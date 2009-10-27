@@ -57,6 +57,49 @@
             <target name="browse-url" if="do.browse-url">
                 <nbbrowse url="${{restbeans.test.url}}"/>
             </target>
+
+            <target name="check-rest-config-props" depends="-do-init">
+                <condition property="do-generate-rest-config">
+                    <and>
+                        <isset property="auxiliary.org-netbeans-modules-websvc-restapi.resource.classes"/>
+                        <isset property="auxiliary.org-netbeans-modules-websvc-restapi.application.path"/>
+                    </and>
+                </condition>
+            </target>
+            <target name = "generate-rest-config" depends="check-rest-config-props" if="do-generate-rest-config">
+                <mkdir dir="${{build.generated.sources.dir}}/rest/org/netbeans/rest/application/config/"/>
+                <echo file="${{build.generated.sources.dir}}/rest/org/netbeans/rest/application/config/ApplicationConfig.java"><![CDATA[/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+package org.netbeans.rest.application.config;
+
+@javax.ws.rs.ApplicationPath("___RESOURCE_URI___")
+public class ApplicationConfig extends javax.ws.rs.core.Application {
+
+    private static final Class<?>[] resourceClasses = {
+        ___RESOURCE_CLASSES___
+    };
+
+    @Override
+    public java.util.Set<Class<?>> getClasses() {
+        java.util.Set<Class<?>> classes = new java.util.HashSet<Class<?>>();
+        for (Class clazz : resourceClasses) {
+            classes.add(clazz);
+        }
+        return classes;
+    }
+
+}]]></echo>
+                <replace file="${{build.generated.sources.dir}}/rest/org/netbeans/rest/application/config/ApplicationConfig.java"
+                         token="___RESOURCE_CLASSES___"
+                         value="${{auxiliary.org-netbeans-modules-websvc-restapi.resource.classes}}"/>
+                <replace file="${{build.generated.sources.dir}}/rest/org/netbeans/rest/application/config/ApplicationConfig.java"
+                         token="___RESOURCE_URI___"
+                         value="${{auxiliary.org-netbeans-modules-websvc-restapi.application.path}}"/>
+            </target>
+
         </project>
             
     </xsl:template>

@@ -111,7 +111,7 @@ public class IndexedFunction extends IndexedFullyQualified implements FunctionEl
         if (parameterList.size() > 0) {
             for (int i = 0, n = parameterList.size(); i < n; i++) {
                 if (i > 0) {
-                    sb.append(", ");
+                    sb.append(",");
                 }
                 final Parameter param = parameterList.get(i);
                 if (includeParamInfo) {
@@ -122,14 +122,14 @@ public class IndexedFunction extends IndexedFullyQualified implements FunctionEl
                         } else {
                         for (QualifiedName qName : types) {
                             sb.append(qName.toString()).append(' ');//NOI18N
-                            }
+                        }
                     }
                 }
                 sb.append(param.getName());
                 if (includeParamInfo) {
                     String defaultValue = param.getDefaultValue();
                     if (defaultValue != null) {
-                        sb.append("=").append(defaultValue).append(" "); //NOI18N
+                        sb.append(" = ").append(defaultValue); //NOI18N
                     }
                 }
             }

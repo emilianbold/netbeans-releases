@@ -180,7 +180,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     private UndoRedo.Manager undoRedo;
 
     /** lines set for this object */
-    private Line.Set lineSet;
+    private Reference<Line.Set> lineSet;
 
     /** Helper variable to prevent multiple cocurrent printing of this
      * instance. */
@@ -639,6 +639,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             prepareTask = RP.create(new Runnable() {
                                                    private boolean runningInAtomicLock;
                                                    private boolean fireEvent;
+                                                   private StyledDocument d;
 
                                                    public void run() {
                                                        doRun();
@@ -653,7 +654,8 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                                            runningInAtomicLock = true;
                                                            NbDocument.runAtomic(docToLoad[0], this);
                                                            if (fireEvent) {
-                                                               fireDocumentChange(getDoc(), false);
+                                                               fireDocumentChange(d, false);
+                                                               d = null;
                                                            }
                                                            return;
                                                        }
@@ -683,6 +685,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                                                // definitively sooner than leaving lock section
                                                                // and notifying al waiters, see #47022
                                                                getDoc().addUndoableEditListener(getUndoRedo());
+                                                               d = getDoc();
                                                            } catch (DelegateIOExc t) {
                                                                prepareDocumentRuntimeException = t;
                                                                prepareTask = null;
@@ -2089,19 +2092,21 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     */
     Line.Set updateLineSet(boolean clear) {
         synchronized (getLock()) {
-            if ((lineSet != null) && !clear) {
-                return lineSet;
+            Reference<Line.Set> ref = lineSet;
+            Line.Set oldSet = ref == null ? null : ref.get();
+            if ((oldSet != null) && !clear) {
+                return oldSet;
             }
 
-            Line.Set oldSet = lineSet;
 
+            Line.Set newSet;
             if ((getDoc() == null) || (documentStatus == DOCUMENT_RELOADING)) {
-                lineSet = new EditorSupportLineSet.Closed(CloneableEditorSupport.this);
+                newSet = new EditorSupportLineSet.Closed(CloneableEditorSupport.this);
             } else {
-                lineSet = new EditorSupportLineSet(CloneableEditorSupport.this,getDoc());
+                newSet = new EditorSupportLineSet(CloneableEditorSupport.this,getDoc());
             }
-
-            return lineSet;
+            lineSet = new WeakReference<Line.Set>(newSet);
+            return newSet;
         }
     }
 
@@ -2221,7 +2226,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         documentStatus = DOCUMENT_NO;
         fireEvent = true;
         setDoc(null, false);
-        kit = null;
+//        kit = null;
         
         getUndoRedo().discardAllEdits();
         updateLineSet(true);
@@ -2655,6 +2660,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     private final class StrongRef extends WeakReference<StyledDocument> 
     implements Runnable {
         private StyledDocument doc;
+        private Line.Set lineSet;
         
         public StrongRef(StyledDocument doc, boolean strong) {
             super(doc, org.openide.util.Utilities.activeReferenceQueue());
@@ -2678,8 +2684,11 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         private void setStrong(boolean alreadyModified) {
             if (alreadyModified) {
                 this.doc = super.get();
+                Reference<Line.Set> r = CloneableEditorSupport.this.lineSet;
+                this.lineSet = r == null ? null : r.get();
             } else {
                 this.doc = null;
+                this.lineSet = null;
             }
         }
 

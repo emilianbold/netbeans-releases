@@ -707,7 +707,12 @@ public class ActionFactory {
                                     int column = start - startLineStartOffset;
 
                                     // insert it after next line
-                                    doc.insertString(endLineEndOffset, linesText, null);
+                                    if (endLineEndOffset == doc.getLength() + 1) { // extra newline at doc end (not included in doc-len)
+                                        assert (linesText.charAt(linesText.length() - 1) == '\n');
+                                        doc.insertString(endLineEndOffset - 1, "\n" + linesText.substring(0, linesText.length() - 1), null);
+                                    } else { // Regular case
+                                        doc.insertString(endLineEndOffset, linesText, null);
+                                    }
 
                                     if (selection) {
                                         // select moved lines
@@ -1365,20 +1370,23 @@ public class ActionFactory {
                     target.replaceSelection(null);
                 }
 
-                final int dotPos = caret.getDot();
-                final String s = editorUI.getWordMatch().getMatchWord(dotPos, matchNext);
+                final int caretOffset = caret.getDot();
+                final String s = editorUI.getWordMatch().getMatchWord(caretOffset, matchNext);
                 final String prevWord = editorUI.getWordMatch().getPreviousWord();
                 if (s != null) {
                     doc.runAtomicAsUser (new Runnable () {
                         public void run () {
                             DocumentUtilities.setTypingModification(doc, true);
                             try {
-                                int pos = dotPos;
-                                if (prevWord != null && prevWord.length() > 0) {
-                                    pos -= prevWord.length();
-                                    doc.remove(pos, prevWord.length());
+                                int offset = caretOffset;
+                                boolean removePrevWord = (prevWord != null && prevWord.length() > 0);
+                                if (removePrevWord) {
+                                    offset -= prevWord.length();
                                 }
-                                doc.insertString(pos, s, null);
+                                // Create position due to possible text replication (e.g. for variable renaming)
+                                Position pos = doc.createPosition(offset);
+                                doc.remove(offset, prevWord.length());
+                                doc.insertString(pos.getOffset(), s, null);
                             } catch (BadLocationException e) {
                                 target.getToolkit().beep();
                             } finally {

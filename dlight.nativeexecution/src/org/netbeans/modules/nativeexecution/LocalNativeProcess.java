@@ -38,12 +38,14 @@
  */
 package org.netbeans.modules.nativeexecution;
 
+import com.sun.jna.Pointer;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Field;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -52,6 +54,7 @@ import org.netbeans.modules.nativeexecution.support.EnvWriter;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.netbeans.modules.nativeexecution.api.util.UnbufferSupport;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
+import org.netbeans.modules.nativeexecution.support.Win32APISupport;
 import org.openide.util.NbBundle;
 
 public final class LocalNativeProcess extends AbstractNativeProcess {
@@ -84,13 +87,6 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
     }
 
     private void createNonWin() throws IOException, InterruptedException {
-        // Get working directory ....
-        String workingDirectory = info.getWorkingDirectory(true);
-
-        if (workingDirectory != null) {
-            workingDirectory = new File(workingDirectory).getAbsolutePath();
-        }
-
         final MacroMap env = info.getEnvironment().clone();
 
         if (info.isUnbuffer()) {
@@ -100,6 +96,16 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
         env.appendPathVariable("PATH", "/bin:/usr/bin:" + hostInfo.getPath()); // NOI18N
 
         final ProcessBuilder pb = new ProcessBuilder(hostInfo.getShell(), "-s"); // NOI18N
+
+        // Get working directory ....
+        String workingDirectory = info.getWorkingDirectory(true);
+
+        if (workingDirectory != null) {
+            File dirFile = new File(workingDirectory);
+            if (dirFile.exists()) {
+                pb.directory(dirFile);
+            }
+        }
 
         if (isInterrupted()) {
             throw new InterruptedException();
@@ -116,10 +122,6 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
 
         EnvWriter ew = new EnvWriter(processInput);
         ew.write(env);
-
-        if (workingDirectory != null) {
-            processInput.write(("cd \"" + workingDirectory + "\"\n").getBytes()); // NOI18N
-        }
 
         if (info.getInitialSuspend()) {
             processInput.write("ITS_TIME_TO_START=\n".getBytes()); // NOI18N
@@ -241,8 +243,24 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
         processError = process.getErrorStream();
         processOutput = process.getInputStream();
 
-        // Fake PID...
-        ByteArrayInputStream bis = new ByteArrayInputStream("12345".getBytes()); // NOI18N
+        int newPid = 12345;
+
+        try {
+            String className = process.getClass().getName();
+            if ("java.lang.Win32Process".equals(className) || "java.lang.ProcessImpl".equals(className)) { // NOI18N
+                Field f = process.getClass().getDeclaredField("handle"); // NOI18N
+                f.setAccessible(true);
+                long phandle = f.getLong(process);
+
+                Win32APISupport kernel = Win32APISupport.instance;
+                Win32APISupport.HANDLE handle = new Win32APISupport.HANDLE();
+                handle.setPointer(Pointer.createConstant(phandle));
+                newPid = kernel.GetProcessId(handle);
+            }
+        } catch (Throwable e) {
+        }
+
+        ByteArrayInputStream bis = new ByteArrayInputStream(("" + newPid).getBytes()); // NOI18N
 
         readPID(bis);
     }

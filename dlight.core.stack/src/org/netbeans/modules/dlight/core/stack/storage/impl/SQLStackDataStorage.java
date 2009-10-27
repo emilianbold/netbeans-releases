@@ -90,6 +90,7 @@ import org.netbeans.modules.dlight.spi.storage.ProxyDataStorage;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.util.Util;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -194,7 +195,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
     private long funcIdSequence;
     private long nodeIdSequence;
     private final ExecutorThread executor;
-    private boolean isRunning = true;    
+    private boolean isRunning = true;
 
     private synchronized PreparedStatement getPreparedStatement(String sql) throws SQLException {
         PreparedStatement stmt = stmtCache.get(sql);
@@ -264,18 +265,21 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         try {
             List<FunctionCallWithMetric> result = new ArrayList<FunctionCallWithMetric>();
             ResultSet rs = sqlStorage.select(null, null, prepareCallersSelect(path));
-            while (rs.next()) {
-                Map<FunctionMetric, Object> metrics = new HashMap<FunctionMetric, Object>();
-                metrics.put(FunctionMetric.CpuTimeInclusiveMetric, new Time(rs.getLong(4)));
-                metrics.put(FunctionMetric.CpuTimeExclusiveMetric, new Time(rs.getLong(5)));
-                String funcName = rs.getString(2);
-                result.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(1), funcName, rs.getString(3)), metrics));
+            try {
+                while (rs.next()) {
+                    Map<FunctionMetric, Object> metrics = new HashMap<FunctionMetric, Object>();
+                    metrics.put(FunctionMetric.CpuTimeInclusiveMetric, new Time(rs.getLong(4)));
+                    metrics.put(FunctionMetric.CpuTimeExclusiveMetric, new Time(rs.getLong(5)));
+                    String funcName = rs.getString(2);
+                    result.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(1), funcName, rs.getString(3)), metrics));
+                }
+            } finally {
+                rs.close();
             }
-            rs.close();
             demangle(result);
             return result;
         } catch (SQLException ex) {
-            ex.printStackTrace();
+            Exceptions.printStackTrace(ex);
             return Collections.emptyList();
         }
     }
@@ -284,18 +288,21 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         try {
             List<FunctionCallWithMetric> result = new ArrayList<FunctionCallWithMetric>();
             ResultSet rs = sqlStorage.select(null, null, prepareCalleesSelect(path));
-            while (rs.next()) {
-                Map<FunctionMetric, Object> metrics = new HashMap<FunctionMetric, Object>();
-                metrics.put(FunctionMetric.CpuTimeInclusiveMetric, new Time(rs.getLong(4)));
-                metrics.put(FunctionMetric.CpuTimeExclusiveMetric, new Time(rs.getLong(5)));
-                String funcName = rs.getString(2);
-                result.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(1), funcName, rs.getString(3)), metrics));
+            try {
+                while (rs.next()) {
+                    Map<FunctionMetric, Object> metrics = new HashMap<FunctionMetric, Object>();
+                    metrics.put(FunctionMetric.CpuTimeInclusiveMetric, new Time(rs.getLong(4)));
+                    metrics.put(FunctionMetric.CpuTimeExclusiveMetric, new Time(rs.getLong(5)));
+                    String funcName = rs.getString(2);
+                    result.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(1), funcName, rs.getString(3)), metrics));
+                }
+            } finally {
+                rs.close();
             }
-            rs.close();
             demangle(result);
             return result;
         } catch (SQLException ex) {
-            ex.printStackTrace();
+            Exceptions.printStackTrace(ex);
             return Collections.emptyList();
         }
     }
@@ -307,7 +314,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
             PreparedStatement select = getPreparedStatement(
                     "SELECT Func.func_id, Func.func_name, Func.func_full_name, SUM(FuncMetricAggr.time_incl) AS time_incl, SUM(FuncMetricAggr.time_excl) AS time_excl " + //NOI18N
                     "FROM Func LEFT JOIN FuncMetricAggr ON Func.func_id = FuncMetricAggr.func_id " + // NOI18N
-                    (timeFilter != null? "WHERE ? <= FuncMetricAggr.bucket_id AND FuncMetricAggr.bucket_id < ? " : "") + // NOI18N
+                    (timeFilter != null ? "WHERE ? <= FuncMetricAggr.bucket_id AND FuncMetricAggr.bucket_id < ? " : "") + // NOI18N
                     "GROUP BY Func.func_id, Func.func_name, Func.func_full_name " + // NOI18N
                     "ORDER BY " + metric.getMetricID() + " DESC"); //NOI18N
             if (timeFilter != null) {
@@ -315,25 +322,29 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
                 select.setLong(2, timeToBucketId(timeFilter.getInterval().getEnd()));//.getEndMilliSeconds()));
             }
             select.setMaxRows(limit);
+
             ResultSet rs = select.executeQuery();
-            while (rs.next()) {
-                Map<FunctionMetric, Object> metrics = new HashMap<FunctionMetric, Object>();
-                metrics.put(FunctionMetric.CpuTimeInclusiveMetric, new Time(rs.getLong(4)));
-                metrics.put(FunctionMetric.CpuTimeExclusiveMetric, new Time(rs.getLong(5)));
-                String name = rs.getString(2);
-                funcList.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(1), name, rs.getString(3)), metrics));
+            try {
+                while (rs.next()) {
+                    Map<FunctionMetric, Object> metrics = new HashMap<FunctionMetric, Object>();
+                    metrics.put(FunctionMetric.CpuTimeInclusiveMetric, new Time(rs.getLong(4)));
+                    metrics.put(FunctionMetric.CpuTimeExclusiveMetric, new Time(rs.getLong(5)));
+                    String name = rs.getString(2);
+                    funcList.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(1), name, rs.getString(3)), metrics));
+                }
+            } finally {
+                rs.close();
             }
-            rs.close();
 
             demangle(funcList);
 
             return funcList;
         } catch (SQLException ex) {
-            ex.printStackTrace();
+            Exceptions.printStackTrace(ex);
         }
         return Collections.emptyList();
     }
-    
+
     public List<FunctionCallWithMetric> getFunctionsList(DataTableMetadata metadata,
             List<Column> metricsColumn, FunctionDatatableDescription functionDescription, List<DataFilter> filters) {
         try {
@@ -351,42 +362,40 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
             //if we hvae Time column create filter
             Collection<DataTableMetadataFilter> tableFilters = new ArrayList<DataTableMetadataFilter>();
             DataTableMetadataFilterSupport filtersSupport = DataTableMetadataFilterSupport.getInstance();
-            for (TimeIntervalDataFilter timeFilter : timeFilters){
+            for (TimeIntervalDataFilter timeFilter : timeFilters) {
                 tableFilters.addAll(filtersSupport.createFilters(metadata, timeFilter));
             }
-            ResultSet rs = sqlStorage.select(metadata, tableFilters);
 
-//            if (metadata.getViewStatement() != null) {
-//                PreparedStatement select = getPreparedStatement(metadata.getViewStatement());
-//                rs = select.executeQuery();
-//            } else {
-//                rs = sqlStorage.select(metadata.getName(), metricsColumn);
-//            }
-          //  rs = sqlStorage.select(metadata.getName(), metricsColumn, metadata.getViewStatement(), tableFilters);
-            while (rs.next()) {
-                Map<FunctionMetric, Object> metricValues = new HashMap<FunctionMetric, Object>();
-                for (FunctionMetric m : metrics) {
-                    try {
-                        rs.findColumn(m.getMetricID());
-                        Object value = rs.getObject(m.getMetricID());
-                        if (m.getMetricValueClass() == Time.class && value != null) {
-                            value = new Time(Long.valueOf(value + ""));
+            ResultSet rs = sqlStorage.select(metadata, tableFilters);
+            try {
+                while (rs.next()) {
+                    Map<FunctionMetric, Object> metricValues = new HashMap<FunctionMetric, Object>();
+                    for (FunctionMetric m : metrics) {
+                        try {
+                            rs.findColumn(m.getMetricID());
+                            Object value = rs.getObject(m.getMetricID());
+                            if (m.getMetricValueClass() == Time.class && value != null) {
+                                value = new Time(Long.valueOf(value + ""));
+                            }
+                            metricValues.put(m, value);
+                        } catch (SQLException e) {
+                            Exceptions.printStackTrace(e);
                         }
-                        metricValues.put(m, value);
-                    } catch (SQLException e) {
                     }
+                    String funcName = rs.getString(functionColumnName);
+                    funcList.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(functionUniqueID), funcName, funcName), offesetColumnName != null ? rs.getLong(offesetColumnName) : -1, metricValues));
                 }
-                String funcName = rs.getString(functionColumnName);
-                funcList.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(functionUniqueID), funcName, funcName), offesetColumnName != null ? rs.getLong(offesetColumnName) : -1, metricValues));
+            } finally {
+                rs.close();
             }
-            rs.close();
 
             demangle(funcList);
 
             return funcList;
         } catch (SQLException ex) {
+            Exceptions.printStackTrace(ex);
+            return Collections.emptyList();
         }
-        return Collections.emptyList();
     }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -424,10 +433,14 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         }
     }
 
-    private long generateFuncId(CharSequence funcName) {
+    private long generateFuncId(final CharSequence fname) {
+        // Need an immutable copy of fname. Otherwise will use
+        // wrong key in funcCache (mutuable fname)
+        String funcName = fname.toString();
+        
         int plusPos = lastIndexOf(funcName, '+'); // NOI18N
         if (0 <= plusPos) {
-            funcName = funcName.subSequence(0, plusPos);
+            funcName = funcName.substring(0, plusPos);
         }
         synchronized (funcCache) {
             Long funcId = funcCache.get(funcName);
@@ -435,7 +448,6 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
                 funcId = ++funcIdSequence;
                 AddFunction cmd = new AddFunction();
                 cmd.id = funcId;
-                funcName = new String(funcName.toString());
                 cmd.name = funcName;
                 executor.submitCommand(cmd);
                 funcCache.put(funcName, funcId);
@@ -513,22 +525,20 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
 
     private ThreadSnapshot fetchSnapshot(int threadId, long timestamp, boolean fullMsa) throws SQLException {
         PreparedStatement s = getPreparedStatement("SELECT leaf_id, mstate FROM CallStack WHERE thread_id = ? AND time_stamp = ?"); // NOI18N
+        s.setInt(1, threadId);
+        s.setLong(2, timestamp);
+        ResultSet rs = s.executeQuery();
         try {
-            s.setInt(1, threadId);
-            s.setLong(2, timestamp);
-            ResultSet rs = s.executeQuery();
-            try {
-                if (rs.next()) {
-                    return new SnapshotImpl(this, timestamp, threadId, rs.getInt(1), MSAState.fromCode(rs.getInt(2), fullMsa));
-                } else {
-                    return null;
-                }
-            } finally {
-                rs.close();
+            if (rs.next()) {
+                return new SnapshotImpl(this, timestamp, threadId, rs.getInt(1), MSAState.fromCode(rs.getInt(2), fullMsa));
+            } else {
+                return null;
             }
         } finally {
-            //s.close(); // do not close! SQLStorage caches these prepared statements
+            rs.close();
         }
+
+        // do not close s here, it is cached
     }
 
     public List<ThreadSnapshot> getThreadSnapshots(ThreadSnapshotQuery query) {
@@ -614,6 +624,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
             }
             return snapshots;
         } catch (SQLException ex) {
+            Exceptions.printStackTrace(ex);
             return Collections.emptyList();
         }
     }
@@ -624,8 +635,8 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
             return null;
         }
         ThreadDumpImpl result = new ThreadDumpImpl(res.getTimestamp());
-        for(Integer i : query.getShowThreads()){
-            for(ThreadSnapshot dump : res.getThreadStates()){
+        for (Integer i : query.getShowThreads()) {
+            for (ThreadSnapshot dump : res.getThreadStates()) {
                 if (dump.getThreadInfo().getThreadId() == i) {
                     result.addStack(dump);
                     break;
@@ -635,7 +646,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         return result;
     }
 
-    private MSAState getTrueState(ThreadSnapshot dump, ThreadDumpQuery query){
+    private MSAState getTrueState(ThreadSnapshot dump, ThreadDumpQuery query) {
         MSAState state = dump.getState();
 //        List<FunctionCall> stack = dump.getStack();
 //        String where = ""; // NOI18N
@@ -664,12 +675,12 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         long end;
         if (true) {
             start = query.getThreadState().getTimeStamp();
-            middle = query.getThreadState().getTimeStamp() + query.getThreadState().getMSASamplePeriod()/2;
+            middle = query.getThreadState().getTimeStamp() + query.getThreadState().getMSASamplePeriod() / 2;
             end = query.getThreadState().getTimeStamp() + query.getThreadState().getMSASamplePeriod();
         } else {
-            start = query.getThreadState().getTimeStamp()* 1000 * 1000;
-            middle = query.getThreadState().getTimeStamp()* 1000 * 1000 + query.getThreadState().getMSASamplePeriod()/2; ///1000/1000;
-            end = query.getThreadState().getTimeStamp()* 1000 * 1000 + query.getThreadState().getMSASamplePeriod(); ///1000/1000;
+            start = query.getThreadState().getTimeStamp() * 1000 * 1000;
+            middle = query.getThreadState().getTimeStamp() * 1000 * 1000 + query.getThreadState().getMSASamplePeriod() / 2; ///1000/1000;
+            end = query.getThreadState().getTimeStamp() * 1000 * 1000 + query.getThreadState().getMSASamplePeriod(); ///1000/1000;
         }
         // 1. try to find needed thread in needed state in sampling interval
         TimeFilter time = new TimeFilter(start, end, TimeFilter.Mode.ALL);
@@ -677,9 +688,9 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         List<ThreadSnapshot> res = getThreadSnapshots(new ThreadSnapshotQuery(query.isFullMode(), time, threads));
         ThreadSnapshot found = null;
         long foundTimeSamp = -1;
-        for(ThreadSnapshot dump : res) {
+        for (ThreadSnapshot dump : res) {
             if (query.getThreadID() == dump.getThreadInfo().getThreadId() &&
-                query.getPreferredState() == getTrueState(dump, query)) {
+                    query.getPreferredState() == getTrueState(dump, query)) {
                 found = dump;
                 foundTimeSamp = found.getTimestamp();
                 break;
@@ -688,13 +699,13 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         if (found == null) {
             // 2. try to find needed thread in needed state before middle of the sampling interval
             time = new TimeFilter(0, middle, TimeFilter.Mode.LAST);
-            threads = new ThreadFilter(Collections.<Integer>singletonList(Integer.valueOf((int)query.getThreadID())));
+            threads = new ThreadFilter(Collections.<Integer>singletonList(Integer.valueOf((int) query.getThreadID())));
             List<ThreadSnapshot> res2 = getThreadSnapshots(new ThreadSnapshotQuery(query.isFullMode(), time, threads));
             long foundAny = -1;
-            for(ThreadSnapshot dump : res2) {
+            for (ThreadSnapshot dump : res2) {
                 foundAny = dump.getTimestamp();
                 if (query.getThreadID() == dump.getThreadInfo().getThreadId() &&
-                    query.getPreferredState() == getTrueState(dump, query)) {
+                        query.getPreferredState() == getTrueState(dump, query)) {
                     found = dump;
                     foundTimeSamp = middle;
                     break;
@@ -703,12 +714,12 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
             // 3. try to find needed thread in needed state in case equals time stamps
             if (found == null && foundAny > 0) {
                 time = new TimeFilter(foundAny - 1000 * 1000, foundAny + 1, TimeFilter.Mode.ALL);
-                threads = new ThreadFilter(Collections.<Integer>singletonList(Integer.valueOf((int)query.getThreadID())));
+                threads = new ThreadFilter(Collections.<Integer>singletonList(Integer.valueOf((int) query.getThreadID())));
                 res2 = getThreadSnapshots(new ThreadSnapshotQuery(query.isFullMode(), time, threads));
-                for(ThreadSnapshot dump : res2) {
+                for (ThreadSnapshot dump : res2) {
                     foundAny = dump.getTimestamp();
                     if (query.getThreadID() == dump.getThreadInfo().getThreadId() &&
-                        query.getPreferredState() == getTrueState(dump, query)) {
+                            query.getPreferredState() == getTrueState(dump, query)) {
                         found = dump;
                         foundTimeSamp = middle;
                         break;
@@ -716,7 +727,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
                 }
                 if (found == null) {
                     // 4. take any dump of the thread
-                    for(ThreadSnapshot dump : res2) {
+                    for (ThreadSnapshot dump : res2) {
                         foundAny = dump.getTimestamp();
                         if (query.getThreadID() == dump.getThreadInfo().getThreadId()) {
                             found = dump;
@@ -731,7 +742,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
             // 5. find closed other thread in the sampling interval
             HashMap<Integer, ThreadSnapshot> map = new HashMap<Integer, ThreadSnapshot>();
             map.put(found.getThreadInfo().getThreadId(), found);
-            for(ThreadSnapshot dump : res) {
+            for (ThreadSnapshot dump : res) {
                 if (dump.getThreadInfo().getThreadId() != found.getThreadInfo().getThreadId()) {
                     int id = dump.getThreadInfo().getThreadId();
                     ThreadSnapshot prev = map.get(id);
@@ -746,7 +757,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
             }
             Set<Integer> toAdd = new HashSet<Integer>(query.getShowThreads());
             ThreadDumpImpl result = new ThreadDumpImpl(foundTimeSamp);
-            for(ThreadSnapshot dump : map.values()) {
+            for (ThreadSnapshot dump : map.values()) {
                 toAdd.remove(dump.getThreadInfo().getThreadId());
                 result.addStack(dump);
             }
@@ -755,7 +766,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
                 time = new TimeFilter(0, foundTimeSamp, TimeFilter.Mode.LAST);
                 threads = new ThreadFilter(toAdd);
                 res = getThreadSnapshots(new ThreadSnapshotQuery(query.isFullMode(), time, threads));
-                for(ThreadSnapshot dump : res) {
+                for (ThreadSnapshot dump : res) {
                     result.addStack(dump);
                 }
             }
@@ -764,7 +775,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         return null;
     }
 
-    public  synchronized  List<FunctionCall> getCallStack(final long stackId) {
+    public synchronized List<FunctionCall> getCallStack(final long stackId) {
         List<FunctionCall> result = new ArrayList<FunctionCall>();
         try {
             long nodeID = stackId;
@@ -790,6 +801,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
                 }
             }
         } catch (SQLException ex) {
+            Exceptions.printStackTrace(ex);
         }
         demangle(result);
         Collections.reverse(result);
@@ -817,7 +829,6 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
     private static long timeToBucketId(long timestamp) {
         return timestamp / 1000 / 1000 / 1000;  // bucket is 1 second
     }
-
     /**
      * Maximal string length that underlying database can store.
      * Must match the numbers in schema.sql.
@@ -1079,7 +1090,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
                                     stmt.executeUpdate();
                                 }
                             } catch (SQLException ex) {
-                                ex.printStackTrace();
+                                Exceptions.printStackTrace(ex);
                             }
                         }
                         cmds.clear();
@@ -1108,7 +1119,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
                                     rs.close();
                                 }
                             } catch (SQLException ex) {
-                                ex.printStackTrace();
+                                Exceptions.printStackTrace(ex);
                             }
                         }
                         funcMetrics.clear();
@@ -1121,7 +1132,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
                                 stmt.setLong(3, cmd.objId);
                                 stmt.executeUpdate();
                             } catch (SQLException ex) {
-                                ex.printStackTrace();
+                                Exceptions.printStackTrace(ex);
                             }
                         }
                         nodeMetrics.clear();

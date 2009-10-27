@@ -40,13 +40,13 @@
  */
 package org.netbeans.modules.refactoring.java.plugins;
 
-import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.*;
+import javax.lang.model.element.TypeElement;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.*;
@@ -79,12 +79,12 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
     final AbstractRefactoring refactoring;
     final boolean isRenameRefactoring;
     ArrayList<FileObject> filesToMove = new ArrayList<FileObject>();
-    HashMap<FileObject,ElementHandle> classes;
+    /** top level classes to move */
+    Set<ElementHandle<TypeElement>> classes;
     /** list of folders grouped by source roots */
     List<List<FileObject>> foldersToMove = new ArrayList<List<FileObject>>();
     /** collection of packages that will change its name */
     Set<String> packages;
-    Map<FileObject, Set<FileObject>> whoReferences = new HashMap<FileObject, Set<FileObject>>();
     
     public MoveRefactoringPlugin(MoveRefactoring move) {
         this.refactoring = move;
@@ -259,18 +259,17 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
         ClasspathInfo cpInfo = getClasspathInfo(refactoring);
         ClassIndex idx = cpInfo.getClassIndex();
         Set<FileObject> set = new HashSet<FileObject>();
-        for (Map.Entry<FileObject, ElementHandle> entry : classes.entrySet()) {
+        for (ElementHandle<TypeElement> elementHandle : classes) {
             //set.add(SourceUtils.getFile(el, cpInfo));
-            Set<FileObject> files = idx.getResources(entry.getValue(), EnumSet.of(ClassIndex.SearchKind.TYPE_REFERENCES, ClassIndex.SearchKind.IMPLEMENTORS),EnumSet.of(ClassIndex.SearchScope.SOURCE));
+            Set<FileObject> files = idx.getResources(elementHandle, EnumSet.of(ClassIndex.SearchKind.TYPE_REFERENCES, ClassIndex.SearchKind.IMPLEMENTORS),EnumSet.of(ClassIndex.SearchScope.SOURCE));
             set.addAll(files);
-            whoReferences.put(entry.getKey(), files);
         }
         set.addAll(filesToMove);
         return set;
     }    
     
     private void initClasses() {
-        classes = new HashMap<FileObject,ElementHandle>();
+        classes = new HashSet<ElementHandle<TypeElement>>();
         for (int i=0;i<filesToMove.size();i++) {
             final int j = i;
             try {
@@ -287,10 +286,7 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
                         List<? extends Tree> trees= parameter.getCompilationUnit().getTypeDecls();
                         for (Tree t: trees) {
                             if (t.getKind() == Tree.Kind.CLASS) {
-                                if (((ClassTree) t).getSimpleName().toString().equals(filesToMove.get(j).getName())) {
-                                    classes.put(filesToMove.get(j), ElementHandle.create(parameter.getTrees().getElement(TreePath.getPath(parameter.getCompilationUnit(), t))));
-                                    return ;
-                                }
+                                classes.add(ElementHandle.create((TypeElement) parameter.getTrees().getElement(TreePath.getPath(parameter.getCompilationUnit(), t))));
                             }
                         }
                               

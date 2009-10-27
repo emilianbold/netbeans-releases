@@ -69,7 +69,9 @@ public interface WSDLWizardConstants {
     
     public static final String TEMP_WSDLMODEL = "TEMP_WSDLMODEL";
     
-    public static final String TEMP_WSDLFILE = "TEMP_WSDLFILE";
+    public static final String 
+        TEMP_WSDLFILE = "TEMP_WSDLFILE",
+        CREATE_NEW_TEMP_WSDLFILE = "CREATE_NEW_TEMP_WSDLFILE";
     
     public static final String PORTTYPE = "PORTTYPE";
 

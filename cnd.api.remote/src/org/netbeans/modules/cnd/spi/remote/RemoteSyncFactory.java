@@ -142,4 +142,8 @@ public abstract class RemoteSyncFactory {
         assert factories.length > 0;
         return factories[0];
     }
+
+    public boolean isPathMappingCustomizable() {
+        return false;
+    }
 }

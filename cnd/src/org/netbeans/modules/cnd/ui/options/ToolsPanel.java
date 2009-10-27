@@ -74,10 +74,10 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -918,12 +918,14 @@ private void btVersionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     RequestProcessor.getDefault().post(new Runnable() {
 
         public void run() {
-            String versions = getToolCollectionPanel().getVersion(currentCompilerSet);
+            CompilerSet set = currentCompilerSet;
+            if (set != null) {
+                String versions = getToolCollectionPanel().getVersion(set);
 
-            NotifyDescriptor nd = new NotifyDescriptor.Message(versions);
-            nd.setTitle(getString("LBL_VersionInfo_Title")); // NOI18N
-            DialogDisplayer.getDefault().notify(nd);
-
+                NotifyDescriptor nd = new NotifyDescriptor.Message(versions);
+                nd.setTitle(getString("LBL_VersionInfo_Title")); // NOI18N
+                DialogDisplayer.getDefault().notify(nd);
+            }
             SwingUtilities.invokeLater(new Runnable() {
 
                 public void run() {
@@ -971,6 +973,10 @@ private void btVersionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     }
 
 private void btRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRestoreActionPerformed
+    if (csm == null) {
+        // restore is available after long initialization
+        return;
+    }
     NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
             getString("RESTORE_TXT"),
             getString("RESTORE_TITLE"),
@@ -1044,6 +1050,9 @@ private void btRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
             }
             if (selectedName != null) {
                 selectedCS[0] = csm.getCompilerSet(selectedName);
+            }
+            if (execEnv.isLocal()) {
+                WindowsSupport.getInstance().init();
             }
             log.finest("Restored defaults\n");
         }

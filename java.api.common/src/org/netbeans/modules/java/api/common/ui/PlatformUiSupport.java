@@ -481,8 +481,11 @@ public final class PlatformUiSupport {
         }
 
         public void setSelectedItem(Object obj) {
-            selectedPlatform = (PlatformKey) obj;
-            fireContentsChanged(this, -1, -1);
+            //Guard from null on Mac OS X
+            if (obj != null) {
+                selectedPlatform = (PlatformKey) obj;
+                fireContentsChanged(this, -1, -1);
+            }
         }
 
         public void propertyChange(PropertyChangeEvent event) {
@@ -529,7 +532,8 @@ public final class PlatformUiSupport {
                     }
                 }
                 platformNamesCache = orderedNames.toArray(new PlatformKey[0]);
-            }
+                assert selectedPlatform != null : "platformNamesCache: " + orderedNames +" initialPlatform: " + initialPlatform;   //NOI18N
+            }            
             return platformNamesCache;
         }
 

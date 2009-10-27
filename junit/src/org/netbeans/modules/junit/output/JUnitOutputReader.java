@@ -542,6 +542,7 @@ final class JUnitOutputReader {
     /**
      */
     void testTaskFinished() {
+            closePereviousReport(); // #171050
     }
 
     private void closePereviousReport(){
@@ -594,7 +595,6 @@ final class JUnitOutputReader {
     /**
      */
     void buildFinished(final AntEvent event) {
-        closePereviousReport();
         manager.sessionFinished(testSession);
     }
 
@@ -739,7 +739,7 @@ final class JUnitOutputReader {
             return false;
         }
     }
-    
+
     private File findReportFile() {
         File file = new File(resultsDir,
                              "TEST-" + testSession.getCurrentSuite().getName() + ".xml"); //NOI18N

@@ -44,16 +44,20 @@ package org.netbeans.modules.websvc.wsitconf.ui.client;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
+import org.netbeans.modules.websvc.wsitconf.api.WSITConfigProvider;
 import org.netbeans.modules.websvc.wsitconf.spi.SecurityCheckerRegistry;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProprietarySecurityPolicyModelHelper;
+import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
+import org.netbeans.modules.websvc.wsstack.api.WSStackVersion;
 import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionView;
 import org.netbeans.modules.xml.multiview.ui.SectionVisualTheme;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -95,6 +99,7 @@ public class STSClientPanel extends SectionInnerPanel {
         trustVersionLabel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         trustVersionCombo.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         shareTokenChBox.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
+        shareTokenChBox.setToolTipText(NbBundle.getMessage(STSClientPanel.class, "LBL_STSPanel_ShareToken_Tooltip"));
 
         inSync = true;
         trustVersionCombo.addItem(ComboConstants.TRUST_10);
@@ -324,6 +329,9 @@ public class STSClientPanel extends SectionInnerPanel {
 
     private void enableDisable() {
         
+        WSStackVersion wsStackVersion = WSITConfigProvider.getDefault().getHighestWSStackVersion(project);
+        
+        boolean cfg20 = ConfigVersion.CONFIG_2_0.isSupported(wsStackVersion);
         boolean amSec = SecurityCheckerRegistry.getDefault().isNonWsitSecurityEnabled(node, jaxwsmodel);
 
         endpointLabel.setEnabled(!amSec);
@@ -336,8 +344,8 @@ public class STSClientPanel extends SectionInnerPanel {
         portNameTextField.setEnabled(!amSec);
         serviceNameLabel.setEnabled(!amSec);
         serviceNameTextField.setEnabled(!amSec);
-        shareTokenChBox.setEnabled(!amSec);
-        shareTokenChBox.setEnabled(!amSec);
+        shareTokenChBox.setEnabled(!amSec && cfg20);
+        shareTokenChBox.setEnabled(!amSec && cfg20);
         wsdlLocationLabel.setEnabled(!amSec);
         wsdlLocationTextField.setEnabled(!amSec);
     }

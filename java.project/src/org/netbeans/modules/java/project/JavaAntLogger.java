@@ -67,6 +67,7 @@ import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.IOColorPrint;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputListener;
+import org.openide.windows.OutputWriter;
 
 /**
  * Ant logger which handles Java- and Java-project-specific UI.
@@ -108,9 +109,11 @@ public final class JavaAntLogger extends AntLogger {
                 InputOutput io = session.getIO();
                 if (IOColorPrint.isSupported(io)) {
                     try {
-                        io.getErr().print(prePart);
-                        IOColorPrint.print(io, midPart, hyperlink, true, null);
-                        io.getErr().println(endPart);
+                        OutputWriter out = messageLevel <= AntEvent.LOG_WARN ? io.getErr() : /* #174781 1/2 */io.getOut();
+                        boolean important = prePart.contains(/* #174781 2/2 */"at "); // NOI18N
+                        out.print(prePart);
+                        IOColorPrint.print(io, midPart, hyperlink, important, null);
+                        out.println(endPart);
                         return;
                     } catch (IOException x) {
                         Exceptions.printStackTrace(x);

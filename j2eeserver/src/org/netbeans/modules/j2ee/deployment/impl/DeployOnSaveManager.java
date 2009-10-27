@@ -58,6 +58,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.source.BuildArtifactMapper;
 import org.netbeans.api.java.source.BuildArtifactMapper.ArtifactsUpdated;
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
+import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener.Artifact;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
@@ -286,6 +288,11 @@ public final class DeployOnSaveManager {
                 }
             }
 
+            if (LOGGER.isLoggable(Level.FINE)) {
+                for (Artifact artifact : realArtifacts) {
+                    LOGGER.log(Level.FINE, "Delivered compile artifact: {0}", artifact);
+                }
+            }
             DeployOnSaveManager.getDefault().submitChangedArtifacts(provider, realArtifacts);
         }
 
@@ -300,6 +307,11 @@ public final class DeployOnSaveManager {
         }
 
         public void artifactsUpdated(Iterable<Artifact> artifacts) {
+            if (LOGGER.isLoggable(Level.FINE)) {
+                for (Artifact artifact : artifacts) {
+                    LOGGER.log(Level.FINE, "Delivered copy artifact: {0}", artifact);
+                }
+            }
             DeployOnSaveManager.getDefault().submitChangedArtifacts(provider, artifacts);
         }
 
@@ -377,6 +389,9 @@ public final class DeployOnSaveManager {
                         "MSG_DeployOnSave", provider.getDeploymentName()), false);
                 ui.start(Integer.valueOf(PROGRESS_DELAY));
                 try {
+                    DeploymentHelper.deployDatasources(provider);
+                    DeploymentHelper.deployMessageDestinations(provider);
+
                     TargetModule[] modules = server.deploy(ui, true);
                     if (modules == null || modules.length <= 0) {
                         state = DeploymentState.DEPLOYMENT_FAILED;
@@ -388,6 +403,12 @@ public final class DeployOnSaveManager {
                     LOGGER.log(Level.INFO, null, ex);
                     state = DeploymentState.DEPLOYMENT_FAILED;
                 } catch (ServerException ex) {
+                    LOGGER.log(Level.INFO, null, ex);
+                    state = DeploymentState.DEPLOYMENT_FAILED;
+                } catch (ConfigurationException ex) {
+                    LOGGER.log(Level.INFO, null, ex);
+                    state = DeploymentState.DEPLOYMENT_FAILED;
+                } catch (DatasourceAlreadyExistsException ex) {
                     LOGGER.log(Level.INFO, null, ex);
                     state = DeploymentState.DEPLOYMENT_FAILED;
                 } finally {

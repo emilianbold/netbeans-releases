@@ -54,5 +54,9 @@ public abstract class DLightToolAccessor {
     public abstract boolean collectorsTurnedOn(DLightTool tool);
 
     public abstract void turnCollectorsState(DLightTool tool, boolean turnedOn);
+
+    public abstract void setDetailsEnabled(DLightTool tool, boolean isEnabled);
+
+    public abstract boolean isDetailsEnabled(DLightTool tool);
     
 }

@@ -30,7 +30,7 @@ shift `expr $OPTIND - 1`
 
 trap "doExit" 1 2 15 EXIT
 
-$SHELL "${SHFILE}"
+sh "${SHFILE}"
 STATUS=$?
 
 echo ${STATUS} > "${SHFILE}.res"

@@ -7,12 +7,16 @@
                 <attr name="displayedName" stringvalue="Thread Profiling"/>
                 <attr name="hidden" boolvalue="true"/>
                 <attr name="system" boolvalue="true"/>
+                <attr name="platforms" stringvalue="Solaris,Linux"/>
+                <attr name="collector.providers" stringvalue="SunStudio"/>
+                <attr name="indicator.providers" stringvalue="ProcFSReader,ProcReader,prstat,SunStudio"/>
                 <folder name="KnownToolsConfigurationProviders">
                     <file name="DLightTHAToolConfigurationProvider.shadow">
                         <attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/DLightTHAToolConfigurationProvider.instance"/>
                     </file>
                     <file name="SyncToolConfigurationProvider.shadow">
                         <attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/SyncToolConfigurationProvider.instance"/>
+                        <attr name="detailsEnabled" boolvalue="false"/>
                     </file>
                 </folder>
                 <folder name="ConfigurationOptions">
@@ -57,4 +61,12 @@
         </folder>
     </folder>
 
+  <folder name="Shortcuts">
+        <file name="A-S-S.shadow">
+            <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-cnd-tha-ui-THAIndicatorTopComponentActivateAction.instance"/>
+        </file>
+        <file name="C-A-S-D.shadow">
+            <attr name="originalFile" stringvalue="Actions/Profile/org-netbeans-modules-cnd-tha-actions-THAMainProjectAction.instance"/>
+        </file>
+    </folder>
 </filesystem>

@@ -349,7 +349,7 @@ public class EditorContextBridge {
         } else if (b instanceof AddressBreakpoint) {
             DisassemblyService disService = getCurrentDisassemblyService();
             if (disService != null) {
-                return disService.showAddress(((AddressBreakpoint)b).getAddress());
+                return disService.showBreakpoint((AddressBreakpoint)b);
             }
         }
         return false;

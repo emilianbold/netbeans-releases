@@ -86,6 +86,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
     private String serverInstanceID;
     private final List<String> preferredLanguages = new ArrayList<String>();
     private String currentServerInstanceID;
+    private final List<String> excludeLibs = Arrays.asList("javaee-web-api-6.0", "javaee-api-6.0"); //NOI18N
     
     /** Creates new form JSFConfigurationPanelVisual */
     public JSFConfigurationPanelVisual(JSFConfigurationPanel panel, boolean customizer) {
@@ -132,7 +133,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
 
             content = library.getContent("classpath"); //NOI18N
             try {
-                if (Util.containsClass(content, JSFUtils.FACES_EXCEPTION)) {
+                if (Util.containsClass(content, JSFUtils.FACES_EXCEPTION) && !excludeLibs.contains(library.getName())) {
                     items.add(library.getDisplayName());
                     boolean isJSF12 = Util.containsClass(content, JSFUtils.JSF_1_2__API_SPECIFIC_CLASS);
                     boolean isJSF20 = Util.containsClass(content, JSFUtils.JSF_2_0__API_SPECIFIC_CLASS);
@@ -736,8 +737,7 @@ private void cbPreferredLangActionPerformed(java.awt.event.ActionEvent evt) {//G
 
     private boolean isServerInstanceChanged() {
         if ((serverInstanceID==null && currentServerInstanceID !=null) ||
-                (serverInstanceID == null && currentServerInstanceID !=null) ||
-                !serverInstanceID.equals(currentServerInstanceID)) {
+                (serverInstanceID != null &&  !serverInstanceID.equals(currentServerInstanceID))) {
             currentServerInstanceID = serverInstanceID;
             return true;
         }

@@ -51,6 +51,7 @@ import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.prefs.Preferences;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Name;
@@ -59,6 +60,8 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.Types;
+import javax.swing.JComponent;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -82,6 +85,7 @@ public class EqualsHint extends AbstractHint {
     static final String KEY_DELEGATE = "delegate"; //NOI18N
     static final String KEY_ARRAY_EQUALS = "EqualsArray"; //NOI18N
     static final String KEY_INCOMPATIBLE_EQUALS = "EqualsIncompabile"; //NOI18N
+    private static final String ERASURE_PREFS_KEY = "eguals-hint-erasure"; // NOI18N
     
     private static EqualsHint DELEGATE;
     private static EqualsHint ARRAY_EQUALS;
@@ -172,13 +176,18 @@ public class EqualsHint extends AbstractHint {
         
         if (getIncompatibleEquals().isEnabled()) {
             TypeMirror parameter = info.getTrees().getTypeMirror(new TreePath(treePath, mit.getArguments().get(0)));
+            if (getErasure(getPreferences(null))) {
+                Types types = info.getTypes();
+                parameter = types.erasure(parameter);
+                invokedOn = types.erasure(invokedOn);
+            }
             boolean castable = info.getTypeUtilities().isCastable(invokedOn, parameter) || info.getTypeUtilities().isCastable(parameter, invokedOn);
 
             if (!castable) {
                 int[] nameSpan = info.getTreeUtilities().findNameSpan((MemberSelectTree) mit.getMethodSelect());
 
                 if (nameSpan != null) {
-                    String displayName = NbBundle.getMessage(EqualsHint.class, "ERR_INCOMPATIBLE_EQUALS");
+                    String displayName = NbBundle.getMessage(EqualsHint.class, "ERR_INCOMPATIBLE_EQUALS"); // NOI18N
 
                     errors.add(ErrorDescriptionFactory.createErrorDescription(getSeverity().toEditorSeverity(), displayName, info.getFileObject(), nameSpan[0], nameSpan[1]));
                 }
@@ -188,12 +197,25 @@ public class EqualsHint extends AbstractHint {
         return errors;
     }
 
+    @Override
+    public JComponent getCustomizer(Preferences node) {
+        return new EqualsHintCustomiser(node);
+    }
+
+    static void setErasure(Preferences p, boolean value) {
+        p.putBoolean(ERASURE_PREFS_KEY, value);
+    }
+
+    static boolean getErasure(Preferences p) {
+        return p.getBoolean(ERASURE_PREFS_KEY, true);
+    }
+
     public String getId() {
         return EqualsHint.class.getName();
     }
 
     public String getDisplayName() {
-        return NbBundle.getMessage(EqualsHint.class, "DN_" + kind);
+        return NbBundle.getMessage(EqualsHint.class, "DN_" + kind); // NOI18N
     }
 
     public void cancel() {

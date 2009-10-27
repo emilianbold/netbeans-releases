@@ -46,12 +46,14 @@ import java.util.Map;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.modules.csl.api.Error;
+import org.netbeans.modules.csl.api.KeystrokeHandler;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
+import org.netbeans.modules.html.editor.gsf.HtmlKeystrokeHandler;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -91,6 +93,11 @@ public class XhtmlElLanguage extends DefaultLanguageConfig {
     @Override
     public String getPreferredExtension() {
         return "xhtml"; // NOI18N
+    }
+
+    @Override
+    public KeystrokeHandler getKeystrokeHandler() {
+        return new HtmlKeystrokeHandler();
     }
 
     private static class XhtmlELParser extends Parser {

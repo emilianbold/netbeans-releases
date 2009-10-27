@@ -61,6 +61,7 @@ public class NodeDisplayPanel extends JPanel implements ExplorerManager.Provider
         BeanTreeView btv = new BeanTreeView();
         btv.setRootVisible(false);
         btv.setDefaultActionAllowed(false);
+        btv.setFocusable(false);
         manager.setRootContext(rootNode);
         manager.addPropertyChangeListener(
         new PropertyChangeListener() {

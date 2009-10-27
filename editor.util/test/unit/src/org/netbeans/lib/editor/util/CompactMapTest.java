@@ -109,7 +109,7 @@ public class CompactMapTest extends NbTestCase {
         assertEquals(val2, entry.getValue());
 
         Entry e1 = new Entry(key1);
-        e1.setValue(val1);
+        assertEquals(null, e1.setValue(val1));
         assertEquals(null, testMap.putEntry(e1));
         assertEquals(val1, testMap.get(key1));
 

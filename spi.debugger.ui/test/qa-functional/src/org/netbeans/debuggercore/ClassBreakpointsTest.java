@@ -48,21 +48,17 @@ import java.io.IOException;
 import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.jellytools.actions.DebugProjectAction;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.debugger.actions.ContinueAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.junit.NbModuleSuite;
 
 
 
@@ -121,209 +117,164 @@ public class ClassBreakpointsTest extends DebuggerTestCase {
     /**
      *
      */
-    public void testClassBreakpointCreation() throws Throwable {
+    public void testClassBreakpointCreation() {        
+        //open source
+        Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
+        new OpenAction().performAPI(beanNode);
+        EditorOperator eo = new EditorOperator("MemoryView.java");
         try {
-            //open source
-            Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
-            new OpenAction().performAPI(beanNode);
-            EditorOperator eo = new EditorOperator("MemoryView.java");
-            try {
-                eo.clickMouse(50,50,1);
-            } catch (Throwable t) {
-                System.err.println(t.getMessage());
-            }
-            NbDialogOperator dialog = Utilities.newBreakpoint(73);
-            setBreakpointType(dialog, "Class");
-            new JTextFieldOperator(dialog, 0).setText("examples.advanced.MemoryView");
-            dialog.ok();
-            Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
-            JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.breakpointsViewTitle));
-            assertEquals("Class breakpoint was not created.", "Class MemoryView load / unload", jTableOperator.getValueAt(0, 0).toString());
-        } catch (Throwable th) {
-            Utilities.captureScreen(this);
-            throw th;
+            eo.clickMouse(50,50,1);
+        } catch (Throwable t) {
+            System.err.println(t.getMessage());
         }
+        NbDialogOperator dialog = Utilities.newBreakpoint(73);
+        setBreakpointType(dialog, "Class");
+        new JTextFieldOperator(dialog, 0).setText("examples.advanced.MemoryView");
+        dialog.ok();
+        Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
+        JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.breakpointsViewTitle));
+        assertEquals("Class breakpoint was not created.", "Class MemoryView load / unload", jTableOperator.getValueAt(0, 0).toString());
     }
 
-    public void testClassBreakpointPrefilledInClass() throws Throwable {
-        try {
-            EditorOperator eo = new EditorOperator("MemoryView.java");
-            NbDialogOperator dialog = Utilities.newBreakpoint(37);            
-            assertTrue("Class breakpoint is not pre-selected", new JComboBoxOperator(dialog, 1).getSelectedItem().equals("Class"));
-            assertEquals("Class Name was not set to correct value.", "examples.advanced.MemoryView", new JTextFieldOperator(dialog, 0).getText());
-            dialog.cancel();
-        } catch (Throwable th) {
-            Utilities.captureScreen(this);
-            throw th;
-        }
+    public void testClassBreakpointPrefilledInClass() {        
+        EditorOperator eo = new EditorOperator("MemoryView.java");
+        NbDialogOperator dialog = Utilities.newBreakpoint(37);
+        assertTrue("Class breakpoint is not pre-selected", new JComboBoxOperator(dialog, 1).getSelectedItem().equals("Class"));
+        assertEquals("Class Name was not set to correct value.", "examples.advanced.MemoryView", new JTextFieldOperator(dialog, 0).getText());
+        dialog.cancel();
     }
 
     /**
      *
      */
-    public void testClassBreakpointPrefilledInInitializer() throws Throwable {
-        try {
-            NbDialogOperator dialog = Utilities.newBreakpoint(45);
-            assertTrue("Class breakpoint is not pre-selected", new JComboBoxOperator(dialog, 1).getSelectedItem().equals("Class"));
-            assertEquals("Class Name was not set to correct value.", "examples.advanced.MemoryView", new JTextFieldOperator(dialog, 0).getText());
-            dialog.cancel();
-        } catch (Throwable th) {
-            Utilities.captureScreen(this);
-            throw th;
-        }
+    public void testClassBreakpointPrefilledInInitializer() {
+        NbDialogOperator dialog = Utilities.newBreakpoint(45);
+        assertTrue("Class breakpoint is not pre-selected", new JComboBoxOperator(dialog, 1).getSelectedItem().equals("Class"));
+        assertEquals("Class Name was not set to correct value.", "examples.advanced.MemoryView", new JTextFieldOperator(dialog, 0).getText());
+        dialog.cancel();
     }
 
     /**
      *
      */
-    public void testClassBreakpointPrefilledInConstructor() throws Throwable {
-        try {
+    public void testClassBreakpointPrefilledInConstructor() {        
             NbDialogOperator dialog = Utilities.newBreakpoint(51);
             setBreakpointType(dialog, "Class");
             assertEquals("Class Name was not set to correct value.", "examples.advanced.MemoryView", new JTextFieldOperator(dialog, 0).getText());
-            dialog.cancel();
-        } catch (Throwable th) {
-            Utilities.captureScreen(this);
-            throw th;
-        }
+            dialog.cancel();        
     }
 
     /**
      *
      */
-    public void testClassBreakpointPrefilledInMethod() throws Throwable {
-        try {
+    public void testClassBreakpointPrefilledInMethod() {        
             NbDialogOperator dialog = Utilities.newBreakpoint(80);
             setBreakpointType(dialog, "Class");
             assertEquals("Class Name was not set to correct value.", "examples.advanced.MemoryView", new JTextFieldOperator(dialog, 0).getText());
-            dialog.cancel();
-        } catch (Throwable th) {
-            Utilities.captureScreen(this);
-            throw th;
-        }
+            dialog.cancel();        
     }
 
     /**
      *
      */
-    public void testClassBreakpointPrefilledInSecondClass() throws Throwable {
-        try {
-            NbDialogOperator dialog = Utilities.newBreakpoint(154);
-            setBreakpointType(dialog, "Class");
-            assertEquals("Class Name was not set to correct value.", "examples.advanced.Helper", new JTextFieldOperator(dialog, 0).getText());
-            dialog.cancel();
-        } catch (Throwable th) {
-            Utilities.captureScreen(this);
-            throw th;
-        }
+    public void testClassBreakpointPrefilledInSecondClass() {        
+        NbDialogOperator dialog = Utilities.newBreakpoint(154);
+        setBreakpointType(dialog, "Class");
+        assertEquals("Class Name was not set to correct value.", "examples.advanced.Helper", new JTextFieldOperator(dialog, 0).getText());
+        dialog.cancel();
     }
 
     /**
      *
      */
     public void testClassBreakpointFunctionalityOnPrimaryClass() throws Throwable {
+        NbDialogOperator dialog = Utilities.newBreakpoint(73);
+        setBreakpointType(dialog, "Class");
+        dialog.ok();
+        new EventTool().waitNoEvent(1500);
+        Utilities.startDebugger();
         try {
-            NbDialogOperator dialog = Utilities.newBreakpoint(73);
-            setBreakpointType(dialog, "Class");
-            dialog.ok();
-            new EventTool().waitNoEvent(1500);
-            Utilities.startDebugger();
-            try {
-                Utilities.waitStatusText("Thread main stopped.");
-            } catch (Throwable e) {
-                if (!Utilities.checkConsoleLastLineForText("Thread main stopped.")) {
-                    System.err.println(e.getMessage());
-                    throw e;
-                }
+            Utilities.waitStatusText("Thread main stopped.");
+        } catch (Throwable e) {
+            if (!Utilities.checkConsoleLastLineForText("Thread main stopped.")) {
+                System.err.println(e.getMessage());
+                throw e;
             }
-            new ContinueAction().perform();
-            try {
-                Utilities.waitStatusText(Utilities.runningStatusBarText);
-            } catch (Throwable e) {
-                if (!Utilities.checkConsoleLastLineForText(Utilities.runningStatusBarText)) {
-                    System.err.println(e.getMessage());
-                    throw e;
-                }
+        }
+        new ContinueAction().perform();
+        try {
+            Utilities.waitStatusText(Utilities.runningStatusBarText);
+        } catch (Throwable e) {
+            if (!Utilities.checkConsoleLastLineForText(Utilities.runningStatusBarText)) {
+                System.err.println(e.getMessage());
+                throw e;
             }
-        } catch (Throwable th) {
-            Utilities.captureScreen(this);
-            throw th;
         }
     }
 
     /**
      *
      */
-    public void testClassBreakpointFunctionalityOnSecondClass() throws Throwable {
-        try {
-            NbDialogOperator dialog = Utilities.newBreakpoint(154);
-            setBreakpointType(dialog, "Class");
-            dialog.ok();
-            new EventTool().waitNoEvent(1500);
-            Utilities.startDebugger();
-            Utilities.waitStatusText("Thread main stopped.");
-            new ContinueAction().perform();
-            Utilities.waitStatusText(Utilities.runningStatusBarText);
-        } catch (Throwable th) {
-            Utilities.captureScreen(this);
-            throw th;
-        }
+    public void testClassBreakpointFunctionalityOnSecondClass() {        
+        NbDialogOperator dialog = Utilities.newBreakpoint(154);
+        setBreakpointType(dialog, "Class");
+        dialog.ok();
+        new EventTool().waitNoEvent(1500);
+        Utilities.startDebugger();
+        Utilities.waitStatusText("Thread main stopped.");
+        new ContinueAction().perform();
+        Utilities.waitStatusText(Utilities.runningStatusBarText);
     }
 
     /**
      *
      */
     public void testClassBreakpointFunctionalityWithFilter() throws Throwable {
-        try {
-            NbDialogOperator dialog = Utilities.newBreakpoint(73);
-            setBreakpointType(dialog, "Class");
-            new JTextFieldOperator(dialog, 0).setText("examples.advanced.*");
-            new JCheckBoxOperator(dialog, 0).changeSelection(true);
-            new JTextFieldOperator(dialog, 1).setText("*.MemoryView");
-            dialog.ok();
+        NbDialogOperator dialog = Utilities.newBreakpoint(73);
+        setBreakpointType(dialog, "Class");
+        new JTextFieldOperator(dialog, 0).setText("examples.advanced.*");
+        new JCheckBoxOperator(dialog, 0).changeSelection(true);
+        new JTextFieldOperator(dialog, 1).setText("*.MemoryView");
+        dialog.ok();
 
-	    //new EventTool().waitNoEvent(500);
-            Utilities.startDebugger();
-            //Class breakpoint hit for class examples.advanced.Helper.");
-            try {
-                Utilities.waitStatusText("Class breakpoint hit for class examples.advanced.Helper", 10000);
-            } catch (Throwable e) {
-                if (!Utilities.checkConsoleForText("Class breakpoint hit for class examples.advanced.Helper",2)) {
-                    System.err.println(e.getMessage());
-                    throw e;
-                }
+        //new EventTool().waitNoEvent(500);
+        Utilities.startDebugger();
+        //Class breakpoint hit for class examples.advanced.Helper.");
+        try {
+            Utilities.waitStatusText("Class breakpoint hit for class examples.advanced.Helper", 10000);
+        } catch (Throwable e) {
+            if (!Utilities.checkConsoleForText("Class breakpoint hit for class examples.advanced.Helper",2)) {
+                System.err.println(e.getMessage());
+                throw e;
             }
-            new ContinueAction().perform();
-            /* try {
-                 //Utilities.waitStatusText("Thread main stopped at MemoryView.java:121", 10000);
-               Utilities.waitStatusText("Class breakpoint hit for class examples.advanced.MemoryView$1", 10000);
-            } catch (Throwable e) {
-                if (!Utilities.checkConsoleLastLineForText("Class breakpoint hit for class examples.advanced.MemoryView$1")) {
-                    System.err.println(e.getMessage());
-                    throw e;
-                }
-            } */
-            //Class breakpoint hit for class examples.advanced.MemoryView$1
-            try {
-                Utilities.waitStatusText("Thread main stopped at MemoryView.java:121", 10000);
-            } catch (Throwable e) {
-                if (!Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:121")) {
-                    System.err.println(e.getMessage());
-                    throw e;
-                }
+        }
+        new ContinueAction().perform();
+        /* try {
+             //Utilities.waitStatusText("Thread main stopped at MemoryView.java:121", 10000);
+           Utilities.waitStatusText("Class breakpoint hit for class examples.advanced.MemoryView$1", 10000);
+        } catch (Throwable e) {
+            if (!Utilities.checkConsoleLastLineForText("Class breakpoint hit for class examples.advanced.MemoryView$1")) {
+                System.err.println(e.getMessage());
+                throw e;
             }
-            new ContinueAction().perform();
-            try {
-                Utilities.waitStatusText(Utilities.runningStatusBarText);
-            } catch (Throwable e) {
-                if (!Utilities.checkConsoleLastLineForText(Utilities.runningStatusBarText)) {
-                    System.err.println(e.getMessage());
-                    throw e;
-                }
+        } */
+        //Class breakpoint hit for class examples.advanced.MemoryView$1
+        try {
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:121", 10000);
+        } catch (Throwable e) {
+            if (!Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:121")) {
+                System.err.println(e.getMessage());
+                throw e;
             }
-        } catch (Throwable th) {
-            Utilities.captureScreen(this);
-            throw th;
+        }
+        new ContinueAction().perform();
+        try {
+            Utilities.waitStatusText(Utilities.runningStatusBarText);
+        } catch (Throwable e) {
+            if (!Utilities.checkConsoleLastLineForText(Utilities.runningStatusBarText)) {
+                System.err.println(e.getMessage());
+                throw e;
+            }
         }
     }
 

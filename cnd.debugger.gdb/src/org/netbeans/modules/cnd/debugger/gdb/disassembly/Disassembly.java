@@ -83,14 +83,15 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author eu155513
+ * @author Egor Ushakov
  */
 public class Disassembly implements PropertyChangeListener, DocumentListener {
     private final GdbDebugger debugger;
     
     private final List<Line> lines = new ArrayList<Line>();
     private static String functionName = "";
-    private static String fileName = "";
+    private static String intFileName = "";
+    private static String resolvedFileName = "";
     private String address = "";
     private boolean withSource = true;
     private boolean opened = false;
@@ -174,8 +175,8 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
             boolean nameSet = false;
 
             File srcFile = null;
-            if (fileName != null) {
-                srcFile = new File(fileName);
+            if (resolvedFileName != null) {
+                srcFile = new File(resolvedFileName);
             }
 
             long start = System.currentTimeMillis();
@@ -411,13 +412,14 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
         }
 
         if (force || getAddressLine(curAddress) == -1) {
-            fileName = frame.getOriginalFullName();
-            if ((fileName == null || fileName.length() == 0) && requestMode == RequestMode.FILE) {
+            intFileName = frame.getOriginalFullName();
+            resolvedFileName = frame.getFullname();
+            if ((intFileName == null || intFileName.length() == 0) && requestMode == RequestMode.FILE) {
                 requestMode = RequestMode.ADDRESS;
             }
             switch (requestMode) {
                 case FILE:
-                    debugger.getGdbProxy().data_disassemble(fileName, frame.getLineNumber(), withSource);
+                    debugger.getGdbProxy().data_disassemble(intFileName, frame.getLineNumber(), withSource);
                     requestMode = RequestMode.ADDRESS;
                     break;
                 case ADDRESS:

@@ -8,7 +8,7 @@ Searchable Keys:
   global : $anotherglobal
   global : $foo
   global : $foobar
-  method : hello
+  method : hello;;Fixnum;
   require : globals
 
 Not Searchable Keys:

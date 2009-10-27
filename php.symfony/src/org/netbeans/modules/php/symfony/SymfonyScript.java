@@ -160,7 +160,10 @@ public class SymfonyScript extends PhpProgram {
         String projectName = phpModule.getDisplayName();
         SymfonyCommandSupport commandSupport = SymfonyPhpFrameworkProvider.getInstance().getFrameworkCommandSupport(phpModule);
         ExternalProcessBuilder processBuilder = commandSupport.createSilentCommand(CMD_INIT_PROJECT, projectName);
-        assert processBuilder != null;
+        if (processBuilder == null) {
+            // #172777
+            return false;
+        }
         ExecutionDescriptor executionDescriptor = commandSupport.getDescriptor();
         runService(processBuilder, executionDescriptor, commandSupport.getOutputTitle(CMD_INIT_PROJECT, projectName), false);
         return SymfonyPhpFrameworkProvider.getInstance().isInPhpModule(phpModule);

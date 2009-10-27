@@ -295,25 +295,28 @@ public class ResourceUtils implements WizardConstants{
              
              //Attributes from server
              AttributeList existAttrList = mejb.getAttributes(objName, attrNames);
-             for(int i=0; i<existAttrList.size(); i++){
-                Attribute existAttr = (Attribute)existAttrList.get(i);
-                String existAttrName = existAttr.getName();
-                for(int j=0; j<attrList.size(); j++){
-                    Attribute resAttr = (Attribute)attrList.get(j);
-                    String resAttrName = resAttr.getName();
-                    if(existAttrName.equals(resAttrName)){
-                        if(resAttr.getValue() == null && existAttr.getValue() != null) { 
-                            mejb.setAttribute(objName, resAttr);
-                        }else if(existAttr.getValue() == null) { //NOI18N
-                            if((resAttr.getValue() != null) && (! resAttr.getValue().toString().equals("")))
-                                mejb.setAttribute(objName, resAttr);
-                        }else{    
-                            if(! resAttr.getValue().toString().equals(existAttr.getValue().toString())){
-                                mejb.setAttribute(objName, resAttr);
-                            }
-                        }
-                    }//if
-                }//loop through project's resource Attributes
+             if (existAttrList != null) {
+                 for (int i = 0; i < existAttrList.size(); i++) {
+                     Attribute existAttr = (Attribute) existAttrList.get(i);
+                     String existAttrName = existAttr.getName();
+                     for (int j = 0; j < attrList.size(); j++) {
+                         Attribute resAttr = (Attribute) attrList.get(j);
+                         String resAttrName = resAttr.getName();
+                         if (existAttrName.equals(resAttrName)) {
+                             if (resAttr.getValue() == null && existAttr.getValue() != null) {
+                                 mejb.setAttribute(objName, resAttr);
+                             } else if (existAttr.getValue() == null) { //NOI18N
+                                 if ((resAttr.getValue() != null) && (!resAttr.getValue().toString().equals(""))) {
+                                     mejb.setAttribute(objName, resAttr);
+                                 }
+                             } else {
+                                 if (!resAttr.getValue().toString().equals(existAttr.getValue().toString())) {
+                                     mejb.setAttribute(objName, resAttr);
+                                 }
+                             }
+                         }//if
+                     }//loop through project's resource Attributes
+                 }
              }
          }catch(Exception ex){
              throw new Exception(ex.getLocalizedMessage(), ex);

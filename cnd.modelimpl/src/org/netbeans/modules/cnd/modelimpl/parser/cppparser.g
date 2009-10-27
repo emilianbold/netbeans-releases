@@ -163,7 +163,7 @@ tokens {
 	CSM_STRANGE_2<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_FIELD<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 
-	CSM_VISIBILITY_REDEF<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+	CSM_VISIBILITY_REDEF<AST=org.netbeans.modules.cnd.modelimpl.parser.NamedFakeAST>;
 	
 	CSM_TEMPLATE_PARMLIST<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_PARMLIST<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
@@ -1405,18 +1405,12 @@ member_declaration
         {if( definition )   #member_declaration = #(#[CSM_USER_TYPE_CAST_DEFINITION, "CSM_USER_TYPE_CAST_DEFINITION"], #member_declaration);
          else               #member_declaration = #(#[CSM_USER_TYPE_CAST_DECLARATION, "CSM_USER_TYPE_CAST_DECLARATION"], #member_declaration);}
     |
-		// Hack to handle decls like "superclass::member",
-		// to redefine access to private base class public members
-		(qualified_id (EOF|SEMICOLON))=>
-		{if (statementTrace>=1) 
-			printf("member_declaration_9[%d]: Qualified ID\n",
-				LT(1).getLine());
-		}
-		q = qualified_id 
-        ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
-        | SEMICOLON) //{end_of_stmt();}
-		{ #member_declaration = #(#[CSM_VISIBILITY_REDEF, "CSM_VISIBILITY_REDEF"], #member_declaration); }
-	|  
+        // Hack to handle decls like "superclass::member",
+        // to redefine access to private base class public members
+        (qualified_id (EOF|SEMICOLON))=>
+        {if (statementTrace>=1) printf("member_declaration_9[%d]: Qualified ID\n", LT(1).getLine());}
+        visibility_redef_declaration
+    |
 		// Member with a type or just a type def
 		// A::T a(), ::T a, ::B a, void a, E a (where E is the enclosing class)
 		((LITERAL___extension__)? declaration_specifiers[true, false])=>
@@ -2948,10 +2942,14 @@ function_try_block
 
 protected 
 condition
-	:
-	((condition_declaration)=> condition_declaration | condition_expression)
-	{#condition=#(#[CSM_CONDITION, "CSM_CONDITION"], #condition);}
-	;
+    :
+        (
+            (condition_declaration) => condition_declaration
+        |
+            condition_expression
+        )
+        {#condition=#(#[CSM_CONDITION, "CSM_CONDITION"], #condition);}
+    ;
 
 protected 
 condition_expression
@@ -2961,10 +2959,13 @@ condition_expression
 
 protected 
 condition_declaration {int ts = tsInvalid;}
-	:
+    :
         cv_qualifier_seq (LITERAL_typename)?
-	ts=type_specifier[dsInvalid, false] declarator[declStatement] ASSIGNEQUAL assignment_expression
-	;
+        ts=type_specifier[dsInvalid, false]
+        (postfix_cv_qualifier)? 
+        declarator[declStatement]
+        ASSIGNEQUAL assignment_expression
+    ;
 
 //	(declaration)=> declaration|	expression
 
@@ -3113,6 +3114,15 @@ using_declaration
 		)
 		SEMICOLON! //{end_of_stmt();}
 	;
+
+visibility_redef_declaration
+{String qid="";}
+    :
+        qid = qualified_id
+        ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
+        | SEMICOLON!) //{end_of_stmt();}
+        {#visibility_redef_declaration = #(#[CSM_VISIBILITY_REDEF, qid], #visibility_redef_declaration);}
+    ;
 
 asm_block 	
     :
