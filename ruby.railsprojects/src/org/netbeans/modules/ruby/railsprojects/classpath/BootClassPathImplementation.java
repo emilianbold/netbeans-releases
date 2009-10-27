@@ -129,6 +129,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
         assert evaluator != null;
         this.evaluator = evaluator;
         evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
+        RubyPreferences.addPropertyChangeListener(WeakListeners.propertyChange(this, RubyPreferences.getInstance()));
     }
 
     public synchronized List<PathResourceImplementation> getResources() {
@@ -354,7 +355,8 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getSource() == RubyInstallation.getInstance() && evt.getPropertyName().equals("roots")) {
+        if ((evt.getSource() == RubyInstallation.getInstance() && evt.getPropertyName().equals("roots"))
+                || evt.getSource() == RubyPreferences.getInstance() && evt.getPropertyName().equals(RubyPreferences.VENDOR_GEMS_PROPERTY)) {
             resetCache();
         }
 //        if (evt.getSource() == this.evaluator && evt.getPropertyName().equals(PLATFORM_ACTIVE)) {
