@@ -83,7 +83,7 @@ public class RemoteIndexTransferListener implements TransferListener {
     }
 
     public void transferInitiated(TransferEvent arg0) {
-        addToActive(Thread.currentThread());
+        // noop
     }
 
     public void transferStarted(TransferEvent arg0) {
@@ -117,7 +117,6 @@ public class RemoteIndexTransferListener implements TransferListener {
             writer.println("Completed");//NII18N
 
         }
-        removeFromActive(Thread.currentThread());
     }
 
     public void transferError(TransferEvent arg0) {
@@ -126,7 +125,6 @@ public class RemoteIndexTransferListener implements TransferListener {
             writer.println("Finish with Errors");//NII18N
 
         }
-        removeFromActive(Thread.currentThread());
     }
 
     public void debug(String arg0) {

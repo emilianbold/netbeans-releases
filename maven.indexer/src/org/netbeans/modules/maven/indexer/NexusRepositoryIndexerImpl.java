@@ -416,6 +416,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
     public void indexRepo(final RepositoryInfo repo) {
         LOGGER.finer("Indexing Context :" + repo);//NOI18N
         try {
+            RemoteIndexTransferListener.addToActive(Thread.currentThread());
             MUTEX.writeAccess(new Mutex.ExceptionAction<Object>() {
 
                 public Object run() throws Exception {
@@ -432,6 +433,8 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
             });
         } catch (MutexException ex) {
             Exceptions.printStackTrace(ex);
+        } finally {
+            RemoteIndexTransferListener.removeFromActive(Thread.currentThread());
         }
 
     }
