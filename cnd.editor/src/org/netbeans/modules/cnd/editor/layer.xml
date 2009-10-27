@@ -550,6 +550,5 @@
                 <attr name="displayName" bundlevalue="org.netbeans.modules.cnd.editor.cplusplus.Bundle#CND_Other_Display_Name"/>
             </file>
         </folder>
-        </folder>
     </folder>
 </filesystem>
