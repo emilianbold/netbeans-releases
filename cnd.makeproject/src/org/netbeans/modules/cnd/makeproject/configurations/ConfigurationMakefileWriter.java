@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakefileConfigura
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DefaultMakefileWriter;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.MakefileWriter;
@@ -76,6 +77,7 @@ import org.netbeans.modules.cnd.makeproject.api.PackagerDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.PackagerManager;
+import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.packaging.DummyPackager;
 import org.openide.util.Lookup;
@@ -113,6 +115,17 @@ public class ConfigurationMakefileWriter {
         Configuration[] confs = projectDescriptor.getConfs().getConfs();
         for (int i = 0; i < confs.length; i++) {
             MakeConfiguration conf = (MakeConfiguration) confs[i];
+            // add configurations if local host and target platform are different (don't have the right compiler set on this platform)
+            if (conf.getDevelopmentHost().isLocalhost()) {
+                int platformID = CompilerSetManager.getDefault(conf.getDevelopmentHost().getExecutionEnvironment()).getPlatform();
+                Platform platform = Platforms.getPlatform(platformID);
+                String buildTarget = conf.getDevelopmentHost().getBuildPlatformConfiguration().getName();
+                if (platform != null && platform.getDisplayName() != null && !platform.getDisplayName().equals(buildTarget)) {
+                    result.add(conf);
+                    continue;
+                }
+            }
+            // add configurations with unknown compiler sets
             if (conf.getCompilerSet().getCompilerSet() == null) {
                 result.add(conf);
             }
