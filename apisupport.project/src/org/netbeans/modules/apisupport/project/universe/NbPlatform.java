@@ -156,6 +156,8 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
     
     /**
      * Reset cached info so unit tests can start from scratch.
+     * <p><b>Do not use outside of tests!</b> Concurrent call may cause
+     * {@link #getPlatformsInternal()} to fail.</p>
      */
     public static void reset() {
         platforms = null;
