@@ -290,7 +290,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
             LOGGER.info("not yet supported for server: " + REGISTERED_SERVER.toString());
             return;
         }
-        J2eeServerNode gf = J2eeServerNode.invoke("GlassFish v2.");
+        J2eeServerNode gf = J2eeServerNode.invoke("GlassFish v2");
         gf.refresh();
         if (gf.isCollapsed()) {
             gf.expand();
