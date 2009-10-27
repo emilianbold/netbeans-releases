@@ -63,6 +63,7 @@ import org.netbeans.api.java.classpath.GlobalPathRegistryListener;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.java.queries.SourceForBinaryQuery.Result;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
@@ -612,15 +613,21 @@ public class DefaultClassPathProvider implements ClassPathProvider {
                         try {
                             for (Iterator<ClassPath.Entry> eit = cp.entries().iterator(); eit.hasNext();) {
                                 ClassPath.Entry entry = eit.next ();
-                                FileObject[] fos = SourceForBinaryQuery.findSourceRoots(entry.getURL()).getRoots();
+                                Result result = SourceForBinaryQuery.findSourceRoots(entry.getURL());
+                                FileObject[] fos = result.getRoots();
                                 for (int i=0; i< fos.length; i++) {
-                                    try {
-                                        if (sroots.contains(fos[i].getURL())) {
-                                            roots.add (entry.getURL());
+                                    if (fos[i] == null)
+                                        ErrorManager.getDefault().notify (
+                                            new NullPointerException (result + " returns null root for " + entry.getURL())
+                                        );
+                                    else
+                                        try {
+                                            if (sroots.contains(fos[i].getURL())) {
+                                                roots.add (entry.getURL());
+                                            }
+                                        } catch (FileStateInvalidException e) {
+                                            ErrorManager.getDefault().notify(e);
                                         }
-                                    } catch (FileStateInvalidException e) {
-                                        ErrorManager.getDefault().notify(e);
-                                    }                                
                                 }
                             }
                         } catch (RecursionException e) {/*Recover from recursion*/}
