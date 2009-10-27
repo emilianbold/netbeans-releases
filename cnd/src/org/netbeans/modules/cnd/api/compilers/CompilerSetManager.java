@@ -496,8 +496,18 @@ public class CompilerSetManager {
         while (st.hasMoreTokens()) {
             String name = st.nextToken();
             int i = name.indexOf('='); // NOI18N
+            if (i < 0) {
+                continue;
+            }
             String tool = name.substring(0,i);
             String p = name.substring(i + 1);
+            i = name.lastIndexOf('/');
+            if (i < 0) {
+                i = name.lastIndexOf('\\');
+            }
+            if (i > 0) {
+                name = name.substring(i+1);
+            }
             int kind = -1;
             if (tool.equals("c")){ // NOI18N
                 kind = Tool.CCompiler;
