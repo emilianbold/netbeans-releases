@@ -49,6 +49,7 @@ import java.io.Reader;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -117,7 +118,8 @@ public class MeasurementTestCase extends RemoteTestBase {
 
             ZipSyncWorker worker = new ZipSyncWorker(execEnv, out, err, privProjectStorageDir, srcDir);
             long time = System.currentTimeMillis();
-            worker.synchronizeImpl(dst);
+            worker.startup(Collections.<String, String>emptyMap());
+            worker.shutdown();
             time = System.currentTimeMillis() - time;
             statistics.add(new StatEntry(getName(), time));
             CommonTasksSupport.rmDir(execEnv, dst, true, err).get();
