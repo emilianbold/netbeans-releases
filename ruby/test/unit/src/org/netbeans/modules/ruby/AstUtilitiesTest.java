@@ -231,7 +231,7 @@ public class AstUtilitiesTest extends RubyTestBase {
         assertEquals("Was: " + exits, 3, exits.size());
         assertEquals("1", AstUtilities.getNameOrValue(exits.get(0)));
         assertEquals("2", AstUtilities.getNameOrValue(exits.get(1)));
-        assertEquals("3", AstUtilities.getNameOrValue(exits.get(2)));
+        assertTrue(exits.get(2) instanceof FixnumNode);
     }
 
     public void testExitPointsThud() {
