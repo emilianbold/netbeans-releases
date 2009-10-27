@@ -137,7 +137,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         return findProject(id);
     }
 
-    public CsmProject _getProject(Object id) {
+    /*package*/final CsmProject _getProject(Object id) {
         ProjectBase prj = null;
         if (id != null) {
             synchronized (lock) {
@@ -676,9 +676,19 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
                 }
             }
         }
-        LibraryManager.getInstance().cleanLibrariesData(libs);
+        Collection<Object> platformProjects = new ArrayList<Object>();
         for (ProjectBase projectBase : toReparse) {
-            projectBase.scheduleReparse();
+            final Object platformProject = projectBase.getPlatformProject();
+            platformProjects.add(platformProject);
+            closeProject(platformProject, true);
+        }
+        for (ProjectBase lib : libs) {
+            closeProject(lib.getPlatformProject(), true);
+        }
+        LibraryManager.getInstance().cleanLibrariesData(libs);
+        for (Object platformProject : platformProjects) {
+            CsmProject newPrj = _getProject(platformProject);
+            ((ProjectBase)newPrj).scheduleReparse();
         }
     }
 
