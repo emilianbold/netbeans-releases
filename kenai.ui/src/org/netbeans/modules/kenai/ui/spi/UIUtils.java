@@ -48,7 +48,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
@@ -66,8 +65,6 @@ import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.StyleSheet;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
-import org.netbeans.modules.kenai.api.KenaiService;
-import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.api.KenaiUser;
 import org.netbeans.modules.kenai.collab.chat.KenaiConnection;
 import org.netbeans.modules.kenai.ui.KenaiLoginTask;
@@ -76,7 +73,6 @@ import org.netbeans.modules.kenai.ui.Utilities;
 import org.netbeans.modules.kenai.ui.dashboard.UserNode;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
@@ -173,7 +169,7 @@ public final class UIUtils {
      */
     @Deprecated
     public static synchronized boolean tryLogin(boolean force) {
-        isChatSupported();
+        Utilities.isChatSupported();
         if (Kenai.getDefault().getPasswordAuthentication()!=null) {
             return true;
         }
@@ -193,34 +189,11 @@ public final class UIUtils {
         String password=preferences.get(getPrefName(KENAI_PASSWORD_PREF), null); // NOI18N
         try {
             KenaiConnection.getDefault();
-            Kenai.getDefault().login(uname, Scrambler.getInstance().descramble(password).toCharArray(), force?true:Boolean.parseBoolean(preferences.get(getPrefName(ONLINE_STATUS_PREF), String.valueOf(isChatSupported()))));
+            Kenai.getDefault().login(uname, Scrambler.getInstance().descramble(password).toCharArray(), force?true:Boolean.parseBoolean(preferences.get(getPrefName(ONLINE_STATUS_PREF), String.valueOf(Utilities.isChatSupported()))));
         } catch (KenaiException ex) {
             return false;
         }
         return true;
-    }
-
-    private static HashMap<String, Boolean> chatSupported = new HashMap();
-
-    private static boolean isChatSupported() {
-        Kenai kenai = Kenai.getDefault();
-        String kenaiHost = kenai.getUrl().getHost();
-        Boolean b = chatSupported.get(kenaiHost);
-        if (b==null) {
-            b=Boolean.FALSE;
-            try {
-                for (KenaiService service : kenai.getServices()) {
-                    if (service.getType() == Type.CHAT) {
-                        b = Boolean.TRUE;
-                        break;
-                    }
-                }
-            } catch (KenaiException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            chatSupported.put(kenaiHost, b);
-        }
-        return b;
     }
 
     /**
@@ -228,7 +201,7 @@ public final class UIUtils {
      * @return true, if user was succesfully logged in
      */
     public static boolean showLogin() {
-        final LoginPanel loginPanel = new LoginPanel(isChatSupported());
+        final LoginPanel loginPanel = new LoginPanel(Utilities.isChatSupported());
         final Preferences preferences = NbPreferences.forModule(LoginPanel.class);
         final String ctlLogin = NbBundle.getMessage(Utilities.class, "CTL_Login");
         final String ctlCancel = NbBundle.getMessage(Utilities.class, "CTL_Cancel");
