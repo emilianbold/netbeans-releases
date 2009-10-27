@@ -19,11 +19,11 @@ import com.sun.jersey.api.core.ResourceContext;
 import javax.ws.rs.WebApplicationException;
 import javax.persistence.NoResultException;
 import javax.persistence.EntityManager;
+import java.util.Collection;
 import o.n.m.ws.qaf.rest.crud.Product;
+import o.n.m.ws.qaf.rest.crud.ProductCode;
 import o.n.m.ws.qaf.rest.crud.PurchaseOrder;
 import o.n.m.ws.qaf.rest.crud.Manufacturer;
-import o.n.m.ws.qaf.rest.crud.ProductCode;
-import java.util.Collection;
 import o.n.m.ws.qaf.rest.crud.converter.ProductConverter;
 
 /**
@@ -37,12 +37,12 @@ public class ProductResource {
     @Context
     protected ResourceContext resourceContext;
     protected Integer id;
-  
+
     /** Creates a new instance of ProductResource */
     public ProductResource() {
     }
 
-    public void setId(Integer id) {
+    protected void setId(Integer id) {
         this.id = id;
     }
 
@@ -227,7 +227,7 @@ public class ProductResource {
 
         private Product parent;
 
-        public void setParent(Product parent) {
+        protected void setParent(Product parent) {
             this.parent = parent;
         }
 
@@ -245,7 +245,7 @@ public class ProductResource {
 
         private Product parent;
 
-        public void setParent(Product parent) {
+        protected void setParent(Product parent) {
             this.parent = parent;
         }
 
@@ -263,7 +263,7 @@ public class ProductResource {
 
         private Product parent;
 
-        public void setParent(Product parent) {
+        protected void setParent(Product parent) {
             this.parent = parent;
         }
 
