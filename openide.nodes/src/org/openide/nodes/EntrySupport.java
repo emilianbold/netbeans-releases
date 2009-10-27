@@ -364,10 +364,12 @@ abstract class EntrySupport {
         private void updateRemove(Node[] current, Set<Entry> toRemove) {
             List<Node> nodes = new LinkedList<Node>();
 
+            ChildrenArray cha = array.get();
             for (Entry en : toRemove) {
                 Info info = map.remove(en);
                 checkInfo(info, en, null, map);
                 nodes.addAll(info.nodes(true));
+                cha.remove(info);
             }
 
             // modify the current set of entries
@@ -382,10 +384,6 @@ abstract class EntrySupport {
             // empty the list of nodes so it has to be recreated again
             clearNodes();
             notifyRemove(nodes, current);
-
-            // extra call for case when removed Infos were already GCed and their
-            // finalizers called (#174741)
-            finalizeNodes();
         }
 
         /** Updates the order of entries.
@@ -899,16 +897,6 @@ abstract class EntrySupport {
                 Children.PR.exitWriteAccess();
             }
         }
-        /** Forces finalization of nodes for given info.
-         * Called from finalizer of Info.
-         */
-        final void finalizeNodes() {
-            ChildrenArray arr = array.get();
-
-            if (arr != null) {
-                arr.finalizeNodes();
-            }
-        }
 
         /** Information about an entry. Contains number of nodes,
          * position in the array of nodes, etc.
@@ -920,13 +908,6 @@ abstract class EntrySupport {
 
             public Info(Entry entry) {
                 this.entry = entry;
-            }
-
-            /** Finalizes the content of ChildrenArray.
-             */
-            @Override
-            protected void finalize() {
-                finalizeNodes();
             }
 
             public Collection<Node> nodes(boolean hasToExist) {
