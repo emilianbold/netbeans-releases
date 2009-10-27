@@ -55,6 +55,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
@@ -225,23 +226,14 @@ public class MainProjectManager implements ProjectActionPerformer, PropertyChang
                    // there do not remain any opened projects.
                    OpenProjects.PROPERTY_OPEN_PROJECTS.equals(evt.getPropertyName())) {
             // Test if the current project is still opened:
-            Project[] openProjects = OpenProjects.getDefault().getOpenProjects();
             Project theMainProject = OpenProjects.getDefault().getMainProject();
             Project currentGone = null;
             Project currentNew = null;
             Project lastGone = null;
             synchronized (this) {
-                boolean isCurrent = false;
-                boolean isLast = false;
+                boolean isCurrent = OpenProjects.getDefault().isProjectOpen(currentProject);
                 Project last = lastSelectedProjectRef.get();
-                for (Project p : openProjects) {
-                    if (p == currentProject) {
-                        isCurrent = true;
-                    }
-                    if (p == last) {
-                        isLast = true;
-                    }
-                }
+                boolean isLast = OpenProjects.getDefault().isProjectOpen(last);
                 if (!isCurrent && currentProject != null) {
                     currentGone = currentProject;
                     currentProject = null;

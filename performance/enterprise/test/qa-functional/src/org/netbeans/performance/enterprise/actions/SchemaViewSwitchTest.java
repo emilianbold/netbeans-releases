@@ -47,7 +47,7 @@ import org.netbeans.performance.enterprise.setup.EnterpriseSetup;
 import org.netbeans.performance.enterprise.XMLSchemaComponentOperator;
 
 import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.NewFileNameLocationStepOperator;
+import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
@@ -115,7 +115,7 @@ public class SchemaViewSwitchTest extends PerformanceTestCase  {
         wizard.selectCategory("XML");
         wizard.selectFileType("XML Schema");
         wizard.next();
-        NewFileNameLocationStepOperator location = new NewFileNameLocationStepOperator();
+        NewJavaFileNameLocationStepOperator location = new NewJavaFileNameLocationStepOperator();
         location.setObjectName(SchemaName);
         location.finish();
     }    
