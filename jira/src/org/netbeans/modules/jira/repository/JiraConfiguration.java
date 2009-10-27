@@ -97,6 +97,7 @@ public class JiraConfiguration extends JiraClientCache {
 
     protected void initialize(boolean forceRefresh) throws JiraException {
         data = (ConfigurationData) getData();
+        getServerInfo(new NullProgressMonitor());
         synchronized (data) {
             if(!forceRefresh) {
                 if(data.initialized) {
@@ -109,7 +110,7 @@ public class JiraConfiguration extends JiraClientCache {
             clearCached();
             refreshData();
             putToCache();
-            hackJiraCache(); 
+            hackJiraCache();
         }
     }
 
@@ -407,7 +408,7 @@ public class JiraConfiguration extends JiraClientCache {
         JiraCommand cmd = new JiraCommand() {
             @Override
             public void execute() throws JiraException, CoreException, IOException, MalformedURLException {
-                ServerInfo info = getServerInfo(new NullProgressMonitor());
+                ServerInfo info = getServerInfo();
                 if(supportsProjectIssueTypes(info.getVersion())) {
                     IssueType[] issueTypes = client.getIssueTypes(project.getId(), new NullProgressMonitor());
                     IssueType[] subTaskTypes = client.getSubTaskIssueTypes(project.getId(), new NullProgressMonitor());
@@ -519,7 +520,7 @@ public class JiraConfiguration extends JiraClientCache {
                 loadedProjects.add(p.getId());
             }
         }
-    }    
+    }
 
     protected static class ConfigurationData extends JiraClientData {
 	Group[] groups = new Group[0];

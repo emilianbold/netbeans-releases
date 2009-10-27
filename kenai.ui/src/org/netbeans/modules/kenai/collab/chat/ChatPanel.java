@@ -231,12 +231,21 @@ public class ChatPanel extends javax.swing.JPanel {
         if (trackers.length == 0) { // No issue trackers found for the project
             return;
         }
-        SwingUtilities.invokeLater(new Runnable() {
+        if (trackers[0].getService().equals(KenaiService.Names.JIRA)) {
+            SwingUtilities.invokeLater(new Runnable() {
 
-            public void run() {
-                KenaiIssueAccessor.getDefault().open(proj, issueNumber);
-            }
-        });
+                public void run() { // issue ID format: PROJECT_NAME-123
+                    KenaiIssueAccessor.getDefault().open(proj, proj.getName().toUpperCase().replaceAll("-", "_") + "-" + issueNumber);
+                }
+            });
+        } else if (trackers[0].getService().equals(KenaiService.Names.BUGZILLA)) {
+            SwingUtilities.invokeLater(new Runnable() {
+
+                public void run() {
+                    KenaiIssueAccessor.getDefault().open(proj, issueNumber);
+                }
+            });
+        }
     }
 
     private void selectStackTrace(Matcher m) {

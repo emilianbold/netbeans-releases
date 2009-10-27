@@ -96,7 +96,7 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
     public static final String PROP_SCM_PREVIEW = "projectSCMPreview"; // NOI18N
     public static final String PROP_ISSUES = "projectIssues"; // NOI18N
     public static final String PROP_ISSUES_URL = "projectIssuesUrl"; // NOI18N
-    public static final String PROP_AUTO_COMMIT = "projectIssuesUrl"; // NOI18N
+    public static final String PROP_AUTO_COMMIT = "projectAutoCommit"; // NOI18N
     public static final String PROP_CREATE_CHAT = "projectCreateChat"; // NOI18N
     public static final String PROP_FOLDERS_TO_SHARE = "projectFoldersToShare"; // NOI18N
 
