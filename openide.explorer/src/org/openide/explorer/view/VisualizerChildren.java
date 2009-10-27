@@ -349,8 +349,9 @@ final class VisualizerChildren extends Object {
                     str += vch;
                 }
             }
-            str += ", ";
+            str += " ";
         }
+        str += " {" + snapshot + "}";
         str += "]";
         return str;
     }
