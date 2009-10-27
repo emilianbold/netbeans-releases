@@ -37,52 +37,30 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.sync;
+package org.netbeans.modules.dlight.spi.support;
 
-import java.io.File;
-import java.io.PrintWriter;
-import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
-import org.netbeans.modules.cnd.remote.support.RemoteUtil;
-import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
-import org.netbeans.modules.cnd.utils.CndUtils;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.util.NbBundle;
+import java.util.Map;
+import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
 
 /**
  *
- * @author Vladimir Kvashin
+ * @author mt154047
  */
-public @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory.class, position=100)
-class ZipSyncFactory extends BaseSyncFactory {
+public class DLightToolConfigurationProviderFactory {
+    private static final String DLIGHT_TOOL_ID = "id"; //NOI18N
+    private static final String DLIGHT_TOOL_NAME = "name"; //NOI18N
+    private static final String DLIGHT_TOOL_DISPLAYED_NAME = "displayedName"; //NOI18N
 
-    /*package*/ static final boolean ENABLE_SCP = CndUtils.getBoolean("cnd.remote.scp", false);
-    /*package*/ static final String ID = "scp"; //NOI18N
+
+    static  DLightToolConfiguration create(Map map) {
+        return DLightToolConfigurationProviderFactory.createInstance(map);
+    }
+
+    private static DLightToolConfiguration createInstance(Map map) {
+        DLightToolConfiguration toolConfiguration = new DLightToolConfiguration((String)map.get(DLIGHT_TOOL_ID), (String)map.get(DLIGHT_TOOL_NAME));
+        toolConfiguration.setLongName((String)map.get(DLIGHT_TOOL_DISPLAYED_NAME));
+        return toolConfiguration;
+    }
+
     
-    @Override
-    public RemoteSyncWorker createNew( ExecutionEnvironment executionEnvironment,
-            PrintWriter out, PrintWriter err, File privProjectStorageDir, File... localDirs) {
-        return new ZipSyncWorker(executionEnvironment, out, err, privProjectStorageDir, localDirs);
-    }
-
-    @Override
-    public String getDisplayName() {
-        // That's justa  replacement for ScpSyncFactory/ScpSyncWorker - we don't need no new name
-        return NbBundle.getMessage(getClass(), "SCP_Factory_Name");
-    }
-
-    @Override
-    public String getDescription() {
-        // That's justa  replacement for ScpSyncFactory/ScpSyncWorker - we don't need no new name
-        return NbBundle.getMessage(getClass(), "SCP_Factory_Description");
-    }
-
-    @Override
-    public String getID() {
-        return ID;
-    }
-
-    @Override
-    public boolean isApplicable(ExecutionEnvironment execEnv) {
-        return ENABLE_SCP && ! RemoteUtil.isForeign(execEnv);
-    }
 }

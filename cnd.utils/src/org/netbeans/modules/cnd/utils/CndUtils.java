@@ -81,6 +81,10 @@ public class CndUtils {
         return ! isReleaseMode();
     }
 
+    public static boolean isUnitTestMode() {
+        return Boolean.getBoolean("cnd.mode.unittest"); // NOI18N
+    }
+
     public static boolean getBoolean(String name, boolean result) {
         String text = System.getProperty(name);
         if (text != null) {
