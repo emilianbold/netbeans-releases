@@ -155,6 +155,7 @@ public class HgCommand {
     private static final String HG_OUT_CMD = "out"; // NOI18N
     private static final String HG_LOG_LIMIT_ONE_CMD = "-l 1"; // NOI18N
     private static final String HG_LOG_LIMIT_CMD = "-l"; // NOI18N
+    private static final String HG_PARENT_CMD = "parents";              //NOI18N
 
     private static final String HG_LOG_NO_MERGES_CMD = "-M";
     private static final String HG_LOG_DEBUG_CMD = "--debug";
@@ -2178,6 +2179,48 @@ public class HgCommand {
         }else{
             return null;
         }
+    }
+
+    /**
+     * Returns parent revision of the given revision
+     * @param repositoryUrl cannot be null
+     * @param file if not null, parent revision limited on this file will be returned
+     * @param revision cannot be null
+     * @return parent revision, -1 if has no parent and null if error occurs
+     * @throws HgException
+     */
+    public static String getParent (String repositoryUrl, File file, String revision) throws HgException {
+        if (repositoryUrl == null ) return null;
+        if (revision == null ) return null;
+
+        List<String> command = new ArrayList<String>();
+
+        command.add(getHgCommand());
+        command.add(HG_PARENT_CMD);
+        command.add(HG_OPT_REPOSITORY);
+        command.add(repositoryUrl);
+        command.add(HG_FLAG_REV_CMD);
+        command.add(revision);
+        command.add("--template={rev}\t");                              //NOI18N
+
+        List<String> list = null;
+        command.add(file.getAbsolutePath());
+        list = exec(command);
+        String parentRevision = "-1";                                   //NOI18N
+        if (!list.isEmpty() && !isErrorAbort(list.get(0))) {
+            String[] revisions = list.get(0).split("\t");               //NOI18N
+            if (revisions.length > 1) {
+                String rev1 = revisions[0].trim();
+                String rev2 = revisions[1].trim();
+                parentRevision = HgCommand.getCommonAncestor(repositoryUrl, rev1, rev2, OutputLogger.getLogger(null));
+            }
+            else if (revisions.length == 1 && revisions[0].trim().length() > 0) {
+                parentRevision = revisions[0].trim();
+            } else {
+                parentRevision = null;
+            }
+        }
+        return parentRevision;
     }
 
 

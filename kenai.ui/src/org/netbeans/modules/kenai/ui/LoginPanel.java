@@ -82,7 +82,7 @@ public class LoginPanel extends javax.swing.JPanel {
     }
 
     /** Creates new form LoginPanel */
-    public LoginPanel() {
+    public LoginPanel(boolean isChatSupported) {
         initComponents();
         final Preferences preferences = NbPreferences.forModule(LoginPanel.class);
         chkIsOnline.setSelected(Boolean.parseBoolean(preferences.get(UIUtils.getPrefName(UIUtils.ONLINE_ON_CHAT_PREF), "true")));
@@ -97,6 +97,10 @@ public class LoginPanel extends javax.swing.JPanel {
             lblKenaiLogoLeft.setText(NbBundle.getMessage(LoginPanel.class, "LBL_LoginTo", kenai.getName(), kenai.getUrl().toString()));
             lblKenaiLogoLeft.setBorder(new EmptyBorder(10, 12, 0, 10));
             lblKenaiLogoLeft.setIcon(null);
+        }
+        if (!isChatSupported) {
+            chkIsOnline.setSelected(false);
+            chkIsOnline.setEnabled(false);
         }
     }
 

@@ -344,6 +344,7 @@ public final class DashboardImpl extends Dashboard {
 
             if( isMemberProject && memberProjectsLoaded && !memberProjects.contains(project) ) {
                 memberProjects.add(project);
+                setMemberProjects(new ArrayList<ProjectHandle>(memberProjects));
             }
             openProjects.add(project);
             storeAllProjects();
