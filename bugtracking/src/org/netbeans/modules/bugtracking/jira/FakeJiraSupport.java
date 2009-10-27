@@ -220,9 +220,8 @@ public class FakeJiraSupport {
                 List<QueryResultHandle> r = new ArrayList<QueryResultHandle>(1);
                 r.add(new FakeJiraQueryResultHandle(
                             NbBundle.getMessage(
-                                QueryAccessorImpl.class,
-                                "LBL_QueryResultTotal",  // NOI18N
-                                new Object[] {0}),
+                                FakeJiraQueryResultHandle.class,
+                                "LBL_NotAvailable"),
                                 ResultType.NAMED_RESULT,
                                 projectUrl));
                 results = r;
@@ -231,7 +230,12 @@ public class FakeJiraSupport {
         }
 
         public QueryResultHandle getUnseenResult() {
-            return new FakeJiraQueryResultHandle("0", ResultType.ALL_CHANGES_RESULT, projectUrl); // NOI18N
+            return new FakeJiraQueryResultHandle(
+                        NbBundle.getMessage(
+                            FakeJiraQueryResultHandle.class,
+                            "LBL_NotAvailable"),
+                        ResultType.ALL_CHANGES_RESULT,
+                        projectUrl); // NOI18N
         }
     }
 
