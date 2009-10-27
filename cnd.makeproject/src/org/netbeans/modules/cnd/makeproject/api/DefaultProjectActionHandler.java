@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.compilers.Tool;
@@ -68,7 +69,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
 
     private ProjectActionEvent pae;
     private volatile ExecutorTask executorTask;
-    private List<ExecutionListener> listeners = new ArrayList<ExecutionListener>();
+    private final List<ExecutionListener> listeners = new CopyOnWriteArrayList<ExecutionListener>();
 
     // VK: this is just to tie two pieces of logic together:
     // first is in determining the type of console for remote;
