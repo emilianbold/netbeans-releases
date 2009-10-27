@@ -59,7 +59,6 @@ import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.CleanJavaProjectAction;
 import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
-import org.netbeans.jellytools.modules.j2ee.nodes.GlassFishV2ServerNode;
 import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
@@ -290,7 +289,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
             LOGGER.info("not yet supported for server: " + REGISTERED_SERVER.toString());
             return;
         }
-        J2eeServerNode gf = J2eeServerNode.invoke("GlassFish v2.");
+        J2eeServerNode gf = J2eeServerNode.invoke("GlassFish v2");
         gf.refresh();
         if (gf.isCollapsed()) {
             gf.expand();
@@ -498,7 +497,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
         // wait project appear in projects view
         ProjectRootNode node = ProjectsTabOperator.invoke().getProjectRootNode(name);
         // wait classpath scanning finished
-        org.netbeans.junit.ide.ProjectSupport.waitScanFinished();
+        waitScanFinished();
         // get a project instance to return
         Project p = ((org.openide.nodes.Node) node.getOpenideNode()).getLookup().lookup(Project.class);
         assertNotNull("Project instance has not been found", p);
@@ -733,7 +732,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
             propertiesDialogOper.ok();
         }
         // if setting default server, it scans server jars; otherwise it continues immediatelly
-        org.netbeans.junit.ide.ProjectSupport.waitScanFinished();
+        waitScanFinished();
     }
 
     protected File getProjectsRootDir() throws IOException {

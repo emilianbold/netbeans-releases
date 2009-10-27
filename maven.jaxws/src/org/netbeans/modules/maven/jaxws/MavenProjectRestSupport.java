@@ -140,7 +140,7 @@ public class MavenProjectRestSupport extends WebRestSupport {
 
     @Override
     public void ensureRestDevelopmentReady() throws IOException {
-        addResourceConfigToWebApp();
+        addResourceConfigToWebApp(RestSupport.REST_SERVLET_ADAPTOR_MAPPING);
         addSwdpLibrary();
     }
 

@@ -66,9 +66,13 @@ import org.openide.util.Exceptions;
  */
 public abstract class WebRestSupport extends RestSupport {
 
-    public static final String PROP_APPLICATION_PATH_ANNOTATION = "application.path"; //NOI18N
-    public static final String PROP_RESOURCE_CLASSES = "resource.classes";//NOI18N
-    
+    public static final String PROP_REST_RESOURCES_PATH = "rest.resources.path";//NOI18N
+    public static final String PROP_REST_ROOT_RESOURCES = "rest.root.resources";//NOI18N
+    public static final String PROP_REST_CONFIG_TYPE = "rest.config.type"; //NOI18N
+    public static final String CONFIG_TYPE_IDE = "ide"; //NOI18N
+    public static final String CONFIG_TYPE_USER= "user"; //NOI18N
+    public static final String CONFIG_TYPE_DD= "dd"; //NOI18N
+
     /** Creates a new instance of WebProjectRestSupport */
     public WebRestSupport(Project project) {
         super(project);
@@ -188,7 +192,7 @@ public abstract class WebRestSupport extends RestSupport {
         return null;
     }
     
-    protected void addResourceConfigToWebApp() throws IOException {
+    protected void addResourceConfigToWebApp(String resourcePath) throws IOException {
         FileObject ddFO = getWebXml();
         WebApp webApp = getWebApp();
         if (webApp == null) {
@@ -198,7 +202,7 @@ public abstract class WebRestSupport extends RestSupport {
         try {
             Servlet adaptorServlet = getRestServletAdaptor(webApp);
             if (adaptorServlet == null) {
-                adaptorServlet = (Servlet) webApp.createBean("Servlet");
+                adaptorServlet = (Servlet) webApp.createBean("Servlet"); //NOI18N
                 adaptorServlet.setServletName(REST_SERVLET_ADAPTOR);
                 adaptorServlet.setServletClass(getServletAdapterClass());
                 adaptorServlet.setLoadOnStartup(BigInteger.valueOf(1));
@@ -208,12 +212,24 @@ public abstract class WebRestSupport extends RestSupport {
 
             ServletMapping sm = getRestServletMapping(webApp);
             if (sm == null) {
-                sm = (ServletMapping) webApp.createBean("ServletMapping");
+                sm = (ServletMapping) webApp.createBean("ServletMapping"); //NOI18N
                 sm.setServletName(adaptorServlet.getServletName());
+
+                String resourcesUrl = resourcePath;
+                if (!resourcePath.startsWith("/")) { //NOI18N
+                    resourcesUrl = "/"+resourcePath; //NOI18N
+                }
+                if (resourcesUrl.endsWith("/")) { //NOI18N
+                    resourcesUrl = resourcesUrl+"*"; //NOI18N
+                } else if (!resourcesUrl.endsWith("*")) { //NOI18N
+                    resourcesUrl = resourcesUrl+"/*"; //NOI18N
+                }
+
                 if (sm instanceof ServletMapping25) {
-                    ((ServletMapping25)sm).addUrlPattern(REST_SERVLET_ADAPTOR_MAPPING);
+                    ((ServletMapping25)sm).addUrlPattern(resourcesUrl);
                 } else {
-                    sm.setUrlPattern(REST_SERVLET_ADAPTOR_MAPPING);
+
+                    sm.setUrlPattern(resourcesUrl);
                 }
                 webApp.addServletMapping(sm);
                 needsSave = true;

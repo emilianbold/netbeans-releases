@@ -61,8 +61,9 @@
             <target name="check-rest-config-props" depends="-do-init">
                 <condition property="do-generate-rest-config">
                     <and>
-                        <isset property="auxiliary.org-netbeans-modules-websvc-restapi.resource.classes"/>
-                        <isset property="auxiliary.org-netbeans-modules-websvc-restapi.application.path"/>
+                        <equals arg1="${{rest.config.type}}" arg2="ide"/>
+                        <isset property="rest.root.resources"/>
+                        <isset property="rest.resources.path"/>
                     </and>
                 </condition>
             </target>
@@ -75,7 +76,7 @@
 
 package org.netbeans.rest.application.config;
 
-@javax.ws.rs.ApplicationPath("___RESOURCE_URI___")
+@javax.ws.rs.ApplicationPath("___APPLICATION_PATH___")
 public class ApplicationConfig extends javax.ws.rs.core.Application {
 
     private static final Class<?>[] resourceClasses = {
@@ -94,10 +95,10 @@ public class ApplicationConfig extends javax.ws.rs.core.Application {
 }]]></echo>
                 <replace file="${{build.generated.sources.dir}}/rest/org/netbeans/rest/application/config/ApplicationConfig.java"
                          token="___RESOURCE_CLASSES___"
-                         value="${{auxiliary.org-netbeans-modules-websvc-restapi.resource.classes}}"/>
+                         value="${{rest.root.resources}}"/>
                 <replace file="${{build.generated.sources.dir}}/rest/org/netbeans/rest/application/config/ApplicationConfig.java"
-                         token="___RESOURCE_URI___"
-                         value="${{auxiliary.org-netbeans-modules-websvc-restapi.application.path}}"/>
+                         token="___APPLICATION_PATH___"
+                         value="${{rest.resources.path}}"/>
             </target>
 
         </project>
