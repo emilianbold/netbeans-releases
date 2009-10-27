@@ -113,6 +113,7 @@ public class PHPNewLineIndenter {
                         movePrevious = true;
                    }
                    if (ts.token().id() == PHPTokenId.PHP_COMMENT
+                            || ts.token().id() == PHPTokenId.PHP_LINE_COMMENT
                             || ts.token().id() == PHPTokenId.PHP_COMMENT_START
                             || ts.token().id() == PHPTokenId.PHP_COMMENT_END) {
 
