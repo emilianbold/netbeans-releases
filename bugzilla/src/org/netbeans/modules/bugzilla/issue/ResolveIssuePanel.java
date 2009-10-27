@@ -38,19 +38,33 @@
  */
 package org.netbeans.modules.bugzilla.issue;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.LinkedList;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JButton;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Jan Stola
  */
 public class ResolveIssuePanel extends javax.swing.JPanel {
+    private final BugzillaIssue issue;
+    private JButton ok = new JButton();
 
     public ResolveIssuePanel(BugzillaIssue issue) {
+        this.issue = issue;
         initComponents();
         BugzillaRepository repository = issue.getBugzillaRepository();
         BugzillaConfiguration bc = repository.getConfiguration();
@@ -60,7 +74,9 @@ public class ResolveIssuePanel extends javax.swing.JPanel {
         }
         List<String> resolutions = new LinkedList<String>(bc.getResolutions());
         resolutions.remove("MOVED"); // NOI18N
+        duplicatePanel.setVisible(false);
         resolutionCombo.setModel(new DefaultComboBoxModel(resolutions.toArray()));
+        org.openide.awt.Mnemonics.setLocalizedText(ok, NbBundle.getMessage(ResolveIssuePanel.class, "ResolveIssuePanel.resolveButton")); // NOI18N
     }
 
     public String getSelectedResolution() {
@@ -85,6 +101,10 @@ public class ResolveIssuePanel extends javax.swing.JPanel {
         commentLabel = new javax.swing.JLabel();
         scrollPane = new javax.swing.JScrollPane();
         textArea = new javax.swing.JTextArea();
+        duplicatePanel = new javax.swing.JPanel();
+        duplicateLabel = new javax.swing.JLabel();
+        duplicateField = new javax.swing.JTextField();
+        duplicateButton = new javax.swing.JButton();
 
         resolutionLabel.setLabelFor(resolutionCombo);
         org.openide.awt.Mnemonics.setLocalizedText(resolutionLabel, org.openide.util.NbBundle.getMessage(ResolveIssuePanel.class, "ResolveIssuePanel.resolutionLabel.text")); // NOI18N
@@ -95,6 +115,43 @@ public class ResolveIssuePanel extends javax.swing.JPanel {
         textArea.setColumns(40);
         textArea.setRows(5);
         scrollPane.setViewportView(textArea);
+        textArea.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ResolveIssuePanel.class, "ResolveIssuePanel.textArea.AccessibleContext.accessibleDescription")); // NOI18N
+
+        duplicateLabel.setLabelFor(duplicateField);
+        org.openide.awt.Mnemonics.setLocalizedText(duplicateLabel, org.openide.util.NbBundle.getMessage(ResolveIssuePanel.class, "ResolveIssuePanel.duplicateLabel.text")); // NOI18N
+
+        duplicateField.setColumns(15);
+
+        org.openide.awt.Mnemonics.setLocalizedText(duplicateButton, org.openide.util.NbBundle.getMessage(ResolveIssuePanel.class, "ResolveIssuePanel.duplicateButton.text")); // NOI18N
+        duplicateButton.setFocusPainted(false);
+        duplicateButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        duplicateButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                duplicateButtonActionPerformed(evt);
+            }
+        });
+
+        org.jdesktop.layout.GroupLayout duplicatePanelLayout = new org.jdesktop.layout.GroupLayout(duplicatePanel);
+        duplicatePanel.setLayout(duplicatePanelLayout);
+        duplicatePanelLayout.setHorizontalGroup(
+            duplicatePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(duplicatePanelLayout.createSequentialGroup()
+                .add(duplicateLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(duplicateField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 151, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(duplicateButton))
+        );
+        duplicatePanelLayout.setVerticalGroup(
+            duplicatePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(duplicatePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                .add(duplicateLabel)
+                .add(duplicateButton)
+                .add(duplicateField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+        );
+
+        duplicateField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ResolveIssuePanel.class, "ResolveIssuePanel.duplicateField.AccessibleContext.accessibleDescription")); // NOI18N
+        duplicateButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ResolveIssuePanel.class, "ResolveIssuePanel.duplicateButton.AccessibleContext.accessibleDescription")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -109,33 +166,94 @@ public class ResolveIssuePanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
                         .add(resolutionCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(305, 305, 305))
-                    .add(layout.createSequentialGroup()
-                        .add(scrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 665, Short.MAX_VALUE)
-                        .addContainerGap())))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(duplicatePanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(scrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 665, Short.MAX_VALUE))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(resolutionLabel)
-                    .add(resolutionCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                        .add(resolutionLabel)
+                        .add(resolutionCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(duplicatePanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(commentLabel)
-                    .add(scrollPane))
-                .add(0, 0, 0))
+                    .add(scrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 168, Short.MAX_VALUE))
+                .addContainerGap())
         );
+
+        resolutionCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ResolveIssuePanel.class, "ResolveIssuePanel.resolutionCombo.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
+
+    private void duplicateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_duplicateButtonActionPerformed
+        Issue newIssue = BugtrackingUtil.selectIssue(
+                NbBundle.getMessage(IssuePanel.class, "IssuePanel.duplicateButton.message"), //NOI18N
+                issue.getBugzillaRepository(),
+                this,
+                new HelpCtx("org.netbeans.modules.bugzilla.duplicateChooser")); // NOI18N
+        if (newIssue != null) {
+            duplicateField.setText(newIssue.getID());
+        }
+}//GEN-LAST:event_duplicateButtonActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel commentLabel;
+    private javax.swing.JButton duplicateButton;
+    private javax.swing.JTextField duplicateField;
+    private javax.swing.JLabel duplicateLabel;
+    private javax.swing.JPanel duplicatePanel;
     private javax.swing.JComboBox resolutionCombo;
     private javax.swing.JLabel resolutionLabel;
     private javax.swing.JScrollPane scrollPane;
     private javax.swing.JTextArea textArea;
     // End of variables declaration//GEN-END:variables
+
+    private void checkDuplicateId () {
+        ok.setEnabled(!BugzillaIssue.RESOLVE_DUPLICATE.equals(resolutionCombo.getSelectedItem()) //NOI18N
+                || duplicateField.getText().trim().length() > 0);
+    }
+
+    private void resolutionComboSelectionChanged () {
+        boolean shown = BugzillaIssue.RESOLVE_DUPLICATE.equals(resolutionCombo.getSelectedItem()); // NOI18N
+        duplicatePanel.setVisible(shown);
+        checkDuplicateId();
+    }
+
+    boolean showDialog() {
+        ok.getAccessibleContext().setAccessibleDescription(ok.getText());
+        final DialogDescriptor dd = new DialogDescriptor(this, NbBundle.getMessage(ResolveIssuePanel.class, "BugzillaIssueProvider.resolveIssueButton.text"), //NOI18N
+                true, new Object[]{ok, DialogDescriptor.CANCEL_OPTION}, ok,
+                DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(ResolveIssuePanel.class), null);
+        duplicateField.getDocument().addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) {
+                checkDuplicateId();
+            }
+
+            public void removeUpdate(DocumentEvent e) {
+                checkDuplicateId();
+            }
+
+            public void changedUpdate(DocumentEvent e) {
+                checkDuplicateId();
+            }
+        });
+        resolutionCombo.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                resolutionComboSelectionChanged();
+            }
+        });
+        resolutionComboSelectionChanged();
+        return DialogDisplayer.getDefault().notify(dd) == ok;
+    }
+
+    String getDuplicateId() {
+        return duplicateField.getText().trim();
+    }
 
 }
