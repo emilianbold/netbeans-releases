@@ -48,20 +48,24 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
+import org.netbeans.modules.nativeexecution.support.SignalSupport;
 
 /**
  * An utility class that simplifies usage of Native Execution Support Module
  * for common tasks like files copying.
  */
 public final class CommonTasksSupport {
+
+    private final static HashMap<ExecutionEnvironment, SignalSupport> ssMap =
+            new HashMap<ExecutionEnvironment, SignalSupport>();
 
     private CommonTasksSupport() {
     }
@@ -261,18 +265,16 @@ public final class CommonTasksSupport {
         return NativeTaskExecutorService.submit(new Callable<Integer>() {
 
             public Integer call() throws Exception {
-                final HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
-                final String command = "/bin/kill"; // NOI18N
-                final String[] args = new String[]{signal == Signal.NULL ? "-0" : "-" + signal.name().substring(3), "" + pid}; // NOI18N
-
-                String shell = hostInfo.getShell();
-                if (shell != null) {
-                    CommandRunner runner = new CommandRunner(execEnv, error, command, args);
-                    return runner.call();
-                } else {
-                    // Will not kill in case when no cygwin on Windows installed??
-                    return -1;
+                SignalSupport support = null;
+                synchronized (ssMap) {
+                    support = ssMap.get(execEnv);
+                    if (support == null) {
+                        support = new SignalSupport(execEnv);
+                        ssMap.put(execEnv, support);
+                    }
                 }
+
+                return support.kill(signal, pid);
             }
         }, descr);
     }

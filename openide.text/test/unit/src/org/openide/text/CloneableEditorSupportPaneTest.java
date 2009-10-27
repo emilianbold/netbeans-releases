@@ -259,6 +259,7 @@ public class CloneableEditorSupportPaneTest extends NbTestCase implements Clonea
         modified = false;
     }
 
+    @Override
     protected boolean runInEQ() {
         return true;
     }
@@ -267,6 +268,11 @@ public class CloneableEditorSupportPaneTest extends NbTestCase implements Clonea
     private static class CES extends CloneableEditorSupport {
         public CES (Env env, Lookup l) {
             super (env, l);
+        }
+        
+        @Override
+        protected boolean asynchronousOpen() {
+            return false;
         }
         
         protected String messageName() {

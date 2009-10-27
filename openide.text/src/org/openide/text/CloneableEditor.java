@@ -41,11 +41,17 @@
 
 package org.openide.text;
 
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Insets;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
-import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -84,13 +90,28 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
 
     /** Flag indicating progress of DoInitialize tasks */
     private boolean initVisualFinished;
+    
+    /** Flag indicating if AWT is waiting in getEditorPane on initVisual.
+     It is static for now when we have only one worker thread/RP */
+    private static boolean waitingOnInitVisual;
+    
+    /** Flag to detect if document loading in initNonVisual was canceled by user */
+    private boolean isDocLoadingCanceled = false;
 
+    /** Flag to detect if component is opened or closed to control return value
+     * of getEditorPane. If component creation starts this flag is set to true and
+     * getEditorPane waits till initialization finishes */
+    private boolean isComponentOpened = false;
+    
     /** Position of cursor. Used to keep the value between deserialization
      * and initialization time. */
     private int cursorPosition = -1;
     
     private final Object CLOSE_LAST_LOCK = new Object();
-    
+
+    private static List<AWTQuery> tbdList = Collections.synchronizedList(new ArrayList<AWTQuery>());
+
+    private static List<AWTQuery> finishedList = Collections.synchronizedList(new ArrayList<AWTQuery>());
     // #20647. More important custom component.
 
     /** Custom editor component, which is used if specified by document
@@ -196,6 +217,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
 
         this.pane = tmp;
         this.initialized = true;
+        this.isComponentOpened = true;
         
         this.doInitialize = new DoInitialize(tmp);
     }
@@ -209,7 +231,35 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         }
         return !Boolean.TRUE.equals(getClientProperty("oldInitialize")); // NOI18N
     }
+    
+    class AWTQuery implements Runnable {
+        private UserQuestionException ex;
+        private boolean isConfirmed ;
 
+        public AWTQuery (UserQuestionException ex) {
+            this.ex = ex;
+        }
+
+        public boolean confirmed () {
+            return isConfirmed;
+        }
+        
+        public void run() {
+            NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
+                    ex.getLocalizedMessage(), NotifyDescriptor.YES_NO_OPTION
+                );
+            nd.setOptions(new Object[] { NotifyDescriptor.YES_OPTION, NotifyDescriptor.NO_OPTION });
+
+            Object res = DialogDisplayer.getDefault().notify(nd);
+
+            if (NotifyDescriptor.OK_OPTION.equals(res)) {
+                isConfirmed = true;
+            } else {
+                isConfirmed = false;
+            }
+        }
+    }
+    
     class DoInitialize implements Runnable, ActionListener {
         private final QuietEditorPane tmp;
         private Document doc;
@@ -328,6 +378,9 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             assert prepareTask != null : "Failed to get prepareTask";
             prepareTask.waitFinished();
             final Throwable ex = support.getPrepareDocumentRuntimeException();
+            if (ex == null) {
+                isDocLoadingCanceled = false;
+            }
             if (support.asynchronousOpen()) {
                 if (ex instanceof CloneableEditorSupport.DelegateIOExc) {
                     if (ex.getCause() instanceof UserQuestionException) {
@@ -395,25 +448,65 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                                 }
                             }
                         }
-
-                        Query query = new Query(this);
-                        try {
-                            SwingUtilities.invokeLater(query);
-                            if (query.awaitAWT()) {
-                                query.waitRest();
+                        //If AWT is blocked by call of CloneableEditor.getEditorPane ie. by waiting on initVisual
+                        //we cannot unblock it so we will confirm UQE for now.
+                        if (waitingOnInitVisual) {
+                            UserQuestionException e = (UserQuestionException) ex.getCause();
+                            AWTQuery query = new AWTQuery(e);
+                            tbdList.add(query);
+                            synchronized (this) {
+                                //Wake up AWT thread to process queries
+                                notifyAll();
+                                try {
+                                    for (;;) {
+                                        //Wait for processed query
+                                        if (!finishedList.isEmpty()) {
+                                            //Check if our query is already processed
+                                            if (finishedList.remove(query)) {
+                                                break;
+                                            }
+                                        }
+                                        wait();
+                                    }
+                                } catch (InterruptedException exc) {
+                                    Exceptions.printStackTrace(exc);
+                                }
                             }
-                            synchronized (query) {
-                                query.finished = true;
+                            if (query.isConfirmed) {
+                                confirmed = true;
+                                try {
+                                    e.confirmed();
+                                } catch (IOException ex1) {
+                                    Exceptions.printStackTrace(ex1);
+                                }
                             }
-                        } catch (InterruptedException exc) {
-                            Exceptions.printStackTrace(exc);
+                        } else {
+                            Query query = new Query(this);
+                            try {
+                                SwingUtilities.invokeLater(query);
+                                if (query.awaitAWT()) {
+                                    query.waitRest();
+                                }
+                                synchronized (query) {
+                                    query.finished = true;
+                                }
+                            } catch (InterruptedException exc) {
+                                Exceptions.printStackTrace(exc);
+                            }
                         }
                         if (confirmed) {
+                            isDocLoadingCanceled = false;
                             prepareTask = support.prepareDocument();
                             assert prepareTask != null : "Failed to get prepareTask";
                             prepareTask.waitFinished();
                         } else {
+                            isDocLoadingCanceled = true;
+                            synchronized (this) {
+                                //Wake up AWT thread to cancel initVisual
+                                notifyAll();
+                            }
                             //Cancel initialization sequence and close editor
+                            isComponentOpened = false;
                             SwingUtilities.invokeLater(new Runnable () {
                                 public void run () {
                                     CloneableEditor.this.close();
@@ -526,10 +619,23 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             Document d;
             synchronized (this) {
                 for (;;) {
+                    if (!tbdList.isEmpty()) {
+                        while (!tbdList.isEmpty()) {
+                            AWTQuery query = tbdList.remove(0);
+                            query.run();
+                            finishedList.add(query);
+                        }
+                        notifyAll();
+                    }
                     d = doc;
                     k = kit;
                     if (initialized) {
                         break;
+                    }
+                    if (isDocLoadingCanceled) {
+                        //Reset pane here so getEditorPane will return null
+                        pane = null;
+                        return false;
                     }
                     try {
                         if (LOG.isLoggable(Level.FINE)) {
@@ -572,6 +678,9 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         }
         
         final void initVisual() {
+            if (isDocLoadingCanceled) {
+                return;
+            }
             //Do not allow recursive call
             if (isInInitVisual) {
                 return;
@@ -694,31 +803,26 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
      */
     @Override
     protected void componentClosed() {
-        SwingUtilities.invokeLater(
-            new Runnable() {
-                public void run() {
-                    // #23486: pane could not be initialized yet.
-                    if (pane != null) {
-                        // #114608 - commenting out setting of the empty document
+        // #23486: pane could not be initialized yet.
+        if (pane != null) {
+            // #114608 - commenting out setting of the empty document
 //                        Document doc = support.createStyledDocument(pane.getEditorKit());
 //                        pane.setDocument(doc);
-                        
-                        // #138611 - this calls kit.deinstall, which is what our kits expect,
-                        // calling it with null does not impact performance, because the pane
-                        // will not create new document and typically nobody listens on "editorKit" prop change
-                        pane.setEditorKit(null);
-                    }
 
-                    removeAll();
-                    customComponent = null;
-                    customToolbar = null;
-                    pane = null;
-                    initialized = false;
-                    initVisualFinished = false;
-                }
-            }
-        );
+            // #138611 - this calls kit.deinstall, which is what our kits expect,
+            // calling it with null does not impact performance, because the pane
+            // will not create new document and typically nobody listens on "editorKit" prop change
+            pane.setEditorKit(null);
+        }
 
+        removeAll();
+        customComponent = null;
+        customToolbar = null;
+        pane = null;
+        initialized = false;
+        initVisualFinished = false;
+        isComponentOpened = false;
+        
         super.componentClosed();
 
         CloneableEditorSupport ces = cloneableEditorSupport();
@@ -1001,6 +1105,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         }
 
         updateName();
+        isComponentOpened = true;
     }
 
     /**
@@ -1059,12 +1164,28 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         return initVisualFinished;
     }
 
+    /** Used from test only. Can be called out of AWT */
+    boolean isEditorPaneReadyTest () {
+        return initVisualFinished;
+    }
+
+    /** Returns editor pane. Returns null if document loading was canceled by user
+     * through answering UserQuestionException or when CloneableEditor is closed.
+     *
+     * @return editor pane or null
+     */
     public JEditorPane getEditorPane() {
         assert SwingUtilities.isEventDispatchThread();
+        //User selected not to load document
+        if (isDocLoadingCanceled || !isComponentOpened) {
+            return null;
+        }
         initialize();
         DoInitialize d = doInitialize;
         if (d != null && !Thread.holdsLock(support.getLock())) {
+            waitingOnInitVisual = true;
             d.initVisual();
+            waitingOnInitVisual = false;
         }
         return pane;
     }

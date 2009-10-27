@@ -125,13 +125,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             final String commandLine = info.getCommandLineForShell();
             final String wDir = info.getWorkingDirectory(true);
 
-            final File workingDirectory;
-
-            if (wDir == null || isWindows) {
-                workingDirectory = new File("."); // NOI18N
-            } else {
-                workingDirectory = new File(wDir);
-            }
+            final File workingDirectory = (wDir == null)? new File(".") : new File(wDir); // NOI18N
 
             pidFileFile = File.createTempFile("dlight", "termexec", hostInfo.getTempDirFile()); // NOI18N
             envFileFile = new File(pidFileFile.getAbsoluteFile() + ".env"); // NOI18N
@@ -147,7 +141,6 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             FileWriter shWriter = new FileWriter(shFileFile);
             shWriter.write("echo $$ > \"" + pidFile + "\" || exit $?\n"); // NOI18N
             shWriter.write(". \"" + envFile + "\" || exit $?\n"); // NOI18N
-            shWriter.write("cd \"" + workingDirectory.getAbsolutePath() + "\" || exit $?\n"); // NOI18N
             shWriter.write("exec " + commandLine + "\n"); // NOI18N
             shWriter.flush();
             shWriter.close();

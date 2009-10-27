@@ -47,4 +47,5 @@ public class ActionNames {
     public static final String  COMMAND_JC_CREATE = "JCCreate"; //NOI18N
     public static final String  COMMAND_JC_DELETE = "JCDelete"; //NOI18N
     public static final String  COMMAND_JC_UNLOAD = "JCUnload"; //NOI18N
+    public static final String  COMMAND_JC_GENPROXY = "JCGenProxy"; //NOI18N
 }

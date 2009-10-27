@@ -41,12 +41,12 @@
 
 package org.netbeans.modules.cnd.debugger.gdb;
 
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.openide.util.NbBundle;
 import org.netbeans.spi.debugger.SessionProvider;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 
 public class GdbSessionProvider extends SessionProvider {
 
@@ -85,7 +85,7 @@ public class GdbSessionProvider extends SessionProvider {
             return ServerList.get((projectActionEvent.getConfiguration()).
                     getDevelopmentHost().getExecutionEnvironment()).getServerName();
         }
-        return CompilerSetManager.LOCALHOST;
+        return HostInfoUtils.LOCALHOST;
     }
     
     public String getTypeID() {

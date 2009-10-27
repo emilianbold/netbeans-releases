@@ -454,4 +454,24 @@ public class CallTest extends RubyTestBase {
         assertType("String", call.getType());
         assertFalse(call.isStatic());
     }
+
+    public void testNotStaticCall() throws Exception {
+        Call call = getCall("Some.new.thing.^");
+        assertFalse(call.isStatic());
+    }
+
+    public void testNotStaticCall2() throws Exception {
+        Call call = getCall("Some.new(x).thing(y).^");
+        assertFalse(call.isStatic());
+    }
+
+    public void testNotStaticCall3() throws Exception {
+        Call call = getCall("Some.new(x).thing.^");
+        assertFalse(call.isStatic());
+    }
+
+    public void testNotStaticCall4() throws Exception {
+        Call call = getCall("Some.new.thing(y).^");
+        assertFalse(call.isStatic());
+    }
 }
