@@ -41,6 +41,7 @@ package org.netbeans.modules.cnd.remote.sync;
 
 import java.io.File;
 import java.io.PrintWriter;
+import java.util.Map;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
@@ -60,12 +61,16 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
         this.executionEnvironment = executionEnvironment;
     }
     
-    public boolean synchronize() {
+    public boolean startup(Map<String, String> env2add) {
         PathMap mapper = HostInfoProvider.getMapper(executionEnvironment);
         if (localDirs != null && localDirs.length > 0) {
             return mapper.checkRemotePath(localDirs[0].getAbsolutePath(), true);
         }
         return true;
+    }
+
+    @Override
+    public void shutdown() {
     }
 
     @Override

@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.InterruptedIOException;
 import java.io.PrintWriter;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
@@ -264,7 +265,7 @@ import org.openide.util.NbBundle;
     }
 
 
-    public boolean synchronize() {
+    public boolean startup(Map<String, String> env2add) {
         // Later we'll allow user to specify where to copy project files to
         String remoteParent = RemotePathMap.getRemoteSyncRoot(executionEnvironment);
         if (remoteParent == null) {
@@ -323,6 +324,10 @@ import org.openide.util.NbBundle;
             }
         }
         return success;
+    }
+
+    @Override
+    public void shutdown() {
     }
 
     @Override
