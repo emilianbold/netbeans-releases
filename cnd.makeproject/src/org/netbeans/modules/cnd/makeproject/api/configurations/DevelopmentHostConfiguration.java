@@ -67,7 +67,7 @@ public class DevelopmentHostConfiguration {
     private List<ExecutionEnvironment> servers;
 
 //    private int buildPlatform; // Actual build platform
-    private IntConfiguration buildPlatformConfiguration;
+    private BuildPlatformConfiguration buildPlatformConfiguration;
 
     private boolean modified;
     private boolean dirty = false;
@@ -90,7 +90,7 @@ public class DevelopmentHostConfiguration {
             // TODO: CompilerSet is not reliable about platform; it must be.
             buildPlatform = PlatformTypes.PLATFORM_NONE;
         }
-        buildPlatformConfiguration = new IntConfiguration(null, buildPlatform, Platforms.getPlatformDisplayNames(), null);
+        buildPlatformConfiguration = new BuildPlatformConfiguration(buildPlatform, Platforms.getPlatformDisplayNames());
     }
 
     /** TODO: deprecate and remove, see #158983 */
@@ -310,14 +310,14 @@ public class DevelopmentHostConfiguration {
     /**
      * @return the buildPlatformConfiguration
      */
-    public IntConfiguration getBuildPlatformConfiguration() {
+    public BuildPlatformConfiguration getBuildPlatformConfiguration() {
         return buildPlatformConfiguration;
     }
 
     /**
      * @param buildPlatformConfiguration the buildPlatformConfiguration to set
      */
-    public void setBuildPlatformConfiguration(IntConfiguration buildPlatformConfiguration) {
+    public void setBuildPlatformConfiguration(BuildPlatformConfiguration buildPlatformConfiguration) {
         this.buildPlatformConfiguration = buildPlatformConfiguration;
     }
 

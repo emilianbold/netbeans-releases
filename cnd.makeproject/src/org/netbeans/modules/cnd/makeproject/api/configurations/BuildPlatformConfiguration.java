@@ -36,35 +36,36 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.makeproject.configurations.ui;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import org.netbeans.modules.cnd.makeproject.api.configurations.BuildPlatformConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
-import org.netbeans.modules.cnd.makeproject.ui.customizer.MakeCustomizer;
+package org.netbeans.modules.cnd.makeproject.api.configurations;
+
+import org.netbeans.modules.cnd.makeproject.api.platforms.PlatformNone;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author thp
  */
-public class BuildPlatformNodeProp extends IntNodeProp implements PropertyChangeListener {
-    private BuildPlatformConfiguration intConfiguration;
-    private MakeCustomizer makeCustomizer = null;
-    
-    public BuildPlatformNodeProp(BuildPlatformConfiguration intConfiguration, DevelopmentHostConfiguration developmentHost, MakeCustomizer makeCustomizer, boolean canWrite, String unused, String name, String description) {
-        super(intConfiguration, canWrite, unused, name, description);
-        this.intConfiguration = intConfiguration;
-        this.makeCustomizer = makeCustomizer;
-        developmentHost.addPropertyChangeListener(this);
+public class BuildPlatformConfiguration extends IntConfiguration {
+    public BuildPlatformConfiguration(int def, String[] names) {
+        super(null, def, names, null);
     }
 
-    public void propertyChange(final PropertyChangeEvent evt) {
-        final boolean isLocalHost = ((DevelopmentHostConfiguration) evt.getNewValue()).isLocalhost();
-        intConfiguration.setDefault(intConfiguration.getValue());
-        setCanWrite(isLocalHost);
-        makeCustomizer.validate();
-        makeCustomizer.repaint();
+    @Override
+    public String getName() {
+        if (getValue() < getNames().length) {
+            return getNames()[getValue()];
+        } else {
+            return NbBundle.getMessage(PlatformNone.class, "NoPlatform");
+        }
     }
+
+    @Override
+    public BuildPlatformConfiguration clone() {
+        BuildPlatformConfiguration clone = new BuildPlatformConfiguration(getDefault(), getNames());
+        clone.setValue(getValue());
+        clone.setModified(getModified());
+        return clone;
+    }
+
 }
