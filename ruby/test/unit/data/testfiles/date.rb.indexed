@@ -12,9 +12,9 @@ Searchable Keys:
   constant : ITALY;Fixnum
   constant : JULIAN;FalseClass
   constant : MONTHNAMES;Array
-  field : ajd;;Fixnum;
-  field : of;;Fixnum;
-  field : sg
+  field : ajd|PRIVATE;;Fixnum;
+  field : of|PRIVATE;;Fixnum;
+  field : sg|PRIVATE
   fqn : Date
   method : +(n)|DOCUMENTED|
   method : -(x)|DOCUMENTED|;;Fixnum;

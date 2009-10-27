@@ -37,52 +37,67 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.sync;
+package org.netbeans.modules.cnd.api.remote;
 
 import java.io.File;
 import java.io.PrintWriter;
-import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
-import org.netbeans.modules.cnd.remote.support.RemoteUtil;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
-import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.util.NbBundle;
 
 /**
- *
+ * Utility functions related with remote synchronization
  * @author Vladimir Kvashin
  */
-public @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory.class, position=100)
-class ZipSyncFactory extends BaseSyncFactory {
+public final class RemoteSyncSupport {
 
-    /*package*/ static final boolean ENABLE_SCP = CndUtils.getBoolean("cnd.remote.scp", false);
-    /*package*/ static final String ID = "scp"; //NOI18N
-    
-    @Override
-    public RemoteSyncWorker createNew( ExecutionEnvironment executionEnvironment,
-            PrintWriter out, PrintWriter err, File privProjectStorageDir, File... localDirs) {
-        return new ZipSyncWorker(executionEnvironment, out, err, privProjectStorageDir, localDirs);
+    private RemoteSyncSupport() {
     }
 
-    @Override
-    public String getDisplayName() {
-        // That's justa  replacement for ScpSyncFactory/ScpSyncWorker - we don't need no new name
-        return NbBundle.getMessage(getClass(), "SCP_Factory_Name");
+    public static RemoteSyncWorker createSyncWorker(Project project, PrintWriter out, PrintWriter err) {
+        ServerRecord serverRecord = ServerList.get(project);
+        if (serverRecord != null) {
+            RemoteSyncFactory syncFactory = serverRecord.getSyncFactory();
+            if (syncFactory != null) {
+                return syncFactory.createNew(project, out, err);
+            }
+        }
+        return null;
     }
 
-    @Override
-    public String getDescription() {
-        // That's justa  replacement for ScpSyncFactory/ScpSyncWorker - we don't need no new name
-        return NbBundle.getMessage(getClass(), "SCP_Factory_Description");
+    /**
+     * Creates an instance of RemoteSyncWorker.
+     *
+     * @param localDir local directory that should be synchronized
+     *
+     * @param executionEnvironment
+     *
+     * @param out output stream:
+     * in the case implementation uses an external program (rsync? scp?),
+     * it can redirect its stdout here
+     *
+     * @param err error stream:
+     * in the case implementation uses an external program (rsync? scp?),
+     * it can redirect its stderr here
+     *
+     * @param privProjectStorageDir a directory to store misc. cache-ing information;
+     * it is caller's responsibility top guarantee that different local dirs
+     * has different privProjectStorage associated
+     * (usually it is "nbprohect/private" :-))
+     *
+     * @return new instance of the RemoteSyncWorker
+     */
+    public static RemoteSyncWorker createSyncWorker(ExecutionEnvironment executionEnvironment,
+        PrintWriter out, PrintWriter err, File privProjectStorageDir, File... localDirs) {
+
+        ServerRecord serverRecord = ServerList.get(executionEnvironment);
+        if (serverRecord != null) {
+            RemoteSyncFactory syncFactory = serverRecord.getSyncFactory();
+            if (syncFactory != null) {
+                return syncFactory.createNew(executionEnvironment, out, err, privProjectStorageDir, localDirs);
+            }
+        }
+        return null;
     }
 
-    @Override
-    public String getID() {
-        return ID;
-    }
-
-    @Override
-    public boolean isApplicable(ExecutionEnvironment execEnv) {
-        return ENABLE_SCP && ! RemoteUtil.isForeign(execEnv);
-    }
 }
