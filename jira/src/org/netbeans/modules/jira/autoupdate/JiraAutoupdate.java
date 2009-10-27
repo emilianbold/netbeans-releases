@@ -149,7 +149,7 @@ public class JiraAutoupdate {
             @Override
             public void execute() throws JiraException, CoreException, IOException, MalformedURLException {
                 JiraConfiguration conf = repository.getConfiguration();
-                ServerInfo info = conf.getServerInfo(new NullProgressMonitor());
+                ServerInfo info = conf.getServerInfo();
                 v[0] = info.getVersion();
             }
         };

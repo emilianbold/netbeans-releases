@@ -45,6 +45,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.awt.Insets;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import javax.swing.BorderFactory;
@@ -90,29 +91,39 @@ class CodeCustomEditor extends javax.swing.JPanel implements DocumentListener, R
             return prefSize;
         }
     };
-        
+
     public CodeCustomEditor(RADConnectionPropertyEditor propertyEditor,
                             FormModel formModel, FormProperty property)
     {
         this.propertyEditor = propertyEditor;
         
-        codePane = new JEditorPane();
+        codePane = new JEditorPane() { // editor pane does not count the pref. height correctly
+            @Override
+            public Dimension getPreferredScrollableViewportSize() {
+                return new Dimension(super.getPreferredScrollableViewportSize().width, getPrefHeight(this));
+            }
+            @Override
+            public Dimension getPreferredSize() {
+                return new Dimension(super.getPreferredSize().width, getPrefHeight(this));
+            }
+            @Override
+            public Dimension getMinimumSize() {
+                return new Dimension(super.getMinimumSize().width, getPrefHeight(this));
+            }
+        };
         codePane.getAccessibleContext().setAccessibleName(
             NbBundle.getBundle(CodeCustomEditor.class).getString("ACSN_CustomCode_EditorPane")); //NOI18N
         headerLabel.setLabelFor(codePane);
         jScrollPane.setViewportView(codePane);
-        
-        resetLayout();
+        jScrollPane.getViewport().setBackground(new Color(codePane.getBackground().getRGB()));
 
         int codePos = -1;
         FormDataObject dobj = FormEditor.getFormDataObject(formModel);
         SimpleSection sec = dobj.getFormEditorSupport().getInitComponentSection();
         if ((property instanceof RADProperty) && (property.getWriteMethod() != null)) {
             RADComponent metacomp = ((RADProperty)property).getRADComponent();
-            headerLabel.setFont(codePane.getFont());
             headerLabel.setText("<html>" + metacomp.getName() + ".<b>" // NOI18N
                     + property.getWriteMethod().getName() + "</b>("); // NOI18N
-            footerLabel.setFont(codePane.getFont());
             footerLabel.setText(");"); // NOI18N
 
             String codeSnippet;
@@ -134,6 +145,8 @@ class CodeCustomEditor extends javax.swing.JPanel implements DocumentListener, R
         }
         FormUtils.setupEditorPane(codePane, dobj.getPrimaryFile(), codePos + sec.getStartPosition().getOffset());
 
+        headerLabel.setFont(codePane.getFont());
+        footerLabel.setFont(codePane.getFont());
         typeField.setBorder(BorderFactory.createEmptyBorder());
         typeField.setEditable(false);
         typeField.setFont(codePane.getFont());
@@ -142,6 +155,8 @@ class CodeCustomEditor extends javax.swing.JPanel implements DocumentListener, R
             // We have to "clone" the Color because Nimbus ignores ColorUIResources
             typeField.setBackground(new Color(getBackground().getRGB()));
         }
+
+        resetLayout();
 
         codePane.getDocument().addDocumentListener(this);
 
@@ -223,6 +238,16 @@ class CodeCustomEditor extends javax.swing.JPanel implements DocumentListener, R
             revalidate();
             repaint();
         }
+    }
+
+    private int lineHeight = -1;
+    private int getPrefHeight(JEditorPane pane) {
+        if (lineHeight < 0) {
+            lineHeight = pane.getFontMetrics(pane.getFont()).getHeight();
+        }
+        int lineCount = pane.getDocument().getDefaultRootElement().getElementCount();
+        Insets ins = pane.getInsets();
+        return lineHeight * lineCount + ins.top + ins.bottom;
     }
 
     // updates the value in the property editor
