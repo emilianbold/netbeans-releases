@@ -1254,6 +1254,9 @@ public final class OpenProjectList {
     }
 
     private static String[] getRecommendedTypes (Project project) {
+        if (project == null) {
+            return null;
+        }
         RecommendedTemplates rt = project.getLookup().lookup(RecommendedTemplates.class);
         return rt == null ? null :rt.getRecommendedTypes();
     }
