@@ -65,8 +65,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import javax.servlet.ServletContext;
-import org.netbeans.api.project.libraries.Library;
-import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.web.jsf.editor.JsfSupport;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
@@ -75,7 +73,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
-import org.w3c.dom.Document;
 
 /**
  *
