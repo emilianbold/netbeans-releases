@@ -43,12 +43,15 @@ package org.netbeans.modules.kenai.ui.nodes;
  *
  * @author Jan Becicka
  */
-public class KenaiInstance {
+public class KenaiInstance implements Comparable<KenaiInstance> {
 
     private String url;
     private String displayName;
 
     public KenaiInstance(String url, String name) {
+        if (url.endsWith("/")) {
+            url=url.substring(0, url.length()-1);
+        }
         this.url=url;
         this.displayName=name;
     }
@@ -86,5 +89,9 @@ public class KenaiInstance {
         int hash = 7;
         hash = 79 * hash + (this.url != null ? this.url.hashCode() : 0);
         return hash;
+    }
+
+    public int compareTo(KenaiInstance o) {
+        return this.displayName.compareToIgnoreCase(o.displayName);
     }
 }

@@ -116,6 +116,10 @@ public class RubyDeclarationFinderTest extends RubyTestBase {
         checkDeclaration("testfiles/alias_method.rb", "Far.new.far_far_aw^ay", "alias_method.rb", 48);
     }
 
+    public void testSuperMethod() throws Exception {
+        checkDeclaration("testfiles/super_method.rb", "sup^er", "super_method.rb", 13);
+    }
+
     //public void testDeclaration6() throws Exception {
     //    checkDeclaration("testfiles/declaration.rb", "File.safe_un^link", "ftools.rb", 1);
     //}

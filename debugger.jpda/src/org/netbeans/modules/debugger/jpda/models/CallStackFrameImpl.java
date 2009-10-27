@@ -473,6 +473,10 @@ public class CallStackFrameImpl implements CallStackFrame {
             return new LocalVariable[0];
         }
     }
+
+    static boolean canFindOperationArguments() {
+        return JPDAUtils.IS_JDK_160_02;
+    }
     
     List<LocalVariable> findOperationArguments(Operation operation) {
         if (!JPDAUtils.IS_JDK_160_02) return null; // Can evaluate methods after pop since JDK 1.6.0_02

@@ -100,6 +100,7 @@ public final class LineAnnotationInfo {
                 lineOffset = el.getStartOffset();
             } catch (IndexOutOfBoundsException ioobe) {
                 // getElement throws IndexOutOfBoundsException if line doesn't exists!
+                return 0;
             }
 
         }
@@ -195,17 +196,21 @@ public final class LineAnnotationInfo {
      */
     public synchronized String getTooltip() {
         if (tooltip == null) {
+            if (notFormatedColumns == null || notFormatedColumns.length == 0){
+                return "";
+            }
             StringBuilder sb = new StringBuilder();
+            sb.append("<html><body>");//NOI18N
             int i = 0;
 
             for (String col : getFileAnnotationInfo().getColumnNames()) {
                 if (i > 0) {
-                    sb.append(" | "); // NOI18N
+                    sb.append("<br>"); // NOI18N
                 }
                 sb.append(col).append(':').append(notFormatedColumns[i]);
                 i++;
             }
-
+            sb.append("</body></html>");//NOI18N
             tooltip = sb.toString();
         }
         return tooltip;

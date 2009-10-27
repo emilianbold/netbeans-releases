@@ -2393,11 +2393,11 @@ public class GdbDebugger implements PropertyChangeListener {
     }
 
     // TODO: unify with requestWhatis and requestValueEx
-    public String requestSymbolType(String type) {
+    public String requestBaseClassType(String type) {
         assert !Thread.currentThread().getName().equals("GdbReaderRP"); // NOI18N
 
         if (state == State.STOPPED && type != null && type.length() > 0) {
-            CommandBuffer cb = gdb.symbol_type(type);
+            CommandBuffer cb = gdb.symbol_type("class " + type); //NOI18N
             String info = cb.getResponse();
             if (info.length() == 0 || !cb.isOK()) {
                 if (cb.isError()) {

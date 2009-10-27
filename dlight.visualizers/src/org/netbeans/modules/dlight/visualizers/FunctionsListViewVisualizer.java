@@ -674,7 +674,9 @@ public class FunctionsListViewVisualizer extends JPanel implements
 
                             @Override
                             public Object getValue() throws IllegalAccessException, InvocationTargetException {
-                                return functionCall.getMetricValue(metric.getColumnName());
+                                return !functionCall.hasMetric(metric.getColumnName()) ?
+                                    getMessage("NotDefined")
+                                    :functionCall.getMetricValue(metric.getColumnName());
                             }
 
                             @Override

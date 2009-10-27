@@ -57,6 +57,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.util.Enumerations;
 import org.openide.util.Mutex;
@@ -1834,9 +1835,11 @@ public abstract class Children extends Object {
         }
 
         private Mutex callPMMutexMethod() {
+            Class<?> clazz = null;
+            Method method = null;
             try {
-                Class<?> clazz = Thread.currentThread().getContextClassLoader().loadClass("org.netbeans.api.project.ProjectManager"); // NOI18N
-                Method method = clazz.getMethod("mutex"); // NOI18N
+                clazz = Thread.currentThread().getContextClassLoader().loadClass("org.netbeans.api.project.ProjectManager"); // NOI18N
+                method = clazz.getMethod("mutex"); // NOI18N
                 return (Mutex) method.invoke(null);
             } catch (ClassNotFoundException e) {
                 return null;
@@ -1847,6 +1850,11 @@ public abstract class Children extends Object {
             } catch (InvocationTargetException e) {
                 return null;
             } catch (NoSuchMethodException e) {
+                return null;
+            } catch (ClassCastException e) { // observed to occur in MemoryValidationTest
+                Class<?> type = method.getReturnType();
+                LOG.log(Level.WARNING, "type=" + type.getName() + " type.cl=" + type.getClassLoader() +
+                        " Mutex.cl=" + Mutex.class.getClassLoader() + " clazz.cl=" + clazz.getClassLoader(), e);
                 return null;
             }
         }

@@ -345,7 +345,7 @@ public final class JavacardPlatformImpl extends JavacardPlatform {
         FAKE_SYSPROPS.put("os.arch", "unknown"); //NOI18N
         FAKE_SYSPROPS.put("java.vm.specification.name", "Java Card Virtual Machine Specification"); //NOI18N
         FAKE_SYSPROPS.put("java.vm.vendor", "Sun Microsystems Inc."); //NOI18N
-        FAKE_SYSPROPS.put("java.runtime.name", "Java Card(TM) Runtime Environment"); //NOI18N
+        FAKE_SYSPROPS.put("java.runtime.name", "Java Card Runtime Environment"); //NOI18N
         FAKE_SYSPROPS.put("java.endorsed.dirs", ""); //NOI18N
         FAKE_SYSPROPS.put("java.class.version", "50.0"); //NOI18N
         FAKE_SYSPROPS.put("java.ext.dirs", ""); //NOI18N

@@ -508,6 +508,12 @@
 <mapID target="org.netbeans.modules.bugzilla.query.savePanel" url="collab/csh/issues_save_query.html" />
 <mapID target="org.netbeans.modules.bugtracking.patchContextChooser" url="collab/csh/issues_patchcontextchooser.html" />
 <mapID target="org.netbeans.modules.bugtracking.issueChooser" url="collab/csh/issues_issuechooser.html" />
+<mapID target="org.netbeans.modules.bugzilla.dependsOnChooser" url="collab/csh/issues_issuechooser.html" />
+<mapID target="org.netbeans.modules.bugzilla.blocksChooser" url="collab/csh/issues_blockschooser.html" />
+<mapID target="org.netbeans.modules.bugzilla.duplicateChooser" url="collab/csh/issues_duplicatechooser.html" />
+
+<!-- Issue tracking csh topic for JIRA plugin in kenai dashboar -->
+<mapID target="org.netbeans.modules.bugtracking.jira.JiraUpdater" url="collab/csh/issues_jiraplugin.html" />
 
 <!-- Issue tracking csh topic for parameter dialog in vcs commit dialog -->
 <mapID target="org.netbeans.modules.bugtracking.vcs.FormatPanel" url="collab/csh/issues_vcs_parameterformat.html" />

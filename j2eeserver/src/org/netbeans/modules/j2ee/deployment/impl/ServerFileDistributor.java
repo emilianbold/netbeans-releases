@@ -214,7 +214,7 @@ public class ServerFileDistributor extends ServerProgress {
         setStatusDistributeCompleted(NbBundle.getMessage(
             ServerFileDistributor.class, "MSG_DoneIncrementalDeploy", targetModule.getModuleID()));
 
-        return Accessor.getDefault().newDescriptor(changes);
+        return ChangeDescriptorAccessor.getDefault().newDescriptor(changes);
     }
 
     public AppChanges _test_distribute(Iterator source, File destDir, TargetModuleID target, long lastDeployTime) throws IOException {
@@ -689,38 +689,5 @@ public class ServerFileDistributor extends ServerProgress {
 
             return builder.toString();
         }
-    }
-
-    public static abstract class Accessor {
-
-        private static volatile Accessor accessor;
-
-        public static void setDefault(Accessor accessor) {
-            if (Accessor.accessor != null) {
-                throw new IllegalStateException("Already initialized accessor");
-            }
-            Accessor.accessor = accessor;
-        }
-
-        public static Accessor getDefault() {
-            if (accessor != null) {
-                return accessor;
-            }
-
-            // invokes static initializer of DeploymentChangeDescriptor.class
-            // that will assign value to the DEFAULT field above
-            Class c = DeploymentChangeDescriptor.class;
-            try {
-                Class.forName(c.getName(), true, c.getClassLoader());
-            } catch (ClassNotFoundException ex) {
-                assert false : ex;
-            }
-            assert accessor != null : "The accessor field must be initialized";
-            return accessor;
-        }
-
-        /** Accessor to constructor */
-        public abstract DeploymentChangeDescriptor newDescriptor(AppChanges desc);
-
     }
 }

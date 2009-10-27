@@ -57,7 +57,7 @@ import java.util.Set;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import org.netbeans.modules.mercurial.ui.status.StatusAction;
-import org.netbeans.modules.versioning.util.IndexingBridge;
+import org.netbeans.modules.versioning.util.DelayScanRegistry;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -379,19 +379,10 @@ public class MercurialInterceptor extends VCSInterceptor {
     }
 
     private class RefreshTask implements Runnable {
-        private int waitingLoops;
-        private int MAX_WAITING_TIME = 180000; // wait max 3 mins
-        private int WAITING_PERIOD = 5000;
         public void run() {
             Thread.interrupted();
-            if (IndexingBridge.getInstance().isIndexingInProgress() && waitingLoops * WAITING_PERIOD < MAX_WAITING_TIME) {
-                // do not steal disk from openning projects and indexing tasks
-                Level level = ++waitingLoops < 10 ? Level.FINE : Level.INFO;
-                Mercurial.STATUS_LOG.log(level, "MercurialInterceptor.refreshTask: Scanning in progress, trying again in " + WAITING_PERIOD + "ms"); //NOI18N
-                refreshTask.schedule(WAITING_PERIOD); // try again in 5 seconds
+            if (DelayScanRegistry.getInstance().isDelayed(refreshTask, Mercurial.STATUS_LOG, "MercurialInterceptor.refreshTask")) { //NOI18N
                 return;
-            } else {
-                waitingLoops = 0;
             }
             File fileToRefresh;
             if (!"false".equals(System.getProperty("mercurial.onEventRefreshRoot"))) { //NOI18N

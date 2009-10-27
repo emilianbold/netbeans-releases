@@ -53,7 +53,7 @@ public class JiraIssueFinder extends IssueFinder {
 
     private static final int[] EMPTY_INT_ARR = new int[0];
 
-    public int[] getIssueSpans(String text) {
+    public int[] getIssueSpans(CharSequence text) {
         int[] result = findBoundaries(text);
         return (result != null) ? result : EMPTY_INT_ARR;
     }
@@ -84,7 +84,7 @@ public class JiraIssueFinder extends IssueFinder {
         return issueHyperlinkText.substring(pos);
     }
 
-    private static int[] findBoundaries(String str) {
+    private static int[] findBoundaries(CharSequence str) {
         return getImpl().findBoundaries(str);
     }
 
@@ -127,7 +127,7 @@ public class JiraIssueFinder extends IssueFinder {
         private static final int NUM         = 9;
         private static final int GARBAGE     = 10;
 
-        private String str;
+        private CharSequence str;
         private int pos;
         private int state;
 
@@ -152,7 +152,7 @@ public class JiraIssueFinder extends IssueFinder {
 
         private Impl() { }
 
-        private int[] findBoundaries(String str) {
+        private int[] findBoundaries(CharSequence str) {
             reset();
 
             this.str = str;
@@ -383,7 +383,7 @@ public class JiraIssueFinder extends IssueFinder {
 
         private boolean isBugword(int startPos) {
             /* relies on precondition #1 (see the top of the class) */
-            String word = str.substring(startPos, pos);
+            CharSequence word = str.subSequence(startPos, pos);
             for (int i = 0; i < BUGWORDS.length; i++) {
                 if (equalsIgnoreCase(BUGWORDS[i], word)) {
                     return true;
@@ -392,7 +392,7 @@ public class JiraIssueFinder extends IssueFinder {
             return false;
         }
 
-        private static boolean equalsIgnoreCase(String pattern, String str) {
+        private static boolean equalsIgnoreCase(CharSequence pattern, CharSequence str) {
             final int patternLength = pattern.length();
 
             if (str.length() != patternLength) {

@@ -136,7 +136,7 @@ made subject to such option by the copyright holder.
         </change>
          <change id="add-fallback-content-to-sfs">
             <api name="filesystems"/>
-            <summary>Allow modules to dynamically add/remove layer content</summary>
+            <summary>Allow modules to provide fallback layer content</summary>
             <version major="7" minor="23"/>
             <date day="12" month="8" year="2009"/>
             <author login="jtulach"/>

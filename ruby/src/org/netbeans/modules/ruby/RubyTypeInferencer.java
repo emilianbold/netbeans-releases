@@ -47,6 +47,7 @@ import org.jrubyparser.ast.Node;
 import org.jrubyparser.ast.NodeType;
 import org.jrubyparser.ast.ReturnNode;
 import org.jrubyparser.ast.SelfNode;
+import org.netbeans.modules.ruby.elements.IndexedMethod;
 import org.netbeans.modules.ruby.options.TypeInferenceSettings;
 
 public final class RubyTypeInferencer {
@@ -184,13 +185,16 @@ public final class RubyTypeInferencer {
                 type = inferType(retNode.getValueNode());
                 break;
             case DEFNNODE:
-            case DEFSNODE:
+            case DEFSNODE: 
                 MethodDefNode methodDefNode = (MethodDefNode) node;
                 type = inferMethodNode(methodDefNode);
                 break;
             case SELFNODE:
-                SelfNode selfNode = (SelfNode) node;
-                type = inferSelfNode(selfNode);
+                type = inferSelf(node);
+                break;
+            case SUPERNODE:
+            case ZSUPERNODE:
+                type = inferSuperNode(node);
                 break;
         }
         if (type == null && AstUtilities.isCall(node)) {
@@ -205,9 +209,31 @@ public final class RubyTypeInferencer {
         return type;
     }
 
-    private RubyType inferSelfNode(SelfNode selfNode) {
+    private RubyType inferSuperNode(Node node) {
+        RubyType selfType = inferSelf(node);
+        if (selfType == null || !selfType.isKnown()) {
+            return RubyType.createUnknown();
+        }
+        MethodDefNode methodDefNode = AstUtilities.findMethod(new AstPath(knowledge.getRoot(), node));
+        if (methodDefNode != null && TypeInferenceSettings.getDefault().getMethodTypeInference()) {
+            RubyIndex index = knowledge.getIndex();
+            if (index != null) {
+                RubyType resultType = new RubyType();
+                for (String each : selfType.getRealTypes()) {
+                    IndexedMethod method = index.getSuperMethod(each, methodDefNode.getName(), true);
+                    if (method != null) {
+                        resultType.append(method.getType());
+                    }
+                }
+                return resultType;
+            }
+        }
+        return RubyType.createUnknown();
+    }
+
+    private RubyType inferSelf(Node node) {
         Node root = knowledge.getRoot();
-        AstPath path = new AstPath(root, selfNode);
+        AstPath path = new AstPath(root, node);
         IScopingNode clazz = AstUtilities.findClassOrModule(path);
         if (clazz == null) {
             return null;

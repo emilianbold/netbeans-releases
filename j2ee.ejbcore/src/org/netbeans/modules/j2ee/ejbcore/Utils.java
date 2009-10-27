@@ -343,7 +343,19 @@ public class Utils {
             result.append(firstChar);
             result.append(token.substring(1));
         }
-        
+
+        return result.toString();
+    }
+
+    public static String makeJavaIdentifierPart(String identifier){
+        StringBuilder result = new StringBuilder(identifier.length());
+        for (int i = 0; i < identifier.length(); i++){
+            if (Character.isJavaIdentifierPart(identifier.charAt(i))){
+                result.append(identifier.charAt(i));
+            } else {
+                result.append('_');
+            }
+        }
         return result.toString();
     }
 

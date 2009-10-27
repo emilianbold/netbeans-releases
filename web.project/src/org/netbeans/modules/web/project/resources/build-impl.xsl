@@ -1686,7 +1686,7 @@ exists or setup the property manually. For example like this:
                 <mkdir dir="${{build.test.results.dir}}"/>
                 <webproject1:debug args="${{test.class}}"
                         classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner"
-                        classpath="${{ant.home}}/lib/ant.jar:${{ant.home}}/lib/ant-junit.jar:${{debug.test.classpath}}">
+                        classpath="${{ant.home}}/lib/ant.jar:${{ant.home}}/lib/ant-junit.jar:${{debug.test.classpath}}:${{j2ee.platform.embeddableejb.classpath}}">
                     <customize>
                         <arg value="showoutput=true"/>
                         <arg value="formatter=org.apache.tools.ant.taskdefs.optional.junit.BriefJUnitResultFormatter"/>

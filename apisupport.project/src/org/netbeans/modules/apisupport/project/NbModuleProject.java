@@ -527,7 +527,10 @@ public final class NbModuleProject implements Project {
         NbPlatform p = getPlatform(false);
         if (p == null || ! p.isValid()) {
             // #67148: have to use something... (and getEntry(codeNameBase) will certainly fail!)
-
+            if (typeProvider.getModuleType() == NbModuleProvider.NETBEANS_ORG) {
+                // #174689: NB.org modules scan sources, not binary platform
+                return ModuleList.getModuleList(getProjectDirectoryFile(), null);
+            }
             // TODO dealing with nonexistent platforms probably not complete / 100% correct yet,
             // see #61227; but project with unresolved platform may also load as result
             // of suite-chaining; perhaps resolve already in loadProject

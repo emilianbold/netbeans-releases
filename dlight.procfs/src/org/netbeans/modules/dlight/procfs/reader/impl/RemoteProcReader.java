@@ -43,6 +43,7 @@ import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -63,8 +64,8 @@ public class RemoteProcReader extends ProcReaderImpl {
     private final String lwpDir;
     private final NativeProcessBuilder npb;
 
-    public RemoteProcReader(ExecutionEnvironment execEnv, int pid, boolean bigendian) {
-        super(bigendian);
+    public RemoteProcReader(ExecutionEnvironment execEnv, int pid, ByteOrder byteOrder, DataModel dataModel) {
+        super(byteOrder, dataModel);
         usageFile = "/proc/" + pid + "/usage"; // NOI18N
 
         npb = NativeProcessBuilder.newProcessBuilder(execEnv);

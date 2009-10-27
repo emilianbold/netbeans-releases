@@ -48,7 +48,9 @@ import java.awt.event.KeyEvent;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.MissingResourceException;
 import java.util.Vector;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
@@ -107,8 +109,6 @@ public final class THAIndicatorsTopComponent extends TopComponent implements Exp
     private final PopupAction popupAction = new PopupAction("popupTHAIndicatorTopComponentAction");//NOI18N
     private THAConfiguration thaConfiguration = null;
     private THAActionsProvider thaActionsProvider;
-    private static final Color RECORDING_COLOR = new Color(51, 153, 0);
-    private static final Color PAUSED_COLOR = new Color(204, 0, 0);
     private JPanel topPanel;
 
     static {
@@ -224,25 +224,24 @@ public final class THAIndicatorsTopComponent extends TopComponent implements Exp
 
         topPanel.setLayout(new BorderLayout());
         topPanel.add(controlPanel, BorderLayout.CENTER);
-        final JLabel statusLabel = new JLabel();
-        final String collectionKind = getMessage(thaConfiguration.collectDataRaces() ? "THAControlPanel.DeadlocksAndRaces" : "THAControlPanel.Deadlocks"); // NOI18N
+        final StatusLabel statusLabel = new StatusLabel(thaConfiguration);
+
         thaActionsProvider.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
                 if (THAActionsProvider.SUSPEND_COMMAND.equals(e.getActionCommand())) {
-                    statusLabel.setText(getMessage("THAControlPanel.Paused", collectionKind)); // NOI18N
-                    statusLabel.setForeground(PAUSED_COLOR);
+                    statusLabel.setColoredText("THAControlPanel.Paused"); // NOI18N
                 } else if (THAActionsProvider.RESUME_COMMAND.equals(e.getActionCommand())) {
-                    statusLabel.setText(getMessage("THAControlPanel.Recording", collectionKind)); // NOI18N
-                    statusLabel.setForeground(RECORDING_COLOR);
+                    statusLabel.setColoredText("THAControlPanel.Recording"); // NOI18N
                 } else if (THAActionsProvider.STOP_COMMAND.equals(e.getActionCommand())) {
-                    statusLabel.setText(getMessage("THAControlPanel.Stopped", collectionKind));//NOI18N
+                    statusLabel.setColoredText("THAControlPanel.Stopped"); // NOI18N
+                } else if (THAActionsProvider.PROCESSING_REQUEST_COMMAND.equals(e.getActionCommand())) {
+                    statusLabel.setColoredText("THAControlPanel.ProcessingRequest"); // NOI18N
                 }
             }
         });
-        statusLabel.setText(getMessage("THAControlPanel.Preparing"));//NOI18N
-        //getMessage(thaConfiguration.collectFromBeginning() ? "THAControlPanel.Recording" : "THAControlPanel.Paused", collectionKind)); // NOI18N
-        statusLabel.setForeground(thaConfiguration.collectFromBeginning() ? RECORDING_COLOR : PAUSED_COLOR);
+
+        statusLabel.setColoredText("THAControlPanel.Preparing"); // NOI18N
         topPanel.add(statusLabel, BorderLayout.SOUTH);
 
         DLightSession oldSession = getSession();
@@ -514,6 +513,45 @@ public final class THAIndicatorsTopComponent extends TopComponent implements Exp
             if (prevFocusedTc != null) {
                 prevFocusedTc.requestActive();
             }
+        }
+    }
+
+    private final static class StatusLabel extends JLabel {
+
+        private final static HashMap<String, Color> colors = new HashMap<String, Color>() {
+
+            {
+                put("THAControlPanel.Paused", new Color(204, 0, 0)); // NOI18N
+                put("THAControlPanel.Recording", new Color(51, 153, 0)); // NOI18N
+                put("THAControlPanel.Stopped", Color.BLUE); // NOI18N
+            }
+        };
+        private final String collectionKind;
+
+        public StatusLabel(THAConfiguration thaConfiguration) {
+            super();
+            collectionKind = getMessage(thaConfiguration.collectDataRaces()
+                    ? "THAControlPanel.DeadlocksAndRaces" // NOI18N
+                    : "THAControlPanel.Deadlocks"); // NOI18N
+        }
+
+        public synchronized void setColoredText(String propID) {
+            if (propID == null) {
+                super.setText(null);
+                return;
+            }
+
+            Color color = colors.get(propID);
+            super.setForeground(color == null ? Color.DARK_GRAY : color);
+
+            String msg = null;
+
+            try {
+                msg = getMessage(propID, collectionKind);
+            } catch (MissingResourceException ex) {
+            }
+
+            super.setText(msg == null ? propID : msg);
         }
     }
 }

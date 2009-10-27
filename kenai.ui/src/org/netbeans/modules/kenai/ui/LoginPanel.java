@@ -48,6 +48,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.ToolTipManager;
+import javax.swing.border.EmptyBorder;
+import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.ui.dashboard.LinkButton;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
@@ -61,19 +63,22 @@ import org.openide.util.NbPreferences;
  */
 public class LoginPanel extends javax.swing.JPanel {
 
-    private static URL forgetPasswordUrl;
-    private static URL registerUrl;
-    static {
+    private static URL getForgetPasswordUrl() {
         try {
-            forgetPasswordUrl = new URL("https://kenai.com/people/forgot_password");
+            return new URL(Kenai.getDefault().getUrl().toString() + "/people/forgot_password");
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);
         }
+        return null;
+    }
+
+    private static URL getRegisterUrl() {
         try {
-            registerUrl = new URL("https://kenai.com/people/signup");
+            return new URL(Kenai.getDefault().getUrl().toString() + "/people/signup");
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);
         }
+        return null;
     }
 
     /** Creates new form LoginPanel */
@@ -84,6 +89,15 @@ public class LoginPanel extends javax.swing.JPanel {
         lblKenaiLogoCenter.setBorder(null);
         lblKenaiLogoLeft.setBorder(null);
         lblKenaiLogoRight.setBorder(null);
+        Kenai kenai = Kenai.getDefault();
+        String hostName = kenai.getUrl().getHost();
+        if (!hostName.equals("kenai.com")) {//NOI18N
+            lblKenaiLogoCenter.setVisible(false);
+            lblKenaiLogoRight.setVisible(false);
+            lblKenaiLogoLeft.setText(NbBundle.getMessage(LoginPanel.class, "LBL_LoginTo", kenai.getName(), kenai.getUrl().toString()));
+            lblKenaiLogoLeft.setBorder(new EmptyBorder(10, 12, 0, 10));
+            lblKenaiLogoLeft.setIcon(null);
+        }
     }
 
     public boolean isStorePassword() {
@@ -147,8 +161,8 @@ public class LoginPanel extends javax.swing.JPanel {
         chkRememberMe = new javax.swing.JCheckBox();
         lblNoAccount = new javax.swing.JLabel();
         password = new javax.swing.JPasswordField();
-        forgotPassword = new LinkButton(NbBundle.getMessage(LoginPanel.class, "LoginPanel.forgotPassword.text"), new URLDisplayerAction("",forgetPasswordUrl));
-        signUp = new LinkButton(NbBundle.getMessage(LoginPanel.class, "LoginPanel.register.text"), new URLDisplayerAction("",registerUrl));
+        forgotPassword = new LinkButton(NbBundle.getMessage(LoginPanel.class, "LoginPanel.forgotPassword.text"), new URLDisplayerAction("",getForgetPasswordUrl()));
+        signUp = new LinkButton(NbBundle.getMessage(LoginPanel.class, "LoginPanel.register.text"), new URLDisplayerAction("",getRegisterUrl()));
         lblKenaiLogoLeft = new javax.swing.JLabel();
         lblKenaiLogoRight = new javax.swing.JLabel();
         error = new javax.swing.JLabel();

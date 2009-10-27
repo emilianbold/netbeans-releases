@@ -455,7 +455,7 @@ public class KenaiConnection implements PropertyChangeListener {
 
 
     private String getChatroomName(KenaiFeature prj) {
-        return prj.getName() + "@muc." + Kenai.getDefault().getName();
+        return prj.getName() + "@muc." + Kenai.getDefault().getUrl().getHost();
     }
 
     public Collection<KenaiFeature> getMyChats() {

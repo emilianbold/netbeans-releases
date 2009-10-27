@@ -344,11 +344,11 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory2 {
             builder.setErrorHandler(Util.defaultErrorHandler());
             Document projectXml = builder.parse(src);
             LOG.fine("parsed document");
-            dumpFields(projectXml);
+//            dumpFields(projectXml);
             Element projectEl = projectXml.getDocumentElement();
             LOG.fine("got document element");
-            dumpFields(projectXml);
-            dumpFields(projectEl);
+//            dumpFields(projectXml);
+//            dumpFields(projectEl);
             String namespace = projectEl.getNamespaceURI();
             LOG.log(Level.FINE, "got namespace {0}", namespace);
             if (!PROJECT_NS.equals(namespace)) {

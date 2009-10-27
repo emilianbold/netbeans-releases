@@ -50,6 +50,8 @@ import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.DebugProjectAction;
 import org.netbeans.jellytools.actions.OpenAction;
+import org.netbeans.jellytools.modules.debugger.actions.RunToCursorAction;
+import org.netbeans.jellytools.modules.debugger.actions.StepIntoAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.EventTool;
@@ -68,6 +70,9 @@ public class StartDebuggerTest extends DebuggerTestCase {
         "testDebugMainProject"
     };
 
+    private Node projectNode;
+    private Node beanNode;
+
     public StartDebuggerTest(String name) {
         super(name);
     }
@@ -83,95 +88,79 @@ public class StartDebuggerTest extends DebuggerTestCase {
     public void setUp() throws IOException {
         super.setUp();
         System.out.println("########  " + getName() + "  #######");
+        if (projectNode == null) {
+            projectNode = ProjectsTabOperator.invoke().getProjectRootNode(Utilities.testProjectName);
+            beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
+            new OpenAction().performAPI(beanNode); // NOI18N
+            new EventTool().waitNoEvent(500);
+            new Action(null, Utilities.setMainProjectAction).perform(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName));
+            new EventTool().waitNoEvent(500);
+        }
     }
         
-    public void testDebugProject() throws Throwable {
+    public void testDebugProject() {        
+        
+        EditorOperator eo = new EditorOperator("MemoryView.java");
         try {
-            Node projectNode = ProjectsTabOperator.invoke().getProjectRootNode(Utilities.testProjectName);
-            Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
-            new OpenAction().performAPI(beanNode); // NOI18N
-            new EventTool().waitNoEvent(500);
-            EditorOperator eo = new EditorOperator("MemoryView.java");
-            try {
-                eo.clickMouse(50,50,1);
-            } catch (Throwable t) {
-                System.err.println(t.getMessage());
-            }
-            new DebugProjectAction().perform(projectNode);
-            new EventTool().waitNoEvent(500);
-            Utilities.getDebugToolbar().waitComponentVisible(true);
-            assertTrue("The debugger toolbar did not show after start of debugging", Utilities.getDebugToolbar().isVisible());
-            Utilities.waitStatusText(Utilities.runningStatusBarText);
-        } catch (Throwable th) {
-            Utilities.captureScreen(this);
-            throw th;
+            eo.clickMouse(50,50,1);
+        } catch (Throwable t) {
+            System.err.println(t.getMessage());
         }
+        new DebugProjectAction().perform(projectNode);
+        new EventTool().waitNoEvent(500);
+        Utilities.getDebugToolbar().waitComponentVisible(true);
+        assertTrue("The debugger toolbar did not show after start of debugging", Utilities.getDebugToolbar().isVisible());
+        Utilities.waitStatusText(Utilities.runningStatusBarText);
     }
 
-    public void testDebugFile() throws Throwable {
-        try {
-            //open source            
-            Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
-            new OpenAction().performAPI(beanNode); // NOI18N
-            new EventTool().waitNoEvent(1000);
-            EditorOperator eo = new EditorOperator("MemoryView.java");
-            new Action(null, null, Utilities.debugFileShortcut).performShortcut();
-            Utilities.getDebugToolbar().waitComponentVisible(true);
-            Utilities.waitStatusText(Utilities.runningStatusBarText);
-        } catch (Throwable th) {
-            Utilities.captureScreen(this);
-            throw th;
-        }
+    public void testDebugFile() {                
+        EditorOperator eo = new EditorOperator("MemoryView.java");
+        new Action(null, null, Utilities.debugFileShortcut).performShortcut();
+        Utilities.getDebugToolbar().waitComponentVisible(true);
+        Utilities.waitStatusText(Utilities.runningStatusBarText);
     }
-    
-    public void testRunDebuggerStepInto() throws Throwable {
-        try {            
-            Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
-            new OpenAction().performAPI(beanNode); // NOI18N
-            new EventTool().waitNoEvent(1000);
-            EditorOperator eo = new EditorOperator("MemoryView.java");
-            new EventTool().waitNoEvent(500);
-            Utilities.setCaret(eo, 75);
-            new EventTool().waitNoEvent(1000);
-            new Action(null, null, Utilities.stepIntoShortcut).performShortcut();
-            Utilities.waitStatusText("Thread main stopped at MemoryView.java:39");
-            assertTrue("Current PC annotation is not on line 39", Utilities.checkAnnotation(eo, 39, "CurrentPC"));
-        } catch (Throwable th) {
-            Utilities.captureScreen(this);
-            throw th;
-        }
-    }
-    
-    public void testRunDebuggerRunToCursor() throws Throwable {
-        try {            
-            Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
-            new OpenAction().performAPI(beanNode); // NOI18N
-            new EventTool().waitNoEvent(1000);
-            EditorOperator eo = new EditorOperator("MemoryView.java");
-            Utilities.setCaret(eo, 75);
-            new Action(null, null, Utilities.runToCursorShortcut).performShortcut();
-            Utilities.waitStatusText("Thread main stopped at MemoryView.java:75");
-            assertTrue("Current PC annotation is not on line 75", Utilities.checkAnnotation(eo, 75, "CurrentPC"));
-        } catch (Throwable th) {
-            Utilities.captureScreen(this);
-            throw th;
-        }
+ 
+    public void testRunDebuggerStepInto() {                
+        EditorOperator eo = new EditorOperator("MemoryView.java");
+        new EventTool().waitNoEvent(500);
+        Utilities.setCaret(eo, 75);
+        new EventTool().waitNoEvent(1000);
+        new StepIntoAction().perform();
+        Utilities.waitStatusText("Thread main stopped at MemoryView.java:39");
+        assertTrue("Current PC annotation is not on line 39", Utilities.checkAnnotation(eo, 39, "CurrentPC"));
     }
 
-    public void testDebugMainProject() throws Throwable {
-        try {            
-            Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
-            new OpenAction().performAPI(beanNode); // NOI18N
-            new Action(null, Utilities.setMainProjectAction).perform(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName));
-            new EventTool().waitNoEvent(1000);
-            EditorOperator eo = new EditorOperator("MemoryView.java");
-            new Action(Utilities.runMenu+"|"+Utilities.debugMainProjectItem, null).perform();
-            Utilities.getDebugToolbar().waitComponentVisible(true);
-            assertTrue("The debugger toolbar did not show after start of debugging", Utilities.getDebugToolbar().isVisible());
-            Utilities.waitStatusText(Utilities.runningStatusBarText);
-        } catch (Throwable th) {
-            Utilities.captureScreen(this);
-            throw th;
-        }
+    /**
+     * Tests start of debugger by run to cursor, run to cursor during an active session
+     *
+     * Testspec:
+     * 1) Open MemoryView.java
+     * 2) Place caret on line 75
+     * 3) Invoke Run To Cursor
+     * 4) Place caret on line 104
+     * 5) Invoke Run To Cursor
+     *
+     * @throws Throwable
+     */
+    public void testRunDebuggerRunToCursor() throws Throwable
+    {
+        EditorOperator eo = new EditorOperator("MemoryView.java");
+        eo.setCaretPosition(75, 9);
+        new RunToCursorAction().perform();
+        Utilities.waitStatusText("Thread main stopped at MemoryView.java:75");
+        assertTrue("Current PC annotation is not on line 75", Utilities.checkAnnotation(eo, 75, "CurrentPC"));
+
+        eo.setCaretPosition(104, 9);
+        new RunToCursorAction().perform();
+        Utilities.waitStatusText("Thread main stopped at MemoryView.java:104");
+        assertTrue("Current PC annotation is not on line 104", Utilities.checkAnnotation(eo, 104, "CurrentPC"));
+    }
+
+    public void testDebugMainProject() {                    
+        EditorOperator eo = new EditorOperator("MemoryView.java");
+        new Action(Utilities.runMenu+"|"+Utilities.debugMainProjectItem, null).perform();
+        Utilities.getDebugToolbar().waitComponentVisible(true);
+        assertTrue("The debugger toolbar did not show after start of debugging", Utilities.getDebugToolbar().isVisible());
+        Utilities.waitStatusText(Utilities.runningStatusBarText);
     }
 }

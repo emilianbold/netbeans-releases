@@ -39,6 +39,7 @@
 package org.netbeans.modules.dlight.perfan.dataprovider;
 
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDumpProvider;
@@ -132,6 +133,7 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
     private final ConcurrentHashMap<FunctionCall, SourceFileInfo> sourceFileInfoCache = new ConcurrentHashMap<FunctionCall, SourceFileInfo>();
     private volatile HotSpotFunctionsFilter filter;
     private volatile TimeIntervalDataFilter timeIntervalDataFilter;
+    private static boolean ompSupport = Boolean.valueOf(System.getProperty("dlight.sunstudio.omp"));
 
     public void attachTo(ServiceInfoDataStorage serviceInfoStorage) {
         this.serviceInfoStorage = serviceInfoStorage;
@@ -297,7 +299,7 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
         //temporary decision
         //we should get here SourceFileInfoProvider
         if (functionCall instanceof FunctionCallImpl) {
-            if (sourceFileInfoCache.get(functionCall) != null){
+            if (sourceFileInfoCache.get(functionCall) != null) {
                 return sourceFileInfoCache.get(functionCall);
             }
             FunctionCallImpl functionCallImpl = (FunctionCallImpl) functionCall;
@@ -451,7 +453,9 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
         private final DecimalFormat df = new DecimalFormat();
 
         public HotSpotFunctionsFetcher() {
-            df.getDecimalFormatSymbols().setDecimalSeparator(',');
+            DecimalFormatSymbols symbols = df.getDecimalFormatSymbols();
+            symbols.setDecimalSeparator('.');
+            df.setDecimalFormatSymbols(symbols);
         }
 
         public List<FunctionCallWithMetric> compute(HotSpotFunctionsFetcherParams taskArguments) throws InterruptedException {
@@ -464,23 +468,15 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
             String[] er_result = null;
 
             try {
-                if (SSStackDataProvider.this.timeIntervalDataFilter != null) {
-                }
                 er_result = storage.getTopFunctions(taskArguments.command, metrics, taskArguments.limit);
             } catch (InterruptedException ex) {
                 log.finest("Fetching Interrupted! Hot Spot Functions @ " + Thread.currentThread()); // NOI18N
                 return null;
             }
 
-            if (er_result == null) {
-                return null;
-            }
 
-            if (er_result.length == 0) {
-                return Collections.emptyList();
-            }
 
-            int limit = Math.min(er_result.length, taskArguments.limit);
+            int limit = er_result == null || er_result.length == 0 ? 0 : Math.min(er_result.length, taskArguments.limit);
             ArrayList<FunctionCallWithMetric> result = new ArrayList<FunctionCallWithMetric>(limit);
 
             Column primarySortColumn = taskArguments.orderBy.get(0);
@@ -592,6 +588,155 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
                 }
             }
 
+
+            
+            Column ompPrimarySortColumn = null;
+            List<Column> ompColumns = null;
+            int omp_limit = Integer.MAX_VALUE;
+            if (ompSupport && storage.hasOMPCollected()) {
+                //add additional results
+                if (metrics.getMspec().indexOf(SunStudioDCConfiguration.c_eSync.getColumnName()) != -1 && metrics.getMsort().indexOf(SunStudioDCConfiguration.c_eSync.getColumnName()) != -1) {
+                    //add i.ompwait
+                    ompPrimarySortColumn = SunStudioDCConfiguration.c_iOMPWait;
+                    ompColumns = Arrays.asList(SunStudioDCConfiguration.c_iOMPWait, SunStudioDCConfiguration.c_name);
+                }
+                if (metrics.getMspec().indexOf(SunStudioDCConfiguration.c_eUser.getColumnName()) != -1 && metrics.getMsort().indexOf(SunStudioDCConfiguration.c_eUser.getColumnName()) != -1) {
+                    //add i.ompwait
+                    ompPrimarySortColumn = SunStudioDCConfiguration.c_iOMPWork;
+                    ompColumns = Arrays.asList(SunStudioDCConfiguration.c_iOMPWork, SunStudioDCConfiguration.c_name);
+                }
+
+                String[] omp_er_result = null;
+                HotSpotFunctionsFetcherParams ompTaskArguments  = null;
+                try {
+                    if (ompColumns != null) {
+                        ompTaskArguments =
+                                new HotSpotFunctionsFetcherParams(taskArguments.command, ompColumns, Arrays.asList(ompPrimarySortColumn), omp_limit, filter);
+                        //add additional results
+                        omp_er_result =
+                                storage.getTopFunctions(ompTaskArguments.command,
+                                ompTaskArguments.metrics,
+                                omp_limit);
+
+                    }
+
+                } catch (InterruptedException ex) {
+                    log.finest("Fetching Interrupted! Hot Spot Functions @ " + Thread.currentThread()); // NOI18N
+                }
+
+                omp_limit = omp_er_result == null || omp_er_result.length == 0 ? 0 : omp_er_result.length;
+                for (int i = 0; i < omp_limit; i++) {
+                    int lineNumber = -1;
+                    String fileName = null;
+
+                    // name is ALWAYS the last column (see HotSpotFunctionsFetcherParams)
+                    // Splitting output string on nameIdx pieces
+
+                    String[] info = omp_er_result[i].split("[ \t]+", ompTaskArguments.nameIdx + 1); // NOI18N
+                    String name = info[ompTaskArguments.nameIdx];
+
+                    if (!taskArguments.isDefaultCommand()) {
+                        //parse
+                        if (ErprintCommand.lines().equals(ompTaskArguments.command)) { // NOI18N
+                            //if name.startsWith< will skip
+                            Matcher match;
+
+                            match = fullInfoPattern.matcher(name);
+                            if (match.matches()) {
+                                name = match.group(1);
+                                lineNumber = Integer.valueOf(match.group(2));
+                                fileName = match.group(3);
+                            } else {
+                                if (filter != null && filter.getType() == HotSpotFunctionsFilter.CollectedDataType.WITHSOURCECODEONLY) {
+                                    continue;
+                                }
+                                match = noLineInfoPattern.matcher(name);
+                                if (match.matches()) {
+                                    name = match.group(1);
+                                    fileName = match.group(2);
+                                } else {
+                                    match = noDebugInfoPattern.matcher(name);
+                                    if (match.matches()) {
+                                        name = match.group(1);
+                                    } else {
+                                        continue;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    Address address = Address.parse(info[ompTaskArguments.addressIdx] + info[ompTaskArguments.addressIdx + 1]);
+                    Function f = new FunctionImpl(name, address == null ? name.hashCode() : address.hashCode());//NOI18N
+
+                    Map<FunctionMetric, Object> metricsValues =
+                            new HashMap<FunctionMetric, Object>();
+
+                    // Will skip function if value of primary sorting metric == 0
+                    boolean skipFunction = false;
+
+                    // Returned result is not, actually what was requested..
+                    // need to return what was requested.
+
+                    for (int midx = 0; midx < ompTaskArguments.requestColumns.size(); midx++) {
+                        Column col = ompTaskArguments.requestColumns.get(midx);
+                        if (col.equals(SunStudioDCConfiguration.c_name)) {
+                            continue;
+                        }
+
+                        String colName = col.getColumnName();
+                        Class<?> colClass = col.getColumnClass();
+                        FunctionMetric metric = getMetricInstance(colName);
+                        if (SunStudioDCConfiguration.c_iOMPWait.getColumnName().equals(colName)) {
+                            metric = getMetricInstance(SunStudioDCConfiguration.c_eSync.getColumnName());
+                        } else if (SunStudioDCConfiguration.c_iOMPWork.getColumnName().equals(colName)) {
+                            metric = getMetricInstance(SunStudioDCConfiguration.c_eUser.getColumnName());
+                        }
+
+                        boolean isPrimaryColumn = col.equals(ompPrimarySortColumn);
+
+                        String val = info[ompTaskArguments.columnsIdxRef[midx]];
+                        Object metricValue = val;
+
+                        try {
+                            Number nvalue = df.parse(val);
+                            if (Integer.class == colClass) {
+                                if (isPrimaryColumn && nvalue.intValue() == 0) {
+                                    skipFunction = true;
+                                }
+                                metricValue = Integer.valueOf(nvalue.intValue());
+                            } else if (Double.class == colClass) {
+                                if (isPrimaryColumn && nvalue.doubleValue() == 0) {
+                                    skipFunction = true;
+                                }
+                                metricValue = Double.valueOf(nvalue.doubleValue());
+                            } else if (Float.class == colClass) {
+                                if (isPrimaryColumn && nvalue.floatValue() == 0) {
+                                    skipFunction = true;
+                                }
+                                metricValue = Float.valueOf(nvalue.floatValue());
+                            } else if (Long.class == colClass) {
+                                if (isPrimaryColumn && nvalue.longValue() == 0) {
+                                    skipFunction = true;
+                                }
+                                metricValue = Long.valueOf(nvalue.longValue());
+                            }
+
+                        } catch (ParseException ex) {
+                            // use plain info[midx]
+                        }
+                        metricsValues.put(metric, metricValue);
+                    }
+
+                    if (!skipFunction) {
+                        FunctionCallImpl fc = new FunctionCallImpl(f, lineNumber, metricsValues);
+                        if (fileName != null) {
+                            fc.setFileName(fileName);
+                        }
+                        result.add(fc);
+                    }
+                }
+            }
             log.fine("Done with Hot Spot Functions fetching"); // NOI18N
 
             return result;
