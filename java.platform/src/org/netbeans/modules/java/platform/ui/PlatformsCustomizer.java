@@ -92,7 +92,8 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
     private static final Logger LOG = Logger.getLogger(PlatformsCustomizer.class.getName());
 
     private static final String TEMPLATE = "Templates/Services/Platforms/org-netbeans-api-java-Platform/javaplatform.xml";  //NOI18N
-    private static final String STORAGE = "Services/Platforms/org-netbeans-api-java-Platform";  //NOI18N   
+    private static final String STORAGE = "Services/Platforms/org-netbeans-api-java-Platform";  //NOI18N
+    private static final String ATTR_CAN_REMOVE = "can-remove"; //NOI18N
 
     private PlatformCategoriesChildren children;
     private ExplorerManager manager;
@@ -374,7 +375,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
         JComponent target = messageArea;
         JavaPlatform platform = pNode.getLookup().lookup(JavaPlatform.class);
         if (platform != null) {
-            this.removeButton.setEnabled (isDefaultPLatform(platform));            
+            this.removeButton.setEnabled (canRemove(platform, pNode.getLookup().lookup(DataObject.class)));
             if (platform.getInstallFolders().size() != 0) {
                 this.platformName.setText(pNode.getDisplayName());
                 for (FileObject installFolder : platform.getInstallFolders()) {
@@ -413,9 +414,23 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
         container.add (component);
     }
 
-    private static boolean isDefaultPLatform (JavaPlatform platform) {
+    private boolean canRemove(final JavaPlatform platform, final DataObject dobj) {
+        if (isDefaultPlatform(platform)) {
+            return false;
+        }
+        if (dobj != null) {
+            final FileObject fo = dobj.getPrimaryFile();
+            Object attr = fo.getAttribute(ATTR_CAN_REMOVE);  //NOI18N
+            if (attr instanceof Boolean && ((Boolean)attr) == Boolean.FALSE) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static boolean isDefaultPlatform (JavaPlatform platform) {
         JavaPlatform defaultPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
-        return defaultPlatform!=null && !defaultPlatform.equals(platform);
+        return defaultPlatform!=null && defaultPlatform.equals(platform);
     }
 
     private void expandPlatforms (JavaPlatform platform) {
