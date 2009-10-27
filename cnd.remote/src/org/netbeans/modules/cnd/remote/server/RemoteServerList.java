@@ -48,10 +48,12 @@ import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
+import org.netbeans.modules.cnd.remote.support.RemoteProjectSupport;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.spi.remote.ServerListImplementation;
@@ -152,6 +154,14 @@ public class RemoteServerList implements ServerListImplementation {
         return record;
     }
 
+    public ServerRecord get(Project project) {
+        ExecutionEnvironment execEnv = RemoteProjectSupport.getExecutionEnvironment(project);
+        if( execEnv != null) {
+            return get(execEnv);
+        }
+        return null;
+    }
+
     @Override
     public synchronized ServerRecord getDefaultRecord() {
         return items.get(defaultIndex);
@@ -194,6 +204,9 @@ public class RemoteServerList implements ServerListImplementation {
             RemoteSyncFactory syncFactory, boolean asDefault, boolean connect) {
 
         RemoteServerRecord record = null;
+        if (syncFactory == null) {
+            syncFactory = RemoteSyncFactory.getDefault();
+        }
 
         // First off, check if we already have this record
         for (RemoteServerRecord r : items) {

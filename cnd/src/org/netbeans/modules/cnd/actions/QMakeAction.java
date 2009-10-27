@@ -50,6 +50,8 @@ import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
+import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
+import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.cnd.loaders.QtProjectDataObject;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -84,7 +86,7 @@ public class QMakeAction extends AbstractExecutorRunAction {
     }
 
     protected void performAction(Node node) {
-        performAction(node, null, null, null, null);
+        performAction(node, null, null, getProject(node), null);
     }
 
     public static Future<Integer> performAction(final Node node, final ExecutionListener listener, final Writer outputListener, final Project project, final InputOutput inputOutput) {
@@ -134,7 +136,13 @@ public class QMakeAction extends AbstractExecutorRunAction {
             }
             inputOutput = tab;
         }
-        ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, inputOutput, "QMake"); // NOI18N
+        RemoteSyncWorker syncWorker = RemoteSyncSupport.createSyncWorker(project, inputOutput.getOut(), inputOutput.getErr());
+        if (syncWorker != null) {
+            if (!syncWorker.startup(envMap)) {
+                return null;
+            }
+        }
+        ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, inputOutput, "QMake", syncWorker); // NOI18N
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv)
         .setCommandLine(quoteExecutable(executable)+" "+argsFlat) // NOI18N
         .setWorkingDirectory(buildDir.getPath())
