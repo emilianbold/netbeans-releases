@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
+import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.execution.NativeExecutor;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
@@ -223,6 +224,10 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                     env1[i] = pathname + csdirs + pi.pathSeparator() + defaultPath;
                 }
                 env = env1;
+                // Pass QMAKE from compiler set to the Makefile (IZ 174731)
+                if (conf.isQmakeConfiguration()) {
+                    args += " QMAKE=" + IpeUtils.quoteIfNecessary(conf.getCompilerSet().getCompilerSet().getTool(Tool.QMakeTool).getPath()); // NOI18N
+                }
             }
             NativeExecutor projectExecutor = new NativeExecutor(
                     execEnv,

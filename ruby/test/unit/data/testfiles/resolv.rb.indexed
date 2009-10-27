@@ -42,8 +42,8 @@ Searchable Keys:
   method : each_question
   method : each_resource
   method : encode;;String;
-  method : initialize(id)|PRIVATE|
-  method : new(id)|PRIVATE|STATIC|
+  method : initialize(id)|PRIVATE|;;Array;
+  method : new(id)|PRIVATE|STATIC|;;Array;
   require : resolv
 
 Not Searchable Keys:
@@ -459,9 +459,9 @@ Searchable Keys:
   method : default_config_hash(filename)|STATIC|;;Hash;
   method : generate_candidates(name);;Array;
   method : generate_timeouts;;Array;
-  method : initialize(config_info)|PRIVATE|
+  method : initialize(config_info)|PRIVATE|;;NilClass;
   method : lazy_initialize;;Config;
-  method : new(config_info)|PRIVATE|STATIC|
+  method : new(config_info)|PRIVATE|STATIC|;;NilClass;
   method : parse_resolv_conf(filename)|STATIC|;;Hash;
   method : resolv(name)
   method : single?;;TrueClass|FalseClass;
@@ -484,8 +484,8 @@ Searchable Keys:
   field : sock;;TCPSocket;
   field : thread;;Thread;
   fqn : Resolv::DNS::Requester::ConnectedUDP
-  method : initialize(host,port)|PRIVATE|
-  method : new(host,port)|PRIVATE|STATIC|
+  method : initialize(host,port)|PRIVATE|;;Thread;
+  method : new(host,port)|PRIVATE|STATIC|;;Thread;
   method : sender(msg,data,queue,host,port)
   require : resolv
 
@@ -518,9 +518,9 @@ Searchable Keys:
   method : getnames(address);;Array;
   method : getresource(name,typeclass)
   method : getresources(name,typeclass);;Array;
-  method : initialize(config_info)|PRIVATE|
+  method : initialize(config_info)|PRIVATE|;;NilClass;
   method : lazy_initialize;;DNS;
-  method : new(config_info)|PRIVATE|STATIC|
+  method : new(config_info)|PRIVATE|STATIC|;;NilClass;
   method : open(*args)|STATIC|;;DNS;
   require : resolv
 
@@ -576,9 +576,9 @@ Searchable Keys:
   method : getaddresses(name);;Array;
   method : getname(address)
   method : getnames(address);;Array;
-  method : initialize(filename)|PRIVATE|
+  method : initialize(filename)|PRIVATE|;;NilClass;
   method : lazy_initialize;;Hosts;
-  method : new(filename)|PRIVATE|STATIC|
+  method : new(filename)|PRIVATE|STATIC|;;NilClass;
   require : resolv
 
 Not Searchable Keys:
@@ -633,8 +633,8 @@ Searchable Keys:
   method : get_string
   method : get_string_list;;Array;
   method : get_unpack(template)
-  method : initialize(data)|PRIVATE|
-  method : new(data)|PRIVATE|STATIC|
+  method : initialize(data)|PRIVATE|;;MessageDecoder;
+  method : new(data)|PRIVATE|STATIC|;;MessageDecoder;
   require : resolv
 
 Not Searchable Keys:
@@ -650,12 +650,12 @@ Searchable Keys:
   field : data
   field : names;;Hash;
   fqn : Resolv::DNS::Message::MessageEncoder
-  method : initialize|PRIVATE|
-  method : new|PRIVATE|STATIC|
+  method : initialize|PRIVATE|;;MessageEncoder;
+  method : new|PRIVATE|STATIC|;;MessageEncoder;
   method : put_bytes(d)
   method : put_label(d)
   method : put_labels(d)
-  method : put_length16
+  method : put_length16;;Array;
   method : put_name(d)
   method : put_pack(template,*d)
   method : put_string(d)
@@ -710,10 +710,10 @@ Searchable Keys:
   method : absolute?;;TrueClass|FalseClass;
   method : create(arg)|STATIC|;;Name;
   method : hash
-  method : initialize(labels,absolute)|PRIVATE|
+  method : initialize(labels,absolute)|PRIVATE|;;TrueClass;
   method : inspect;;String;
   method : length
-  method : new(labels,absolute)|PRIVATE|STATIC|
+  method : new(labels,absolute)|PRIVATE|STATIC|;;TrueClass;
   method : subdomain_of?(other)|DOCUMENTED|;;TrueClass|FalseClass;
   method : to_a;;Array;
   method : to_s|DOCUMENTED|;;String;
@@ -842,8 +842,8 @@ Searchable Keys:
   fqn : Resolv::DNS::Requester
   method : close
   method : delete(arg)
-  method : initialize|PRIVATE|
-  method : new|PRIVATE|STATIC|
+  method : initialize|PRIVATE|;;Hash;
+  method : new|PRIVATE|STATIC|;;Hash;
   require : resolv
 
 Not Searchable Keys:
@@ -872,8 +872,8 @@ Searchable Keys:
   method : getname(address)|STATIC|
   method : getnames(address);;Array;
   method : getnames(address)|STATIC|
-  method : initialize(resolvers)|PRIVATE|
-  method : new(resolvers)|PRIVATE|STATIC|
+  method : initialize(resolvers)|PRIVATE|;;Array;
+  method : new(resolvers)|PRIVATE|STATIC|;;Array;
   require : resolv
 
 Not Searchable Keys:
@@ -993,8 +993,8 @@ Searchable Keys:
   field : sock;;TCPSocket;
   field : thread;;Thread;
   fqn : Resolv::DNS::Requester::TCP
-  method : initialize(host,port)|PRIVATE|
-  method : new(host,port)|PRIVATE|STATIC|
+  method : initialize(host,port)|PRIVATE|;;Thread;
+  method : new(host,port)|PRIVATE|STATIC|;;Thread;
   method : sender(msg,data,queue,host,port)
   require : resolv
 
@@ -1013,8 +1013,8 @@ Searchable Keys:
   field : sock;;TCPSocket;
   field : thread;;Thread;
   fqn : Resolv::DNS::Requester::UnconnectedUDP
-  method : initialize|PRIVATE|
-  method : new|PRIVATE|STATIC|
+  method : initialize|PRIVATE|;;Thread;
+  method : new|PRIVATE|STATIC|;;Thread;
   method : sender(msg,data,queue,host,port)
   require : resolv
 

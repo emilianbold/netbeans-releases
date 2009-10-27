@@ -223,6 +223,15 @@ public class ErprintSession {
         }
     }
 
+    public Metrics getMetrics(boolean restart) throws IOException {
+        final Erprint erp = restartAndLock(restart);
+        try {
+            return erp.getExperimentMetrics();
+        } finally {
+            erp.releaseLock();
+        }
+    }
+
     public List<DataraceImpl> getDataRaces(boolean restart) throws IOException {
         final Erprint erp = restartAndLock(restart);
         try {

@@ -95,12 +95,14 @@ public class THAIndicatorPanel extends javax.swing.JPanel {
         deadlocksDetails.setText(org.openide.util.NbBundle.getMessage(THAIndicatorPanel.class, "THAIndicatorPanel.deadlocksDetails.text")); // NOI18N
         deadlocksDetails.setBorderPainted(false);
         deadlocksDetails.setContentAreaFilled(false);
+        deadlocksDetails.setName("deadlocksDetails"); // NOI18N
 
         racesDetails.setAction(racesAction);
         racesDetails.setForeground(java.awt.Color.blue);
         racesDetails.setText(org.openide.util.NbBundle.getMessage(THAIndicatorPanel.class, "THAIndicatorPanel.racesDetails.text")); // NOI18N
         racesDetails.setBorderPainted(false);
         racesDetails.setContentAreaFilled(false);
+        racesDetails.setName("racesDetails"); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
