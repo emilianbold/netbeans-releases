@@ -1215,13 +1215,17 @@ public class GdbDebugger implements PropertyChangeListener {
         }
     }
 
+    private static final String CONSOLE_MSG_END = "\\n"; // NOI18N
+
     /** Handle gdb responses starting with '~' */
     public void consoleStreamOutput(int token, String omsg) {
         String msg;
 
-        if (omsg.endsWith("\\n")) { // NOI18N
+        if (omsg.endsWith(CONSOLE_MSG_END)) { // NOI18N
             msg = omsg.substring(0, omsg.length() - 2);
         } else {
+            // append endline if needed, see IZ 172314
+            omsg = omsg + CONSOLE_MSG_END;
             msg = omsg;
         }
 
