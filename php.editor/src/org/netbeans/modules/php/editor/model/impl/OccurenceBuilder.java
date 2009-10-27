@@ -551,7 +551,7 @@ class OccurenceBuilder {
 
                 NamespaceIndexFilter filterQuery = new NamespaceIndexFilter(queryQN.toString());
                 if (isParent || isSelf) {
-                    TypeScope typeScope = ModelUtils.getFirst(getStaticTypeName(scope, clzName));
+                    TypeScope typeScope = ModelUtils.getFirst(VariousUtils.getStaticTypeName(scope, clzName));
                     if (typeScope != null) {
                         nodeQN = typeScope.getNamespaceName().append(QualifiedName.create(typeScope.getName()));
                     }
@@ -607,7 +607,7 @@ class OccurenceBuilder {
 
                 NamespaceIndexFilter filterQuery = new NamespaceIndexFilter(queryQN.toString());
                 if (isParent || isSelf) {
-                    TypeScope typeScope = ModelUtils.getFirst(getStaticTypeName(scope, clzName));
+                    TypeScope typeScope = ModelUtils.getFirst(VariousUtils.getStaticTypeName(scope, clzName));
                     if (typeScope != null) {
                         nodeQN = typeScope.getNamespaceName().append(QualifiedName.create(typeScope.getName()));
                     }
@@ -654,7 +654,7 @@ class OccurenceBuilder {
 
                 NamespaceIndexFilter filterQuery = new NamespaceIndexFilter(queryQN.toString());
                 if (isParent || isSelf) {
-                    TypeScope typeScope = ModelUtils.getFirst(getStaticTypeName(scope, clzName));
+                    TypeScope typeScope = ModelUtils.getFirst(VariousUtils.getStaticTypeName(scope, clzName));
                     if (typeScope != null) {
                         nodeQN = typeScope.getNamespaceName().append(QualifiedName.create(typeScope.getName()));
                     }
@@ -1009,44 +1009,6 @@ class OccurenceBuilder {
         String vartype = VariousUtils.extractTypeFroVariableBase(varBase, 
                 Collections.<String,AssignmentImpl>emptyMap());
         return VariousUtils.getType(scp, vartype, varBase.getStartOffset(), true);
-    }
-
-    private static Collection<? extends ClassScope> getStaticClassName(Scope inScope, String staticClzName) {
-        ClassScope csi = null;
-        if (inScope instanceof MethodScope) {
-            MethodScope msi = (MethodScope) inScope;
-            csi = (ClassScope) msi.getInScope();
-        }
-        if (inScope instanceof ClassScope) {
-            csi = (ClassScope)inScope;
-        }
-        if (csi != null) {
-            if ("self".equals(staticClzName)) {
-                return Collections.singletonList(csi);
-            } else if ("parent".equals(staticClzName)) {
-                return csi.getSuperClasses();
-            }
-        }
-
-        return CachingSupport.getClasses(staticClzName, inScope);
-    }
-    private static Collection<? extends TypeScope> getStaticTypeName(Scope inScope, String staticTypeName) {
-        TypeScope csi = null;
-        if (inScope instanceof MethodScope) {
-            MethodScope msi = (MethodScope) inScope;
-            csi = (ClassScope) msi.getInScope();
-        }
-        if (inScope instanceof ClassScope || inScope instanceof InterfaceScope) {
-            csi = (TypeScope)inScope;
-        } 
-        if (csi != null) {
-            if ("self".equals(staticTypeName)) {
-                return Collections.singletonList(csi);
-            } else if ( "parent".equals(staticTypeName) && (csi instanceof ClassScope)) {
-                return ((ClassScope)csi).getSuperClasses();
-            }
-        }
-        return CachingSupport.getTypes(staticTypeName, inScope);
     }
 
     @SuppressWarnings("unchecked")

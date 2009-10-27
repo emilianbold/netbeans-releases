@@ -59,6 +59,7 @@ import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.FieldElement;
 import org.netbeans.modules.php.editor.model.FileScope;
 import org.netbeans.modules.php.editor.model.FunctionScope;
+import org.netbeans.modules.php.editor.model.InterfaceScope;
 import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelUtils;
@@ -1076,6 +1077,24 @@ public class VariousUtils {
 
     private static boolean isString(Token<PHPTokenId> token) {
         return token.id().equals(PHPTokenId.PHP_STRING);
+    }
+    public static Collection<? extends TypeScope> getStaticTypeName(Scope inScope, String staticTypeName) {
+        TypeScope csi = null;
+        if (inScope instanceof MethodScope) {
+            MethodScope msi = (MethodScope) inScope;
+            csi = (ClassScope) msi.getInScope();
+        }
+        if (inScope instanceof ClassScope || inScope instanceof InterfaceScope) {
+            csi = (TypeScope)inScope;
+        }
+        if (csi != null) {
+            if ("self".equals(staticTypeName)) {
+                return Collections.singletonList(csi);
+            } else if ( "parent".equals(staticTypeName) && (csi instanceof ClassScope)) {
+                return ((ClassScope)csi).getSuperClasses();
+            }
+        }
+        return CachingSupport.getTypes(staticTypeName, inScope);
     }
 
 }

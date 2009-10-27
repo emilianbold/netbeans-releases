@@ -54,12 +54,9 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.editor.indent.api.Reformat;
-import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpSources;
 import org.netbeans.modules.php.project.PhpVisibilityQuery;
-import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.netbeans.modules.php.project.api.PhpLanguageOptions.PhpVersion;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
@@ -235,21 +232,5 @@ public final class PhpProjectUtils {
             fo = fo.getParent();
         }
         return true;
-    }
-
-    /**
-     * Get the fully quilified name of a PHP class depending on project's PHP version.
-     * @param phpProject PHP project the PHP class comes from
-     * @param phpClass PHP class
-     * @return the fully quilified name of a PHP class depending on project's PHP version
-     */
-    public static String getFullyQualifiedName(PhpProject phpProject, PhpClass phpClass) {
-        assert phpProject != null;
-        assert phpClass != null;
-
-        if (PhpVersion.PHP_5.equals(ProjectPropertiesSupport.getPhpVersion(phpProject))) {
-            return phpClass.getName();
-        }
-        return phpClass.getFullyQualifiedName();
     }
 }
