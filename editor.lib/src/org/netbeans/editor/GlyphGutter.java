@@ -68,6 +68,7 @@ import javax.accessibility.*;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.text.AbstractDocument;
+import javax.swing.text.Caret;
 import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
@@ -722,13 +723,9 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
     class GutterMouseListener extends MouseAdapter implements MouseMotionListener {
         
         /** start line of the dragging. */
-        private int dragStartLine;
+        private int dragStartOffset = -1;
         /** end line of the dragging. */
-        private int dragEndLine;
-        /** end line of last selection. */
-        private int currentEndLine;
-        /** If true, the selection goes forwards. */
-        private boolean selectForward;
+        private int dragEndOffset;
 
         public @Override void mouseClicked(MouseEvent e) {
             if (editorUI==null)
@@ -808,6 +805,7 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
             if (!e.isConsumed() && (isMouseOverGlyph(e) || isMouseOverCycleButton(e))) {
                 e.consume();
             }
+            dragStartOffset = -1;
         }
         
         public @Override void mousePressed (MouseEvent e) {
@@ -815,84 +813,56 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
             if (!e.isConsumed() && (isMouseOverGlyph(e) || isMouseOverCycleButton(e))) {
                 e.consume();
             }
-            // "click gutter selects line" functionality was disabled
-//            // only react when it is not a cycling button
-//            if ((e.getModifiers() & InputEvent.BUTTON1_MASK) == InputEvent.BUTTON1_MASK) {
-//                if (! isMouseOverCycleButton(e)) {
-//                    dragStartLine = (int)( (float)e.getY() / (float)lineHeight );
-//                    updateSelection (true);
-//                }
-//            }
         }
         
         public void mouseDragged(MouseEvent e) {
-            // "click gutter selects line" functionality was disabled
-//            dragEndLine = (int)( (float)e.getY() / (float)lineHeight );
-//            updateSelection (false);
+            JTextComponent component = editorUI.getComponent();
+            BaseTextUI textUI = (BaseTextUI)component.getUI();
+            AbstractDocument aDoc = (AbstractDocument)component.getDocument();
+            aDoc.readLock();
+            try {
+                Element rootElement = aDoc.getDefaultRootElement();
+                // The drag must be extended to a next line in order to perform any selection
+                int lineStartOffset = textUI.getPosFromY(e.getY());
+                boolean updateDragEndOffset = false;
+                if (dragStartOffset == -1) { // Drag starts now
+                    dragStartOffset = lineStartOffset;
+                    dragEndOffset = lineStartOffset;
+                } else if (dragStartOffset == dragEndOffset) {
+                    if (lineStartOffset != dragStartOffset) {
+                        updateDragEndOffset = true;
+                    }
+                } else {
+                    updateDragEndOffset = true;
+                }
+                if (updateDragEndOffset) {
+                    // Extend selection to active line's end or begining depending on dragStartOffset
+                    Caret caret = component.getCaret();
+                    if (lineStartOffset >= dragStartOffset) {
+                        if (caret.getMark() != dragStartOffset) {
+                            caret.setDot(dragStartOffset);
+                        }
+                        // Check if the sele
+                        // Extend to next line's begining
+                        dragEndOffset = Math.min(Utilities.getRowEnd((BaseDocument) aDoc, lineStartOffset) + 1, aDoc.getLength());
+                    } else { // Backward selection
+                        // Check if the selection is already reverted i.e. it starts at dragStartOffset's line end
+                        if (caret.getMark() == dragStartOffset) {
+                            caret.setDot(Utilities.getRowEnd((BaseDocument)aDoc, dragStartOffset) + 1);
+                        }
+                        dragEndOffset = lineStartOffset;
+                    }
+                    component.moveCaretPosition(dragEndOffset);
+                }
+            } catch (BadLocationException ble) {
+                // Ignore rather than notify
+            } finally {
+                aDoc.readUnlock();
+            }
         }
         
         public void mouseMoved(MouseEvent e) {}
         
-//        /** Updates the selection */
-//        private void updateSelection (boolean newSelection) {
-//            if (editorUI == null)
-//                return ;
-//            javax.swing.text.JTextComponent comp = Utilities.getLastActiveComponent ();
-//            try {
-//                if (newSelection) {
-//                    selectForward = true;
-//                    // try to get the startOffset. In case of -1 it is most
-//                    // likely the end of the document
-//                    int rowStart = Utilities.getRowStartFromLineOffset (doc, dragStartLine);
-//                    if (rowStart < 0) {
-//                        rowStart = Utilities.getRowStart (doc, doc.getLength ());
-//                        dragStartLine = Utilities.getLineOffset (doc, rowStart);
-//                    }
-//                    comp.setCaretPosition (rowStart);
-//                    int offSet = Utilities.getRowEnd (doc, rowStart);
-//                    if (offSet < doc.getLength()) {
-//                        offSet = offSet + 1;
-//                    }
-//                    comp.moveCaretPosition (offSet);
-//                    currentEndLine = dragEndLine = dragStartLine;
-//                } else {
-//                    if (currentEndLine == dragEndLine) return;
-//                    // select backwards
-//                    if (dragEndLine < dragStartLine) {
-//                        if (selectForward) {
-//                            // selection start should be at start of (dragLine + 1)
-//                            int offSet = Utilities.getRowStartFromLineOffset (doc, dragStartLine + 1);
-//                            if (offSet < 0) {
-//                                offSet = Utilities.getRowEnd (doc, Utilities.getRowStartFromLineOffset (doc, dragStartLine));
-//                            }
-//                            comp.setCaretPosition (offSet);
-//                            selectForward = false;
-//                        }
-//                        int rowStart = Utilities.getRowStartFromLineOffset (doc, dragEndLine);
-//                        if (rowStart < 0) rowStart = 0;
-//                        comp.moveCaretPosition (rowStart);
-//                    }
-//                    // select forwards
-//                    else {
-//                        if (! selectForward) {
-//                            // select start should be at dragStartLine
-//                            comp.setCaretPosition (Utilities.getRowStartFromLineOffset (doc, dragStartLine));
-//                            selectForward = true;
-//                        }
-//                        // try to get the begin of (endLine + 1)
-//                        int offSet = Utilities.getRowStartFromLineOffset (doc, dragEndLine + 1);;
-//                        // for last line or more -1 is returned, so set to docLength...
-//                        if (offSet < 0) {
-//                            offSet = doc.getLength ();
-//                        }
-//                        comp.moveCaretPosition (offSet);
-//                    }
-//                }
-//                currentEndLine = dragEndLine;
-//            } catch (BadLocationException ble) {
-//                ErrorManager.getDefault().notify(ble);
-//            }
-//        }
     }
 
     class GlyphGutterFoldHierarchyListener implements FoldHierarchyListener{

@@ -168,7 +168,7 @@ made subject to such option by the copyright holder.
     </change>
     <change id="HtmlBrowser.dispose">
         <api name="awt"/>
-        <summary>Added dispose() method.</summary>
+        <summary>Added <code>HtmlBrowser.dispose</code></summary>
         <version major="7" minor="11"/>
         <date day="15" month="7" year="2009"/>
         <author login="saubrecht"/>

@@ -68,6 +68,7 @@ import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
+import org.netbeans.modules.websvc.jaxws.light.api.JAXWSLightSupport;
 import org.netbeans.modules.websvc.wsitconf.spi.SecurityCheckerRegistry;
 import org.netbeans.modules.websvc.wsitconf.spi.WsitProvider;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
@@ -132,8 +133,16 @@ public class CallbackPanel extends SectionInnerPanel {
         cfgVersion = PolicyModelHelper.getConfigVersion(binding);
 
         FileObject fo = node.getLookup().lookup(FileObject.class);
+        if (fo == null) {
+            JAXWSLightSupport support = node.getLookup().lookup(JAXWSLightSupport.class);
+            if (support != null) {
+                fo = support.getWsdlFolder(false);
+            }
+        }
         if (fo != null) {
             project = FileOwnerQuery.getOwner(fo);
+        } else {
+            throw new IllegalArgumentException("Cannot find corresponding project: " + node);
         }
 
         this.wsitProvider = project.getLookup().lookup(WsitProvider.class);

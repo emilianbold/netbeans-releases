@@ -167,11 +167,9 @@ class CyclicArray<T> {
                 } else {
                     if (v2 == null) {
                         return false;
+                    } else if (!v1.equals(v2)) {
+                        return false;
                     }
-                }
-
-                if (!v1.equals(v2)) {
-                    return false;
                 }
             }
             return true;

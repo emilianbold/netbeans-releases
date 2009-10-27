@@ -105,11 +105,27 @@ public class PHPNewLineIndenter {
                     ts.move(offset);
                     ts.moveNext();
 
+                    boolean indentStartComment = false;
 
-                    if (ts.token().id() == PHPTokenId.PHP_COMMENT || ts.token().id() == PHPTokenId.PHP_COMMENT_START
+
+                   boolean movePrevious = false;
+                   if (ts.token().id() == PHPTokenId.WHITESPACE && ts.moveNext()) {
+                        movePrevious = true;
+                   }
+                   if (ts.token().id() == PHPTokenId.PHP_COMMENT
+                            || ts.token().id() == PHPTokenId.PHP_COMMENT_START
                             || ts.token().id() == PHPTokenId.PHP_COMMENT_END) {
-                        // don't indent comment - issue #173979
-                        return;
+
+                       if (ts.token().id() == PHPTokenId.PHP_COMMENT_START && ts.offset() >= offset) {
+                           indentStartComment = true;
+                       }
+                       else {
+                           // don't indent comment - issue #173979
+                            return;
+                       }
+                    }
+                    if (movePrevious){
+                        ts.movePrevious();
                     }
                     if (ts.token().id() == PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING) {
 
@@ -143,7 +159,7 @@ public class PHPNewLineIndenter {
                                     break;
                                 }
 
-                                CodeB4BreakData codeB4BreakData = processCodeBeforeBreak(ts);
+                                CodeB4BreakData codeB4BreakData = processCodeBeforeBreak(ts, indentStartComment);
                                 anchor = codeB4BreakData.expressionStartOffset;
                                 shiftAtAncor = codeB4BreakData.indentDelta;
 
@@ -185,12 +201,16 @@ public class PHPNewLineIndenter {
         });
     }
 
-    private CodeB4BreakData processCodeBeforeBreak(TokenSequence ts){
+    private CodeB4BreakData processCodeBeforeBreak(TokenSequence ts, boolean indentComment){
         CodeB4BreakData retunValue = new CodeB4BreakData();
         int origOffset = ts.offset();
-        
+        Token token = ts.token();
+
+        if (indentComment && token.id() == PHPTokenId.PHP_SEMICOLON) {
+            ts.moveNext();
+        }
         while (ts.movePrevious()) {
-            Token token = ts.token();
+            token = ts.token();
             ScopeDelimiter delimiter = getScopeDelimiter(token);
             if (delimiter != null){
                 retunValue.expressionStartOffset = ts.offset();
@@ -200,11 +220,25 @@ public class PHPNewLineIndenter {
                 }
                 break;
             }
+            else {
+                if (indentComment && token.id() == PHPTokenId.WHITESPACE 
+                        && token.text().toString().indexOf('\n') != -1
+                        && ts.moveNext()) {
+                    retunValue.expressionStartOffset = ts.offset();
+                    retunValue.indentDelta = 0;
+                    break;
+                }
+            }
         }
         
         ts.move(origOffset);
         ts.moveNext();
         return retunValue;
+    }
+
+    private int findStartEndOfExpression(TokenSequence ts) {
+
+        return 0;
     }
 
     private boolean breakProceededByCase(TokenSequence ts){

@@ -46,6 +46,7 @@ import java.beans.Customizer;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 
+import org.netbeans.modules.cnd.debugger.common.breakpoints.customizers.ControllerProvider;
 import org.netbeans.modules.cnd.debugger.common.models.BreakpointsActionsProvider;
 import org.netbeans.spi.debugger.ui.Controller;
 
@@ -75,11 +76,11 @@ public class CndBreakpointCustomizer extends JPanel implements Customizer, Contr
     }
 
     public boolean ok() {
-        return ((Controller) c).ok();
+        return ((ControllerProvider) c).getController().ok();
     }
 
     public boolean cancel() {
-        return ((Controller) c).cancel();
+        return ((ControllerProvider) c).getController().cancel();
     }
 
 }

@@ -54,7 +54,9 @@ import org.openide.util.actions.SystemAction;
  *
  * @author ak119685
  */
-public class AnnotationBar extends JComponent implements Accessible, PropertyChangeListener, DocumentListener, ChangeListener, ActionListener, ComponentListener, MouseMotionListener {
+public class AnnotationBar extends JComponent implements Accessible, 
+        PropertyChangeListener, DocumentListener, ChangeListener,
+        ActionListener, ComponentListener, MouseMotionListener {
 
     //TestAnnotationsPanel mainPanel = new TestAnnotationsPanel();
     /**
@@ -89,6 +91,8 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
     private Color metricsBG = null;
     private Color navigationBarFG = null;
     private Color navigationBarBG = null;
+    // Bar font
+    private Font barFont = null;
     /**
      * Most recent status message.
      */
@@ -202,8 +206,10 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
     }
 
     private Font getBarFont() {
-        Font font = editorUI.getComponent().getFont();
-        return font;
+        if (barFont == null) {
+            barFont = new Font("Monospaced", Font.PLAIN, editorUI.getComponent().getFont().getSize() - 1); // NOI18N
+        }
+        return barFont;
 
     }
 
@@ -421,7 +427,7 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
             int y2 = editorUI.getLineHeight();
             // paint background
             g.setColor(backgroundColor());
-            g.fillRect(x1, y1+1, x2, y2-2);
+            g.fillRect(x1, y1+1, x2, y2-1);
             // paint text
             String annotation = lineAnnotationInfo.getAnnotation();
             g.setFont(getBarFont());

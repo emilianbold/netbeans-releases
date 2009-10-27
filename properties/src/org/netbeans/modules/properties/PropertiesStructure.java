@@ -181,14 +181,6 @@ public class PropertiesStructure extends Element {
     /**
      * Retrieves an item (property value) associated with the specified 
      * {@code key} (property name).
-     * The {@code key} sould be specified as the <i>unescaped Java string</i>,
-     * e.g. if a property file contains:
-     * <p><code>
-     * A\ B=propertyValue
-     * </code><p/>
-     * to retrive that item you need specify a {@code key} as "A\\ B" 
-     * (not "A B"!).
-     *  
      * @param key Java string (unescaped).
      * @return an item or {@code null} if does not exist.
      */

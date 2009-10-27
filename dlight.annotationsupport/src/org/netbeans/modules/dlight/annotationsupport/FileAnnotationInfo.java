@@ -188,16 +188,16 @@ public class FileAnnotationInfo {
         if (tooltip == null) {
             StringBuilder sb = new StringBuilder();
             boolean first = true;
-
+            sb.append("<html><body>");//NOI18N
             for (String col : getColumnNames()) {
                 if (first) {
                     first = false;
                 } else {
-                    sb.append(" | "); // NOI18N
+                    sb.append("<br>"); // NOI18N
                 }
                 sb.append(col);
             }
-            
+            sb.append("</body></html>");//NOI18N
             tooltip = sb.toString();
         }
         

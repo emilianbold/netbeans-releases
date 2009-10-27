@@ -395,6 +395,10 @@ public class CompilerSetManager {
         }
     }
 
+    public static final String getRemoteScript(String path) {
+        return ToolchainScriptGenerator.generateScript(path);
+    }
+    
     public boolean isValid() {
         return sets.size() > 0 && !sets.get(0).getName().equals(CompilerSet.None);
     }
@@ -444,7 +448,7 @@ public class CompilerSetManager {
         return platform == -1 ? PlatformTypes.PLATFORM_NONE : platform;
     }
 
-    private String getPlatformName(int platform) {
+    static String getPlatformName(int platform) {
         switch (platform) {
             case PlatformTypes.PLATFORM_LINUX:
                 return "linux"; // NOI18N
@@ -562,7 +566,7 @@ public class CompilerSetManager {
      * @param dirlist An ArrayList of the current PATH
      * @return A possibly modified ArrayList
      */
-    private ArrayList<String> appendDefaultLocations(int platform, ArrayList<String> dirlist) {
+    static ArrayList<String> appendDefaultLocations(int platform, ArrayList<String> dirlist) {
         for (ToolchainDescriptor d : ToolchainManager.getImpl().getToolchains(platform)) {
             Map<String, List<String>> map = d.getDefaultLocations();
             if (map != null) {
@@ -643,7 +647,7 @@ public class CompilerSetManager {
     }
 
     private CompilerSet parseCompilerSetString(int platform, String data) {
-        log.fine("CSM.initRemoteCompileSets: line = [" + data + "]");
+        log.fine("CSM.initRemoteCompileSets: line = [" + data + "]"); // NOI18N
         String flavor;
         String path;
         StringTokenizer st = new StringTokenizer(data, ";"); // NOI18N
@@ -651,54 +655,53 @@ public class CompilerSetManager {
             flavor = st.nextToken();
             path = st.nextToken();
         } catch (NoSuchElementException ex) {
-            log.warning("Malformed compilerSetString: " + data);
+            log.warning("Malformed compilerSetString: " + data); // NOI18N
             return null;
         }
         CompilerFlavor compilerFlavor = CompilerFlavor.toFlavor(flavor, platform);
         if (compilerFlavor == null) { // #158084
-            log.warning("NULL compiler flavor for " + flavor + " on platform " + platform);
+            log.warning("NULL compiler flavor for " + flavor + " on platform " + platform); // NOI18N
             return null;
         }
         CompilerSet cs = new CompilerSet(compilerFlavor, path, flavor);
         while (st.hasMoreTokens()) {
             String name = st.nextToken();
+            int i = name.indexOf('='); // NOI18N
+            String tool = name.substring(0,i);
+            String p = name.substring(i + 1);
             int kind = -1;
-            String p = path + '/' + name;
-            if (flavor.startsWith("Sun")) { // NOI18N
-                if (name.equals("cc")) { // NOI18N
-                    kind = Tool.CCompiler;
-                } else if (name.equals("CC")) { // NOI18N
-                    kind = Tool.CCCompiler;
-                } else if (name.equals("f95") || name.equals("f90")) { // NOI18N
-                    kind = Tool.FortranCompiler;
-                } else if (name.startsWith("as=")) { // NOI18N
-                    kind = Tool.Assembler;
-                    p = name.substring(name.indexOf('=') + 1);
-                } else if (name.equals("dmake")) { // NOI18N
-                    kind = Tool.MakeTool;
-                } else if (name.startsWith("gdb=") || name.startsWith("dbx=")) { // NOI18N
-                    kind = Tool.DebuggerTool;
-                    p = name.substring(name.indexOf('=') + 1);
-                }
-            } else {
-                if (name.equals("gcc")) { // NOI18N
-                    kind = Tool.CCompiler;
-                } else if (name.equals("g++")) { // NOI18N
-                    kind = Tool.CCCompiler;
-                } else if (name.equals("g77") || name.equals("gfortran")) { // NOI18N
-                    kind = Tool.FortranCompiler;
-                } else if (name.equals("as") || name.equals("gas")) { // NOI18N
-                    kind = Tool.Assembler;
-                } else if (name.equals("make") || // NOI18N
-                        ((platform == PlatformTypes.PLATFORM_SOLARIS_INTEL || platform == PlatformTypes.PLATFORM_SOLARIS_SPARC) &&
-                        name.equals("gmake"))) { // NOI18N
-                    kind = Tool.MakeTool;
-                } else if (name.equals("gdb")) { // NOI18N
-                    kind = Tool.DebuggerTool;
-                } else if (name.startsWith("gdb=")) { // NOI18N
-                    kind = Tool.DebuggerTool;
-                    p = name.substring(name.indexOf('=') + 1);
-                }
+            if (tool.equals("c")){ // NOI18N
+                kind = Tool.CCompiler;
+            } else if (tool.equals("cpp")){ // NOI18N
+                kind = Tool.CCCompiler;
+            } else if (tool.equals("fortran")){ // NOI18N
+                kind = Tool.FortranCompiler;
+            } else if (tool.equals("assembler")){ // NOI18N
+                kind = Tool.Assembler;
+            } else if (tool.equals("make")){ // NOI18N
+                kind = Tool.MakeTool;
+            } else if (tool.equals("debugger")){ // NOI18N
+                kind = Tool.DebuggerTool;
+            } else if (tool.equals("cmake")){ // NOI18N
+                kind = Tool.CMakeTool;
+            } else if (tool.equals("qmake")){ // NOI18N
+                kind = Tool.QMakeTool;
+            } else if (tool.equals("c(PATH)")){ // NOI18N
+                cs.addPathCandidate(Tool.CCompiler, p);
+            } else if (tool.equals("cpp(PATH)")){ // NOI18N
+                cs.addPathCandidate(Tool.CCCompiler, p);
+            } else if (tool.equals("fortran(PATH)")){ // NOI18N
+                cs.addPathCandidate(Tool.FortranCompiler, p);
+            } else if (tool.equals("assembler(PATH)")){ // NOI18N
+                cs.addPathCandidate(Tool.Assembler, p);
+            } else if (tool.equals("make(PATH)")){ // NOI18N
+                cs.addPathCandidate(Tool.MakeTool, p);
+            } else if (tool.equals("debugger(PATH)")){ // NOI18N
+                cs.addPathCandidate(Tool.DebuggerTool, p);
+            } else if (tool.equals("cmake(PATH)")){ // NOI18N
+                cs.addPathCandidate(Tool.CMakeTool, p);
+            } else if (tool.equals("qmake(PATH)")){ // NOI18N
+                cs.addPathCandidate(Tool.QMakeTool, p);
             }
             if (kind != -1) {
                 cs.addTool(executionEnvironment, name, p, kind);
@@ -726,7 +729,7 @@ public class CompilerSetManager {
         ServerRecord record = ServerList.get(executionEnvironment);
         assert record != null;
 
-        log.fine("CSM.initRemoteCompilerSets for " + executionEnvironment + " [" + state + "]");
+        log.fine("CSM.initRemoteCompilerSets for " + executionEnvironment + " [" + state + "]"); // NOI18N
         final boolean wasOffline = record.isOffline();
         if (wasOffline) {
             CompilerSetReporter.report("CSM_Conn", false, executionEnvironment.getHost()); //NOI18N
@@ -752,7 +755,7 @@ public class CompilerSetManager {
                         platform = provider.getPlatform();
                         CompilerSetReporter.report("CSM_ValPlatf", true, PlatformTypes.toString(platform)); //NOI18N
                         CompilerSetReporter.report("CSM_LFTC"); //NOI18N
-                        log.fine("CSM.initRemoteCompileSets: platform = " + platform);
+                        log.fine("CSM.initRemoteCompileSets: platform = " + platform); // NOI18N
                         getPreferences().putInt(CSM + ExecutionEnvironmentFactory.toUniqueID(executionEnvironment) +
                                 SET_PLATFORM, platform);
                         while (provider.hasMoreCompilerSets()) {
@@ -772,8 +775,12 @@ public class CompilerSetManager {
                                 CompilerSetReporter.report("CSM_Err", true, data);//NOI18N
                             }
                         }
-                        completeCompilerSets(platform);
-                        log.fine("CSM.initRemoteCompilerSets: Found " + sets.size() + " compiler sets");
+                        completeSunStudioCompilerSet(platform);
+                        for(CompilerSet cs : sets) {
+                            completeCompilerSet(executionEnvironment, cs, sets);
+                        }
+
+                        log.fine("CSM.initRemoteCompilerSets: Found " + sets.size() + " compiler sets"); // NOI18N
                         if (sets.size() == 0) {
                             CompilerSetReporter.report("CSM_Done_NF"); //NOI18N
                         } else {
@@ -904,9 +911,6 @@ public class CompilerSetManager {
      * tool. If selected, this will tell the build validation things are OK.
      */
     private void completeCompilerSets() {
-        for (CompilerSet cs : sets) {
-            completeCompilerSet(executionEnvironment, cs, sets);
-        }
         for(CompilerFlavor flavor : CompilerFlavor.getFlavors(getPlatform())){
             ToolchainDescriptor descriptor = flavor.getToolchainDescriptor();
             if (descriptor.getUpdateCenterUrl() != null && descriptor.getModuleID() != null) {
@@ -918,7 +922,9 @@ public class CompilerSetManager {
                     }
                 }
                 if (!found) {
-                    add(CompilerSet.getCustomCompilerSet(null, flavor, null));
+                    CompilerSet fake = CompilerSet.getCustomCompilerSet(null, flavor, null);
+                    fake.setAutoGenerated(true);
+                    add(fake);
                 }
             }
         }
@@ -927,11 +933,14 @@ public class CompilerSetManager {
         } else {
             setDefaltCompilerSet();
         }
+        for (CompilerSet cs : sets) {
+            completeCompilerSet(executionEnvironment, cs, sets);
+        }
 
-        completeCompilerSets(getPlatform());
+        completeSunStudioCompilerSet(getPlatform());
     }
 
-    private void completeCompilerSets(int platform) {
+    private void completeSunStudioCompilerSet(int platform) {
         // Make sure 'SunStudio' set exists if just one other Sun Studio set found.
         CompilerSet sun = getCompilerSet("SunStudio"); // NOI18N
         if (sun == null) {
@@ -969,7 +978,7 @@ public class CompilerSetManager {
     }
 
     private static Tool autoComplete(ExecutionEnvironment env, CompilerSet cs, List<CompilerSet> sets, ToolDescriptor descriptor, int tool){
-        if (descriptor != null) {
+        if (descriptor != null && !cs.isUrlPointer()) {
             AlternativePath[] paths = descriptor.getAlternativePath();
             if (paths != null && paths.length > 0) {
                 for(AlternativePath p : paths){
@@ -980,32 +989,50 @@ public class CompilerSetManager {
                             while(st.hasMoreTokens()){
                                 String method = st.nextToken();
                                 if ("$PATH".equals(method)){ // NOI18N
-                                    for(String name : descriptor.getNames()){
-                                        String path = findCommand(name);
-                                        if (path != null) {
-                                            if (notSkipedName(cs, descriptor, path, name)) {
-                                                return cs.addNewTool(env, IpeUtils.getBaseName(path), path, tool);
-                                            }
-                                        }
-                                    }
-                                } else if ("$MSYS".equals(method)){ // NOI18N
-                                    for(String name : descriptor.getNames()){
-                                        String dir = getMSysBase();
-                                        if (dir != null) {
-                                            String path = findCommand(name, dir+"/bin"); // NOI18N
+                                    if (env.isLocal()) {
+                                        for(String name : descriptor.getNames()){
+                                            String path = findCommand(name);
                                             if (path != null) {
                                                 if (notSkipedName(cs, descriptor, path, name)) {
                                                     return cs.addNewTool(env, IpeUtils.getBaseName(path), path, tool);
                                                 }
                                             }
                                         }
+                                     } else {
+                                        String path = cs.getPathCandidate(tool);
+                                        if (path != null) {
+                                            String name = IpeUtils.getBaseName(path);
+                                            if (notSkipedName(cs, descriptor, path, name)) {
+                                                return cs.addNewTool(env, name, path, tool);
+                                            }
+                                        }
+                                    }
+                                } else if ("$MSYS".equals(method)){ // NOI18N
+                                    if (env.isLocal()) {
+                                        for(String name : descriptor.getNames()){
+                                            String dir = getMSysBase();
+                                            if (dir != null) {
+                                                String path = findCommand(name, dir+"/bin"); // NOI18N
+                                                if (path != null) {
+                                                    if (notSkipedName(cs, descriptor, path, name)) {
+                                                        return cs.addNewTool(env, IpeUtils.getBaseName(path), path, tool);
+                                                    }
+                                                }
+                                            }
+                                        }
+                                     } else {
+                                        // TODO
                                     }
                                 } else {
-                                    for(String name : descriptor.getNames()){
-                                        String path = findCommand(name, method);
-                                        if (path != null) {
-                                            return cs.addNewTool(env, IpeUtils.getBaseName(path), path, tool);
+                                    if (env.isLocal()) {
+                                        for(String name : descriptor.getNames()){
+                                            String path = findCommand(name, method);
+                                            if (path != null) {
+                                                return cs.addNewTool(env, IpeUtils.getBaseName(path), path, tool);
+                                            }
                                         }
+                                    } else {
+                                        // TODO
                                     }
                                 }
                             }
@@ -1112,10 +1139,10 @@ public class CompilerSetManager {
     }
 
     private static void completeCompilerSet(ExecutionEnvironment env, CompilerSet cs, List<CompilerSet> sets) {
-        if (cs.findTool(Tool.CCompiler) == null && cs.findTool(Tool.CCCompiler) == null) {
-            // do not complete empty tool
-            return;
-        }
+        //if (cs.findTool(Tool.CCompiler) == null && cs.findTool(Tool.CCCompiler) == null) {
+        //    // do not complete empty tool
+        //    return;
+        //}
         if (cs.findTool(Tool.CCompiler) == null) {
             autoComplete(env, cs, sets, cs.getCompilerFlavor().getToolchainDescriptor().getC(), Tool.CCompiler);
         }

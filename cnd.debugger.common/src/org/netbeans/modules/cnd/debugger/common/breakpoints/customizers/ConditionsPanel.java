@@ -272,6 +272,9 @@ public class ConditionsPanel extends JPanel {
 private void cbSkipCountActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbSkipCountActionPerformed
     boolean isSelected = cbSkipCount.isSelected();
     tfSkipCount.setEnabled(isSelected);
+    if (isSelected) {
+        tfSkipCount.requestFocusInWindow();
+    }
 }//GEN-LAST:event_cbSkipCountActionPerformed
 
 private void cbConditionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbConditionActionPerformed

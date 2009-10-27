@@ -109,7 +109,6 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
     private Pattern prjNamePattern;
 
     private static final String PRJ_NAME_REGEXP = "[a-z]{1}[a-z0-9-]+"; // NOI18N
-    public static final String PRJ_NAME_PREVIEW_PREFIX = "http://kenai.com/projects/"; // NOI18N
 
     private static final String EMPTY_ELEMENT = "";
 
@@ -118,6 +117,10 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
     private String prjNameCheckMessage = null;
 
     private boolean licensesLoaded = true;
+
+    public static final String getPreviewPrefix() {
+        return Kenai.getDefault().getUrl().toString() +  "/projects/"; //NOI18N
+    } // NOI18N
 
     public NameAndLicenseWizardPanelGUI(NameAndLicenseWizardPanel pnl) {
 
@@ -238,9 +241,9 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
     private void updatePrjNamePreview() {
         String prjName = getProjectName();
         if (checkPrjName(prjName)) {
-            kenaiURLPreviewLabel.setText(PRJ_NAME_PREVIEW_PREFIX + prjName);
+            kenaiURLPreviewLabel.setText(getPreviewPrefix() + prjName);
         } else {
-            kenaiURLPreviewLabel.setText(PRJ_NAME_PREVIEW_PREFIX + "..."); // NOI18N
+            kenaiURLPreviewLabel.setText(getPreviewPrefix() + "..."); // NOI18N
         }
     }
 
@@ -350,7 +353,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
 
         projectNameTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.projectNameTextField.AccessibleContext.accessibleName")); // NOI18N
         projectNameTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.projectNameTextField.AccessibleContext.accessibleDescription")); // NOI18N
-        Mnemonics.setLocalizedText(kenaiURLPreviewLabel, PRJ_NAME_PREVIEW_PREFIX + "...");
+        Mnemonics.setLocalizedText(kenaiURLPreviewLabel, getPreviewPrefix() + "...");
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
@@ -711,6 +714,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
             settings.putProperty(NewKenaiProjectWizardIterator.PROP_SCM_URL, 
                     MessageFormat.format(
                     SourceAndIssuesWizardPanelGUI.REPO_NAME_PREVIEW_MSG,
+                    Kenai.getDefault().getUrl().toString(),
                     SourceAndIssuesWizardPanelGUI.SVN_REPO_NAME,
                     getProjectName(), 
                     SourceAndIssuesWizardPanelGUI.SVN_DEFAULT_NAME));

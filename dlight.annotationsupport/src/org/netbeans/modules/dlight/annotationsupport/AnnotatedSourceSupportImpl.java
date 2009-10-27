@@ -62,6 +62,7 @@ import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -77,17 +78,19 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
     private static AnnotatedSourceSupportImpl instance = null;
 
     public AnnotatedSourceSupportImpl() {
-        instance = this;
 //        WindowManager.getDefault().getRegistry().addPropertyChangeListener(new EditorFileChangeListener());
         AnnotationSupport.getInstance().addPropertyChangeListener(new ProfilerPropertyChangeListener());
         EditorRegistry.addPropertyChangeListener(new EditorFileChangeListener());
     }
 
     protected static AnnotatedSourceSupportImpl getInstance() {
+        if (instance == null) {
+            instance = Lookup.getDefault().lookup(AnnotatedSourceSupportImpl.class);
+        }
         return instance;
     }
 
-    private void preProcessAnnotations(SourceFileInfoDataProvider sourceFileInfoProvider, List<Column> metrics, List<FunctionCallWithMetric> list, boolean lineAnnotations) {
+    private synchronized void preProcessAnnotations(SourceFileInfoDataProvider sourceFileInfoProvider, List<Column> metrics, List<FunctionCallWithMetric> list, boolean lineAnnotations) {
         if (list == null || list.size() == 0) {
             return;
         }

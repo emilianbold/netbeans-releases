@@ -72,12 +72,13 @@ public class IssueAccessorImpl extends KenaiIssueAccessor {
     @Override
     public void open(final KenaiProject project, final String issueID) {
         if(!JiraUpdater.isJiraInstalled()) {
-            if(JiraUpdater.notifyJiraDownload()) {
-                JiraUpdater.getInstance().install();
-            } else {
-                FakeJiraSupport support = FakeJiraSupport.get(project);
-                support.openIsssueOnWeb(issueID);
+            FakeJiraSupport support = FakeJiraSupport.get(project);
+            if(support == null) {
+                return;
             }
+            if(JiraUpdater.notifyJiraDownload(support.getIssueUrl(issueID))) {
+                JiraUpdater.getInstance().downloadAndInstall();
+            } 
             return;
         }
 

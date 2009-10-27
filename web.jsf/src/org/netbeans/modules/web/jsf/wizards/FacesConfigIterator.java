@@ -208,6 +208,13 @@ public class FacesConfigIterator implements TemplateWizard.Iterator {
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
         if (wm != null) {
             FileObject webInf = wm.getWebInf();
+            if (webInf == null) {
+                try {
+                    webInf = FileUtil.createFolder(wm.getDocumentBase(), "WEB-INF"); //NOI18N
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
             FileObject targetFolder = Templates.getTargetFolder(wizard);
             String relativePath = (targetFolder == null) ? null : FileUtil.getRelativePath(webInf, targetFolder);
             if (relativePath == null) {

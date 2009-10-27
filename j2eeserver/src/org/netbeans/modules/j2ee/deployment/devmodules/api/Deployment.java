@@ -48,29 +48,22 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
-import javax.enterprise.deploy.spi.Target;
-import javax.enterprise.deploy.spi.status.ProgressObject;
-import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
-import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
-import org.netbeans.modules.j2ee.deployment.config.J2eeModuleAccessor;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance.Descriptor;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.impl.DeployOnSaveManager;
-import org.netbeans.modules.j2ee.deployment.impl.ProgressObjectUtil;
+import org.netbeans.modules.j2ee.deployment.impl.DeploymentHelper;
 import org.netbeans.modules.j2ee.deployment.impl.Server;
 import org.netbeans.modules.j2ee.deployment.impl.ServerException;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.netbeans.modules.j2ee.deployment.impl.ServerString;
-import org.netbeans.modules.j2ee.deployment.impl.ServerTarget;
 import org.netbeans.modules.j2ee.deployment.impl.TargetModule;
 import org.netbeans.modules.j2ee.deployment.impl.TargetServer;
 import org.netbeans.modules.j2ee.deployment.impl.projects.DeploymentTargetImpl;
 import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.JDBCDriverDeployer;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
@@ -159,35 +152,20 @@ public final class Deployment {
                 throw new DeploymentException(msg);
             }
 
-            // Only call getTargets() if we really need to.
-            Set<Datasource> moduleDatasources = jmp.getModuleDatasources();
-            if(moduleDatasources != null && moduleDatasources.size() > 0) {
-                JDBCDriverDeployer jdbcDriverDeployer = server.getServerInstance().getJDBCDriverDeployer();
-                if(jdbcDriverDeployer != null) {
-                    // Currently it is not possible to select target to which modules will 
-                    // be deployed. Lets use the first one.
-                    ServerTarget targets[] = serverInstance.getTargets();
-                    if (targets.length > 0) {
-                        Target target = targets[0].getTarget();
-                        if (jdbcDriverDeployer.supportsDeployJDBCDrivers(target)) {
-                            ProgressObject po = jdbcDriverDeployer.deployJDBCDrivers(target, moduleDatasources);
-                            ProgressObjectUtil.trackProgressObject(progress, po, Long.MAX_VALUE);
-                        }
-                    }
-                }
-            }            
-            
+            DeploymentHelper.deployJdbcDrivers(jmp, progress);
+
             boolean serverReady = false;
             TargetServer targetserver = new TargetServer(deploymentTarget);
 
+            // Only call getTargets() if we really need to.
             if (alsoStartTargets || mode != Mode.RUN) {
                 targetserver.startTargets(mode, progress);
             } else { //PENDING: how do we know whether target does not need to start when deploy only
                 server.getServerInstance().start(progress);
             }
 
-            jmp.deployDatasources();
-            deployMessageDestinations(jmp);
+            DeploymentHelper.deployDatasources(jmp);
+            DeploymentHelper.deployMessageDestinations(jmp);
 
             modules = targetserver.deploy(progress, forceRedeploy);
             // inform the plugin about the deploy action, even if there was
@@ -294,17 +272,6 @@ public final class Deployment {
         DeployOnSaveManager.getDefault().stopListening(provider);
     }
 
-    private static void deployMessageDestinations(J2eeModuleProvider jmp) throws ConfigurationException {
-        ServerInstance si = ServerRegistry.getInstance ().getServerInstance (jmp.getServerInstanceID ());
-        if (si != null) {
-            si.deployMessageDestinations(jmp.getConfigSupport().getMessageDestinations());
-        }
-        else {
-            java.util.logging.Logger.getLogger("global").log(Level.WARNING,
-                    "The message destinations cannot be deployed because the server instance cannot be found."); // NOI18N
-        }
-    }
-    
     public static final class DeploymentException extends Exception {
         private DeploymentException (String msg) {
             super (msg);

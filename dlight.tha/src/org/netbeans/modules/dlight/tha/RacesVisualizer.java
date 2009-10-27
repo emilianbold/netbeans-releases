@@ -134,17 +134,16 @@ public class RacesVisualizer implements Visualizer<RacesVisualizerConfiguration>
 
         public Component getComponent() {
             stackPanel.clean();
-            if (threadDumps != null && !threadDumps.isEmpty()){
-                
-            }
-            for (ThreadDump threadDump : threadDumps) {
-                List<ThreadSnapshot> threads = threadDump.getThreadStates();
-                for (ThreadSnapshot snap : threads) {
-                    stackPanel.add( loc("RacesVisualizer.Access")  + " " + //NOI18N
-                            (snap.getMemoryAccessType() == ThreadSnapshot.MemoryAccessType.READ ?
-                                " [" + loc("RacesVisualizer.Access.R") + "]" : " [" + loc("RacesVisualizer.Access.W") + "]"),//NOI18N
-                                ImageUtilities.loadImageIcon("org/netbeans/modules/dlight/tha/resources/memory.png",//NOI18N
-                                false), snap.getStack());
+            if (threadDumps != null && !threadDumps.isEmpty()) {
+                for (ThreadDump threadDump : threadDumps) {
+                    List<ThreadSnapshot> threads = threadDump.getThreadStates();
+                    for (ThreadSnapshot snap : threads) {
+                        stackPanel.add(loc("RacesVisualizer.Access") + // NOI18N
+                                (snap.getMemoryAccessType() == ThreadSnapshot.MemoryAccessType.READ ?
+                                    " [" + loc("RacesVisualizer.Access.R") + "]" : " [" + loc("RacesVisualizer.Access.W") + "]"), // NOI18N
+                                    ImageUtilities.loadImageIcon("org/netbeans/modules/dlight/tha/resources/memory.png", // NOI18N
+                                    false), snap.getStack());
+                    }
                 }
             }
             return stackPanel;

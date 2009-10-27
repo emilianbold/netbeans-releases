@@ -45,9 +45,9 @@ import junit.textui.TestRunner;
 import org.netbeans.jellytools.FindInFilesOperator;
 import org.netbeans.jellytools.CNDProjectsTabOperator;
 import org.netbeans.jellytools.CNDTestCase;
-import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jemmy.TimeoutExpiredException;
 
 /**
  *  Test of CNDProjectRootNode. Mostly copied/moved from ProjectRootNodeTest,
@@ -89,6 +89,7 @@ public class CNDProjectRootNodeTest extends CNDTestCase
         System.out.println("### "+getName()+" ###");
         if(projectRootNode == null) {
             createAndOpenTestProject();
+            setToolchain("GNU");
             projectRootNode = CNDProjectsTabOperator.invoke().getCNDProjectRootNode(getTestProjectName()); // NOI18N
         }
     }

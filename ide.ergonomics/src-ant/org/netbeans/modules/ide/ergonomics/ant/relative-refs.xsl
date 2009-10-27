@@ -69,7 +69,7 @@
                 <xsl:element name="attr">
                     <xsl:attribute name="name"><xsl:value-of select="@name"/></xsl:attribute>
                     <xsl:attribute name="urlvalue">
-                        <xsl:text>nbresloc:/org/netbeans/modules/ide/ergonomics/</xsl:text>
+                        <xsl:text>ergoloc:/org/netbeans/modules/ide/ergonomics/</xsl:text>
                         <xsl:value-of select="$cluster.name"/>
                         <xsl:text>/</xsl:text>
                         <xsl:call-template name="filename">

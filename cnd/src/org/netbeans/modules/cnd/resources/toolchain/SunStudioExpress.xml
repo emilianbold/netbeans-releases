@@ -46,15 +46,18 @@ made subject to such option by the copyright holder.
     <platforms stringvalue="sun_intel,sun_sparc,linux"/>
     <makefile_writer class="org.netbeans.modules.cnd.makeproject.api.configurations.DefaultMakefileWriter"/>
     <default_locations>
+        <platform os="linux" directory="/opt/sun/sunstudioaten/bin"/>
         <platform os="linux" directory="/opt/sun/SunStudioExpress/bin"/>
         <platform os="linux" directory="/opt/SunStudioExpress/bin"/>
+        <platform os="sun_intel" directory="/opt/aten/bin"/>
         <platform os="sun_intel" directory="/opt/SunStudioExpress/bin"/>
+        <platform os="sun_intel" directory="/opt/aten/bin"/>
         <platform os="sun_sparc" directory="/opt/SunStudioExpress/bin"/>
     </default_locations>
     <c>
         <compiler name="cc"/>
-        <recognizer pattern=".*(SunStudioExpress|/prod/bin)" or_exist_folder="../prod"/>
-        <version flags="-V" pattern=".*Sun Ceres C 5.10"/>
+        <recognizer pattern=".*(SunStudioExpress|/prod/bin|/sunstudioaten/)" or_exist_folder="../prod"/>
+        <version flags="-V" pattern=".*Sun.*(Ceres|Aten)"/>
         <system_include_paths flags="-xdryrun -E" parser="Sun"/>
         <system_macros flags="-xdryrun -E" parser="Sun"/>
         <user_include flags="-I"/>
@@ -102,8 +105,8 @@ made subject to such option by the copyright holder.
     </c>
     <cpp>
         <compiler name="CC"/>
-        <recognizer pattern=".*(SunStudioExpress|/prod/bin)" or_exist_folder="../prod"/>
-        <version flags="-V" pattern=".*Sun Ceres C++ 5.10"/>
+        <recognizer pattern=".*(SunStudioExpress|/prod/bin|/sunstudioaten/)" or_exist_folder="../prod"/>
+        <version flags="-V" pattern=".*Sun.*(Ceres|Aten)"/>
         <system_include_paths flags="-xdryrun -E" parser="Sun"/>
         <system_macros flags="-xdumpmacros=defs,sys -E" parser="Sun"/>
         <user_include flags="-I"/>
@@ -158,8 +161,8 @@ made subject to such option by the copyright holder.
     </cpp>
     <fortran>
         <compiler name="ffortran,f95,f90,f77"/>
-        <recognizer pattern=".*(SunStudioExpress|/prod/bin)" or_exist_folder="../prod"/>
-        <version flags="-V" pattern=".*Sun Ceres Fortran 95 8.3"/>
+        <recognizer pattern=".*(SunStudioExpress|/prod/bin|/sunstudioaten/)" or_exist_folder="../prod"/>
+        <version flags="-V" pattern=".*Sun.*(Ceres|Aten)"/>
         <development_mode>
             <fast_build flags=""/>
             <debug flags="-g" default="true"/>

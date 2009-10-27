@@ -120,6 +120,9 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
         cbMarkOccurrences.setMnemonic(getString("EnableMarkOccurrences_Mnemonic").charAt(0));
         cbKeepMarks.setMnemonic(getString("KeepMarks_Mnemonic").charAt(0));
 
+        cbMarkOccurrences.setToolTipText(getString("EnableMarkOccurrences_AD"));
+        cbKeepMarks.setToolTipText(getString("KeepMarks_AD"));
+
         cbMarkOccurrences.getAccessibleContext().setAccessibleDescription(getString("EnableMarkOccurrences_AD"));
         cbKeepMarks.getAccessibleContext().setAccessibleDescription(getString("KeepMarks_AD"));
     }

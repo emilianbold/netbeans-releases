@@ -118,7 +118,9 @@ public class FortranCompilerConfiguration extends BasicCompilerConfiguration imp
         FortranCompilerConfiguration master = (FortranCompilerConfiguration) getMaster();
 
         String options = ""; // NOI18N
-        options += compiler.getDevelopmentModeOptions(getDevelopmentMode().getValue()) + " "; // NOI18N
+        if (getDevelopmentMode().getValue() != DEVELOPMENT_MODE_TEST) {
+            options += compiler.getDevelopmentModeOptions(getDevelopmentMode().getValue()) + " "; // NOI18N
+        }
         options += compiler.getWarningLevelOptions(getWarningLevel().getValue()) + " "; // NOI18N
         return CppUtils.reformatWhitespaces(options);
     }
