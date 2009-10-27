@@ -394,6 +394,9 @@ public class JpaControllerUtil {
         boolean isFieldOptional = true;
         Boolean isFieldNullable = null;
         Element fieldElement = fieldAccess ? JpaControllerUtil.guessField(controller, method) : method;
+        if (fieldElement == null) {
+            fieldElement = method;
+        }
         String[] fieldAnnotationFqns = {"javax.persistence.ManyToOne", "javax.persistence.OneToOne", "javax.persistence.Basic"};
         Boolean isFieldOptionalBoolean = findAnnotationValueAsBoolean(fieldElement, fieldAnnotationFqns, "optional");
         if (isFieldOptionalBoolean != null) {
