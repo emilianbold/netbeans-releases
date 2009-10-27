@@ -53,13 +53,16 @@ import java.util.List;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.cnd.api.execution.LinkSupport;
+import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
@@ -203,14 +206,17 @@ public abstract class CCCCompiler extends BasicCompiler {
         return ""; // NOI18N
     }
     
-    protected void getSystemIncludesAndDefines(String arguments, boolean stdout, Pair pair) throws IOException {
+    protected final void getSystemIncludesAndDefines(String arguments, boolean stdout, Pair pair) throws IOException {
         String path = getPath();
         if (path != null && path.length() == 0) {
             return;
         }
         ExecutionEnvironment execEnv = getExecutionEnvironment();
-        if (path == null || !PlatformInfo.getDefault(execEnv).fileExists(path)) {
+        if (path == null) {
             path = getDefaultPath();
+        }
+        if (! HostInfoUtils.fileExists(execEnv, path)) {
+            return;
         }
         String command = path;
         path = IpeUtils.getDirName(path);
