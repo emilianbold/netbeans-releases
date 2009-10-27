@@ -158,8 +158,10 @@ public class IssueAccessorImpl extends KenaiIssueAccessor {
         if(project == null) {
             return new IssueHandle[0];
         }
-        Repository repo = KenaiRepositoryUtils.getInstance().getRepository(project);
+        Repository repo = KenaiRepositoryUtils.getInstance().getRepository(project, false);
         if(repo == null) {
+            // looks like no repository was created for the project yet, and if there's no repository
+            // then there can't be any recent issue for it...
             BugtrackingManager.LOG.fine("No issue tracker available for the given kenai project [" + project.getName() + "," + project.getDisplayName() + "]"); // NOI18N
             return new IssueHandle[0];
         }
