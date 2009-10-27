@@ -115,7 +115,7 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
 
         String sufix = "...";                                                   // NOI18N
         int sufixLength = fm.stringWidth(sufix);
-        int desired = width - sufixLength - 10;
+        int desired = width - sufixLength;
         if (desired <= 0) return text;
 
         for (int i = 0; i <= text.length() - 1; i++) {
