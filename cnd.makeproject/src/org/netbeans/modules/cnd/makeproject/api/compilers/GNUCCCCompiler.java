@@ -86,7 +86,12 @@ public abstract class GNUCCCCompiler extends CCCCompiler {
             }
         } catch (IOException ioe) {
             System.err.println("IOException " + ioe);
-            String errormsg = NbBundle.getMessage(getClass(), "CANTFINDCOMPILER", getPath()); // NOI18N
+            String errormsg;
+            if (getExecutionEnvironment().isLocal()) {
+                errormsg = NbBundle.getMessage(getClass(), "CANTFINDCOMPILER", getPath()); // NOI18N
+            }  else {
+                errormsg = NbBundle.getMessage(getClass(), "CANT_FIND_REMOTE_COMPILER", getPath(), getExecutionEnvironment().getDisplayName()); // NOI18N
+            }
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
         }
         return res;
