@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.cnd.api.remote;
 
+import java.util.Map;
 import org.openide.util.Cancellable;
 
 /**
@@ -50,14 +51,27 @@ import org.openide.util.Cancellable;
 public interface RemoteSyncWorker extends Cancellable {
 
     /**
-     * Performs synchronization
+     * Starts synchronization
+     * (it's up to implementation to decide whether all files should be in sync
+     * just before return, or the synchronization should be done on the fly)
      *
      * There are no parameters, because a separate instance is created
      * for each synchronization work;
      * so these are factory method parameters, which define what to copy,
      * where to copy, etc.
      *
-     * @return true in the case synchronization succeeded, otehrwise false
+     * @param env2add (output parameter) - map for worker to store necessary environment settings
+     * process on remote host should be run with
+     *
+     * @return true in the case synchronization started up sucessfully, otehrwise false
      */
-    boolean synchronize();
+    boolean startup(Map<String, String> env2add);
+
+    /**
+     * Makes a cleanup.
+     * Client MUST call correspondent shutdown for each startup call
+     * @return
+     */
+    void shutdown();
+
 }

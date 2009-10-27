@@ -580,7 +580,7 @@ public abstract class AbstractOffsetGapList<E> extends GapList<E> {
      *         if it is contained in the list;
      *	       otherwise, <tt>(-(<i>insertion point</i>) - 1)</tt>.  The
      *	       <i>insertion point</i> is defined as the point at which an
-     *	       element the <code>offset</code> would be inserted into the list:
+     *	       element with the <code>offset</code> would be inserted into the list:
      *         the index of the first
      *	       element with its offset greater than the <code>offset</code> prameter,
      *         or <tt>list.size()</tt>, if all
