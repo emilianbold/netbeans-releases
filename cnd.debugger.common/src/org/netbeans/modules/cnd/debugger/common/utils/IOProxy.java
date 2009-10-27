@@ -47,7 +47,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetUtils;
 import org.netbeans.modules.cnd.api.remote.CommandProvider;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -236,11 +236,11 @@ public abstract class IOProxy {
                 String tool = "mkfifo"; // NOI18N
                 if (Utilities.isWindows()) {
                     tool += ".exe"; // NOI18N
-                    File toolFile = new File(CompilerSetManager.getCygwinBase() + "/bin", tool); // NOI18N
+                    File toolFile = new File(CompilerSetUtils.getCygwinBase() + "/bin", tool); // NOI18N
                     if (toolFile.exists()) {
                         tool = toolFile.getAbsolutePath();
                     } else {
-                        toolFile = new File(CompilerSetManager.getMSysBase() + "/bin", tool); // NOI18N
+                        toolFile = new File(CompilerSetUtils.getMSysBase() + "/bin", tool); // NOI18N
                         if (toolFile.exists()) {
                             tool = toolFile.getAbsolutePath();
                         }
