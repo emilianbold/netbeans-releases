@@ -47,9 +47,9 @@ import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
  * @author mt154047
  */
 public class DLightToolConfigurationProviderFactory {
-    private static final String DLIGHT_TOOL_ID = "id";
-    private static final String DLIGHT_TOOL_NAME = "name";
-    private static final String DLIGHT_TOOL_DISPLAYED_NAME = "displayedName";
+    private static final String DLIGHT_TOOL_ID = "id"; //NOI18N
+    private static final String DLIGHT_TOOL_NAME = "name"; //NOI18N
+    private static final String DLIGHT_TOOL_DISPLAYED_NAME = "displayedName"; //NOI18N
 
 
     static  DLightToolConfiguration create(Map map) {
