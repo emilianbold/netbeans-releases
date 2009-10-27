@@ -125,14 +125,14 @@ public class PHPFormatterQATest extends PHPTestBase {
      * issue 173906
      * @throws Exception
      */
-    public void test173906_172475_1_unstableNewIssue() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/unstable_newIssues/173906_172475_1.php");
+    public void test173906_172475_1_stableFixedIssue() throws Exception {
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/173906_172475_1.php");
     }
-    public void test173906_172475_2_unstableNewIssue() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/unstable_newIssues/173906_172475_2.php");
+    public void test173906_172475_2_stableFixedIssue() throws Exception {
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/173906_172475_2.php");
     }
-    public void test173906_172475_3_unstableNewIssue() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/unstable_newIssues/173906_172475_3.php");
+    public void test173906_172475_3_stableFixedIssue() throws Exception {
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/173906_172475_3.php");
     }
 
 
