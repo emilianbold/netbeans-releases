@@ -125,6 +125,7 @@ public final class AnalyzeFolder extends AbstractAction implements ContextAwareA
         
         public ToolsAction() {
             delegate = new AnalyzeFolder();
+            putValue("noIconInMenu", Boolean.TRUE);
         }
 
         @Override
