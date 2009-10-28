@@ -312,31 +312,31 @@ public class CsmUtilities {
 
     public static CsmFile getCsmFile(Document bDoc, boolean waitParsing) {
         CsmFile csmFile = null;
-        try {
-            if(bDoc != null) {
+        if (bDoc != null) {
+            try {
                 csmFile = (CsmFile) bDoc.getProperty(CsmFile.class);
-            }
-            if (csmFile == null) {
-                csmFile = getCsmFile(NbEditorUtilities.getDataObject(bDoc), waitParsing);
-            }
-            if (csmFile == null) {
-                String mimeType = (String) bDoc.getProperty(NbEditorDocument.MIME_TYPE_PROP); 
-                if ("text/x-dialog-binding".equals(mimeType)) { // NOI18N
-                    // this is context from dialog
-                    InputAttributes inputAttributes = (InputAttributes) bDoc.getProperty(InputAttributes.class);
-                    if (inputAttributes != null) {
-                        LanguagePath path = LanguagePath.get(MimeLookup.getLookup(mimeType).lookup(Language.class));
-                        FileObject fileObject = (FileObject) inputAttributes.getValue(path, "dialogBinding.fileObject"); //NOI18N
-                        csmFile = CsmUtilities.getCsmFile(fileObject, waitParsing);
-                        if (csmFile == null) {
-                            Document d = (Document) inputAttributes.getValue(path, "dialogBinding.document"); //NOI18N
-                            csmFile = d == null ? null : CsmUtilities.getCsmFile(d, waitParsing);
+                if (csmFile == null) {
+                    csmFile = getCsmFile(NbEditorUtilities.getDataObject(bDoc), waitParsing);
+                }
+                if (csmFile == null) {
+                    String mimeType = (String) bDoc.getProperty(NbEditorDocument.MIME_TYPE_PROP);
+                    if ("text/x-dialog-binding".equals(mimeType)) { // NOI18N
+                        // this is context from dialog
+                        InputAttributes inputAttributes = (InputAttributes) bDoc.getProperty(InputAttributes.class);
+                        if (inputAttributes != null) {
+                            LanguagePath path = LanguagePath.get(MimeLookup.getLookup(mimeType).lookup(Language.class));
+                            FileObject fileObject = (FileObject) inputAttributes.getValue(path, "dialogBinding.fileObject"); //NOI18N
+                            csmFile = CsmUtilities.getCsmFile(fileObject, waitParsing);
+                            if (csmFile == null) {
+                                Document d = (Document) inputAttributes.getValue(path, "dialogBinding.document"); //NOI18N
+                                csmFile = d == null ? null : CsmUtilities.getCsmFile(d, waitParsing);
+                            }
                         }
                     }
                 }
+            } catch (NullPointerException exc) {
+                exc.printStackTrace();
             }
-        } catch (NullPointerException exc) {
-            exc.printStackTrace();
         }
         return csmFile;
     }
