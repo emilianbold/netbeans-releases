@@ -222,6 +222,7 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
     
     private static final String[] BREAKABLE_PROPERTIES = new String[] {
         EarProjectProperties.DEBUG_CLASSPATH,
+        ProjectProperties.ENDORSED_CLASSPATH,
         EarProjectProperties.JAR_CONTENT_ADDITIONAL,
     };
     

@@ -204,6 +204,7 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider2 {
         AppClientProjectProperties.DEBUG_CLASSPATH,
         ProjectProperties.RUN_TEST_CLASSPATH,
         AppClientProjectProperties.DEBUG_TEST_CLASSPATH,
+        ProjectProperties.ENDORSED_CLASSPATH,
         ProjectProperties.JAVAC_TEST_CLASSPATH,
     };
     
