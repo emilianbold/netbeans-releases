@@ -89,7 +89,7 @@ public class UnnecessaryThreadsAdvice implements Advice {
     }
 
     public String getHtml() {
-        URL iconUrl = LoopParallelizationAdvice.class.getClassLoader().getResource("org/netbeans/modules/cnd/paralleladviser/paralleladviserview/resources/info.png"); // NOI18N
+        URL iconUrl = LoopParallelizationAdvice.class.getClassLoader().getResource("org/netbeans/modules/cnd/paralleladviser/paralleladviserview/resources/toomanythreads.png"); // NOI18N
         if(threads == null || threads.isEmpty()) {
             return ParallelAdviserAdviceUtils.createAdviceHtml(iconUrl,
                     getString("PAT_UnnecessaryThreads_Title"), // NOI18N

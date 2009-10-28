@@ -242,6 +242,11 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         performStaticTest("iz171453.cpp");
     }
 
+    public void testIZ175231() throws Exception {
+        // IZ#175231 : Error parser doesn't handle linenumber:column correctly
+        performStaticTest("iz175231.cpp");
+    }
+
     /////////////////////////////////////////////////////////////////////
     // FAILS
 
