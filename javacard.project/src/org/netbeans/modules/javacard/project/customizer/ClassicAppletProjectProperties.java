@@ -65,6 +65,7 @@ public final class ClassicAppletProjectProperties extends AppletProjectPropertie
 
     private AID originalPackageAID;
     private AID packageAID;
+    boolean useMyProxies;
 
     public ClassicAppletProjectProperties(JCProject project) {
         super(project);
@@ -76,6 +77,14 @@ public final class ClassicAppletProjectProperties extends AppletProjectPropertie
 
     public void setPackageAID(AID aid) {
         packageAID = aid;
+    }
+
+    public boolean isUseMyProxies() {
+        return useMyProxies;
+    }
+
+    public void setUseMyProxies(boolean useMyProxies) {
+        this.useMyProxies = useMyProxies;
     }
 
     private void rewriteManifest() throws IOException {
@@ -112,6 +121,7 @@ public final class ClassicAppletProjectProperties extends AppletProjectPropertie
 
     @Override
     protected boolean doStoreProperties(EditableProperties props) throws IOException {
+        props.setProperty(ProjectPropertyNames.PROJECT_PROP_CLASSIC_USE_MY_PROXIES, String.valueOf(useMyProxies));
         if (packageAID != null && !packageAID.equals(originalPackageAID)) {
             props.setProperty(ProjectPropertyNames.PROJECT_PROP_CLASSIC_PACKAGE_AID, packageAID.toString());
             rewriteManifest();
@@ -121,6 +131,7 @@ public final class ClassicAppletProjectProperties extends AppletProjectPropertie
 
     @Override
     protected void onInit(PropertyEvaluator eval) {
+        useMyProxies = Boolean.parseBoolean(project.evaluator().getProperty(ProjectPropertyNames.PROJECT_PROP_CLASSIC_USE_MY_PROXIES));
         String aidString = project.evaluator().getProperty(ProjectPropertyNames.PROJECT_PROP_CLASSIC_PACKAGE_AID);
         if (aidString != null) {
             try {
