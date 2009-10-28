@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.remote.ui.EditPathMapDialog;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
@@ -159,6 +160,10 @@ public abstract class RemotePathMap extends PathMap {
     
     // PathMap
     public String getRemotePath(String lpath, boolean useDefault) {
+        CndUtils.assertNotNull(lpath, "local path should not be null"); // nOI18N
+        if (lpath == null) {
+            return null;
+        }
         String ulpath = unifySeparators(lpath);
         String rpath = null;
         int max = 0;
@@ -181,6 +186,10 @@ public abstract class RemotePathMap extends PathMap {
     }
 
     public String getLocalPath(String rpath, boolean useDefault) {
+        CndUtils.assertNotNull(rpath, "remote path should not be null"); // nOI18N
+        if (rpath == null) {
+            return null;
+        }
         String urpath = unifySeparators(rpath);
         for (Map.Entry<String, String> entry : map.entrySet()) {
             String value = unifySeparators(entry.getValue());
@@ -201,6 +210,10 @@ public abstract class RemotePathMap extends PathMap {
      * @return true if path is remote, false otherwise
      */
     public boolean checkRemotePath(String lpath, boolean fixMissingPaths) {
+        CndUtils.assertNotNull(lpath, "local path should not be null"); // nOI18N
+        if (lpath == null) {
+            return false;
+        }
         String ulpath = unifySeparators(lpath);
         for (Map.Entry<String, String> entry : map.entrySet()) {
             String mpoint = unifySeparators(entry.getValue());
@@ -236,6 +249,11 @@ public abstract class RemotePathMap extends PathMap {
     }
 
     public void addMapping(String localParent, String remoteParent) {
+        CndUtils.assertNotNull(localParent, "local path shouldn't be null"); //NOI18N
+        CndUtils.assertNotNull(remoteParent, "remote path shouldn't be null"); //NOI18N
+        if (localParent == null || remoteParent == null) {
+            return;
+        }
         synchronized( map ) {
             Map<String, String> clone = new LinkedHashMap<String, String>(map);
             clone.put(localParent,remoteParent);
@@ -282,6 +300,11 @@ public abstract class RemotePathMap extends PathMap {
     }
 
     public static boolean isSubPath(String path, String pathToValidate) {
+        CndUtils.assertNotNull(path, "path should not be null"); // nOI18N
+        CndUtils.assertNotNull(pathToValidate, "pathToValidate should not be null"); // nOI18N
+        if (path == null || pathToValidate == null) {
+            return false;
+        }
         return unifySeparators(pathToValidate).startsWith(unifySeparators(path));
     }
 
@@ -381,13 +404,22 @@ public abstract class RemotePathMap extends PathMap {
         @Override
         public void init() {
             if (!loadFromPrefs()) {
-                addMapping("/", remoteBase); // NOI18N
+                if (remoteBase != null) {
+                    addMapping("/", remoteBase); // NOI18N
+                }
             }
         }
 
         @Override
         public String getRemotePath(String lpath, boolean useDefault) {
+            CndUtils.assertNotNull(lpath, "local path should not be null"); // nOI18N
+            if (lpath == null) {
+                return null;
+            }
             initRemoteBase(true);
+            if (remoteBase == null) {
+                return useDefault ? lpath : null;
+            }
             String remotePath = lpath;
             if (!isSubPath(remoteBase, lpath)) {
                 if (Utilities.isWindows() && !"/".equals(lpath)) { // NOI18N

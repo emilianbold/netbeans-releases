@@ -46,6 +46,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
@@ -74,6 +75,7 @@ import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.spi.project.FileOwnerQueryImplementation;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.SaveCookie;
@@ -501,6 +503,21 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
                 argsFlat.append(args[i]);
             }
             traceExecutable(executable, buildDir, argsFlat, envMap);
+        }
+    }
+
+    protected static boolean checkConnection(ExecutionEnvironment execEnv) {
+        if (execEnv.isRemote()) {
+            try {
+                ConnectionManager.getInstance().connectTo(execEnv);
+                return true;
+            } catch (IOException ex) {
+                return false;
+            } catch (CancellationException ex) {
+                return false;
+            }            
+        } else {
+            return true;
         }
     }
 

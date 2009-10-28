@@ -125,6 +125,9 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
             args = new String[]{"-f", makefile.getName(), target}; // NOI18N
         }
         final ExecutionEnvironment execEnv = getExecutionEnvironment(fileObject, project);
+        if (!checkConnection(execEnv)) {
+            return null;
+        }
         if (execEnv.isRemote()) {
             String s = HostInfoProvider.getMapper(execEnv).getRemotePath(buildDir.getAbsolutePath());
             if (s != null) {
