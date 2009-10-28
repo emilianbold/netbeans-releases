@@ -47,8 +47,8 @@ import org.netbeans.performance.enterprise.setup.EnterpriseSetup;
 
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.actions.BuildProjectAction;
-import org.netbeans.jellytools.actions.CleanProjectAction;
+//import org.netbeans.jellytools.actions.BuildProjectAction;
+//import org.netbeans.jellytools.actions.CleanProjectAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.Timeouts;
@@ -103,7 +103,7 @@ public class BuildComplexProjectTest extends PerformanceTestCase {
     @Override
     public void close() {
         if (projectNode != null) {
-            new CleanProjectAction().performPopup(projectNode);
+//            new CleanProjectAction().performPopup(projectNode);
             MainWindowOperator.getDefault().waitStatusText("Finished building"); // NOI18N
         }
         projectNode = null;
@@ -114,7 +114,7 @@ public class BuildComplexProjectTest extends PerformanceTestCase {
     
     public ComponentOperator open(){
         projectNode = new ProjectsTabOperator().getProjectRootNode(project_name);
-        new BuildProjectAction().performPopup(projectNode);
+//        new BuildProjectAction().performPopup(projectNode);
         Timeouts temp = JemmyProperties.getProperties().getTimeouts().cloneThis();
         JemmyProperties.getProperties().getTimeouts().setTimeout("Waiter.WaitingTime", expectedTime * 5);
         MainWindowOperator.getDefault().waitStatusText("Finished building build.xml (jbi-build)"); // NOI18N
