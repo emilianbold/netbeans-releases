@@ -53,11 +53,9 @@ import java.util.List;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.cnd.api.execution.LinkSupport;
-import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.utils.CndUtils;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
@@ -267,10 +265,10 @@ public abstract class CCCCompiler extends BasicCompiler {
      * @param macroToFind the name of the macro to search for
      * @return true if macro with the given name is found, otherwise false
      */
-    protected boolean containsMacro(List macrosList, String macroToFind) {
+    protected boolean containsMacro(List<String> macrosList, String macroToFind) {
 	int len = macroToFind.length();
-	for (Iterator it = macrosList.iterator(); it.hasNext();) {
-	    String macro = (String) it.next();
+	for (Iterator<String> it = macrosList.iterator(); it.hasNext();) {
+	    String macro = it.next();
 	    if (macro.startsWith(macroToFind) ) {
 		if( macro.length() == len ) {
 		    return true; // they are just equal
