@@ -82,7 +82,6 @@ import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.packaging.DummyPackager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -125,10 +124,9 @@ public class ConfigurationMakefileWriter {
             MakeConfiguration conf = (MakeConfiguration) confs[i];
             // add configurations if local host and target platform are different (don't have the right compiler set on this platform)
             if (conf.getDevelopmentHost().isLocalhost()) {
-                int platformID = CompilerSetManager.getDefault(conf.getDevelopmentHost().getExecutionEnvironment()).getPlatform();
-                Platform platform = Platforms.getPlatform(platformID);
-                String buildTarget = conf.getDevelopmentHost().getBuildPlatformConfiguration().getName();
-                if (platform != null && platform.getDisplayName() != null && !platform.getDisplayName().equals(buildTarget)) {
+                int hostPlatform = CompilerSetManager.getDefault(conf.getDevelopmentHost().getExecutionEnvironment()).getPlatform();
+                int targetPlatform = conf.getDevelopmentHost().getBuildPlatformConfiguration().getValue();
+                if (hostPlatform != targetPlatform) {
                     wrongPlatform.add(conf);
                 }
             }
