@@ -618,6 +618,14 @@ public class StartTask extends BasicTask<OperationState> {
             pathList.add(new TreeParser.Path("/domain/servers/server", reader.getServerFinder())); // NOI18N
             pathList.add(new TreeParser.Path("/domain/configs/config", reader.getConfigFinder())); // NOI18N
             pathList.add(new TreeParser.Path("/domain/configs/config/java-config", reader));  // NOI18N
+
+            // this option does not apply to installs that do not have the btrace-agent.jar
+            // so check for that first.
+            File irf = new File(ip.get(GlassfishModule.GLASSFISH_FOLDER_ATTR));
+            File btrace = new File(irf, "lib/monitor/btrace-agent.jar"); // NOI18N
+            if (btrace.exists()) {
+                pathList.add(new TreeParser.Path("/domain/configs/config/monitoring-service", reader.getMonitoringFinder(btrace)));  // NOI18N
+            }
             try {
                 TreeParser.readXml(domainXml, pathList);
                 return true;
