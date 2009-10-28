@@ -414,18 +414,20 @@ public class CompilerSetManager {
                 return;
             }
         }
-        // Look for compiler set with lowest position and set it as the default 
-        List<ToolchainDescriptor> toolchainDescriptors = ToolchainManager.getImpl().getAllToolchains();
-        int pos = -1;
+        CompilerSet bestCandidate = null;
         for (CompilerSet cs : sets) {
-            ToolchainDescriptor toolchainDescriptor = cs.getCompilerFlavor().getToolchainDescriptor();
-            int newPos = toolchainDescriptors.indexOf(toolchainDescriptor);
-            if (newPos >= 0 && (pos == -1 || newPos < pos)) {
-                pos = newPos;
-                setDefault(cs);
+            if (cs.isSunCompiler()) {
+                if ("SunStudio".equals(cs.getName())) { // NOI18N
+                    setDefault(cs);
+                    return;
+                }
+                if (bestCandidate == null) {
+                    bestCandidate = cs;
+                }
             }
         }
-        if (pos >= 0) {
+        if (bestCandidate != null) {
+            setDefault(bestCandidate);
             return;
         }
         if (!sets.isEmpty()) {
@@ -982,9 +984,6 @@ public class CompilerSetManager {
             sets.remove(0);
         }
         sets.add(cs);
-        if (sets.size() == 1) {
-            setDefault(cs);
-        }
     }
 
     public final boolean isEmpty() {
