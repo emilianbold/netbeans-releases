@@ -868,6 +868,12 @@ public final class CsmProjectContentResolver {
     }
 
     public List<CsmNamespace> getNestedNamespaces(CsmNamespace ns, String strPrefix, boolean match) {
+        return getNestedNamespaces(ns, strPrefix, match, new HashSet<CsmNamespace>());
+    }
+
+    private List<CsmNamespace> getNestedNamespaces(CsmNamespace ns, String strPrefix, boolean match, Set<CsmNamespace> handledNS) {
+        handledNS.add(ns);
+
         List<CsmNamespace> res = new ArrayList<CsmNamespace>();
         // handle all nested namespaces
         for (Iterator it = ns.getNestedNamespaces().iterator(); it.hasNext();) {
@@ -880,6 +886,14 @@ public final class CsmProjectContentResolver {
         if (sort && res != null) {
             CsmSortUtilities.sortMembers(res, isNaturalSort(), isCaseSensitive());
         }
+
+        for (CsmProject lib : ns.getProject().getLibraries()) {
+            CsmNamespace n = lib.findNamespace(ns.getQualifiedName());
+            if (n != null && !handledNS.contains(n)) {
+                res.addAll(getNestedNamespaces(n, strPrefix, match, handledNS));
+            }
+        }
+        
         return res;
     }
 
