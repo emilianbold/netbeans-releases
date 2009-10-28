@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakefileConfigura
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DefaultMakefileWriter;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.MakefileWriter;
@@ -76,9 +77,17 @@ import org.netbeans.modules.cnd.makeproject.api.PackagerDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.PackagerManager;
+import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.packaging.DummyPackager;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 public class ConfigurationMakefileWriter {
 
@@ -110,9 +119,34 @@ public class ConfigurationMakefileWriter {
      */
     private Collection<MakeConfiguration> getProtectedConfigurations() {
         List<MakeConfiguration> result = new ArrayList<MakeConfiguration>();
+        List<MakeConfiguration> wrongPlatform = new ArrayList<MakeConfiguration>();
         Configuration[] confs = projectDescriptor.getConfs().getConfs();
         for (int i = 0; i < confs.length; i++) {
             MakeConfiguration conf = (MakeConfiguration) confs[i];
+            // add configurations if local host and target platform are different (don't have the right compiler set on this platform)
+            if (conf.getDevelopmentHost().isLocalhost()) {
+                int platformID = CompilerSetManager.getDefault(conf.getDevelopmentHost().getExecutionEnvironment()).getPlatform();
+                Platform platform = Platforms.getPlatform(platformID);
+                String buildTarget = conf.getDevelopmentHost().getBuildPlatformConfiguration().getName();
+                if (platform != null && platform.getDisplayName() != null && !platform.getDisplayName().equals(buildTarget)) {
+                    result.add(conf);
+                    wrongPlatform.add(conf);
+                    continue;
+                }
+            }
+            if (!wrongPlatform.isEmpty()) {
+                ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.getLocal();
+                int platformID = CompilerSetManager.getDefault(execEnv).getPlatform();
+                Platform platform = Platforms.getPlatform(platformID);
+                StringBuffer list = new StringBuffer();
+                for (MakeConfiguration c : wrongPlatform) {
+                    list.append(getString("CONF", c.getName(), c.getDevelopmentHost().getBuildPlatformConfiguration().getName()) + "\n"); // NOI18N
+                }
+                String msg = getString("TARGET_MISMATCH_TXT", platform.getDisplayName(), list.toString());
+                NotifyDescriptor.Message nd = new DialogDescriptor.Message(msg);
+                DialogDisplayer.getDefault().notify(nd);
+            }
+            // add configurations with unknown compiler sets
             if (conf.getCompilerSet().getCompilerSet() == null) {
                 result.add(conf);
             }
@@ -944,5 +978,16 @@ public class ConfigurationMakefileWriter {
         bw.write("# Cleanup\n"); // NOI18N
         bw.write("cd \"${TOP}\"\n"); // NOI18N
         bw.write("rm -rf ${TMPDIR}\n"); // NOI18N
+    }
+
+    /** Look up i18n strings here */
+    private static String getString(String s) {
+        return NbBundle.getMessage(ConfigurationMakefileWriter.class, s);
+    }
+    private static String getString(String s, String arg1) {
+        return NbBundle.getMessage(ConfigurationMakefileWriter.class, s, arg1);
+    }
+    private static String getString(String s, String arg1, String arg2) {
+        return NbBundle.getMessage(ConfigurationMakefileWriter.class, s, arg1, arg2);
     }
 }
