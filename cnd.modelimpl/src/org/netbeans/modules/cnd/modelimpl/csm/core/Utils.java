@@ -203,6 +203,10 @@ public class Utils {
                 return "v"; // NOI18N
             case CLASS_FORWARD_DECLARATION:
                 return "w"; // NOI18N
+            case FUNCTION_FRIEND:
+                return "D"; // NOI18N
+            case FUNCTION_FRIEND_DEFINITION:
+                return "d"; // NOI18N
             default:
                 throw new IllegalArgumentException("Unexpected value of CsmDeclaration.Kind:" + kind); //NOI18N
         }
@@ -254,6 +258,10 @@ public class Utils {
                 return VARIABLE_DEFINITION;
             case 'w': // NOI18N
                 return CLASS_FORWARD_DECLARATION;
+            case 'D': // NOI18N
+                return FUNCTION_FRIEND;
+            case 'd': // NOI18N
+                return FUNCTION_FRIEND_DEFINITION;
             default:
                 throw new IllegalArgumentException("Unexpected char for CsmDeclaration.Kind: " + kind); //NOI18N
         }

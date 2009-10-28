@@ -212,7 +212,8 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
      * returns false
      */
     public boolean isPureDefinition() {
-        return getKind() == CsmDeclaration.Kind.FUNCTION_DEFINITION;
+        return getKind() == CsmDeclaration.Kind.FUNCTION_DEFINITION ||
+                getKind() == CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION;
     }
 
     protected boolean hasFlags(byte mask) {
@@ -422,6 +423,26 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
                 def = findDefinition(dependent, uname);
                 if (def != null) {
                     break;
+                }
+            }
+        }
+        if (def == null) {
+            uname = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION) + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix();
+            def = findDefinition(prj, uname);
+            if (def == null) {
+                for (CsmProject lib : prj.getLibraries()) {
+                    def = findDefinition(lib, uname);
+                    if (def != null) {
+                        break;
+                    }
+                }
+            }
+            if (def == null && (prj instanceof ProjectBase)) {
+                for (CsmProject dependent : ((ProjectBase) prj).getDependentProjects()) {
+                    def = findDefinition(dependent, uname);
+                    if (def != null) {
+                        break;
+                    }
                 }
             }
         }

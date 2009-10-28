@@ -484,7 +484,13 @@ public class AstRenderer {
         if (findGlobal(file.getProject(), uname, new ArrayList<CsmProject>())) {
             return true;
         }
-        CsmFilter filter = CsmSelect.getFilterBuilder().createKindFilter(CsmDeclaration.Kind.NAMESPACE_DEFINITION, CsmDeclaration.Kind.FUNCTION, CsmDeclaration.Kind.FUNCTION_DEFINITION);
+        uname = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION_FRIEND) +
+                OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR + "::" + name; // NOI18N
+        if (findGlobal(file.getProject(), uname, new ArrayList<CsmProject>())) {
+            return true;
+        }
+        CsmFilter filter = CsmSelect.getFilterBuilder().createKindFilter(CsmDeclaration.Kind.NAMESPACE_DEFINITION, CsmDeclaration.Kind.FUNCTION, CsmDeclaration.Kind.FUNCTION_DEFINITION,
+                CsmDeclaration.Kind.FUNCTION_FRIEND, CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION);
         return findFunction(name, CsmSelect.getDeclarations(file, filter), offset, filter);
     }
 
@@ -542,11 +548,13 @@ public class AstRenderer {
             }
             switch (decl.getKind()) {
                 case FUNCTION:
+                case FUNCTION_FRIEND:
                     if (CharSequenceKey.Comparator.compare(name, ((CsmFunction) decl).getName()) == 0) {
                         return true;
                     }
                     break;
                 case FUNCTION_DEFINITION:
+                case FUNCTION_FRIEND_DEFINITION:
                     if (CharSequenceKey.Comparator.compare(name, ((CsmFunctionDefinition) decl).getQualifiedName()) == 0) {
                         return true;
                     }

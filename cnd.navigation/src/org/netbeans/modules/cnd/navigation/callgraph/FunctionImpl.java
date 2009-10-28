@@ -61,6 +61,8 @@ public class FunctionImpl implements Function {
 
     static {
         preferredIcons.put(CsmDeclaration.Kind.FUNCTION, CsmDeclaration.Kind.FUNCTION_DEFINITION);
+        preferredIcons.put(CsmDeclaration.Kind.FUNCTION, CsmDeclaration.Kind.FUNCTION_FRIEND);
+        preferredIcons.put(CsmDeclaration.Kind.FUNCTION, CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION);
     }
     
     private CsmFunction function;

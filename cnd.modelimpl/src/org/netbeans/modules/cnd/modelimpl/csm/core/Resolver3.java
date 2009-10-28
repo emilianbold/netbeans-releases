@@ -297,7 +297,8 @@ public final class Resolver3 implements Resolver {
                     containingClass = cls;
                     findContext(CsmSelect.getClassMembers(containingClass, filter), filter);
                 }
-            } else if( decl.getKind() == CsmDeclaration.Kind.FUNCTION_DEFINITION ) {
+            } else if( decl.getKind() == CsmDeclaration.Kind.FUNCTION_DEFINITION ||
+                    decl.getKind() == CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION) {
                 CsmFunctionDefinition fd = (CsmFunctionDefinition) decl;
                 if( fd.getStartOffset() < this.offset && this.offset < fd.getEndOffset()  ) {
                     CsmNamespace ns = CsmBaseUtilities.getFunctionNamespace(fd);
@@ -544,7 +545,8 @@ public final class Resolver3 implements Resolver {
             CsmDeclaration decl = resolveUsingDeclaration((CsmUsingDeclaration) element);
             if( decl != null ) {
                 CharSequence id;
-                if( decl.getKind() == CsmDeclaration.Kind.FUNCTION || decl.getKind() == CsmDeclaration.Kind.FUNCTION_DEFINITION ) {
+                if( decl.getKind() == CsmDeclaration.Kind.FUNCTION || decl.getKind() == CsmDeclaration.Kind.FUNCTION_DEFINITION ||
+                        decl.getKind() == CsmDeclaration.Kind.FUNCTION_FRIEND || decl.getKind() == CsmDeclaration.Kind.FUNCTION_FRIEND) {
                     // TODO: decide how to resolve functions
                     id = ((CsmFunction) decl).getSignature();
                 } else {
