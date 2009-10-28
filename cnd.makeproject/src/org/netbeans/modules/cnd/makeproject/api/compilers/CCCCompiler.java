@@ -212,10 +212,10 @@ public abstract class CCCCompiler extends BasicCompiler {
             return;
         }
         ExecutionEnvironment execEnv = getExecutionEnvironment();
-        if (path == null) {
+        if (path == null || !HostInfoUtils.fileExists(execEnv, path)) {
             path = getDefaultPath();
         }
-        if (! HostInfoUtils.fileExists(execEnv, path)) {
+        if (!HostInfoUtils.fileExists(execEnv, path)) {
             return;
         }
         String command = path;
