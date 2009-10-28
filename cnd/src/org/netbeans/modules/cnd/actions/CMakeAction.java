@@ -114,6 +114,9 @@ public class CMakeAction extends AbstractExecutorRunAction {
         //String arguments = proFile.getName();
         String[] arguments =  getArguments(node, Tool.CMakeTool); // NOI18N
         ExecutionEnvironment execEnv = getExecutionEnvironment(fileObject, project);
+        if (!checkConnection(execEnv)) {
+            return null;
+        }
         Map<String, String> envMap = getEnv(execEnv, node, null);
         StringBuilder argsFlat = new StringBuilder();
         for (int i = 0; i < arguments.length; i++) {
