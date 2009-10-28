@@ -135,6 +135,9 @@ public class ShellRunAction extends AbstractExecutorRunAction {
         String[] args = bes.getArguments(); // from properties
 
         ExecutionEnvironment execEnv = getExecutionEnvironment(fileObject, project);
+        if (!checkConnection(execEnv)) {
+            return null;
+        }
         if (execEnv.isRemote()) {
             String s = HostInfoProvider.getMapper(execEnv).getRemotePath(buildDir.getAbsolutePath());
             if (s != null) {
