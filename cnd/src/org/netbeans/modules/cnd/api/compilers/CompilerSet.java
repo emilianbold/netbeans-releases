@@ -43,9 +43,18 @@ package org.netbeans.modules.cnd.api.compilers;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.modules.cnd.api.compilers.ToolchainManager.BaseFolder;
+import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CMakeDescriptor;
+import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
+import org.netbeans.modules.cnd.api.compilers.ToolchainManager.DebuggerDescriptor;
+import org.netbeans.modules.cnd.api.compilers.ToolchainManager.LinkerDescriptor;
+import org.netbeans.modules.cnd.api.compilers.ToolchainManager.MakeDescriptor;
+import org.netbeans.modules.cnd.api.compilers.ToolchainManager.QMakeDescriptor;
+import org.netbeans.modules.cnd.api.compilers.ToolchainManager.ScannerDescriptor;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.ToolchainDescriptor;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -165,6 +174,9 @@ public class CompilerSet {
                         if (list.size()>0){
                             d = list.get(0);
                         }
+                    }
+                    if (d == null) {
+                        d = new UnknownToolchainDescriptor();
                     }
                     unknownFlavor = new CompilerFlavor(UNKNOWN, d);
                     unknown.put(platform, unknownFlavor);
@@ -607,7 +619,7 @@ public class CompilerSet {
      * Example: C:/abc/def.c -> /cygdrive/c/def/c
      */
     public String normalizeDriveLetter(String path) {
-        if (path.length() > 1 && path.charAt(1) == ':') {
+        if (path.length() > 1 && path.charAt(1) == ':') { // NOI18N
             return getDriveLetterPrefix() + path.charAt(0) + path.substring(2); // NOI18N
         }
         return path;
@@ -630,5 +642,142 @@ public class CompilerSet {
     @Override
     public String toString() {
         return name;
+    }
+
+    private static class UnknownToolchainDescriptor implements ToolchainDescriptor {
+
+        public String getFileName() {
+            return ""; // NOI18N
+        }
+
+        public String getName() {
+            return ""; // NOI18N
+        }
+
+        public String getDisplayName() {
+            return ""; // NOI18N
+        }
+
+        public String[] getFamily() {
+            return new String[]{};
+        }
+
+        public String[] getPlatforms() {
+            return new String[]{};
+        }
+
+        public String getUpdateCenterUrl() {
+            return null;
+        }
+
+        public String getUpdateCenterDisplayName() {
+            return null;
+        }
+
+        public String getModuleID() {
+            return null;
+        }
+
+        public String getDriveLetterPrefix() {
+            return ""; // NOI18N
+        }
+
+        public List<BaseFolder> getBaseFolders() {
+            return Collections.<BaseFolder>emptyList();
+        }
+
+        public List<BaseFolder> getCommandFolders() {
+            return Collections.<BaseFolder>emptyList();
+        }
+
+        public String getQmakeSpec() {
+            return ""; // NOI18N
+        }
+
+        public CompilerDescriptor getC() {
+            return null;
+        }
+
+        public CompilerDescriptor getCpp() {
+            return null;
+        }
+
+        public CompilerDescriptor getFortran() {
+            return null;
+        }
+
+        public CompilerDescriptor getAssembler() {
+            return null;
+        }
+
+        public ScannerDescriptor getScanner() {
+            return null;
+        }
+
+        public LinkerDescriptor getLinker() {
+            return new LinkerDescriptor(){
+
+                public String getLibraryPrefix() {
+                    return ""; // NOI18N
+                }
+
+                public String getLibrarySearchFlag() {
+                    return ""; // NOI18N
+                }
+
+                public String getDynamicLibrarySearchFlag() {
+                    return ""; // NOI18N
+                }
+
+                public String getLibraryFlag() {
+                    return ""; // NOI18N
+                }
+
+                public String getPICFlag() {
+                    return ""; // NOI18N
+                }
+
+                public String getStaticLibraryFlag() {
+                    return ""; // NOI18N
+                }
+
+                public String getDynamicLibraryFlag() {
+                    return ""; // NOI18N
+                }
+
+                public String getDynamicLibraryBasicFlag() {
+                    return ""; // NOI18N
+                }
+
+                public String getOutputFileFlag() {
+                    return ""; // NOI18N
+                }
+            };
+        }
+
+        public MakeDescriptor getMake() {
+            return null;
+        }
+
+        public Map<String, List<String>> getDefaultLocations() {
+            return Collections.<String, List<String>>emptyMap();
+        }
+
+        public DebuggerDescriptor getDebugger() {
+            return null;
+        }
+
+        public String getMakefileWriter() {
+            return null;
+        }
+
+        public QMakeDescriptor getQMake() {
+            return null;
+        }
+
+        public CMakeDescriptor getCMake() {
+            return null;
+        }
+
     }
 }
