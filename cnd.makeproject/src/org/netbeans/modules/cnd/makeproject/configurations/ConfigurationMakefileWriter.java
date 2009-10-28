@@ -122,16 +122,14 @@ public class ConfigurationMakefileWriter {
         Configuration[] confs = projectDescriptor.getConfs().getConfs();
         for (int i = 0; i < confs.length; i++) {
             MakeConfiguration conf = (MakeConfiguration) confs[i];
-            // add configurations if local host and target platform are different (don't have the right compiler set on this platform)
-            if (conf.getDevelopmentHost().isLocalhost()) {
-                int hostPlatform = CompilerSetManager.getDefault(conf.getDevelopmentHost().getExecutionEnvironment()).getPlatform();
-                int targetPlatform = conf.getDevelopmentHost().getBuildPlatformConfiguration().getValue();
-                if (hostPlatform != targetPlatform) {
-                    wrongPlatform.add(conf);
-                }
+            if (conf.getDevelopmentHost().isLocalhost() &&
+                    CompilerSetManager.getDefault(conf.getDevelopmentHost().getExecutionEnvironment()).getPlatform() != conf.getDevelopmentHost().getBuildPlatformConfiguration().getValue()) {
+                // add configurations if local host and target platform are different (don't have the right compiler set on this platform)
+                wrongPlatform.add(conf);
+                result.add(conf);
             }
-            // add configurations with unknown compiler sets
-            if (conf.getCompilerSet().getCompilerSet() == null) {
+            else if (conf.getCompilerSet().getCompilerSet() == null) {
+                // add configurations with unknown compiler sets
                 result.add(conf);
             }
         }
