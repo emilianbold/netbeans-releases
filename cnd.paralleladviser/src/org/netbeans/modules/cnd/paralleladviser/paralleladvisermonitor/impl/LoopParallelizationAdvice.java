@@ -145,7 +145,7 @@ public class LoopParallelizationAdvice implements Advice {
     }
 
     public String getHtml() {
-        URL iconUrl = LoopParallelizationAdvice.class.getClassLoader().getResource("org/netbeans/modules/cnd/paralleladviser/paralleladviserview/resources/ploop.png"); // NOI18N
+        URL iconUrl = LoopParallelizationAdvice.class.getClassLoader().getResource("org/netbeans/modules/cnd/paralleladviser/paralleladviserview/resources/loopforparallelization.png"); // NOI18N
 
         return ParallelAdviserAdviceUtils.createAdviceHtml(iconUrl,
                 getString("PAT_LoopParallelization_Title"), // NOI18N

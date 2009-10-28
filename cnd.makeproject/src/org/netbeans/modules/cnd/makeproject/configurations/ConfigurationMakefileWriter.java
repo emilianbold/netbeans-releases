@@ -551,7 +551,7 @@ public class ConfigurationMakefileWriter {
                     BasicCompiler compiler = (BasicCompiler) compilerSet.getTool(itemConfiguration.getTool());
                     BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
                     target = compilerConfiguration.getOutputFile(items[i], conf, false);
-                    if (compiler != null) {
+                    if (compiler != null && compiler.getDescriptor() != null) {
                         String fromLinker = ""; // NOI18N
                         if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_DYNAMIC_LIB) {
                             if (conf.getLinkerConfiguration().getPICOption().getValue()) {

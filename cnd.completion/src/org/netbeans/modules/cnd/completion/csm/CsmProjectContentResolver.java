@@ -485,11 +485,15 @@ public final class CsmProjectContentResolver {
             kinds = new CsmDeclaration.Kind[]{
                         CsmDeclaration.Kind.FUNCTION,
                         CsmDeclaration.Kind.FUNCTION_DEFINITION,
+                        CsmDeclaration.Kind.FUNCTION_FRIEND,
+                        CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION,
                         CsmDeclaration.Kind.NAMESPACE_DEFINITION};
         } else {
             kinds = new CsmDeclaration.Kind[]{
                         CsmDeclaration.Kind.FUNCTION,
-                        CsmDeclaration.Kind.FUNCTION_DEFINITION};
+                        CsmDeclaration.Kind.FUNCTION_DEFINITION,
+                        CsmDeclaration.Kind.FUNCTION_FRIEND,
+                        CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION};
         }
         CsmFilter filter = CsmContextUtilities.createFilter(kinds,
                 strPrefix, match, caseSensitive, fromUnnamedNamespace || needDeclFromUnnamedNS);
@@ -520,11 +524,16 @@ public final class CsmProjectContentResolver {
             kinds = new CsmDeclaration.Kind[]{
                         CsmDeclaration.Kind.FUNCTION,
                         CsmDeclaration.Kind.FUNCTION_DEFINITION,
+                        CsmDeclaration.Kind.FUNCTION_FRIEND,
+                        CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION,
+
                         CsmDeclaration.Kind.NAMESPACE_DEFINITION};
         } else {
             kinds = new CsmDeclaration.Kind[]{
                         CsmDeclaration.Kind.FUNCTION,
-                        CsmDeclaration.Kind.FUNCTION_DEFINITION};
+                        CsmDeclaration.Kind.FUNCTION_DEFINITION,
+                        CsmDeclaration.Kind.FUNCTION_FRIEND,
+                        CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION};
         }
         CsmFilter filter = CsmContextUtilities.createFilter(kinds,
                 strPrefix, match, caseSensitive, fromUnnamedNamespace || needDeclFromUnnamedNS);
@@ -703,7 +712,9 @@ public final class CsmProjectContentResolver {
             CsmFile file, List<CsmFunction> out, boolean needDeclFromUnnamedNS) {
         CsmDeclaration.Kind kinds[] = {
             CsmDeclaration.Kind.FUNCTION,
-            CsmDeclaration.Kind.FUNCTION_DEFINITION
+            CsmDeclaration.Kind.FUNCTION_DEFINITION,
+            CsmDeclaration.Kind.FUNCTION_FRIEND,
+            CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION
         };
         Collection<CsmScopeElement> se = new ArrayList<CsmScopeElement>();
         getFileLocalIncludeNamespaceMembers(ns, file, se, needDeclFromUnnamedNS);
@@ -827,7 +838,9 @@ public final class CsmProjectContentResolver {
     private List<CsmFunction> getNamespaceFunctions(CsmNamespace ns, String strPrefix, boolean match, boolean sort, boolean searchNested) {
         CsmDeclaration.Kind memberKinds[] = {
             CsmDeclaration.Kind.FUNCTION,
-            CsmDeclaration.Kind.FUNCTION_DEFINITION
+            CsmDeclaration.Kind.FUNCTION_DEFINITION,
+            CsmDeclaration.Kind.FUNCTION_FRIEND,
+            CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION
         };
         List res = getNamespaceMembers(ns, memberKinds, strPrefix, match, searchNested, false);
         Collection used = CsmUsingResolver.getDefault().findUsedDeclarations(ns);
@@ -930,7 +943,9 @@ public final class CsmProjectContentResolver {
     public List<CsmMethod> getMethods(CsmClass clazz, CsmOffsetableDeclaration contextDeclaration, String strPrefix, boolean staticOnly, boolean match, boolean inspectParentClasses, boolean inspectOuterClasses, boolean scopeAccessedClassifier) {
         CsmDeclaration.Kind memberKinds[] = {
             CsmDeclaration.Kind.FUNCTION,
-            CsmDeclaration.Kind.FUNCTION_DEFINITION
+            CsmDeclaration.Kind.FUNCTION_DEFINITION,
+            CsmDeclaration.Kind.FUNCTION_FRIEND,
+            CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION
         };
         List res = getClassMembers(clazz, contextDeclaration, memberKinds, strPrefix, staticOnly, match, inspectParentClasses, inspectOuterClasses, scopeAccessedClassifier, false);
         if (res != null && this.isSortNeeded()) {
@@ -990,7 +1005,9 @@ public final class CsmProjectContentResolver {
         CsmDeclaration.Kind memberKinds[] = {
             CsmDeclaration.Kind.VARIABLE,
             CsmDeclaration.Kind.FUNCTION,
-            CsmDeclaration.Kind.FUNCTION_DEFINITION
+            CsmDeclaration.Kind.FUNCTION_DEFINITION,
+            CsmDeclaration.Kind.FUNCTION_FRIEND,
+            CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION
         };
         List<CsmMember> res = getClassMembers(clazz, contextDeclaration, memberKinds, strPrefix, staticOnly, match, inspectParentClasses, inspectOuterClasses, scopeAccessedClassifier, false);
         if (isSortNeeded() && res != null) {

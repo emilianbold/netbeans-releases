@@ -194,6 +194,8 @@ public class CppTypeProvider implements TypeProvider {
             case USING_DECLARATION:
             case CLASS_FORWARD_DECLARATION:
             case CLASS_FRIEND_DECLARATION:
+            case FUNCTION_FRIEND:
+            case FUNCTION_FRIEND_DEFINITION:
                 break;
         }
     }    

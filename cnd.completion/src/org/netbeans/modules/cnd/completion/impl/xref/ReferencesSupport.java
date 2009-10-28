@@ -98,6 +98,7 @@ import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
 import org.netbeans.modules.cnd.api.model.CsmFunctionPointerType;
 import org.netbeans.modules.cnd.api.model.CsmListeners;
+import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmProgressAdapter;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
@@ -249,8 +250,22 @@ public final class ReferencesSupport {
         // macros have max priority in file
         List<CsmReference> macroUsages = CsmFileInfoQuery.getDefault().getMacroUsages(csmFile);
         csmItem = findMacro(macroUsages, offset);
-        if (csmItem != null) {
-            return csmItem;
+        if (csmItem instanceof CsmMacro) {
+            CsmMacro macro = (CsmMacro) csmItem;
+            List<CharSequence> macroParameters = macro.getParameters();
+            if (macroParameters == null || macroParameters.isEmpty()) {
+                return csmItem;
+            } else {
+                int paramsNumber = CompletionUtilities.getMethodParamsNumber(doc, offset);
+                if (paramsNumber != 0) {
+                    if (paramsNumber == macroParameters.size()) {
+                        return csmItem;
+                    } else {
+                        return null;
+                    }
+                }
+            }
+            csmItem = null;
         }
         CsmObject objUnderOffset = CsmOffsetResolver.findObject(csmFile, offset, fileReferencesContext);
         // TODO: it would be great to check position in named element, but we don't
@@ -719,7 +734,7 @@ public final class ReferencesSupport {
         }
         return null;
     }
-    
+
     private static final class RefOffsetKey implements CsmReference {
 
         private final int offset;

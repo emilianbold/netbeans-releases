@@ -105,11 +105,11 @@ public class FileMagic {
     }
     
     public static boolean isExeMagic(byte[] bytes){
-        return bytes[0] == 'M' && bytes[1] == 'Z';
+        return bytes[0] == 'M' && bytes[1] == 'Z'; // NOI18N
     }
 
     public static boolean isPeMagic(byte[] bytes){
-        return bytes[0] == 'P' && bytes[1] == 'E' && bytes[2] == 0 && bytes[3] == 0;
+        return bytes[0] == 'P' && bytes[1] == 'E' && bytes[2] == 0 && bytes[3] == 0; // NOI18N
     }
 
     public static boolean isCoffMagic(byte[] bytes){
@@ -117,7 +117,7 @@ public class FileMagic {
     }
     
     public static boolean isElfMagic(byte[] bytes){
-        return bytes[0] == 0x7f && bytes[1] == 'E' && bytes[2] == 'L' && bytes[3] == 'F';
+        return bytes[0] == 0x7f && bytes[1] == 'E' && bytes[2] == 'L' && bytes[3] == 'F'; // NOI18N
     }
     
     public static boolean isMachoMagic(byte[] bytes){
@@ -125,8 +125,8 @@ public class FileMagic {
     }
     
     public static boolean isArchiveMagic(byte[] bytes){
-        return bytes[0] == '!' && bytes[1] == '<' && bytes[2] == 'a' && bytes[3] == 'r' &&
-                bytes[4] == 'c' && bytes[5] == 'h' && bytes[6] == '>' && bytes[7] == '\n';
+        return bytes[0] == '!' && bytes[1] == '<' && bytes[2] == 'a' && bytes[3] == 'r' && // NOI18N
+                bytes[4] == 'c' && bytes[5] == 'h' && bytes[6] == '>' && bytes[7] == '\n'; // NOI18N
     }
 
     private static final class MyRandomAccessFile extends RandomAccessFile {
@@ -142,7 +142,7 @@ public class FileMagic {
         private long countOfBufferReads = 0;
 
         private MyRandomAccessFile(String fileName) throws IOException {
-            super(fileName, "r");
+            super(fileName, "r"); // NOI18N
             this.fileName = fileName;
             invalidate();
         }
@@ -225,13 +225,13 @@ public class FileMagic {
         public void dispose() {
             if (TRACE_STATISTIC) {
                 if (buffer != null) {
-                    System.err.println("File " + fileName);
+                    System.err.println("File " + fileName); // NOI18N
                     try {
-                        System.err.println("\tFile Length= " + length());
+                        System.err.println("\tFile Length= " + length()); // NOI18N
                     } catch (IOException ex) {
                     }
-                    System.err.println("\tByte Reads=  " + countOfReads);
-                    System.err.println("\tBuffer Reads=" + countOfBufferReads);
+                    System.err.println("\tByte Reads=  " + countOfReads); // NOI18N
+                    System.err.println("\tBuffer Reads=" + countOfBufferReads); // NOI18N
                 }
             }
             try {
