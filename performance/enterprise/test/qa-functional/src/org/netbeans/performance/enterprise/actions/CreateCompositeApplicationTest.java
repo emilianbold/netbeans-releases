@@ -47,7 +47,7 @@ import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.enterprise.setup.EnterpriseSetup;
 
 import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
+import org.netbeans.jellytools.NewJavaProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.ComponentOperator;
@@ -61,7 +61,7 @@ import org.netbeans.junit.NbModuleSuite;
  */
 public class CreateCompositeApplicationTest extends PerformanceTestCase {
     
-    private NewProjectNameLocationStepOperator wizard_location;
+    private NewJavaProjectNameLocationStepOperator wizard_location;
     private String category, project, project_name;
     
     /**
@@ -113,7 +113,7 @@ public class CreateCompositeApplicationTest extends PerformanceTestCase {
         wizard.selectCategory(category);
         wizard.selectProject(project);
         wizard.next();
-        wizard_location = new NewProjectNameLocationStepOperator();
+        wizard_location = new NewJavaProjectNameLocationStepOperator();
         String directory = CommonUtilities.getTempDir() + "createdProjects";
         wizard_location.txtProjectLocation().setText(directory);
         project_name = "CompositeApp_" + System.currentTimeMillis();
