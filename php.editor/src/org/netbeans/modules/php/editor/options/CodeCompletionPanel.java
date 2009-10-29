@@ -93,6 +93,7 @@ public class CodeCompletionPanel extends JPanel {
         }
     }
 
+    static final String PHP_AUTO_COMPLETION_FULL = "phpAutoCompletionFull"; // NOI18N
     static final String PHP_AUTO_COMPLETION_VARIABLES = "phpAutoCompletionVariables"; // NOI18N
     static final String PHP_AUTO_COMPLETION_TYPES = "phpAutoCompletionTypes"; // NOI18N
     static final String PHP_AUTO_COMPLETION_NAMESPACES = "phpAutoCompletionNamespaces"; // NOI18N
@@ -102,6 +103,7 @@ public class CodeCompletionPanel extends JPanel {
     static final String PHP_CODE_COMPLETION_TYPE = "phpCodeCompletionType"; // NOI18N
 
     // default values
+    static final boolean PHP_AUTO_COMPLETION_FULL_DEFAULT = true;
     static final boolean PHP_AUTO_COMPLETION_VARIABLES_DEFAULT = true;
     static final boolean PHP_AUTO_COMPLETION_TYPES_DEFAULT = true;
     static final boolean PHP_AUTO_COMPLETION_NAMESPACES_DEFAULT = true;
@@ -205,6 +207,8 @@ public class CodeCompletionPanel extends JPanel {
     }
 
     void validateData() {
+        //TODO: add missing UI for PHP_AUTO_COMPLETION_FULL
+        preferences.putBoolean(PHP_AUTO_COMPLETION_FULL, PHP_AUTO_COMPLETION_FULL_DEFAULT);
         preferences.putBoolean(PHP_AUTO_COMPLETION_VARIABLES, autoCompletionVariablesCheckBox.isSelected());
         preferences.putBoolean(PHP_AUTO_COMPLETION_TYPES, autoCompletionTypesCheckBox.isSelected());
         preferences.putBoolean(PHP_AUTO_COMPLETION_NAMESPACES, autoCompletionNamespacesCheckBox.isSelected());
