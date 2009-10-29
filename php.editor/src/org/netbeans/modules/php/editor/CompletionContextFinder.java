@@ -77,6 +77,13 @@ class CompletionContextFinder {
             new Object[]{PHPTokenId.PHP_NEW, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING}
     );
 
+    private static final List<Object[]> FUNCTION_NAME_TOKENCHAINS = Arrays.asList(
+            new Object[]{PHPTokenId.PHP_FUNCTION},
+            new Object[]{PHPTokenId.PHP_FUNCTION, PHPTokenId.WHITESPACE},
+            new Object[]{PHPTokenId.PHP_FUNCTION, PHPTokenId.WHITESPACE, NAMESPACE_FALSE_TOKEN},
+            new Object[]{PHPTokenId.PHP_FUNCTION, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING}
+    );
+
     private static final List<Object[]> USE_KEYWORD_TOKENS = Arrays.asList(
             new Object[]{PHPTokenId.PHP_USE},
             new Object[]{PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE},
@@ -270,6 +277,8 @@ class CompletionContextFinder {
                     return paramContext;
                 }
             }
+            return CompletionContext.NONE;
+        } else if (acceptTokenChains(tokenSequence, FUNCTION_NAME_TOKENCHAINS)) {
             return CompletionContext.NONE;
         }
 
