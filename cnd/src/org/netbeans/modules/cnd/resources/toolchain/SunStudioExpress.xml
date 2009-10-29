@@ -51,7 +51,7 @@ made subject to such option by the copyright holder.
         <platform os="linux" directory="/opt/SunStudioExpress/bin"/>
         <platform os="sun_intel" directory="/opt/aten/bin"/>
         <platform os="sun_intel" directory="/opt/SunStudioExpress/bin"/>
-        <platform os="sun_intel" directory="/opt/aten/bin"/>
+        <platform os="sun_sparc" directory="/opt/aten/bin"/>
         <platform os="sun_sparc" directory="/opt/SunStudioExpress/bin"/>
     </default_locations>
     <c>
