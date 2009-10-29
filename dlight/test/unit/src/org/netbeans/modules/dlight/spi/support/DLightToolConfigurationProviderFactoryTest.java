@@ -139,6 +139,36 @@ public class DLightToolConfigurationProviderFactoryTest {
     }
 
     @Test
+    public void testCreateDetailsTable() {
+        System.out.println("createDetaiklsTable");
+        DataTableMetadata result = null;
+        try {
+            FileObject fo = folder.getFileObject("DtraceDetailsDatatableMetadata.instance");
+            assertNotNull("file " + "DLight/Fops.Configuration/DtraceDetailsDatatableMetadata.instance", fo);
+
+            Object obj = fo.getAttribute("instanceCreate");
+            assertNotNull("File object should have not null instanceCreate attribute", obj);
+
+            if (!(obj instanceof DataTableMetadata)) {
+                fail("Object needs to be DatatableMetadata: " + obj);
+            }
+            result = (DataTableMetadata)obj;
+
+        } catch (Exception ex) {
+            fail("Test is not passed");
+        }
+        assertNotNull("DataTableMetadata should not be null", result);
+        System.out.println("****************************************");
+        System.out.println("table name=" + result.getName());
+        System.out.println("*********************columns*********************");
+        List<Column> columns = result.getColumns();
+        for (Column c: columns ){
+            print(c);
+        }
+        System.out.println("****************************************");
+    }
+
+    @Test
     public void testCreateColumnsList(){
         System.out.println("createColumnsList");
         List<Column> result = null;

@@ -67,44 +67,63 @@ public final class DataTableMetadataFactory {
     }
     
     static DataTableMetadata create(Map map){
-        FileObject rootFolder = FileUtil.getConfigRoot();
-        String columnsFolderPath = (String)map.get("columns");//NOI18N
-        FileObject columnsFolder = rootFolder.getFileObject(columnsFolderPath);
-        List<Column> columns = (List<Column>)columnsFolder.getAttribute("instanceCreate");//NOI18N
-        return new DataTableMetadata((String)map.get("name"), columns, null);//NOI18N
+        try{
+            FileObject rootFolder = FileUtil.getConfigRoot();
+            String columnsFolderPath = (String)map.get("columns");//NOI18N
+            FileObject columnsFolder = rootFolder.getFileObject(columnsFolderPath);
+            @SuppressWarnings("unchecked")
+            List<Column> columns = (List<Column>)columnsFolder.getAttribute("instanceCreate");//NOI18N
+            if (columns == null){
+                return null;
+            }
+            return new DataTableMetadata((String)map.get("name"), columns, null);//NOI18N
+        }catch(Throwable e){
+            e.printStackTrace();
+        }
+        return null;
     }
 
     static List<Column> createColumnsList(Map map){
-        FileObject rootFolder = FileUtil.getConfigRoot();
-        String columnsFolderPath = (String)map.get("columns");//NOI18N
-        FileObject columnsFolder = rootFolder.getFileObject(columnsFolderPath);
-        FileObject[] columnFiles = columnsFolder.getChildren();
-        List<Column> columns = new ArrayList<Column>();
-        for (int i = 0; i < columnFiles.length; i++){
-            Object obj = columnFiles[i].getAttribute("instanceCreate");//NOI18N
-            if ((obj != null && obj instanceof Column)) {
-                columns.add((Column)obj);
-            }
+        try{
+            FileObject rootFolder = FileUtil.getConfigRoot();
+            String columnsFolderPath = (String)map.get("columns");//NOI18N
+            FileObject columnsFolder = rootFolder.getFileObject(columnsFolderPath);
+            FileObject[] columnFiles = columnsFolder.getChildren();
+            List<Column> columns = new ArrayList<Column>();
+            for (int i = 0; i < columnFiles.length; i++){
+                Object obj = columnFiles[i].getAttribute("instanceCreate");//NOI18N
+                if ((obj != null && obj instanceof Column)) {
+                    columns.add((Column)obj);
+                }
 
+            }
+            return columns;
+        }catch(Throwable e){
+            e.printStackTrace();
         }
-        return columns;
+        return null;
     }
 
     static Column createColumn(Map map){
-        String name =getStringValue(map, "name");//NOI18N
-        String shortName = getStringValue(map, "shortname");//NOI18N
-        String expression = getStringValue(map, "expression");//NOI18N
-        Class clazz = String.class;
-        try {
-            
-            clazz = Class.forName(getStringValue(map, "class"));//NOI18N
-        } catch (ClassNotFoundException ex) {
-            clazz = stringToClass.get(getStringValue(map, "class"));
-            if (clazz == null){
-                clazz = String.class;
+        try{
+            String name = getStringValue(map, "name");//NOI18N
+            String shortName = getStringValue(map, "shortname");//NOI18N
+            String expression = getStringValue(map, "expression");//NOI18N
+            Class clazz = String.class;
+            try {
+
+                clazz = Class.forName(getStringValue(map, "class"));//NOI18N
+            } catch (ClassNotFoundException ex) {
+                clazz = stringToClass.get(getStringValue(map, "class"));
+                if (clazz == null){
+                    clazz = String.class;
+                }
             }
+            return new Column(name, clazz, shortName, shortName, expression);
+        }catch(Throwable e){
+            e.printStackTrace();
         }
-        return new Column(name, clazz, shortName, shortName, expression);
+        return null;
     }
 
      private static String getStringValue(Map map, String key) {

@@ -53,7 +53,7 @@
                     <attr name="class" stringvalue="time"/>
                     <attr name="shortname" bundlevalue="org.netbeans.modules.dlight.spi.support.Bundle#Column.Timestamp"/>
                 </file>
-                <file name="Column7.instance">
+                <file name="Column6.instance">
                     <attr name="instanceCreate" methodValue="org.netbeans.modules.dlight.api.impl.DataTableMetadataFactory.createColumn"/>
                     <attr name="name" stringvalue="sid"/>
                     <attr name="class" stringvalue="int"/>
@@ -92,7 +92,7 @@
             </file>
             <file name="DtraceDetailsColumns.List">
                 <attr name="instanceCreate" methodValue="org.netbeans.modules.dlight.api.impl.DataTableMetadataFactory.createColumnsList"/>
-                <attr name="columns" stringvalue="DLight/Fops/DtraceDetailsColumns.List"/>
+                <attr name="columns" stringvalue="DLight/Fops.Configuration/DtraceDetailsColumns"/>
             </file>
             <folder name="DtraceDetailsColumns">
                 <file name="Column1.instance">
@@ -144,7 +144,8 @@
                 <attr name="LastNonNull" boolvalue="false"/>
                 <attr name="action.displayName" bundlevalue="org.netbeans.modules.dlight.spi.support.Bundle#Indicator.Action"/>
                 <attr name="action.tooltip" bundlevalue="org.netbeans.modules.dlight.spi.support.Bundle#Indicator.Action.Tooltip"/>
-                <attr name="details.descriptor" newvalue="org.netbeans.modules.dlight.indicators."/>
+                <attr name="details.descriptor" stringvalue="DLight/Fops.Configuration/DetailsDescription.instance"/>
+                <attr name="timeSeriesDescriptors" stringvalue="DLight/Fops.Configuration/TimeSeriesDescriptorsList"/>
             </file>
         </folder>
     </folder>
