@@ -42,6 +42,50 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 <filesystem>
+    <folder name="Actions">
+        <folder name="Source">
+            <file name="org-netbeans-modules-java-hints-analyzer-AnalyzeFolder.instance"/>
+        </folder>
+        <folder name="Window">
+            <file name="org-netbeans-modules-java-hints-analyzer-ui-AnalyzerAction.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.windows.TopComponent.openAction"/>
+                <attr name="component" methodvalue="org.netbeans.modules.java.hints.analyzer.ui.AnalyzerTopComponent.findInstance"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.java.hints.analyzer.ui.Bundle#CTL_AnalyzerAction"/>
+            </file>
+        </folder>
+    </folder>
+    <folder name="Menu">
+<!--        <folder name="Source">
+            <file name="org-netbeans-modules-java-hints-analyzer-AnalyzeFolder.shadow">
+                <attr name="originalFile" stringvalue="Actions/Source/org-netbeans-modules-java-hints-analyzer-AnalyzeFolder.instance"/>
+                <attr name="position" intvalue="3050"/>
+            </file>
+            <file name="org-netbeans-modules-java-hints-analyzer-separatorAfter.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                <attr name="position" intvalue="3075"/>
+            </file>
+        </folder>-->
+        <folder name="Window">
+            <folder name="Output">
+                <file name="AnalyzerAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-java-hints-analyzer-ui-AnalyzerAction.instance"/>
+                    <attr name="position" intvalue="2467" />
+                </file>
+            </folder>
+        </folder>
+    </folder>
+    <folder name="Windows2">
+        <folder name="Components">
+            <file name="AnalyzerTopComponent.settings" url="AnalyzerTopComponentSettings.xml"/>
+        </folder>
+        <folder name="Modes">
+            <folder name="output">
+                <file name="AnalyzerTopComponent.wstcref" url="AnalyzerTopComponentWstcref.xml">
+                    <attr name="position" intvalue="2350"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
     <folder name="Editors">
         <folder name="text">
             <folder name="x-java">
