@@ -67,8 +67,6 @@ import org.openide.util.RequestProcessor;
                         projectType="org-netbeans-modules-web-project") //NOI18N
 public class RestOpenHook extends ProjectOpenedHook {
 
-    private static final String REST_CONFIG_TARGET="generate-rest-config"; //NOI18N
-
     public static final RequestProcessor METADATA_MODEL_RP =
             new RequestProcessor("RestOpenHook.REST_REQUEST_PROCESSOR"); //NOI18N
 
@@ -162,7 +160,7 @@ public class RestOpenHook extends ProjectOpenedHook {
                                 support.setProjectProperty(WebRestSupport.PROP_REST_ROOT_RESOURCES, newClasses);
                                 FileObject buildFo = Utils.findBuildXml(prj);
                                 if (buildFo != null) {
-                                    ActionUtils.runTarget(buildFo, new String[]{REST_CONFIG_TARGET}, null);
+                                    ActionUtils.runTarget(buildFo, new String[]{WebRestSupport.REST_CONFIG_TARGET}, null);
                                 }
                             }
 

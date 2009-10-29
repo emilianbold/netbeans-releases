@@ -45,6 +45,8 @@
 
 package org.netbeans.modules.websvc.rest.projects;
 
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
 
 /**
@@ -54,8 +56,39 @@ import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
 public class ApplicationConfigPanel extends javax.swing.JPanel {
 
     /** Creates new form RestSupportPanel */
+
+    public ApplicationConfigPanel(String configType, String resourcesPath) {
+        this();
+        if (WebRestSupport.CONFIG_TYPE_IDE.equals(configType)) {
+            jRadioButton1.setSelected(true);
+        } else if (WebRestSupport.CONFIG_TYPE_USER.equals(configType)) {
+            jRadioButton2.setSelected(true);
+        } else {
+            jRadioButton3.setSelected(true);
+        }
+        jTextField1.setText(resourcesPath);
+    }
+
     public ApplicationConfigPanel() {
         initComponents();
+        ItemListener l = new MyItemListener();
+        jRadioButton1.addItemListener(l);
+        jRadioButton2.addItemListener(l);
+        jRadioButton3.addItemListener(l);
+    }
+
+    private class MyItemListener implements ItemListener {
+
+        public void itemStateChanged(ItemEvent e) {
+            if (jRadioButton2.isSelected()) {
+                jLabel1.setEnabled(false);
+                jTextField1.setEnabled(false);
+            } else {
+                jLabel1.setEnabled(true);
+                jTextField1.setEnabled(true);
+            }
+        }
+
     }
 
     public String getConfigType() {

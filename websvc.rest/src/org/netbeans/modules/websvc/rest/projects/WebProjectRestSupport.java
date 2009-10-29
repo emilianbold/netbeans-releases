@@ -54,6 +54,7 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
+import org.netbeans.modules.j2ee.dd.api.web.ServletMapping25;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
@@ -334,7 +335,15 @@ public class WebProjectRestSupport extends WebRestSupport {
                 String applPath = getApplicationPathFromAnnotations();
                 return (applPath == null ? super.getApplicationPath() : applPath);
             } else {
-                String urlPattern = sm.getUrlPattern();
+                String urlPattern = super.getApplicationPath();
+                if (sm instanceof ServletMapping25) {
+                    String[] urlPatterns = ((ServletMapping25)sm).getUrlPatterns();
+                    if (urlPatterns.length > 0) {
+                        urlPattern = urlPatterns[0];
+                    }
+                } else {
+                    urlPattern = sm.getUrlPattern();
+                }
                 if (urlPattern.endsWith("*")) {
                     urlPattern = urlPattern.substring(0, urlPattern.length()-1);
                 }
