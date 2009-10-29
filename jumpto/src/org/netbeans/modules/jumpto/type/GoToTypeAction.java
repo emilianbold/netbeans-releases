@@ -113,7 +113,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
     private static final RequestProcessor rp = new RequestProcessor ("GoToTypeAction-RequestProcessor",1);
     private Worker running;
     private RequestProcessor.Task task;
-    private GoToPanel panel;
+    GoToPanel panel;
     private Dialog dialog;
     private JButton okButton;
     private Collection<? extends TypeProvider> typeProviders;
@@ -144,6 +144,10 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
     }
             
     public TypeDescriptor getSelectedType() {
+        return getSelectedType(true);
+    }
+    
+    public TypeDescriptor getSelectedType(final boolean visible) {
         TypeDescriptor result = null;
         try {
             panel = new GoToPanel(this);
@@ -164,7 +168,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                 }
             }            
             
-            dialog.setVisible(true);
+            dialog.setVisible(visible);
             result = panel.getSelectedType();
 
         } catch (IOException ex) {
@@ -504,6 +508,10 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
 	    }
 	    return text;
 	}
+    }
+
+    final void waitSearchFinished() {
+        task.waitFinished();
     }
     
     private static class Renderer extends DefaultListCellRenderer implements ChangeListener {
