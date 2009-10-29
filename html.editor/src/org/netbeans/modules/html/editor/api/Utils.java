@@ -150,9 +150,29 @@ public class Utils {
         return null;
     }
 
-    /** returns top most joined html token seuence for the document. */
+    /** returns top most joined html token seuence for the document at the specified offset. */
     public static TokenSequence<HTMLTokenId> getJoinedHtmlSequence(Document doc, int offset) {
-        return LexUtilities.getTokenSequence((BaseDocument) doc, offset, HTMLTokenId.language());
+        TokenHierarchy th = TokenHierarchy.get(doc);
+        TokenSequence ts = th.tokenSequence();
+        ts.move(offset);
+
+        while(ts.moveNext() || ts.movePrevious()) {
+            if(ts.language() == HTMLTokenId.language()) {
+                return ts;
+            }
+            
+            ts = ts.embeddedJoined();
+            
+            if(ts == null) {
+                break;
+            }
+
+            //position the embedded ts so we can search deeper
+            ts.move(offset);
+        }
+
+        return null;
+        
     }
 
 }

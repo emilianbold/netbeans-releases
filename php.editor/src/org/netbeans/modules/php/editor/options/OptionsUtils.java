@@ -57,6 +57,11 @@ public final class OptionsUtils {
         public void preferenceChange(PreferenceChangeEvent evt) {
             String settingName = evt == null ? null : evt.getKey();
 
+            if (settingName == null || CodeCompletionPanel.PHP_AUTO_COMPLETION_FULL.equals(settingName)) {
+                autoCompletionFull = preferences.getBoolean(
+                        CodeCompletionPanel.PHP_AUTO_COMPLETION_FULL,
+                        CodeCompletionPanel.PHP_AUTO_COMPLETION_FULL_DEFAULT);
+            }
             if (settingName == null || CodeCompletionPanel.PHP_AUTO_COMPLETION_VARIABLES.equals(settingName)) {
                 autoCompletionVariables = preferences.getBoolean(
                         CodeCompletionPanel.PHP_AUTO_COMPLETION_VARIABLES,
@@ -96,6 +101,7 @@ public final class OptionsUtils {
 
     private static Preferences preferences;
 
+    private static Boolean autoCompletionFull = null;
     private static Boolean autoCompletionVariables = null;
     private static Boolean autoCompletionTypes = null;
     private static Boolean autoCompletionNamespaces = null;
@@ -110,12 +116,24 @@ public final class OptionsUtils {
     private OptionsUtils() {
     }
 
+     /**
+     * Code Completion after typing
+     */
+    public static boolean autoCompletionFull() {
+        lazyInit();
+        assert autoCompletionFull != null;
+        return autoCompletionFull;
+    }
+
     /**
      * Variables after "$"
      */
     public static boolean autoCompletionVariables() {
         lazyInit();
         assert autoCompletionVariables != null;
+        if (autoCompletionFull()) {
+            return true;
+        }
         return autoCompletionVariables;
     }
 
@@ -125,6 +143,9 @@ public final class OptionsUtils {
     public static boolean autoCompletionTypes() {
         lazyInit();
         assert autoCompletionTypes != null;
+        if (autoCompletionFull()) {
+            return true;
+        }
         return autoCompletionTypes;
     }
 
@@ -134,6 +155,9 @@ public final class OptionsUtils {
     public static boolean autoCompletionNamespaces() {
         lazyInit();
         assert autoCompletionNamespaces != null;
+        if (autoCompletionFull()) {
+            return true;
+        }
         return autoCompletionNamespaces;
     }
 

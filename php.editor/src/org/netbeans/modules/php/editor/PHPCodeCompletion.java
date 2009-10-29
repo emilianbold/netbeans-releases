@@ -58,6 +58,7 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
@@ -1180,9 +1181,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         if (ts == null) {
             return QueryType.STOP;
         }
+       Token t = null;
         int diff = ts.move(offset);
         if(diff > 0 && ts.moveNext() || ts.movePrevious()) {
-            Token t = ts.token();
+            t = ts.token();
             if (OptionsUtils.autoCompletionTypes()) {
                 if (lastChar == ' ' || lastChar == '\t'){
                     if (ts.movePrevious()
@@ -1195,9 +1197,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 }
 
                 if(t.id() == PHPTokenId.PHP_OBJECT_OPERATOR || t.id() == PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM) {
-                    return QueryType.ALL_COMPLETION;
+                        return QueryType.ALL_COMPLETION;
+                    }
                 }
-            }
             if (OptionsUtils.autoCompletionVariables()) {
                 if((t.id() == PHPTokenId.PHP_TOKEN && lastChar == '$') ||
                         (t.id() == PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING && lastChar == '$')) {
@@ -1211,6 +1213,12 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             }
             if (t.id() == PHPTokenId.PHPDOC_COMMENT && lastChar == '@') {
                 return QueryType.ALL_COMPLETION;
+            }
+            if (OptionsUtils.autoCompletionFull() && t != null) {
+                TokenId id = t.id();
+                if ((id.equals(PHPTokenId.PHP_STRING) || id.equals(PHPTokenId.PHP_VARIABLE)) && t.length() > 0) {
+                    return QueryType.ALL_COMPLETION;
+                }
             }
         }
         return QueryType.NONE;
