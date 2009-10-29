@@ -175,6 +175,12 @@ made subject to such option by the copyright holder.
             <bits_64 flags="-m64"/>
         </architecture>
         <strip flags="-s"/>
+        <multithreading>
+            <none flags="" default="true"/>
+            <safe flags="-mt"/>
+            <automatic flags="-xautopar -xvector -xreduction -xloopinfo -O3"/>
+            <open_mp flags="-xopenmp -O3"/>
+        </multithreading>
         <output_object_file flags="-o " />
     </fortran>
     <assembler>
