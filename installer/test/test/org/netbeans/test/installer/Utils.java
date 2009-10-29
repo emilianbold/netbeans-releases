@@ -62,6 +62,7 @@ public class Utils {
     private static final Pattern PATTERN = Pattern.compile("(20[0-9]{10})");
     public static final String NB_DIR_NAME = "NetBeans";
     public static final String GF2_DIR_NAME = "GlassFish2";
+    public static final String GF2_PRELUDE_DIR_NAME = "gf-prelude";
     //public static final String GF3_DIR_NAME = "GlassFish3";
     public static final String TOMCAT_DIR_NAME = "Tomcat";
     public static final String NEXT_BUTTON_LABEL = "Next >";
@@ -405,7 +406,8 @@ public class Utils {
       new JButtonOperator( installerMain, NEXT_BUTTON_LABEL ).push( );
     }
 
-    public static void stepChooseComponet(String name) {
+    public static void stepChooseComponet( String name, TestData data )
+    {
         JFrameOperator installerMain = new JFrameOperator(MAIN_FRAME_TITLE);
 
         new JButtonOperator(installerMain, "Customize...").push();
@@ -414,6 +416,24 @@ public class Utils {
         featureList.selectItem(name);
 
         featureList.pressKey(KeyEvent.VK_SPACE);
+
+        // Check prelude
+        data.m_bPreludePresents = ( -1 != featureList.findItemIndex( "Prelude" ) );
+
+        new JButtonOperator(customizeInstallation, "OK").push();
+    }
+
+    public static void CheckPrelude( TestData data )
+    {
+        JFrameOperator installerMain = new JFrameOperator(MAIN_FRAME_TITLE);
+
+        new JButtonOperator(installerMain, "Customize...").push();
+        JDialogOperator customizeInstallation = new JDialogOperator("Customize Installation");
+        JListOperator featureList = new JListOperator(customizeInstallation);
+
+        // Check prelude
+        data.m_bPreludePresents = ( -1 != featureList.findItemIndex( "Prelude" ) );
+
         new JButtonOperator(customizeInstallation, "OK").push();
     }
 
@@ -513,6 +533,13 @@ public class Utils {
           "GlassFish2 dir deleted",
           Utils.dirExist( data.GetApplicationServerInstallPath( ) ).equals( OK )
         );
+      if( data.m_bPreludePresents )
+      {
+        TestCase.assertFalse(
+            "Prelude dir deleted",
+            Utils.dirExist( data.GetApplicationServerPreludeInstallPath( ) ).equals( OK )
+        );
+      }
       TestCase.assertFalse(
           "Tomcat dir deleted",
           Utils.dirExist( data.GetTomcatInstallPath( ) ).equals( OK )

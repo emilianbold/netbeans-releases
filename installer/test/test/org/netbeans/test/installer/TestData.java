@@ -62,7 +62,10 @@ public class TestData implements Serializable {
 
     private String m_sNetBeansInstallPath;
     private String m_sApplicationServerInstallPath;
+    private String m_sApplicationServerPreludeInstallPath;
     private String m_sTomcatInstallPath;
+
+    public boolean m_bPreludePresents = false;
 
     public TestData(Logger logger) {
         assert logger != null;
@@ -305,12 +308,14 @@ public class TestData implements Serializable {
     {
       m_sNetBeansInstallPath = null;
       m_sApplicationServerInstallPath = null;
+      m_sApplicationServerPreludeInstallPath = null;
       m_sTomcatInstallPath = null;
     }
     else
     {
       m_sNetBeansInstallPath = sInstallBase + File.separator + Utils.NB_DIR_NAME;
       m_sApplicationServerInstallPath = sInstallBase + File.separator + Utils.GF2_DIR_NAME;
+      m_sApplicationServerPreludeInstallPath = sInstallBase + File.separator + Utils.GF2_PRELUDE_DIR_NAME;
       m_sTomcatInstallPath = sInstallBase + File.separator + Utils.TOMCAT_DIR_NAME;
     }
   }
@@ -323,6 +328,11 @@ public class TestData implements Serializable {
   public String GetApplicationServerInstallPath( )
   {
     return m_sApplicationServerInstallPath;
+  }
+
+  public String GetApplicationServerPreludeInstallPath( )
+  {
+    return m_sApplicationServerPreludeInstallPath;
   }
 
   public String GetTomcatInstallPath( )
@@ -341,6 +351,14 @@ public class TestData implements Serializable {
     {
       m_sApplicationServerInstallPath = s;
       return;
+    }
+    if( m_bPreludePresents )
+    {
+      if( null == m_sApplicationServerPreludeInstallPath )
+      {
+        m_sApplicationServerPreludeInstallPath = s;
+        return;
+      }
     }
     if( null == m_sTomcatInstallPath )
     {
