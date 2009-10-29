@@ -1,7 +1,7 @@
 Name: Swing Layout Extensions
-Version: 1.0.3
-Source: http://swing-layout.dev.java.net/files/documents/2752/70793/swing-layout-1.0.3-src.zip
-Files: swing-layout-1.0.3.jar swing-layout-1.0.3-doc.zip swing-layout-1.0.3-src.zip
+Version: 1.0.4
+Source: https://swing-layout.dev.java.net/files/documents/2752/144673/swing-layout-1.0.4-src.zip
+Files: swing-layout-1.0.4.jar swing-layout-1.0.4-doc.zip swing-layout-1.0.4-src.zip
 License: LGPL-2.1
 OSR: 3446
 Description: Swing Layout Extensions
