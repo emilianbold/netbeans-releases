@@ -156,7 +156,7 @@ public class AstNodeUtils {
             int ch_eo = childNodeRange[1];
             if (astOffset >= ch_so && astOffset < ch_eo) {
                 //the child is or contains the searched node
-                return findDescendant(child, astOffset, true);
+                return findDescendant(child, astOffset, exclusiveStartOffset);
             }
 
         }
