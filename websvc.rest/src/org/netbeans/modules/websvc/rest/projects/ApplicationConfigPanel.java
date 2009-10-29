@@ -45,6 +45,8 @@
 
 package org.netbeans.modules.websvc.rest.projects;
 
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
 
 /**
@@ -54,8 +56,39 @@ import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
 public class ApplicationConfigPanel extends javax.swing.JPanel {
 
     /** Creates new form RestSupportPanel */
+
+    public ApplicationConfigPanel(String configType, String resourcesPath) {
+        this();
+        if (WebRestSupport.CONFIG_TYPE_IDE.equals(configType)) {
+            jRadioButton1.setSelected(true);
+        } else if (WebRestSupport.CONFIG_TYPE_USER.equals(configType)) {
+            jRadioButton2.setSelected(true);
+        } else {
+            jRadioButton3.setSelected(true);
+        }
+        jTextField1.setText(resourcesPath);
+    }
+
     public ApplicationConfigPanel() {
         initComponents();
+        ItemListener l = new MyItemListener();
+        jRadioButton1.addItemListener(l);
+        jRadioButton2.addItemListener(l);
+        jRadioButton3.addItemListener(l);
+    }
+
+    private class MyItemListener implements ItemListener {
+
+        public void itemStateChanged(ItemEvent e) {
+            if (jRadioButton2.isSelected()) {
+                jLabel1.setEnabled(false);
+                jTextField1.setEnabled(false);
+            } else {
+                jLabel1.setEnabled(true);
+                jTextField1.setEnabled(true);
+            }
+        }
+
     }
 
     public String getConfigType() {
@@ -86,23 +119,24 @@ public class ApplicationConfigPanel extends javax.swing.JPanel {
         jRadioButton1 = new javax.swing.JRadioButton();
         jLabel2 = new javax.swing.JLabel();
 
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(ApplicationConfigPanel.class, "ApplicationConfigPanel.jLabel1.text")); // NOI18N
+        jLabel1.setLabelFor(jTextField1);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(ApplicationConfigPanel.class, "ApplicationConfigPanel.jLabel1.text")); // NOI18N
 
         jTextField1.setText(org.openide.util.NbBundle.getMessage(ApplicationConfigPanel.class, "ApplicationConfigPanel.jTextField1.text")); // NOI18N
 
         jPanel1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
         buttonGroup1.add(jRadioButton3);
-        jRadioButton3.setText(org.openide.util.NbBundle.getMessage(ApplicationConfigPanel.class, "ApplicationConfigPanel.jRadioButton3.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jRadioButton3, org.openide.util.NbBundle.getMessage(ApplicationConfigPanel.class, "ApplicationConfigPanel.jRadioButton3.text")); // NOI18N
         jRadioButton3.setVerticalTextPosition(javax.swing.SwingConstants.TOP);
 
         buttonGroup1.add(jRadioButton2);
-        jRadioButton2.setText(org.openide.util.NbBundle.getMessage(ApplicationConfigPanel.class, "ApplicationConfigPanel.jRadioButton2.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jRadioButton2, org.openide.util.NbBundle.getMessage(ApplicationConfigPanel.class, "ApplicationConfigPanel.jRadioButton2.text")); // NOI18N
         jRadioButton2.setVerticalTextPosition(javax.swing.SwingConstants.TOP);
 
         buttonGroup1.add(jRadioButton1);
         jRadioButton1.setSelected(true);
-        jRadioButton1.setText(org.openide.util.NbBundle.getMessage(ApplicationConfigPanel.class, "ApplicationConfigPanel.jRadioButton1.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jRadioButton1, org.openide.util.NbBundle.getMessage(ApplicationConfigPanel.class, "ApplicationConfigPanel.jRadioButton1.text")); // NOI18N
         jRadioButton1.setAutoscrolls(true);
         jRadioButton1.setVerifyInputWhenFocusTarget(false);
         jRadioButton1.setVerticalTextPosition(javax.swing.SwingConstants.TOP);
@@ -165,6 +199,9 @@ public class ApplicationConfigPanel extends javax.swing.JPanel {
                     .add(jLabel1))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ApplicationConfigPanel.class, "TTL_ApplicationConfigPanel")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ApplicationConfigPanel.class, "ApplicationConfigPanel.jLabel2.text")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 
