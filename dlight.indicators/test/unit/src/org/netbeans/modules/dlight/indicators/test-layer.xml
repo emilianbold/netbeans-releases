@@ -53,7 +53,7 @@
                     <attr name="class" stringvalue="time"/>
                     <attr name="shortname" bundlevalue="org.netbeans.modules.dlight.indicators.Bundle#Column.Timestamp"/>
                 </file>
-                <file name="Column7.instance">
+                <file name="Column6.instance">
                     <attr name="instanceCreate" methodValue="org.netbeans.modules.dlight.api.impl.DataTableMetadataFactory.createColumn"/>
                     <attr name="name" stringvalue="sid"/>
                     <attr name="class" stringvalue="int"/>
@@ -92,7 +92,7 @@
             </file>
             <file name="DtraceDetailsColumns.List">
                 <attr name="instanceCreate" methodValue="org.netbeans.modules.dlight.api.impl.DataTableMetadataFactory.createColumnsList"/>
-                <attr name="columns" stringvalue="DLight/Fops/DtraceDetailsColumns.List"/>
+                <attr name="columns" stringvalue="DLight/Fops.Configuration/DtraceDetailsColumns"/>
             </file>
             <folder name="DtraceDetailsColumns">
                 <file name="Column1.instance">
@@ -144,7 +144,27 @@
                 <attr name="LastNonNull" boolvalue="false"/>
                 <attr name="action.displayName" bundlevalue="org.netbeans.modules.dlight.indicators.Bundle#Indicator.Action"/>
                 <attr name="action.tooltip" bundlevalue="org.netbeans.modules.dlight.indicators.Bundle#Indicator.Action.Tooltip"/>
+                <attr name="details.descriptor" stringvalue="DLight/Fops.Configuration/DetailDescriptor.instance"/>
+                <attr name="timeSeriesDescriptors" stringvalue="DLight/Fops.Configuration/TimeSeriesDescriptors.List"/>
             </file>
+            <file name="DetailDescriptor.instance">
+                <attr name="instanceCreate" methodValue="org.netbeans.modules.dlight.indicators.impl.DetailDescriptorFactory.create"/>
+                <attr name="name" stringvalue="file-count"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.dlight.indicators.Bundle#Indicator.FileCount"/>
+                <attr name="defaultValue" stringvalue="0"/>
+            </file>
+            <folder name="TimeSeriesDescriptors.List">
+                <attr name="instanceCreate" methodValue="org.netbeans.modules.dlight.indicators.impl.TimeSeriesDescriptorFactory.createList"/>
+                <attr name="items" stringvalue="DLight/Fops.Configuration/TimeSeriesDescriptors.List"/>
+            </folder>
+            <folder name="TimeSeriesDescriptors.List">
+                <file name="TimeSeriesDescriptor_1.instance">
+                    <attr name="instanceCreate" methodValue="org.netbeans.modules.dlight.indicators.impl.TimeSeriesDescriptorFactory.create"/>
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.dlight.indicators.Bundle#Indicator.Write"/>
+                    <attr name="kind" stringvalue="LINE"/>
+                    <attr name="color" stringvalue="0xE7:0x6F:0x00"/>
+                </file>
+            </folder>
         </folder>
     </folder>
 </filesystem>

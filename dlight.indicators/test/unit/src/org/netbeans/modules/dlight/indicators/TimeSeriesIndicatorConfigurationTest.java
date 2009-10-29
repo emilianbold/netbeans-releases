@@ -36,10 +36,9 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.indicators;
 
-
+import java.util.Collection;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -55,7 +54,9 @@ import static org.junit.Assert.*;
  * @author mt154047
  */
 public class TimeSeriesIndicatorConfigurationTest {
+
     private FileObject folder;
+
     public TimeSeriesIndicatorConfigurationTest() {
     }
 
@@ -78,7 +79,7 @@ public class TimeSeriesIndicatorConfigurationTest {
     }
 
     @Test
-    public void testCreate(){
+    public void testCreate() {
         System.out.println("createIndicatorMetadata");
         TimeSeriesIndicatorConfiguration result = null;
         try {
@@ -91,7 +92,7 @@ public class TimeSeriesIndicatorConfigurationTest {
             if (!(obj instanceof TimeSeriesIndicatorConfiguration)) {
                 fail("Object needs to be a IndicatorMetadata: " + obj);
             }
-            result = (TimeSeriesIndicatorConfiguration)obj;
+            result = (TimeSeriesIndicatorConfiguration) obj;
 
         } catch (Exception ex) {
             fail("Test is not passed");
@@ -104,6 +105,24 @@ public class TimeSeriesIndicatorConfigurationTest {
         System.out.println("title=" + accessor.getTitle(result));
     }
 
-  
+    @Test
+    @SuppressWarnings({"unchecked"})
+    public void testTimeSeriesDescriptorsList() {
+        System.out.println("TimeSeriesDescriptors.List");
+        Collection<TimeSeriesDescriptor> result = null;
+        try {
+            FileObject fo = folder.getFileObject("TimeSeriesDescriptors.List");
+            assertNotNull("file " + "DLight/Fops.Configuration/TimeSeriesDescriptors.List", fo);
 
+            Object obj = fo.getAttribute("instanceCreate");
+            assertNotNull("File object should have not null instanceCreate attribute", obj);
+
+            result = (Collection<TimeSeriesDescriptor>) obj;
+
+        } catch (Exception ex) {
+            fail("Test is not passed");
+        }
+        assertNotNull("IndicatorMetadata should not be null", result);
+        System.out.println("size=" + result.size());
+    }
 }
