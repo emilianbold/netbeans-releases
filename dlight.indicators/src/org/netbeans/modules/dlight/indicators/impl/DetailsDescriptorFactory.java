@@ -37,30 +37,19 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.spi.support;
+package org.netbeans.modules.dlight.indicators.impl;
 
 import java.util.Map;
-import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
+import org.netbeans.modules.dlight.indicators.DetailDescriptor;
 
 /**
  *
  * @author mt154047
  */
-public class DLightToolConfigurationProviderFactory {
-    private static final String DLIGHT_TOOL_ID = "id";
-    private static final String DLIGHT_TOOL_NAME = "name";
-    private static final String DLIGHT_TOOL_DISPLAYED_NAME = "displayedName";
+public final class DetailsDescriptorFactory {
 
-
-    static  DLightToolConfiguration create(Map map) {
-        return DLightToolConfigurationProviderFactory.createInstance(map);
+    static DetailDescriptor create(Map map){
+        return null;
     }
 
-    private static DLightToolConfiguration createInstance(Map map) {
-        DLightToolConfiguration toolConfiguration = new DLightToolConfiguration((String)map.get(DLIGHT_TOOL_ID), (String)map.get(DLIGHT_TOOL_NAME));
-        toolConfiguration.setLongName((String)map.get(DLIGHT_TOOL_DISPLAYED_NAME));
-        return toolConfiguration;
-    }
-
-    
 }
