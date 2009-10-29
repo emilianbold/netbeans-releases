@@ -80,6 +80,7 @@ import org.openide.util.actions.SystemAction;
 public class KenaiPopupMenu extends CookieAction {
 
     private static HashMap<VersioningSystem, JComponent[]> versioningItemMap = new HashMap<VersioningSystem, JComponent[]>();
+    private static HashMap<Project, String> repoForProjCache = new HashMap<Project, String>();
 
     @Override
     public Action createContextAwareInstance(Lookup actionContext) {
@@ -175,6 +176,12 @@ public class KenaiPopupMenu extends CookieAction {
             JMenu kenaiPopup = new JMenu(NbBundle.getMessage(KenaiPopupMenu.class, "KENAI_POPUP")); //NOI18N
             if (proj == null || !isKenaiProject(proj) || getActivatedNodes().length > 1) { // hide for non-Kenai projects
                 kenaiPopup.setVisible(false);
+                if (repoForProjCache.get(proj) == null) {
+                    JMenuItem dummy = new JMenuItem(NbBundle.getMessage(KenaiPopupMenu.class, "LBL_CHECKING"));
+                    dummy.setVisible(true);
+                    dummy.setEnabled(false);
+                    return dummy;
+                }
             } else { // show for Kenai projects
                 kenaiPopup.setVisible(true);
                 KenaiFeature[] issueTrackers = null;
@@ -190,7 +197,8 @@ public class KenaiPopupMenu extends CookieAction {
                     }
                     kenaiPopup.addSeparator();
                     /* Add action to navigate to Kenai project - based on repository URL (not on Kenai dashboard at the moment) */
-                    String projRepo = (String) proj.getProjectDirectory().getAttribute("ProvidedExtensions.RemoteLocation"); //NOI18N
+                    // if isKenaiProject==true, there must be cached result + it is different from ""
+                    String projRepo = repoForProjCache.get(proj);
                     String kpName = KenaiProject.getNameForRepository(projRepo);
                     if (kpName != null) {
                         if (inDashboard(kpName)) {
@@ -198,9 +206,14 @@ public class KenaiPopupMenu extends CookieAction {
                             if (issueTrackers != null && issueTrackers.length > 0) {
                                 kenaiPopup.add(new LazyFindIssuesAction(proj, kpName));
                                 kenaiPopup.add(new LazyNewIssuesAction(proj, kpName));
-                                kenaiPopup.addSeparator();
                             }
+                        } else {
+                            JMenuItem issuesNAItem = new JMenuItem(NbBundle.getMessage(KenaiPopupMenu.class, "LBL_NA_SERVICES"));
+                            issuesNAItem.setEnabled(false);
+                            issuesNAItem.setVisible(true);
+                            kenaiPopup.add(issuesNAItem);
                         }
+                        kenaiPopup.addSeparator();
                         kenaiPopup.add(new LazyOpenKenaiProjectAction(kpName));
                     }
                 } catch (KenaiException ex) {
@@ -210,10 +223,24 @@ public class KenaiPopupMenu extends CookieAction {
             return kenaiPopup;
         }
 
-        private boolean isKenaiProject(Project proj) {
+        private boolean isKenaiProject(final Project proj) {
             assert proj != null;
-            String projRepo = (String) proj.getProjectDirectory().getAttribute("ProvidedExtensions.RemoteLocation"); //NOI18N
-            if (projRepo != null) {
+            String projRepo = repoForProjCache.get(proj);
+            if (projRepo == null) {
+                RequestProcessor.getDefault().post(new Runnable() {
+
+                    public void run() {
+                        String s = (String) proj.getProjectDirectory().getAttribute("ProvidedExtensions.RemoteLocation"); //NOI18N
+                        if (s == null) {
+                            repoForProjCache.put(proj, ""); // null cannot be used - project with no repo is null, "" is to indicate I already checked this one...
+                        } else {
+                            repoForProjCache.put(proj, s);
+                        }
+                    }
+                });
+                return false;
+            }
+            if (!projRepo.equals("")) {
                 return KenaiProject.getNameForRepository(projRepo) !=null;
             }
             return false;
