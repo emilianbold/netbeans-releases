@@ -3,7 +3,6 @@
     /*FORMAT_START*/
     function __construct() {
     echo 1;
-    }
-    /*FORMAT_END*/
+    }/*FORMAT_END*/
 }
 ?>
