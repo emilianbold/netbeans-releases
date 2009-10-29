@@ -131,7 +131,7 @@ public class FileMagic {
 
     private static final class MyRandomAccessFile extends RandomAccessFile {
 
-        private static final int BUF_SIZE = 8 * 1024;
+        private static final int BUF_SIZE = Integer.getInteger("cnd.dwarfdump.random_access_file_buffer_size", 8 * 1024); // NOI18N
         private String fileName;
         private byte buffer[] = new byte[BUF_SIZE];
         private int buf_end = 0;
