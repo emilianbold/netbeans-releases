@@ -194,4 +194,35 @@ public class TextUtils {
         return sb.toString();
     }
 
+/**
+     * Encodes URL by encoding to %XX escape sequences.
+     *
+     * @param url url to decode
+     * @return decoded url
+     */
+    public static String encodeURL(String url) {
+        if (url == null) {
+            return null;
+        }
+        StringBuffer sb = new StringBuffer(url.length());
+
+        for (int i = 0; i < url.length(); i++) {
+            char c = url.charAt(i);
+            if (!isAlowedChar(c)) {
+                sb.append('%');                                                 // NOI18N
+                sb.append(Integer.toHexString(c).toUpperCase());
+            } else {
+                sb.append(c);
+            }
+        }
+        return sb.toString();
+    }
+
+    private static boolean isAlowedChar(char c) {
+        return c >= '0' && c <= '9' ||                                          // NOI18N
+               c >= 'A' && c <= 'Z' ||                                          // NOI18N
+               c >= 'a' && c <= 'z' ||                                          // NOI18N
+               c == '.' ||                                                      // NOI18N
+               c == '_';                                                        // NOI18N
+    }
 }

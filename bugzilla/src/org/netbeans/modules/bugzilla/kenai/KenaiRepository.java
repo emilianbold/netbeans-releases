@@ -50,6 +50,7 @@ import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.util.KenaiUtil;
+import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.query.QueryParameter;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
@@ -75,7 +76,7 @@ public class KenaiRepository extends BugzillaRepository {
     private final Object kenaiProject;
 
     KenaiRepository(KenaiProject kenaiProject, String repoName, String url, String host, String userName, String password, String urlParam, String product) {
-        super(repoName, repoName, url, userName, password, null, null); // use name as id - can't be changed anyway
+        super(getRepositoryId(repoName, url), repoName, url, userName, password, null, null); // use name as id - can't be changed anyway
         this.urlParam = urlParam;
         icon = ImageUtilities.loadImage(ICON_PATH, true);
         this.product = product;
@@ -244,4 +245,7 @@ public class KenaiRepository extends BugzillaRepository {
         return host;
     }
 
+    private static String getRepositoryId(String name, String url) {
+        return TextUtils.encodeURL(url) + ":" + name;                           // NOI18N
+    }
 }
