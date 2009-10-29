@@ -275,7 +275,7 @@ public final class CompletionLayout {
             Rectangle occupiedBounds = popup.getAnchorOffsetBounds();
             occupiedBounds = tipPopup.unionBounds(completionPopup.unionBounds(occupiedBounds));
 
-            if(CompletionSettings.getInstance().documentationPopupNextToCC()) {
+            if(CompletionSettings.getInstance(getEditorComponent()).documentationPopupNextToCC()) {
                 docPopup.showAlongOrNextOccupiedBounds(completionPopup.getPopupBounds(), occupiedBounds);
             } else {
                 docPopup.showAlongOccupiedBounds(occupiedBounds);
