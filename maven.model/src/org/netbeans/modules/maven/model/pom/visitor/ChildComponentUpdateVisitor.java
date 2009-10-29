@@ -82,6 +82,7 @@ public class ChildComponentUpdateVisitor<T extends POMComponent> //implements SC
         this.parent = target;
         this.operation = operation;
         this.index = index;
+        //#165465
         if (operation != null) {
             if (operation == Operation.REMOVE) {
                 //TODO what property shall be fired? is it important?
