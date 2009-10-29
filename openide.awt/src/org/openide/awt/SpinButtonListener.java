@@ -47,6 +47,7 @@ package org.openide.awt;
 * @author Jan Jancura
 * @version 0.10 Nov 17, 1997
 */
+@Deprecated
 public interface SpinButtonListener {
     /**
     * Is invoked when button up / left is clicked.
