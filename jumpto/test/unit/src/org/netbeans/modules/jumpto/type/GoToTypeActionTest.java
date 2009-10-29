@@ -67,7 +67,7 @@ public class GoToTypeActionTest extends TestCase {
         panel = action.panel;
         panel.nameField.setText("Pepik");
         action.waitSearchFinished();
-        assertEquals("Provider queried twice", 2, TestTypeProvider.count);
+        assertEquals("Provider queried once", 1, TestTypeProvider.count);
     }
     
     @Override
