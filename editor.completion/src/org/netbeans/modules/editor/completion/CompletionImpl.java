@@ -446,7 +446,6 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
             activeComponent = (component != null)
                     ? new WeakReference<JTextComponent>(component)
                     : null;
-            CompletionSettings.getInstance().notifyEditorComponentChange(getActiveComponent());
             layout.setEditorComponent(getActiveComponent());
             installKeybindings();
             cancel = true;
