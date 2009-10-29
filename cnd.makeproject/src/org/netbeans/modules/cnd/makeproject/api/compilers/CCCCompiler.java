@@ -53,11 +53,9 @@ import java.util.List;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.cnd.api.execution.LinkSupport;
-import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.utils.CndUtils;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
@@ -173,7 +171,7 @@ public abstract class CCCCompiler extends BasicCompiler {
         compilerDefinitions = getFreshSystemIncludesAndDefines();
         saveSystemIncludesAndDefines();
     }
-
+    
     public String getMTLevelOptions(int value) {
         CompilerDescriptor compiler = getDescriptor();
         if (compiler != null && compiler.getMultithreadingFlags() != null && compiler.getMultithreadingFlags().length > value){
@@ -181,7 +179,7 @@ public abstract class CCCCompiler extends BasicCompiler {
         }
         return ""; // NOI18N
     }
-    
+
     public String getLibraryLevelOptions(int value) {
         CompilerDescriptor compiler = getDescriptor();
         if (compiler != null && compiler.getLibraryFlags() != null && compiler.getLibraryFlags().length > value){

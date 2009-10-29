@@ -47,6 +47,8 @@ import org.netbeans.modules.cnd.api.utils.CppUtils;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.makeproject.api.compilers.SunFortranCompiler;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 
@@ -71,6 +73,7 @@ public class FortranCompilerConfiguration extends BasicCompilerConfiguration imp
         clone.setWarningLevel(getWarningLevel().clone());
         clone.setSixtyfourBits(getSixtyfourBits().clone());
         clone.setStrip(getStrip().clone());
+        clone.setMTLevel(getMTLevel().clone());
         clone.setAdditionalDependencies(getAdditionalDependencies().clone());
         clone.setTool(getTool().clone());
         clone.setCommandLineConfiguration(getCommandLineConfiguration().clone());
@@ -89,6 +92,9 @@ public class FortranCompilerConfiguration extends BasicCompilerConfiguration imp
     public String getFFlagsBasic(BasicCompiler compiler) {
         String options = ""; // NOI18N
         options += compiler.getStripOption(getStrip().getValue()) + " "; // NOI18N
+        if (compiler instanceof SunFortranCompiler) {
+            options += ((SunFortranCompiler)compiler).getMTLevelOptions(getMTLevel().getValue()) + " "; // NOI18N
+        }
         options += compiler.getSixtyfourBitsOption(getSixtyfourBits().getValue()) + " "; // NOI18N
         if (getDevelopmentMode().getValue() == DEVELOPMENT_MODE_TEST) {
             options += compiler.getDevelopmentModeOptions(DEVELOPMENT_MODE_TEST);
@@ -134,6 +140,14 @@ public class FortranCompilerConfiguration extends BasicCompilerConfiguration imp
         sheet.put(getBasicSet());
         if (getMaster() != null) {
             sheet.put(getInputSet());
+        }
+        if (compilerSet !=null && compilerSet.isSunCompiler()) { // FIXUP: should be moved to SunCCompiler
+            Sheet.Set set2 = new Sheet.Set();
+            set2.setName("OtherOptions"); // NOI18N
+            set2.setDisplayName(getString("OtherOptionsTxt"));
+            set2.setShortDescription(getString("OtherOptionsHint"));
+            set2.put(new IntNodeProp(getMTLevel(), getMaster() != null ? false : true, "MultithreadingLevel", getString("MultithreadingLevelTxt"), getString("MultithreadingLevelHint"))); // NOI18N
+            sheet.put(set2);
         }
         Sheet.Set set4 = new Sheet.Set();
         set4.setName("Tool"); // NOI18N
