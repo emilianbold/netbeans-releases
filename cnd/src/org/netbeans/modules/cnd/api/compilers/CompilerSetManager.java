@@ -119,8 +119,12 @@ public class CompilerSetManager {
     public static CompilerSetManager getDefault(ExecutionEnvironment env) {
         return getDefaultImpl(env, true);
     }
+    
+    public void saveToDisk() {
+        CompilerSetPreferences.saveToDisk(this);
+    }
 
-   private static CompilerSetManager getDefaultImpl(ExecutionEnvironment env, boolean initialize) {
+    private static CompilerSetManager getDefaultImpl(ExecutionEnvironment env, boolean initialize) {
         CompilerSetManager csm = null;
         boolean no_compilers = false;
 
@@ -795,7 +799,7 @@ public class CompilerSetManager {
         bestCandidate = getCompilerSet("SunStudio_12.2"); // NOI18N
         if (bestCandidate == null) {
             bestCandidate = getCompilerSet("SunStudioExpress"); // NOI18N
-            if (bestCandidate != null && bestCandidate.getCompilerFlavor().getToolchainDescriptor().getDisplayName().indexOf("Aten") < 0) {
+            if (bestCandidate != null && bestCandidate.getCompilerFlavor().getToolchainDescriptor().getDisplayName().indexOf("Aten") < 0) { // NOI18N
                 bestCandidate = null;
             }
         }
