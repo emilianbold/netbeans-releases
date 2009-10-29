@@ -162,6 +162,7 @@ implements PropertyChangeListener, ContextAwareAction {
     }
 
     static final Object extractCommonAttribute(Map fo, Action action, String name) {
+        try {
         if (Action.NAME.equals(name)) {
             String actionName = (String) fo.get("displayName"); // NOI18N
             // NOI18N
@@ -208,7 +209,9 @@ implements PropertyChangeListener, ContextAwareAction {
         if (!"delegate".equals(name) && !"instanceCreate".equals(name)) {
             return fo == null ? null : fo.get(name);
         }
-
+        } catch (RuntimeException x) { // noted in #172103
+            LOG.log(Level.WARNING, "Could not get action attribute " + name, x);
+        }
         return null;
     }
 
