@@ -568,9 +568,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
                             StatusDisplayer.getDefault().setStatusText(statusMessage);
                         }
                     };
-                    if (syncWorker != null) {
-                        syncWorker.shutdown();
-                    }
+                    shutdownSyncWorker();
                     break;
                 }
                 case ERROR:
@@ -578,6 +576,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
                     if (listener != null) {
                         listener.executionFinished(-1);
                     }
+                    shutdownSyncWorker();
                     postRunnable = new Runnable() {
                         public void run() {
                             String message = getString("Output."+resourceKey+"FailedToStart"); // NOI18N
@@ -595,6 +594,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
                     if (listener != null) {
                         listener.executionFinished(process.exitValue());
                     }
+                    shutdownSyncWorker();
                     postRunnable = new Runnable() {
                         public void run() {
                             String message;
@@ -620,6 +620,12 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         public void run() {
             if (postRunnable != null) {
                 postRunnable.run();
+            }
+        }
+
+        private void shutdownSyncWorker() {
+            if (syncWorker != null) {
+                syncWorker.shutdown();
             }
         }
     }

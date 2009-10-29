@@ -144,9 +144,27 @@
                 <attr name="LastNonNull" boolvalue="false"/>
                 <attr name="action.displayName" bundlevalue="org.netbeans.modules.dlight.spi.support.Bundle#Indicator.Action"/>
                 <attr name="action.tooltip" bundlevalue="org.netbeans.modules.dlight.spi.support.Bundle#Indicator.Action.Tooltip"/>
-                <attr name="details.descriptor" stringvalue="DLight/Fops.Configuration/DetailsDescription.instance"/>
-                <attr name="timeSeriesDescriptors" stringvalue="DLight/Fops.Configuration/TimeSeriesDescriptorsList"/>
+                <attr name="details.descriptor" stringvalue="DLight/Fops.Configuration/DetailDescriptor.instance"/>
+                <attr name="timeSeriesDescriptors" stringvalue="DLight/Fops.Configuration/TimeSeriesDescriptors.List"/>
             </file>
+            <file name="DetailDescriptor.instance">
+                <attr name="instanceCreate" methodValue="org.netbeans.modules.dlight.indicators.impl.DetailDescriptorFactory.create"/>
+                <attr name="name" stringvalue="file-count"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.dlight.spi.support.Bundle#Indicator.FileCount"/>
+                <attr name="defaultValue" stringvalue="0"/>
+            </file>
+            <file name="TimeSeriesDescriptors.List">
+                <attr name="instanceCreate" methodValue="org.netbeans.modules.dlight.indicators.impl.TimeSeriesDescriptorFactory.createList"/>
+                <attr name="items" stringvalue="DLight/Fops.Configuration/TimeSeriesDescriptors.List"/>
+            </file>
+            <folder name="TimeSeriesDescriptors.List">
+                <file name="TimeSeriesDescriptor_1.instance">
+                    <attr name="instanceCreate" methodValue="org.netbeans.modules.dlight.indicators.impl.TimeSeriesDescriptorFactory.create"/>
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.dlight.spi.support.Bundle#Indicator.Write"/>
+                    <attr name="kind" stringvalue="LINE"/>
+                    <attr name="color" stringvalue="0xE7:0x6F:0x00"/>
+                </file>
+            </folder>
         </folder>
     </folder>
 </filesystem>

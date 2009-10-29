@@ -43,17 +43,41 @@ made subject to such option by the copyright holder.
 
 <toolchaindefinition xmlns="http://www.netbeans.org/ns/cnd-toolchain-definition/1">
     <toolchain name="SunStudio_9" display="Sun Studio 9 Compiler Collection" family="SunStudio"/>
-    <platforms stringvalue="sun_sparc"/>
+    <platforms stringvalue="sun_intel,sun_sparc"/>
     <default_locations>
         <platform os="sun_sparc" directory="/opt/SUNWspro/bin"/>
+        <platform os="sun_intel" directory="/opt/SUNWspro/bin"/>
     </default_locations>
     <c>
         <version flags="-V" pattern=".*Sun C 5.6"/>
+        <development_mode>
+           <release flags="-fast"/>
+           <performance_release flags="-xO5 -fsimple=1 -xlibmil -xlibmopt -xbuiltin"/>
+        </development_mode>
+        <architecture>
+            <default flags="" default="true"/>
+            <bits_32 flags=""/>
+            <bits_64 flags=""/>
+        </architecture>
     </c>
     <cpp>
         <version flags="-V" pattern=".*Sun C\+\+ 5.6"/>
+        <development_mode>
+           <release flags="-fast"/>
+           <performance_release flags="-xO5 -fsimple=1 -xlibmil -xlibmopt -xbuiltin -sync_stdio=no"/>
+        </development_mode>
+        <architecture>
+            <default flags="" default="true"/>
+            <bits_32 flags=""/>
+            <bits_64 flags=""/>
+        </architecture>
     </cpp>
     <fortran>
         <version flags="-V" pattern=".*Sun Fortran 95 8.0"/>
+        <architecture>
+            <default flags="" default="true"/>
+            <bits_32 flags=""/>
+            <bits_64 flags=""/>
+        </architecture>
     </fortran>
 </toolchaindefinition>
