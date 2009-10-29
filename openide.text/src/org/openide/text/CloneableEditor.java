@@ -813,7 +813,14 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             pane.setEditorKit(null);
         }
 
-        removeAll();
+        // #175576 - EditorRegistry listens on TopComponent.getRegistry() and iterates through
+        // children of closed TCs to registered JEditorPanes and close them as well. Calling
+        // removeAll() here directly means that ER will have no children to search through.
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                removeAll();
+            }
+        });
         customComponent = null;
         customToolbar = null;
         pane = null;
