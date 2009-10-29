@@ -227,7 +227,9 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                 env = env1;
                 // Pass QMAKE from compiler set to the Makefile (IZ 174731)
                 if (conf.isQmakeConfiguration()) {
-                    args += " QMAKE=" + IpeUtils.quoteIfNecessary(conf.getCompilerSet().getCompilerSet().getTool(Tool.QMakeTool).getPath()); // NOI18N
+                    String qmakePath = conf.getCompilerSet().getCompilerSet().getTool(Tool.QMakeTool).getPath();
+                    qmakePath = conf.getCompilerSet().getCompilerSet().normalizeDriveLetter(qmakePath.replace('\\', '/')); // NOI18N
+                    args += " QMAKE=" + IpeUtils.escapeOddCharacters(qmakePath); // NOI18N
                 }
             }
             NativeExecutor projectExecutor = new NativeExecutor(
