@@ -38,9 +38,7 @@
  */
 package org.netbeans.modules.maven.model.pom.visitor;
 
-import java.util.List;
 import org.netbeans.modules.maven.model.pom.POMComponent;
-import org.netbeans.modules.xml.xam.dom.DocumentComponent;
 
 /**
  * Deep visitor.
