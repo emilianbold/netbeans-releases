@@ -133,21 +133,22 @@ public class VarDocHint extends AbstractRule {
         }
 
         public void implement() throws Exception {
-            BaseDocument doc = context.doc;
-            int caretOffset = getOffset(doc);
+            final BaseDocument doc = context.doc;
+            final int caretOffset = getOffset(doc);
+            final String commentText = getCommentText();
+            final int indexOf = commentText.indexOf(getTypeTemplate());
             final EditList editList = getEditList(doc, caretOffset);
-            Position caretPosition = editList.createPosition(caretOffset);
+            final Position typeOffset = editList.createPosition(caretOffset+indexOf);
             editList.apply();
-            if (caretPosition != null && caretPosition.getOffset() != -1) {
+            if (typeOffset != null && typeOffset.getOffset() != -1) {
                 JTextComponent target = GsfUtilities.getPaneFor(context.parserResult.getSnapshot().getSource().getFileObject());
                 if (target != null) {
-                    int offset = caretPosition.getOffset();
-                    String commentText = getCommentText();
-                    int indexOf = commentText.indexOf(getTypeTemplate());
-                    if (indexOf != -1 && (offset + indexOf + getTypeTemplate().length() <= doc.getLength())) {
-                        String s = doc.getText(offset + indexOf, getTypeTemplate().length());
+                    final int startOffset = typeOffset.getOffset();
+                    final int endOffset = startOffset + getTypeTemplate().length();
+                    if (indexOf != -1 && (endOffset <= doc.getLength())) {
+                        String s = doc.getText(startOffset, getTypeTemplate().length());
                         if (getTypeTemplate().equals(s)) {
-                            target.select(offset + indexOf, offset + indexOf + getTypeTemplate().length());
+                            target.select(startOffset, endOffset);
                             scheduleShowingCompletion();
                         }
 

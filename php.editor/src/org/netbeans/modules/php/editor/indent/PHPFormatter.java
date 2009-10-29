@@ -162,7 +162,7 @@ public class PHPFormatter implements Formatter {
                 TokenId id = token.id();
                 // If we're in a string literal (or regexp or documentation) leave
                 // indentation alone!
-                if (id == PHPTokenId.PHP_COMMENT || id == PHPTokenId.PHP_COMMENT_START || id == PHPTokenId.PHP_COMMENT_END ||
+                if (id == PHPTokenId.PHP_COMMENT ||
                     id == PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE ||
 
 // TODO: please review!! without this line PHP formatter clobers
