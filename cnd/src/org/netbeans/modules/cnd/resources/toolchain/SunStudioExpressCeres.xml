@@ -28,7 +28,7 @@ Contributor(s):
 The Original Software is NetBeans. The Initial Developer of the Original
 Software is Sun Microsystems, Inc. Portions Copyright 2001-2006 Sun
 Microsystems, Inc. All Rights Reserved.
-fortran
+
 If you wish your version of this file to be governed by only the CDDL
 or only the GPL Version 2, indicate your decision by adding
 "[Contributor] elects to include this software in this distribution
@@ -42,33 +42,24 @@ made subject to such option by the copyright holder.
 -->
 
 <toolchaindefinition xmlns="http://www.netbeans.org/ns/cnd-toolchain-definition/1">
-    <toolchain name="SunStudio_11" display="Sun Studio 11 Compiler Collection" family="SunStudio"/>
-    <platforms stringvalue="linux"/>
+    <toolchain name="SunStudioExpress" display="Sun Studio Express Compiler Collection (Ceres)" family="SunStudio"/>
+    <platforms stringvalue="sun_intel,sun_sparc,linux"/>
     <default_locations>
-        <platform os="linux" directory="/opt/sun/sunstudio11/bin"/>
+        <platform os="linux" directory="/opt/sun/SunStudioExpress/bin"/>
+        <platform os="linux" directory="/opt/SunStudioExpress/bin"/>
+        <platform os="sun_intel" directory="/opt/SunStudioExpress/bin"/>
+        <platform os="sun_sparc" directory="/opt/SunStudioExpress/bin"/>
     </default_locations>
     <c>
-        <version flags="-V" pattern=".*Sun C 5.8"/>
-        <architecture>
-            <default flags="" default="true"/>
-            <bits_32 flags="-m32"/>
-            <bits_64 flags="-m64"/>
-        </architecture>
+        <recognizer pattern=".*(SunStudioExpress|/prod/bin)" or_exist_folder="../prod"/>
+        <version flags="-V" pattern=".*Sun.*Ceres"/>
     </c>
     <cpp>
-        <version flags="-V" pattern=".*Sun C\+\+ 5.8"/>
-        <architecture>
-            <default flags="" default="true"/>
-            <bits_32 flags="-m32"/>
-            <bits_64 flags="-m64"/>
-        </architecture>
+        <recognizer pattern=".*(SunStudioExpress|/prod/bin)" or_exist_folder="../prod"/>
+        <version flags="-V" pattern=".*Sun.*Ceres"/>
     </cpp>
     <fortran>
-        <version flags="-V" pattern=".*Sun Fortran 95 8.2"/>
-        <architecture>
-            <default flags="" default="true"/>
-            <bits_32 flags="-m32"/>
-            <bits_64 flags="-m64"/>
-        </architecture>
+        <recognizer pattern=".*(SunStudioExpress|/prod/bin)" or_exist_folder="../prod"/>
+        <version flags="-V" pattern=".*Sun.*Ceres)"/>
     </fortran>
 </toolchaindefinition>

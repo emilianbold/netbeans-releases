@@ -61,16 +61,21 @@ public class QueryResultHandleImpl extends QueryResultHandle implements ActionLi
 
     private final Query query;
     private final String label;
+    private final String tooltip;
     private final Filter filter;
     private final ResultType type;
 
     private static MessageFormat totalFormat = new MessageFormat(NbBundle.getMessage(QueryResultHandleImpl.class, "LBL_QueryResultTotal"));       // NOI18N
     private static MessageFormat unseenFormat = new MessageFormat(NbBundle.getMessage(QueryResultHandleImpl.class, "LBL_QueryResultUnseen"));     // NOI18N
     private static MessageFormat newFormat = new MessageFormat(NbBundle.getMessage(QueryResultHandleImpl.class, "LBL_QueryResultNew"));           // NOI18N
+    private static MessageFormat totalTooltipFormat = new MessageFormat(NbBundle.getMessage(QueryResultHandleImpl.class, "LBL_QueryResultTotalTooltip"));       // NOI18N
+    private static MessageFormat unseenTooltipFormat = new MessageFormat(NbBundle.getMessage(QueryResultHandleImpl.class, "LBL_QueryResultUnseenTooltip"));     // NOI18N
+    private static MessageFormat newTooltipFormat = new MessageFormat(NbBundle.getMessage(QueryResultHandleImpl.class, "LBL_QueryResultNewTooltip"));           // NOI18N
 
-    QueryResultHandleImpl(Query query, String label, Filter filter, ResultType type) {
+    QueryResultHandleImpl(Query query, String label, String tooltip, Filter filter, ResultType type) {
         this.query = query;
         this.label = label;
+        this.tooltip = tooltip;
         this.filter = filter;
         this.type = type;
     }
@@ -78,6 +83,11 @@ public class QueryResultHandleImpl extends QueryResultHandle implements ActionLi
     @Override
     public String getText() {
         return label;
+    }
+
+    @Override
+    public String getToolTipText() {
+        return tooltip;
     }
 
     @Override
@@ -103,9 +113,11 @@ public class QueryResultHandleImpl extends QueryResultHandle implements ActionLi
             case IssueCache.ISSUE_STATUS_ALL:
 
                 issues = query.getIssues(status);
+                int issueCount = issues != null ? issues.length : 0;
                 return new QueryResultHandleImpl(
                         query,
-                        totalFormat.format(new Object[] {issues != null ? issues.length : 0}, new StringBuffer(), null).toString(),
+                        totalFormat.format(new Object[] {issueCount}, new StringBuffer(), null).toString(),
+                        totalTooltipFormat.format(new Object[] {issueCount}, new StringBuffer(), null).toString(),
                         Filter.getAllFilter(query),
                         ResultType.NAMED_RESULT);
 
@@ -119,11 +131,14 @@ public class QueryResultHandleImpl extends QueryResultHandle implements ActionLi
                 notIssues = issues.length;
 
                 StringBuffer label = new StringBuffer();
+                StringBuffer tooltip = new StringBuffer();
                 unseenFormat.format(new Object[] {notIssues}, label, null);
+                unseenTooltipFormat.format(new Object[] {notIssues}, tooltip, null);
                 
                 return new QueryResultHandleImpl(
                         query,
                         label.toString(),
+                        tooltip.toString(),
                         Filter.getNotSeenFilter(),
                         ResultType.NAMED_RESULT);
 
@@ -137,11 +152,14 @@ public class QueryResultHandleImpl extends QueryResultHandle implements ActionLi
                 newIssues = issues.length;
 
                 label = new StringBuffer();
+                tooltip = new StringBuffer();
                 newFormat.format(new Object[] {newIssues}, label, null);
+                newTooltipFormat.format(new Object[] {newIssues}, label, null);
 
                 return new QueryResultHandleImpl(
                         query,
                         label.toString(),
+                        tooltip.toString(),
                         Filter.getNewFilter(query),
                         ResultType.NAMED_RESULT);
 
@@ -158,6 +176,7 @@ public class QueryResultHandleImpl extends QueryResultHandle implements ActionLi
         return new QueryResultHandleImpl(
                 query,
                 Integer.toString(notIssues),
+                totalTooltipFormat.format(new Object[] {notIssues}, new StringBuffer(), null).toString(),
                 Filter.getNotSeenFilter(),
                 ResultType.ALL_CHANGES_RESULT);
     }
