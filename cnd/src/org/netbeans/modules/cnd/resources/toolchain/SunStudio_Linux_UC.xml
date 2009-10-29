@@ -48,4 +48,13 @@ made subject to such option by the copyright holder.
     <download uc_url="http://updates.netbeans.org/netbeans/updates/6.8/uc/final/thirdparty/catalog.xml.gz" module_id="org.netbeans.libs.sunstudio"
          uc_display="3rd Party Plugins" />
     <platforms stringvalue="linux"/>
+    <c>
+        <version flags="-V"/>
+    </c>
+    <cpp>
+        <version flags="-V"/>
+    </cpp>
+    <fortran>
+        <version flags="-V"/>
+    </fortran>
 </toolchaindefinition>
