@@ -155,10 +155,10 @@ public final class GetSourcesFromKenaiAction extends AbstractAction {
 
                             if (passwdAuth != null) {
                                 Mercurial.cloneRepository(feature.getLocation(), new File(sourcesInfo.localFolderPath),
-                                    "", "", "", passwdAuth.getUserName(), new String(passwdAuth.getPassword())); // NOI18N
+                                    "", "", "", passwdAuth.getUserName(), new String(passwdAuth.getPassword()), true); // NOI18N
                             } else {
                                 Mercurial.cloneRepository(feature.getLocation(), new File(sourcesInfo.localFolderPath),
-                                    "", "", ""); // NOI18N
+                                    "", "", "",true); // NOI18N
                             }
                             if (srcHandle != null) {
                                 srcHandle.refresh();
