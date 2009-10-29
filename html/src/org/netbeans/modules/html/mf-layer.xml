@@ -257,6 +257,8 @@ made subject to such option by the copyright holder.
     
     <folder name="HTMLPalette">
 
+        <attr name="paletteDefaultVisible" boolvalue="false"/>
+
         <folder name="HTML">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.html.palette.Bundle"/>
 
