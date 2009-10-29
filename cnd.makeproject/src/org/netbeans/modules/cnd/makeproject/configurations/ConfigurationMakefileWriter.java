@@ -82,6 +82,7 @@ import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.packaging.DummyPackager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -134,7 +135,7 @@ public class ConfigurationMakefileWriter {
             }
         }
         if (!wrongPlatform.isEmpty()) {
-            ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.getLocal();
+            ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.fromUniqueID(HostInfoUtils.LOCALHOST);
             int platformID = CompilerSetManager.getDefault(execEnv).getPlatform();
             Platform platform = Platforms.getPlatform(platformID);
             StringBuffer list = new StringBuffer();
