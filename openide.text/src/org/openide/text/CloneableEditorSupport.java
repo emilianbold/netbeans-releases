@@ -570,6 +570,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                 documentStatus = DOCUMENT_LOADING;
                 counterPrepareDocument++;
                 Task t = prepareDocument(false);
+                prepareTask = t;
                 
                 t.addTaskListener(new TaskListener() {
                     public void taskFinished(Task task) {
@@ -665,10 +666,12 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                                        synchronized (getLock()) {
                                                            if (documentStatus ==
                                                                DOCUMENT_NO) {
+                                                               prepareTask = null;
                                                                return;
                                                            }
                                                            // Check whether the document to be loaded was not closed
                                                            if (getDoc() != docToLoad[0]) {
+                                                               prepareTask = null;
                                                                return;
                                                            }
                                                            prepareDocumentRuntimeException = null;
@@ -702,6 +705,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                                                synchronized (getLock()) {
                                                                    documentStatus = targetStatus;
                                                                    getLock().notifyAll();
+                                                                   prepareTask = null;
                                                                }
                                                            }
                                                        }
@@ -720,7 +724,6 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             prepareDocumentRuntimeException = err;
             throw err;
 	} finally {
-            prepareTask = null;
 	    if (failed) {
                 documentStatus = DOCUMENT_NO;
                 getLock().notifyAll();
