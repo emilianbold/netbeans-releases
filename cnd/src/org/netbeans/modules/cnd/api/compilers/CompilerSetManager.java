@@ -119,8 +119,12 @@ public class CompilerSetManager {
     public static CompilerSetManager getDefault(ExecutionEnvironment env) {
         return getDefaultImpl(env, true);
     }
+    
+    public void saveToDisk() {
+        CompilerSetPreferences.saveToDisk(this);
+    }
 
-   private static CompilerSetManager getDefaultImpl(ExecutionEnvironment env, boolean initialize) {
+    private static CompilerSetManager getDefaultImpl(ExecutionEnvironment env, boolean initialize) {
         CompilerSetManager csm = null;
         boolean no_compilers = false;
 
