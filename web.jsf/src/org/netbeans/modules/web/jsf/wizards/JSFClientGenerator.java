@@ -371,7 +371,7 @@ public class JSFClientGenerator {
                 simpleEntityName, idGetter.get(0), managedBean, jpaControllerClass, genSessionBean, isInjection);
         
         final String styleAndScriptTags = "<link rel=\"stylesheet\" type=\"text/css\" href=\"" + rootRelativePathToWebFolder + JSFCRUD_STYLESHEET + "\" />" +
-            (ajaxify ? "<%@ include file=\"/" + JSPF_FOLDER + "/" + JSFCRUD_AJAX_JSPF + "\" %><scfaceript type=\"text/javascript\" src=\"" + rootRelativePathToWebFolder + JSFCRUD_JAVASCRIPT + "\"></script>" : "");
+            (ajaxify ? "<%@ include file=\"/" + JSPF_FOLDER + "/" + JSFCRUD_AJAX_JSPF + "\" %><script type=\"text/javascript\" src=\"" + rootRelativePathToWebFolder + JSFCRUD_JAVASCRIPT + "\"></script>" : "");
             
         boolean welcomePageExists = addLinkToListJspIntoIndexJsp(wm, simpleEntityName, styleAndScriptTags, projectEncoding, "");
         final String linkToIndex = welcomePageExists ? "<br />\n<h:commandLink value=\"Index\" action=\"welcome\" immediate=\"true\" />\n" : "";  //NOI18N
