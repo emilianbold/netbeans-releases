@@ -7,7 +7,7 @@
 
 <helenProject version="1.0">
     <documents>
-		<directory title="/Users/smorgan/netbeans-dev/cnd-main/cnd/javahelp/org/netbeans/modules/cnd/help">
+		<directory title="/Users/smorgan/cnd-help">
 			<directory title="CandC++ProjectBasics">
 				<file title="AddtlIncludeDirectories.html"/>
 				<file title="AddtlLibraryDirectories.html"/>
@@ -147,6 +147,7 @@
 				<file title="CurrentFrame.gif"/>
 				<file title="CurrentSession.gif"/>
 				<file title="CurrentThread.gif"/>
+				<file title="dataraceicon.png"/>
 				<file title="deconstructors.png"/>
 				<file title="deconstructors_private.png"/>
 				<file title="deconstructors_protected.png"/>
@@ -245,8 +246,16 @@
 				<file title="who_includes.png"/>
 				<file title="who_is_included.png"/>
 			</directory>
+			<directory title="ProfilingCandC++Projects">
+				<file title="DetectingDataRacesDeadLocksC++.html"/>
+				<file title="ManagingProfileConfigurations.html"/>
+				<file title="OverviewOfCandC++Profiling.html"/>
+				<file title="ProfilingCandC++Projects.html"/>
+				<file title="ProfilingThreadedCandC++Apps.html"/>
+			</directory>
 			<directory title="WorkingWithCandC++Projects">
 				<file title="AboutCandC++Projects.html"/>
+				<file title="AboutQtProjects.html"/>
 				<file title="AddingFilesAndFolders.html"/>
 				<file title="CandC++BuildingTasks.html"/>
 				<file title="CodeAssistance.html"/>
@@ -279,7 +288,6 @@
 				<file title="NewRemoteDevelopmentHostWizardP2.html"/>
 				<file title="NewRemoteDevelopmentHostWizardP3.html"/>
 				<file title="NewStaticLibWizard.html"/>
-				<file title="ProfilingCorC++Projects.html"/>
 				<file title="ProjectPropsArchiverGeneral.html"/>
 				<file title="ProjectPropsBuild.html"/>
 				<file title="ProjectPropsCompilerGeneral.html"/>
@@ -290,6 +298,7 @@
 				<file title="ProjectPropsPackaging.html"/>
 				<file title="ProjectPropsParser.html"/>
 				<file title="ProjectPropsProfile.html"/>
+				<file title="ProjectPropsQt.html"/>
 				<file title="ProjectPropsRequired.html"/>
 				<file title="ProjectPropsRunning.html"/>
 				<file title="ProjectTasks.html"/>

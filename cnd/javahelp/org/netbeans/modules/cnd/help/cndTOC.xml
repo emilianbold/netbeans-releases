@@ -16,6 +16,7 @@
 		</tocitem>
 		<tocitem text="Working With C and C++ Projects">
 			<tocitem text="About C and C++ Projects" target="AboutCandC++Projects" />
+			<tocitem text="About Qt Projects" target="AboutQtProjects" />
 			<tocitem text="Working With C and C++ Projects" target="WorkingWithCandC++Projects" />
 			<tocitem text="Project Tasks: Quick Reference" target="ProjectTasks" />
 			<tocitem text="Creating a C and C++ Project" target="CreatingCorC++Project" />
@@ -26,7 +27,10 @@
 			<tocitem text="Configuring C and C++ Semantic Highlighting" target="ConfiguringSemanticHighlighting" />
 			<tocitem text="Configuring C and C++ File Extensions" target="ConfiguringFileExtensions" />
 			<tocitem text="Configuring Code Assistance" target="CodeAssistance" />
-			<tocitem text="Profiling C and C++ Projects" target="ProfilingCorC++Projects" />
+			<tocitem text="Configuring C and C++ Project Settings" target="Configuring1" />
+			<tocitem text="Running a C or C++ Project" target="RunningCorC++Project1" />
+			<tocitem text="Running a C or C++ Project on a Remote Host" target="RemoteDevelopment" />
+			<tocitem text="Profiling C and C++ Projects" target="ProfilingCandC++Projects" />
 			<tocitem text="Deleting a C or C++ Project" target="DeletingCorC++Project" />
 			<tocitem text="Moving, Copying, or Renaming a C or C++ Project" target="MovingCorC++Project" />
 			<tocitem text="Creating a Makefile" target="CreatingMakefile" />
@@ -78,6 +82,12 @@
 			</tocitem>
 			<tocitem text="Running a C or C++ Project" target="RunningCorC++Project" />
 		</tocitem>
+		<tocitem text="Profiling C and C++ Applications">
+			<tocitem text="Overview of Profiling Tools" target="OverviewOfCandC++Profiling" />
+			<tocitem text="Managing Profiling Configurations" target="ManagingProfileConfigurations" />
+			<tocitem text="Profiling Threaded C and C++ Applications" target="ProfilingThreadedCandC++Apps" />
+			<tocitem text="Detecting Data Races and Deadlocks in C and C++ Applications" target="DetectingDataRacesDeadLocksC++" />
+		</tocitem>
 		<tocitem text="Debugging C and C++ Applications With gdb">
 			<tocitem text="About Debugging C and C++ Applications" target="DebuggingCorC++Project" />
 			<tocitem text="Working With Debugging" target="WorkingWithDebugging" />
@@ -104,6 +114,4 @@
 		</tocitem>
 	</tocitem>
 	<tocitem text="Legal Notices" target="credits" />
-	<tocitem text="Configuring C and C++ Project Settings" target="Configuring1" />
-	<tocitem text="Running a C or C++ Project" target="RunningCorC++Project1" />
 </toc>
