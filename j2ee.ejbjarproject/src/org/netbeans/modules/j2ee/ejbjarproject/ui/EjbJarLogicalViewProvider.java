@@ -212,6 +212,7 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider2 {
         EjbJarProjectProperties.DEBUG_CLASSPATH,
         ProjectProperties.RUN_TEST_CLASSPATH,
         EjbJarProjectProperties.DEBUG_TEST_CLASSPATH, 
+        ProjectProperties.ENDORSED_CLASSPATH,
         ProjectProperties.JAVAC_TEST_CLASSPATH,
     };
 
