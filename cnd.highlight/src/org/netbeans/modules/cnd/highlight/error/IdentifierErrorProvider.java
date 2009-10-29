@@ -222,7 +222,7 @@ public class IdentifierErrorProvider extends CsmErrorProvider {
             this.startOffset = startOffset;
             this.endOffset = endOffset;
             this.message = NbBundle.getMessage(IdentifierDeclarationAfterUsageInfo.class,
-                    "HighlightProvider_IdentifierMissed", name); //NOI18N
+                    "HighlightProvider_DeclarationAfterUsage", name); //NOI18N
             this.severity = severity;
         }
 
