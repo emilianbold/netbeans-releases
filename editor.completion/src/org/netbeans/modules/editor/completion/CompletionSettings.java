@@ -53,11 +53,9 @@ import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
-import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
-import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.openide.util.WeakListeners;
 
 /**
@@ -124,25 +122,6 @@ public final class CompletionSettings implements PreferenceChangeListener {
     public boolean completionInstantSubstitution() {
         initialize();
         return completionInstantSubstitution;
-    }
-    
-    public synchronized void notifyEditorComponentChange(JTextComponent newEditorComponent) {
-        if (preferences != null) {
-            assert weakListener != null;
-            preferences.removePreferenceChangeListener(weakListener);
-            preferences = null;
-            weakListener = null;
-        }
-        
-        if (newEditorComponent != null) {
-            String mimeType = DocumentUtilities.getMimeType(newEditorComponent);
-            Preferences prefs = MimeLookup.getLookup(mimeType).lookup(Preferences.class);
-            read(prefs);
-
-            preferences = prefs;
-            weakListener = WeakListeners.create(PreferenceChangeListener.class, this, preferences);
-            preferences.addPreferenceChangeListener(weakListener);
-        }
     }
     
     // -----------------------------------------------------------------------
