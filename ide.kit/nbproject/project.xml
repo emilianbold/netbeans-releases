@@ -70,7 +70,7 @@
                     <code-name-base>org.netbeans.modules.editor.fold</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.6</specification-version>
+                        <specification-version>1.10.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
