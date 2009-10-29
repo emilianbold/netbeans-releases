@@ -96,7 +96,7 @@ implements PropertyChangeListener, ContextAwareAction {
     }
 
     private void syncActionDelegateProperty(String propertyName, Action actionDelegate) {
-        Object value = extractCommonAttribute(map, this, propertyName);
+        Object value = extractCommonAttribute(map, propertyName);
         Object delegateValue = actionDelegate.getValue(propertyName);
         if (value != null) {
             if (delegateValue == null) {
@@ -156,12 +156,12 @@ implements PropertyChangeListener, ContextAwareAction {
                 return null;
             }
         }
-        Object o = extractCommonAttribute(map, this, name);
+        Object o = extractCommonAttribute(map, name);
         // cf. #137709 JG18:
         return o != null ? o : super.getValue(name);
     }
 
-    static final Object extractCommonAttribute(Map fo, Action action, String name) {
+    static final Object extractCommonAttribute(Map fo, String name) {
         try {
         if (Action.NAME.equals(name)) {
             String actionName = (String) fo.get("displayName"); // NOI18N
