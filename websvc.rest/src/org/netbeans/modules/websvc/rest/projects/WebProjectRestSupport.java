@@ -379,7 +379,8 @@ public class WebProjectRestSupport extends WebRestSupport {
 
     private String setApplicationConfigProperty() {
         ApplicationConfigPanel configPanel = new ApplicationConfigPanel();
-        DialogDescriptor desc = new DialogDescriptor(configPanel, "Set Up Application Config");
+        DialogDescriptor desc = new DialogDescriptor(configPanel,
+                NbBundle.getMessage(WebProjectRestSupport.class, "TTL_ApplicationConfigPanel"));
         DialogDisplayer.getDefault().notify(desc);
         if (NotifyDescriptor.OK_OPTION.equals(desc.getValue())) {
             String configType = configPanel.getConfigType();

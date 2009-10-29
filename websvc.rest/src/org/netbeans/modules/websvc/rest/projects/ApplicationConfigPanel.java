@@ -86,23 +86,24 @@ public class ApplicationConfigPanel extends javax.swing.JPanel {
         jRadioButton1 = new javax.swing.JRadioButton();
         jLabel2 = new javax.swing.JLabel();
 
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(ApplicationConfigPanel.class, "ApplicationConfigPanel.jLabel1.text")); // NOI18N
+        jLabel1.setLabelFor(jTextField1);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(ApplicationConfigPanel.class, "ApplicationConfigPanel.jLabel1.text")); // NOI18N
 
         jTextField1.setText(org.openide.util.NbBundle.getMessage(ApplicationConfigPanel.class, "ApplicationConfigPanel.jTextField1.text")); // NOI18N
 
         jPanel1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
         buttonGroup1.add(jRadioButton3);
-        jRadioButton3.setText(org.openide.util.NbBundle.getMessage(ApplicationConfigPanel.class, "ApplicationConfigPanel.jRadioButton3.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jRadioButton3, org.openide.util.NbBundle.getMessage(ApplicationConfigPanel.class, "ApplicationConfigPanel.jRadioButton3.text")); // NOI18N
         jRadioButton3.setVerticalTextPosition(javax.swing.SwingConstants.TOP);
 
         buttonGroup1.add(jRadioButton2);
-        jRadioButton2.setText(org.openide.util.NbBundle.getMessage(ApplicationConfigPanel.class, "ApplicationConfigPanel.jRadioButton2.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jRadioButton2, org.openide.util.NbBundle.getMessage(ApplicationConfigPanel.class, "ApplicationConfigPanel.jRadioButton2.text")); // NOI18N
         jRadioButton2.setVerticalTextPosition(javax.swing.SwingConstants.TOP);
 
         buttonGroup1.add(jRadioButton1);
         jRadioButton1.setSelected(true);
-        jRadioButton1.setText(org.openide.util.NbBundle.getMessage(ApplicationConfigPanel.class, "ApplicationConfigPanel.jRadioButton1.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jRadioButton1, org.openide.util.NbBundle.getMessage(ApplicationConfigPanel.class, "ApplicationConfigPanel.jRadioButton1.text")); // NOI18N
         jRadioButton1.setAutoscrolls(true);
         jRadioButton1.setVerifyInputWhenFocusTarget(false);
         jRadioButton1.setVerticalTextPosition(javax.swing.SwingConstants.TOP);
@@ -165,6 +166,9 @@ public class ApplicationConfigPanel extends javax.swing.JPanel {
                     .add(jLabel1))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ApplicationConfigPanel.class, "TTL_ApplicationConfigPanel")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ApplicationConfigPanel.class, "ApplicationConfigPanel.jLabel2.text")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 
