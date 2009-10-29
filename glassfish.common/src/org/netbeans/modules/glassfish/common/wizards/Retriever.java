@@ -188,9 +188,10 @@ public class Retriever implements Runnable {
             connection.setReadTimeout(ZIP_DOWNLOAD_TIMEOUT);
             in = connection.getInputStream();
             setDownloadState(STATUS_DOWNLOADING);
+            int len = connection.getContentLength();
             
             // Download and unzip the V3 archive.
-            downloadAndInstall(in, targetInstallDir);
+            downloadAndInstall(in, targetInstallDir, len);
             
             if(!shutdown) {
                 long end = System.currentTimeMillis();
@@ -273,7 +274,7 @@ public class Retriever implements Runnable {
     private static final int READ_BUF_SIZE = 131072; // 128k
     private static final int WRITE_BUF_SIZE = 131072; // 128k
     
-    private boolean downloadAndInstall(final InputStream in, final File targetFolder) throws IOException {
+    private boolean downloadAndInstall(final InputStream in, final File targetFolder, final int filelen) throws IOException {
         BufferedInputStream bufferedStream = null;
         JarInputStream jarStream = null;
         try {
@@ -281,6 +282,7 @@ public class Retriever implements Runnable {
             bufferedStream = new BufferedInputStream(in, READ_BUF_SIZE);
             jarStream = new JarInputStream(bufferedStream);
             final InputStream entryStream = jarStream;
+            int totalBytesRead = 0;
             JarEntry entry;
             while(!shutdown && (entry = (JarEntry) jarStream.getNextEntry()) != null) {
                 String entryName = stripTopLevelDir(entry.getName());
@@ -312,10 +314,17 @@ public class Retriever implements Runnable {
                         long lastUpdate = 1;
                         while(!shutdown && (len = entryStream.read(buffer)) >= 0) {
                             bytesRead += len;
+                            totalBytesRead += len;
                             long update = System.currentTimeMillis() / 333;
                             if(update != lastUpdate) {
-                                updateMessage(NbBundle.getMessage(Retriever.class,
-                                        "MSG_Installing", entryName, countAsString(bytesRead))); // NOI18N
+                                if (filelen < 1) {
+                                    // do not know the content length... thanks bogus hoster config
+                                    updateMessage(NbBundle.getMessage(Retriever.class,
+                                            "MSG_Installing", entryName, countAsString(bytesRead))); // NOI18N
+                                } else {
+                                    updateMessage(NbBundle.getMessage(Retriever.class,
+                                            "MSG_Installing2", entryName, countAsString(totalBytesRead), countAsString(filelen))); // NOI18N
+                                }
                                 lastUpdate = update;
                             }
                             os.write(buffer, 0, len);

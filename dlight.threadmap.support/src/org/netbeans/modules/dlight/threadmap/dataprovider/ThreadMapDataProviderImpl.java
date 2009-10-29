@@ -350,6 +350,9 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
                     int threadID = rset.getInt(MSASQLTables.lwps.LWP_ID.getColumnName());
 
                     final ThreadInfo lwpInfo = getLWPInfo(threadID);
+                    if (lwpInfo == null) {
+                        continue;
+                    }
                     final List<StateDuration> states = new ArrayList<StateDuration>();
 
                     for (int colNum = 2; colNum < 12; colNum++) {

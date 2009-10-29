@@ -82,7 +82,6 @@ import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.packaging.DummyPackager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -123,33 +122,28 @@ public class ConfigurationMakefileWriter {
         Configuration[] confs = projectDescriptor.getConfs().getConfs();
         for (int i = 0; i < confs.length; i++) {
             MakeConfiguration conf = (MakeConfiguration) confs[i];
-            // add configurations if local host and target platform are different (don't have the right compiler set on this platform)
-            if (conf.getDevelopmentHost().isLocalhost()) {
-                int platformID = CompilerSetManager.getDefault(conf.getDevelopmentHost().getExecutionEnvironment()).getPlatform();
-                Platform platform = Platforms.getPlatform(platformID);
-                String buildTarget = conf.getDevelopmentHost().getBuildPlatformConfiguration().getName();
-                if (platform != null && platform.getDisplayName() != null && !platform.getDisplayName().equals(buildTarget)) {
-                    result.add(conf);
-                    wrongPlatform.add(conf);
-                    continue;
-                }
-            }
-            if (!wrongPlatform.isEmpty()) {
-                ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.getLocal();
-                int platformID = CompilerSetManager.getDefault(execEnv).getPlatform();
-                Platform platform = Platforms.getPlatform(platformID);
-                StringBuffer list = new StringBuffer();
-                for (MakeConfiguration c : wrongPlatform) {
-                    list.append(getString("CONF", c.getName(), c.getDevelopmentHost().getBuildPlatformConfiguration().getName()) + "\n"); // NOI18N
-                }
-                String msg = getString("TARGET_MISMATCH_TXT", platform.getDisplayName(), list.toString());
-                NotifyDescriptor.Message nd = new DialogDescriptor.Message(msg);
-                DialogDisplayer.getDefault().notify(nd);
-            }
-            // add configurations with unknown compiler sets
-            if (conf.getCompilerSet().getCompilerSet() == null) {
+            if (conf.getDevelopmentHost().isLocalhost() &&
+                    CompilerSetManager.getDefault(conf.getDevelopmentHost().getExecutionEnvironment()).getPlatform() != conf.getDevelopmentHost().getBuildPlatformConfiguration().getValue()) {
+                // add configurations if local host and target platform are different (don't have the right compiler set on this platform)
+                wrongPlatform.add(conf);
                 result.add(conf);
             }
+            else if (conf.getCompilerSet().getCompilerSet() == null) {
+                // add configurations with unknown compiler sets
+                result.add(conf);
+            }
+        }
+        if (!wrongPlatform.isEmpty()) {
+            ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.getLocal();
+            int platformID = CompilerSetManager.getDefault(execEnv).getPlatform();
+            Platform platform = Platforms.getPlatform(platformID);
+            StringBuffer list = new StringBuffer();
+            for (MakeConfiguration c : wrongPlatform) {
+                list.append(getString("CONF", c.getName(), c.getDevelopmentHost().getBuildPlatformConfiguration().getName()) + "\n"); // NOI18N
+            }
+            String msg = getString("TARGET_MISMATCH_TXT", platform.getDisplayName(), list.toString());
+            NotifyDescriptor.Message nd = new DialogDescriptor.Message(msg);
+            DialogDisplayer.getDefault().notify(nd);
         }
         return result;
     }
