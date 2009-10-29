@@ -3550,6 +3550,7 @@ constant
 	:	OCTALINT
 	|	DECIMALINT
 	|	HEXADECIMALINT
+	|	BINARYINT
 	|	CHAR_LITERAL
 	|	(options {warnWhenFollowAmbig = false;}: STRING_LITERAL)+
 	|	FLOATONE
