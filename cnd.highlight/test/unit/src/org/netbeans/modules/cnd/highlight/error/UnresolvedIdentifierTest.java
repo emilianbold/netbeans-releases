@@ -247,6 +247,11 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         performStaticTest("iz175231.cpp");
     }
 
+    public void testIZ161565() throws Exception {
+        // IZ#161565 : Usage of not-yet-declared function is not highlighted as error
+        performStaticTest("iz161565.cpp");
+    }
+
     /////////////////////////////////////////////////////////////////////
     // FAILS
 
