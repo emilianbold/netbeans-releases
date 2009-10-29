@@ -54,6 +54,11 @@ made subject to such option by the copyright holder.
            <release flags="-fast"/>
            <performance_release flags="-xO5 -fsimple=1 -xlibmil -xlibmopt -xbuiltin"/>
         </development_mode>
+        <architecture>
+            <default flags="" default="true"/>
+            <bits_32 flags=""/>
+            <bits_64 flags=""/>
+        </architecture>
     </c>
     <cpp>
         <version flags="-V" pattern=".*Sun C\+\+ 5.5"/>
@@ -61,8 +66,18 @@ made subject to such option by the copyright holder.
            <release flags="-fast"/>
            <performance_release flags="-xO5 -fsimple=1 -xlibmil -xlibmopt -xbuiltin"/>
         </development_mode>
+        <architecture>
+            <default flags="" default="true"/>
+            <bits_32 flags=""/>
+            <bits_64 flags=""/>
+        </architecture>
     </cpp>
     <fortran>
         <version flags="-V" pattern=".*Sun Fortran 95 7.1"/>
+        <architecture>
+            <default flags="" default="true"/>
+            <bits_32 flags=""/>
+            <bits_64 flags=""/>
+        </architecture>
     </fortran>
 </toolchaindefinition>
