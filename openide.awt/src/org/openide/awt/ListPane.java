@@ -61,6 +61,7 @@ import javax.swing.event.*;
  * @deprecated This class does nothing interesting which cannot be
  * done in a more reliable, scalable way with a JTable.
  */
+@Deprecated
 public class ListPane extends JList {
     /** generated Serialized Version UID */
     static final long serialVersionUID = 3828318151121500783L;

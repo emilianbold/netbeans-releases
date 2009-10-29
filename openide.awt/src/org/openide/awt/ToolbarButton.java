@@ -46,9 +46,10 @@ package org.openide.awt;
  * feel issues.  All implementation code has been removed.  It is here only
  * for backward compatibility.
  */
+@Deprecated
 public class ToolbarButton extends javax.swing.JButton {
     /** generated Serialized Version UID */
-    static final long serialVersionUID = 6564434578524381134L;
+    private static final long serialVersionUID = 6564434578524381134L;
 
     public ToolbarButton() {
     }
@@ -57,7 +58,4 @@ public class ToolbarButton extends javax.swing.JButton {
         super(icon);
     }
 
-    public void processMouseEvent(java.awt.event.MouseEvent e) {
-        super.processMouseEvent(e);
-    }
 }
