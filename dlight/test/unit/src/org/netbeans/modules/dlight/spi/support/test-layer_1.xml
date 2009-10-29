@@ -2,16 +2,16 @@
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
     <folder name="DLight">
-        <folder name="Fops.Configuration">
+        <folder name="MSA.Configuration">
             <file name="XMLToolConfiguration.instance">
                 <attr name="instanceCreate" methodValue="org.netbeans.modules.dlight.spi.impl.DLightToolConfigurationFactory.create"/>
-                <attr name="displayName" bundlevalue="org.netbeans.modules.dlight.spi.support.Bundle#Tool.Name"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.dlight.spi.support.MSABundle#ThreadMapTool.ToolName"/>
                 <attr name="name" stringvalue="fops"/>
                 <attr name="id" stringvalue="dlight.tool.fops"/>
                 <attr name="iconBase" stringvalue="org/netbeans/modules/dlight/spi/support/i_o_usage_16.png"/>
-                <attr name="datatable" stringvalue="DLight/Fops.Configuration/DtraceDatatableMetadata.instance"/>
-                <attr name="collector.config" stringvalue="DLight/Fops.Configuration/DTDCConfiguration.instance"/>
-                <attr name="idp.config" stringvalue="DLight/Fops.Configuration/DTDCConfiguration.instance"/>
+                <attr name="datatable" stringvalue="DLight/MSA.Configuration/DtraceDatatableMetadata.instance"/>
+                <attr name="collector.config" stringvalue="DLight/MSA.Configuration/DTDCConfiguration.instance"/>
+                <attr name="idp.config" stringvalue="DLight/MSA.Configuration/DTDCConfiguration.instance"/>
             </file>
             <file name="DtraceDatatableMetadata.instance">
                 <attr name="instanceCreate" methodValue="org.netbeans.modules.dlight.api.impl.DataTableMetadataFactory.create"/>
@@ -53,7 +53,7 @@
                     <attr name="class" stringvalue="time"/>
                     <attr name="shortname" bundlevalue="org.netbeans.modules.dlight.spi.support.Bundle#Column.Timestamp"/>
                 </file>
-                <file name="Column6.instance">
+                <file name="Column7.instance">
                     <attr name="instanceCreate" methodValue="org.netbeans.modules.dlight.api.impl.DataTableMetadataFactory.createColumn"/>
                     <attr name="name" stringvalue="sid"/>
                     <attr name="class" stringvalue="int"/>
@@ -92,7 +92,7 @@
             </file>
             <file name="DtraceDetailsColumns.List">
                 <attr name="instanceCreate" methodValue="org.netbeans.modules.dlight.api.impl.DataTableMetadataFactory.createColumnsList"/>
-                <attr name="columns" stringvalue="DLight/Fops.Configuration/DtraceDetailsColumns"/>
+                <attr name="columns" stringvalue="DLight/Fops/DtraceDetailsColumns.List"/>
             </file>
             <folder name="DtraceDetailsColumns">
                 <file name="Column1.instance">
@@ -134,18 +134,7 @@
                 <attr name="columns" stringvalue="DLight/Fops.Configuration/FopsColumns.List"/>
             </file>
             <file name="TimeSeriesIndicatorConfiguration.instance">
-                <attr name="instanceCreate" methodValue="org.netbeans.modules.dlight.indicators.impl.TimeSeriesIndicatorConfigurationFactory.create"/>
-                <attr name="title" bundlevalue="org.netbeans.modules.dlight.spi.support.Bundle#Indicator.Title"/>
-                <attr name="position" intvalue="400"/>
-                <attr name="metadata" stringvalue="DLight/Fops.Configuration/IndicatorMetadata.instance"/>
-                <attr name="aggregation" stringvalue="SUM"/>
-                <attr name="label.formatter" newvalue="org.netbeans.modules.dlight.util.BytesFormatter"/>
-                <attr name="graph.scale" intvalue="1024"/>
-                <attr name="LastNonNull" boolvalue="false"/>
-                <attr name="action.displayName" bundlevalue="org.netbeans.modules.dlight.spi.support.Bundle#Indicator.Action"/>
-                <attr name="action.tooltip" bundlevalue="org.netbeans.modules.dlight.spi.support.Bundle#Indicator.Action.Tooltip"/>
-                <attr name="details.descriptor" stringvalue="DLight/Fops.Configuration/DetailsDescription.instance"/>
-                <attr name="timeSeriesDescriptors" stringvalue="DLight/Fops.Configuration/TimeSeriesDescriptorsList"/>
+                <attr name="metadata" stringvalue="DLight/Fops.Configuration"/>
             </file>
         </folder>
     </folder>
