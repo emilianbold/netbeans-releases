@@ -131,6 +131,9 @@ public final class OptionsUtils {
     public static boolean autoCompletionVariables() {
         lazyInit();
         assert autoCompletionVariables != null;
+        if (autoCompletionFull()) {
+            return true;
+        }
         return autoCompletionVariables;
     }
 
@@ -140,6 +143,9 @@ public final class OptionsUtils {
     public static boolean autoCompletionTypes() {
         lazyInit();
         assert autoCompletionTypes != null;
+        if (autoCompletionFull()) {
+            return true;
+        }
         return autoCompletionTypes;
     }
 
@@ -149,6 +155,9 @@ public final class OptionsUtils {
     public static boolean autoCompletionNamespaces() {
         lazyInit();
         assert autoCompletionNamespaces != null;
+        if (autoCompletionFull()) {
+            return true;
+        }
         return autoCompletionNamespaces;
     }
 
