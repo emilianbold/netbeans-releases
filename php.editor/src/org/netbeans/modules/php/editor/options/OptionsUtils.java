@@ -57,6 +57,11 @@ public final class OptionsUtils {
         public void preferenceChange(PreferenceChangeEvent evt) {
             String settingName = evt == null ? null : evt.getKey();
 
+            if (settingName == null || CodeCompletionPanel.PHP_AUTO_COMPLETION_FULL.equals(settingName)) {
+                autoCompletionFull = preferences.getBoolean(
+                        CodeCompletionPanel.PHP_AUTO_COMPLETION_FULL,
+                        CodeCompletionPanel.PHP_AUTO_COMPLETION_FULL_DEFAULT);
+            }
             if (settingName == null || CodeCompletionPanel.PHP_AUTO_COMPLETION_VARIABLES.equals(settingName)) {
                 autoCompletionVariables = preferences.getBoolean(
                         CodeCompletionPanel.PHP_AUTO_COMPLETION_VARIABLES,
@@ -96,6 +101,7 @@ public final class OptionsUtils {
 
     private static Preferences preferences;
 
+    private static Boolean autoCompletionFull = null;
     private static Boolean autoCompletionVariables = null;
     private static Boolean autoCompletionTypes = null;
     private static Boolean autoCompletionNamespaces = null;
@@ -108,6 +114,15 @@ public final class OptionsUtils {
     private static CodeCompletionPanel.CodeCompletionType codeCompletionType = null;
 
     private OptionsUtils() {
+    }
+
+     /**
+     * Code Completion after typing
+     */
+    public static boolean autoCompletionFull() {
+        lazyInit();
+        assert autoCompletionFull != null;
+        return autoCompletionFull;
     }
 
     /**
