@@ -56,6 +56,7 @@ import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.util.KenaiUtil;
+import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
@@ -79,7 +80,7 @@ public class KenaiRepository extends JiraRepository {
 
     public KenaiRepository(KenaiProject kenaiProject, String repoName, String url, String host, String project) {
         // use name for id, can't be changed anyway
-        super(repoName, repoName, url, getKenaiUser(), getKenaiPassword(), null, null);
+        super(getRepositoryId(repoName, url), repoName, url, getKenaiUser(), getKenaiPassword(), null, null);
         icon = ImageUtilities.loadImage(ICON_PATH, true);
         this.projectName = project;
         this.host = host;
@@ -320,4 +321,7 @@ public class KenaiRepository extends JiraRepository {
          return users;
     }
 
+    private static String getRepositoryId(String name, String url) {
+        return TextUtils.encodeURL(url) + ":" + name;                           // NOI18N
+    }
 }

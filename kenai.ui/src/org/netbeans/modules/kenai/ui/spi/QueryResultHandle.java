@@ -26,6 +26,12 @@ public abstract class QueryResultHandle {
     public abstract String getText();
 
     /**
+     * 
+     * @return The tooltiptext of the link 
+     */
+    public abstract String getToolTipText();
+
+    /**
      * Determines the result type
      *
      * @return the result type
