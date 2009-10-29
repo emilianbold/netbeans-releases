@@ -411,6 +411,7 @@
                 <friend>com.sun.tools.swdev.advtools.actions.spi</friend>
                 <friend>com.sun.tools.swdev.projectimport</friend>
                 <friend>com.sun.tools.swdev.sunstudio</friend>
+                <friend>org.netbeans.embedded.project</friend>
                 <friend>org.netbeans.libs.sunstudio</friend>
                 <friend>org.netbeans.modules.cnd.api.remote</friend>
                 <friend>org.netbeans.modules.cnd.classview</friend>
@@ -435,7 +436,6 @@
                 <friend>org.netbeans.modules.cnd.refactoring</friend>
                 <friend>org.netbeans.modules.cnd.remote</friend>
                 <friend>org.netbeans.modules.cnd.tha</friend>
-                <package>org.netbeans.modules.cnd</package>
                 <package>org.netbeans.modules.cnd.actions</package>
                 <package>org.netbeans.modules.cnd.api.compilers</package>
                 <package>org.netbeans.modules.cnd.api.execution</package>
