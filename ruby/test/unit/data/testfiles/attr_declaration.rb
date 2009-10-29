@@ -8,6 +8,9 @@ end
 
 class Corge < Bar
   attr_accessor :thud
+  def fred
+    @thud = ""
+  end
 end
 
 b = Bar.new

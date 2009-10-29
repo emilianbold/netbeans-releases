@@ -934,7 +934,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
                 descriptions.toArray(new CustomizerNode[descriptions.size()]));
     }
 
-    private static class BuildCustomizerNode extends CustomizerNode {
+    private class BuildCustomizerNode extends CustomizerNode {
 
         public BuildCustomizerNode(String name, String displayName, CustomizerNode[] children) {
             super(name, displayName, children);
@@ -942,7 +942,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
 
         @Override
         public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor, Configuration configuration) {
-            return ((MakeConfiguration) configuration).getBuildSheet(project);
+            return ((MakeConfiguration) configuration).getBuildSheet(project, makeCustomizer);
         }
 
         @Override

@@ -425,6 +425,7 @@ tokens {
     protected static final int declOther = 0;
     protected static final int declStatement = 1;
     protected static final int declGeneric = 2;
+    protected static final int declNotFirst = 3;
 
 	public int getErrorCount() {
 	    int cnt = errorCount;
@@ -1827,7 +1828,7 @@ typeID
 	;
 
 init_declarator_list[int kind]
-	:	init_declarator[kind] (COMMA init_declarator[kind])*
+	:	init_declarator[kind] (COMMA init_declarator[declNotFirst])*
 	;
 
 init_declarator[int kind]
@@ -1957,8 +1958,9 @@ member_declarator
 conversion_function_decl_or_def returns [boolean definition = false]
 	{CPPParser.TypeQualifier tq; }
 	:	// DW 01/08/03 Use type_specifier here? see syntax
-		LITERAL_OPERATOR declaration_specifiers[true, false] (STAR | AMPERSAND)*
-		(LESSTHAN template_parameter_list GREATERTHAN)?
+		LITERAL_OPERATOR declaration_specifiers[true, false]
+                (ptr_operator)*
+                (LESSTHAN template_parameter_list GREATERTHAN)?
 		LPAREN (parameter_list)? RPAREN	
 		(tq = cv_qualifier)?
 		(exception_specification)?
@@ -2020,23 +2022,21 @@ restrict_declarator[int kind]
     ;
 
 direct_declarator[int kind]
-	{String id;
-	 TypeQualifier tq;}  
-	:
-		// Must be function declaration
+{String id; TypeQualifier tq;}
+    :
+        // Must be function declaration
         (function_like_var_declarator) =>
         function_like_var_declarator
-        {if(kind == declStatement) {#direct_declarator = #(#[CSM_VARIABLE_LIKE_FUNCTION_DECLARATION, "CSM_VARIABLE_LIKE_FUNCTION_DECLARATION"], #direct_declarator);}}
-    |	(qualified_id LPAREN)=>	// Must be class instantiation
-		id = qualified_id
-		{
-		    declaratorID(id, qiVar);
-		}
-		LPAREN
-		(expression_list)?
-		RPAREN
-		{#direct_declarator = #(#[CSM_VARIABLE_DECLARATION, "CSM_VARIABLE_DECLARATION"], #direct_declarator);}
-	|
+        {if(kind == declStatement || kind == declNotFirst || LA(1) == COMMA) {#direct_declarator = #(#[CSM_VARIABLE_LIKE_FUNCTION_DECLARATION, "CSM_VARIABLE_LIKE_FUNCTION_DECLARATION"], #direct_declarator);}}
+    |   
+        (qualified_id LPAREN) => // Must be class instantiation
+        id = qualified_id
+        {declaratorID(id, qiVar);}
+        LPAREN
+        (expression_list)?
+        RPAREN
+        {#direct_declarator = #(#[CSM_VARIABLE_DECLARATION, "CSM_VARIABLE_DECLARATION"], #direct_declarator);}
+    |
                 (options {greedy=true;} :variable_attribute_specification)?
                 (
                     (qualified_id LSQUARE)=>	// Must be array declaration

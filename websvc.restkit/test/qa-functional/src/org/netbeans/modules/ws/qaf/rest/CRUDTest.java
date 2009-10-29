@@ -57,7 +57,6 @@ import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.ide.ProjectSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -288,7 +287,7 @@ public class CRUDTest extends RestTestBase {
         String restGenTitle = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_RestSevicicesFromEntitiesProgress");
         waitDialogClosed(restGenTitle);
         // wait classpath scanning finished
-        ProjectSupport.waitScanFinished();
+        waitScanFinished();
     }
 
     /**

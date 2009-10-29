@@ -84,7 +84,10 @@ public class CastUtils {
 		case CPPTokenTypes.CSM_TYPE_COMPOUND:
 		    sb.append(' ');
 		    addTypeText(next, sb);
-		    break;
+                    break;
+		case CPPTokenTypes.CSM_PTR_OPERATOR:
+		    addTypeText(next, sb);
+                    break;
 		case CPPTokenTypes.LPAREN:
 		    break begin;
 		case CPPTokenTypes.AMPERSAND:

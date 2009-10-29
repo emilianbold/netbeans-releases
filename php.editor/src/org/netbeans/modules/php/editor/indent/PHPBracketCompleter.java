@@ -433,7 +433,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                 sb.append(IndentUtils.createIndentString(doc, indent));
                 sb.append("//"); // NOI18N
                 // Copy existing indentation
-                int afterHash = begin+1;
+                int afterHash = begin+2;
                 String line = doc.getText(afterHash, Utilities.getRowEnd(doc, afterHash)-afterHash);
                 for (int i = 0; i < line.length(); i++) {
                     char c = line.charAt(i);

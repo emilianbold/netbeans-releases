@@ -512,7 +512,7 @@ public class ProjectsRootNode extends AbstractNode {
                 return;
             }
             FileObject fo = p.getProjectDirectory();
-            if (newProj.getProjectDirectory().equals(fo)) {
+            if (newProj != null && newProj.getProjectDirectory().equals(fo)) {
                 Node n = null;
                 if (logicalView) {
                     n = ch.logicalViewForProject(newProj, null);

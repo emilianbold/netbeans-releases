@@ -439,6 +439,8 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
                 setDesignerSize(val);
             }
         };
+        // hack: avoid persisting as synthetic value, it's persisted as aux value when needed (#153085)
+        designerSizeProperty.setValue("defaultValue", Boolean.TRUE); // NOI18N
 
         java.util.List<Node.Property> propList = new java.util.ArrayList<Node.Property>();
 

@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.php.editor.verification;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -101,6 +102,12 @@ public class VarDocHint extends AbstractRule {
                         final OffsetRange identifierRange = new OffsetRange(wordStart, wordEnd);
                         int offset = identifierRange.getEnd();
                         if (variable.getTypes(offset).isEmpty()) {
+                            Collection<? extends String> typeNames = variable.getTypeNames(offset);
+                            for (String type : typeNames) {
+                                if (!type.contains("@")) {//NOI18N
+                                    return;
+                                }
+                            }
                             hints.add(new Hint(VarDocHint.this, getDisplayName(),
                                     context.parserResult.getSnapshot().getSource().getFileObject(), identifierRange,
                                     Collections.<HintFix>singletonList(new Fix(context, variable)), 500));
@@ -159,13 +166,12 @@ public class VarDocHint extends AbstractRule {
 
         EditList getEditList(BaseDocument doc, int caretOffset) throws Exception {
             EditList edits = new EditList(doc);
-
-            edits.replace(caretOffset, 0, getCommentText(), true, caretOffset);
+            edits.replace(caretOffset, 0, getCommentText(), true, 0);
             return edits;
         }
 
         private String getCommentText() {
-            return String.format("/* @var %s %s */\n", vName.getName(), getTypeTemplate());//NOI18N
+            return String.format("\n/* @var %s %s */", vName.getName(), getTypeTemplate());//NOI18N
         }
 
         private String getTypeTemplate() {
@@ -174,7 +180,7 @@ public class VarDocHint extends AbstractRule {
 
         private int getOffset(BaseDocument doc) throws BadLocationException {
             final int caretOffset = Utilities.getRowStart(doc, context.caretOffset);
-            return Utilities.getRowStart(doc, caretOffset);
+            return Utilities.getRowEnd(doc, caretOffset-1);
         }
 
         private void scheduleShowingCompletion() {

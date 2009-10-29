@@ -335,6 +335,9 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
 
     private final void setToolDescription(String toolDescription) {
         this.toolDecsription = toolDescription;
+        if (toolDescription == null){
+            return;
+        }
         final JComponent component = getComponent();
         if (component == null) {
             return;

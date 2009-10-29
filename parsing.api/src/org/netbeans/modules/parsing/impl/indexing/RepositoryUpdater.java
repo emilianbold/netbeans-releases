@@ -2369,7 +2369,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 Collection<? extends Object> suspectFilesOrFileObjects,
                 FSRefreshInterceptor interceptor)
         {
-            super(false, false, true, logStatistics);
+            super(logStatistics);
 
             Parameters.notNull("scannedRoots2Depencencies", scannedRoots2Depencencies); //NOI18N
             Parameters.notNull("scannedBinaries", scannedBinaries); //NOI18N
@@ -2614,7 +2614,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         protected Indexers indexers = null; // is only ever filled by InitialRootsWork
 
         public RootsWork(Map<URL, List<URL>> scannedRoots2Depencencies, Set<URL> scannedBinaries, Set<URL> sourcesForBinaryRoots, boolean useInitialState) {
-            super(false, false, true, false);
+            super(false);
             this.scannedRoots2Dependencies = scannedRoots2Depencencies;
             this.scannedBinaries = scannedBinaries;
             this.sourcesForBinaryRoots = sourcesForBinaryRoots;
@@ -2817,15 +2817,15 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
         private boolean logStatistics;
 
-        protected AbstractRootsWork(boolean followUpJob, boolean checkEditor, boolean supportsProgress, boolean logStatistics) {
-            super(followUpJob, checkEditor, supportsProgress, true);
+        protected AbstractRootsWork(boolean logStatistics) {
+            super(false, false, true, true);
             this.logStatistics = logStatistics;
         }
 
-        protected AbstractRootsWork(boolean followUpJob, boolean checkEditor, String progressTitle, boolean logStatistics) {
-            super(followUpJob, checkEditor, progressTitle, true);
-            this.logStatistics = logStatistics;
-        }
+//        protected AbstractRootsWork(boolean followUpJob, boolean checkEditor, String progressTitle, boolean logStatistics) {
+//            super(followUpJob, checkEditor, progressTitle, true);
+//            this.logStatistics = logStatistics;
+//        }
 
         protected final boolean scanBinaries(final DependenciesContext ctx) {
             assert ctx != null;

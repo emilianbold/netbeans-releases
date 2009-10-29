@@ -51,12 +51,12 @@ made subject to such option by the copyright holder.
         <platform os="linux" directory="/opt/SunStudioExpress/bin"/>
         <platform os="sun_intel" directory="/opt/aten/bin"/>
         <platform os="sun_intel" directory="/opt/SunStudioExpress/bin"/>
-        <platform os="sun_intel" directory="/opt/aten/bin"/>
+        <platform os="sun_sparc" directory="/opt/aten/bin"/>
         <platform os="sun_sparc" directory="/opt/SunStudioExpress/bin"/>
     </default_locations>
     <c>
         <compiler name="cc"/>
-        <recognizer pattern=".*(SunStudioExpress|/prod/bin|/sunstudioaten/)" or_exist_folder="../prod"/>
+        <recognizer pattern=".*(SunStudioExpress|/prod/bin|/sunstudioaten/|/aten/)" or_exist_folder="../prod"/>
         <version flags="-V" pattern=".*Sun.*(Ceres|Aten)"/>
         <system_include_paths flags="-xdryrun -E" parser="Sun"/>
         <system_macros flags="-xdryrun -E" parser="Sun"/>
@@ -105,7 +105,7 @@ made subject to such option by the copyright holder.
     </c>
     <cpp>
         <compiler name="CC"/>
-        <recognizer pattern=".*(SunStudioExpress|/prod/bin|/sunstudioaten/)" or_exist_folder="../prod"/>
+        <recognizer pattern=".*(SunStudioExpress|/prod/bin|/sunstudioaten/|/aten/)" or_exist_folder="../prod"/>
         <version flags="-V" pattern=".*Sun.*(Ceres|Aten)"/>
         <system_include_paths flags="-xdryrun -E" parser="Sun"/>
         <system_macros flags="-xdumpmacros=defs,sys -E" parser="Sun"/>
@@ -161,7 +161,7 @@ made subject to such option by the copyright holder.
     </cpp>
     <fortran>
         <compiler name="ffortran,f95,f90,f77"/>
-        <recognizer pattern=".*(SunStudioExpress|/prod/bin|/sunstudioaten/)" or_exist_folder="../prod"/>
+        <recognizer pattern=".*(SunStudioExpress|/prod/bin|/sunstudioaten/|/aten/)" or_exist_folder="../prod"/>
         <version flags="-V" pattern=".*Sun.*(Ceres|Aten)"/>
         <development_mode>
             <fast_build flags=""/>

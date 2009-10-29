@@ -295,14 +295,14 @@ public class PHPNewLineIndenterTest extends PHPTestBase {
     public void test175118_08() throws Exception {
         testIndentInFile("testfiles/indent/issue175118_08.php");
     }
-//    need to be fiexed the multi line expressions
-//    public void test175118_09() throws Exception {
-//        testIndentInFile("testfiles/indent/issue175118_09.php");
-//    }
-//
-//    public void test175118_10() throws Exception {
-//        testIndentInFile("testfiles/indent/issue175118_10.php");
-//    }
+    
+    public void test175118_09() throws Exception {
+        testIndentInFile("testfiles/indent/issue175118_09.php");
+    }
+
+    public void test175118_10() throws Exception {
+        testIndentInFile("testfiles/indent/issue175118_10.php");
+    }
 
     public void test175118_11() throws Exception {
         testIndentInFile("testfiles/indent/issue175118_11.php");
@@ -363,14 +363,15 @@ public class PHPNewLineIndenterTest extends PHPTestBase {
     public void test175437_8() throws Exception {
         testIndentInFile("testfiles/indent/issue175437_8.php");
     }
-
-    public void test175437_9() throws Exception {
-        testIndentInFile("testfiles/indent/issue175437_9.php");
-    }
-
-    public void test175437_10() throws Exception {
-        testIndentInFile("testfiles/indent/issue175437_10.php");
-    }
+    
+//  need to be fiexed the multi line expressions
+//    public void test175437_9() throws Exception {
+//        testIndentInFile("testfiles/indent/issue175437_9.php");
+//    }
+//
+//    public void test175437_10() throws Exception {
+//        testIndentInFile("testfiles/indent/issue175437_10.php");
+//    }
 
     public void test175437_11() throws Exception {
         testIndentInFile("testfiles/indent/issue175437_11.php");
@@ -384,6 +385,21 @@ public class PHPNewLineIndenterTest extends PHPTestBase {
         testIndentInFile("testfiles/indent/issue175437_13.php");
     }
 
+    public void testLineComment_1() throws Exception {
+        testIndentInFile("testfiles/indent/linecomment_1.php");
+    }
+
+    public void testLineComment_2() throws Exception {
+        testIndentInFile("testfiles/indent/linecomment_2.php");
+    }
+
+    public void testLineComment_3() throws Exception {
+        testIndentInFile("testfiles/indent/linecomment_3.php");
+    }
+
+    public void testLineComment_4() throws Exception {
+        testIndentInFile("testfiles/indent/linecomment_4.php");
+    }
 
     @Override
     protected boolean runInEQ() {

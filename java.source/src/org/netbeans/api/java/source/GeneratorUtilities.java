@@ -90,7 +90,10 @@ import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.GuardedDocument;
+import org.netbeans.modules.java.source.builder.CommentHandlerService;
+import org.netbeans.modules.java.source.builder.CommentSetImpl;
 import org.netbeans.modules.java.source.parsing.SourceFileObject;
+import org.netbeans.modules.java.source.query.CommentSet.RelativePosition;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
 import org.openide.modules.SpecificationVersion;
@@ -519,7 +522,30 @@ public final class GeneratorUtilities {
         }
         return original;
     }
-    
+
+    /**
+     * Copy comments from source tree to target tree.
+     *
+     * @param source tree to copy comments from
+     * @param target tree to copy comments to
+     * @param preceding true iff preceding comments should be copied
+     * @since 0.51
+     */
+    public void copyComments(Tree source, Tree target, boolean preceding) {
+        CommentHandlerService handler = CommentHandlerService.instance(copy.impl.getJavacTask().getContext());
+        CommentSetImpl s = handler.getComments(source);
+
+        TreeUtilities.ensureCommentsMapped(copy, source, s);
+
+        CommentSetImpl t = handler.getComments(target);
+
+        if (preceding) {
+            t.addComments(RelativePosition.PRECEDING, s.getComments(RelativePosition.PRECEDING));
+        } else {
+            t.addComments(RelativePosition.INLINE, s.getComments(RelativePosition.INLINE));
+            t.addComments(RelativePosition.TRAILING, s.getComments(RelativePosition.TRAILING));
+        }
+    }
     
     // private implementation --------------------------------------------------
 

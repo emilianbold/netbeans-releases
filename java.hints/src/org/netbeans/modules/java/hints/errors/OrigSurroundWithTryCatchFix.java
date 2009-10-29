@@ -109,7 +109,7 @@ class OrigSurroundWithTryCatchFix implements Fix {
 
                 StatementTree leaf = (StatementTree) p.getLeaf();
 
-                leaf = GeneratorUtilities.get(parameter).importComments(leaf, parameter.getCompilationUnit());
+                GeneratorUtilities.get(parameter).importComments(p.getParentPath().getLeaf(), parameter.getCompilationUnit());
 
                 TreeMaker make = parameter.getTreeMaker();
                 
@@ -128,6 +128,8 @@ class OrigSurroundWithTryCatchFix implements Fix {
                             if (sep) {
                                 StatementTree assignment = make.ExpressionStatement(make.Assignment(make.Identifier(vt.getName()), vt.getInitializer()));
                                 StatementTree declaration = make.Variable(vt.getModifiers(), vt.getName(), vt.getType(), null);//XXX: mask out final
+                                declaration = Utilities.copyComments(parameter, vt, declaration, true);
+                                assignment = Utilities.copyComments(parameter, vt, assignment, false);
                                 TryTree tryTree = make.Try(make.Block(Collections.singletonList(assignment), false), MagicSurroundWithTryCatchFix.createCatches(parameter, make, thandles, p), null);
                                 List<StatementTree> nueStatements = new LinkedList<StatementTree>();
 

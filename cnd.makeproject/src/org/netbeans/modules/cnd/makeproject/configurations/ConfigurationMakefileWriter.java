@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakefileConfigura
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DefaultMakefileWriter;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.MakefileWriter;
@@ -76,9 +77,17 @@ import org.netbeans.modules.cnd.makeproject.api.PackagerDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.PackagerManager;
+import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.packaging.DummyPackager;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 public class ConfigurationMakefileWriter {
 
@@ -110,12 +119,32 @@ public class ConfigurationMakefileWriter {
      */
     private Collection<MakeConfiguration> getProtectedConfigurations() {
         List<MakeConfiguration> result = new ArrayList<MakeConfiguration>();
+        List<MakeConfiguration> wrongPlatform = new ArrayList<MakeConfiguration>();
         Configuration[] confs = projectDescriptor.getConfs().getConfs();
         for (int i = 0; i < confs.length; i++) {
             MakeConfiguration conf = (MakeConfiguration) confs[i];
-            if (conf.getCompilerSet().getCompilerSet() == null) {
+            if (conf.getDevelopmentHost().isLocalhost() &&
+                    CompilerSetManager.getDefault(conf.getDevelopmentHost().getExecutionEnvironment()).getPlatform() != conf.getDevelopmentHost().getBuildPlatformConfiguration().getValue()) {
+                // add configurations if local host and target platform are different (don't have the right compiler set on this platform)
+                wrongPlatform.add(conf);
                 result.add(conf);
             }
+            else if (conf.getCompilerSet().getCompilerSet() == null) {
+                // add configurations with unknown compiler sets
+                result.add(conf);
+            }
+        }
+        if (!wrongPlatform.isEmpty()) {
+            ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.fromUniqueID(HostInfoUtils.LOCALHOST);
+            int platformID = CompilerSetManager.getDefault(execEnv).getPlatform();
+            Platform platform = Platforms.getPlatform(platformID);
+            StringBuffer list = new StringBuffer();
+            for (MakeConfiguration c : wrongPlatform) {
+                list.append(getString("CONF", c.getName(), c.getDevelopmentHost().getBuildPlatformConfiguration().getName()) + "\n"); // NOI18N
+            }
+            String msg = getString("TARGET_MISMATCH_TXT", platform.getDisplayName(), list.toString());
+            NotifyDescriptor.Message nd = new DialogDescriptor.Message(msg);
+            DialogDisplayer.getDefault().notify(nd);
         }
         return result;
     }
@@ -517,7 +546,7 @@ public class ConfigurationMakefileWriter {
                     BasicCompiler compiler = (BasicCompiler) compilerSet.getTool(itemConfiguration.getTool());
                     BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
                     target = compilerConfiguration.getOutputFile(items[i], conf, false);
-                    if (compiler != null) {
+                    if (compiler != null && compiler.getDescriptor() != null) {
                         String fromLinker = ""; // NOI18N
                         if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_DYNAMIC_LIB) {
                             if (conf.getLinkerConfiguration().getPICOption().getValue()) {
@@ -944,5 +973,16 @@ public class ConfigurationMakefileWriter {
         bw.write("# Cleanup\n"); // NOI18N
         bw.write("cd \"${TOP}\"\n"); // NOI18N
         bw.write("rm -rf ${TMPDIR}\n"); // NOI18N
+    }
+
+    /** Look up i18n strings here */
+    private static String getString(String s) {
+        return NbBundle.getMessage(ConfigurationMakefileWriter.class, s);
+    }
+    private static String getString(String s, String arg1) {
+        return NbBundle.getMessage(ConfigurationMakefileWriter.class, s, arg1);
+    }
+    private static String getString(String s, String arg1, String arg2) {
+        return NbBundle.getMessage(ConfigurationMakefileWriter.class, s, arg1, arg2);
     }
 }

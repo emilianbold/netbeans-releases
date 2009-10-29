@@ -366,9 +366,10 @@ public final class LibraryManager {
     }
 
     /*package*/
-    void cleanLibrariesData(Collection<LibProjectImpl> libs) {
+    final void cleanLibrariesData(Collection<LibProjectImpl> libs) {
         for (LibProjectImpl entry : libs) {
             librariesEntries.remove(entry.getPath().toString());
+            entry.dispose(true);
         }
     }
 

@@ -41,24 +41,20 @@ package org.netbeans.modules.cnd.remote.sync;
 
 import java.io.File;
 import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
+import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
-import org.netbeans.modules.cnd.api.remote.ServerList;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.Env;
+import org.netbeans.modules.cnd.remote.support.RemoteProjectSupport;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.filesystems.FileUtil;
 import org.openide.windows.InputOutput;
 
 /**
@@ -75,7 +71,6 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
 
     private PrintWriter out;
     private PrintWriter err;
-    private String remoteDir;
 
     /* package-local */
     RemoteBuildProjectActionHandler() {
@@ -123,41 +118,17 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
             out = io.getOut();
         }
 
-        final File baseDir = new File(pae.getProfile().getBaseDir()).getAbsoluteFile(); // or canonical?
-        final File privProjectStorage = new File(new File(baseDir, "nbproject"), "private"); //NOI18N
-
+        final File privProjectStorage = RemoteProjectSupport.getPrivateStorage(pae.getProject());
         MakeConfiguration conf = pae.getConfiguration();
+        File[] sourceDirs = RemoteProjectSupport.getProjectSourceDirs(pae.getProject(), conf);
 
-        // the project itself
-        List<File> extraSourceRoots = new ArrayList<File>();
-        MakeConfigurationDescriptor mcs = MakeConfigurationDescriptor.getMakeConfigurationDescriptor(pae.getProject());
-        for(String soorceRoot : mcs.getSourceRoots()) {
-            String path = IpeUtils.toAbsolutePath(baseDir.getAbsolutePath(), soorceRoot);
-            File file = new File(path); // or canonical?
-            extraSourceRoots.add(file);
+        final RemoteSyncWorker worker =  RemoteSyncSupport.createSyncWorker(
+                execEnv, out, err, privProjectStorage, sourceDirs);
+        CndUtils.assertTrue(worker != null, "RemoteSyncWorker shouldn't be null"); //NOI18N
+        if (worker == null) {
+            delegate.execute(io);
+            return;            
         }
-        // Make sure 1st level subprojects are visible remotely
-        // First, remembr all subproject locations
-        for (String subprojectDir : conf.getSubProjectLocations()) {
-            subprojectDir = IpeUtils.toAbsolutePath(baseDir.getAbsolutePath(), subprojectDir);
-            extraSourceRoots.add(new File(subprojectDir));
-        }
-        // Then go trough open subprojects and add their external source roots
-        for (Project subProject : conf.getSubProjects()) {
-            File subProjectDir = FileUtil.toFile(subProject.getProjectDirectory());
-            MakeConfigurationDescriptor subMcs =
-                    MakeConfigurationDescriptor.getMakeConfigurationDescriptor(subProject);
-            for(String soorceRoot : mcs.getSourceRoots()) {
-                File file = new File(soorceRoot).getAbsoluteFile(); // or canonical?
-                extraSourceRoots.add(file);
-            }
-        }
-        List<File> allFiles = new ArrayList<File>(extraSourceRoots.size() + 1);
-        allFiles.add(baseDir);
-        allFiles.addAll(extraSourceRoots);
-
-        final RemoteSyncWorker worker = ServerList.get(execEnv).getSyncFactory().createNew(
-                execEnv, out, err, privProjectStorage, allFiles.toArray(new File[allFiles.size()]));
 
         Map<String, String> env2add = new HashMap<String, String>();
         if (worker.startup(env2add)) {

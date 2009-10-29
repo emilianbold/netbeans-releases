@@ -122,7 +122,7 @@ public class GoToTest implements TestLocator {
         assert editorSupport != null : "Editor support must exist";
         Collection<PhpClass> classes = editorSupport.getClasses(testFo);
         for (PhpClass phpClass : classes) {
-            String clsFQName = org.netbeans.modules.php.project.util.PhpProjectUtils.getFullyQualifiedName(project, phpClass);
+            String clsFQName = phpClass.getFullyQualifiedName();
             if (clsFQName.endsWith(PhpUnit.TEST_CLASS_SUFFIX)) {
                 int lastIndexOf = phpClass.getName().lastIndexOf(PhpUnit.TEST_CLASS_SUFFIX);
                 assert lastIndexOf != -1;
@@ -149,7 +149,7 @@ public class GoToTest implements TestLocator {
             Collection<PhpClass> classes = editorSupport.getClasses(srcFo);
             for (PhpClass phpClass : classes) {
                 String testClsName = phpClass.getName() + PhpUnit.TEST_CLASS_SUFFIX;
-                String testClsFQName = org.netbeans.modules.php.project.util.PhpProjectUtils.getFullyQualifiedName(project, phpClass) + PhpUnit.TEST_CLASS_SUFFIX;
+                String testClsFQName = phpClass.getFullyQualifiedName() + PhpUnit.TEST_CLASS_SUFFIX;
                 Collection<FileObject> files = editorSupport.filesForClass(tests, new PhpClass(testClsName, testClsFQName, -1));
                 for (FileObject fileObject : files) {
                     if (FileUtils.isPhpFile(fileObject)
