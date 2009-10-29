@@ -33,15 +33,15 @@ import org.netbeans.junit.NbTestSuite;
  *
  * @author Mikhail Vaysman
  */
-public class TestInstallerAndUninstallerJava extends Installer{
+public class TestInstallerAndUninstallerJavaFX extends Installer {
 
     /*
-    public TestInstallerAndUninstallerJavaSE() {
+    public TestInstallerAndUninstallerJavaFX() {
         super("Installer test");
     }
 
     public static Test suite() {
-        TestSuite suite = new NbTestSuite(TestInstallerAndUninstallerJavaSE.class);
+        TestSuite suite = new NbTestSuite(TestInstallerAndUninstallerJavaFX.class);
 
         return suite;
     }
@@ -49,12 +49,11 @@ public class TestInstallerAndUninstallerJava extends Installer{
 
     public void testInstaller() {
         TestData data = new TestData(Logger.getLogger("global"));
+        data.SetTestPackage( "java3/org-netbeans-modules-java-kit" ); // TODO
 
-        Utils.phaseOne(data, "java");
+        Utils.phaseOne(data, "javafx");
 
         // Pages
-          // Apache
-        Utils.stepChooseComponet( "Apache Tomcat", data );
         // Welcome
         Utils.stepWelcome();
         // Agreement
@@ -65,37 +64,18 @@ public class TestInstallerAndUninstallerJava extends Installer{
             "Install the NetBeans IDE",
             data.GetNetBeansInstallPath( )
           );
-        // GF
-        Utils.stepSetDir(
-            data,
-            data.m_bPreludePresents ? "Install Sun GlassFish Enterprise Server" : "Install GlassFish",
-            data.GetApplicationServerInstallPath( )
-          );
-        if( data.m_bPreludePresents )
-        {
-          Utils.stepSetDir(
-              data,
-              "Install GlassFish",
-              data.GetApplicationServerInstallPath( )
-            );
-        }
-
-        // Apache
-        Utils.stepSetDir(
-            data,
-            "Install Apache Tomcat",
-            data.GetTomcatInstallPath( )
-          );
         // Summary
         Utils.stepInstall(data);
         //Installation
         //finish
         Utils.stepFinish();
 
-        //Utils.phaseTwo( data );
-        //Utils.phaseThree( data );
+
+        //Utils.phaseTwo(data);
 
         Utils.phaseFour(data);
+
+        //Utils.RunCommitTests( data );
 
         Utils.phaseFive( data );
 

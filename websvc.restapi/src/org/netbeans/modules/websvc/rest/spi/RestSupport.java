@@ -570,6 +570,22 @@ public abstract class RestSupport {
         }
         return helper.getStandardPropertyEvaluator().getProperty(name);
     }
+
+    public void removeProjectProperties(String[] propertyNames) {
+        if (getAntProjectHelper() == null) {
+            return;
+        }
+        EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        for (String name : propertyNames) {
+            ep.remove(name);
+        }
+        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+        try {
+            ProjectManager.getDefault().saveProject(getProject());
+        } catch(IOException ioe) {
+            Logger.getLogger(this.getClass().getName()).log(Level.INFO, ioe.getLocalizedMessage(), ioe);
+        }
+    }
     
     protected boolean ignorePlatformRestLibrary() {
         String v = getProjectProperty(IGNORE_PLATFORM_RESTLIB);

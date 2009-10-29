@@ -100,10 +100,10 @@ public class RestApplicationsPanel extends javax.swing.JPanel {
         setOpaque(false);
 
         jLabel1.setLabelFor(jComboBox1);
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(RestApplicationsPanel.class, "RestApplicationsPanel.jLabel1.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(RestApplicationsPanel.class, "RestApplicationsPanel.jLabel1.text")); // NOI18N
 
         jLabel2.setLabelFor(jLabel3);
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(RestApplicationsPanel.class, "RestApplicationsPanel.jLabel2.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(RestApplicationsPanel.class, "RestApplicationsPanel.jLabel2.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
