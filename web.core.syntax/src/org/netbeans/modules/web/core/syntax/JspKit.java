@@ -154,8 +154,22 @@ public class JspKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
 
     @Override
     public Document createDefaultDocument() {
-        Document doc = super.createDefaultDocument();
-        initLexerColoringListener(doc);
+        final Document doc = super.createDefaultDocument();
+        //#174763 workaround - there isn't any elegant place where to place
+        //a code which needs to be run after document's COMPLETE initialization.
+        //DataEditorSupport.createStyledDocument() creates the document via the
+        //EditorKit.createDefaultDocument(), but some of the important properties
+        //like Document.StreamDescriptionProperty or mimetype are set as the
+        //document properties later.
+        //A hacky solution is that a Runnable can be set to the postInitRunnable property
+        //in the EditorKit.createDefaultDocument() and the runnable is run
+        //once the document is completely initialized.
+        //The code responsible for running the runnable is in BaseJspEditorSupport.createStyledDocument()
+        doc.putProperty("postInitRunnable", new Runnable() { //NOI18N
+            public void run() {
+                initLexerColoringListener(doc);
+            }
+        });
         return doc;
     }
 
