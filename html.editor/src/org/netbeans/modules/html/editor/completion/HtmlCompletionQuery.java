@@ -224,7 +224,7 @@ public class HtmlCompletionQuery extends UserTask {
 
         //namespace is null for html content
         String namespace = (String) root.getProperty(AstNode.NAMESPACE_PROPERTY);
-        boolean queryHtmlContent = namespace == null || parserResult.getHtmlVersion().getDefaultNamespace().equals(namespace);
+        boolean queryHtmlContent = namespace == null || namespace.equals(parserResult.getHtmlVersion().getDefaultNamespace());
 
         /* Character reference finder */
         int ampIndex = preText.lastIndexOf('&'); //NOI18N
