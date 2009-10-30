@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.php.editor.model.impl;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -809,9 +810,14 @@ public class VariousUtils {
     public static FileObject resolveInclude(FileObject sourceFile, String fileName) {
         FileObject retval = null;
         if (fileName != null) {
-            FileObject parent = sourceFile.getParent();
-            if (parent != null) {
-                retval = PhpSourcePath.resolveFile(parent, fileName);
+            File absoluteFile = new File(fileName);
+            if (absoluteFile.exists()) {
+                retval = FileUtil.toFileObject(absoluteFile);
+            } else {
+                FileObject parent = sourceFile.getParent();
+                if (parent != null) {
+                    retval = PhpSourcePath.resolveFile(parent, fileName);
+                }
             }
         }
         return retval;
