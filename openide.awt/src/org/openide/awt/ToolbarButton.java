@@ -40,6 +40,8 @@
  */
 package org.openide.awt;
 
+import java.awt.event.MouseEvent;
+
 /**
  * An implementation of a toolbar button.
  * @deprecated This class was a workaround for JDK 1.2 era Windows Look and
@@ -56,6 +58,11 @@ public class ToolbarButton extends javax.swing.JButton {
 
     public ToolbarButton(javax.swing.Icon icon) {
         super(icon);
+    }
+
+    /** just made public */
+    public @Override void processMouseEvent(MouseEvent e) {
+        super.processMouseEvent(e);
     }
 
 }
