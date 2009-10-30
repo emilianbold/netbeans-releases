@@ -49,12 +49,10 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Language;
-import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.ext.html.parser.AstNode;
-import org.netbeans.editor.ext.html.parser.AstNodeUtils;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -88,6 +86,7 @@ public class HtmlBracesMatching implements BracesMatcher, BracesMatcherFactory {
     }
 
     public int[] findOrigin() throws InterruptedException, BadLocationException {
+        //disabling the master matcher cool matching strategy - if forward scanning, decrease the offset by one
         int searchOffset = context.isSearchingBackward() ? context.getSearchOffset() : context.getSearchOffset() + 1;
         ((AbstractDocument) context.getDocument()).readLock();
         try {
@@ -164,7 +163,7 @@ public class HtmlBracesMatching implements BracesMatcher, BracesMatcherFactory {
         if (!testMode && MatcherContext.isTaskCanceled()) {
             return null;
         }
-
+        //disabling the master matcher cool matching strategy - if forward scanning, decrease the offset by one
         final int searchOffset = context.isSearchingBackward() ? context.getSearchOffset() : context.getSearchOffset() + 1;
         final Source source = Source.create(context.getDocument());
         if (source == null) {
