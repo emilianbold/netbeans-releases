@@ -400,25 +400,19 @@ public class LocalVariablesTest extends DebuggerTestCase {
         Utilities.getStepOverExpressionAction().perform();
         new EventTool().waitNoEvent(700);
         Utilities.getStepOverExpressionAction().perform();
-        new EventTool().waitNoEvent(700);
-
-        // TODO: Enable after fix of issue 132886
-        //new Action(Utilities.runMenu+"|"+Utilities.stepOverExpresItem, null).perform();
+        new EventTool().waitNoEvent(700);        
 
         Utilities.showDebuggerView(Utilities.variablesViewTitle);
         OutlineOperator outlineOp = new OutlineOperator(new TopComponentOperator(Utilities.variablesViewTitle));
         int count = 1; //line 0 is the New Watch Expression line by default
         checkOutlineTableLine(outlineOp, count++, "Before call to 'println()'", null, null);
-        checkOutlineTableLine(outlineOp, count++, "Arguments", null, null);
-
-
+        if (version.equals("jdk16")) {
+            checkOutlineTableLine(outlineOp, count++, "Arguments", null, null);
             checkOutlineTableLine(outlineOp, count++, "Return values history", null, null);
             checkOutlineTableLine(outlineOp, count++, "return <init>()", null, null);
             checkOutlineTableLine(outlineOp, count++, "return <init>()", null, null);
-            checkOutlineTableLine(outlineOp, count++, "return <init>()", null, null);
-        if (version.equals("jdk16")) {
-            checkOutlineTableLine(outlineOp, count++, "return format()", "String", null);
-            //checkOutlineTableLine(outlineOp, count++, "return println()", "String", null);
+            checkOutlineTableLine(outlineOp, count++, "return <init>()", null, null);   
+            checkOutlineTableLine(outlineOp, count++, "return format()", "String", null);            
         }
     }
     

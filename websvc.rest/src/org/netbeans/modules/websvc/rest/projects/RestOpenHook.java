@@ -90,7 +90,6 @@ public class RestOpenHook extends ProjectOpenedHook {
                     public Void run(RestServicesMetadata metadata) throws IOException {
                         pcl = new RestServicesListener(support, model);
                         if (metadata.getRoot().getRestServiceDescription().length>0) {
-                            System.out.println("extending build script");
                             support.extendBuildScripts();
                         }
                         metadata.getRoot().addPropertyChangeListener(pcl);
