@@ -57,20 +57,35 @@ public class ApplicationConfigPanel extends javax.swing.JPanel {
 
     /** Creates new form RestSupportPanel */
 
-    public ApplicationConfigPanel(String configType, String resourcesPath) {
-        this();
+    public ApplicationConfigPanel(String configType, String resourcesPath, boolean annotationConfigAvailable) {
+        initComponents();
+        if (!annotationConfigAvailable) {
+            jRadioButton1.setVisible(false);
+        }
         if (WebRestSupport.CONFIG_TYPE_IDE.equals(configType)) {
-            jRadioButton1.setSelected(true);
+            if (annotationConfigAvailable) jRadioButton1.setSelected(true);
+            else jRadioButton3.setSelected(true);
         } else if (WebRestSupport.CONFIG_TYPE_USER.equals(configType)) {
             jRadioButton2.setSelected(true);
+            jTextField1.setEnabled(false);
         } else {
             jRadioButton3.setSelected(true);
         }
         jTextField1.setText(resourcesPath);
+        addListeners();
     }
 
-    public ApplicationConfigPanel() {
+    public ApplicationConfigPanel(boolean annotationConfigAvailable) {
         initComponents();
+        if (!annotationConfigAvailable) {
+            jRadioButton1.setVisible(false);
+            jRadioButton3.setSelected(true);
+        }
+        addListeners();
+
+    }
+
+    private void addListeners() {
         ItemListener l = new MyItemListener();
         jRadioButton1.addItemListener(l);
         jRadioButton2.addItemListener(l);
