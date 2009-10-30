@@ -209,7 +209,7 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="1910"/>
             </file>
             <!-- SunStudio on Update Center -->
-            <file name="SunStudio_Linux_UC.xml" url="toolchain/SunStudio_Linux_UC.xml">
+            <file name="SunStudioLite.xml" url="toolchain/SunStudioLite.xml">
                 <attr name="position" intvalue="1920"/>
                 <attr name="extends" stringvalue="SunStudio_12"/>
             </file>

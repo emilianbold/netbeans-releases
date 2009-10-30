@@ -42,7 +42,7 @@ made subject to such option by the copyright holder.
 -->
 
 <toolchaindefinition xmlns="http://www.netbeans.org/ns/cnd-toolchain-definition/1">
-    <toolchain name="SunStudio" display="Sun™ Studio Toolchain" family="SunStudio"/>
+    <toolchain name="SunStudioLite" display="Sun™ Studio Lite" family="SunStudio"/>
     <!-- download uc_url="http://elif.russia.sun.com/uc/catalog.xml" module_id="org.netbeans.libs.sunstudio"
          uc_display="Developer Update Center" / -->
     <download uc_url="http://updates.netbeans.org/netbeans/updates/6.8/uc/final/thirdparty/catalog.xml.gz" module_id="org.netbeans.libs.sunstudio"
