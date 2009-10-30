@@ -212,6 +212,9 @@ public class HtmlParserResult extends ParserResult {
         for(String uri : getNamespaces().keySet()) {
             AstNode root = root(uri);
             AstNode leaf = AstNodeUtils.findDescendantTag(root, offset, useLogicalRanges, forward);
+            if(leaf == null) {
+                continue;
+            }
             if(mostLeaf == null) {
                 mostLeaf = leaf;
             } else {
