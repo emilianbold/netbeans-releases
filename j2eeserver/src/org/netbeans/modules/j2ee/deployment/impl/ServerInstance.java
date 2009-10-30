@@ -153,7 +153,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
     // last known server state, the initial value is stopped
     private volatile int serverState = STATE_STOPPED;
     // server state listeners
-    private List stateListeners = new ArrayList();
+    private final List stateListeners = new ArrayList();
     
     // running check helpers
     private long lastCheck = 0;
@@ -1566,6 +1566,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
         }
     }
 
+    @Override
     public String toString() {
         return getDisplayName();
     }
