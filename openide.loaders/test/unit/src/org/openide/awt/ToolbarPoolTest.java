@@ -45,10 +45,9 @@ import java.awt.Component;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.logging.Level;
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
-import junit.framework.Test;
+import javax.swing.JToggleButton;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.openide.awt.MenuBarTest.MyAction;
@@ -103,8 +102,6 @@ public class ToolbarPoolTest extends NbTestCase {
         assertEquals ("By default there is no config", "", conf);
         
     }
-    
-
     
     public void testCreateConf () throws Exception {
         JLabel conf = new JLabel ();
@@ -182,7 +179,7 @@ public class ToolbarPoolTest extends NbTestCase {
         assertEquals("Pool name", "m1", tb.getName());
         assertEquals("Has one subcomponent", 1, tb.getComponents().length);
         Object o1 = tb.getComponent(0);
-        if (!(o1 instanceof JButton)) {
+        if (!(o1 instanceof JToggleButton)) {
             fail("Need JPanel " + o1);
         }
         assertEquals("And now the action is created", 1, MyAction.counter);
