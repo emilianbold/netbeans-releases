@@ -45,15 +45,15 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
 import java.beans.BeanInfo;
+import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -132,11 +132,15 @@ public class FSCompletion implements CompletionProvider {
                                     return;
                                 }
                                 int startOffset = s.getStartOffset() + 1;
-                                String prefix = parameter.getSnapshot().getText().subSequence(startOffset, caretOffset).toString();
+                                final String prefix = parameter.getSnapshot().getText().subSequence(startOffset, caretOffset).toString();
                                 List<FileObject> relativeTo = new LinkedList<FileObject>();
                                 relativeTo.addAll(includePath);
-                                relativeTo.add(parameter.getSnapshot().getSource().getFileObject().getParent());
-                                resultSet.addAllItems(computeRelativeItems(relativeTo, prefix, startOffset, new PHPIncludesFilter(parameter.getSnapshot().getSource().getFileObject())));
+                                final PHPIncludesFilter filter = new PHPIncludesFilter(parameter.getSnapshot().getSource().getFileObject());
+                                final FileObject parent = parameter.getSnapshot().getSource().getFileObject().getParent();
+                                if (parent != null) {
+                                    relativeTo.add(parent);
+                                }
+                                resultSet.addAllItems(computeRelativeItems(relativeTo, prefix, startOffset,filter));
                             }
                         });
                     } catch (ParseException ex) {
@@ -153,11 +157,12 @@ public class FSCompletion implements CompletionProvider {
         return 0;
     }
 
-    private static List<? extends CompletionItem> computeRelativeItems(Collection<? extends FileObject> relativeTo, String prefix, int anchor, FileObjectFilter filter) throws IOException {
+    private static List<? extends CompletionItem> computeRelativeItems(Collection<? extends FileObject> relativeTo, final String prefix, int anchor, FileObjectFilter filter) throws IOException {
+        final String GO_UP = "../";
         assert relativeTo != null;
         
         List<CompletionItem> result = new LinkedList<CompletionItem>();
-        
+                
         int lastSlash = prefix.lastIndexOf('/');
         String pathPrefix;
         String filePrefix;
@@ -171,14 +176,37 @@ public class FSCompletion implements CompletionProvider {
         }
         
         Set<FileObject> directories = new HashSet<FileObject>();
-        
-        for (FileObject f : relativeTo) {
-            if (pathPrefix != null) {
-                f = f.getFileObject(pathPrefix);
+        File prefixFile = null;
+        if (pathPrefix != null && !pathPrefix.startsWith(".")) {//NOI18N
+            if (pathPrefix.length() == 0 && prefix.startsWith("/")) {
+                prefixFile = new File("/");//NOI18N
+            } else {
+                prefixFile = new File(pathPrefix);
             }
-            
-            if (f != null) {
-                directories.add(f);
+        }
+        if (prefixFile != null && prefixFile.exists()) {
+            //absolute path
+            File normalizeFile = FileUtil.normalizeFile(prefixFile);
+            FileObject fo = FileUtil.toFileObject(normalizeFile);
+            if (fo != null) {
+                directories.add(fo);
+            }
+        } else {
+            //relative path
+            for (FileObject f : relativeTo) {
+                if (pathPrefix != null) {
+                    File toFile = FileUtil.toFile(f);
+                    if (toFile != null) {
+                        URI resolve = toFile.toURI().resolve(pathPrefix);
+                        f = FileUtil.toFileObject(new File(resolve));
+                    } else {
+                        f = f.getFileObject(pathPrefix);
+                    }
+                }
+
+                if (f != null) {
+                    directories.add(f);
+                }
             }
         }
         
@@ -188,9 +216,25 @@ public class FSCompletion implements CompletionProvider {
             for (int cntr = 0; cntr < children.length; cntr++) {
                 FileObject current = children[cntr];
 
-                if (VisibilityQuery.getDefault().isVisible(current) && current.getNameExt().startsWith(filePrefix) && filter.accept(current)) {
+                if (VisibilityQuery.getDefault().isVisible(current) && current.getNameExt().toLowerCase().startsWith(filePrefix.toLowerCase()) && filter.accept(current)) {
                     result.add(new FSCompletionItem(current, pathPrefix != null ? pathPrefix + "/" : "", anchor));
                 }
+            }
+        }
+        if (GO_UP.startsWith(filePrefix) && directories.size() == 1) {
+            final FileObject parent = directories.iterator().next();
+            if (parent.getParent() != null && VisibilityQuery.getDefault().isVisible(parent.getParent()) && filter.accept(parent.getParent())) {
+                result.add(new FSCompletionItem(parent, "", anchor) {
+                    @Override
+                    public void render(Graphics g, Font defaultFont, Color defaultColor, Color backgroundColor, int width, int height, boolean selected) {
+                        CompletionUtilities.renderHtml(super.icon,GO_UP, null, g, defaultFont, defaultColor, width, height, selected);
+                    }
+
+                    @Override
+                    protected String getText() {
+                        return prefix + GO_UP;//NOI18N
+                    }
+                });
             }
         }
         
@@ -234,7 +278,7 @@ public class FSCompletion implements CompletionProvider {
         }
     }
 
-    static final class FSCompletionItem implements CompletionItem {
+    static class FSCompletionItem implements CompletionItem {
 
         private FileObject file;
         private ImageIcon  icon;
@@ -331,7 +375,7 @@ public class FSCompletion implements CompletionProvider {
             return getText();
         }
 
-        private String getText() {
+        protected String getText() {
             return prefix + file.getNameExt() + (file.isFolder() ? "/" : "");
         }
 
