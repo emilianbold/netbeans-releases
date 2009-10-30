@@ -181,13 +181,13 @@ public class HtmlParserResult extends ParserResult {
         return findLeaf(offset, false);
     }
 
-    public AstNode findLeaf(int offset, boolean forward) {
+    public AstNode findLeaf(int offset, boolean exclusiveStartOffset) {
         //first try to find the leaf in html content
-        AstNode mostLeaf = AstNodeUtils.findDescendant(root(), offset, forward);
+        AstNode mostLeaf = AstNodeUtils.findDescendant(root(), offset, exclusiveStartOffset);
         //now search the non html trees
         for(String uri : getNamespaces().keySet()) {
             AstNode root = root(uri);
-            AstNode leaf = AstNodeUtils.findDescendant(root, offset, forward);
+            AstNode leaf = AstNodeUtils.findDescendant(root, offset, exclusiveStartOffset);
             if(mostLeaf == null) {
                 mostLeaf = leaf;
             } else {
