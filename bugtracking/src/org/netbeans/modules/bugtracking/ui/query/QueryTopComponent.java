@@ -43,6 +43,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Insets;
@@ -686,6 +687,7 @@ public final class QueryTopComponent extends TopComponent
             GroupieFlowLayout dl = (GroupieFlowLayout) lm;
             int h = dl.getHeight(queriesPanel);
             if(h == 0) return;
+            queriesPanel.revalidate();
             Dimension d = queriesPanel.getSize();
             d.height = h;
             queriesPanel.setSize(d);
