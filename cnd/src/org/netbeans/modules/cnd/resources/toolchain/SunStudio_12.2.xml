@@ -42,38 +42,19 @@ made subject to such option by the copyright holder.
 -->
 
 <toolchaindefinition xmlns="http://www.netbeans.org/ns/cnd-toolchain-definition/1">
-    <toolchain name="SunStudio" display="Sun™ Studio Toolchain" family="SunStudio"/>
-    <!-- download uc_url="http://elif.russia.sun.com/uc/catalog.xml" module_id="org.netbeans.libs.sunstudio"
-         uc_display="Developer Update Center" / -->
-    <download uc_url="http://updates.netbeans.org/netbeans/updates/6.8/uc/final/thirdparty/catalog.xml.gz" module_id="org.netbeans.libs.sunstudio"
-         uc_display="3rd Party Plugins" />
-    <platforms stringvalue="linux"/>
+    <toolchain name="SunStudio_12.2" display="Sun Studio 12.2 Compiler Collection" family="SunStudio"/>
+    <default_locations>
+        <platform os="linux" directory="/opt/sun/sunstudio12.2/bin"/>
+        <platform os="sun_intel" directory="/opt/sunstudio12.2/bin"/>
+        <platform os="sun_sparc" directory="/opt/sunstudio12.2/bin"/>
+    </default_locations>
     <c>
-        <architecture>
-            <default flags="" default="true"/>
-            <bits_32 flags="-m32"/>
-            <bits_64 flags="-m64"/>
-        </architecture>
+        <version flags="-V" pattern=".*Sun C 5.11"/>
     </c>
     <cpp>
-        <architecture>
-            <default flags="" default="true"/>
-            <bits_32 flags="-m32"/>
-            <bits_64 flags="-m64"/>
-        </architecture>
+        <version flags="-V" pattern=".*Sun C\+\+ 5.11"/>
     </cpp>
     <fortran>
-        <architecture>
-            <default flags="" default="true"/>
-            <bits_32 flags="-m32"/>
-            <bits_64 flags="-m64"/>
-        </architecture>
+        <version flags="-V" pattern=".*Sun Fortran 95 8.5"/>
     </fortran>
-    <assembler>
-        <architecture>
-            <default flags="" default="true"/>
-            <bits_32 flags="-m32"/>
-            <bits_64 flags="-m64"/>
-        </architecture>
-    </assembler>
 </toolchaindefinition>

@@ -91,39 +91,45 @@ public class AstNodeUtils {
         List<AstNode> matching = new ArrayList<AstNode>();
         AstNode n = node;
         do {
-            if(filter.accepts(n)) {
+            if (filter.accepts(n)) {
                 matching.add(n);
             }
 
             n = n.parent();
         } while (n != null);
-        
+
         return matching;
     }
 
     public static List<AstNode> getChildrenRecursivelly(AstNode node, AstNode.NodeFilter filter, boolean recurseOnlyMatching) {
-         List<AstNode> matching = new ArrayList<AstNode>();
-         getChildrenRecursivelly(matching, node, filter, recurseOnlyMatching);
-         return matching;
+        List<AstNode> matching = new ArrayList<AstNode>();
+        getChildrenRecursivelly(matching, node, filter, recurseOnlyMatching);
+        return matching;
     }
 
     private static void getChildrenRecursivelly(List<AstNode> found, AstNode node, AstNode.NodeFilter filter, boolean recurseOnlyMatching) {
-        for(AstNode child : node.children()) {
-            if(filter.accepts(child)) {
+        for (AstNode child : node.children()) {
+            if (filter.accepts(child)) {
                 found.add(child);
                 getChildrenRecursivelly(found, child, filter, recurseOnlyMatching);
             } else {
-                if(!recurseOnlyMatching) {
+                if (!recurseOnlyMatching) {
                     getChildrenRecursivelly(found, child, filter, recurseOnlyMatching);
                 }
             }
         }
     }
 
+    /**
+     * searches the logical node ranges!
+     */
     public static AstNode findDescendant(AstNode node, int astOffset) {
         return findDescendant(node, astOffset, false);
     }
 
+    /**
+     * searches the logical node ranges!
+     */
     public static AstNode findDescendant(AstNode node, int astOffset, boolean exclusiveStartOffset) {
         int[] nodeRange = node.getLogicalRange();
 
@@ -156,12 +162,69 @@ public class AstNodeUtils {
             int ch_eo = childNodeRange[1];
             if (astOffset >= ch_so && astOffset < ch_eo) {
                 //the child is or contains the searched node
-                return findDescendant(child, astOffset, true);
+                return findDescendant(child, astOffset, exclusiveStartOffset);
             }
 
         }
 
         return node;
+    }
+
+    /**
+     *
+     * <div>|</div> ... forward == true will return <div> false </div>
+     * 
+     * @param node
+     * @param astOffset
+     * @param forward
+     * @return
+     */
+    public static AstNode findDescendantTag(AstNode node, int astOffset, boolean useLogicalRanges, boolean forward) {
+        int so = useLogicalRanges ? node.logicalStartOffset() : node.startOffset();
+        int eo = useLogicalRanges ? node.logicalEndOffset() : node.endOffset();
+
+
+        //if the node matches and has no children we found it
+        if (forward) {
+            if (astOffset >= so && astOffset < eo && node.children().isEmpty()) {
+                return node;
+            }
+        } else {
+            if (astOffset > so && astOffset <= eo && node.children().isEmpty()) {
+                return node;
+            }
+        }
+
+        for (AstNode child : node.children()) {
+            int ch_so = child.logicalStartOffset();
+            int ch_eo = child.logicalEndOffset();
+            if (forward) {
+                if (astOffset >= ch_so && astOffset < ch_eo) {
+                    if(astOffset < child.endOffset()) {
+                        return child;
+                    }
+                    //the child is or contains the searched node
+                    AstNode n =  findDescendantTag(child, astOffset, useLogicalRanges, forward);
+                    if(n != null) {
+                        return n;
+                    }
+                }
+            } else {
+                if (astOffset > ch_so && astOffset <= ch_eo) {
+                    if(astOffset <= child.endOffset()) {
+                        return child;
+                    }
+                    //the child is or contains the searched node
+                    AstNode n = findDescendantTag(child, astOffset, useLogicalRanges, forward);
+                    if(n != null) {
+                        return n;
+                    }
+                }
+            }
+
+        }
+
+        return null;
     }
 
     public static AstNode getTagNode(AstNode node, int astOffset) {
@@ -190,6 +253,7 @@ public class AstNodeUtils {
     public static AstNode query(AstNode base, String path) {
         return query(base, path, false);
     }
+
     /** find an AstNode according to the path
      * example of path: html/body/table|2/tr -- find a second table tag in body tag
      *
@@ -203,7 +267,7 @@ public class AstNodeUtils {
             int indexDelim = token.indexOf('|');
 
             String nodeName = indexDelim >= 0 ? token.substring(0, indexDelim) : token;
-            if(caseInsensitive) {
+            if (caseInsensitive) {
                 nodeName = nodeName.toLowerCase(Locale.ENGLISH);
             }
             String sindex = indexDelim >= 0 ? token.substring(indexDelim + 1, token.length()) : "0";

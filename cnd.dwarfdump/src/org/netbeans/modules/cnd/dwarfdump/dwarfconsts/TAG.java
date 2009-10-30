@@ -111,19 +111,28 @@ public enum TAG {
     DW_TAG_MIPS_lo(0x4081),
     DW_TAG_MIPS_loop(0x4081),
     DW_TAG_MIPS_hi(0x4090),
+
+    /* GNU extensions.  */
+    DW_TAG_format_label(0x4101),	/* For FORTRAN 77 and Fortran 90.  */
+    DW_TAG_function_template(0x4102),	/* For C++.  */
+    DW_TAG_class_template(0x4103),	/* For C++.  */
+    DW_TAG_GNU_BINCL(0x4104),
+    DW_TAG_GNU_EINCL(0x4105),
     
     DW_TAG_SUN_lo(0x4201),
     DW_TAG_SUN_function_template(0x4201),
     DW_TAG_SUN_class_template(0x4202),
     DW_TAG_SUN_struct_template(0x4203),
     DW_TAG_SUN_union_template(0x4204),
-    DW_TAG_SUN_virtual_inheritance(0x4205),
+    DW_TAG_SUN_indirect_inheritance(0x4205),
     DW_TAG_SUN_codeflags(0x4206),
     DW_TAG_SUN_memop_info(0x4207),
     DW_TAG_SUN_omp_child_func(0x4208),
     DW_TAG_SUN_rtti_descriptor(0x4209),
     DW_TAG_SUN_dtor_info(0x420a),
     DW_TAG_SUN_dtor(0x420b),
+    DW_TAG_SUN_f90_interface(0x420c),
+    DW_TAG_SUN_fortran_vax_structure(0x420d),
     DW_TAG_SUN_hi(0x42ff),
 
     DW_TAG_upc_shared_type(0x8765),

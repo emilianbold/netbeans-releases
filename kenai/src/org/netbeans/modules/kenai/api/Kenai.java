@@ -273,8 +273,8 @@ public final class Kenai {
 
     private void logout(boolean setPropId) {
         PasswordAuthentication old=auth;
-        auth = null;
         synchronized(this) {
+            auth = null;
             myProjects=null;
             xmppDisconnect(setPropId);
         }
