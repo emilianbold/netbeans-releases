@@ -300,6 +300,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
                     for (AstElement member : clz.getChildren()) {
                         if ((member.getKind() == ElementKind.ATTRIBUTE) &&
                                 member.getName().equals(fieldName)) {
+                            member.setType(co.getType());
                             found = true;
                             break;
                         }

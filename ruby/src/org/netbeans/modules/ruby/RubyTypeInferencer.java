@@ -244,9 +244,13 @@ public final class RubyTypeInferencer {
     private RubyType inferMethodNode(MethodDefNode methodDefNode) {
         String name = methodDefNode.getName();
         RubyType fastType = RubyMethodTypeInferencer.fastCheckType(name);
+        if (fastType == null && RubyMethodTypeInferencer.returnsReceiver(name)) {
+            fastType = inferSelf(methodDefNode);
+        }
         if (fastType != null) {
             return fastType;
         }
+
         if (TypeInferenceSettings.getDefault().getRdocTypeInference()) {
             List<String> rdocs = AstUtilities.gatherDocumentation(knowledge.getParserResult().getSnapshot(), methodDefNode);
             if (rdocs != null) {
