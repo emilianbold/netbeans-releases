@@ -41,6 +41,8 @@ package org.netbeans.modules.kenai.ui;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.filechooser.FileSystemView;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
@@ -90,7 +92,8 @@ public class Utilities {
                     }
                 }
             } catch (KenaiException ex) {
-                Exceptions.printStackTrace(ex);
+                Logger.getLogger(Utilities.class.getName()).log(Level.INFO, ex.getMessage(), ex);
+                return false;
             }
             chatSupported.put(kenaiHost, b);
         }
