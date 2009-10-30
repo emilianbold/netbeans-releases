@@ -2,17 +2,18 @@
 
 <Form version="1.5" maxVersion="1.7" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <NonVisualComponents>
-    <Component class="javax.swing.ButtonGroup" name="codeCompletionButtonGroup">
+    <Component class="javax.swing.ButtonGroup" name="codeCompletionTypeButtonGroup">
+    </Component>
+    <Component class="javax.swing.ButtonGroup" name="codeCompletionVariablesScopeButtonGroup">
+    </Component>
+    <Component class="javax.swing.ButtonGroup" name="autoCompletionButtonGroup">
     </Component>
   </NonVisualComponents>
-  <SyntheticProperties>
-    <SyntheticProperty name="designerSize" type="java.awt.Dimension" value="-84,-19,0,5,115,114,0,18,106,97,118,97,46,97,119,116,46,68,105,109,101,110,115,105,111,110,65,-114,-39,-41,-84,95,68,20,2,0,2,73,0,6,104,101,105,103,104,116,73,0,5,119,105,100,116,104,120,112,0,0,1,94,0,0,2,67"/>
-  </SyntheticProperties>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="false"/>
-    <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
@@ -23,9 +24,13 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" attributes="0">
-              <EmptySpace max="-2" attributes="0"/>
+          <Group type="102" alignment="0" attributes="0">
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="autoCompletionCustomizeRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="autoCompletionFullRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="currentFileVariablesRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="allVariablesRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="methodCodeCompletionLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="codeCompletionNonStaticMethodsCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="codeCompletionStaticMethodsCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -46,9 +51,15 @@
                       <Component id="unqualifiedInfoLabel" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Component id="enableAutocompletionLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="autoCompletionTypesCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="autoCompletionVariablesCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="autoCompletionNamespacesCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="codeCompletionVariablesScopeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace min="21" pref="21" max="21" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="autoCompletionTypesCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="autoCompletionVariablesCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="autoCompletionNamespacesCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                  </Group>
               </Group>
               <EmptySpace pref="109" max="32767" attributes="0"/>
           </Group>
@@ -59,18 +70,28 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Component id="enableAutocompletionLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="autoCompletionFullRadioButton" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="autoCompletionCustomizeRadioButton" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Component id="autoCompletionVariablesCheckBox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Component id="autoCompletionTypesCheckBox" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="autoCompletionNamespacesCheckBox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
               <Component id="methodCodeCompletionLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="codeCompletionStaticMethodsCheckBox" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="codeCompletionNonStaticMethodsCheckBox" min="-2" max="-2" attributes="0"/>
+              <EmptySpace type="separate" max="-2" attributes="0"/>
+              <Component id="codeCompletionVariablesScopeLabel" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="allVariablesRadioButton" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="currentFileVariablesRadioButton" min="-2" max="-2" attributes="0"/>
               <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
               <Component id="codeCompletionTypeLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
@@ -85,7 +106,7 @@
               <Component id="unqualifiedRadioButton" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="unqualifiedInfoLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="32767" attributes="0"/>
+              <EmptySpace pref="64" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -95,6 +116,26 @@
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/php/editor/options/Bundle.properties" key="CodeCompletionPanel.enableAutocompletionLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JRadioButton" name="autoCompletionFullRadioButton">
+      <Properties>
+        <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+          <ComponentRef name="autoCompletionButtonGroup"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/editor/options/Bundle.properties" key="CodeCompletionPanel.autoCompletionFullRadioButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JRadioButton" name="autoCompletionCustomizeRadioButton">
+      <Properties>
+        <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+          <ComponentRef name="autoCompletionButtonGroup"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/editor/options/Bundle.properties" key="CodeCompletionPanel.autoCompletionCustomizeRadioButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
@@ -141,6 +182,33 @@
         </Property>
       </Properties>
     </Component>
+    <Component class="javax.swing.JLabel" name="codeCompletionVariablesScopeLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/editor/options/Bundle.properties" key="CodeCompletionPanel.codeCompletionVariablesScopeLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JRadioButton" name="allVariablesRadioButton">
+      <Properties>
+        <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+          <ComponentRef name="codeCompletionVariablesScopeButtonGroup"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/editor/options/Bundle.properties" key="CodeCompletionPanel.allVariablesRadioButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JRadioButton" name="currentFileVariablesRadioButton">
+      <Properties>
+        <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+          <ComponentRef name="codeCompletionVariablesScopeButtonGroup"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/editor/options/Bundle.properties" key="CodeCompletionPanel.currentFileVariablesRadioButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
     <Component class="javax.swing.JLabel" name="codeCompletionTypeLabel">
       <Properties>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
@@ -154,7 +222,7 @@
     <Component class="javax.swing.JRadioButton" name="smartRadioButton">
       <Properties>
         <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
-          <ComponentRef name="codeCompletionButtonGroup"/>
+          <ComponentRef name="codeCompletionTypeButtonGroup"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/php/editor/options/Bundle.properties" key="CodeCompletionPanel.smartRadioButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -174,7 +242,7 @@
     <Component class="javax.swing.JRadioButton" name="fullyQualifiedRadioButton">
       <Properties>
         <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
-          <ComponentRef name="codeCompletionButtonGroup"/>
+          <ComponentRef name="codeCompletionTypeButtonGroup"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/php/editor/options/Bundle.properties" key="CodeCompletionPanel.fullyQualifiedRadioButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -194,7 +262,7 @@
     <Component class="javax.swing.JRadioButton" name="unqualifiedRadioButton">
       <Properties>
         <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
-          <ComponentRef name="codeCompletionButtonGroup"/>
+          <ComponentRef name="codeCompletionTypeButtonGroup"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/php/editor/options/Bundle.properties" key="CodeCompletionPanel.unqualifiedRadioButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>

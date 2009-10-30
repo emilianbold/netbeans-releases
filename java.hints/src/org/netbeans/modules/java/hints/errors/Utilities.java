@@ -74,6 +74,7 @@ import javax.swing.text.Position;
 import org.netbeans.api.java.source.Comment;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementUtilities.ElementAcceptor;
+import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.api.java.source.SourceUtils;
@@ -437,15 +438,14 @@ public class Utilities {
     }
     
     public static <T extends Tree> T copyComments(WorkingCopy wc, Tree from, T to) {
-        TreeMaker make = wc.getTreeMaker();
+        copyComments(wc, from, to, true);
+        copyComments(wc, from, to, false);
         
-        for (Comment c : wc.getTreeUtilities().getComments(from, true)) {
-            make.addComment(to, c, true);
-        }
+        return to;
+    }
 
-        for (Comment c : wc.getTreeUtilities().getComments(from, false)) {
-            make.addComment(to, c, false);
-        }
+    public static <T extends Tree> T copyComments(WorkingCopy wc, Tree from, T to, boolean preceding) {
+        GeneratorUtilities.get(wc).copyComments(from, to, preceding);
         
         return to;
     }

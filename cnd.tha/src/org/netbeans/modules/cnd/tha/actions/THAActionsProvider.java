@@ -38,10 +38,10 @@
  */
 package org.netbeans.modules.cnd.tha.actions;
 
-import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Arrays;
+import java.util.List;
 import java.util.MissingResourceException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -51,25 +51,29 @@ import org.netbeans.modules.cnd.tha.support.THAProjectSupport;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
 import org.netbeans.modules.dlight.api.execution.DLightTargetListener;
+import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.perfan.tha.api.THAConfiguration;
-import org.netbeans.modules.dlight.util.DLightExecutorService;
+import org.netbeans.modules.dlight.perfan.tha.api.THASuspensionSupport;
+import org.netbeans.modules.dlight.perfan.tha.api.THASuspensionSupport.State;
+import org.netbeans.modules.dlight.perfan.tha.api.THASuspensionSupport.Status;
+import org.netbeans.modules.dlight.spi.indicator.IndicatorNotificationsListener;
 import org.netbeans.modules.dlight.util.UIThread;
-import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
-import org.netbeans.modules.nativeexecution.api.util.Signal;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
-public final class THAActionsProvider {
+public final class THAActionsProvider implements IndicatorNotificationsListener{
 
     public static final String SUSPEND_COMMAND = "THAProfileSuspend";//NOI18N
     public static final String RESUME_COMMAND = "THAProfileResume";//NOI18N
     public static final String STOP_COMMAND = "THAProfileStop";//NOI18N
+    public static final String STOPPING_COMMAND = "THAProfileStopping";//NOI18N
+    public static final String PROCESSING_REQUEST_COMMAND = "THAProfileProcessRequest";//NOI18N
+    private volatile THASuspensionSupport suspensionSupport = null;
     private Action suspendDataCollection;
     private Action resumeDataCollection;
     private Action stop;
-    private int pid;
     private DLightTarget target;
     private static Action startThreadAnalyzerConfiguration;
     /** A list of event listeners for this component. */
@@ -177,13 +181,13 @@ public final class THAActionsProvider {
         suspendDataCollection = new AbstractAction() {
 
             public void actionPerformed(ActionEvent e) {
-                if (project == null) {
+                if (project == null || suspensionSupport == null) {
                     return;
                 }
-                sendSignal();
-                resumeDataCollection.setEnabled(true);
+
+                fireActionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, PROCESSING_REQUEST_COMMAND));
+                suspensionSupport.resume(false);
                 suspendDataCollection.setEnabled(false);
-                fireActionPerformed(e);
             }
         };
         suspendDataCollection.putValue("command", SUSPEND_COMMAND); // NOI18N
@@ -194,10 +198,13 @@ public final class THAActionsProvider {
         resumeDataCollection = new AbstractAction() {
 
             public void actionPerformed(ActionEvent e) {
-                sendSignal();
+                if (project == null || suspensionSupport == null) {
+                    return;
+                }
+
+                fireActionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, PROCESSING_REQUEST_COMMAND));
+                suspensionSupport.resume(true);
                 resumeDataCollection.setEnabled(false);
-                suspendDataCollection.setEnabled(true);
-                fireActionPerformed(e);
             }
         };
         resumeDataCollection.putValue("command", RESUME_COMMAND); // NOI18N
@@ -234,8 +241,6 @@ public final class THAActionsProvider {
         }
     }
 
-    
-
     public void targetStateChanged(DLightTargetChangeEvent event) {
         this.target = event.target;
         switch (event.state) {
@@ -258,7 +263,7 @@ public final class THAActionsProvider {
         }
     }
 
-    static  boolean start(final DLightTargetListener listener, final Project project, final THAConfiguration thaConfiguration) {
+    static boolean start(final DLightTargetListener listener, final Project project, final THAConfiguration thaConfiguration) {
         THAProjectSupport support = THAProjectSupport.getSupportFor(project);
 
         if (support == null) {
@@ -289,28 +294,41 @@ public final class THAActionsProvider {
         return true;
     }
 
-    void sendSignal() {
-        if (0 < pid) {
-            if (!EventQueue.isDispatchThread()){
-                CommonTasksSupport.sendSignal(target.getExecEnv(), pid, Signal.SIGUSR1, null); // NOI18N
-            }else{
-                DLightExecutorService.submit(new Runnable() {
-
-                    public void run() {
-                        CommonTasksSupport.sendSignal(target.getExecEnv(), pid, Signal.SIGUSR1, null); // NOI18N
-                    }
-                }, "Send signal USR1 to pid " + pid + " from THAActionsProvider.sendSignal()");//NOI18N
-            }
-        }
-    }
-
     private void targetStarted(int pid) {
         //means stop button should be enabled
-        this.pid = pid;
-        suspendDataCollection.setEnabled(thaConfiguration.collectFromBeginning());
-        resumeDataCollection.setEnabled(!thaConfiguration.collectFromBeginning());
-        stop.setEnabled(true);
+        suspensionSupport = THASuspensionSupport.getSupportFor(target.getExecEnv(), pid, new THASuspensionSupport.Listener() {
 
+            public void statusChanged(Status newStatus) {
+                boolean fromStart = thaConfiguration.collectFromBeginning();
+                switch (newStatus) {
+                    case ENABLED:
+                        suspendDataCollection.setEnabled(fromStart);
+                        resumeDataCollection.setEnabled(!fromStart);
+                        fireActionPerformed(new ActionEvent(
+                                THAActionsProvider.this,
+                                ActionEvent.ACTION_PERFORMED,
+                                fromStart ? RESUME_COMMAND : SUSPEND_COMMAND));
+                        break;
+                    default:
+                        suspendDataCollection.setEnabled(false);
+                        resumeDataCollection.setEnabled(false);
+                }
+            }
+
+            public void stateChanged(State newState) {
+                suspendDataCollection.setEnabled(newState == State.RESUMED);
+                resumeDataCollection.setEnabled(newState == State.SUSPENDED);
+                if (newState == State.RESUMED) {
+                    fireActionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, RESUME_COMMAND));
+                } else if (newState == State.SUSPENDED) {
+                    fireActionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, SUSPEND_COMMAND));
+                }
+            }
+        }, thaConfiguration.collectFromBeginning());
+
+        suspendDataCollection.setEnabled(false);
+        resumeDataCollection.setEnabled(false);
+        stop.setEnabled(true);
     }
 
     private void targetFailed() {
@@ -325,7 +343,28 @@ public final class THAActionsProvider {
         suspendDataCollection.setEnabled(false);
         resumeDataCollection.setEnabled(false);
         stop.setEnabled(false);
-        fireActionPerformed(new ActionEvent(THAActionsProvider.this, ActionEvent.ACTION_PERFORMED, STOP_COMMAND));
+        fireActionPerformed(new ActionEvent(THAActionsProvider.this, ActionEvent.ACTION_PERFORMED, STOPPING_COMMAND));
+    }
+
+    public void updated(List<DataRow> data) {
+        //throw new UnsupportedOperationException("Not supported yet.");
+        //check if we have tha.end data row and the send Stop
+        for (DataRow row : data){
+            List<String> columnNames = row.getColumnNames();
+            if (columnNames.contains("sunstudio.finished")){//NOI18N
+                  if (row.getData("sunstudio.finished") instanceof Boolean && (Boolean)row.getData("sunstudio.finished")){//NOI18N
+                        fireActionPerformed(new ActionEvent(THAActionsProvider.this, ActionEvent.ACTION_PERFORMED, STOP_COMMAND));
+                  }
+            }
+        }
+    }
+
+    public void suggestRepaint() {
+        //throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void reset() {
+        //throw new UnsupportedOperationException("Not supported yet.");
     }
 
     private final class DLightTargetListenerImpl implements DLightTargetListener {

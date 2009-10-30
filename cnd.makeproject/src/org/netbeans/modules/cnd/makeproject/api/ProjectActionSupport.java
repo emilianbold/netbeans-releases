@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
@@ -300,7 +301,15 @@ public class ProjectActionSupport {
             }
             progressHandle = createProgressHandle();
             progressHandle.start();
-            go();
+            if (SwingUtilities.isEventDispatchThread()) {
+                RequestProcessor.getDefault().post(new Runnable(){
+                    public void run() {
+                        go();
+                    }
+                });
+            } else {
+                go();
+            }
         }
 
         private void go() {
@@ -331,10 +340,11 @@ public class ProjectActionSupport {
                 initHandler(customHandler, pae, paes);
                 customHandler.execute(ioTab);
             } else {
-                if (currentAction == 0 && !checkRemotePath(pae)) {
-                    progressHandle.finish();
-                    return;
-                }
+                // moved to RemoteBuildProjectActionHandler
+                //if (currentAction == 0 && !checkRemotePath(pae, err, out)) {
+                //    progressHandle.finish();
+                //    return;
+                //}
                 boolean foundFactory = false;
                 for (ProjectActionHandlerFactory factory : handlerFactories) {
                     if (factory.canHandle(pae.getType(), pae.getConfiguration())) {
@@ -350,59 +360,6 @@ public class ProjectActionSupport {
                 }
             }
 
-        }
-
-        // moved from DefaultProjectActionHandler.execute
-        private boolean checkRemotePath(ProjectActionEvent pae) {
-            boolean success = true;
-            MakeConfiguration conf = pae.getConfiguration();
-            ExecutionEnvironment env = conf.getDevelopmentHost().getExecutionEnvironment();
-            if (env.isRemote()) {
-                // the project itself
-                File baseDir = new File(pae.getProfile().getBaseDir()).getAbsoluteFile(); // or canonical?
-                List<File> extraSourceRoots = new ArrayList<File>();
-                MakeConfigurationDescriptor mcs = MakeConfigurationDescriptor.getMakeConfigurationDescriptor(pae.getProject());
-                for(String soorceRoot : mcs.getSourceRoots()) {
-                    String path = IpeUtils.toAbsolutePath(baseDir.getAbsolutePath(), soorceRoot);
-                    File file = new File(path); // or canonical?
-                    extraSourceRoots.add(file);
-                }
-                // Make sure 1st level subprojects are visible remotely
-                // First, remembr all subproject locations
-                for (String subprojectDir : conf.getSubProjectLocations()) {
-                    subprojectDir = IpeUtils.toAbsolutePath(baseDir.getAbsolutePath(), subprojectDir);
-                    extraSourceRoots.add(new File(subprojectDir));
-                }
-                // Then go trough open subprojects and add their external source roots
-                for (Project subProject : conf.getSubProjects()) {
-                    File subProjectDir = FileUtil.toFile(subProject.getProjectDirectory());
-                    MakeConfigurationDescriptor subMcs =
-                            MakeConfigurationDescriptor.getMakeConfigurationDescriptor(subProject);
-                    for(String soorceRoot : mcs.getSourceRoots()) {
-                        File file = new File(soorceRoot).getAbsoluteFile(); // or canonical?
-                        extraSourceRoots.add(file);
-                    }
-                }
-                success = sync(env, baseDir, extraSourceRoots);
-            }
-            return success;
-        }
-
-        private boolean sync(ExecutionEnvironment env, File projectDir, List<File> externSourceRoots) {
-            PrintWriter err = null;
-            PrintWriter out = null;
-            InputOutput tab = getTab();
-            if (tab != null) {
-                out = this.ioTab.getOut();
-                err = this.ioTab.getErr();
-            }
-            File privProjectStorage = new File(new File(projectDir, "nbproject"), "private"); //NOI18N
-            List<File> allFiles = new ArrayList<File>(externSourceRoots.size() + 1);
-            allFiles.add(projectDir);
-            allFiles.addAll(externSourceRoots);
-            RemoteSyncWorker syncWorker = ServerList.get(env).getSyncFactory().createNew(
-                    env, out, err, privProjectStorage, allFiles.toArray(new File[allFiles.size()]));
-            return syncWorker.synchronize();
         }
 
         private void initHandler(ProjectActionHandler handler, ProjectActionEvent pae, ProjectActionEvent[] paes) {
@@ -529,8 +486,10 @@ public class ProjectActionSupport {
 
                 if (conf instanceof MakeConfiguration && !((MakeConfiguration) conf).getDevelopmentHost().isLocalhost()) {
                     final ExecutionEnvironment execEnv = ((MakeConfiguration) conf).getDevelopmentHost().getExecutionEnvironment();
-                    PathMap mapper = HostInfoProvider.getMapper(execEnv);
-                    executable = mapper.getRemotePath(executable,true);
+                    if (!pae.isFinalExecutable()) {
+                        PathMap mapper = HostInfoProvider.getMapper(execEnv);
+                        executable = mapper.getRemotePath(executable,true);
+                    }
                     CommandProvider cmd = Lookup.getDefault().lookup(CommandProvider.class);
                     if (cmd != null) {
                         ok = cmd.run(execEnv, "test", null, "-x", executable, "-a", "-f", executable) == 0; // NOI18N
@@ -557,6 +516,7 @@ public class ProjectActionSupport {
             // path that reflects file location on a target host (local or remote)
 
             pae.setExecutable(executable);
+            pae.setFinalExecutable();
             
             return true;
         }

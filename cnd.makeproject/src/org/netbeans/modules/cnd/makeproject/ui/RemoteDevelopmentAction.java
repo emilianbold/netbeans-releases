@@ -155,7 +155,9 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
 //                    PlatformConfiguration platformConfiguration = mconf.getPlatform();
 //                    platformConfiguration.propertyChange(new PropertyChangeEvent(
 //                            jmi, DevelopmentHostConfiguration.PROP_DEV_HOST, oldDhc, dhc));
-            
+            //FIXUP: please send PropertyChangeEvent to MakeConfiguration listeners
+            //when you do this changes
+            //see cnd.tha.THAMainProjectAction which should use huck to get these changes
             NativeProjectProvider npp = project.getLookup().lookup(NativeProjectProvider.class);
             npp.propertyChange(new PropertyChangeEvent(source, Configurations.PROP_ACTIVE_CONFIGURATION, null, mconf));
             ConfigurationDescriptorProvider configurationDescriptorProvider = project.getLookup().lookup(ConfigurationDescriptorProvider.class);

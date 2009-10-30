@@ -312,6 +312,12 @@ public abstract class FromEntityBase {
                         index++;
                     }
                 }
+                if (index == 0) {
+                    key.append(INDENT+"// TODO: no setter methods were found in your entity class\n"+
+                            INDENT+"//    "+keyTypeFQN+"\n"+INDENT+"// and therefore Converter.getKey() method could not be pre-generated.");
+                    stringKey.append(INDENT+"// TODO: no setter methods were found in your entity class\n"+
+                            INDENT+"//    "+keyTypeFQN+"\n"+INDENT+"// and therefore Converter.getStringKey() method could not be pre-generated.");
+                }
             } else {
                 params.put("keyEmbedded", Boolean.FALSE);
                 addParam(key, stringKey, null, -1, keyType, keyTypeFQN, idType);
@@ -334,7 +340,7 @@ public abstract class FromEntityBase {
         params.put("keyGetter", primaryGetter.getSimpleName().toString());
     }
 
-    private static void addParam(StringBuffer key, StringBuffer stringKey, String setter, 
+    private static void addParam(StringBuffer key, StringBuffer stringKey, String setter,
             int index, String keyType, String keyTypeFQN, TypeMirror idType) {
         if (index == 0) {
             key.append(INDENT+"String values[] = value.split(SEPARATOR_ESCAPED);\n");
@@ -512,6 +518,9 @@ public abstract class FromEntityBase {
 
         private boolean isBlob() {
             Element fieldElement = isFieldAccess() ? JpaControllerUtil.guessField(controller, method) : method;
+            if (fieldElement == null) {
+                fieldElement = method;
+            }
             return JpaControllerUtil.isAnnotatedWith(fieldElement, "javax.persistence.Lob"); // NOI18N
         }
 

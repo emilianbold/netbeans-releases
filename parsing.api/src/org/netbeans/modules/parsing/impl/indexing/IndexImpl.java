@@ -56,7 +56,7 @@ public interface IndexImpl {
 
     public boolean isValid() throws IOException;
 
-    public void store () throws IOException;
+    public void store (boolean optimize) throws IOException;
 
     public Collection<? extends IndexDocumentImpl> query (String fieldName, String value, QuerySupport.Kind kind, String... fieldsToLoad) throws IOException;
 

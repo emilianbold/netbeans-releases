@@ -105,7 +105,7 @@ public class CompletionScrollPane extends JScrollPane {
         setVerticalScrollBarPolicy(VERTICAL_SCROLLBAR_AS_NEEDED);
         
         // Use maximumSize property to store the limit of the preferred size
-        setMaximumSize(CompletionSettings.getInstance().completionPaneMaximumSize());
+        setMaximumSize(CompletionSettings.getInstance(editorComponent).completionPaneMaximumSize());
         // At least 2 items; do -1 for title height
         int maxVisibleRowCount = Math.max(2,
             getMaximumSize().height / CompletionLayout.COMPLETION_ITEM_HEIGHT - 1);

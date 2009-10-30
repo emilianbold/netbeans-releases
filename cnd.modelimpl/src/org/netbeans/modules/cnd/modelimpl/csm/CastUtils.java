@@ -42,8 +42,12 @@
 package org.netbeans.modules.cnd.modelimpl.csm;
 
 import antlr.collections.AST;
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
+import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 
 /**
  * Utility class used for user cast operators processing.
@@ -80,7 +84,10 @@ public class CastUtils {
 		case CPPTokenTypes.CSM_TYPE_COMPOUND:
 		    sb.append(' ');
 		    addTypeText(next, sb);
-		    break;
+                    break;
+		case CPPTokenTypes.CSM_PTR_OPERATOR:
+		    addTypeText(next, sb);
+                    break;
 		case CPPTokenTypes.LPAREN:
 		    break begin;
 		case CPPTokenTypes.AMPERSAND:
@@ -97,7 +104,30 @@ public class CastUtils {
 	}
 	return sb.toString();
     }
-    
+
+    public static CharSequence[] getFunctionRawName(AST token) {
+        assert isCast(token);
+        AST ast = token;
+        token = token.getFirstChild();
+        List<CharSequence> l = new ArrayList<CharSequence>();
+        for( ; token != null; token = token.getNextSibling() ) {
+            switch( token.getType() ) {
+                case CPPTokenTypes.ID:
+                    l.add(NameCache.getManager().getString(token.getText()));
+                    break;
+                case CPPTokenTypes.SCOPE:
+                    break;
+                case CPPTokenTypes.LITERAL_OPERATOR:
+                    l.add(NameCache.getManager().getString(getFunctionName(ast)));
+                    return l.toArray(new CharSequence[l.size()]);
+                default:
+                    //TODO: process templates
+                    break;
+            }
+        }
+        return l.toArray(new CharSequence[l.size()]);
+    }
+
     private static void addTypeText(AST ast, StringBuilder sb) {
 	if( ast == null ) {
 	    return;
@@ -124,15 +154,22 @@ public class CastUtils {
     
     public static boolean isMemberDefinition(AST ast) {
 	assert isCast(ast);
-	AST child = ast.getFirstChild();
+        AST child = ast.getFirstChild();
+        if (child != null && child.getType() == CPPTokenTypes.LITERAL_template) {
+            child = AstRenderer.skipTemplateSibling(child);
+        }
+        child = AstRenderer.getFirstSiblingSkipQualifiers(child);
 	if( child != null && child.getType() == CPPTokenTypes.ID ) {
 	    child = child.getNextSibling();
-	    if( child != null && child.getType() == CPPTokenTypes.SCOPE ) {
+	    if( child != null && child.getType() == CPPTokenTypes.LESSTHAN ) {
+                child = AstRenderer.skipTemplateParameters(child);
+	    }
+            if( child != null && child.getType() == CPPTokenTypes.SCOPE ) {
 		return true;
 	    }
 	}
 	return false;
     }
-    
-    
+
+
 }

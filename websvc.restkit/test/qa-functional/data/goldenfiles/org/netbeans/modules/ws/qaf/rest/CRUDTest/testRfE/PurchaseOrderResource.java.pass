@@ -19,8 +19,8 @@ import com.sun.jersey.api.core.ResourceContext;
 import javax.ws.rs.WebApplicationException;
 import javax.persistence.NoResultException;
 import javax.persistence.EntityManager;
-import o.n.m.ws.qaf.rest.crud.Customer;
 import o.n.m.ws.qaf.rest.crud.Product;
+import o.n.m.ws.qaf.rest.crud.Customer;
 import o.n.m.ws.qaf.rest.crud.PurchaseOrder;
 import o.n.m.ws.qaf.rest.crud.converter.PurchaseOrderConverter;
 
@@ -35,12 +35,12 @@ public class PurchaseOrderResource {
     @Context
     protected ResourceContext resourceContext;
     protected Integer id;
-  
+
     /** Creates a new instance of PurchaseOrderResource */
     public PurchaseOrderResource() {
     }
 
-    public void setId(Integer id) {
+    protected void setId(Integer id) {
         this.id = id;
     }
 
@@ -193,7 +193,7 @@ public class PurchaseOrderResource {
 
         private PurchaseOrder parent;
 
-        public void setParent(PurchaseOrder parent) {
+        protected void setParent(PurchaseOrder parent) {
             this.parent = parent;
         }
 
@@ -211,7 +211,7 @@ public class PurchaseOrderResource {
 
         private PurchaseOrder parent;
 
-        public void setParent(PurchaseOrder parent) {
+        protected void setParent(PurchaseOrder parent) {
             this.parent = parent;
         }
 

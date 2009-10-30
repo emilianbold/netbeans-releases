@@ -192,6 +192,7 @@ public class J2SELogicalViewProvider implements LogicalViewProvider2 {
         J2SEProjectProperties.DEBUG_CLASSPATH,
         ProjectProperties.RUN_TEST_CLASSPATH,
         J2SEProjectProperties.DEBUG_TEST_CLASSPATH,
+        ProjectProperties.ENDORSED_CLASSPATH,
         ProjectProperties.JAVAC_TEST_CLASSPATH,
     };
     

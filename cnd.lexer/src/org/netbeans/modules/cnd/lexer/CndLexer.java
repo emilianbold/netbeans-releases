@@ -345,7 +345,8 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
 
                     case '0': // in a number literal
                         c = read(true);
-                        if (c == 'x' || c == 'X') { // in hexadecimal (possibly floating-point) literal
+                        if (c == 'x' || c == 'X' || // in hexadecimal (possibly floating-point) literal
+                                c == 'b' || c == 'B' ) { // in bianry literal
                             boolean inFraction = false;
                             while (true) {
                                 switch (read(true)) {

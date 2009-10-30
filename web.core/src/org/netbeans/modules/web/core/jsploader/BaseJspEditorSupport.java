@@ -173,7 +173,16 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
                         ((Document)evt.getNewValue()).addDocumentListener(DOCUMENT_LISTENER);
                     } else {
                         //document closed
-                        ((Document)evt.getOldValue()).removeDocumentListener(DOCUMENT_LISTENER);
+                        //Issue #172631>>>
+                        Object oldDoc = evt.getOldValue();
+                        if(oldDoc == null) {
+                            Logger.getLogger(getClass().getName()).log(Level.INFO, 
+                                    "property change fired with both new and old value null!",
+                                    new IllegalStateException());
+                            return ;
+                        }
+                        //<<<
+                        ((Document)oldDoc).removeDocumentListener(DOCUMENT_LISTENER);
                         //cancel waiting parsing task if there is any
                         //this is largely a workaround for issue #50926
                         TagLibParseSupport sup = (TagLibParseSupport) getDataObject().getCookie(TagLibParseSupport.class);
@@ -185,6 +194,27 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
                 }
             }
         });
+    }
+
+    @Override
+    protected StyledDocument createStyledDocument(EditorKit kit) {
+        StyledDocument doc = super.createStyledDocument(kit);
+
+        //#174763 workaround - there isn't any elegant place where to place
+        //a code which needs to be run after document's COMPLETE initialization.
+        //DataEditorSupport.createStyledDocument() creates the document via the
+        //EditorKit.createDefaultDocument(), but some of the important properties
+        //like Document.StreamDescriptionProperty or mimetype are set as the
+        //document properties later.
+        //A hacky solution is that a Runnable can be set to the postInitRunnable property
+        //in the EditorKit.createDefaultDocument() and the runnable is run
+        //once the document is completely initialized.
+        Runnable postInitRunnable = (Runnable)doc.getProperty("postInitRunnable"); //NOI18N
+        if(postInitRunnable != null) {
+            postInitRunnable.run();
+        }
+
+        return doc;
     }
 
     private WebModule getWebModule(FileObject fo) {

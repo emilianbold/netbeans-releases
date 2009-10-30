@@ -9,7 +9,7 @@ class |>CLASS:test<| {
     }
 
     public static  function |>METHOD,STATIC:getCount<|() {
-        return self::getHelpCount();
+        return self::|>STATIC:getHelpCount<|();
     }
 
     private static function |>METHOD,STATIC:getHelpCount<|() {

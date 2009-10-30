@@ -45,6 +45,7 @@ import org.netbeans.editor.*;
 import org.netbeans.editor.Utilities;
 import org.netbeans.api.editor.fold.*;
 import org.netbeans.api.diff.*;
+import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.spi.diff.*;
 import org.netbeans.modules.mercurial.ui.update.RevertModifications;
 import org.netbeans.modules.mercurial.ui.update.RevertModificationsAction;
@@ -73,6 +74,7 @@ import java.io.*;
 import java.text.DateFormat;
 import java.text.MessageFormat;
 import org.netbeans.modules.mercurial.kenai.HgKenaiSupport;
+import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.util.VCSKenaiSupport.KenaiUser;
 
@@ -181,6 +183,11 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
      * Holdes kenai users
      */
     private Map<String, KenaiUser> kenaiUsersMap = null;
+
+    /*
+     * Holds parent/previous revisions for each line revision
+     */
+    private Map<String, String> previousRevisions;
 
     /**
      * Creates new instance initializing final fields.
@@ -307,6 +314,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
 
                 StyledDocument sd = (StyledDocument) doc;
                 Iterator<AnnotateLine> it = lines.iterator();
+                previousRevisions = Collections.synchronizedMap(new HashMap<String, String>());
                 elementAnnotations = Collections.synchronizedMap(new HashMap<Element, AnnotateLine>(lines.size()));
                 while (it.hasNext()) {
                     AnnotateLine line = it.next();
@@ -457,9 +465,21 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         diffMenu.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if (revisionPerLine != null) {
-                    if (getPreviousRevision(revisionPerLine) != null) {
-                        DiffAction.diff(originalFile, getPreviousRevision(revisionPerLine), revisionPerLine);
-                    }
+                    // getting the prevoius revision may take some time, running in bg
+                    new HgProgressSupport() {
+                        @Override
+                        protected void perform() {
+                            final String previousRevision = getParentRevision(originalFile, revisionPerLine);
+                            if (!isCanceled() && previousRevision != null) {
+                                SwingUtilities.invokeLater(new Runnable () {
+                                    public void run() {
+                                        DiffAction.diff(originalFile, previousRevision, revisionPerLine);
+                                    }
+                                });
+                            }
+                        }
+                    }.start(RequestProcessor.getDefault(), repositoryRoot,
+                            NbBundle.getMessage(AnnotationBar.class, "MSG_GettingPreviousRevision")); //NOI18N
                 }
             }
         });
@@ -474,9 +494,9 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         popupMenu.add(rollbackMenu);
         rollbackMenu.setEnabled(revisionCanBeRolledBack);
 
-        final int lineNr = al.getLineNum();
         if(isKenai() && al != null) {
             String author = al.getAuthor();
+            final int lineNr = al.getLineNum();
             final KenaiUser ku = kenaiUsersMap.get(author);
             if(ku != null) {
                 popupMenu.addSeparator();
@@ -497,7 +517,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                 hideBar();
             }
         });
-        JSeparator separator = new JSeparator();
+        JSeparator separator = new JPopupMenu.Separator();
         popupMenu.add(separator);
         popupMenu.add(menu);
 
@@ -505,9 +525,19 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         rollbackMenu.setVisible(false);
         separator.setVisible(false);
         if (revisionPerLine != null) {
-            if (getPreviousRevision(revisionPerLine) != null) {
+            String key = getPreviousRevisionKey(file.getAbsolutePath(), revisionPerLine);
+            String previousRevision = getPreviousRevisions().get(key); // get from cache
+            if (previousRevision != null || getPreviousRevision(revisionPerLine) != null) {
+                if (!getPreviousRevisions().containsKey(key)) {
+                    // get revision in a bg thread and cache the value
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        public void run() {
+                            getParentRevision(originalFile, revisionPerLine);
+                        }
+                    });
+                }
                 String format = loc.getString("CTL_MenuItem_DiffToRevision"); // NOI18N
-                diffMenu.setText(MessageFormat.format(format, new Object [] { revisionPerLine, getPreviousRevision(revisionPerLine) }));
+                diffMenu.setText(MessageFormat.format(format, new Object [] { revisionPerLine, previousRevision == null ? loc.getString("LBL_PreviousRevision") : previousRevision})); //NOI18N
                 diffMenu.setVisible(originalFile != null);
                 rollbackMenu.setVisible(true);
                 separator.setVisible(true);
@@ -557,6 +587,23 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             }
         }
         return null;
+    }
+
+    private String getParentRevision(File file, String revision) {
+        String key = getPreviousRevisionKey(file.getAbsolutePath(), revision);
+        String parent = getPreviousRevisions().get(key);
+        if (parent == null) {
+            try {
+                parent = HgCommand.getParent(repositoryRoot.getAbsolutePath(), file, revision);
+            } catch (HgException ex) {
+                Mercurial.LOG.log(Level.INFO, null, ex);
+            }
+            if (parent == null) {
+                parent = getPreviousRevision(revision);
+            }
+            getPreviousRevisions().put(key, parent);
+        }
+        return parent;
     }
 
     /**
@@ -746,6 +793,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             caretTimer.removeActionListener(this);
         }
         elementAnnotations = null;
+        previousRevisions = null;
         // cancel running annotation task if active
         if(latestAnnotationTask != null) {
             latestAnnotationTask.cancel();
@@ -1074,6 +1122,15 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
 
     public void setLogs(HgLogMessage [] logs) {
         this.logs = logs;
+    }
+
+    private static String getPreviousRevisionKey(String filePath, String revision) {
+        return filePath + "#" + revision;                               //NOI18N
+    }
+
+    private Map<String, String> getPreviousRevisions () {
+        Map<String, String> revisions = previousRevisions;
+        return revisions == null ? new HashMap<String, String>(0) : previousRevisions;
     }
 }
 

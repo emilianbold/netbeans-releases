@@ -43,6 +43,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.spi.remote.ServerListImplementation;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -92,7 +93,15 @@ public class ServerList {
     public static ServerRecord get(ExecutionEnvironment env) {
         return getDefault().get(env);
     }
-    
+
+    /** 
+     * Gets server record that corresponds the given project' environment .
+     * Return value can be null!
+     */
+    /*package*/ static ServerRecord get(Project project) {
+        return getDefault().get(project);
+    }
+
     public static ServerRecord getDefaultRecord() {
         return getDefault().getDefaultRecord();
     }
@@ -173,6 +182,10 @@ public class ServerList {
         }
 
         public ServerRecord get(ExecutionEnvironment env) {
+            return record;
+        }
+
+        public ServerRecord get(Project project) {
             return record;
         }
 

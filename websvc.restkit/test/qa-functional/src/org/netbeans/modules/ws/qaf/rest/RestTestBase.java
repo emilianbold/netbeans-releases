@@ -59,7 +59,6 @@ import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.actions.SaveAllAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.modules.ws.qaf.WebServicesTestBase;
 import org.netbeans.modules.ws.qaf.utilities.ContentComparator;
 import org.netbeans.modules.ws.qaf.utilities.FilteringLineDiff;
@@ -185,7 +184,7 @@ public abstract class RestTestBase extends WebServicesTestBase {
      * @return RESTful Web Services node
      */
     protected Node getRestNode() {
-        ProjectSupport.waitScanFinished();
+        waitScanFinished();
         String restNodeLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.nodes.Bundle", "LBL_RestServices");
         JemmyProperties.setCurrentTimeout("JTreeOperator.WaitNextNodeTimeout", 120000); //NOI18N
         Node restNode = new Node(getProjectRootNode(), restNodeLabel);

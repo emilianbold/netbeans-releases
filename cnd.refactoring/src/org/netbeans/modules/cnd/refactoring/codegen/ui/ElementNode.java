@@ -459,8 +459,10 @@ public class ElementNode extends AbstractNode {
             int k2i(CsmDeclaration.Kind kind) {
                 switch (kind) {
                     case FUNCTION:
+                    case FUNCTION_FRIEND:
                         return 1;
                     case FUNCTION_DEFINITION:
+                    case FUNCTION_FRIEND_DEFINITION:
                         return 2;
                     case VARIABLE:
                     case VARIABLE_DEFINITION:

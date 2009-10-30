@@ -46,7 +46,6 @@ import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.ide.ProjectSupport;
 
 /**
  * Test jMaki client stub.
@@ -123,7 +122,7 @@ public class JMakiTest extends RestCStubsTest {
         // confirm properties dialog
         propertiesDialogOper.ok();
         // if setting default server, it scans server jars; otherwise it continues immediatelly
-        ProjectSupport.waitScanFinished();
+        waitScanFinished();
     }
 
     /**

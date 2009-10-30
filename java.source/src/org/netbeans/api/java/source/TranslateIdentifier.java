@@ -912,6 +912,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
 
         int index = seq.index() - 1;
 
+        maxLines = Math.max(maxLines, newlines);
+
         for (TrailingCommentsDataHolder h : comments) {
             if (h.newlines < maxLines) {
                 attachComments(Collections.singleton(h.comment), tree, commentService, CommentSet.RelativePosition.TRAILING);

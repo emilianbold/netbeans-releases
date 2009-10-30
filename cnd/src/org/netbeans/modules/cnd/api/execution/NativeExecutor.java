@@ -74,6 +74,7 @@ import org.openide.windows.OutputWriter;
  *
  * @deprecated  Use {@link @org-netbeans-modules-nativexecution@} instead
  */
+@Deprecated
 public class NativeExecutor implements Runnable {
     private final ArrayList<ExecutionListener> listeners = new ArrayList<ExecutionListener>();
     
@@ -87,6 +88,7 @@ public class NativeExecutor implements Runnable {
     private final boolean showInput;
     private final ExecutionEnvironment execEnv;
     private final boolean unbuffer;
+    private boolean x11forwarding = false;
     
     private String rcfile;
     private NativeExecution nativeExecution;
@@ -159,6 +161,10 @@ public class NativeExecutor implements Runnable {
             boolean showInput) {
         this(ExecutionEnvironmentFactory.getLocal(), runDir, executable,
                 arguments, envp, tabName, actionName, parseOutputForErrors, showInput, false);
+    }
+
+    public void setX11Forwarding(boolean x11forwarding) {
+        this.x11forwarding = x11forwarding;
     }
     
     /** targets may be null to indicate default target */
@@ -286,23 +292,24 @@ public class NativeExecutor implements Runnable {
                     prepareEnvironment(),
                     out,
 		    showInput ? io.getIn() : null,
-                    unbuffer);
+                    unbuffer,
+                    x11forwarding);
         } catch (ThreadDeath td) {
             StatusDisplayer.getDefault().setStatusText(getString("MSG_FailedStatus"));
-            executionFinished(-1, System.currentTimeMillis() - startTime);
+            executionFinished(-2, System.currentTimeMillis() - startTime);
             throw td;
         } catch (IOException ex) {
             // command not found, normal exit
             StatusDisplayer.getDefault().setStatusText(getString("MSG_FailedStatus"));
-            rc = -1;
+            rc = -3;
         } catch (InterruptedException ex) {
             // interrupted, normal exit
             StatusDisplayer.getDefault().setStatusText(getString("MSG_FailedStatus"));
-            rc = -1;
+            rc = -4;
         } catch (Throwable t) {
             StatusDisplayer.getDefault().setStatusText(getString("MSG_FailedStatus"));
             ErrorManager.getDefault().notify(t);
-            rc = -1;
+            rc = -5;
         } finally {
             if (showInput) {
                 io.setInputVisible(false);

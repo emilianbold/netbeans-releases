@@ -685,7 +685,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
 
         FileObject [] children = srcRootWithFiles1.getChildren();
         assertTrue(children.length > 0);
-        RepositoryUpdater.FileListWork flw3 = new RepositoryUpdater.FileListWork(ru.getScannedRoots2Dependencies(),srcRootWithFiles1.getURL(), Collections.singleton(children[0]), false, false, true, false);
+        RepositoryUpdater.FileListWork flw3 = new RepositoryUpdater.FileListWork(ru.getScannedRoots2Dependencies(),srcRootWithFiles1.getURL(), Collections.singleton(children[0]), false, false, true, false, true);
         assertTrue("The flw3 job was not absorbed", flw1.absorb(flw3));
 
         RepositoryUpdater.FileListWork flw4 = new RepositoryUpdater.FileListWork(ru.getScannedRoots2Dependencies(),srcRoot1.getURL(), false, false, true, false);
@@ -813,6 +813,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(2, eindexerFactory.scanFinishedFor.size());
         assertEquals(new URL[] {srcRoot1.getURL(), srcRootWithFiles1.getURL()}, eindexerFactory.scanFinishedFor);
     }
+
     //where
     private void assertEquals(final URL[] expected, final Collection<URL> data) throws AssertionError {
         assertEquals(expected.length, data.size());
@@ -926,105 +927,134 @@ public class RepositoryUpdaterTest extends NbTestCase {
 
     }
 
+    public void testFileListWorkVsRefreshWork() throws IOException {
+        File root1 = new File(getWorkDir(), "root1");
+        {
+        RepositoryUpdater.FileListWork flw = new RepositoryUpdater.FileListWork(Collections.<URL, List<URL>>emptyMap(), root1.toURL(), false, false, false, true);
+        RepositoryUpdater.RefreshWork rw = new RepositoryUpdater.RefreshWork(Collections.<URL, List<URL>>emptyMap(), Collections.<URL>emptySet(), Collections.<URL>emptySet(), false, false, null, new RepositoryUpdater.FSRefreshInterceptor());
+        assertTrue("RefreshWork didn't absorb FileListWork", rw.absorb(flw));
+        }
+        {
+        RepositoryUpdater.FileListWork flw = new RepositoryUpdater.FileListWork(Collections.<URL, List<URL>>emptyMap(), root1.toURL(), false, false, true, true);
+        RepositoryUpdater.RefreshWork rw = new RepositoryUpdater.RefreshWork(Collections.<URL, List<URL>>emptyMap(), Collections.<URL>emptySet(), Collections.<URL>emptySet(), true, false, null, new RepositoryUpdater.FSRefreshInterceptor());
+        assertTrue("RefreshWork didn't absorb FileListWork", rw.absorb(flw));
+        }
+        {
+        RepositoryUpdater.FileListWork flw = new RepositoryUpdater.FileListWork(Collections.<URL, List<URL>>emptyMap(), root1.toURL(), false, false, false, true);
+        RepositoryUpdater.RefreshWork rw = new RepositoryUpdater.RefreshWork(Collections.<URL, List<URL>>emptyMap(), Collections.<URL>emptySet(), Collections.<URL>emptySet(), true, false, null, new RepositoryUpdater.FSRefreshInterceptor());
+        assertTrue("RefreshWork didn't absorb FileListWork", rw.absorb(flw));
+        }
+        {
+        RepositoryUpdater.FileListWork flw = new RepositoryUpdater.FileListWork(Collections.<URL, List<URL>>emptyMap(), root1.toURL(), false, false, true, true);
+        RepositoryUpdater.RefreshWork rw = new RepositoryUpdater.RefreshWork(Collections.<URL, List<URL>>emptyMap(), Collections.<URL>emptySet(), Collections.<URL>emptySet(), false, false, null, new RepositoryUpdater.FSRefreshInterceptor());
+        assertTrue("RefreshWork didn't absorb FileListWork", rw.absorb(flw));
+        }
+    }
+
+    public void testRefreshWork() throws IOException {
+        File root1 = new File(getWorkDir(), "root1");
+        File root2 = new File(getWorkDir(), "root2");
+        {
+        RepositoryUpdater.RefreshWork rw1 = new RepositoryUpdater.RefreshWork(Collections.<URL, List<URL>>emptyMap(), Collections.<URL>emptySet(), Collections.<URL>emptySet(), false, false, Collections.singleton(root1), new RepositoryUpdater.FSRefreshInterceptor());
+        RepositoryUpdater.RefreshWork rw2 = new RepositoryUpdater.RefreshWork(Collections.<URL, List<URL>>emptyMap(), Collections.<URL>emptySet(), Collections.<URL>emptySet(), false, false, Collections.singleton(root2), new RepositoryUpdater.FSRefreshInterceptor());
+        assertFalse("RefreshWork should not be cancelled by other RefreshWork", rw1.isCancelledBy(rw2));
+        assertTrue("RefreshWork should absorb other RefreshWork", rw1.absorb(rw2));
+        }
+    }
+
     public static class TestHandler extends Handler {
 
         public static enum Type {BATCH, DELETE, FILELIST};
 
-            private Type type;
-            private CountDownLatch latch;
-            private List<URL> sources;
-            private Set<URL> binaries;
+        private Type type;
+        private CountDownLatch latch;
+        private List<URL> sources;
+        private Set<URL> binaries;
 
-            public TestHandler () {
-                reset();
+        public TestHandler () {
+            reset();
+        }
+
+        public void reset () {
+            reset (Type.BATCH);
+        }
+
+        public void reset(final Type t) {
+            sources = null;
+            binaries = null;
+            type = t;
+            if (t == Type.BATCH) {
+                latch = new CountDownLatch(2);
             }
-
-            public void reset () {
-                reset (Type.BATCH);
-            }
-
-            public void reset(final Type t) {
-                sources = null;
-                binaries = null;
-                type = t;
-                if (t == Type.BATCH) {
-                    latch = new CountDownLatch(2);
-                }
-                else {
-                    latch = new CountDownLatch(1);
-                }
-            }
-
-            public void reset(final Type t, int initialCount) {
-                sources = null;
-                binaries = null;
-                type = t;
-                latch = new CountDownLatch(initialCount);
-            }
-
-            public boolean await () throws InterruptedException {
-                return latch.await(TIME, TimeUnit.MILLISECONDS);
-            }
-
-            public Set<URL> getBinaries () {
-                return this.binaries;
-            }
-
-            public List<URL> getSources() {
-                return this.sources;
-            }
-
-            @Override
-            public void publish(LogRecord record) {
-                String msg = record.getMessage();
-                if (type == Type.BATCH) {
-                    if ("scanBinary".equals(msg)) {
-                        @SuppressWarnings("unchecked")
-                        Set<URL> b = (Set<URL>) record.getParameters()[0];
-                        binaries = b;
-                        latch.countDown();
-                    }
-                    else if ("scanSources".equals(msg)) {
-                        @SuppressWarnings("unchecked")
-                        List<URL> s =(List<URL>) record.getParameters()[0];
-                        sources = s;
-                        latch.countDown();
-                    }
-                } else if (type == Type.DELETE) {
-                    if ("delete".equals(msg)) {
-                        latch.countDown();
-                    }
-                } else if (type == Type.FILELIST) {
-                    if ("filelist".equals(msg)) {
-                        latch.countDown();
-                    }
-                }
-            }
-
-            @Override
-            public void flush() {
-            }
-
-            @Override
-            public void close() throws SecurityException {
+            else {
+                latch = new CountDownLatch(1);
             }
         }
-    
-    
-        
+
+        public void reset(final Type t, int initialCount) {
+            sources = null;
+            binaries = null;
+            type = t;
+            latch = new CountDownLatch(initialCount);
+        }
+
+        public boolean await () throws InterruptedException {
+            return latch.await(TIME, TimeUnit.MILLISECONDS);
+        }
+
+        public Set<URL> getBinaries () {
+            return this.binaries;
+        }
+
+        public List<URL> getSources() {
+            return this.sources;
+        }
+
+        @Override
+        public void publish(LogRecord record) {
+            String msg = record.getMessage();
+            if (type == Type.BATCH) {
+                if ("scanBinary".equals(msg)) {
+                    @SuppressWarnings("unchecked")
+                    Set<URL> b = (Set<URL>) record.getParameters()[0];
+                    binaries = b;
+                    latch.countDown();
+                }
+                else if ("scanSources".equals(msg)) {
+                    @SuppressWarnings("unchecked")
+                    List<URL> s =(List<URL>) record.getParameters()[0];
+                    sources = s;
+                    latch.countDown();
+                }
+            } else if (type == Type.DELETE) {
+                if ("delete".equals(msg)) {
+                    latch.countDown();
+                }
+            } else if (type == Type.FILELIST) {
+                if ("filelist".equals(msg)) {
+                    latch.countDown();
+                }
+            }
+        }
+
+        @Override
+        public void flush() {
+        }
+
+        @Override
+        public void close() throws SecurityException {
+        }
+    }
 
     public static class PRI implements FilteringPathResourceImplementation {
 
-
         private final URL root;
         private final PropertyChangeSupport support;
-
 
         public PRI (URL root) {
             this.root = root;
             this.support = new PropertyChangeSupport (this);
         }
-
 
         public boolean includes(URL root, String resource) {
             return true;

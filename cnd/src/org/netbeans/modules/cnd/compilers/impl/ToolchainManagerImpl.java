@@ -1015,6 +1015,11 @@ public final class ToolchainManagerImpl {
             c.setAttribute("pattern", scanner.getChangeDirectoryPattern()); // NOI18N
             element.appendChild(c);
         }
+        if (scanner.getMakeAllInDirectoryPattern() != null) {
+            c = doc.createElement("making_all_in_directory"); // NOI18N
+            c.setAttribute("pattern", scanner.getMakeAllInDirectoryPattern()); // NOI18N
+            element.appendChild(c);
+        }
         if (scanner.getLeaveDirectoryPattern() != null) {
             c = doc.createElement("leave_directory"); // NOI18N
             c.setAttribute("pattern", scanner.getLeaveDirectoryPattern()); // NOI18N
@@ -1271,6 +1276,7 @@ public final class ToolchainManagerImpl {
         String changeDirectoryPattern;
         String enterDirectoryPattern;
         String leaveDirectoryPattern;
+        String makingAllInDirectoryPattern;
         String stackHeaderPattern;
         String stackNextPattern;
         List<String> filterOut = new ArrayList<String>();
@@ -1756,6 +1762,8 @@ public final class ToolchainManagerImpl {
                     s.stackNextPattern = getValue(attributes, "pattern"); // NOI18N
                 } else if (path.endsWith(".filter_out")) { // NOI18N
                     s.filterOut.add(getValue(attributes, "pattern")); // NOI18N
+                } else if (path.endsWith(".making_all_in_directory")) { // NOI18N
+                    s.makingAllInDirectoryPattern = getValue(attributes, "pattern"); // NOI18N
                 }
                 return;
             }
@@ -2404,6 +2412,10 @@ public final class ToolchainManagerImpl {
 
         public String getLeaveDirectoryPattern() {
             return s.leaveDirectoryPattern;
+        }
+
+        public String getMakeAllInDirectoryPattern() {
+            return s.makingAllInDirectoryPattern;
         }
 
         public String getStackHeaderPattern() {

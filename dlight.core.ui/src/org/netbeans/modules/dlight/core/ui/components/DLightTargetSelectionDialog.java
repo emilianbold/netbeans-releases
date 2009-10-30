@@ -69,9 +69,9 @@ import org.openide.util.NbBundle;
  */
 public abstract class DLightTargetSelectionDialog extends JDialog implements ActionListener {
 
-  public static int RESULT_OK = 0;
-  public static int RESULT_CANCEL = 1;
-  public static int RESULT_ERROR = -1;
+  public static final int RESULT_OK = 0;
+  public static final int RESULT_CANCEL = 1;
+  public static final int RESULT_ERROR = -1;
   private int result = RESULT_ERROR;
   protected JButton btnOK = new JButton(NbBundle.getMessage(DLightTargetSelectionDialog.class, "DLightTargetSelectionDialog.OK_Button")); //NOI18N
   protected JButton btnCancel = new JButton(NbBundle.getMessage(DLightTargetSelectionDialog.class, "DLightTargetSelectionDialog.Cancel_Button")); //NOI18N

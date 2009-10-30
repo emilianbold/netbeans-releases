@@ -50,7 +50,7 @@ made subject to such option by the copyright holder.
     <change id="Notification.SILENT">
         <api name="awt"/>
         <summary>Support for silent notifications</summary>
-        <version major="7" minor="17"/>
+        <version major="7" minor="18"/>
         <date day="16" month="10" year="2009"/>
         <author login="jtulach"/>
         <compatibility addition="yes" binary="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
@@ -60,6 +60,21 @@ made subject to such option by the copyright holder.
         </description>
         <class package="org.openide.awt" name="NotificationDisplayer"/>
         <issue number="174183"/>
+    </change>
+    <change id="Actions.checkbox">
+        <api name="awt"/>
+        <summary>Actions.checkbox() can represent a boolean key in Preferences.</summary>
+        <version major="7" minor="17"/>
+        <date day="9" month="10" year="2009"/>
+        <author login="mmetelka"/>
+        <compatibility addition="yes" binary="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>
+            <a href="@TOP@/org/openide/awt/Actions.html#checkbox(java.lang.String,%20java.lang.String,%20java.lang.String,%20java.lang.String,%20boolean)">
+                checkbox</a>
+            added to create an action that represents a key in Preferences.
+        </description>
+        <class package="org.openide.awt" name="Actions"/>
+        <issue number="166027"/>
     </change>
     <change id="AlwaysEnabledAction.CheckBox">
         <api name="awt"/>
@@ -153,7 +168,7 @@ made subject to such option by the copyright holder.
     </change>
     <change id="HtmlBrowser.dispose">
         <api name="awt"/>
-        <summary>Added dispose() method.</summary>
+        <summary>Added <code>HtmlBrowser.dispose</code></summary>
         <version major="7" minor="11"/>
         <date day="15" month="7" year="2009"/>
         <author login="saubrecht"/>

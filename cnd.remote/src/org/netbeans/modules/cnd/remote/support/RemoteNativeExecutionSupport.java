@@ -47,12 +47,8 @@ import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.Reader;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.logging.Level;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -68,6 +64,11 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
 
     public RemoteNativeExecutionSupport(ExecutionEnvironment execEnv, File dirf, String cmd,
             String args, Map<String, String> env, PrintWriter out, Reader userInput) {
+        this(execEnv, dirf, cmd, args, env, out, userInput, false);
+    }
+
+    public RemoteNativeExecutionSupport(ExecutionEnvironment execEnv, File dirf, String cmd,
+            String args, Map<String, String> env, PrintWriter out, Reader userInput, boolean x11forwarding) {
         super(execEnv);
 
         Process process;
@@ -82,7 +83,7 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
             }
 
             pb.redirectError();
-            if (env == null || !env.containsKey("DISPLAY")) { // NOI18N
+            if (x11forwarding) {
                 pb.setX11Forwarding(true);
             }
 
@@ -153,24 +154,6 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
 //            disconnect();
         }
     }
-
-    private static String displayString ;
-
-    private static String getDisplayString() {
-        if (displayString == null) {
-            try {
-                String localDisplay = PlatformInfo.getDefault(ExecutionEnvironmentFactory.getLocal()).getEnv().get("DISPLAY"); //NOI18N
-                if (localDisplay == null) {
-                    localDisplay = ":.0"; //NOI18N
-                }
-                displayString = "DISPLAY=" + InetAddress.getLocalHost().getHostAddress() + localDisplay; //NOI18N
-            } catch (UnknownHostException ex) {
-                displayString = "";
-            }
-        }
-        return displayString;
-    }
-
 
     /** Helper class to read the input from the build */
     private static final class InputReaderThread extends Thread {

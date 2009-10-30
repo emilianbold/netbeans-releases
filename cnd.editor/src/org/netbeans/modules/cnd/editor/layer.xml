@@ -510,13 +510,6 @@
     </folder>
 
     <folder name="OptionsExport">
-        <folder name="Editor">
-            <attr name="displayName" bundlevalue="org.netbeans.modules.cnd.editor.cplusplus.Bundle#Editor_Category_Display_Name"/>
-            <file name="Other">
-                <attr name="include" stringvalue="config/Preferences/org/netbeans/modules/cnd/editor/.*"/>
-                <attr name="displayName" bundlevalue="org.netbeans.modules.cnd.editor.cplusplus.Bundle#CND_Formatting_Style_Display_Name"/>
-            </file>
-        </folder>
         <folder name="CND">
             <attr name="position" intvalue="900"/>
             <attr name="displayName" bundlevalue="org.netbeans.modules.cnd.editor.cplusplus.Bundle#CND_Category_Display_Name"/>
@@ -546,9 +539,14 @@
                 <attr name="position" intvalue="500"/>
                 <attr name="displayName" bundlevalue="org.netbeans.modules.cnd.editor.cplusplus.Bundle#CND_Remote_Display_Name"/>
             </file>
+            <file name="Editor">
+                <attr name="include" stringvalue="config/Preferences/org/netbeans/modules/cnd/editor/.*"/>
+                <attr name="position" intvalue="600"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.cnd.editor.cplusplus.Bundle#CND_Formatting_Style_Display_Name"/>
+            </file>
             <file name="Other">
                 <attr name="include" stringvalue="config/Preferences/org/netbeans/modules/cnd/(utils|refactoring|callgraph|classview|qnavigator)\.properties"/>
-                <attr name="position" intvalue="600"/>
+                <attr name="position" intvalue="700"/>
                 <attr name="displayName" bundlevalue="org.netbeans.modules.cnd.editor.cplusplus.Bundle#CND_Other_Display_Name"/>
             </file>
         </folder>

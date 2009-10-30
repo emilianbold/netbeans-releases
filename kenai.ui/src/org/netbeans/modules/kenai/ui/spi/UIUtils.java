@@ -95,7 +95,7 @@ public final class UIUtils {
     private static Set<String> loggedParams; // to avoid logging same params more than once in a session
 
     public static String getPrefName(String name)  {
-        return Kenai.getDefault().getName() + name;
+        return Kenai.getDefault().getUrl().getHost() + name;
     }
 
     public static void waitStartupFinished() {
@@ -163,10 +163,13 @@ public final class UIUtils {
     /**
      * this method will be removed
      * will try to login using stored uname and password if not already logged in
+     * @param force
      * @return true if logged in, false otherwise
+     * @deprecated 
      */
     @Deprecated
     public static synchronized boolean tryLogin(boolean force) {
+        Utilities.isChatSupported();
         if (Kenai.getDefault().getPasswordAuthentication()!=null) {
             return true;
         }
@@ -186,7 +189,7 @@ public final class UIUtils {
         String password=preferences.get(getPrefName(KENAI_PASSWORD_PREF), null); // NOI18N
         try {
             KenaiConnection.getDefault();
-            Kenai.getDefault().login(uname, Scrambler.getInstance().descramble(password).toCharArray(), force?true:Boolean.parseBoolean(preferences.get(getPrefName(ONLINE_STATUS_PREF), "true")));
+            Kenai.getDefault().login(uname, Scrambler.getInstance().descramble(password).toCharArray(), force?true:Boolean.parseBoolean(preferences.get(getPrefName(ONLINE_STATUS_PREF), String.valueOf(Utilities.isChatSupported()))));
         } catch (KenaiException ex) {
             return false;
         }
@@ -198,7 +201,7 @@ public final class UIUtils {
      * @return true, if user was succesfully logged in
      */
     public static boolean showLogin() {
-        final LoginPanel loginPanel = new LoginPanel();
+        final LoginPanel loginPanel = new LoginPanel(Utilities.isChatSupported());
         final Preferences preferences = NbPreferences.forModule(LoginPanel.class);
         final String ctlLogin = NbBundle.getMessage(Utilities.class, "CTL_Login");
         final String ctlCancel = NbBundle.getMessage(Utilities.class, "CTL_Cancel");

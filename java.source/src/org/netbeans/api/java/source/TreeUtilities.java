@@ -72,6 +72,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.source.builder.CommentHandlerService;
 import org.netbeans.modules.java.source.builder.CommentSetImpl;
 import org.netbeans.modules.java.source.parsing.SourceFileObject;
+import org.netbeans.modules.java.source.query.CommentSet.RelativePosition;
 import org.openide.util.Exceptions;
 
 /**
@@ -184,23 +185,31 @@ public final class TreeUtilities {
      */
     public List<Comment> getComments(Tree tree, boolean preceding) {
         CommentSetImpl set = handler.getComments(tree);
+
+        ensureCommentsMapped(info, tree, set);
+
+        List<Comment> comments = preceding ? set.getPrecedingComments() : set.getTrailingComments();
         
+        return Collections.unmodifiableList(comments);
+    }
+
+    static void ensureCommentsMapped(CompilationInfo info, Tree tree, CommentSetImpl set) {
         if (!set.areCommentsMapped()) {
             boolean assertsEnabled = false;
             boolean automap = true;
-            
+
             assert assertsEnabled = true;
-            
+
             if (assertsEnabled) {
                 TreePath tp = info.getCompilationUnit() == tree ? new TreePath(info.getCompilationUnit()) : TreePath.getPath(info.getCompilationUnit(), tree);
-                
+
                 if (tp == null) {
                     Logger.getLogger(TreeUtilities.class.getName()).log(Level.WARNING, "Comment automap requested for Tree not from the root compilation info. Please, make sure to call GeneratorUtilities.importComments before Treeutilities.getComments. Tree: {0}", tree);
                     Logger.getLogger(TreeUtilities.class.getName()).log(Level.INFO, "Caller", new Exception());
                     automap = false;
                 }
             }
-            
+
             if (automap) {
                 try {
                     TokenSequence<JavaTokenId> seq = ((SourceFileObject) info.getCompilationUnit().getSourceFile()).getTokenHierarchy().tokenSequence(JavaTokenId.language());
@@ -210,12 +219,8 @@ public final class TreeUtilities {
                 }
             }
         }
-        
-        List<Comment> comments = preceding ? set.getPrecedingComments() : set.getTrailingComments();
-        
-        return Collections.unmodifiableList(comments);
     }
-    
+
     public TreePath pathFor(int pos) {
         return pathFor(new TreePath(info.getCompilationUnit()), pos);
     }

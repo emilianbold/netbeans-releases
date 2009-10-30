@@ -433,7 +433,7 @@ class J2SEActionProvider implements ActionProvider {
                     if (runtimeEnc != null) {
                         try {
                             Charset runtimeChs = Charset.forName(runtimeEnc);
-                            execProperties.put("runtime.encoding", runtimeChs); //NOI18N
+                            execProperties.put(JavaRunner.PROP_RUNTIME_ENCODING, runtimeChs); //NOI18N
                         } catch (IllegalCharsetNameException ichsn) {
                             LOG.warning("Illegal charset name: " + runtimeEnc); //NOI18N
                         } catch (UnsupportedCharsetException uchs) {

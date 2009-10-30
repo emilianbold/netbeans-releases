@@ -46,15 +46,19 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.kenai.FakeJiraSupport.FakeJiraQueryHandle;
-import org.netbeans.modules.bugtracking.kenai.FakeJiraSupport.FakeJiraQueryResultHandle;
+import org.netbeans.modules.bugtracking.jira.FakeJiraSupport;
+import org.netbeans.modules.bugtracking.jira.FakeJiraSupport.FakeJiraQueryHandle;
+import org.netbeans.modules.bugtracking.jira.FakeJiraSupport.FakeJiraQueryResultHandle;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport;
+import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
@@ -86,7 +90,6 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
         Dashboard.getDefault().addPropertyChangeListener(this);
     }
 
-
     @Override
     public QueryHandle getAllIssuesQuery(ProjectHandle project) {
         Repository repo = KenaiRepositoryUtils.getInstance().getRepository(project);
@@ -110,7 +113,7 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
         if(allIssuesQuery == null) {
             return null;
         }
-        List<QueryHandle> queries = getQueryHandles(project, true, allIssuesQuery);
+        List<QueryHandle> queries = getQueryHandles(project, allIssuesQuery);
         assert queries.size() == 1;
 
         registerProject(project, queries);
@@ -127,7 +130,7 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
 
         registerRepository(repo, project);
         
-        List<QueryHandle> queries = getQueryHandles(repo, project, true);
+        List<QueryHandle> queries = getQueryHandles(repo, project);
 
         registerProject(project, queries);
 
@@ -143,7 +146,7 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
         return Collections.emptyList();
     }
 
-    private List<QueryHandle> getQueryHandles(ProjectHandle project, boolean newQueriesNeedRefresh, Query... queries) {
+    private List<QueryHandle> getQueryHandles(ProjectHandle project, Query... queries) {
         List<QueryHandle> ret = new ArrayList<QueryHandle>();
         synchronized (queryHandles) {
             Map<String, QueryHandle> m = queryHandles.get(project.getId());
@@ -154,16 +157,27 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
                 List<String> l = new ArrayList<String>();
                 for (Query q : queries) {
                     if (q != null) {
-                        l.add(q.getDisplayName());
+                        String qName = q.getDisplayName();
+                        l.add(qName);
                     }
                 }
                 m.keySet().retainAll(l);
             }
             for (Query q : queries) {
-                QueryHandle qh = m.get(q.getDisplayName());
+                String qName = q.getDisplayName();
+                QueryHandle qh = m.get(qName);
                 if (qh == null) {
-                    qh = new QueryHandleImpl(q, newQueriesNeedRefresh);
-                    m.put(q.getDisplayName(), qh);
+                    Issue[] issues = q.getIssues();
+                    // XXX HACK - totaly new queries should be refreshed.
+                    //            unfortunatelly, an already refreshed query with
+                    //            will be unnecessarilly refreshed one more time
+                    //            as needed.
+                    if(issues != null && issues.length > 0) {
+                        qh = new QueryHandleImpl(q, false);
+                    } else {
+                        qh = new QueryHandleImpl(q, true);
+                    }
+                    m.put(qName, qh);
                 }
                 ret.add(qh);
             }
@@ -198,26 +212,49 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
         }
     }
 
-    private List<QueryHandle> getQueryHandles(Repository repo, ProjectHandle project, boolean newQueriesNeedRefresh) {
+    private List<QueryHandle> getQueryHandles(Repository repo, ProjectHandle projectHandle) {
         Query[] queries = repo.getQueries();
-        if(queries == null || queries.length == 0) {
+        if(queries == null) {
             // XXX is this possible - at least preset queries
             return Collections.emptyList();
-        }
-        List<QueryHandle> ret = getQueryHandles(project, newQueriesNeedRefresh, queries);
-
-        if(!KenaiUtil.isLoggedIn()) {
-            QueryHandle myIssuesFake = new QueryHandle() {
-                @Override
-                public String getDisplayName() {
-                    return NbBundle.getMessage(QueryAccessorImpl.class, "LBL_MyIssuesNotLoggedIn");
+        }        
+        List<QueryHandle> ret;
+        if(KenaiUtil.isLoggedIn()) {
+            ret = getQueryHandles(projectHandle, queries);
+        } else {
+            KenaiSupport.BugtrackingType type = getBugtrackingType(repo);
+            assert type != null;
+            
+            if(KenaiSupport.BugtrackingType.JIRA == type) {
+                // JIRA always returns zero issues if not logged in. Showing zero
+                // in the resut would nbe missleading
+                ret = new LinkedList<QueryHandle>();
+                for (Query q : queries) {
+                    ret.add(new NotLoggedInQueryHandle(q.getDisplayName()));
                 }
-                @Override
-                public void addPropertyChangeListener(PropertyChangeListener l) {}
-                @Override
-                public void removePropertyChangeListener(PropertyChangeListener l) {}
-            };
-            ret.add(myIssuesFake);
+            } else if(KenaiSupport.BugtrackingType.BUGZILLA == type) {
+                // not logged in so my issues makes no sense
+                // as we don't know who 'me' actually is. Other queries
+                // contains resonable results so keep them
+                ret = getQueryHandles(projectHandle, queries);
+                
+                Query myIssuesQuery = null;
+                KenaiSupport support = repo.getLookup().lookup(KenaiSupport.class);
+                if(support != null) {
+                    myIssuesQuery = support.getMyIssuesQuery(repo);
+                }
+                for (QueryHandle qh : ret) {
+                    if(qh instanceof QueryHandleImpl) {
+                        if(((QueryHandleImpl)qh).getQuery() == myIssuesQuery) {
+                            ret.remove(qh);
+                            ret.add(new NotLoggedInQueryHandle(qh.getDisplayName()));
+                            break;
+                        }
+                    }
+                }
+            } else {
+                throw new IllegalStateException("Unknown bugtracking type : " + getBugtrackingType(repo));
+            }
         }
         return ret;
     }
@@ -249,6 +286,12 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
         }
         return new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
+                if(!KenaiUtil.isLoggedIn() &&
+                    KenaiSupport.BugtrackingType.JIRA == getBugtrackingType(repo) &&
+                   !KenaiUtil.showLogin())
+                {
+                    return;
+                }
                 BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() { // XXX add post method to BM
                     public void run() {
                         QueryAction.openQuery(null, repo, true);
@@ -271,6 +314,12 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
         }
         return new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
+                if(!KenaiUtil.isLoggedIn() &&
+                    KenaiSupport.BugtrackingType.JIRA == getBugtrackingType(repo) &&
+                   !KenaiUtil.showLogin())
+                {
+                    return;
+                }
                 BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() { // XXX add post method to BM
                     public void run() {
                         IssueAction.openIssue(repo);
@@ -337,6 +386,16 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
             tc.updateSavedQueries();
         }
     }
+
+    private KenaiSupport.BugtrackingType getBugtrackingType(Repository repo) {
+        KenaiSupport support = repo.getLookup().lookup(KenaiSupport.class);
+        if(support != null) {
+            return support.getType();
+        } else {
+            assert false : "no KenaiSupport available for repository [" + repo.getDisplayName() + "]";  // NOI18N
+        }
+        return null;
+    }
     
     private class ProjectHandleListener implements PropertyChangeListener {
         private List<QueryHandle> queries;
@@ -374,7 +433,7 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
 
         public void propertyChange(PropertyChangeEvent evt) {
             if(evt.getPropertyName().equals(Repository.EVENT_QUERY_LIST_CHANGED)) {
-                fireQueriesChanged(ph, getQueryHandles(repo, ph, false));
+                fireQueriesChanged(ph, getQueryHandles(repo, ph));
             }
         }
     }
@@ -389,4 +448,21 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
            al.actionPerformed(e);
         }
     }
+
+    private class NotLoggedInQueryHandle extends QueryHandle {
+        private String notLoggedIn = NbBundle.getMessage(QueryAccessorImpl.class, "LBL_NotLoggedIn"); // NOI18N
+        private String label;
+        public NotLoggedInQueryHandle(String label) {
+            this.label = label;
+        }
+        @Override
+        public String getDisplayName() {
+            return label + " " + notLoggedIn;                                   // NOI18N
+        }
+        @Override
+        public void addPropertyChangeListener(PropertyChangeListener l) {}
+        @Override
+        public void removePropertyChangeListener(PropertyChangeListener l) {}
+    }
+
 }

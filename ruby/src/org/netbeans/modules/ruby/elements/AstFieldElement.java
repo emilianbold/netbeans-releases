@@ -49,7 +49,8 @@ public class AstFieldElement extends AstElement {
             if (node instanceof ClassVarNode || node instanceof ClassVarDeclNode) {
                 modifiers = EnumSet.of(Modifier.STATIC);
             } else {
-                modifiers = Collections.emptySet();
+                // instance variables are always private
+                modifiers = Collections.singleton(Modifier.PRIVATE);
             }
         }
 

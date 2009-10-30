@@ -19,8 +19,8 @@ import com.sun.jersey.api.core.ResourceContext;
 import javax.ws.rs.WebApplicationException;
 import javax.persistence.NoResultException;
 import javax.persistence.EntityManager;
-import o.n.m.ws.qaf.rest.crud.Customer;
 import java.util.Collection;
+import o.n.m.ws.qaf.rest.crud.Customer;
 import o.n.m.ws.qaf.rest.crud.DiscountCode;
 import o.n.m.ws.qaf.rest.crud.converter.DiscountCodeConverter;
 
@@ -35,12 +35,12 @@ public class DiscountCodeResource {
     @Context
     protected ResourceContext resourceContext;
     protected String id;
-  
+
     /** Creates a new instance of DiscountCodeResource */
     public DiscountCodeResource() {
     }
 
-    public void setId(String id) {
+    protected void setId(String id) {
         this.id = id;
     }
 
@@ -175,7 +175,7 @@ public class DiscountCodeResource {
 
         private DiscountCode parent;
 
-        public void setParent(DiscountCode parent) {
+        protected void setParent(DiscountCode parent) {
             this.parent = parent;
         }
 

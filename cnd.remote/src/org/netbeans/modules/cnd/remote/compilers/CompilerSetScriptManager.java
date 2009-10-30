@@ -38,15 +38,19 @@
  */
 package org.netbeans.modules.cnd.remote.compilers;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.remote.support.RemoteConnectionSupport;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.openide.util.Exceptions;
 
 /**
  * Manage the getCompilerSets script.
@@ -63,7 +67,6 @@ import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
         super(env);
         compilerSets = new ArrayList<String>();
     }
-    private static int emulateFailure = Integer.getInteger("cnd.remote.failure", 0); // NOI18N
 
     public void runScript() {
         if (!isFailedOrCancelled()) {
@@ -71,40 +74,44 @@ import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
             compilerSets.clear();
             try {
                 NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(executionEnvironment);
-                pb.setExecutable(SCRIPT);
+                HostInfo hinfo = HostInfoUtils.getHostInfo(executionEnvironment);
+                pb.setExecutable(hinfo.getShell()).setArguments("-s"); // NOI18N
                 Process process = pb.call();
-                BufferedReader in = new BufferedReader(
-                        new InputStreamReader(process.getInputStream()));
+                process.getOutputStream().write(CompilerSetManager.getRemoteScript(null).getBytes());
+                process.getOutputStream().close();
+
+                List<String> lines = ProcessUtils.readProcessOutput(process);
+                int status = -1;
+
                 try {
-                    if (0 < emulateFailure) {
-                        RemoteUtil.LOGGER.warning("CSSM.runScript: failure emulation [" + emulateFailure + "]"); // NOI18N
-                        setFailed("failure emulation in CompilerSetScriptManager"); // NOI18N
-                        emulateFailure--;
-                        return;
-                    }
+                    status = process.waitFor();
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
 
-                    platform = in.readLine();
-                    RemoteUtil.LOGGER.fine("CSSM.runScript: Reading input from getCompilerSets.bash");
-                    RemoteUtil.LOGGER.fine("    platform [" + platform + "]");
-
-                    String line;
-                    while ((line = in.readLine()) != null) {
-                        RemoteUtil.LOGGER.fine("    line [" + line + "]");
-                        compilerSets.add(line);
+                if (status != 0) {
+                    RemoteUtil.LOGGER.warning("CSSM.runScript: FAILURE "+status); // NOI18N
+                    ProcessUtils.logError(Level.ALL, RemoteUtil.LOGGER, process);
+                } else {
+                    int i = 0;
+                    for (String s: lines) {
+                        RemoteUtil.LOGGER.fine("CSSM.runScript line: " + s); // NOI18N
+                        if (i == 0) {
+                            platform = s;
+                            RemoteUtil.LOGGER.fine("    platform [" + platform + "]"); // NOI18N
+                        } else {
+                            RemoteUtil.LOGGER.fine("    line [" + s + "]"); // NOI18N
+                            compilerSets.add(s);
+                        }
+                        i++;
                     }
-                } finally {
-                    in.close();
                 }
             } catch (IOException ex) {
                 RemoteUtil.LOGGER.warning("CSSM.runScript: IOException [" + ex.getMessage() + "]"); // NOI18N
                 setFailed(ex.getMessage());
-//            } finally {
-//                support.disconnect();
             }
         }
     }
-
-    public static final String SCRIPT = ".netbeans/6.8/cnd3/scripts/getCompilerSets.bash"; // NOI18N
 
     public String getPlatform() {
         return platform;
@@ -122,7 +129,7 @@ import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
     public String toString() {
         StringBuilder buf = new StringBuilder();
         for (String set : compilerSets) {
-            buf.append(set).append('\n');
+            buf.append(set).append('\n'); // NOI18N
         }
         return buf.toString();
     }

@@ -245,6 +245,8 @@ public final class ToolchainManager {
 
         String getLeaveDirectoryPattern();
 
+        String getMakeAllInDirectoryPattern();
+
         String getStackHeaderPattern();
 
         String getStackNextPattern();

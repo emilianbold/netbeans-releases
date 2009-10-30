@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.groovy.editor.api;
 
-import org.netbeans.modules.groovy.editor.api.PathFinderVisitor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
@@ -159,11 +158,19 @@ public class GroovyOccurencesFinderTest extends GroovyTestBase {
     }
 
     public void testClass1() throws Exception {
-        doTest("class TestC^ase {");
+        doTest("class TestC^ase extends java.lang.Object {");
     }
 
     public void testClass2() throws Exception {
         doTest("T^estCase.create().method1(1)");
+    }
+
+    public void testClass3() throws Exception {
+        doTest("class TestCase extends ^java.lang.Object {");
+    }
+
+    public void testClass4() throws Exception {
+        doTest("class Test^Case extends java.lang.Object {");
     }
 
     public void testLocalVar3() throws Exception {

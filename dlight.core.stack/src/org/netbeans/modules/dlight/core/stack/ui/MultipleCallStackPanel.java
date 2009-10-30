@@ -38,11 +38,11 @@
  */
 package org.netbeans.modules.dlight.core.stack.ui;
 
+import java.awt.EventQueue;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.beans.PropertyVetoException;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -52,17 +52,14 @@ import javax.swing.Icon;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
-import javax.swing.tree.TreePath;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.dataprovider.SourceFileInfoDataProvider;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -195,7 +192,7 @@ public final class MultipleCallStackPanel extends JPanel implements ExplorerMana
         return lookup;
     }
 
-    private final class MyOwnBeanTreeView extends BeanTreeView {
+    private static final class MyOwnBeanTreeView extends BeanTreeView {
 
         MyOwnBeanTreeView() {
             super();
@@ -203,29 +200,18 @@ public final class MultipleCallStackPanel extends JPanel implements ExplorerMana
 
         @Override
         public void expandAll() {
-            super.expandAll();
-            RequestProcessor.getDefault().post(new Runnable() {
+            if (!EventQueue.isDispatchThread()){
+                SwingUtilities.invokeLater(new Runnable() {
 
-                public void run() {
-                    try {
-                        Node[] selected = manager.getSelectedNodes();
-                        if (selected == null || selected.length == 0) {
-                            selected = new Node[]{rootNode};
-                            manager.setSelectedNodes(selected);
-                        }
-                        final TreePath path = tree.getSelectionPath();
-                        SwingUtilities.invokeLater(new Runnable(){
-                            public void run() {
-                                if (path != null) {
-                                    tree.scrollPathToVisible(path);
-                                }
-                            }
-                        });
-                    } catch (PropertyVetoException ex) {
-                        Exceptions.printStackTrace(ex);
+                    public void run() {
+                        MyOwnBeanTreeView.super.expandAll();
                     }
-                }
-            }, 500);
+                });
+           }else{
+                super.expandAll();
+           }
+            
+
         }
     }
 }

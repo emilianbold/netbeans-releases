@@ -61,6 +61,9 @@ public class InstallerAndUninstallerAllTest
     else
     if( sInstallerType.equals( "php" ) )
       I = new TestInstallerAndUninstallerPHP( );
+    else
+    if( sInstallerType.equals( "javafx" ) )
+      I = new TestInstallerAndUninstallerJavaFX( );
 
     I.testInstaller( );
   }

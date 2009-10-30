@@ -1679,6 +1679,8 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                         return ; //TODO...
                     }
 
+                    GeneratorUtilities.get(copy).importComments(block.getLeaf(), copy.getCompilationUnit());
+                    
                     Scope s = copy.getTrees().getScope(block);
                     boolean isStatic = copy.getTreeUtilities().isStaticContext(s);
                     BlockTree statements = (BlockTree) block.getLeaf();

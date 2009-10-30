@@ -45,8 +45,10 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
+import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.execution.NativeExecutor;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
@@ -67,7 +69,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
 
     private ProjectActionEvent pae;
     private volatile ExecutorTask executorTask;
-    private List<ExecutionListener> listeners = new ArrayList<ExecutionListener>();
+    private final List<ExecutionListener> listeners = new CopyOnWriteArrayList<ExecutionListener>();
 
     // VK: this is just to tie two pieces of logic together:
     // first is in determining the type of console for remote;
@@ -135,7 +137,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                         args = "/c " + IpeUtils.quoteIfNecessary(FilePathAdaptor.naturalize(pae.getExecutable())) // NOI18N
                                 + " " + getArguments(); // NOI18N
                     } else if (conf.getDevelopmentHost().isLocalhost()) {
-                        exe = IpeUtils.toAbsolutePath(pae.getProfile().getBaseDir(), pae.getExecutable());
+                        exe = IpeUtils.toAbsolutePath(pae.getProfile().getRunDir(), pae.getExecutable());
                     }
                     unbuffer = true;
                 } else {
@@ -223,6 +225,12 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                     env1[i] = pathname + csdirs + pi.pathSeparator() + defaultPath;
                 }
                 env = env1;
+                // Pass QMAKE from compiler set to the Makefile (IZ 174731)
+                if (conf.isQmakeConfiguration()) {
+                    String qmakePath = conf.getCompilerSet().getCompilerSet().getTool(Tool.QMakeTool).getPath();
+                    qmakePath = conf.getCompilerSet().getCompilerSet().normalizeDriveLetter(qmakePath.replace('\\', '/')); // NOI18N
+                    args += " QMAKE=" + IpeUtils.escapeOddCharacters(qmakePath); // NOI18N
+                }
             }
             NativeExecutor projectExecutor = new NativeExecutor(
                     execEnv,
@@ -233,6 +241,14 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                     pae.getType() == ProjectActionEvent.Type.BUILD,
                     showInput,
                     unbuffer);
+            //if (pae.getType() == ProjectActionEvent.Type.RUN)
+            switch (pae.getType()) {
+                case DEBUG:
+                case RUN:
+                    if (!contains(env, "DISPLAY")) { //NOI18N if DISPLAY is set, let it do its work
+                        projectExecutor.setX11Forwarding(true);
+                    }
+            }
             projectExecutor.addExecutionListener(this);
             if (rcfile != null) {
                 projectExecutor.setExitValueOverride(rcfile);
@@ -247,6 +263,18 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
         }
     }
 
+    private boolean contains(String[] env, String var) {
+        for (String v : env) {
+            int pos = v.indexOf('='); //NOI18N
+            if (pos > 0) {
+                if (v.substring(0, pos).equals(var)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     public void addExecutionListener(ExecutionListener l) {
         if (!listeners.contains(l)) {
             listeners.add(l);
@@ -258,20 +286,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
     }
 
     public boolean canCancel() {
-        if (pae.getType() != ProjectActionEvent.Type.RUN) {
-            return true;
-        } else {
-            if (RUN_REMOTE_IN_OUTPUT_WINDOW) {
-                if (!pae.getConfiguration().getDevelopmentHost().isLocalhost()) {
-                    return true;
-                }
-            }
-            int consoleType = pae.getProfile().getConsoleType().getValue();
-            if (consoleType == RunProfile.CONSOLE_TYPE_DEFAULT) {
-                consoleType = RunProfile.getDefaultConsoleType();
-            }
-            return consoleType != RunProfile.CONSOLE_TYPE_EXTERNAL;
-        }
+        return true;
     }
 
     public void cancel() {

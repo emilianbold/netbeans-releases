@@ -106,6 +106,7 @@ import org.netbeans.modules.cnd.settings.CppSettings;
 import org.netbeans.modules.cnd.ui.options.LocalToolsPanelModel;
 import org.netbeans.modules.cnd.ui.options.ToolsPanel;
 import org.netbeans.modules.cnd.ui.options.ToolsPanelModel;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.spi.project.ActionProvider;
@@ -1074,6 +1075,10 @@ public class MakeActionProvider implements ActionProvider {
 
     private boolean validateBuildSystem(MakeConfigurationDescriptor pd, MakeConfiguration conf,
             boolean validated, AtomicBoolean cancelled) {
+        RunProfile runProfile = (RunProfile)conf.getAuxObject(RunProfile.PROFILE_ID);
+        if (runProfile != null && !runProfile.getBuildFirst()) {
+            return true;
+        }
         CompilerSet2Configuration csconf = conf.getCompilerSet();
         ExecutionEnvironment env = ExecutionEnvironmentFactory.fromUniqueID(conf.getDevelopmentHost().getHostKey());
         ArrayList<String> errs = new ArrayList<String>();
@@ -1152,6 +1157,7 @@ public class MakeActionProvider implements ActionProvider {
         Tool fTool = cs.getTool(Tool.FortranCompiler);
         Tool asTool = cs.getTool(Tool.Assembler);
         Tool makeTool = cs.getTool(Tool.MakeTool);
+        Tool qmakeTool = cs.getTool(Tool.QMakeTool);
 
         if (cancelled.get()) {
             return false;
@@ -1199,6 +1205,9 @@ public class MakeActionProvider implements ActionProvider {
             //errs.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingFortranCompiler", csname, fTool.getDisplayName())); // NOI18N
             runBTA = true;
         }
+        if (conf.isQmakeConfiguration() && !exists(qmakeTool.getPath(), pi)) {
+            runBTA = true;
+        }
 
         if (conf.getDevelopmentHost().isLocalhost() && Boolean.getBoolean("netbeans.cnd.always_show_bta")) { // NOI18N
             runBTA = true;
@@ -1208,7 +1217,10 @@ public class MakeActionProvider implements ActionProvider {
             return false;
         }
         if (runBTA) {
-            if (conf.getDevelopmentHost().isLocalhost()) {
+            if (CndUtils.isUnitTestMode()) {
+                // do not show any dialogs in unit test mode, just silently fail validation
+                lastValidation = false;
+            } else if (conf.getDevelopmentHost().isLocalhost()) {
                 BuildToolsAction bt = SystemAction.get(BuildToolsAction.class);
                 bt.setTitle(NbBundle.getMessage(BuildToolsAction.class, "LBL_ResolveMissingTools_Title")); // NOI18N
                 ToolsPanelModel model = new LocalToolsPanelModel();

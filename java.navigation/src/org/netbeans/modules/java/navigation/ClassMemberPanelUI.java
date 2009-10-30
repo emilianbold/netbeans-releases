@@ -178,7 +178,9 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
                     manager.setRootContext(new ElementNode( description ) );
                     boolean scrollOnExpand = getScrollOnExpand();
                     setScrollOnExpand( false );
+                    elementView.setAutoWaitCursor(false);
                     elementView.expandAll();
+                    elementView.setAutoWaitCursor(true);
                     setScrollOnExpand( scrollOnExpand );
 
                     if (PERF_LOG.isLoggable(Level.FINE)) {

@@ -1039,6 +1039,9 @@ made subject to such option by the copyright holder.
             <file name="DO-H.shadow">
                 <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance"/>
             </file>
+            <file name="OS-R.shadow">
+                <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-api-ui-RenameAction.instance"/>
+            </file>
             <file name="D-1.shadow">
                 <attr name="originalFile" stringvalue="Actions/Source/org-netbeans-modules-editor-hints-FixAction.instance"/>
             </file>
@@ -1358,6 +1361,9 @@ made subject to such option by the copyright holder.
                 <folder name="Eclipse">
                     <folder name="Defaults">
                         <file name="org-netbeans-modules-defaults-keybindings.xml" url="Eclipse-keybindings.xml"/>
+                        <file name="org-netbeans-modules-editor-keybindings-mac.xml" url="Eclipse-keybindings-mac.xml">
+                            <attr name="nbeditor-settings-targetOS" stringvalue="OS_MAC"/>
+                        </file>
                     </folder>
                 </folder>
                 <folder name="Emacs">

@@ -133,7 +133,7 @@ public final class ClassMemberFilters {
         desc.addFilter(SHOW_FIELDS,
                 NbBundle.getMessage(ClassMemberFilters.class, "LBL_ShowFields"),     //NOI18N
                 NbBundle.getMessage(ClassMemberFilters.class, "LBL_ShowFieldsTip"),     //NOI18N
-                true, ImageUtilities.loadImageIcon("org/netbeans/modules/java/navigation/resources/filterHideFields.gif", false), //NOI18N
+                true, ImageUtilities.loadImageIcon("org/netbeans/modules/java/navigation/resources/filterHideFields.png", false), //NOI18N
                 null
         );
         desc.addFilter(SHOW_STATIC,

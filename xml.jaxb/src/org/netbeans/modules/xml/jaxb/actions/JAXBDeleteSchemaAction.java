@@ -68,6 +68,7 @@ public class JAXBDeleteSchemaAction extends NodeAction {
             ProjectHelper.deleteSchemaFromModel(prj, schema);
             ProjectHelper.cleanupLocalSchemaDir(prj, schema);
             ProjectHelper.cleanCompileXSDs(prj, false);
+            ProjectHelper.checkAndDeregisterScript(prj);
         }        
     }
     

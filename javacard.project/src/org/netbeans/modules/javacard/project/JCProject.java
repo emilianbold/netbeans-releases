@@ -278,7 +278,11 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
                 antHelper.getStockPropertyPreprovider(),
                 globals,
                 PropertyUtils.userPropertiesProvider(baseEval2,
-                "user.properties.file", FileUtil.toFile(getProjectDirectory())), // NOI18N
+                ProjectPropertyNames.PROJECT_PROP_USER_PROPERTIES_FILE, FileUtil.toFile(getProjectDirectory())),
+                PropertyUtils.userPropertiesProvider(baseEval2,
+                ProjectPropertyNames.PROJECT_PROP_KEYSTORE_PASSWORD, FileUtil.toFile(getProjectDirectory())),
+                PropertyUtils.userPropertiesProvider(baseEval2,
+                ProjectPropertyNames.PROJECT_PROP_KEYSTORE_ALIAS_PASSWORD, FileUtil.toFile(getProjectDirectory())),
                 platformProperties,
                 deviceProperties,
                 privatePropsEval,
@@ -1152,6 +1156,10 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
                                     if (buildProperties != null) { //unit test
                                         ep.setProperty(ProjectPropertyNames.PROJECT_PROP_USER_PROPERTIES_FILE,
                                                 buildProperties.getAbsolutePath()); //NOI18N
+                                        ep.put(ProjectPropertyNames.PROJECT_PROP_KEYSTORE_ALIAS_PASSWORD,
+                                                "password"); //NOI18N
+                                        ep.put(ProjectPropertyNames.PROJECT_PROP_KEYSTORE_PASSWORD,
+                                                "password"); //NOI18N
                                     }
                                 }
                                 // Synchronize the options with actual values

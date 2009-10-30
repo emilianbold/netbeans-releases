@@ -543,7 +543,7 @@ abstract public class CsmCompletionQuery {
         }
 
         // in global context add all methods, but only direct ones
-        if (contextFunction == null) {
+        if (contextFunction == null && contextClass == null) {
             staticOnly = false;
             context = cls;
         }
@@ -800,7 +800,8 @@ abstract public class CsmCompletionQuery {
             Collection<CsmFunction> out = new ArrayList<CsmFunction>();
             CsmFilterBuilder filterBuilder = CsmSelect.getFilterBuilder();
             CsmSelect.CsmFilter filter = filterBuilder.createCompoundFilter(
-                    filterBuilder.createKindFilter(CsmDeclaration.Kind.FUNCTION, CsmDeclaration.Kind.FUNCTION_DEFINITION),
+                    filterBuilder.createKindFilter(CsmDeclaration.Kind.FUNCTION, CsmDeclaration.Kind.FUNCTION_DEFINITION,
+                    CsmDeclaration.Kind.FUNCTION_FRIEND, CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION),
                     filterBuilder.createNameFilter(cls.getName(), true, true, false));
             Iterator<CsmMember> classMembers = CsmSelect.getClassMembers(cls, filter);
             while (classMembers.hasNext()) {

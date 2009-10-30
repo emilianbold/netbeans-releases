@@ -19,7 +19,7 @@ c.method1(1)
 TestCase.create().method1()
 TestCase.create().method1(1)
 
-class TestCase {
+class TestCase extends java.lang.Object {
     int membervar1 = 2
 
     TestCase() {

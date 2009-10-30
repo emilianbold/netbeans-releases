@@ -45,6 +45,8 @@ import java.awt.Component;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
@@ -68,7 +70,8 @@ import org.openide.util.NbBundle;
  * 
  */
 class NewCndFileChooserPanelGUI extends CndPanelGUI implements ActionListener{
-  
+
+    private final Logger logger;
     private final String defaultExtension;
     private String expectedExtension;
     private final MIMEExtensions es;
@@ -77,7 +80,8 @@ class NewCndFileChooserPanelGUI extends CndPanelGUI implements ActionListener{
     /** Creates new form NewCndFileChooserPanelGUI */
     NewCndFileChooserPanelGUI( Project project, SourceGroup[] folders, Component bottomPanel, MIMEExtensions es, String defaultExt) {
         super(project, folders);
-        
+
+        this.logger = Logger.getLogger("cnd.editor.filecreation"); // NOI18N
         this.es = es;
         this.fileWithoutExtension = "".equals(defaultExt);
         
@@ -104,11 +108,19 @@ class NewCndFileChooserPanelGUI extends CndPanelGUI implements ActionListener{
         assert project != null;
         
         projectTextField.setText(ProjectUtils.getInformation(project).getDisplayName());
-        
+
         Sources sources = ProjectUtils.getSources( project );
-                        
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "sources is {0}", sources); // NOI18N
+        }
+
         folders = sources.getSourceGroups( Sources.TYPE_GENERIC );
-        
+        if (logger.isLoggable(Level.FINE)) {
+            for (int i = 0; i < folders.length; ++i) {
+                logger.log(Level.FINE, "folders[{0}] = {1}", new Object[]{i, folders[i]}); // NOI18N
+            }
+        }
+
         if ( folders.length < 2 ) {
             // one source group i.e. hide Location
             locationLabel.setVisible( false );

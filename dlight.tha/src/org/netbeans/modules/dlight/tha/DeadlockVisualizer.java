@@ -41,9 +41,9 @@ package org.netbeans.modules.dlight.tha;
 import java.awt.Component;
 import java.awt.Image;
 import java.util.List;
+import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JComponent;
-import javax.swing.Renderer;
 import org.netbeans.module.dlight.threads.api.Deadlock;
 import org.netbeans.module.dlight.threads.api.DeadlockThreadSnapshot;
 import org.netbeans.module.dlight.threads.dataprovider.ThreadAnalyzerDataProvider;
@@ -52,6 +52,7 @@ import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 
@@ -60,10 +61,13 @@ import org.openide.util.RequestProcessor.Task;
  */
 public final class DeadlockVisualizer implements Visualizer<DeadlockVisualizerConfiguration> {
 
-    public final static Image deadlockImage = ImageUtilities.loadImage("org/netbeans/modules/dlight/tha/resources/deadlock_active16.png"); // NOI18N
+    public final static Image deadlockImage =
+            ImageUtilities.loadImage("org/netbeans/modules/dlight/tha/resources/deadlock_active16.png"); // NOI18N
     public final static Icon deadlockIcon = ImageUtilities.image2Icon(deadlockImage);
-    public final static Icon deadlockRequestIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/dlight/tha/resources/deadlock_request_ver1.png", false);//NOI18N
-    public final static Icon deadlockHeldIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/dlight/tha/resources/deadlock_request_ver2.png", false);//NOI18N
+    public final static Icon deadlockRequestIcon =
+            ImageUtilities.loadImageIcon("org/netbeans/modules/dlight/tha/resources/deadlock_request_ver1.png", false);//NOI18N
+    public final static Icon deadlockHeldIcon =
+            ImageUtilities.loadImageIcon("org/netbeans/modules/dlight/tha/resources/deadlock_request_ver2.png", false);//NOI18N
     private final DeadlockVisualizerConfiguration configuration;
     private final ThreadAnalyzerDataProvider dataProvider;
     private MasterSlaveView<Deadlock, DeadlockTHANodeFactory> msview;
@@ -93,7 +97,8 @@ public final class DeadlockVisualizer implements Visualizer<DeadlockVisualizerCo
     public synchronized void refresh() {
         if (refreshTask == null) {
             @SuppressWarnings("unchecked")
-            final MasterSlaveView<Deadlock, DeadlockTHANodeFactory> view = (MasterSlaveView<Deadlock, DeadlockTHANodeFactory>) getComponent();
+            final MasterSlaveView<Deadlock, DeadlockTHANodeFactory> view =
+                    (MasterSlaveView<Deadlock, DeadlockTHANodeFactory>) getComponent();
             refreshTask = RequestProcessor.getDefault().post(new Runnable() {
 
                 public void run() {
@@ -113,43 +118,52 @@ public final class DeadlockVisualizer implements Visualizer<DeadlockVisualizerCo
     public void updateVisualizerConfiguration(DeadlockVisualizerConfiguration configuration) {
     }
 
-    private class DeadlockRenderer implements Renderer {
+    private static String loc(String key, String... params) {
+        return NbBundle.getMessage(
+                DeadlockVisualizer.class, key, params);
+    }
 
+    private class DeadlockRenderer implements SlaveRenderer {
+
+        final MultipleCallStackPanel stackPanel =
+                MultipleCallStackPanel.createInstance(DeadlockVisualizer.this.dataProvider);
         private List<DeadlockThreadSnapshot> snapshots;
 
         public void setValue(Object aValue, boolean isSelected) {
             if (aValue instanceof Deadlock) {
                 Deadlock d = (Deadlock) aValue;
                 snapshots = d.getThreadStates();//.get(0).getHeldLockCallStack();
-//                StringBuilder buf = new StringBuilder();
-//                buf.append(d).append('\n');
-//                for (DeadlockThreadSnapshot dts : d.getThreadStates()) {
-//                    buf.append("\tThread:\n");
-//                    buf.append("\t\tLock held:\t0x").append(Long.toHexString(dts.getHeldLockAddress())).append('\n');
-//                    buf.append("\t\tLock requested:\t0x").append(Long.toHexString(dts.getRequestedLockAddress())).append('\n');
-//                }
-                //setText(buf.toString());
             }
         }
 
         public Component getComponent() {
-            final MultipleCallStackPanel stackPanel = MultipleCallStackPanel.createInstance(DeadlockVisualizer.this.dataProvider);
+            stackPanel.clean();
             for (DeadlockThreadSnapshot dts : snapshots) {
-                stackPanel.add("Lock held:  " + Long.toHexString(dts.getHeldLockAddress()), deadlockHeldIcon, dts.getHeldLockCallStack());//NOI18N
-                stackPanel.add("Lock requested:  " + Long.toHexString(dts.getRequestedLockAddress()), deadlockRequestIcon, dts.getRequestedLockCallStack());//NOI18N
+                stackPanel.add(loc("DeadlockVisualizer.LockHeld") +  " " + //NOI18N
+                        Long.toHexString(dts.getHeldLockAddress()),
+                        deadlockHeldIcon,
+                        dts.getHeldLockCallStack());
+                stackPanel.add(loc("DeadlockVisualizer.LockRequested") +  " " + //NOI18N
+                        Long.toHexString(dts.getRequestedLockAddress()),
+                        deadlockRequestIcon,
+                        dts.getRequestedLockCallStack());
             }
+            return stackPanel;
+//            return StackPanelFactory.newStackPanel(stack);
+        }
+
+        public void expandAll() {
             RequestProcessor.getDefault().post(new Runnable() {
 
                 public void run() {
                     stackPanel.expandAll();
                 }
             }, 500);
-            return stackPanel;
-//            return StackPanelFactory.newStackPanel(stack);
+
         }
     }
 
-    private final class DeadlockNode extends THANode<Deadlock> {
+    private final static class DeadlockNode extends THANode<Deadlock> {
 
         private final Deadlock deadlock;
 
@@ -160,7 +174,9 @@ public final class DeadlockVisualizer implements Visualizer<DeadlockVisualizerCo
 
         @Override
         public String getDisplayName() {
-            return deadlock.isActual() ? "Actual deadlock" : "Potential deadlock";//NOI18N
+            return deadlock.isActual() ? 
+                loc("DeadlockVisualizer.DeadlockNode.ActualDeadlock") ://NOI18N
+                loc("DeadlockVisualizer.DeadlockNode.PotentialDeadlock");//NOI18N
         }
 
         @Override
@@ -172,9 +188,15 @@ public final class DeadlockVisualizer implements Visualizer<DeadlockVisualizerCo
         public Image getOpenedIcon(int type) {
             return getIcon(type);
         }
+
+        @Override
+        public Action[] getActions(boolean context) {
+            return new Action[0];
+        }
+
     }
 
-    private final class DeadlockTHANodeFactory implements THANodeFactory<Deadlock> {
+    private static final class DeadlockTHANodeFactory implements THANodeFactory<Deadlock> {
 
         public THANode<Deadlock> create(Deadlock object) {
             return new DeadlockNode(object);

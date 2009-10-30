@@ -53,7 +53,7 @@ import org.openide.util.NbBundle;
  * @author Vladimir Kvashin
  */
 public @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory.class, position=100)
-class ZipSyncFactory extends RemoteSyncFactory {
+class ZipSyncFactory extends BaseSyncFactory {
 
     /*package*/ static final boolean ENABLE_SCP = CndUtils.getBoolean("cnd.remote.scp", false);
     /*package*/ static final String ID = "scp"; //NOI18N

@@ -42,6 +42,7 @@
 package org.netbeans.api.editor;
 
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -283,6 +284,7 @@ public final class EditorRegistry {
     static void notifyClose(JComponent c) {
         if (LOG.isLoggable(Level.FINE)) {
             LOG.log(Level.FINE, "EditorRegistry.notifyClose(): " + dumpComponent(c) + '\n'); //NOI18N
+//            LOG.log(Level.FINE, "EditorRegistry.notifyClose(): " + dumpComponentHierarchy(c, "", new StringBuilder()) + '\n'); //NOI18N
         }
         ArrayList<PropertyChangeEvent> events = new ArrayList<PropertyChangeEvent>();
         synchronized (EditorRegistry.class) {
@@ -531,17 +533,35 @@ public final class EditorRegistry {
     }
     
     static String dumpComponent(JComponent c) {
+        Document doc = null;
         Object streamDesc = null;
         if (c instanceof JTextComponent) {
-            Document doc = ((JTextComponent)c).getDocument();
+            doc = ((JTextComponent)c).getDocument();
             if (doc != null) {
                 streamDesc = doc.getProperty(Document.StreamDescriptionProperty);
             }
         }
-        return "component[IHC=" + System.identityHashCode(c) //NOI18N
-                + "]:" + ((streamDesc != null) ? streamDesc : c); //NOI18N
+        return "component=" + s2s(c) //NOI18N
+                + "; doc=" + s2s(doc) //NOI18N
+                + "; streamDesc=" + s2s(streamDesc); //NOI18N
     }
-    
+
+    static StringBuilder dumpComponentHierarchy(Component c, String indent, StringBuilder sb) {
+        sb.append(indent);
+        sb.append(s2s(c));
+        sb.append('\n'); //NOI18N
+        if (c instanceof Container) {
+            for(Component child : ((Container) c).getComponents()) {
+                dumpComponentHierarchy(child, indent + "  ", sb);
+            }
+        }
+        return sb;
+    }
+
+    private static String s2s(Object o) {
+        return o == null ? "null" : o.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(o)); //NOI18N
+    }
+
     /**
      * Item of a single linked list of text component references.
      */

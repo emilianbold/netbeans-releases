@@ -116,6 +116,7 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
             return var;
         }
 
+        @Override
         protected FunctionImpl createFunction(AST ast, CsmFile file, CsmType type, CsmScope scope) {
             FunctionImpl fun = null;
             try {
@@ -140,65 +141,7 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
                     case CPPTokenTypes.CSM_FOR_INIT_STATEMENT:
                     case CPPTokenTypes.CSM_DECLARATION_STATEMENT:
                         if (!renderVariable(token, currentNamespace, container, false)) {
-                            AST ast = token;
-                            token = token.getFirstChild();
-                            if (token != null) {
-                                boolean _static = false;
-                                boolean _extern = false;
-                                if (isQualifier(token.getType())) {
-                                    _static = AstUtil.hasChildOfType(token, CPPTokenTypes.LITERAL_static);
-                                    _extern = AstUtil.hasChildOfType(token, CPPTokenTypes.LITERAL_extern);
-                                    token = getFirstSiblingSkipQualifiers(token);
-                                }
-                                if (token != null && (token.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN || token.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND)) {
-                                    AST typeToken = token;
-                                    AST next = token.getNextSibling();
-                                    AST ptrOperator = null;
-                                    while (next != null && next.getType() == CPPTokenTypes.CSM_PTR_OPERATOR) {
-                                        if (ptrOperator == null) {
-                                            ptrOperator = next;
-                                        }
-                                        next = next.getNextSibling();
-                                    }
-                                    TypeImpl type = null;
-                                    if (typeToken.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN) {
-                                        AST typeNameToken = typeToken.getFirstChild();
-                                        if (typeNameToken != null) {
-                                            type = TypeFactory.createBuiltinType(typeNameToken.getText(), ptrOperator, 0, typeToken, getContainingFile());
-                                        }
-                                    } else {
-                                        type = TypeFactory.createType(typeToken, getContainingFile(), ptrOperator, 0);
-                                    }
-                                    if (type != null) {
-                                        while (next != null) {
-                                            if (next.getType() == CPPTokenTypes.CSM_VARIABLE_LIKE_FUNCTION_DECLARATION) {
-                                                AST inner = next.getFirstChild();
-                                                if (inner != null) {
-                                                    String name = inner.getText();
-                                                    if (isVariableLikeFunc(next)) {
-                                                        /*FunctionImpl fun =*/ createFunction(next, getContainingFile(), type, getScope());
-                                                    } else {
-                                                        /*VariableImpl var =*/ createVariable(next, getContainingFile(), type, name, _static, _extern, currentNamespace, container, getScope());
-                                                    }
-                                                }
-                                            }
-                                            if (next.getType() == CPPTokenTypes.CSM_VARIABLE_DECLARATION) {
-                                                AST nameAst = next.getFirstChild();
-                                                if (nameAst != null && nameAst.getType() == CPPTokenTypes.CSM_QUALIFIED_ID) {
-                                                    /*VariableImpl var =*/ createVariable(next, getContainingFile(), type, nameAst.getText(), _static, _extern, currentNamespace, container, getScope());
-                                                    next = next.getNextSibling();
-                                                    if (next != null && next.getType() == CPPTokenTypes.COMMA) {
-                                                        next = next.getNextSibling();
-                                                    }
-                                                }
-                                            }
-                                            next = next.getNextSibling();
-                                        }
-                                    }
-                                }
-                            }
-
-                            render(ast.getFirstChild(), currentNamespace, container);
+                            render(token.getFirstChild(), currentNamespace, container);
                         }
                         break;
                     case CPPTokenTypes.CSM_NAMESPACE_ALIAS:
@@ -208,7 +151,7 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
                         declarators.add(new UsingDirectiveImpl(token, getContainingFile(), !isRenderingLocalContext()));
                         break;
                     case CPPTokenTypes.CSM_USING_DECLARATION:
-                        declarators.add(new UsingDeclarationImpl(token, getContainingFile(), null, !isRenderingLocalContext()));
+                        declarators.add(new UsingDeclarationImpl(token, getContainingFile(), null, !isRenderingLocalContext(), CsmVisibility.PUBLIC));
                         break;
 
                     case CPPTokenTypes.CSM_CLASS_DECLARATION:

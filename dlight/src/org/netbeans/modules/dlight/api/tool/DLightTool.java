@@ -60,10 +60,10 @@ import org.netbeans.modules.dlight.spi.impl.DataCollectorProvider;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 import org.netbeans.modules.dlight.spi.impl.IDPProvider;
+import org.netbeans.modules.dlight.spi.impl.IndicatorAccessor;
 import org.netbeans.modules.dlight.spi.impl.IndicatorProvider;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
-import org.openide.util.Exceptions;
 
 /**
  * D-Light Tool is a set of registered collector used to collect data,
@@ -78,6 +78,7 @@ public final class DLightTool implements Validateable<DLightTarget> {
     private final String id;
     private final String toolName;
     private final String detailedToolName;
+    private final String description;
     private boolean enabled;
     private final List<DataCollector<?>> dataCollectors;
     private final List<IndicatorDataProvider<?>> indicatorDataProviders;
@@ -91,6 +92,7 @@ public final class DLightTool implements Validateable<DLightTarget> {
     private final DLightToolConfiguration configuration;
     private volatile Boolean idpsInitialized = false;
     private boolean visible;
+    private boolean isDetailsEnabled = true;
     //register accessor which will be used ne friend packages of API/SPI accessor packages
     //to get access to tool creation, etc.
 
@@ -104,6 +106,7 @@ public final class DLightTool implements Validateable<DLightTarget> {
         this.toolName = toolConfAccessor.getToolName(configuration);
         this.detailedToolName = toolConfAccessor.getDetailedToolName(configuration);
         this.iconPath = toolConfAccessor.getIconPath(configuration);
+        this.description = toolConfAccessor.getToolDescription(configuration);
         dataCollectors = Collections.synchronizedList(new ArrayList<DataCollector<?>>());
         indicators = new ArrayList<Indicator<?>>();
         this.configuration = configuration;
@@ -156,6 +159,10 @@ public final class DLightTool implements Validateable<DLightTarget> {
 
     public final String getName() {
         return toolName;
+    }
+
+    public final String getDescription(){
+        return description;
     }
 
     public final String getID() {
@@ -263,13 +270,14 @@ public final class DLightTool implements Validateable<DLightTarget> {
                 //Add All indicators
                 List<IndicatorConfiguration> indConfigurationsList = DLightToolConfigurationAccessor.getDefault().getIndicators(configuration);
                 for (IndicatorConfiguration indConfiguration : indConfigurationsList) {
-                    Indicator indicator = IndicatorProvider.getInstance().createIndicator(id, indConfiguration);
+                    Indicator indicator = IndicatorProvider.getInstance().createIndicator(id, indConfiguration, isDetailsEnabled);
                     if (indicator == null) {
                         log.info("Could not find Indicator for configuration with id:" + indConfiguration.getID() + " check if " + //NOI18N
                                 "IndicatorFactory is registered in Global Lookup with the same ID"); //NOI18N
                         continue;
 
                     }
+                    IndicatorAccessor.getDefault().setToolDescription(indicator, description);
                     if (!indicators.contains(indicator)) {
                         indicators.add(indicator);
                     }
@@ -312,7 +320,7 @@ public final class DLightTool implements Validateable<DLightTarget> {
         return newStatus;
     }
 
-    public final ValidationStatus validateIndicatorDataProviders(final DLightTarget target) {
+    public final ValidationStatus validateIndicatorDataProviders(final DLightConfiguration dlightConfiguration, final DLightTarget target) {
         if (indicatorDataProvidersValidationStatus.isValid()) {
             return indicatorDataProvidersValidationStatus;
         }
@@ -324,10 +332,10 @@ public final class DLightTool implements Validateable<DLightTarget> {
                 public ValidationStatus call() throws Exception {
                     ValidationStatus result = ValidationStatus.initialStatus();
 
-                    for (IndicatorDataProvider<?> idp : indicatorDataProviders) {
+                    for (IndicatorDataProvider<?> idp : dlightConfiguration.getConfigurationOptions(false).getIndicatorDataProviders(DLightTool.this)) {
                         result = result.merge(idp.validate(target));
                     }
-                    for (DataCollector<?> dc : dataCollectors) {
+                    for (DataCollector<?> dc : dlightConfiguration.getConfigurationOptions(false).getCollectors(DLightTool.this)) {
                         if (!(dc instanceof IndicatorDataProvider)) {
                             continue;
                         }
@@ -347,10 +355,10 @@ public final class DLightTool implements Validateable<DLightTarget> {
         } else {
             ValidationStatus result = ValidationStatus.initialStatus();
 
-            for (IndicatorDataProvider<?> idp : indicatorDataProviders) {
+            for (IndicatorDataProvider<?> idp : dlightConfiguration.getConfigurationOptions(false).getIndicatorDataProviders(this)) {
                 result = result.merge(idp.validate(target));
             }
-            for (DataCollector<?> dc : dataCollectors) {
+            for (DataCollector<?> dc : dlightConfiguration.getConfigurationOptions(false).getCollectors(this)) {
                 if (!(dc instanceof IndicatorDataProvider)) {
                     continue;
                 }
@@ -362,7 +370,7 @@ public final class DLightTool implements Validateable<DLightTarget> {
 
     }
 
-    public final ValidationStatus validateDataCollectors(final DLightTarget target) {
+    public final ValidationStatus validateDataCollectors(final DLightConfiguration dlightConfiguration, final DLightTarget target) {
         if (dataCollectorsValidationStatus.isValid()) {
             return dataCollectorsValidationStatus;
         }
@@ -374,7 +382,7 @@ public final class DLightTool implements Validateable<DLightTarget> {
                 public ValidationStatus call() throws Exception {
                     ValidationStatus result = ValidationStatus.initialStatus();
 
-                    for (DataCollector<?> dc : dataCollectors) {
+                    for (DataCollector<?> dc : dlightConfiguration.getConfigurationOptions(false).getCollectors(DLightTool.this)) {
                         result = result.merge(dc.validate(target));
                     }
                     return result;
@@ -391,7 +399,7 @@ public final class DLightTool implements Validateable<DLightTarget> {
         } else {
             ValidationStatus result = ValidationStatus.initialStatus();
 
-            for (DataCollector<?> dc : dataCollectors) {
+            for (DataCollector<?> dc : dlightConfiguration.getConfigurationOptions(false).getCollectors(this)) {
                 result = result.merge(dc.validate(target));
             }
             result = dataCollectorsValidationStatus;
@@ -498,6 +506,16 @@ public final class DLightTool implements Validateable<DLightTarget> {
         @Override
         public void turnCollectorsState(DLightTool tool, boolean turnedOn) {
             tool.turnCollectorsState(null, turnedOn);
+        }
+
+        @Override
+        public void setDetailsEnabled(DLightTool tool, boolean isEnabled) {
+            tool.isDetailsEnabled = isEnabled;
+        }
+
+        @Override
+        public boolean isDetailsEnabled(DLightTool tool) {
+            return tool.isDetailsEnabled;
         }
     }
 }

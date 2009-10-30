@@ -166,7 +166,7 @@ public class QueryHandleImpl extends QueryHandle implements ActionListener, Prop
             return false;
         }
         final QueryHandleImpl other = (QueryHandleImpl) obj;
-        if ((this.stringValue == null) ? (other.stringValue != null) : !this.stringValue.equals(other.stringValue)) {
+        if ((this.toString() == null) ? (other.toString() != null) : !this.toString().equals(other.toString())) {
             return false;
         }
         return true;

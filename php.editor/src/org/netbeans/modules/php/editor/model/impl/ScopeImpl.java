@@ -42,7 +42,9 @@ import org.netbeans.modules.php.editor.model.PhpKind;
 import org.netbeans.modules.php.editor.model.PhpModifiers;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -52,7 +54,6 @@ import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Block;
-import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Union2;
 
@@ -62,7 +63,7 @@ import org.openide.util.Union2;
 abstract class ScopeImpl extends ModelElementImpl implements Scope {
 
     private OffsetRange blockRange = null;
-    private List<ModelElementImpl> elements = new ArrayList<ModelElementImpl>();
+    private final List<ModelElementImpl> elements = Collections.synchronizedList(new LinkedList<ModelElementImpl>());
 
     //new contructors
     ScopeImpl(Scope inScope, ASTNodeInfo info, PhpModifiers modifiers, Block block) {
@@ -104,7 +105,7 @@ abstract class ScopeImpl extends ModelElementImpl implements Scope {
     }
 
     public List<? extends ModelElementImpl> getElements() {
-        return elements;
+        return new ArrayList<ModelElementImpl>(elements);
     }
 
     void addElement(ModelElementImpl element) {
