@@ -37,65 +37,34 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.ide.ergonomics.fod;
+package org.netbeans.modules.openide.util;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.SequenceInputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.net.URLStreamHandlerFactory;
-import org.openide.util.NbBundle;
-import org.openide.util.lookup.ServiceProvider;
+import org.netbeans.junit.NbTestCase;
+import org.openide.util.URLStreamHandlerRegistration;
 
-/**
- *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
- */
-@ServiceProvider(service=URLStreamHandlerFactory.class, position=99999)
-public class FoDURLStreamHandlerFactory implements URLStreamHandlerFactory {
+public class ProxyURLStreamHandlerFactoryTest extends NbTestCase {
 
-    public URLStreamHandler createURLStreamHandler(String protocol) {
-        if (protocol.equals("ergoloc")) {
-            return new FoDSH();
-        }
-        return null;
+    public ProxyURLStreamHandlerFactoryTest(String n) {
+        super(n);
     }
-    private static final class FoDSH extends URLStreamHandler {
-        @Override
+
+    public void testURLStreamHandlerRegistration() throws Exception {
+        URLStreamHandlerFactory factory = new ProxyURLStreamHandlerFactory();
+        assertEquals(MyHandler.class, factory.createURLStreamHandler("stuff").getClass());
+        assertEquals(MyHandler.class, factory.createURLStreamHandler("stuff").getClass());
+        assertNull(factory.createURLStreamHandler("whatever"));
+    }
+
+    @URLStreamHandlerRegistration(protocol="stuff")
+    public static class MyHandler extends URLStreamHandler {
         protected URLConnection openConnection(URL u) throws IOException {
-            URL orig = new URL("nbresloc", u.getHost(), u.getPort(), u.getFile()); // NOI18N
-            final URLConnection connection = orig.openConnection();
-            if (!u.getFile().endsWith(".html")) {
-                return connection;
-            }
-
-            InputStream is = connection.getInputStream();
-            byte[] arr = new byte[4096];
-            int len = is.read(arr);
-            if (len == -1) {
-                throw new IOException();
-            }
-            String head = new String(arr, 0, len, "UTF-8"); // NOI18N
-            String newHead = head.replaceFirst("<[bB][oO][dD][yY]>", NbBundle.getMessage(FoDSH.class, "MSG_NotEnabled")); // NOI18N
-            ByteArrayInputStream headIS = new ByteArrayInputStream(newHead.getBytes("UTF-8")); // NOI18N
-
-            final SequenceInputStream seq = new SequenceInputStream(headIS, is);
-
-            return new URLConnection(u) {
-                @Override
-                public void connect() throws IOException {
-                    connection.connect();
-                }
-
-                @Override
-                public InputStream getInputStream() throws IOException {
-                    return seq;
-                }
-            };
+            throw new IOException("unsupported");
         }
-
     }
+
 }
