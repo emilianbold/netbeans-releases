@@ -613,7 +613,7 @@ public class CompilerSetManager {
                                 for (Tool tool : cs.getTools()) {
                                     if (! tool.isReady()) {
                                         CompilerSetReporter.report("CSM_Initializing_Tool", false, tool.getDisplayName()); //NOI18N
-                                        tool.waitReady();
+                                        tool.waitReady(true);
                                         CompilerSetReporter.report("CSM_Done"); //NOI18N
                                     }
                                 }

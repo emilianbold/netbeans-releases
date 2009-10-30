@@ -144,9 +144,13 @@ public abstract class CCCCompiler extends BasicCompiler {
     }
 
     @Override
-    public void waitReady() {
+    public void waitReady(boolean reset) {
         CndUtils.assertNonUiThread();
-        getSystemIncludesAndDefines();
+        if (reset) {
+            resetSystemIncludesAndDefines();
+        } else {
+            getSystemIncludesAndDefines();
+        }
     }
 
     private synchronized void getSystemIncludesAndDefines() {
