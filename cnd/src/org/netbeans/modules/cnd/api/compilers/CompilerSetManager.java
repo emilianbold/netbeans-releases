@@ -184,8 +184,10 @@ public class CompilerSetManager {
     }
 
     /** Replace the default CompilerSetManager. Let registered listeners know its been updated */
-    public static void setDefaults(Collection<CompilerSetManager> csms) {
+    public static void setManagers(Collection<CompilerSetManager> csms) {
         synchronized (MASTER_LOCK) {
+            CompilerSetPreferences.clearPersistence();
+            managers.clear();
             for (CompilerSetManager csm : csms) {
                 csm.completeCompilerSets();
                 CompilerSetPreferences.saveToDisk(csm);
