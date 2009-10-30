@@ -47,43 +47,19 @@ import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
-import java.net.URLStreamHandlerFactory;
 import java.net.UnknownServiceException;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.URLStreamHandlerRegistration;
 
 /**
- * StreamHandlerFactory for nbinst protocol
+ * URLStreamHandler for nbinst protocol
  */
-@org.openide.util.lookup.ServiceProvider(service=java.net.URLStreamHandlerFactory.class)
-public class NbinstURLStreamHandlerFactory implements URLStreamHandlerFactory {
+@URLStreamHandlerRegistration(protocol=NbinstURLMapper.PROTOCOL)
+public class NbinstURLStreamHandler extends URLStreamHandler {
 
-    /**
-     * Creates URLStreamHandler for nbinst protocol
-     * @param protocol
-     * @return NbinstURLStreamHandler if the protocol is nbinst otherwise null
-     */
-    public URLStreamHandler createURLStreamHandler(String protocol) {
-        if (NbinstURLMapper.PROTOCOL.equals(protocol)) {
-            return new NbinstURLStreamHandler ();
-        }
-        return null;
-    }
-
-    /**
-     * URLStreamHandler for nbinst protocol
-     */
-    private static class NbinstURLStreamHandler extends URLStreamHandler {
-
-        /**
-         * Creates URLConnection for URL with nbinst protocol.
-         * @param u URL for which the URLConnection should be created
-         * @return URLConnection
-         * @throws IOException
-         */
-        protected URLConnection openConnection(URL u) throws IOException {
-            return new NbinstURLConnection (u);
-        }
+    protected URLConnection openConnection(URL u) throws IOException {
+        return new NbinstURLConnection(u);
     }
 
     /** URLConnection for URL with nbinst protocol.
