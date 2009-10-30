@@ -1492,16 +1492,11 @@ public final class FileUtil extends Object {
     }
 
     /**
-     * Construct a stream handler that handles the <code>nbfs</code> URL protocol
-     * used for accessing file objects directly.
-     * This method is not intended for module use; only the core
-     * should need to call it.
-     * Modules probably need only use {@link URLMapper} to create and decode such
-     * URLs.
-     * @since 3.17
+     * @deprecated No longer used.
      */
+    @Deprecated
     public static URLStreamHandler nbfsURLStreamHandler() {
-        return FileURL.HANDLER;
+        return new FileURL.Handler();
     }
 
     /** Recursively checks whether the file is underneath the folder. It checks whether

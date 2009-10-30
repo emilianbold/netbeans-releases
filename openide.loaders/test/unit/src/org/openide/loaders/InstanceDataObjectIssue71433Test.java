@@ -48,9 +48,9 @@ import org.netbeans.junit.NbTestCase;
  *
  * @author Marek Slama
  */
-public class InstanceDataObjecIssue71433Test extends NbTestCase {
+public class InstanceDataObjectIssue71433Test extends NbTestCase {
 
-    public InstanceDataObjecIssue71433Test(String name) {
+    public InstanceDataObjectIssue71433Test(String name) {
         super (name);
     }
 

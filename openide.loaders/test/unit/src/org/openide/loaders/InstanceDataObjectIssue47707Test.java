@@ -43,35 +43,28 @@ package org.openide.loaders;
 
 import org.openide.filesystems.*;
 import org.openide.filesystems.FileSystem; // override java.io.FileSystem
-import org.openide.loaders.*;
 import org.openide.cookies.*;
-import org.openide.util.*;
 
-import java.beans.*;
-import java.io.*;
-import java.util.*;
 
 import org.netbeans.junit.*;
+import org.openide.util.test.MockLookup;
 
 /** Simulate deadlock from issue 47707.
  *
  * @author Radek Matous, Jaroslav Tulach
  */
-public class InstanceDataObjecIssue47707Test extends NbTestCase {
+public class InstanceDataObjectIssue47707Test extends NbTestCase {
     /** folder to create instances in */
     private DataObject inst;
     /** filesystem containing created instances */
     private FileSystem lfs;
     
-    /** Creates new DataFolderTest */
-    public InstanceDataObjecIssue47707Test(String name) {
+    public InstanceDataObjectIssue47707Test(String name) {
         super (name);
     }
     
-    /** Setups variables.
-     */
-    protected void setUp () throws Exception {
-        System.setProperty ("org.openide.util.Lookup", "org.openide.loaders.InstanceDataObjecIssue47707Test$Lkp");
+    protected @Override void setUp() throws Exception {
+        MockLookup.setInstances(new EP());
         
         String fsstruct [] = new String [] {
             "A.settings",
@@ -93,23 +86,13 @@ public class InstanceDataObjecIssue47707Test extends NbTestCase {
         
     }
     
-    public static final class Lkp extends org.openide.util.lookup.AbstractLookup 
-    implements Environment.Provider {
-        public Lkp () {
-            this (new org.openide.util.lookup.InstanceContent ());
-        }
-        
-        private Lkp (org.openide.util.lookup.InstanceContent ic) {
-            super (ic);
-            ic.add (this);
-        }
-        
+    private static final class EP implements Environment.Provider {
         public org.openide.util.Lookup getEnvironment (DataObject obj) {
             return new LkpForDO (new org.openide.util.lookup.InstanceContent (), obj);
         }
-    } // end of Lkp
+    }
     
-    public static final class LkpForDO extends org.openide.util.lookup.AbstractLookup 
+    private static final class LkpForDO extends org.openide.util.lookup.AbstractLookup
     implements org.openide.cookies.InstanceCookie, Runnable {
         private boolean triedToDeadlock;
         private DataObject obj;
@@ -126,7 +109,7 @@ public class InstanceDataObjecIssue47707Test extends NbTestCase {
             assertNotNull ("Cookie is there", o);
         }
 
-        protected void beforeLookup(Template template) {
+        protected @Override void beforeLookup(Template template) {
             if (!triedToDeadlock) {
                 triedToDeadlock = true;
                 org.openide.util.RequestProcessor.getDefault ().post (this).waitFinished ();
@@ -148,7 +131,7 @@ public class InstanceDataObjecIssue47707Test extends NbTestCase {
             return this;
         }
 
-        public String toString() {
+        public @Override String toString() {
             return getClass().getName();
         }
     } // end LkpForDO

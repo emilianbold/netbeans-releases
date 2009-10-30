@@ -53,8 +53,8 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.SwingUtilities;
-import junit.framework.Test;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
@@ -121,6 +121,7 @@ public class TopLoggingTest extends NbTestCase {
         return w;
     }
 
+    @RandomlyFails // NB-Core-Build #3503; a few lines got reordered or dropped
     public void testLog10000Lines() throws Exception {
         Logger l = Logger.getLogger(TopLoggingTest.class.getName());
         long time = System.currentTimeMillis();
