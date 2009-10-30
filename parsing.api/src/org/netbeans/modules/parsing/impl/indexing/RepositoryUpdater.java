@@ -2539,7 +2539,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
             boolean finished = scanBinaries(depCtx);
             if (finished) {
-                finished = scanSources(depCtx, null);
+                finished = scanSources(depCtx, null,null);
                 if (finished) {
                     finished = scanRootFiles(fullRescanFiles);
                     if (finished) {
@@ -2722,8 +2722,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             }
 
             boolean finished = scanBinaries(depCtx);
-            if (finished) {
-                finished = scanSources(depCtx, indexers);
+            if (finished) {                
+                finished = scanSources(depCtx, indexers, scannedRoots2Dependencies);
             }
 
             for(URL root : depCtx.scannedRoots) {
@@ -2867,7 +2867,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             return finished;
         }
 
-        protected final boolean scanSources(DependenciesContext ctx, Indexers indexers) {
+        protected final boolean scanSources(DependenciesContext ctx, Indexers indexers, Map<URL, List<URL>> preregisterIn) {
             assert ctx != null;
             long scannedRootsCnt = 0;
             long completeTime = 0;
@@ -2890,11 +2890,24 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 final int [] deletedFiles = new int [] { 0 };
                 try {
                     updateProgress(source);
-                    if (scanSource (source, ctx.fullRescanSourceRoots.contains(source), ctx.sourcesForBinaryRoots.contains(source), indexers, outOfDateFiles, deletedFiles)) {
-                        ctx.scannedRoots.add(source);
-                    } else {
-                        finished = false;
-                        break;
+                    boolean preregistered = false;
+                    boolean success = false;
+                    if (preregisterIn != null && !preregisterIn.containsKey(source)) {
+                        preregisterIn.put(source, EMPTY_DEPS);
+                        preregistered = true;
+                    }
+                    try {
+                        if (scanSource (source, ctx.fullRescanSourceRoots.contains(source), ctx.sourcesForBinaryRoots.contains(source), indexers, outOfDateFiles, deletedFiles)) {
+                            ctx.scannedRoots.add(source);
+                            success = true;
+                        } else {
+                            finished = false;
+                            break;
+                        }
+                    } finally {
+                        if (preregistered && !success) {
+                            preregisterIn.remove(source);
+                        }
                     }
                 } catch (IOException ioe) {
                     LOGGER.log(Level.WARNING, null, ioe);
