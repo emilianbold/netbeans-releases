@@ -1331,6 +1331,19 @@ public class SvnUtils {
         return commitOptions;
     }
 
+    /**
+     * Parses the url and returns tunnel name which follows svn+ in protocol
+     * @param urlString url with protocol starting with svn+
+     * @return
+     */
+    public static String getTunnelName(String urlString) {
+        assert urlString.startsWith("svn+");                            //NOI18N
+        int idx = urlString.indexOf(":", 4);                            //NOI18N
+        if (idx < 0) {
+            idx = urlString.length();
+        }
+        return urlString.substring(4, idx);
+    }
 
     private static CommitOptions getDefaultCommitOptions(File file) {
         if (file.isFile()) {
