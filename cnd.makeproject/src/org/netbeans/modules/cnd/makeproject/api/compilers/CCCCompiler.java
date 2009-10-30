@@ -210,10 +210,10 @@ public abstract class CCCCompiler extends BasicCompiler {
             return;
         }
         ExecutionEnvironment execEnv = getExecutionEnvironment();
-        if (path == null) {
+        if (path == null || !HostInfoUtils.fileExists(execEnv, path)) {
             path = getDefaultPath();
         }
-        if (! HostInfoUtils.fileExists(execEnv, path)) {
+        if (!HostInfoUtils.fileExists(execEnv, path)) {
             return;
         }
         String command = path;
@@ -265,10 +265,10 @@ public abstract class CCCCompiler extends BasicCompiler {
      * @param macroToFind the name of the macro to search for
      * @return true if macro with the given name is found, otherwise false
      */
-    protected boolean containsMacro(List macrosList, String macroToFind) {
+    protected boolean containsMacro(List<String> macrosList, String macroToFind) {
 	int len = macroToFind.length();
-	for (Iterator it = macrosList.iterator(); it.hasNext();) {
-	    String macro = (String) it.next();
+	for (Iterator<String> it = macrosList.iterator(); it.hasNext();) {
+	    String macro = it.next();
 	    if (macro.startsWith(macroToFind) ) {
 		if( macro.length() == len ) {
 		    return true; // they are just equal
