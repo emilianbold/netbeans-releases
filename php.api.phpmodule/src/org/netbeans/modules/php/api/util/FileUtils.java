@@ -46,11 +46,15 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParserFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.Parameters;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 
 /**
  * Miscellaneous file utilities.
@@ -125,5 +129,22 @@ public final class FileUtils {
             return d.getPrimaryFile();
         }
         return null;
+    }
+
+    /**
+     * Create {@link org.xml.sax.XMLReader} from {javax.xml.parsers.SAXParser}.
+     * @return {@link org.xml.sax.XMLReader} from {javax.xml.parsers.SAXParser}
+     * @throws SAXException if the parser cannot be created
+     * @since 1.22
+     */
+    public static XMLReader createXmlReader() throws SAXException {
+        SAXParserFactory factory = SAXParserFactory.newInstance();
+        factory.setValidating(false);
+        factory.setNamespaceAware(false);
+        try {
+            return factory.newSAXParser().getXMLReader();
+        } catch (ParserConfigurationException ex) {
+            throw new SAXException("Cannot create SAX parser", ex);
+        }
     }
 }
