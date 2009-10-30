@@ -44,7 +44,7 @@
  */
 package org.netbeans.modules.nativeexecution.support.ui;
 
-import javax.swing.SwingUtilities;
+import java.awt.event.ActionListener;
 import org.netbeans.modules.nativeexecution.api.util.Shell;
 import org.openide.util.NbBundle;
 
@@ -53,6 +53,7 @@ import org.openide.util.NbBundle;
  * @author ak119685
  */
 public class ShellValidationStatusPanel extends javax.swing.JPanel {
+    private ActionListener actionListener = null;
 
     /** Creates new form ShellValidationErrors */
     public ShellValidationStatusPanel() {
@@ -170,6 +171,9 @@ public class ShellValidationStatusPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void cbRememberChoiceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbRememberChoiceActionPerformed
+        if (actionListener != null) {
+            actionListener.actionPerformed(evt);
+        }
     }//GEN-LAST:event_cbRememberChoiceActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -185,5 +189,9 @@ public class ShellValidationStatusPanel extends javax.swing.JPanel {
 
     private static String loc(String key, String... params) {
         return NbBundle.getMessage(ShellValidationStatusPanel.class, key, params);
+    }
+
+    public void setActionListener(ActionListener actionListener) {
+        this.actionListener = actionListener;
     }
 }

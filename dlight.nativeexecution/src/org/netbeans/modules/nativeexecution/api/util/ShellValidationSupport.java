@@ -39,6 +39,8 @@
 package org.netbeans.modules.nativeexecution.api.util;
 
 import java.awt.Dialog;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -47,6 +49,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.swing.JButton;
 import org.netbeans.modules.nativeexecution.api.util.Shell.ShellType;
 import org.netbeans.modules.nativeexecution.support.ui.ShellValidationStatusPanel;
 import org.openide.DialogDescriptor;
@@ -128,8 +131,8 @@ public final class ShellValidationSupport {
                     }
 
                     if (cygpath.startsWith("/usr")) { // NOI18N
-                        String p1 = winfile.getParentFile().getAbsolutePath() + '\\';
-                        String p2 = shell.bindir.getParentFile().getAbsolutePath() + '\\';
+                        String p1 = (winfile.getParentFile().getAbsolutePath() + '\\').toLowerCase();
+                        String p2 = (shell.bindir.getParentFile().getAbsolutePath() + '\\').toLowerCase();
 
                         if (!p2.startsWith(p1)) {
                             validationWarnings.add(loc("ShellValidationSupport.ValidationError.wrongMountPoint", winpath, cygpath)); // NOI18N
@@ -175,14 +178,22 @@ public final class ShellValidationSupport {
             return true;
         }
 
-        ShellValidationStatusPanel errorPanel = new ShellValidationStatusPanel(header, footer, status.shell);
+        final ShellValidationStatusPanel errorPanel = new ShellValidationStatusPanel(header, footer, status.shell);
+
+        final JButton noButton = new JButton("No"); // NOI18N
+        errorPanel.setActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                noButton.setEnabled(!errorPanel.isRememberDecision());
+            }
+        });
 
         DialogDescriptor dd = new DialogDescriptor(errorPanel,
                 loc("ShellValidationSupport.ValidationError.ErrorDialogTitle", "cygwin"), // NOI18N
                 true,
-                DialogDescriptor.YES_NO_OPTION,
-                DialogDescriptor.NO_OPTION,
-                null);
+                new Object[]{DialogDescriptor.YES_OPTION, noButton},
+                noButton,
+                DialogDescriptor.DEFAULT_ALIGN, null, null);
 
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
         dialog.setVisible(true);

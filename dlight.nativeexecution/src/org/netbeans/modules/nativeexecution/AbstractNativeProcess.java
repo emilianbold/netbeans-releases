@@ -42,6 +42,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.CancellationException;
@@ -88,7 +89,13 @@ public abstract class AbstractNativeProcess extends NativeProcess {
         isInterrupted = false;
         state = State.INITIAL;
         execEnv = info.getExecutionEnvironment();
-        id = execEnv.toString() + ' ' + info.getCommandLineForShell();
+        String cmd = info.getCommandLineForShell();
+
+        if (cmd == null) {
+            cmd = Arrays.toString(info.getCommand().toArray(new String[0]));
+        }
+
+        id = execEnv.toString() + ' ' + cmd;
         stateLock = "StateLock: " + id; // NOI18N
 
         HostInfo hinfo = null;
