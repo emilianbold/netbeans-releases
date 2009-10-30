@@ -298,14 +298,6 @@ public abstract class RestSupport {
 
     public abstract void extendBuildScripts() throws IOException;
     
-    private boolean buildExtensionInited = false;
-    public void initBuildScripts() throws IOException {
-        if (! buildExtensionInited) {
-            extendBuildScripts();
-            buildExtensionInited = true;
-        }
-        
-    }
     
     /**
      * Generates test client.  Typically RunTestClientAction would need to call 
@@ -315,7 +307,6 @@ public abstract class RestSupport {
      * @return test file object, containing token BASE_URL_TOKEN whether used or not.
      */
     public FileObject generateTestClient(File testdir) throws IOException {        
-        initBuildScripts();
         
         if (! testdir.isDirectory()) {
             FileUtil.createFolder(testdir);
