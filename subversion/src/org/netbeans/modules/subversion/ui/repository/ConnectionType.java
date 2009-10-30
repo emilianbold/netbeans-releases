@@ -60,6 +60,7 @@ import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.diff.options.AccessibleJFileChooser;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.config.SvnConfigFiles;
+import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
@@ -408,7 +409,7 @@ public abstract class ConnectionType implements ActionListener, DocumentListener
             try {
                 SVNUrl repositoryUrl = rc.getSvnUrl();
                 if(repositoryUrl.getProtocol().startsWith("svn+")) {
-                    SvnConfigFiles.getInstance().setExternalCommand(getTunnelName(repositoryUrl.getProtocol()), panel.tunnelCommandTextField.getText());
+                    SvnConfigFiles.getInstance().setExternalCommand(SvnUtils.getTunnelName(repositoryUrl.getProtocol()), panel.tunnelCommandTextField.getText());
                 }
             } catch (MalformedURLException mue) {
                 // should not happen
@@ -429,7 +430,7 @@ public abstract class ConnectionType implements ActionListener, DocumentListener
         @Override
         public void onSelectedRepositoryChange(String urlString) {
             if(urlString.startsWith("svn+")) {
-                String tunnelName = getTunnelName(urlString).trim();
+                String tunnelName = SvnUtils.getTunnelName(urlString).trim();
                 if( panel.tunnelCommandTextField.getText().trim().equals("") &&
                     tunnelName != null &&
                     !tunnelName.equals("") )
@@ -446,16 +447,8 @@ public abstract class ConnectionType implements ActionListener, DocumentListener
 
         @Override
         String getTip(String url) {
-            String tunnelName = getTunnelName(url);
+            String tunnelName = SvnUtils.getTunnelName(url);
             return MessageFormat.format(SVN_SSH_URL_HELP, tunnelName).trim();
-        }
-
-        private String getTunnelName(String urlString) {
-            int idx = urlString.indexOf(":", 4);
-            if(idx < 0) {
-                idx = urlString.length();
-            }
-            return urlString.substring(4, idx);
         }
     }
 
