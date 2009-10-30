@@ -394,14 +394,12 @@ public class ProxyLookup extends Lookup {
                         return weakL.getResults();
                     }
 
-                    for (int i = 0; i < arr.length; i++) {
-                        arr[i].addLookupListener(weakL);
-                    }
-
                     weakL.setResults(arr);
-
-                    return arr;
                 }
+                for (int i = 0; i < arr.length; i++) {
+                    arr[i].addLookupListener(weakL);
+                }
+                return arr;
             }
         }
 
@@ -471,6 +469,7 @@ public class ProxyLookup extends Lookup {
             }
 
             listeners.add(LookupListener.class, l);
+            initResults();
         }
 
         /** Just delegates.
@@ -519,8 +518,9 @@ public class ProxyLookup extends Lookup {
 
             // if the call to beforeLookup resulted in deletion of caches
             synchronized (proxy()) {
-                if (getCache() != null) {
-                    Collection result = getCache()[indexToCache];
+                Collection[] cc = getCache();
+                if (cc != null && cc != NO_CACHE) {
+                    Collection result = cc[indexToCache];
                     if (result != null) {
                         return result;
                     }
@@ -561,15 +561,16 @@ public class ProxyLookup extends Lookup {
             
 
             synchronized (proxy()) {
-                if (getCache() == null) {
+                Collection[] cc = getCache();
+                if (cc == null || cc == NO_CACHE) {
                     // initialize the cache to indicate this result is in use
-                    setCache(new Collection[3]);
+                    setCache(cc = new Collection[3]);
                 }
                 
                 if (arr == weakL.getResults()) {
                     // updates the results, if the results have not been
                     // changed during the computation of allInstances
-                    getCache()[indexToCache] = ret;
+                    cc[indexToCache] = ret;
                 }
             }
 
@@ -583,49 +584,58 @@ public class ProxyLookup extends Lookup {
         }
         
         protected void collectFires(Collection<Object> evAndListeners) {
-            // clear cached instances
-            Collection oldItems;
-            Collection oldInstances;
-            synchronized (proxy()) {
-                if (getCache() == null) {
-                    // nobody queried the result yet
-                    return;
-                }
-                oldInstances = getCache()[0];
-                oldItems = getCache()[2];
-                
-
-                if (listeners == null || listeners.getListenerCount() == 0) {
-                    // clear the cache
-                    setCache(new Collection[3]);
-                    return;
-                }
-                
-                // ignore events if they arrive as a result of call to allItems
-                // or allInstances, bellow...
-                setCache(null);
-            }
-
             boolean modified = true;
 
-            if (oldItems != null) {
-                Collection newItems = allItems();
-                if (oldItems.equals(newItems)) {
-                    modified = false;
+            try {
+                // clear cached instances
+                Collection oldItems;
+                Collection oldInstances;
+                synchronized (proxy()) {
+                    final Collection[] cc = getCache();
+                    if (cc == NO_CACHE) {
+                        return;
+                    }
+
+                    oldInstances = cc == null ? null : cc[0];
+                    oldItems = cc == null ? null : cc[2];
+
+
+                    if (listeners == null || listeners.getListenerCount() == 0) {
+                        // clear the cache
+                        setCache(new Collection[3]);
+                        return;
+                    }
+
+                    // ignore events if they arrive as a result of call to allItems
+                    // or allInstances, bellow...
+                    setCache(NO_CACHE);
                 }
-            } else {
-                if (oldInstances != null) {
-                    Collection newInstances = allInstances();
-                    if (oldInstances.equals(newInstances)) {
+
+                if (oldItems != null) {
+                    Collection newItems = allItems();
+                    if (oldItems.equals(newItems)) {
                         modified = false;
                     }
                 } else {
-                    synchronized (proxy()) {
-                        if (getCache() == null) {
-                            // we have to initialize the cache
-                            // to show that the result has been initialized
-                            setCache(new Collection[3]);
+                    if (oldInstances != null) {
+                        Collection newInstances = allInstances();
+                        if (oldInstances.equals(newInstances)) {
+                            modified = false;
                         }
+                    } else {
+                        synchronized (proxy()) {
+                            if (getCache() == NO_CACHE) {
+                                // we have to initialize the cache
+                                // to show that the result has been initialized
+                                setCache(new Collection[3]);
+                            }
+                        }
+                    }
+                }
+            } finally {
+                synchronized (proxy()) {
+                    if (getCache() == NO_CACHE) {
+                        setCache(null);
                     }
                 }
             }
@@ -673,6 +683,7 @@ public class ProxyLookup extends Lookup {
             assert Thread.holdsLock(proxy());
             this.cache = cache;
         }
+        private static final Collection[] NO_CACHE = new Collection[0];
     }
     private static final class WeakRef<T> extends WeakReference<R> implements Runnable {
         final WeakResult<T> result;

@@ -1386,12 +1386,12 @@ public class AbstractLookupBaseHid extends NbTestCase {
     public void testChangeOfNodeDoesNotFireChangeInActionMap() {
         ActionMap am = new ActionMap();
         Lookup s = Lookups.singleton(am);
-        doChangeOfNodeDoesNotFireChangeInActionMap(am, s, false);
+        doChangeOfNodeDoesNotFireChangeInActionMap(am, s, false, 0);
     }
     public void testChangeOfNodeDoesNotFireChangeInActionMapSimple() {
         ActionMap am = new ActionMap();
         Lookup s = Lookups.singleton(am);
-        doChangeOfNodeDoesNotFireChangeInActionMap(am, s, true);
+        doChangeOfNodeDoesNotFireChangeInActionMap(am, s, true, 0);
     }
 
     public void testChangeOfNodeDoesNotFireChangeInActionMapWithBeforeLookupSimple() {
@@ -1424,12 +1424,12 @@ public class AbstractLookupBaseHid extends NbTestCase {
         }
         
         Before s = new Before();
-        doChangeOfNodeDoesNotFireChangeInActionMap(am, s, wrapBySimple);
+        doChangeOfNodeDoesNotFireChangeInActionMap(am, s, wrapBySimple, 1);
         
         assertNull("beforeLookup called once", s.ic);
     }
     
-    private void doChangeOfNodeDoesNotFireChangeInActionMap(final ActionMap am, Lookup actionMapLookup, final boolean wrapBySimple) {
+    private void doChangeOfNodeDoesNotFireChangeInActionMap(final ActionMap am, Lookup actionMapLookup, final boolean wrapBySimple, int firstChange) {
         Lookup[] lookups = { lookup, actionMapLookup };
         
         class Provider implements Lookup.Provider {
@@ -1470,7 +1470,7 @@ public class AbstractLookupBaseHid extends NbTestCase {
         ActionMap am1 = (ActionMap)c.iterator().next();
         assertEquals("Am is there", am, am1);
         
-        assertEquals("No change in first get", 0, ll.getCount());
+        assertEquals("Correct # of changes in first get", firstChange, ll.getCount());
         
         Object m1 = new InputMap();
         Object m2 = new InputMap();
