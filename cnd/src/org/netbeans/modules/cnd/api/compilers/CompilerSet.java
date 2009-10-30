@@ -674,6 +674,10 @@ public class CompilerSet {
             return null;
         }
 
+        public String getUpgradeUrl() {
+            return null;
+        }
+
         public String getModuleID() {
             return null;
         }
