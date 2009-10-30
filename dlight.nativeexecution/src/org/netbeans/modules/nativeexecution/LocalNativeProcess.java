@@ -78,7 +78,7 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
                 createNonWin();
             }
         } catch (Throwable ex) {
-            String msg = ex.getMessage() == null ? ex.toString() : ex.getMessage();
+            String msg = (ex.getMessage() == null ? ex.toString() : ex.getMessage()) + "\n"; // NOI18N
             processOutput = new ByteArrayInputStream(new byte[0]);
             processError = new ByteArrayInputStream(msg.getBytes());
             processInput = new ByteArrayOutputStream();
@@ -227,11 +227,12 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
         String wdir = info.getWorkingDirectory(true);
         if (wdir != null) {
             File wd = new File(wdir);
-            if (wd.exists()) {
-                pb.directory(wd);
-                if (LOG.isLoggable(Level.FINEST)) {
-                    LOG.finest(String.format("Working directory: %s", wdir)); // NOI18N
-                }
+            if (!wd.exists()) {
+                throw new IOException(loc("NativeProcess.noSuchDirectoryError.text", wd.getAbsolutePath())); // NOI18N
+            }
+            pb.directory(wd);
+            if (LOG.isLoggable(Level.FINEST)) {
+                LOG.finest(String.format("Working directory: %s", wdir)); // NOI18N
             }
         }
 

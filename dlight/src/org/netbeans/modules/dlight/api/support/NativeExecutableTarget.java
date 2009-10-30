@@ -282,7 +282,7 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
                 }
 
                 if (errConvertorFactory != null) {
-                    descr = descr.outConvertorFactory(errConvertorFactory);
+                    descr = descr.errConvertorFactory(errConvertorFactory);
                 }
             }
 
