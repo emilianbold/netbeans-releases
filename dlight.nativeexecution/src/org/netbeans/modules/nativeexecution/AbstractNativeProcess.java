@@ -121,12 +121,8 @@ public abstract class AbstractNativeProcess extends NativeProcess {
             setState(State.RUNNING);
             findInfoProvider();
         } catch (Throwable ex) {
-            //String msg = ex.getMessage() == null ? ex.toString() : ex.getMessage();
-            //log.info(loc("NativeProcess.exceptionOccured.text", msg)); // NOI18N
             LOG.log(Level.INFO, loc("NativeProcess.exceptionOccured.text"), ex);
             setState(State.ERROR);
-            interrupt();
-            throw new IOException(ex.getMessage());
         }
 
         return this;
