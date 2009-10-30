@@ -351,6 +351,7 @@
                 <xs:element ref="tns:warning_level"  minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="tns:architecture"  minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="tns:strip"  minOccurs="0" maxOccurs="1"/>
+                <xs:element ref="tns:multithreading"  minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="tns:output_object_file"  minOccurs="0" maxOccurs="1"/>
             </xs:sequence>
         </xs:complexType>

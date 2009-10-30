@@ -1851,7 +1851,7 @@ abstract public class CsmCompletionQuery {
                                 if (resolve(varPos, mtdName, openingSource)) {
                                     compResolver.getResult().addResulItemsToCol(mtdList);
                                 }
-                                if (!last || findType || look4Constructors) {
+                                if (!last || findType) {
                                     Collection<? extends CsmObject> candidates = new ArrayList<CsmObject>();
                                     compResolver.setResolveTypes(CompletionResolver.RESOLVE_VARIABLES | CompletionResolver.RESOLVE_LOCAL_VARIABLES);
                                     if (resolve(varPos, mtdName, true)) {
@@ -1862,16 +1862,9 @@ abstract public class CsmCompletionQuery {
                                             CsmType varType = ((CsmVariable) object).getType();
                                             if (varType != null) {
                                                 CsmClassifier cls = getClassifier(varType, contextFile);
-                                                if (!last || findType) {
-                                                    CsmFunction funCall = cls == null ? null : CsmCompletionQuery.getOperator(cls, contextFile, CsmFunction.OperatorKind.CAST);
-                                                    if (funCall != null) {
-                                                        mtdList.add(funCall);
-                                                    }
-                                                }
-                                                if (look4Constructors) {
-                                                    if (CsmKindUtilities.isClass(cls)) {
-                                                        mtdList.addAll(getConstructors((CsmClass) cls));
-                                                    }
+                                                CsmFunction funCall = cls == null ? null : CsmCompletionQuery.getOperator(cls, contextFile, CsmFunction.OperatorKind.CAST);
+                                                if (funCall != null) {
+                                                    mtdList.add(funCall);
                                                 }
                                             }
                                         }
