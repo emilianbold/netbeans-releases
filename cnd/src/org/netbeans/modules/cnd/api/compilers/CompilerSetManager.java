@@ -52,7 +52,6 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -100,7 +99,7 @@ public class CompilerSetManager {
     private static final Object MASTER_LOCK = new Object();
 
     // CopyOnWriteArrayList because of IZ#175647
-    private List<CompilerSet> sets = new CopyOnWriteArrayList<CompilerSet>();
+    private List<CompilerSet> sets = new ArrayList<CompilerSet>();
 
     private final ExecutionEnvironment executionEnvironment;
     private volatile State state;
