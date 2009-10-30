@@ -39,10 +39,11 @@
 
 package org.netbeans.modules.project.uiapi;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
-import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
@@ -58,11 +59,14 @@ import org.openide.util.lookup.ServiceProvider;
 
 @ServiceProvider(service=Processor.class)
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
-@SupportedAnnotationTypes({
-    "org.netbeans.spi.project.ui.support.ProjectCustomizer.CompositeCategoryProvider.Registration",
-    "org.netbeans.spi.project.ui.support.ProjectCustomizer.CompositeCategoryProvider.Registrations"
-})
 public class CompositeCategoryProviderAnnotationProcessor extends LayerGeneratingProcessor {
+
+    public @Override Set<String> getSupportedAnnotationTypes() {
+        return new HashSet<String>(Arrays.asList(
+            Registration.class.getCanonicalName(),
+            Registrations.class.getCanonicalName()
+        ));
+    }
 
     protected boolean handleProcess(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) throws LayerGenerationException {
         if (roundEnv.processingOver()) {

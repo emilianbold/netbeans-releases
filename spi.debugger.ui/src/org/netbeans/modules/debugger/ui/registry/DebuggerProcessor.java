@@ -41,10 +41,11 @@
 
 package org.netbeans.modules.debugger.ui.registry;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
-import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
@@ -61,7 +62,6 @@ import org.netbeans.spi.debugger.ui.BreakpointType;
 import org.netbeans.spi.debugger.ui.ColumnModelRegistration;
 import org.netbeans.spi.viewmodel.ColumnModel;
 
-import org.openide.filesystems.annotations.LayerBuilder.File;
 import org.openide.filesystems.annotations.LayerGeneratingProcessor;
 import org.openide.filesystems.annotations.LayerGenerationException;
 import org.openide.util.lookup.ServiceProvider;
@@ -72,10 +72,15 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=Processor.class)
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
-@SupportedAnnotationTypes({"org.netbeans.spi.debugger.ui.AttachType.Registration",  // NOI18N
-                           "org.netbeans.spi.debugger.ui.BreakpointType.Registration", //NOI18N
-                           "org.netbeans.spi.debugger.ui.ColumnModelRegistration"}) //NOI18N
 public class DebuggerProcessor extends LayerGeneratingProcessor {
+
+    public @Override Set<String> getSupportedAnnotationTypes() {
+        return new HashSet<String>(Arrays.asList(
+            AttachType.Registration.class.getCanonicalName(),
+            BreakpointType.Registration.class.getCanonicalName(),
+            ColumnModelRegistration.class.getCanonicalName()
+        ));
+    }
 
     public static final String SERVICE_NAME = "serviceName"; // NOI18N
 

@@ -40,12 +40,13 @@
 package org.netbeans.modules.projectapi;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
-import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
@@ -75,12 +76,15 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=Processor.class)
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
-@SupportedAnnotationTypes({
-    "org.netbeans.spi.project.LookupProvider.Registration",
-    "org.netbeans.spi.project.ProjectServiceProvider",
-    "org.netbeans.spi.project.LookupMerger.Registration"
-})
 public class LookupProviderAnnotationProcessor extends LayerGeneratingProcessor {
+
+    public @Override Set<String> getSupportedAnnotationTypes() {
+        return new HashSet<String>(Arrays.asList(
+            LookupProvider.Registration.class.getCanonicalName(),
+            ProjectServiceProvider.class.getCanonicalName(),
+            LookupMerger.Registration.class.getCanonicalName()
+        ));
+    }
 
     protected boolean handleProcess(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) throws LayerGenerationException {
         if (roundEnv.processingOver()) {

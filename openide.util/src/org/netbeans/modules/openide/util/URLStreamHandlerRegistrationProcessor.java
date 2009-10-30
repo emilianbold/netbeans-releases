@@ -40,9 +40,9 @@
 package org.netbeans.modules.openide.util;
 
 import java.net.URLStreamHandler;
+import java.util.Collections;
 import java.util.Set;
 import javax.annotation.processing.RoundEnvironment;
-import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
@@ -51,10 +51,11 @@ import javax.lang.model.type.TypeMirror;
 import org.openide.util.URLStreamHandlerRegistration;
 
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
-@SupportedAnnotationTypes({
-    "org.openide.util.URLStreamHandlerRegistration"
-})
 public class URLStreamHandlerRegistrationProcessor extends AbstractServiceProviderProcessor {
+
+    public @Override Set<String> getSupportedAnnotationTypes() {
+        return Collections.singleton(URLStreamHandlerRegistration.class.getCanonicalName());
+    }
 
     public static final String REGISTRATION_PREFIX = "URLStreamHandler/"; // NOI18N
 

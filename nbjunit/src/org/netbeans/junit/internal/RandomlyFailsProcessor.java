@@ -39,11 +39,11 @@
 
 package org.netbeans.junit.internal;
 
+import java.util.Collections;
 import java.util.Set;
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
-import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
@@ -59,11 +59,12 @@ import org.openide.util.lookup.ServiceProvider;
  * Just verifies usage.
  */
 @ServiceProvider(service=Processor.class)
-@SupportedAnnotationTypes("org.netbeans.junit.RandomlyFails")
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
 public class RandomlyFailsProcessor extends AbstractProcessor {
 
-    public RandomlyFailsProcessor() {}
+    public @Override Set<String> getSupportedAnnotationTypes() {
+        return Collections.singleton(RandomlyFails.class.getCanonicalName());
+    }
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {

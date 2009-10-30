@@ -39,10 +39,10 @@
 
 package org.netbeans.core.ide;
 
+import java.util.Collections;
 import java.util.Set;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
-import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
@@ -60,8 +60,12 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=Processor.class)
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
-@SupportedAnnotationTypes("org.netbeans.api.core.ide.ServicesTabNodeRegistration")//NOI18N
 public class ServiceTabProcessor extends LayerGeneratingProcessor {
+
+    public @Override Set<String> getSupportedAnnotationTypes() {
+        return Collections.singleton(ServicesTabNodeRegistration.class.getCanonicalName());
+    }
+
     @Override
     protected boolean handleProcess(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) throws LayerGenerationException {
         if (roundEnv.processingOver()) {
