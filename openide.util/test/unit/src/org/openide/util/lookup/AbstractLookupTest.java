@@ -47,7 +47,6 @@ import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import junit.framework.Test;
 import org.netbeans.junit.*;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup.Pair;
@@ -79,7 +78,11 @@ public class AbstractLookupTest extends AbstractLookupBaseHid implements Abstrac
 
     public void clearCaches () {
     }    
-
+    
+    public static void main(java.lang.String[] args) {
+        junit.textui.TestRunner.run(new NbTestSuite(AbstractLookupTest.class));
+    }
+    
     static class LkpResultCanBeGargageCollectedAndClearsTheResult extends AbstractLookup {
         public int cleared;
         public int dirty;
