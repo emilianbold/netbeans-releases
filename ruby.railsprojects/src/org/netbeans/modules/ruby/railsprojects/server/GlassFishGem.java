@@ -123,7 +123,8 @@ class GlassFishGem implements RubyServer, ServerInstanceImplementation {
     }
 
     public String getServerPath() {
-        return "glassfish_rails";
+        // glassfish_rails is deprecated in 0.9.4 and newer
+        return compareVersion("0.9.4") >= 0 ? "glassfish" : "glassfish_rails";
     }
 
     public boolean isStartupMsg(String outputLine) {

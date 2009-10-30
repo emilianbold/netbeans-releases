@@ -51,6 +51,7 @@ made subject to such option by the copyright holder.
                 <friend>org.jruby</friend>
                 <friend>org.netbeans.core.browser.xulrunner</friend>
                 <friend>org.netbeans.core.nativeaccess</friend>
+                <friend>org.netbeans.modules.dlight.nativeexecution</friend>
                 <friend>org.netbeans.modules.extexecution.destroy</friend>
                 <friend>org.netbeans.modules.maven.killer</friend>
                 <friend>org.netbeans.modules.python.qshell</friend>

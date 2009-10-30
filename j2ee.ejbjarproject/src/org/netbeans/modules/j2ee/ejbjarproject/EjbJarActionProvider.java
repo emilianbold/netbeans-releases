@@ -383,11 +383,11 @@ class EjbJarActionProvider implements ActionProvider {
         // TEST PART
         } else if ( command.equals( COMMAND_TEST_SINGLE ) ) {
             setDirectoryDeploymentProperty(p);
-            FileObject[] files = findTestSourcesForSources(context);
+            FileObject[] files = findTestSources(context, true);
             targetNames = setupTestSingle(p, files);
         } else if ( command.equals( COMMAND_DEBUG_TEST_SINGLE ) ) {
             setDirectoryDeploymentProperty(p);
-            FileObject[] files = findTestSourcesForSources(context);
+            FileObject[] files = findTestSources(context, true);
             targetNames = setupDebugTestSingle(p, files);
         } else {
             if (targetNames == null) {
@@ -454,9 +454,9 @@ class EjbJarActionProvider implements ActionProvider {
             FileObject files[] = findJavaSources(context);
             return files != null && files.length == 1;
         } else if ( command.equals( COMMAND_TEST_SINGLE ) ) {
-            return findTestSourcesForSources(context) != null;
+            return findTestSources(context, true) != null;
         } else if ( command.equals( COMMAND_DEBUG_TEST_SINGLE ) ) {
-            FileObject[] files = findTestSourcesForSources(context);
+            FileObject[] files = findTestSources(context, true);
             return files != null && files.length == 1;
         } else if (command.equals(COMMAND_DEBUG_SINGLE)) {
             FileObject[] testFiles = findTestSources(context, false);
@@ -592,12 +592,12 @@ class EjbJarActionProvider implements ActionProvider {
                 Object o = s.lookupFirst(null, AttachingDICookie.class);
                 if (o != null) {
                     AttachingDICookie attCookie = (AttachingDICookie)o;
-                    if (sdi.getTransport().equals(ServerDebugInfo.TRANSPORT_SHMEM)) {
+                    if (ServerDebugInfo.TRANSPORT_SHMEM.equals(sdi.getTransport())) {
                         if (attCookie.getSharedMemoryName().equalsIgnoreCase(sdi.getShmemName())) {
                             return true;
                         }
                     } else {
-                        if (attCookie.getHostName().equalsIgnoreCase(sdi.getHost())) {
+                        if (sdi.getHost() != null && sdi.getHost().equalsIgnoreCase(attCookie.getHostName())) {
                             if (attCookie.getPortNumber() == sdi.getPort()) {
                                 return true;
                             }

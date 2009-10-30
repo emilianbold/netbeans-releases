@@ -52,6 +52,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.netbeans.junit.NbTestCase;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -423,12 +424,12 @@ public class KenaiTest extends NbTestCase {
             assert feature.getName().equals(name);
             assert feature.getDisplayName().equals(displayName);
 
-            name = "unittestfeature02b";
-            displayName = "Feature 2b";
-            description = "Test Description - chat";
-            feature = project.createProjectFeature(name, displayName, description, KenaiService.Type.CHAT.getId(), null, null, null);
-            assert feature.getName().equals(UNITTESTUNIQUENAME);
-            assert feature.getDisplayName().equals(displayName);
+//            name = "unittestfeature02b";
+//            displayName = "Feature 2b";
+//            description = "Test Description - chat";
+//            feature = project.createProjectFeature(name, displayName, description, KenaiService.Type.CHAT.getId(), null, null, null);
+//            assert feature.getName().equals(UNITTESTUNIQUENAME);
+//            assert feature.getDisplayName().equals(displayName);
 
             name = "unittestfeature03";
             displayName = "Feature 3";
@@ -521,7 +522,7 @@ public class KenaiTest extends NbTestCase {
         BufferedReader br = null;
         boolean doAsserts = true; //set false to list all features returned by json to stdout
         try {
-            System.out.println("testGetFeatures");
+            System.out.println("testGetFeaturesGolden");
             String _fileName = getDataDir().getAbsolutePath() + File.separatorChar + "features-golden.data";
             br = new BufferedReader(new FileReader(_fileName));
             String line = null;
@@ -575,6 +576,13 @@ public class KenaiTest extends NbTestCase {
             throw mes;
         } catch (IOException ex) {
             fail("Failure while reading the features-java-inline.data golden file.");
+        }
+        try {
+            if (br.readLine() != null) {
+                fail("There are some features in the golden file that are not in the Kenai project...");
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
 
@@ -665,7 +673,7 @@ public class KenaiTest extends NbTestCase {
         _suite.addTest(new KenaiTest("testGetFeaturesGolden"));
         _suite.addTest(new KenaiTest("testGetLicenses"));
         _suite.addTest(new KenaiTest("testGetServices"));
-//        _suite.addTest(new KenaiTest("testGetMyProjects"));
+        _suite.addTest(new KenaiTest("testGetMyProjects"));
         _suite.addTest(new KenaiTest("testIsAuthorized"));
         return _suite;
     }

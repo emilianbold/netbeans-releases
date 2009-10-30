@@ -328,15 +328,6 @@ public class UpdateAction extends ContextAction {
 //                FileStatusCache cache = Subversion.getInstance().getStatusCache();
 //                cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
                 update(new File[] {file}, this, file.getAbsolutePath(), repositoryUrl);
-                // give FS some time to recognize the change - e.g. MS Win system takes some time to recognize changes on net drives
-                RequestProcessor.getDefault().post(new Runnable() {
-                    public void run() {
-                        FileObject fo = FileUtil.toFileObject(file);
-                        if (fo != null) {
-                            fo.refresh(true);
-                        }
-                    }
-                }, 100);
             }
         };
         support.start(rp, repositoryUrl, org.openide.util.NbBundle.getMessage(UpdateAction.class, "MSG_Update_Progress")); // NOI18N

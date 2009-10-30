@@ -253,7 +253,7 @@ public class DocumentFinder
             blockSearchStart = blockSearchEnd;
             blockSearchEnd = tmp;
         }
-        CharSequence docText = DocumentUtilities.getText(doc);;
+        CharSequence docText = DocumentUtilities.getText(doc);
         CharSequence blockText = blockSearch
                 ? docText.subSequence(blockSearchStart, blockSearchEnd)
                 : docText;
@@ -266,6 +266,17 @@ public class DocumentFinder
             initOffset = startOffset - blockSearchStart;
          else
             initOffset = startOffset;
+        if (initOffset < 0 || initOffset > blockText.length ()) {
+            LOG.log (
+                Level.INFO,
+                "Index: " + initOffset +
+                "\nOffset: " + startOffset + "-" + endOffset +
+                "\nBlock: " + blockSearchStart + "-" + blockSearchEnd +
+                "\nLength : " + blockText.length ()
+            );
+            initOffset = Math.max (initOffset, 0);
+            initOffset = Math.min (initOffset, blockText.length ());
+        }
         int findRet = finder.find(initOffset, blockText);
         if (!finder.isFound()){
             ret[0]  = -1;
@@ -415,6 +426,7 @@ public class DocumentFinder
 
         private boolean closed;
 
+        @Override
         public void reset() {
             super.reset();
             blocksInd = 0;
@@ -553,6 +565,7 @@ public class DocumentFinder
             firstCharWordPart = DocUtils.isIdentifierPart(doc, chars[0]);
         }
         
+        @Override
         public void reset() {
             super.reset();
             insideWord = false;
@@ -647,6 +660,7 @@ public class DocumentFinder
             chars = (matchCase ? s : s.toLowerCase()).toCharArray();
         }
         
+        @Override
         public void reset() {
             super.reset();
             stringInd = 0;
@@ -716,6 +730,7 @@ public class DocumentFinder
             return chars.length;
         }
 
+        @Override
         public void reset() {
             super.reset();
             insideWord = false;
@@ -881,6 +896,7 @@ public class DocumentFinder
             return chars.length;
         }
 
+        @Override
         public void reset() {
             super.reset();
             insideWord = false;
@@ -971,6 +987,7 @@ public class DocumentFinder
             return chars.length;
         }
 
+        @Override
         public void reset() {
             super.reset();
             stringInd = endInd;
@@ -1021,6 +1038,7 @@ public class DocumentFinder
             return chars.length;
         }
 
+        @Override
         public void reset() {
             super.reset();
             stringInd = 0;
@@ -1080,6 +1098,7 @@ public class DocumentFinder
             return length;
         }
 
+        @Override
         public void reset() {
             super.reset();
             length = 0;
@@ -1149,6 +1168,7 @@ public class DocumentFinder
             return length;
         }
 
+        @Override
         public void reset() {
             super.reset();
             length = 0;
@@ -1191,6 +1211,7 @@ public class DocumentFinder
             this.matchCase = matchCase;
         }
 
+        @Override
         public void reset() {
             super.reset();
             stringInd = 0;

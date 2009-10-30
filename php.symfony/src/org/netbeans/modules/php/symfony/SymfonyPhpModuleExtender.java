@@ -44,6 +44,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.php.api.phpmodule.PhpInterpreter;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException;
 import org.netbeans.modules.php.api.util.Pair;
@@ -73,7 +74,7 @@ public class SymfonyPhpModuleExtender extends PhpModuleExtender {
         }
         assert symfonyScript.isValid() : "Symfony script has to be valid!";
 
-        if (!symfonyScript.initProject(phpModule)) {
+        if (!symfonyScript.initProject(phpModule, getPanel().getProjectParams())) {
             // can happen if symfony script was not chosen
             Logger.getLogger(SymfonyPhpModuleExtender.class.getName())
                     .info("Framework Symfony not found in newly created project " + phpModule.getDisplayName());
@@ -91,8 +92,16 @@ public class SymfonyPhpModuleExtender extends PhpModuleExtender {
         // return files
         Set<FileObject> files = new HashSet<FileObject>();
         FileObject databases = phpModule.getSourceDirectory().getFileObject("config/databases.yml"); // NOI18N
-        assert databases != null;
-        files.add(databases);
+        if (databases != null) {
+            // likely --orm=none
+            files.add(databases);
+        }
+        FileObject config = phpModule.getSourceDirectory().getFileObject("config/ProjectConfiguration.class.php"); // NOI18N
+        assert config != null;
+        if (config != null) {
+            files.add(config);
+        }
+
         return files;
     }
 
@@ -123,6 +132,11 @@ public class SymfonyPhpModuleExtender extends PhpModuleExtender {
 
     @Override
     public String getErrorMessage() {
+        try {
+            PhpInterpreter.getDefault();
+        } catch (InvalidPhpProgramException ex) {
+            return ex.getLocalizedMessage();
+        }
         try {
             SymfonyScript.getDefault();
         } catch (InvalidPhpProgramException ex) {

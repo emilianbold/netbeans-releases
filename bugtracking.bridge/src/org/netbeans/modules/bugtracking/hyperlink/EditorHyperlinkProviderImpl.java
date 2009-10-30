@@ -50,6 +50,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
@@ -173,6 +174,10 @@ public class EditorHyperlinkProviderImpl implements HyperlinkProviderExt, Lookup
     }
 
     private HyperlinkSpanInfo getIssueSpan(Document doc, int offset, HyperlinkType type) {
+        if (issueFinders.length == 0) {
+            return null;
+        }
+
         TokenHierarchy th = TokenHierarchy.get(doc);
         List<TokenSequence> list = th.embeddedTokenSequences(offset, false);
 
@@ -185,13 +190,18 @@ public class EditorHyperlinkProviderImpl implements HyperlinkProviderExt, Lookup
                 return null;
             }
             Token t = ts.token();
-            if(t.id() == null || t.id().primaryCategory() == null || t.id().name() == null) {
+            TokenId tokenId;
+            String primCategory, name;
+
+            if (((tokenId = t.id()) == null)
+                    || ((primCategory = tokenId.primaryCategory()) == null)
+                    || ((name = tokenId.name()) == null)) {
                 continue;
             }
-            if (t.id().primaryCategory().toUpperCase().indexOf("COMMENT") > -1      ||  // primaryCategory == commment should be more or less a convention // NOI18N
-                t.id().name().toUpperCase().indexOf("COMMENT") > -1)                    // consider this as a fallback // NOI18N
+            if (primCategory.toUpperCase().indexOf("COMMENT") > -1      ||  // primaryCategory == commment should be more or less a convention // NOI18N
+                name.toUpperCase().indexOf("COMMENT") > -1)                    // consider this as a fallback // NOI18N
             {
-                String text = t.text().toString();
+                CharSequence text = t.text();
                 for (IssueFinder issueFinder : issueFinders) {
                     int[] span = issueFinder.getIssueSpans(text);
                     for (int i = 1; i < span.length; i += 2) {

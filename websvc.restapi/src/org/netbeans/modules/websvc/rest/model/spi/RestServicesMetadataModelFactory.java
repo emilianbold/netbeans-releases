@@ -43,8 +43,13 @@ package org.netbeans.modules.websvc.rest.model.spi;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.dd.spi.MetadataUnit;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.spi.MetadataModelFactory;
+import org.netbeans.modules.j2ee.metadata.model.spi.MetadataModelImplementation;
+import org.netbeans.modules.websvc.rest.model.api.RestApplicationModel;
+import org.netbeans.modules.websvc.rest.model.api.RestApplications;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesModel;
+import org.netbeans.modules.websvc.rest.model.impl.RestApplicationMetadataModelImpl;
 import org.netbeans.modules.websvc.rest.model.impl.RestServicesMetadataModelImpl;
 
 /**
@@ -59,6 +64,10 @@ public class RestServicesMetadataModelFactory {
     public static RestServicesModel createMetadataModel(MetadataUnit metadataUnit, Project project) {
         RestServicesModel impl = new RestServicesMetadataModelImpl(metadataUnit, project);
         MetadataModelFactory.createMetadataModel(impl);
+        return impl;
+    }
+    public static RestApplicationModel createApplicationMetadataModel(MetadataUnit metadataUnit, Project project) {
+        RestApplicationModel impl = new RestApplicationMetadataModelImpl(metadataUnit, project);
         return impl;
     }
     

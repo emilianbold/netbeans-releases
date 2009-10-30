@@ -93,7 +93,7 @@ public class SafeDeleteAction extends RefactoringGlobalAction implements Extende
     }
 
     protected boolean enable(Lookup context) {
-        return ActionsImplementationFactory.canDelete(context); 
+        return true;
     }
     
     @Override
@@ -114,7 +114,7 @@ public class SafeDeleteAction extends RefactoringGlobalAction implements Extende
     
     private boolean regularDelete = false;
     public boolean delete(final Node[] nodes) {
-        if (nodes.length < 2 && enable(nodes)) {
+        if (nodes.length < 2 && ActionsImplementationFactory.canDelete(getLookup(nodes))) {
             if (java.awt.EventQueue.isDispatchThread()) {
                 regularDelete = true;
                 performAction(nodes);

@@ -63,6 +63,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
@@ -75,7 +76,6 @@ import org.netbeans.modules.java.project.PackageDisplayUtils;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.FileSensitiveActions;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.FileSystemAction;
 import org.openide.actions.PropertiesAction;
@@ -116,6 +116,8 @@ import org.openidex.search.SearchInfoFactory;
  * @author Adam Sotona, Jesse Glick, Petr Hrebejk, Tomas Zezula
  */
 final class PackageViewChildren extends Children.Keys<String> implements FileChangeListener, ChangeListener, Runnable {
+
+    private static final Logger LOG = Logger.getLogger(PackageViewChildren.class.getName());
     
     private static final String NODE_NOT_CREATED = "NNC"; // NOI18N
     private static final String NODE_NOT_CREATED_EMPTY = "NNC_E"; //NOI18N
@@ -218,7 +220,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
             fs.addFileChangeListener( wfcl );
         }
         catch ( FileStateInvalidException e ) {
-            ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, e );
+            Exceptions.printStackTrace(e);
         }
         wvqcl = WeakListeners.change( this, VisibilityQuery.getDefault() );
         VisibilityQuery.getDefault().addChangeListener( wvqcl );
@@ -232,7 +234,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
             root.getFileSystem().removeFileChangeListener( wfcl );
         }
         catch ( FileStateInvalidException e ) {
-            ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, e );
+            Exceptions.printStackTrace(e);
         }
         setKeys(new String[0]);
         names2nodes.clear();
@@ -782,10 +784,10 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
                     }
                     return hasPackageFlavor ? new PasteType[0] : super.getPasteTypes (t);
                 } catch (UnsupportedFlavorException e) {
-                    ErrorManager.getDefault().notify(e);
+                    Exceptions.printStackTrace(e);
                     return new PasteType[0];
                 } catch (IOException e) {
-                    ErrorManager.getDefault().notify(e);
+                    Exceptions.printStackTrace(e);
                     return new PasteType[0];
                 }
             }
@@ -814,10 +816,10 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
                     }
                     return hasPackageFlavor ? null : super.getDropType (t, action, index);
                 } catch (UnsupportedFlavorException e) {
-                    ErrorManager.getDefault().notify(e);
+                    Exceptions.printStackTrace(e);
                     return null;
                 } catch (IOException e) {
-                    ErrorManager.getDefault().notify(e);
+                    Exceptions.printStackTrace(e);
                     return null;
                 }
             }
@@ -848,7 +850,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
             if (handlers.size()==0)
                 return null;
             if (handlers.size()>1)
-                ErrorManager.getDefault().log(ErrorManager.WARNING, "Multiple instances of PackageRenameHandler found in Lookup; only using first one: " + handlers); //NOI18N
+                LOG.warning("Multiple instances of PackageRenameHandler found in Lookup; only using first one: " + handlers); //NOI18N
             return handlers.iterator().next(); 
         }
         
@@ -916,7 +918,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
                     }
                 }
             } catch (IOException ioe) {
-                ErrorManager.getDefault().notify (ioe);
+                Exceptions.printStackTrace(ioe);
             }
         }
         

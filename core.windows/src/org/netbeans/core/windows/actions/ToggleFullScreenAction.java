@@ -72,9 +72,11 @@ public class ToggleFullScreenAction extends SystemAction implements DynamicMenuC
 
             public void propertyChange(PropertyChangeEvent evt) {
                 if( Action.ACCELERATOR_KEY.equals(evt.getPropertyName()) ) {
-                    //119127 - make sure shortcut gets updated in the menu
-                    menuItems = null;
-                    createItems();
+                    synchronized( ToggleFullScreenAction.this ) {
+                        //119127 - make sure shortcut gets updated in the menu
+                        menuItems = null;
+                        createItems();
+                    }
                 }
             }
         });
@@ -101,17 +103,21 @@ public class ToggleFullScreenAction extends SystemAction implements DynamicMenuC
     
     /** Updates state of action. Uses Runnable interface impl to save one class */ 
     public void run () {
-        createItems();
         MainWindow frame = (MainWindow)WindowManager.getDefault().getMainWindow();
-        menuItems[0].setSelected(null != frame && frame.isFullScreenMode());
+        synchronized( this ) {
+            createItems();
+            menuItems[0].setSelected(null != frame && frame.isFullScreenMode());
+        }
     }
     
     private void createItems() {
-        if (menuItems == null) {
-            menuItems = new JCheckBoxMenuItem[1];
-            menuItems[0] = new JCheckBoxMenuItem(this);
-            menuItems[0].setIcon(null);
-            Mnemonics.setLocalizedText(menuItems[0], NbBundle.getMessage(ToggleFullScreenAction.class, "CTL_ToggleFullScreenAction"));
+        synchronized( this ) {
+            if (menuItems == null) {
+                menuItems = new JCheckBoxMenuItem[1];
+                menuItems[0] = new JCheckBoxMenuItem(this);
+                menuItems[0].setIcon(null);
+                Mnemonics.setLocalizedText(menuItems[0], NbBundle.getMessage(ToggleFullScreenAction.class, "CTL_ToggleFullScreenAction"));
+            }
         }
     }
 

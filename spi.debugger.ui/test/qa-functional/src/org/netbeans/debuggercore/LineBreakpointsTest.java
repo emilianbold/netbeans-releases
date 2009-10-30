@@ -84,6 +84,8 @@ public class LineBreakpointsTest extends DebuggerTestCase {
         "testLineBreakpointsValidation"
     };
 
+    private Node beanNode;
+
     //MainWindowOperator.StatusTextTracer stt = null;
     /**
      *
@@ -116,242 +118,193 @@ public class LineBreakpointsTest extends DebuggerTestCase {
     public void setUp() throws IOException {
         super.setUp();
         System.out.println("########  " + getName() + "  ####### ");
-    }
-
-    /**
-     *
-     */
-    public void testLineBreakpointCreation() throws Throwable {
-        try {
-            //open source
-            Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
+        if (beanNode == null)
+        {
+            beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
             new OpenAction().performAPI(beanNode);
-            EditorOperator eo = new EditorOperator("MemoryView.java");
-            try {
-                eo.clickMouse(50,50,1);
-            } catch (Throwable t) {
-                System.err.println(t.getMessage());
+        }
+    }
+
+    /**
+     *
+     */
+    public void testLineBreakpointCreation() throws Throwable {        
+        //open source
+        EditorOperator eo = new EditorOperator("MemoryView.java");
+        try {
+            eo.clickMouse(50,50,1);
+        } catch (Throwable t) {
+            System.err.println(t.getMessage());
+        }
+        //toggle breakpoints
+        Utilities.toggleBreakpoint(eo, 73);
+        Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
+        JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.breakpointsViewTitle));
+        assertEquals("Line MemoryView.java:73", jTableOperator.getValueAt(0, 0).toString());
+        eo = new EditorOperator("MemoryView.java");
+        Utilities.toggleBreakpoint(eo, 73, false);
+        new EventTool().waitNoEvent(1000);
+        jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.breakpointsViewTitle));
+        assertEquals(0, jTableOperator.getRowCount());
+    }
+
+    /**
+     *
+     */
+    public void testLineBreakpointFunctionality() throws Throwable {        
+        EditorOperator eo = new EditorOperator("MemoryView.java");
+        //toggle breakpoints
+        Utilities.toggleBreakpoint(eo, 73);
+        Utilities.startDebugger();
+        try {
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:73");
+        } catch (Throwable e) {
+            if (!Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:73")) {
+                System.err.println(e.getMessage());
+                throw e;
             }
-            //toggle breakpoints
-            Utilities.toggleBreakpoint(eo, 73);
-            Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
-            JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.breakpointsViewTitle));
-            assertEquals("Line MemoryView.java:73", jTableOperator.getValueAt(0, 0).toString());
-            eo = new EditorOperator("MemoryView.java");
-            Utilities.toggleBreakpoint(eo, 73, false);
-            new EventTool().waitNoEvent(1000);
-            jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.breakpointsViewTitle));
-            assertEquals(0, jTableOperator.getRowCount());
-        } catch (Throwable th) {
-            Utilities.captureScreen(this);
-            Utilities.captureScreen(this);
-            throw th;
         }
     }
 
     /**
      *
      */
-    public void testLineBreakpointFunctionality() throws Throwable {
-        try {
-            EditorOperator eo = new EditorOperator("MemoryView.java");
-            //toggle breakpoints
-            Utilities.toggleBreakpoint(eo, 73);
-            Utilities.startDebugger();
-            try {
-                Utilities.waitStatusText("Thread main stopped at MemoryView.java:73");
-            } catch (Throwable e) {
-                if (!Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:73")) {
-                    System.err.println(e.getMessage());
-                    throw e;
-                }
-            }
-        } catch (Throwable th) {
-            Utilities.captureScreen(this);
-            throw th;
-        }
+    public void testLineBreakpointFunctionalityAfterContinue() throws Throwable {        
+        EditorOperator eo = new EditorOperator("MemoryView.java");
+        //toggle breakpoints
+        Utilities.toggleBreakpoint(eo, 52);
+        Utilities.startDebugger();
+        Utilities.waitStatusText("Thread main stopped at MemoryView.java:52");
+        eo = new EditorOperator("MemoryView.java");
+        Utilities.toggleBreakpoint(eo, 74);
+        new ContinueAction().perform();
+        Utilities.waitStatusText("Thread main stopped at MemoryView.java:74");
+        
     }
 
     /**
      *
      */
-    public void testLineBreakpointFunctionalityAfterContinue() throws Throwable {
-        try {
-            EditorOperator eo = new EditorOperator("MemoryView.java");
-            //toggle breakpoints
-            Utilities.toggleBreakpoint(eo, 52);
-            Utilities.startDebugger();
-            Utilities.waitStatusText("Thread main stopped at MemoryView.java:52");
-            eo = new EditorOperator("MemoryView.java");
-            Utilities.toggleBreakpoint(eo, 74);
-            new ContinueAction().perform();
-            Utilities.waitStatusText("Thread main stopped at MemoryView.java:74");
-        } catch (Throwable th) {
-            Utilities.captureScreen(this);
-            throw th;
-        }
-    }
-
-    /**
-     *
-     */
-    public void testLineBreakpointFunctionalityInStaticMethod() throws Throwable {
-        try {
-            EditorOperator eo = new EditorOperator("MemoryView.java");
-            //toggle breakpoints
-            Utilities.toggleBreakpoint(eo, 114);
-            Utilities.startDebugger();
-            Utilities.waitStatusText("Thread main stopped at MemoryView.java:114");
-        } catch (Throwable th) {
-            Utilities.captureScreen(this);
-            throw th;
-        }
+    public void testLineBreakpointFunctionalityInStaticMethod() throws Throwable {        
+        EditorOperator eo = new EditorOperator("MemoryView.java");
+        //toggle breakpoints
+        Utilities.toggleBreakpoint(eo, 114);
+        Utilities.startDebugger();
+        Utilities.waitStatusText("Thread main stopped at MemoryView.java:114");
     }
 
     /**
      *
      */
     public void testLineBreakpointFunctionalityInInitializer() throws Throwable {
-        try {
-            EditorOperator eo = new EditorOperator("MemoryView.java");
-            //toggle breakpoints
-            Utilities.toggleBreakpoint(eo, 45);
-            Utilities.startDebugger();
-            Utilities.waitStatusText("Thread main stopped at MemoryView.java:45");
-        } catch (Throwable th) {
-            Utilities.captureScreen(this);
-            throw th;
-        }
+        
+        EditorOperator eo = new EditorOperator("MemoryView.java");
+        //toggle breakpoints
+        Utilities.toggleBreakpoint(eo, 45);
+        Utilities.startDebugger();
+        Utilities.waitStatusText("Thread main stopped at MemoryView.java:45");
     }
 
     /**
      *
      */
-    public void testLineBreakpointFunctionalityInConstructor() throws Throwable {
-        try {
-            EditorOperator eo = new EditorOperator("MemoryView.java");
-            //toggle breakpoints
-            Utilities.toggleBreakpoint(eo, 54);
-            Utilities.startDebugger();
-            Utilities.waitStatusText("Thread main stopped at MemoryView.java:54");
-        } catch (Throwable th) {
-            Utilities.captureScreen(this);
-            throw th;
-        }
+    public void testLineBreakpointFunctionalityInConstructor() throws Throwable {        
+        EditorOperator eo = new EditorOperator("MemoryView.java");
+        //toggle breakpoints
+        Utilities.toggleBreakpoint(eo, 54);
+        Utilities.startDebugger();
+        Utilities.waitStatusText("Thread main stopped at MemoryView.java:54");
     }
 
     /**
      *
      */
     public void testLineBreakpointFunctionalityInInnerClass() throws Throwable {
-        try {
-            EditorOperator eo = new EditorOperator("MemoryView.java");
-            //toggle breakpoints
-            Utilities.toggleBreakpoint(eo, 123);
-            Utilities.startDebugger();
-            Utilities.waitStatusText("Thread Thread-0 stopped at MemoryView.java:123");
-        } catch (Throwable th) {
-            Utilities.captureScreen(this);
-            throw th;
-        }
+        
+        EditorOperator eo = new EditorOperator("MemoryView.java");
+        //toggle breakpoints
+        Utilities.toggleBreakpoint(eo, 123);
+        Utilities.startDebugger();
+        Utilities.waitStatusText("Thread Thread-0 stopped at MemoryView.java:123");
     }
 
     /**
      *
      */
-    public void testLineBreakpointFunctionalityInSecondaryClass() throws Throwable {
-        try {
-            EditorOperator eo = new EditorOperator("MemoryView.java");
-            //toggle breakpoints
-            Utilities.toggleBreakpoint(eo, 154);
-            Utilities.startDebugger();
-            Utilities.waitStatusText("Thread main stopped at MemoryView.java:154");
-        } catch (Throwable th) {
-            Utilities.captureScreen(this);
-            throw th;
-        }
+    public void testLineBreakpointFunctionalityInSecondaryClass() throws Throwable {        
+        EditorOperator eo = new EditorOperator("MemoryView.java");
+        //toggle breakpoints
+        Utilities.toggleBreakpoint(eo, 154);
+        Utilities.startDebugger();
+        Utilities.waitStatusText("Thread main stopped at MemoryView.java:154");
     }
 
     /**
      *
      */
     public void testConditionalLineBreakpointFunctionality() throws Throwable {
-        try {
-            EditorOperator eo = new EditorOperator("MemoryView.java");
-            //toggle breakpoints
-            Utilities.toggleBreakpoint(eo, 63);
-            Utilities.toggleBreakpoint(eo, 64);
+        
+        EditorOperator eo = new EditorOperator("MemoryView.java");
+        //toggle breakpoints
+        Utilities.toggleBreakpoint(eo, 63);
+        Utilities.toggleBreakpoint(eo, 64);
 
-            Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
-            JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.breakpointsViewTitle));
-            assertEquals("Line MemoryView.java:64", jTableOperator.getValueAt(1, 0).toString());
-            new JPopupMenuOperator(jTableOperator.callPopupOnCell(1, 0)).pushMenuNoBlock("Properties");
-            NbDialogOperator dialog = new NbDialogOperator(Utilities.customizeBreakpointTitle);
-            new JCheckBoxOperator(dialog, 0).changeSelection(true);
-            new JEditorPaneOperator(dialog, 0).setText("i > 0");
-            dialog.ok();
-            Utilities.startDebugger();
-            Utilities.waitStatusText("Thread main stopped at MemoryView.java:63");
-            new ContinueAction().perform();
-            Utilities.waitStatusText("Thread main stopped at MemoryView.java:63");
-            new ContinueAction().perform();
-            Utilities.waitStatusText("Thread main stopped at MemoryView.java:64");
-        } catch (Throwable th) {
-            Utilities.captureScreen(this);
-            throw th;
-        }
+        Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
+        JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.breakpointsViewTitle));
+        assertEquals("Line MemoryView.java:64", jTableOperator.getValueAt(1, 0).toString());
+        new JPopupMenuOperator(jTableOperator.callPopupOnCell(1, 0)).pushMenuNoBlock("Properties");
+        NbDialogOperator dialog = new NbDialogOperator(Utilities.customizeBreakpointTitle);
+        new JCheckBoxOperator(dialog, 0).changeSelection(true);
+        new JEditorPaneOperator(dialog, 0).setText("i > 0");
+        dialog.ok();
+        Utilities.startDebugger();
+        Utilities.waitStatusText("Thread main stopped at MemoryView.java:63");
+        new ContinueAction().perform();
+        Utilities.waitStatusText("Thread main stopped at MemoryView.java:63");
+        new ContinueAction().perform();
+        Utilities.waitStatusText("Thread main stopped at MemoryView.java:64");
     }
 
     /**
      *
      */
-    public void testLineBreakpointActions() throws Throwable {
-        try {
-            EditorOperator eo = new EditorOperator("MemoryView.java");
-            //toggle breakpoints
-            Utilities.toggleBreakpoint(eo, 102);
-            
-            Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
-            JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.breakpointsViewTitle));
-            assertEquals("Line MemoryView.java:102", jTableOperator.getValueAt(0, 0).toString());
-            new JPopupMenuOperator(jTableOperator.callPopupOnCell(0, 0)).pushMenuNoBlock("Properties");
-            NbDialogOperator dialog = new NbDialogOperator(Utilities.customizeBreakpointTitle);
+    public void testLineBreakpointActions() throws Throwable {        
+        EditorOperator eo = new EditorOperator("MemoryView.java");
+        //toggle breakpoints
+        Utilities.toggleBreakpoint(eo, 102);
 
-            String nothread = Bundle.getString("org.netbeans.modules.debugger.jpda.ui.breakpoints.Bundle", "LBL_CB_Actions_Panel_Suspend_None");
-            new JComboBoxOperator(dialog, 1).selectItem(nothread);
-            String breakpointHitText = "Line breakpoint hit on {className}:{lineNumber}"; //noi18n
-            new JTextFieldOperator(dialog, 4).setText(breakpointHitText);
-            dialog.ok();
-            Utilities.toggleBreakpoint(eo, 104);
-            Utilities.startDebugger();            
-            Utilities.waitStatusText("Thread main stopped at MemoryView.java:104");
-        } catch (Throwable th) {
-            Utilities.captureScreen(this);
-            throw th;
-        }
+        Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
+        JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.breakpointsViewTitle));
+        assertEquals("Line MemoryView.java:102", jTableOperator.getValueAt(0, 0).toString());
+        new JPopupMenuOperator(jTableOperator.callPopupOnCell(0, 0)).pushMenuNoBlock("Properties");
+        NbDialogOperator dialog = new NbDialogOperator(Utilities.customizeBreakpointTitle);
+
+        String nothread = Bundle.getString("org.netbeans.modules.debugger.jpda.ui.breakpoints.Bundle", "LBL_CB_Actions_Panel_Suspend_None");
+        new JComboBoxOperator(dialog, 1).selectItem(nothread);
+        String breakpointHitText = "Line breakpoint hit on {className}:{lineNumber}"; //noi18n
+        new JTextFieldOperator(dialog, 4).setText(breakpointHitText);
+        dialog.ok();
+        Utilities.toggleBreakpoint(eo, 104);
+        Utilities.startDebugger();
+        Utilities.waitStatusText("Thread main stopped at MemoryView.java:104");
     }
 
-    public void testLineBreakpointsValidation() throws Throwable {
-        try {
-            int[] prelines = new int[]{33, 34, 37, 43, 49};
-            EditorOperator eo = new EditorOperator("MemoryView.java");
-            //start debugging
-            Utilities.startDebugger();
-            Utilities.waitStatusText(Utilities.runningStatusBarText);
-            //toggle breakpoints
-            for (int i = 0; i < prelines.length; i++) {
-                Utilities.toggleBreakpoint(eo, prelines[i]);
-                Utilities.waitStatusText("Invalid LineBreakpoint MemoryView.java : " + prelines[i]);
-            }
-            int[] debuglines = new int[]{72, 81, 83, 95, 96, 105, 108, 125, 153};
-            //toggle breakpoints
-            for (int i = 0; i < debuglines.length; i++) {
-                Utilities.toggleBreakpoint(eo, debuglines[i]);
-                Utilities.waitStatusText("Invalid LineBreakpoint MemoryView.java : " + debuglines[i]);
-            }
-        } catch (Throwable th) {
-            Utilities.captureScreen(this);
-            throw th;
+    public void testLineBreakpointsValidation() throws Throwable {        
+        int[] prelines = new int[]{33, 34, 37, 43, 49};
+        EditorOperator eo = new EditorOperator("MemoryView.java");
+        //start debugging
+        Utilities.startDebugger();
+        Utilities.waitStatusText(Utilities.runningStatusBarText);
+        //toggle breakpoints
+        for (int i = 0; i < prelines.length; i++) {
+            Utilities.toggleBreakpoint(eo, prelines[i]);
+            Utilities.waitStatusText("Invalid LineBreakpoint MemoryView.java : " + prelines[i]);
+        }
+        int[] debuglines = new int[]{72, 81, 83, 95, 96, 105, 108, 125, 153};
+        //toggle breakpoints
+        for (int i = 0; i < debuglines.length; i++) {
+            Utilities.toggleBreakpoint(eo, debuglines[i]);
+            Utilities.waitStatusText("Invalid LineBreakpoint MemoryView.java : " + debuglines[i]);
         }
     }
 

@@ -81,6 +81,10 @@ public class CndUtils {
         return ! isReleaseMode();
     }
 
+    public static boolean isUnitTestMode() {
+        return Boolean.getBoolean("cnd.mode.unittest"); // NOI18N
+    }
+
     public static boolean getBoolean(String name, boolean result) {
         String text = System.getProperty(name);
         if (text != null) {
@@ -104,6 +108,12 @@ public class CndUtils {
     public static void assertTrue(boolean value) {
         if (isDebugMode()) {
             assertTrue(value, "Assertion error"); //NOI18N
+        }
+    }
+
+    public static void assertNotNull(Object object, String message) {
+        if (isDebugMode()) {
+            assertTrue(object != null, message); //NOI18N
         }
     }
 

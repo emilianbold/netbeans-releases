@@ -276,6 +276,52 @@ public class CommentCollectorTest extends NbTestCase {
 
     }
 
+    public void testVariable() throws Exception {
+        File testFile = new File(getWorkDir(), "Test.java");
+        final String origin =
+                       "package test;\n" +
+                       "public abstract class Test {\n" +
+                       "    public Test() {\n" +
+                       "        //nabytek\n" +
+                       "        FileInputStream fis = new FileInputStream(new File(\"\"));//NOI18N\n" +
+                       "        //foo\n" +
+                       "        \n" +
+                       "        fis = null;\n" +
+                       "    }\n" +
+                       "}\n";
+        TestUtilities.copyStringToFile(testFile, origin);
+        JavaSource src = getJavaSource(testFile);
+
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            public void run(final WorkingCopy workingCopy) throws Exception {
+                workingCopy.toPhase(JavaSource.Phase.PARSED);
+                final CommentHandlerService service = CommentHandlerService.instance(workingCopy.impl.getJavacTask().getContext());
+
+                TreeScanner<Void, Void> w = new TreeScanner<Void, Void>() {
+                    @Override
+                    public Void visitVariable(VariableTree node, Void p) {
+                        GeneratorUtilities.get(workingCopy).importComments(node, workingCopy.getCompilationUnit());
+                        verify(node, CommentSet.RelativePosition.PRECEDING, service,
+                                "//nabytek"
+                        );
+                        verify(node, CommentSet.RelativePosition.INLINE, service,
+                                "//NOI18N"
+                        );
+                        verify(node, CommentSet.RelativePosition.TRAILING, service,
+                                "//foo"
+                        );
+
+                        return super.visitVariable(node, p);
+                    }
+                };
+                w.scan(workingCopy.getCompilationUnit(), null);
+            }
+
+
+        };
+        src.runModificationTask(task);
+
+    }
 
     void verify(Tree tree, CommentSet.RelativePosition position, CommentHandler service, String... comments) {
         assertNotNull("Comments handler service not null", service);

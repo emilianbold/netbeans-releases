@@ -1509,7 +1509,7 @@ public abstract class CslTestBase extends NbTestCase {
         } finally {
             IndexingSupport support = SPIAccessor.getInstance().context_getAttachedIndexingSupport(context);
             if (support != null) {
-                SupportAccessor.getInstance().store(support);
+                SupportAccessor.getInstance().store(support,true);
             }
         }
 
@@ -3728,7 +3728,7 @@ public abstract class CslTestBase extends NbTestCase {
         return hints;
     }
 
-    protected ComputedHints computeHints(NbTestCase test, final Rule hint, String relFilePath, FileObject fileObject, final String lineWithCaret, final ChangeOffsetType changeOffsetType) throws Exception {
+    protected ComputedHints computeHints(final NbTestCase test, final Rule hint, String relFilePath, FileObject fileObject, final String lineWithCaret, final ChangeOffsetType changeOffsetType) throws Exception {
         assertTrue(relFilePath == null || fileObject == null);
 
         initializeRegistry();
@@ -3759,7 +3759,7 @@ public abstract class CslTestBase extends NbTestCase {
                 ParserResult pr = (ParserResult) r;
                 
                 Document document = pr.getSnapshot().getSource().getDocument(false);
-                assert document != null;
+                assert document != null : test;
 
                 // remember the original document content, we are going to destroy it
                 // and then restore
@@ -4216,8 +4216,8 @@ public abstract class CslTestBase extends NbTestCase {
             documents.keySet().removeAll(toRemove);
         }
 
-        public void store() throws IOException {
-            original.store();
+        public void store(boolean optimize) throws IOException {
+            original.store(optimize);
         }
 
         public Collection<? extends IndexDocumentImpl> query(String fieldName, String value, Kind kind, String... fieldsToLoad) throws IOException {

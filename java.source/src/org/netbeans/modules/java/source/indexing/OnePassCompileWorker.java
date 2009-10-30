@@ -41,6 +41,7 @@ package org.netbeans.modules.java.source.indexing;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.tools.javac.api.JavacTaskImpl;
+import com.sun.tools.javac.util.CancelAbort;
 import com.sun.tools.javac.util.CancelService;
 import com.sun.tools.javac.util.CouplingAbort;
 import com.sun.tools.javac.util.Log;
@@ -119,6 +120,10 @@ final class OnePassCompileWorker extends CompileWorker {
                     computeFQNs(file2FQNs, cut, tuple);
                 }
                 Log.instance(jt.getContext()).nerrors = 0;
+            } catch (CancelAbort ca) {
+                if (JavaIndex.LOG.isLoggable(Level.FINEST)) {
+                    JavaIndex.LOG.log(Level.FINEST, "OnePassCompileWorker was canceled in root: " + FileUtil.getFileDisplayName(context.getRoot()), ca);  //NOI18N
+                }
             } catch (Throwable t) {
                 if (JavaIndex.LOG.isLoggable(Level.WARNING)) {
                     final ClassPath bootPath   = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT);
@@ -226,6 +231,10 @@ final class OnePassCompileWorker extends CompileWorker {
                             sourcePath == null ? null : sourcePath.toString()
                             );
                 JavaIndex.LOG.log(Level.FINEST, message, mpe);
+            }
+        } catch (CancelAbort ca) {
+            if (JavaIndex.LOG.isLoggable(Level.FINEST)) {
+                JavaIndex.LOG.log(Level.FINEST, "OnePassCompileWorker was canceled in root: " + FileUtil.getFileDisplayName(context.getRoot()), ca);  //NOI18N
             }
         } catch (Throwable t) {
             if (t instanceof ThreadDeath) {

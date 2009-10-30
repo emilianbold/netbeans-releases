@@ -46,6 +46,7 @@ import javax.swing.JPanel;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.indicators.ClockIndicatorConfiguration;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
+import org.openide.util.Lookup;
 
 public class ClockIndicator extends Indicator<ClockIndicatorConfiguration> {
 
@@ -82,6 +83,11 @@ public class ClockIndicator extends Indicator<ClockIndicatorConfiguration> {
 
     public void reset() {
         //throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void setIndicatorActionsProviderContext(Lookup context) {
+
     }
 
     private class ClockPanel extends JPanel {

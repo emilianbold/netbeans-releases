@@ -81,12 +81,17 @@ public class Platforms {
         return null;
     }
 
+    /*
+     * Returns platforms names up to but not included Generic.
+     */
     public static String[] getPlatformDisplayNames() {
-        String[] ret = new String[getPlatforms().size()];
-        int index = 0;
+        ArrayList<String> ret = new ArrayList<String>();
         for (Platform pl : getPlatforms()) {
-            ret[index++] = pl.getDisplayName();
+            if (pl.getId() == Platform.PLATFORM_GENERIC || pl.getId() == Platform.PLATFORM_NONE) {
+                continue;
+            }
+            ret.add(pl.getDisplayName());
         }
-        return ret;
+        return ret.toArray(new String[ret.size()]);
     }
 }

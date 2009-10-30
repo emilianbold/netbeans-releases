@@ -18,23 +18,26 @@ Use is subject to license terms.
        <a href="#seealso"><small>See Also</small></a><small>&nbsp;</small>
     </p>
     <p>
-       The Profile panel enables you to specify the properties of the profiling tools that are
-      displayed in the Run Monitor tab when C/C++ projects are run.
+       The Profile panel enables you to specify properties of the profiling tools that are
+      displayed in the Run Monitor window when C/C++ projects are run.
     </p>
     <ul>
       <li>
-        <b>Profile on Run</b>: Select to run profiling tools when the project runs.
+        <b>Show profile indicators during run</b>: Select this option to show C/C++ profiling tools in the Run Monitor window
+        whenever the project runs. The Profile Configuration determines which of the tools are shown.
       </li>
       <li>
-        <b>Data Provider</b>: Select the tool to collect data on your running program. Choices
-        shown depend on your operating system and toolchain. On Windows platforms only Simple can
-        be used, and detailed data cannot be shown. Sun Studio data provider can be used on Solaris
-        and Linux systems where Sun Studio tools are installed. DTrace can be used only on Solaris
-        platforms.
-      </li>
-      
-      <li>
-        <b>Indicators</b>: Select which indicator graphs to display when the project runs.
+        <b>Profile Configuration</b>: Profile Configurations are sets of profiling tools. The Profile Configurations
+        shown in the drop down list depend on your operating system and tool collection. 
+       
+        <ul>
+        <li>C/C++ DTrace configurations are only supported on a Solaris OS and do not require the Sun Studio tool collection.</li>
+        <li>C/C++ Sun Studio configurations are supported on Solaris OS and Linux systems that have the Sun Studio tool collection.</li>
+        <li>C/C++ Simple configurations provide the graphic indicators without the deeper analysis for detailed information and can be
+            used on Solais OS or Linux, without Sun Studio tool collection.</li>
+       </ul>
+        Click the button next to the Profile Configuration list
+        to open the Profiler Tools Manager dialog box, where you can see which tools are included in each Profile Configuration.
       </li>
     </ul>
     <table>
@@ -48,6 +51,7 @@ Use is subject to license terms.
           &nbsp;
         </td>
         <td>
+          <a href="../ProfilingCandC++Projects/ProfilingCandC++Projects.html">Profiling C and C++ Projects</a><br>
           C/C++ Project Properties Dialog Box:<br>
            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="ProjectPropsBuild.html">Build</a><br>
            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="ProjectPropsGeneral.html">General</a><br>
@@ -62,25 +66,13 @@ Use is subject to license terms.
         </td>
       </tr>
     </table>
-    <p>
-       <a href="../credits.html"><small>Legal Notices</small></a>
-    </p>
-    <table border="0" cellpadding="20">
-      <tr>
-        <td>
-          &nbsp;
-        </td>
-      </tr>
-      <tr>
-        <td>
-          &nbsp;
-        </td>
-      </tr>
-      <tr>
-        <td>
-          &nbsp;
-        </td>
-      </tr>
-    </table>
-  </body>
+    <hr>
+<small>
+<a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="20">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
 </html>

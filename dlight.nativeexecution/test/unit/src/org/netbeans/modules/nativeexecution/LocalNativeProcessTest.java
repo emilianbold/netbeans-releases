@@ -222,14 +222,14 @@ public class LocalNativeProcessTest extends NativeExecutionBaseTestCase {
                             // Again, skip Windows
 
                             if (!isWindows) {
+                                int result = -1;
                                 try {
-                                    NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(execEnv).setCommandLine("/bin/kill -0 " + pid); // NOI18N
-                                    int result = pb.call().waitFor();
-                                    assertTrue(result != 0);
-                                } catch (IOException ex) {
+                                    result = CommonTasksSupport.sendSignal(execEnv, pid, Signal.NULL, null).get();
+                                } catch (ExecutionException ex) {
                                     Exceptions.printStackTrace(ex);
                                     fail();
                                 }
+                                assertTrue(result != 0);
                             }
 
                             counters.getCounter("Killed").incrementAndGet(); // NOI18N

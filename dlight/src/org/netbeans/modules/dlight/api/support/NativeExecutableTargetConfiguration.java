@@ -74,7 +74,7 @@ public final class NativeExecutableTargetConfiguration {
      */
     public NativeExecutableTargetConfiguration(String cmd, String[] args, Map<String, String> env) {
         this.cmd = cmd;
-        this.args = args;
+        this.args = args == null ? new String[0] : args.clone();
         this.env = new HashMap<String, String>();
         if (env != null) {
             this.env.putAll(env);

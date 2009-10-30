@@ -41,7 +41,7 @@
 
 package org.netbeans.performance.enterprise.footprint;
 
-import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
+import org.netbeans.jellytools.NewWebProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.RuntimeTabOperator;
@@ -75,7 +75,7 @@ public class EPFootprintUtilities extends CommonUtilities {
         wizard.selectProject(project);
         wizard.next();
 
-        NewProjectNameLocationStepOperator wizard_location = new NewProjectNameLocationStepOperator();
+        NewWebProjectNameLocationStepOperator wizard_location = new NewWebProjectNameLocationStepOperator();
         wizard_location.txtProjectLocation().clearText();
         wizard_location.txtProjectLocation().typeText(CommonUtilities.getTempDir());
         String pname = wizard_location.txtProjectName().getText();

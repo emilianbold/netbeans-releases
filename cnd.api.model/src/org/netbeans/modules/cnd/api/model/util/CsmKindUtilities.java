@@ -360,7 +360,9 @@ public class CsmKindUtilities {
         if (isDeclaration(obj)) {
             CsmDeclaration.Kind kind = ((CsmDeclaration)obj).getKind();
             return kind == CsmDeclaration.Kind.FUNCTION ||
-                    kind == CsmDeclaration.Kind.FUNCTION_DEFINITION;
+                    kind == CsmDeclaration.Kind.FUNCTION_DEFINITION ||
+                    kind == CsmDeclaration.Kind.FUNCTION_FRIEND ||
+                    kind == CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION;
         } else {
             return false;
         }
@@ -387,7 +389,8 @@ public class CsmKindUtilities {
     public static boolean isFunctionDeclaration(CsmObject obj) {
         if (isDeclaration(obj)) {
             CsmDeclaration.Kind kind = ((CsmDeclaration)obj).getKind();
-            return kind == CsmDeclaration.Kind.FUNCTION;
+            return kind == CsmDeclaration.Kind.FUNCTION ||
+                   kind == CsmDeclaration.Kind.FUNCTION_FRIEND;
         } else {
             return false;
         }
@@ -400,7 +403,8 @@ public class CsmKindUtilities {
     public static boolean isFunctionDefinition(CsmObject obj) {
         if (isDeclaration(obj)) {
             CsmDeclaration.Kind kind = ((CsmDeclaration)obj).getKind();
-            return kind == CsmDeclaration.Kind.FUNCTION_DEFINITION;
+            return kind == CsmDeclaration.Kind.FUNCTION_DEFINITION ||
+                    kind == CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION;
         } else {
             return false;
         }

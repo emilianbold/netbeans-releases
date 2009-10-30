@@ -253,7 +253,7 @@ public class LogSupport {
                 errAnnot = new ErrorAnnotation(errorMsg);
                 errAnnot.attach(errorLine);
                 errAnnot.moveToFront();
-                errorLine.show(ShowOpenType.NONE, ShowVisibilityType.NONE);
+                errorLine.show(ShowOpenType.OPEN, ShowVisibilityType.NONE);
             }
         }
         

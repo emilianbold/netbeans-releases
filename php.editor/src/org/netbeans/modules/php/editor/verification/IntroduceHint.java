@@ -41,6 +41,7 @@ package org.netbeans.modules.php.editor.verification;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.lexer.Token;
@@ -50,7 +51,6 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.EditList;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
-import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.core.UiUtils;
 import org.netbeans.modules.csl.spi.GsfUtilities;
@@ -64,9 +64,11 @@ import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
+import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.Model;
-import org.netbeans.modules.php.editor.model.ModelFactory;
+import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelUtils;
+import org.netbeans.modules.php.editor.model.PhpKind;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
@@ -199,18 +201,19 @@ public class IntroduceHint extends AbstractRule {
             if (isInside(methodInvocation.getStartOffset(), lineBegin, lineEnd)) {
                 String methName = CodeUtils.extractFunctionName(methodInvocation.getMethod());
                 String clzName = CodeUtils.extractUnqualifiedClassName(methodInvocation);
-                
+
                 if (clzName != null) {
-                    IndexedClass clz = getIndexedClass(clzName);
-                    if (clz != null && methName != null) {
+                    Collection<? extends TypeScope> allTypes = ModelUtils.resolveType(model, methodInvocation);
+                    if (allTypes.size() == 1) {
+                        TypeScope type = ModelUtils.getFirst(allTypes);
                         PHPIndex index = model.getIndexScope().getIndex();
-                        Collection<IndexedFunction> allMethods = PHPIndex.toMembers(index.getAllMethods(null, clz.getName(),
+                        Collection<IndexedFunction> allMethods = PHPIndex.toMembers(index.getAllMethods(null, type.getName(),
                                 methName, Kind.EXACT, PHPIndex.ANY_ATTR));
                         if (allMethods.isEmpty()) {
-                            FileObject fileObject = clz.getFileObject();
+                            FileObject fileObject = type.getFileObject();
                             BaseDocument document = fileObject != null ? GsfUtilities.getDocument(fileObject, true) : null;
                             if (document != null && fileObject.canWrite()) {
-                                fix = new IntroduceStaticMethodFix(document, methodInvocation, clz);
+                                fix = new IntroduceStaticMethodFix(document, methodInvocation, type);
                             }
                         }
                     }
@@ -232,8 +235,8 @@ public class IntroduceHint extends AbstractRule {
                         if (allFields.isEmpty()) {
                             FileObject fileObject = type.getFileObject();
                             BaseDocument document = fileObject != null ? GsfUtilities.getDocument(fileObject, false) : null;
-                            if (document != null && fileObject.canWrite()) {
-                                fix = new IntroduceFieldFix(document, fieldAccess, type);
+                            if (document != null && fileObject.canWrite() && type instanceof ClassScope ) {
+                                fix = new IntroduceFieldFix(document, fieldAccess, (ClassScope)type);
                             }
                         }
 
@@ -244,30 +247,36 @@ public class IntroduceHint extends AbstractRule {
         }
 
         @Override
-        public void visit(StaticFieldAccess staticFieldAccess) {
-            if (isInside(staticFieldAccess.getStartOffset(), lineBegin, lineEnd)) {
-                final Variable field = staticFieldAccess.getField();
-                String fieldName = CodeUtils.extractVariableName(field);
-                String clzName = CodeUtils.extractUnqualifiedClassName(staticFieldAccess);
+        public void visit(StaticFieldAccess fieldAccess) {
+            if (isInside(fieldAccess.getStartOffset(), lineBegin, lineEnd)) {
+                final Variable field = fieldAccess.getField();
+                String clzName = CodeUtils.extractUnqualifiedClassName(fieldAccess);
                 if (clzName != null) {
-                    IndexedClass clz = getIndexedClass(clzName);
-                    if (clz != null && fieldName != null) {
-                        if (fieldName.startsWith("$")) {//NOI18N
-                            fieldName = fieldName.substring(1);
-                        }
+                    String fieldName = CodeUtils.extractVariableName(field);
+                    if (fieldName == null) {
+                        return;
+                    }
+                    if (fieldName.startsWith("$")) {//NOI18N
+                        fieldName = fieldName.substring(1);
+                    }
+
+                    Collection<? extends TypeScope> allTypes = ModelUtils.resolveType(model, fieldAccess);
+                    if (allTypes.size() == 1) {
+                        TypeScope type = ModelUtils.getFirst(allTypes);
                         PHPIndex index = model.getIndexScope().getIndex();
-                        Collection<IndexedConstant> allConstants = PHPIndex.toMembers(index.getAllFields(null, clz.getName(), fieldName, Kind.EXACT, Modifier.STATIC));
-                        if (allConstants.isEmpty()) {
-                            FileObject fileObject = clz.getFileObject();
-                            BaseDocument document = fileObject != null ? GsfUtilities.getDocument(fileObject, true) : null;
-                            if (document != null && fileObject.canWrite()) {
-                                fix = new IntroduceStaticFieldFix(document, staticFieldAccess, clz);
+                        Collection<IndexedConstant> allFields = PHPIndex.toMembers(index.getAllFields(null, type.getName(), fieldName, Kind.EXACT, PHPIndex.ANY_ATTR));
+                        if (allFields.isEmpty()) {
+                            FileObject fileObject = type.getFileObject();
+                            BaseDocument document = fileObject != null ? GsfUtilities.getDocument(fileObject, false) : null;
+                            if (document != null && fileObject.canWrite() && type instanceof ClassScope ) {
+                                fix = new IntroduceStaticFieldFix(document, fieldAccess, (ClassScope)type);
                             }
                         }
+
                     }
                 }
             }
-            super.visit(staticFieldAccess);
+            super.visit(fieldAccess);
         }
 
         @Override
@@ -277,15 +286,18 @@ public class IntroduceHint extends AbstractRule {
                 String clzName = CodeUtils.extractUnqualifiedClassName(staticConstantAccess);
 
                 if (clzName != null) {
-                    IndexedClass clz = getIndexedClass(clzName);
-                    if (clz != null && constName != null) {
-                        PHPIndex index = model.getIndexScope().getIndex();
-                        Collection<IndexedConstant> allConstants = PHPIndex.toMembers(index.getAllTypeConstants(null, clz.getName(), constName, Kind.EXACT));
-                        if (allConstants.isEmpty()) {
-                            FileObject fileObject = clz.getFileObject();
-                            BaseDocument document = fileObject != null ? GsfUtilities.getDocument(fileObject, true) : null;
-                            if (document != null && fileObject.canWrite()) {
-                                fix = new IntroduceClassConstantFix(document, staticConstantAccess, clz);
+                    if (constName != null) {
+                        Collection<? extends TypeScope> allTypes = ModelUtils.resolveType(model, staticConstantAccess);
+                        if (allTypes.size() == 1) {
+                            TypeScope type = ModelUtils.getFirst(allTypes);
+                            PHPIndex index = model.getIndexScope().getIndex();
+                            Collection<IndexedConstant> allConstants = PHPIndex.toMembers(index.getAllTypeConstants(null, type.getName(), constName, Kind.EXACT));
+                            if (allConstants.isEmpty()) {
+                                FileObject fileObject = type.getFileObject();
+                                BaseDocument document = fileObject != null ? GsfUtilities.getDocument(fileObject, false) : null;
+                                if (document != null && fileObject.canWrite()) {
+                                    fix = new IntroduceClassConstantFix(document, staticConstantAccess, (TypeScope) type);
+                                }
                             }
                         }
                     }
@@ -436,18 +448,18 @@ public class IntroduceHint extends AbstractRule {
         }
 
         int getOffset() throws BadLocationException {
-            return IntroduceHint.getOffset(doc, type.getOffset());
+            return IntroduceHint.getOffset(doc, type, PhpKind.METHOD);
         }
     }
 
     private static class IntroduceStaticMethodFix extends IntroduceFix {
 
-        private IndexedClass clz;
+        private TypeScope type;
         private MethodDeclarationItem item;
 
-        public IntroduceStaticMethodFix(BaseDocument doc, StaticMethodInvocation node, IndexedClass clz) {
+        public IntroduceStaticMethodFix(BaseDocument doc, StaticMethodInvocation node, TypeScope type) {
             super(doc, node);
-            this.clz = clz;
+            this.type = type;
             this.item = createMethodDeclarationItem(node);
         }
 
@@ -457,13 +469,13 @@ public class IntroduceHint extends AbstractRule {
             edits.replace(templateOffset, 0, "\n" + item.getCustomInsertTemplate(), true, 0);//NOI18N
             edits.apply();
             templateOffset = Utilities.getRowEnd(doc, templateOffset + 1);
-            UiUtils.open(clz.getFileObject(), Utilities.getRowEnd(doc, templateOffset + 1) - 1);
+            UiUtils.open(type.getFileObject(), Utilities.getRowEnd(doc, templateOffset + 1) - 1);
         }
 
         @Override
         public String getDescription() {
-            String clsName = clz.getName();
-            String fileName = clz.getFileObject().getNameExt();
+            String clsName = type.getName();
+            String fileName = type.getFileObject().getNameExt();
             return NbBundle.getMessage(IntroduceHint.class, "IntroduceHintStaticMethodDesc",
                     item.getFunction().getFunctionSignature(true), clsName, fileName);//NOI18N
         }
@@ -473,19 +485,19 @@ public class IntroduceHint extends AbstractRule {
         }
 
         int getOffset() throws BadLocationException {
-            return IntroduceHint.getOffset(doc, clz.getOffset());
+            return IntroduceHint.getOffset(doc, type, PhpKind.METHOD);
         }
     }
 
     private static class IntroduceFieldFix extends IntroduceFix {
 
-        private TypeScope type;
+        private ClassScope clz;
         private String templ;
         private String fieldName;
 
-        public IntroduceFieldFix(BaseDocument doc, FieldAccess node, TypeScope type) {
+        public IntroduceFieldFix(BaseDocument doc, FieldAccess node, ClassScope clz) {
             super(doc, node);
-            this.type = type;
+            this.clz = clz;
             this.templ = createTemplate();//NOI18N
         }
 
@@ -495,19 +507,19 @@ public class IntroduceHint extends AbstractRule {
             edits.replace(templateOffset, 0, "\n" + templ, true, 0);//NOI18N
             edits.apply();
             templateOffset = Utilities.getRowEnd(doc, templateOffset + 1) - 2;
-            UiUtils.open(type.getFileObject(), templateOffset);
+            UiUtils.open(clz.getFileObject(), templateOffset);
         }
 
         @Override
         public String getDescription() {
-            String clsName = type.getName();
-            String fileName = type.getFileObject().getNameExt();
+            String clsName = clz.getName();
+            String fileName = clz.getFileObject().getNameExt();
             return NbBundle.getMessage(IntroduceHint.class, "IntroduceHintFieldDesc",
                     templ, clsName, fileName);//NOI18N
         }
 
         int getOffset() throws BadLocationException {
-            return IntroduceHint.getOffset(doc, type.getOffset());
+            return IntroduceHint.getOffset(doc, clz, PhpKind.FIELD);
         }
 
         private String createTemplate() {
@@ -522,11 +534,11 @@ public class IntroduceHint extends AbstractRule {
 
     private static class IntroduceStaticFieldFix extends IntroduceFix {
 
-        private IndexedClass clz;
+        private ClassScope clz;
         private String templ;
         private String fieldName;
 
-        public IntroduceStaticFieldFix(BaseDocument doc, StaticFieldAccess node, IndexedClass clz) {
+        public IntroduceStaticFieldFix(BaseDocument doc, StaticFieldAccess node, ClassScope clz) {
             super(doc, node);
             this.clz = clz;
             this.templ = createTemplate();
@@ -551,7 +563,7 @@ public class IntroduceHint extends AbstractRule {
         }
 
         int getOffset() throws BadLocationException {
-            return IntroduceHint.getOffset(doc, clz.getOffset());
+            return IntroduceHint.getOffset(doc, clz, PhpKind.FIELD);
         }
 
         private String createTemplate() {
@@ -566,13 +578,13 @@ public class IntroduceHint extends AbstractRule {
 
     private static class IntroduceClassConstantFix extends IntroduceFix {
 
-        private IndexedClass clz;
+        private TypeScope type;
         private String templ;
         private String constantName;
 
-        public IntroduceClassConstantFix(BaseDocument doc, StaticConstantAccess node, IndexedClass clz) {
+        public IntroduceClassConstantFix(BaseDocument doc, StaticConstantAccess node, TypeScope type) {
             super(doc, node);
-            this.clz = clz;
+            this.type = type;
             this.constantName = ((StaticConstantAccess) node).getConstant().getName();
             this.templ = String.format("const %s = \"\";", constantName);
         }
@@ -583,19 +595,19 @@ public class IntroduceHint extends AbstractRule {
             edits.replace(templateOffset, 0, "\n" + templ, true, 0);//NOI18N
             edits.apply();
             templateOffset = Utilities.getRowEnd(doc, templateOffset + 1) - 2;
-            UiUtils.open(clz.getFileObject(), templateOffset);
+            UiUtils.open(type.getFileObject(), templateOffset);
         }
 
         @Override
         public String getDescription() {
-            String clsName = clz.getName();
-            String fileName = clz.getFileObject().getNameExt();
+            String clsName = type.getName();
+            String fileName = type.getFileObject().getNameExt();
             return NbBundle.getMessage(IntroduceHint.class, "IntroduceHintClassConstDesc",
                     constantName, clsName, fileName);//NOI18N
         }
 
         int getOffset() throws BadLocationException {
-            return IntroduceHint.getOffset(doc, clz.getOffset());
+            return IntroduceHint.getOffset(doc, type, PhpKind.CLASS_CONSTANT);
         }
     }
 
@@ -663,11 +675,40 @@ public class IntroduceHint extends AbstractRule {
 
         @Override
         protected String getFunctionBodyForTemplate() {
-            return ";\n";//NOI18N
+            return "\n";//NOI18N
         }
     }
 
-    private static int getOffset(BaseDocument doc, int offset) throws BadLocationException {
+    private static int  getOffset(BaseDocument doc, TypeScope typeScope, PhpKind kind) throws BadLocationException {
+        int offset = -1;
+        Collection<ModelElement> elements = new HashSet<ModelElement>();
+        switch (kind) {
+            case CLASS_CONSTANT:
+                elements.addAll(typeScope.getDeclaredConstants());
+                break;
+            case METHOD:
+            case FIELD:
+                elements.addAll(typeScope.getDeclaredConstants());
+                if ((typeScope instanceof ClassScope)) {
+                    ClassScope clz = (ClassScope) typeScope;
+                    elements.addAll(clz.getDeclaredFields());
+                }
+                break;
+        }
+        for (ModelElement elem : elements) {
+            if (elem.getOffset() > offset) {
+                offset = elem.getOffset();
+            }
+        }
+        if (offset != -1) {
+            offset = Utilities.getRowEnd(doc, offset);
+        } else {
+            offset = getClassCurlyOpenOffset(doc, typeScope.getOffset());
+        }
+        return offset;
+    }
+
+    private static int getClassCurlyOpenOffset(BaseDocument doc, int offset) throws BadLocationException {
         int retval = offset;
         TokenSequence<? extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, retval);
         if (ts != null) {

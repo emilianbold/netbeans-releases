@@ -222,6 +222,7 @@ public class HtmlCompletionQuery extends UserTask {
 
         //namespace is null for html content
         String namespace = (String) root.getProperty(AstNode.NAMESPACE_PROPERTY);
+        boolean queryHtmlContent = namespace == null || parserResult.getHtmlVersion().getDefaultNamespace().equals(namespace);
 
         /* Character reference finder */
         int ampIndex = preText.lastIndexOf('&'); //NOI18N
@@ -245,7 +246,7 @@ public class HtmlCompletionQuery extends UserTask {
 
             result = new ArrayList<CompletionItem>();
 
-            if (namespace == null) {
+            if (queryHtmlContent) {
                 Collection<DTD.Element> openTags = AstNodeUtils.getPossibleOpenTagElements(root, astOffset);
 
                 result.addAll(translateTags(documentItemOffset - 1,
@@ -266,7 +267,7 @@ public class HtmlCompletionQuery extends UserTask {
             anchor = offset;
             result = new ArrayList<CompletionItem>();
 
-            if (namespace == null) {
+            if (queryHtmlContent) {
                 Collection<DTD.Element> openTags = AstNodeUtils.getPossibleOpenTagElements(root, astOffset);
                 result.addAll(translateTags(offset - 1, openTags, dtd.getElementList(null)));
             }
@@ -299,7 +300,7 @@ public class HtmlCompletionQuery extends UserTask {
             len = prefix.length();
             anchor = offset - len;
 
-            if (namespace != null) {
+            if (!queryHtmlContent) {
                 //extensions
                 Collection<CompletionItem> items = new ArrayList<CompletionItem>();
                 HtmlExtension.CompletionContext context = new HtmlExtension.CompletionContext(parserResult, itemOffset, astOffset, anchor, prefix, itemText, node);

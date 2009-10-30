@@ -229,7 +229,7 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
     public Collection<? extends ClassConstantElement> findDeclaredConstants(final QuerySupport.Kind nameKind, final String... queryName) {
         if (ModelUtils.getFileScope(this) == null) {
             IndexScopeImpl indexScopeImpl = (IndexScopeImpl) ModelUtils.getIndexScope(this);
-            return indexScopeImpl.findClassConstants(this, queryName);
+            return indexScopeImpl.findClassConstants(this, (queryName == null) ? new String[]{""} : queryName);
         }
 
         return filter(getElements(), new ElementFilter() {

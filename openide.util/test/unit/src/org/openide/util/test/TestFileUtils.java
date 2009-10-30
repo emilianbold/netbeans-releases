@@ -159,7 +159,7 @@ public class TestFileUtils {
         }
         for (long pause = 1; pause < 9999; pause *= 2) {
             Thread.sleep(pause);
-            f.setLastModified(System.currentTimeMillis());
+            f.setLastModified(System.currentTimeMillis() + 1);  // plus 1 needed for FileObject tests (initially FO lastModified is set to currentTimeMillis)
             if (f.lastModified() > older) {
                 return;
             }

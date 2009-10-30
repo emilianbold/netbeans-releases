@@ -61,7 +61,6 @@ public class RemoteBuildSamplesTestCase extends RemoteBuildTestBase {
         super(testName, execEnv);       
     }
 
-
     @ForAllEnvironments
     public void testBuildSampleArgumentsOnce() throws Exception {
         setupHost();

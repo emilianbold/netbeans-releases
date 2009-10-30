@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.core.stack.storage.impl;
 
 import java.util.List;
@@ -46,6 +45,8 @@ import org.netbeans.modules.dlight.core.stack.api.ThreadInfo;
 import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
 
 final class SnapshotImpl implements ThreadSnapshot {
+
+    private final Lock lock = new Lock();
     private final ThreadInfo threadInfo;
     private final SQLStackDataStorage storage;
     private final int stackID;
@@ -53,14 +54,13 @@ final class SnapshotImpl implements ThreadSnapshot {
     private final MSAState state;
     private boolean stackLoaded = false;
     private List<FunctionCall> stack = null;
-    private final Object lock = new String("SnapshotImpl.stack.lock");//NOI18N
 
     public SnapshotImpl(final SQLStackDataStorage storage, final long timestamp, final int threadID, final int stackID, final MSAState state) {
         this.timestamp = timestamp;
         this.storage = storage;
         this.stackID = stackID;
         this.state = state;
-        
+
         this.threadInfo = new ThreadInfo() {
 
             public int getThreadId() {
@@ -73,17 +73,16 @@ final class SnapshotImpl implements ThreadSnapshot {
         };
     }
 
-
     public ThreadInfo getThreadInfo() {
         return threadInfo;
     }
 
     public List<FunctionCall> getStack() {
-        synchronized(lock){
-            if (stackLoaded){
+        synchronized (lock) {
+            if (stackLoaded) {
                 return stack;
             }
-            stack =  storage.getCallStack(stackID);
+            stack = storage.getCallStack(stackID);
             stackLoaded = true;
             return stack;
         }
@@ -99,5 +98,8 @@ final class SnapshotImpl implements ThreadSnapshot {
 
     public long getTimestamp() {
         return timestamp;
+    }
+
+    private final static class Lock {
     }
 }

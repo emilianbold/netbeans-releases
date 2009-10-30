@@ -306,7 +306,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
                         completionResultNull = (completionResult == null);
                     }
                     if ((type & CompletionProvider.COMPLETION_QUERY_TYPE) != 0 &&
-                            CompletionSettings.getInstance().completionAutoPopup()) {
+                            CompletionSettings.getInstance(getActiveComponent()).completionAutoPopup()) {
                         autoModEndOffset = modEndOffset;
                         if (completionResultNull)
                             showCompletion(false, false, true, CompletionProvider.COMPLETION_QUERY_TYPE);
@@ -403,7 +403,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
         assert (SwingUtilities.isEventDispatchThread());
 
         documentationCancel();
-        if (layout.isDocumentationVisible() || CompletionSettings.getInstance().documentationAutoPopup()) {
+        if (layout.isDocumentationVisible() || CompletionSettings.getInstance(getActiveComponent()).documentationAutoPopup()) {
             restartDocumentationAutoPopupTimer();
         }
     }
@@ -446,7 +446,6 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
             activeComponent = (component != null)
                     ? new WeakReference<JTextComponent>(component)
                     : null;
-            CompletionSettings.getInstance().notifyEditorComponentChange(getActiveComponent());
             layout.setEditorComponent(getActiveComponent());
             installKeybindings();
             cancel = true;
@@ -491,7 +490,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
     private void restartCompletionAutoPopupTimer() {
         assert (SwingUtilities.isEventDispatchThread()); // expect in AWT only
 
-        int completionDelay = CompletionSettings.getInstance().completionAutoPopupDelay();
+        int completionDelay = CompletionSettings.getInstance(getActiveComponent()).completionAutoPopupDelay();
         completionAutoPopupTimer.setInitialDelay(completionDelay);
         completionAutoPopupTimer.restart();
     }
@@ -499,7 +498,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
     private void restartDocumentationAutoPopupTimer() {
         assert (SwingUtilities.isEventDispatchThread()); // expect in AWT only
 
-        int docDelay = CompletionSettings.getInstance().documentationAutoPopupDelay();
+        int docDelay = CompletionSettings.getInstance(getActiveComponent()).documentationAutoPopupDelay();
         docAutoPopupTimer.setInitialDelay(docDelay);
         docAutoPopupTimer.restart();
     }
@@ -897,10 +896,11 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
                         return;
                 }
                 JTextComponent c = getActiveComponent();
+                CompletionSettings cs = CompletionSettings.getInstance(c);
                 int caretOffset = c.getSelectionStart();
                 // completionResults = null;
                 if (sortedResultItems.size() == 1 && !refreshedQuery && explicitQuery
-                        && CompletionSettings.getInstance().completionInstantSubstitution()
+                        && cs.completionInstantSubstitution()
                         && c.isEditable() && !(c.getDocument() instanceof GuardedDocument && ((GuardedDocument)c.getDocument()).isPosGuarded(caretOffset))) {
                     try {
                         int[] block = Utilities.getIdentifierBlock(c, caretOffset);
@@ -915,12 +915,12 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
                 }
                 
                 int selectedIndex = getCompletionPreSelectionIndex(sortedResultItems);
-                getActiveComponent().putClientProperty("completion-visible", Boolean.TRUE);
+                c.putClientProperty("completion-visible", Boolean.TRUE);
                 layout.showCompletion(noSuggestions ? Collections.singletonList(NO_SUGGESTIONS) : sortedResultItems, displayTitle, displayAnchorOffset, CompletionImpl.this, displayAdditionalItems ? hasAdditionalItemsText.toString() : null, displayAdditionalItems ? completionShortcut : null, selectedIndex);
                 pleaseWaitDisplayed = false;
 
                 // Show documentation as well if set by default
-                if (CompletionSettings.getInstance().documentationAutoPopup()) {
+                if (cs.documentationAutoPopup()) {
                     if (noSuggestions) {
                         docAutoPopupTimer.stop(); // Ensure the popup timer gets stopped
                         documentationCancel();
@@ -986,10 +986,10 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         pleaseWaitTimer.stop();
         boolean hidePerformed = layout.hideCompletion();
         pleaseWaitDisplayed = false;
-        if (!completionOnly && hidePerformed && CompletionSettings.getInstance().documentationAutoPopup()) {
+        JTextComponent jtc = getActiveComponent();
+        if (!completionOnly && hidePerformed && CompletionSettings.getInstance(jtc).documentationAutoPopup()) {
             hideDocumentation(true);
         }
-        JTextComponent jtc = getActiveComponent();
         if (jtc != null) {
             jtc.putClientProperty("completion-visible", Boolean.FALSE);
             jtc.putClientProperty("completion-active", Boolean.FALSE);
@@ -1116,7 +1116,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         docAutoPopupTimer.stop();
         boolean hidePerformed = layout.hideDocumentation();
  // Also hide completion if documentation pops automatically
-        if (!documentationOnly && hidePerformed && CompletionSettings.getInstance().documentationAutoPopup()) {
+        if (!documentationOnly && hidePerformed && CompletionSettings.getInstance(getActiveComponent()).documentationAutoPopup()) {
             hideCompletion(true);
         }
         return hidePerformed;

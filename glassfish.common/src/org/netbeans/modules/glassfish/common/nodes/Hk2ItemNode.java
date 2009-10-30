@@ -83,8 +83,6 @@ import org.openide.windows.WindowManager;
  */
 public class Hk2ItemNode extends AbstractNode {
     
-    protected static final String HTTP_HEADER = "http://"; // NOI18N
-
     protected final Decorator decorator;
     
     protected Hk2ItemNode(Children children, final Lookup lookup, final String name, final Decorator decorator) {

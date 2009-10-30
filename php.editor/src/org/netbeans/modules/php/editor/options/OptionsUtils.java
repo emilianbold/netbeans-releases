@@ -57,6 +57,11 @@ public final class OptionsUtils {
         public void preferenceChange(PreferenceChangeEvent evt) {
             String settingName = evt == null ? null : evt.getKey();
 
+            if (settingName == null || CodeCompletionPanel.PHP_AUTO_COMPLETION_FULL.equals(settingName)) {
+                autoCompletionFull = preferences.getBoolean(
+                        CodeCompletionPanel.PHP_AUTO_COMPLETION_FULL,
+                        CodeCompletionPanel.PHP_AUTO_COMPLETION_FULL_DEFAULT);
+            }
             if (settingName == null || CodeCompletionPanel.PHP_AUTO_COMPLETION_VARIABLES.equals(settingName)) {
                 autoCompletionVariables = preferences.getBoolean(
                         CodeCompletionPanel.PHP_AUTO_COMPLETION_VARIABLES,
@@ -84,6 +89,10 @@ public final class OptionsUtils {
                         CodeCompletionPanel.PHP_CODE_COMPLETION_NON_STATIC_METHODS_DEFAULT);
             }
 
+            if (settingName == null || CodeCompletionPanel.PHP_CODE_COMPLETION_VARIABLES_SCOPE.equals(settingName)) {
+                codeCompletionVariablesScope = CodeCompletionPanel.VariablesScope.resolve(preferences.get(CodeCompletionPanel.PHP_CODE_COMPLETION_VARIABLES_SCOPE, null));
+            }
+
             if (settingName == null || CodeCompletionPanel.PHP_CODE_COMPLETION_TYPE.equals(settingName)) {
                 codeCompletionType = CodeCompletionPanel.CodeCompletionType.resolve(preferences.get(CodeCompletionPanel.PHP_CODE_COMPLETION_TYPE, null));
             }
@@ -92,6 +101,7 @@ public final class OptionsUtils {
 
     private static Preferences preferences;
 
+    private static Boolean autoCompletionFull = null;
     private static Boolean autoCompletionVariables = null;
     private static Boolean autoCompletionTypes = null;
     private static Boolean autoCompletionNamespaces = null;
@@ -99,9 +109,20 @@ public final class OptionsUtils {
     private static Boolean codeCompletionStaticMethods = null;
     private static Boolean codeCompletionNonStaticMethods = null;
 
-    private static CodeCompletionPanel.CodeCompletionType codeCompletionType = null;;
+    private static CodeCompletionPanel.VariablesScope codeCompletionVariablesScope = null;
+
+    private static CodeCompletionPanel.CodeCompletionType codeCompletionType = null;
 
     private OptionsUtils() {
+    }
+
+     /**
+     * Code Completion after typing
+     */
+    public static boolean autoCompletionFull() {
+        lazyInit();
+        assert autoCompletionFull != null;
+        return autoCompletionFull;
     }
 
     /**
@@ -110,6 +131,9 @@ public final class OptionsUtils {
     public static boolean autoCompletionVariables() {
         lazyInit();
         assert autoCompletionVariables != null;
+        if (autoCompletionFull()) {
+            return true;
+        }
         return autoCompletionVariables;
     }
 
@@ -119,6 +143,9 @@ public final class OptionsUtils {
     public static boolean autoCompletionTypes() {
         lazyInit();
         assert autoCompletionTypes != null;
+        if (autoCompletionFull()) {
+            return true;
+        }
         return autoCompletionTypes;
     }
 
@@ -128,6 +155,9 @@ public final class OptionsUtils {
     public static boolean autoCompletionNamespaces() {
         lazyInit();
         assert autoCompletionNamespaces != null;
+        if (autoCompletionFull()) {
+            return true;
+        }
         return autoCompletionNamespaces;
     }
 
@@ -147,6 +177,15 @@ public final class OptionsUtils {
         lazyInit();
         assert codeCompletionNonStaticMethods != null;
         return codeCompletionNonStaticMethods;
+    }
+
+    /**
+     * All variables or only from current file.
+     */
+    public static CodeCompletionPanel.VariablesScope codeCompletionVariablesScope() {
+        lazyInit();
+        assert codeCompletionVariablesScope != null;
+        return codeCompletionVariablesScope;
     }
 
     /**

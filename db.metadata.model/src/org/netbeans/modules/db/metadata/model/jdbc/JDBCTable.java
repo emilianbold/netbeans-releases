@@ -148,7 +148,7 @@ public class JDBCTable extends TableImplementation {
     protected JDBCColumn createJDBCColumn(ResultSet rs) throws SQLException {
         int position = 0;
         JDBCValue jdbcValue;
-        if (isOdbc()) {
+        if (isOdbc(rs)) {
             jdbcValue = JDBCValue.createTableColumnValueODBC(rs);
         } else {
             position = rs.getInt("ORDINAL_POSITION");
@@ -159,8 +159,17 @@ public class JDBCTable extends TableImplementation {
 
     /** Returns true if this table is under ODBC connection. In such a case
      * some meta data like ORDINAL_POSITION or ASC_OR_DESC are not supported. */
-    private boolean isOdbc() throws SQLException {
-        return jdbcSchema.getJDBCCatalog().getJDBCMetadata().getDmd().getURL().startsWith("jdbc:odbc");  //NOI18N
+    private boolean isOdbc(ResultSet rs) throws SQLException {
+        boolean odbc = jdbcSchema.getJDBCCatalog().getJDBCMetadata().getDmd().getURL().startsWith("jdbc:odbc");  //NOI18N
+        if (odbc) {
+            try {
+                rs.getInt("PRECISION");
+                return true;
+            } catch (SQLException e) {
+                // ignore and return false at the end; Probably MS Access driver which supports standards
+            }
+        }
+        return false;
     }
 
     protected JDBCPrimaryKey createJDBCPrimaryKey(String pkName, Collection<Column> pkcols) {
@@ -244,7 +253,7 @@ public class JDBCTable extends TableImplementation {
         Ordering ordering = Ordering.NOT_SUPPORTED;
         try {
             column = getColumn(rs.getString("COLUMN_NAME"));
-            if (!isOdbc()) {
+            if (!isOdbc(rs)) {
                 position = rs.getInt("ORDINAL_POSITION");
                 ordering = JDBCUtils.getOrdering(rs.getString("ASC_OR_DESC"));
             }

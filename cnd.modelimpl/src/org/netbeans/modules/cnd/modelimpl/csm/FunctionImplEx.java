@@ -106,8 +106,15 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
     private static CharSequence[] getClassOrNspNames(AST ast) {
 	assert CastUtils.isCast(ast);
 	AST child = ast.getFirstChild();
+        if (child != null && child.getType() == CPPTokenTypes.LITERAL_template) {
+            child = AstRenderer.skipTemplateSibling(child);
+        }
+        child = AstRenderer.getFirstSiblingSkipQualifiers(child);
 	if( child != null && child.getType() == CPPTokenTypes.ID ) {
 	    AST next = child.getNextSibling();
+	    if( next != null && next.getType() == CPPTokenTypes.LESSTHAN ) {
+                next = AstRenderer.skipTemplateParameters(next);
+	    }
 	    if( next != null && next.getType() == CPPTokenTypes.SCOPE ) {
 		List<CharSequence> l = new ArrayList<CharSequence>();
                 APTStringManager manager = NameCache.getManager();

@@ -61,15 +61,24 @@ public interface ArtifactListener {
 
         private final boolean relocatable;
 
-        public Artifact(File file, File distributionPath, boolean library, boolean relocatable) {
+        /*
+         * True if the artifact is server related - not a part of application
+         * and thus intended to be deployed in a different way. For example
+         * data sources, message queues etc.
+         */
+        private final boolean serverResource;
+
+        public Artifact(File file, File distributionPath, boolean library,
+                boolean relocatable, boolean resource) {
             this.file = file;
             this.distributionPath = distributionPath;
             this.library = library;
             this.relocatable = relocatable;
+            this.serverResource = resource;
         }
 
         public static Artifact forFile(File file) {
-            return new Artifact(FileUtil.normalizeFile(file), null, false, false);
+            return new Artifact(FileUtil.normalizeFile(file), null, false, false, false);
         }
 
         public File getFile() {
@@ -77,7 +86,8 @@ public interface ArtifactListener {
         }
 
         public Artifact referencedLibrary() {
-            return new Artifact(this.file, this.distributionPath, true, this.relocatable);
+            return new Artifact(this.file, this.distributionPath, true,
+                    this.relocatable, this.isServerResource());
         }
 
         public boolean isReferencedLibrary() {
@@ -85,7 +95,8 @@ public interface ArtifactListener {
         }
 
         public Artifact distributionPath(File distributionPath) {
-            return new Artifact(this.file, distributionPath, this.library, this.relocatable);
+            return new Artifact(this.file, distributionPath, this.library,
+                    this.relocatable, this.isServerResource());
         }
 
         public File getDistributionPath() {
@@ -93,11 +104,21 @@ public interface ArtifactListener {
         }
 
         public Artifact relocatable() {
-            return new Artifact(this.file, this.distributionPath, this.library, true);
+            return new Artifact(this.file, this.distributionPath, this.library,
+                    true, this.isServerResource());
         }
 
         public boolean isRelocatable() {
             return relocatable;
+        }
+
+        public Artifact serverResource() {
+            return new Artifact(this.file, this.distributionPath, this.library,
+                    this.relocatable, true);
+        }
+
+        public boolean isServerResource() {
+            return serverResource;
         }
 
         @Override
@@ -128,6 +149,20 @@ public interface ArtifactListener {
             hash = 59 * hash + (this.distributionPath != null ? this.distributionPath.hashCode() : 0);
             hash = 59 * hash + (this.library ? 1 : 0);
             return hash;
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder builder = new StringBuilder(getFile().toString());
+            builder.append(", ");
+            builder.append(getDistributionPath());
+            builder.append(", ");
+            builder.append("isReferencedLibrary: ").append(isReferencedLibrary());
+            builder.append(", ");
+            builder.append("isRelocatable: ").append(isRelocatable());
+            builder.append(", ");
+            builder.append("isServerResource: ").append(isServerResource());
+            return builder.toString();
         }
 
     }

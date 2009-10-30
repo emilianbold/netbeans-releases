@@ -147,13 +147,13 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
                 sb.append(param.getName());
                     String defaultValue = param.getDefaultValue();
                     if (defaultValue != null) {
-                        sb.append("=").append(defaultValue).append(" "); //NOI18N
+                        sb.append(" = ").append(defaultValue); //NOI18N
                     }
             }
         }
 
         sb.append(")");
-        sb.append("{\n}\n");//NOI18N
+        sb.append("{\n}");//NOI18N
         return sb.toString();
     }
 
@@ -166,7 +166,7 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
         for (int i = 0; i < parameterNames.size(); i++) {
             String param = parameterNames.get(i);
             if (i > 0) {
-                sb.append(",");//NOI18N
+                sb.append(", ");//NOI18N
             }
             sb.append(param);
         }
@@ -178,36 +178,42 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
     @Override
     public String getIndexSignature() {
         StringBuilder sb = new StringBuilder();
+        sb.append(getName().toLowerCase()).append(";");//NOI18N
         sb.append(getName()).append(";");//NOI18N
-        sb.append(getOffset()).append(";");//NOI18N
-        List<? extends Parameter> parameters = getParameters();
-        for (int idx = 0; idx < parameters.size(); idx++) {
-            Parameter parameter = parameters.get(idx);
-            if (idx > 0) {
-                sb.append(',');//NOI18N
-            }
-            sb.append(parameter.getIndexSignature());
-
-        }
-        sb.append(";");//NOI18N
-        if (returnType != null && !PredefinedSymbols.MIXED_TYPE.equalsIgnoreCase(returnType)) {
-            sb.append(returnType);
-        }
-        sb.append(";");//NOI18N
-        sb.append(getPhpModifiers().toBitmask()).append(";");
+        sb.append(getSignatureLastPart());
         return sb.toString();
     }
 
     @Override
     public String getConstructorIndexSignature() {
         StringBuilder sb = new StringBuilder();
-        String indexSignature = getIndexSignature();
-        int indexOf = indexSignature.indexOf(";");
-        sb.append(getInScope().getName()).append(indexSignature.substring(indexOf));//NOI18N
+        final String typeName = getInScope().getName();
+        sb.append(typeName.toLowerCase()).append(";");//NOI18N
+        sb.append(typeName).append(";");//NOI18N
+        sb.append(getSignatureLastPart());
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(this);
         QualifiedName qualifiedName = namespaceScope.getQualifiedName();
         sb.append(qualifiedName.toString()).append(";");//NOI18N
+        return sb.toString();
+    }
 
+    private String getSignatureLastPart() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(getOffset()).append(";"); //NOI18N
+        List<? extends Parameter> parameters = getParameters();
+        for (int idx = 0; idx < parameters.size(); idx++) {
+            Parameter parameter = parameters.get(idx);
+            if (idx > 0) {
+                sb.append(','); //NOI18N
+            }
+            sb.append(parameter.getIndexSignature());
+        }
+        sb.append(";"); //NOI18N
+        if (returnType != null && !PredefinedSymbols.MIXED_TYPE.equalsIgnoreCase(returnType)) {
+            sb.append(returnType);
+        }
+        sb.append(";"); //NOI18N
+        sb.append(getPhpModifiers().toBitmask()).append(";");
         return sb.toString();
     }
 }

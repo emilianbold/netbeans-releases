@@ -152,6 +152,10 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
     private CsmFunction findDeclaration(Resolver parent) {
         String uname = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION) + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix();
         Collection<? extends CsmDeclaration> defs = getContainingFile().getProject().findDeclarations(uname);
+        if (defs.isEmpty()) {
+            uname = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION_FRIEND) + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix();
+            defs = getContainingFile().getProject().findDeclarations(uname);
+        }
         CsmDeclaration def = null;
         if (defs.isEmpty()) {
             CsmObject owner = findOwner(parent);

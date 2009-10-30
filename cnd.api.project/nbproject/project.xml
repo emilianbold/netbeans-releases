@@ -30,6 +30,7 @@
                 <friend>com.sun.dlight.remotesupport</friend>
                 <friend>com.sun.dlight.target</friend>
                 <friend>com.sun.dlight.xyplot</friend>
+                <friend>org.netbeans.embedded.project</friend>
                 <friend>org.netbeans.modules.cnd</friend>
                 <friend>org.netbeans.modules.cnd.debugger.common</friend>
                 <friend>org.netbeans.modules.cnd.debugger.gdb</friend>

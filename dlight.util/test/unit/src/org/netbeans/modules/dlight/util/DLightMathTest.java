@@ -73,4 +73,25 @@ public class DLightMathTest {
         String b = "b";
         assertSame(a, DLightMath.min(a, b));
     }
+
+    @Test
+    public void testNearestMultipleOf() {
+        assertEquals(10, DLightMath.nearestMultipleOf(10, 11));
+        assertEquals(40, DLightMath.nearestMultipleOf(10, 39));
+        assertEquals(10, DLightMath.nearestMultipleOf(10, 5));
+        assertEquals(0, DLightMath.nearestMultipleOf(10, 4));
+        assertEquals(444, DLightMath.nearestMultipleOf(222, 445));
+    }
+
+    @Test
+    public void testPrevMultipleOf() {
+        assertEquals(10990, DLightMath.prevMultipleOf(10, 11000));
+        assertEquals(230, DLightMath.prevMultipleOf(10, 234));
+    }
+
+    @Test
+    public void testNextMultipleOf() {
+        assertEquals(123, DLightMath.prevMultipleOf(123, 246));
+        assertEquals(123, DLightMath.prevMultipleOf(123, 200));
+    }
 }

@@ -124,7 +124,7 @@ public class GeneratorUtils {
 
     public static Collection<CsmFunction> getAllOutOfClassMethodDefinitions(CsmClass clazz) {
         // get all method declarations
-        Iterator<CsmMember> methods = CsmSelect.getClassMembers(clazz, CsmSelect.getFilterBuilder().createKindFilter(CsmDeclaration.Kind.FUNCTION));
+        Iterator<CsmMember> methods = CsmSelect.getClassMembers(clazz, CsmSelect.getFilterBuilder().createKindFilter(CsmDeclaration.Kind.FUNCTION, CsmDeclaration.Kind.FUNCTION_FRIEND));
         List<CsmFunction> result = new ArrayList<CsmFunction>();
         // find definitions of that declarations
         while (methods.hasNext()) {

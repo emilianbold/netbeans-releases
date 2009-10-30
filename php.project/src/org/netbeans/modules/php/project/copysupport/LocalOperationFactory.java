@@ -40,10 +40,7 @@ package org.netbeans.modules.php.project.copysupport;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
+import java.util.Enumeration;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -51,6 +48,7 @@ import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.project.ui.Utils;
+import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -166,7 +164,13 @@ final class LocalOperationFactory extends FileOperationFactory {
                 Boolean work = null;
                 String[] list = target.list();
                 if (list != null && target.list().length == 0) {
-                    for (FileObject child : getAllChildren(source)) {
+                    Enumeration<? extends FileObject> children = source.getChildren(true);
+                    while (children.hasMoreElements()) {
+                        FileObject child = children.nextElement();
+                        if (!isSourceFileValid(child)) {
+                            LOGGER.log(Level.FINE, "Ignored for {0} (not valid)", getPath(child));
+                            continue;
+                        }
                         target = getTarget(child, false);
                         if (target == null) {
                             LOGGER.log(Level.FINE, "Ignored for {0} (no target)", getPath(child));
@@ -212,7 +216,13 @@ final class LocalOperationFactory extends FileOperationFactory {
                 }
 
                 if (source.isFolder()) {
-                    for (FileObject child : getAllChildren(source)) {
+                    Enumeration<? extends FileObject> children = source.getChildren(true);
+                    while (children.hasMoreElements()) {
+                        FileObject child = children.nextElement();
+                        if (!isSourceFileValid(child)) {
+                            LOGGER.log(Level.FINE, "Ignored for {0} (not valid)", getPath(child));
+                            continue;
+                        }
                         final File childTarget = getTarget(child, false);
                         if (childTarget != null
                                 && !doCopy(child, childTarget)) {
@@ -331,33 +341,5 @@ final class LocalOperationFactory extends FileOperationFactory {
 
     private static boolean isPairValid(Pair<FileObject, File> pair) {
         return pair != null && pair.first != null && pair.second != null;
-    }
-
-    private Collection<FileObject> getAllChildren(FileObject source) {
-        LOGGER.log(Level.FINE, "Getting all valid children for {0}", getPath(source));
-        assert source.isFolder() : "Only folders allowed but file given: " + getPath(source);
-        Queue<FileObject> queue = new LinkedList<FileObject>();
-        queue.offer(source);
-
-        List<FileObject> children = new LinkedList<FileObject>();
-        while (!queue.isEmpty()) {
-            FileObject file = queue.poll();
-            if (file.isFolder()) {
-                for (FileObject child : file.getChildren()) {
-                    if (isSourceFileValid(child)) {
-                        assert !children.contains(child) : String.format("File %s already in children %s", child, children);
-                        LOGGER.log(Level.FINEST, "\t-> file {0} added", getPath(child));
-                        children.add(child);
-
-                        queue.offer(child);
-                    } else {
-                        LOGGER.log(Level.FINEST, "\t-> file {0} ignored (not valid)", getPath(child));
-                    }
-                }
-            }
-        }
-        LOGGER.log(Level.FINEST, "Children of folder {0}: {1}", new Object[] {source, children});
-        LOGGER.log(Level.FINE, "\t-> got {0} children", children.size());
-        return children;
     }
 }

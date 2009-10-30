@@ -175,7 +175,7 @@ public abstract class CndPanelGUI  extends javax.swing.JPanel implements Documen
                 setIcon( group.getIcon( false ) );
             } 
             else {
-                setText( value.toString () );
+                setText( value == null? "" : value.toString() ); // NOI18N
                 setIcon( null );
             }
             if ( isSelected ) {

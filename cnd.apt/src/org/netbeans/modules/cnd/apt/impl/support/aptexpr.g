@@ -131,6 +131,15 @@ options {
         return num;
     }
 
+    private long binaryToLong(String str) {
+        str = remSuffix(str);
+        long val = 0;
+        for (int i = 2; i < str.length(); i++) {
+            val = val*2 + ((str.charAt(i) == '0') ? 0 : 1);
+        }
+        return val;
+    }
+    
     private long evalID(Token id) {
         // each not expanded ID in expression is '0' by specification
         return 0;
@@ -194,7 +203,9 @@ constant returns [long r] {r=0;}
             |   id:ID {r=evalID(id);}
             | o:OCTALINT {r=toLong(o.getText());}
             | d:DECIMALINT {r=toLong(d.getText());}
-            | x:HEXADECIMALINT {r=toLong(x.getText());}
+            | x:HEXADECIMALINT {r=toLong(x.
+                getText());}
+            | b:BINARYINT {r=binaryToLong(b.getText());}
             | c: CHAR_LITERAL { r=c.getText().charAt(1); }
 //          | f1: FLOATONE {r=Integer.parseInt(f1.getText());}
 //          | f2: FLOATTWO {r=Integer.parseInt(f2.getText());}

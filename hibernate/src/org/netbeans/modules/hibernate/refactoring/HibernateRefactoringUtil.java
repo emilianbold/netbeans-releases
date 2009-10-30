@@ -579,12 +579,14 @@ public class HibernateRefactoringUtil {
                             mappingResourceAttribValue = getAttributeValue(theNode, HibernateCfgXmlConstants.RESOURCE_ATTRIB);
                             if(mappingResourceAttribValue != null) {
                                 if(searchingPathOnly) {
-                                    mappingResourceAttribValue = mappingResourceAttribValue.substring(0, mappingResourceAttribValue.lastIndexOf('/'));
+                                    int lastIndex = mappingResourceAttribValue.lastIndexOf('/');
+                                    if (lastIndex > -1) {
+                                        mappingResourceAttribValue = mappingResourceAttribValue.substring(0, lastIndex);
+                                    } else {
+                                        mappingResourceAttribValue = "";
+                                    }
                                 }
-
                                 if (mappingResourceAttribValue.equals(resourceName)) {
-
-
                                     text = document.getText(item.getOffset(), element.getElementLength());
 
                                     // find the offset for the field name
@@ -593,7 +595,6 @@ public class HibernateRefactoringUtil {
                                     int endOffset = startOffset + resourceName.length();
                                     PositionBounds loc = new PositionBounds(editor.createPositionRef(startOffset, Bias.Forward),
                                             editor.createPositionRef(endOffset, Bias.Forward));
-
                                     foundPlaces.add(new OccurrenceItem(loc, text));
                                 }
                             }
