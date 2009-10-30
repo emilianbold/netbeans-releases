@@ -165,7 +165,17 @@ public class IdentifierErrorProvider extends CsmErrorProvider {
                     if (fun.getStartOffset() <= ref.getStartOffset()) {
                         return;
                     }
-                    if (!CsmKindUtilities.isGlobalFunction(referencedObject)) {
+                    if (!CsmKindUtilities.isGlobalFunction(fun)) {
+                        return;
+                    }
+                    CsmFunction funDecl = fun.getDeclaration();
+                    if(funDecl == null) {
+                        return;
+                    }
+                    if (funDecl.getContainingFile() != ref.getContainingFile()) {
+                        return;
+                    }
+                    if (funDecl.getStartOffset() <= ref.getStartOffset()) {
                         return;
                     }
                     Severity severity = Severity.WARNING;
