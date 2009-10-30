@@ -271,6 +271,9 @@ public abstract class IndexedElement extends RubyElement {
     
     /** Return flag corresponding to the given encoding chars */
     public static int stringToFlag(char first, char second) {
+        if (first == ';'){
+            return 0;
+        }
         int high = 0;
         int low = 0;
         if (first > '9') {
