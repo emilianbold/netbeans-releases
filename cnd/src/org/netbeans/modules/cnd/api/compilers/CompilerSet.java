@@ -147,6 +147,10 @@ public class CompilerSet {
             return "MinGW".equals(sval); // NOI18N
         }
 
+        public boolean isCygwinCompiler(){
+            return "Cygwin".equals(sval); // NOI18N
+        }
+
         public String getCommandFolder(int platform){
             ToolchainDescriptor d = getToolchainDescriptor();
             if (d != null) {
