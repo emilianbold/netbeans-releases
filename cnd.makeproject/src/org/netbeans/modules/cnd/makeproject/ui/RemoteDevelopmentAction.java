@@ -49,6 +49,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JSeparator;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerListUI;
@@ -63,6 +64,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostCo
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.Presenter;
 
 public class RemoteDevelopmentAction extends AbstractAction implements Presenter.Menu, Presenter.Popup {
@@ -137,18 +139,30 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
         });
     }
 
-    private static boolean setRemodeDevelopmentHost(Object source, MakeConfiguration mconf, ExecutionEnvironment execEnv, Project project) {
+    private static void setRemodeDevelopmentHost(final Object source, final MakeConfiguration mconf, final ExecutionEnvironment execEnv, final Project project) {
+        if (SwingUtilities.isEventDispatchThread()) {
+            RequestProcessor.getDefault().post(new Runnable(){
+                public void run() {
+                    _setRemodeDevelopmentHost(source, mconf, execEnv, project);
+                }
+            });
+        } else {
+            _setRemodeDevelopmentHost(source, mconf, execEnv, project);
+        }
+    }
+
+    private static void _setRemodeDevelopmentHost(Object source, MakeConfiguration mconf, ExecutionEnvironment execEnv, Project project) {
         if (mconf != null && execEnv != null) {
             ServerRecord record = ServerList.get(execEnv);
             if (!record.isSetUp()) {
                 if (!record.setUp()) {
-                    return true;
+                    return; //true;
                 }
             }
             DevelopmentHostConfiguration dhc = new DevelopmentHostConfiguration(execEnv);
             DevelopmentHostConfiguration oldDhc = mconf.getDevelopmentHost();
             if (dhc.getValue() == oldDhc.getValue()) {
-                return true;
+                return; //true;
             }
             mconf.setDevelopmentHost(dhc);
             mconf.setCompilerSet(new CompilerSet2Configuration(dhc));
@@ -164,7 +178,7 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
             ConfigurationDescriptor configurationDescriptor = configurationDescriptorProvider.getConfigurationDescriptor();
             configurationDescriptor.setModified(true);
         }
-        return false;
+        return; // false;
     }
 
     private static class MenuItemActionListener implements ActionListener {
@@ -175,7 +189,7 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
                 ExecutionEnvironment execEnv = (ExecutionEnvironment) jmi.getClientProperty(HOST_ENV);
                 MakeConfiguration mconf = (MakeConfiguration) jmi.getClientProperty(CONF);
                 Project project = (Project) jmi.getClientProperty(PROJECT);
-                if (setRemodeDevelopmentHost(jmi, mconf, execEnv, project)) return;
+                setRemodeDevelopmentHost(jmi, mconf, execEnv, project);
             }
         }
     }
