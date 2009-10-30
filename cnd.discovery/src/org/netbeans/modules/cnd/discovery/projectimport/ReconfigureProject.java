@@ -108,6 +108,7 @@ public class ReconfigureProject {
         assert configuration != null && configuration.getConfigurationType().getValue() ==  MakeConfiguration.TYPE_MAKEFILE;
         CompilerSet2Configuration set = configuration.getCompilerSet();
         compilerSet = set.getCompilerSet();
+        assert compilerSet != null;
         isSunCompiler = compilerSet.isSunCompiler();
         Folder important = pdp.getConfigurationDescriptor().getExternalFileItems();
         for(Item item : important.getAllItemsAsArray()){

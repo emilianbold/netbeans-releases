@@ -44,8 +44,10 @@ import javax.swing.JButton;
 import javax.swing.JMenuItem;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.discovery.projectimport.ReconfigureProject.CompilerOptions;
+import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.nodes.Node;
@@ -128,8 +130,16 @@ public class ReconfigureAction extends NodeAction {
         if (pdp == null || !pdp.gotDescriptor()){
             return false;
         }
-        MakeConfiguration configuration = pdp.getConfigurationDescriptor().getActiveConfiguration();
+        MakeConfigurationDescriptor mcd = pdp.getConfigurationDescriptor();
+        if (mcd == null) {
+            return false;
+        }
+        MakeConfiguration configuration = mcd.getActiveConfiguration();
         if (configuration == null || configuration.getConfigurationType().getValue() !=  MakeConfiguration.TYPE_MAKEFILE){
+            return false;
+        }
+        CompilerSet2Configuration set = configuration.getCompilerSet();
+        if (set == null) {
             return false;
         }
         return true;
