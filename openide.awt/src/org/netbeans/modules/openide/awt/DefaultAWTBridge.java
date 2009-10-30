@@ -47,6 +47,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
+import javax.swing.JButton;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
@@ -87,10 +88,12 @@ public final class DefaultAWTBridge extends org.netbeans.modules.openide.util.AW
     }
     
     public Component createToolbarPresenter(Action action) {
-        AbstractButton btn = new JToggleButton();
+        AbstractButton btn;
         if (action instanceof BooleanStateAction) {
+            btn = new JToggleButton();
             Actions.connect(btn, (BooleanStateAction) action);
         } else {
+            btn = new JButton();
             Actions.connect(btn, action);
         }
         return btn;
