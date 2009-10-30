@@ -2743,7 +2743,7 @@ public class JavaCompletionProvider implements CompletionProvider {
         private void addPackages(Env env, String fqnPrefix, boolean inPkgStmt) {
             if (fqnPrefix == null)
                 fqnPrefix = EMPTY;
-            for (String pkgName : env.getController().getClasspathInfo().getClassIndex().getPackageNames(fqnPrefix, true,EnumSet.allOf(ClassIndex.SearchScope.class)))
+            for (String pkgName : env.getController().getClasspathInfo().getClassIndex().getPackageNames(fqnPrefix.toLowerCase(), true,EnumSet.allOf(ClassIndex.SearchScope.class)))
                 if (pkgName.length() > 0 && !Utilities.isExcluded(pkgName + ".")) //NOI18N
                     results.add(JavaCompletionItem.createPackageItem(pkgName, anchorOffset, inPkgStmt));
         }

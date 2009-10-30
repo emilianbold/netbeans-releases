@@ -72,6 +72,9 @@ import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import junit.framework.Test;
+import junit.framework.TestSuite;
+import org.foo.impl.Runnable1;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -80,6 +83,7 @@ import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
@@ -147,6 +151,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
     private FileObject unknownSrc2;
     private FileObject srcRootWithFiles1;
 
+    FileObject f1;
     FileObject f3;
 
     private URL[] customFiles;
@@ -162,6 +167,13 @@ public class RepositoryUpdaterTest extends NbTestCase {
 
     public RepositoryUpdaterTest (String name) {
         super (name);
+    }
+
+    public static Test suite() {
+        TestSuite suite = new NbTestSuite(RepositoryUpdaterTest.class);
+//        TestSuite suite = new NbTestSuite ();
+//        suite.addTest(new RepositoryUpdaterTest("testMissedChanges"));
+        return suite;
     }
 
     @Override
@@ -225,7 +237,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         srcRootWithFiles1 = wd.createFolder("srcwf1");
         assertNotNull(srcRootWithFiles1);
         FileUtil.setMIMEType("foo", MIME);
-        FileObject f1 = FileUtil.createData(srcRootWithFiles1,"folder/a.foo");
+        f1 = FileUtil.createData(srcRootWithFiles1,"folder/a.foo");
         assertNotNull(f1);
         assertEquals(MIME, f1.getMIMEType());
         FileObject f2 = FileUtil.createData(srcRootWithFiles1,"folder/b.foo");
@@ -962,6 +974,50 @@ public class RepositoryUpdaterTest extends NbTestCase {
         }
     }
 
+    @RandomlyFails
+    public void testMissedChanges() throws Exception {
+        
+        final TestHandler handler = new TestHandler();
+        final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests");
+        logger.setLevel (Level.FINEST);
+        logger.addHandler(handler);
+        indexerFactory.indexer.setExpectedFile(customFiles, new URL[0], new URL[0]);
+        indexerFactory.indexer.setCallBack(new Runnable() {
+            public void run () {
+                try {
+                    final OutputStream out = f1.getOutputStream();
+                    try {
+                        out.write("Buena Suerte".getBytes());
+                    } finally {
+                        out.close();
+                    }
+                } catch (IOException e) {
+                    Exceptions.printStackTrace(e);
+                }
+            }
+        });
+        eindexerFactory.indexer.setExpectedFile(embeddedFiles, new URL[0], new URL[0]);
+
+
+        MutableClassPathImplementation mcpi1 = new MutableClassPathImplementation ();        
+        mcpi1.addResource(srcRootWithFiles1);
+        ClassPath cp1 = ClassPathFactory.createClassPath(mcpi1);
+        globalPathRegistry_register(SOURCES,new ClassPath[]{cp1});
+
+        assertTrue (handler.await());
+        assertEquals(0, handler.getBinaries().size());
+        assertEquals(1, handler.getSources().size());
+        assertEquals(srcRootWithFiles1.getURL(), handler.getSources().get(0));
+        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(eindexerFactory.indexer.awaitIndex());
+
+        indexerFactory.indexer.setExpectedFile(new URL[]{f1.getURL()}, new URL[0], new URL[0]);
+        eindexerFactory.indexer.setExpectedFile(new URL[0], new URL[0], new URL[0]);
+        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(eindexerFactory.indexer.awaitIndex());
+    }
+    
+
     public static class TestHandler extends Handler {
 
         public static enum Type {BATCH, DELETE, FILELIST};
@@ -1476,6 +1532,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         private volatile int dirtyCounter;
         private Set<URL> expectedDeleted = new HashSet<URL>();
         private Set<URL> expectedDirty = new HashSet<URL>();
+        private Runnable callBack;
 
         public void setExpectedFile (URL[] files, URL[] deleted, URL[] dirty) {
             expectedIndex.clear();
@@ -1490,6 +1547,10 @@ public class RepositoryUpdaterTest extends NbTestCase {
             indexFilesLatch = new CountDownLatch(expectedIndex.size());
             deletedFilesLatch = new CountDownLatch(expectedDeleted.size());
             dirtyFilesLatch = new CountDownLatch(expectedDirty.size());
+        }
+
+        public void setCallBack (final Runnable callBack) {
+            this.callBack = callBack;
         }
 
         public boolean awaitIndex() throws InterruptedException {
@@ -1517,13 +1578,17 @@ public class RepositoryUpdaterTest extends NbTestCase {
         }
 
         @Override
-        protected void index(Iterable<? extends Indexable> files, Context context) {
+        protected void index(Iterable<? extends Indexable> files, Context context) {            
             for (Indexable i : files) {
                 indexCounter++;
                 if (expectedIndex.remove(i.getURL())) {
                     //System.out.println("FooIndexer.index: " + i.getURL());
                     indexFilesLatch.countDown();
                 }
+            }
+            if (callBack != null) {
+                callBack.run();
+                callBack = null;
             }
         }
     }
