@@ -121,6 +121,7 @@ public class RemoteServerList implements ServerListImplementation {
                 }
             }
         }
+        defaultIndex = Math.min(defaultIndex, items.size() - 1);
         refresh();
     }
 
