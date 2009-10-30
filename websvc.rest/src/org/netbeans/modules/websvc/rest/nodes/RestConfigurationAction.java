@@ -77,18 +77,8 @@ public class RestConfigurationAction extends NodeAction  {
 
     protected boolean enable(Node[] activatedNodes) {
         if (activatedNodes.length != 1) return false;
-        Project project = activatedNodes[0].getLookup().lookup(Project.class);
-        if (project != null) {
-            SourceGroup[] sourceGroups = SourceGroupSupport.getJavaSourceGroups(project);
-            if (sourceGroups.length>0) {
-                ClassPath cp = ClassPath.getClassPath(sourceGroups[0].getRootFolder(), ClassPath.COMPILE);
-                if (cp.findResource("javax/ws/rs/ApplicationPath.class") != null && // NOI18N
-                    cp.findResource("javax/ws/rs/core/Application.class") != null) { // NOI18N
-                    return true;
-                }
-            }
-        }
-        return false;
+        if (activatedNodes[0].getLookup().lookup(Project.class) == null) return false;
+        return true;
     }
 
     protected void performAction(Node[] activatedNodes) {
@@ -115,48 +105,52 @@ public class RestConfigurationAction extends NodeAction  {
             if (!oldApplicationPath.startsWith(("/"))) { //NOI18N
                 oldApplicationPath="/"+oldApplicationPath;
             }
-            ApplicationConfigPanel configPanel = new ApplicationConfigPanel(oldConfigType, oldApplicationPath);
-            DialogDescriptor desc = new DialogDescriptor(configPanel,
-                NbBundle.getMessage(WebProjectRestSupport.class, "TTL_ApplicationConfigPanel"));
-            DialogDisplayer.getDefault().notify(desc);
-            if (NotifyDescriptor.OK_OPTION.equals(desc.getValue())) {
-                String newConfigType = configPanel.getConfigType();
-                String newApplicationPath = configPanel.getApplicationPath();
-                boolean applPathChanged = !oldApplicationPath.equals(newApplicationPath);
-                if (!oldConfigType.equals(newConfigType) || applPathChanged) {
+            try {
+                ApplicationConfigPanel configPanel = new ApplicationConfigPanel(oldConfigType, oldApplicationPath, isAnnotationConfigAvailable(project));
+                DialogDescriptor desc = new DialogDescriptor(configPanel,
+                    NbBundle.getMessage(WebProjectRestSupport.class, "TTL_ApplicationConfigPanel"));
+                DialogDisplayer.getDefault().notify(desc);
+                if (NotifyDescriptor.OK_OPTION.equals(desc.getValue())) {
+                    String newConfigType = configPanel.getConfigType();
+                    String newApplicationPath = configPanel.getApplicationPath();
+                    boolean applPathChanged = !oldApplicationPath.equals(newApplicationPath);
+                    if (!oldConfigType.equals(newConfigType) || applPathChanged) {
 
-                    if (!oldConfigType.equals(newConfigType)) {
-                        // set up rest.config.type property
-                        restSupport.setProjectProperty(WebRestSupport.PROP_REST_CONFIG_TYPE, newConfigType);
+                        if (!oldConfigType.equals(newConfigType)) {
+                            // set up rest.config.type property
+                            restSupport.setProjectProperty(WebRestSupport.PROP_REST_CONFIG_TYPE, newConfigType);
 
-                        if (WebRestSupport.CONFIG_TYPE_IDE.equals(oldConfigType)) {
-                            //remove properties related to rest.config.type=ide
-                            restSupport.removeProjectProperties(new String[] {
-                                WebRestSupport.PROP_REST_RESOURCES_PATH,
-                                WebRestSupport.PROP_REST_ROOT_RESOURCES
-                            });
+                            if (WebRestSupport.CONFIG_TYPE_IDE.equals(oldConfigType)) {
+                                //remove properties related to rest.config.type=ide
+                                restSupport.removeProjectProperties(new String[] {
+                                    WebRestSupport.PROP_REST_RESOURCES_PATH,
+                                    WebRestSupport.PROP_REST_ROOT_RESOURCES
+                                });
+                            }
                         }
-                    }
 
-                    if (WebRestSupport.CONFIG_TYPE_IDE.equals(newConfigType)) {
-                        if (newApplicationPath.startsWith("/")) { //NOI18N
-                            newApplicationPath = newApplicationPath.substring(1);
-                        }
-                        restSupport.setProjectProperty(WebRestSupport.PROP_REST_RESOURCES_PATH, newApplicationPath);
-                        try {
-                            setRootResources(project, restSupport, applPathChanged);
-                        } catch (IOException ex) {
-                            ex.printStackTrace();
-                        }
-                    } else if (!WebRestSupport.CONFIG_TYPE_USER.equals(newConfigType)) { // Deployment Descriptor
-                        // add entries to dd
-                        try {
-                            restSupport.addResourceConfigToWebApp(newApplicationPath);
-                        } catch (IOException ex) {
-                            ex.printStackTrace();
+                        if (WebRestSupport.CONFIG_TYPE_IDE.equals(newConfigType)) {
+                            if (newApplicationPath.startsWith("/")) { //NOI18N
+                                newApplicationPath = newApplicationPath.substring(1);
+                            }
+                            restSupport.setProjectProperty(WebRestSupport.PROP_REST_RESOURCES_PATH, newApplicationPath);
+                            try {
+                                setRootResources(project, restSupport, applPathChanged);
+                            } catch (IOException ex) {
+                                ex.printStackTrace();
+                            }
+                        } else if (!WebRestSupport.CONFIG_TYPE_USER.equals(newConfigType)) { // Deployment Descriptor
+                            // add entries to dd
+                            try {
+                                restSupport.addResourceConfigToWebApp(newApplicationPath);
+                            } catch (IOException ex) {
+                                ex.printStackTrace();
+                            }
                         }
                     }
                 }
+            } catch (IOException ex) {
+                ex.printStackTrace();
             }
         }
     }
@@ -201,6 +195,18 @@ public class RestConfigurationAction extends NodeAction  {
     @Override
     public boolean asynchronous() {
         return true;
+    }
+
+    private boolean isAnnotationConfigAvailable(Project project) throws IOException {
+        SourceGroup[] sourceGroups = SourceGroupSupport.getJavaSourceGroups(project);
+        if (sourceGroups.length>0) {
+            ClassPath cp = ClassPath.getClassPath(sourceGroups[0].getRootFolder(), ClassPath.COMPILE);
+            if (cp.findResource("javax/ws/rs/ApplicationPath.class") != null && // NOI18N
+                cp.findResource("javax/ws/rs/core/Application.class") != null) { // NOI18N
+                return true;
+            }
+        }
+        return false;
     }
 
 }

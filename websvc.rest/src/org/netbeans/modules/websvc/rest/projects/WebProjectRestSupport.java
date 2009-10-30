@@ -143,9 +143,7 @@ public class WebProjectRestSupport extends WebRestSupport {
         if (!isRestSupportOn()) {
             needsRefresh = true;
             setProjectProperty(REST_SUPPORT_ON, "true");
-            if (needToSetupApplicationConfig()) {
-                resourceUrl = setApplicationConfigProperty();
-            }
+            resourceUrl = setApplicationConfigProperty(isAnnotationConfigAvailable());
         }
 
         extendBuildScripts();
@@ -371,7 +369,7 @@ public class WebProjectRestSupport extends WebRestSupport {
         return null;
     }
 
-    private boolean needToSetupApplicationConfig() throws IOException {
+    private boolean isAnnotationConfigAvailable() throws IOException {
         WebApp webApp = findWebApp();
         if (webApp != null && getRestServletMapping(webApp) != null) {
             return false;
@@ -386,8 +384,8 @@ public class WebProjectRestSupport extends WebRestSupport {
         return false;
     }
 
-    private String setApplicationConfigProperty() {
-        ApplicationConfigPanel configPanel = new ApplicationConfigPanel();
+    private String setApplicationConfigProperty(boolean annotationConfigAvailable) {
+        ApplicationConfigPanel configPanel = new ApplicationConfigPanel(annotationConfigAvailable);
         DialogDescriptor desc = new DialogDescriptor(configPanel,
                 NbBundle.getMessage(WebProjectRestSupport.class, "TTL_ApplicationConfigPanel"));
         DialogDisplayer.getDefault().notify(desc);
