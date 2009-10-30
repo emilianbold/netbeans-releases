@@ -313,7 +313,6 @@ made subject to such option by the copyright holder.
                 <project>../../java.guards</project>
                 <project>../../java.helpset</project>
                 <project>../../java.hints</project>
-                <project>../../java.hints.analyzer</project>
                 <project>../../java.j2seplatform</project>
                 <project>../../java.j2seproject</project>
                 <project>../../java.kit</project>
