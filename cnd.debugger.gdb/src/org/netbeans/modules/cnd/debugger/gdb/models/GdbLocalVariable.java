@@ -75,6 +75,10 @@ public class GdbLocalVariable extends AbstractVariable implements LocalVariable,
         debugger.addPropertyChangeListener(GdbDebugger.PROP_VALUE_CHANGED, this);
     }
 
+    protected void selfDestroy() {
+        getDebugger().removePropertyChangeListener(GdbDebugger.PROP_VALUE_CHANGED, this);
+    }
+
     public String getType() {
         return type;
     }
