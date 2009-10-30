@@ -548,6 +548,7 @@ public final class ToolchainManagerImpl {
                             element.setAttribute("uc_url", descriptor.getUpdateCenterUrl()); // NOI18N
                             element.setAttribute("module_id", descriptor.getModuleID()); // NOI18N
                             element.setAttribute("uc_display", descriptor.getUpdateCenterDisplayName()); // NOI18N
+                            element.setAttribute("upgrade_url", descriptor.getUpgradeUrl()); // NOI18N
                             root.appendChild(element);
                         }
 
@@ -1168,6 +1169,7 @@ public final class ToolchainManagerImpl {
         String platforms;
         String uc;
         String ucName;
+        String upgrage;
         String module;
         String driveLetterPrefix;
         List<FolderInfo> baseFolder;
@@ -1591,6 +1593,7 @@ public final class ToolchainManagerImpl {
                 v.uc = getValue(attributes, "uc_url"); // NOI18N
                 v.ucName = getValue(attributes, "uc_display"); // NOI18N
                 v.module = getValue(attributes, "module_id"); // NOI18N
+                v.upgrage = getValue(attributes, "upgrade_url"); // NOI18N
                 return;
             } else if (path.endsWith(".drive_letter_prefix")) { // NOI18N
                 v.driveLetterPrefix = getValue(attributes, "stringvalue"); // NOI18N
@@ -2080,6 +2083,10 @@ public final class ToolchainManagerImpl {
 
         public String getUpdateCenterDisplayName() {
             return v.ucName;
+        }
+
+        public String getUpgradeUrl() {
+            return v.upgrage;
         }
 
         public String getModuleID() {

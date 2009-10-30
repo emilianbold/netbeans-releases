@@ -97,7 +97,7 @@ import org.openide.util.NbPreferences;
                             DocumentUtilities.setTypingModification(bdoc, true);
                             try {
                                 int offset = newOffset(target);
-                                if (offset != -1) {
+                                if (offset >= 0 && offset < bdoc.getLength()) {
                                     moveToNewOffset(target, offset);
                                 }
                             } catch (BadLocationException ble) {
