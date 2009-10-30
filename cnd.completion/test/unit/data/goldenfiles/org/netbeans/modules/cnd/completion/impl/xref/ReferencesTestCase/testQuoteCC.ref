@@ -1058,7 +1058,7 @@
 --OWNER:
     VARIABLE MyCpu [169:5/5712-169:32/5739] ReferencesTestCase/quote.cc  TYPE: Cpu TEXT=Cpu  [169:5/5712-169:8/5715]  INIT: null  SCOPE: Stmt  [123:33/4428-232:2/7723]
 --RESOLVED TO:
-    FUNCTION Cpu(int,int,int)  [52:9/2324-52:75/2390] ReferencesTestCase/cpu.h
+    VARIABLE MyCpu [169:5/5712-169:32/5739] ReferencesTestCase/quote.cc  TYPE: Cpu TEXT=Cpu  [169:5/5712-169:8/5715]  INIT: null  SCOPE: Stmt  [123:33/4428-232:2/7723]
 ==============================================================
 'type', tokenID=identifier, offset=5722 [169:15/5722-169:19/5726]
 --OWNER:
@@ -1166,7 +1166,7 @@
 --OWNER:
     VARIABLE MyDisk [191:5/6309-191:34/6338] ReferencesTestCase/quote.cc  TYPE: Disk TEXT=Disk  [191:5/6309-191:9/6313]  INIT: null  SCOPE: Stmt  [123:33/4428-232:2/7723]
 --RESOLVED TO:
-    FUNCTION Disk(int,int,int)  [51:5/2330-51:60/2385] ReferencesTestCase/disk.h
+    VARIABLE MyDisk [191:5/6309-191:34/6338] ReferencesTestCase/quote.cc  TYPE: Disk TEXT=Disk  [191:5/6309-191:9/6313]  INIT: null  SCOPE: Stmt  [123:33/4428-232:2/7723]
 ==============================================================
 'type', tokenID=identifier, offset=6321 [191:17/6321-191:21/6325]
 --OWNER:
@@ -1292,7 +1292,7 @@
 --OWNER:
     VARIABLE MyMemory [216:5/7015-216:38/7048] ReferencesTestCase/quote.cc  TYPE: Memory TEXT=Memory  [216:5/7015-216:11/7021]  INIT: null  SCOPE: Stmt  [123:33/4428-232:2/7723]
 --RESOLVED TO:
-    FUNCTION Memory(int,int,int)  [51:5/2308-51:68/2371] ReferencesTestCase/memory.h
+    VARIABLE MyMemory [216:5/7015-216:38/7048] ReferencesTestCase/quote.cc  TYPE: Memory TEXT=Memory  [216:5/7015-216:11/7021]  INIT: null  SCOPE: Stmt  [123:33/4428-232:2/7723]
 ==============================================================
 'type', tokenID=identifier, offset=7031 [216:21/7031-216:25/7035]
 --OWNER:
