@@ -46,6 +46,8 @@ import java.awt.event.*;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.JToggleButton.ToggleButtonModel;
 import javax.swing.KeyStroke;
@@ -94,9 +96,13 @@ class TabsComponent extends JPanel {
                 final JComponent vr = elem.getVisualRepresentation();
                 if (vr instanceof CloneableEditorSupport.Pane) {
                    Pane pane = (Pane)vr;
-                   if (pane.getEditorPane().isShowing()) {
-                     return pane.getEditorPane();
-                  }
+                   JEditorPane editorPane = pane.getEditorPane();
+                   if (null != editorPane && editorPane.isShowing()) {
+                     return editorPane;
+                   } else if( null == editorPane ) {
+                       Logger.getLogger(TabsComponent.class.getName()).log(Level.INFO,
+                               "No editor pane in " + model.getActiveElement().getVisualRepresentation() ); //NOI18N
+                   }
                }
                return super.getDefaultComponent(aContainer);
             }
