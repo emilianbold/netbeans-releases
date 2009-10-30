@@ -58,7 +58,7 @@ final class RubyMethodTypeInferencer {
     /**
      * Names of the methods that whose return type is (typically) the same as the receiver.
      */
-    private static final String[] RECEIVER_METHODS = {"new", "clone", "dup", "freeze", "+", "-"};
+    private static final String[] RECEIVER_METHODS = {"new", "initialize", "clone", "dup", "freeze", "+", "-"};
 
     /**
      * Method names whose return type we know.
@@ -128,7 +128,7 @@ final class RubyMethodTypeInferencer {
         return false;
     }
 
-    private static boolean returnsReceiver(String methodName) {
+    static boolean returnsReceiver(String methodName) {
         // If you call Foo.new or I'm going to assume the type of the expression is "Foo"
         for (String each : RECEIVER_METHODS) {
             if (each.equals(methodName)) {
