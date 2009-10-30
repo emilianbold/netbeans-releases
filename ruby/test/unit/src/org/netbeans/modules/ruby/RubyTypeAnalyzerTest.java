@@ -160,6 +160,14 @@ public class RubyTypeAnalyzerTest extends RubyTestBase {
         assertTypes(instance.inferType("@t"), "Fixnum");
     }
 
+    public void testNestedMultipleAssigments() throws Exception {
+        RubyTypeInferencer instance = getInferencer("types.rb", " # d^one", false);
+        assertTypes(instance.inferType("u"), "String");
+        assertTypes(instance.inferType("i"), "Fixnum");
+        assertTypes(instance.inferType("o"), "Float");
+        assertTypes(instance.inferType("p"), "File");
+    }
+
     public void testTypeAssertions() throws Exception {
         RubyTypeInferencer instance = getInferencer("types.rb", " l^oc = {", true);
         assertTypes(instance.inferType("param1"), "String");
