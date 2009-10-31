@@ -228,7 +228,16 @@ public class FixDependencies extends Task {
             
             for (Module m : r.modules) {
                 if (m.codeNameBase.equals(r.codeNameBase)) {
-                    // verify version
+                    String b = "<specification-version>";
+                    int specBeg = remove.indexOf(b);
+                    int specEnd = remove.indexOf("</specification-version>");
+                    if (specBeg == -1 || specEnd == -1) {
+                        continue;
+                    }
+                    String v = remove.substring(specBeg + b.length(), specEnd);
+                    if (olderThanOrEqual(m.specVersion, v)) {
+                        return false;
+                    }
                 } else {
                     if (stream.indexOf ("<code-name-base>" + m.codeNameBase + "</code-name-base>") != -1) {
                         continue;
@@ -375,6 +384,22 @@ public class FixDependencies extends Task {
             from++;
         }
         return from;
+    }
+
+    private static boolean olderThanOrEqual(String v1, String v2) {
+        String[] arr1 = v1.split("\\.");
+        String[] arr2 = v2.split("\\.");
+        int min = Math.min(arr1.length, arr2.length);
+        for (int i = 0; i < min; i++) {
+            int i1 = Integer.parseInt(arr1[i]);
+            int i2 = Integer.parseInt(arr2[i]);
+
+            if (i1 == i2) {
+                continue;
+            }
+            return i1 < i2;
+        }
+        return arr1.length <= arr2.length;
     }
 
     public static final class Replace extends Object {

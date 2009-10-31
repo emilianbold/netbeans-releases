@@ -159,6 +159,63 @@ public class FixDependenciesTest extends NbTestCase {
             fail ("Snd Spec version must be updated to 8.0: " + result);
         }
     }
+    public void testDontReplaceNewerVersionOfItself() throws Exception {
+        doDontReplaceNewerVersionOfItself("8.1");
+    }
+    public void testDontReplaceNewerVersionOfItself9() throws Exception {
+        doDontReplaceNewerVersionOfItself("9.0");
+    }
+
+    private void doDontReplaceNewerVersionOfItself(String version) throws Exception {
+        java.io.File xml = PublicPackagesInProjectizedXMLTest.extractString (
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+            "<project>" +
+            "  <module-dependencies>" +
+            "    <dependency>" +
+            "        <code-name-base>org.openide.util</code-name-base>" +
+            "        <build-prerequisite/> " +
+            "        <compile-dependency/> " +
+            "        <run-dependency>" +
+            "            <specification-version>" + version + "</specification-version> " +
+            "        </run-dependency>" +
+            "    </dependency>" +
+            "  </module-dependencies>" +
+            "</project>"
+        );
+
+        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+            "<project name=\"Replace Openide\" basedir=\".\" default=\"all\" >" +
+            "  <taskdef name=\"fix\" classname=\"org.netbeans.nbbuild.FixDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "<target name=\"all\" >" +
+            "<fix>" +
+            "  <replace codenamebase=\"org.openide.util\">" +
+            "    <module codenamebase=\"org.openide.util\" spec=\"8.0\" />" +
+            "    <module codenamebase=\"org.openide.util.lookup\" spec=\"8.0\" />" +
+            "  </replace>" +
+            "  <fileset dir=\"" + xml.getParent () + "\">" +
+            "    <include name=\"" + xml.getName () + "\" /> " +
+            "  </fileset>" +
+            "</fix>" +
+            "</target>" +
+            "</project>"
+
+        );
+        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { });
+
+        String result = PublicPackagesInProjectizedXMLTest.readFile (xml);
+
+        if (result.indexOf ("org.openide.util") == -1) {
+            fail ("org.openide.util should be there: " + result);
+        }
+        if (result.indexOf ("org.openide.util.lookup") >= 0) {
+            fail ("org.openide.util.lookup should not be there: " + result);
+        }
+
+        if (result.indexOf ("<specification-version>" + version + "</specification-version>") == -1) {
+            fail ("Spec version stays at updated to kept: " + result);
+        }
+    }
     
     
     public void testVerificationOfRemovedDependencies () throws Exception {
