@@ -76,8 +76,6 @@ public final class NbModuleProjectTypeProfiler extends AbstractProjectTypeProfil
 
     // -----
     // I18N String constants
-
-    // -----
     private static final String NBMODULE_PROJECT_NAMESPACE_2 = "http://www.netbeans.org/ns/nb-module-project/2"; // NOI18N
     private static final String NBMODULE_PROJECT_NAMESPACE_3 = "http://www.netbeans.org/ns/nb-module-project/3"; // NOI18N
     private static final String NBMODULE_SUITE_PROJECT_NAMESPACE = "http://www.netbeans.org/ns/nb-module-suite-project/1"; // NOI18N
@@ -93,6 +91,11 @@ public final class NbModuleProjectTypeProfiler extends AbstractProjectTypeProfil
                                                                      "NbModuleProjectTypeProfiler_FilesCategory"); // NOI18N
     private static final String SOCKETS_CATEGORY = NbBundle.getMessage(NbModuleProjectTypeProfiler.class,
                                                                        "NbModuleProjectTypeProfiler_SocketsCategory"); // NOI18N
+    // -----
+
+    private static final String TEST_TYPE_UNIT = "unit"; // NOI18N
+    private static final String TEST_TYPE_QA_FUNCTIONAL = "qa-functional"; // NOI18N
+
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
     public boolean isFileObjectSupported(final Project project, final FileObject fo) {
@@ -200,10 +203,19 @@ public final class NbModuleProjectTypeProfiler extends AbstractProjectTypeProfil
         return true;
     }
 
+    private static String getTestType(FileObject testFile) {
+        String testPath = testFile.getPath();
+        if (testPath.contains(TEST_TYPE_QA_FUNCTIONAL)) return TEST_TYPE_QA_FUNCTIONAL;
+        else return TEST_TYPE_UNIT;
+    }
+
     public void configurePropertiesForProfiling(final Properties props, final Project project, final FileObject profiledClassFile) {
         if (profiledClassFile != null) {
             final String profiledClass = SourceUtils.getToplevelClassName(profiledClassFile);
             props.setProperty("profile.class", profiledClass); //NOI18N
+            // Set for all cases (incl. Profile Project, Profile File) but should only
+            // be taken into account when profiling single test
+            props.setProperty("test.type", getTestType(profiledClassFile)); //NOI18N
         }
         
         String agentArg = props.getProperty("profiler.info.jvmargs.agent"); //NOI18N
