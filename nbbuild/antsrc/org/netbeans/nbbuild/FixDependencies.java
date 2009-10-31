@@ -75,6 +75,7 @@ public class FixDependencies extends Task {
     private boolean onlyChanged;
     /** fail on error */
     private boolean fail;
+    private boolean doSanity = true;
     
     
     /** tasks to be executed */
@@ -94,6 +95,10 @@ public class FixDependencies extends Task {
         if (this.set != null) throw new BuildException ("Only one file set is allowed");
         this.set = new FileSet();
         return this.set;
+    }
+
+    public void setSanityCheck(boolean s) {
+        doSanity = s;
     }
     
     public void setBuildTarget (String s) {
@@ -155,8 +160,10 @@ public class FixDependencies extends Task {
                         log ("Cleaning " + clean + " in " + script, org.apache.tools.ant.Project.MSG_INFO);
                         cleanTask.execute ();
                     }
-                    log ("Sanity check executes " + target + " in " + script, org.apache.tools.ant.Project.MSG_INFO);
-                    task.execute ();
+                    if (doSanity) {
+                        log ("Sanity check executes " + target + " in " + script, org.apache.tools.ant.Project.MSG_INFO);
+                        task.execute ();
+                    }
                 } catch (BuildException ex) {
                     if (fail) {
                         throw ex;
@@ -220,8 +227,12 @@ public class FixDependencies extends Task {
             sb.append (stream.substring (0, from));
             
             for (Module m : r.modules) {
-                if (stream.indexOf ("<code-name-base>" + m.codeNameBase + "</code-name-base>") != -1) {
-                    continue;
+                if (m.codeNameBase.equals(r.codeNameBase)) {
+                    // verify version
+                } else {
+                    if (stream.indexOf ("<code-name-base>" + m.codeNameBase + "</code-name-base>") != -1) {
+                        continue;
+                    }
                 }
 
                 int beg = remove.indexOf (r.codeNameBase);
@@ -352,7 +363,6 @@ public class FixDependencies extends Task {
         log ("Final verification runs " + target + " in " + script, Project.MSG_INFO);
         // now verify, if there is a failure then something is wrong now
         task.execute ();
-        
         if (success.length () == 0) {
             log ("No dependencies removed from " + script);
         } else {
