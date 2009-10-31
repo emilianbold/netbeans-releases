@@ -410,7 +410,22 @@ public class MetaInfServicesLookupTest extends NbTestCase {
         });
         assertNotNull("Interface found", l.lookup(xface));
         assertFalse(event.get());
-        MetaInfServicesLookup.RP.post(new Runnable() {public void run() {}}).waitFinished();
+        class W implements Runnable {
+            boolean ok;
+            public synchronized void run() {
+                ok = true;
+                notifyAll();
+            }
+
+            public synchronized void await() throws Exception {
+                while (!ok) {
+                    wait();
+                }
+            }
+        }
+        W w = new W();
+        MetaInfServicesLookup.RP.execute(w);
+        w.await();
         assertEquals("Now two", 2, res.allInstances().size());
     }
     
