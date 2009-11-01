@@ -206,7 +206,12 @@ public class FixDependencies extends Task {
         data = null;
 
         for (Replace r : replaces) {
-            int idx = stream.indexOf ("<code-name-base>" + r.codeNameBase + "</code-name-base>");
+            int md = stream.indexOf("<module-dependencies>");
+            if (md == -1) {
+                throw new BuildException("No module dependencies in " + file);
+            }
+
+            int idx = stream.indexOf ("<code-name-base>" + r.codeNameBase + "</code-name-base>", md);
             if (idx == -1) continue;
             
             int from = stream.lastIndexOf ("<dependency>", idx);

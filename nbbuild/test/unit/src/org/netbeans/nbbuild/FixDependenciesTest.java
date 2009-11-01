@@ -54,6 +54,34 @@ public class FixDependenciesTest extends NbTestCase {
     public FixDependenciesTest (String name) {
         super (name);
     }
+    public void testCanParseOpenideUtil () throws Exception {
+        java.io.File xml = PublicPackagesInProjectizedXMLTest.extractResource("FixDependencies-openide.util.xml");
+
+        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+            "<project name=\"Replace Openide\" basedir=\".\" default=\"all\" >" +
+            "  <taskdef name=\"fix\" classname=\"org.netbeans.nbbuild.FixDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "<target name=\"all\" >" +
+            "<fix>" +
+            "  <replace codenamebase=\"org.openide.util\">" +
+            "    <module codenamebase=\"org.openide.util\" spec=\"8.0\" />" +
+            "    <module codenamebase=\"org.openide.util.lookup\" spec=\"8.0\" />" +
+            "  </replace>" +
+            "  <fileset dir=\"" + xml.getParent () + "\">" +
+            "    <include name=\"" + xml.getName () + "\" /> " +
+            "  </fileset>" +
+            "</fix>" +
+            "</target>" +
+            "</project>"
+
+        );
+
+        String before = PublicPackagesInProjectizedXMLTest.readFile(xml);
+        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { });
+        String after = PublicPackagesInProjectizedXMLTest.readFile(xml);
+
+        assertEquals("No change", before, after);
+    }
     public void testReplaceOpenideDepWithSmallerOnes () throws Exception {
         java.io.File xml = PublicPackagesInProjectizedXMLTest.extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
