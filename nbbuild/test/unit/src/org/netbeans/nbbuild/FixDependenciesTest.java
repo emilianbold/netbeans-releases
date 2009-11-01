@@ -82,6 +82,46 @@ public class FixDependenciesTest extends NbTestCase {
 
         assertEquals("No change", before, after);
     }
+    public void testNoModuleDependenciesDoesNotCrash() throws Exception {
+        java.io.File xml = PublicPackagesInProjectizedXMLTest.extractString(
+                "<?xml version='1.0' encoding='UTF-8'?>" +
+                "<project xmlns='http://www.netbeans.org/ns/project/1'>" +
+                "<type>org.netbeans.modules.apisupport.project</type>" +
+                "<configuration>" +
+                "<data xmlns='http://www.netbeans.org/ns/nb-module-project/3'>" +
+                "<code-name-base>org.netbeans.api.annotations.common</code-name-base>" +
+                "<module-dependencies/>" +
+                "<public-packages/>" +
+                "</data>" +
+                "</configuration>" +
+                "</project>"
+        );
+
+        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+            "<project name=\"Replace Openide\" basedir=\".\" default=\"all\" >" +
+            "  <taskdef name=\"fix\" classname=\"org.netbeans.nbbuild.FixDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "<target name=\"all\" >" +
+            "<fix>" +
+            "  <replace codenamebase=\"org.openide.util\">" +
+            "    <module codenamebase=\"org.openide.util\" spec=\"8.0\" />" +
+            "    <module codenamebase=\"org.openide.util.lookup\" spec=\"8.0\" />" +
+            "  </replace>" +
+            "  <fileset dir=\"" + xml.getParent () + "\">" +
+            "    <include name=\"" + xml.getName () + "\" /> " +
+            "  </fileset>" +
+            "</fix>" +
+            "</target>" +
+            "</project>"
+
+        );
+
+        String before = PublicPackagesInProjectizedXMLTest.readFile(xml);
+        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { });
+        String after = PublicPackagesInProjectizedXMLTest.readFile(xml);
+
+        assertEquals("No change", before, after);
+    }
     public void testReplaceOpenideDepWithSmallerOnes () throws Exception {
         java.io.File xml = PublicPackagesInProjectizedXMLTest.extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
