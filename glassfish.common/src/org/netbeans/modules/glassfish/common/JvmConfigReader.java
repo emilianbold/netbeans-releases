@@ -209,7 +209,7 @@ public class JvmConfigReader extends TreeParser.NodeReader {
 //                <monitoring-service [monitoring-enabled="false"] 
                 if (readJvmConfig) {
                     if (!"false".equals(attributes.getValue("monitoring-enabled"))) {  // NOI18N
-                        optList.add("-javaagent:"+btraceJar.getAbsolutePath()+"=unsafe=true,noServer=true"); // NOI18N
+                        optList.add("-javaagent:"+Util.quote(btraceJar.getAbsolutePath())+"=unsafe=true,noServer=true"); // NOI18N
                     }
                 }
             }
