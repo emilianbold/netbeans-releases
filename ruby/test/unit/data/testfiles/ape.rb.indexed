@@ -14,7 +14,7 @@ Searchable Keys:
   field : lnum|PRIVATE;;Fixnum;
   field : output|PRIVATE
   field : steps|PRIVATE;;Array;
-  field : w|PRIVATE;;XmlMarkup;
+  field : w|PRIVATE;;Builder::XmlMarkup;
   fqn : Ape
   method : check(uri,username,password,requested_e_coll,requested_m_coll)|DOCUMENTED|
   method : check_new_entry(as_posted,new_entry,desc)
