@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.cnd.makeproject;
 
+import java.io.IOException;
 import java.util.concurrent.CancellationException;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import java.awt.Dialog;
@@ -108,6 +109,7 @@ import org.netbeans.modules.cnd.ui.options.ToolsPanel;
 import org.netbeans.modules.cnd.ui.options.ToolsPanelModel;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.Shell;
 import org.netbeans.modules.nativeexecution.api.util.ShellValidationSupport;
@@ -127,6 +129,7 @@ import org.openide.nodes.Node;
 import org.openide.util.Cancellable;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
 import org.openide.windows.WindowManager;
 
@@ -1218,6 +1221,11 @@ public class MakeActionProvider implements ActionProvider {
         if (cancelled.get()) {
             return false;
         }
+
+        // user counting mode
+        if (cs.getCompilerFlavor().isSunStudioCompiler()) {
+            registerSunStudio(cs.getDirectory(), execEnv);
+        }
         if (runBTA) {
             if (CndUtils.isUnitTestMode()) {
                 // do not show any dialogs in unit test mode, just silently fail validation
@@ -1296,6 +1304,26 @@ public class MakeActionProvider implements ActionProvider {
         return lastValidation;
     }
 
+    private static boolean DISABLED_REGISTRATION = true; //Boolean.getBoolean("disable.sunstudio.registration");
+    private static RequestProcessor REGISTRATION = new RequestProcessor("SunStudio toolchain registration"); // NOI18N
+    private static void registerSunStudio(final String basePath, final ExecutionEnvironment execEnv) {
+        if (!DISABLED_REGISTRATION && !CndUtils.isUnitTestMode() && ConnectionManager.getInstance().isConnectedTo(execEnv)) {
+            REGISTRATION.post(new Runnable() {
+                public void run() {
+                    System.err.println("sunstudio with path " + basePath+"../prod/bin/sunstudio_registration");
+                    NativeProcessBuilder nb = NativeProcessBuilder.newProcessBuilder(execEnv).setExecutable("/var/tmp/register_sunstudio"); // NOI18N
+                    try {
+                        nb.call();
+                    } catch (IOException ex) {
+                        if (CndUtils.isDebugMode()) {
+                            ex.printStackTrace(System.err);
+                        }
+                    }
+                }
+            });
+        }
+    }
+    
     private boolean validatePackaging(MakeConfiguration conf) {
         String errormsg = null;
 

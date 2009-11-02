@@ -40,7 +40,6 @@ package org.netbeans.modules.cnd.gizmo;
 
 import org.netbeans.modules.dlight.spi.SourceSupportProvider;
 import java.awt.Container;
-import java.awt.Point;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -50,7 +49,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
 import javax.swing.JEditorPane;
-import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.JumpList;
@@ -67,7 +65,6 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.DataEditorSupport;
 import org.openide.text.NbDocument;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.TopComponent;
 
@@ -219,14 +216,6 @@ public class SourceSupportProviderImpl implements SourceSupportProvider {
     }
 
     private static void jumpToLine(final JEditorPane pane, final SourceFileInfo sourceFileInfo, boolean delayProcessing) {
-        // immediate processing
-        RequestProcessor.getDefault().post(new Runnable() {
-
-            public void run() {
-                jumpToLine(pane, sourceFileInfo);
-            }
-        });
-
         // try to activate outer TopComponent
         Container temp = pane;
         while (temp != null && !(temp instanceof TopComponent)) {
@@ -237,14 +226,12 @@ public class SourceSupportProviderImpl implements SourceSupportProvider {
             ((TopComponent) temp).requestActive();
             ((TopComponent) temp).requestVisible();
         }
-
+        // have to be called in EDT, because working with swing objects
+        jumpToLine(pane, sourceFileInfo);
     }
 
     private static void jumpToLine(JEditorPane pane, SourceFileInfo sourceFileInfo) {
-        int caretPos = pane.getCaretPosition();
-        Container parent = pane.getParent();
-        Point viewPos = parent instanceof JViewport ? ((JViewport) parent).getViewPosition()
-                : null;
+        assert SwingUtilities.isEventDispatchThread() : "must be called in EDT";
         long start;
         if (sourceFileInfo.hasOffset()) {
             start = sourceFileInfo.getOffset();
