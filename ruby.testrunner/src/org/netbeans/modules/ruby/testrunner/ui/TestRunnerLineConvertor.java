@@ -67,12 +67,13 @@ public final class TestRunnerLineConvertor implements LineConvertor {
         this.handlers = handlerFactory.createHandlers();
     }
 
-    public synchronized void refreshSession() {
+    public synchronized TestSession refreshSession() {
         RerunHandler rerunHandler = this.session.getRerunHandler();
         OutputLineHandler outputLineHandler = this.session.getOutputLineHandler();
         this.session = new TestSession(session.getName(), session.getProject(), session.getSessionType(), session.getNodeFactory());
         session.setRerunHandler(rerunHandler);
         session.setOutputLineHandler(outputLineHandler);
+        return this.session;
     }
 
     public synchronized List<ConvertedLine> convert(String line) {
