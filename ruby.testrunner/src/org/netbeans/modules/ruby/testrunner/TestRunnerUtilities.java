@@ -36,16 +36,19 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.ruby.testrunner;
 
 import java.util.Arrays;
 import java.util.List;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.gsf.testrunner.api.Manager;
+import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties;
 import org.netbeans.modules.ruby.rubyproject.rake.RakeTask;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
+import org.netbeans.modules.ruby.testrunner.ui.TestRunnerInputProcessorFactory;
+import org.netbeans.modules.ruby.testrunner.ui.TestRunnerLineConvertor;
 
 /**
  * Utility methods for <code>TestRunner</code> implementations.
@@ -64,7 +67,6 @@ public final class TestRunnerUtilities {
      * used.
      */
     private static final String TEST_JVM_ARGS = "test.jvm.args"; // NOI18N
-
     private static final List<String> NB_RUNNER_FILES = Arrays.asList(TestUnitRunner.MEDIATOR_SCRIPT_NAME,
             TestUnitRunner.TEST_RUNNER_SCRIPT_NAME, TestUnitRunner.SUITE_RUNNER_SCRIPT_NAME,
             RspecRunner.RSPEC_MEDIATOR_SCRIPT, AutotestRunner.AUTOTEST_LOADER);
@@ -98,7 +100,6 @@ public final class TestRunnerUtilities {
         }
         return false;
     }
-    
 
     /**
      * Adds the standard project properties (e.g. encoding, class path etc.) to the
@@ -141,9 +142,33 @@ public final class TestRunnerUtilities {
         return false;
     }
 
+    static void setUpConvertors(final TestSession session,
+            final RubyExecutionDescriptor taskDescriptor, final Manager manager, 
+            final TestRunnerLineConvertor convertor) {
+
+        session.setOutputLineHandler(new RubyOutputLineHandler(session.getFileLocator()));
+        taskDescriptor.addOutConvertor(convertor);
+        taskDescriptor.addErrConvertor(convertor);
+        taskDescriptor.lineBased(true);
+        final TestRunnerInputProcessorFactory outFactory = new TestRunnerInputProcessorFactory(manager, session, true);
+        final TestRunnerInputProcessorFactory errFactory = new TestRunnerInputProcessorFactory(manager, session, false);
+        taskDescriptor.setOutProcessorFactory(outFactory);
+        taskDescriptor.setErrProcessorFactory(errFactory);
+        taskDescriptor.postBuild(new Runnable() {
+
+            public void run() {
+                TestExecutionManager.getInstance().finish();
+                convertor.refreshSession();
+                TestSession newSession = convertor.refreshSession();
+                outFactory.refreshSession(newSession);
+                errFactory.refreshSession(newSession);
+            }
+        });
+
+    }
+
     interface DefaultTaskEvaluator {
-        
+
         boolean isDefault(RakeTask task);
     }
-    
 }

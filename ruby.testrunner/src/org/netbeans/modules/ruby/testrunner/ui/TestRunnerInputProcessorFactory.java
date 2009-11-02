@@ -68,10 +68,14 @@ public final class TestRunnerInputProcessorFactory implements ExecutionDescripto
         return new TestRunnerInputProcessor(defaultProcessor, data);
     }
 
+    public void refreshSession(TestSession newSession) {
+        this.data.session = newSession;
+    }
+
     // just a helper for holding conf data
     private static class Data {
         private final Manager manager;
-        private final TestSession session;
+        private TestSession session;
         private final boolean printSummary;
 
         public Data(Manager manager, TestSession session, boolean printSummary) {
