@@ -279,7 +279,7 @@ public class SvnModuleConfig {
 
     public List<AnnotationExpression> getDefaultAnnotationExpresions() {
         List<AnnotationExpression> ret = new ArrayList<AnnotationExpression>(1);
-        ret.add(new AnnotationExpression(".*/(branches|tags)/(.+?)/.*", "\\2"));     
+        ret.add(new AnnotationExpression(".*/(branches|tags)/(.+?)(/.*)?", "\\2")); //NOI18N
         return ret;
     }
     

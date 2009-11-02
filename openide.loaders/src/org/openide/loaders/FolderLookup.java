@@ -388,7 +388,7 @@ public class FolderLookup extends FolderInstance {
 
             lookups.set(0, pairs);
 
-            Lookup[] arr = (Lookup[])lookups.toArray (new Lookup[lookups.size ()]);
+            Lookup[] arr = lookups.toArray(new Lookup[lookups.size()]);
             setLookups (DISPATCH, arr);
             if (fl.err().isLoggable(Level.FINE)) fl.err ().fine("Changed lookups: " + lookups); // NOI18N
         }
@@ -502,7 +502,7 @@ public class FolderLookup extends FolderInstance {
                     }
                 }
 
-                ic = (InstanceCookie)obj.getCookie (InstanceCookie.class);
+                ic = obj.getCookie(InstanceCookie.class);
                 if (ic == null) {
                     ic = new BrokenInstance("No cookie for " + fo.getPath(), null); // NOI18N
                 }

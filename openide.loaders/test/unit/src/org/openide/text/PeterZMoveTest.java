@@ -159,7 +159,7 @@ public class PeterZMoveTest extends NbTestCase {
         assertFalse ("It is closed now", support ().isDocumentLoaded ());
         
         Lookup lkp = sup.getLookup ();
-        obj = (DataObject)lkp.lookup (DataObject.class);
+        obj = lkp.lookup(DataObject.class);
         assertNotNull ("DataObject found", obj);
         
         Document d = sup.openDocument ();
@@ -234,7 +234,7 @@ public class PeterZMoveTest extends NbTestCase {
         public int primary;
         
         public static MyLoader get () {
-            return (MyLoader)MyLoader.findObject (MyLoader.class, true);
+            return MyLoader.findObject(MyLoader.class, true);
         }
         
         public MyLoader() {

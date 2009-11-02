@@ -503,7 +503,7 @@ implements EditorCookie.Observable, OpenCookie, CloseCookie, PrintCookie {
         * acquired as the DataObject's EditorSupport.class cookie.
         */
         public Editor (DataObject obj) {
-            this(obj, (EditorSupport)obj.getCookie(EditorSupport.class));
+            this(obj, obj.getCookie(EditorSupport.class));
         }
 
         /** Constructor
@@ -847,9 +847,7 @@ implements EditorCookie.Observable, OpenCookie, CloseCookie, PrintCookie {
                 changeFile ();
             }
             if (DataObject.PROP_NAME.equals(ev.getPropertyName())) {
-                EditorSupport es = (EditorSupport)getDataObject ().getCookie (
-                    EditorSupport.class
-                );
+                EditorSupport es = getDataObject().getCookie(EditorSupport.class);
                 if (es != null) {
                     es.updateTitles ();
                 }
@@ -866,7 +864,7 @@ implements EditorCookie.Observable, OpenCookie, CloseCookie, PrintCookie {
             // Do not use findCloneableOpenSupport; it will not work if the
             // DataObject has both an EditorSupport and an OpenSupport attached
             // at once.
-            EditorSupport es = (EditorSupport)getDataObject ().getCookie (EditorSupport.class);
+            EditorSupport es = getDataObject().getCookie(EditorSupport.class);
             if (es == null)
                 throw new IOException ("no EditorSupport found on this data object"); // NOI18N
             else
@@ -931,7 +929,7 @@ implements EditorCookie.Observable, OpenCookie, CloseCookie, PrintCookie {
                 return s;
             }
                 
-            EditorSupport es = (EditorSupport)getDataObject ().getCookie (EditorSupport.class);
+            EditorSupport es = getDataObject().getCookie(EditorSupport.class);
             if (es != null) {
                 return es.del;
             } else {

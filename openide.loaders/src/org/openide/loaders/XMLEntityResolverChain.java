@@ -96,7 +96,7 @@ final class XMLEntityResolverChain implements EntityResolver {
         synchronized (resolverChain) {
             int index = resolverChain.indexOf(resolver);
             if ( index < 0 ) return null;
-            return (EntityResolver) resolverChain.remove(index);
+            return resolverChain.remove(index);
         }
     }
 
