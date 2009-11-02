@@ -51,6 +51,10 @@ public interface Constants {
     
     public final String HINT_DEPLOY_J2EE_SERVER = "netbeans.hint.deploy.server"; //NOI18N
 
+    /**
+     * values according to the org.netbeans.api.j2ee.core.Profile class.
+     * 1.4, 1.5, 1.6, 1.6-web
+     */
     public final String HINT_J2EE_VERSION = "netbeans.hint.j2eeVersion"; //NOI18N
     
     /**

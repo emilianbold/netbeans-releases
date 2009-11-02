@@ -17,7 +17,7 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="cbBrowser" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="lblHint1" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -27,9 +27,9 @@
                       <Group type="103" groupAlignment="1" attributes="0">
                           <Group type="102" attributes="0">
                               <Component id="lblHint2" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="222" max="32767" attributes="0"/>
+                              <EmptySpace pref="237" max="32767" attributes="0"/>
                           </Group>
-                          <Component id="txtRelativeUrl" pref="360" max="32767" attributes="0"/>
+                          <Component id="txtRelativeUrl" pref="377" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
@@ -38,15 +38,21 @@
                           <Component id="lblJ2EEVersion" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="lblServer" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="comServer" alignment="1" pref="360" max="32767" attributes="0"/>
-                          <Component id="txtJ2EEVersion" alignment="1" pref="360" max="32767" attributes="0"/>
-                          <Component id="txtContextPath" alignment="0" pref="360" max="32767" attributes="0"/>
+                          <Component id="comServer" alignment="1" pref="374" max="32767" attributes="0"/>
+                          <Component id="txtContextPath" alignment="0" pref="374" max="32767" attributes="0"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="txtJ2EEVersion" pref="148" max="32767" attributes="0"/>
+                              <EmptySpace min="-2" max="-2" attributes="0"/>
+                              <Component id="lblProfile" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" max="-2" attributes="0"/>
+                              <Component id="comProfile" pref="159" max="32767" attributes="0"/>
+                          </Group>
                       </Group>
                   </Group>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -62,6 +68,8 @@
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="lblJ2EEVersion" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="txtJ2EEVersion" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="lblProfile" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="comProfile" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
@@ -79,7 +87,7 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="lblHint2" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="102" max="32767" attributes="0"/>
+              <EmptySpace pref="97" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -174,6 +182,25 @@
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/maven/j2ee/web/Bundle.properties" key="LBL_Hint2" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="lblProfile">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/maven/j2ee/web/Bundle.properties" key="WebRunCustomizerPanel.lblProfile.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JComboBox" name="comProfile">
+      <Properties>
+        <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+          <StringArray count="4">
+            <StringItem index="0" value="Item 1"/>
+            <StringItem index="1" value="Item 2"/>
+            <StringItem index="2" value="Item 3"/>
+            <StringItem index="3" value="Item 4"/>
+          </StringArray>
         </Property>
       </Properties>
     </Component>
