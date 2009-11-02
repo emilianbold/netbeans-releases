@@ -57,6 +57,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Rectangle;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyListener;
@@ -72,6 +73,7 @@ import java.util.logging.Level;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
@@ -109,6 +111,8 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
     private Filter filter;
     private Filter[] filters;
     private Set<Issue> issues = new HashSet<Issue>();
+
+    private QueryTableHeaderRenderer queryTableHeaderRenderer;
 
     private Task storeColumnWidthsTask;
 
@@ -172,7 +176,8 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
         table.addMouseListener(this);
         table.addKeyListener(this);
         table.setDefaultRenderer(Node.Property.class, new QueryTableCellRenderer(query));
-        table.getTableHeader().setDefaultRenderer(new QueryTableHeaderRenderer(table.getTableHeader().getDefaultRenderer(), this, query));
+        queryTableHeaderRenderer = new QueryTableHeaderRenderer(table.getTableHeader().getDefaultRenderer(), this, query);
+        table.getTableHeader().setDefaultRenderer(queryTableHeaderRenderer);
         table.addAncestorListener(this);
         table.getAccessibleContext().setAccessibleName(NbBundle.getMessage(IssueTable.class, "ACSN_IssueTable")); // NOI18N
         table.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(IssueTable.class, "ACSD_IssueTable")); // NOI18N
@@ -314,12 +319,11 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
             public void run() {
                 int[] widths = BugtrackingConfig.getInstance().getColumnWidths(getColumnWidthsKey());
                 if(widths != null && widths.length > 0) {
-                    for (int i = 0; i < widths.length; i++) {
+                    int columnCount = table.getColumnModel().getColumnCount();
+                    for (int i = 0; i < widths.length && i < columnCount; i++) {
                         int w = widths[i];
-                        table.getColumnModel().getColumn(i).setMinWidth(10);
-                        table.getColumnModel().getColumn(i).setMaxWidth(10000);
-                        if(w > -1) {
-                            table.getColumnModel().getColumn(i).setPreferredWidth(w);
+                        if(w > 0) {
+                            setColumnWidth(i, w);
                         }
                     }
                 } else {
@@ -327,15 +331,14 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
                         ColumnDescriptor desc = descriptors[i];
                         int w = desc.getWidth();
                         if(w > 0) {
-                            table.getColumnModel().getColumn(i).setMinWidth(10);
-                            table.getColumnModel().getColumn(i).setMaxWidth(10000);
-                            table.getColumnModel().getColumn(i).setPreferredWidth(w);
+                            setColumnWidth(i, w);
+                        } else if(w == 0) {
+                            setWidthForFit(i);
                         }
                     }
                     if(query.isSaved()) {
-                        table.getColumnModel().getColumn(recentChangesColumnIdx).setMaxWidth(10000);
-                        table.getColumnModel().getColumn(recentChangesColumnIdx).setMinWidth(10);
-                        table.getColumnModel().getColumn(recentChangesColumnIdx).setPreferredWidth(BugtrackingUtil.getColumnWidthInPixels(25, table));
+                        int w = BugtrackingUtil.getColumnWidthInPixels(25, table);
+                        setColumnWidth(recentChangesColumnIdx, w);
                     }
                 }
 
@@ -359,6 +362,24 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
                             storeColumnWidthsTask.schedule(1000);
                         }
                     });
+                }
+            }
+
+            private void setColumnWidth(int i, int w) {
+                table.getColumnModel().getColumn(i).setMinWidth(10);
+                table.getColumnModel().getColumn(i).setMaxWidth(10000);
+                table.getColumnModel().getColumn(i).setPreferredWidth(w);
+            }
+
+            private void setWidthForFit(int i) {
+                TableColumn c = table.getColumnModel().getColumn(i);
+                Component comp = queryTableHeaderRenderer.getTableCellRendererComponent(table, c.getHeaderValue(), false, false, 0, i);
+                if(comp instanceof JLabel) {
+                    JLabel label = (JLabel) comp;
+                    int w = label.getPreferredSize().width;
+                    if(w > -1) {
+                        setColumnWidth(i, w);
+                    }
                 }
             }
         });

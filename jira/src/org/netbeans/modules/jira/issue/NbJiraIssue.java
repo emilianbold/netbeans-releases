@@ -762,6 +762,9 @@ public class NbJiraIssue extends Issue {
                 // so do not set to close if already closed
                 Jira.LOG.log(Level.INFO, "Close not permitted, current status is " + getStatus().getName() + ", leaving status the same", ise);
             }
+        } else {
+            // comment must be added even when not resolving
+            addComment(comment);
         }
 
         JiraCommand submitCmd = new JiraCommand() {
@@ -973,31 +976,23 @@ public class NbJiraIssue extends Issue {
                 new ColumnDescriptor<String>(LABEL_NAME_TYPE, String.class,
                                                   loc.getString("CTL_Issue_Type_Title"), // NOI18N
                                                   loc.getString("CTL_Issue_Type_Desc"), // NOI18N
-                                                  BugtrackingUtil.getLongestWordWidth(
-                                                    loc.getString("CTL_Issue_Type_Title"),      // NOI18N
-                                                    JiraUtils.toStrings(conf.getIssueTypes()), t)),
+                                                  0),
                 new ColumnDescriptor<String>(LABEL_NAME_PRIORITY, String.class,
                                                   loc.getString("CTL_Issue_Priority_Title"), // NOI18N
                                                   loc.getString("CTL_Issue_Priority_Desc"), // NOI18N
-                                                  BugtrackingUtil.getLongestWordWidth(
-                                                    loc.getString("CTL_Issue_Priority_Title"),      // NOI18N
-                                                    JiraUtils.toStrings(conf.getPriorities()), t, true)),
+                                                  0),
                 new ColumnDescriptor<String>(LABEL_NAME_STATUS, String.class,
                                                   loc.getString("CTL_Issue_Status_Title"), // NOI18N
                                                   loc.getString("CTL_Issue_Status_Desc"), // NOI18N
-                                                  BugtrackingUtil.getLongestWordWidth(
-                                                    loc.getString("CTL_Issue_Status_Title"),      // NOI18N
-                                                    JiraUtils.toStrings(conf.getPriorities()), t)),
+                                                  0),
                 new ColumnDescriptor<String>(LABEL_NAME_RESOLUTION, String.class,
                                                   loc.getString("CTL_Issue_Resolution_Title"), // NOI18N
                                                   loc.getString("CTL_Issue_Resolution_Desc"), // NOI18N
-                                                  BugtrackingUtil.getLongestWordWidth(
-                                                    loc.getString("CTL_Issue_Status_Title"),      // NOI18N
-                                                    JiraUtils.toStrings(conf.getResolutions()), t)),
+                                                  0),
                 new ColumnDescriptor<String>(LABEL_NAME_ASSIGNED_TO, String.class,
                                               loc.getString("CTL_Issue_Assigned_Title"),        // NOI18N
                                               loc.getString("CTL_Issue_Assigned_Desc"),         // NOI18N
-                                              BugtrackingUtil.getColumnWidthInPixels(20, t))
+                                              0)
             };
         }
         return DESCRIPTORS;
