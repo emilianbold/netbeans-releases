@@ -425,6 +425,9 @@ public class DwarfSource implements SourceFileProperties{
                     }
                 }
             }
+            //if (path.startsWith("/usr")) {
+            //    System.err.println("Detectes as user include"+path);
+            //}
         }
         return false;
     }
@@ -497,14 +500,15 @@ public class DwarfSource implements SourceFileProperties{
             if (Utilities.isWindows()) {
                 includeFullName = includeFullName.replace('\\', '/');
             }
-            if (!isSystemPath(includeFullName)) {
-                list = grepSourceFile(includeFullName).includes;
-                for(String included : list){
-                    cutFolderPrefix(included, dwarfTable);
-                }
-                int i = includeFullName.lastIndexOf('/');
-                if (i > 0) {
-                    String userPath = includeFullName.substring(0,i);
+            String userPath = null;
+            int i = includeFullName.lastIndexOf('/');
+            if (i > 0) {
+                userPath = includeFullName.substring(0,i);
+                if (!isSystemPath(userPath)) {
+                    list = grepSourceFile(includeFullName).includes;
+                    for(String included : list){
+                        cutFolderPrefix(included, dwarfTable);
+                    }
                     addpath(userPath);
                 }
             }

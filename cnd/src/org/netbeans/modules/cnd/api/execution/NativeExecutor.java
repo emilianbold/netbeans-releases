@@ -89,12 +89,13 @@ public class NativeExecutor implements Runnable {
     private final ExecutionEnvironment execEnv;
     private final boolean unbuffer;
     private boolean x11forwarding = false;
+    private final File runDirFile;
     
     private String rcfile;
-    private NativeExecution nativeExecution;
+    private volatile NativeExecution nativeExecution;
     
     private static final boolean showHeader = Boolean.getBoolean("cnd.execution.showheader");
-    
+
     /** I/O class for writing output to a build tab */
     private InputOutput io;
     private PrintWriter out;
@@ -129,6 +130,8 @@ public class NativeExecutor implements Runnable {
         this.parseOutputForErrors = parseOutputForErrors;
         this.showInput = showInput;
         this.unbuffer = unbuffer;
+        
+        runDirFile = new File(runDir);
     }
 
     /**
@@ -257,6 +260,16 @@ public class NativeExecutor implements Runnable {
      *  Call execute(), not this method directly!
      */
     synchronized public void run() {
+
+        nativeExecution = NativeExecution.getDefault(
+                execEnv,
+                runDirFile,
+                executable,
+                arguments,
+                prepareEnvironment(),
+                unbuffer,
+                x11forwarding);
+
         // IZ162493: no need to switch each time into Ouput window
 //        io.setFocusTaken(true);
         io.setErrVisible(false);
@@ -264,8 +277,7 @@ public class NativeExecutor implements Runnable {
         if (showInput) {
             io.setInputVisible(true);
         }
-        
-        File runDirFile = new File(runDir);
+                
         OutputWriter originalWriter = io.getOut();
         if (outputListener != null) {
             originalWriter = new OutputWriterProxy(originalWriter, outputListener);
@@ -284,16 +296,7 @@ public class NativeExecutor implements Runnable {
         
         try {
             // Execute the selected command
-            nativeExecution = NativeExecution.getDefault(execEnv);
-            rc = nativeExecution.executeCommand(
-                    runDirFile,
-                    executable,
-                    arguments,
-                    prepareEnvironment(),
-                    out,
-		    showInput ? io.getIn() : null,
-                    unbuffer,
-                    x11forwarding);
+            nativeExecution.execute(out, showInput ? io.getIn() : null);
         } catch (ThreadDeath td) {
             StatusDisplayer.getDefault().setStatusText(getString("MSG_FailedStatus"));
             executionFinished(-2, System.currentTimeMillis() - startTime);
@@ -358,9 +361,12 @@ public class NativeExecutor implements Runnable {
     }
     
     public void stop() {
-        nativeExecution.stop();
+        NativeExecution ne = nativeExecution;
+        if (ne != null) {
+            nativeExecution.stop();
+        }
     }
-    
+
     private void executionStarted() {
         if(showHeader) {
             String runDirToShow = execEnv.isLocal() ?
