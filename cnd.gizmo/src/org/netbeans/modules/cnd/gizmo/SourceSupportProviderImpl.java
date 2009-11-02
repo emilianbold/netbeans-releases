@@ -67,7 +67,6 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.DataEditorSupport;
 import org.openide.text.NbDocument;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.TopComponent;
 
@@ -219,14 +218,7 @@ public class SourceSupportProviderImpl implements SourceSupportProvider {
     }
 
     private static void jumpToLine(final JEditorPane pane, final SourceFileInfo sourceFileInfo, boolean delayProcessing) {
-        // immediate processing
-        RequestProcessor.getDefault().post(new Runnable() {
-
-            public void run() {
-                jumpToLine(pane, sourceFileInfo);
-            }
-        });
-
+        System.err.println("called by me");
         // try to activate outer TopComponent
         Container temp = pane;
         while (temp != null && !(temp instanceof TopComponent)) {
@@ -237,10 +229,12 @@ public class SourceSupportProviderImpl implements SourceSupportProvider {
             ((TopComponent) temp).requestActive();
             ((TopComponent) temp).requestVisible();
         }
-
+        // have to be called in EDT, because working with swing objects
+        jumpToLine(pane, sourceFileInfo);
     }
 
     private static void jumpToLine(JEditorPane pane, SourceFileInfo sourceFileInfo) {
+        assert SwingUtilities.isEventDispatchThread() : "must be called in EDT";
         int caretPos = pane.getCaretPosition();
         Container parent = pane.getParent();
         Point viewPos = parent instanceof JViewport ? ((JViewport) parent).getViewPosition()
