@@ -140,6 +140,7 @@ class ServerLog extends Thread {
         }
     }
 
+    @Override
     public void run() {
         try {
             while(!done) {                    
@@ -189,6 +190,8 @@ class ServerLog extends Thread {
             // no op - the thread was interrupted 
         } finally {
             logSupport.detachAnnotation();
+            writer.close();
+            errorWriter.close();
         }
     }
     
