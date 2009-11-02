@@ -43,7 +43,7 @@ made subject to such option by the copyright holder.
 
 <toolchaindefinition xmlns="http://www.netbeans.org/ns/cnd-toolchain-definition/1">
     <toolchain name="SunStudio" display="Sun Studio Compiler Collection" family="SunStudio" qmakespec="${os}-cc"/>
-    <platforms stringvalue="sun_intel,sun_sparc"/>
+    <platforms stringvalue="sun_intel,sun_sparc,linux"/>
     <makefile_writer class="org.netbeans.modules.cnd.makeproject.api.configurations.DefaultMakefileWriter"/>
     <c>
         <compiler name="cc"/>
@@ -58,9 +58,9 @@ made subject to such option by the copyright holder.
            <debug flags="-g" default="true"/>
            <performance_debug flags="-g -xO2"/>
            <test_coverage flags="-xprofile=tcov -xinline="/>
-           <diagnosable_release flags="-g -xO3"/>
+           <diagnosable_release flags="-g -O"/>
            <release flags="-fast -xipo"/>
-           <performance_release flags="-xO5 -xipo -xdepend -fsimple=1 -xlibmil -xlibmopt -xvector -xbuiltin"/>
+           <performance_release flags="-fast -xipo"/>
         </development_mode>
         <warning_level>
             <no_warnings flags="-w"/>
@@ -107,9 +107,9 @@ made subject to such option by the copyright holder.
            <debug flags="-g" default="true"/>
            <performance_debug flags="-g0 -xO2"/>
            <test_coverage flags="-xprofile=tcov +d -xinline="/>
-           <diagnosable_release flags="-g0 -xO3"/>
+           <diagnosable_release flags="-g0 -O"/>
            <release flags="-fast -xipo"/>
-           <performance_release flags="-xO5 -xipo -xdepend -fsimple=1 -xlibmil -xlibmopt -xvector -xbuiltin -sync_stdio=no"/>
+           <performance_release flags="-fast -xipo"/>
         </development_mode>
         <warning_level>
             <no_warnings flags="-w"/>
@@ -157,11 +157,11 @@ made subject to such option by the copyright holder.
         <development_mode>
            <fast_build flags=""/>
            <debug flags="-g" default="true"/>
-           <performance_debug flags="-g -O"/>
+           <performance_debug flags="-g -O2"/>
            <test_coverage flags="-g"/>
-           <diagnosable_release flags="-g -O2"/>
+           <diagnosable_release flags="-g -O"/>
            <release flags="-fast"/>
-           <performance_release flags="-O4"/>
+           <performance_release flags="-fast"/>
         </development_mode>
         <warning_level>
             <no_warnings flags="-w"/>

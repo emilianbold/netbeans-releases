@@ -69,8 +69,8 @@ public final class TimeSeriesDescriptorFactory {
     }
 
     static TimeSeriesDescriptor create(Map map) {
-        String colorString = getStringValue(map, "color");//NOI8N
-        String[] rgb = colorString.split(":");
+        String colorString = getStringValue(map, "color");//NOI18N
+        String[] rgb = colorString.split(":");//NOI18N
         Color color = Color.BLACK;
         if (rgb != null && rgb.length == 3){
             try{
@@ -79,7 +79,7 @@ public final class TimeSeriesDescriptorFactory {
                 e.printStackTrace();
             }
         }
-        String displayName = getStringValue(map, "displayName");//NOI8N
+        String displayName = getStringValue(map, "displayName");//NOI18N
         Kind kind = Kind.valueOf(getStringValue(map, "kind"));//NOI18N
         return  new TimeSeriesDescriptor(color, displayName, kind);
     }

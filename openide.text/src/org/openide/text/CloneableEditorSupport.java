@@ -180,7 +180,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     private UndoRedo.Manager undoRedo;
 
     /** lines set for this object */
-    private Reference<Line.Set> lineSet;
+    private Line.Set lineSet;
 
     /** Helper variable to prevent multiple cocurrent printing of this
      * instance. */
@@ -2087,21 +2087,19 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     */
     Line.Set updateLineSet(boolean clear) {
         synchronized (getLock()) {
-            Reference<Line.Set> ref = lineSet;
-            Line.Set oldSet = ref == null ? null : ref.get();
-            if ((oldSet != null) && !clear) {
-                return oldSet;
+            if ((lineSet != null) && !clear) {
+                return lineSet;
             }
 
+            Line.Set oldSet = lineSet;
 
-            Line.Set newSet;
             if ((getDoc() == null) || (documentStatus == DOCUMENT_RELOADING)) {
-                newSet = new EditorSupportLineSet.Closed(CloneableEditorSupport.this);
+                lineSet = new EditorSupportLineSet.Closed(CloneableEditorSupport.this);
             } else {
-                newSet = new EditorSupportLineSet(CloneableEditorSupport.this,getDoc());
+                lineSet = new EditorSupportLineSet(CloneableEditorSupport.this,getDoc());
             }
-            lineSet = new WeakReference<Line.Set>(newSet);
-            return newSet;
+
+            return lineSet;
         }
     }
 
@@ -2654,7 +2652,6 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     private final class StrongRef extends WeakReference<StyledDocument> 
     implements Runnable {
         private StyledDocument doc;
-        private Line.Set lineSet;
         
         public StrongRef(StyledDocument doc, boolean strong) {
             super(doc, org.openide.util.Utilities.activeReferenceQueue());
@@ -2678,11 +2675,8 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         private void setStrong(boolean alreadyModified) {
             if (alreadyModified) {
                 this.doc = super.get();
-                Reference<Line.Set> r = CloneableEditorSupport.this.lineSet;
-                this.lineSet = r == null ? null : r.get();
             } else {
                 this.doc = null;
-                this.lineSet = null;
             }
         }
 

@@ -57,20 +57,35 @@ public class ApplicationConfigPanel extends javax.swing.JPanel {
 
     /** Creates new form RestSupportPanel */
 
-    public ApplicationConfigPanel(String configType, String resourcesPath) {
-        this();
+    public ApplicationConfigPanel(String configType, String resourcesPath, boolean annotationConfigAvailable) {
+        initComponents();
+        if (!annotationConfigAvailable) {
+            jRadioButton1.setVisible(false);
+        }
         if (WebRestSupport.CONFIG_TYPE_IDE.equals(configType)) {
-            jRadioButton1.setSelected(true);
+            if (annotationConfigAvailable) jRadioButton1.setSelected(true);
+            else jRadioButton3.setSelected(true);
         } else if (WebRestSupport.CONFIG_TYPE_USER.equals(configType)) {
             jRadioButton2.setSelected(true);
+            jTextField1.setEnabled(false);
         } else {
             jRadioButton3.setSelected(true);
         }
         jTextField1.setText(resourcesPath);
+        addListeners();
     }
 
-    public ApplicationConfigPanel() {
+    public ApplicationConfigPanel(boolean annotationConfigAvailable) {
         initComponents();
+        if (!annotationConfigAvailable) {
+            jRadioButton1.setVisible(false);
+            jRadioButton3.setSelected(true);
+        }
+        addListeners();
+
+    }
+
+    private void addListeners() {
         ItemListener l = new MyItemListener();
         jRadioButton1.addItemListener(l);
         jRadioButton2.addItemListener(l);
@@ -181,9 +196,9 @@ public class ApplicationConfigPanel extends javax.swing.JPanel {
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(jLabel2)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 138, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 175, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jTextField1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 398, Short.MAX_VALUE)))
+                        .add(jTextField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 361, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(

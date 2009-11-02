@@ -44,10 +44,10 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.project.ui.codecoverage.CoverageVO.ClassVO;
 import org.netbeans.modules.php.project.ui.codecoverage.CoverageVO.FileVO;
 import org.netbeans.modules.php.project.ui.codecoverage.CoverageVO.LineVO;
-import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.xml.sax.Attributes;
@@ -73,7 +73,7 @@ public class PhpUnitCoverageLogParser extends DefaultHandler {
     private PhpUnitCoverageLogParser(CoverageVO coverage) throws SAXException {
         assert coverage != null;
         this.coverage = coverage;
-        xmlReader = PhpProjectUtils.createXmlReader();
+        xmlReader = FileUtils.createXmlReader();
         xmlReader.setContentHandler(this);
     }
 

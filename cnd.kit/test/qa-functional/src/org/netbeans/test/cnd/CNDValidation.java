@@ -52,6 +52,7 @@ import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.TimeoutExpiredException;
+import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.junit.NbModuleSuite;
 
@@ -187,6 +188,24 @@ public class CNDValidation extends JellyTestCase {
         } catch (TimeoutExpiredException e) {
             // ignore when it doesn't appear
         }
+        // if some compiler exists
+        try {
+            NbDialogOperator downloadOper = new NbDialogOperator("Download Tool Collection");
+            new JButtonOperator(downloadOper, "No").clickMouse();
+
+            NbDialogOperator resolveOper = new NbDialogOperator("Resolve Missing Native Build Tools");
+            // select GNU collection
+            
+            JButtonOperator removeButton = new JButtonOperator(resolveOper, "Remove");
+            removeButton.press();
+            removeButton.release();
+
+            new JButtonOperator(resolveOper, "OK").clickMouse();
+        } catch (TimeoutExpiredException e) {
+            // ignore when it doesn't appear
+        }
+
+
         // wait message "Clean successful"
         stt.waitText("Clean successful", true); // NOI18N
         // wait message "Build successful."

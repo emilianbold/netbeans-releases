@@ -191,7 +191,7 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
                     // localhost only mode (either cnd.remote is not installed or no devhosts were specified
                     for (CompilerSet cs : getCompilerSetManager(ExecutionEnvironmentFactory.getLocal()).getCompilerSets()) {
                         for (Tool tool : cs.getTools()) {
-                            tool.waitReady();
+                            tool.waitReady(false);
                         }
                         CompilerSetPresenter csp = new CompilerSetPresenter(cs, cs.getName());
                         if (csToSelect == cs) {

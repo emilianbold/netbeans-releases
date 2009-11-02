@@ -44,7 +44,7 @@ public class GrailsPluginsPanel extends javax.swing.JPanel {
     public GrailsPluginsPanel(Project project) {
         initComponents();
         this.project = (GrailsProject) project;
-        this.pluginsManager = new GrailsPluginSupport(this.project);
+        this.pluginsManager = GrailsPluginSupport.forProject(this.project);
     }
 
     public void dispose() {

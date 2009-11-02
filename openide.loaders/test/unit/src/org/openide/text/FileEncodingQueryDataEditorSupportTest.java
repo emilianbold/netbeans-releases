@@ -445,7 +445,7 @@ public class FileEncodingQueryDataEditorSupportTest extends NbTestCase {
         public int primary;
         
         public static MyLoader get () {
-            return (MyLoader)MyLoader.findObject (MyLoader.class, true);
+            return MyLoader.findObject(MyLoader.class, true);
         }
         
         public MyLoader() {

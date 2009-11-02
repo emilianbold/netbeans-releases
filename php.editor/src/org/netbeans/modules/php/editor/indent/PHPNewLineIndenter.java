@@ -121,8 +121,29 @@ public class PHPNewLineIndenter {
                            indentStartComment = true;
                        }
                        else {
-                           // don't indent comment - issue #173979
-                            return;
+                           if (!movePrevious) {
+                               // don't indent comment - issue #173979
+                               return;
+                           }
+                           else {
+                               if (ts.token().id() == PHPTokenId.PHP_LINE_COMMENT) {
+                                   ts.movePrevious();
+                                   CharSequence whitespace = ts.token().text();
+                                   if (ts.movePrevious() && ts.token().id() == PHPTokenId.PHP_LINE_COMMENT) {
+                                       int index = 0;
+                                       while (index < whitespace.length() && whitespace.charAt(index) != '\n') {
+                                           index++;
+                                       }
+                                       if (index == whitespace.length()) {
+                                           // don't indent if the line commnet continue
+                                           // the last new line belongs to the line comment
+                                           return;
+                                       }
+                                   }
+                                   ts.moveNext();
+                                   movePrevious = false;
+                               }
+                           }
                        }
                     }
                     if (movePrevious){

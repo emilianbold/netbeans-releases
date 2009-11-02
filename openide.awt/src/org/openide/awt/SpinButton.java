@@ -69,6 +69,7 @@ import java.util.Vector;
 * @version 3.06, November 17, 1997
 * @author  Petr Hamernik, Jan Jancura
 */
+@Deprecated
 public class SpinButton extends Canvas {
     /** generated Serialized Version UID */
     static final long serialVersionUID = -3525959415481788776L;
@@ -209,7 +210,7 @@ public class SpinButton extends Canvas {
 
         addMouseListener(
             new MouseAdapter() {
-                public void mousePressed(MouseEvent evt) {
+                public @Override void mousePressed(MouseEvent evt) {
                     Dimension d = getSize();
                     boolean newDir = SPIN_UP;
 
@@ -238,7 +239,7 @@ public class SpinButton extends Canvas {
                     repaint();
                 }
 
-                public void mouseReleased(MouseEvent evt) {
+                public @Override void mouseReleased(MouseEvent evt) {
                     boolean r = running;
                     switchStop();
 
@@ -255,7 +256,7 @@ public class SpinButton extends Canvas {
     *
     * @param color New foreground color.
     */
-    public void setForeground(Color color) {
+    public @Override void setForeground(Color color) {
         super.setForeground(color);
         repaint();
     }
@@ -471,7 +472,7 @@ public class SpinButton extends Canvas {
         repeating = aRepeating;
     }
 
-    public void paint(Graphics g) {
+    public @Override void paint(Graphics g) {
         Dimension d = getSize();
 
         int left = 0;
@@ -594,11 +595,11 @@ public class SpinButton extends Canvas {
         running = false;
     }
 
-    public Dimension getMinimumSize() {
+    public @Override Dimension getMinimumSize() {
         return countSize();
     }
 
-    public Dimension getPreferredSize() {
+    public @Override Dimension getPreferredSize() {
         return countSize();
     }
 
@@ -615,11 +616,11 @@ public class SpinButton extends Canvas {
         return new Dimension(x, y);
     }
 
-    public void addPropertyChangeListener(PropertyChangeListener l) {
+    public @Override void addPropertyChangeListener(PropertyChangeListener l) {
         valueSupport.addPropertyChangeListener(l);
     }
 
-    public void removePropertyChangeListener(PropertyChangeListener l) {
+    public @Override void removePropertyChangeListener(PropertyChangeListener l) {
         valueSupport.removePropertyChangeListener(l);
     }
 

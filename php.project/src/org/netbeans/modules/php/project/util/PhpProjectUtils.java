@@ -45,8 +45,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -69,8 +67,6 @@ import org.openide.nodes.Node;
 import org.openide.text.Line;
 import org.openide.text.Line.Set;
 import org.openide.util.Mutex;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
 
 /**
  * Utility methods.
@@ -102,18 +98,6 @@ public final class PhpProjectUtils {
             return null;
         }
         return project.getLookup().lookup(PhpProject.class);
-    }
-
-    public static XMLReader createXmlReader() throws SAXException {
-        SAXParserFactory factory = SAXParserFactory.newInstance();
-        factory.setValidating(false);
-        factory.setNamespaceAware(false);
-
-        try {
-            return factory.newSAXParser().getXMLReader();
-        } catch (ParserConfigurationException ex) {
-            throw new SAXException("Cannot create SAX parser", ex);
-        }
     }
 
     /**

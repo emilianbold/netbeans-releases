@@ -38,6 +38,8 @@
  */
 package org.netbeans.lib.html.lexer;
 
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -59,6 +61,12 @@ public class HtmlLexerTest extends NbTestCase {
     protected void setUp() throws java.lang.Exception {
         // Set-up testing environment
         LexerTestUtilities.setTesting(true);
+    }
+
+    public static Test xsuite() {
+        TestSuite suite = new TestSuite();
+        suite.addTest(new HtmlLexerTest("testIssue149968"));
+        return suite;
     }
 
     public void testInput() throws Exception {
@@ -103,6 +111,9 @@ public class HtmlLexerTest extends NbTestCase {
         checkTokens("<div/", "<|TAG_OPEN_SYMBOL", "div|TAG_OPEN", "/|TEXT");
     }
 
+    public void testIssue149968() {
+        checkTokens("<div @@@/>", "<|TAG_OPEN_SYMBOL", "div|TAG_OPEN", " @@@|WS", "/>|TAG_CLOSE_SYMBOL");
+    }
 
     private void checkTokens(String text, String... descriptions) {
         TokenHierarchy th = TokenHierarchy.create(text, HTMLTokenId.language());
