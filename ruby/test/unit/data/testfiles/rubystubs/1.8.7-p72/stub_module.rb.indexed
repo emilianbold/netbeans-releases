@@ -40,7 +40,7 @@ Searchable Keys:
   method : equal?(other);01;;TrueClass|FalseClass;
   method : extend_object(obj);01;;Object;
   method : extended(p1);01
-  method : freeze;01
+  method : freeze;01;;Module;
   method : include(module_);01
   method : include?(module_name);01;;TrueClass|FalseClass;
   method : included(othermod);01
