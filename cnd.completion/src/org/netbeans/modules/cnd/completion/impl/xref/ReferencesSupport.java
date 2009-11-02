@@ -253,7 +253,7 @@ public final class ReferencesSupport {
         if (csmItem instanceof CsmMacro) {
             CsmMacro macro = (CsmMacro) csmItem;
             List<CharSequence> macroParameters = macro.getParameters();
-            if (macroParameters == null || macroParameters.isEmpty()) {
+            if (macroParameters == null || macroParameters.isEmpty() || CompletionUtilities.conatinsVaArgs(macroParameters)) {
                 return csmItem;
             } else {
                 int paramsNumber = CompletionUtilities.getMethodParamsNumber(doc, offset);

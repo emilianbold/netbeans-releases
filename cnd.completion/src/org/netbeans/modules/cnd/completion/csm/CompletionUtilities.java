@@ -167,7 +167,7 @@ public class CompletionUtilities {
                             if (csmItem instanceof CsmMacro) {
                                 CsmMacro macro = (CsmMacro) csmItem;
                                 List<CharSequence> macroParameters = macro.getParameters();
-                                if (macroParameters != null && !macroParameters.isEmpty()) {
+                                if (macroParameters != null && !macroParameters.isEmpty() && !CompletionUtilities.conatinsVaArgs(macroParameters)) {
                                     int paramsNumber = CompletionUtilities.getMethodParamsNumber(doc, dotPos);
                                     if (paramsNumber != macroParameters.size()) {
                                         remove.add(csmItem);
@@ -320,5 +320,14 @@ public class CompletionUtilities {
             }
         }
         return paramsNumber;
+    }
+
+    public static boolean conatinsVaArgs(List<CharSequence> macroParameters) {
+        for (CharSequence param : macroParameters) {
+            if (param.toString().equals("__VA_ARGS__")) { // NOI18N
+                return true;
+            }
+        }
+        return false;
     }
 }
