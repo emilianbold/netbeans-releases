@@ -212,8 +212,13 @@ public class FixDependencies extends Task {
                 throw new BuildException("No module dependencies in " + file);
             }
 
+            int ed = stream.indexOf ("</module-dependencies>", md);
+            if (ed == -1) {
+                ed = stream.length();
+            }
+
             int idx = stream.indexOf ("<code-name-base>" + r.codeNameBase + "</code-name-base>", md);
-            if (idx == -1) continue;
+            if (idx == -1 || idx > ed) continue;
             
             int from = stream.lastIndexOf ("<dependency>", idx);
             if (from == -1) throw new BuildException ("No <dependency> tag before index " + idx);
