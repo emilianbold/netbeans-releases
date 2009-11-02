@@ -637,6 +637,11 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ175123.cc", 4, 21, "IZ175123.cc", 4, 9);
     }
 
+    public void testStringInMacroParams() throws Exception {
+        // Unresolved macro with string in params
+        performTest("string_in_macro_params.cc", 7, 31, "string_in_macro_params.cc", 1, 1);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
