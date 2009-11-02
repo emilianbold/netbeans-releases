@@ -746,7 +746,7 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
             } catch (VMDisconnectedExceptionWrapper ex) {
                 return new Field[0];
             } catch (ObjectCollectedExceptionWrapper ex) {
-                Exceptions.printStackTrace(ex);
+                // The array was collected => no fields.
                 return new Field[0];
             }
             int i, k = l.size ();

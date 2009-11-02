@@ -1130,7 +1130,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     JEditorPane getRecentPane () {
         // expected in AWT only
         assert SwingUtilities.isEventDispatchThread()
-                : "CloneableEditorSupport.getOpenedPaneForTC must be called from AWT thread only"; // NOI18N
+                : "CloneableEditorSupport.getRecentPane must be called from AWT thread only"; // NOI18N
         CloneableEditorSupport redirect = CloneableEditorSupportRedirector.findRedirect(this);
         if (redirect != null) {
             return redirect.getRecentPane();
@@ -1160,7 +1160,9 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                         p = ed.getEditorPane();
                     }
                 }
-                return p;
+                if (p != null) {
+                    return p;
+                }
             } else {
                 throw new IllegalStateException("No reference to Pane. Please file a bug against openide/text");
             }

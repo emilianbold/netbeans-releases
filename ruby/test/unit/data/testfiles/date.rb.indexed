@@ -16,8 +16,8 @@ Searchable Keys:
   field : of|PRIVATE;;Fixnum;
   field : sg|PRIVATE
   fqn : Date
-  method : +(n)|DOCUMENTED|
-  method : -(x)|DOCUMENTED|;;Fixnum;
+  method : +(n)|DOCUMENTED|;;Date;
+  method : -(x)|DOCUMENTED|;;Date;
   method : <<(n)|DOCUMENTED|
   method : <=>(other)|DOCUMENTED|;;Fixnum|NilClass;
   method : ===(other)|DOCUMENTED|;;TrueClass|FalseClass;

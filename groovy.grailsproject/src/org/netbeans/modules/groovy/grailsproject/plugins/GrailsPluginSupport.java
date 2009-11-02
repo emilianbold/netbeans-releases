@@ -71,6 +71,7 @@ import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grails.api.GrailsPlatform;
@@ -99,8 +100,27 @@ public class GrailsPluginSupport {
 
     private final GrailsProject project;
 
-    public GrailsPluginSupport(GrailsProject project) {
+    private GrailsPluginSupport(GrailsProject project) {
         this.project = project;
+    }
+
+    public static GrailsPluginSupport forProject(Project project) {
+        GrailsProject grailsProject = project.getLookup().lookup(GrailsProject.class);
+        if (grailsProject != null) {
+            return new GrailsPluginSupport(grailsProject);
+        }
+        return null;
+    }
+
+    public boolean usesPlugin(String name) {
+        assert name != null : "Name is null";
+
+        for (GrailsPlugin plugin : loadInstalledPlugins()) {
+            if (name.equals(plugin.getName())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public List<GrailsPlugin> refreshAvailablePlugins() throws InterruptedException {
