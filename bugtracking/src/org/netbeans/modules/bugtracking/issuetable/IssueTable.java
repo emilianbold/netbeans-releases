@@ -319,7 +319,8 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
             public void run() {
                 int[] widths = BugtrackingConfig.getInstance().getColumnWidths(getColumnWidthsKey());
                 if(widths != null && widths.length > 0) {
-                    for (int i = 0; i < widths.length; i++) {
+                    int columnCount = table.getColumnModel().getColumnCount();
+                    for (int i = 0; i < widths.length && i < columnCount; i++) {
                         int w = widths[i];
                         if(w > 0) {
                             setColumnWidth(i, w);
