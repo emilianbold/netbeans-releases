@@ -48,7 +48,6 @@ import java.util.logging.Level;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
-import junit.framework.Test;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.openide.awt.MenuBarTest.MyAction;
@@ -103,8 +102,6 @@ public class ToolbarPoolTest extends NbTestCase {
         assertEquals ("By default there is no config", "", conf);
         
     }
-    
-
     
     public void testCreateConf () throws Exception {
         JLabel conf = new JLabel ();

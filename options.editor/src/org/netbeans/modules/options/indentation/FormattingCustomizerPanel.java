@@ -75,6 +75,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex.ExceptionAction;
 import org.openide.util.NbBundle;
@@ -83,7 +84,7 @@ import org.openide.util.NbBundle;
  *
  * @author Dusan Balek
  */
-public final class FormattingCustomizerPanel extends javax.swing.JPanel implements ActionListener {
+public final class FormattingCustomizerPanel extends javax.swing.JPanel implements ActionListener, HelpCtx.Provider {
     
     // ------------------------------------------------------------------------
     // ProjectCustomizer.CompositeCategoryProvider implementation
@@ -185,6 +186,10 @@ public final class FormattingCustomizerPanel extends javax.swing.JPanel implemen
                 }
             }
         }
+    }
+
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx( FormattingCustomizerPanel.class );
     }
 
     // ------------------------------------------------------------------------
@@ -519,7 +524,7 @@ private void editGlobalButtonActionPerformed(java.awt.event.ActionEvent evt) {//
         }
         for(String key : from.keys()) {
             String value = from.get(key, null);
-            assert value != null : "Preferences should never have value == null."; //NOI18N
+            if (value == null) continue;
 
             Class type = guessType(value);
             if (Integer.class == type) {

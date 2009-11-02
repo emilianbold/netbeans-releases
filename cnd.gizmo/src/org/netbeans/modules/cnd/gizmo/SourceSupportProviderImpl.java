@@ -53,8 +53,8 @@ import javax.swing.JEditorPane;
 import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.JumpList;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
 import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
@@ -92,7 +92,7 @@ public class SourceSupportProviderImpl implements SourceSupportProvider {
         }
     }
 
-    final class ROEditor extends DataEditorSupport {
+    private static final class ROEditor extends DataEditorSupport {
 
         private ROEditor(DataObject d) {
             super(d, new E(d));
@@ -197,7 +197,7 @@ public class SourceSupportProviderImpl implements SourceSupportProvider {
                 SwingUtilities.invokeLater(new Runnable() {
 
                     public void run() {
-                        NbEditorUtilities.addJumpListEntry(dob);
+                        JumpList.checkAddEntry();
                         JEditorPane pane = NbDocument.findRecentEditorPane(ec);
                         boolean opened = true;
                         if (pane == null) {

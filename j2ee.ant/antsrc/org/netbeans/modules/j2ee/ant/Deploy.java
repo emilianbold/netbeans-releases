@@ -100,7 +100,9 @@ public class Deploy extends Task implements Deployment.Logger {
             }
 
             try {
-                String clientUrl = Deployment.getDefault ().deploy (jmp, debugmode, clientModuleUri, clientUrlPart, forceRedeploy, this);
+                String clientUrl = Deployment.getDefault ().deploy (jmp, 
+                        debugmode ? Deployment.Mode.DEBUG : Deployment.Mode.RUN,
+                        clientModuleUri, clientUrlPart, forceRedeploy, this);
                 if (clientUrl != null) {
                     getProject().setProperty("client.url", clientUrl);
                 }

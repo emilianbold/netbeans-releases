@@ -70,29 +70,36 @@ public class Dwarf {
     };
     private final Mode mode;
     
-    public Dwarf(String objFileName) throws FileNotFoundException, WrongFileFormatException, IOException {
+    public Dwarf(String objFileName) throws IOException {
         if (TraceDwarf.TRACED) {
             System.out.println("\n**** Dwarfing " + objFileName + "\n"); //NOI18N
         }
         fileName = objFileName;
-        magic = new FileMagic(objFileName);
-        if (magic.getMagic() == Magic.Arch){
-            // support archives
-            skipFirstHeader(magic.getReader());
-            offsets = getObjectTable(magic.getReader());
-            if (offsets.size()==0) {
-                throw new WrongFileFormatException("Not an ELF file"); // NOI18N
-            }
-            mode = Mode.Archive;
-        } else {
-            dwarfReader = new DwarfReader(objFileName, magic.getReader(), magic.getMagic(), 0, magic.getReader().length());
-            if (dwarfReader.getLinkedObjectFiles().size() > 0) {
-                // Mach-O left dwarf info in linked object files
-                mode = Mode.MachoLOF;
+        try {
+            magic = new FileMagic(objFileName);
+            if (magic.getMagic() == Magic.Arch){
+                // support archives
+                skipFirstHeader(magic.getReader());
+                offsets = getObjectTable(magic.getReader());
+                if (offsets.size()==0) {
+                    throw new WrongFileFormatException("Not an ELF file"); // NOI18N
+                }
+                mode = Mode.Archive;
             } else {
-                mode = Mode.Normal;
+                dwarfReader = new DwarfReader(objFileName, magic.getReader(), magic.getMagic(), 0, magic.getReader().length());
+                if (dwarfReader.getLinkedObjectFiles().size() > 0) {
+                    // Mach-O left dwarf info in linked object files
+                    mode = Mode.MachoLOF;
+                } else {
+                    mode = Mode.Normal;
+                }
+
             }
-            
+        } catch (IOException ex) {
+            if (magic != null) {
+                magic.dispose();
+            }
+            throw ex;
         }
     }
     
@@ -163,11 +170,7 @@ public class Dwarf {
     
     public void dispose(){
         if (magic != null) {
-            try {
-                magic.getReader().close();
-            } catch (IOException ex) {
-                //ex.printStackTrace();
-            }
+            magic.dispose();
             magic = null;
         }
     }

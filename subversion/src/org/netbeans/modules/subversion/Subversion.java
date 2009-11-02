@@ -42,7 +42,6 @@
 package org.netbeans.modules.subversion;
 
 import org.netbeans.modules.subversion.kenai.SvnKenaiSupport;
-import java.net.MalformedURLException;
 import org.netbeans.modules.subversion.config.SvnConfigFiles;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.client.*;
@@ -62,6 +61,7 @@ import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.subversion.hooks.spi.SvnHook;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
+import org.netbeans.modules.versioning.util.DelayScanRegistry;
 import org.netbeans.modules.versioning.util.HyperlinkProvider;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -154,18 +154,26 @@ public class Subversion {
             }
         }, 500);
     }
+
+    RequestProcessor.Task cleanupTask;
+    
     private void prepareCache() {
-        getRequestProcessor().post(new Runnable() {
+        cleanupTask = getRequestProcessor().create(new Runnable() {
             public void run() {
+                if (DelayScanRegistry.getInstance().isDelayed(cleanupTask, LOG, "Subversion.cleanupTask")) { //NOI18N
+                    return;
+                }
                 try {
                     fileStatusCache.computeIndex();
                     LOG.fine("Cleaning up cache"); // NOI18N
                     fileStatusCache.cleanUp(); // do not call before computeIndex()
                 } finally {
                     Subversion.LOG.fine("END Cleaning up cache"); // NOI18N
+                    cleanupTask = null;
                 }
             }
-        }, 500);
+        });
+        cleanupTask.schedule(500);
     }
 
     public void shutdown() {
@@ -226,7 +234,7 @@ public class Subversion {
                 password = new String(pa.getPassword());
             }
         } else {
-            RepositoryConnection rc = findRepositoryConnection(repositoryUrl);
+            RepositoryConnection rc = SvnModuleConfig.getDefault().getRepositoryConnection(repositoryUrl.toString());
             if(rc != null) {
                 username = rc.getUsername();
                 password = rc.getPassword();
@@ -601,20 +609,5 @@ public class Subversion {
         List<HyperlinkProvider> providersList = new ArrayList<HyperlinkProvider>(providersCol.size());
         providersList.addAll(providersCol);
         return Collections.unmodifiableList(providersList);
-    }
-
-    private RepositoryConnection findRepositoryConnection(SVNUrl repositoryUrl) {
-        RepositoryConnection rc = null;
-        try {
-            // this will remove username from the hostname
-            rc = SvnModuleConfig.getDefault().getRepositoryConnection(new RepositoryConnection(repositoryUrl.toString()).getSvnUrl().toString());
-        } catch (MalformedURLException ex) {
-            // not interested
-        }
-        if (rc == null) {
-            rc = SvnModuleConfig.getDefault().getRepositoryConnection(repositoryUrl.toString());
-        }
-        return rc;
-    }
-    
+    }    
 }

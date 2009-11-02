@@ -87,7 +87,6 @@ final class DummyWindowManager extends WindowManager {
     private final Map<String,Workspace> workspaces;
     private transient Frame mw;
     private transient PropertyChangeSupport pcs;
-    private transient R r;
 
     public DummyWindowManager() {
         workspaces = new TreeMap<String,Workspace>();
@@ -109,21 +108,11 @@ final class DummyWindowManager extends WindowManager {
     }
 
     protected TopComponent.Registry componentRegistry() {
-        TopComponent.Registry reg = super.componentRegistry();
-
-        if (reg != null) {
-            return reg;
-        } else {
-            return registry();
-        }
+        return new R();
     }
 
-    synchronized R registry() {
-        if (r == null) {
-            r = new R();
-        }
-
-        return r;
+    private R registry() {
+        return (R) getRegistry();
     }
 
     protected WindowManager.Component createTopComponentManager(TopComponent c) {

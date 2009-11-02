@@ -67,6 +67,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.MissingResourceException;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -134,6 +135,10 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
      * (if there is no name to derive from)
      */
     private static final String ARTIFICAL_VAR_NAME_BASE = "arg";        //NOI18N
+    /**
+     * name of the stub test method
+     */
+    private static final String STUB_TEST_NAME = "testSomeMethod";      //NOI18N
     /** */
     private static final EnumSet<Modifier> NO_MODIFIERS
             = EnumSet.noneOf(Modifier.class);
@@ -334,6 +339,12 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
                                         tstTopClass,
                                         tstTopClassTreePath,
                                         workingCopy);
+                // #175201
+                tstTopClass = generateStubTestMethod(
+                                       tstTopClass,
+                                       STUB_TEST_NAME,
+                                       workingCopy);
+
             }
             if (tstTopClass != origTstTopClass) {
                 workingCopy.rewrite(origTstTopClass,
@@ -350,6 +361,40 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
                 //PENDING - generate suite method
             }
         }
+    }
+
+    /**
+     * Returns default body for the test method. The generated body will
+     * contains the following lines:
+     * <pre><code>
+     * // TODO review the generated test code and remove the default call to fail.
+     * fail("The test case is a prototype.");
+     * </code></pre>
+     * @param maker the tree maker
+     * @return an {@code ExpressionStatementTree} for the generated body.
+     * @throws MissingResourceException
+     * @throws IllegalStateException
+     */
+    private ExpressionStatementTree generateDefMethodBody(TreeMaker maker)
+                        throws MissingResourceException, IllegalStateException {
+        String failMsg = NbBundle.getMessage(TestCreator.class,
+                                   "TestCreator.variantMethods.defaultFailMsg");
+        MethodInvocationTree failMethodCall =
+            maker.MethodInvocation(
+                Collections.<ExpressionTree>emptyList(),
+                maker.Identifier("fail"),
+                Collections.<ExpressionTree>singletonList(
+                                                       maker.Literal(failMsg)));
+        ExpressionStatementTree exprStatement =
+            maker.ExpressionStatement(failMethodCall);
+        if (setup.isGenerateMethodBodyComment()) {
+            Comment comment =
+                Comment.create(Comment.Style.LINE, -2, -2, -2,
+                               NbBundle.getMessage(AbstractTestGenerator.class,
+                                  "TestCreator.variantMethods.defaultComment"));
+            maker.addComment(exprStatement, comment, true);
+        }
+        return exprStatement;
     }
 
     /**
@@ -1061,6 +1106,32 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
         return method;
     }
 
+    protected ClassTree generateStubTestMethod(ClassTree tstClass,
+                                               String testMethodName,
+                                               WorkingCopy workingCopy) {
+        List<? extends Tree> tstMembersOrig = tstClass.getMembers();
+        List<Tree> tstMembers = new ArrayList<Tree>(tstMembersOrig.size() + 4);
+        tstMembers.addAll(tstMembersOrig);
+
+        List<ExpressionTree> throwsList = Collections.emptyList();
+        MethodTree method = composeNewTestMethod(
+                STUB_TEST_NAME,
+                generateStubTestMethodBody(workingCopy),
+                throwsList,
+                workingCopy);
+
+        tstMembers.add(method);
+
+        ClassTree newClass = workingCopy.getTreeMaker().Class(
+                tstClass.getModifiers(),
+                tstClass.getSimpleName(),
+                tstClass.getTypeParameters(),
+                tstClass.getExtendsClause(),
+                (List<? extends ExpressionTree>) tstClass.getImplementsClause(),
+                tstMembers);
+        return newClass;
+    }
+
     /**
      * Generates a {@code throws}-clause of a method or constructor such that
      * it declares all non-runtime exceptions and errors that are declared
@@ -1410,25 +1481,23 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
 //            }
 
         if (setup.isGenerateDefMethodBody()) {
-            String failMsg = NbBundle.getMessage(
-                    TestCreator.class,
-                    "TestCreator.variantMethods.defaultFailMsg");       //NOI18N
-            MethodInvocationTree failMethodCall = maker.MethodInvocation(
-                    Collections.<ExpressionTree>emptyList(),    //type args.
-                    maker.Identifier("fail"),                           //NOI18N
-                    Collections.<ExpressionTree>singletonList(
-                            maker.Literal(failMsg)));
+            ExpressionStatementTree exprStatementTree =
+                                             generateDefMethodBody(maker);
+            statements.add(exprStatementTree);
+        }
 
-            ExpressionStatementTree exprStatement = maker.ExpressionStatement(failMethodCall);
-            if (setup.isGenerateMethodBodyComment()) {
-                Comment comment = Comment.create(Comment.Style.LINE,
-                                                 -2, -2, -2,
-                                                 NbBundle.getMessage(
-                          AbstractTestGenerator.class,
-                          "TestCreator.variantMethods.defaultComment"));//NOI18N
-                maker.addComment(exprStatement, comment, true);
-            }
-            statements.add(exprStatement);
+        return maker.Block(statements, false);
+    }
+
+    protected BlockTree generateStubTestMethodBody(WorkingCopy workingCopy) {
+        TreeMaker maker = workingCopy.getTreeMaker();
+        List<StatementTree> statements = new ArrayList<StatementTree>(8);
+
+
+        if (setup.isGenerateDefMethodBody()) {
+            ExpressionStatementTree exprStatementTree =
+                                             generateDefMethodBody(maker);
+            statements.add(exprStatementTree);
         }
 
         return maker.Block(statements, false);

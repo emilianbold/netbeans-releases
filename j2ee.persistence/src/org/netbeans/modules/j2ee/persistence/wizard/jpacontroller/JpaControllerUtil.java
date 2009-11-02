@@ -394,6 +394,9 @@ public class JpaControllerUtil {
         boolean isFieldOptional = true;
         Boolean isFieldNullable = null;
         Element fieldElement = fieldAccess ? JpaControllerUtil.guessField(controller, method) : method;
+        if (fieldElement == null) {
+            fieldElement = method;
+        }
         String[] fieldAnnotationFqns = {"javax.persistence.ManyToOne", "javax.persistence.OneToOne", "javax.persistence.Basic"};
         Boolean isFieldOptionalBoolean = findAnnotationValueAsBoolean(fieldElement, fieldAnnotationFqns, "optional");
         if (isFieldOptionalBoolean != null) {
@@ -554,6 +557,19 @@ public class JpaControllerUtil {
         Logger.getLogger(JpaControllerUtil.class.getName()).log(Level.WARNING, "Cannot detect the field associated with property: " + guessFieldName);
         return null;
     }
+
+    public static VariableElement guessGetter(CompilationController controller, ExecutableElement setter) {
+        String name = setter.getSimpleName().toString().substring(3);
+        String guessGetterName = "set" + name;
+        TypeElement typeElement = (TypeElement) setter.getEnclosingElement();
+        for (VariableElement variableElement : ElementFilter.fieldsIn(typeElement.getEnclosedElements())) {
+            if (variableElement.getSimpleName().contentEquals(guessGetterName)) {
+                return variableElement;
+            }
+        }
+        Logger.getLogger(JpaControllerUtil.class.getName()).log(Level.INFO, "Cannot detect setter associated with getter: " + guessGetterName);
+        return null;
+    }
     
     // ----------------------------------------------------------------------------------------- Nested Classes
     
@@ -565,7 +581,13 @@ public class JpaControllerUtil {
             return info.getPkAccessorMethods();
         }
         
-        public String getCodeToPopulatePkField(CompilationController controller, TypeElement type, ExecutableElement pkAccessorMethod) {
+       public boolean getPkSetterMethodExist(CompilationController controller, TypeElement type, ExecutableElement getter) {
+            EmbeddedPkSupportInfo info = getInfo(controller, type);
+            String column = info.getReferencedColumnName(getter);
+            return info.getSetterString(column) != null;
+       }
+
+       public String getCodeToPopulatePkField(CompilationController controller, TypeElement type, ExecutableElement pkAccessorMethod) {
             EmbeddedPkSupportInfo info = getInfo(controller, type);
             String code = info.getCodeToPopulatePkField(pkAccessorMethod);
             if (code != null) {
@@ -625,7 +647,9 @@ public class JpaControllerUtil {
         private Map<ExecutableElement,List<String>> relationshipMethodToJoinColumnNames = new HashMap<ExecutableElement,List<String>>(); //used only in isRedundantWithPkFields
         private Map<String,String> joinColumnNameToReferencedColumnName = new HashMap<String,String>();
         private Map<String,String> columnNameToAccessorString = new HashMap<String,String>();
+        private Map<String,String> columnNameToSetterString = new HashMap<String,String>();
         private Map<ExecutableElement,String> pkAccessorMethodToColumnName = new HashMap<ExecutableElement,String>();
+        private Map<ExecutableElement,String> pkSetterMethodToColumnName = new HashMap<ExecutableElement,String>();
         private Map<ExecutableElement,String> pkAccessorMethodToPopulationCode = new HashMap<ExecutableElement,String>(); //derived
         private boolean isFieldAccess;
         
@@ -653,6 +677,10 @@ public class JpaControllerUtil {
             return columnNameToAccessorString.get(columnName);
         }
         
+        public String getSetterString(String columnName) {
+            return columnNameToSetterString.get(columnName);
+        }
+
         public String getCodeToPopulatePkField(ExecutableElement pkAccessorMethod) {
             return pkAccessorMethodToPopulationCode.get(pkAccessorMethod);
         }
@@ -736,6 +764,22 @@ public class JpaControllerUtil {
                             columnNameToAccessorString.put(columnName, 
                                     idGetterElement.getSimpleName().toString() + "()." + 
                                     pkMethod.getSimpleName() + "()");
+                        }
+                    }
+                }
+                else if(pkMethodName.startsWith("set"))
+                {
+                    Element pkFieldElement = isFieldAccess ? guessField(controller, pkMethod) : guessGetter(controller, pkMethod);
+                    if(pkFieldElement != null) {//we do not need setters not associated with fields/properties
+                        AnnotationMirror columnAnnotation = findAnnotation(pkFieldElement, "javax.persistence.Column"); //NOI18N
+                        if (columnAnnotation != null) {
+                            String columnName = findAnnotationValueAsString(columnAnnotation, "name"); //NOI18N
+                            if (columnName != null) {
+                                pkSetterMethodToColumnName.put(pkMethod, columnName);
+                                columnNameToSetterString.put(columnName,
+                                        idGetterElement.getSimpleName().toString() + "()." +
+                                        pkMethod.getSimpleName() + "()");
+                            }
                         }
                     }
                 }

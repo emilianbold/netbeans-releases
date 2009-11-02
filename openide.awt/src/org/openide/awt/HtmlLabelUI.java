@@ -92,7 +92,7 @@ class HtmlLabelUI extends LabelUI {
         }
     }
 
-    private static Map hintsMap;
+    private static Map<Object,Object> hintsMap;
     private static Color unfocusedSelBg;
     private static Color unfocusedSelFg;
     private static Boolean gtkAA;
@@ -107,7 +107,7 @@ class HtmlLabelUI extends LabelUI {
         return uiInstance;
     }
 
-    public Dimension getPreferredSize(JComponent c) {
+    public @Override Dimension getPreferredSize(JComponent c) {
         return calcPreferredSize((HtmlRendererImpl) c);
     }
 
@@ -185,24 +185,25 @@ class HtmlLabelUI extends LabelUI {
         return prefSize;
     }
 
-    static final Map getHints() {
+    @SuppressWarnings("unchecked")
+    static final Map<?,?> getHints() {
         //XXX We REALLY need to put this in a graphics utils lib
         if (hintsMap == null) {
             //Thanks to Phil Race for making this possible
             hintsMap = (Map)(Toolkit.getDefaultToolkit().getDesktopProperty("awt.font.desktophints")); //NOI18N
             if (hintsMap == null) {
-                hintsMap = new HashMap();
+                hintsMap = new HashMap<Object,Object>();
                 if (antialias) {
                     hintsMap.put(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
                 }
             }
         }
-        Map ret = hintsMap;
+        Map<?,?> ret = hintsMap;
         assert ret != null; // does this method need to be synchronized?
         return ret;
     }
 
-    public void update(Graphics g, JComponent c) {
+    public @Override void update(Graphics g, JComponent c) {
         Color bg = getBackgroundFor((HtmlRendererImpl) c);
         HtmlRendererImpl h = (HtmlRendererImpl) c;
 
@@ -230,7 +231,7 @@ class HtmlLabelUI extends LabelUI {
         paint(g, c);
     }
 
-    public void paint(Graphics g, JComponent c) {
+    public @Override void paint(Graphics g, JComponent c) {
 
         ((Graphics2D) g).addRenderingHints(getHints());
 
@@ -448,7 +449,7 @@ class HtmlLabelUI extends LabelUI {
 
         if (r.isSelected()) {
             switch (r.getType()) {
-            case HtmlRendererImpl.TYPE_LIST:
+            case LIST:
                 result = UIManager.getColor("List.selectionBackground"); //NOI18N
 
                 if (result == null) { //GTK
@@ -460,12 +461,12 @@ class HtmlLabelUI extends LabelUI {
                 //System.err.println("  now " + result);
                 break;
 
-            case HtmlRendererImpl.TYPE_TABLE:
+            case TABLE:
                 result = UIManager.getColor("Table.selectionBackground"); //NOI18N
 
                 break;
 
-            case HtmlRendererImpl.TYPE_TREE:
+            case TREE:
                 return UIManager.getColor("Tree.selectionBackground"); //NOI18N
             }
 
@@ -488,13 +489,13 @@ class HtmlLabelUI extends LabelUI {
 
         if (r.isSelected()) {
             switch (r.getType()) {
-            case HtmlRendererImpl.TYPE_LIST:
+            case LIST:
                 result = UIManager.getColor("List.selectionForeground"); //NOI18N
-
-            case HtmlRendererImpl.TYPE_TABLE:
+                break;
+            case TABLE:
                 result = UIManager.getColor("Table.selectionForeground"); //NOI18N
-
-            case HtmlRendererImpl.TYPE_TREE:
+                break;
+            case TREE:
                 result = UIManager.getColor("Tree.selectionForeground"); //NOI18N
             }
         }

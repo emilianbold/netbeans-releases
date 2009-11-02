@@ -40,9 +40,15 @@
 package org.netbeans.modules.kenai.ui;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.filechooser.FileSystemView;
 import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiException;
+import org.netbeans.modules.kenai.api.KenaiService;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -70,4 +76,27 @@ public class Utilities {
         return true;
     }
 
+    private static HashMap<String, Boolean> chatSupported = new HashMap();
+
+    public static boolean isChatSupported() {
+        Kenai kenai = Kenai.getDefault();
+        String kenaiHost = kenai.getUrl().getHost();
+        Boolean b = chatSupported.get(kenaiHost);
+        if (b==null) {
+            b=Boolean.FALSE;
+            try {
+                for (KenaiService service : kenai.getServices()) {
+                    if (service.getType() == KenaiService.Type.CHAT) {
+                        b = Boolean.TRUE;
+                        break;
+                    }
+                }
+            } catch (KenaiException ex) {
+                Logger.getLogger(Utilities.class.getName()).log(Level.INFO, ex.getMessage(), ex);
+                return false;
+            }
+            chatSupported.put(kenaiHost, b);
+        }
+        return b;
+    }
 }

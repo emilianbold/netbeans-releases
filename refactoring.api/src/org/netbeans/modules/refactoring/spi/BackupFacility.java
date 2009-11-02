@@ -52,6 +52,8 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -157,9 +159,9 @@ public abstract class BackupFacility {
     }
     
     private static class DefaultHandle implements Handle {
-        ArrayList<Long> handle;
+        List<Long> handle;
         DefaultImpl instance;
-        private DefaultHandle(DefaultImpl instance, ArrayList<Long> handles) {
+        private DefaultHandle(DefaultImpl instance, List<Long> handles) {
             this.handle = handles;
             this.instance = instance;
         }
@@ -173,7 +175,7 @@ public abstract class BackupFacility {
     private static class DefaultImpl extends BackupFacility {
         
         private long currentId = 0;
-        private HashMap<Long, BackupEntry> map = new HashMap();
+        private Map<Long, BackupEntry> map = new HashMap<Long, BackupEntry>();
         
         private class BackupEntry {
             private File file;
@@ -185,7 +187,7 @@ public abstract class BackupFacility {
         }
         
         public Handle backup(FileObject ... file) throws IOException {
-            ArrayList<Long> list = new ArrayList();
+            ArrayList<Long> list = new ArrayList<Long>();
             for (FileObject f:file) {
                 list.add(backup(f));
             }

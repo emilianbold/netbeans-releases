@@ -318,8 +318,6 @@ final class ToolbarContainer extends JPanel {
             if( dropIndex == toolbar.getComponentCount()-1 )
                 cursorLocation -= 3;
         }
-        if( null != dragger )
-            cursorLocation += dragger.getWidth();
         drawDropLine( g, cursorLocation );
     }
 

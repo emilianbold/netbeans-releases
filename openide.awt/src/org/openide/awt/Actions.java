@@ -86,7 +86,14 @@ import org.openide.util.actions.SystemAction;
 *
 * @author   Jaroslav Tulach
 */
-public class Actions extends Object {
+public class Actions {
+
+    /**
+     * @deprecated should not be used
+     */
+    @Deprecated
+    public Actions() {}
+
     /**
      * Make sure an icon is not null, so that e.g. menu items for javax.swing.Action's
      * with no specified icon are correctly aligned. SystemAction already does this so
@@ -147,6 +154,7 @@ public class Actions extends Object {
     * @param popup create popup or menu item
      * @deprecated Use {@link #connect(JMenuItem, Action, boolean)} instead.
     */
+    @Deprecated
     public static void connect(JMenuItem item, SystemAction action, boolean popup) {
         connect(item, (Action) action, popup);
     }
@@ -199,6 +207,7 @@ public class Actions extends Object {
     * @param action the action
      * @deprecated Use {@link #connect(AbstractButton, Action)} instead.
     */
+    @Deprecated
     public static void connect(AbstractButton button, SystemAction action) {
         connect(button, (Action) action);
     }
@@ -249,6 +258,7 @@ public class Actions extends Object {
     *           as Mnemonic.
     * @deprecated Use either {@link AbstractButton#setText} or {@link Mnemonics#setLocalizedText(AbstractButton, String)} as appropriate.
     */
+    @Deprecated
     public static void setMenuText(AbstractButton item, String text, boolean useMnemonic) {
         if (useMnemonic) {
             Mnemonics.setLocalizedText(item, text);
@@ -353,6 +363,55 @@ public class Actions extends Object {
     }
     // for use from layers
     static Action alwaysEnabled(Map map) {
+        return AlwaysEnabledAction.create(map);
+    }
+
+    /** Creates action which represents a boolean value in {@link java.util.prefs.Preferences}.
+     * When added to a menu the action is presented as a JCheckBox.
+     * This method can also be used from
+     * <a href="@org-openide-modules@/org/openide/modules/doc-files/api.html#how-layer">XML Layer</a>
+     * directly by following XML definition:
+     * <pre>
+     * &lt;file name="your-pkg-action-id.instance"&gt;
+     *   &lt;attr name="preferencesNode" methodvalue="method-returning-Preferences-instance" or
+     *                                   methodvalue="method-returning-Lookup-that-contains-Preferences-instance" or
+     *                                   stringvalue="see below for the preferencesNode parameter description"
+     * /&gt;
+     *   &lt;attr name="preferencesKey" stringvalue="preferences-key-name"/&gt;
+     *   &lt;attr name="instanceCreate" methodvalue="org.openide.awt.Actions.checkbox"/&gt;
+     *   &lt;attr name="displayName" bundlevalue="your.pkg.Bundle#key"/&gt;
+     *   &lt;attr name="iconBase" stringvalue="your/pkg/YourImage.png"/&gt;
+     *   &lt;!-- if desired: &lt;attr name="noIconInMenu" boolvalue="false"/&gt; --&gt;
+     *   &lt;!-- if desired: &lt;attr name="asynchronous" boolvalue="true"/&gt; --&gt;
+     * &lt;/file&gt;
+     * </pre>
+     *
+     * @param preferencesNode It's one of:
+     * <ul>
+     *   <li>Absolute path to preferences node under <code>NbPreferences.root()</code>.</li>
+     *   <li>"system:" followed by absolute path to preferences node under <code>Preferences.systemRoot()</code>.</li>
+     *   <li>"user:" followed by absolute path to preferences node under <code>Preferences.userRoot()</code>.</li>
+     * </ul>
+     * @param preferencesKey name of the preferences key.
+     * @param displayName the name of the action
+     * @param iconBase the location to the actions icon
+     * @param noIconInMenu true if this icon shall not have an item in menu
+     * @since 7.17
+     */
+    public static Action checkbox(
+        String preferencesNode, String preferencesKey,
+        String displayName, String iconBase, boolean noIconInMenu
+    ) {
+        HashMap<String,Object> map = new HashMap<String,Object>();
+        map.put("preferencesNode", preferencesNode); // NOI18N
+        map.put("preferencesKey", preferencesKey); // NOI18N
+        map.put("displayName", displayName); // NOI18N
+        map.put("iconBase", iconBase); // NOI18N
+        map.put("noIconInMenu", noIconInMenu); // NOI18N
+        return checkbox(map);
+    }
+    // for use from layers
+    static Action checkbox(Map map) {
         return AlwaysEnabledAction.create(map);
     }
 
@@ -614,7 +673,9 @@ public class Actions extends Object {
     /** Interface for the creating Actions.SubMenu. It provides the methods for
     * all items in submenu: name shortcut and perform method. Also has methods
     * for notification of changes of the model.
-    */
+     * @deprecated used by deprecated {@link SubMenu}
+     */
+    @Deprecated
     public static interface SubMenuModel {
         /** @return count of the submenu items. */
         public int getCount();
@@ -1380,7 +1441,7 @@ public class Actions extends Object {
     * @author   Ian Formanek, Jan Jancura
     */
     public static class CheckboxMenuItem extends javax.swing.JCheckBoxMenuItem {
-        static final long serialVersionUID = 6190621106981774043L;
+        private static final long serialVersionUID = 6190621106981774043L;
 
         /** Constructs a new ActCheckboxMenuItem with the specified label
         *  and connects it to the given BooleanStateAction.
@@ -1395,8 +1456,9 @@ public class Actions extends Object {
     /** Component shown in toolbar, representing an action.
     * @deprecated extends deprecated ToolbarButton
     */
+    @Deprecated
     public static class ToolbarButton extends org.openide.awt.ToolbarButton {
-        static final long serialVersionUID = 6564434578524381134L;
+        private static final long serialVersionUID = 6564434578524381134L;
 
         public ToolbarButton(SystemAction aAction) {
             super(null);
@@ -1431,8 +1493,9 @@ public class Actions extends Object {
     *
     * @deprecated extends deprecated ToolbarToggleButton
     */
+    @Deprecated
     public static class ToolbarToggleButton extends org.openide.awt.ToolbarToggleButton {
-        static final long serialVersionUID = -4783163952526348942L;
+        private static final long serialVersionUID = -4783163952526348942L;
 
         /** Constructs a new ActToolbarToggleButton for specified action */
         public ToolbarToggleButton(BooleanStateAction aAction) {
@@ -1461,9 +1524,11 @@ public class Actions extends Object {
 
     /** SubMenu provides easy way of displaying submenu items based on
     * SubMenuModel.
-    */
+     * @deprecated extends deprecated {@link JMenuPlus}
+     */
+    @Deprecated
     public static class SubMenu extends JMenuPlus implements DynamicMenuContent {
-        static final long serialVersionUID = -4446966671302959091L;
+        private static final long serialVersionUID = -4446966671302959091L;
 
         private SubMenuBridge bridge;
 

@@ -340,7 +340,7 @@ public class CompilationUnit {
             if (entry.getKind().equals(TAG.DW_TAG_typedef)) {
                 Object entryTypeRef = entry.getAttributeValue(ATTR.DW_AT_type);
                 if (entryTypeRef instanceof Integer) {
-                    if (((Integer)entryTypeRef).equals(typeRef)) {
+                    if (((Integer)entryTypeRef).equals((int)typeRef)) {
                         return entry;
                     }
                 } else if (entryTypeRef instanceof Long) {

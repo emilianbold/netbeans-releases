@@ -54,6 +54,8 @@ import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Mutex;
+import org.openide.util.MutexException;
 
 /**
  *
@@ -63,13 +65,13 @@ public class AntFilesHelper {
     /**
      * IMPORTANT: bump up version when you change the dependencies list
      */
-    public static final int CURRENT_DEPENDECIES_VERSION = 3;
+    public static final int CURRENT_DEPENDECIES_VERSION = 4;
     // dependency(from, to)
     public static Map<String,String> dependencies = new HashMap<String,String>();
     static {
         //IMPORTANT: bump up version when you change the dependencies list
         //dependencies.put("-post-compile", "-rest-post-compile");
-        //IMPORTANT: bump up version when you change the dependencies list
+        dependencies.put("-pre-pre-compile", "generate-rest-config");
     }
     
     public static final String REST_ANT_EXT_NAME_BASE = "rest";
@@ -96,25 +98,44 @@ public class AntFilesHelper {
     }
     
     public void initRestBuildExtension() throws IOException {
-        boolean changed = refreshRestBuildXml();
-        FileObject extensionXml = project.getProjectDirectory().getFileObject(REST_BUILD_XML_PATH);
-        if (extensionXml != null) {
+        boolean restBuildScriptRefreshed = refreshRestBuildXml();
+        boolean saveProjectXml = false;
+        boolean changed = false;
+        FileObject restBuildScript = project.getProjectDirectory().getFileObject(REST_BUILD_XML_PATH);
+        if (restBuildScript != null) {
             Extension extension =  extender.getExtension(REST_ANT_EXT_NAME);
             if (extension == null) {
-                extension = extender.addExtension(REST_ANT_EXT_NAME, extensionXml);
+                extension = extender.addExtension(REST_ANT_EXT_NAME, restBuildScript);
                 for (Map.Entry<String,String> dependency : dependencies.entrySet()) {
                     extension.addDependency(dependency.getKey(), dependency.getValue());
                 }
                 changed = true;
+                saveProjectXml = true;
             }
         }
 
         // check for cleanup of last version
         if (cleanupLastExtensionVersions()) {
-            changed = true;
+            saveProjectXml = true;
         }
-        if (changed) {
+        if (saveProjectXml) {
             ProjectManager.getDefault().saveProject(project);
+        }
+
+        if (changed && !restBuildScriptRefreshed) {
+            // generate build script
+            try {
+                final GeneratedFilesHelper helper = new GeneratedFilesHelper(projectHelper);
+                ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
+                    public Boolean run() throws IOException {
+                        URL xslURL = this.getClass().getClassLoader().getResource(REST_BUILD_XSL);
+                        helper.generateBuildScriptFromStylesheet(REST_BUILD_XML_PATH,  xslURL);
+                        return true;
+                    }
+                });
+            } catch (MutexException e) {
+                throw (IOException)e.getException();
+            }
         }
     }
     

@@ -311,7 +311,7 @@ is the proper place.
         </description>
         <issue number="62964"/>
     </change>      
-    
+
     <change id="support-text-dnd" >
         <api name="palette_api"/>
         <summary>Allowing user dropping text into the palette to create new custom code clips.</summary>
@@ -326,7 +326,7 @@ is the proper place.
                 can be dropped into editor later on.
             </p>
             <p>
-                That can be achieved simply by subclassing the default DragAndDropHandler class 
+                That can be achieved simply by subclassing the default DragAndDropHandler class
                 which manages all DragAndDrop-related operations in the Common Palette and turning
                 the text dnd support in superclasses's constructor on. The default implementation
                 pops up a dialog window when some text is dropped into the palette where user enters
@@ -335,7 +335,27 @@ is the proper place.
         </description>
         <class package="org.netbeans.spi.palette" name="DragAndDropHandler"/>
         <issue number="93002"/>
-    </change>      
+    </change>
+
+    <change id="default-visible" >
+        <api name="palette_api"/>
+        <summary>Make palette hidden by default for selected document types.</summary>
+        <version major="1" minor="20"/>
+        <date day="21" month="10" year="2009"/>
+        <author login="saubrecht"/>
+        <compatibility addition="yes" binary="compatible" deletion="no" semantic="compatible" deprecation="no" modification="no" source="compatible"/>
+        <description>
+            <p>
+                A new boolean attribute can be set on palette's root node or
+                on palette's root folder in XML layer to hide the palette window
+                by default when a document the palette is associated with is activated.
+                User then must open the palette window manually for the first time.
+                The attribute's name is "paletteDefaultVisible" and the default
+                value is "true".
+            </p>
+        </description>
+        <issue number="170718"/>
+    </change>
     
 </changes>
   

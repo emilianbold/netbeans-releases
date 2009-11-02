@@ -77,7 +77,7 @@ public class RubyDeclarationFinderTest extends RubyTestBase {
     }
 
     public void testAttrDeclaration2() throws Exception {
-        checkDeclaration("testfiles/attr_declaration.rb", "attr_accessor :th^ud", "attr_declaration.rb", 58);
+        checkDeclaration("testfiles/attr_declaration.rb", "attr_accessor :th^ud", "attr_declaration.rb", 135);
     }
 
     public void testAttrDeclaration3() throws Exception {
@@ -88,6 +88,13 @@ public class RubyDeclarationFinderTest extends RubyTestBase {
         checkDeclaration("testfiles/attr_declaration.rb", "c.t^hud", "attr_declaration.rb", 114);
     }
 
+    public void testCAttrDeclaration() throws Exception {
+        checkDeclaration("testfiles/cattr_declaration.rb", "Hila.vi^tkutin", "cattr_declaration.rb", 28);
+    }
+
+    public void testCAttrDeclaration2() throws Exception {
+        checkDeclaration("testfiles/cattr_declaration.rb", "h.vi^tkutin", "cattr_declaration.rb", 28);
+    }
 
     public void testSymbolToInheritedMethod() throws Exception {
         checkDeclaration("testfiles/symbol_to_method.rb", ":foo_bar_b^ax", "symbol_to_method_base.rb", 12);
@@ -103,6 +110,14 @@ public class RubyDeclarationFinderTest extends RubyTestBase {
 
     public void testNamedScopes2() throws Exception {
         checkDeclaration("testfiles/named_scopes_client.rb", "my_model.to^ka", "named_scopes.rb", 91);
+    }
+
+    public void testAliasMethod() throws Exception {
+        checkDeclaration("testfiles/alias_method.rb", "Far.new.far_far_aw^ay", "alias_method.rb", 48);
+    }
+
+    public void testSuperMethod() throws Exception {
+        checkDeclaration("testfiles/super_method.rb", "sup^er", "super_method.rb", 13);
     }
 
     //public void testDeclaration6() throws Exception {

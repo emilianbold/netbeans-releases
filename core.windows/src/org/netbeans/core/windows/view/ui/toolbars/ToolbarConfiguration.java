@@ -437,13 +437,19 @@ public final class ToolbarConfiguration implements ToolbarPool.Configuration {
     private ToolbarConstraints getConstraints( String toolbarName ) {
         ToolbarConstraints tc = collectAllConstraints().get(toolbarName);
         if( null == tc ) {
-            tc = new ToolbarConstraints(toolbarName, ToolbarConstraints.Align.left, true, true);
+            boolean isQuickSearch = "QuickSearch".equals(toolbarName); //NOI18N
+            tc = new ToolbarConstraints(toolbarName,
+                    isQuickSearch ? ToolbarConstraints.Align.right : ToolbarConstraints.Align.left,
+                    true, true);
             ToolbarRow row = null; //TODO find / add row with the best available space
             if( rows.isEmpty() ) {
                 row = new ToolbarRow();
                 rows.add(row);
             } else {
-                row = rows.get(rows.size()-1);
+                if( isQuickSearch )
+                    row = rows.get(0);
+                else
+                    row = rows.get(rows.size()-1);
             }
             row.addConstraint(tc);
             SwingUtilities.invokeLater( new Runnable() {

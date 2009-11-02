@@ -513,7 +513,7 @@ public class SettingsPanel extends javax.swing.JPanel {
 
     private void btnIndexActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnIndexActionPerformed
         btnIndex.setEnabled(false);
-        RequestProcessor.getDefault().post(new Runnable() {
+        new RequestProcessor("Maven Repo Index Transfer/Scan").post(new Runnable() {
             public void run() {
                 //TODO shall we iterate all "local" repositories??
                 RepositoryInfo info = RepositoryPreferences.getInstance().getRepositoryInfoById(RepositoryPreferences.LOCAL_REPO_ID);

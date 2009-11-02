@@ -121,13 +121,21 @@ public abstract class EJBProblemFinder {
             }
 
             EjbJar ejbModule = EjbJar.getEjbJar(file);
-            if (ejbModule == null
-                    || !Profile.JAVA_EE_5.equals(ejbModule.getJ2eeProfile())) {
+            Profile profile = ejbModule.getJ2eeProfile();
+            if (ejbModule == null ||
+                    !(Profile.JAVA_EE_5.equals(profile)
+                    || Profile.JAVA_EE_6_FULL.equals(profile)
+                    || Profile.JAVA_EE_6_WEB.equals(profile))) {
                 return; // EJB version is not supported
             }
-
+            
             ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, Void>() {
                 public Void run(EjbJarMetadata metadata) {
+                    String ejbVersion = metadata.getRoot().getVersion().toString();
+                    if (!org.netbeans.modules.j2ee.dd.api.ejb.EjbJar.VERSION_3_0.equals(ejbVersion) &&
+                        !org.netbeans.modules.j2ee.dd.api.ejb.EjbJar.VERSION_3_1.equals(ejbVersion)){
+                        return null; // Only EJB 3.0 and 3.1 are supported
+                    }
                     for (Tree tree : info.getCompilationUnit().getTypeDecls()){
                         if (isCancelled()){
                             break;

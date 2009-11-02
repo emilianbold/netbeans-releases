@@ -512,7 +512,7 @@ public class ProjectsRootNode extends AbstractNode {
                 return;
             }
             FileObject fo = p.getProjectDirectory();
-            if (newProj.getProjectDirectory().equals(fo)) {
+            if (newProj != null && newProj.getProjectDirectory().equals(fo)) {
                 Node n = null;
                 if (logicalView) {
                     n = ch.logicalViewForProject(newProj, null);
@@ -781,11 +781,7 @@ public class ProjectsRootNode extends AbstractNode {
         
         // sources change
         public void stateChanged(ChangeEvent e) {
-            Hacks.RP.post(new Runnable () {
-                public void run() {
-                    setProjectFiles();
-                }
-            });
+            fsRefreshTask.schedule(DELAY);
         }
 
         @Override

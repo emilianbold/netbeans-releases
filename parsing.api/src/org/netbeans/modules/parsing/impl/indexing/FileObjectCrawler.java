@@ -69,14 +69,14 @@ public final class FileObjectCrawler extends Crawler {
     private final FileObject[] files;
 
     public FileObjectCrawler(FileObject root, boolean checkTimeStamps, ClassPath.Entry entry, CancelRequest cancelRequest) throws IOException {
-        super (root.getURL(), checkTimeStamps, cancelRequest);
+        super (root.getURL(), checkTimeStamps, true, cancelRequest);
         this.root = root;
         this.entry = entry;
         this.files = null;
     }
 
     public FileObjectCrawler(FileObject root, FileObject[] files, boolean checkTimeStamps, ClassPath.Entry entry, CancelRequest cancelRequest) throws IOException {
-        super (root.getURL(), checkTimeStamps, cancelRequest);
+        super (root.getURL(), checkTimeStamps, false, cancelRequest);
         this.root = root;
         this.entry = entry;
         this.files = files;
@@ -103,14 +103,18 @@ public final class FileObjectCrawler extends Crawler {
                 for(FileObject parent : clusters.keySet()) {
                     Set<FileObject> cluster = clusters.get(parent);
                     StringBuilder relativePath = getRelativePath(root, parent);
-                    finished = collect(cluster.toArray(new FileObject[cluster.size()]), root, resources, allResources, stats, entry, relativePath);
-                    if (!finished) {
-                        break;
-                    }
+                    if (relativePath != null) {
+                        finished = collect(cluster.toArray(new FileObject[cluster.size()]), root, resources, allResources, stats, entry, relativePath);
+                        if (!finished) {
+                            break;
+                        }
+                    } // else invalid (eg. deleted) FileObject encountered
                 }
             } else if (files.length == 1) {
                 StringBuilder relativePath = getRelativePath(root, files[0].getParent());
-                finished = collect(files, root, resources, allResources, stats, entry, relativePath);
+                if (relativePath != null) {
+                    finished = collect(files, root, resources, allResources, stats, entry, relativePath);
+                } // else invalid (eg. deleted) FileObject encountered
             }
         } else {
             finished = collect(root.getChildren(), root, resources, allResources, stats, entry, new StringBuilder());
@@ -193,11 +197,16 @@ public final class FileObjectCrawler extends Crawler {
     }
 
     private StringBuilder getRelativePath(FileObject folder, FileObject fo) {
-        StringBuilder relativePath = new StringBuilder(FileUtil.getRelativePath(folder, fo));
-        if (relativePath.length() > 0) {
-            relativePath.append('/'); //NOI18N
+        String rp = FileUtil.getRelativePath(folder, fo);
+        if (rp != null) {
+            StringBuilder relativePath = new StringBuilder(rp);
+            if (relativePath.length() > 0) {
+                relativePath.append('/'); //NOI18N
+            }
+            return relativePath;
+        } else {
+            return null;
         }
-        return relativePath;
     }
 
     private static final class Stats {

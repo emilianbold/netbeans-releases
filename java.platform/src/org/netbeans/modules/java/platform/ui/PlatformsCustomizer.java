@@ -61,6 +61,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -68,7 +69,6 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.java.platform.wizard.PlatformInstallIterator;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
@@ -81,6 +81,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Children;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -88,8 +89,11 @@ import org.openide.util.NbBundle;
  */
 public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyChangeListener, VetoableChangeListener, ExplorerManager.Provider {
 
+    private static final Logger LOG = Logger.getLogger(PlatformsCustomizer.class.getName());
+
     private static final String TEMPLATE = "Templates/Services/Platforms/org-netbeans-api-java-Platform/javaplatform.xml";  //NOI18N
-    private static final String STORAGE = "Services/Platforms/org-netbeans-api-java-Platform";  //NOI18N   
+    private static final String STORAGE = "Services/Platforms/org-netbeans-api-java-Platform";  //NOI18N
+    private static final String ATTR_CAN_REMOVE = "can-remove"; //NOI18N
 
     private PlatformCategoriesChildren children;
     private ExplorerManager manager;
@@ -317,7 +321,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
             this.getChildren().refreshPlatforms();
             this.expandPlatforms(null);
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify (ioe);
+            Exceptions.printStackTrace(ioe);
         }
     }//GEN-LAST:event_removePlatform
 
@@ -345,10 +349,10 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
                 dlg.dispose();
             }
         } catch (DataObjectNotFoundException dfne) {
-            ErrorManager.getDefault().notify (dfne);
+            Exceptions.printStackTrace(dfne);
         }
         catch (IOException ioe) {
-            ErrorManager.getDefault().notify (ioe);
+            Exceptions.printStackTrace(ioe);
         }
     }//GEN-LAST:event_addNewPlatform
 
@@ -371,7 +375,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
         JComponent target = messageArea;
         JavaPlatform platform = pNode.getLookup().lookup(JavaPlatform.class);
         if (platform != null) {
-            this.removeButton.setEnabled (isDefaultPLatform(platform));            
+            this.removeButton.setEnabled (canRemove(platform, pNode.getLookup().lookup(DataObject.class)));
             if (platform.getInstallFolders().size() != 0) {
                 this.platformName.setText(pNode.getDisplayName());
                 for (FileObject installFolder : platform.getInstallFolders()) {
@@ -410,9 +414,23 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
         container.add (component);
     }
 
-    private static boolean isDefaultPLatform (JavaPlatform platform) {
+    private boolean canRemove(final JavaPlatform platform, final DataObject dobj) {
+        if (isDefaultPlatform(platform)) {
+            return false;
+        }
+        if (dobj != null) {
+            final FileObject fo = dobj.getPrimaryFile();
+            Object attr = fo.getAttribute(ATTR_CAN_REMOVE);  //NOI18N
+            if (attr instanceof Boolean && ((Boolean)attr) == Boolean.FALSE) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static boolean isDefaultPlatform (JavaPlatform platform) {
         JavaPlatform defaultPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
-        return defaultPlatform!=null && !defaultPlatform.equals(platform);
+        return defaultPlatform!=null && defaultPlatform.equals(platform);
     }
 
     private void expandPlatforms (JavaPlatform platform) {
@@ -612,14 +630,14 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
                                 platforms.add (node);
                             }
                             else {
-                                ErrorManager.getDefault().log ("Platform: "+ platform.getDisplayName() +" has invalid specification.");  //NOI18N
+                                LOG.warning("Platform: "+ platform.getDisplayName() +" has invalid specification.");  //NOI18N
                             }
                         }
                         else {                        
-                            ErrorManager.getDefault().log ("Platform node for : "+node.getDisplayName()+" has no platform in its lookup.");   //NOI18N
+                            LOG.warning("Platform node for : "+node.getDisplayName()+" has no platform in its lookup.");   //NOI18N
                         }                    
                     }catch (DataObjectNotFoundException e) {
-                        ErrorManager.getDefault().notify(e);
+                        Exceptions.printStackTrace(e);
                     }
                  }                                    
                 List<PlatformCategoriesDescriptor> keys = new ArrayList<PlatformsCustomizer.PlatformCategoriesDescriptor>(categories.values());

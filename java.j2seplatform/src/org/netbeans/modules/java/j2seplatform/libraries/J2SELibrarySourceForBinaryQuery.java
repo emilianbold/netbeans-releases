@@ -43,11 +43,14 @@ package org.netbeans.modules.java.j2seplatform.libraries;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.libraries.Library;
@@ -56,9 +59,9 @@ import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
 
 /**
@@ -68,6 +71,7 @@ import org.openide.util.WeakListeners;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation.class, position=150)
 public class J2SELibrarySourceForBinaryQuery implements SourceForBinaryQueryImplementation2 {
 
+    private static final Logger LOG = Logger.getLogger (J2SELibrarySourceForBinaryQuery.class.getName ());
     private final Map<URL,SourceForBinaryQueryImplementation2.Result> cache = new ConcurrentHashMap<URL,SourceForBinaryQueryImplementation2.Result>();
     private final Map<URL,URL> normalizedURLCache = new ConcurrentHashMap<URL,URL>();
 
@@ -79,23 +83,33 @@ public class J2SELibrarySourceForBinaryQuery implements SourceForBinaryQueryImpl
         if (res != null) {
             return res;
         }
-        boolean isNormalizedURL = isNormalizedURL(binaryRoot);
-        for (LibraryManager mgr : LibraryManager.getOpenManagers()) {
-            for (Library lib : mgr.getLibraries()) {
-                if (lib.getType().equals(J2SELibraryTypeProvider.LIBRARY_TYPE)) {
-                    for (URL entry : lib.getContent(J2SELibraryTypeProvider.VOLUME_TYPE_CLASSPATH)) {
-                        URL normalizedEntry = entry;
-                        if (isNormalizedURL) {
-                            normalizedEntry = getNormalizedURL(normalizedEntry);
-                        }
-                        if (binaryRoot.equals(normalizedEntry)) {
-                            res = new Result(entry, lib);
-                            cache.put(binaryRoot, res);
-                            return res;
+        try {
+            boolean isNormalizedURL = isNormalizedURL (binaryRoot);
+            for (LibraryManager mgr : LibraryManager.getOpenManagers()) {
+                for (Library lib : mgr.getLibraries()) {
+                    if (lib.getType().equals(J2SELibraryTypeProvider.LIBRARY_TYPE)) {
+                        for (URL entry : lib.getContent(J2SELibraryTypeProvider.VOLUME_TYPE_CLASSPATH)) {
+                            URL normalizedEntry = entry;
+                            if (isNormalizedURL) {
+                                try {
+                                    normalizedEntry = getNormalizedURL (normalizedEntry);
+                                } catch (MalformedURLException ex) {
+                                    LOG.log (Level.INFO, "Invalid URL: " + normalizedEntry, ex);
+                                    return null;
+                                }
+                            }
+                            if (binaryRoot.equals(normalizedEntry)) {
+                                res = new Result(entry, lib);
+                                cache.put(binaryRoot, res);
+                                return res;
+                            }
                         }
                     }
                 }
             }
+        } catch (MalformedURLException ex) {
+            LOG.log (Level.INFO, "Invalid URL: " + binaryRoot, ex);
+            //cache.put (binaryRoot, null);
         }
         return null;
     }
@@ -105,7 +119,7 @@ public class J2SELibrarySourceForBinaryQuery implements SourceForBinaryQueryImpl
         return this.findSourceRoots2(binaryRoot);
     }
     
-    private URL getNormalizedURL (URL url) {
+    private URL getNormalizedURL (URL url) throws MalformedURLException {
         //URL is already nornalized, return it
         if (isNormalizedURL(url)) {
             return url;
@@ -134,9 +148,21 @@ public class J2SELibrarySourceForBinaryQuery implements SourceForBinaryQueryImpl
      * @param URL url
      * @return true if  the URL is normal
      */
-    private static boolean isNormalizedURL (URL url) {
+    private static boolean isNormalizedURL (URL url) throws MalformedURLException {
         if ("jar".equals(url.getProtocol())) { //NOI18N
-            url = FileUtil.getArchiveFile(url);
+            String path = url.getPath();
+            int index = path.indexOf("!/"); //NOI18N
+            if (index < 0)
+                throw new MalformedURLException ();
+            String jarPath = path.substring (0, index);
+            if (
+                jarPath.indexOf ("file://") > -1 &&         //NOI18N
+                jarPath.indexOf("file:////") == -1          //NOI18N
+            ) {
+                /* Replace because JDK application classloader wrongly recognizes UNC paths. */
+                jarPath = jarPath.replaceFirst ("file://", "file:////");  //NOI18N
+            }
+            url = new   URL(jarPath);
         }
         return "file".equals(url.getProtocol());    //NOI18N
     }

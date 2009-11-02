@@ -1574,7 +1574,9 @@ public class Installer extends ModuleInstall implements Runnable {
                     LOG.info("ALREADY SUBMITTING"); // NOI18N
                     return;
                 }
-                reportPanel.showCheckingPassword();
+		if (report){
+                    reportPanel.showCheckingPassword();
+		}
                 RP_SUBMIT.post(new Runnable() {
 
                     public void run() {
@@ -1832,67 +1834,74 @@ public class Installer extends ModuleInstall implements Runnable {
         }
 
         protected void createDialog() {
-            Dimension dim = new Dimension(450, 50);
-
-            if (reportPanel==null) {
-                reportPanel = new ReportPanel();
-            }
+            String message = null;
             if (slownData != null) {
-                String message;
                 if (slownData.getLatestActionName() == null) {
                     message = String.format("AWT thread blocked for %1$s ms.", Long.toString(slownData.getTime())); // NOI18N
                 } else {
                     message = String.format("Invoking %1$s took %2$s ms.", slownData.getLatestActionName(), Long.toString(slownData.getTime()));// NOI18N
                 }
-                reportPanel.setSummary(message);
             } else {
                 Throwable t = getThrown(recs);
                 if (t != null) {
-                    reportPanel.setSummary(createMessage(t));
+                    message = createMessage(t);
                 }
             }
-            if ("ERROR_URL".equals(msg)) {
-                dim = new Dimension(470, 450);
-            }
-            browser = new JEditorPane();
+            final String summary = message;
             try {
-                URL resource = new URL("nbresloc:/org/netbeans/modules/uihandler/Connecting.html"); // NOI18N
-                browser.setPage(resource); // NOI18N
-            } catch (IOException ex) {
-                LOG.log(Level.SEVERE, ex.getMessage(), ex);
+                EventQueue.invokeAndWait(new Runnable() {
+
+                    public void run() {
+                        if (reportPanel==null) {
+                            reportPanel = new ReportPanel();
+                        }
+                        if (summary != null){
+                            reportPanel.setSummary(summary);
+                        }
+                        Dimension dim = new Dimension(450, 50);
+                        if ("ERROR_URL".equals(msg)) {
+                            dim = new Dimension(470, 450);
+                        }
+                        browser = new JEditorPane();
+                        try {
+                            URL resource = new URL("nbresloc:/org/netbeans/modules/uihandler/Connecting.html"); // NOI18N
+                            browser.setPage(resource); // NOI18N
+                        } catch (IOException ex) {
+                            LOG.log(Level.SEVERE, ex.getMessage(), ex);
+                        }
+                        browser.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 0, 8));
+                        browser.setPreferredSize(dim);
+                        browser.setEditable(false);
+                        browser.setEditorKit(new HTMLEditorKit()); // needed up to nb5.5
+                        browser.setBackground(new JLabel().getBackground());
+                        browser.addHyperlinkListener(SubmitInteractive.this);
+                        JScrollPane p = new JScrollPane();
+                        p.setViewportView(browser);
+                        p.setBorder(BorderFactory.createEmptyBorder());
+                        p.setPreferredSize(dim);
+                        dd.setMessage(p);
+                        //        AbstractNode root = new AbstractNode(new Children.Array());
+                        //        root.setName("root"); // NOI18N
+                        //        root.setDisplayName(NbBundle.getMessage(Installer.class, "MSG_RootDisplayName", recs.size(), new Date()));
+                        //        root.setIconBaseWithExtension("org/netbeans/modules/uihandler/logs.gif");
+                        //        for (LogRecord r : recs) {
+                        //            root.getChildren().add(new Node[] { UINode.create(r) });
+                        //        }
+                        //
+                        //        panel.getExplorerManager().setRootContext(root);
+                        Object[] arr = new Object[]{exitMsg};
+                        dd.setOptions(arr);
+                        dd.setClosingOptions(arr);
+                        dd.setButtonListener(SubmitInteractive.this);
+                        dd.setModal(true);
+                        d = DialogDisplayer.getDefault().createDialog(dd);
+                    }
+                });
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InvocationTargetException ex) {
+                Exceptions.printStackTrace(ex);
             }
-
-            browser.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 0, 8));
-            browser.setPreferredSize(dim);
-            browser.setEditable(false);
-            browser.setEditorKit(new HTMLEditorKit()); // needed up to nb5.5
-            browser.setBackground(new JLabel().getBackground());
-            browser.addHyperlinkListener(this);
-
-            JScrollPane p = new JScrollPane();
-            p.setViewportView(browser);
-            p.setBorder(BorderFactory.createEmptyBorder());
-            p.setPreferredSize(dim);
-
-
-            dd.setMessage(p);
-
-            //        AbstractNode root = new AbstractNode(new Children.Array());
-            //        root.setName("root"); // NOI18N
-            //        root.setDisplayName(NbBundle.getMessage(Installer.class, "MSG_RootDisplayName", recs.size(), new Date()));
-            //        root.setIconBaseWithExtension("org/netbeans/modules/uihandler/logs.gif");
-            //        for (LogRecord r : recs) {
-            //            root.getChildren().add(new Node[] { UINode.create(r) });
-            //        }
-            //
-            //        panel.getExplorerManager().setRootContext(root);
-
-            Object[] arr = new Object[] { exitMsg };
-            dd.setOptions(arr);
-            dd.setClosingOptions(arr);
-            dd.setButtonListener(this);
-            dd.setModal(true);
-            d = DialogDisplayer.getDefault().createDialog(dd);
         }
 
         public void hyperlinkUpdate(HyperlinkEvent e) {
@@ -2075,8 +2084,19 @@ public class Installer extends ModuleInstall implements Runnable {
                     doCloseDialog();
                 }
             });
-            d.setModal(false);
-            d.setVisible(true);
+            try {
+                EventQueue.invokeAndWait(new Runnable() {
+
+                    public void run() {
+                        d.setModal(false);
+                        d.setVisible(true);
+                    }
+                });
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InvocationTargetException ex) {
+                Exceptions.printStackTrace(ex);
+            }
             synchronized (this){
                 while (d != null && !dontWaitForUserInputInTests){
                     try{

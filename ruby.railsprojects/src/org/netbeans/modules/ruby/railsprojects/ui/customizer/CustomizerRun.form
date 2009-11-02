@@ -15,13 +15,18 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="configSep" alignment="1" pref="658" max="32767" attributes="0"/>
-          <Group type="102" alignment="1" attributes="0">
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="rubyPlatformLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="configLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+          <Component id="configSep" alignment="1" pref="700" max="32767" attributes="0"/>
+          <Group type="102" alignment="0" attributes="0">
+              <Component id="mainPanel" max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+          </Group>
+          <Group type="102" alignment="0" attributes="0">
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="1" attributes="0">
+                  <Component id="configLabel" min="-2" max="-2" attributes="0"/>
+                  <Component id="rubyPlatformLabel" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" pref="25" max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" max="-2" attributes="0">
                   <Component id="configCombo" max="32767" attributes="1"/>
                   <Component id="platforms" alignment="0" min="-2" pref="374" max="-2" attributes="1"/>
@@ -35,37 +40,30 @@
                   </Group>
                   <Component id="manageButton" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace pref="19" max="32767" attributes="0"/>
           </Group>
-          <Component id="mainPanel" alignment="1" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" attributes="0">
-                      <Component id="rubyPlatformLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
-                      <Component id="configLabel" min="-2" max="-2" attributes="0"/>
-                  </Group>
-                  <Group type="102" attributes="0">
-                      <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="platforms" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="manageButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="configCombo" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="configNew" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="configDel" alignment="3" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                  </Group>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="platforms" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="manageButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="rubyPlatformLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="configCombo" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="configNew" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="configDel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="configLabel" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" pref="14" max="-2" attributes="0"/>
               <Component id="configSep" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="mainPanel" max="32767" attributes="0"/>
+              <Component id="mainPanel" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -191,35 +189,29 @@
                               <Component id="serverArgsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="1" attributes="0">
-                              <Component id="urlHelpLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="railsEnvCombo" alignment="0" pref="499" max="32767" attributes="0"/>
-                              <Component id="portField" alignment="0" pref="499" max="32767" attributes="1"/>
-                              <Component id="urlTextField" alignment="0" pref="499" max="32767" attributes="0"/>
-                              <Component id="serverComboBox" alignment="0" pref="499" max="32767" attributes="0"/>
-                              <Component id="serverArgsField" alignment="1" pref="499" max="32767" attributes="0"/>
-                          </Group>
                       </Group>
                       <Group type="102" alignment="0" attributes="0">
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Group type="102" alignment="0" attributes="0">
-                                  <Component id="encodingLabel" pref="107" max="32767" attributes="1"/>
-                                  <EmptySpace min="-2" pref="64" max="-2" attributes="0"/>
-                              </Group>
-                              <Group type="102" alignment="0" attributes="0">
-                                  <Component id="rakeLabel" min="-2" max="-2" attributes="1"/>
-                                  <EmptySpace min="-2" pref="34" max="-2" attributes="0"/>
-                              </Group>
-                          </Group>
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="rakeHelpLabel" alignment="0" min="-2" max="-2" attributes="1"/>
-                              <Group type="102" alignment="0" attributes="0">
-                                  <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="encoding" pref="463" max="32767" attributes="1"/>
-                              </Group>
-                              <Component id="rakeTextField" alignment="0" pref="463" max="32767" attributes="1"/>
-                          </Group>
+                          <Component id="rakeLabel" min="-2" max="-2" attributes="1"/>
+                          <EmptySpace max="-2" attributes="0"/>
                       </Group>
+                      <Group type="102" alignment="0" attributes="0">
+                          <Component id="encodingLabel" pref="152" max="32767" attributes="1"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                      </Group>
+                  </Group>
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" attributes="0">
+                          <Component id="rakeHelpLabel" min="-2" max="-2" attributes="1"/>
+                          <EmptySpace pref="408" max="32767" attributes="0"/>
+                      </Group>
+                      <Component id="rakeTextField" alignment="0" pref="512" max="32767" attributes="1"/>
+                      <Component id="encoding" alignment="1" pref="512" max="32767" attributes="1"/>
+                      <Component id="urlHelpLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="railsEnvCombo" alignment="0" pref="512" max="32767" attributes="0"/>
+                      <Component id="portField" alignment="0" pref="512" max="32767" attributes="1"/>
+                      <Component id="urlTextField" alignment="0" pref="512" max="32767" attributes="0"/>
+                      <Component id="serverComboBox" alignment="0" pref="512" max="32767" attributes="0"/>
+                      <Component id="serverArgsField" alignment="1" pref="512" max="32767" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
@@ -228,7 +220,7 @@
         <DimensionLayout dim="1">
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="0" attributes="0">
-                  <EmptySpace max="-2" attributes="0"/>
+                  <EmptySpace max="32767" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="serverLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="serverComboBox" alignment="3" min="-2" pref="22" max="-2" attributes="0"/>
@@ -255,19 +247,18 @@
                       <Component id="serverArgsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="serverArgsField" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace type="separate" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
-                      <Component id="encodingLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="encoding" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="encodingLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
-                      <Component id="rakeLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="rakeTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="rakeLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="rakeHelpLabel" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>

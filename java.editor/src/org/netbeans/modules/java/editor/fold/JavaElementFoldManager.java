@@ -366,7 +366,7 @@ public class JavaElementFoldManager extends JavaFoldManager {
                 while (ts.moveNext()) {
                     Token<JavaTokenId> token = ts.token();
                     
-                    if (token.id() == JavaTokenId.BLOCK_COMMENT) {
+                    if (token.id() == JavaTokenId.BLOCK_COMMENT || token.id() == JavaTokenId.JAVADOC_COMMENT) {
                         Document doc   = operation.getHierarchy().getComponent().getDocument();
                         int startOffset = ts.offset();
                         boolean collapsed = foldInitialCommentsPreset;

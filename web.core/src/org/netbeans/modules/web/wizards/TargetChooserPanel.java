@@ -88,7 +88,7 @@ final class TargetChooserPanel implements WizardDescriptor.Panel {
 
     //TODO how to add [,] to the regular expression?
     private static final Pattern INVALID_FILENAME_CHARACTERS = Pattern.compile("[`~!@#$%^&*()=+\\|{};:'\",<>/?]"); // NOI18N
-    private static final Pattern INVALID_FOLDERNAME_CHARACTERS = Pattern.compile("[`~!@#$%^&*()=+|{};:'\",<>?]"); // NOI18N
+    private static final Pattern INVALID_FOLDERNAME_CHARACTERS = Pattern.compile("[`~!@#$%^&*()=+|{};'\",<>?]"); // NOI18N
 
     TargetChooserPanel(Project project, SourceGroup[] folders, FileType fileType) {
         this.folders = folders;

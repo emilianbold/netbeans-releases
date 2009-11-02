@@ -54,6 +54,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.SwingUtilities;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
@@ -70,6 +71,7 @@ public class TopLoggingTest extends NbTestCase {
         super(testName);
     }
 
+    @Override
     protected void setUp() throws Exception {
         clearWorkDir();
 
@@ -117,6 +119,36 @@ public class TopLoggingTest extends NbTestCase {
 
     protected ByteArrayOutputStream getStream() {
         return w;
+    }
+
+    @RandomlyFails // NB-Core-Build #3503; a few lines got reordered or dropped
+    public void testLog10000Lines() throws Exception {
+        Logger l = Logger.getLogger(TopLoggingTest.class.getName());
+        long time = System.currentTimeMillis();
+        for (int i = 0; i < 10000; i++) {
+            l.log(Level.INFO, "Count " + i);
+        }
+        long took = System.currentTimeMillis() - time;
+
+
+        Pattern p = Pattern.compile("INFO.*Count ([0-9]*)");
+        final String msg = getStream().toString();
+        Matcher m = p.matcher(msg);
+
+        for (int i = 0; i < 10000; i++) {
+            if (!m.find()) {
+                fail("Cannot find " + i + " in:\n" + msg);
+            }
+            if (i == Integer.parseInt(m.group(1))) {
+                continue;
+            }
+            assertEquals("Correct group:\n" + msg, "" + i, m.group(1));
+        }
+
+        if (took > 5000) {
+            // runs in ~500ms on my computer, used to take about 30s
+            fail("Printing of 10000 messages takes too long: " + took + " ms");
+        }
     }
 
     public void testLogOneLine() throws Exception {

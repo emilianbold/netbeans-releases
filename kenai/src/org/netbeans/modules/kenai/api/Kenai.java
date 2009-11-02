@@ -44,6 +44,7 @@ import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.AbstractCollection;
 import java.util.Arrays;
@@ -52,6 +53,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.prefs.Preferences;
 import org.codeviation.commons.patterns.Factory;
 import org.codeviation.commons.utils.Iterators;
 import org.jivesoftware.smack.PacketListener;
@@ -66,6 +68,8 @@ import org.netbeans.modules.kenai.LicensesListData;
 import org.netbeans.modules.kenai.ProjectData;
 import org.netbeans.modules.kenai.ServicesListData.ServicesListItem;
 import org.netbeans.modules.kenai.UserData;
+import org.openide.util.Exceptions;
+import org.openide.util.NbPreferences;
 
 /**
  * Main entry point to Kenai integration.
@@ -109,6 +113,10 @@ public final class Kenai {
     private KenaiImpl impl;
     private XMPPConnection xmppConnection;
     private PacketListener packetListener;
+    private static Preferences prefs = NbPreferences.forModule(Kenai.class);
+    private static final String DEFAULT_INSTANCE_PREF="kenai.default.instance";
+    private static final String INSTANCES_PREF="kenai.instances";
+
 
 
     final HashMap<String, WeakReference<KenaiProject>> projectsCache = new HashMap<String, WeakReference<KenaiProject>>();
@@ -122,7 +130,8 @@ public final class Kenai {
      public static synchronized Kenai getDefault() {
         if (instance == null) {
             try {
-                String urlString = System.getProperty("kenai.com.url", "https://kenai.com/");
+                String urlString = prefs.get(DEFAULT_INSTANCE_PREF, "https://kenai.com/");
+                urlString = System.getProperty("kenai.com.url", urlString);
                 assert urlString.startsWith("https://"):"the only supported protocol is https";
                 if (urlString.endsWith("/")) {
                     urlString = urlString.substring(0, urlString.length()-1);
@@ -146,8 +155,13 @@ public final class Kenai {
     }
 
     public void setUrl(URL url) {
-        if (impl.getUrl().equals(url))
-            return;
+        try {
+            if (impl.getUrl().toURI().equals(url.toURI())) {
+                return;
+            }
+        } catch (URISyntaxException ex) {
+            Exceptions.printStackTrace(ex);
+        }
         if (getStatus()!=Status.OFFLINE) {
             logout(true);
         }
@@ -155,7 +169,8 @@ public final class Kenai {
         synchronized (Kenai.class) {
             impl = new KenaiREST(url);
         }
-        propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_URL_CHANGED, old, impl.getUrl()));
+        prefs.put(DEFAULT_INSTANCE_PREF, url.toString());
+        propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_URL_CHANGED, null, impl.getUrl()));
     }
 
     /**
@@ -163,7 +178,19 @@ public final class Kenai {
      * @return e.g. kenai.com, testkenai.com, odftoolkit.org, netbeans.org
      */
     public String getName() {
-        return getUrl().toString().substring("https://".length());
+        String s = prefs.get(INSTANCES_PREF, "");//NOI18N
+        if (s.length() > 1) {
+            for (String inst : s.split(";")) { // NOI18N
+                if (inst.length()>0) {
+                    String[] pair = inst.split(","); // NOI18N
+                    if (inst.split(",")[0].equals(getUrl().toString())) {// NOI18N
+                        return pair[1];
+                    }
+                }
+            }
+        }
+
+        return getUrl().toString().substring("https://".length());// NOI18N
     }
 
     Kenai(KenaiImpl impl) {
@@ -246,8 +273,8 @@ public final class Kenai {
 
     private void logout(boolean setPropId) {
         PasswordAuthentication old=auth;
-        auth = null;
         synchronized(this) {
+            auth = null;
             myProjects=null;
             xmppDisconnect(setPropId);
         }
@@ -582,7 +609,7 @@ public final class Kenai {
     private void xmppConnect() throws KenaiException {
         propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_XMPP_LOGIN_STARTED, null, null));
         synchronized (this) {
-            xmppConnection = new XMPPConnection(getName());
+            xmppConnection = new XMPPConnection(getUrl().getHost());
             packetListener = new KenaiUser.KenaiPacketListener();
             try {
                 xmppConnection.removePacketListener(packetListener);

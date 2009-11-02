@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.deep.CsmLoopStatement;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.paralleladviser.utils.ParallelAdviserAdviceUtils;
+import org.openide.text.PositionBounds;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.OutputEvent;
@@ -83,6 +84,9 @@ public class LoopParallelizationAdvice implements Advice {
     private final String functionName;
     private final String fileName;
     private final int lineInFile;
+    private final PositionBounds functionPosition;
+    private final PositionBounds loopPosition;
+
 
     public LoopParallelizationAdvice(CsmFunction function, CsmLoopStatement loop, double processorUtilization) {
         this.functionRef = new WeakReference<CsmFunction>(function);
@@ -91,6 +95,8 @@ public class LoopParallelizationAdvice implements Advice {
         this.functionName = function.getName().toString();
         this.fileName = loop.getContainingFile().getName().toString();
         this.lineInFile = loop.getStartPosition().getLine();
+        this.loopPosition = CsmUtilities.createPositionBounds(loop);
+        this.functionPosition = CsmUtilities.createPositionBounds(function);
     }
 
     public CsmProject getProject() {
@@ -112,6 +118,10 @@ public class LoopParallelizationAdvice implements Advice {
         return loopRef.get();
     }
 
+    public PositionBounds getLoopPosition() {
+        return loopPosition;
+    }
+
     public double getProcessorUtilization() {
         return processorUtilization;
     }
@@ -124,16 +134,10 @@ public class LoopParallelizationAdvice implements Advice {
                     public void hyperlinkUpdate(HyperlinkEvent e) {
                         if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
                             if (e.getDescription().equals("function")) { // NOI18N
-                                CsmFunction function = functionRef.get();
-                                if (function != null) {
-                                    CsmUtilities.openSource(function);
-                                }
+                                CsmUtilities.openSource(functionPosition);
                             }
                             if (e.getDescription().equals("loop")) { // NOI18N
-                                CsmLoopStatement loop = loopRef.get();
-                                if (loop != null) {
-                                    CsmUtilities.openSource(loop);
-                                }
+                                CsmUtilities.openSource(loopPosition);
                             }
                         }
                     }
@@ -141,7 +145,7 @@ public class LoopParallelizationAdvice implements Advice {
     }
 
     public String getHtml() {
-        URL iconUrl = LoopParallelizationAdvice.class.getClassLoader().getResource("org/netbeans/modules/cnd/paralleladviser/paralleladviserview/resources/ploop.png"); // NOI18N
+        URL iconUrl = LoopParallelizationAdvice.class.getClassLoader().getResource("org/netbeans/modules/cnd/paralleladviser/paralleladviserview/resources/loopforparallelization.png"); // NOI18N
 
         return ParallelAdviserAdviceUtils.createAdviceHtml(iconUrl,
                 getString("PAT_LoopParallelization_Title"), // NOI18N
@@ -158,10 +162,7 @@ public class LoopParallelizationAdvice implements Advice {
                 }
 
                 public void outputLineAction(OutputEvent ev) {
-                    CsmLoopStatement loop = loopRef.get();
-                    if (loop != null) {
-                        CsmUtilities.openSource(loop);
-                    }
+                    CsmUtilities.openSource(loopPosition);
                 }
 
                 public void outputLineCleared(OutputEvent ev) {

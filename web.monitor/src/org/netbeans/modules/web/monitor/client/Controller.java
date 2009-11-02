@@ -1047,7 +1047,8 @@ class Controller  {
     private TransactionNode createTransactionNode(MonitorData md, boolean current) {
 
 	if(debug) log("createTransactionNode(MonitorData)"); //NOI18N 
-	Dispatches dis = null; 
+	Dispatches dis = null;
+        RequestData rd = md.getRequestData();
 	try { 
 	    dis = md.getDispatches();
 	}
@@ -1066,7 +1067,7 @@ class Controller  {
 				       md.getAttributeValue("method"), // NOI18N
 				       md.getAttributeValue("resource"), //NOI18N
 				       current,
-                                       parseStatusCode(md.getRequestData().getAttributeValue("status"))); // NOI18N
+                                       parseStatusCode((rd == null) ? null : rd.getAttributeValue("status"))); // NOI18N
 	}
 	else {
 
@@ -1097,7 +1098,7 @@ class Controller  {
 				       md.getAttributeValue("resource"), //NOI18N
 				       nested, 
                                        current,
-                                       parseStatusCode(md.getRequestData().getAttributeValue("status"))); // NOI18N
+                                       parseStatusCode((rd == null) ? null: rd.getAttributeValue("status"))); // NOI18N
 
 	}
 	return node;

@@ -56,7 +56,6 @@ import javax.swing.Action;
 import javax.swing.Icon;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
-import org.openide.ErrorManager;
 import org.openide.actions.FileSystemAction;
 import org.openide.actions.FindAction;
 import org.openide.actions.PasteAction;
@@ -77,6 +76,7 @@ import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -126,10 +126,8 @@ final class PackageRootNode extends AbstractNode implements Runnable, FileStatus
             FileSystem fs = file.getFileSystem();
             fileSystemListener = FileUtil.weakFileStatusListener(this, fs);
             fs.addFileStatusListener(fileSystemListener);
-        } catch (FileStateInvalidException e) {
-            ErrorManager err = ErrorManager.getDefault();
-            err.annotate(e, "Can not get " + file + " filesystem, ignoring...");  // NO18N
-            err.notify(ErrorManager.INFORMATIONAL, e);
+        } catch (FileStateInvalidException e) {            
+            Exceptions.printStackTrace(Exceptions.attachMessage(e,"Can not get " + file + " filesystem, ignoring...")); //NOI18N
         }
         setName( group.getName() );
         setDisplayName( group.getDisplayName() );        
@@ -150,7 +148,7 @@ final class PackageRootNode extends AbstractNode implements Runnable, FileStatus
         try {            
             s = file.getFileSystem ().getStatus ().annotateName (s, files);
         } catch (FileStateInvalidException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Exceptions.printStackTrace(e);
         }
 
         return s;
@@ -171,7 +169,7 @@ final class PackageRootNode extends AbstractNode implements Runnable, FileStatus
                  }
              }
          } catch (FileStateInvalidException e) {
-             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+             Exceptions.printStackTrace(e);
          }
          return super.getHtmlDisplayName();
     }
@@ -286,9 +284,9 @@ final class PackageRootNode extends AbstractNode implements Runnable, FileStatus
                     list.addAll( Arrays.asList( getDataFolderNodeDelegate().getPasteTypes( t ) ) );
                 }
             } catch (UnsupportedFlavorException e) {
-                ErrorManager.getDefault().notify(e);
+                Exceptions.printStackTrace(e);
             } catch (IOException e) {
-                ErrorManager.getDefault().notify(e);
+                Exceptions.printStackTrace(e);
             }
         }
         else {
@@ -307,10 +305,10 @@ final class PackageRootNode extends AbstractNode implements Runnable, FileStatus
                                 list.add(new PackageViewChildren.PackagePasteType (root, new PackageViewChildren.PackageNode[] {pkgNode}, op));
                             }
                         } catch (IOException ioe) {
-                            ErrorManager.getDefault().notify(ioe);
+                            Exceptions.printStackTrace(ioe);
                         }
                         catch (UnsupportedFlavorException ufe) {
-                            ErrorManager.getDefault().notify(ufe);
+                            Exceptions.printStackTrace(ufe);
                         }
                     }
                 }

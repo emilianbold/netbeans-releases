@@ -52,7 +52,7 @@ import org.openide.util.NbBundle;
  * @author Vladimir Kvashin
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory.class, position=200)
-public class SharedSyncFactory extends RemoteSyncFactory {
+public class SharedSyncFactory extends BaseSyncFactory {
 
     /*package*/ static final String ID = "shared"; //NOI18N
 
@@ -83,5 +83,9 @@ public class SharedSyncFactory extends RemoteSyncFactory {
         return ! RemoteUtil.isForeign(execEnv);
     }
 
+    @Override
+    public boolean isPathMappingCustomizable() {
+        return true;
+    }
 
 }

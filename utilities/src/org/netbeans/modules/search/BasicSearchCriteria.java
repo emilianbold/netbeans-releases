@@ -790,6 +790,20 @@ final class BasicSearchCriteria {
             int column = matcherStart - lineStartOffset + 1 - prevCR;
             String lineText = bcs.getLineText(lineStartOffset);
 
+            // #174056
+            assert lineText.length() > (column - 1) :
+                "Please, re-open the Issue 174056 with the following info:" +
+                "\nTrying to set illegal state of the TextDetail object:" +
+                "\nmatcher: " + matcher +
+                "\ntextPattern: [" + textPattern + "]" +
+                "\nmatcherStart: " + matcherStart +
+                "\nlineStartOffset: " + lineStartOffset +
+                "\nprevCR: " + prevCR +
+                "\nlineText: [" + lineText + "]" +
+                "\nlineText.length(): " + lineText.length() +
+                "\ncolumn: " + column +
+                "\n=> lineText.length() < (column - 1)"; // NOI18N
+
             TextDetail det = newTextDetail(data, sp, matcher);
             det.setColumn(column);
             det.setLine(lineNumber);

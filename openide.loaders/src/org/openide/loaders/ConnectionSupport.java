@@ -280,7 +280,7 @@ public class ConnectionSupport extends Object implements ConnectionCookie {
 
             if (pair.getType ().overlaps(ev.getType())) {
                 try {
-                    ConnectionCookie.Listener l = (ConnectionCookie.Listener)pair.getNode ().getCookie (ConnectionCookie.Listener.class);
+                    ConnectionCookie.Listener l = pair.getNode().getCookie(ConnectionCookie.Listener.class);
                     if (l != null) {
                         try {
                             l.notify (ev);
@@ -326,7 +326,7 @@ public class ConnectionSupport extends Object implements ConnectionCookie {
         HashSet<Node> set = new HashSet<Node> (7);
 
         while (it.hasNext ()) {
-            Pair pair = (Pair)it.next ();
+            Pair pair = it.next();
             if (type.overlaps(pair.getType ())) {
                 try {
                     set.add (pair.getNode ());

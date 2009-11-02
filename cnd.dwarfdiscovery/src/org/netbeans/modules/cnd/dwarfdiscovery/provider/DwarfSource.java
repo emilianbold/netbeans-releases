@@ -419,7 +419,7 @@ public class DwarfSource implements SourceFileProperties{
             for (String cp : systemIncludes){
                 for(String sub : bits) {
                     if (path.startsWith(cp)) {
-                        if (path.startsWith(cp+sub)){
+                        if (path.substring(cp.length()).startsWith(sub)){
                             return true;
                         }
                     }
@@ -691,17 +691,45 @@ public class DwarfSource implements SourceFileProperties{
             try {
                 BufferedReader in = new BufferedReader(new FileReader(file));
                 int lineNo = 0;
-                while(true){
+                fileLoop:while(true){
                     String line = in.readLine();
-                    lineNo++;
                     if (line == null){
                         break;
                     }
-                    line = line.trim();
-                    if (!line.startsWith("#")){ // NOI18N
+                    lineNo++;
+                    int size = line.length();
+                    if (size == 0) {
                         continue;
                     }
-                    line = line.substring(1).trim();
+                    int first = 0;
+                    for(; first < size; first++) {
+                        char c = line.charAt(first);
+                        if (c == ' ' || c == '\t') { // NOI18N
+                            continue;
+                        }
+                        if (c == '#') { // NOI18N
+                            break;
+                        }
+                        continue fileLoop;
+                    }
+                    first++;
+                    if (first >= size) {
+                        continue;
+                    }
+                    for(; first < size; first++) {
+                        char c = line.charAt(first);
+                        if (c == ' ' || c == '\t') { // NOI18N
+                            continue;
+                        }
+                        if (c == 'i' || c == 'd') { // NOI18N
+                            break;
+                        }
+                        continue fileLoop;
+                    }
+                    if (first >= size) {
+                        continue;
+                    }
+                    line = line.substring(first);
                     if (line.startsWith("include")){ // NOI18N
                         line = line.substring(7).trim();
                         if (line.length()>2) {

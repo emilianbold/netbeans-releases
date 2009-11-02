@@ -39,6 +39,7 @@
 package org.netbeans.modules.web.jsf.editor.facelets;
 
 import com.sun.faces.config.ConfigManager;
+import com.sun.faces.config.DocumentInfo;
 import com.sun.faces.facelets.tag.AbstractTagLibrary;
 import com.sun.faces.facelets.tag.TagLibrary;
 import com.sun.faces.facelets.tag.composite.CompositeLibrary;
@@ -69,9 +70,9 @@ import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
-import org.w3c.dom.Document;
 
 /**
  *
@@ -205,8 +206,19 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
         ClassLoader originalLoader = Thread.currentThread().getContextClassLoader();
         Collection<URL> urlsToLoad = new ArrayList<URL>();
         for (FileObject cpRoot : getJsfSupport().getClassPath().getRoots()) {
-            urlsToLoad.add(URLMapper.findURL(cpRoot, URLMapper.INTERNAL));
+            try {
+                //exclude the jsf jars from the classpath, if jsf20 library is available,
+                //we'll use the jars from the netbeans library instead
+                String fsName = cpRoot.getFileSystem().getDisplayName(); //any better way?
+                if(!(fsName.endsWith("jsf-impl.jar") || fsName.endsWith("jsf-api.jar"))) { //NOI18N
+                    urlsToLoad.add(URLMapper.findURL(cpRoot, URLMapper.INTERNAL));
+                }
+
+            } catch (FileStateInvalidException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
+        
         ClassLoader proxyLoader = new URLClassLoader(urlsToLoad.toArray(new URL[]{}), originalLoader);
 
         try {
@@ -254,7 +266,7 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
 
         //parse the libraries
         ConfigManager cm = ConfigManager.getInstance();
-        Document[] documents = (Document[]) callMethod("getConfigDocuments", ConfigManager.class, cm, null, faceletTaglibProviders, null, true); //NOI18N
+        DocumentInfo[] documents = (DocumentInfo[]) callMethod("getConfigDocuments", ConfigManager.class, cm, null, faceletTaglibProviders, null, true); //NOI18N
         if (documents == null) {
             return null; //error????
         }

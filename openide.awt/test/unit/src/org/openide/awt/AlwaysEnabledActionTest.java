@@ -343,17 +343,22 @@ public class AlwaysEnabledActionTest extends NbTestCase implements PropertyChang
     @RandomlyFails
     public void testPreferencesAction() throws Exception {
 //        checkPreferencesAction("testSystemPreferences.instance", Preferences.systemRoot());
-        checkPreferencesAction("testUserPreferences.instance", Preferences.userRoot());
-        checkPreferencesAction("testNbPreferences.instance", NbPreferences.root());
-        checkPreferencesAction("testCustomPreferences.instance", Preferences.userRoot()); // customPreferences() uses "myNode" subnode
+        checkPreferencesAction("testUserPreferences.instance", "user:", Preferences.userRoot());
+        checkPreferencesAction("testNbPreferences.instance", "", NbPreferences.root());
+        checkPreferencesAction("testCustomPreferences.instance", "user:", Preferences.userRoot()); // customPreferences() uses "myNode" subnode
     }
 
-    private void checkPreferencesAction(String actionFileName, Preferences prefsRoot) throws Exception {
-        final int[] changeCount = new int[] { 0 };
+    private void checkPreferencesAction(String actionFileName, String preferencesNodePrefix, Preferences prefsRoot) throws Exception {
         Action a = readAction(actionFileName);
         Preferences prefsNode = prefsRoot.node("myNode");
+        checkPreferencesAction(a, prefsNode);
+        a = Actions.checkbox(preferencesNodePrefix + "/myNode", "myKey", null, null, false);
+        checkPreferencesAction(a, prefsNode);
+    }
+
+    private void checkPreferencesAction(Action a, Preferences prefsNode) throws Exception {
         prefsNode.putBoolean("myKey", true);
-        prefsRoot.sync();
+        prefsNode.sync();
         int delay = 1;
         Thread.sleep(delay);
         // Verify value
@@ -368,7 +373,7 @@ public class AlwaysEnabledActionTest extends NbTestCase implements PropertyChang
         JMenuItem item = ((Presenter.Menu) a).getMenuPresenter();
         TestCase.assertTrue("Expected to be selected", item.isSelected());
         prefsNode.putBoolean("myKey", false);
-        prefsRoot.sync();
+        prefsNode.sync();
         Thread.sleep(delay);
         TestCase.assertFalse("Expected to not be selected", item.isSelected());
         a.actionPerformed(null); // new ActionEvent(null, 0, ""));
@@ -413,7 +418,7 @@ public class AlwaysEnabledActionTest extends NbTestCase implements PropertyChang
     private static int myIconResourceCounter;
     private static String myIconResource() {
         myIconResourceCounter++;
-        return "/org/openide/awt/TestIcon.png";
+        return "org/openide/awt/TestIcon.png";
     }
     
     

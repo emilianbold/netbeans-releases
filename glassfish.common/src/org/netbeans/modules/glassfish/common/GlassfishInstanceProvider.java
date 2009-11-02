@@ -626,6 +626,11 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
 //                !NbPreferences.forModule(this.getClass()).getBoolean(ServerUtilities.PROP_FIRST_RUN, false);
 
         String candidate = System.getProperty(installRootPropName);
+        if (null == candidate) {
+            return;
+        }
+        candidate = new File(candidate).getAbsolutePath();
+        
         String firstRunValue = NbPreferences.forModule(this.getClass()).get(ServerUtilities.PROP_FIRST_RUN+getInstallRootKey(), "false"); // NOI18N
         
         // we may be migrating from 'old' to new

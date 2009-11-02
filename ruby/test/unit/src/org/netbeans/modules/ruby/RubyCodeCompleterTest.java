@@ -423,6 +423,14 @@ public class RubyCodeCompleterTest extends RubyCodeCompleterTestBase {
         checkCompletion("testfiles/cc-attr_accessors.rb", "attr_writer :baz, :fo^o");
     }
 
+    public void testAliasMethod() throws Exception {
+        checkCompletion("testfiles/alias_method.rb", "Far.new.far_^far_away");
+    }
+
+    public void testAliasMethod2() throws Exception {
+        checkCompletion("testfiles/alias_method.rb", "Close.new.so_^so_close");
+    }
+
     // TODO uncomment when reindexed
 //    public void testIndexedConstantMethods() throws Exception {
 //        checkCompletion("testfiles/constants.rb", "REXML::COPYRIGHT.ls^");

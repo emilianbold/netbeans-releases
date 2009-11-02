@@ -155,6 +155,10 @@ abstract public class HostKeyArray extends Children.Keys<PersistentKey> implemen
             return new SortedName(3,CVUtil.getSignature((CsmFunction)d),0);
         } else if( d.getKind() == CsmDeclaration.Kind.FUNCTION_DEFINITION ) {
             return new SortedName(3,CVUtil.getSignature((CsmFunction)d),1);
+        } else if( d.getKind() == CsmDeclaration.Kind.FUNCTION_FRIEND ) {
+            return new SortedName(3,CVUtil.getSignature((CsmFunction)d),0);
+        } else if( d.getKind() == CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION ) {
+            return new SortedName(3,CVUtil.getSignature((CsmFunction)d),1);
         }
         return new SortedName(9,d.getName(),0);
     }

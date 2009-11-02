@@ -150,8 +150,9 @@ public class Tool {
      * - if it is not, start initialization
      * - wait until it is done
      * NB: Should never be called from AWT thread
+     * @param reset pass true if expect getting fresh
      */
-    public void waitReady() {
+    public void waitReady(boolean reset) {
     }
 
     public int getKind() {

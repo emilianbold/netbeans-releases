@@ -14,8 +14,7 @@ type="text/css">
 <h2>C and C++ Building Tasks: Quick Reference
 </h2>
 <p>
-This topic describes common tasks you can perform when building C and C++ projects. For more 
-detailed information, click the links in the right column.
+This topic describes common tasks you can perform when building C and C++ projects. 
 </p>
 <table border="1" cellpadding="5" cellspacing="0" summary="The left column lists  
 the task name. The right column lists the steps to perform.">
@@ -25,32 +24,30 @@ the task name. The right column lists the steps to perform.">
 </tr>
 <tr valign="top">
 <td>
-Build a project
+Build main project.
 </td>
 <td>
 <ol>
+
 <li>
-Select the node of the project you want to build.
-</li>
-<li>
-Choose Build &gt; Build Main Project (F11) or right-click any project in the 
-Projects window and choose Build Project.
+Press F11, or click the Build button in the toolbar, or Choose Run &gt; Build Main Project.
 </li>
 </ol>
 </td>
 </tr>
 <tr>
 <td>
-Build a project.
+Build any project.
 </td>
 <td>
-<ul>
+<ol>
+    <li>
+        ﻿Select the node of the project you want to build.
+    </li>
 <li>
-Choose Build <img src="../images/arrow.gif" width ="5" height="11" 
-alt="and choose">&nbsp; Build Main Project (F11) or right-click any project node 
-and choose Build Project.
+Right-click the project node and choose Build Project.
 </li>
-</ul>
+</ol>
 </td>
 </tr>
 <tr valign="top">
@@ -59,7 +56,7 @@ Stop building a project.
 </td>
 <td>
 <ul>
-<li>Choose Build &gt; Stop Build/Run.
+<li>Choose Run &gt; Stop Build/Run or click the Stop button in the Output window.
 </li>
 </ul>
 </td>
@@ -71,7 +68,7 @@ Compile a single file.
 <td>
 <ol>
 <li>Select the node of the file you want to compile.</li>
-<li>Choose Build &gt; Compile File (F9).</li>
+<li>Press F9, or Choose Run &gt; Compile File.</li>
 </ol>
 </td>
 </tr>
@@ -82,7 +79,7 @@ Clean a project.
 <td>
 <ul>
 <li>
-Right-click the project node and choose Clean Project.
+Right-click the project node and choose Clean.
 </li>
 </ul>
 </td>
@@ -93,8 +90,8 @@ Clean and build the main project.
 </td>
 <td>
 <ol>
-<li>Select the node of the project you want to clean and build.</li>
-<li>Choose Build &gt; Clean and Build Main Project (Shift-F11).
+
+<li>Press Shift-F11, or click Clean and Build button in the toolbar, or choose Run &gt; Clean and Build Main Project.
 </li>
 </ul>
 </td>
@@ -107,9 +104,9 @@ View build output.
 <li>
 In the Files window, expand the project folder node.
 </li>
-<li>Expand the <tt>build</tt> folder to view object (<tt>.o</tt>) files.
+<li>Expand the <tt>build</tt> folder and subfolders to view object (<tt>.o</tt>) files.
 </li>
-<li>Expand the <tt>dist</tt> folder to view executable (<tt>.exe</tt>) 
+<li>Expand the <tt>dist</tt> folder and subfolders to view executable (<tt>.exe</tt>)
 files and built libraries.
 </li>
 </ol>
@@ -123,7 +120,7 @@ Correct compilation errors
 <ul>
 <li>
 In the Output window, double-click any highlighted syntax error to jump to the 
-location in the source code where the error occurred..
+location in the source code where the error occurred.
 </li>
 <li>
 In the Output window, double-click any make error to open the makefile in the 

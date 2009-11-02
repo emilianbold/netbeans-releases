@@ -150,8 +150,8 @@ class GraphPainter {
     public void paint(Graphics g, int scale, List<AxisMark> yMarks, int viewportStart, int viewportEnd, List<AxisMark> xMarks, int filterStart, int filterEnd, int x, int y, int w, int h, boolean ticks) {
         paintGradient(g, x, y, w, h);
         if (0 < w && 0 < h) {
-            paintGrid(g, x, y, w, h, xMarks, yMarks, ticks);
             paintGraph(g, scale, viewportStart, viewportEnd, x, y, w, h);
+            paintGrid(g, x, y, w, h, xMarks, yMarks, ticks);
             dimInactiveRegions(g, viewportStart, viewportEnd, filterStart, filterEnd, x, y, w, h);
         }
     }
@@ -333,14 +333,14 @@ class GraphPainter {
      * Returns a copy of passed color with adjusted alpha value.
      *
      * @param orig  original color
-     * @param alpha  new alpha value
+     * @param alpha  alpha scale value
      * @return copy of color with adjusted alpha
      */
     private static Color adjustAlpha(Color orig, int alpha) {
-        if (orig.getAlpha() == alpha) {
+        if (alpha == 255) {
             return orig;
         } else {
-            return new Color(orig.getRed(), orig.getGreen(), orig.getBlue(), alpha);
+            return new Color(orig.getRed(), orig.getGreen(), orig.getBlue(), orig.getAlpha() * alpha / 255);
         }
     }
 }

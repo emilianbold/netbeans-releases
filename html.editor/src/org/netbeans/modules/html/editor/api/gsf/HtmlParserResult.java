@@ -56,6 +56,7 @@ import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.html.editor.HtmlVersion;
 import org.netbeans.modules.html.editor.gsf.HtmlParserResultAccessor;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.openide.filesystems.FileObject;
 
 /**
  * HTML parser result
@@ -88,11 +89,27 @@ public class HtmlParserResult extends ParserResult {
 
     /**
      * Returns an html version for the specified parser result input.
-     * The return value depends on doctype declaration content.
+     * The return value depends on:
+     * 1) doctype declaration content
+     * 2) if not present, xhtml file extension
+     * 3) if not xhtml extension, present of default XHTML namespace declaration
+     * 
      */
     public HtmlVersion getHtmlVersion() {
         String publicId = result.getPublicID();
         if(publicId == null) {
+            FileObject fo = getSnapshot().getSource().getFileObject();
+            if(fo != null) {
+                if("text/xhtml".equals(fo.getMIMEType())) { //NOI18N
+                    //TODO resolve the xhtml version once we support more than 1.0
+                    return HtmlVersion.XHTML10;
+                } else {
+                    //is there an xhtml namespace declared in the file?
+                    if(result.getDeclaredNamespaces().containsKey(HtmlVersion.XHTML10.getDefaultNamespace())) {
+                        return HtmlVersion.XHTML10;
+                    }
+                }
+            }
             return HtmlVersion.UNKNOWN;
         } else {
             return HtmlVersion.findHtmlVersion(publicId);
@@ -112,17 +129,26 @@ public class HtmlParserResult extends ParserResult {
      * the postprocessing takes some time and is done lazily.
      */
     public AstNode root() {
-        return root(null);
+        return root(getHtmlVersion().getDefaultNamespace());
     }
 
     /** returns a parse tree for non-html content */
     public AstNode root(String namespace) {
-        //handle default html namespace
-        if(namespace == null || namespace.equals(getHtmlVersion().getDefaultNamespace())) {
-            return result.getASTRoot();
-        } else {
-            return result.getASTRoot(namespace);
+        DTD dtd = null;
+        if(namespace == null || namespace != null && namespace.equals(getHtmlVersion().getDefaultNamespace())) {
+            //html content, use fallback dtd
+            dtd = getFallbackDTD(getHtmlVersion());
         }
+
+        return result.getASTRoot(namespace, dtd);
+    }
+
+    private DTD getFallbackDTD(HtmlVersion version) {
+        String fallbackPublicID = version == HtmlVersion.UNKNOWN ?
+            HtmlVersion.HTML41.getFallbackPublicId() :
+            version.getFallbackPublicId();
+        
+        return org.netbeans.editor.ext.html.dtd.Registry.getDTD(fallbackPublicID, null);
     }
 
     /** returns a map of all namespaces to astnode roots.*/
@@ -147,17 +173,48 @@ public class HtmlParserResult extends ParserResult {
     }
 
     /** Returns a leaf most AstNode from the parse tree to which range the given
-     * offset belongs.
+     * offset belongs. Uses logical node ranges.
      *
      * @param offset of the searched node
      */
     public AstNode findLeaf(int offset) {
+        return findLeaf(offset, false);
+    }
+
+    public AstNode findLeaf(int offset, boolean exclusiveStartOffset) {
         //first try to find the leaf in html content
-        AstNode mostLeaf = AstNodeUtils.findDescendant(root(), offset);
+        AstNode mostLeaf = AstNodeUtils.findDescendant(root(), offset, exclusiveStartOffset);
         //now search the non html trees
         for(String uri : getNamespaces().keySet()) {
             AstNode root = root(uri);
-            AstNode leaf = AstNodeUtils.findDescendant(root, offset);
+            AstNode leaf = AstNodeUtils.findDescendant(root, offset, exclusiveStartOffset);
+            if(mostLeaf == null) {
+                mostLeaf = leaf;
+            } else {
+                //they cannot overlap, just be nested, at least I think
+                if(leaf.logicalStartOffset() > mostLeaf.logicalStartOffset() ) {
+                    mostLeaf = leaf;
+                }
+            }
+        }
+        return mostLeaf;
+    }
+
+    /** Returns a leaf most AstNode from the parse tree to which range the given
+     * offset belongs.
+     *
+     * @param offset of the searched node
+     */
+    public AstNode findLeafTag(int offset, boolean useLogicalRanges, boolean forward) {
+        //first try to find the leaf in html content
+        AstNode mostLeaf = AstNodeUtils.findDescendantTag(root(), offset, useLogicalRanges, forward);
+        //now search the non html trees
+        for(String uri : getNamespaces().keySet()) {
+            AstNode root = root(uri);
+            AstNode leaf = AstNodeUtils.findDescendantTag(root, offset, useLogicalRanges, forward);
+            if(leaf == null) {
+                continue;
+            }
             if(mostLeaf == null) {
                 mostLeaf = leaf;
             } else {

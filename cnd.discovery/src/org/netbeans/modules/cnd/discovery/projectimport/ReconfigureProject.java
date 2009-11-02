@@ -108,6 +108,7 @@ public class ReconfigureProject {
         assert configuration != null && configuration.getConfigurationType().getValue() ==  MakeConfiguration.TYPE_MAKEFILE;
         CompilerSet2Configuration set = configuration.getCompilerSet();
         compilerSet = set.getCompilerSet();
+        assert compilerSet != null;
         isSunCompiler = compilerSet.isSunCompiler();
         Folder important = pdp.getConfigurationDescriptor().getExternalFileItems();
         for(Item item : important.getAllItemsAsArray()){
@@ -316,7 +317,7 @@ public class ReconfigureProject {
             } else {
                 lastTask = ShellRunAction.performAction(configure.getNodeDelegate(), listener, null, makeProject, tab);
             }
-        } else if (make != null && make != null) {
+        } else if (make != null) {
             postClean(true);
         } else {
             assert false;
@@ -636,7 +637,7 @@ public class ReconfigureProject {
             return qmake;
         } else if (configure != null && make != null) {
             return configure;
-        } else if (make != null && make != null) {
+        } else if (make != null) {
             return make;
         }
         return null;
@@ -667,7 +668,7 @@ public class ReconfigureProject {
                     return args[0];
                 }
             }
-        } else if (make != null && make != null) {
+        } else if (make != null) {
             ExecutionSupport ses = make.getNodeDelegate().getCookie(ExecutionSupport.class);
             if (ses != null) {
                 String[] args = ses.getEnvironmentVariables();

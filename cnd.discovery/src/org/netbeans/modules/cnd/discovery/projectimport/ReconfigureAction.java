@@ -44,8 +44,10 @@ import javax.swing.JButton;
 import javax.swing.JMenuItem;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.discovery.projectimport.ReconfigureProject.CompilerOptions;
+import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.nodes.Node;
@@ -128,8 +130,16 @@ public class ReconfigureAction extends NodeAction {
         if (pdp == null || !pdp.gotDescriptor()){
             return false;
         }
-        MakeConfiguration configuration = pdp.getConfigurationDescriptor().getActiveConfiguration();
+        MakeConfigurationDescriptor mcd = pdp.getConfigurationDescriptor();
+        if (mcd == null) {
+            return false;
+        }
+        MakeConfiguration configuration = mcd.getActiveConfiguration();
         if (configuration == null || configuration.getConfigurationType().getValue() !=  MakeConfiguration.TYPE_MAKEFILE){
+            return false;
+        }
+        CompilerSet2Configuration set = configuration.getCompilerSet();
+        if (set == null) {
             return false;
         }
         return true;
@@ -149,7 +159,9 @@ public class ReconfigureAction extends NodeAction {
             cFlags = "-g3 -gdwarf-2"; // NOI18N
             cxxFlags = "-g3 -gdwarf-2"; // NOI18N
         }
-        ReconfigurePanel panel = new ReconfigurePanel(cFlags, cxxFlags, linkerFlags, reconfigurator.getRestOptions(), getLegend(reconfigurator));
+
+        ReconfigurePanel panel = new ReconfigurePanel(cFlags, cxxFlags, linkerFlags, reconfigurator.getRestOptions(), 
+                getLegend(reconfigurator), reconfigurator.getCompilerSet().getDisplayName());
         JButton runButton = new JButton(NbBundle.getMessage(getClass(), "ReconfigureButton")); // NOI18N
         runButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(getClass(), "ReconfigureButtonAD")); // NOI18N
         Object options[] =  new Object[]{runButton, DialogDescriptor.CANCEL_OPTION};
@@ -174,7 +186,7 @@ public class ReconfigureAction extends NodeAction {
         if (options != null && options.CFlags != null && options.CppFlags != null &&
             options.CCompiler != null && options.CppCompiler != null) {
             String linker = options.LinkerFlags == null ? "" : options.LinkerFlags;
-            return NbBundle.getMessage(getClass(), "ReconfigureLegend", options.CCompiler+"<br>"+options.CppCompiler+"<br>", options.CFlags, options.CppFlags, linker); // NOI18N
+            return NbBundle.getMessage(getClass(), "ReconfigureLegend", options.CCompiler, options.CppCompiler, options.CFlags, options.CppFlags, linker); // NOI18N
         }
         return ""; // NOI18N
     }

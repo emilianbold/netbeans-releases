@@ -40,8 +40,6 @@
  */
 package org.openide.awt;
 
-import org.openide.awt.HtmlLabelUI;
-import org.openide.awt.HtmlRenderer;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -49,7 +47,6 @@ import java.awt.event.*;
 import java.beans.PropertyChangeListener;
 import java.beans.VetoableChangeListener;
 
-import java.io.*;
 
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
@@ -78,10 +75,7 @@ class HtmlRendererImpl extends JLabel implements HtmlRenderer.Renderer {
     private static final Rectangle bounds = new Rectangle();
     private static final boolean swingRendering = Boolean.getBoolean("nb.useSwingHtmlRendering"); //NOI18N
     private static final Insets EMPTY_INSETS = new Insets(0, 0, 0, 0);
-    static final int TYPE_UNKNOWN = -1;
-    static final int TYPE_TREE = 0;
-    static final int TYPE_LIST = 1;
-    static final int TYPE_TABLE = 2;
+    enum Type {UNKNOWN, TREE, LIST, TABLE}
 
     //For experimentation - holding the graphics object may be the source of some
     //strange painting problems on Apple
@@ -95,7 +89,7 @@ class HtmlRendererImpl extends JLabel implements HtmlRenderer.Renderer {
     private boolean selected = false;
     private boolean leadSelection = false;
     private Dimension prefSize = null;
-    private int type = TYPE_UNKNOWN;
+    private Type type = Type.UNKNOWN;
     private int renderStyle = HtmlRenderer.STYLE_CLIP;
     private boolean enabled = true;
 
@@ -111,7 +105,7 @@ class HtmlRendererImpl extends JLabel implements HtmlRenderer.Renderer {
         selected = false;
         leadSelection = false;
         prefSize = null;
-        type = TYPE_UNKNOWN;
+        type = Type.UNKNOWN;
         renderStyle = HtmlRenderer.STYLE_CLIP;
         setFont(UIManager.getFont("controlFont")); //NOI18N
         setIconTextGap(3);
@@ -130,7 +124,7 @@ class HtmlRendererImpl extends JLabel implements HtmlRenderer.Renderer {
     ) {
         reset();
         configureFrom(value, table, selected, leadSelection);
-        type = TYPE_TABLE;
+        type = Type.TABLE;
 
         if (swingRendering && selected) {
             setBackground(table.getSelectionBackground());
@@ -146,7 +140,7 @@ class HtmlRendererImpl extends JLabel implements HtmlRenderer.Renderer {
     ) {
         reset();
         configureFrom(value, tree, selected, leadSelection);
-        type = TYPE_TREE;
+        type = Type.TREE;
 
         if (swingRendering && selected) {
             if (HtmlLabelUI.isGTK()) {
@@ -164,7 +158,7 @@ class HtmlRendererImpl extends JLabel implements HtmlRenderer.Renderer {
     ) {
         reset();
         configureFrom(value, list, selected, leadSelection);
-        type = TYPE_LIST;
+        type = Type.LIST;
 
         if (swingRendering && selected) {
             setBackground(list.getSelectionBackground());
@@ -223,13 +217,13 @@ class HtmlRendererImpl extends JLabel implements HtmlRenderer.Renderer {
         return result;
     }
 
-    public void addNotify() {
+    public @Override void addNotify() {
         if (swingRendering) {
             super.addNotify();
         }
     }
 
-    public void removeNotify() {
+    public @Override void removeNotify() {
         if (swingRendering) {
             super.removeNotify();
         }
@@ -333,11 +327,11 @@ class HtmlRendererImpl extends JLabel implements HtmlRenderer.Renderer {
         return indent;
     }
 
-    int getType() {
+    Type getType() {
         return type;
     }
 
-    public Dimension getPreferredSize() {
+    public @Override Dimension getPreferredSize() {
         if (!swingRendering) {
             if (prefSize == null) {
                 prefSize = getUI().getPreferredSize(this);
@@ -355,7 +349,7 @@ class HtmlRendererImpl extends JLabel implements HtmlRenderer.Renderer {
      *
      * @return The text - unless the renderer is disabled, this just return super.getText()
      */
-    public String getText() {
+    public @Override String getText() {
         String result = super.getText();
 
         if (swingRendering && Boolean.TRUE.equals(html)) {
@@ -506,7 +500,7 @@ class HtmlRendererImpl extends JLabel implements HtmlRenderer.Renderer {
 
     /** Overridden to do nothing under normal circumstances.  If the boolean flag to <strong>not</strong> use the
      * internal HTML renderer is in effect, this will fire changes normally */
-    protected final void firePropertyChange(String name, Object old, Object nue) {
+    protected @Override final void firePropertyChange(String name, Object old, Object nue) {
         if (swingRendering) {
             if ("text".equals(name) && isHtml()) {
                 //Force in the HTML tags so the UI will set up swing HTML rendering appropriately
@@ -517,7 +511,7 @@ class HtmlRendererImpl extends JLabel implements HtmlRenderer.Renderer {
         }
     }
 
-    public Border getBorder() {
+    public @Override Border getBorder() {
         Border result;
 
         if ((indent != 0) && swingRendering) {
@@ -529,7 +523,7 @@ class HtmlRendererImpl extends JLabel implements HtmlRenderer.Renderer {
         return result;
     }
 
-    public void setBorder(Border b) {
+    public @Override void setBorder(Border b) {
         Border old = border;
         border = b;
 
@@ -538,7 +532,7 @@ class HtmlRendererImpl extends JLabel implements HtmlRenderer.Renderer {
         }
     }
 
-    public Insets getInsets() {
+    public @Override Insets getInsets() {
         Insets result;
 
         //Call getBorder(), not just read the field - if swingRendering, the border will be constructed, and the
@@ -555,7 +549,7 @@ class HtmlRendererImpl extends JLabel implements HtmlRenderer.Renderer {
         return result;
     }
 
-    public void setEnabled(boolean b) {
+    public @Override void setEnabled(boolean b) {
         //OptimizeIt shows about 12Ms overhead calling back to Component.enable(), so avoid it if possible
         enabled = b;
 
@@ -564,11 +558,11 @@ class HtmlRendererImpl extends JLabel implements HtmlRenderer.Renderer {
         }
     }
 
-    public boolean isEnabled() {
+    public @Override boolean isEnabled() {
         return enabled;
     }
 
-    public void updateUI() {
+    public @Override void updateUI() {
         if (swingRendering) {
             super.updateUI();
         } else {
@@ -580,7 +574,7 @@ class HtmlRendererImpl extends JLabel implements HtmlRenderer.Renderer {
      * false, so that calls to getPreferredSize() will return accurate
      * dimensions (presuming the font and text are set correctly) even when
      * not onscreen. */
-    public Graphics getGraphics() {
+    public @Override Graphics getGraphics() {
         Graphics result = null;
 
         if (isDisplayable()) {
@@ -619,7 +613,7 @@ class HtmlRendererImpl extends JLabel implements HtmlRenderer.Renderer {
         return result;
     }
 
-    public void setBounds(int x, int y, int w, int h) {
+    public @Override void setBounds(int x, int y, int w, int h) {
         if (swingRendering) {
             super.setBounds(x, y, w, h);
         }
@@ -627,134 +621,135 @@ class HtmlRendererImpl extends JLabel implements HtmlRenderer.Renderer {
         bounds.setBounds(x, y, w, h);
     }
 
-    public void reshape(int x, int y, int w, int h) {
+    @Deprecated
+    public @Override void reshape(int x, int y, int w, int h) {
         if (swingRendering) {
             super.reshape(x, y, w, h);
         }
     }
 
-    public int getWidth() {
+    public @Override int getWidth() {
         return bounds.width;
     }
 
-    public int getHeight() {
+    public @Override int getHeight() {
         return bounds.height;
     }
 
-    public Point getLocation() {
+    public @Override Point getLocation() {
         return bounds.getLocation();
     }
 
     /** Overridden to do nothing for performance reasons */
-    public void validate() {
+    public @Override void validate() {
         //do nothing
     }
 
     /** Overridden to do nothing for performance reasons */
-    public void repaint(long tm, int x, int y, int w, int h) {
+    public @Override void repaint(long tm, int x, int y, int w, int h) {
         //do nothing
     }
 
     /** Overridden to do nothing for performance reasons */
-    public void repaint() {
+    public @Override void repaint() {
         //do nothing
     }
 
     /** Overridden to do nothing for performance reasons */
-    public void invalidate() {
+    public @Override void invalidate() {
         //do nothing
     }
 
     /** Overridden to do nothing for performance reasons */
-    public void revalidate() {
+    public @Override void revalidate() {
         //do nothing
     }
 
     /** Overridden to do nothing for performance reasons */
-    public void addAncestorListener(AncestorListener l) {
+    public @Override void addAncestorListener(AncestorListener l) {
         if (swingRendering) {
             super.addAncestorListener(l);
         }
     }
 
     /** Overridden to do nothing for performance reasons */
-    public void addComponentListener(ComponentListener l) {
+    public @Override void addComponentListener(ComponentListener l) {
         if (swingRendering) {
             super.addComponentListener(l);
         }
     }
 
     /** Overridden to do nothing for performance reasons */
-    public void addContainerListener(ContainerListener l) {
+    public @Override void addContainerListener(ContainerListener l) {
         if (swingRendering) {
             super.addContainerListener(l);
         }
     }
 
     /** Overridden to do nothing for performance reasons */
-    public void addHierarchyListener(HierarchyListener l) {
+    public @Override void addHierarchyListener(HierarchyListener l) {
         if (swingRendering) {
             super.addHierarchyListener(l);
         }
     }
 
     /** Overridden to do nothing for performance reasons */
-    public void addHierarchyBoundsListener(HierarchyBoundsListener l) {
+    public @Override void addHierarchyBoundsListener(HierarchyBoundsListener l) {
         if (swingRendering) {
             super.addHierarchyBoundsListener(l);
         }
     }
 
     /** Overridden to do nothing for performance reasons */
-    public void addInputMethodListener(InputMethodListener l) {
+    public @Override void addInputMethodListener(InputMethodListener l) {
         if (swingRendering) {
             super.addInputMethodListener(l);
         }
     }
 
     /** Overridden to do nothing for performance reasons */
-    public void addFocusListener(FocusListener fl) {
+    public @Override void addFocusListener(FocusListener fl) {
         if (swingRendering) {
             super.addFocusListener(fl);
         }
     }
 
     /** Overridden to do nothing for performance reasons */
-    public void addMouseListener(MouseListener ml) {
+    public @Override void addMouseListener(MouseListener ml) {
         if (swingRendering) {
             super.addMouseListener(ml);
         }
     }
 
     /** Overridden to do nothing for performance reasons */
-    public void addMouseWheelListener(MouseWheelListener ml) {
+    public @Override void addMouseWheelListener(MouseWheelListener ml) {
         if (swingRendering) {
             super.addMouseWheelListener(ml);
         }
     }
 
     /** Overridden to do nothing for performance reasons */
-    public void addMouseMotionListener(MouseMotionListener ml) {
+    public @Override void addMouseMotionListener(MouseMotionListener ml) {
         if (swingRendering) {
             super.addMouseMotionListener(ml);
         }
     }
 
     /** Overridden to do nothing for performance reasons */
-    public void addVetoableChangeListener(VetoableChangeListener vl) {
+    public @Override void addVetoableChangeListener(VetoableChangeListener vl) {
         if (swingRendering) {
             super.addVetoableChangeListener(vl);
         }
     }
 
     /** Overridden to do nothing for performance reasons, unless using standard swing rendering */
-    public void addPropertyChangeListener(String s, PropertyChangeListener l) {
+    public @Override void addPropertyChangeListener(String s, PropertyChangeListener l) {
         if (swingRendering) {
             super.addPropertyChangeListener(s, l);
         }
     }
 
-    public void addPropertyChangeListener(PropertyChangeListener l) {
+    public @Override void addPropertyChangeListener(PropertyChangeListener l) {
         if (swingRendering) {
             super.addPropertyChangeListener(l);
         }

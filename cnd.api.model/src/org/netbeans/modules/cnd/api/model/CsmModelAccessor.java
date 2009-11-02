@@ -90,6 +90,9 @@ public final class CsmModelAccessor {
         public Cancellable enqueue(Runnable task, CharSequence name) {
             return cancellableStub;
         }
+        
+        public void scheduleReparse(Collection<CsmProject> projects) {
+        }
     }
     private static final Cancellable cancellableStub = new Cancellable() {
 

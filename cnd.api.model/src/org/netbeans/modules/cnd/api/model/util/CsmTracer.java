@@ -774,6 +774,8 @@ public final class CsmTracer {
             return false;
         } else if (decl.getKind() == CsmDeclaration.Kind.FUNCTION_DEFINITION) {
             return false;
+        } else if (decl.getKind() == CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION) {
+            return false;
         } else if (decl.getKind() == CsmDeclaration.Kind.NAMESPACE_ALIAS) {
             return false;
         } else if (decl.getKind() == CsmDeclaration.Kind.NAMESPACE_DEFINITION) {
@@ -806,6 +808,10 @@ public final class CsmTracer {
         } else if (decl.getKind() == CsmDeclaration.Kind.FUNCTION) {
             dumpModel((CsmFunction) decl);
         } else if (decl.getKind() == CsmDeclaration.Kind.FUNCTION_DEFINITION) {
+            dumpModel((CsmFunctionDefinition) decl);
+        } else if (decl.getKind() == CsmDeclaration.Kind.FUNCTION_FRIEND) {
+            dumpModel((CsmFunction) decl);
+        } else if (decl.getKind() == CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION) {
             dumpModel((CsmFunctionDefinition) decl);
         } else if (decl.getKind() == CsmDeclaration.Kind.VARIABLE) {
             dumpModel((CsmVariable) decl);
@@ -904,7 +910,11 @@ public final class CsmTracer {
                 dumpModel((CsmField) member);
             } else if (member.getKind() == CsmDeclaration.Kind.FUNCTION) {
                 dumpModel((CsmFunction) member);
+            } else if (member.getKind() == CsmDeclaration.Kind.FUNCTION_FRIEND) {
+                dumpModel((CsmFunction) member);
             } else if (member.getKind() == CsmDeclaration.Kind.FUNCTION_DEFINITION) { // inline function
+                dumpModel((CsmFunctionDefinition) member);
+            } else if (member.getKind() == CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION) { // inline function
                 dumpModel((CsmFunctionDefinition) member);
             } else if (member.getKind() == CsmDeclaration.Kind.TYPEDEF) {
                 dumpModel((CsmTypedef) member);
@@ -949,6 +959,10 @@ public final class CsmTracer {
                 } else if (friend.getKind() == CsmDeclaration.Kind.FUNCTION) {
                     dumpModel((CsmFunction) friend);
                 } else if (friend.getKind() == CsmDeclaration.Kind.FUNCTION_DEFINITION) { // inline function
+                    dumpModel((CsmFunctionDefinition) friend);
+                } else if (friend.getKind() == CsmDeclaration.Kind.FUNCTION_FRIEND) {
+                    dumpModel((CsmFunction) friend);
+                } else if (friend.getKind() == CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION) { // inline function
                     dumpModel((CsmFunctionDefinition) friend);
                 } else {
                     assert false : "unexpected friend object " + friend;

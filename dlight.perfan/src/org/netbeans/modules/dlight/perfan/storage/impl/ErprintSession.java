@@ -72,6 +72,7 @@ public class ErprintSession {
         this.dataFiltersProvider = dataFiltersProvider;
 
         npb = erProcessBuilder;
+        npb.getEnvironment().put("LC_ALL", "C");//NOI18N
     }
 
     /**
@@ -217,6 +218,15 @@ public class ErprintSession {
         final Erprint erp = restartAndLock(restart);
         try {
             return erp.getExperimentLeaks();
+        } finally {
+            erp.releaseLock();
+        }
+    }
+
+    public Metrics getMetrics(boolean restart) throws IOException {
+        final Erprint erp = restartAndLock(restart);
+        try {
+            return erp.getExperimentMetrics();
         } finally {
             erp.releaseLock();
         }

@@ -51,7 +51,7 @@ made subject to such option by the copyright holder.
 .ID {color: #000099; font-family: Monospaced; font-weight: bold}
 .COMMENT {color: #808080; font-family: Monospaced; font-style: italic}
 -->
-</STYLE>
+</style>
 </head>
 <body>
 <p>Representation of a library, and the ability to find the installed libraries.</p>
@@ -79,20 +79,20 @@ To obtain a list of installed libraries you want to call
 as in the following example for listing the names of installed libraries.
 <pre>
 Library[] libraries = LibraryManager.getDefault().getLibraries ();
-<font CLASS="ID">for</font> (<font CLASS="ID">int</font> i = <font CLASS="NUM">0</font>; i&lt; libraries.length; i++) {
-    System.out.println(libraries[i].getName()+<font CLASS="STR">" : "</font>+libraries[i].getType());
+<span CLASS="ID">for</span> (<span CLASS="ID">int</span> i = <span CLASS="NUM">0</span>; i&lt; libraries.length; i++) {
+    System.out.println(libraries[i].getName()+<span CLASS="STR">" : "</span>+libraries[i].getType());
 }
 </pre>
 To obtain a library with a given name you want to call
 {@link org.netbeans.api.project.libraries.LibraryManager#getLibrary} method as in the following example.
 <pre>
-Library library = LibraryManager.getDefault().getLibrary (<font CLASS="STR">"Ant"</font>);
-<font CLASS="ID">if</font> (library != <font CLASS="ID">null</font>) {
-    System.out.println(library.getName()+<font CLASS="STR">" : "</font>+libraries[i].getType());
+Library library = LibraryManager.getDefault().getLibrary (<span CLASS="STR">"Ant"</span>);
+<span CLASS="ID">if</span> (library != <span CLASS="ID">null</span>) {
+    System.out.println(library.getName()+<span CLASS="STR">" : "</span>+libraries[i].getType());
 }
 </pre>
-</p>
 <h2><a name="customizer">Managing libraries</a></h2>
+<p>
 Libraries module provides graphical manager of libraries. The manager allows you to create a new library
 of a given type, to delete existing library or to change content of volumes. It is not possible to create
 or delete a volume in the library since the volumes are implied by the library type.</p>
@@ -108,56 +108,55 @@ on the system filesystem.</p>
 <p>
 The library format is given by the following DTD.
 <pre>
-&lt;?<font CLASS="ID">xml</font> <font CLASS="ID">version</font>="1.0" <font CLASS="ID">encoding</font>="UTF-8"?&gt;
+&lt;?<span CLASS="ID">xml</span> <span CLASS="ID">version</span>="1.0" <span CLASS="ID">encoding</span>="UTF-8"?&gt;
 
-<font CLASS="COMMENT">&lt;!--</font>
-<font CLASS="COMMENT">  Root element of library definition descriptor.</font>
-<font CLASS="COMMENT">--&gt;</font>
-&lt;!<font CLASS="ID">ELEMENT</font> library (name, type, description?, localizing-bundle?, volume*) &gt;
+<span CLASS="COMMENT">&lt;!--</span>
+<span CLASS="COMMENT">  Root element of library definition descriptor.</span>
+<span CLASS="COMMENT">--&gt;</span>
+&lt;!<span CLASS="ID">ELEMENT</span> library (name, type, description?, localizing-bundle?, volume*) &gt;
 
-<font CLASS="COMMENT">&lt;!--</font><font CLASS="COMMENT"> The version attribute specifies the version of the library </font><font CLASS="COMMENT">--&gt;</font>
+<span CLASS="COMMENT">&lt;!--</span><span CLASS="COMMENT"> The version attribute specifies the version of the library </span><span CLASS="COMMENT">--&gt;</span>
 
-&lt;!<font CLASS="ID">ATTLIST</font> library version <font CLASS="ID">CDATA</font> <font CLASS="ID">#FIXED</font> <font CLASS="STR">"</font><font CLASS="STR">1.0</font><font CLASS="STR">"</font> &gt;
+&lt;!<span CLASS="ID">ATTLIST</span> library version <span CLASS="ID">CDATA</span> <span CLASS="ID">#FIXED</span> <span CLASS="STR">"</span><span CLASS="STR">1.0</span><span CLASS="STR">"</span> &gt;
 
-<font CLASS="COMMENT">&lt;!--</font><font CLASS="COMMENT">- Library unique identifier - a string.</font>
+<span CLASS="COMMENT">&lt;!--</span><span CLASS="COMMENT">- Library unique identifier - a string.</span>
 
-<font CLASS="COMMENT"> In the case when the localizing-bundle element presents the name value is used </font>
-<font CLASS="COMMENT"> as a key into bundle to locate the display name. Otherwise the name value is </font>
-<font CLASS="COMMENT"> used as a display name</font><font CLASS="COMMENT">--&gt;</font>
-&lt;!<font CLASS="ID">ELEMENT</font> name (<font CLASS="ID">#PCDATA</font>) &gt;
+<span CLASS="COMMENT"> In the case when the localizing-bundle element presents the name value is used </span>
+<span CLASS="COMMENT"> as a key into bundle to locate the display name. Otherwise the name value is </span>
+<span CLASS="COMMENT"> used as a display name</span><span CLASS="COMMENT">--&gt;</span>
+&lt;!<span CLASS="ID">ELEMENT</span> name (<span CLASS="ID">#PCDATA</span>) &gt;
 
-<font CLASS="COMMENT">&lt;!--</font><font CLASS="COMMENT">Short description of given library - a string.</font>
-<font CLASS="COMMENT"> In the case when the localizing-bundle element presents the description value</font>
-<font CLASS="COMMENT"> is used as a key into bundle to locate the localized description. Otherwise</font>
-<font CLASS="COMMENT"> the description value is used.</font><font CLASS="COMMENT">--&gt;</font>
-&lt;!<font CLASS="ID">ELEMENT</font> description (<font CLASS="ID">#PCDATA</font>) &gt;
+<span CLASS="COMMENT">&lt;!--</span><span CLASS="COMMENT">Short description of given library - a string.</span>
+<span CLASS="COMMENT"> In the case when the localizing-bundle element presents the description value</span>
+<span CLASS="COMMENT"> is used as a key into bundle to locate the localized description. Otherwise</span>
+<span CLASS="COMMENT"> the description value is used.</span><span CLASS="COMMENT">--&gt;</span>
+&lt;!<span CLASS="ID">ELEMENT</span> description (<span CLASS="ID">#PCDATA</span>) &gt;
 
-<font CLASS="COMMENT">&lt;!--</font><font CLASS="COMMENT"> The resource name of base bundle without an extension - a string.</font>
-<font CLASS="COMMENT"> The bundle used to lookup the localized strings.</font>
-<font CLASS="COMMENT"> The bundle is looked up by NbBundle.getBundle (String) method.</font>
-<font CLASS="COMMENT"> Example of localizing bundle: org.netbeans.modules.junit.resources.Bundle </font><font CLASS="COMMENT">--&gt;</font>
-&lt;!<font CLASS="ID">ELEMENT</font> localizing-bundle (<font CLASS="ID">#PCDATA</font>)&gt;
+<span CLASS="COMMENT">&lt;!--</span><span CLASS="COMMENT"> The resource name of base bundle without an extension - a string.</span>
+<span CLASS="COMMENT"> The bundle used to lookup the localized strings.</span>
+<span CLASS="COMMENT"> The bundle is looked up by NbBundle.getBundle (String) method.</span>
+<span CLASS="COMMENT"> Example of localizing bundle: org.netbeans.modules.junit.resources.Bundle </span><span CLASS="COMMENT">--&gt;</span>
+&lt;!<span CLASS="ID">ELEMENT</span> localizing-bundle (<span CLASS="ID">#PCDATA</span>)&gt;
 
-<font CLASS="COMMENT">&lt;!--</font><font CLASS="COMMENT">- Volume is typed list of resources </font><font CLASS="COMMENT">--&gt;</font>
-&lt;!<font CLASS="ID">ELEMENT</font> volume (type, resource*) &gt;
+<span CLASS="COMMENT">&lt;!--</span><span CLASS="COMMENT">- Volume is typed list of resources </span><span CLASS="COMMENT">--&gt;</span>
+&lt;!<span CLASS="ID">ELEMENT</span> volume (type, resource*) &gt;
 
-<font CLASS="COMMENT">&lt;!--</font><font CLASS="COMMENT">- Volume type of a library volume - a string </font>
-<font CLASS="COMMENT"> For example the Java SE library supports the following types of volume:</font>
+<span CLASS="COMMENT">&lt;!--</span><span CLASS="COMMENT">- Volume type of a library volume - a string </span>
+<span CLASS="COMMENT"> For example the Java SE library supports the following types of volume:</span>
 
-<font CLASS="COMMENT"> classpath, javadoc and src </font><font CLASS="COMMENT">--&gt;</font>
-&lt;!<font CLASS="ID">ELEMENT</font> type (<font CLASS="ID">#PCDATA</font>) &gt;
+<span CLASS="COMMENT"> classpath, javadoc and src </span><span CLASS="COMMENT">--&gt;</span>
+&lt;!<span CLASS="ID">ELEMENT</span> type (<span CLASS="ID">#PCDATA</span>) &gt;
 
-<font CLASS="COMMENT">&lt;!--</font><font CLASS="COMMENT">- Volume resource coded as an URL</font>
-<font CLASS="COMMENT"> In the case of URL with nbinst protocol the URL is resolved from the NetBeans installation</font>
-<font CLASS="COMMENT"> dircetory.</font>
-<font CLASS="COMMENT"> If the URL points to an archive file, the URL must have the jar protocol.</font>
-<font CLASS="COMMENT"> Example:</font>
-<font CLASS="COMMENT"> jar:file:///usr/lib/java/xerces.jar!/ is resolved to /usr/lib/java/xerces.jar/</font>
-<font CLASS="COMMENT"> jar:nbinst://org.netbeans.modules.junit/modules/ext/junit.jar!/ is resolved to ${netbeans</font><font CLASS="COMMENT">.home</font><font CLASS="COMMENT">}</font><font CLASS="COMMENT">/modules/ext/junit.jar</font>
+<span CLASS="COMMENT">&lt;!--</span><span CLASS="COMMENT">- Volume resource coded as an URL</span>
+<span CLASS="COMMENT"> In the case of URL with nbinst protocol the URL is resolved from the NetBeans installation</span>
+<span CLASS="COMMENT"> directory.</span>
+<span CLASS="COMMENT"> If the URL points to a ZIP/JAR archive, the URL must have the jar protocol.</span>
+<span CLASS="COMMENT"> Example:</span>
+<span CLASS="COMMENT"> jar:file:///usr/lib/java/xerces.jar!/ is resolved to /usr/lib/java/xerces.jar/</span>
+<span CLASS="COMMENT"> jar:nbinst://org.netbeans.modules.junit/modules/ext/junit.jar!/ is resolved to ${netbeans</span><span CLASS="COMMENT">.home</span><span CLASS="COMMENT">}</span><span CLASS="COMMENT">/modules/ext/junit.jar</span>
 
- <font CLASS="COMMENT">--&gt;</font>
-&lt;!<font CLASS="ID">ELEMENT</font> resource (<font CLASS="ID">#PCDATA</font>) &gt;
+ <span CLASS="COMMENT">--&gt;</span>
+&lt;!<span CLASS="ID">ELEMENT</span> resource (<span CLASS="ID">#PCDATA</span>) &gt;
 </pre>
-</p>
 </body>
 </html>

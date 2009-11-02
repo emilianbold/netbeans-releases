@@ -168,6 +168,9 @@ public class ToolCollectionPanel extends javax.swing.JPanel implements DocumentL
     }
 
     void updateCompilerSet(CompilerSet cs, boolean force) {
+        if (cs.isUrlPointer()) {
+            return;
+        }
         if (force) {
             cs.getTool(Tool.CCompiler).setPath(tfCPath.getText());
             cs.getTool(Tool.CCCompiler).setPath(tfCppPath.getText());
@@ -270,14 +273,24 @@ public class ToolCollectionPanel extends javax.swing.JPanel implements DocumentL
     }
 
     void changeCompilerSet(CompilerSet cs) {
-        Tool cSelection = cs.getTool(Tool.CCompiler);
-        Tool cppSelection = cs.getTool(Tool.CCCompiler);
-        Tool fortranSelection = cs.getTool(Tool.FortranCompiler);
-        Tool asSelection = cs.getTool(Tool.Assembler);
-        Tool makeToolSelection = cs.getTool(Tool.MakeTool);
-        Tool debuggerToolSelection = cs.getTool(Tool.DebuggerTool);
-        Tool qmakeToolSelection = cs.getTool(Tool.QMakeTool);
-        Tool cmakeToolSelection = cs.getTool(Tool.CMakeTool);
+        Tool cSelection = null;
+        Tool cppSelection = null;
+        Tool fortranSelection = null;
+        Tool asSelection = null;
+        Tool makeToolSelection = null;
+        Tool debuggerToolSelection = null;
+        Tool qmakeToolSelection = null;
+        Tool cmakeToolSelection = null;
+        if (!cs.isUrlPointer()) {
+            cSelection = cs.getTool(Tool.CCompiler);
+            cppSelection = cs.getTool(Tool.CCCompiler);
+            fortranSelection = cs.getTool(Tool.FortranCompiler);
+            asSelection = cs.getTool(Tool.Assembler);
+            makeToolSelection = cs.getTool(Tool.MakeTool);
+            debuggerToolSelection = cs.getTool(Tool.DebuggerTool);
+            qmakeToolSelection = cs.getTool(Tool.QMakeTool);
+            cmakeToolSelection = cs.getTool(Tool.CMakeTool);
+        }
         if (cSelection != null) {
             setCPathField(cSelection.getPath());
         } else {
@@ -308,8 +321,16 @@ public class ToolCollectionPanel extends javax.swing.JPanel implements DocumentL
         } else {
             tfCMakePath.setText(""); // NOI18N
         }
-        setMakePathField(makeToolSelection.getPath());
-        setGdbPathField(debuggerToolSelection.getPath());
+        if (makeToolSelection != null) {
+            setMakePathField(makeToolSelection.getPath());
+        } else {
+            tfMakePath.setText(""); // NOI18N
+        }
+        if (debuggerToolSelection != null) {
+            setGdbPathField(debuggerToolSelection.getPath());
+        } else {
+            tfDebuggerPath.setText(""); // NOI18N
+        }
     }
 
     private void setMakePathField(String path) {
@@ -656,6 +677,10 @@ public class ToolCollectionPanel extends javax.swing.JPanel implements DocumentL
         handle.progress(++i);
         versions.append(getToolVersion(cs.findTool(Tool.CMakeTool), tfCMakePath)).append('\n'); // NOI18N
         handle.finish();
+        String upgradeUrl = cs.getCompilerFlavor().getToolchainDescriptor().getUpgradeUrl();
+        if (upgradeUrl != null) {
+            versions.append('\n').append(ToolsPanel.getString("TOOL_UPGRADE", upgradeUrl)).append('\n'); // NOI18N
+        }
         return versions.toString();
     }
 

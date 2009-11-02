@@ -53,6 +53,7 @@ import java.awt.*;
 * in the NetBeans codebase, but is retained for backward compatibility in the
 * case it is used elsewhere.
 */
+@Deprecated
 public class EqualFlowLayout extends FlowLayout {
     /** A JDK 1.1 serial version UID */
     static final long serialVersionUID = -1996929627282401218L;

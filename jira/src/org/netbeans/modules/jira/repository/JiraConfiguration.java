@@ -97,6 +97,7 @@ public class JiraConfiguration extends JiraClientCache {
 
     protected void initialize(boolean forceRefresh) throws JiraException {
         data = (ConfigurationData) getData();
+        getServerInfo(new NullProgressMonitor());
         synchronized (data) {
             if(!forceRefresh) {
                 if(data.initialized) {
@@ -124,13 +125,9 @@ public class JiraConfiguration extends JiraClientCache {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
         NullProgressMonitor nullProgressMonitor = new NullProgressMonitor();
 
-        data.projects = client.getProjects(nullProgressMonitor);
         data.projectsById = new HashMap<String, Project>(data.projects.length);
         data.projectsByKey = new HashMap<String, Project>(data.projects.length);
-        for (Project project : data.projects) {
-            data.projectsById.put(project.getId(), project);
-            data.projectsByKey.put(project.getKey(), project);
-        }
+        loadProjectsIntern();
         data.priorities = client.getPriorities(nullProgressMonitor);
         data.prioritiesById = new HashMap<String, Priority>(data.priorities.length);
         for (Priority priority : data.priorities) {
@@ -162,6 +159,18 @@ public class JiraConfiguration extends JiraClientCache {
         // XXX issue types by project
 
         putToCache();
+    }
+
+    private void loadProjectsIntern() throws JiraException {
+        loadedProjects.clear(); // XXX what about KenaiConfiguration.projects?
+        data.projects = client.getProjects(new NullProgressMonitor());
+        if(data.projects == null) {
+            data.projects = new Project[0];
+        }
+        for (Project project : data.projects) {
+            data.projectsById.put(project.getId(), project);
+            data.projectsByKey.put(project.getKey(), project);
+        }
     }
 
     private void putToCache () {
@@ -399,7 +408,7 @@ public class JiraConfiguration extends JiraClientCache {
         JiraCommand cmd = new JiraCommand() {
             @Override
             public void execute() throws JiraException, CoreException, IOException, MalformedURLException {
-                ServerInfo info = getServerInfo(new NullProgressMonitor());
+                ServerInfo info = getServerInfo();
                 if(supportsProjectIssueTypes(info.getVersion())) {
                     IssueType[] issueTypes = client.getIssueTypes(project.getId(), new NullProgressMonitor());
                     IssueType[] subTaskTypes = client.getSubTaskIssueTypes(project.getId(), new NullProgressMonitor());
@@ -431,8 +440,7 @@ public class JiraConfiguration extends JiraClientCache {
         JiraCommand cmd = new JiraCommand() {
             @Override
             public void execute() throws JiraException, CoreException, IOException, MalformedURLException {
-                loadedProjects.clear(); // XXX what about KenaiConfiguration.projects?
-                data.projects = client.getProjects(new NullProgressMonitor());
+                loadProjectsIntern();
             }
         };
         repository.getExecutor().execute(cmd);
@@ -512,7 +520,7 @@ public class JiraConfiguration extends JiraClientCache {
                 loadedProjects.add(p.getId());
             }
         }
-    }    
+    }
 
     protected static class ConfigurationData extends JiraClientData {
 	Group[] groups = new Group[0];

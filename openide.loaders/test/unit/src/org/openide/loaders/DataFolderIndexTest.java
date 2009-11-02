@@ -105,7 +105,7 @@ public class DataFolderIndexTest extends NbTestCase {
     public void testIndexWithoutInitialization() throws Exception {
         Node n = df.getNodeDelegate();
         
-        Index fromNode = (Index) n.getLookup ().lookup (Index.class);
+        Index fromNode = n.getLookup().lookup(Index.class);
         assertNotNull ("DataFolderNode has Index.", fromNode);
 
         int x = fromNode.getNodesCount();
@@ -119,7 +119,7 @@ public class DataFolderIndexTest extends NbTestCase {
             public Object run () throws Exception {
                 Node n = df.getNodeDelegate();
 
-                Index fromNode = (Index) n.getLookup ().lookup (Index.class);
+                Index fromNode = n.getLookup().lookup(Index.class);
                 assertNotNull ("DataFolderNode has Index.", fromNode);
 
                 int x = fromNode.getNodesCount();
@@ -137,7 +137,7 @@ public class DataFolderIndexTest extends NbTestCase {
     public void testIndexNodesWithoutInitialization() throws Exception {
         Node n = df.getNodeDelegate();
         
-        Index fromNode = (Index) n.getLookup ().lookup (Index.class);
+        Index fromNode = n.getLookup().lookup(Index.class);
         assertNotNull ("DataFolderNode has Index.", fromNode);
 
         int x = fromNode.getNodes().length;
@@ -170,7 +170,7 @@ public class DataFolderIndexTest extends NbTestCase {
         Node [] arr = n.getChildren ().getNodes (true);
         ERR.log("Children created");
         
-        Index fromNode = (Index) n.getLookup ().lookup (Index.class);
+        Index fromNode = n.getLookup().lookup(Index.class);
         assertNotNull ("DataFolderNode has Index.", fromNode);
         ERR.log("Index from node: " + fromNode);
         

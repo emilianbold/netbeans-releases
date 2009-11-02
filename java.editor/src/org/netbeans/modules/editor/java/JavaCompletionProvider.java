@@ -1435,7 +1435,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                         addMembers(env, tm, ((DeclaredType)tm).asElement(), EnumSet.of(CONSTRUCTOR), null, inImport, insideNew);
                                 }
                             }
-                            if (exs != null) {
+                            if (exs != null && !exs.isEmpty()) {
                                 Elements elements = controller.getElements();
                                 for (TypeMirror ex : exs)
                                     if (ex.getKind() == TypeKind.DECLARED) {
@@ -1461,7 +1461,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                     if (tm != null && tm.getKind() == TypeKind.DECLARED)
                                         addMembers(env, tm, ((DeclaredType)tm).asElement(), EnumSet.of(CONSTRUCTOR), null, inImport, insideNew);
                                 }
-                                if (exs != null) {
+                                if (exs != null && !exs.isEmpty()) {
                                     Elements elements = controller.getElements();
                                     for (TypeMirror ex : exs)
                                         if (ex.getKind() == TypeKind.DECLARED) {
@@ -2743,7 +2743,7 @@ public class JavaCompletionProvider implements CompletionProvider {
         private void addPackages(Env env, String fqnPrefix, boolean inPkgStmt) {
             if (fqnPrefix == null)
                 fqnPrefix = EMPTY;
-            for (String pkgName : env.getController().getClasspathInfo().getClassIndex().getPackageNames(fqnPrefix, true,EnumSet.allOf(ClassIndex.SearchScope.class)))
+            for (String pkgName : env.getController().getClasspathInfo().getClassIndex().getPackageNames(fqnPrefix.toLowerCase(), true,EnumSet.allOf(ClassIndex.SearchScope.class)))
                 if (pkgName.length() > 0 && !Utilities.isExcluded(pkgName + ".")) //NOI18N
                     results.add(JavaCompletionItem.createPackageItem(pkgName, anchorOffset, inPkgStmt));
         }

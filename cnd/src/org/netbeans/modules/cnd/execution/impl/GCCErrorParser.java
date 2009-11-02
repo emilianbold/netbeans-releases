@@ -64,6 +64,7 @@ public final class GCCErrorParser extends ErrorParser {
     private Pattern GCC_DIRECTORY_ENTER;
     private Pattern GCC_DIRECTORY_LEAVE;
     private Pattern GCC_DIRECTORY_CD;
+    private Pattern GCC_DIRECTORY_MAKE_ALL;
     private Pattern GCC_STACK_HEADER;
     private Pattern GCC_STACK_NEXT;
 
@@ -93,6 +94,10 @@ public final class GCCErrorParser extends ErrorParser {
 	if (scanner.getChangeDirectoryPattern() != null) {
 	    GCC_DIRECTORY_CD = Pattern.compile(scanner.getChangeDirectoryPattern());
 	    patterns.add(GCC_DIRECTORY_CD);
+	}
+	if (scanner.getChangeDirectoryPattern() != null) {
+	    GCC_DIRECTORY_MAKE_ALL = Pattern.compile(scanner.getMakeAllInDirectoryPattern());
+	    patterns.add(GCC_DIRECTORY_MAKE_ALL);
 	}
 	if (scanner.getStackHeaderPattern() != null && scanner.getStackHeaderPattern() != null) {
 	    GCC_STACK_HEADER = Pattern.compile(scanner.getStackHeaderPattern());
@@ -176,6 +181,22 @@ public final class GCCErrorParser extends ErrorParser {
                 }
             }
             FileObject relativeDir = resolveFile(directory);
+            if (relativeDir != null) {
+                relativesTo.push(relativeDir);
+            }
+            return ErrorParserProvider.NO_RESULT;
+        }
+        if (m.pattern() == GCC_DIRECTORY_MAKE_ALL) {
+            FileObject relativeDir = relativesTo.peek();
+            String directory = m.group(1);
+            if (!IpeUtils.isPathAbsolute(directory)) {
+                if (relativeDir != null) {
+                    if (relativeDir.isFolder()) {
+                        directory = relativeDir.getURL().getPath() + File.separator + directory;
+                    }
+                }
+            }
+            relativeDir = resolveFile(directory);
             if (relativeDir != null) {
                 relativesTo.push(relativeDir);
             }

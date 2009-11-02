@@ -41,16 +41,15 @@
 
 package org.openide.text;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
-import junit.framework.*;
-
-import org.netbeans.junit.*;
-
+import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import junit.framework.Test;
+import junit.framework.TestSuite;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.*;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 
 /** Testing LineSet impl for CloneableEditorSupport.
@@ -72,7 +71,7 @@ public class LineSetTest extends NbTestCase implements CloneableEditorSupport.En
     private boolean valid = true;
     private boolean modified = false;
     private java.util.Date date = new java.util.Date ();
-    private java.util.List/*<java.beans.PropertyChangeListener>*/ propL = new java.util.ArrayList ();
+    private java.util.List<PropertyChangeListener> propL = new ArrayList<PropertyChangeListener>();
     private java.beans.VetoableChangeListener vetoL;
 
     
@@ -94,6 +93,7 @@ public class LineSetTest extends NbTestCase implements CloneableEditorSupport.En
     }
     
 
+    @Override
     protected void setUp () {
         ic = new InstanceContent ();
         support = new CES (this, new AbstractLookup (ic));
@@ -214,7 +214,7 @@ public class LineSetTest extends NbTestCase implements CloneableEditorSupport.En
         assertEquals ("Line index is two", 2, set.getLines ().indexOf (two));
         assertNumberOfLines (1, set);
         
-        assertEquals ("Really two", 2, new java.util.ArrayList (set.getLines ()).indexOf (two));
+        assertEquals ("Really two", 2, new ArrayList<Line>(set.getLines ()).indexOf (two));
     }
     
     public void testLinesAreNonMutable () throws Exception {
@@ -242,7 +242,7 @@ public class LineSetTest extends NbTestCase implements CloneableEditorSupport.En
         assertEquals ("Line index is two", 2, set.getLines ().indexOf (two));
         assertNumberOfLines (1, set);
         
-        assertEquals ("Really two", 2, new java.util.ArrayList (set.getLines ()).indexOf (two));
+        assertEquals ("Really two", 2, new ArrayList<Line>(set.getLines ()).indexOf (two));
     }
     
     public void testWhatHappensWhenAskingForLineOutOfBounds () throws Exception {
@@ -315,7 +315,7 @@ public class LineSetTest extends NbTestCase implements CloneableEditorSupport.En
 
         // now few additinal checks 
         assertGetOriginal ("However if one asks the line set it works", set, two, 2);
-        assertEquals ("Really missing from the list", -1, new java.util.ArrayList (set.getLines ()).indexOf (two));
+        assertEquals ("Really missing from the list", -1, new ArrayList<Line>(set.getLines ()).indexOf (two));
     }
     
     
@@ -437,12 +437,12 @@ public class LineSetTest extends NbTestCase implements CloneableEditorSupport.En
     
     private void assertNumberOfLines (int cnt, Line.Set set) throws Exception {
         class MF implements org.netbeans.junit.MemoryFilter {
-            private java.util.HashSet counted = new java.util.HashSet ();
+            private java.util.HashSet<Line> counted = new java.util.HashSet<Line>();
             public int cnt;
             public boolean reject(Object obj) {
                 if (obj instanceof Line) {
                     Line l = (Line)obj;
-                    if (counted.add (obj)) {
+                    if (counted.add (l)) {
                         if (l.getLookup ().lookup (LineSetTest.class) == LineSetTest.this) {
                             cnt++;
                         }
@@ -489,7 +489,8 @@ public class LineSetTest extends NbTestCase implements CloneableEditorSupport.En
          */
         
         try {
-            l.remove (new Object ());
+            Line x = null;
+            l.remove (x);
             fail ("remove should fail"); 
         } catch (java.lang.UnsupportedOperationException ex) {
             // ok
@@ -534,10 +535,10 @@ public class LineSetTest extends NbTestCase implements CloneableEditorSupport.En
     // Implementation of the CloneableEditorSupport.Env
     //
     
-    public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
+    public synchronized void addPropertyChangeListener(PropertyChangeListener l) {
         propL.add (l);
     }    
-    public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
+    public synchronized void removePropertyChangeListener(PropertyChangeListener l) {
         propL.remove (l);
     }
     
@@ -567,6 +568,7 @@ public class LineSetTest extends NbTestCase implements CloneableEditorSupport.En
     }
     public java.io.OutputStream outputStream() throws java.io.IOException {
         class ContentStream extends java.io.ByteArrayOutputStream {
+            @Override
             public void close () throws java.io.IOException {
                 super.close ();
                 content = new String (toByteArray ());

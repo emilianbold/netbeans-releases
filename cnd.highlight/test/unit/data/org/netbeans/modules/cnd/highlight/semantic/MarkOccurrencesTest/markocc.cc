@@ -67,3 +67,15 @@ namespace N1
 
     }
 }
+
+struct A {
+    int a;
+    A(int i) {
+        a = i;
+    }
+};
+
+int main() {
+    A a(1);
+    a.a++;
+}

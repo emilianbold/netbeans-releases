@@ -57,6 +57,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.apisupport.project.ProjectXMLManager.CyclicDependencyException;
 import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
@@ -232,7 +233,7 @@ public class ProjectXMLManagerTest extends TestBase {
         
         // apply and save project
         boolean result = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
-            public Boolean run() throws IOException {
+            public Boolean run() throws IOException, CyclicDependencyException {
                 testingPXM.addDependencies(newDeps);
                 return true;
             }
@@ -343,7 +344,7 @@ public class ProjectXMLManagerTest extends TestBase {
         
         // apply and save project
         boolean result = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
-            public Boolean run() throws IOException {
+            public Boolean run() throws IOException, CyclicDependencyException {
                 testingPXM.replaceDependencies(deps);
                 return true;
             }
@@ -525,7 +526,7 @@ public class ProjectXMLManagerTest extends TestBase {
                 "org.netbeans.modules.java.project");
         final ModuleDependency md = new ModuleDependency(me, "1", null, false, true);
         boolean result = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
-            public Boolean run() throws IOException {
+            public Boolean run() throws IOException, CyclicDependencyException {
                 testingPXM.addDependency(md);
                 return true;
             }

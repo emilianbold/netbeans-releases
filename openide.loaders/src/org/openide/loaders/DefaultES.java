@@ -176,9 +176,9 @@ implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie, CloseCo
             DataObject obj = getDataObject ();
             DefaultES ret;
             if (obj instanceof DefaultDataObject) {
-                ret = (DefaultES)((DefaultDataObject)obj).getCookie (DefaultES.class, true);
+                ret = ((DefaultDataObject) obj).getCookie(DefaultES.class, true);
             } else {
-                ret = (DefaultES)getDataObject().getCookie(DefaultES.class);
+                ret = getDataObject().getCookie(DefaultES.class);
             }
             
             // this is necessary as for large files, this methods sets flag that

@@ -70,6 +70,7 @@ import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.websvc.jaxws.spi.JAXWSSupportProvider;
+import org.netbeans.modules.websvc.rest.model.api.RestApplicationModel;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesModel;
 import org.netbeans.modules.websvc.rest.model.spi.RestServicesMetadataModelFactory;
@@ -129,6 +130,7 @@ public abstract class RestSupport {
     
     private AntProjectHelper helper;
     protected RestServicesModel restServicesModel;
+    protected RestApplicationModel restApplicationModel;
     private List<PropertyChangeListener> modelListeners = new ArrayList<PropertyChangeListener>();
     protected final Project project;
 
@@ -222,6 +224,21 @@ public abstract class RestSupport {
         return restServicesModel;
     }
 
+    public RestApplicationModel getRestApplicationsModel() {
+        FileObject sourceRoot = findSourceRoot();
+        if (restApplicationModel == null && sourceRoot != null) {
+            ClassPathProvider cpProvider = getProject().getLookup().lookup(ClassPathProvider.class);
+            MetadataUnit metadataUnit = MetadataUnit.create(
+                    cpProvider.findClassPath(sourceRoot, ClassPath.BOOT),
+                    cpProvider.findClassPath(sourceRoot, ClassPath.COMPILE),
+                    cpProvider.findClassPath(sourceRoot, ClassPath.SOURCE),
+                    null);
+            restApplicationModel =
+                    RestServicesMetadataModelFactory.createApplicationMetadataModel(metadataUnit, project);
+        }
+        return restApplicationModel;
+    }
+
     protected void refreshRestServicesMetadataModel() {
         if (restServicesModel != null) {
             for (PropertyChangeListener pcl : modelListeners) {
@@ -281,14 +298,6 @@ public abstract class RestSupport {
 
     public abstract void extendBuildScripts() throws IOException;
     
-    private boolean buildExtensionInited = false;
-    public void initBuildScripts() throws IOException {
-        if (! buildExtensionInited) {
-            extendBuildScripts();
-            buildExtensionInited = true;
-        }
-        
-    }
     
     /**
      * Generates test client.  Typically RunTestClientAction would need to call 
@@ -298,7 +307,6 @@ public abstract class RestSupport {
      * @return test file object, containing token BASE_URL_TOKEN whether used or not.
      */
     public FileObject generateTestClient(File testdir) throws IOException {        
-        initBuildScripts();
         
         if (! testdir.isDirectory()) {
             FileUtil.createFolder(testdir);
@@ -553,6 +561,22 @@ public abstract class RestSupport {
         }
         return helper.getStandardPropertyEvaluator().getProperty(name);
     }
+
+    public void removeProjectProperties(String[] propertyNames) {
+        if (getAntProjectHelper() == null) {
+            return;
+        }
+        EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        for (String name : propertyNames) {
+            ep.remove(name);
+        }
+        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+        try {
+            ProjectManager.getDefault().saveProject(getProject());
+        } catch(IOException ioe) {
+            Logger.getLogger(this.getClass().getName()).log(Level.INFO, ioe.getLocalizedMessage(), ioe);
+        }
+    }
     
     protected boolean ignorePlatformRestLibrary() {
         String v = getProjectProperty(IGNORE_PLATFORM_RESTLIB);
@@ -673,7 +697,7 @@ public abstract class RestSupport {
     }
 
     public String getApplicationPath() throws IOException {
-        return "/resources"; // default application path
+        return "resources"; // default application path
     }
 }
 

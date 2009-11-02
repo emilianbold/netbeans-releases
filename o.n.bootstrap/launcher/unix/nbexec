@@ -61,7 +61,7 @@ absolutize_path () {
     cd "$1"
     abspath=`pwd`
     cd "${oldpwd}"
-    echo $abspath
+    echo "$abspath"
 }
 
 PRG=`resolve_symlink "$PRG"`
@@ -509,9 +509,8 @@ while [ "$restart" ] ; do
     #
     delete_new_clusters_file
     rm -f "${restart_file}"
-
-     eval ${_NB_PROFILE_CMD} "\"${jdkhome}/bin/java\"" -Djdk.home="\"${jdkhome}\"" -classpath "\"$cp\"" \
-        $jargs org.netbeans.Main "$args" '&'
+    eval ${_NB_PROFILE_CMD} "\"${jdkhome}/bin/java\"" -Djdk.home="\"${jdkhome}\"" -classpath "\"$cp\"" \
+        "$jargs" org.netbeans.Main "$args" '&'
     PID=$!
     trap "kill $PID" EXIT
     wait $PID

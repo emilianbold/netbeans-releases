@@ -54,7 +54,6 @@ import java.util.Set;
 
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.Breakpoint;
-import org.netbeans.api.debugger.Breakpoint.VALIDITY;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerListener;
@@ -190,6 +189,7 @@ public class BreakpointAnnotationProvider implements AnnotationProvider, Debugge
                     RequestProcessor.getDefault().post(new AnnotationRefresh((CndBreakpoint)breakpoint, true, true));
                 }
             }
+            return;
         }
 
         if ( (!CndBreakpoint.PROP_ENABLED.equals(propertyName)) &&
@@ -253,8 +253,9 @@ public class BreakpointAnnotationProvider implements AnnotationProvider, Debugge
                !((CndBreakpoint) b).isHidden();
     }
     
-    private static String getAnnotationType(CndBreakpoint b, boolean isConditional) {
-        boolean isInvalid = b.getValidity() == VALIDITY.INVALID;
+    public static String getAnnotationType(CndBreakpoint b) {
+        String condition = b.getCondition();
+        boolean isConditional = (condition != null) && condition.trim().length() > 0;
         String annotationType;
         if (b instanceof LineBreakpoint) {
             annotationType = b.isEnabled() ?
@@ -272,9 +273,6 @@ public class BreakpointAnnotationProvider implements AnnotationProvider, Debugge
                 EditorContext.DISABLED_ADDRESS_BREAKPOINT_ANNOTATION_TYPE;
         } else {
             throw new IllegalStateException(b.toString());
-        }
-        if (isInvalid && b.isEnabled()) {
-            annotationType += "_broken"; // NOI18N
         }
         return annotationType;
     }
@@ -299,7 +297,7 @@ public class BreakpointAnnotationProvider implements AnnotationProvider, Debugge
         // the rest are session specific
         final DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager().getCurrentEngine();
         if (currentEngine != null) {
-            BreakpointAnnotationLinesProvider bptLinesProvider = currentEngine.lookupFirst(null, BreakpointAnnotationLinesProvider.class);
+            SessionBreakpointAnnotationProvider bptLinesProvider = currentEngine.lookupFirst(null, SessionBreakpointAnnotationProvider.class);
             if (bptLinesProvider != null) {
                 return bptLinesProvider.getBreakpointAnnotationLines(b, fo);
             }
@@ -314,9 +312,17 @@ public class BreakpointAnnotationProvider implements AnnotationProvider, Debugge
             return;
         }
         log.fine("BreakpointAnnotationProvider.addAnnotationTo: " + b.getPath() + ":" + b.getLineNumber());
-        String condition = b.getCondition();
-        boolean isConditional = (condition != null) && condition.trim().length() > 0;
-        String annotationType = getAnnotationType(b, isConditional);
+        String annotationType = getAnnotationType(b);
+
+        // update with session specifics
+        final DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager().getCurrentEngine();
+        if (currentEngine != null) {
+            SessionBreakpointAnnotationProvider bptLinesProvider = currentEngine.lookupFirst(null, SessionBreakpointAnnotationProvider.class);
+            if (bptLinesProvider != null) {
+                annotationType = bptLinesProvider.getAnnotationType(b);
+            }
+        }
+
         DataObject dataObject;
         try {
             dataObject = DataObject.find(fo);

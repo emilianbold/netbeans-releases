@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.cnd.remote.support;
 
-import java.io.File;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -48,6 +48,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Handler;
+import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
@@ -60,11 +61,15 @@ import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
+import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.cnd.remote.ui.wizard.HostValidatorImpl;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.netbeans.modules.cnd.test.CndTestIOProvider;
 import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
+import org.netbeans.modules.nativeexecution.test.RcFile;
+import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.windows.IOProvider;
 
@@ -84,12 +89,6 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
         };
 
     static {
-        System.setProperty("cnd.remote.force.setup", "true");
-        System.setProperty("socket.connection.timeout", "10000");
-    }
-
-    static {
-        //log.setLevel(Level.ALL);
         log.addHandler(new Handler() {
             @Override
             public void publish(LogRecord record) {
@@ -114,19 +113,29 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
     // we need this for tests which should run NOT for all environments
     public RemoteTestBase(String testName) {
         super(testName);
+        setSysProps();
     }
 
     protected RemoteTestBase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
-        setupUserDir();
+        setSysProps();
     }
 
-    private void setupUserDir() {
-        File dataDir = getDataDir();
-        File dataDirParent = dataDir.getParentFile();
-        File userDir = new File(dataDirParent, "userdir");
-        userDir.mkdirs();
-        System.setProperty("netbeans.user", userDir.getAbsolutePath());
+    private void setSysProps() {
+        try {
+            addPropertyFromRcFile(RemoteDevelopmentTest.DEFAULT_SECTION, "cnd.remote.logger.level");
+            addPropertyFromRcFile(RemoteDevelopmentTest.DEFAULT_SECTION, "nativeexecution.support.logger.level");
+            addPropertyFromRcFile(RemoteDevelopmentTest.DEFAULT_SECTION, "cnd.remote.force.setup", "true");
+            addPropertyFromRcFile(RemoteDevelopmentTest.DEFAULT_SECTION, "socket.connection.timeout", "10000");
+            if (NativeExecutionTestSupport.getBoolean(RemoteDevelopmentTest.DEFAULT_SECTION, "logging.finest")) {
+                Logger.getLogger("cnd.remote.logger").setLevel(Level.ALL);
+                Logger.getLogger("nativeexecution.support.logger.level").setLevel(Level.FINEST);
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        } catch (FormatException ex) {
+            ex.printStackTrace();
+        }
     }
 
     @Override
@@ -222,6 +231,18 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
         String cmd = "rm -rf ${HOME}/.netbeans/remote/" + subdir;
         int rc = RemoteCommandSupport.run(getTestExecutionEnvironment(), cmd);
         assertEquals("Failed to run " + cmd, 0, rc);
+    }
+
+    protected void addPropertyFromRcFile(String section, String varName) throws IOException, FormatException {
+        addPropertyFromRcFile(section, varName, null);
+    }
+
+    protected void addPropertyFromRcFile(String section, String varName, String defaultValue) throws IOException, FormatException {
+        RcFile rcFile = NativeExecutionTestSupport.getRcFile();
+        String value = rcFile.get(section, varName, defaultValue);
+        if (value != null && value.length() > 0) {
+            System.setProperty(varName, value);
+        }
     }
 
     public static class FakeCompilerSet extends CompilerSet {

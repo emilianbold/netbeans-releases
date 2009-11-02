@@ -262,7 +262,7 @@ public class HQLEditorController {
 
         for (FileObject mappingFO : mappingPOJOMap.keySet()) {
             List<String> pojoNameList = mappingPOJOMap.get(mappingFO);
-            logger.info("pojoNameList from configution : ");
+            logger.info("pojoNameList from configuration : ");
             for (String name : pojoNameList) {
                 logger.info("pojo-name " + name);
             }

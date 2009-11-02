@@ -79,6 +79,7 @@ import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ant.FileChooser;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
+import org.netbeans.modules.apisupport.project.ProjectXMLManager;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.platform.NbPlatformCustomizer;
@@ -112,6 +113,7 @@ import org.openide.util.RequestProcessor;
 public class CustomizerLibraries extends NbPropertyPanel.Single {
     private ListComponent emListComp;
     private Map<File, Boolean> isJarExportedMap = Collections.synchronizedMap(new HashMap<File, Boolean>());
+    private ProjectXMLManager pxml;
 
     /** Creates new form CustomizerLibraries */
     public CustomizerLibraries(final SingleModuleProperties props, ProjectCustomizer.Category category) {
@@ -145,6 +147,7 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
                 null,
                 null);
         attachListeners();
+        pxml = new ProjectXMLManager((NbModuleProject) getProperties().getProject());
     }
 
     void refresh() {
@@ -599,6 +602,12 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
                 getProperties().resetUniverseDependencies();
                 ModuleDependency dep = new ModuleDependency(
                         getProperties().getModuleList().getEntry(project.getCodeNameBase()));
+                String warn = pxml.getDependencyCycleWarning(Collections.singleton(dep));
+                if (warn != null) {
+                    NotifyDescriptor.Message msg = new NotifyDescriptor.Message(warn, NotifyDescriptor.WARNING_MESSAGE);
+                    DialogDisplayer.getDefault().notify(msg);
+                    return;
+                }
                 getDepListModel().addDependency(dep);
             } catch (IOException e) {
                 assert false : e;
@@ -700,12 +709,17 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
         for (int i = 0; i < newDeps.length; i++) {
             ModuleDependency dep = newDeps[i];
             if ("0".equals(dep.getReleaseVersion()) && !dep.hasImplementationDepedendency()) { // #72216 NOI18N
-                getDepListModel().addDependency(new ModuleDependency(
+                dep = new ModuleDependency(
                             dep.getModuleEntry(), "0-1", dep.getSpecificationVersion(), // NOI18N
-                            dep.hasCompileDependency(), dep.hasImplementationDepedendency()));
-            } else {
-                getDepListModel().addDependency(dep);
+                            dep.hasCompileDependency(), dep.hasImplementationDepedendency());
             }
+            String warn = pxml.getDependencyCycleWarning(Collections.singleton(dep));
+            if (warn != null) {
+                NotifyDescriptor.Message msg = new NotifyDescriptor.Message(warn, NotifyDescriptor.WARNING_MESSAGE);
+                DialogDisplayer.getDefault().notify(msg);
+                return;
+            }
+            getDepListModel().addDependency(dep);
             dependencyList.setSelectedValue(dep, true);
         }
         dependencyList.requestFocusInWindow();

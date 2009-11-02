@@ -66,11 +66,13 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerUtil;
 import org.netbeans.modules.web.jsf.palette.JSFPaletteUtilities;
+import org.netbeans.modules.web.jsf.wizards.JSFClientGenerator;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 public abstract class FromEntityBase {
 
@@ -312,6 +314,10 @@ public abstract class FromEntityBase {
                         index++;
                     }
                 }
+                if (index == 0) {
+                     key.append(NbBundle.getMessage(FromEntityBase.class, "ERR_NO_SETTERS", new String[]{INDENT, keyTypeFQN, "Converter.getKey()"}));//NOI18N;
+                     stringKey.append(NbBundle.getMessage(FromEntityBase.class, "ERR_NO_SETTERS", new String[]{INDENT, keyTypeFQN, "Converter.getKey()"}));//NOI18N;
+                }
             } else {
                 params.put("keyEmbedded", Boolean.FALSE);
                 addParam(key, stringKey, null, -1, keyType, keyTypeFQN, idType);
@@ -334,7 +340,7 @@ public abstract class FromEntityBase {
         params.put("keyGetter", primaryGetter.getSimpleName().toString());
     }
 
-    private static void addParam(StringBuffer key, StringBuffer stringKey, String setter, 
+    private static void addParam(StringBuffer key, StringBuffer stringKey, String setter,
             int index, String keyType, String keyTypeFQN, TypeMirror idType) {
         if (index == 0) {
             key.append(INDENT+"String values[] = value.split(SEPARATOR_ESCAPED);\n");
@@ -512,6 +518,9 @@ public abstract class FromEntityBase {
 
         private boolean isBlob() {
             Element fieldElement = isFieldAccess() ? JpaControllerUtil.guessField(controller, method) : method;
+            if (fieldElement == null) {
+                fieldElement = method;
+            }
             return JpaControllerUtil.isAnnotatedWith(fieldElement, "javax.persistence.Lob"); // NOI18N
         }
 

@@ -77,6 +77,13 @@ class CompletionContextFinder {
             new Object[]{PHPTokenId.PHP_NEW, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING}
     );
 
+    private static final List<Object[]> FUNCTION_NAME_TOKENCHAINS = Arrays.asList(
+            new Object[]{PHPTokenId.PHP_FUNCTION},
+            new Object[]{PHPTokenId.PHP_FUNCTION, PHPTokenId.WHITESPACE},
+            new Object[]{PHPTokenId.PHP_FUNCTION, PHPTokenId.WHITESPACE, NAMESPACE_FALSE_TOKEN},
+            new Object[]{PHPTokenId.PHP_FUNCTION, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING}
+    );
+
     private static final List<Object[]> USE_KEYWORD_TOKENS = Arrays.asList(
             new Object[]{PHPTokenId.PHP_USE},
             new Object[]{PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE},
@@ -91,7 +98,14 @@ class CompletionContextFinder {
             new Object[]{PHPTokenId.PHP_NAMESPACE, PHPTokenId.WHITESPACE, NAMESPACE_FALSE_TOKEN}
     );
 
-    private static final List<Object[]> TYPE_TOKENCHAINS = Arrays.asList(
+    private static final List<Object[]> INSTANCEOF_TOKENCHAINS = Arrays.asList(
+            new Object[]{PHPTokenId.PHP_INSTANCEOF},
+            new Object[]{PHPTokenId.PHP_INSTANCEOF, PHPTokenId.WHITESPACE},
+            new Object[]{PHPTokenId.PHP_INSTANCEOF, PHPTokenId.WHITESPACE, NAMESPACE_FALSE_TOKEN},
+            new Object[]{PHPTokenId.PHP_INSTANCEOF, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING}
+    );
+
+    private static final List<Object[]> CATCH_TOKENCHAINS = Arrays.asList(
         new Object[]{PHPTokenId.PHP_CATCH, PHPTokenId.PHP_TOKEN},
         new Object[]{PHPTokenId.PHP_CATCH, PHPTokenId.PHP_TOKEN, NAMESPACE_FALSE_TOKEN},
         new Object[]{PHPTokenId.PHP_CATCH, PHPTokenId.WHITESPACE, PHPTokenId.PHP_TOKEN},
@@ -256,8 +270,10 @@ class CompletionContextFinder {
             return CompletionContext.NONE;
         } else if (acceptTokenChains(tokenSequence, PHPDOC_TOKENCHAINS)){
             return CompletionContext.PHPDOC;
-        } else if (acceptTokenChains(tokenSequence, TYPE_TOKENCHAINS)){
+        } else if (acceptTokenChains(tokenSequence, CATCH_TOKENCHAINS)){
             return CompletionContext.TYPE_NAME;
+       } else if (acceptTokenChains(tokenSequence, INSTANCEOF_TOKENCHAINS)){
+           return CompletionContext.TYPE_NAME;
         } else if (isInsideClassIfaceDeclarationBlock(info, caretOffset, tokenSequence)) {
             if (acceptTokenChains(tokenSequence, CLASS_CONTEXT_KEYWORDS_TOKENCHAINS)) {
                 return CompletionContext.CLASS_CONTEXT_KEYWORDS;
@@ -270,6 +286,8 @@ class CompletionContextFinder {
                     return paramContext;
                 }
             }
+            return CompletionContext.NONE;
+        } else if (acceptTokenChains(tokenSequence, FUNCTION_NAME_TOKENCHAINS)) {
             return CompletionContext.NONE;
         }
 

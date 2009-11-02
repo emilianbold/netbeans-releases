@@ -42,6 +42,7 @@ package org.netbeans.modules.cnd.spi.remote;
 import org.netbeans.modules.cnd.api.remote.*;
 import java.util.Collection;
 import java.util.List;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
@@ -58,6 +59,8 @@ public interface ServerListImplementation {
     public abstract List<ExecutionEnvironment> getEnvironments();
 
     public abstract ServerRecord get(ExecutionEnvironment env);
+
+    public abstract ServerRecord get(Project project);
     
     public abstract ServerRecord getDefaultRecord();
     
@@ -66,4 +69,6 @@ public interface ServerListImplementation {
     public ServerRecord addServer(ExecutionEnvironment env, String displayName, RemoteSyncFactory syncFactory, boolean asDefault, boolean connect);
 
     public abstract boolean isValidExecutable(ExecutionEnvironment env, String path);
+
+    public abstract  ServerRecord createServerRecord(ExecutionEnvironment env, String displayName, RemoteSyncFactory syncFactory);
 }

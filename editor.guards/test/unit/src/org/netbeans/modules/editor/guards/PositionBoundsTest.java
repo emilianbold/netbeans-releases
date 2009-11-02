@@ -246,11 +246,14 @@ public class PositionBoundsTest extends TestCase {
         Position p = doc.createPosition(1);
         assertTrue(!GuardUtils.isGuarded(doc, 1));
         NbDocument.markGuarded(doc, 1, 3);
-        assertTrue(GuardUtils.isGuarded(doc, 1));
+        // As of #174294 the GuardedDocument.isPosGuarded returns false
+        // at the begining of an intra-line guarded section since an insert is allowed there.
+        assertFalse(GuardUtils.isGuarded(doc, 1));
+        assertTrue(GuardUtils.isGuarded(doc, 2));
         
         doc.insertString(1, "x", null);
         assertEquals(2, p.getOffset());
-        assertTrue(GuardUtils.isGuarded(doc, 2));
+        assertTrue(GuardUtils.isGuarded(doc, 3));
         assertTrue(!GuardUtils.isGuarded(doc, 1));
         
         doc.insertString(4, "x", null);
@@ -258,7 +261,7 @@ public class PositionBoundsTest extends TestCase {
         assertTrue(GuardUtils.isGuarded(doc, 4));
         assertTrue(GuardUtils.isGuarded(doc, 3));
         assertTrue(GuardUtils.isGuarded(doc, 5));
-        assertTrue(GuardUtils.isGuarded(doc, 2));
+        assertFalse(GuardUtils.isGuarded(doc, 2));
         assertTrue(!GuardUtils.isGuarded(doc, 1));
         GuardUtils.dumpGuardedAttr(doc);
         

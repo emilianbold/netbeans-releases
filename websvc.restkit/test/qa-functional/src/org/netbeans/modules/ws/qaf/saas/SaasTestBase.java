@@ -49,7 +49,6 @@ import org.netbeans.jellytools.modules.web.NewJspFileNameStepOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.modules.ws.qaf.rest.RestTestBase;
 
 /**
@@ -195,7 +194,7 @@ public abstract class SaasTestBase extends RestTestBase {
         new CopyAction().performAPI(wsNode);
         //XXX-this should not be required!!!!!!!!!!!!!
         //wait for the end of the classpath compilation (just in case)
-        ProjectSupport.waitScanFinished();
+        waitScanFinished();
         //sleep for a while, give other threads time to finish (just to be sure)
         try {
             Thread.sleep(5000);
