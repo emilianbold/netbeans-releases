@@ -147,7 +147,10 @@ made subject to such option by the copyright holder.
             <path>
                 <fileset dir="${release.dir}"/>
             </path>
-            <map from="${release.dir}${file.separator}" to=""/>
+            <filtermapper>
+                <replacestring from="${release.dir}${file.separator}" to=""/>
+                <replacestring from=" " to="?"/>
+            </filtermapper>
         </pathconvert>
     </target>
 
