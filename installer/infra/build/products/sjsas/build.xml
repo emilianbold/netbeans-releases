@@ -284,7 +284,7 @@
                 <include name="appserv_uninstall.class"/>
                 <include name="derby.log"/>
 		<include name="uninstall*"/>
-		<include name="License_Notice_Translated.pdf"/>
+		<!--<include name="License_Notice_Translated.pdf"/>-->
                 <exclude name="icons/**/"/>                
             </fileset>
         </delete>
