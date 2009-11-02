@@ -289,9 +289,10 @@ public class PageIterator implements TemplateWizard.Iterator {
                             tag.setName(panel.getTagName());
                             String packageName = null;
                             for (int i = 0; i < sourceGroups.length && packageName == null; i++) {
-                                packageName = org.openide.filesystems.FileUtil.getRelativePath(sourceGroups[i].getRootFolder(), dobj.getPrimaryFile());
+                                FileObject rootFolder = sourceGroups[i].getRootFolder();
+                                packageName = rootFolder.getName()+"/"+org.openide.filesystems.FileUtil.getRelativePath(rootFolder, dobj.getPrimaryFile());
                             }
-                            tag.setPath("/" + packageName); //NOI18N
+                            tag.setPath("/" +packageName); //NOI18N
                             taglib.addTagFile(tag);
                             SaveCookie save = (SaveCookie) tldDO.getCookie(SaveCookie.class);
                             if (save != null) {
