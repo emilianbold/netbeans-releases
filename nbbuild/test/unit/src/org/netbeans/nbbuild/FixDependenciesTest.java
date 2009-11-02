@@ -54,6 +54,38 @@ public class FixDependenciesTest extends NbTestCase {
     public FixDependenciesTest (String name) {
         super (name);
     }
+    public void testCanFixXmlWsdlModel() throws Exception {
+        java.io.File xml = PublicPackagesInProjectizedXMLTest.extractResource("FixDependencies-xml.wsdl.model.xml");
+
+        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+            "<project name=\"Replace Openide\" basedir=\".\" default=\"all\" >" +
+            "  <taskdef name=\"fix\" classname=\"org.netbeans.nbbuild.FixDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "<target name=\"all\" >" +
+            "<fix>" +
+            "  <replace codenamebase=\"org.openide.util\">" +
+            "    <module codenamebase=\"org.openide.util\" spec=\"8.0\" />" +
+            "    <module codenamebase=\"org.openide.util.lookup\" spec=\"8.0\" />" +
+            "  </replace>" +
+            "  <fileset dir=\"" + xml.getParent () + "\">" +
+            "    <include name=\"" + xml.getName () + "\" /> " +
+            "  </fileset>" +
+            "</fix>" +
+            "</target>" +
+            "</project>"
+
+        );
+
+        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { });
+        String result = PublicPackagesInProjectizedXMLTest.readFile (xml);
+
+        if (result.indexOf ("org.openide.util") == -1) {
+            fail ("org.openide.util should be there: " + result);
+        }
+        if (result.indexOf ("org.openide.util.lookup") == -1) {
+            fail ("org.openide.util.lookup should be there: " + result);
+        }
+    }
     public void testCanParseCoreKit () throws Exception {
         java.io.File xml = PublicPackagesInProjectizedXMLTest.extractResource("FixDependencies-core.kit.xml");
 

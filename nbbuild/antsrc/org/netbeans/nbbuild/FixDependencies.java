@@ -247,12 +247,11 @@ public class FixDependencies extends Task {
                     String b = "<specification-version>";
                     int specBeg = remove.indexOf(b);
                     int specEnd = remove.indexOf("</specification-version>");
-                    if (specBeg == -1 || specEnd == -1) {
-                        continue;
-                    }
-                    String v = remove.substring(specBeg + b.length(), specEnd);
-                    if (olderThanOrEqual(m.specVersion, v)) {
-                        return false;
+                    if (specBeg != -1 && specEnd != -1) {
+                        String v = remove.substring(specBeg + b.length(), specEnd);
+                        if (olderThanOrEqual(m.specVersion, v)) {
+                            return false;
+                        }
                     }
                 } else {
                     if (stream.indexOf ("<code-name-base>" + m.codeNameBase + "</code-name-base>") != -1) {
