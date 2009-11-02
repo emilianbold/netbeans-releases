@@ -132,7 +132,7 @@ public class ChatPanel extends javax.swing.JPanel {
     private CompoundUndoManager undo;
     private MessageHistoryManager history = new MessageHistoryManager();
 
-    private static final String ISSUE_REPORT_STRING = "(issue |bug |ISSUE:)#?([A-Z_]+-)*([0-9]+)"; //NOI18N
+    private static final String ISSUE_REPORT_STRING = "(issue |bug |ISSUE:|ISSUE: )#?([A-Z_]+-)*([0-9]+)"; //NOI18N
     /**
      * Pattern for matching issue references in the form "issue 123", "issue #123", "bug 123" and "bug #123"
      */

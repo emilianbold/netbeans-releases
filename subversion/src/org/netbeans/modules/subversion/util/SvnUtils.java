@@ -673,6 +673,48 @@ public class SvnUtils {
         return fileURL;
     }
 
+    /**
+     * Returns repository urls for all versioned files underneath the given root
+     *
+     * @param root
+     * @return
+     * @throws SVNClientException
+     */
+    public static Map<File, SVNUrl> getRepositoryUrls(File root) throws SVNClientException {
+        SVNUrl fileURL = null;
+        SvnClient client = null;
+        try {
+            client = Subversion.getInstance().getClient(false);
+        } catch (SVNClientException ex) {
+            SvnClientExceptionHandler.notifyException(ex, false, false);
+            return null;
+        }
+
+        Map<File, SVNUrl> ret = new HashMap<File, SVNUrl>();
+        try {
+            ISVNStatus[] statuses = client.getStatus(root, true, true);
+            for (ISVNStatus status : statuses) {
+                if (status != null) {
+                    fileURL = decode(status.getUrl());
+                    if (fileURL != null) {
+                        ret.put(status.getFile(), fileURL);
+                    }
+                }
+            }
+        } catch (SVNClientException ex) {
+            if (SvnClientExceptionHandler.isUnversionedResource(ex.getMessage()) == false) {
+                if (SvnClientExceptionHandler.isTooOldClientForWC(ex.getMessage())) {
+                    // log this exception if needed and break the execution
+                    WorkingCopyAttributesCache.getInstance().logUnsupportedWC(ex, root);
+                } else {
+                    SvnClientExceptionHandler.notifyException(ex, false, false);
+                }
+            }
+        }
+
+        return ret;
+    }
+
     private static ISVNStatus getSingleStatus(SvnClient client, File file) throws SVNClientException{
         return client.getSingleStatus(file);
     }
