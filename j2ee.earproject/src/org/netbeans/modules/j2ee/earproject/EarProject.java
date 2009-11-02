@@ -244,6 +244,7 @@ public final class EarProject implements Project, AntProjectListener {
             UILookupMergerSupport.createRecommendedTemplatesMerger(),
             LookupProviderSupport.createSourcesMerger(),
             buildExtender,
+            new SourceForBinaryQueryImpl(this),
         });
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-j2ee-earproject/Lookup"); //NOI18N
     }
