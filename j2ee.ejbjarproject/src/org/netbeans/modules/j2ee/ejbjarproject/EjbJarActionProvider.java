@@ -358,6 +358,7 @@ class EjbJarActionProvider implements ActionProvider {
                 }
             } else {
                 files = findTestSources(context, false);
+                assert files != null : "findTestSources() can't be null: " + project.getTestSourceRoots().getRoots();   //NOI18N
                 path = FileUtil.getRelativePath(getRoot(project.getTestSourceRoots().getRoots(),files[0]), files[0]);
                 targetNames = new String[] {"debug-fix-test"}; // NOI18N
             }
@@ -458,7 +459,8 @@ class EjbJarActionProvider implements ActionProvider {
         } else if ( command.equals( COMMAND_DEBUG_TEST_SINGLE ) ) {
             FileObject[] files = findTestSources(context, true);
             return files != null && files.length == 1;
-        } else if (command.equals(COMMAND_DEBUG_SINGLE)) {
+        } else if (command.equals(COMMAND_DEBUG_SINGLE) ||
+                command.equals(JavaProjectConstants.COMMAND_DEBUG_FIX)) {
             FileObject[] testFiles = findTestSources(context, false);
             FileObject[] javaFiles = findJavaSources(context);
             return ((testFiles != null && testFiles.length == 1) ||

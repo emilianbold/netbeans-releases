@@ -41,12 +41,17 @@
 
 package org.netbeans.modules.web.jsf;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -55,14 +60,25 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.api.webmodule.WebFrameworks;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
+import org.netbeans.modules.web.jsf.api.facesmodel.Converter;
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
+import org.netbeans.modules.web.jsf.api.facesmodel.FacesValidator;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule;
-import org.netbeans.modules.web.jsf.JSFFrameworkProvider;
+import org.netbeans.modules.web.jsf.api.facesmodel.ResourceBundle;
+import org.netbeans.modules.web.jsf.api.metamodel.ClientBehaviorRenderer;
+import org.netbeans.modules.web.jsf.api.metamodel.Component;
+import org.netbeans.modules.web.jsf.api.metamodel.FacesConverter;
+import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
+import org.netbeans.modules.web.jsf.api.metamodel.JsfModel;
+import org.netbeans.modules.web.jsf.api.metamodel.JsfModelFactory;
+import org.netbeans.modules.web.jsf.api.metamodel.Renderer;
+import org.netbeans.modules.web.jsf.api.metamodel.Validator;
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
 import org.openide.filesystems.FileObject;
@@ -77,18 +93,87 @@ import org.openide.util.Exceptions;
 public class JSFConfigUtilities {
     
     private static String CONFIG_FILES_PARAM_NAME = "javax.faces.CONFIG_FILES"; //NOI18N
+    private static String FACES_PARAM = "javax.faces";  //NOI18N
     private static String DEFAULT_FACES_CONFIG_PATH = "WEB-INF/faces-config.xml"; //NOI18N
-    
-    
+    private static final String JSF_PRESENT_PROPERTY= "jsf.present";    //NOI18N
+    private static final Class[] types = new Class[] {
+        FacesManagedBean.class,
+        Component.class,
+        FacesValidator.class,
+        FacesConverter.class,
+        ClientBehaviorRenderer.class,
+        ResourceBundle.class,
+        Validator.class,
+        Converter.class,
+        Renderer.class
+    };
     public static boolean hasJsfFramework(FileObject fileObject) {
         if (fileObject != null) {
             WebModule webModule = WebModule.getWebModule(fileObject);
+            //Check for faces-config is present
             String[] configFiles = JSFConfigUtilities.getConfigFiles(webModule);
-            return configFiles != null && configFiles.length > 0;
+            if (configFiles != null && configFiles.length > 0) {
+                return true;
+            }
+            //Check Faces Servlet or any other javax.faces parameters present
+            FileObject dd = webModule.getDeploymentDescriptor();
+            if (dd != null) {
+                //Check Faces Servlet
+                if (ConfigurationUtils.getFacesServlet(webModule)!=null) {
+                    return true;
+                }
+                try {
+                    //Check javax.faces
+                    WebApp ddRoot = DDProvider.getDefault().getDDRoot(dd);
+                    if (ddRoot != null) {
+                        InitParam[] parameters = ddRoot.getContextParam();
+                        for (InitParam param: parameters) {
+                            if (param.getParamName().startsWith(FACES_PARAM)) {
+                                return true;
+                            }
+                        }
+                    }
+                } catch (IOException ex) {
+                    Logger.getLogger(JSFConfigUtilities.class.getName()).log(Level.WARNING, ex.getMessage());
+                }
+            }
+
+            final Project project = FileOwnerQuery.getOwner(fileObject);
+            Preferences preferences = ProjectUtils.getPreferences(project, ProjectUtils.class, true);
+            if (!preferences.get(JSF_PRESENT_PROPERTY, "").equals("true")) {
+                try {
+                    Future<Boolean> future =  JsfModelFactory.getModel(webModule).runReadActionWhenReady(new MetadataModelAction<JsfModel, Boolean>() {
+
+                        public Boolean run(JsfModel metadata) throws Exception {
+                            long time = System.currentTimeMillis();
+                            try {
+                                for (Class clazz: types) {
+                                    if (!metadata.getElements(clazz).isEmpty()) {
+                                        ProjectUtils.getPreferences(project, ProjectUtils.class, true).put(JSF_PRESENT_PROPERTY, "true");
+                                        return Boolean.TRUE;
+                                    }
+                                }
+                                return Boolean.FALSE;
+                            } finally {
+                                Logger.getLogger(this.getClass().getName()).log(Level.INFO,"Total time spent = "+(System.currentTimeMillis() - time)+" ms");
+                            }
+                        }
+                    });
+                    if (future.isDone()) {
+                        return future.get().booleanValue();
+                    } else {
+                        return false;
+                    }
+                }catch(Exception e){
+                    Exceptions.printStackTrace(e);
+                }
+            } else {
+                return true;
+            }
         }
         return false;
     }
-    
+
     public static Set extendJsfFramework(FileObject fileObject, boolean createWelcomeFile) {
         Set result = Collections.EMPTY_SET;
         if (fileObject == null) {
