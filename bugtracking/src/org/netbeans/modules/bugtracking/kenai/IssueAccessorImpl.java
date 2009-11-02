@@ -71,21 +71,21 @@ public class IssueAccessorImpl extends KenaiIssueAccessor {
      */
     @Override
     public void open(final KenaiProject project, final String issueID) {
-        if(!JiraUpdater.isJiraInstalled()) {
-            FakeJiraSupport support = FakeJiraSupport.get(project);
-            if(support == null) {
+
+        FakeJiraSupport support = FakeJiraSupport.get(project);
+        if(support != null) {
+            // this is a jira project
+            if(!JiraUpdater.isJiraInstalled()) {
+                if(JiraUpdater.notifyJiraDownload(support.getIssueUrl(issueID))) {
+                    JiraUpdater.getInstance().downloadAndInstall();
+                }
                 return;
             }
-            if(JiraUpdater.notifyJiraDownload(support.getIssueUrl(issueID))) {
-                JiraUpdater.getInstance().downloadAndInstall();
-            } 
-            return;
         }
 
         final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(Issue.class, "LBL_GETTING_REPO"));
         handle.start();
         BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
-
             public void run() {
                 final Repository repo = KenaiRepositoryUtils.getInstance().getRepository(project);
                 handle.finish();
