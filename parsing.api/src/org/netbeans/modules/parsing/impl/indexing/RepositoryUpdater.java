@@ -122,6 +122,7 @@ import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.netbeans.modules.parsing.spi.indexing.SourceIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
 import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
@@ -163,6 +164,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 LOGGER.fine("Initializing..."); //NOI18N
                 this.indexingActivityInterceptors = Lookup.getDefault().lookupResult(IndexingActivityInterceptor.class);
                 PathRegistry.getDefault().addPathRegistryListener(this);
+                BinaryPathNotifier.getDefault().addFileChangeListener(this.binaryRootsListener);
                 FileUtil.addFileChangeListener(this);
                 EditorRegistry.addPropertyChangeListener(this);
                 IndexerCache.getCifCache().addPropertyChangeListener(this);
@@ -188,6 +190,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 LOGGER.fine("Closing..."); //NOI18N
 
                 PathRegistry.getDefault().removePathRegistryListener(this);
+                BinaryPathNotifier.getDefault().removeFileChangeListener(this.binaryRootsListener);
                 FileUtil.removeFileChangeListener(this);
                 EditorRegistry.removePropertyChangeListener(this);
 
@@ -435,6 +438,10 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
     }
 
     public void fileChanged(FileEvent fe) {
+        fileChangedImpl(fe, true);
+    }
+
+    private void fileChangedImpl (FileEvent fe, boolean source) {
         FileObject fo = fe.getFile();
         if (isCacheFile(fo)) {
             return;
@@ -448,14 +455,16 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         Pair<URL, FileObject> root = null;
 
         if (fo != null && fo.isValid() && VisibilityQuery.getDefault().isVisible(fo)) {
-            root = getOwningSourceRoot (fo);
-            if (root != null) {
-                boolean sourceForBinaryRoot = sourcesForBinaryRoots.contains(root.first);
-                ClassPath.Entry entry = sourceForBinaryRoot ? null : getClassPathEntry(root.second);
-                if (entry == null || entry.includes(fo)) {
-                    final Work wrk = new FileListWork(scannedRoots2Dependencies, root.first, Collections.singleton(fo), false, false, true, sourceForBinaryRoot, true);
-                    eventQueue.record(FileEventLog.FileOp.CREATE, root.first, FileUtil.getRelativePath(root.second, fo), fe, wrk);
-                    processed = true;
+            if (source) {
+                root = getOwningSourceRoot (fo);
+                if (root != null) {
+                    boolean sourceForBinaryRoot = sourcesForBinaryRoots.contains(root.first);
+                    ClassPath.Entry entry = sourceForBinaryRoot ? null : getClassPathEntry(root.second);
+                    if (entry == null || entry.includes(fo)) {
+                        final Work wrk = new FileListWork(scannedRoots2Dependencies, root.first, Collections.singleton(fo), false, false, true, sourceForBinaryRoot, true);
+                        eventQueue.record(FileEventLog.FileOp.CREATE, root.first, FileUtil.getRelativePath(root.second, fo), fe, wrk);
+                        processed = true;
+                    }
                 }
             } else {
                 root = getOwningBinaryRoot(fo);
@@ -474,6 +483,10 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
     }
 
     public void fileDeleted(FileEvent fe) {
+        fileDeletedImpl(fe, true);
+    }
+
+    private void fileDeletedImpl(FileEvent fe, boolean source) {
         FileObject fo = fe.getFile();
         if (isCacheFile(fo)) {
             return;
@@ -487,14 +500,16 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         Pair<URL, FileObject> root = null;
 
         if (fo != null && VisibilityQuery.getDefault().isVisible(fo)) {
-            root = getOwningSourceRoot (fo);
-            if (root != null) {
-                if (fo.isData() /*&& FileUtil.getMIMEType(fo, recognizers.getMimeTypes())!=null*/) {
-                    String relativePath = FileUtil.getRelativePath(root.second, fo);
-                    assert relativePath != null : "FileObject not under root: f=" + fo + ", root=" + root; //NOI18N
-                    final Work wrk = new DeleteWork(root.first, Collections.singleton(relativePath));
-                    eventQueue.record(FileEventLog.FileOp.DELETE, root.first, relativePath, fe, wrk);
-                    processed = true;
+            if (source) {
+                root = getOwningSourceRoot (fo);
+                if (root != null) {
+                    if (fo.isData() /*&& FileUtil.getMIMEType(fo, recognizers.getMimeTypes())!=null*/) {
+                        String relativePath = FileUtil.getRelativePath(root.second, fo);
+                        assert relativePath != null : "FileObject not under root: f=" + fo + ", root=" + root; //NOI18N
+                        final Work wrk = new DeleteWork(root.first, Collections.singleton(relativePath));
+                        eventQueue.record(FileEventLog.FileOp.DELETE, root.first, relativePath, fe, wrk);
+                        processed = true;
+                    }
                 }
             } else {
                 root = getOwningBinaryRoot(fo);
@@ -513,6 +528,10 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
     }
 
     public void fileRenamed(FileRenameEvent fe) {
+        fileRenamedImpl(fe, true);
+    }
+
+    public void fileRenamedImpl(FileRenameEvent fe, boolean  source) {
         FileObject fo = fe.getFile();
         if (isCacheFile(fo)) {
             return;
@@ -528,33 +547,35 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         boolean processed = false;
 
         if (newFile != null && newFile.isValid()) {
-            root = getOwningSourceRoot(newFile);
-            if (root != null) {
-                FileObject rootFo = root.second;
-                String ownerPath = FileUtil.getRelativePath(rootFo, newFile.getParent());
-                String oldFilePath =  ownerPath.length() == 0 ? oldNameExt : ownerPath + "/" + oldNameExt; //NOI18N
-                if (newFile.isData()) {
-                    final Work work = new DeleteWork(root.first, Collections.singleton(oldFilePath));
-                    eventQueue.record(FileEventLog.FileOp.DELETE, root.first, oldFilePath, fe, work);
-                } else {
-                    Set<String> oldFilePaths = new HashSet<String>();
-                    collectFilePaths(newFile, oldFilePath, oldFilePaths);
-                    for (String path : oldFilePaths) {
-                        final Work work = new DeleteWork(root.first, oldFilePaths);
-                        eventQueue.record(FileEventLog.FileOp.DELETE, root.first, path, fe, work);
+            if (source) {
+                root = getOwningSourceRoot(newFile);
+                if (root != null) {
+                    FileObject rootFo = root.second;
+                    String ownerPath = FileUtil.getRelativePath(rootFo, newFile.getParent());
+                    String oldFilePath =  ownerPath.length() == 0 ? oldNameExt : ownerPath + "/" + oldNameExt; //NOI18N
+                    if (newFile.isData()) {
+                        final Work work = new DeleteWork(root.first, Collections.singleton(oldFilePath));
+                        eventQueue.record(FileEventLog.FileOp.DELETE, root.first, oldFilePath, fe, work);
+                    } else {
+                        Set<String> oldFilePaths = new HashSet<String>();
+                        collectFilePaths(newFile, oldFilePath, oldFilePaths);
+                        for (String path : oldFilePaths) {
+                            final Work work = new DeleteWork(root.first, oldFilePaths);
+                            eventQueue.record(FileEventLog.FileOp.DELETE, root.first, path, fe, work);
+                        }
                     }
-                }
-                
 
-                if (VisibilityQuery.getDefault().isVisible(newFile) && newFile.isData()) {
-                    final boolean sourceForBinaryRoot = sourcesForBinaryRoots.contains(root.first);
-                    ClassPath.Entry entry = sourceForBinaryRoot ? null : getClassPathEntry(rootFo);
-                    if (entry == null || entry.includes(newFile)) {                        
-                        final FileListWork flw = new FileListWork(scannedRoots2Dependencies,root.first, Collections.singleton(newFile), false, false, true, sourceForBinaryRoot, true);
-                        eventQueue.record(FileEventLog.FileOp.CREATE, root.first, FileUtil.getRelativePath(rootFo, newFile), fe,flw);
+
+                    if (VisibilityQuery.getDefault().isVisible(newFile) && newFile.isData()) {
+                        final boolean sourceForBinaryRoot = sourcesForBinaryRoots.contains(root.first);
+                        ClassPath.Entry entry = sourceForBinaryRoot ? null : getClassPathEntry(rootFo);
+                        if (entry == null || entry.includes(newFile)) {
+                            final FileListWork flw = new FileListWork(scannedRoots2Dependencies,root.first, Collections.singleton(newFile), false, false, true, sourceForBinaryRoot, true);
+                            eventQueue.record(FileEventLog.FileOp.CREATE, root.first, FileUtil.getRelativePath(rootFo, newFile), fe,flw);
+                        }
                     }
+                    processed = true;
                 }
-                processed = true;
             } else {
                 root = getOwningBinaryRoot(newFile);
                 if (root != null) {
@@ -791,6 +812,30 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
     private final String lastOwningSourceRootCacheLock = new String("lastOwningSourceRootCacheLock"); //NOI18N
 
     private boolean ignoreIndexerCacheEvents = false;
+
+    private final FileChangeListener binaryRootsListener = new FileChangeAdapter() {
+
+        @Override
+        public void fileDataCreated(FileEvent fe) {
+            fileChangedImpl(fe, false);
+        }
+
+        @Override
+        public void fileChanged(FileEvent fe) {
+            fileChangedImpl(fe, false);
+        }
+
+        @Override
+        public void fileDeleted(FileEvent fe) {
+            fileDeletedImpl(fe, false);
+        }
+
+        @Override
+        public void fileRenamed(FileRenameEvent fe) {
+            fileRenamedImpl(fe, false);
+        }
+
+    };
     
     private RepositoryUpdater () {
         // no-op
@@ -2731,6 +2776,9 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 scannedRoots2Dependencies.put(root, deps);
             }
             scannedRoots2Dependencies.keySet().removeAll(depCtx.oldRoots);
+
+            BinaryPathNotifier.getDefault().unregisterRoots(depCtx.oldBinaries);
+            BinaryPathNotifier.getDefault().registerRoots(depCtx.scannedBinaries);
 
             scannedBinaries.addAll(depCtx.scannedBinaries);
             scannedBinaries.removeAll(depCtx.oldBinaries);
