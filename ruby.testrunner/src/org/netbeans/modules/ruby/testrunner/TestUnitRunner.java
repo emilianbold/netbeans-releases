@@ -208,20 +208,8 @@ public final class TestUnitRunner implements TestRunner, RakeTaskCustomizer {
         taskDescriptor.addAdditionalEnv(env);
         Manager manager = Manager.getInstance();
         final TestRunnerLineConvertor testConvertor = new TestRunnerLineConvertor(manager, session, new TestUnitHandlerFactory());
-        session.setOutputLineHandler(new RubyOutputLineHandler(session.getFileLocator()));
         taskDescriptor.addStandardRecognizers();
-        taskDescriptor.addOutConvertor(testConvertor);
-        taskDescriptor.addErrConvertor(testConvertor);
-        taskDescriptor.lineBased(true);
-        taskDescriptor.setOutProcessorFactory(new TestRunnerInputProcessorFactory(manager, session, true));
-        taskDescriptor.setErrProcessorFactory(new TestRunnerInputProcessorFactory(manager, session, false));
-        taskDescriptor.postBuild(new Runnable() {
-
-            public void run() {
-                TestExecutionManager.getInstance().finish();
-                testConvertor.refreshSession();
-            }
-        });
+        TestRunnerUtilities.setUpConvertors(session, taskDescriptor, manager, testConvertor);
         TestRunnerUtilities.addProperties(taskDescriptor, project);
         TestExecutionManager.getInstance().init(taskDescriptor);
         session.setRerunHandler(TestExecutionManager.getInstance());

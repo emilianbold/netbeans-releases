@@ -41,6 +41,7 @@ package org.netbeans.modules.ruby;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import org.jrubyparser.ast.Colon2Node;
 import org.jrubyparser.ast.IScopingNode;
 import org.jrubyparser.ast.MethodDefNode;
 import org.jrubyparser.ast.Node;
@@ -177,8 +178,10 @@ public final class RubyTypeInferencer {
             case INSTVARNODE:
             case GLOBALVARNODE:
             case CLASSVARNODE:
-            case COLON2NODE:
                 type = knowledge.getType(AstUtilities.getName(node));
+                break;
+            case COLON2NODE:
+                type = knowledge.getType(AstUtilities.getFqn((Colon2Node) node));
                 break;
             case RETURNNODE:
                 ReturnNode retNode = (ReturnNode) node;

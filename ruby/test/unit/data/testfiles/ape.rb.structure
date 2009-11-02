@@ -38,6 +38,6 @@ Ape:CLASS:[]:ESCAPED{Ape}:
   test_media_linkage:METHOD:[PUBLIC]:ESCAPED{test_media_linkage}(PARAMETERS{ESCAPED{coll}}):
   test_media_posts:METHOD:[PUBLIC]:ESCAPED{test_media_posts}(PARAMETERS{ESCAPED{media_collection}}):
   test_sorting:METHOD:[PUBLIC]:ESCAPED{test_sorting}(PARAMETERS{ESCAPED{coll}}):
-  w:FIELD:[PRIVATE]:ESCAPED{w}<font color='#777777'> : ESCAPED{XmlMarkup}</font>:
+  w:FIELD:[PRIVATE]:ESCAPED{w}<font color='#777777'> : ESCAPED{Builder::XmlMarkup}</font>:
   warning:METHOD:[PUBLIC]:ESCAPED{warning}(PARAMETERS{ESCAPED{message}, ESCAPED{crumb_key}})<font color='#777777'> : ESCAPED{Array}</font>:
   write_mark:METHOD:[PUBLIC]:ESCAPED{write_mark}(PARAMETERS{ESCAPED{mark}}):

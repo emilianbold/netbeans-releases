@@ -80,8 +80,8 @@ public final class TestExecutionManager implements RerunHandler {
      * Indicates whether the current execution has finished.
      */
     private boolean finished;
-    private TestRunnerLineConvertor outConvertor;
-    private TestRunnerLineConvertor errConvertor;
+    private TestRunnerLineConvertor outConvertor, errConvertor;
+    private TestRunnerInputProcessorFactory outFactory, errFactory;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private final RequestProcessor testExecutionProcessor = new RequestProcessor("Ruby Test Execution Processor"); //NOI18N
     
@@ -131,8 +131,10 @@ public final class TestExecutionManager implements RerunHandler {
         session.setOutputLineHandler(new RubyOutputLineHandler(session.getFileLocator()));
         rubyDescriptor.addOutConvertor(outConvertor);
         rubyDescriptor.addErrConvertor(errConvertor);
-        rubyDescriptor.setOutProcessorFactory(new TestRunnerInputProcessorFactory(manager, session, handlerFactory.printSummary()));
-        rubyDescriptor.setErrProcessorFactory(new TestRunnerInputProcessorFactory(manager, session, false));
+        outFactory = new TestRunnerInputProcessorFactory(manager, session, handlerFactory.printSummary());
+        errFactory = new TestRunnerInputProcessorFactory(manager, session, false);
+        rubyDescriptor.setOutProcessorFactory(outFactory);
+        rubyDescriptor.setErrProcessorFactory(errFactory);
         rubyDescriptor.lineBased(true);
 
 
@@ -212,11 +214,22 @@ public final class TestExecutionManager implements RerunHandler {
      * computed test statuses.
      */
     public synchronized void refresh() {
+        // uh. this is a pretty brain-dead approach; should
+        // redesign the whole test session thing so that "refreshing"
+        // wouldn't be needed in the first place
+        TestSession newSession = null;
         if (outConvertor != null) {
-            outConvertor.refreshSession();
+            newSession = outConvertor.refreshSession();
         }
         if (errConvertor != null) {
             errConvertor.refreshSession();
         }
+        if (newSession != null && outFactory != null) {
+            outFactory.refreshSession(newSession);
+        }
+        if (newSession != null && errFactory != null) {
+            errFactory.refreshSession(newSession);
+        }
     }
+
 }
