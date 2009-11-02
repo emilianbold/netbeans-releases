@@ -58,7 +58,7 @@ final class RubyMethodTypeInferencer {
     /**
      * Names of the methods that whose return type is (typically) the same as the receiver.
      */
-    private static final String[] RECEIVER_METHODS = {"new", "initialize", "clone", "dup", "freeze", "+", "-"};
+    private static final String[] RECEIVER_METHODS = {"new", "clone", "dup", "freeze", "+", "-"};
 
     /**
      * Method names whose return type we know.
