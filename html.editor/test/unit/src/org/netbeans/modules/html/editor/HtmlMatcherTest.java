@@ -140,6 +140,8 @@ public class HtmlMatcherTest extends TestBase {
         setDocumentText("<p><a></a></p>");
         //               0123456789012345678901234567890123456789
         //               0         1         2         3
+
+        //backward search
         BracesMatcher matcher = createMatcher(10, false, 1);
         assertOrigin(10, 14, matcher);
         assertMatch(0, 2, 2, 3, matcher);
@@ -147,6 +149,15 @@ public class HtmlMatcherTest extends TestBase {
         matcher = createMatcher(6, false, 1);
         assertOrigin(6, 10, matcher);
         assertMatch(3, 5, 5, 6, matcher);
+
+        //forward search
+        matcher = createMatcher(10, true, 1);
+        assertOrigin(6, 10, matcher);
+        assertMatch(3, 5, 5, 6, matcher);
+
+        matcher = createMatcher(6, true, 1);
+        assertOrigin(3, 6, matcher);
+        assertMatch(6, 10, -1, -1, matcher);
         
     }
     
@@ -154,9 +165,9 @@ public class HtmlMatcherTest extends TestBase {
         setDocumentText("<html><div></body></html>");
         //               0123456789012345678901234567890123456789
         //               0         1         2         3
-        BracesMatcher matcher = createMatcher(12, false, 1);
+        BracesMatcher matcher = createMatcher(13, false, 1);
         assertOrigin(11, 18, matcher);
-        assertMatch(12, 12, matcher); //body has optional end tag so returning the searched position range (hack)
+        assertMatch(14, 14, matcher); //body has optional end tag so returning the searched position range (hack)
         
         matcher = createMatcher(8, false, 1);
         assertOrigin(6, 11, matcher);
@@ -185,8 +196,12 @@ public class HtmlMatcherTest extends TestBase {
         assertNotNull(match);
         assertEquals("Incorrect match block start:", expectedStart1, match[0]);
         assertEquals("Incorrect match block end:", expectedEnd1, match[1]);
-        assertEquals("Incorrect match block start:", expectedStart2, match[2]);
-        assertEquals("Incorrect match block end:", expectedEnd2, match[3]);
+        if(expectedStart2 != -1) {
+            assertEquals("Incorrect match block start:", expectedStart2, match[2]);
+        }
+        if(expectedEnd2 != -1) {
+            assertEquals("Incorrect match block end:", expectedEnd2, match[3]);
+        }
     }
 
     private BracesMatcher createMatcher(int offset, boolean searchBackward, int lookahead) {

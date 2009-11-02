@@ -43,7 +43,6 @@ package org.netbeans.modules.debugger.ui.models;
 
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
-import java.util.*;
 import javax.swing.*;
 import javax.swing.KeyStroke;
 
@@ -67,7 +66,7 @@ import org.openide.util.HelpCtx;
  */
 public class WatchesActionsProvider implements NodeActionsProvider {
     
-    private static final Action NEW_WATCH_ACTION = new AbstractAction
+    static final Action NEW_WATCH_ACTION = new AbstractAction
         (NbBundle.getBundle(WatchesActionsProvider.class).getString("CTL_WatchAction_AddNew")) {
             public void actionPerformed (ActionEvent e) {
                 ((AddWatchAction) AddWatchAction.findObject(AddWatchAction.class, true)).actionPerformed(null);

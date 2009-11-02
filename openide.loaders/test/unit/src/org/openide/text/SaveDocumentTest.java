@@ -91,12 +91,12 @@ public class SaveDocumentTest extends NbTestCase {
     }
     
     protected void setUp() throws Exception {
-        TXTDataLoader loader = (TXTDataLoader)TXTDataLoader.getLoader (TXTDataLoader.class);
+        TXTDataLoader loader = TXTDataLoader.getLoader(TXTDataLoader.class);
         org.openide.loaders.AddLoaderManuallyHid.addRemoveLoader (loader, true);
     }
     
     protected void tearDown() throws Exception {
-        TXTDataLoader loader = (TXTDataLoader)TXTDataLoader.getLoader (TXTDataLoader.class);
+        TXTDataLoader loader = TXTDataLoader.getLoader(TXTDataLoader.class);
         org.openide.loaders.AddLoaderManuallyHid.addRemoveLoader (loader, false);
     }
 
@@ -109,7 +109,7 @@ public class SaveDocumentTest extends NbTestCase {
 
         DataObject data = DataObject.find(fo);
         
-        EditorCookie ec = (EditorCookie)data.getCookie(EditorCookie.class);
+        EditorCookie ec = data.getCookie(EditorCookie.class);
         
         if(!(ec instanceof CloneableEditorSupport)) {
             throw new IllegalStateException("Bad editor cookie type");
@@ -417,7 +417,7 @@ public class SaveDocumentTest extends NbTestCase {
              * @return text editor support (instance of enclosing class)
              */
             public CloneableOpenSupport findCloneableOpenSupport() {
-                return (TXTEditorSupport)getDataObject().getCookie(TXTEditorSupport.class);
+                return getDataObject().getCookie(TXTEditorSupport.class);
             }
         } // End of nested Environment class.
 

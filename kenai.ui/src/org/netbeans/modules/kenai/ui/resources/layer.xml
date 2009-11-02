@@ -27,7 +27,12 @@
                 <attr name="displayName" bundlevalue="org.netbeans.modules.kenai.ui.Bundle#CTL_NewKenaiProjectAction"/>
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
             </file>
-            <file name="org-netbeans-modules-kenai-ui-ShareAction.instance"/>
+            <file name="org-netbeans-modules-kenai-ui-ShareAction.instance">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.kenai.ui.Bundle"/>
+                <attr name="delegate" methodvalue="org.netbeans.modules.kenai.ui.ShareAction.getDefault"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.kenai.ui.Bundle#CTL_ShareAction"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.kenai.ui.ShareAction.getDefault"/>
+            </file>
             <file name="org-netbeans-modules-kenai-ui-ShareMenuAction.instance">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.kenai.ui.Bundle"/>
                 <attr name="delegate" newvalue="org.netbeans.modules.kenai.ui.ShareMenuAction"/>
@@ -72,6 +77,7 @@
         <folder name="Actions">
             <file name="org-netbeans-modules-kenai-ui-ShareAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Team/org-netbeans-modules-kenai-ui-ShareAction.instance"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.kenai.ui.ShareAction.getDefault"/>
                 <attr name="position" intvalue="150"/>
             </file>
             <file name="org-netbeans-modules-kenai-ui-KenaiPopupMenu.shadow">
@@ -121,10 +127,6 @@
                 <file name="org-netbeans-modules-kenai-ui-GetSourcesFromKenaiAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Team/org-netbeans-modules-kenai-ui-GetSourcesFromKenaiAction.instance"/>
                     <attr name="position" intvalue="400"/>
-                </file>
-                <file name="org-netbeans-modules-kenai-ui-ShareMenuAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Team/org-netbeans-modules-kenai-ui-ShareMenuAction.instance"/>
-                    <attr name="position" intvalue="350"/>
                 </file>
                 <file name="org-netbeans-modules-kenai-collab-chat-SendChatMessage-separatorBefore.instance">
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>

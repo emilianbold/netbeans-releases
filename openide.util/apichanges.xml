@@ -49,6 +49,27 @@ made subject to such option by the copyright holder.
     <apidef name="actions">Actions API</apidef>
 </apidefs>
 <changes>
+    <change id="URLStreamHandlerRegistration">
+        <api name="util"/>
+        <summary>Added <code>@URLStreamHandlerRegistration</code></summary>
+        <version major="7" minor="31"/>
+        <date day="30" month="10" year="2009"/>
+        <author login="jglick"/>
+        <compatibility addition="yes">
+            <p>
+                Modules registering <code>URLStreamHandlerFactory</code>s into
+                global lookup will still work but are advised to switch to this
+                annotation, which is both easier to use and more efficient.
+            </p>
+        </compatibility>
+        <description>
+            <p>
+                Introduced an annotation to register URL protocols.
+            </p>
+        </description>
+        <class package="org.openide.util" name="URLStreamHandlerRegistration"/>
+        <issue number="20838"/>
+    </change>
     <change id="ImageUtilities.createDisabled">
         <api name="util"/>
         <summary><code>ImageUtilities.createDisabledIcon</code> and <code>ImageUtilities.createDisabledImage</code> added.</summary>

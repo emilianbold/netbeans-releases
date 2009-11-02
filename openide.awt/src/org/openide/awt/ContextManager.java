@@ -42,7 +42,6 @@
 package org.openide.awt;
 
 import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeListener;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -53,7 +52,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Logger;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -67,15 +65,13 @@ import org.openide.util.lookup.ProxyLookup;
 /** Listener on a global context.
  */
 class ContextManager extends Object {
-    private static Logger LOG = GeneralAction.LOG;
     
     private static final Map<LookupRef, Reference<ContextManager>> CACHE = new HashMap<LookupRef, Reference<ContextManager>>();
     private static final Map<LookupRef, Reference<ContextManager>> SURVIVE = new HashMap<LookupRef, Reference<ContextManager>>();
 
     private Map<Class,LSet> listeners;
-    private PropertyChangeListener changeL;
     private Lookup lookup;
-    private LSet selectionAll;
+    private LSet<Lookup.Provider> selectionAll;
     
     private ContextManager(Lookup lookup) {
         this.listeners = new HashMap<Class,LSet>();
@@ -118,7 +114,7 @@ class ContextManager extends Object {
             
             if (a.selectMode == ContextSelection.ALL) {
                 if (selectionAll == null) {
-                    selectionAll = new LSet(lookup, Lookup.Provider.class);
+                    selectionAll = new LSet<Lookup.Provider>(lookup, Lookup.Provider.class);
                 }
                 selectionAll.add(a);
             }
@@ -176,7 +172,7 @@ class ContextManager extends Object {
                 if (result.allItems().size() != items.allItems().size()) {
                     return false;
                 }
-                Lookup.Template<T> template = new Lookup.Template(type);
+                Lookup.Template<T> template = new Lookup.Template<T>(type);
                 for (Lookup.Provider prov : items.allInstances()) {
                     if (prov.getLookup().lookupItem(template) == null) {
                         return false;
@@ -192,7 +188,7 @@ class ContextManager extends Object {
                 if (result.allItems().size() < items.allItems().size()) {
                     return false;
                 }
-                Lookup.Template<T> template = new Lookup.Template(type);
+                Lookup.Template<T> template = new Lookup.Template<T>(type);
                 for (Lookup.Provider prov : items.allInstances()) {
                     if (prov.getLookup().lookupItem(template) == null) {
                         return false;
@@ -241,6 +237,7 @@ class ContextManager extends Object {
         perf.actionPerformed(e, Collections.unmodifiableList(all), new LkpAE());
     }
 
+    @SuppressWarnings("unchecked") // XXX cast Collection<? extends T> -> List<? extends T> should not be unsafe, right? maybe javac bug
     private <T> List<? extends T> listFromResult(Lookup.Result<T> result) {
         List<? extends T> all;
         Collection<? extends T> col = result.allInstances();

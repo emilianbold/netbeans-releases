@@ -46,6 +46,8 @@ import org.netbeans.api.debugger.test.TestActionsManagerListener;
 import org.netbeans.api.debugger.test.TestLazyActionsManagerListener;
 
 import java.util.*;
+import junit.framework.Test;
+import org.netbeans.junit.NbModuleSuite;
 import org.openide.util.Task;
 
 /**
@@ -58,6 +60,12 @@ public class DebuggerActionsTest extends DebuggerApiTestBase {
     public DebuggerActionsTest(String s) {
         super(s);
     }
+
+    /* TODO:  Add this to simulate the IDE runtime behavior
+    public static Test suite() {
+        return NbModuleSuite.create(NbModuleSuite.createConfiguration(ProvidersAnnotationTest.class));
+    }
+     */
 
     public void testLookup() throws Exception {
 

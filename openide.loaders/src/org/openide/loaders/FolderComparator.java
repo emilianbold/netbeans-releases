@@ -117,7 +117,7 @@ class FolderComparator extends DataFolder.SortMode {
             return ((DataObject) o).getPrimaryFile();
         }
         Node n = (Node) o;
-        DataObject obj = (DataObject) n.getCookie(DataObject.class);
+        DataObject obj = n.getCookie(DataObject.class);
         return obj.getPrimaryFile();
     }
 
@@ -133,7 +133,7 @@ class FolderComparator extends DataFolder.SortMode {
             }
         }
         Node n = (Node) o;
-        DataObject obj = (DataObject) n.getCookie(DataObject.class);
+        DataObject obj = n.getCookie(DataObject.class);
         return obj;
     }
 

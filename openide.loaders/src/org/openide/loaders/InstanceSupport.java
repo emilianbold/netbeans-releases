@@ -486,7 +486,7 @@ public class InstanceSupport extends Object implements InstanceCookie.Of {
                     c = customLoader.loadClass(name);
                 } else {
                     // to save the space with wasting classloaders, try the system first
-                    loader = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
+                    loader = Lookup.getDefault().lookup(ClassLoader.class);
                     if (loader == null) {
                         loader = getClass ().getClassLoader ();
                     }
@@ -515,7 +515,7 @@ public class InstanceSupport extends Object implements InstanceCookie.Of {
      * @return ClassLoader
      */
     protected ClassLoader createClassLoader() {
-        ClassLoader l = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
+        ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
         return l;
     }
 

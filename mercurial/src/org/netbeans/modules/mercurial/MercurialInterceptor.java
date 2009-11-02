@@ -52,7 +52,6 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -78,6 +77,8 @@ public class MercurialInterceptor extends VCSInterceptor {
     private static final RequestProcessor rp = new RequestProcessor("MercurialRefresh", 1, true);
     private final RequestProcessor parallelRP = new RequestProcessor("Mercurial FS handler", 50);
     private final HashSet<FileObject> dirStates = new HashSet<FileObject>(5);
+    private static final boolean AUTOMATIC_REFRESH_ENABLED = !"true".equals(System.getProperty("versioning.mercurial.autoRefreshDisabled", "false")); //NOI18N
+    private static final boolean FULL_REPO_SCAN_ENABLED = !"true".equals(System.getProperty("versioning.mercurial.fullRepoScanDisabled", "false")); //NOI18N
 
     public MercurialInterceptor() {
         cache = Mercurial.getInstance().getFileStatusCache();
@@ -354,6 +355,9 @@ public class MercurialInterceptor extends VCSInterceptor {
      * @param file
      */
     void pingRepositoryRootFor(final File file) {
+        if (!AUTOMATIC_REFRESH_ENABLED) {
+            return;
+        }
         Mercurial.getInstance().getRequestProcessor().post(new Runnable() {
             public void run() {
                 // select repository root for the file and finds it's dirstate file
@@ -417,37 +421,57 @@ public class MercurialInterceptor extends VCSInterceptor {
         if (files.isEmpty()) {
             return;
         }
-        HashMap<File, File> rootFiles = new HashMap<File, File>(5);
-        File firstFile = files.iterator().next();
-        File firstRepository = Mercurial.getInstance().getRepositoryRoot(firstFile);
-        assert firstRepository != null;
-        rootFiles.put(firstRepository, FileUtil.normalizeFile(firstFile));
-
+        HashMap<File, Set<File>> rootFiles = new HashMap<File, Set<File>>(5);
+        
         for (File file : files) {
-            boolean added = false;
+            // go through all files and sort them under repository roots
             file = FileUtil.normalizeFile(file);
-            for (Map.Entry<File, File> entry : rootFiles.entrySet()) {
-                File ancestorCandidate = entry.getValue();
+            File repository = Mercurial.getInstance().getRepositoryRoot(file);
+            assert repository != null;
+            Set<File> filesUnderRoot = rootFiles.get(repository);
+            if (filesUnderRoot == null) {
+                filesUnderRoot = new HashSet<File>();
+                rootFiles.put(repository, filesUnderRoot);
+            }
+            boolean added = false;
+            for (File fileUnderRoot : filesUnderRoot) {
+                // try to find a common parent for planned files
                 File childCandidate = file;
+                File ancestorCandidate = fileUnderRoot;
                 added = true;
-                if (childCandidate.equals(ancestorCandidate)) {
-                    // file has already been inserted
+                if (childCandidate.equals(ancestorCandidate) || ancestorCandidate.equals(repository)) {
+                    // file has already been inserted or scan is planned for the whole repository root
                     break;
                 }
-                if (file.getAbsolutePath().length() < entry.getValue().getAbsolutePath().length()) {
-                    // entry path is too short to be the file's parent
-                    ancestorCandidate = file;
-                    childCandidate = entry.getValue();
+                if (childCandidate.equals(repository)) {
+                    // plan the scan for the whole repository root
+                    ancestorCandidate = childCandidate;
+                } else {
+                    if (file.getAbsolutePath().length() < fileUnderRoot.getAbsolutePath().length()) {
+                        // ancestor's path is too short to be the child's parent
+                        ancestorCandidate = file;
+                        childCandidate = fileUnderRoot;
+                    }
+                    if (!Utils.isAncestorOrEqual(ancestorCandidate, childCandidate)) {
+                        ancestorCandidate = Utils.getCommonParent(childCandidate, ancestorCandidate);
+                    }
                 }
-                if (!Utils.isAncestorOrEqual(ancestorCandidate, childCandidate)) {
-                    ancestorCandidate = Utils.getCommonParent(childCandidate, ancestorCandidate);
-                }
-                if (ancestorCandidate == entry.getValue()) {
+                if (ancestorCandidate == fileUnderRoot) {
                     // already added
                     break;
-                } else if (ancestorCandidate != null && entry.getKey().equals(Mercurial.getInstance().getRepositoryRoot(ancestorCandidate))) {
+                } else if (!FULL_REPO_SCAN_ENABLED && ancestorCandidate != childCandidate && ancestorCandidate.equals(repository)) {
+                    // common ancestor is the repo root and neither one of the candidates was originally the repo root
+                    // do not scan the whole clone, it might be a performance killer
+                    added = false;
+                } else if (ancestorCandidate != null) {
                     // file is under the repository root
-                    entry.setValue(ancestorCandidate);
+                    if (ancestorCandidate.equals(repository)) {
+                        // adding the repository, there's no need to leave all other files
+                        filesUnderRoot.clear();
+                    } else {
+                        filesUnderRoot.remove(fileUnderRoot);
+                    }
+                    filesUnderRoot.add(ancestorCandidate);
                     break;
                 } else {
                     added = false;
@@ -455,9 +479,7 @@ public class MercurialInterceptor extends VCSInterceptor {
             }
             if (!added) {
                 // not added yet
-                File repository = Mercurial.getInstance().getRepositoryRoot(file);
-                assert repository != null;
-                rootFiles.put(repository, FileUtil.normalizeFile(file));
+                filesUnderRoot.add(file);
             }
         }
         if (Mercurial.STATUS_LOG.isLoggable(Level.FINE)) {

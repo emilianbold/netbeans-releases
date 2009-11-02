@@ -245,7 +245,7 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
     * @param original original data object
     */
     private DataShadow (FileObject fo, DataObject original) throws DataObjectExistsException {
-        this (fo, original, (MultiFileLoader)DataLoaderPool.getShadowLoader ());
+        this(fo, original, DataLoaderPool.getShadowLoader());
     }
 
     /** Method that creates new data shadow in a folder. The name chosen is based

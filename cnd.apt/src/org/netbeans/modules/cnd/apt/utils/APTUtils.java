@@ -174,6 +174,7 @@ public class APTUtils {
                 // Numbers
             case APTTokenTypes.DECIMALINT:
             case APTTokenTypes.HEXADECIMALINT:
+            case APTTokenTypes.BINARYINT:
             case APTTokenTypes.FLOATONE:
             case APTTokenTypes.FLOATTWO:
             case APTTokenTypes.OCTALINT:
@@ -316,6 +317,7 @@ public class APTUtils {
                 case APTTokenTypes.DECIMALINT:
                 case APTTokenTypes.HEXADECIMALINT:
                 case APTTokenTypes.OCTALINT:
+                case APTTokenTypes.BINARYINT:
                     return true;
             }
         }

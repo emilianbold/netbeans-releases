@@ -44,7 +44,9 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
+import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -161,6 +163,7 @@ public abstract class PositionEstimator {
     public abstract String head();
     public abstract String sep();
     public abstract String getIndentString();
+    public String append(int index) {return "";}
     
     // remove the method after all calls will be refactored!
     public int[][] getMatrix() { 
@@ -872,6 +875,7 @@ public abstract class PositionEstimator {
     static class MembersEstimator extends PositionEstimator {
         
         private List<int[]> data;
+        private List<String> append;
         private int minimalLeftPosition;
         
         public MembersEstimator(final List<? extends Tree> oldL, 
@@ -895,6 +899,7 @@ public abstract class PositionEstimator {
         public void initialize() {
             int size = oldL.size();
             data = new ArrayList<int[]>(size);
+            append = new ArrayList<String>(size);
             SourcePositions positions = copy.getTrees().getSourcePositions();
             CompilationUnitTree compilationUnit = copy.getCompilationUnit();
             
@@ -907,14 +912,6 @@ public abstract class PositionEstimator {
                     FieldGroupTree fgt = ((FieldGroupTree) item);
                     List<JCVariableDecl> vars = fgt.getVariables();
                     treeEnd = (int) positions.getEndPosition(compilationUnit, vars.get(vars.size()-1));
-                    if (fgt.isEnum()) {
-                        seq.move(treeEnd);
-                        moveToSrcRelevant(seq, Direction.FORWARD);
-                        if (JavaTokenId.SEMICOLON == seq.token().id()) {
-                            seq.moveNext();
-                        }
-                        treeEnd = seq.offset();
-                    }
                 } else {
                     seq.move(treeEnd);
                     if (seq.movePrevious() && nonRelevant.contains(seq.token().id())) {
@@ -923,7 +920,26 @@ public abstract class PositionEstimator {
                         treeEnd = seq.offset();
                     }
                 }
-                
+
+                String itemAppend = "";
+                int    appendInsertPos = -1;
+
+                if (isEnum(item)) {
+                    seq.move(treeEnd);
+                    moveToSrcRelevant(seq, Direction.FORWARD);
+                    if (JavaTokenId.COMMA == seq.token().id()) {
+                        treeEnd = seq.offset() + seq.token().length();
+                        moveToSrcRelevant(seq, Direction.FORWARD);
+                    }
+                    if (JavaTokenId.SEMICOLON == seq.token().id()) {
+                        seq.moveNext();
+                    } else {
+                        itemAppend = ";";
+                        appendInsertPos = treeEnd;
+                    }
+                    treeEnd = seq.offset();
+                }
+
                 seq.move(treeStart);
                 seq.moveNext();
                 if (null != moveToSrcRelevant(seq, Direction.BACKWARD)) {
@@ -973,9 +989,16 @@ public abstract class PositionEstimator {
                         break;
                 }
                 if (wideEnd < treeEnd) wideEnd = treeEnd;
-                data.add(new int[] { previousEnd, wideEnd, previousEnd });
+                data.add(new int[] { previousEnd, wideEnd, previousEnd, appendInsertPos });
+                append.add(itemAppend);
             }
             initialized = true;
+        }
+
+        private boolean isEnum(Tree tree) {
+            if (tree instanceof FieldGroupTree) return ((FieldGroupTree) tree).isEnum();
+            if (tree instanceof VariableTree) return (((JCVariableDecl) tree).getModifiers().flags & Flags.ENUM) != 0;
+            return false;
         }
         
         @Override()
@@ -1049,6 +1072,11 @@ public abstract class PositionEstimator {
         public String sep() { return ""; }
 
         public String getIndentString() { return ""; }
+
+        @Override
+        public String append(int index) {
+            return append.get(index);
+        }
         
         @Override()
         public int[] getPositions(int index) {

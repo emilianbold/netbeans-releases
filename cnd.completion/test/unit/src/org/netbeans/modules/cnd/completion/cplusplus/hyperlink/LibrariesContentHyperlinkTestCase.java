@@ -215,6 +215,12 @@ public class LibrariesContentHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("src/iz154851.cc", 6, 10, "sys_include/iz154851_2.h", 2, 1);
         performTest("src/iz154851.cc", 8, 10, "src/iz167200.h", 2, 1);
     }
+
+    public void test175505() throws Exception {
+        // IZ#175505 : Unable to resolve namespace
+        performTest("src/iz175505.cc", 10, 38, "sys_include/iz175505.h", 3, 5);
+        performTest("src/iz175505.cc", 13, 6, "sys_include/iz175505.h", 4, 9);
+    }
     
     public static class Failed extends HyperlinkBaseTestCase {
 
