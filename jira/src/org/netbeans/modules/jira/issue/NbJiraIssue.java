@@ -762,6 +762,9 @@ public class NbJiraIssue extends Issue {
                 // so do not set to close if already closed
                 Jira.LOG.log(Level.INFO, "Close not permitted, current status is " + getStatus().getName() + ", leaving status the same", ise);
             }
+        } else {
+            // comment must be added even when not resolving
+            addComment(comment);
         }
 
         JiraCommand submitCmd = new JiraCommand() {
