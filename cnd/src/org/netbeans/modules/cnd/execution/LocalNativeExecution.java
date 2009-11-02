@@ -45,6 +45,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.Reader;
@@ -146,7 +147,7 @@ class LocalNativeExecution extends NativeExecution {
 
     private static Logger getExecLog() {
         if (execLog == null) {
-            execLog = Logger.getLogger(LocalNativeExecution.class.getName());
+            execLog = Logger.getLogger("cnd.remote.logger"); //NOI18N;  let it be the same as in remote
         }
         return execLog;
     }
@@ -242,6 +243,8 @@ class LocalNativeExecution extends NativeExecution {
                     //output.flush(); // 135380
                 }
                 output.flush();
+            } catch (InterruptedIOException e) {
+                getExecLog().finest("Output reader thread interrupted");
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }
@@ -278,12 +281,17 @@ class LocalNativeExecution extends NativeExecution {
                     pout.write((char) ch);
                     pout.flush();
                 }
+            } catch (InterruptedIOException e) {
+                getExecLog().finest("Input reader thread interrupted");
             } catch (IOException e) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             } finally {
                 // Handle EOF and other exits
                 try {
                     pout.flush();
                     pout.close();
+                } catch (InterruptedIOException e) {
+                    getExecLog().finest("Input reader thread cleanup interrupted");
                 } catch (IOException ex) {
                     ex.printStackTrace();
                 }
