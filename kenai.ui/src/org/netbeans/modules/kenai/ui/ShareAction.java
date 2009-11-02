@@ -39,14 +39,20 @@
 package org.netbeans.modules.kenai.ui;
 
 import java.awt.event.ActionEvent;
+import java.io.File;
 import java.text.MessageFormat;
 import java.util.Set;
 import javax.swing.AbstractAction;
+import javax.swing.JOptionPane;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.kenai.ui.NewKenaiProjectWizardIterator.CreatedProjectInfo;
 import org.netbeans.modules.kenai.ui.dashboard.DashboardImpl;
 import org.netbeans.modules.subversion.api.Subversion;
+import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.windows.WindowManager;
@@ -75,7 +81,20 @@ public final class ShareAction extends AbstractAction {
         }
     }
 
-    public static void actionPerformed(Node [] e) {
+    public static void actionPerformed(Node[] e) {
+        if (e != null) {
+            for (Node node : e) {
+                Project prj = node.getLookup().lookup(Project.class);
+                if (prj != null) {
+                    File file = FileUtil.toFile(prj.getProjectDirectory());
+                    if (VersioningSupport.getOwner(file) != null) {
+                        JOptionPane.showMessageDialog(WindowManager.getDefault().getMainWindow(),
+                                NbBundle.getMessage(ShareAction.class, "NameAndLicenseWizardPanelGUI.versioningNotSupported", ProjectUtils.getInformation(prj).getDisplayName()));
+                        return;
+                    }
+                }
+            }
+        }
         if (Subversion.isClientAvailable(true)) {
 
             WizardDescriptor wizardDescriptor = new WizardDescriptor(new NewKenaiProjectWizardIterator(e));
