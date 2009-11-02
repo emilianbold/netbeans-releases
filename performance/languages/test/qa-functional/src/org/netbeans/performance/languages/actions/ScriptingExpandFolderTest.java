@@ -123,7 +123,7 @@ public class ScriptingExpandFolderTest extends PerformanceTestCase {
     }
 
     public void testExpandRubyProjectNode() {
-        WAIT_AFTER_OPEN = 2000;
+        WAIT_AFTER_OPEN = 1000;
         project = Projects.RUBY_PROJECT;
         pathToFolderNode = "";
         expectedTime = 1000;
@@ -131,7 +131,7 @@ public class ScriptingExpandFolderTest extends PerformanceTestCase {
     }
 
     public void testExpandFolderWith100RubyFiles() {
-        WAIT_AFTER_OPEN = 2000;
+        WAIT_AFTER_OPEN = 1000;
         project = Projects.RUBY_PROJECT;
         pathToFolderNode = "Source Files" + "|" + "100RbFiles";
         expectedTime = 1000;
@@ -139,7 +139,7 @@ public class ScriptingExpandFolderTest extends PerformanceTestCase {
     }
 
     public void testExpandRailsProjectNode() {
-        WAIT_AFTER_OPEN = 2000;
+        WAIT_AFTER_OPEN = 1000;
         project = Projects.RAILS_PROJECT;
         pathToFolderNode = "";
         expectedTime = 1000;
@@ -147,7 +147,7 @@ public class ScriptingExpandFolderTest extends PerformanceTestCase {
     }
 
     public void testExpandPHPProjectNode() {
-        WAIT_AFTER_OPEN = 2000;
+        WAIT_AFTER_OPEN = 1000;
         project = Projects.PHP_PROJECT;
         pathToFolderNode = "";
         expectedTime = 1000;
@@ -155,28 +155,28 @@ public class ScriptingExpandFolderTest extends PerformanceTestCase {
     }
 
     public void testExpandFolderWith100RailsFiles() {
-        WAIT_AFTER_OPEN = 2000;
+        WAIT_AFTER_OPEN = 1000;
         project = Projects.RAILS_PROJECT;
         pathToFolderNode = "Unit Tests" + "|" + "100RhtmlFiles";
         expectedTime = 1000;
         doMeasurement();        
     }
     public void testExpandFolderWith100JSFiles() {
-        WAIT_AFTER_OPEN = 2000;
+        WAIT_AFTER_OPEN = 1000;
         project = Projects.SCRIPTING_PROJECT;
         pathToFolderNode = "Web Pages" + "|" + "100JsFiles";
         expectedTime = 1000;
         doMeasurement();           
     }
     public void testExpandFolderWith100CssFiles() {
-        WAIT_AFTER_OPEN = 2000;
+        WAIT_AFTER_OPEN = 1000;
         project = Projects.SCRIPTING_PROJECT;
         pathToFolderNode = "Web Pages" + "|" + "100CssFiles";
         expectedTime = 1000;
         doMeasurement();           
     }  
     public void testExpandFolderWith100PhpFiles() {
-        WAIT_AFTER_OPEN = 2000;
+        WAIT_AFTER_OPEN = 1000;
         project = Projects.PHP_PROJECT;
         pathToFolderNode = "Source Files" + "|" + "100PhpFiles";
         expectedTime = 1000;
