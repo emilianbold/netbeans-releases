@@ -240,6 +240,10 @@ public class FixDependencies extends Task {
             
             for (Module m : r.modules) {
                 if (m.codeNameBase.equals(r.codeNameBase)) {
+                    if (remove.contains("<implementation-version/>")) {
+                        return false;
+                    }
+
                     String b = "<specification-version>";
                     int specBeg = remove.indexOf(b);
                     int specEnd = remove.indexOf("</specification-version>");
