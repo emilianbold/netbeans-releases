@@ -258,9 +258,29 @@ public class CompletionUtilities {
         int level = 0;
         boolean inFirstParameter = false;
         boolean whitespaceAfterName = false;
+        boolean inStringLiteral = false;
+        boolean inCharLiteral = false;
+        boolean escapeSymbol = false;
         CharSequence text = DocumentUtilities.getText(doc);
         for (int i = startPos; i < doc.getLength(); i++) {
             char ch = text.charAt(i);
+
+            // skip string and char litarals
+            if (!inCharLiteral && ch == '"' && !escapeSymbol) {
+                inStringLiteral = !inStringLiteral;
+            }
+            if (!inStringLiteral && ch == '\'' && !escapeSymbol) {
+                inCharLiteral = !inCharLiteral;
+            }
+            if (ch == '\\') {
+                escapeSymbol = true;
+            } else {
+                escapeSymbol = false;
+            }
+            if(inCharLiteral || inStringLiteral) {
+                continue;
+            }
+
             if (ch == ';') {
                 return paramsNumber;
             }
