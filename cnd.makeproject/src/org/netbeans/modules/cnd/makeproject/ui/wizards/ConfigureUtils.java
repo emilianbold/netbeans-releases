@@ -197,7 +197,7 @@ public final class ConfigureUtils {
     }
 
     private static boolean isSunStodio(){
-        CompilerSet def = CompilerSetManager.getDefault().getDefaultCompilerSet();
+        CompilerSet def = CompilerSetManager.getDefault(CompilerSetManager.getDefaultExecutionEnvironment()).getDefaultCompilerSet();
         if (def != null) {
             CompilerFlavor flavor = def.getCompilerFlavor();
             if (flavor.isSunStudioCompiler()) {
@@ -208,7 +208,7 @@ public final class ConfigureUtils {
     }
 
     private static String getDefaultC(){
-        CompilerSet def = CompilerSetManager.getDefault().getDefaultCompilerSet();
+        CompilerSet def = CompilerSetManager.getDefault(CompilerSetManager.getDefaultExecutionEnvironment()).getDefaultCompilerSet();
         String cCompiler = getToolPath(def, Tool.CCompiler);
         if (cCompiler != null) {
             return cCompiler;
@@ -224,7 +224,7 @@ public final class ConfigureUtils {
     }
 
     private static String getDefaultCpp(){
-        CompilerSet def = CompilerSetManager.getDefault().getDefaultCompilerSet();
+        CompilerSet def = CompilerSetManager.getDefault(CompilerSetManager.getDefaultExecutionEnvironment()).getDefaultCompilerSet();
         String cppCompiler = getToolPath(def, Tool.CCCompiler);
         if (cppCompiler != null) {
             return cppCompiler;
@@ -258,7 +258,7 @@ public final class ConfigureUtils {
     }
 
     private static String getCompilerFlags(){
-        CompilerSet def = CompilerSetManager.getDefault().getDefaultCompilerSet();
+        CompilerSet def = CompilerSetManager.getDefault(CompilerSetManager.getDefaultExecutionEnvironment()).getDefaultCompilerSet();
         if (def != null) {
             CompilerFlavor flavor = def.getCompilerFlavor();
             if (flavor.isSunStudioCompiler()) {
