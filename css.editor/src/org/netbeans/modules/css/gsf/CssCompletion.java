@@ -500,7 +500,7 @@ public class CssCompletion implements CodeCompletionHandler {
             return null;
         }
         final String[] retval = new String[1];
-        ((BaseDocument) document).runAtomic(new Runnable() {
+        ((BaseDocument) document).render(new Runnable() {
             public void run() {
                 retval[0] = getPrefix(LexerUtils.getCssTokenSequence(document, caretOffset), caretOffset);
             }
