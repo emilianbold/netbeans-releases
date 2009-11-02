@@ -1187,8 +1187,10 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 metaBase.getFileSystem().addFileChangeListener(this);
             }
 
-            FileUtil.addFileChangeListener(this, resources);
-            
+            if (resources != null) {
+                FileUtil.addFileChangeListener(this, resources);
+            }
+
             LOGGER.log(Level.FINE, "Meta directory is {0}", metaBaseValue);
 
             EjbJarProject.this.evaluator().addPropertyChangeListener(this);
@@ -1198,7 +1200,9 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
             if (metaBase != null) {
                 metaBase.getFileSystem().removeFileChangeListener(this);
             }
-            FileUtil.removeFileChangeListener(this, resources);
+            if (resources != null) {
+                FileUtil.removeFileChangeListener(this, resources);
+            }
 
             EjbJarProject.this.evaluator().removePropertyChangeListener(this);
         }
