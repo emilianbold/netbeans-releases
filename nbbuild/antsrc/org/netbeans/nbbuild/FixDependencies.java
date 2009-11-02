@@ -75,6 +75,7 @@ public class FixDependencies extends Task {
     private boolean onlyChanged;
     /** fail on error */
     private boolean fail;
+    private boolean doSanity = true;
     
     
     /** tasks to be executed */
@@ -94,6 +95,10 @@ public class FixDependencies extends Task {
         if (this.set != null) throw new BuildException ("Only one file set is allowed");
         this.set = new FileSet();
         return this.set;
+    }
+
+    public void setSanityCheck(boolean s) {
+        doSanity = s;
     }
     
     public void setBuildTarget (String s) {
@@ -155,8 +160,10 @@ public class FixDependencies extends Task {
                         log ("Cleaning " + clean + " in " + script, org.apache.tools.ant.Project.MSG_INFO);
                         cleanTask.execute ();
                     }
-                    log ("Sanity check executes " + target + " in " + script, org.apache.tools.ant.Project.MSG_INFO);
-                    task.execute ();
+                    if (doSanity) {
+                        log ("Sanity check executes " + target + " in " + script, org.apache.tools.ant.Project.MSG_INFO);
+                        task.execute ();
+                    }
                 } catch (BuildException ex) {
                     if (fail) {
                         throw ex;
@@ -199,7 +206,12 @@ public class FixDependencies extends Task {
         data = null;
 
         for (Replace r : replaces) {
-            int idx = stream.indexOf ("<code-name-base>" + r.codeNameBase + "</code-name-base>");
+            int md = stream.indexOf("<module-dependencies");
+            if (md == -1) {
+                throw new BuildException("No module dependencies in " + file);
+            }
+
+            int idx = stream.indexOf ("<code-name-base>" + r.codeNameBase + "</code-name-base>", md);
             if (idx == -1) continue;
             
             int from = stream.lastIndexOf ("<dependency>", idx);
@@ -220,8 +232,21 @@ public class FixDependencies extends Task {
             sb.append (stream.substring (0, from));
             
             for (Module m : r.modules) {
-                if (stream.indexOf ("<code-name-base>" + m.codeNameBase + "</code-name-base>") != -1) {
-                    continue;
+                if (m.codeNameBase.equals(r.codeNameBase)) {
+                    String b = "<specification-version>";
+                    int specBeg = remove.indexOf(b);
+                    int specEnd = remove.indexOf("</specification-version>");
+                    if (specBeg == -1 || specEnd == -1) {
+                        continue;
+                    }
+                    String v = remove.substring(specBeg + b.length(), specEnd);
+                    if (olderThanOrEqual(m.specVersion, v)) {
+                        return false;
+                    }
+                } else {
+                    if (stream.indexOf ("<code-name-base>" + m.codeNameBase + "</code-name-base>") != -1) {
+                        continue;
+                    }
                 }
 
                 int beg = remove.indexOf (r.codeNameBase);
@@ -352,7 +377,6 @@ public class FixDependencies extends Task {
         log ("Final verification runs " + target + " in " + script, Project.MSG_INFO);
         // now verify, if there is a failure then something is wrong now
         task.execute ();
-        
         if (success.length () == 0) {
             log ("No dependencies removed from " + script);
         } else {
@@ -365,6 +389,22 @@ public class FixDependencies extends Task {
             from++;
         }
         return from;
+    }
+
+    private static boolean olderThanOrEqual(String v1, String v2) {
+        String[] arr1 = v1.split("\\.");
+        String[] arr2 = v2.split("\\.");
+        int min = Math.min(arr1.length, arr2.length);
+        for (int i = 0; i < min; i++) {
+            int i1 = Integer.parseInt(arr1[i]);
+            int i2 = Integer.parseInt(arr2[i]);
+
+            if (i1 == i2) {
+                continue;
+            }
+            return i1 < i2;
+        }
+        return arr1.length <= arr2.length;
     }
 
     public static final class Replace extends Object {

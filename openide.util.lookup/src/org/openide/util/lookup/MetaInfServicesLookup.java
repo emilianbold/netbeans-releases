@@ -57,10 +57,11 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.util.Lookup;
-import org.openide.util.RequestProcessor;
 
 /**
  * @author Jaroslav Tulach, Jesse Glick
@@ -70,7 +71,10 @@ import org.openide.util.RequestProcessor;
 final class MetaInfServicesLookup extends AbstractLookup {
 
     private static final Logger LOGGER = Logger.getLogger(MetaInfServicesLookup.class.getName());
-    static final RequestProcessor RP = new RequestProcessor(MetaInfServicesLookup.class.getName(), 1);
+    static final Executor RP = Executors.newSingleThreadExecutor(); 
+    /*TBD: Inject RequestProcessor somehow
+     new RequestProcessor(MetaInfServicesLookup.class.getName(), 1);
+     */
     private static int knownInstancesCount;
     private static final List<Reference<Object>> knownInstances;
     static {
