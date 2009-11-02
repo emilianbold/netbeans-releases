@@ -54,7 +54,7 @@ public class TestInstallerAndUninstallerJava extends Installer{
 
         // Pages
           // Apache
-        Utils.stepChooseComponet("Apache Tomcat");
+        Utils.stepChooseComponet( "Apache Tomcat", data );
         // Welcome
         Utils.stepWelcome();
         // Agreement
@@ -68,9 +68,18 @@ public class TestInstallerAndUninstallerJava extends Installer{
         // GF
         Utils.stepSetDir(
             data,
-            "Install GlassFish",
+            data.m_bPreludePresents ? "Install Sun GlassFish Enterprise Server" : "Install GlassFish",
             data.GetApplicationServerInstallPath( )
           );
+        if( data.m_bPreludePresents )
+        {
+          Utils.stepSetDir(
+              data,
+              "Install GlassFish",
+              data.GetApplicationServerInstallPath( )
+            );
+        }
+
         // Apache
         Utils.stepSetDir(
             data,

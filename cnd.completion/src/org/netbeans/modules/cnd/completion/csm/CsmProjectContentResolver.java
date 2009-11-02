@@ -868,17 +868,35 @@ public final class CsmProjectContentResolver {
     }
 
     public List<CsmNamespace> getNestedNamespaces(CsmNamespace ns, String strPrefix, boolean match) {
-        List<CsmNamespace> res = new ArrayList<CsmNamespace>();
+        Map<CharSequence, CsmNamespace> set = getNestedNamespaces(ns, strPrefix, match, new HashSet<CsmNamespace>());
+        List<CsmNamespace> res;
+        if (set != null && set.size() > 0) {
+            res = new ArrayList<CsmNamespace>(set.values());
+        } else {
+            res = new ArrayList<CsmNamespace>();
+        }
+        if (sort && res != null) {
+            CsmSortUtilities.sortMembers(res, isNaturalSort(), isCaseSensitive());
+        }
+        return res;
+    }
+
+    private Map<CharSequence, CsmNamespace> getNestedNamespaces(CsmNamespace ns, String strPrefix, boolean match, Set<CsmNamespace> handledNS) {
+        handledNS.add(ns);
+        Map<CharSequence, CsmNamespace> res = new LinkedHashMap<CharSequence, CsmNamespace>(); // order is important
         // handle all nested namespaces
         for (Iterator it = ns.getNestedNamespaces().iterator(); it.hasNext();) {
             CsmNamespace nestedNs = (CsmNamespace) it.next();
             // TODO: consider when we add nested namespaces
             if (nestedNs.getName().length() != 0 && matchName(nestedNs.getName(), strPrefix, match)) {
-                res.add(nestedNs);
+                res.put(nestedNs.getQualifiedName(), nestedNs);
             }
         }
-        if (sort && res != null) {
-            CsmSortUtilities.sortMembers(res, isNaturalSort(), isCaseSensitive());
+        for (CsmProject lib : ns.getProject().getLibraries()) {
+            CsmNamespace n = lib.findNamespace(ns.getQualifiedName());
+            if (n != null && !handledNS.contains(n)) {
+                res.putAll(getNestedNamespaces(n, strPrefix, match, handledNS));
+            }
         }
         return res;
     }

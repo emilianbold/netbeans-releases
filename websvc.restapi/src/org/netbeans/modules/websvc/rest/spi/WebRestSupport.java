@@ -72,6 +72,7 @@ public abstract class WebRestSupport extends RestSupport {
     public static final String CONFIG_TYPE_IDE = "ide"; //NOI18N
     public static final String CONFIG_TYPE_USER= "user"; //NOI18N
     public static final String CONFIG_TYPE_DD= "dd"; //NOI18N
+    public static final String REST_CONFIG_TARGET="generate-rest-config"; //NOI18N
 
     /** Creates a new instance of WebProjectRestSupport */
     public WebRestSupport(Project project) {
@@ -192,7 +193,7 @@ public abstract class WebRestSupport extends RestSupport {
         return null;
     }
     
-    protected void addResourceConfigToWebApp(String resourcePath) throws IOException {
+    public void addResourceConfigToWebApp(String resourcePath) throws IOException {
         FileObject ddFO = getWebXml();
         WebApp webApp = getWebApp();
         if (webApp == null) {
@@ -210,29 +211,54 @@ public abstract class WebRestSupport extends RestSupport {
                 needsSave = true;
             }
 
+            String resourcesUrl = resourcePath;
+            if (!resourcePath.startsWith("/")) { //NOI18N
+                resourcesUrl = "/"+resourcePath; //NOI18N
+            }
+            if (resourcesUrl.endsWith("/")) { //NOI18N
+                resourcesUrl = resourcesUrl+"*"; //NOI18N
+            } else if (!resourcesUrl.endsWith("*")) { //NOI18N
+                resourcesUrl = resourcesUrl+"/*"; //NOI18N
+            }
+
             ServletMapping sm = getRestServletMapping(webApp);
             if (sm == null) {
                 sm = (ServletMapping) webApp.createBean("ServletMapping"); //NOI18N
                 sm.setServletName(adaptorServlet.getServletName());
-
-                String resourcesUrl = resourcePath;
-                if (!resourcePath.startsWith("/")) { //NOI18N
-                    resourcesUrl = "/"+resourcePath; //NOI18N
-                }
-                if (resourcesUrl.endsWith("/")) { //NOI18N
-                    resourcesUrl = resourcesUrl+"*"; //NOI18N
-                } else if (!resourcesUrl.endsWith("*")) { //NOI18N
-                    resourcesUrl = resourcesUrl+"/*"; //NOI18N
-                }
-
                 if (sm instanceof ServletMapping25) {
                     ((ServletMapping25)sm).addUrlPattern(resourcesUrl);
                 } else {
-
                     sm.setUrlPattern(resourcesUrl);
                 }
                 webApp.addServletMapping(sm);
                 needsSave = true;
+            } else {
+                // check old url pattern
+                boolean urlPatternChanged = false;
+                if (sm instanceof ServletMapping25) {
+                    String[] urlPatterns = ((ServletMapping25)sm).getUrlPatterns();
+                    if (urlPatterns.length == 0 || !resourcesUrl.equals(urlPatterns[0])) {
+                        urlPatternChanged = true;
+                    }
+                } else {
+                    if (!resourcesUrl.equals(sm.getUrlPattern())) {
+                        urlPatternChanged = true;
+                    }
+                }
+
+                if (urlPatternChanged) {
+                    if (sm instanceof ServletMapping25) {
+                        String[] urlPatterns = ((ServletMapping25)sm).getUrlPatterns();
+                        if (urlPatterns.length>0) {
+                            ((ServletMapping25)sm).setUrlPattern(0, resourcesUrl);
+                        } else {
+                            ((ServletMapping25)sm).addUrlPattern(resourcesUrl);
+                        }
+                    } else {
+                        sm.setUrlPattern(resourcesUrl);
+                    }
+                    needsSave = true;
+                }
             }
             if (needsSave) {
                 webApp.write(ddFO);

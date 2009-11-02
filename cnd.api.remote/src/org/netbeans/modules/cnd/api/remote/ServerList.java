@@ -114,6 +114,10 @@ public class ServerList {
         return getDefault().addServer(env, displayName, syncFactory, asDefault, connect);
     }
 
+    public static ServerRecord createServerRecord(ExecutionEnvironment env, String displayName, RemoteSyncFactory syncFactory) {
+        return getDefault().createServerRecord(env, displayName, syncFactory);
+    }
+
     public static boolean isValidExecutable(ExecutionEnvironment env, String path) {
         return getDefault().isValidExecutable(env, path);
     }
@@ -209,6 +213,10 @@ public class ServerList {
         }
 
         public void setDefaultRecord(ServerRecord record) {
+        }
+
+        public ServerRecord createServerRecord(ExecutionEnvironment env, String displayName, RemoteSyncFactory syncFactory) {
+            return new DummyServerRecord();
         }
     }
 }

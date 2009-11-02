@@ -67,10 +67,30 @@ public class KenaiRepositoryUtils {
         return instance;
     }
 
+    /**
+     * Returns a {@link Repository} representing the given {@link KenaiProject}
+     *
+     * @param kp
+     * @return
+     */
     public Repository getRepository(KenaiProject kp) {
+        return getRepository(kp, true);
+    }
+
+    /**
+     * Returns a {@link Repository} representing the given {@link KenaiProject}.
+     *
+     * @param kp KenaiProject
+     * @param forceCreate determines if a Repository instance should be created if it doesn't already exist
+     * @return
+     */
+    public Repository getRepository(KenaiProject kp, boolean forceCreate) {
         Repository repository = map.get(kp.getName());
         if(repository != null) {
             return repository;
+        }
+        if(!forceCreate) {
+            return null;
         }
         BugtrackingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
         for (BugtrackingConnector c : connectors) {
@@ -87,7 +107,24 @@ public class KenaiRepositoryUtils {
         return null;
     }
 
+    /**
+     * Returns a {@link Repository} representing the given {@link ProjectHandle}
+     *
+     * @param ph
+     * @return
+     */
     Repository getRepository(ProjectHandle ph) {
+        return getRepository(ph, true);
+    }
+
+    /**
+     * Returns a {@link Repository} representing the given {@link ProjectHandle}
+     * 
+     * @param ph
+     * @param forceCreate determines if a Repository instance should be created if it doesn't already exist
+     * @return
+     */
+    Repository getRepository(ProjectHandle ph, boolean forceCreate) {
         KenaiProject kp = KenaiUtil.getKenaiProject(ph);
         if(kp == null) {
             BugtrackingManager.LOG.warning("No issue tracking repository available for ProjectHandle [" + ph.getId() + "," + ph.getDisplayName() + "]"); // NOI18N
@@ -99,6 +136,10 @@ public class KenaiRepositoryUtils {
             return repository;
         }
 
+        if(!forceCreate) {
+            return null;
+        }
+        
         repository = getRepository(kp);
         if(repository == null) {
             BugtrackingManager.LOG.warning("No issue tracking repository available for project " + kp.getName()); // NOI18N

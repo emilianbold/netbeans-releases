@@ -45,10 +45,13 @@ import java.awt.Component;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import javax.swing.AbstractButton;
 import javax.swing.Action;
+import javax.swing.JButton;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
+import javax.swing.JToggleButton;
 import org.openide.awt.Actions;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.util.actions.BooleanStateAction;
@@ -85,16 +88,15 @@ public final class DefaultAWTBridge extends org.netbeans.modules.openide.util.AW
     }
     
     public Component createToolbarPresenter(Action action) {
+        AbstractButton btn;
         if (action instanceof BooleanStateAction) {
-            BooleanStateAction b = (BooleanStateAction)action;
-            return new Actions.ToolbarToggleButton (b);
+            btn = new JToggleButton();
+            Actions.connect(btn, (BooleanStateAction) action);
+        } else {
+            btn = new JButton();
+            Actions.connect(btn, action);
         }
-        if (action instanceof SystemAction) {
-            SystemAction s = (SystemAction)action;
-            return new Actions.ToolbarButton (s);
-        }
-            
-        return new Actions.ToolbarButton (action);
+        return btn;
     }
     
     public JPopupMenu createEmptyPopup() {

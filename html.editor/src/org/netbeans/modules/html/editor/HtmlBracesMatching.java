@@ -49,12 +49,10 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Language;
-import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.ext.html.parser.AstNode;
-import org.netbeans.editor.ext.html.parser.AstNodeUtils;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -88,19 +86,20 @@ public class HtmlBracesMatching implements BracesMatcher, BracesMatcherFactory {
     }
 
     public int[] findOrigin() throws InterruptedException, BadLocationException {
+        //disabling the master matcher cool matching strategy - if forward scanning, decrease the offset by one
+        int searchOffset = context.isSearchingBackward() ? context.getSearchOffset() : context.getSearchOffset() + 1;
         ((AbstractDocument) context.getDocument()).readLock();
         try {
             if (!testMode && MatcherContext.isTaskCanceled()) {
                 return null;
             }
-            TokenSequence<HTMLTokenId> ts = Utils.getJoinedHtmlSequence(context.getDocument(), context.getSearchOffset());
+            TokenSequence<HTMLTokenId> ts = Utils.getJoinedHtmlSequence(context.getDocument(), searchOffset);
             TokenHierarchy<Document> th = TokenHierarchy.get(context.getDocument());
 
             if (ts.language() == HTMLTokenId.language()) {
-                ts.move(context.getSearchOffset());
-                //if (context.isSearchingBackward() ? ts.movePrevious() : ts.moveNext()) {
-                if (ts.moveNext()) {
-                    if (context.isSearchingBackward() && ts.offset() + ts.token().length() < context.getSearchOffset()) {
+                ts.move(searchOffset);
+                if (context.isSearchingBackward() ? ts.movePrevious() : ts.moveNext()) {
+                    if (context.isSearchingBackward() && ts.offset() + ts.token().length() < searchOffset) {
                         //check whether the searched position doesn't overlap the token boundaries
                         return null;
                     }
@@ -164,7 +163,8 @@ public class HtmlBracesMatching implements BracesMatcher, BracesMatcherFactory {
         if (!testMode && MatcherContext.isTaskCanceled()) {
             return null;
         }
-
+        //disabling the master matcher cool matching strategy - if forward scanning, decrease the offset by one
+        final int searchOffset = context.isSearchingBackward() ? context.getSearchOffset() : context.getSearchOffset() + 1;
         final Source source = Source.create(context.getDocument());
         if (source == null) {
             return null;
@@ -186,7 +186,7 @@ public class HtmlBracesMatching implements BracesMatcher, BracesMatcherFactory {
                     }
 
                     if (resultIterator == null) {
-                        ret[0] = new int[]{context.getSearchOffset(), context.getSearchOffset()};
+                        ret[0] = new int[]{searchOffset, searchOffset};
                         return;
                     }
 
@@ -195,14 +195,11 @@ public class HtmlBracesMatching implements BracesMatcher, BracesMatcherFactory {
                         return;
                     }
 
-                    int searched = result.getSnapshot().getEmbeddedOffset(context.getSearchOffset());
-                    AstNode origin = result.findLeaf(searched);
+                    int searched = result.getSnapshot().getEmbeddedOffset(searchOffset);
+                    AstNode origin = result.findLeafTag(searched, false, !context.isSearchingBackward());
                     if (origin != null) {
                         if (origin.type() == AstNode.NodeType.OPEN_TAG ||
                                 origin.type() == AstNode.NodeType.ENDTAG) {
-
-                            //adjust the tag node, we are interested in the tags itself, not in the tag ranges
-                            origin = AstNodeUtils.getTagNode(origin, searched);
 
                             if (origin == null) {
                                 //offset between tags, no match
@@ -216,7 +213,7 @@ public class HtmlBracesMatching implements BracesMatcher, BracesMatcherFactory {
                                         ret[0] = null; //no match
                                     } else {
                                         //valid
-                                        ret[0] = new int[]{context.getSearchOffset(), context.getSearchOffset()}; //match nothing, origin will be yellow  - workaround
+                                        ret[0] = new int[]{searchOffset, searchOffset}; //match nothing, origin will be yellow  - workaround
                                     }
                                 } else {
                                     //match

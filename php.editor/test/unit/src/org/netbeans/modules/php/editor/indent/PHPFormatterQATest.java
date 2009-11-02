@@ -125,15 +125,15 @@ public class PHPFormatterQATest extends PHPTestBase {
      * issue 173906
      * @throws Exception
      */
-//    public void test173906_1_unstableReopened() throws Exception {
-//        reformatFileContents("testfiles/formatting/qa/issues/unstable_reopenedIssues/173906_1.php");
-//    }
-//    public void test173906_2_unstableReopened() throws Exception {
-//        reformatFileContents("testfiles/formatting/qa/issues/unstable_reopenedIssues/173906_2.php");
-//    }
-//    public void test173906_3_unstableReopened() throws Exception {
-//        reformatFileContents("testfiles/formatting/qa/issues/unstable_reopenedIssues/173906_3.php");
-//    }
+    public void test173906_172475_1_stableFixedIssue() throws Exception {
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/173906_172475_1.php");
+    }
+    public void test173906_172475_2_stableFixedIssue() throws Exception {
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/173906_172475_2.php");
+    }
+    public void test173906_172475_3_stableFixedIssue() throws Exception {
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/173906_172475_3.php");
+    }
 
 
      /**

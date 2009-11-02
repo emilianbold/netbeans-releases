@@ -42,6 +42,7 @@
 package org.netbeans.modules.subversion;
 
 
+import java.net.MalformedURLException;
 import java.util.regex.Pattern;
 import java.util.*;
 import java.util.prefs.Preferences;
@@ -181,26 +182,17 @@ public class SvnModuleConfig {
     }
 
     public RepositoryConnection getRepositoryConnection(String url) {
-        if(url.endsWith("/")) url = url.substring(0, url.length() - 1);
-        List<RepositoryConnection> rcs = getRecentUrls();
-        for (Iterator<RepositoryConnection> it = rcs.iterator(); it.hasNext();) {
-            RepositoryConnection rc = it.next();
-            String rcUrl = rc.getUrl();
-            if(rcUrl.endsWith("/")) rcUrl = rcUrl.substring(0, rcUrl.length() - 1);
-            if(url.equals(rcUrl)) {
-                return rc; // exact match
-            }            
-        }
-        for (Iterator<RepositoryConnection> it = rcs.iterator(); it.hasNext();) {
-            RepositoryConnection rc = it.next();
-            String rcUrl = rc.getUrl();
-            if(rcUrl.endsWith("/")) rcUrl = rcUrl.substring(0, rcUrl.length() - 1);
-            if(rcUrl.startsWith(url)) {
-                return rc; // try this
+        RepositoryConnection rc = getRepositoryConnectionIntern(url.toString());
+        if (rc == null) {
+            try {
+                // this will remove username from the hostname
+                rc = getRepositoryConnectionIntern(new RepositoryConnection(url).getSvnUrl().toString());
+            } catch (MalformedURLException ex) {
+                // not interested
             }
         }
-        return null;
-    }            
+        return rc;
+    }      
     
     public void insertRecentUrl(RepositoryConnection rc) {        
         Preferences prefs = getPreferences();
@@ -287,7 +279,7 @@ public class SvnModuleConfig {
 
     public List<AnnotationExpression> getDefaultAnnotationExpresions() {
         List<AnnotationExpression> ret = new ArrayList<AnnotationExpression>(1);
-        ret.add(new AnnotationExpression(".*/(branches|tags)/(.+?)/.*", "\\2"));     
+        ret.add(new AnnotationExpression(".*/(branches|tags)/(.+?)(/.*)?", "\\2")); //NOI18N
         return ret;
     }
     
@@ -344,4 +336,25 @@ public class SvnModuleConfig {
         return urlCredentials;
     }    
     
+    private RepositoryConnection getRepositoryConnectionIntern (String url) {
+        if(url.endsWith("/")) url = url.substring(0, url.length() - 1); //NOI18N
+        List<RepositoryConnection> rcs = getRecentUrls();
+        for (Iterator<RepositoryConnection> it = rcs.iterator(); it.hasNext();) {
+            RepositoryConnection rc = it.next();
+            String rcUrl = rc.getUrl();
+            if(rcUrl.endsWith("/")) rcUrl = rcUrl.substring(0, rcUrl.length() - 1); //NOI18N
+            if(url.equals(rcUrl)) {
+                return rc; // exact match
+            }
+        }
+        for (Iterator<RepositoryConnection> it = rcs.iterator(); it.hasNext();) {
+            RepositoryConnection rc = it.next();
+            String rcUrl = rc.getUrl();
+            if(rcUrl.endsWith("/")) rcUrl = rcUrl.substring(0, rcUrl.length() - 1); //NOI18N
+            if(rcUrl.startsWith(url)) {
+                return rc; // try this
+            }
+        }
+        return null;
+    }
 }

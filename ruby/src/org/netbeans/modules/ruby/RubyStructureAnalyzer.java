@@ -76,6 +76,7 @@ import org.jrubyparser.ast.StrNode;
 import org.jrubyparser.ast.SymbolNode;
 import org.jrubyparser.ast.INameNode;
 import org.jrubyparser.SourcePosition;
+import org.jrubyparser.ast.MultipleAsgnNode;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -299,6 +300,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
                     for (AstElement member : clz.getChildren()) {
                         if ((member.getKind() == ElementKind.ATTRIBUTE) &&
                                 member.getName().equals(fieldName)) {
+                            member.setType(co.getType());
                             found = true;
                             break;
                         }
@@ -670,6 +672,38 @@ public class RubyStructureAnalyzer implements StructureScanner {
             
             break;
         }
+        case MULTIPLEASGNNODE: {
+            Map<Node, RubyType> vars = new HashMap<Node, RubyType>();
+            RubyTypeAnalyzer.collectMultipleAsgnVars((MultipleAsgnNode) node, typeInferencer, vars);
+            for (Node each : vars.keySet()) {
+                switch (each.getNodeType()) {
+                    case LOCALASGNNODE: {
+                        if (parent == null && AstUtilities.findMethod(path) == null) {
+                            String name = AstUtilities.getName(each);
+                            if (findExistingVariable(name) == null) {
+                                AstElement co = new AstNameElement(result, each, name, ElementKind.VARIABLE);
+                                co.setType(vars.get(each));
+                                co.setIn(in);
+                                structure.add(co);
+                            }
+                        }
+                        break;
+                    }
+                    case INSTASGNNODE: {
+                        if (parent instanceof AstClassElement) {
+                            Set<InstAsgnNode> assignments = fields.get((AstClassElement) parent);
+                            if (assignments == null) {
+                                assignments = new HashSet<InstAsgnNode>();
+                                fields.put((AstClassElement) parent, assignments);
+                            }
+                            assignments.add((InstAsgnNode) each);
+                        }
+                        break;
+                    }
+                }
+            }
+            break;
+        }
         case LOCALASGNNODE: {
             // Only include variables at the top level
             if (parent == null && AstUtilities.findMethod(path) == null) {
@@ -677,13 +711,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
                 // TODO - avoid duplicates?
 
                 String name = AstUtilities.getName(node);
-                boolean found = false;
-                for (AstElement child : structure) {
-                    if (child.getKind() == ElementKind.VARIABLE && name.equals(child.getName())) {
-                        found = true;
-                        break;
-                    }
-                }
+                boolean found = findExistingVariable(name) != null;
                 if (!found) {
                     AstElement co = new AstNameElement(result, node, name,
                             ElementKind.VARIABLE);
@@ -952,6 +980,16 @@ public class RubyStructureAnalyzer implements StructureScanner {
             scan(child, path, in, includes, parent);
             path.ascend();
         }
+    }
+
+
+    private AstElement findExistingVariable(String name) {
+        for (AstElement child : structure) {
+            if (child.getKind() == ElementKind.VARIABLE && name.equals(child.getName())) {
+                return child;
+            }
+        }
+        return null;
     }
 
     private AstMethodElement findExistingMethod(String name) {

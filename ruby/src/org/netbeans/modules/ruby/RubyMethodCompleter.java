@@ -116,7 +116,7 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
         final TokenHierarchy<Document> th = request.th;
         final AstPath path = request.path;
         final QuerySupport.Kind kind = request.kind;
-        final Node target = AstUtilities.findNextNonNewLineNode(request.target);
+        final Node target = request.target != null ? AstUtilities.findNextNonNewLineNode(request.target) : null;
 
         TokenSequence<? extends RubyTokenId> ts = LexUtilities.getRubyTokenSequence(th, lexOffset);
 

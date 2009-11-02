@@ -282,7 +282,7 @@ public class WatchesTreeModel implements TreeModel, PropertyChangeListener {
             Object o = m.watchToVariable.remove(watch);
             // fix for the IZ 163112
             if (o != null && o instanceof GdbWatchVariable) {
-                ((GdbWatchVariable)o).remove();
+                ((GdbWatchVariable)o).destroy();
             }
             watch.removePropertyChangeListener(this);
             m.fireTreeChanged();

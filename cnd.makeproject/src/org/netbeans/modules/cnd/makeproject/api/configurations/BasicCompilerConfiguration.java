@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
+import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationMakefileWriter;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
@@ -90,6 +91,17 @@ public abstract class BasicCompilerConfiguration {
         getString("BITS_64"),};
     private IntConfiguration sixtyfourBits;
     private BooleanConfiguration strip;
+    public static final int MT_LEVEL_NONE = 0;
+    public static final int MT_LEVEL_SAFE = 1;
+    public static final int MT_LEVEL_AUTOMATIC = 2;
+    public static final int MT_LEVEL_OPENMP = 3;
+    private static final String[] MT_LEVEL_NAMES = {
+        getString("NoneTxt"),
+        getString("SafeTxt"),
+        getString("AutomaticTxt"),
+        getString("OpenMPTxt"),};
+    private static final String[] MT_LEVEL_OPTIONS = null;
+    private IntConfiguration mpLevel;
     private StringConfiguration additionalDependencies;
     private StringConfiguration tool;
     private OptionsConfiguration commandLineConfiguration;
@@ -102,6 +114,7 @@ public abstract class BasicCompilerConfiguration {
         warningLevel = new IntConfiguration(master != null ? master.getWarningLevel() : null, WARNING_LEVEL_DEFAULT, WARNING_LEVEL_NAMES, null);
         sixtyfourBits = new IntConfiguration(master != null ? master.getSixtyfourBits() : null, BITS_DEFAULT, BITS_NAMES, null);
         strip = new BooleanConfiguration(master != null ? master.getStrip() : null, false, "", ""); // NOI18N
+        mpLevel = new IntConfiguration(master != null ? master.getMTLevel() : null, MT_LEVEL_NONE, MT_LEVEL_NAMES, null);
         additionalDependencies = new StringConfiguration(master != null ? master.getAdditionalDependencies() : null, ""); // NOI18N
         tool = new StringConfiguration(master != null ? master.getTool() : null, ""); // NOI18N
         commandLineConfiguration = new OptionsConfiguration();
@@ -118,6 +131,7 @@ public abstract class BasicCompilerConfiguration {
 
     public boolean getModified() {
         return developmentMode.getModified() ||
+                mpLevel.getModified() ||
                 warningLevel.getModified() ||
                 sixtyfourBits.getModified() ||
                 strip.getModified() ||
@@ -177,6 +191,20 @@ public abstract class BasicCompilerConfiguration {
         return sixtyfourBits;
     }
 
+    // MT Level
+    public void setMTLevel(IntConfiguration mpLevel) {
+        this.mpLevel = mpLevel;
+    }
+
+    public IntConfiguration getMTLevel() {
+        return mpLevel;
+    }
+    
+    // To be overridden
+    protected String[] getMTLevelOptions() {
+        return MT_LEVEL_OPTIONS;
+    }
+
     // Strip
     public void setStrip(BooleanConfiguration strip) {
         this.strip = strip;
@@ -211,7 +239,7 @@ public abstract class BasicCompilerConfiguration {
     public void setCommandLineConfiguration(OptionsConfiguration commandLineConfiguration) {
         this.commandLineConfiguration = commandLineConfiguration;
     }
-
+    
     public String getOutputFile(Item item, MakeConfiguration conf, boolean expanded) {
         String filePath = item.getPath(true);
         String fileName = filePath;
@@ -272,6 +300,7 @@ public abstract class BasicCompilerConfiguration {
         getWarningLevel().assign(conf.getWarningLevel());
         getSixtyfourBits().assign(conf.getSixtyfourBits());
         getStrip().assign(conf.getStrip());
+        getMTLevel().assign(conf.getMTLevel());
         getAdditionalDependencies().assign(conf.getAdditionalDependencies());
         getTool().assign(conf.getTool());
         getCommandLineConfiguration().assign(conf.getCommandLineConfiguration());

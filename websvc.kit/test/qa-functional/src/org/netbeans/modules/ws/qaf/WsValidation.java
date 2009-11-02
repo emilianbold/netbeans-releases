@@ -570,10 +570,10 @@ public class WsValidation extends WebServicesTestBase {
 
     protected void addMethod(final EditorOperator eo, String dlgTitle, String opName, String opRetVal) {
         NbDialogOperator dialog = new NbDialogOperator(dlgTitle);
-        JTextFieldOperator jtfo = new JTextFieldOperator(dialog, "operation"); //NOI18N
+        JTextFieldOperator jtfo = new JTextFieldOperator(dialog, 1); //NOI18N
         jtfo.clearText();
         jtfo.typeText(opName);
-        jtfo = new JTextFieldOperator(dialog, "java.lang.String"); //NOI18N
+        jtfo = new JTextFieldOperator(dialog, 0); //NOI18N
         jtfo.clearText();
         jtfo.typeText(opRetVal);
         dialog.ok();

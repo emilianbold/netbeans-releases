@@ -291,7 +291,7 @@ public class DataEditorSupportTest extends NbTestCase {
         assertFalse ("It is closed now", support ().isDocumentLoaded ());
         
         Lookup lkp = sup.getLookup ();
-        obj = (DataObject)lkp.lookup (DataObject.class);
+        obj = lkp.lookup(DataObject.class);
         assertNotNull ("DataObject found", obj);
         
         sup.openDocument ();
@@ -761,7 +761,7 @@ public class DataEditorSupportTest extends NbTestCase {
         public int primary;
         
         public static MyLoader get () {
-            return (MyLoader)MyLoader.findObject (MyLoader.class, true);
+            return MyLoader.findObject(MyLoader.class, true);
         }
         
         public MyLoader() {

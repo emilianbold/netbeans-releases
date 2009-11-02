@@ -1471,7 +1471,9 @@ public final class WebProject implements Project, AntProjectListener {
                 }
             }
 
-            FileUtil.addFileChangeListener(this, resources);
+            if (resources != null) {
+                FileUtil.addFileChangeListener(this, resources);
+            }
 
             LOGGER.log(Level.FINE, "Web directory is {0}", docBaseValue);
             LOGGER.log(Level.FINE, "WEB-INF directory is {0}", webInfValue);
@@ -1490,7 +1492,9 @@ public final class WebProject implements Project, AntProjectListener {
                     webInf.getFileSystem().removeFileChangeListener(this);
                 }
             }
-            FileUtil.removeFileChangeListener(this, resources);
+            if (resources != null) {
+                FileUtil.removeFileChangeListener(this, resources);
+            }
 
             WebProject.this.evaluator().removePropertyChangeListener(this);
         }

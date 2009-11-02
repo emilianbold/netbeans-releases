@@ -184,7 +184,6 @@ public final class ToolbarConvertor extends Convertor {
                 //needed when importing toolbar settings from nb 6.5
                 if( "QuickSearch".equals( barName ) ) {
                     align = ToolbarConstraints.Align.right;
-                    draggable = false;
                 }
                 ToolbarConstraints tc = new ToolbarConstraints(barName, align, visible, draggable);
                 if( null != currentRow )

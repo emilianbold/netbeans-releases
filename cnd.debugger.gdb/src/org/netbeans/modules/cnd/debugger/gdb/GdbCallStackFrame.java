@@ -272,6 +272,20 @@ public class GdbCallStackFrame extends CallStackFrame {
         return cachedAutos;
     }
 
+    public void destroy() {
+        if (cachedLocalVariables != null) {
+            for (AbstractVariable var : cachedLocalVariables) {
+                var.destroy();
+            }
+        }
+
+        if (cachedAutos != null) {
+            for (AbstractVariable var : cachedAutos) {
+                var.destroy();
+            }
+        }
+    }
+
     @Override
     public int hashCode() {
         // currently default hash code and equals are the optimal ones,
