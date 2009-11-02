@@ -105,6 +105,19 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+    <change id="ProgressUtils">
+        <api name="progress_api"/>
+        <summary><code>ProgressUtils</code> class with <code>runOffEventDispatchThread</code> methods was added.</summary>
+        <version major="1" minor="16"/>
+        <date day="2" month="11" year="2009"/>
+        <author login="t_h"/>
+        <compatibility binary="compatible" source="compatible" deprecation="no" deletion="no" addition="yes"/>
+        <description><code>ProgressUtils</code> class with <code>runOffEventDispatchThread</code> methods
+        was added. These methods allow movement of operations out of AWT thread while blocking UI.
+        </description>
+        <class package="org.netbeans.api.progress" name="ProgressUtils"/>
+        <issue number="170882"/>
+    </change>
     <change id="suspend">
         <api name="progress_api"/>
         <summary>Add <code>ProgressHandle.suspend(String)</code> method for visual suspend of a running task.</summary>
