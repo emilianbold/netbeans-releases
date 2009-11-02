@@ -66,7 +66,7 @@ public class FixDependencies extends Task {
     /** files to fix */
     private FileSet set;
     /** verify target */
-    private String target;
+    private String tgt;
     /** clean target */
     private String clean;
     /** relative path from module file to build script to use for verification */
@@ -102,7 +102,7 @@ public class FixDependencies extends Task {
     }
     
     public void setBuildTarget (String s) {
-        target = s;
+        tgt = s;
     }
     
     public void setCleanTarget (String s) {
@@ -121,6 +121,7 @@ public class FixDependencies extends Task {
         fail = b;
     }
 
+    @Override
     public void execute () throws org.apache.tools.ant.BuildException {
         FileScanner scan = this.set.getDirectoryScanner(getProject());
         File dir = scan.getBasedir();
@@ -133,7 +134,7 @@ public class FixDependencies extends Task {
             File script = null;
             Ant task = null;
             Ant cleanTask = null;
-            if (ant != null && target != null) {
+            if (ant != null && tgt != null) {
                 task = (org.apache.tools.ant.taskdefs.Ant)getProject ().createTask ("ant");
                 script = FileUtils.getFileUtils().resolveFile(xml, ant);
                 if (!script.exists ()) {
@@ -146,7 +147,7 @@ public class FixDependencies extends Task {
                 }
                 task.setAntfile (script.getPath ());
                 task.setDir (script.getParentFile ());
-                task.setTarget (target);
+                task.setTarget (tgt);
                 if (clean != null) {
                     cleanTask = (Ant) getProject().createTask("ant");
                     cleanTask.setAntfile (script.getPath ());
@@ -161,7 +162,7 @@ public class FixDependencies extends Task {
                         cleanTask.execute ();
                     }
                     if (doSanity) {
-                        log ("Sanity check executes " + target + " in " + script, org.apache.tools.ant.Project.MSG_INFO);
+                        log ("Sanity check executes " + tgt + " in " + script, org.apache.tools.ant.Project.MSG_INFO);
                         task.execute ();
                     }
                 } catch (BuildException ex) {
@@ -169,7 +170,7 @@ public class FixDependencies extends Task {
                         throw ex;
                     }
 
-                    log("Skipping. Could not execute " + target + " in " + script, org.apache.tools.ant.Project.MSG_ERR);
+                    log("Skipping. Could not execute " + tgt + " in " + script, org.apache.tools.ant.Project.MSG_ERR);
                     continue;
                 }
             }
@@ -288,7 +289,7 @@ public class FixDependencies extends Task {
     private void simplify (
         File file, File script, org.apache.tools.ant.taskdefs.Ant task, org.apache.tools.ant.taskdefs.Ant cleanTask
     ) throws IOException, BuildException {
-        if (ant == null || target == null) {
+        if (ant == null || tgt == null) {
             return;
         }
         
@@ -353,7 +354,7 @@ public class FixDependencies extends Task {
 
             String result;
             try {
-                log ("Executing target " + target + " in " + script, Project.MSG_INFO);
+                log ("Executing target " + tgt + " in " + script, Project.MSG_INFO);
                 task.execute ();
                 result = "Ok";
                 success.append (dep);
