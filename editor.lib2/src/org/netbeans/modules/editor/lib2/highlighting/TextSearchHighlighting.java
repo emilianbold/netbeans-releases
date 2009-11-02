@@ -62,6 +62,7 @@ import org.netbeans.spi.editor.highlighting.HighlightsChangeListener;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.support.AbstractHighlightsContainer;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
 /**
@@ -94,7 +95,7 @@ public class TextSearchHighlighting extends AbstractHighlightsContainer implemen
         
         // ...and the internal listener second
         this.document.addDocumentListener(WeakListeners.document(this, this.document));
-        
+
         EditorFindSupport.getInstance().addPropertyChangeListener(
             WeakListeners.propertyChange(this, EditorFindSupport.getInstance())
         );
@@ -130,11 +131,21 @@ public class TextSearchHighlighting extends AbstractHighlightsContainer implemen
     public void changedUpdate(DocumentEvent e) {
         // not interested
     }
-    
+
     private void fillInTheBag() {
-        document.render(new Runnable() {
+        final Document d = document;
+        final OffsetsBag b = bag;
+        RequestProcessor.getDefault().post(new Runnable() {
+            private boolean documentLocked = false;
+
             public void run() {
-                OffsetsBag newBag = new OffsetsBag(document);
+                if (!documentLocked) {
+                    documentLocked = true;
+                    d.render(this);
+                    return;
+                }
+
+                OffsetsBag newBag = new OffsetsBag(d);
 
                 if (LOG.isLoggable(Level.FINE)) {
                     LOG.fine("TSH: filling the bag; enabled = " + isEnabled());
@@ -143,7 +154,7 @@ public class TextSearchHighlighting extends AbstractHighlightsContainer implemen
                 if (isEnabled()) {
                     try {
                         int [] blocks = EditorFindSupport.getInstance().getBlocks(
-                            new int [] {-1, -1}, document, 0, document.getLength());
+                            new int [] {-1, -1}, d, 0, d.getLength());
 
                         assert blocks.length % 2 == 0 : "Wrong number of block offsets";
 
@@ -156,7 +167,7 @@ public class TextSearchHighlighting extends AbstractHighlightsContainer implemen
                     }
                 }
 
-                bag.setHighlights(newBag);
+                b.setHighlights(newBag);
             }
         });
     }
