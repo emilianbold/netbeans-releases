@@ -89,13 +89,13 @@ public class TextSearchHighlighting extends AbstractHighlightsContainer implemen
         this.component = component;
         this.document = component.getDocument();
         
-        // Let the bag update first...
+        // Let the internal listener update first...
+        this.document.addDocumentListener(WeakListeners.document(this, this.document));
+
+        // ...and the bag second
         this.bag = new OffsetsBag(document);
         this.bag.addHighlightsChangeListener(this);
         
-        // ...and the internal listener second
-        this.document.addDocumentListener(WeakListeners.document(this, this.document));
-
         EditorFindSupport.getInstance().addPropertyChangeListener(
             WeakListeners.propertyChange(this, EditorFindSupport.getInstance())
         );
@@ -121,11 +121,11 @@ public class TextSearchHighlighting extends AbstractHighlightsContainer implemen
     }
 
     public void insertUpdate(DocumentEvent e) {
-        this.bag.removeHighlights(e.getOffset(), e.getOffset() + e.getLength(), false);
+        this.bag.removeHighlights(Math.max(e.getOffset() - 1, 0), Math.min(e.getOffset() + 1, document.getLength()), false);
     }
 
     public void removeUpdate(DocumentEvent e) {
-        this.bag.removeHighlights(e.getOffset() - 1, e.getOffset() + e.getLength() - 1, false);
+        this.bag.removeHighlights(e.getOffset(), e.getOffset() + e.getLength(), false);
     }
 
     public void changedUpdate(DocumentEvent e) {
