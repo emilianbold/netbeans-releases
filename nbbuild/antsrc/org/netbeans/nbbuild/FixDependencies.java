@@ -213,6 +213,7 @@ public class FixDependencies extends Task {
             }
 
             int ed = stream.indexOf ("</module-dependencies>", md);
+            ed = ed == -1 ? stream.indexOf ("<module-dependencies/>", md) : ed;
             if (ed == -1) {
                 ed = stream.length();
             }
@@ -380,7 +381,7 @@ public class FixDependencies extends Task {
             fw.close ();
         }
         
-        log ("Final verification runs " + target + " in " + script, Project.MSG_INFO);
+        log ("Final verification runs " + tgt + " in " + script, Project.MSG_INFO);
         // now verify, if there is a failure then something is wrong now
         task.execute ();
         if (success.length () == 0) {
