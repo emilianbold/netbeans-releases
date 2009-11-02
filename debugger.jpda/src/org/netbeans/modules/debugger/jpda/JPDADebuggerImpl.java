@@ -820,7 +820,11 @@ public class JPDADebuggerImpl extends JPDADebugger {
                     };
                 Lookup context;
                 if (var != null) {
-                    context = Lookups.fixed(csf, var, sf, stackDepth, v, methodToBeInvokedNotifier);
+                    if (v != null) {
+                        context = Lookups.fixed(csf, var, sf, stackDepth, v, methodToBeInvokedNotifier);
+                    } else {
+                        context = Lookups.fixed(csf, var, sf, stackDepth, methodToBeInvokedNotifier);
+                    }
                 } else {
                     context = Lookups.fixed(csf, sf, stackDepth, methodToBeInvokedNotifier);
                 }
