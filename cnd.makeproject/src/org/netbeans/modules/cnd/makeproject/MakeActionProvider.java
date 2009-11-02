@@ -509,9 +509,9 @@ public class MakeActionProvider implements ActionProvider {
                 }
             }
         } else if (targetName.equals(RUN_STEP) || targetName.equals(DEBUG_STEP) || targetName.equals(DEBUG_STEPINTO_STEP) || targetName.equals(DEBUG_LOAD_ONLY_STEP)) {
-            if (!validateBuildSystem(pd, conf, validated.get(), cancelled)) {
-                return false;
-            }
+//            if (!validateBuildSystem(pd, conf, validated.get(), cancelled)) {
+//                return false;
+//            }
             validated.set(true);
             if (conf.isMakefileConfiguration()) {
                 String path;
@@ -1081,10 +1081,6 @@ public class MakeActionProvider implements ActionProvider {
 
     private boolean validateBuildSystem(MakeConfigurationDescriptor pd, MakeConfiguration conf,
             boolean validated, AtomicBoolean cancelled) {
-        RunProfile runProfile = (RunProfile)conf.getAuxObject(RunProfile.PROFILE_ID);
-        if (runProfile != null && !runProfile.getBuildFirst()) {
-            return true;
-        }
         CompilerSet2Configuration csconf = conf.getCompilerSet();
         ExecutionEnvironment env = ExecutionEnvironmentFactory.fromUniqueID(conf.getDevelopmentHost().getHostKey());
         ArrayList<String> errs = new ArrayList<String>();
