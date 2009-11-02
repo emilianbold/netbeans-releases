@@ -642,6 +642,11 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("string_in_macro_params.cc", 7, 31, "string_in_macro_params.cc", 1, 1);
     }
 
+    public void testIZ175877() throws Exception {
+        // IZ#175877 : Error at processing #define func(args....)
+        performTest("IZ175877.cc", 12, 6, "IZ175877.cc", 5, 3);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
