@@ -11,40 +11,40 @@
 	<mapID target="org.netbeans.modules.javacard.WhatIsNotIn" url="help/WhatIsNotIn.html"/>
 	<mapID target="org.netbeans.modules.javacard.DevelopingforJavaCard3Platform" url="help/DevelopingforJavaCard3Platform.html"/>
 	<mapID target="org.netbeans.modules.javacard.SequenceofDevelopment" url="help/SequenceofDevelopment.html"/>
-	<mapID target="org.netbeans.modules.javacard.CreateProject" url="help/CreateProject.html"/>
-	<mapID target="org.netbeans.modules.javacard.WriteModifySourceCode" url="help/WriteModifySourceCode.html"/>
+	<mapID target="CreateProject" url="CreateProject.html"/>
+	<mapID target="WriteModifySourceCode" url="WriteModifySourceCode.html"/>
 	<mapID target="org.netbeans.modules.javacard.BuildProject" url="help/BuildProject.html"/>
-	<mapID target="org.netbeans.modules.javacard.RunApplication" url="help/RunApplication.html"/>
-	<mapID target="org.netbeans.modules.javacard.DebugApplication" url="help/DebugApplication.html"/>
+	<mapID target="RunApplication" url="RunApplication.html"/>
+	<mapID target="DebugApplication" url="DebugApplication.html"/>
 	<mapID target="org.netbeans.modules.javacard.JavaCardWizardsDialogBoxes" url="help/JavaCardWizardsDialogBoxes.html"/>
 	<mapID target="org.netbeans.modules.javacard.JavaCard3NewProjectWizard" url="help/JavaCard3NewProjectWizard.html"/>
-	<mapID target="org.netbeans.modules.javacard.JavaCard3Add LibraryWizard" url="help/JavaCard3AddLibraryWizard.html"/>
-	<mapID target="org.netbeans.modules.javacard.JavaPlatformManagerDialogBox" url="help/JavaPlatformManagerDialogBox.html"/>
-	<mapID target="org.netbeans.modules.javacard.JavaCard3DeviceManagerDialogBox" url="help/JavaCard3DeviceManagerDialogBox.html"/>
+	<mapID target="JavaCard3AddLibraryWizard" url="JavaCard3AddLibraryWizard.html"/>
+	<mapID target="cjcbabef" url="cjcbabef.html"/>
+	<mapID target="JavaCard3DeviceManagerDialogBox" url="JavaCard3DeviceManagerDialogBox.html"/>
 	<mapID target="org.netbeans.modules.javacard.JavaCard3ProjectPropertiesDialogBox" url="help/JavaCard3ProjectPropertiesDialogBox.html"/>
-	<mapID target="org.netbeans.modules.javacard.SourcesPanel" url="help/SourcesPanel.html"/>
+	<mapID target="SourcesPanel" url="SourcesPanel.html"/>
 	<mapID target="org.netbeans.modules.javacard.AddExistingSources" url="help/AddExistingSources.html"/>
 	<mapID target="org.netbeans.modules.javacard.RemoveSourcePackages" url="help/RemoveSourcePackages.html"/>
 	<mapID target="org.netbeans.modules.javacard.DependenciesPanel" url="help/DependenciesPanel.html"/>
-	<mapID target="org.netbeans.modules.javacard.AddLibrary" url="help/AddLibrary.html"/>
-	<mapID target="org.netbeans.modules.javacard.RemoveLibrary" url="help/RemoveLibrary.html"/>
-	<mapID target="org.netbeans.modules.javacard.ChangeLibraryDeploymentStrategy" url="help/ChangeLibraryDeploymentStrategy.html"/>
-	<mapID target="org.netbeans.modules.javacard.AppletsPanel" url="help/AppletsPanel.html"/>
-	<mapID target="org.netbeans.modules.javacard.RemoveApplet" url="help/RemoveApplet.html"/>
-	<mapID target="org.netbeans.modules.javacard.RemoveInstanceApplet" url="help/RemoveInstanceApplet.html"/>
-	<mapID target="org.netbeans.modules.javacard.AddInstanceApplet" url="help/AddInstanceApplet.html"/>
-	<mapID target="org.netbeans.modules.javacard.EditAppletAID" url="help/EditAppletAID.html"/>
+	<mapID target="AddLibrary" url="AddLibrary.html"/>
+	<mapID target="RemoveLibrary" url="RemoveLibrary.html"/>
+	<mapID target="ChangeLibraryDeploymentStrategy" url="ChangeLibraryDeploymentStrategy.html"/>
+	<mapID target="AppletsPanel" url="AppletsPanel.html"/>
+	<mapID target="RemoveApplet" url="RemoveApplet.html"/>
+	<mapID target="RemoveInstanceApplet" url="RemoveInstanceApplet.html"/>
+	<mapID target="AddInstanceApplet" url="AddInstanceApplet.html"/>
+	<mapID target="EditAppletAID" url="EditAppletAID.html"/>
 	<mapID target="org.netbeans.modules.javacard.WebPanel" url="help/WebPanel.html"/>
-	<mapID target="org.netbeans.modules.javacard.BuildCompilingPanel" url="help/BuildCompilingPanel.html"/>
-	<mapID target="org.netbeans.modules.javacard.BuildPackagingPanel" url="help/BuildPackagingPanel.html"/>
-	<mapID target="org.netbeans.modules.javacard.BuildSecurityPanel" url="help/BuildSecurityPanel.html"/>
-	<mapID target="org.netbeans.modules.javacard.RunPanel" url="help/RunPanel.html"/>
+	<mapID target="BuildCompilingPanel" url="BuildCompilingPanel.html"/>
+	<mapID target="BuildPackagingPanel" url="BuildPackagingPanel.html"/>
+	<mapID target="BuildSecurityPanel" url="BuildSecurityPanel.html"/>
+	<mapID target="RunPanel" url="RunPanel.html"/>
 	<mapID target="org.netbeans.modules.javacard.SettingUpJavaCardPlatform" url="help/SettingUpJavaCardPlatform.html"/>
 	<mapID target="org.netbeans.modules.javacard.VerifyJavaCardPlatformSetUp" url="help/VerifyJavaCardPlatformSetUp.html"/>
 	<mapID target="org.netbeans.modules.javacard.AddJavaCardPlatform" url="help/AddJavaCardPlatform.html"/>
 	<mapID target="org.netbeans.modules.javacard.RemoveJavaCardPlatform" url="help/RemoveJavaCardPlatform.html"/>
 	<mapID target="org.netbeans.modules.javacard.AddNewDevice" url="help/AddNewDevice.html"/>
-	<mapID target="org.netbeans.modules.javacard.CustomizeDevice" url="help/CustomizeDevice.html"/>
+	<mapID target="CustomizeDevice" url="CustomizeDevice.html"/>
 	<mapID target="org.netbeans.modules.javacard.RemoveDeviceFromPlatform" url="help/RemoveDeviceFromPlatform.html"/>
 	<mapID target="org.netbeans.modules.javacard.DebuggingApplications" url="help/DebuggingApplications.html"/>
 	<mapID target="org.netbeans.modules.javacard.DebugApplication2" url="help/DebugApplication2.html"/>
@@ -54,64 +54,131 @@
 	<mapID target="org.netbeans.modules.javacard.CustomizingClassicAppletProject" url="help/CustomizingClassicAppletProject.html"/>
 	<mapID target="org.netbeans.modules.javacard.SetAppletProjectProperties" url="help/SetAppletProjectProperties.html"/>
 	<mapID target="org.netbeans.modules.javacard.SettingClassicAppletSources" url="help/SettingClassicAppletSources.html"/>
-	<mapID target="org.netbeans.modules.javacard.ClassicAppletAddExistingSources" url="help/ClassicAppletAddExistingSources.html"/>
-	<mapID target="org.netbeans.modules.javacard.ClassicAppletRemoveSourcePackages" url="help/ClassicAppletRemoveSourcePackages.html"/>
-	<mapID target="org.netbeans.modules.javacard.SettingClassicAppletDependencies" url="help/SettingClassicAppletDependencies.html"/>
+	<mapID target="AddExistingClassicAppletSources" url="AddExistingClassicAppletSources.html"/>
+	<mapID target="RemoveClassicAppletSourcePackages" url="RemoveClassicAppletSourcePackages.html"/>
+	<mapID target="SettingClassicAppletDependencies" url="SettingClassicAppletDependencies.html"/>
 	<mapID target="org.netbeans.modules.javacard.AddClassicAppletLibrary" url="help/AddClassicAppletLibrary.html"/>
 	<mapID target="org.netbeans.modules.javacard.RemoveClassicAppletLibrary" url="help/RemoveClassicAppletLibrary.html"/>
 	<mapID target="org.netbeans.modules.javacard.ChangeClassicAppletLibraryDeployment" url="help/ChangeClassicAppletLibraryDeployment.html"/>
-	<mapID target="org.netbeans.modules.javacard.SettingApplets" url="help/SettingApplets.html"/>
+	<mapID target="SettingApplets" url="SettingApplets.html"/>
 	<mapID target="org.netbeans.modules.javacard.ClassicAppletRemoveApplet" url="help/ClassicAppletRemoveApplet.html"/>
 	<mapID target="org.netbeans.modules.javacard.ClassicAppletRemoveInstanceApplet" url="help/ClassicAppletRemoveInstanceApplet.html"/>
 	<mapID target="org.netbeans.modules.javacard.ClassicAppletAddInstanceApplet" url="help/ClassicAppletAddInstanceApplet.html"/>
 	<mapID target="org.netbeans.modules.javacard.ClassicAppletEditAppletAID" url="help/ClassicAppletEditAppletAID.html"/>
-	<mapID target="org.netbeans.modules.javacard.SettingClassicAppletBuildCompilingProperties" url="help/SettingClassicAppletBuildCompilingProperties.html"/>
-	<mapID target="org.netbeans.modules.javacard.SettingClassicAppletBuildPackagingProperties" url="help/SettingClassicAppletBuildPackagingProperties.html"/>
-	<mapID target="org.netbeans.modules.javacard.SettingClassicAppletBuildSecurityProperties" url="help/SettingClassicAppletBuildSecurityProperties.html"/>
+	<mapID target="org.netbeans.modules.javacard.SettingClassicAppletCompilingProperties" url="help/SettingClassicAppletCompilingProperties.html"/>
+	<mapID target="org.netbeans.modules.javacard.SettingClassicAppletPackagingProperties" url="help/SettingClassicAppletPackagingProperties.html"/>
+	<mapID target="org.netbeans.modules.javacard.SettingClassicAppletSecurityProperties" url="help/SettingClassicAppletSecurityProperties.html"/>
 	<mapID target="org.netbeans.modules.javacard.SettingClassicAppletRunProperties" url="help/SettingClassicAppletRunProperties.html"/>
 	<mapID target="org.netbeans.modules.javacard.RunningClassicAppletProject" url="help/RunningClassicAppletProject.html"/>
 	<mapID target="org.netbeans.modules.javacard.RunningClassicAppletSamples" url="help/RunningClassicAppletSamples.html"/>
+	<mapID target="org.netbeans.modules.javacard.RunClassicChannelsClassicApplet" url="help/RunClassicChannelsClassicApplet.html"/>
 	<mapID target="org.netbeans.modules.javacard.CreatingExtendedAppletProject" url="help/CreatingExtendedAppletProject.html"/>
-	<mapID target="org.netbeans.modules.javacard.CreateExtendedAppletProjectFromTemplate" url="help/CreateExtendedAppletProjectFromTemplate.html"/>
-	<mapID target="org.netbeans.modules.javacard.CreateExtendedAppletProjectFromExistingCode" url="help/CreateExtendedAppletProjectFromExistingCode.html"/>
+	<mapID target="CreateExtendedAppletProjectFromTemplate2" url="CreateExtendedAppletProjectFromTemplate.html"/>
+	<mapID target="CreateExtendedAppletProjectFromExistingCode2" url="CreateExtendedAppletProjectFromExistingCode2.html"/>
 	<mapID target="org.netbeans.modules.javacard.CustomizingExtendedAppletProject" url="help/CustomizingExtendedAppletProject.html"/>
-	<mapID target="org.netbeans.modules.javacard.DeployingExtendedApplet" url="help/DeployingExtendedApplet.html"/>
-	<mapID target="org.netbeans.modules.javacard.CustomizingExtendedAppletDeployment" url="help/CustomizingExtendedAppletDeployment.html"/>
-	<mapID target="org.netbeans.modules.javacard.RunningExtendedAppletProject" url="help/RunningExtendedAppletProject.html"/>
+	<mapID target="SetExtendedAppletProjectProperties" url="SetExtendedAppletProjectProperties.html"/>
+	<mapID target="SettingExtendedAppletSources" url="SettingExtendedAppletSources.html"/>
+	<mapID target="AddExistingExtendedAppletSources" url="AddExistingExtendedAppletSources.html"/>
+	<mapID target="RemoveExtendedAppletSourcePackages" url="RemoveExtendedAppletSourcePackages.html"/>
+	<mapID target="SettingExtendedAppletDependencies" url="SettingExtendedAppletDependencies.html"/>
+	<mapID target="AddExtendedAppletLibrary" url="AddExtendedAppletLibrary.html"/>
+	<mapID target="RemoveExtendedAppletLib" url="RemoveExtendedAppletLib.html"/>
+	<mapID target="ChangeExtendedAppletLibraryDeployment" url="ChangeExtendedAppletLibraryDeployment.html"/>
+	<mapID target="org.netbeans.modules.javacard.SettingExtendedApplets" url="help/SettingExtendedApplets.html"/>
+	<mapID target="RemoveExtendedApplet" url="RemoveExtendedApplet.html"/>
+	<mapID target="RemoveInstanceExtendedApplet" url="RemoveInstanceExtendedApplet.html"/>
+	<mapID target="AddInstanceExtendedApplet" url="AddInstanceExtendedApplet.html"/>
+	<mapID target="EditAIDofExtendedApplet" url="EditAIDofExtendedApplet.html"/>
+	<mapID target="org.netbeans.modules.javacard.SettingExtendedAppletCompilingProperties" url="help/SettingExtendedAppletCompilingProperties.html"/>
+	<mapID target="org.netbeans.modules.javacard.SettingExtendedAppletSecurityProperties" url="help/SettingExtendedAppletSecurityProperties.html"/>
+	<mapID target="org.netbeans.modules.javacard.SettingExtendedAppletRunProperties" url="help/SettingExtendedAppletRunProperties.html"/>
+	<mapID target="org.netbeans.modules.javacard.JavaCard3NewProjectWizard2" url="help/JavaCard3NewProjectWizard2.html"/>
 	<mapID target="org.netbeans.modules.javacard.RunningExtendedAppletSamples" url="help/RunningExtendedAppletSamples.html"/>
-	<mapID target="org.netbeans.modules.javacard.CreatingClassicLibraryProject" url="help/CreatingClassicLibraryProject.html"/>
-	<mapID target="org.netbeans.modules.javacard.CreateClassicLibraryFromTemplate" url="help/CreateClassicLibraryFromTemplate.html"/>
-	<mapID target="org.netbeans.modules.javacard.CreateClassicLibraryFromExistingCode" url="help/CreateClassicLibraryFromExistingCode.html"/>
-	<mapID target="org.netbeans.modules.javacard.CustomizingClassicLibrary" url="help/CustomizingClassicLibrary.html"/>
+	<mapID target="org.netbeans.modules.javacard.RunHelloWorldExtendedApplet" url="help/RunHelloWorldExtendedApplet.html"/>
+	<mapID target="org.netbeans.modules.javacard.RunExtendedChannelsExtendedApplet" url="help/RunExtendedChannelsExtendedApplet.html"/>
+	<mapID target="CreatingClassicLibProject" url="CreatingClassicLibProject.html"/>
+	<mapID target="CreateClassicLibProjectFromTemplate" url="CreateClassicLibProjectFromTemplate.html"/>
+	<mapID target="CreateClassicLibProjectFromExistingCode" url="CreateClassicLibProjectFromExistingCode.html"/>
+	<mapID target="org.netbeans.modules.javacard.CustomizingClassicLibProject" url="help/CustomizingClassicLibProject.html"/>
+	<mapID target="org.netbeans.modules.javacard.SetClassicLibProjectProperties" url="help/SetClassicLibProjectProperties.html"/>
+	<mapID target="SettingClassicLibrarySources" url="SettingClassicLibrarySources.html"/>
+	<mapID target="AddExistingClassicLibSources" url="AddExistingClassicLibSources.html"/>
+	<mapID target="RemoveClassicLibrarySourcePackages" url="RemoveClassicLibrarySourcePackages.html"/>
+	<mapID target="SettingClassicLibraryDependencies" url="SettingClassicLibraryDependencies.html"/>
+	<mapID target="AddClassicLibrary" url="AddClassicLibrary.html"/>
+	<mapID target="RemoveClassicLibrary" url="RemoveClassicLibrary.html"/>
+	<mapID target="ChangeClassicLibDeployment" url="ChangeClassicLibDeployment.html"/>
+	<mapID target="org.netbeans.modules.javacard.SettingClassicLibCompilingProperties" url="help/SettingClassicLibCompilingProperties.html"/>
+	<mapID target="org.netbeans.modules.javacard.SettingClassicLibPackagingProperties" url="help/SettingClassicLibPackagingProperties.html"/>
+	<mapID target="org.netbeans.modules.javacard.SettingClassicLibrarySecurityProperties" url="help/SettingClassicLibrarySecurityProperties.html"/>
+	<mapID target="org.netbeans.modules.javacard.SettingClassicLibRunProperties" url="help/SettingClassicLibRunProperties.html"/>
 	<mapID target="org.netbeans.modules.javacard.DeployingClassicLibrary" url="help/DeployingClassicLibrary.html"/>
-	<mapID target="org.netbeans.modules.javacard.CustomizingClassicLibraryDeployment" url="help/CustomizingClassicLibraryDeployment.html"/>
-	<mapID target="org.netbeans.modules.javacard.CreatingExtensionLibrary" url="help/CreatingExtensionLibrary.html"/>
-	<mapID target="org.netbeans.modules.javacard.CreateExtensionLibraryFromTemplate" url="help/CreateExtensionLibraryFromTemplate.html"/>
-	<mapID target="org.netbeans.modules.javacard.CreateExtensionLibraryFromExistingCode" url="help/CreateExtensionLibraryFromExistingCode.html"/>
-	<mapID target="org.netbeans.modules.javacard.CustomizingExtensionLibrary" url="help/CustomizingExtensionLibrary.html"/>
+	<mapID target="CreatingExtensionLibProject" url="CreatingExtensionLibProject.html"/>
+	<mapID target="CreateExtensionLibProjectFromTemplate" url="CreateExtensionLibProjectFromTemplate.html"/>
+	<mapID target="CreateExtensionLibProjectFromExistingCode" url="CreateExtensionLibProjectFromExistingCode.html"/>
+	<mapID target="org.netbeans.modules.javacard.CustomizingExtensionLibProject" url="help/CustomizingExtensionLibProject.html"/>
+	<mapID target="org.netbeans.modules.javacard.SetExtensionLibProjectProperties" url="help/SetExtensionLibProjectProperties.html"/>
+	<mapID target="SettingExtensionLibSources" url="SettingExtensionLibSources.html"/>
+	<mapID target="AddExistingExtensionLibrarySources" url="AddExistingExtensionLibrarySources.html"/>
+	<mapID target="RemoveExtensionLibSourcePackages" url="RemoveExtensionLibSourcePackages.html"/>
+	<mapID target="SettingExtensionLibDependencies" url="SettingExtensionLibDependencies.html"/>
+	<mapID target="AddExtensionLibrary" url="AddExtensionLibrary.html"/>
+	<mapID target="RemoveExtensionLibrary" url="RemoveExtensionLibrary.html"/>
+	<mapID target="ChangeExtensionLibDeployment" url="ChangeExtensionLibDeployment.html"/>
+	<mapID target="org.netbeans.modules.javacard.SettingExtensionLibCompilingProperties" url="help/SettingExtensionLibCompilingProperties.html"/>
+	<mapID target="org.netbeans.modules.javacard.SettingExtensionLibSecurityProperties" url="help/SettingExtensionLibSecurityProperties.html"/>
+	<mapID target="org.netbeans.modules.javacard.SettingExtensionLibRunProperties" url="help/SettingExtensionLibRunProperties.html"/>
 	<mapID target="org.netbeans.modules.javacard.DeployingExtensionLibrary" url="help/DeployingExtensionLibrary.html"/>
-	<mapID target="org.netbeans.modules.javacard.CustomizingExtensionLibraryDeployment" url="help/CustomizingExtensionLibraryDeployment.html"/>
-	<mapID target="org.netbeans.modules.javacard.CreatingWebApplication" url="help/CreatingWebApplication.html"/>
-	<mapID target="org.netbeans.modules.javacard.CreateWeb ApplicationFromTemplate" url="help/CreateWeb ApplicationFromTemplate.html"/>
-	<mapID target="org.netbeans.modules.javacard.CreateWebApplicationFromExistingCode" url="help/CreateWebApplicationFromExistingCode.html"/>
+	<mapID target="CreatingWebAppProject" url="CreatingWebAppProject.html"/>
+	<mapID target="org.netbeans.modules.javacard.CreateWebAppProjectFromTemplate" url="help/CreateWebAppProjectFromTemplate.html"/>
+	<mapID target="org.netbeans.modules.javacard.CreateWebAppProjectFromExistingCode" url="help/CreateWebAppProjectFromExistingCode.html"/>
 	<mapID target="org.netbeans.modules.javacard.CustomizingWebApplication" url="help/CustomizingWebApplication.html"/>
-	<mapID target="org.netbeans.modules.javacard.DeployingWebApplication" url="help/DeployingWebApplication.html"/>
-	<mapID target="org.netbeans.modules.javacard.CustomizingWebApplicationDeployment" url="help/CustomizingWebApplicationDeployment.html"/>
-	<mapID target="org.netbeans.modules.javacard.RunningWebApplicationProject" url="help/RunningWebApplicationProject.html"/>
+	<mapID target="cjcbaiij" url="cjcbaiij.html"/>
+	<mapID target="org.netbeans.modules.javacard.SettingWebAppSources" url="help/SettingWebAppSources.html"/>
+	<mapID target="AddWebAppSources" url="AddWebAppSources.html"/>
+	<mapID target="org.netbeans.modules.javacard.RemoveWebAppSourcePackages" url="help/RemoveWebAppSourcePackages.html"/>
+	<mapID target="SettingWebAppDependencies" url="SettingWebAppDependencies.html"/>
+	<mapID target="AddWebAppLibrary" url="AddWebAppLibrary.html"/>
+	<mapID target="RemoveWebAppLib" url="RemoveWebAppLib.html"/>
+	<mapID target="ChangeWebAppDeployment" url="ChangeWebAppDeployment.html"/>
+	<mapID target="org.netbeans.modules.javacard.SettingWebAppCompilingProperties" url="help/SettingWebAppCompilingProperties.html"/>
+	<mapID target="org.netbeans.modules.javacard.SettingWebAppSecurityProperties" url="help/SettingWebAppSecurityProperties.html"/>
+	<mapID target="org.netbeans.modules.javacard.SourcesPanel2" url="help/SourcesPanel2.html"/>
+	<mapID target="org.netbeans.modules.javacard.RunningWebAppProject" url="help/RunningWebAppProject.html"/>
 	<mapID target="org.netbeans.modules.javacard.RunningWebApplicationSamples" url="help/RunningWebApplicationSamples.html"/>
+	<mapID target="org.netbeans.modules.javacard.RunningHelloWorldSampleWebApp" url="help/RunningHelloWorldSampleWebApp.html"/>
+	<mapID target="org.netbeans.modules.javacard.RunningContainerManagedAuthenticationSampleWebApp" url="help/RunningContainerManagedAuthenticationSampleWebApp.html"/>
+	<mapID target="org.netbeans.modules.javacard.RunningStaticSecureWebHostingSampleWebApp" url="help/RunningStaticSecureWebHostingSampleWebApp.html"/>
+	<mapID target="org.netbeans.modules.javacard.RunningDynamicSecureWebHostingSampleWebApp" url="help/RunningDynamicSecureWebHostingSampleWebApp.html"/>
+	<mapID target="org.netbeans.modules.javacard.RunningGCFClientSampleWebApp" url="help/RunningGCFClientSampleWebApp.html"/>
+	<mapID target="org.netbeans.modules.javacard.RunningDynamicallyLoadedClassesSampleWebApp" url="help/RunningDynamicallyLoadedClassesSampleWebApp.html"/>
+	<mapID target="org.netbeans.modules.javacard.RunningPersistenceSampleWebApp" url="help/RunningPersistenceSampleWebApp.html"/>
+	<mapID target="org.netbeans.modules.javacard.RunningRestartableTasksSampleWebApp" url="help/RunningRestartableTasksSampleWebApp.html"/>
+	<mapID target="org.netbeans.modules.javacard.RunningTransactionsSampleWebApp" url="help/RunningTransactionsSampleWebApp.html"/>
+	<mapID target="org.netbeans.modules.javacard.RunningSIOFacilitySampleWebApp" url="help/RunningSIOFacilitySampleWebApp.html"/>
+	<mapID target="org.netbeans.modules.javacard.RunningEventFacilitySampleWebApp" url="help/RunningEventFacilitySampleWebApp.html"/>
+	<mapID target="org.netbeans.modules.javacard.RunningCardHolderAuthorizationSampleWebApp" url="help/RunningCardHolderAuthorizationSampleWebApp.html"/>
+	<mapID target="org.netbeans.modules.javacard.RunningTransitReferenceAppSample" url="help/RunningTransitReferenceAppSample.html"/>
+	<mapID target="org.netbeans.modules.javacard.BuildWalletClassicLibRefApp" url="help/BuildWalletClassicLibRefApp.html"/>
+	<mapID target="org.netbeans.modules.javacard.BuildTransitExtLibRefApp" url="help/BuildTransitExtLibRefApp.html"/>
+	<mapID target="org.netbeans.modules.javacard.RunClassicWalletAppletRefApp" url="help/RunClassicWalletAppletRefApp.html"/>
+	<mapID target="org.netbeans.modules.javacard.RunWalletAssistAppletRefApp" url="help/RunWalletAssistAppletRefApp.html"/>
+	<mapID target="org.netbeans.modules.javacard.RunPOSWebRefApp" url="help/RunPOSWebRefApp.html"/>
+	<mapID target="org.netbeans.modules.javacard.RunAdminWebRefApp" url="help/RunAdminWebRefApp.html"/>
+	<mapID target="org.netbeans.modules.javacard.RunTurnstileAppletRefApp" url="help/RunTurnstileAppletRefApp.html"/>
+	<mapID target="org.netbeans.modules.javacard.RunTurnstileClientRefApp" url="help/RunTurnstileClientRefApp.html"/>
+	<mapID target="org.netbeans.modules.javacard.RunTurnstileWebRefApp" url="help/RunTurnstileWebRefApp.html"/>
 	<mapID target="org.netbeans.modules.javacard.SettingUpSecurityForWebApplication" url="help/SettingUpSecurityForWebApplication.html"/>
-	<mapID target="org.netbeans.modules.javacard.GeneratingCustomSSLCertificatesKeys" url="help/GeneratingCustomSSLCertificatesKeys.html"/>
-	<mapID target="org.netbeans.modules.javacard.UsingCustomSSLCertificatesKeys" url="help/UsingCustomSSLCertificatesKeys.html"/>
 	<mapID target="org.netbeans.modules.javacard.AcceptingUntrustedCertificates" url="help/AcceptingUntrustedCertificates.html"/>
 	<mapID target="org.netbeans.modules.javacard.CustomizingJavaCardPlatform" url="help/CustomizingJavaCardPlatform.html"/>
+	<mapID target="org.netbeans.modules.javacard.BuildingCustomJavaCardPlatformRI" url="help/BuildingCustomJavaCardPlatformRI.html"/>
 	<mapID target="org.netbeans.modules.javacard.ConfiguringCustomRI" url="help/ConfiguringCustomRI.html"/>
-	<mapID target="org.netbeans.modules.javacard.UsingRuntimeNodeCustomizer" url="help/UsingRuntimeNodeCustomizer.html"/>
-	<mapID target="org.netbeans.modules.javacard.UsingDeviceNodeCustomizer" url="help/UsingDeviceNodeCustomizer.html"/>
-	<mapID target="org.netbeans.modules.javacard.DeployingOntoCustomCard" url="help/DeployingOntoCustomCard.html"/>
-	<mapID target="org.netbeans.modules.javacard.AddingProprietaryPackages" url="help/AddingProprietaryPackages.html"/>
-	<mapID target="org.netbeans.modules.javacard.ModifyingJavaCardRuntimeEnvironmentConfigurationFiles" url="help/ModifyingJavaCardRuntimeEnvironmentConfigurationFiles.html"/>
+	<mapID target="org.netbeans.modules.javacard.GeneratingCustomSSLCertificatesKeys" url="help/GeneratingCustomSSLCertificatesKeys.html"/>
+	<mapID target="org.netbeans.modules.javacard.UsingCustomSSLCertificatesKeys" url="help/UsingCustomSSLCertificatesKeys.html"/>
+	<mapID target="org.netbeans.modules.javacard.CustomizingRuntimeNode" url="help/CustomizingRuntimeNode.html"/>
+	<mapID target="org.netbeans.modules.javacard.CustomizingDeviceNode" url="help/CustomizingDeviceNode.html"/>
 	<mapID target="org.netbeans.modules.javacard.Troubleshooting" url="help/Troubleshooting.html"/>
 	<mapID target="org.netbeans.modules.javacard.UnableRunSamples" url="help/UnableRunSamples.html"/>
 	<mapID target="org.netbeans.modules.javacard.Glossary" url="help/Glossary.html"/>
-	<mapID target="org.netbeans.modules.javacard.idx-1" url="help/idx-1.html"/>
+	<mapID target="idx-1" url="idx-1.html"/>
 </map>
