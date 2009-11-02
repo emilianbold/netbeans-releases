@@ -127,6 +127,35 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
         // lib directory from project root
         addLibs(projectRoot, result);
 
+        // FIXME move this to plugin specific support
+        // http://grails.org/GWT+Plugin
+        GrailsPluginSupport pluginSupport = GrailsPluginSupport.forProject(projectConfig.getProject());
+        if (pluginSupport != null && pluginSupport.usesPlugin("gwt")) { // NOI18N
+            File gwtDir = new File(new File(projectRoot, SourceCategory.LIB.getRelativePath()), "gwt"); // NOI18N
+            if (gwtDir.exists() && gwtDir.isDirectory()) {
+                addJars(gwtDir, result, false);
+            }
+        }
+
+        // FIXME move this to plugin specific support
+        // http://grails.org/plugin/app-engine
+        if (pluginSupport != null && pluginSupport.usesPlugin("app-engine")) { // NOI18N
+            // FIXME BuilConfig defined value
+            String value = System.getenv("APPENGINE_HOME"); // NOI18N
+            if (value != null) {
+                File appEngineLib = new File(new File(value), "lib"); // NOI18N
+                // http://code.google.com/intl/cs/appengine/docs/java/tools/ant.html - classpath
+                File lib = new File(appEngineLib, "shared"); // NOI18N
+                if (lib.exists() && lib.isDirectory()) {
+                    addJars(lib, result, true);
+                }
+                // not sure about this
+                lib = new File(appEngineLib, "user"); // NOI18N
+                if (lib.exists() && lib.isDirectory()) {
+                    addJars(lib, result, true);
+                }
+            }
+        }
 
         File oldPluginsDir = pluginsDir;
         File currentPluginsDir = ((GrailsProject) projectConfig.getProject()).getBuildConfig().getProjectPluginsDir();
@@ -139,7 +168,6 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
 
         if (pluginsDir.isDirectory()) {
             if (GrailsPlatform.Version.VERSION_1_1.compareTo(projectConfig.getGrailsPlatform().getVersion()) <= 0) {
-                GrailsPluginSupport pluginSupport = GrailsPluginSupport.forProject(projectConfig.getProject());
                 List<GrailsPlugin> plugins = pluginSupport != null
                         ? pluginSupport.loadInstalledPlugins11()
                         : Collections.<GrailsPlugin>emptyList();
@@ -208,35 +236,10 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
     private void addLibs(File root, List<PathResourceImplementation> result) {
         File libDir = new File(root, SourceCategory.LIB.getRelativePath());
 
-        File[] jars = libDir.listFiles();
-        if (jars != null) {
-            for (File f : jars) {
-                try {
-                    if (f.isFile()) {
-                        URL entry = f.toURI().toURL();
-                        if (FileUtil.isArchiveFile(entry)) {
-                            entry = FileUtil.getArchiveRoot(entry);
-                            result.add(ClassPathSupport.createResource(entry));
-                        }
-                    }
-                } catch (MalformedURLException mue) {
-                    assert false : mue;
-                }
-            }
-        }
-
-        // FIXME move this to plugin specific support
-        // http://grails.org/GWT+Plugin
-        GrailsPluginSupport pluginSupport = GrailsPluginSupport.forProject(projectConfig.getProject());
-        if (pluginSupport != null && pluginSupport.usesPlugin("gwt")) { // NOI18N
-            File gwtDir = new File(libDir, "gwt"); // NOI18N
-            if (gwtDir.exists() && gwtDir.isDirectory()) {
-                addJars(gwtDir, result);
-            }
-        }
+        addJars(libDir, result, false);
     }
 
-    private void addJars(File dir, List<PathResourceImplementation> result) {
+    private static void addJars(File dir, List<PathResourceImplementation> result, boolean recurse) {
         File[] jars = dir.listFiles();
         if (jars != null) {
             for (File f : jars) {
@@ -247,6 +250,8 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
                             entry = FileUtil.getArchiveRoot(entry);
                             result.add(ClassPathSupport.createResource(entry));
                         }
+                    } else if (recurse && f.isDirectory()) {
+                        addJars(f, result, recurse);
                     }
                 } catch (MalformedURLException mue) {
                     assert false : mue;
