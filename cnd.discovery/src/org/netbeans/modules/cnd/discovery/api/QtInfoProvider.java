@@ -38,18 +38,23 @@
  */
 package org.netbeans.modules.cnd.discovery.api;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
+import org.netbeans.modules.nativeexecution.api.NativeProcess;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 
 /**
  * Utility to find Qt include directories for project configuration.
@@ -59,6 +64,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguratio
 public abstract class QtInfoProvider {
 
     private static final QtInfoProvider DEFAULT = new Default();
+    private static final Logger LOGGER = Logger.getLogger(QtInfoProvider.class.getName());
 
     private QtInfoProvider() {
     }
@@ -86,78 +92,93 @@ public abstract class QtInfoProvider {
          */
         public List<String> getQtIncludeDirectories(MakeConfiguration conf) {
             String baseDir;
+            String cacheKey = getCacheKey(conf);
             synchronized (cache) {
-                baseDir = cache.get(conf.getDevelopmentHost().getHostKey());
+                baseDir = cache.get(cacheKey);
                 if (baseDir == null) {
                     baseDir = queryQtIncludeDir(conf);
-                    cache.put(conf.getDevelopmentHost().getHostKey(), baseDir);
+                    cache.put(cacheKey, baseDir);
                 }
             }
+            List<String> result;
             if (baseDir != null && !baseDir.equals(FAKE_DIR)) {
-                List<String> list = new ArrayList<String>();
-                list.add(baseDir);
+                result = new ArrayList<String>();
+                result.add(baseDir);
                 QmakeConfiguration qmakeConfiguration = conf.getQmakeConfiguration();
                 if (qmakeConfiguration.isCoreEnabled().getValue()) {
-                    list.add(baseDir + File.separator + "QtCore"); // NOI18N
+                    result.add(baseDir + File.separator + "QtCore"); // NOI18N
                 }
                 if (qmakeConfiguration.isGuiEnabled().getValue()) {
-                    list.add(baseDir + File.separator + "QtGui"); // NOI18N
+                    result.add(baseDir + File.separator + "QtGui"); // NOI18N
                 }
                 if (qmakeConfiguration.isNetworkEnabled().getValue()) {
-                    list.add(baseDir + File.separator + "QtNetwork"); // NOI18N
+                    result.add(baseDir + File.separator + "QtNetwork"); // NOI18N
                 }
                 if (qmakeConfiguration.isOpenglEnabled().getValue()) {
-                    list.add(baseDir + File.separator + "QtOpenGL"); // NOI18N
+                    result.add(baseDir + File.separator + "QtOpenGL"); // NOI18N
                 }
                 if (qmakeConfiguration.isPhononEnabled().getValue()) {
-                    list.add(baseDir + File.separator + "phonon"); // NOI18N
+                    result.add(baseDir + File.separator + "phonon"); // NOI18N
                 }
                 if (qmakeConfiguration.isQt3SupportEnabled().getValue()) {
-                    list.add(baseDir + File.separator + "Qt3Support"); // NOI18N
+                    result.add(baseDir + File.separator + "Qt3Support"); // NOI18N
                 }
                 if (qmakeConfiguration.isSqlEnabled().getValue()) {
-                    list.add(baseDir + File.separator + "QtSql"); // NOI18N
+                    result.add(baseDir + File.separator + "QtSql"); // NOI18N
                 }
                 if (qmakeConfiguration.isSvgEnabled().getValue()) {
-                    list.add(baseDir + File.separator + "QtSvg"); // NOI18N
+                    result.add(baseDir + File.separator + "QtSvg"); // NOI18N
                 }
                 if (qmakeConfiguration.isXmlEnabled().getValue()) {
-                    list.add(baseDir + File.separator + "QtXml"); // NOI18N
+                    result.add(baseDir + File.separator + "QtXml"); // NOI18N
                 }
                 if (qmakeConfiguration.isWebkitEnabled().getValue()) {
-                    list.add(baseDir + File.separator + "QtWebKit"); // NOI18N
+                    result.add(baseDir + File.separator + "QtWebKit"); // NOI18N
                 }
                 String uiDir = qmakeConfiguration.getUiDir().getValue();
                 if (IpeUtils.isPathAbsolute(uiDir)) {
-                    list.add(uiDir);
+                    result.add(uiDir);
                 } else {
-                    list.add(conf.getBaseDir() + File.separator + uiDir);
+                    result.add(conf.getBaseDir() + File.separator + uiDir);
                 }
-                return list;
             } else {
-                return Collections.emptyList();
+                result = Collections.emptyList();
             }
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "Qt include dirs for {0} = {1}", new Object[] {cacheKey, result});
+            }
+            return result;
         }
 
-        private String queryQtIncludeDir(MakeConfiguration conf) {
-            if (conf.getDevelopmentHost().getExecutionEnvironment().isLocal()) {
-                try {
-                    Process process = Runtime.getRuntime().exec("qmake -query QT_INSTALL_HEADERS"); // NOI18N
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                    try {
-                        String line = reader.readLine().trim();
-                        if (0 < line.length()) {
-                            return line;
-                        }
-                    } finally {
-                        reader.close();
-                    }
-                } catch (IOException ex) {
-                    // probably qmake was not found
-                    // ignore and return FAKE_DIR
+        private static String getQmakePath(MakeConfiguration conf) {
+            CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
+            if (compilerSet != null) {
+                Tool qmakeTool = compilerSet.getTool(Tool.QMakeTool);
+                if (qmakeTool != null && 0 < qmakeTool.getPath().length()) {
+                    return qmakeTool.getPath();
                 }
-            } else {
-                // remote is not supported yet
+            }
+            return "qmake"; // NOI18N
+        }
+
+        private static String getCacheKey(MakeConfiguration conf) {
+            return conf.getDevelopmentHost().getHostKey() + '/' + getQmakePath(conf); // NOI18N
+        }
+
+        private static String queryQtIncludeDir(MakeConfiguration conf) {
+            NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(conf.getDevelopmentHost().getExecutionEnvironment());
+            npb.setExecutable(getQmakePath(conf));
+            npb.setArguments("-query", "QT_INSTALL_HEADERS"); // NOI18N
+            try {
+                NativeProcess process = npb.call();
+                String output = ProcessUtils.readProcessOutputLine(process).trim();
+                if (process.waitFor() == 0 && 0 < output.length()) {
+                    return output;
+                }
+            } catch (IOException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+            } catch (InterruptedException ex) {
+                LOGGER.log(Level.INFO, null, ex);
             }
             return FAKE_DIR;
         }

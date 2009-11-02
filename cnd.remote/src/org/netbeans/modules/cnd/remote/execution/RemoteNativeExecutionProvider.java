@@ -39,6 +39,9 @@
 
 package org.netbeans.modules.cnd.remote.execution;
 
+import java.io.File;
+import java.io.PrintWriter;
+import java.io.Reader;
 import org.netbeans.modules.cnd.api.execution.NativeExecution;
 import org.netbeans.modules.cnd.spi.compilers.NativeExecutionProvider;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -50,8 +53,9 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.compilers.NativeExecutionProvider.class)
 public class RemoteNativeExecutionProvider implements NativeExecutionProvider {
     
-    public NativeExecution getNativeExecution(ExecutionEnvironment execEnv) {
-        return new RemoteNativeExecution(execEnv);
+    public NativeExecution getNativeExecution(ExecutionEnvironment execEnv, File runDirFile, String executable,
+            String arguments, String[] envp, boolean unbuffer, boolean x11forwarding) {
+        return new RemoteNativeExecution(execEnv, runDirFile, executable, arguments, envp, unbuffer, x11forwarding);
     }
 
     public boolean isApplicable(ExecutionEnvironment execEnv) {

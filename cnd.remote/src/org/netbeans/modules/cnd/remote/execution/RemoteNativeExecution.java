@@ -58,53 +58,49 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 class RemoteNativeExecution extends NativeExecution {
 
     private final ExecutionEnvironment execEnv;
+    private final File runDirFile;
+    private final String executable;
+    private final String arguments;
+    private final String[] envp;
+    private final boolean unbuffer;
+    private final boolean x11forwarding;
+    private final RemoteNativeExecutionSupport support;
 
-    /* package-local */
-    RemoteNativeExecution(ExecutionEnvironment execEnv) {
-        assert execEnv.isRemote();
+    public RemoteNativeExecution(ExecutionEnvironment execEnv, File runDirFile, String executable,
+            String arguments, String[] envp, boolean unbuffer, boolean x11forwarding) {
         this.execEnv = execEnv;
-    }
-
-    public int executeCommand(
-            File runDirFile,
-            String executable,
-            String arguments,
-            String[] envp,
-            PrintWriter out,
-            Reader in,
-            boolean unbuffer) throws IOException, InterruptedException {
-        return executeCommand(runDirFile, executable, arguments, envp, out, in, unbuffer, false);
+        this.runDirFile = runDirFile;
+        this.executable = executable;
+        this.arguments = arguments;
+        this.envp = envp;
+        this.unbuffer = unbuffer;
+        this.x11forwarding = x11forwarding;
+        if (execEnv != null) {
+            support = new RemoteNativeExecutionSupport(execEnv, runDirFile, executable,
+                    arguments, envToMap(envp), x11forwarding);
+        } else {
+            support = null;
+        }
     }
 
     /**
      * Execute an executable, a makefile, or a script
-     * @param runDir absolute path to directory from where the command should be executed
-     * @param executable absolute or relative path to executable, makefile, or script
-     * @param arguments space separated list of arguments
-     * @param envp environment variables (name-value pairs of the form ABC=123)
-     * @param out Output
-     * @param io Input
-     * @param parseOutput true if output should be parsed for compiler errors
      * @return completion code
      */
-    public int executeCommand(
-            File runDirFile,
-            String executable,
-            String arguments,
-            String[] envp,
-            PrintWriter out,
-            Reader in,
-            boolean unbuffer,
-            boolean x11forwarding) throws IOException, InterruptedException {
-        RemoteNativeExecutionSupport support = null;
-        if (execEnv != null ) {
-            support = new RemoteNativeExecutionSupport(execEnv, runDirFile, executable, 
-                    arguments, envToMap(envp), out, in, x11forwarding);
+    @Override
+    public int execute(PrintWriter out, Reader in) throws IOException, InterruptedException {
+        if (support == null) {
+            return -1;
+        } else {
+            support.execute(out, in);
+            return support.getExitStatus();
         }
-        return support == null ? -1 : support.getExitStatus();
     }
 
     public void stop() {
+        if (support != null) {
+            support.stop();
+        }
     }
 
     private static Map<String, String> envToMap(String[] envp) {

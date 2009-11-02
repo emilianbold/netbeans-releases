@@ -42,12 +42,15 @@ import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 
 public class Logger {
-
     private static boolean assertionsEnabled = false;
 
     static {
         assert (assertionsEnabled = true);
     }
+
+    private Logger() {
+    }
+
     private static java.util.logging.Logger instance =
             java.util.logging.Logger.getLogger(
             "nativeexecution.support.logger"); // NOI18N
@@ -61,8 +64,9 @@ public class Logger {
     }
 
     public static void assertTrue(boolean value) {
-        if (assertionsEnabled) {
-            assertTrue(value, "Assertion error"); //NOI18N
+        if (assertionsEnabled && !value) {
+            String message = "Assertion error"; //NOI18N
+            instance.log(Level.SEVERE, message, new Exception(message));
         }
     }
 
@@ -73,16 +77,22 @@ public class Logger {
     }
 
     public static void assertFalse(boolean value) {
-        if (assertionsEnabled) {
-            assertTrue(!value, "Assertion error"); //NOI18N
+        if (assertionsEnabled && value) {
+            String message = "Assertion error"; //NOI18N
+            instance.log(Level.SEVERE, message, new Exception(message));
         }
     }
 
     public static void assertFalse(boolean value, String message) {
-        assertTrue(!value, message);
+        if (assertionsEnabled && value) {
+            instance.log(Level.SEVERE, message, new Exception(message));
+        }
     }
 
     public static final void assertNonUiThread() {
-        assertFalse(SwingUtilities.isEventDispatchThread(), "Should not be called from UI thread"); //NOI18N
+        if (assertionsEnabled && SwingUtilities.isEventDispatchThread()) {
+            String message = "Should not be called from UI thread"; //NOI18N
+            instance.log(Level.SEVERE, message, new Exception(message));
+        }
     }
 }

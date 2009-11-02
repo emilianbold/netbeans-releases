@@ -62,6 +62,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.execution.ExecutorTask;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.windows.InputOutput;
 
@@ -69,6 +70,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
 
     private ProjectActionEvent pae;
     private volatile ExecutorTask executorTask;
+    private NativeExecutor executor;
     private final List<ExecutionListener> listeners = new CopyOnWriteArrayList<ExecutionListener>();
 
     // VK: this is just to tie two pieces of logic together:
@@ -232,7 +234,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                     args += " QMAKE=" + IpeUtils.escapeOddCharacters(qmakePath); // NOI18N
                 }
             }
-            NativeExecutor projectExecutor = new NativeExecutor(
+            executor = new NativeExecutor(
                     execEnv,
                     runDirectory,
                     exe, args, env,
@@ -246,15 +248,15 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                 case DEBUG:
                 case RUN:
                     if (!contains(env, "DISPLAY")) { //NOI18N if DISPLAY is set, let it do its work
-                        projectExecutor.setX11Forwarding(true);
+                        executor.setX11Forwarding(true);
                     }
             }
-            projectExecutor.addExecutionListener(this);
+            executor.addExecutionListener(this);
             if (rcfile != null) {
-                projectExecutor.setExitValueOverride(rcfile);
+                executor.setExitValueOverride(rcfile);
             }
             try {
-                executorTask = projectExecutor.execute(io);
+                executorTask = executor.execute(io);
             } catch (java.io.IOException ioe) {
                 ioe.printStackTrace();
             }
@@ -290,10 +292,18 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
     }
 
     public void cancel() {
-        ExecutorTask et = executorTask;
-        if (et != null) {
-            executorTask.stop();
-        }
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                ExecutorTask et = executorTask;
+                if (et != null) {
+                    executorTask.stop();
+                }
+                NativeExecutor ne = executor;
+                if (ne != null) {
+                    ne.stop(); // "kontrolny" ;)
+                }
+            }
+        });
     }
 
     public void executionStarted(int pid) {

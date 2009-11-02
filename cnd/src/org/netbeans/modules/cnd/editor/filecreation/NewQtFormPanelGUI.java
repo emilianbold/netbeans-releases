@@ -130,7 +130,7 @@ import org.openide.loaders.DataObjectNotFoundException;
         if (template != null) {
             if (formName == null) {
                 formName = getMessage("NewFormSuggestedName");
-                FileObject currentFolder = preselectedFolder != null ? preselectedFolder : ((SourceGroup) cbLocation.getSelectedItem()).getRootFolder();
+                FileObject currentFolder = preselectedFolder != null ? preselectedFolder : getTargetGroup().getRootFolder();
                 if (currentFolder != null) {
                     formName += generateUniqueSuffix(
                             currentFolder, getFileName(formName),
@@ -144,7 +144,15 @@ import org.openide.loaders.DataObjectNotFoundException;
     }
 
     public SourceGroup getTargetGroup() {
-        return (SourceGroup) cbLocation.getSelectedItem();
+        Object selectedItem = cbLocation.getSelectedItem();
+        if (selectedItem == null) {
+            // workaround for MacOS, see IZ 175457
+            selectedItem = cbLocation.getItemAt(cbLocation.getSelectedIndex());
+            if (selectedItem == null) {
+                selectedItem = cbLocation.getItemAt(0);
+            }
+        }
+        return (SourceGroup) selectedItem;
     }
 
     public String getTargetFolder() {
@@ -162,7 +170,7 @@ import org.openide.loaders.DataObjectNotFoundException;
     }
 
     protected void updateCreatedFile() {
-        FileObject root = ((SourceGroup) cbLocation.getSelectedItem()).getRootFolder();
+        FileObject root = getTargetGroup().getRootFolder();
         String folderName = tfFolder.getText().trim();
         String folderDisplayName = FileUtil.getFileDisplayName(root) +
                 (folderName.startsWith("/") || folderName.startsWith(File.separator) ? "" : "/") + // NOI18N
@@ -451,7 +459,7 @@ import org.openide.loaders.DataObjectNotFoundException;
             FileObject fo = null;
             // Show the browse dialog             
 
-            SourceGroup group = (SourceGroup) cbLocation.getSelectedItem();
+            SourceGroup group = getTargetGroup();
 
             fo = BrowseFolders.showDialog(new SourceGroup[]{group},
                     project,
