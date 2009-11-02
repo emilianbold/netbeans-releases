@@ -52,18 +52,20 @@ import java.text.SimpleDateFormat;
 import java.text.DateFormat;
 import java.util.*;
 import java.io.File;
+import java.util.Map.Entry;
 import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
+import org.tigris.subversion.svnclientadapter.utils.SVNUrlUtils;
 
 /**
  * Executes searches in Search History panel.
- * 
+ *
  * @author Maros Sandor
  */
 class SearchExecutor implements Runnable {
 
     public static final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");  // NOI18N
-    
+
     static final SimpleDateFormat fullDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z");  // NOI18N
     static final DateFormat [] dateFormats = new DateFormat[] {
         fullDateFormat,
@@ -71,12 +73,12 @@ class SearchExecutor implements Runnable {
         simpleDateFormat,
         new SimpleDateFormat("yyyy-MM-dd"), // NOI18N
     };
-    
+
     private final SearchHistoryPanel    master;
     private Map<SVNUrl, Set<File>>      workFiles;
     private Map<String,File>            pathToRoot;
     private final SearchCriteriaPanel   criteria;
-    
+
     private int                         completedSearches;
     private boolean                     searchCanceled;
     private List<RepositoryRevision> results = new ArrayList<RepositoryRevision>();
@@ -95,9 +97,8 @@ class SearchExecutor implements Runnable {
             } else {
                 workFiles = new HashMap<SVNUrl, Set<File>>();
                 for (File file : master.getRoots()) {
-                    populatePathToRoot(file);
-
                     SVNUrl rootUrl = SvnUtils.getRepositoryRootUrl(file);
+                    populatePathToRoot(file, rootUrl);
                     Set<File> set = workFiles.get(rootUrl);
                     if (set == null) {
                         set = new HashSet<File>(2);
@@ -111,40 +112,28 @@ class SearchExecutor implements Runnable {
             return;
         }
     }
-    
-    private void populatePathToRoot(File file) throws SVNClientException {
-        
-        String rootPath = SvnUtils.getRepositoryPath(file);
-        String fileAbsPath = file.getAbsolutePath().replace(File.separatorChar, '/');
-        int commonPathLength = getCommonPostfixLength(rootPath, fileAbsPath);
-        pathToRoot.put(rootPath.substring(0, rootPath.length() - commonPathLength),
-                       new File(fileAbsPath.substring(0, fileAbsPath.length() - commonPathLength)));
 
-        File[] files = file.listFiles();
-        if(files == null || files.length == 0) {
-            return; 
-        }
-        
-        FileStatusCache cache = Subversion.getInstance().getStatusCache();
-        for(File f : files) {
-            if(SvnUtils.isAdministrative(f) || !SvnUtils.isManaged(f)) {
-                continue;
+    private void populatePathToRoot(File file, SVNUrl rootUrl) throws SVNClientException {
+        Map<File, SVNUrl> m = SvnUtils.getRepositoryUrls(file);
+        for (Entry<File, SVNUrl> e : m.entrySet()) {
+            SVNUrl url = e.getValue();
+            if(url != null) {
+                String rootPath = SVNUrlUtils.getRelativePath(rootUrl, url, true);
+                String fileAbsPath = e.getKey().getAbsolutePath().replace(File.separatorChar, '/');
+                int commonPathLength = getCommonPostfixLength(rootPath, fileAbsPath);
+                pathToRoot.put(rootPath.substring(0, rootPath.length() - commonPathLength),
+                               new File(fileAbsPath.substring(0, fileAbsPath.length() - commonPathLength)));
+
             }
-            int status = cache.getStatus(f).getStatus();
-            if( ( f.isDirectory() && (status & SearchHistoryAction.DIRECTORY_ENABLED_STATUS) != 0)  ||                    
-                (                    (status & SearchHistoryAction.FILE_ENABLED_STATUS)      != 0) )
-            {
-                populatePathToRoot(f);    
-            }            
         }
     }
-    
+
     private int getCommonPostfixLength(String a, String b) {
-        int ai = a.length() - 1;        
+        int ai = a.length() - 1;
         int bi = b.length() - 1;
         int slash = -1;
         for (;;) {
-            if (ai < 0 || bi < 0) break;         
+            if (ai < 0 || bi < 0) break;
             char ca = a.charAt(ai);
             char cb = b.charAt(bi);
             if(ca == '/') slash = ai;
@@ -160,7 +149,7 @@ class SearchExecutor implements Runnable {
     }
 
 
-    
+
     public void run() {
         populatePathToRoot();
 
@@ -171,7 +160,7 @@ class SearchExecutor implements Runnable {
         if (searchingUrl()) {
             RequestProcessor rp = Subversion.getInstance().getRequestProcessor(master.getRepositoryUrl());
             SvnProgressSupport support = new SvnProgressSupport() {
-                public void perform() {                    
+                public void perform() {
                     search(master.getRepositoryUrl(), null, fromRevision, toRevision, this);
                 }
             };
@@ -182,7 +171,7 @@ class SearchExecutor implements Runnable {
                 final Set<File> files = workFiles.get(rootUrl);
                 RequestProcessor rp = Subversion.getInstance().getRequestProcessor(rootUrl);
                 SvnProgressSupport support = new SvnProgressSupport() {
-                    public void perform() {                    
+                    public void perform() {
                         search(rootUrl, files, fromRevision, toRevision, this);
                     }
                 };
@@ -215,32 +204,32 @@ class SearchExecutor implements Runnable {
         } else {
             String [] paths = new String[files.size()];
             int idx = 0;
-            try {       
+            try {
                 for (File file : files) {
                     String p = SvnUtils.getRelativePath(file);
                     if(p != null && p.startsWith("/")) {
                         p = p.substring(1, p.length());
                     }
                     paths[idx++] = p;
-                }                
+                }
                 ISVNLogMessage [] messages = SvnUtils.getLogMessages(client, rootUrl, paths, fromRevision, toRevision, false, true);
                 appendResults(rootUrl, messages);
-            } catch (SVNClientException e) {                
-                try {    
-                    // WORKAROUND issue #110034 
-                    // the client.getLogMessages(rootUrl, paths[] ... seems to touch also the repository root even if it's not 
+            } catch (SVNClientException e) {
+                try {
+                    // WORKAROUND issue #110034
+                    // the client.getLogMessages(rootUrl, paths[] ... seems to touch also the repository root even if it's not
                     // listed in paths[]. This causes problems when the given user has restricted access only to a specific folder.
                     if(SvnClientExceptionHandler.isHTTP403(e.getMessage())) { // 403 forbidden
-                        for(String path : paths) {                        
+                        for(String path : paths) {
                             ISVNLogMessage [] messages = client.getLogMessages(rootUrl.appendPath(path), null, fromRevision, toRevision, false, true, 0);
                             appendResults(rootUrl, messages);
                         }
                         return;
-                    }                      
-                } catch (SVNClientException ex) {                    
+                    }
+                } catch (SVNClientException ex) {
                     if(!SvnClientExceptionHandler.handleLogException(rootUrl, toRevision, e)) {
                         progressSupport.annotate(ex);
-                    }    
+                    }
                 }
                 if(!SvnClientExceptionHandler.handleLogException(rootUrl, toRevision, e)) {
                     progressSupport.annotate(e);
@@ -248,15 +237,15 @@ class SearchExecutor implements Runnable {
             }
         }
     }
-            
-  
-    
+
+
+
     /**
-     * Processes search results from a single repository. 
-     * 
+     * Processes search results from a single repository.
+     *
      * @param rootUrl repository root URL
      * @param logMessages events in chronological order
-     */ 
+     */
     private synchronized void appendResults(SVNUrl rootUrl, ISVNLogMessage[] logMessages) {
         // /tags/tag-JavaAppX => /branches/brenc2-JavaAppX
         Map<String, String> historyPaths = new HashMap<String, String>();
@@ -282,8 +271,8 @@ class SearchExecutor implements Runnable {
                 }
                 String originalFilePath = event.getChangedPath().getPath();
                 for (String srcPath : historyPaths.keySet()) {
-                    if ( originalFilePath.startsWith(srcPath) && 
-                         (originalFilePath.length() == srcPath.length() || originalFilePath.charAt(srcPath.length()) == '/') ) 
+                    if ( originalFilePath.startsWith(srcPath) &&
+                         (originalFilePath.length() == srcPath.length() || originalFilePath.charAt(srcPath.length()) == '/') )
                     {
                         originalFilePath = historyPaths.get(srcPath) + originalFilePath.substring(srcPath.length());
                         break;
@@ -300,10 +289,10 @@ class SearchExecutor implements Runnable {
     private boolean searchingUrl() {
         return master.getRepositoryUrl() != null;
     }
-    
+
     private File computeFile(String path) {
         for (String s : pathToRoot.keySet()) {
-            if (path.startsWith(s)) {                
+            if (path.startsWith(s)) {
                 return new File(pathToRoot.get(s), path.substring(s.length()));
             }
         }
@@ -321,5 +310,5 @@ class SearchExecutor implements Runnable {
         }
     }
 
-  
+
 }

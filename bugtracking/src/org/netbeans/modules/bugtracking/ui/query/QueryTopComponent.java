@@ -686,6 +686,7 @@ public final class QueryTopComponent extends TopComponent
             GroupieFlowLayout dl = (GroupieFlowLayout) lm;
             int h = dl.getHeight(queriesPanel);
             if(h == 0) return;
+            queriesPanel.revalidate();
             Dimension d = queriesPanel.getSize();
             d.height = h;
             queriesPanel.setSize(d);
