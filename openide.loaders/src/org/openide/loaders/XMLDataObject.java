@@ -421,7 +421,7 @@ public class XMLDataObject extends MultiDataObject {
         }
         protected void notifyUnmodified () {
             super.notifyUnmodified ();
-            SaveCookie save = (SaveCookie) getDataObject ().getCookie (SaveCookie.class);
+            SaveCookie save = getDataObject().getCookie(SaveCookie.class);
             if (save != null) {
                 ((XMLDataObject) getDataObject ()).removeSaveCookie (save);
                 getDataObject ().setModified (false);
@@ -880,7 +880,7 @@ public class XMLDataObject extends MultiDataObject {
     @Deprecated
     public static Info getRegisteredInfo(String publicId) {  //!!! to be replaced by lookup
         synchronized (infos) {
-            Info ret = (Info) infos.get(publicId);
+            Info ret = infos.get(publicId);
             return ret == null ? null : (Info)ret.clone ();
         }
     }

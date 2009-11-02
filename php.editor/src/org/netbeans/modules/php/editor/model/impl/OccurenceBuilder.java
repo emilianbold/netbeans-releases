@@ -592,6 +592,7 @@ class OccurenceBuilder {
         for (Entry<ASTNodeInfo<StaticFieldAccess>, Scope> entry : staticFieldInvocations.entrySet()) {
             ASTNodeInfo<StaticFieldAccess> nodeInfo = entry.getKey();
             String fieldName = nodeInfo.getName();
+            if (fieldName == null) continue;
             if (fieldName.startsWith("$")) {
                 fieldName = fieldName.substring(1);
             }

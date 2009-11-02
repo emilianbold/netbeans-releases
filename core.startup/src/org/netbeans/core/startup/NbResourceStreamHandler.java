@@ -47,47 +47,18 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
-import java.net.URLStreamHandlerFactory;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.URLStreamHandlerRegistration;
 
-/**
- * Proxying stream handler factory. Currently searches Lookup for registered
- * factories and delegates to them. But #20838 suggests using JNDI instead,
- * in which case registering them via Lookup would be deprecated.
- * @author Jesse Glick
- */
-@org.openide.util.lookup.ServiceProvider(service=java.net.URLStreamHandlerFactory.class)
-public final class NbURLStreamHandlerFactory implements URLStreamHandlerFactory {
-    
-    /** public for lookup */
-    public NbURLStreamHandlerFactory() {}
-    
-    public URLStreamHandler createURLStreamHandler(String protocol) {
-        if (protocol.equals("nbfs")) { // NOI18N
-             return FileUtil.nbfsURLStreamHandler();
-        }
-        
-        if (protocol.equals(NbResourceStreamHandler.PROTOCOL_SYSTEM_RESOURCE) ||
-                   protocol.equals(NbResourceStreamHandler.PROTOCOL_LOCALIZED_SYSTEM_RESOURCE)) {
-           return new NbResourceStreamHandler();
-        }
-        
-        return null;
-    }
-    
     /** Stream handler for internal resource-based URLs.
-     * Copied with modifications from org.openide.execution - that version is now
-     * deprecated and handles only deprecated protocols.
      * @author Jesse Glick
      */
-    private static final class NbResourceStreamHandler extends URLStreamHandler {
-        
-        public NbResourceStreamHandler() {}
+    @URLStreamHandlerRegistration(protocol={NbResourceStreamHandler.PROTOCOL_SYSTEM_RESOURCE, NbResourceStreamHandler.PROTOCOL_LOCALIZED_SYSTEM_RESOURCE})
+    public final class NbResourceStreamHandler extends URLStreamHandler {
         
         public static final String PROTOCOL_SYSTEM_RESOURCE = "nbres"; // NOI18N
         public static final String PROTOCOL_LOCALIZED_SYSTEM_RESOURCE = "nbresloc"; // NOI18N
@@ -133,7 +104,7 @@ public final class NbURLStreamHandlerFactory implements URLStreamHandlerFactory 
                     if (resource.length() > 0 && resource.charAt(0) == '/') { // NOI18N
                         resource = resource.substring(1);
                     } else {
-                        Logger.getLogger(NbURLStreamHandlerFactory.class.getName()).log(Level.WARNING, "URL path should begin with a slash: " + url);
+                        Logger.getLogger(NbResourceStreamHandler.class.getName()).log(Level.WARNING, "URL path should begin with a slash: " + url);
                     }
                     ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
                     URL target;
@@ -166,7 +137,7 @@ public final class NbURLStreamHandlerFactory implements URLStreamHandlerFactory 
                         target = t1;
                     }
                     if (target == null) {
-                        throw new IOException(NbBundle.getMessage(NbURLStreamHandlerFactory.class, "EXC_nbres_cannot_connect", url));
+                        throw new IOException(NbBundle.getMessage(NbResourceStreamHandler.class, "EXC_nbres_cannot_connect", url));
                     }
                     real = target.openConnection();
                     real.connect();
@@ -267,5 +238,3 @@ public final class NbURLStreamHandlerFactory implements URLStreamHandlerFactory 
         }
         
     }
-    
-}

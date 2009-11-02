@@ -73,13 +73,7 @@ public class ProjectTemplateAttributesProviderTest extends NbTestCase {
         assertEquals(FEQImpl.ENCODING, FileEncodingQuery.getEncoding(folder).name());
     }
 
-    @Override
-    protected void tearDown() throws Exception {
-        MockLookup.setInstances();
-        super.tearDown();
-    }
-
-    public void testcheckProjectAttrs() throws Exception {
+    public void testCheckProjectAttrs() throws Exception {
         Map<String, ? extends Object> checked = ProjectTemplateAttributesProvider.checkProjectAttrs(null, folder);
         assertAttribute("default", checked, "license");
         assertAttribute(FEQImpl.ENCODING, checked, "encoding");

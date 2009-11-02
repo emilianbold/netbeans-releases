@@ -31,12 +31,17 @@
 
 package org.netbeans.modules.settings;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.logging.Logger;
 import org.netbeans.modules.openide.util.NamedServicesProvider;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.util.Lookup;
@@ -61,7 +66,7 @@ public final class RecognizeInstanceObjects extends NamedServicesProvider {
     
     
     private static final class OverObjects extends ProxyLookup 
-    implements LookupListener {
+    implements LookupListener, FileChangeListener {
         private static Lookup.Result<ClassLoader> CL = Lookup.getDefault().lookupResult(ClassLoader.class);
         
         private final String path;
@@ -70,6 +75,12 @@ public final class RecognizeInstanceObjects extends NamedServicesProvider {
             super(delegates(path));
             this.path = path;
             CL.addLookupListener(WeakListeners.create(LookupListener.class, this, CL));
+            try {
+                FileSystem sfs = FileUtil.getConfigRoot().getFileSystem();
+                sfs.addFileChangeListener(FileUtil.weakFileChangeListener(this, sfs));
+            } catch (FileStateInvalidException x) {
+                assert false : x;
+            }
         }
         
         @SuppressWarnings("deprecation")
@@ -83,27 +94,47 @@ public final class RecognizeInstanceObjects extends NamedServicesProvider {
                     allCL = Collections.singleton(RecognizeInstanceObjects.class.getClassLoader());
                 }
             }
-            try {
-                FileObject fo = FileUtil.createFolder(FileUtil.getConfigRoot(), path);
-                
-                String s;
-                if (path.endsWith("/")) { // NOI18N
-                    s = path.substring(0, path.length() - 1);
-                } else {
-                    s = path;
-                }
-                
-                org.openide.loaders.FolderLookup l;
-                l = new org.openide.loaders.FolderLookup(DataFolder.findFolder(fo), s);
-                return new Lookup[] { l.getLookup(), Lookups.metaInfServices(allCL.iterator().next(), "META-INF/namedservices/" + path) }; // NOI18N
-            } catch (IOException ex) {
-                return new Lookup[] { Lookups.metaInfServices(allCL.iterator().next(), "META-INF/namedservices/" + path) }; // NOI18N
+            Lookup base = Lookups.metaInfServices(allCL.iterator().next(), "META-INF/namedservices/" + path); // NOI18N
+            FileObject fo = FileUtil.getConfigFile(path);
+            if (fo == null) {
+                return new Lookup[] {base};
             }
-            
+            String s;
+            if (path.endsWith("/")) { // NOI18N
+                s = path.substring(0, path.length() - 1);
+            } else {
+                s = path;
+            }
+            return new Lookup[] {new org.openide.loaders.FolderLookup(DataFolder.findFolder(fo), s).getLookup(), base};
         }
     
         public void resultChanged(LookupEvent ev) {
             setLookups(delegates(path));
         }
+
+        public void fileFolderCreated(FileEvent fe) {
+            ch(fe);
+        }
+        public void fileDataCreated(FileEvent fe) {
+            ch(fe);
+        }
+        public void fileChanged(FileEvent fe) {
+            ch(fe);
+        }
+        public void fileDeleted(FileEvent fe) {
+            ch(fe);
+        }
+        public void fileRenamed(FileRenameEvent fe) {
+            ch(fe);
+        }
+        public void fileAttributeChanged(FileAttributeEvent fe) {
+            ch(fe);
+        }
+        private void ch(FileEvent e) {
+            if ((e.getFile().getPath() + "/").startsWith(path)) { // NOI18N
+                setLookups(delegates(path));
+            }
+        }
+
     } // end of OverObjects
 }
