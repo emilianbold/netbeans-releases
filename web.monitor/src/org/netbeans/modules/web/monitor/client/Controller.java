@@ -1131,10 +1131,11 @@ class Controller  {
 	
 	// No dispatched requests, we add a regular transaction node
 	if(dis == null || dis.sizeDispatchData() == 0 ) {
+            RequestData rd = dd.getRequestData();
 	    node = new NestedNode(dd.getAttributeValue("resource"),// NOI18N
                             method, 
                             newloc, 
-                            parseStatusCode(dd.getRequestData().getAttributeValue("status"))); // NOI18N
+                            parseStatusCode((rd == null) ? null : rd.getAttributeValue("status"))); // NOI18N
 	}
 	else {
 	    int numChildren = dis.sizeDispatchData();

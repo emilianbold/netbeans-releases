@@ -139,8 +139,11 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
 
         if (pluginsDir.isDirectory()) {
             if (GrailsPlatform.Version.VERSION_1_1.compareTo(projectConfig.getGrailsPlatform().getVersion()) <= 0) {
-                List<GrailsPlugin> plugins = new GrailsPluginSupport((GrailsProject) projectConfig.getProject())
-                        .loadInstalledPlugins11();
+                GrailsPluginSupport pluginSupport = GrailsPluginSupport.forProject(projectConfig.getProject());
+                List<GrailsPlugin> plugins = pluginSupport != null
+                        ? pluginSupport.loadInstalledPlugins11()
+                        : Collections.<GrailsPlugin>emptyList();
+
                 Set<String> pluginDirs = new HashSet<String>();
                 for (GrailsPlugin plugin : plugins) {
                     pluginDirs.add(plugin.getDirName());
@@ -202,8 +205,39 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
         }
     }
 
-    private static void addLibs(File root, List<PathResourceImplementation> result) {
-        File[] jars = new File(root, SourceCategory.LIB.getRelativePath()).listFiles();
+    private void addLibs(File root, List<PathResourceImplementation> result) {
+        File libDir = new File(root, SourceCategory.LIB.getRelativePath());
+
+        File[] jars = libDir.listFiles();
+        if (jars != null) {
+            for (File f : jars) {
+                try {
+                    if (f.isFile()) {
+                        URL entry = f.toURI().toURL();
+                        if (FileUtil.isArchiveFile(entry)) {
+                            entry = FileUtil.getArchiveRoot(entry);
+                            result.add(ClassPathSupport.createResource(entry));
+                        }
+                    }
+                } catch (MalformedURLException mue) {
+                    assert false : mue;
+                }
+            }
+        }
+
+        // FIXME move this to plugin specific support
+        // http://grails.org/GWT+Plugin
+        GrailsPluginSupport pluginSupport = GrailsPluginSupport.forProject(projectConfig.getProject());
+        if (pluginSupport != null && pluginSupport.usesPlugin("gwt")) { // NOI18N
+            File gwtDir = new File(libDir, "gwt"); // NOI18N
+            if (gwtDir.exists() && gwtDir.isDirectory()) {
+                addJars(gwtDir, result);
+            }
+        }
+    }
+
+    private void addJars(File dir, List<PathResourceImplementation> result) {
+        File[] jars = dir.listFiles();
         if (jars != null) {
             for (File f : jars) {
                 try {

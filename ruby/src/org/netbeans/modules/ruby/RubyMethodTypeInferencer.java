@@ -43,6 +43,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import org.jrubyparser.ast.CallNode;
+import org.jrubyparser.ast.Colon2Node;
 import org.jrubyparser.ast.Node;
 import org.jrubyparser.ast.INameNode;
 import org.jrubyparser.ast.IScopingNode;
@@ -58,7 +59,7 @@ final class RubyMethodTypeInferencer {
     /**
      * Names of the methods that whose return type is (typically) the same as the receiver.
      */
-    private static final String[] RECEIVER_METHODS = {"new", "initialize", "clone", "dup", "freeze", "+", "-"};
+    private static final String[] RECEIVER_METHODS = {"new", "clone", "dup", "freeze", "+", "-"};
 
     /**
      * Method names whose return type we know.
@@ -231,13 +232,18 @@ final class RubyMethodTypeInferencer {
 
     private RubyType getReceiverType(final Node receiver) {
         RubyType type = RubyTypeInferencer.create(knowledge).inferType(receiver);
-        if (!type.isKnown() && receiver instanceof INameNode) {
-            String name = ((INameNode) receiver).getName();
+        if (!type.isKnown()) {
+            String name = null;
+            if (receiver instanceof Colon2Node) {
+                name = AstUtilities.getFqn((Colon2Node) receiver);
+            } else if (receiver instanceof INameNode) {
+                name = AstUtilities.getName(receiver);
+            }
             // create a type for classes only -- no point in creating a type
             // for a variable or method whose type we couldn't infer
-            if (RubyUtils.isValidConstantName(name)) {
+            if (name != null && RubyUtils.isValidConstantFQN(name)) {
             // TODO - compute fqn (packages etc.)
-                type = RubyType.create(((INameNode) receiver).getName());
+                type = RubyType.create(name);
             }
         }
         return type;
