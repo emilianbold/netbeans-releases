@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.api.execution;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.text.MessageFormat;
@@ -301,18 +302,22 @@ public class NativeExecutor implements Runnable {
             StatusDisplayer.getDefault().setStatusText(getString("MSG_FailedStatus"));
             executionFinished(-2, System.currentTimeMillis() - startTime);
             throw td;
+        } catch (InterruptedIOException ex) {
+            // interrupted, normal exit
+            StatusDisplayer.getDefault().setStatusText(getString("MSG_FailedStatus"));
+            rc = -3;
         } catch (IOException ex) {
             // command not found, normal exit
             StatusDisplayer.getDefault().setStatusText(getString("MSG_FailedStatus"));
-            rc = -3;
+            rc = -4;
         } catch (InterruptedException ex) {
             // interrupted, normal exit
             StatusDisplayer.getDefault().setStatusText(getString("MSG_FailedStatus"));
-            rc = -4;
+            rc = -5;
         } catch (Throwable t) {
             StatusDisplayer.getDefault().setStatusText(getString("MSG_FailedStatus"));
             ErrorManager.getDefault().notify(t);
-            rc = -5;
+            rc = -6;
         } finally {
             if (showInput) {
                 io.setInputVisible(false);
