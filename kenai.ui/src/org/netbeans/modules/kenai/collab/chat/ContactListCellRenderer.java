@@ -46,6 +46,7 @@ package org.netbeans.modules.kenai.collab.chat;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import javax.swing.border.EmptyBorder;
@@ -97,6 +98,7 @@ public class ContactListCellRenderer extends javax.swing.JPanel implements ListC
         buddyLabel.setIcon(item.getIcon());
         if (item.hasMessages()) {
             messageLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/collab/resources/newmessage.png", true));
+            messageLabel.setBorder(new EmptyBorder(0,3,0,0));
         } else {
             messageLabel.setIcon(null);
         }
@@ -115,6 +117,7 @@ public class ContactListCellRenderer extends javax.swing.JPanel implements ListC
             messageLabel.setBackground(list.getBackground());
             messageLabel.setForeground(list.getForeground());
         }
+        this.setPreferredSize(new Dimension(10, getPreferredSize().height));
         return this;
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
