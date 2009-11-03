@@ -113,10 +113,10 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
         WEB,
         EJB,
         APPCLIENT,
+        SAMPLE,
         MAVEN_SE,
         MAVEN_WEB,
-        MAVEN_EJB,
-        SAMPLE;
+        MAVEN_EJB;
 
         /**
          * Get project template category name
@@ -220,6 +220,10 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
                     return 1;
             }
             throw new AssertionError("Unknown type: " + this); //NOI18N
+        }
+
+        public boolean isAntBasedProject() {
+            return this.ordinal() < 5;
         }
     }
 
@@ -520,9 +524,16 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
             JComboBoxOperator jcboVersion = new JComboBoxOperator(op, type.getServerVersionComboBoxIndex());
             jcboVersion.selectItem(javaeeVersion.toString());
         }
-        if (ProjectType.MAVEN_WEB.equals(type) || ProjectType.MAVEN_EJB.equals(type) || ProjectType.MAVEN_SE.equals(type)) {
+        if (!type.isAntBasedProject()) {
             op.btFinish().pushNoBlock();
-            new JButtonOperator(new JDialogOperator("Message")).push();
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException ex) {
+                //ignore
+            }
+            if (JDialogOperator.findJDialog("Message", true, true) != null) {
+                new JButtonOperator(new JDialogOperator("Message")).push();
+            }
             // Opening Projects
             String openingProjectsTitle = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "LBL_Opening_Projects_Progress");
             waitDialogClosed(openingProjectsTitle);
@@ -699,7 +710,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
     private void performProjectAction(String projectName, String actionName) throws IOException {
         ProjectRootNode node = new ProjectsTabOperator().getProjectRootNode(projectName);
         node.performPopupAction(actionName);
-        if (ProjectType.MAVEN_WEB.equals(getProjectType()) || ProjectType.MAVEN_EJB.equals(getProjectType())) {
+        if (!getProjectType().isAntBasedProject()) {
             //Select deployment server
             String title = Bundle.getStringTrimmed("org.netbeans.modules.maven.j2ee.Bundle", "TIT_Select");
             JDialogOperator ndo = new JDialogOperator(title);
@@ -708,9 +719,19 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
         }
         OutputTabOperator oto = new OutputTabOperator(projectName);
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", 600000); //NOI18N
-        oto.waitText("(total time: "); //NOI18N
-        dumpOutput();
-        assertTrue("Build failed", oto.getText().indexOf("BUILD SUCCESSFUL") > -1); //NOI18N
+        if (!getProjectType().isAntBasedProject()) {
+            oto.waitText("All operations"); //NOI18N
+            dumpOutput();
+            assertTrue("Build failed", oto.getText().indexOf("BUILD SUCCESSFUL") > -1); //NOI18N
+            assertTrue("Deploy failed", oto.getText().indexOf("[ERROR]") < 0); //NOI18N
+        } else {
+            //Ant projects
+            oto.waitText("(total time: "); //NOI18N
+            dumpOutput();
+            assertTrue("Build failed", oto.getText().indexOf("BUILD SUCCESSFUL") > -1); //NOI18N
+        }
+        
+        
     }
 
     private void setProjectName(String projectName) {
