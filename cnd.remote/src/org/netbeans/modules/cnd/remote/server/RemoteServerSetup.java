@@ -78,8 +78,8 @@ public class RemoteServerSetup {
         Collection<? extends SetupProvider> list = results.allInstances();
         SetupProvider[] providers = list.toArray(new SetupProvider[list.size()]);
         libDir = HostInfoProvider.getLibDir(executionEnvironment); //NB: should contain trailing '/'
-        if (!libDir.endsWith("/")) {
-            libDir += "/";
+        if (!libDir.endsWith("/")) { // NOI18N
+            libDir += "/"; // NOI18N
         }
         // Binary setup map
         binarySetupMap = new HashMap<String, String>();
