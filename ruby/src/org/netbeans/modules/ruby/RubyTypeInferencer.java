@@ -190,6 +190,10 @@ public final class RubyTypeInferencer {
             case CLASSVARNODE:
                 type = knowledge.getType(AstUtilities.getName(node));
                 break;
+            case CONSTNODE:
+                String fqn = AstUtilities.getFqnName(knowledge.getRoot(), node);
+                type = knowledge.getType(fqn);
+                break;
             case COLON2NODE:
                 type = knowledge.getType(AstUtilities.getFqn((Colon2Node) node));
                 break;

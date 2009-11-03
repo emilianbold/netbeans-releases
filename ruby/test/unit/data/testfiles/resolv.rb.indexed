@@ -565,7 +565,7 @@ Searchable Keys:
   constant : DefaultFileName;
   constant : DefaultFileName;String
   field : addr2name|PRIVATE;;Hash;
-  field : filename|PRIVATE
+  field : filename|PRIVATE;;String;
   field : initialized|PRIVATE;;NilClass|TrueClass;
   field : mutex|PRIVATE;;Mutex;
   field : name2addr|PRIVATE;;Hash;

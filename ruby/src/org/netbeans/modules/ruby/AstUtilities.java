@@ -1509,6 +1509,22 @@ public class AstUtilities {
         return null;
     }
 
+    static String getFqnName(Node root, Node target) {
+        String fqn = getFqnName(new AstPath(root, target));
+        if (fqn.length() > 0) {
+            return fqn + "::" + getName(target);
+        }
+        return getName(target);
+    }
+
+    static String getFqnName(AstPath path, String simpleName) {
+        String fqn = getFqnName(path);
+        if (fqn.length() > 0) {
+            return fqn + "::" + simpleName;
+        }
+        return simpleName;
+    }
+
     /** Compute the module/class name for the given node path */
     public static String getFqnName(AstPath path) {
         StringBuilder sb = new StringBuilder();
