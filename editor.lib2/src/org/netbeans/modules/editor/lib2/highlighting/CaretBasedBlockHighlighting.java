@@ -119,6 +119,13 @@ public abstract class CaretBasedBlockHighlighting extends AbstractHighlightsCont
         if (currentLineStart != null && currentLineEnd != null &&
             endOffset >= currentLineStart.getOffset() && startOffset <= currentLineEnd.getOffset())
         {
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("Queried for highlights in [" //NOI18N
+                    + startOffset + ", " + endOffset + "], returning [" //NOI18N
+                    + positionToString(currentLineStart) + ", " + positionToString(currentLineEnd) + "]" //NOI18N
+                    + ", layer=" + s2s(this)); //NOI18N
+            }
+
             return new SimpleHighlightsSequence(
                 Math.max(currentLineStart.getOffset(), startOffset), 
                 Math.min(currentLineEnd.getOffset(), endOffset), 
@@ -177,9 +184,10 @@ public abstract class CaretBasedBlockHighlighting extends AbstractHighlightsCont
                 Position changeEnd = getHigherPosition(currentLine[1], currentLineEnd);
 
                 if (LOG.isLoggable(Level.FINE)) {
-                    LOG.fine("Current row changed from [" //NOI18N
+                    LOG.fine("Current block changed from [" //NOI18N
                         + positionToString(currentLineStart) + ", " + positionToString(currentLineEnd) + "] to [" //NOI18N
-                        + positionToString(currentLine[0]) + ", " + positionToString(currentLine[1]) + "]"); //NOI18N
+                        + positionToString(currentLine[0]) + ", " + positionToString(currentLine[1]) + "]" //NOI18N
+                        + ", layer=" + s2s(this)); //NOI18N
                 }
 
                 currentLineStart = currentLine[0];
@@ -216,8 +224,10 @@ public abstract class CaretBasedBlockHighlighting extends AbstractHighlightsCont
     }
     
     private static boolean comparePositions(Position p1, Position p2) {
+        // XXX: zero positions never move and so as a rule of thumb we will consider them different
+        // in order to recalculate highlights (see eg #136215)
         return (p1 == null && p2 == null) || 
-               (p1 != null && p2 != null && p1.getOffset() == p2.getOffset());
+               (p1 != null && p2 != null && p1.getOffset() == p2.getOffset() && p1.getOffset() != 0);
     }
     
     private static Position getLowerPosition(Position p1, Position p2) {
@@ -247,7 +257,11 @@ public abstract class CaretBasedBlockHighlighting extends AbstractHighlightsCont
     private static String positionToString(Position p) {
         return p == null ? "null" : Integer.toString(p.getOffset()); //NOI18N
     }
-    
+
+    private static String s2s(Object o) {
+        return o == null ? "null" : o.getClass().getSimpleName() + "@" + Integer.toHexString(System.identityHashCode(o)); //NOI18N
+    }
+
     private static final class SimpleHighlightsSequence implements HighlightsSequence {
         
         private int startOffset;
