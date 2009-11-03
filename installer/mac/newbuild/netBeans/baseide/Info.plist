@@ -19,7 +19,7 @@
     <string>@VERSION@</string>
 
     <key>CFBundleIdentifier</key>
-    <string>org.netbeans.ide</string> 
+    <string>org.netbeans.ide.baseide</string> 
     
     <key>CFBundleSignature</key>
     <string>NETB</string>
