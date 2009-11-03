@@ -297,7 +297,7 @@ public class NativeExecutor implements Runnable {
         
         try {
             // Execute the selected command
-            nativeExecution.execute(out, showInput ? io.getIn() : null);
+            rc = nativeExecution.execute(out, showInput ? io.getIn() : null);
         } catch (ThreadDeath td) {
             StatusDisplayer.getDefault().setStatusText(getString("MSG_FailedStatus"));
             executionFinished(-2, System.currentTimeMillis() - startTime);
