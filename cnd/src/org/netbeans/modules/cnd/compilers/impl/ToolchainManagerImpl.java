@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.WeakHashMap;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -220,8 +221,8 @@ public final class ToolchainManagerImpl {
     public boolean isMyFolder(String path, ToolchainDescriptor d, int platform, boolean known) {
         boolean res = isMyFolderImpl(path, d, platform, known);
         if (TRACE && res) {
-            System.err.println("Path [" + path + "] belongs to tool chain " + d.getName());
-        } // NOI18N
+            System.err.println("Path [" + path + "] belongs to tool chain " + d.getName()); // NOI18N
+        }
         return res;
     }
 
@@ -271,14 +272,14 @@ public final class ToolchainManagerImpl {
         }
         pattern = Pattern.compile(c.getVersionPattern());
         String command = LinkSupport.resolveWindowsLink(file.getAbsolutePath());
-        String s = getCommandOutput(path, command + " " + flag, true); // NOI18N
+        String s = getCommandOutput(path, command + " " + flag); // NOI18N
         boolean res = pattern.matcher(s).find();
         if (TRACE && !res) {
-            System.err.println("No match for pattern [" + c.getVersionPattern() + "]:");
-        } // NOI18N
+            System.err.println("No match for pattern [" + c.getVersionPattern() + "]:"); // NOI18N
+        }
         if (TRACE && !res) {
-            System.err.println("Run " + path + "/" + c.getNames()[0] + " " + flag + "\n" + s);
-        } // NOI18N
+            System.err.println("Run " + path + "/" + c.getNames()[0] + " " + flag + "\n" + s); // NOI18N
+        }
         return res;
     }
 
@@ -357,8 +358,8 @@ public final class ToolchainManagerImpl {
         String base = null;
         try {
             if (TRACE) {
-                System.err.println("Read registry " + key);
-            } // NOI18N
+                System.err.println("Read registry " + key); // NOI18N
+            }
             Process process = pb.start();
             BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
             Pattern p = Pattern.compile(pattern);
@@ -366,14 +367,14 @@ public final class ToolchainManagerImpl {
             while ((line = br.readLine()) != null) {
                 line = line.trim();
                 if (TRACE) {
-                    System.err.println("\t" + line);
-                } // NOI18N
+                    System.err.println("\t" + line); // NOI18N
+                }
                 Matcher m = p.matcher(line);
                 if (m.find() && m.groupCount() == 1) {
                     base = m.group(1).trim();
                     if (TRACE) {
-                        System.err.println("\tFound " + base);
-                    } // NOI18N
+                        System.err.println("\tFound " + base); // NOI18N
+                    }
                 }
             }
         } catch (Exception ex) {
@@ -388,8 +389,8 @@ public final class ToolchainManagerImpl {
         return base;
     }
 
-    private static String getCommandOutput(String path, String command, boolean stdout) {
-        StringBuilder buf = new StringBuilder();
+    private static final WeakHashMap<String, String> commandCache = new WeakHashMap<String, String>();
+    private static String getCommandOutput(String path, String command) {
         if (path == null) {
             path = ""; // NOI18N
         }
@@ -403,6 +404,12 @@ public final class ToolchainManagerImpl {
                 envp.add(entry);
             }
         }
+        String res = commandCache.get(command); // NOI18N
+        if (res != null) {
+            //System.err.println("Get command output from cache #"+command); // NOI18N
+            return res;
+        }
+        StringBuilder buf = new StringBuilder();
         try {
             Process process = Runtime.getRuntime().exec(command, envp.toArray(new String[envp.size()])); // NOI18N
             InputStream is = process.getInputStream();
@@ -454,6 +461,7 @@ public final class ToolchainManagerImpl {
                 ex.printStackTrace();
             }
         }
+        commandCache.put(command, buf.toString()); // NOI18N
         return buf.toString();
     }
 

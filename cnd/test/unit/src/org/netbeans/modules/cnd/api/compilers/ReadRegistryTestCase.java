@@ -264,8 +264,8 @@ public class ReadRegistryTestCase extends NbTestCase {
             "-g -xO2", // Performance Debug" // NOI18N
             "-xprofile=tcov -xinline=", // Test Coverage // NOI18N
             "-g -O", // Dianosable Release // NOI18N
-            "-fast -xipo", // Release // NOI18N
-            "-fast -xipo", // Performance Release // NOI18N
+            "-fast -g", // Release // NOI18N
+            "-fast -xipo -g", // Performance Release // NOI18N
         };
         String[] WARNING_LEVEL_OPTIONS = {
             "-w", // No Warnings // NOI18N
@@ -309,8 +309,8 @@ public class ReadRegistryTestCase extends NbTestCase {
             "-g0 -xO2", // Performance Debug" // NOI18N
             "-xprofile=tcov +d -xinline=", // Test Coverage // NOI18N
             "-g0 -O", // Dianosable Release // NOI18N
-            "-fast -xipo", // Release // NOI18N
-            "-fast -xipo", // Performance Release // NOI18N
+            "-fast -g0", // Release // NOI18N
+            "-fast -xipo -g0", // Performance Release // NOI18N
         };
         String[] WARNING_LEVEL_OPTIONS = {
             "-w", // No Warnings // NOI18N
@@ -361,8 +361,8 @@ public class ReadRegistryTestCase extends NbTestCase {
             "-g -O2", // Performance Debug" // NOI18N
             "-g", // Test Coverage // NOI18N
             "-g -O", // Dianosable Release // NOI18N
-            "-fast", // Release // NOI18N
-            "-fast", // Performance Release // NOI18N
+            "-fast -g", // Release // NOI18N
+            "-fast -g", // Performance Release // NOI18N
         };
         String[] WARNING_LEVEL_OPTIONS = {
             "-w", // No Warnings // NOI18N
