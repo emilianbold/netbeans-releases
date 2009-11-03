@@ -40,10 +40,6 @@ package org.netbeans.modules.ws.qaf;
 
 import java.io.IOException;
 import junit.framework.Test;
-import org.netbeans.jellytools.Bundle;
-import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JComboBoxOperator;
-import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.junit.NbModuleSuite;
 
 /**
@@ -70,15 +66,15 @@ public class MavenWsValidation extends WsValidation {
                 "testWsHandlers",
                 "testRunWsProject",
                 "testTestWS",
-                // IZ# 175453               "testGenerateWrapper",
-                "testGenerateWSDL",
-                "testRunWsProject",
+// IZ# 175975              "testGenerateWrapper",
+// IZ# 175974              "testGenerateWSDL",
+//                "testRunWsProject",
                 "testCreateWsClient",
                 "testCallWsOperationInServlet",
-                "testCallWsOperationInJSP",
+// IZ# 175976              "testCallWsOperationInJSP",
                 "testCallWsOperationInJavaClass",
                 "testRefreshClient",
-                "testWsClientHandlers",
+// IZ# 175977              "testWsClientHandlers",
                 "testRunWsClientProject",
                 "testUndeployProjects",
                 "testStopServer").enableModules(".*").clusters(".*"));
