@@ -101,7 +101,7 @@ public final class ShareAction extends AbstractAction {
             // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
             wizardDescriptor.setTitleFormat(new MessageFormat("{0}")); // NOI18N
             wizardDescriptor.setTitle(NbBundle.getMessage(NewKenaiProjectAction.class,
-                    "ShareAction.dialogTitle")); // NOI18N
+                    "NewKenaiProjectAction.dialogTitle")); // NOI18N
 
             DialogDisplayer.getDefault().notify(wizardDescriptor);
 
