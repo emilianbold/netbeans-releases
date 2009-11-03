@@ -71,7 +71,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
     private static final int TYPE_UNKNOWN = -1;
     
     private final NbMavenProjectImpl project;
-    private ClassPath[] cache = new ClassPath[8];
+    private ClassPath[] cache = new ClassPath[9];
     
     public ClassPathProviderImpl(NbMavenProjectImpl proj) {
         project = proj;
@@ -272,7 +272,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
     private synchronized ClassPath getBootClassPath() {
         ClassPath cp = cache[6];
         if (cp == null) {
-            bcpImpl = new BootClassPathImpl(project);
+            getEndorserdClassPath();
+            bcpImpl = new BootClassPathImpl(project, ecpImpl);
             cp = ClassPathFactory.createClassPath(bcpImpl);
             cache[6] = cp;
         }
@@ -289,12 +290,11 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
     private EndorsedClassPathImpl ecpImpl;
 
     private ClassPath getEndorserdClassPath() {
-        System.out.println("get endoresed path");
-        ClassPath cp = cache[7];
+        ClassPath cp = cache[8];
         if (cp == null) {
             ecpImpl = new EndorsedClassPathImpl(project);
             cp = ClassPathFactory.createClassPath(ecpImpl);
-            cache[7] = cp;
+            cache[8] = cp;
         }
         return cp;
     }
