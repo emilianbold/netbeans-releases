@@ -263,6 +263,7 @@ public class RubyTypeAnalyzerTest extends RubyTestBase {
 
     public void testMethodType() throws Exception {
         assertTypes("method_type_inference.rb", "puts n^um.abs", "num", "Fixnum");
+        assertTypes("method_type_inference.rb", "puts a.a_cons^tant", "a_constant", "Fixnum");
     }
 
 //    public void testCoreMethodType() throws Exception {

@@ -4,7 +4,9 @@ Document 0
 Searchable Keys:
   class : A
   class-ig : a
+  constant : A_CONSTANT;Fixnum
   fqn : A
+  method : a_constant;;Fixnum;
   method : condition2;;String|Fixnum|Float;
   method : condition3;;Fixnum|String|Float;
   method : condition;;Fixnum|String|Float;
