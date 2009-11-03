@@ -920,6 +920,10 @@ public class SemanticHighlighter extends JavaParserResultTask {
 //                    highlights.add(h);
 //                }
 //            }
+
+            //#170338: constructor without modifiers:
+            tl.moveToOffset(sourcePositions.getStartPosition(info.getCompilationUnit(), tree));
+
             handlePossibleIdentifier(getCurrentPath(), EnumSet.of(UseTypes.DECLARATION));
             
             for (Tree t : tree.getThrows()) {
