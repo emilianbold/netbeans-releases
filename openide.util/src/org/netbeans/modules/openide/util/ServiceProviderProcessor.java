@@ -40,14 +40,15 @@
 package org.netbeans.modules.openide.util;
 
 import java.lang.annotation.Annotation;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import javax.annotation.processing.Completion;
 import javax.annotation.processing.RoundEnvironment;
-import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
@@ -61,8 +62,14 @@ import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
 
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
-@SupportedAnnotationTypes({"org.openide.util.lookup.ServiceProvider", "org.openide.util.lookup.ServiceProviders"})
 public class ServiceProviderProcessor extends AbstractServiceProviderProcessor {
+
+    public @Override Set<String> getSupportedAnnotationTypes() {
+        return new HashSet<String>(Arrays.asList(
+            ServiceProvider.class.getCanonicalName(),
+            ServiceProviders.class.getCanonicalName()
+        ));
+    }
 
     /** public for ServiceLoader */
     public ServiceProviderProcessor() {}

@@ -47,7 +47,6 @@ import java.util.List;
 import java.util.Set;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
-import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
@@ -78,16 +77,20 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=Processor.class)
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
-@SupportedAnnotationTypes({"org.netbeans.api.debugger.jpda.JPDADebugger.Registration",  // NOI18N
-                           "org.netbeans.spi.debugger.jpda.SmartSteppingCallback.Registration", //NOI18N
-                           "org.netbeans.spi.debugger.jpda.SourcePathProvider.Registration", //NOI18N
-                           "org.netbeans.spi.debugger.jpda.EditorContext.Registration", //NOI18N
-                           "org.netbeans.spi.debugger.jpda.VariablesFilter.Registration", //NOI18N
-                           "org.netbeans.spi.debugger.jpda.Evaluator.Registration"}) //NOI18N
 public class DebuggerProcessor extends LayerGeneratingProcessor {
 
     public static final String SERVICE_NAME = "serviceName"; // NOI18N
 
+    public @Override Set<String> getSupportedAnnotationTypes() {
+        return new HashSet<String>(Arrays.asList(
+            JPDADebugger.Registration.class.getCanonicalName(),
+            SmartSteppingCallback.Registration.class.getCanonicalName(),
+            SourcePathProvider.Registration.class.getCanonicalName(),
+            EditorContext.Registration.class.getCanonicalName(),
+            VariablesFilter.Registration.class.getCanonicalName(),
+            Evaluator.Registration.class.getCanonicalName()
+        ));
+    }
 
     @Override
     protected boolean handleProcess(
