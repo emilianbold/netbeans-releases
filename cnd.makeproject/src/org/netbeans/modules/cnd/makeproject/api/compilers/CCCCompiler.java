@@ -209,21 +209,19 @@ public abstract class CCCCompiler extends BasicCompiler {
     }
     
     protected final void getSystemIncludesAndDefines(String arguments, boolean stdout, Pair pair) throws IOException {
-        String path = getPath();
-        if (path != null && path.length() == 0) {
+        String compilerPath = getPath();
+        if (compilerPath == null || compilerPath.length() == 0) {
             return;
         }
         ExecutionEnvironment execEnv = getExecutionEnvironment();
-        if (path == null || !HostInfoUtils.fileExists(execEnv, path)) {
-            path = getDefaultPath();
-        }
-        if (!HostInfoUtils.fileExists(execEnv, path)) {
-            return;
-        }
-        String command = path;
-        path = IpeUtils.getDirName(path);
         if (execEnv.isLocal() && Utilities.isWindows()) {
-            command = LinkSupport.resolveWindowsLink(command);
+            compilerPath = LinkSupport.resolveWindowsLink(compilerPath);
+        }
+        if (!HostInfoUtils.fileExists(execEnv, compilerPath)) {
+            compilerPath = getDefaultPath();
+        }
+        if (!HostInfoUtils.fileExists(execEnv, compilerPath)) {
+            return;
         }
 
         List<String> argsList = new ArrayList<String>();
@@ -232,9 +230,9 @@ public abstract class CCCCompiler extends BasicCompiler {
 
         PlatformInfo pi = PlatformInfo.getDefault(execEnv);
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
-        npb.setExecutable(command);
+        npb.setExecutable(compilerPath);
         npb.setArguments(argsList.toArray(new String[argsList.size()]));
-        npb.getEnvironment().prependPathVariable(pi.getPathName(), path);
+        npb.getEnvironment().prependPathVariable(pi.getPathName(), IpeUtils.getDirName(compilerPath));
 
         try {
             NativeProcess process = npb.call();

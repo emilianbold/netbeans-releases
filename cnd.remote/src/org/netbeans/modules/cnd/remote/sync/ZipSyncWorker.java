@@ -173,9 +173,9 @@ import org.openide.util.NbBundle;
         }
 
         Collection<Future<Integer>> mkDirs = new ArrayList<Future<Integer>>();
-
-        String[] inexistentDirs = rcs.getOutput().trim().split("\n"); // NOI18N
-        if (inexistentDirs.length > 0) {
+        final String scriptOutput = rcs.getOutput().trim();
+        if (scriptOutput.length() > 0) {
+            String[] inexistentDirs = scriptOutput.split("\n"); // NOI18N
             filter.clear();
             // we optimize check (via script) since it is preformed each build,
             // but does not optimize createion since it's done once
@@ -282,8 +282,10 @@ import org.openide.util.NbBundle;
             // NB: we aren't waining for completion,
             // since the name of the file made my File.createTempFile is new each time
             filter.flush();
+        } catch (Exception ex) {
+            ex.printStackTrace();
         } finally {
-            if (zipFile != null & zipFile.exists()) {
+            if (zipFile != null && zipFile.exists()) {
                 if (!zipFile.delete()) {
                     RemoteUtil.LOGGER.info("Can not delete temporary file " + zipFile.getAbsolutePath()); //NOI18N
                 }

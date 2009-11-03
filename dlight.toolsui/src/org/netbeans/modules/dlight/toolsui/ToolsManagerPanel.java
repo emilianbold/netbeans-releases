@@ -183,7 +183,9 @@ public class ToolsManagerPanel extends PanelWithApply {
                 List<String> platforms = origDLightConfiguration.getPlatforms();
                 String collector = origDLightConfiguration.getCollectorProviders();
                 List<String> indicators = origDLightConfiguration.getIndicatorProviders();
-                DLightConfiguration dlightConfiguration = DLightConfigurationSupport.getInstance().registerConfiguration(configuration.getName(), configuration.getDisplayName(), category, platforms, collector, indicators);
+                DLightConfiguration dlightConfiguration = 
+                        DLightConfigurationSupport.getInstance().registerConfigurationAsACopy(configuration.getCopyOf(),
+                        configuration.getName(), configuration.getDisplayName(), category, platforms, collector, indicators);
                 configuration.setDLightConfiguration(dlightConfiguration);
                 for (DLightToolUIWrapper toolUI : configuration.getTools()) {
                     toolUI.setModified(true);

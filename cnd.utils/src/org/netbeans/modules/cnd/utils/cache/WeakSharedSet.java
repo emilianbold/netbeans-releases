@@ -1095,7 +1095,6 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
                 if (!(o instanceof Map.Entry))
                     return false;
                 Map.Entry e = (Map.Entry)o;
-                Object k = e.getKey();
                 Entry candidate = getEntry(e.getKey());
                 return candidate != null && candidate.equals(e);
             }

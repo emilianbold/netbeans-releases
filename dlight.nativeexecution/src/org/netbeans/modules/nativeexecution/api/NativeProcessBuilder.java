@@ -54,7 +54,6 @@ import org.netbeans.modules.nativeexecution.api.util.Shell;
 import org.netbeans.modules.nativeexecution.api.util.ShellValidationSupport;
 import org.netbeans.modules.nativeexecution.api.util.ShellValidationSupport.ShellValidationStatus;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
-import org.netbeans.modules.nativeexecution.support.Logger;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -76,10 +75,8 @@ import org.openide.util.Utilities;
 // @NotThreadSafe
 public final class NativeProcessBuilder implements Callable<Process> {
 
-    private final static java.util.logging.Logger log = Logger.getInstance();
-    private NativeProcessInfo info;
+    private final NativeProcessInfo info;
     private ExternalTerminal externalTerminal = null;
-    private AbstractNativeProcess process = null;
 
     private NativeProcessBuilder(final ExecutionEnvironment execEnv) {
         info = new NativeProcessInfo(execEnv);
@@ -155,7 +152,8 @@ public final class NativeProcessBuilder implements Callable<Process> {
      * @throws IOException if the process could not be created
      */
     public NativeProcess call() throws IOException {
-
+        AbstractNativeProcess process = null;
+        
         if (info.getExecutionEnvironment().isRemote()) {
             process = new RemoteNativeProcess(info);
         } else {

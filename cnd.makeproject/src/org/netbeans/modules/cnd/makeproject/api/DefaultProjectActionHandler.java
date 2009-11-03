@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.execution.NativeExecutor;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
@@ -247,7 +248,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
             switch (pae.getType()) {
                 case DEBUG:
                 case RUN:
-                    if (!contains(env, "DISPLAY")) { //NOI18N if DISPLAY is set, let it do its work
+                    if (ServerList.get(execEnv).getX11Forwarding() && !contains(env, "DISPLAY")) { //NOI18N if DISPLAY is set, let it do its work
                         executor.setX11Forwarding(true);
                     }
             }

@@ -175,6 +175,10 @@ public class ServerList {
 
         public void validate(boolean force) {
         }
+
+        public boolean getX11Forwarding() {
+            return false;
+        }
     }
 
     private static class DummyServerListImplementation implements ServerListImplementation {

@@ -258,11 +258,11 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
         }
     }
 
-    private void checkPropertyChange(String propertyName, Object oldValue, Object newValue) {
-        if (oldValue != newValue && pcs != null) {
-            pcs.firePropertyChange(propertyName, oldValue, newValue);
-        }
-    }
+//    private void checkPropertyChange(String propertyName, Object oldValue, Object newValue) {
+//        if (oldValue != newValue && pcs != null) {
+//            pcs.firePropertyChange(propertyName, oldValue, newValue);
+//        }
+//    }
 
     /**
      * Profile On Run

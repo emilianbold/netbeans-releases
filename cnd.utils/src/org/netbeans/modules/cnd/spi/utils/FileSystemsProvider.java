@@ -50,7 +50,7 @@ import org.openide.util.Lookup;
  */
 public abstract class FileSystemsProvider {
 
-    public final class Data {
+    public static final class Data {
         public final FileSystem fileSystem;
         public final String path;
 

@@ -87,12 +87,7 @@ import org.openide.util.TaskListener;
  * are found in the user's $PATH variable.
  */
 public class CompilerSetManager {
-
-    @Deprecated
-    public static final int SUN_COMPILER_SET = 0; // Legacy defines for CND 5.5 compiler set definitions used in DBX, so don't remove please!
-    @Deprecated
-    public static final int GNU_COMPILER_SET = 1; // Legacy defines for CND 5.5 compiler set definitions used in DBX, so don't remove please!
-
+    
     private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
 
     private static final HashMap<ExecutionEnvironment, CompilerSetManager> managers = new HashMap<ExecutionEnvironment, CompilerSetManager>();
@@ -797,6 +792,17 @@ public class CompilerSetManager {
                 return o1.getCompilerFlavor().getToolchainDescriptor().getName().compareTo(o2.getCompilerFlavor().getToolchainDescriptor().getName());
             }
         });
+        completeCompilerSetsSettings(false);
+    }
+
+    private void completeCompilerSetsSettings(boolean reset) {
+        for (CompilerSet cs : sets) {
+            for (Tool tool : cs.getTools()) {
+                if (!tool.isReady()) {
+                    tool.waitReady(reset);
+                }
+            }
+        }
     }
 
     private void completeSunStudioCompilerSet(int platform) {

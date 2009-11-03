@@ -102,9 +102,7 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
             }
 
             pb.redirectError();
-            if (x11forwarding) {
-                pb.setX11Forwarding(true);
-            }
+            pb.setX11Forwarding(x11forwarding);
 
             String path = null;
             if (dirf != null) {

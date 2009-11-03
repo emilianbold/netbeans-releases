@@ -86,11 +86,22 @@ import org.openide.util.NbBundle;
                     out.setText(""); //NOI18N
                 } else {
                     CompilerSet cset = (CompilerSet) value;
-                    out.setText(cset.getDisplayName());
+                    out.setText(cset.getName());
                 }
                 return out;
             }
         });
+        boolean selected = false;
+        for(CompilerSet cs : compilerSetManager.getCompilerSets()) {
+            if (cs.isDefault()) {
+                cbDefaultToolchain.setSelectedItem(cs);
+                selected = true;
+                break;
+            }
+        }
+        if (!selected && compilerSetManager.getCompilerSets().size() > 0) {
+            cbDefaultToolchain.setSelectedItem(0);
+        }
         cbDefaultToolchain.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
                 compilerSetManager.setDefault((CompilerSet) cbDefaultToolchain.getSelectedItem());

@@ -977,7 +977,7 @@ private void btVersionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         }
     }
 
-    class MyDevHostListCellRenderer extends DefaultListCellRenderer {
+    static class MyDevHostListCellRenderer extends DefaultListCellRenderer {
 
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
