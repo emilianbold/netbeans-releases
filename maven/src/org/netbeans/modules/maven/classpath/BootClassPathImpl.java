@@ -73,29 +73,30 @@ public final class BootClassPathImpl implements ClassPathImplementation, Propert
     private String lastHintValue = null;
     private boolean activePlatformValid = true;
     private JavaPlatformManager platformManager;
+    private final EndorsedClassPathImpl ecpImpl;
     
-//    private String lastNonDefault = null;
-//    private String lastNonDefaultPlatform = null;
 
-
-    BootClassPathImpl(NbMavenProjectImpl project) {
+    BootClassPathImpl(NbMavenProjectImpl project, EndorsedClassPathImpl ecpImpl) {
         this.project = project;
+        this.ecpImpl = ecpImpl;
     }
 
     public synchronized List<? extends PathResourceImplementation> getResources() {
         if (this.resourcesCache == null) {
+            ArrayList<PathResourceImplementation> result = new ArrayList<PathResourceImplementation> ();
+//TODO            result.addAll(ecpImpl.getResources());
+
             JavaPlatform jp = findActivePlatform ();
             if (jp != null) {
                 //TODO May also listen on CP, but from Platform it should be fixed.
                 ClassPath cp = jp.getBootstrapLibraries();
                 List entries = cp.entries();
-                ArrayList<PathResourceImplementation> result = new ArrayList<PathResourceImplementation> (entries.size());
                 for (Iterator it = entries.iterator(); it.hasNext();) {
                     ClassPath.Entry entry = (ClassPath.Entry) it.next();
                     result.add (ClassPathSupport.createResource(entry.getURL()));
                 }
-                resourcesCache = Collections.unmodifiableList (result);
             }
+            resourcesCache = Collections.unmodifiableList (result);
         }
         return this.resourcesCache;
     }
