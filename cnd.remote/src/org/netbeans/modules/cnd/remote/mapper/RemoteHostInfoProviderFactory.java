@@ -80,7 +80,7 @@ public class RemoteHostInfoProviderFactory implements HostInfoProviderFactory {
             } catch (Throwable ex) {
                 tmpDir = "/var/tmp"; // NOI18N
             }
-            String libDir = tmpDir + "/tools";
+            String libDir = tmpDir + "/tools"; // NOI18N
             return libDir;
         }
 
