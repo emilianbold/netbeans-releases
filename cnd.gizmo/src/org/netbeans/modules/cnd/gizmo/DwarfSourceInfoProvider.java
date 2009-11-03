@@ -348,7 +348,7 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
         }
 
         public SourceFileInfo getLine(int offset, Map<String, String> serviceInfo){
-            if (offset == 0) {
+            if (offset <= 0) {
                 //return new SourceFileInfo(toAbsolutePath(serviceInfo, filePath), baseLine, 0);
                 if (baseLine > 0) {
                     return new SourceFileInfo(filePath, baseLine, 0);
