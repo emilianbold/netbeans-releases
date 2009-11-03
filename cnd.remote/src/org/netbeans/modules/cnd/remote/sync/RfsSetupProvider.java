@@ -41,12 +41,14 @@ package org.netbeans.modules.cnd.remote.sync;
 
 import java.text.ParseException;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.SetupProvider;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -55,6 +57,7 @@ import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroE
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.remote.SetupProvider.class)
 public class RfsSetupProvider implements SetupProvider {
+    public static final String POSTFIX_64 = "_64";
 
     private Map<String, String> binarySetupMap;
     private static final String CONTROLLER = "rfs_controller"; // NOI18N
@@ -76,12 +79,20 @@ public class RfsSetupProvider implements SetupProvider {
         }
     }
 
-    public Map<String, String> getBinaryFiles() {
-        return binarySetupMap;
-    }
-
-    public Map<String, Double> getScriptFiles() {
-        return null;
+    public Map<String, String> getBinaryFiles(ExecutionEnvironment env) {
+        Map<String, String> result = new LinkedHashMap<String, String>();
+        try {
+            String dir32 = getOsName(env) + '/';
+            String dir64 = getOsName(env) + POSTFIX_64 + '/';
+            for (Map.Entry<String, String> entry : binarySetupMap.entrySet()) {
+                if (entry.getKey().startsWith(dir32) || entry.getKey().startsWith(dir64)) {
+                    result.put(entry.getKey(), entry.getValue());
+                }
+            }
+        } catch (ParseException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return result;
     }
 
     public static String getPreloadName(ExecutionEnvironment execEnv) {
@@ -95,13 +106,19 @@ public class RfsSetupProvider implements SetupProvider {
 
     public static String getLdLibraryPath(ExecutionEnvironment execEnv) throws ParseException {
         String libDir = getLibDir(execEnv);
-        return libDir + ':' + libDir + "_64"; // NOI18N
+        return libDir + ':' + libDir + POSTFIX_64; // NOI18N
     }
 
     private static String getLibDir(ExecutionEnvironment execEnv) throws ParseException {
         String libDir = HostInfoProvider.getLibDir(execEnv); //NB: should contain trailing '/'
+        String osname = getOsName(execEnv); // NOI18N
+        return libDir + '/' + osname;
+    }
+
+    private static String getOsName(ExecutionEnvironment execEnv) throws ParseException {
+        //NB: should contain trailing '/'
         MacroExpander mef = MacroExpanderFactory.getExpander(execEnv);
         String osname = mef.expandPredefinedMacros("${osname}-${platform}"); // NOI18N
-        return libDir + '/' + osname;
+        return osname;
     }
 }
