@@ -80,16 +80,20 @@ import org.jrubyparser.ast.SymbolNode;
 import org.jrubyparser.ast.VCallNode;
 import org.jrubyparser.ast.INameNode;
 import org.jrubyparser.SourcePosition;
-import org.jrubyparser.ast.ArrayNode;
+import org.jrubyparser.ast.AndNode;
 import org.jrubyparser.ast.CaseNode;
 import org.jrubyparser.ast.DSymbolNode;
+import org.jrubyparser.ast.DefinedNode;
+import org.jrubyparser.ast.DotNode;
 import org.jrubyparser.ast.HashNode;
 import org.jrubyparser.ast.ILiteralNode;
 import org.jrubyparser.ast.IfNode;
 import org.jrubyparser.ast.NewlineNode;
 import org.jrubyparser.ast.NilNode;
+import org.jrubyparser.ast.NotNode;
 import org.jrubyparser.ast.OrNode;
 import org.jrubyparser.ast.ReturnNode;
+import org.jrubyparser.ast.UntilNode;
 import org.jrubyparser.ast.WhenNode;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
@@ -2335,10 +2339,17 @@ public class AstUtilities {
         if (node instanceof OrNode) {
             return node.childNodes();
         }
+        if (node instanceof AndNode) {
+            return Collections.singletonList(((AndNode) node).getSecondNode());
+        }
         if (node instanceof ReturnNode
                 || isCall(node)
                 || node instanceof ILiteralNode
-                || node instanceof HashNode) {
+                || node instanceof HashNode
+                || node instanceof DotNode
+                || node instanceof NotNode
+                || node instanceof UntilNode
+                || node instanceof DefinedNode) {
             return Collections.emptyList();
         }
         List<Node> children = node.childNodes();
