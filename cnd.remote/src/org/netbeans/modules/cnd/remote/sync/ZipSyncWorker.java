@@ -160,12 +160,12 @@ import org.openide.util.NbBundle;
         }
         filter = new TimestampAndSharabilityFilter(privProjectStorageDir, executionEnvironment);
 
-        StringBuilder script = new StringBuilder("sh -c \"");
+        StringBuilder script = new StringBuilder("sh -c \""); // NOI18N
         for (int i = 0; i < localDirs.length; i++) {
             String remoteDir = RemotePathMap.getPathMap(executionEnvironment).getRemotePath(localDirs[i].getAbsolutePath(), true);
-            script.append(String.format("test -d %s  || echo %s; ", remoteDir, remoteDir)); // echo all inexistent directories
+            script.append(String.format("test -d %s  || echo %s; ", remoteDir, remoteDir)); // echo all inexistent directories // NOI18N
         }
-        script.append("\"");
+        script.append("\""); // NOI18N
         
         RemoteCommandSupport rcs = new RemoteCommandSupport(executionEnvironment, script.toString());
         if (rcs.run() != 0) {
@@ -174,7 +174,7 @@ import org.openide.util.NbBundle;
 
         Collection<Future<Integer>> mkDirs = new ArrayList<Future<Integer>>();
 
-        String[] inexistentDirs = rcs.getOutput().trim().split("\n");
+        String[] inexistentDirs = rcs.getOutput().trim().split("\n"); // NOI18N
         if (inexistentDirs.length > 0) {
             filter.clear();
             // we optimize check (via script) since it is preformed each build,
