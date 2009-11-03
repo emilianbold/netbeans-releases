@@ -295,7 +295,7 @@ public class StrutsConfigUtilities {
                 servlet = servlets[index[0]];
             return servlet;
         } catch (java.io.IOException e) {
-            Exceptions.printStackTrace(e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
             return null;
         }
     }
@@ -313,7 +313,7 @@ public class StrutsConfigUtilities {
                         return mappings[i].getUrlPattern();
                 }
             } catch (java.io.IOException e) {
-                
+                Logger.getLogger("global").log(Level.INFO, null, e);
             }
         }
         return null;

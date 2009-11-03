@@ -145,6 +145,9 @@ public class TemplateIterator implements TemplateWizard.Iterator {
 
                         is = templatePanel.getTemplate();
                         String content = JSFFrameworkProvider.readResource(is, ENCODING);
+                        if (!isJSF20) {
+                            content = content.replaceAll("h:head", "head").replaceAll("h:body", "body"); //NOI18N
+                        }
 
                         HashMap args = new HashMap();
                         args.put("LAYOUT_CSS_PATH", layoutPath);    //NOI18N
@@ -153,7 +156,6 @@ public class TemplateIterator implements TemplateWizard.Iterator {
                         formater.setLeftBrace("__");    //NOI18N
                         formater.setRightBrace("__");   //NOI18N
                         formater.setExactMatch(false);
-
                         content = formater.format(content);
 
                         JSFFrameworkProvider.createFile(target, content, ENCODING);

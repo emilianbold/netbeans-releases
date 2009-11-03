@@ -52,6 +52,7 @@ import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.WizardDescriptor;
@@ -189,6 +190,11 @@ public class PageIterator implements TemplateWizard.Iterator {
                     Templates.createSimpleTargetChooser(project, sourceGroups)
                 };
     }
+    private static boolean isJSF20(WebModule wm) {
+        ClassPath classpath = ClassPath.getClassPath(wm.getDocumentBase(), ClassPath.COMPILE);
+        boolean isJSF20 = classpath.findResource("javax/faces/application/ProjectStage.class") != null; //NOI18N
+        return isJSF20;
+    }
 
     public Set<DataObject> instantiate(TemplateWizard wiz) throws IOException {
         // Here is the default plain behavior. Simply takes the selected
@@ -222,6 +228,10 @@ public class PageIterator implements TemplateWizard.Iterator {
                 }
                 if (panel.isFacelets()) {
                     template = templateParent.getFileObject("JSP", "xhtml"); //NOI18N
+                    WebModule wm = WebModule.getWebModule(df.getPrimaryFile());
+                    if (wm != null && isJSF20(wm)) {
+                        wizardProps.put("isJSF20", Boolean.TRUE);
+                    }
                 }
             }
         } else if (FileType.TAG.equals(fileType)) {

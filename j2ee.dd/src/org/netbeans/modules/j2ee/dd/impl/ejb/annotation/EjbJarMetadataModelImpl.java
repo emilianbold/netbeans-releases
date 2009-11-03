@@ -44,6 +44,8 @@ package org.netbeans.modules.j2ee.dd.impl.ejb.annotation;
 import java.io.IOException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
@@ -53,7 +55,6 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.spi.MetadataModelImplementation;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -75,7 +76,7 @@ public class EjbJarMetadataModelImpl implements MetadataModelImplementation<EjbJ
             try {
                 ddRoot = DDProvider.getDefault().getDDRoot(ddFO);
             } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
+                Logger.getLogger("global").log(Level.INFO, null ,ioe);
             }
         }
         if (ddRoot != null && ddRoot.getVersion().doubleValue() < 3.0) {

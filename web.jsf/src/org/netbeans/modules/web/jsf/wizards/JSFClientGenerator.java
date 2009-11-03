@@ -500,6 +500,12 @@ public class JSFClientGenerator {
                 templateContent = templateContent.replace(justTitleEnd, replaceHeadWith); //NOI18N
                 JSFFrameworkProvider.createFile(templatefl,templateContent, projectEncoding);
             }
+            //insert style and script tags if not already present
+            if (content.indexOf(styleAndScriptTags) == -1) {
+                String justTitleEnd = "</title>"; //NOI18N
+                String replaceHeadWith = justTitleEnd + endLine + styleAndScriptTags;    //NOI18N
+                content = content.replace(justTitleEnd, replaceHeadWith); //NOI18N
+            }
             
             //make sure <f:view> is outside of <html>
             String html = "<html>";
@@ -521,7 +527,17 @@ public class JSFClientGenerator {
             }
 
             String find = "</h:body>"; //NOI18N
-            if ( content.indexOf(find) > -1){
+            boolean isFound = false;
+            if (content.indexOf(find)>-1) {
+                isFound = true;
+            } else {
+                find = "</body>";   //NOI18N
+                if (content.indexOf(find)>-1) {
+                    isFound = true;
+                }
+            }
+
+            if ( isFound ){
                 StringBuffer replace = new StringBuffer();
                 String managedBeanName = getManagedBeanName(simpleEntityName);
                 String commandLink = "";
