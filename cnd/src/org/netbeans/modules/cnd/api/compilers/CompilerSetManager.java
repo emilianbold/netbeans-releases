@@ -792,14 +792,14 @@ public class CompilerSetManager {
                 return o1.getCompilerFlavor().getToolchainDescriptor().getName().compareTo(o2.getCompilerFlavor().getToolchainDescriptor().getName());
             }
         });
-        completeCompilerSetsSettings();
+        completeCompilerSetsSettings(false);
     }
 
-    private void completeCompilerSetsSettings() {
+    private void completeCompilerSetsSettings(boolean reset) {
         for (CompilerSet cs : sets) {
             for (Tool tool : cs.getTools()) {
                 if (!tool.isReady()) {
-                    tool.waitReady(true);
+                    tool.waitReady(reset);
                 }
             }
         }
