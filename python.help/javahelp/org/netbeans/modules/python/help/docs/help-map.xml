@@ -7,5 +7,6 @@ and open the template in the editor.
 <map version="2.0">
     <mapID target="org.netbeans.modules.python.help.about" url="help-about.html"/>
      <mapID target="org.netbeans.modules.python.help.quickref" url="help-quickref.html"/>
-     <mapID target="org.netbeans.modules.python.help.pydebug" url="help-pydebug.html"/>     
+     <mapID target="org.netbeans.modules.python.help.pydebug" url="help-pydebug.html"/>
+	<mapID target="org.netbeans.modules.python.help.credits" url="credits.html"/>
 </map>
