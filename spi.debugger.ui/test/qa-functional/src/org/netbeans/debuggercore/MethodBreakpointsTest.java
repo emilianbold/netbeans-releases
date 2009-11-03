@@ -82,6 +82,8 @@ public class MethodBreakpointsTest extends DebuggerTestCase {
     };
     
     //MainWindowOperator.StatusTextTracer stt = null;
+    private Node beanNode;
+
     /**
      *
      * @param name
@@ -113,14 +115,17 @@ public class MethodBreakpointsTest extends DebuggerTestCase {
     public void setUp() throws IOException {
         super.setUp();
         System.out.println("########  " + getName() + "  ####### ");
+        if (beanNode == null)
+        {
+            beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
+            new OpenAction().performAPI(beanNode);
+        }
     }
 
     /**
      *
      */
-    public void testMethodBreakpointCreation() {        
-        Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
-        new OpenAction().performAPI(beanNode);
+    public void testMethodBreakpointCreation() {                
         EditorOperator eo = new EditorOperator("MemoryView.java");
         try {
             eo.clickMouse(50,50,1);
@@ -141,9 +146,7 @@ public class MethodBreakpointsTest extends DebuggerTestCase {
      *
      */
     public void testMethodBreakpointPrefilledConstructor() {        
-        //open source
-        Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
-        new OpenAction().performAPI(beanNode);
+        //open source        
         EditorOperator eo = new EditorOperator("MemoryView.java");
         NbDialogOperator dialog = Utilities.newBreakpoint(53);
         setBreakpointType(dialog, "Method");
@@ -166,7 +169,7 @@ public class MethodBreakpointsTest extends DebuggerTestCase {
     /**
      *
      */
-    public void testMethodBreakpointFunctionalityInPrimaryClass() {
+    public void testMethodBreakpointFunctionalityInPrimaryClass() throws Throwable {
         NbDialogOperator dialog = Utilities.newBreakpoint(92);
         setBreakpointType(dialog, "Method");
         dialog.ok();
@@ -178,18 +181,18 @@ public class MethodBreakpointsTest extends DebuggerTestCase {
             new EventTool().waitNoEvent(1500);
             Utilities.startDebugger();
         }
-        Utilities.waitStatusText("Thread main stopped at MemoryView.java:92");
+        Utilities.waitStatusOrConsoleText("Thread main stopped at MemoryView.java:92");
     }
 
     /**
      *
      */
-    public void testMethodBreakpointFunctionalityInSecondClass() {        
+    public void testMethodBreakpointFunctionalityInSecondClass() throws Throwable{
         NbDialogOperator dialog = Utilities.newBreakpoint(154);
         setBreakpointType(dialog, "Method");
         dialog.ok();
         Utilities.startDebugger();
-        Utilities.waitStatusText("Thread main stopped at MemoryView.java:154");
+        Utilities.waitStatusOrConsoleText("Thread main stopped at MemoryView.java:154");
     }
 
     /**
