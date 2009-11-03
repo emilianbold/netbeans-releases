@@ -168,18 +168,33 @@ made subject to such option by the copyright holder.
     </folder>	<!-- Services -->
     <folder name="CND">
         <folder name="ToolChain">
-            <file name="SunStudio_12.2.xml" url="toolchain/SunStudio_12.2.xml">
+            <file name="SunStudio_12.2_solaris-sparc.xml" url="toolchain/SunStudio_12.2_solaris-sparc.xml">
                 <attr name="position" intvalue="1120"/>
                 <attr name="extends" stringvalue="SunStudio_12"/>
             </file>
-            <file name="SunStudioExpressAten.xml" url="toolchain/SunStudioExpressAten.xml">
+            <file name="SunStudio_12.2_solaris-x86_linux.xml" url="toolchain/SunStudio_12.2_solaris-x86_linux.xml">
+                <attr name="position" intvalue="1125"/>
+                <attr name="extends" stringvalue="SunStudio_12"/>
+            </file>
+
+            <file name="SunStudioExpressAten_solaris-sparc.xml" url="toolchain/SunStudioExpressAten_solaris-sparc.xml">
                 <attr name="position" intvalue="1130"/>
                 <attr name="extends" stringvalue="SunStudio_12"/>
             </file>
-            <file name="SunStudio_12.1.xml" url="toolchain/SunStudio_12.1.xml">
+            <file name="SunStudioExpressAten_solaris-x86_linux.xml" url="toolchain/SunStudioExpressAten_solaris-x86_linux.xml">
+                <attr name="position" intvalue="1135"/>
+                <attr name="extends" stringvalue="SunStudio_12"/>
+            </file>
+
+            <file name="SunStudio_12.1_solaris-sparc.xml" url="toolchain/SunStudio_12.1_solaris-sparc.xml">
                 <attr name="position" intvalue="1140"/>
                 <attr name="extends" stringvalue="SunStudio_12"/>
             </file>
+            <file name="SunStudio_12.1_solaris-x86_linux.xml" url="toolchain/SunStudio_12.1_solaris-x86_linux.xml">
+                <attr name="position" intvalue="1145"/>
+                <attr name="extends" stringvalue="SunStudio_12"/>
+            </file>
+
             <file name="SunStudioExpressCeres.xml" url="toolchain/SunStudioExpressCeres.xml">
                 <attr name="position" intvalue="1150"/>
                 <attr name="extends" stringvalue="SunStudio_12"/>
