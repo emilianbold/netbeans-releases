@@ -773,6 +773,15 @@ public final class BuildImplTest extends NbTestCase {
         assertTrue(found);
     }
 
+    public void testCyclicBuildWarnings() throws Exception { // #174799
+        AntProjectHelper aph = setupProject(1, true);
+        FileObject buildXml = aph.getProjectDirectory().getFileObject("build.xml");
+        assertNotNull("Must have build.xml", buildXml);
+        Properties p = getProperties();
+        assertBuildSuccess(ActionUtils.runTarget(buildXml, new String[] {"jar", "test"}, p));
+        assertOutput("Cycle detected: testCyclicBuildWarnings was already built");
+    }
+
     private J2SEProject mkprj(String name) throws Exception {
         return (J2SEProject) ProjectManager.getDefault().findProject(setupProject(name, 1, false).getProjectDirectory());
     }
