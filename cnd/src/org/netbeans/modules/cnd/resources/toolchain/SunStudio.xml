@@ -59,8 +59,8 @@ made subject to such option by the copyright holder.
            <performance_debug flags="-g -xO2"/>
            <test_coverage flags="-xprofile=tcov -xinline="/>
            <diagnosable_release flags="-g -O"/>
-           <release flags="-fast -xipo"/>
-           <performance_release flags="-fast -xipo"/>
+           <release flags="-fast -g"/>
+           <performance_release flags="-fast -xipo -g"/>
         </development_mode>
         <warning_level>
             <no_warnings flags="-w"/>
@@ -108,8 +108,8 @@ made subject to such option by the copyright holder.
            <performance_debug flags="-g0 -xO2"/>
            <test_coverage flags="-xprofile=tcov +d -xinline="/>
            <diagnosable_release flags="-g0 -O"/>
-           <release flags="-fast -xipo"/>
-           <performance_release flags="-fast -xipo"/>
+           <release flags="-fast -g0"/>
+           <performance_release flags="-fast -xipo -g0"/>
         </development_mode>
         <warning_level>
             <no_warnings flags="-w"/>
@@ -160,8 +160,8 @@ made subject to such option by the copyright holder.
            <performance_debug flags="-g -O2"/>
            <test_coverage flags="-g"/>
            <diagnosable_release flags="-g -O"/>
-           <release flags="-fast"/>
-           <performance_release flags="-fast"/>
+           <release flags="-fast -g"/>
+           <performance_release flags="-fast -g"/>
         </development_mode>
         <warning_level>
             <no_warnings flags="-w"/>
