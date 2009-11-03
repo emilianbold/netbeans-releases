@@ -41,21 +41,16 @@
 
 package org.openide.nodes;
 
-import com.sun.org.apache.bcel.internal.generic.ARRAYLENGTH;
-import junit.framework.*;
-import junit.textui.TestRunner;
-import java.util.*;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.cookies.SaveCookie;
-import org.openide.nodes.*;
 
-import org.netbeans.junit.*;
 import javax.swing.event.ChangeListener;
+import org.netbeans.junit.NbTestCase;
+import org.openide.nodes.Node.Cookie;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
-import org.openide.util.lookup.InstanceContent;
 
 /** Tests behaviour of CookieSet.
  *
@@ -64,6 +59,36 @@ import org.openide.util.lookup.InstanceContent;
 public class CookieSetTest extends NbTestCase {
     public CookieSetTest(String name) {
         super(name);
+    }
+
+    public void testInconsistencyOfLookupAndGetCookie175750() {
+        CookieSet cs = CookieSet.createGeneric(null);
+
+
+        class Factory implements CookieSet.Factory {
+            public <T extends Cookie> T createCookie(Class<T> klass) {
+                if (klass == Cook.class) {
+                    return klass.cast(new Cook() { });
+                }
+                return null;
+            }
+        }
+        final Factory f = new Factory();
+        cs.add(Cook.class, f);
+
+        Cook one = cs.getCookie(Cook.class);
+        Cook two = cs.getCookie(Cook.class);
+        Cook three = cs.getLookup().lookup(Cook.class);
+
+        assertSame("One and two", one, two);
+        assertSame("3 and two", three, two);
+
+        cs.remove(new Class[] { Cook.class }, f);
+
+        assertNull("No cookie now ", cs.getCookie(Cook.class));
+        assertNull("No lkp now ", cs.getLookup().lookup(Cook.class));
+    }
+    static interface Cook extends Node.Cookie {
     }
 
     
