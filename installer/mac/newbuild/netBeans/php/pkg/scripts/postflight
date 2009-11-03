@@ -27,3 +27,9 @@ script_dir=`dirname "$0"`
 if [ -d "/Library/Receipts/php.pkg" ] ; then
     rm -rf "/Library/Receipts/php.pkg"
 fi
+
+if [ -d "/private/var/db/receipts" ] ; then
+    rm -rf "/private/var/db/receipts/org.netbeans.ide.php.plist"
+    rm -rf "/private/var/db/receipts/org.netbeans.ide.php.bom"
+fi
+
