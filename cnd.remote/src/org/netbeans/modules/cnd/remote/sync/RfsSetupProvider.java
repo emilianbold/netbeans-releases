@@ -119,8 +119,14 @@ public class RfsSetupProvider implements SetupProvider {
     }
 
     /** Never returns null, throws instead */
-    public static String getControllerPath(ExecutionEnvironment execEnv) throws ParseException {
-        return getLibDir(execEnv) + '/' + CONTROLLER; // NOI18N
+    public static String getControllerPath(ExecutionEnvironment execEnv) throws ParseException, CancellationException, IOException {
+        String result = getLibDir(execEnv);
+        HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
+        if (hostInfo.getOS().getBitness() == HostInfo.Bitness._64) {
+            result += POSTFIX_64;
+        }
+        result += '/' + CONTROLLER; // NOI18N;
+        return result;
     }
 
     public static String getLdLibraryPath(ExecutionEnvironment execEnv) throws ParseException {
