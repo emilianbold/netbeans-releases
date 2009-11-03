@@ -312,8 +312,10 @@ public class HtmlCompletionQuery extends UserTask {
                 }
                 result = items;
             } else {
-                if (node.type() == AstNode.NodeType.UNKNOWN_TAG || node.type() == AstNode.NodeType.ROOT) {
-                    //nothing to complete in an unknown tag
+                if (node.type() == AstNode.NodeType.UNKNOWN_TAG ||
+                        node.type() == AstNode.NodeType.DECLARATION ||
+                        node.type() == AstNode.NodeType.ROOT) {
+                    //nothing to complete in an unknown tag or declaration
                     return null;
                 }
                 //should be open tag if not unknown or root in case of the text being broken
