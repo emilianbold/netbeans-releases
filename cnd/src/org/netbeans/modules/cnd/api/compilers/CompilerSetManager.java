@@ -87,7 +87,7 @@ import org.openide.util.TaskListener;
  * are found in the user's $PATH variable.
  */
 public class CompilerSetManager {
-
+    
     private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
 
     private static final HashMap<ExecutionEnvironment, CompilerSetManager> managers = new HashMap<ExecutionEnvironment, CompilerSetManager>();
