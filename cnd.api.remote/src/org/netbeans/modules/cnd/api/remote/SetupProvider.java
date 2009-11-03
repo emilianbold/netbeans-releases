@@ -40,6 +40,7 @@
 package org.netbeans.modules.cnd.api.remote;
 
 import java.util.Map;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  * An interface to allow cnd modules to add binary and script files to the cnd.remote setup and initialization.
@@ -47,8 +48,5 @@ import java.util.Map;
  * @author gordonp
  */
 public interface SetupProvider {
-
-    public Map<String, String> getBinaryFiles();
-
-    public Map<String, Double> getScriptFiles();
+    public Map<String, String> getBinaryFiles(ExecutionEnvironment env);
 }
