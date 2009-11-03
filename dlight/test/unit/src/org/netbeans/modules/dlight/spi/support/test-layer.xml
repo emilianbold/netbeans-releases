@@ -157,6 +157,7 @@
                 <attr name="instanceCreate" methodValue="org.netbeans.modules.dlight.indicators.impl.TimeSeriesDescriptorFactory.createList"/>
                 <attr name="items" stringvalue="DLight/Fops.Configuration/TimeSeriesDescriptors.List"/>
             </file>
+<!--
             <folder name="TimeSeriesDescriptors.List">
                 <file name="TimeSeriesDescriptor_1.instance">
                     <attr name="instanceCreate" methodValue="org.netbeans.modules.dlight.indicators.impl.TimeSeriesDescriptorFactory.create"/>
@@ -165,6 +166,7 @@
                     <attr name="color" stringvalue="0xE7:0x6F:0x00"/>
                 </file>
             </folder>
+-->
         </folder>
     </folder>
 </filesystem>
