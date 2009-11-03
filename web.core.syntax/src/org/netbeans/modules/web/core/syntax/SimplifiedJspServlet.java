@@ -343,7 +343,7 @@ public class SimplifiedJspServlet extends JSPProcessor {
     private PieceOfCode extractCodeFromTagAttribute(TokenSequence tokenSequence, List<String> tagName, List<String> attrName) {
         PieceOfCode pieceOfCode = null;
         
-        if (tokenSequence.token().id() == JspTokenId.TAG && tagName.contains(tokenSequence.token().text().toString())) { //NOI18N
+        if (tokenSequence.token().id() == JspTokenId.TAG && tagName.contains(tokenSequence.token().text().toString().trim())) { //NOI18N
 
             int startPos = tokenSequence.offset();
 
