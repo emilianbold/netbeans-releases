@@ -47,6 +47,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.SetupProvider;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.cnd.remote.support.RemoteCopySupport;
@@ -62,8 +63,6 @@ import org.openide.util.NbBundle;
  */
 public class RemoteServerSetup {
     
-    public static final String REMOTE_LIB_DIR = ".netbeans/6.8/cnd3/lib/"; // NOI18N
-    
     private final Map<String, String> binarySetupMap;
     private final Map<ExecutionEnvironment, List<String>> updateMap;
     private final ExecutionEnvironment executionEnvironment;
@@ -71,20 +70,24 @@ public class RemoteServerSetup {
     private boolean cancelled;
     private boolean failed;
     private String reason;
+    private String libDir;
     
     /*package*/ RemoteServerSetup(ExecutionEnvironment executionEnvironment) {
         this.executionEnvironment = executionEnvironment;
         Lookup.Result<SetupProvider> results = Lookup.getDefault().lookup(new Lookup.Template<SetupProvider>(SetupProvider.class));
         Collection<? extends SetupProvider> list = results.allInstances();
         SetupProvider[] providers = list.toArray(new SetupProvider[list.size()]);
-        
+        libDir = HostInfoProvider.getLibDir(executionEnvironment); //NB: should contain trailing '/'
+        if (!libDir.endsWith("/")) {
+            libDir += "/";
+        }
         // Binary setup map
         binarySetupMap = new HashMap<String, String>();
         for (SetupProvider provider : providers) {
             Map<String, String> map = provider.getBinaryFiles(executionEnvironment);
             if (map != null) {
                 for (Map.Entry<String, String> entry : map.entrySet()) {
-                    binarySetupMap.put(REMOTE_LIB_DIR + entry.getKey(), entry.getValue());
+                    binarySetupMap.put(libDir + entry.getKey(), entry.getValue());
                 }
             }
         }
@@ -112,43 +115,17 @@ public class RemoteServerSetup {
     
     protected  void setup() {
         List<String> list = updateMap.remove(executionEnvironment);
-        boolean needChmod = false;
-        
         for (String path : list) {
-            if (path.equals(REMOTE_LIB_DIR)) {
-                RemoteUtil.LOGGER.fine("RSS.setup: Creating ~/" + REMOTE_LIB_DIR); //NO18N
-                int exit_status = RemoteCommandSupport.run(executionEnvironment,
-                        "mkdir -p " + REMOTE_LIB_DIR); // NOI18N
-                if (exit_status == 0) {
-                    needChmod = true;
-                    for (String remoteFileName : binarySetupMap.keySet()) {
-                        String localFileName = binarySetupMap.get(remoteFileName);
-                        RemoteUtil.LOGGER.fine("RSS.setup: Copying " + localFileName + " to " + executionEnvironment); //NO18N
-                        File file = InstalledFileLocator.getDefault().locate(localFileName, null, false);
-                        if (file == null
-                                || !file.exists()
-                                || !copyTo(file, remoteFileName)) {
-                            setFailed(NbBundle.getMessage(RemoteServerSetup.class, "ERR_UpdateSetupFailure", //NOI18N
-                                    executionEnvironment.toString(), localFileName));
-                        }
-                    }
-                } else {
-                    setFailed(NbBundle.getMessage(RemoteServerSetup.class, "ERR_DirectorySetupFailure", //NO18N
-                            executionEnvironment.toString(), exit_status));
-                }
-            } else {                
-                RemoteUtil.LOGGER.fine("RSS.setup: Updating \"" + path + "\" on " + executionEnvironment); //NO18N
-                if (binarySetupMap.containsKey(path)) {
-                    needChmod = true;
-                    String localFileName = binarySetupMap.get(path);
-                    File file = InstalledFileLocator.getDefault().locate(localFileName, null, false);
-                    //String remotePath = REMOTE_LIB_DIR + file.getName();
-                    String remotePath = path;
-                    if (file == null
-                            || !file.exists()
-                            || !copyTo(file, remotePath)) {
-                        setFailed(NbBundle.getMessage(RemoteServerSetup.class, "ERR_UpdateSetupFailure", executionEnvironment, path)); //NOI18N
-                    }
+            RemoteUtil.LOGGER.fine("RSS.setup: Updating \"" + path + "\" on " + executionEnvironment); //NO18N
+            if (binarySetupMap.containsKey(path)) {
+                String localFileName = binarySetupMap.get(path);
+                File file = InstalledFileLocator.getDefault().locate(localFileName, null, false);
+                //String remotePath = REMOTE_LIB_DIR + file.getName();
+                String remotePath = path;
+                if (file == null
+                        || !file.exists()
+                        || !copyTo(file, remotePath)) {
+                    setFailed(NbBundle.getMessage(RemoteServerSetup.class, "ERR_UpdateSetupFailure", executionEnvironment, path)); //NOI18N
                 }
             }
         }
@@ -183,12 +160,8 @@ public class RemoteServerSetup {
                 cancelled = true;
             } else {
                 String val = support.getOutput();
-                int count = 0;
                 for (String line : val.split("\n")) { // NOI18N
                     if (line.length() > 0) {
-                        if (count++ == 0) {
-                            list.add(REMOTE_LIB_DIR);
-                        }
                         list.add(line);
                     }
                 }
