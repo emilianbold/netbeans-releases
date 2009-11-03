@@ -83,6 +83,12 @@ public final class DLightConfigurationSupport {
 
     }
 
+   public DLightConfiguration registerConfigurationAsACopy(DLightConfiguration configuration,
+           String configurationName, String displayedName, String category, List<String> platforms, String collector, List<String> indicators){
+        return DLightConfigurationManagerAccessor.getDefault().registerConfigurationAsACopy(DLightConfigurationManager.getInstance(),
+                configuration, configurationName, displayedName, category, platforms, collector, indicators);
+    }
+
     public DLightConfiguration registerConfiguration(String configurationName, String displayedName, String category, List<String> platforms, String collector, List<String> indicators){
         return DLightConfigurationManagerAccessor.getDefault().registerConfiguration(DLightConfigurationManager.getInstance(), configurationName, displayedName, category, platforms, collector, indicators);
     }
