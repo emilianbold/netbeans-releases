@@ -27,3 +27,8 @@ script_dir=`dirname "$0"`
 if [ -d "/Library/Receipts/javaee.pkg" ] ; then
     rm -rf "/Library/Receipts/javaee.pkg"
 fi
+
+if [ -d "/private/var/db/receipts" ] ; then
+    rm -rf "/private/var/db/receipts/org.netbeans.ide.javaee.plist"
+    rm -rf "/private/var/db/receipts/org.netbeans.ide.javaee.bom"
+fi

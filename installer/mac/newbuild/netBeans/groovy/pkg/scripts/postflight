@@ -27,3 +27,8 @@ script_dir=`dirname "$0"`
 if [ -d "/Library/Receipts/groovy.pkg" ] ; then
     rm -rf "/Library/Receipts/groovy.pkg"
 fi
+
+if [ -d "/private/var/db/receipts" ] ; then
+    rm -rf "/private/var/db/receipts/org.netbeans.ide.groovy.plist"
+    rm -rf "/private/var/db/receipts/org.netbeans.ide.groovy.bom"
+fi

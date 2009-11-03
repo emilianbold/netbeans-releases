@@ -44,3 +44,9 @@ chmod a+w logs
 if [ -d "/Library/Receipts/tomcat.pkg" ] ; then
     rm -rf "/Library/Receipts/tomcat.pkg"
 fi
+
+if [ -d "/private/var/db/receipts" ] ; then
+    rm -rf "/private/var/db/receipts/apache.tomcat.plist"
+    rm -rf "/private/var/db/receipts/apache.tomcat.bom"
+fi
+
