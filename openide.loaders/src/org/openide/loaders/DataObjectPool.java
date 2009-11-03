@@ -122,7 +122,7 @@ implements ChangeListener {
     /** Allows DataObject constructors to be called.
      * @return a key to pass to exitAllowConstructor
      */
-    private static Collection<Item> enterAllowContructor() {
+    private static Collection<Item> enterAllowConstructor() {
         Collection<Item> prev = FIND.get();
         FIND.set (TOKEN);
         return prev;
@@ -150,7 +150,7 @@ implements ChangeListener {
     throws java.io.IOException {
         DataObject ret;
         
-        Collection<Item> prev = enterAllowContructor();
+        Collection<Item> prev = enterAllowConstructor();
         try {
             // make sure this thread is allowed to recognize
             getPOOL ().enterRecognition(fo);
@@ -170,7 +170,7 @@ implements ChangeListener {
     throws java.io.IOException {
         DataObject ret;
         
-        Collection<Item> prev = enterAllowContructor();
+        Collection<Item> prev = enterAllowConstructor();
         try {
             // make sure this thread is allowed to recognize
             getPOOL ().enterRecognition(fo);
@@ -189,7 +189,7 @@ implements ChangeListener {
     throws java.io.IOException {
         MultiDataObject ret;
         
-        Collection<Item> prev = enterAllowContructor();
+        Collection<Item> prev = enterAllowConstructor();
         try {
             ret = loader.createMultiObject (fo);
         } finally {
@@ -205,7 +205,7 @@ implements ChangeListener {
     public static MultiDataObject createMultiObject(DataLoaderPool.FolderLoader loader, FileObject fo, DataFolder original) throws java.io.IOException {
         MultiDataObject ret;
         
-        Collection<Item> prev = enterAllowContructor();
+        Collection<Item> prev = enterAllowConstructor();
         try {
             ret = loader.createMultiObject (fo, original);
         } finally {
@@ -221,7 +221,7 @@ implements ChangeListener {
      */
     public void runAtomicActionSimple (FileObject fo, FileSystem.AtomicAction action) 
     throws java.io.IOException {
-        Collection<Item> prev = enterAllowContructor();
+        Collection<Item> prev = enterAllowConstructor();
         try {
             fo.getFileSystem ().runAtomicAction(action);
         } finally {
@@ -253,7 +253,7 @@ implements ChangeListener {
                     blocked = target;
                 }
 
-                Collection<Item> findPrev = enterAllowContructor();
+                Collection<Item> findPrev = enterAllowConstructor();
                 try {
                     action.run ();
                 } finally {
@@ -1331,7 +1331,7 @@ implements ChangeListener {
             }
             List<Item> arr = children.get(parent);
             if (arr != null) {
-                arr.remove(obj);
+                arr.remove(obj); // XXX this makes no sense; obj is a FileObject, arr is a List<Item>
                 if (arr.isEmpty()) {
                     children.remove(parent);
                 }
