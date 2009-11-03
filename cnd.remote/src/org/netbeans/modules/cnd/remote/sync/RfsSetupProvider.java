@@ -39,13 +39,18 @@
 
 package org.netbeans.modules.cnd.remote.sync;
 
+import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.text.ParseException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.SetupProvider;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
 import org.openide.util.Exceptions;
@@ -82,13 +87,27 @@ public class RfsSetupProvider implements SetupProvider {
     public Map<String, String> getBinaryFiles(ExecutionEnvironment env) {
         Map<String, String> result = new LinkedHashMap<String, String>();
         try {
-            String dir32 = getOsName(env) + '/';
+            HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
+            String osName = getOsName(env);
+            String dir32 = osName + '/';
             String dir64 = getOsName(env) + POSTFIX_64 + '/';
             for (Map.Entry<String, String> entry : binarySetupMap.entrySet()) {
-                if (entry.getKey().startsWith(dir32) || entry.getKey().startsWith(dir64)) {
+                boolean add = false;
+                if (entry.getKey().startsWith(dir32)) {
+                    add = true;
+                } else if (entry.getKey().startsWith(dir64)) {
+                    add = hostInfo.getOS().getBitness() == HostInfo.Bitness._64;
+                }
+                if (add) {
                     result.put(entry.getKey(), entry.getValue());
                 }
             }
+        } catch (InterruptedIOException ex) {
+            // don't report
+        } catch (CancellationException ex) {
+            // don't report
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         } catch (ParseException ex) {
             Exceptions.printStackTrace(ex);
         }
