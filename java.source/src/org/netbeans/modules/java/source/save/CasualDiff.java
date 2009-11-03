@@ -2654,6 +2654,8 @@ public class CasualDiff {
     private int commentStartCorrect(Comment c) {
         tokenSequence.move(c.pos());
 
+        boolean wasPrevious = false;
+
         while (tokenSequence.movePrevious()) {
             if (tokenSequence.token().id() != JavaTokenId.WHITESPACE) {
                 return tokenSequence.offset() + tokenSequence.token().length();
@@ -2664,9 +2666,14 @@ public class CasualDiff {
             if (lastNewLine != (-1)) {
                 return tokenSequence.offset() + lastNewLine + 1;
             }
+
+            wasPrevious = true;
         }
 
-        return tokenSequence.offset();
+        if (wasPrevious)
+            return tokenSequence.offset();
+        else
+            return c.pos();
     }
 
     private int commentStart(CommentSet comments, CommentSet.RelativePosition pos) {
