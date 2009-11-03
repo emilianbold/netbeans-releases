@@ -137,6 +137,9 @@ final class ToolchainScriptGenerator {
     }
     private void platformPath(int platform){
         for (ToolchainDescriptor d : ToolchainManager.getImpl().getToolchains(platform)) {
+            if (d.getModuleID() != null) {
+                continue;
+            }
             CompilerDescriptor c = d.getC();
             if (c == null || c.getNames().length == 0) {
                 continue;
