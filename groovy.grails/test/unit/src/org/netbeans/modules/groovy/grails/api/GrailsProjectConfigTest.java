@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.groovy.grails.api;
 
+import org.netbeans.modules.groovy.grailsproject.config.GrailsProjectConfig;
 import java.io.IOException;
 import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
