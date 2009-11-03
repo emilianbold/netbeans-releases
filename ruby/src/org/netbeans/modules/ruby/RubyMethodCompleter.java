@@ -168,6 +168,10 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
                     // up and do it a bit more cleverly
                     type = getTypesForConstant(lhs);
                     if (!type.isKnown()) {
+                        // try fqn
+                        type = getTypesForConstant(AstUtilities.getFqnName(path, lhs));
+                    }
+                    if (!type.isKnown()) {
                         type = createTypeInferencer(request, method).inferType(_lhs);
                     }
                     if (type.isKnown() && call.isLHSConstant()) {

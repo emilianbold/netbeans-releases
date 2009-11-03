@@ -378,6 +378,29 @@ public class RubyUtils {
         return new String[]{module, constant};
     }
 
+    /**
+     * Gets the "parent" modules of the given <code>fqn</code>. Does
+     * not include the fqn itself. E.g. for <code>"Foo::Bar::Baz::Qux"</code>
+     * this will return <code>"Foo::Bar::Baz"</code>, <code>"Foo::Bar"</code> 
+     * and <code>"Foo"</code>.
+     * 
+     * @param fqn
+     * @return
+     */
+    static List<String> getParentModules(String fqn) {
+        int lastColon2 = fqn.lastIndexOf("::");
+        if (lastColon2 == -1) {
+            return Collections.emptyList();
+        }
+        List<String> result = new ArrayList<String>();
+        while(lastColon2 > 0) {
+            String parent = fqn.substring(0, lastColon2);
+            result.add(parent);
+            lastColon2 = parent.lastIndexOf("::");
+        }
+        return result;
+    }
+    
     public static boolean isValidRubyLocalVarName(String name) {
         if (isRubyKeyword(name)) {
             return false;
@@ -469,10 +492,6 @@ public class RubyUtils {
         return Arrays.binarySearch(RUBY_KEYWORDS, name) >= 0;
     }
 
-    public static boolean isRubyPredefVar(String name) {
-        return Arrays.binarySearch(RUBY_PREDEF_VAR, name) >= 0;
-    }
-
     public static String getLineCommentPrefix() {
         return "#"; // NOI18N
     }
@@ -499,35 +518,8 @@ public class RubyUtils {
             "undef", "unless", "until", "when", "while", "yield"
         };
 
-    public static final Map<String, String> RUBY_PREDEF_VARS_CLASSES = new HashMap<String, String>();
-
-    static {
-        RUBY_PREDEF_VARS_CLASSES.put("__FILE__", "String"); // NOI18N
-        RUBY_PREDEF_VARS_CLASSES.put("__LINE__", "Fixnum"); // NOI18N
-        RUBY_PREDEF_VARS_CLASSES.put("ARGF", "Object"); // NOI18N
-        RUBY_PREDEF_VARS_CLASSES.put("ARGV", "Array"); // NOI18N
-        RUBY_PREDEF_VARS_CLASSES.put("DATA", "File"); // NOI18N
-        RUBY_PREDEF_VARS_CLASSES.put("DATA", "IO"); // NOI18N
-        RUBY_PREDEF_VARS_CLASSES.put("ENV", "Object"); // NOI18N
-        RUBY_PREDEF_VARS_CLASSES.put("FALSE", "FalseClass"); // NOI18N
-        RUBY_PREDEF_VARS_CLASSES.put("NIL", "NilClass"); // NOI18N
-        RUBY_PREDEF_VARS_CLASSES.put("RUBY_PLATFORM", "String"); // NOI18N
-        RUBY_PREDEF_VARS_CLASSES.put("RUBY_RELEASE_DATE", "String"); // NOI18N
-        RUBY_PREDEF_VARS_CLASSES.put("RUBY_VERSION", "String"); // NOI18N
-        RUBY_PREDEF_VARS_CLASSES.put("SCRIPT_LINES__", "Hash"); // NOI18N
-        RUBY_PREDEF_VARS_CLASSES.put("STDERR", "IO"); // NOI18N
-        RUBY_PREDEF_VARS_CLASSES.put("STDIN", "IO"); // NOI18N
-        RUBY_PREDEF_VARS_CLASSES.put("STDOUT", "IO"); // NOI18N
-        RUBY_PREDEF_VARS_CLASSES.put("TOPLEVEL_BINDING", "Binding"); // NOI18N
-        RUBY_PREDEF_VARS_CLASSES.put("TRUE", "TrueClass"); // NOI18N
-    }
-
-    static final String[] RUBY_PREDEF_VAR =
-            RUBY_PREDEF_VARS_CLASSES.keySet().toArray(new String[RUBY_PREDEF_VARS_CLASSES.size()]);
-
     static { // so we can use Arrays#binarySearch
         Arrays.sort(RUBY_KEYWORDS);
-        Arrays.sort(RUBY_PREDEF_VAR);
     }
 
     /** Return the class name corresponding to the given controller file */

@@ -5,5 +5,5 @@ Colors:MODULE:[]:ESCAPED{Colors}:
     VERSION:CONSTANT:[]:ESCAPED{VERSION}<font color='#777777'> : ESCAPED{Fixnum}</font>:
   GREEN:CONSTANT:[]:ESCAPED{GREEN}<font color='#777777'> : ESCAPED{String}</font>:
   RED:CONSTANT:[]:ESCAPED{RED}<font color='#777777'> : ESCAPED{String}</font>:
-  red:METHOD:[PUBLIC]:ESCAPED{red}:
+  red:METHOD:[PUBLIC]:ESCAPED{red}<font color='#777777'> : ESCAPED{String}</font>:
 b:VARIABLE:[]:ESCAPED{b}<font color='#777777'> : ESCAPED{String}</font>:

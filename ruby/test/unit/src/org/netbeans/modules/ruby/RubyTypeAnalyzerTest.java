@@ -255,7 +255,7 @@ public class RubyTypeAnalyzerTest extends RubyTestBase {
     }
 
     public void testConstant() throws Exception {
-        assertTypes("constants.rb", "Colors::RED.byte^", "RED", "String");
+        assertTypes("constants.rb", "Colors::RED.byte^", "Colors::RED", "String");
         assertTypes("constants.rb", "puts b.down^case", "b", "String");
         // TODO fix and uncomment when reindexed
         // assertTypes("indexed constants type inference", "constants.rb", "REXML::COPY^RIGHT", "COPYRIGHT", "String");
@@ -263,6 +263,7 @@ public class RubyTypeAnalyzerTest extends RubyTestBase {
 
     public void testMethodType() throws Exception {
         assertTypes("method_type_inference.rb", "puts n^um.abs", "num", "Fixnum");
+        assertTypes("method_type_inference.rb", "puts a.a_cons^tant", "a_constant", "Fixnum");
     }
 
 //    public void testCoreMethodType() throws Exception {
