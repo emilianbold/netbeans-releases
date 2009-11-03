@@ -41,6 +41,7 @@ package org.netbeans.modules.parsing.impl.indexing;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -415,7 +416,9 @@ public class RepositoryUpdater2Test extends NbTestCase {
         RepositoryUpdater.getDefault().waitUntilFinished(-1);
 
         assertEquals("All roots should be indexed: " + indexer.indexedRoots, 3, indexer.indexedRoots.size());
-        assertEquals("Wrong scanned sources", new HashSet<URL>(indexer.indexedRoots), RepositoryUpdater.getDefault().getScannedSources());
+        ArrayList<URL> expectedSourceRoots = new ArrayList<URL>(indexer.indexedRoots);
+        Collections.sort(expectedSourceRoots, new RepositoryUpdater.LexicographicComparator(true));
+        assertEquals("Wrong scanned sources", expectedSourceRoots, RepositoryUpdater.getDefault().getScannedSources());
         assertEquals("Wrong scanned binaries", 0, RepositoryUpdater.getDefault().getScannedBinaries().size());
         assertEquals("Wrong scanned unknowns", 0, RepositoryUpdater.getDefault().getScannedBinaries().size());
     }
@@ -727,7 +730,73 @@ public class RepositoryUpdater2Test extends NbTestCase {
         }
     } // End of FixedClassPathProvider class
 
-    
+    public void testNestedRoots() throws Exception {
+        FileUtil.setMIMEType("txt", "text/plain");
+        final FileObject root = workDir.createFolder("root");
+        final FileObject file1 = root.createData("file1.txt");
+
+        final FileObject nestedRoot = root.createFolder("nestedRoot");
+        final FileObject file2 = nestedRoot.createData("file2.txt");
+
+        final RepositoryUpdaterTest.MutableClassPathImplementation mcpi = new RepositoryUpdaterTest.MutableClassPathImplementation();
+        mcpi.addFilteredResource(root, "nestedRoot.*");
+        mcpi.addResource(nestedRoot);
+        ClassPath cp = ClassPathFactory.createClassPath(mcpi);
+
+        Map<FileObject, Map<String, ClassPath>> allDeps = new HashMap<FileObject, Map<String, ClassPath>>();
+        allDeps.put(root, Collections.singletonMap(testRootsWorkCancelling_PathRecognizer.SOURCEPATH, cp));
+        allDeps.put(nestedRoot, Collections.singletonMap(testRootsWorkCancelling_PathRecognizer.SOURCEPATH, cp));
+
+        final FixedClassPathProvider cpProvider = new FixedClassPathProvider(allDeps);
+        MockLookup.setInstances(cpProvider, new testRootsWorkCancelling_PathRecognizer());
+
+        final TestCustomIndexer indexer = new TestCustomIndexer();
+        MockMimeLookup.setInstances(MimePath.parse("text/plain"), new FixedCustomIndexerFactory(indexer), new FixedParserFactory(new EmptyParser()));
+        Util.allMimeTypes = Collections.singleton("text/plain");
+
+        assertEquals("No roots should be indexed yet", 0, indexer.indexed.size());
+
+        ruSync.reset(RepositoryUpdaterTest.TestHandler.Type.BATCH);
+        globalPathRegistry_register(testRootsWorkCancelling_PathRecognizer.SOURCEPATH, new ClassPath[] { cp });
+        ruSync.await();
+
+        assertEquals("Wrong number of roots", 2, indexer.indexed.size());
+        assertEquals("Expecting nested root", nestedRoot.getURL(), indexer.indexed.get(0).first.getRootURI());
+        assertEquals("Wrong number of files under nestedRoot", 1, indexer.indexed.get(0).second.size());
+        assertEquals("Expecting root", root.getURL(), indexer.indexed.get(1).first.getRootURI());
+        assertEquals("Wrong number of files under root", 1, indexer.indexed.get(1).second.size());
+
+        indexer.indexed.clear();
+        ruSync.reset(RepositoryUpdaterTest.TestHandler.Type.FILELIST, 1);
+        OutputStream os = file2.getOutputStream();
+        try {
+            os.write('\n');
+        } finally {
+            os.close();
+        }
+        ruSync.await();
+
+        assertEquals("Wrong number of roots", 1, indexer.indexed.size());
+        assertEquals("Expecting nested root", nestedRoot.getURL(), indexer.indexed.get(0).first.getRootURI());
+        assertEquals("Wrong number of files under nestedRoot", 1, indexer.indexed.get(0).second.size());
+        assertEquals("Wring file indexed", file2.getURL(), indexer.indexed.get(0).second.get(0).getURL());
+    }
+
+    private static final class TestCustomIndexer extends CustomIndexer {
+
+        public final List<Pair<Context, List<Indexable>>> indexed = new ArrayList<Pair<Context, List<Indexable>>>();
+        
+        @Override
+        protected void index(Iterable<? extends Indexable> files, Context context) {
+            List<Indexable> indexables = new ArrayList<Indexable>();
+            for(Indexable i : files) {
+                indexables.add(i);
+            }
+            Pair<Context, List<Indexable>> pair = Pair.of(context, indexables);
+            indexed.add(pair);
+        }
+    }
+
     // ---------- !!!!!! This MUST be the last test in the suite,
     // ---------- !!!!!! because it shuts down RepositoryUpdater
 
