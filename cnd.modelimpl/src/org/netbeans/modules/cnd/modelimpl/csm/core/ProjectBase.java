@@ -2865,7 +2865,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return cc != null ? cc : ClassifierContainer.empty();
     }
 
-    private class FixRegistrationRunnable implements Runnable {
+    private static class FixRegistrationRunnable implements Runnable {
         private final CountDownLatch countDownLatch;
         private final List<CsmUID<CsmFile>> files;
         private final boolean libsAlreadyParsed;

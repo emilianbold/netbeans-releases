@@ -171,7 +171,7 @@ public class RemoteBinaryServiceImpl extends RemoteBinaryService {
         }
 
         private String getFullTimeLsCommand() throws IOException {
-            HostInfo hostInfo = hostInfo = HostInfoUtils.getHostInfo(execEnv);
+            HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
             switch (hostInfo.getOSFamily()) {
                 case LINUX:
                     return "ls --full-time"; // NOI18N

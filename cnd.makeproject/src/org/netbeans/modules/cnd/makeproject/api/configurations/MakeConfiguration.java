@@ -853,7 +853,7 @@ public class MakeConfiguration extends Configuration {
      * Special version of IntConfiguration
      * Names are shifted one (because Makefile is not allowed as a choice anymore for managed projects)
      */
-    class ManagedIntConfiguration extends IntConfiguration {
+    static class ManagedIntConfiguration extends IntConfiguration {
         public ManagedIntConfiguration(IntConfiguration master, int def, String[] names, String[] options) {
             super(master, def, names, options);
         }

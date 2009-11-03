@@ -109,9 +109,8 @@ public final class DataTableMetadataFactory {
             String name = getStringValue(map, "name");//NOI18N
             String shortName = getStringValue(map, "shortname");//NOI18N
             String expression = getStringValue(map, "expression");//NOI18N
-            Class clazz = String.class;
+            Class clazz;
             try {
-
                 clazz = Class.forName(getStringValue(map, "class"));//NOI18N
             } catch (ClassNotFoundException ex) {
                 clazz = stringToClass.get(getStringValue(map, "class")); //NOI18N
