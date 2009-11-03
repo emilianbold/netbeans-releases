@@ -280,7 +280,7 @@ public class JRubyServerModule implements RubyInstance, CustomizerCookie, Recogn
                 if(deployedContextRoot == null) {
                     return false;
                 } else if(!deployedContextRoot.equals(contextRoot)) {
-                    ServerCommand.SetPropertyCommand setCmd = new ServerCommand.SetPropertyCommand(
+                    ServerCommand.SetPropertyCommand setCmd = commonModule.getCommandFactory().getSetPropertyCommand(
                             contextRootProperty, contextRoot);
                     result = commonModule.execute(setCmd).get(15000, TimeUnit.MILLISECONDS);
                     if(result != GlassfishModule.OperationState.COMPLETED) {
