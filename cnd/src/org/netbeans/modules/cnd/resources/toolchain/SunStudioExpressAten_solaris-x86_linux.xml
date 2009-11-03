@@ -42,26 +42,29 @@ made subject to such option by the copyright holder.
 -->
 
 <toolchaindefinition xmlns="http://www.netbeans.org/ns/cnd-toolchain-definition/1">
-    <toolchain name="SunStudio_12.2" display="Sun Studio 12.2 Compiler Collection" family="SunStudio"/>
+    <toolchain name="SunStudioExpress" display="Sun Studio Express Compiler Collection (Aten)" family="SunStudio"/>
     <platforms stringvalue="sun_intel,linux"/>
     <default_locations>
-        <platform os="linux" directory="/opt/sun/sunstudio12.2/bin"/>
-        <platform os="sun_intel" directory="/opt/sunstudio12.2/bin"/>
+        <platform os="linux" directory="/opt/sun/sunstudioaten/bin"/>
+        <platform os="sun_intel" directory="/opt/aten/bin"/>
     </default_locations>
     <c>
-        <version flags="-V" pattern=".*Sun C 5.11"/>
+        <recognizer pattern=".*(SunStudioExpress|/prod/bin|/sunstudioaten/|/aten/)" or_exist_folder="../prod"/>
+        <version flags="-V" pattern=".*Sun.*Aten"/>
         <development_mode>
            <performance_release flags="-fast -xipo -xvector=simd -g"/>
         </development_mode>
     </c>
     <cpp>
-        <version flags="-V" pattern=".*Sun C\+\+ 5.11"/>
+        <recognizer pattern=".*(SunStudioExpress|/prod/bin|/sunstudioaten/|/aten/)" or_exist_folder="../prod"/>
+        <version flags="-V" pattern=".*Sun.*Aten"/>
         <development_mode>
            <performance_release flags="-fast -xipo -xvector=simd -g0"/>
         </development_mode>
     </cpp>
     <fortran>
-        <version flags="-V" pattern=".*Sun Fortran 95 8.5"/>
+        <recognizer pattern=".*(SunStudioExpress|/prod/bin|/sunstudioaten/|/aten/)" or_exist_folder="../prod"/>
+        <version flags="-V" pattern=".*Sun.*Aten"/>
         <development_mode>
            <performance_release flags="-fast -xvector=simd -g"/>
         </development_mode>

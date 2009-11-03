@@ -43,18 +43,27 @@ made subject to such option by the copyright holder.
 
 <toolchaindefinition xmlns="http://www.netbeans.org/ns/cnd-toolchain-definition/1">
     <toolchain name="SunStudio_12.1" display="Sun Studio 12.1 Compiler Collection" family="SunStudio"/>
+    <platforms stringvalue="sun_intel,linux"/>
     <default_locations>
         <platform os="linux" directory="/opt/sun/sunstudio12.1/bin"/>
         <platform os="sun_intel" directory="/opt/sunstudio12.1/bin"/>
-        <platform os="sun_sparc" directory="/opt/sunstudio12.1/bin"/>
     </default_locations>
     <c>
         <version flags="-V" pattern=".*Sun C 5.10"/>
+        <development_mode>
+           <performance_release flags="-fast -xipo -xvector=simd -g"/>
+        </development_mode>
     </c>
     <cpp>
         <version flags="-V" pattern=".*Sun C\+\+ 5.10"/>
+        <development_mode>
+           <performance_release flags="-fast -xipo -xvector=simd -g0"/>
+        </development_mode>
     </cpp>
     <fortran>
         <version flags="-V" pattern=".*Sun Fortran 95 8.4"/>
+        <development_mode>
+           <performance_release flags="-fast -xvector=simd -g"/>
+        </development_mode>
     </fortran>
 </toolchaindefinition>

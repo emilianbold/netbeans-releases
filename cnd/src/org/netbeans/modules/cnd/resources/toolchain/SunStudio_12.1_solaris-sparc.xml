@@ -42,23 +42,18 @@ made subject to such option by the copyright holder.
 -->
 
 <toolchaindefinition xmlns="http://www.netbeans.org/ns/cnd-toolchain-definition/1">
-    <toolchain name="SunStudioExpress" display="Sun Studio Express Compiler Collection (Aten)" family="SunStudio"/>
-    <platforms stringvalue="sun_intel,sun_sparc,linux"/>
+    <toolchain name="SunStudio_12.1" display="Sun Studio 12.1 Compiler Collection" family="SunStudio"/>
+    <platforms stringvalue="sun_sparc"/>
     <default_locations>
-        <platform os="linux" directory="/opt/sun/sunstudioaten/bin"/>
-        <platform os="sun_intel" directory="/opt/aten/bin"/>
-        <platform os="sun_sparc" directory="/opt/aten/bin"/>
+        <platform os="sun_sparc" directory="/opt/sunstudio12.1/bin"/>
     </default_locations>
     <c>
-        <recognizer pattern=".*(SunStudioExpress|/prod/bin|/sunstudioaten/|/aten/)" or_exist_folder="../prod"/>
-        <version flags="-V" pattern=".*Sun.*Aten"/>
+        <version flags="-V" pattern=".*Sun C 5.10"/>
     </c>
     <cpp>
-        <recognizer pattern=".*(SunStudioExpress|/prod/bin|/sunstudioaten/|/aten/)" or_exist_folder="../prod"/>
-        <version flags="-V" pattern=".*Sun.*Aten"/>
+        <version flags="-V" pattern=".*Sun C\+\+ 5.10"/>
     </cpp>
     <fortran>
-        <recognizer pattern=".*(SunStudioExpress|/prod/bin|/sunstudioaten/|/aten/)" or_exist_folder="../prod"/>
-        <version flags="-V" pattern=".*Sun.*Aten"/>
+        <version flags="-V" pattern=".*Sun Fortran 95 8.4"/>
     </fortran>
 </toolchaindefinition>
