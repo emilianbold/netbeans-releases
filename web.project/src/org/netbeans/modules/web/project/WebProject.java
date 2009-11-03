@@ -1456,6 +1456,9 @@ public final class WebProject implements Project, AntProjectListener {
             docBaseValue = evaluator().getProperty(WebProjectProperties.WEB_DOCBASE_DIR);
             webInf = getWebModule().getWebInf();
             webInfValue = evaluator().getProperty(WebProjectProperties.WEBINF_DIR);
+            if (resources != null) {
+                FileUtil.removeFileChangeListener(this, resources);
+            }
             resources = getWebModule().getResourceDirectory();
             buildWeb = evaluator().getProperty(WebProjectProperties.BUILD_WEB_DIR);
 
