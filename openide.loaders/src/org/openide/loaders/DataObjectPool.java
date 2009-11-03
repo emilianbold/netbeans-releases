@@ -388,7 +388,7 @@ implements ChangeListener {
         Integer i = registrationCounts.get(fo);
         Integer i2;
         if (i == null) {
-            i2 = 1;
+            i2 = 0;
         } else {
             i2 = i + 1;
         }
