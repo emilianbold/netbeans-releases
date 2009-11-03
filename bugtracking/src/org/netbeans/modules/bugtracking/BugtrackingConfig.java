@@ -89,8 +89,8 @@ public class BugtrackingConfig {
             String[] keys = getPreferences().keys();
             for (int i = 0; i < keys.length; i++) {
                 String k = keys[i];
-                if (k != null && k.startsWith(COLUMN_WIDTH_PREFIX + "." + key)) {
-                    int idx = Integer.parseInt(k.substring(k.lastIndexOf('.') + 1)); // NOI18N
+                if (k != null && k.startsWith(COLUMN_WIDTH_PREFIX + "." + key + ".")) { // NOI18N
+                    int idx = Integer.parseInt(k.substring(k.lastIndexOf('.') + 1));    // NOI18N
                     int value = getPreferences().getInt(k, -1);
                     retval.add(idx, value);
                 }
