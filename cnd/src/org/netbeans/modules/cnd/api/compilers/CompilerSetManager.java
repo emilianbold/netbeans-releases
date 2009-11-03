@@ -792,6 +792,17 @@ public class CompilerSetManager {
                 return o1.getCompilerFlavor().getToolchainDescriptor().getName().compareTo(o2.getCompilerFlavor().getToolchainDescriptor().getName());
             }
         });
+        completeCompilerSetsSettings();
+    }
+
+    private void completeCompilerSetsSettings() {
+        for (CompilerSet cs : sets) {
+            for (Tool tool : cs.getTools()) {
+                if (!tool.isReady()) {
+                    tool.waitReady(true);
+                }
+            }
+        }
     }
 
     private void completeSunStudioCompilerSet(int platform) {
