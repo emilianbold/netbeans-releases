@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.groovy.grails.api;
 
-import org.netbeans.modules.groovy.grailsproject.config.GrailsProjectConfig;
 import java.beans.PropertyChangeListener;
 import javax.swing.Icon;
 import org.netbeans.api.project.Project;
