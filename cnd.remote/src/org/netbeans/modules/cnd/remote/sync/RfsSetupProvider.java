@@ -57,7 +57,7 @@ import org.openide.util.Exceptions;
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.remote.SetupProvider.class)
 public class RfsSetupProvider implements SetupProvider {
-    public static final String POSTFIX_64 = "_64";
+    public static final String POSTFIX_64 = "_64"; // NOI18N
 
     private Map<String, String> binarySetupMap;
     private static final String CONTROLLER = "rfs_controller"; // NOI18N
