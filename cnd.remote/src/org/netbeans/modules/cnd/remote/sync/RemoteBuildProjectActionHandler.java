@@ -42,7 +42,9 @@ package org.netbeans.modules.cnd.remote.sync;
 import java.io.File;
 import java.io.PrintWriter;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
@@ -68,6 +70,7 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
     private ProjectActionEvent pae;
     private ProjectActionEvent[] paes;
     private ExecutionEnvironment execEnv;
+    private final List<ExecutionListener> listeners = new CopyOnWriteArrayList<ExecutionListener>();
 
     private PrintWriter out;
     private PrintWriter err;
@@ -88,11 +91,13 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
     @Override
     public void addExecutionListener(ExecutionListener l) {
         delegate.addExecutionListener(l);
+        listeners.add(l);
     }
 
     @Override
     public void removeExecutionListener(ExecutionListener l) {
         delegate.removeExecutionListener(l);
+        listeners.remove(l);
     }
 
     @Override
@@ -149,6 +154,10 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
                 env.putenv(entry.getKey(), entry.getValue());
             }
             delegate.execute(io);
+        } else {
+            for (ExecutionListener l : listeners) {
+                l.executionFinished(-8);
+            }
         }
     }
 }
