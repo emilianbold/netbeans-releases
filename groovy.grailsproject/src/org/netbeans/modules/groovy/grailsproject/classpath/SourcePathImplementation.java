@@ -49,6 +49,7 @@ import java.beans.PropertyChangeSupport;
 import java.net.URL;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
+import org.netbeans.modules.groovy.grailsproject.config.BuildConfig;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -75,7 +76,8 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
         GrailsProjectConfig config = GrailsProjectConfig.forProject(project);
         SourcePathImplementation impl = new SourcePathImplementation(sourceRoots);
 
-        config.addPropertyChangeListener(WeakListeners.propertyChange(impl, config));
+        BuildConfig build = ((GrailsProject) config.getProject()).getBuildConfig();
+        build.addPropertyChangeListener(WeakListeners.propertyChange(impl, config));
 
         return impl;
     }
@@ -101,8 +103,7 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
-        if (GrailsProjectConfig.GRAILS_PROJECT_PLUGINS_DIR_PROPERTY.equals(evt.getPropertyName())
-                || GrailsProjectConfig.GRAILS_GLOBAL_PLUGINS_DIR_PROPERTY.equals(evt.getPropertyName())) {
+        if (BuildConfig.BUILD_CONFIG_PLUGINS.equals(evt.getPropertyName())) {
             synchronized (this) {
                 this.resources = null;
             }

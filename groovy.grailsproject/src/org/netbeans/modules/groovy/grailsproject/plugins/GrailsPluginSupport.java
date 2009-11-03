@@ -332,7 +332,7 @@ public class GrailsPluginSupport {
                     args.add(plugin.getName());
                     args.add(plugin.getVersion());
                 } else {
-                    args.add(plugin.getPath());
+                    args.add(plugin.getPath().getAbsolutePath());
                 }
 
                 Callable<Process> callable = ExecutionSupport.getInstance().createSimpleCommand(
@@ -396,15 +396,18 @@ public class GrailsPluginSupport {
     public GrailsPlugin getPluginFromZipFile(String path) {
         GrailsPlugin plugin = null;
         try {
-            final ZipFile file = new ZipFile(new File(path));
-            try {
-                final ZipEntry entry = file.getEntry("plugin.xml"); // NOI18N
-                if (entry != null) {
-                    InputStream stream = file.getInputStream(entry);
-                    plugin = getPluginFromInputStream(stream, path);
+            File pluginFile = new File(path);
+            if (pluginFile.exists() && pluginFile.isFile()) {
+                final ZipFile file = new ZipFile(pluginFile);
+                try {
+                    final ZipEntry entry = file.getEntry("plugin.xml"); // NOI18N
+                    if (entry != null) {
+                        InputStream stream = file.getInputStream(entry);
+                        plugin = getPluginFromInputStream(stream, pluginFile);
+                    }
+                } finally {
+                    file.close();
                 }
-            } finally {
-                file.close();
             }
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
@@ -412,7 +415,7 @@ public class GrailsPluginSupport {
         return plugin;
     }
 
-    private GrailsPlugin getPluginFromInputStream(InputStream inputStream, String path) throws Exception {
+    private GrailsPlugin getPluginFromInputStream(InputStream inputStream, File path) throws Exception {
         final Document doc = XMLUtil.parse(new InputSource(inputStream), false, false, null, null);
         final Node root = doc.getFirstChild();
         final String name = root.getAttributes().getNamedItem("name").getTextContent(); //NOI18N

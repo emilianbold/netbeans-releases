@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.groovy.grails.api;
 
+import org.netbeans.modules.groovy.grailsproject.config.GrailsProjectConfig;
 import java.io.IOException;
 import java.util.Enumeration;
 import java.util.HashSet;
