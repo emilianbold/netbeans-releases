@@ -107,7 +107,7 @@ public class HudsonConnector {
         Document docInstance = getDocument(instance.getUrl() + XML_API_URL + "?depth=1&xpath=/&exclude=//primaryView&exclude=//view[name='All']" +
                 "&exclude=//view/job/url&exclude=//view/job/color&exclude=//description&exclude=//job/build&exclude=//healthReport" +
                 "&exclude=//firstBuild&exclude=//keepDependencies&exclude=//nextBuildNumber&exclude=//property&exclude=//action" +
-                "&exclude=//upstreamProject&exclude=//downstreamProject&exclude=//queueItem"); // NOI18N
+                "&exclude=//upstreamProject&exclude=//downstreamProject&exclude=//queueItem&exclude=//scm"); // NOI18N
         
         if (null == docInstance)
             return new ArrayList<HudsonJob>();

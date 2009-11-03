@@ -427,13 +427,6 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                                 isModalDialog = false;
                                 if (NotifyDescriptor.OK_OPTION.equals(res)) {
                                     doInit.confirmed = true;
-                                    try {
-                                        e.confirmed();
-                                    } catch (IOException ex1) {
-                                        Exceptions.printStackTrace(ex1);
-
-                                        return;
-                                    }
                                 } else {
                                     return;
                                 }
@@ -490,6 +483,10 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                                 SwingUtilities.invokeLater(query);
                                 if (query.awaitAWT()) {
                                     query.waitRest();
+                                } else {
+                                    //#175956: If AWT is blocked so user could not answer UQE.
+                                    //In such case open document anyway.
+                                    confirmed = true;
                                 }
                                 synchronized (query) {
                                     query.finished = true;
@@ -500,6 +497,12 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                         }
                         if (confirmed) {
                             isDocLoadingCanceled = false;
+                            UserQuestionException e = (UserQuestionException) ex.getCause();
+                            try {
+                                e.confirmed();
+                            } catch (IOException ex1) {
+                                Exceptions.printStackTrace(ex1);
+                            }
                             prepareTask = support.prepareDocument();
                             assert prepareTask != null : "Failed to get prepareTask";
                             prepareTask.waitFinished();
