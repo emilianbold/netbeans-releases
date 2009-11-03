@@ -202,10 +202,8 @@ public final class RubyTypeAnalyzer {
             }
             case CONSTDECLNODE: {
                 RubyType type = RubyTypeInferencer.create(knowledge).inferTypesOfRHS(node);
-                String fqn  = AstUtilities.getFqnName(new AstPath(knowledge.getRoot(), node));
-                String name = AstUtilities.getName(node);
-                String symbol = fqn.length() > 0 ? fqn + "::" + name : name;//NOI18N
-                maybePutTypeForSymbol(typesForSymbols, symbol, type, override);
+                String fqn  = AstUtilities.getFqnName(knowledge.getRoot(), node);
+                maybePutTypeForSymbol(typesForSymbols, fqn, type, override);
                 break;
             }
             case INSTASGNNODE:

@@ -1,4 +1,6 @@
 A:CLASS:[]:ESCAPED{A}:
+  A_CONSTANT:CONSTANT:[]:ESCAPED{A_CONSTANT}<font color='#777777'> : ESCAPED{Fixnum}</font>:
+  a_constant:METHOD:[PUBLIC]:ESCAPED{a_constant}<font color='#777777'> : ESCAPED{Fixnum}</font>:
   condition:METHOD:[PUBLIC]:ESCAPED{condition}<font color='#777777'> : ESCAPED{Fixnum, String, Float}</font>:
   condition2:METHOD:[PUBLIC]:ESCAPED{condition2}<font color='#777777'> : ESCAPED{String, Fixnum, Float}</font>:
   condition3:METHOD:[PUBLIC]:ESCAPED{condition3}<font color='#777777'> : ESCAPED{Fixnum, String, Float}</font>:

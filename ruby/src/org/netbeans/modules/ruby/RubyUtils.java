@@ -378,6 +378,29 @@ public class RubyUtils {
         return new String[]{module, constant};
     }
 
+    /**
+     * Gets the "parent" modules of the given <code>fqn</code>. Does
+     * not include the fqn itself. E.g. for <code>"Foo::Bar::Baz::Qux"</code>
+     * this will return <code>"Foo::Bar::Baz"</code>, <code>"Foo::Bar"</code> 
+     * and <code>"Foo"</code>.
+     * 
+     * @param fqn
+     * @return
+     */
+    static List<String> getParentModules(String fqn) {
+        int lastColon2 = fqn.lastIndexOf("::");
+        if (lastColon2 == -1) {
+            return Collections.emptyList();
+        }
+        List<String> result = new ArrayList<String>();
+        while(lastColon2 > 0) {
+            String parent = fqn.substring(0, lastColon2);
+            result.add(parent);
+            lastColon2 = parent.lastIndexOf("::");
+        }
+        return result;
+    }
+    
     public static boolean isValidRubyLocalVarName(String name) {
         if (isRubyKeyword(name)) {
             return false;

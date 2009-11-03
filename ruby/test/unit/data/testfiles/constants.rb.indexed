@@ -8,7 +8,7 @@ Searchable Keys:
   constant : GREEN;String
   constant : RED;String
   fqn : Colors
-  method : red
+  method : red;;String;
   require : constants
 
 Not Searchable Keys:

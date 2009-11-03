@@ -73,11 +73,19 @@ final class RubyConstantCompleter extends RubyBaseCompleter {
             return false;
         }
 
-        if ((call == Call.LOCAL) || (call == Call.NONE)) {
+        if (call == Call.NONE) {
             return false;
         }
 
-        Set<? extends IndexedConstant> constants = getIndex().getConstants(call.getType(), request.prefix);
+        RubyType type = call.getType();
+        if (call == Call.LOCAL && !type.isKnown()) {
+            String classFqn = AstUtilities.getFqnName(request.path);
+            if (classFqn.length() > 0) {
+                type = RubyType.create(classFqn);
+            }
+        }
+
+        Set<? extends IndexedConstant> constants = getIndex().getConstants(type, request.prefix);
         for (IndexedConstant constant : constants) {
             RubyCompletionItem item = new RubyCompletionItem(constant, anchor, request);
             item.setSmart(true);

@@ -14,7 +14,7 @@ Searchable Keys:
   constant : MONTHNAMES;Array
   field : ajd|PRIVATE;;Fixnum;
   field : of|PRIVATE;;Fixnum;
-  field : sg|PRIVATE
+  field : sg|PRIVATE;;Fixnum;
   fqn : Date
   method : +(n)|DOCUMENTED|;;Date;
   method : -(x)|DOCUMENTED|;;Date;
@@ -90,7 +90,7 @@ Searchable Keys:
   method : parse(str,comp,sg)|DOCUMENTED|STATIC|
   method : sec_fraction|DOCUMENTED|PRIVATE|
   method : sec|DOCUMENTED|PRIVATE|
-  method : start|DOCUMENTED|
+  method : start|DOCUMENTED|;;Fixnum;
   method : step(limit,step)|DOCUMENTED|;;Date;
   method : strptime(str,fmt,sg)|DOCUMENTED|STATIC|
   method : succ|DOCUMENTED|;;Date;
