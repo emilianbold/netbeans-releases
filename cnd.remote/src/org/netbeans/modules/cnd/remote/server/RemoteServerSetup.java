@@ -40,6 +40,7 @@
 package org.netbeans.modules.cnd.remote.server;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -47,12 +48,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CancellationException;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.SetupProvider;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.cnd.remote.support.RemoteCopySupport;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -143,11 +147,44 @@ public class RemoteServerSetup {
         }        
         return RemoteCopySupport.copyTo(executionEnvironment, file.getAbsolutePath(), remoteFilePath);
     }
-        
+
+    private String getUpdateCommand(String path, HostInfo hostInfo) {
+        if (hostInfo == null) {
+            return String.format("if [ ! -x %s ]; then echo %s; fi", path, path); // NOI18N
+        } else {
+            String localFileName = binarySetupMap.get(path);
+            File file = InstalledFileLocator.getDefault().locate(localFileName, null, false);
+        }
+    }
+
     private List<String> getBinaryUpdates(List<String> list) {
+
+        String md5pattern = null; // parameters: path, checksum, path
+        String existencePattern = null; // parameters: path, path
+        
+        try {
+            HostInfo hostIinfo = HostInfoUtils.getHostInfo(executionEnvironment);
+            switch (hostIinfo.getOSFamily()) {
+                case LINUX:
+                    break;
+                case SUNOS:
+                    break;
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        } catch (CancellationException ex) {
+            // don't report CancellationException
+        }
+
+        if (md5pattern == null) {
+            existencePattern =
+        }
+
 
         StringBuilder sb = new StringBuilder("sh -c \""); // NOI18N
         for (String path : binarySetupMap.keySet()) {
+
+
             sb.append(String.format("if [ ! -x %s ]; then echo %s; fi;", path, path)); // NOI18N
         }
         sb.append("\""); // NOI18N
