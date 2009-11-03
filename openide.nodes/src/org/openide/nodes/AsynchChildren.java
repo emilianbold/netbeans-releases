@@ -93,6 +93,7 @@ final class AsynchChildren <T> extends Children.Keys <Object> implements
         } finally {
             if (notified) {
                 factory.removeNotify();
+                notified = false;
             }
         }
     }
@@ -118,6 +119,11 @@ final class AsynchChildren <T> extends Children.Keys <Object> implements
         } else {
             task.schedule (0);
         }
+    }
+
+    @Override
+    public int getNodesCount(boolean optimalResult) {
+        return getNodes(optimalResult).length;
     }
 
     @Override
