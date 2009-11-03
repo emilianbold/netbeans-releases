@@ -123,6 +123,9 @@ class IssueStorage {
                 is = getDataInputStream(data);
                 ret = is.readLong();
                 return ret;
+            } catch (EOFException ex) {
+                BugtrackingManager.LOG.log(Level.SEVERE, data.getAbsolutePath(), ex);
+                return -1;
             } catch (InterruptedException ex) {
                 BugtrackingManager.LOG.log(Level.WARNING, null, ex);
                 IOException ioe = new IOException(ex.getMessage());
@@ -194,7 +197,7 @@ class IssueStorage {
         assert !SwingUtilities.isEventDispatchThread() : "should not access the issue storage in awt"; // NOI18N
         BugtrackingManager.LOG.log(Level.FINE, "start reading issue {0} - {1}", new Object[] {nameSpace, entry.getId()}); // NOI18N
         DataInputStream is = null;
-        try {          
+        try {
             is = getIssueInputStream(getNameSpaceFolder(nameSpace), entry.getId());
             if(is == null) {
                 return;
