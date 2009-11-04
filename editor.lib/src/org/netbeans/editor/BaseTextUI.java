@@ -257,13 +257,16 @@ public class BaseTextUI extends BasicTextUI implements PropertyChangeListener, D
 
     /** Deinstalls the UI for a component */
     public @Override void uninstallUI(JComponent c) {
+        if (prefs == null && weakListener == null) {
+            // already uninstalled or not installed at all
+            return;
+        }
+
         super.uninstallUI(c);
 
-        if (prefs != null && weakListener != null) {
-            prefs.removePreferenceChangeListener(weakListener);
-            prefs = null;
-            weakListener = null;
-        }
+        prefs.removePreferenceChangeListener(weakListener);
+        prefs = null;
+        weakListener = null;
         
         if (c instanceof JTextComponent){        
             JTextComponent comp = (JTextComponent)c;

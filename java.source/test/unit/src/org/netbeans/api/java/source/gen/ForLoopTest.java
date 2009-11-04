@@ -43,11 +43,14 @@ package org.netbeans.api.java.source.gen;
 import com.sun.source.tree.*;
 import java.io.*;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.type.TypeKind;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.junit.NbTestSuite;
+import org.openide.filesystems.FileUtil;
 
 /**
  * For Loop generator tests.
@@ -72,6 +75,7 @@ public class ForLoopTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new ForLoopTest("testReplaceStmtWithBlock2"));
 //        suite.addTest(new ForLoopTest("test120270"));
 //        suite.addTest(new ForLoopTest("testForEachLoop160488"));
+//        suite.addTest(new ForLoopTest("testAddInitializer175866"));
         return suite;
     }
 
@@ -580,6 +584,177 @@ public class ForLoopTest extends GeneratorTestMDRCompat {
             }
         };
         src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void testAddInitializer175866() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package javaapplication1;\n" +
+            "\n" +
+            "class UserTask {\n" +
+            "\n" +
+            "    public void method() {\n" +
+            "        for (; j<1; j++);\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package javaapplication1;\n" +
+            "\n" +
+            "class UserTask {\n" +
+            "\n" +
+            "    public void method() {\n" +
+            "        for (int j = 0; j<1; j++);\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                BlockTree block = method.getBody();
+                ForLoopTree flt = (ForLoopTree) block.getStatements().get(0);
+                VariableTree init = make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)),
+                                                  "j",
+                                                  make.Type(workingCopy.getTypes().getPrimitiveType(TypeKind.INT)),
+                                                  make.Literal(0));
+                workingCopy.rewrite(flt, make.addForLoopInitializer(flt, init));
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void testRemoveInitializer175866() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package javaapplication1;\n" +
+            "\n" +
+            "class UserTask {\n" +
+            "\n" +
+            "    public void method() {\n" +
+            "        for (int j=0; j<1; j++);\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package javaapplication1;\n" +
+            "\n" +
+            "class UserTask {\n" +
+            "\n" +
+            "    public void method() {\n" +
+            "        for (; j<1; j++);\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                BlockTree block = method.getBody();
+                ForLoopTree flt = (ForLoopTree) block.getStatements().get(0);
+                workingCopy.rewrite(flt, make.removeForLoopInitializer(flt, 0));
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void testInitializerAssignmentToVariable175866() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package javaapplication1;\n" +
+            "\n" +
+            "class UserTask {\n" +
+            "\n" +
+            "    public void method() {\n" +
+            "        for (j = 0; j<1; j++);\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package javaapplication1;\n" +
+            "\n" +
+            "class UserTask {\n" +
+            "\n" +
+            "    public void method() {\n" +
+            "        for (int j = 0; j<1; j++);\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                BlockTree block = method.getBody();
+                ForLoopTree flt = (ForLoopTree) block.getStatements().get(0);
+                VariableTree init = make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)),
+                                                  "j",
+                                                  make.Type(workingCopy.getTypes().getPrimitiveType(TypeKind.INT)),
+                                                  make.Literal(0));
+                workingCopy.rewrite(flt.getInitializer().get(0), init);
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void testInitializerVariableToAssignment175866() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package javaapplication1;\n" +
+            "\n" +
+            "class UserTask {\n" +
+            "\n" +
+            "    public void method() {\n" +
+            "        for (int j = 0; j<1; j++);\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package javaapplication1;\n" +
+            "\n" +
+            "class UserTask {\n" +
+            "\n" +
+            "    public void method() {\n" +
+            "        for (j = 0; j<1; j++);\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                BlockTree block = method.getBody();
+                ForLoopTree flt = (ForLoopTree) block.getStatements().get(0);
+                VariableTree vt = (VariableTree) flt.getInitializer().get(0);
+                AssignmentTree initAssign = make.Assignment(make.Identifier("j"), vt.getInitializer());
+                ExpressionStatementTree est = make.ExpressionStatement(initAssign);
+                workingCopy.rewrite(vt, est);
+            }
+        };
+        testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);
