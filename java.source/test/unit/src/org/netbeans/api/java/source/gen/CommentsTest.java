@@ -1345,6 +1345,116 @@ public class CommentsTest extends GeneratorTest {
         assertEquals(golden, res);
     }
 
+    public void testComments175889a() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "/**test\n" +
+            " * test\n" +
+            " */\n" +
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "/**test\n" +
+            " * test\n" +
+            " */\n" +
+            "public class Test {\n" +
+            "}\n");
+        String golden =
+            "/**test\n" +
+            " * test\n" +
+            " */\n" +
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "/**test\n" +
+            " * test\n" +
+            " */\n" +
+            "public class Test {\n\n" +
+            "    public void test() {\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task task = new Task<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree method = make.Method(make.Modifiers(Collections.<Modifier>singleton(Modifier.PUBLIC)),
+                                                "test",
+                                                make.Type(workingCopy.getTypes().getNoType(TypeKind.VOID)),
+                                                Collections.<TypeParameterTree>emptyList(),
+                                                Collections.<VariableTree>emptyList(),
+                                                Collections.<ExpressionTree>emptyList(),
+                                                "{}",
+                                                null);
+                String commentText = "TESTTTT";
+                Comment comment = Comment.create(Comment.Style.JAVADOC, 0, 0, 0, commentText);
+                make.addComment(clazz, comment, true);
+                workingCopy.rewrite(clazz, make.addClassMember(clazz, method));
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void testComments175889b() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "/**test\n" +
+            " * test\n" +
+            " */\n" +
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "/**test\n" +
+            " * test\n" +
+            " */\n" +
+            "public class Test {\n" +
+            "}\n");
+        String golden =
+            "/**test\n" +
+            " * test\n" +
+            " */\n" +
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "/**test\n" +
+            " * test\n" +
+            " */\n" +
+            "public class Test {\n\n" +
+            "    public void test() {\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task task = new Task<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree method = make.Method(make.Modifiers(Collections.<Modifier>singleton(Modifier.PUBLIC)),
+                                                "test",
+                                                make.Type(workingCopy.getTypes().getNoType(TypeKind.VOID)),
+                                                Collections.<TypeParameterTree>emptyList(),
+                                                Collections.<VariableTree>emptyList(),
+                                                Collections.<ExpressionTree>emptyList(),
+                                                "{}",
+                                                null);
+                String commentText = "TESTTTT";
+                Comment comment = Comment.create(Comment.Style.JAVADOC, -1, -1, -1, commentText);
+                make.addComment(clazz, comment, true);
+                workingCopy.rewrite(clazz, make.addClassMember(clazz, method));
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
     String getGoldenPckg() {
         return "";
     }
