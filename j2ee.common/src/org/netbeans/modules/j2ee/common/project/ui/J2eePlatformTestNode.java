@@ -53,6 +53,7 @@ import java.util.List;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.openide.nodes.Children;
 import org.openide.nodes.AbstractNode;
@@ -176,17 +177,21 @@ class J2eePlatformTestNode extends AbstractNode implements PropertyChangeListene
     }
     
     private void refresh() {
-        if (platformCache != null)
-            platformCache.removePropertyChangeListener(weakPlatformListener);
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                if (platformCache != null)
+                    platformCache.removePropertyChangeListener(weakPlatformListener);
 
-        platformCache = null;
+                platformCache = null;
 
-        this.fireNameChange(null, null);
-        this.fireDisplayNameChange(null, null);
-        this.fireIconChange();
-        
-        // The caller may hold ProjectManager.mutex() read lock (i.e., the propertyChange() method)
-        postAddNotify();
+                fireNameChange(null, null);
+                fireDisplayNameChange(null, null);
+                fireIconChange();
+
+                // The caller may hold ProjectManager.mutex() read lock (i.e., the propertyChange() method)
+                postAddNotify();
+            }
+        });
     }
     
     public void instanceAdded(String serverInstanceID) {
