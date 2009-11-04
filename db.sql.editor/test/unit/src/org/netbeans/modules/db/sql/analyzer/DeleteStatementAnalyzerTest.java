@@ -76,7 +76,7 @@ public class DeleteStatementAnalyzerTest extends NbTestCase {
 
     public void testDetectKind() {
         assertNull(doDetectKind("foo"));
-        assertEquals(SQLStatementKind.DELETE, doDetectKind("#comment\n delete"));
+        assertEquals(SQLStatementKind.DELETE, doDetectKind("# comment\n delete"));
         assertEquals(SQLStatementKind.DELETE, doDetectKind("delete"));
         assertEquals(SQLStatementKind.DELETE, doDetectKind("delete from foo"));
     }

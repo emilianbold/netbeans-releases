@@ -1853,7 +1853,7 @@ public abstract class Children extends Object {
                 return null;
             } catch (ClassCastException e) { // observed to occur in MemoryValidationTest
                 Class<?> type = method.getReturnType();
-                LOG.log(Level.WARNING, "type=" + type.getName() + " type.cl=" + type.getClassLoader() +
+                LOG.log(Level.WARNING, "Reopen #175325 and save complete log: type=" + type.getName() + " type.cl=" + type.getClassLoader() +
                         " Mutex.cl=" + Mutex.class.getClassLoader() + " clazz.cl=" + clazz.getClassLoader(), e);
                 return null;
             }

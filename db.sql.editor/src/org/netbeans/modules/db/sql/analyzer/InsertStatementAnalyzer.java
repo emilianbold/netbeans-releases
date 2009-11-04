@@ -147,7 +147,6 @@ class InsertStatementAnalyzer extends SQLStatementAnalyzer {
                 case COMMA:
                     continue;
                 case RPAREN:
-                    moveToContext(Context.VALUES);
                     return parts;
                 default:
                     parts.add (getUnquotedIdentifier ());

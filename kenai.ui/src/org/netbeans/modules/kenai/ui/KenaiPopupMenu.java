@@ -43,7 +43,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.MissingResourceException;
+import java.util.WeakHashMap;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
@@ -83,7 +85,7 @@ import org.openide.util.actions.SystemAction;
 public class KenaiPopupMenu extends CookieAction {
 
     private static HashMap<VersioningSystem, JComponent[]> versioningItemMap = new HashMap<VersioningSystem, JComponent[]>();
-    private static HashMap<Project, String> repoForProjCache = new HashMap<Project, String>();
+    private static Map<Project, String> repoForProjCache = new WeakHashMap<Project, String>();
 
     @Override
     public Action createContextAwareInstance(Lookup actionContext) {
@@ -196,7 +198,9 @@ public class KenaiPopupMenu extends CookieAction {
                     }
                 }
             }
+            /* XXX #176013
             versioningItemMap.put(owner, items);
+            */
             return items;
         }
 

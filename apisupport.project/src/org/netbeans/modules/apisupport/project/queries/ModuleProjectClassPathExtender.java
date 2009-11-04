@@ -46,7 +46,9 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectManager;
@@ -55,8 +57,11 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
+import org.netbeans.modules.apisupport.project.ProjectXMLManager;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
+import org.netbeans.modules.apisupport.project.universe.ModuleList;
+import org.netbeans.modules.apisupport.project.universe.TestModuleDependency;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -68,8 +73,9 @@ import org.openide.util.NbBundle;
  */
 public final class ModuleProjectClassPathExtender extends ProjectClassPathModifierImplementation {
 
-    private static final String LIBRARY_NAME = "swing-layout"; // NOI18N
-    private static final String MODULE_NAME = "org.jdesktop.layout"; // NOI18N
+    private static final String LAYOUT_MODULE = "org.jdesktop.layout";
+    private static final String JUNIT_MODULE = "org.netbeans.libs.junit4";
+    private static final String NBJUNIT_MODULE = "org.netbeans.modules.nbjunit";
 
     private final NbModuleProject project;
 
@@ -82,12 +88,14 @@ public final class ModuleProjectClassPathExtender extends ProjectClassPathModifi
     }
 
     protected SourceGroup[] getExtensibleSourceGroups() {
+        List<SourceGroup> sgs = new ArrayList<SourceGroup>(2);
         for (SourceGroup g : ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
-            if (g.getRootFolder() == project.getSourceDirectory()) {
-                return new SourceGroup[] {g};
+            if (g.getRootFolder() == project.getSourceDirectory()
+                    || g.getRootFolder() == project.getTestSourceDirectory("unit")) {
+                sgs.add(g);
             }
         }
-        return new SourceGroup[0];
+        return sgs.toArray(new SourceGroup[sgs.size()]);
     }
 
     protected String[] getExtensibleClassPathTypes(SourceGroup sourceGroup) {
@@ -100,19 +108,32 @@ public final class ModuleProjectClassPathExtender extends ProjectClassPathModifi
             return false;
         }
         for (Library library : libraries) {
-            if (!library.getName().equals(LIBRARY_NAME)) {
-                IOException e = new IOException("unknown lib " + library.getName()); // NOI18N
-                Exceptions.attachLocalizedMessage(e, NbBundle.getMessage(ModuleProjectClassPathExtender.class, "ERR_unsupported_library", library.getDisplayName()));
-                throw e;
-            }
-        }
-        for (Library library : libraries) {
-            ModuleEntry entry = project.getModuleList().getEntry(MODULE_NAME);
-            if (entry != null) {
-                cpChanged = Util.addDependency(project, MODULE_NAME);
+            String libName = library.getName();
+            if ("swing-layout".equals(libName)) {
+                ModuleEntry entry = project.getModuleList().getEntry(LAYOUT_MODULE);
+                if (entry != null) {
+                    boolean res = Util.addDependency(project, LAYOUT_MODULE);
+                    cpChanged = cpChanged || res;
+                } else {
+                    IOException e = new IOException("no module " + LAYOUT_MODULE); // NOI18N
+                    Exceptions.attachLocalizedMessage(e, NbBundle.getMessage(ModuleProjectClassPathExtender.class, "ERR_could_not_find_module", LAYOUT_MODULE));
+                    throw e;
+                }
+            } else if ("junit_4".equals(libName)) {
+                try {
+                    resolveJUnitDependencies(project, "unit", true);
+                } catch (IOException ex) {
+                    // if only nbjunit cannot be found, add at least junit4
+                    if (ex.getMessage().indexOf(NBJUNIT_MODULE) != -1) {
+                        resolveJUnitDependencies(project, "unit", false);
+                    } else {
+                        throw ex;
+                    }
+                }
+                cpChanged = true;
             } else {
-                IOException e = new IOException("no module " + MODULE_NAME); // NOI18N
-                Exceptions.attachLocalizedMessage(e, NbBundle.getMessage(ModuleProjectClassPathExtender.class, "ERR_could_not_find_module", MODULE_NAME));
+                IOException e = new IOException("unknown lib " + libName); // NOI18N
+                Exceptions.attachLocalizedMessage(e, NbBundle.getMessage(ModuleProjectClassPathExtender.class, "ERR_unsupported_library", library.getDisplayName()));
                 throw e;
             }
         }
@@ -161,4 +182,20 @@ public final class ModuleProjectClassPathExtender extends ProjectClassPathModifi
         throw new UnsupportedOperationException();
     }
 
+    public static void resolveJUnitDependencies(NbModuleProject project, String testType, boolean addNBJUnit) throws IOException {
+        ModuleList moduleList = project.getModuleList();
+        ModuleEntry junit4 = moduleList.getEntry(JUNIT_MODULE);
+        ModuleEntry nbjunit = moduleList.getEntry(NBJUNIT_MODULE);
+        if (junit4 == null || (addNBJUnit && nbjunit == null)) {
+            String m = (junit4 == null) ? JUNIT_MODULE : NBJUNIT_MODULE;
+            IOException e = new IOException("no module " + m); // NOI18N
+            Exceptions.attachLocalizedMessage(e, NbBundle.getMessage(ModuleProjectClassPathExtender.class, "ERR_could_not_find_module", m));
+            throw e;
+        }
+        ProjectXMLManager pxm = new ProjectXMLManager(project);
+        pxm.addTestDependency(testType, new TestModuleDependency(junit4, false, false, true));
+        if (addNBJUnit) {
+            pxm.addTestDependency(testType, new TestModuleDependency(nbjunit, false, true, true));
+        }
+    }
 }
