@@ -171,7 +171,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 IndexerCache.getEifCache().addPropertyChangeListener(this);
 
                 if (force) {
-                    work = new InitialRootsWork(scannedRoots2Dependencies, scannedBinaries, sourcesForBinaryRoots, false);
+                    work = new InitialRootsWork(scannedRoots2Dependencies, scannedBinaries2InvDependencies, sourcesForBinaryRoots, false);
                 }
             }
         }
@@ -327,7 +327,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         }
 
         scheduleWork(
-            new RefreshWork(scannedRoots2Dependencies, scannedBinaries, sourcesForBinaryRoots,
+            new RefreshWork(scannedRoots2Dependencies, scannedBinaries2InvDependencies, sourcesForBinaryRoots,
                 fullRescan, logStatistics,
                 filesOrFileObjects == null ? Collections.<Object>emptySet() : Arrays.asList(filesOrFileObjects),
                 fsRefreshInterceptor),
@@ -381,7 +381,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         }
 
         if (containsRelevantChanges) {
-            scheduleWork(new RootsWork(scannedRoots2Dependencies, scannedBinaries, sourcesForBinaryRoots, !existingPathsChanged), false);
+            scheduleWork(new RootsWork(scannedRoots2Dependencies, scannedBinaries2InvDependencies, sourcesForBinaryRoots, !existingPathsChanged), false);
         }
     }
 
@@ -795,7 +795,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
     /* test */ static final List<URL> EMPTY_DEPS = Collections.unmodifiableList(new LinkedList<URL>());
 
     private final Map<URL, List<URL>>scannedRoots2Dependencies = Collections.synchronizedMap(new HashMap<URL, List<URL>>());
-    private final Set<URL>scannedBinaries = Collections.synchronizedSet(new HashSet<URL>());
+    private final Map<URL, List<URL>>scannedBinaries2InvDependencies = Collections.synchronizedMap(new HashMap<URL,List<URL>>());
     private final Set<URL>scannedUnknown = Collections.synchronizedSet(new HashSet<URL>());
     private final Set<URL>sourcesForBinaryRoots = Collections.synchronizedSet(new HashSet<URL>());
 
@@ -969,7 +969,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         }
 
         if (scheduleExtraWork) {
-            getWorker().schedule(new InitialRootsWork(scannedRoots2Dependencies, scannedBinaries, sourcesForBinaryRoots, true), false);
+            getWorker().schedule(new InitialRootsWork(scannedRoots2Dependencies, scannedBinaries2InvDependencies, sourcesForBinaryRoots, true), false);
 
             if (work instanceof RootsWork) {
                 // if the work is the initial RootsWork it's superseeded
@@ -1064,7 +1064,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             return null;
         }
 
-        List<URL> clone = new ArrayList<URL>(this.scannedBinaries);
+        List<URL> clone = new ArrayList<URL>(this.scannedBinaries2InvDependencies.keySet());
         for (URL root : clone) {
             URL fileURL = FileUtil.getArchiveFile(root);
             boolean archive = true;
@@ -1271,12 +1271,24 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                             else {
                                 //What does it mean?
                                 if (ctx.useInitialState) {
-                                    if (!ctx.initialBinaries.contains(binaryRoot)) {
+                                    if (!ctx.initialBinaries2InvDeps.keySet().contains(binaryRoot)) {
                                         ctx.newBinariesToScan.add (binaryRoot);
+                                        List<URL> binDeps = ctx.newBinaries2InvDeps.get(binaryRoot);
+                                        if (binDeps == null) {
+                                            binDeps = new LinkedList<URL>();
+                                            ctx.newBinaries2InvDeps.put(binaryRoot, binDeps);
+                                        }
+                                        binDeps.add(rootURL);
                                     }
                                     ctx.oldBinaries.remove(binaryRoot);
                                 } else {
                                     ctx.newBinariesToScan.add(binaryRoot);
+                                    List<URL> binDeps = ctx.newBinaries2InvDeps.get(binaryRoot);
+                                    if (binDeps == null) {
+                                        binDeps = new LinkedList<URL>();
+                                        ctx.newBinaries2InvDeps.put(binaryRoot, binDeps);
+                                    }
+                                    binDeps.add(rootURL);
                                     ctx.oldBinaries.remove(binaryRoot);
                                 }
 
@@ -2396,7 +2408,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
     /* test */ static final class RefreshWork extends AbstractRootsWork {
 
         private final Map<URL, List<URL>> scannedRoots2Dependencies;
-        private final Set<URL> scannedBinaries;
+        private final Map<URL, List<URL>> scannedBinaries2InvDependencies;
         private final Set<URL> sourcesForBinaryRoots;
         private final Set<Pair<Object, Boolean>> suspectFilesOrFileObjects;
         private final FSRefreshInterceptor interceptor;
@@ -2407,7 +2419,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
         public RefreshWork(
                 Map<URL, List<URL>> scannedRoots2Depencencies,
-                Set<URL> scannedBinaries,
+                Map<URL, List<URL>> scannedBinaries2InvDependencies,
                 Set<URL> sourcesForBinaryRoots,
                 boolean fullRescan,
                 boolean logStatistics,
@@ -2417,12 +2429,12 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             super(logStatistics);
 
             Parameters.notNull("scannedRoots2Depencencies", scannedRoots2Depencencies); //NOI18N
-            Parameters.notNull("scannedBinaries", scannedBinaries); //NOI18N
+            Parameters.notNull("scannedBinaries2InvDependencies", scannedBinaries2InvDependencies); //NOI18N
             Parameters.notNull("sourcesForBinaryRoots", sourcesForBinaryRoots); //NOI18N
             Parameters.notNull("interceptor", interceptor); //NOI18N
 
             this.scannedRoots2Dependencies = scannedRoots2Depencencies;
-            this.scannedBinaries = scannedBinaries;
+            this.scannedBinaries2InvDependencies = scannedBinaries2InvDependencies;
             this.sourcesForBinaryRoots = sourcesForBinaryRoots;
             this.suspectFilesOrFileObjects = new HashSet<Pair<Object, Boolean>>();
             if (suspectFilesOrFileObjects != null) {
@@ -2433,10 +2445,10 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
         protected @Override boolean getDone() {
             if (depCtx == null) {
-                depCtx = new DependenciesContext(scannedRoots2Dependencies, scannedBinaries, sourcesForBinaryRoots, false);
+                depCtx = new DependenciesContext(scannedRoots2Dependencies, scannedBinaries2InvDependencies, sourcesForBinaryRoots, false);
 
                 if (suspectFilesOrFileObjects.size() == 0) {
-                    depCtx.newBinariesToScan.addAll(scannedBinaries);
+                    depCtx.newBinariesToScan.addAll(scannedBinaries2InvDependencies.keySet());
                     try {
                         depCtx.newRootsToScan.addAll(org.openide.util.Utilities.topologicalSort(scannedRoots2Dependencies.keySet(), scannedRoots2Dependencies));
                     } catch (final TopologicalSortException tse) {
@@ -2469,7 +2481,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                     
                     { // <editor-fold defaultstate="collapsed" desc="process binary roots">
                         for(Pair<FileObject, Boolean> f : suspects) {
-                            for(URL root : scannedBinaries) {
+                            for(URL root : scannedBinaries2InvDependencies.keySet()) {
                                 // check roots owned by suspects
                                 File rootFile = FileUtil.archiveOrDirForURL(root);
                                 if (rootFile != null) {
@@ -2598,8 +2610,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 LOGGER.log(logLevel, this + " " + (isCancelled() ? "cancelled" : "finished") + ": {"); //NOI18N
                 LOGGER.log(logLevel, "  scannedRoots2Dependencies(" + scannedRoots2Dependencies.size() + ")="); //NOI18N
                 printMap(scannedRoots2Dependencies, logLevel);
-                LOGGER.log(logLevel, "  scannedBinaries(" + scannedBinaries.size() + ")="); //NOI18N
-                printCollection(scannedBinaries, logLevel);
+                LOGGER.log(logLevel, "  scannedBinaries(" + scannedBinaries2InvDependencies.size() + ")="); //NOI18N
+                printCollection(scannedBinaries2InvDependencies.keySet(), logLevel);
                 LOGGER.log(logLevel, "} ===="); //NOI18N
             }
 
@@ -2651,17 +2663,17 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
     private static class RootsWork extends AbstractRootsWork {
 
         private final Map<URL, List<URL>> scannedRoots2Dependencies;
-        private final Set<URL> scannedBinaries;
+        private final Map<URL,List<URL>> scannedBinaries2InvDependencies;
         private final Set<URL> sourcesForBinaryRoots;
         private boolean useInitialState;
 
         private DependenciesContext depCtx;
         protected Indexers indexers = null; // is only ever filled by InitialRootsWork
 
-        public RootsWork(Map<URL, List<URL>> scannedRoots2Depencencies, Set<URL> scannedBinaries, Set<URL> sourcesForBinaryRoots, boolean useInitialState) {
+        public RootsWork(Map<URL, List<URL>> scannedRoots2Depencencies, Map<URL,List<URL>> scannedBinaries2InvDependencies, Set<URL> sourcesForBinaryRoots, boolean useInitialState) {
             super(false);
             this.scannedRoots2Dependencies = scannedRoots2Depencencies;
-            this.scannedBinaries = scannedBinaries;
+            this.scannedBinaries2InvDependencies = scannedBinaries2InvDependencies;
             this.sourcesForBinaryRoots = sourcesForBinaryRoots;
             this.useInitialState = useInitialState;
         }
@@ -2678,7 +2690,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             updateProgress(NbBundle.getMessage(RepositoryUpdater.class, "MSG_ProjectDependencies")); //NOI18N
             long tm1 = System.currentTimeMillis();
             if (depCtx == null) {
-                depCtx = new DependenciesContext(scannedRoots2Dependencies, scannedBinaries, sourcesForBinaryRoots, useInitialState);
+                depCtx = new DependenciesContext(scannedRoots2Dependencies, scannedBinaries2InvDependencies, sourcesForBinaryRoots, useInitialState);
                 final List<URL> newRoots = new LinkedList<URL>();
                 Collection<? extends URL> c = PathRegistry.getDefault().getSources();
                 LOGGER.log(Level.FINE, "PathRegistry.sources="); printCollection(c, Level.FINE); //NOI18N
@@ -2714,6 +2726,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 Controller controller = (Controller)IndexingController.getDefault();
                 synchronized (controller) {
                     controller.roots2Dependencies = Collections.unmodifiableMap(depCtx.newRoots2Deps);
+                    controller.binRoots2Dependencies = Collections.unmodifiableMap(depCtx.newBinaries2InvDeps);
                 }
                 
                 try {
@@ -2779,9 +2792,16 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
             BinaryPathNotifier.getDefault().unregisterRoots(depCtx.oldBinaries);
             BinaryPathNotifier.getDefault().registerRoots(depCtx.scannedBinaries);
-
-            scannedBinaries.addAll(depCtx.scannedBinaries);
-            scannedBinaries.removeAll(depCtx.oldBinaries);
+            
+            for(URL root : depCtx.scannedBinaries) {
+                List<URL> deps = depCtx.newBinaries2InvDeps.get(root);
+                if (deps == null) {
+                    deps = EMPTY_DEPS;
+                    System.out.println("No deps for: " + root);
+                }
+                scannedBinaries2InvDependencies.put(root, deps);
+            }
+            scannedBinaries2InvDependencies.keySet().removeAll(depCtx.oldBinaries);
 
             notifyRootsRemoved (depCtx.oldBinaries, depCtx.oldRoots);
 
@@ -2790,8 +2810,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 LOGGER.log(logLevel, this + " " + (isCancelled() ? "cancelled" : "finished") + ": {"); //NOI18N
                 LOGGER.log(logLevel, "  scannedRoots2Dependencies(" + scannedRoots2Dependencies.size() + ")="); //NOI18N
                 printMap(scannedRoots2Dependencies, logLevel);
-                LOGGER.log(logLevel, "  scannedBinaries(" + scannedBinaries.size() + ")="); //NOI18N
-                printCollection(scannedBinaries, logLevel);
+                LOGGER.log(logLevel, "  scannedBinaries(" + scannedBinaries2InvDependencies.size() + ")="); //NOI18N
+                printCollection(scannedBinaries2InvDependencies.keySet(), logLevel);
                 LOGGER.log(logLevel, "} ===="); //NOI18N
             }
             refreshActiveDocument();
@@ -3088,8 +3108,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
         private final boolean waitForProjects;
 
-        public InitialRootsWork(Map<URL, List<URL>> scannedRoots2Depencencies, Set<URL> scannedBinaries, Set<URL> sourcesForBinaryRoots, boolean waitForProjects) {
-            super(scannedRoots2Depencencies, scannedBinaries, sourcesForBinaryRoots, true);
+        public InitialRootsWork(Map<URL, List<URL>> scannedRoots2Depencencies, Map<URL,List<URL>> scannedBinaries2InvDependencies, Set<URL> sourcesForBinaryRoots, boolean waitForProjects) {
+            super(scannedRoots2Depencencies, scannedBinaries2InvDependencies, sourcesForBinaryRoots, true);
             this.waitForProjects = waitForProjects;
         }
         
@@ -3456,12 +3476,13 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
     private static final class DependenciesContext {
 
         private final Map<URL, List<URL>> initialRoots2Deps;
-        private final Set<URL> initialBinaries;
+        private final Map<URL, List<URL>> initialBinaries2InvDeps;
 
         private final Set<URL> oldRoots;
         private final Set<URL> oldBinaries;
 
         private final Map<URL,List<URL>> newRoots2Deps;
+        private final Map<URL,List<URL>> newBinaries2InvDeps;
         private final List<URL> newRootsToScan;
         private final Set<URL> newBinariesToScan;
 
@@ -3474,17 +3495,18 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         private final Stack<URL> cycleDetector;
         private final boolean useInitialState;
 
-        public DependenciesContext (final Map<URL, List<URL>> scannedRoots2Deps, final Set<URL> scannedBinaries, final Set<URL> sourcesForBinaryRoots, boolean useInitialState) {
+        public DependenciesContext (final Map<URL, List<URL>> scannedRoots2Deps, final Map<URL,List<URL>> scannedBinaries2InvDependencies, final Set<URL> sourcesForBinaryRoots, boolean useInitialState) {
             assert scannedRoots2Deps != null;
-            assert scannedBinaries != null;
+            assert scannedBinaries2InvDependencies != null;
             
             this.initialRoots2Deps = Collections.unmodifiableMap(scannedRoots2Deps);
-            this.initialBinaries = Collections.unmodifiableSet(scannedBinaries);
+            this.initialBinaries2InvDeps = Collections.unmodifiableMap(scannedBinaries2InvDependencies);
 
             this.oldRoots = new HashSet<URL> (scannedRoots2Deps.keySet());
-            this.oldBinaries = new HashSet<URL> (scannedBinaries);
+            this.oldBinaries = new HashSet<URL> (scannedBinaries2InvDependencies.keySet());
 
             this.newRoots2Deps = new HashMap<URL,List<URL>>();
+            this.newBinaries2InvDeps = new HashMap<URL, List<URL>>();
             this.newRootsToScan = new ArrayList<URL>();
             this.newBinariesToScan = new HashSet<URL>();
 
@@ -3505,8 +3527,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             sb.append("  useInitialState=" + useInitialState).append("\n"); //NOI18N
             sb.append("  initialRoots2Deps(").append(initialRoots2Deps.size()).append(")=\n"); //NOI18N
             printMap(initialRoots2Deps, sb);
-            sb.append("  initialBinaries(").append(initialBinaries.size()).append(")=\n"); //NOI18N
-            printCollection(initialBinaries, sb);
+            sb.append("  initialBinaries(").append(initialBinaries2InvDeps.size()).append(")=\n"); //NOI18N
+            printCollection(initialBinaries2InvDeps.keySet(), sb);
             sb.append("  oldRoots(").append(oldRoots.size()).append(")=\n"); //NOI18N
             printCollection(oldRoots, sb);
             sb.append("  oldBinaries(").append(oldBinaries.size()).append(")=\n"); //NOI18N
@@ -3556,6 +3578,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
     private final class Controller extends IndexingController {
 
         private Map<URL, List<URL>>roots2Dependencies = Collections.emptyMap();
+        private Map<URL, List<URL>>binRoots2Dependencies = Collections.emptyMap();
 
         public Controller() {
             super();
@@ -3580,6 +3603,11 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         @Override
         public synchronized Map<URL, List<URL>> getRootDependencies() {
             return roots2Dependencies;
+        }
+
+        @Override
+        public synchronized Map<URL, List<URL>> getBinaryRootDependencies() {
+            return binRoots2Dependencies;
         }
 
         @Override
@@ -3694,7 +3722,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
     //Unit test method
     /* test */ Set<URL> getScannedBinaries () {
-        return this.scannedBinaries;
+        return this.scannedBinaries2InvDependencies.keySet();
     }
 
     //Unit test method

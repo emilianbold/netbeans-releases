@@ -74,7 +74,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import junit.framework.Test;
 import junit.framework.TestSuite;
-import org.foo.impl.Runnable1;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -943,22 +942,22 @@ public class RepositoryUpdaterTest extends NbTestCase {
         File root1 = new File(getWorkDir(), "root1");
         {
         RepositoryUpdater.FileListWork flw = new RepositoryUpdater.FileListWork(Collections.<URL, List<URL>>emptyMap(), root1.toURL(), false, false, false, true);
-        RepositoryUpdater.RefreshWork rw = new RepositoryUpdater.RefreshWork(Collections.<URL, List<URL>>emptyMap(), Collections.<URL>emptySet(), Collections.<URL>emptySet(), false, false, null, new RepositoryUpdater.FSRefreshInterceptor());
+        RepositoryUpdater.RefreshWork rw = new RepositoryUpdater.RefreshWork(Collections.<URL, List<URL>>emptyMap(), Collections.<URL,List<URL>>emptyMap(), Collections.<URL>emptySet(), false, false, null, new RepositoryUpdater.FSRefreshInterceptor());
         assertTrue("RefreshWork didn't absorb FileListWork", rw.absorb(flw));
         }
         {
         RepositoryUpdater.FileListWork flw = new RepositoryUpdater.FileListWork(Collections.<URL, List<URL>>emptyMap(), root1.toURL(), false, false, true, true);
-        RepositoryUpdater.RefreshWork rw = new RepositoryUpdater.RefreshWork(Collections.<URL, List<URL>>emptyMap(), Collections.<URL>emptySet(), Collections.<URL>emptySet(), true, false, null, new RepositoryUpdater.FSRefreshInterceptor());
+        RepositoryUpdater.RefreshWork rw = new RepositoryUpdater.RefreshWork(Collections.<URL, List<URL>>emptyMap(), Collections.<URL,List<URL>>emptyMap(), Collections.<URL>emptySet(), true, false, null, new RepositoryUpdater.FSRefreshInterceptor());
         assertTrue("RefreshWork didn't absorb FileListWork", rw.absorb(flw));
         }
         {
         RepositoryUpdater.FileListWork flw = new RepositoryUpdater.FileListWork(Collections.<URL, List<URL>>emptyMap(), root1.toURL(), false, false, false, true);
-        RepositoryUpdater.RefreshWork rw = new RepositoryUpdater.RefreshWork(Collections.<URL, List<URL>>emptyMap(), Collections.<URL>emptySet(), Collections.<URL>emptySet(), true, false, null, new RepositoryUpdater.FSRefreshInterceptor());
+        RepositoryUpdater.RefreshWork rw = new RepositoryUpdater.RefreshWork(Collections.<URL, List<URL>>emptyMap(), Collections.<URL,List<URL>>emptyMap(), Collections.<URL>emptySet(), true, false, null, new RepositoryUpdater.FSRefreshInterceptor());
         assertTrue("RefreshWork didn't absorb FileListWork", rw.absorb(flw));
         }
         {
         RepositoryUpdater.FileListWork flw = new RepositoryUpdater.FileListWork(Collections.<URL, List<URL>>emptyMap(), root1.toURL(), false, false, true, true);
-        RepositoryUpdater.RefreshWork rw = new RepositoryUpdater.RefreshWork(Collections.<URL, List<URL>>emptyMap(), Collections.<URL>emptySet(), Collections.<URL>emptySet(), false, false, null, new RepositoryUpdater.FSRefreshInterceptor());
+        RepositoryUpdater.RefreshWork rw = new RepositoryUpdater.RefreshWork(Collections.<URL, List<URL>>emptyMap(), Collections.<URL,List<URL>>emptyMap(), Collections.<URL>emptySet(), false, false, null, new RepositoryUpdater.FSRefreshInterceptor());
         assertTrue("RefreshWork didn't absorb FileListWork", rw.absorb(flw));
         }
     }
@@ -967,8 +966,8 @@ public class RepositoryUpdaterTest extends NbTestCase {
         File root1 = new File(getWorkDir(), "root1");
         File root2 = new File(getWorkDir(), "root2");
         {
-        RepositoryUpdater.RefreshWork rw1 = new RepositoryUpdater.RefreshWork(Collections.<URL, List<URL>>emptyMap(), Collections.<URL>emptySet(), Collections.<URL>emptySet(), false, false, Collections.singleton(root1), new RepositoryUpdater.FSRefreshInterceptor());
-        RepositoryUpdater.RefreshWork rw2 = new RepositoryUpdater.RefreshWork(Collections.<URL, List<URL>>emptyMap(), Collections.<URL>emptySet(), Collections.<URL>emptySet(), false, false, Collections.singleton(root2), new RepositoryUpdater.FSRefreshInterceptor());
+        RepositoryUpdater.RefreshWork rw1 = new RepositoryUpdater.RefreshWork(Collections.<URL, List<URL>>emptyMap(), Collections.<URL,List<URL>>emptyMap(), Collections.<URL>emptySet(), false, false, Collections.singleton(root1), new RepositoryUpdater.FSRefreshInterceptor());
+        RepositoryUpdater.RefreshWork rw2 = new RepositoryUpdater.RefreshWork(Collections.<URL, List<URL>>emptyMap(), Collections.<URL,List<URL>>emptyMap(), Collections.<URL>emptySet(), false, false, Collections.singleton(root2), new RepositoryUpdater.FSRefreshInterceptor());
         assertFalse("RefreshWork should not be cancelled by other RefreshWork", rw1.isCancelledBy(rw2));
         assertTrue("RefreshWork should absorb other RefreshWork", rw1.absorb(rw2));
         }

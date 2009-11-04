@@ -41,12 +41,17 @@ package org.netbeans.modules.java.source.usages;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.usages.BinaryAnalyser.Result;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl.UsageType;
 import org.openide.filesystems.FileObject;
@@ -75,7 +80,7 @@ public class BinaryAnalyserTest extends NbTestCase {
                 File binaryAnalyzerDataDir = new File(getDataDir(), "Annotations.jar");
 
                 Index index = LuceneIndex.create(FileUtil.toFile(indexDir));
-                BinaryAnalyser a = new BinaryAnalyser(index);
+                BinaryAnalyser a = new BinaryAnalyser(index, getWorkDir());
 
                 assertEquals(Result.FINISHED, a.start(FileUtil.getArchiveRoot(binaryAnalyzerDataDir.toURI().toURL()), new AtomicBoolean(), new AtomicBoolean()));
 
@@ -89,6 +94,66 @@ public class BinaryAnalyserTest extends NbTestCase {
                 return null;
             }
         });
+    }
+
+    public void testCRCDiff () throws Exception {
+        final List<Pair<ElementHandle<TypeElement>,Long>> first = new ArrayList<Pair<ElementHandle<TypeElement>, Long>>();
+        final List<Pair<ElementHandle<TypeElement>,Long>> second = new ArrayList<Pair<ElementHandle<TypeElement>, Long>>();
+        BinaryAnalyser.Changes c = BinaryAnalyser.diff(first, second);
+        assertTrue(c.added.isEmpty());
+        assertTrue(c.removed.isEmpty());
+        assertTrue(c.changed.isEmpty());
+        first.add(create("test/afirst",10));
+        first.add(create("test/bsecond",10));
+        first.add(create("test/cthird",10));
+        c = BinaryAnalyser.diff(first, first);
+        assertTrue(c.added.isEmpty());
+        assertTrue(c.removed.isEmpty());
+        assertTrue(c.changed.isEmpty());
+        c = BinaryAnalyser.diff(first, second);
+        assertTrue(c.added.isEmpty());
+        assertTrue(c.changed.isEmpty());
+        assertEquals(3,c.removed.size());
+        assertEquals((create("test/afirst", "test/bsecond", "test/cthird")), c.removed);
+        c = BinaryAnalyser.diff(second, first);
+        assertTrue(c.removed.isEmpty());
+        assertTrue(c.changed.isEmpty());
+        assertEquals(3,c.added.size());
+        assertEquals((create("test/afirst", "test/bsecond", "test/cthird")), c.added);
+        first.add(create("test/dfourth",10));
+        second.add(create("test/bsecond",10));
+        second.add(create("test/bsecond_and_half",10));
+        second.add(create("test/cthird",10));
+        second.add(create("test/efifth",10));
+        second.add(create("test/fsixth",10));
+        c = BinaryAnalyser.diff(first, second);
+        assertTrue(c.changed.isEmpty());
+        assertEquals(3,c.added.size());
+        assertEquals((create("test/bsecond_and_half", "test/efifth", "test/fsixth")), c.added);
+        assertEquals(2,c.removed.size());
+        assertEquals((create("test/afirst", "test/dfourth")), c.removed);
+        second.clear();
+        second.add(create("test/afirst",10));
+        second.add(create("test/bsecond",15));
+        second.add(create("test/cthird",10));
+        second.add(create("test/dfourth",15));
+        c = BinaryAnalyser.diff(first, second);
+        assertTrue(c.added.isEmpty());
+        assertTrue(c.removed.isEmpty());
+        assertEquals(2,c.changed.size());
+        assertEquals((create("test/bsecond", "test/dfourth")), c.changed);
+    }
+
+    private Pair<ElementHandle<TypeElement>,Long> create (String name, long crc) {
+        return Pair.<ElementHandle<TypeElement>,Long>of(ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, name),crc);
+    }
+
+    private List<ElementHandle<TypeElement>> create (String... names) {
+        List<ElementHandle<TypeElement>> result = new ArrayList<ElementHandle<TypeElement>>();
+        for (String name : names) {
+            result.add(ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, name));
+        }
+        return result;
     }
 
     private void assertReference(Index index, String refered, String... in) throws IOException, InterruptedException {

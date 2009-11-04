@@ -43,19 +43,27 @@ package org.netbeans.modules.java.source.usages;
 
 import com.sun.tools.javac.api.JavacTaskImpl;
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -75,6 +83,7 @@ import javax.tools.Diagnostic;
 import javax.tools.DiagnosticListener;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.classfile.Access;
 import org.netbeans.modules.classfile.Annotation;
 import org.netbeans.modules.classfile.AnnotationComponent;
@@ -97,6 +106,7 @@ import org.netbeans.modules.classfile.Method;
 import org.netbeans.modules.classfile.NestedElementValue;
 import org.netbeans.modules.classfile.Variable;
 import org.netbeans.modules.classfile.Parameter;
+import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.TreeLoader;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.JavacParser;
@@ -122,6 +132,22 @@ public class BinaryAnalyser {
         CANCELED,
         CLOSED,
     };
+
+    public static final class Changes {
+
+        static final List<ElementHandle<TypeElement>> NO_CHANGES = Collections.emptyList();
+
+        public final List<ElementHandle<TypeElement>> added;
+        public final List<ElementHandle<TypeElement>> removed;
+        public final List<ElementHandle<TypeElement>> changed;
+
+        private Changes (final List<ElementHandle<TypeElement>> added, final List<ElementHandle<TypeElement>> removed, final List<ElementHandle<TypeElement>> changed) {
+            this.added = added;
+            this.removed = removed;
+            this.changed = changed;
+        }
+
+    }
     
     private static final Logger LOGGER = Logger.getLogger(BinaryAnalyser.class.getName());
     static final String OBJECT = Object.class.getName();                        
@@ -129,14 +155,16 @@ public class BinaryAnalyser {
     private static boolean FULL_INDEX = Boolean.getBoolean("org.netbeans.modules.java.source.usages.BinaryAnalyser.fullIndex");     //NOI18N
     
     private final Index index;
+    private final File cacheRoot;
     private final Map<Pair<String,String>,Object[]> refs = new HashMap<Pair<String,String>,Object[]>();
     private final Set<Pair<String,String>> toDelete = new HashSet<Pair<String,String>> ();
     private final LMListener lmListener;
     private Continuation cont;
 
-    public BinaryAnalyser (Index index) {
+    public BinaryAnalyser (Index index, File cacheRoot) {
        assert index != null;
        this.index = index;
+       this.cacheRoot = cacheRoot;
        this.lmListener = new LMListener();
     }
     
@@ -217,20 +245,107 @@ public class BinaryAnalyser {
     }
     
     
-    public long finish () throws IOException {
-        long time = 0;
-        if (cont != null) {
-            time = cont.finish();
-            cont = null;
+    public Changes finish () throws IOException {
+        if (cont == null) {
+            return new Changes(Changes.NO_CHANGES, Changes.NO_CHANGES, Changes.NO_CHANGES);
         }
-        long startTime = System.currentTimeMillis();
+        final List<Pair<ElementHandle<TypeElement>,Long>> newState = cont.finish();
+        final List<Pair<ElementHandle<TypeElement>,Long>> oldState = loadCRCs(cacheRoot);
+        cont = null;
+        store();
+        storeCRCs(cacheRoot, newState);
+        return diff(oldState,newState);
+    }
+
+
+    private List<Pair<ElementHandle<TypeElement>,Long>> loadCRCs(final File indexFolder) throws IOException {
+        List<Pair<ElementHandle<TypeElement>,Long>> result = new LinkedList<Pair<ElementHandle<TypeElement>, Long>>();
+        final File file = new File (indexFolder,"crc.properties");  //NOI18N
+        if (file.canRead()) {
+            BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(file),"UTF-8"));   //NOI18N
+
+            try {
+                String line;
+                while ((line=in.readLine())!=null) {
+                    final String[] parts = line.split("=");    //NOI18N
+                    if (parts.length == 2) {
+                        try {
+                            final ElementHandle<TypeElement> handle = ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, parts[0]);
+                            final Long crc = Long.parseLong(parts[1]);
+                            result.add(Pair.of(handle, crc));
+                        } catch (NumberFormatException e) {
+                            //Log and pass
+                        }
+                    }
+                }
+            } finally {
+                in.close();
+            }
+        }
+        return result;
+    }
+
+    private void storeCRCs(final File indexFolder, final List<Pair<ElementHandle<TypeElement>,Long>> state) throws IOException {
+        final File file = new File (indexFolder,"crc.properties");  //NOI18N
+        PrintWriter out = new PrintWriter(new OutputStreamWriter(new FileOutputStream(file),"UTF-8"));   //NOI18N
         try {
-            store();
+            for (Pair<ElementHandle<TypeElement>,Long> pair : state) {
+                StringBuilder sb = new StringBuilder(pair.first.getQualifiedName());
+                sb.append('='); //NOI18N
+                sb.append(pair.second.longValue());
+                out.println(sb.toString());
+            }
         } finally {
-            long endTime =System.currentTimeMillis();            
-            time += (endTime-startTime);
+            out.close();
         }
-        return time;
+    }
+
+
+    static Changes diff (List<Pair<ElementHandle<TypeElement>,Long>> oldState, List<Pair<ElementHandle<TypeElement>,Long>> newState) {
+        final List<ElementHandle<TypeElement>> changed = new LinkedList<ElementHandle<TypeElement>>();
+        final List<ElementHandle<TypeElement>> removed = new LinkedList<ElementHandle<TypeElement>>();
+        final List<ElementHandle<TypeElement>> added = new LinkedList<ElementHandle<TypeElement>>();
+
+        final Iterator<Pair<ElementHandle<TypeElement>,Long>> oldIt = oldState.iterator();
+        final Iterator<Pair<ElementHandle<TypeElement>,Long>> newIt = newState.iterator();
+        Pair<ElementHandle<TypeElement>,Long> oldE = null;
+        Pair<ElementHandle<TypeElement>,Long> newE = null;
+        while (oldIt.hasNext() && newIt.hasNext()) {
+            if (oldE == null) {
+                oldE = oldIt.next();
+            }
+            if (newE == null) {
+                newE = newIt.next();
+            }
+            int ni = oldE.first.getQualifiedName().compareTo(newE.first.getQualifiedName());
+            if (ni == 0) {
+                if (oldE.second.longValue() == 0 || oldE.second.longValue() != newE.second.longValue()) {
+                    changed.add(oldE.first);
+                }
+                oldE = newE = null;
+            }
+            else if (ni < 0) {
+                removed.add(oldE.first);
+                oldE = null;
+            }
+            else if (ni > 0) {
+                added.add(newE.first);
+                newE = null;
+            }
+        }
+        if (oldE != null) {
+            removed.add(oldE.first);
+        }
+        while (oldIt.hasNext()) {
+            removed.add(oldIt.next().first);
+        }
+        if (newE != null) {
+            added.add(newE.first);
+        }
+        while (newIt.hasNext()) {
+            added.add(newIt.next().first);
+        }
+        return new Changes(added, removed, changed);
     }
                 
         /** Analyses a folder 
@@ -239,7 +354,8 @@ public class BinaryAnalyser {
      *  but the {@link URL#toExternalForm} from some strange reason does not cache result,
      *  the String type is faster.
      */
-    private Result analyseFolder (final LinkedList<File>  todo, final String rootPath, final AtomicBoolean cancel, AtomicBoolean closed) throws IOException {
+    private Result analyseFolder (final LinkedList<File>  todo, final String rootPath,
+            final AtomicBoolean cancel, final AtomicBoolean closed, final Continuation cont) throws IOException {
         while (!todo.isEmpty()) {
             File file = todo.removeFirst();
             if (file.isDirectory() && file.canRead()) {
@@ -261,6 +377,7 @@ public class BinaryAnalyser {
                     endPos = filePath.length();
                 }
                 String relativePath = FileObjects.convertFolder2Package (filePath.substring(rootPath.length(), endPos));
+                cont.report(ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, relativePath), 0L);
                 if (this.accepts(file.getName()) && !isUpToDate (relativePath, fileMTime)) {
                     this.toDelete.add(Pair.<String,String>of (relativePath,null));
                     try {
@@ -296,12 +413,13 @@ public class BinaryAnalyser {
     
         //Private helper methods
     /** Analyses a zip file */
-    private Result analyseArchive (final ZipFile zipFile, final Enumeration<? extends ZipEntry> e, AtomicBoolean cancel, AtomicBoolean closed) throws IOException {
+    private Result analyseArchive (final ZipFile zipFile, final Enumeration<? extends ZipEntry> e,
+            AtomicBoolean cancel, AtomicBoolean closed, Continuation cont) throws IOException {
         while(e.hasMoreElements()) {
             ZipEntry ze;
 
             try {
-                ze = (ZipEntry)e.nextElement();
+                ze = (ZipEntry)e.nextElement();                
             } catch (InternalError err) {
                 //#174611:
                 LOGGER.log(Level.INFO, "Broken zip file: " + zipFile.getName(), err);
@@ -309,6 +427,7 @@ public class BinaryAnalyser {
             }
             
             if ( !ze.isDirectory()  && this.accepts(ze.getName()))  {
+                cont.report (ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, FileObjects.convertFolder2Package(FileObjects.stripExtension(ze.getName()))),ze.getCrc());
                 InputStream in = new BufferedInputStream (zipFile.getInputStream( ze ));
                 try {                                        
                     analyse(in);
@@ -336,10 +455,13 @@ public class BinaryAnalyser {
         return Result.FINISHED;
     }
     
-    private Result analyseFileObjects (final Enumeration<? extends FileObject> todo, final AtomicBoolean cancel, final AtomicBoolean closed) throws IOException {
+    private Result analyseFileObjects (final Enumeration<? extends FileObject> todo, final FileObject root,
+            final AtomicBoolean cancel, final AtomicBoolean closed, final Continuation cont) throws IOException {
         while (todo.hasMoreElements()) {            
             FileObject fo = todo.nextElement();            
             if (this.accepts(fo.getName())) {
+                final String rp = FileObjects.stripExtension(FileUtil.getRelativePath(root, fo));
+                cont.report(ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, FileObjects.convertFolder2Package(rp)), 0L);
                 InputStream in = new BufferedInputStream (fo.getInputStream());
                 try {
                     analyse (in);
@@ -708,24 +830,35 @@ public class BinaryAnalyser {
     
     private static abstract class Continuation {
         
-        private long time;
+        private List<Pair<ElementHandle<TypeElement>,Long>> result;
+
+        protected Continuation () {
+            this.result = new ArrayList<Pair<ElementHandle<TypeElement>, Long>>();
+        }
+        
         
         protected abstract Result doExecute () throws IOException;
+
         protected abstract void doFinish () throws IOException;
+
+        protected final void report (final ElementHandle<TypeElement> te, final long crc) {
+            this.result.add(Pair.of(te, crc));
+        }
         
-        public final Result execute () throws IOException {
-            final long startTime = System.currentTimeMillis();
-            try {
-                return doExecute();
-            } finally {
-                final long endTime = System.currentTimeMillis();
-                time += (endTime - startTime);
-            }
+        public final Result execute () throws IOException {                
+            return doExecute();            
         }
                 
-        public final long finish () throws IOException {
-            doFinish();  
-            return time;
+        public final List<Pair<ElementHandle<TypeElement>,Long>> finish () throws IOException {
+            doFinish();
+            Collections.sort(result, new Comparator() {
+                public int compare(Object o1, Object o2) {
+                    final Pair<ElementHandle<TypeElement>,Long> p1 = (Pair<ElementHandle<TypeElement>,Long>) o1;
+                    final Pair<ElementHandle<TypeElement>,Long> p2 = (Pair<ElementHandle<TypeElement>,Long>) o2;
+                    return p1.first.getQualifiedName().compareTo(p2.first.getQualifiedName());
+                }
+            });
+            return result;
         }        
     }
     
@@ -747,7 +880,7 @@ public class BinaryAnalyser {
         }
         
         protected Result doExecute () throws IOException {
-            return analyseArchive(zipFile, entries, cancel, closed);
+            return analyseArchive(zipFile, entries, cancel, closed, this);
         }
         
         protected void doFinish () throws IOException {
@@ -773,7 +906,7 @@ public class BinaryAnalyser {
         }
         
         public Result doExecute () throws IOException {            
-            return analyseFolder(todo, rootPath, cancel, closed);
+            return analyseFolder(todo, rootPath, cancel, closed, this);
         }
         
         public void doFinish () throws IOException {                        
@@ -783,6 +916,7 @@ public class BinaryAnalyser {
     private class FileObjectContinuation extends  Continuation {
         
         private final Enumeration<? extends FileObject> todo;
+        private FileObject root;
         private final AtomicBoolean cancel;
         private final AtomicBoolean closed;
         
@@ -795,7 +929,7 @@ public class BinaryAnalyser {
         }
         
         public Result doExecute () throws IOException {
-            return analyseFileObjects(todo, cancel, closed);
+            return analyseFileObjects(todo, root, cancel, closed, this);
         }
         
         public void doFinish () throws IOException {
