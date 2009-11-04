@@ -753,7 +753,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
     }
 
     /** Returns part of token before cursor or entire token if at the end of it.
-     * Returns null prefix if token is comma or whitespace. Returned offset is
+     * Returns null prefix if token is comma, rparen or whitespace. Returned offset is
      * caret offset if prefix is null, otherwise it is token offset. */
     private Symbol findPrefix() {
         TokenSequence<SQLTokenId> seq = env.getTokenSequence();
@@ -772,6 +772,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         switch (seq.token().id()) {
             case WHITESPACE:
             case COMMA:
+            case RPAREN:
                 return new Symbol(null, caretOffset, caretOffset);
             default:
                 int offset = caretOffset - seq.offset();
@@ -808,6 +809,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
             case DOUBLE_LITERAL:
             case STRING:
             case INCOMPLETE_STRING:
+            case RPAREN:  // not identifier (abcd)|
                 return null;
         }
         boolean incomplete = false; // Whether incomplete, like '"foo.bar."|'.
