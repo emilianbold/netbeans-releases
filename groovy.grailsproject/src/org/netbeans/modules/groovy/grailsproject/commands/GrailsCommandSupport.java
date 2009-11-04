@@ -116,6 +116,8 @@ public final class GrailsCommandSupport {
 
     private BuildConfigListener buildConfigListener;
 
+    private ProjectConfigListener projectConfigListener;
+
     public GrailsCommandSupport(GrailsProject project) {
         this.project = project;
     }
@@ -212,6 +214,13 @@ public final class GrailsCommandSupport {
                 buildConfig.addPropertyChangeListener(WeakListeners.propertyChange(buildConfigListener, buildConfig));
             }
 
+            if (projectConfigListener == null) {
+                GrailsProjectConfig projectConfig = project.getLookup().lookup(GrailsProjectConfig.class);
+                if (projectConfig != null) {
+                    projectConfigListener = new ProjectConfigListener();
+                    projectConfig.addPropertyChangeListener(WeakListeners.propertyChange(projectConfigListener, projectConfig));
+                }
+            }
             this.commands = freshCommands;
         }
     }
@@ -388,6 +397,17 @@ public final class GrailsCommandSupport {
                 processors[i] = factories.get(i).newInputProcessor(defaultProcessor);
             }
             return InputProcessors.proxy(processors);
+        }
+    }
+
+    private class ProjectConfigListener implements PropertyChangeListener {
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (GrailsProjectConfig.GRAILS_PLATFORM_PROPERTY.equals(evt.getPropertyName())) {
+                synchronized (GrailsCommandSupport.this) {
+                    commands = null;
+                }
+            }
         }
     }
 
