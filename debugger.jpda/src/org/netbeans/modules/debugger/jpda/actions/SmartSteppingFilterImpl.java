@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.debugger.jpda.actions;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
@@ -57,22 +58,47 @@ import org.netbeans.api.debugger.jpda.SmartSteppingFilter;
  */
 public class SmartSteppingFilterImpl implements SmartSteppingFilter {
 
-    private HashSet<String> filter = new HashSet<String>();
-    private ArrayList<String> exact = new ArrayList<String>();
-    private ArrayList<String> start = new ArrayList<String>();
-    private ArrayList<String> end = new ArrayList<String>();
+    private final HashSet<String> filter = new HashSet<String>();
+    private final ArrayList<String> exact = new ArrayList<String>();
+    private final ArrayList<String> start = new ArrayList<String>();
+    private final ArrayList<String> end = new ArrayList<String>();
     private PropertyChangeSupport pcs;
     {pcs = new PropertyChangeSupport (this);}
+    private final Properties options = Properties.getDefault().
+            getProperties("debugger.options.JPDA");
+    private final Properties classFiltersProperties = Properties.getDefault().
+            getProperties("debugger").getProperties("sources").
+            getProperties("class_filters");
 
     {
-        addExclusionPatterns (
-            (Set) Properties.getDefault ().getProperties ("debugger").
-                getProperties ("sources").getProperties ("class_filters").
-                getCollection (
-                    "enabled", 
-                    Collections.EMPTY_SET
-                )
-        );
+        PropertyChangeListener propListener = new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                setExclusionPatterns ();
+            }
+        };
+        options.addPropertyChangeListener(propListener);
+        classFiltersProperties.addPropertyChangeListener(propListener);
+        setExclusionPatterns ();
+    }
+
+    private void setExclusionPatterns () {
+        Set<String> patterns;
+        if (options.getBoolean("UseStepFilters", true)) {
+            patterns = (Set<String>) classFiltersProperties.getCollection (
+                    "enabled",
+                    Collections.EMPTY_SET);
+        } else {
+            patterns = Collections.EMPTY_SET;
+        }
+        synchronized (filter) {
+            filter.clear();
+            exact.clear();
+            start.clear();
+            end.clear();
+            filter.addAll (patterns);
+            refreshFilters (patterns);
+        }
+        pcs.firePropertyChange (PROP_EXCLUSION_PATTERNS, null, patterns);
     }
     
     
@@ -89,8 +115,10 @@ public class SmartSteppingFilterImpl implements SmartSteppingFilter {
         reallyNew.removeAll (filter);
         if (reallyNew.size () < 1) return;
 
-        filter.addAll (reallyNew);
-        refreshFilters (reallyNew);
+        synchronized (filter) {
+            filter.addAll (reallyNew);
+            refreshFilters (reallyNew);
+        }
 
         pcs.firePropertyChange (PROP_EXCLUSION_PATTERNS, null, reallyNew);
     }
@@ -101,11 +129,13 @@ public class SmartSteppingFilterImpl implements SmartSteppingFilter {
      * @param patterns a set of class exclusion filters to be added
      */
     public void removeExclusionPatterns (Set<String> patterns) {
-        filter.removeAll (patterns);
-        exact = new ArrayList<String>();
-        start = new ArrayList<String>();
-        end = new ArrayList<String>();
-        refreshFilters (filter);
+        synchronized (filter) {
+            filter.removeAll (patterns);
+            exact.clear();
+            start.clear();
+            end.clear();
+            refreshFilters (filter);
+        }
 
         pcs.firePropertyChange (PROP_EXCLUSION_PATTERNS, patterns, null);
     }
@@ -114,22 +144,26 @@ public class SmartSteppingFilterImpl implements SmartSteppingFilter {
      * Returns list of all exclusion patterns.
      */
     public String[] getExclusionPatterns () {
-        String[] ef = new String [filter.size ()];
-        return filter.toArray (ef);
+        synchronized (filter) {
+            String[] ef = new String [filter.size ()];
+            return filter.toArray (ef);
+        }
     }
 
     public boolean stopHere (String className) {
-        int i, k = exact.size ();
-        for (i = 0; i < k; i++) {
-            if (exact.get (i).equals (className)) return false;
-        }
-        k = start.size ();
-        for (i = 0; i < k; i++) {
-            if (className.startsWith (start.get (i))) return false;
-        }
-        k = end.size ();
-        for (i = 0; i < k; i++) {
-            if (className.endsWith (end.get (i))) return false;
+        synchronized (filter) {
+            int i, k = exact.size ();
+            for (i = 0; i < k; i++) {
+                if (exact.get (i).equals (className)) return false;
+            }
+            k = start.size ();
+            for (i = 0; i < k; i++) {
+                if (className.startsWith (start.get (i))) return false;
+            }
+            k = end.size ();
+            for (i = 0; i < k; i++) {
+                if (className.endsWith (end.get (i))) return false;
+            }
         }
         return true;
     }

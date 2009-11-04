@@ -56,7 +56,10 @@ import javax.swing.text.Caret;
 import javax.swing.text.StyledDocument;
 
 import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -140,16 +143,21 @@ public final class EditorContextDispatcher {
     private static final Reference<FileObject> NO_FILE = new WeakReference<FileObject>(null);
     private static final Reference<EditorCookie> NO_COOKIE = new WeakReference<EditorCookie>(null);
     private static final Reference<JEditorPane> NO_EDITOR = new WeakReference<JEditorPane>(null);
+    private static final Reference<FileChangeListener> NO_FILE_CHANGE = new WeakReference<FileChangeListener>(null);
 
     private String currentURL;
     private Reference<FileObject> currentFile = NO_FILE;
     private Reference<EditorCookie> currentEditorCookie = NO_COOKIE;
     private Reference<JEditorPane> currentOpenedPane = NO_EDITOR;
+    private FileChangeListener currentFileChangeListener = null;
+    private Reference<FileChangeListener> currentFileChangeListenerWeak = NO_FILE_CHANGE;
     
     // Most recent in editor:
     private Reference<FileObject> mostRecentFileRef = NO_FILE;
     private Reference<EditorCookie> mostRecentEditorCookieRef = NO_COOKIE;
     private Reference<JEditorPane> mostRecentOpenedPaneRef = NO_EDITOR;
+    private FileChangeListener mostRecentFileChangeListener = null;
+    private Reference<FileChangeListener> mostRecentFileChangeListenerWeak = NO_FILE_CHANGE;
     
     private EditorContextDispatcher() {
         refreshProcessor = new RequestProcessor("Refresh Editor Context", 1);   // NOI18N
@@ -518,6 +526,7 @@ public final class EditorContextDispatcher {
                     //System.err.println("\nCURRENT FILES = "+fos+"\n");
                     currentFile = newFile == null ? NO_FILE : new WeakReference<FileObject>(newFile);
                     currentURL = null;
+                    reAttachFileChangeListener(oldFile, newFile, true);
                     /*if (newFile != null) {  - NO, we need the last file in editor.
                         mostRecentFileRef = new WeakReference(newFile);
                     }*/
@@ -624,6 +633,7 @@ public final class EditorContextDispatcher {
                         MIMEType = f.getMIMEType();
                         if (newEditor != null) {
                             mostRecentOpenedPaneRef = new WeakReference<JEditorPane>(newEditor);
+                            reAttachFileChangeListener(mostRecentFileRef.get(), f, false);
                             mostRecentFileRef = new WeakReference<FileObject>(f);
                             if (ec != null) {
                                 mostRecentEditorCookieRef = new WeakReference<EditorCookie>(ec);
@@ -637,6 +647,48 @@ public final class EditorContextDispatcher {
             }
             if (oldEditor != newEditor) {
                 refreshProcessor.post(new EventFirer(PROP_EDITOR, oldEditor, newEditor, MIMEType));
+            }
+        }
+
+        private void reAttachFileChangeListener(FileObject oldFile, FileObject newFile, boolean current) {
+            // Must be called in synchronized block
+            assert Thread.holdsLock(EditorContextDispatcher.this);
+            if (current) {
+                if (oldFile != null) {
+                    FileChangeListener chw = currentFileChangeListenerWeak.get();
+                    if (chw != null) {
+                        oldFile.removeFileChangeListener(chw);
+                        currentFileChangeListenerWeak = NO_FILE_CHANGE;
+                        currentFileChangeListener = null;
+                    }
+                }
+                if (newFile != null) {
+                    currentFileChangeListener = new FileRenameListener();
+                    FileChangeListener chw =
+                            WeakListeners.create(FileChangeListener.class,
+                                                 currentFileChangeListener,
+                                                 newFile);
+                    newFile.addFileChangeListener(chw);
+                    currentFileChangeListenerWeak = new WeakReference<FileChangeListener>(chw);
+                }
+            } else {
+                if (oldFile != null) {
+                    FileChangeListener chw = mostRecentFileChangeListenerWeak.get();
+                    if (chw != null) {
+                        oldFile.removeFileChangeListener(chw);
+                        mostRecentFileChangeListenerWeak = NO_FILE_CHANGE;
+                        mostRecentFileChangeListener = null;
+                    }
+                }
+                if (newFile != null) {
+                    mostRecentFileChangeListener = new FileRenameListener();
+                    FileChangeListener chw =
+                            WeakListeners.create(FileChangeListener.class,
+                                                 mostRecentFileChangeListener,
+                                                 newFile);
+                    newFile.addFileChangeListener(chw);
+                    mostRecentFileChangeListenerWeak = new WeakReference<FileChangeListener>(chw);
+                }
             }
         }
         
@@ -673,6 +725,28 @@ public final class EditorContextDispatcher {
             firePropertyChange(evt, MIMEType);
         }
         
+    }
+
+    private final class FileRenameListener extends FileChangeAdapter {
+
+        @Override
+        public void fileRenamed(FileRenameEvent fe) {
+            FileObject fo = (FileObject) fe.getSource();
+            boolean doFire;
+            synchronized (EditorContextDispatcher.this) {
+                FileObject currentFO = currentFile.get();
+                FileObject lastFO = mostRecentFileRef.get();
+                doFire = fo.equals(currentFO) || fo.equals(lastFO);
+                if (doFire) {
+                    currentURL = null;
+                }
+            }
+            if (doFire) {
+                // Fire null as the old value so that the event is not ignored.
+                refreshProcessor.post(new EventFirer(PROP_FILE, null, fo, fo.getMIMEType()));
+            }
+        }
+
     }
     
 }

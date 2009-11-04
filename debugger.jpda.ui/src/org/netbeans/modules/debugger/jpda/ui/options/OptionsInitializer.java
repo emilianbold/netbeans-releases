@@ -68,25 +68,27 @@ public class OptionsInitializer implements Initializer {
     public Object getDefaultPropertyValue(String propertyName) {
         if (CLASS_FILTERS_ALL.equals(propertyName)) {
             Set allFilters = new LinkedHashSet<String>();
-            fillClassFilters(allFilters);
+            fillClassFilters(allFilters, false);
             return allFilters;
         }
         if (CLASS_FILTERS_ENABLED.equals(propertyName)) {
             Set<String> enabled = new HashSet();
-            fillClassFilters(enabled);
+            fillClassFilters(enabled, true);
             return enabled;
         }
         return null;
     }
 
-    private static void fillClassFilters(Set filters) {
+    private static void fillClassFilters(Set filters, boolean enabled) {
         filters.add(ClassLoader.class.getName());
         filters.add(StringBuffer.class.getName());
         filters.add(StringBuilder.class.getName());
         filters.add("java.lang.AbstractStringBuilder");
         filters.add("java.lang.String");
-        filters.add("sun.*");
-        filters.add("sunw.*");
+        if (!enabled) {
+            filters.add("sun.*");
+            filters.add("sunw.*");
+        }
     }
 
 }
