@@ -72,15 +72,21 @@ import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.util.WeakListeners;
 
-final class ProjectClassPathImplementation implements ClassPathImplementation, PropertyChangeListener {
+final class ProjectClassPathImplementation implements ClassPathImplementation {
 
     private static final Logger LOGGER = Logger.getLogger(ProjectClassPathImplementation.class.getName());
 
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
 
+    private final ProjectConfigListener projectConfigListener = new ProjectConfigListener();
+
+    private final BuildConfigListener buildConfigListener = new BuildConfigListener();
+
     private List<PathResourceImplementation> resources;
 
     private final GrailsProjectConfig projectConfig;
+
+    private GrailsPlatform.Version version;
 
     private final File projectRoot;
 
@@ -93,6 +99,7 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
     private ProjectClassPathImplementation(GrailsProjectConfig projectConfig) {
         this.projectConfig = projectConfig;
         this.projectRoot = FileUtil.toFile(projectConfig.getProject().getProjectDirectory());
+        this.version = projectConfig.getGrailsPlatform().getVersion();
     }
 
     public static ProjectClassPathImplementation forProject(Project project) {
@@ -100,7 +107,9 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
         ProjectClassPathImplementation impl = new ProjectClassPathImplementation(config);
 
         BuildConfig build = ((GrailsProject) config.getProject()).getBuildConfig();
-        build.addPropertyChangeListener(WeakListeners.propertyChange(impl, config));
+        build.addPropertyChangeListener(WeakListeners.propertyChange(impl.buildConfigListener, build));
+
+        config.addPropertyChangeListener(WeakListeners.propertyChange(impl.projectConfigListener, config));
 
         return impl;
     }
@@ -110,15 +119,6 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
             this.resources = this.getPath();
         }
         return this.resources;
-    }
-
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (BuildConfig.BUILD_CONFIG_PLUGINS.equals(evt.getPropertyName())) {
-            synchronized (this) {
-                this.resources = null;
-            }
-            this.support.firePropertyChange(ClassPathImplementation.PROP_RESOURCES, null, null);
-        }
     }
 
     private List<PathResourceImplementation> getPath() {
@@ -285,6 +285,45 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
 
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         support.removePropertyChangeListener(listener);
+    }
+
+    private class ProjectConfigListener implements PropertyChangeListener {
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (GrailsProjectConfig.GRAILS_PLATFORM_PROPERTY.equals(evt.getPropertyName())) {
+                GrailsPlatform platform = ((GrailsProjectConfig) evt.getSource()).getGrailsPlatform();
+                GrailsPlatform.Version currentVersion = platform.getVersion();
+
+                if ((GrailsPlatform.Version.VERSION_1_1.compareTo(currentVersion) <= 0 // 1.1 or above
+                        && GrailsPlatform.Version.VERSION_1_1.compareTo(version) > 0) // lower than 1.1
+                            || (GrailsPlatform.Version.VERSION_1_1.compareTo(currentVersion) > 0 // lower than 1.1
+                                && GrailsPlatform.Version.VERSION_1_1.compareTo(version) <= 0)) { // 1.1 or above
+
+                    LOGGER.log(Level.INFO, "Project classpath changed due to change in {0}", evt.getPropertyName());
+
+                    synchronized (ProjectClassPathImplementation.this) {
+                        resources = null;
+                    }
+                    support.firePropertyChange(ClassPathImplementation.PROP_RESOURCES, null, null);
+                }
+                version = currentVersion;
+            }
+        }
+    }
+
+    private class BuildConfigListener implements PropertyChangeListener {
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (BuildConfig.BUILD_CONFIG_PLUGINS.equals(evt.getPropertyName())) {
+
+                LOGGER.log(Level.INFO, "Project classpath changed due to change in {0}", evt.getPropertyName());
+
+                synchronized (ProjectClassPathImplementation.this) {
+                    resources = null;
+                }
+                support.firePropertyChange(ClassPathImplementation.PROP_RESOURCES, null, null);
+            }
+        }
     }
 
     private static class PluginsLibListener implements FileChangeListener {
