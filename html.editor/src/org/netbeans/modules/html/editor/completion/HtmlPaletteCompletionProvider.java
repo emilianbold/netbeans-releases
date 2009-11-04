@@ -156,6 +156,9 @@ public class HtmlPaletteCompletionProvider implements CompletionProvider {
                     this.completionExpressionStartOffset = creationCaretOffset - prefix.length();
 
                     TopComponent tc = NbEditorUtilities.getTopComponent(component);
+                    if(tc == null) {
+                        return ;
+                    }
 
                     PaletteController pc = tc.getLookup().lookup(PaletteController.class);
                     if (pc != null) {
