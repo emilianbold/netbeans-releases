@@ -2091,6 +2091,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 }
             }
             TEST_LOGGER.log(Level.FINEST, "filelist"); //NOI18N
+            refreshActiveDocument();
             return true;
         }
 
@@ -2762,6 +2763,26 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                     depCtx.newRootsToScan.retainAll(addedOrChanged.keySet());
                     depCtx.fullRescanSourceRoots = depCtx.newRoots2Deps.keySet();
                 }
+                final Map<URL,List<URL>> adderOrChangedBin = new HashMap<URL, List<URL>>();
+                final Map<URL,List<URL>> removedBin = new HashMap<URL, List<URL>>();
+                diff(depCtx.initialBinaries2InvDeps, depCtx.newBinaries2InvDeps, adderOrChangedBin, removedBin);
+                final List<URL> affectedSourceRoots = new LinkedList<URL>();
+                for (Map.Entry<URL,List<URL>> entry : adderOrChangedBin.entrySet()) {
+                    final List<URL> oldDeps = depCtx.initialBinaries2InvDeps.get(entry.getKey());
+                    final List<URL> newDeps = entry.getValue();
+                    if (oldDeps == null) {
+                        //New
+                        affectedSourceRoots.addAll(newDeps);
+                    }
+                    else {
+                        //Modified
+                        diff(oldDeps,newDeps,affectedSourceRoots,affectedSourceRoots);
+                    }
+                }
+                for (List<URL> entry : removedBin.values()) {
+                    affectedSourceRoots.addAll(entry);
+                }
+                depCtx.newRootsToScan.addAll(affectedSourceRoots);
             } else {
                 depCtx.newRootsToScan.removeAll(depCtx.scannedRoots);
                 depCtx.scannedRoots.clear();
@@ -2792,7 +2813,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
             BinaryPathNotifier.getDefault().unregisterRoots(depCtx.oldBinaries);
             BinaryPathNotifier.getDefault().registerRoots(depCtx.scannedBinaries);
-            
+
             for(URL root : depCtx.scannedBinaries) {
                 List<URL> deps = depCtx.newBinaries2InvDeps.get(root);
                 if (deps == null) {
@@ -2879,6 +2900,20 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 }
             }
         }
+
+        private static <T> void diff (final List<T> oldList, final List<T> newList, final List<? super  T> added, final List<? super T> removed) {
+            final Set<T> oldCopy = new HashSet<T>(oldList);
+            final Set<T> newCopy = new HashSet<T>(newList);
+            for (Iterator<T> oldIt = oldCopy.iterator(); oldIt.hasNext();) {
+                T e = oldIt.next();
+                oldIt.remove();
+                if (!newCopy.remove(e)) {
+                    removed.add(e);
+                }
+            }
+            added.addAll(newCopy);
+        }
+
     } // End of RootsScanningWork class
 
     private static abstract class AbstractRootsWork extends Work {

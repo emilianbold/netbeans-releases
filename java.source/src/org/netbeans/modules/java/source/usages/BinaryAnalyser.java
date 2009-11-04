@@ -195,6 +195,9 @@ public class BinaryAnalyser {
                         }
                     }
                 }
+                else {
+                    return deleted();
+                }
             }
             else {
                 FileObject rootFo =  URLMapper.findFileObject(root);
@@ -205,6 +208,9 @@ public class BinaryAnalyser {
                         cont = new FileObjectContinuation (todo,cancel,closed);
                         return cont.execute();
                     }
+                }
+                else {
+                    return deleted();
                 }
             }
         }
@@ -234,6 +240,9 @@ public class BinaryAnalyser {
                 Enumeration<? extends FileObject> todo = rootFo.getData(true);
                 cont = new FileObjectContinuation (todo,cancel,closed);
                 return cont.execute();
+            }
+            else {
+                return deleted();
             }
         }
         return Result.FINISHED;                        
@@ -300,7 +309,7 @@ public class BinaryAnalyser {
         }
     }
 
-
+    
     static Changes diff (List<Pair<ElementHandle<TypeElement>,Long>> oldState, List<Pair<ElementHandle<TypeElement>,Long>> newState) {
         final List<ElementHandle<TypeElement>> changed = new LinkedList<ElementHandle<TypeElement>>();
         final List<ElementHandle<TypeElement>> removed = new LinkedList<ElementHandle<TypeElement>>();
@@ -346,6 +355,10 @@ public class BinaryAnalyser {
             added.add(newIt.next().first);
         }
         return new Changes(added, removed, changed);
+    }
+
+    private Result deleted () throws IOException {
+        return (cont = new DeletedContinuation()).execute();
     }
                 
         /** Analyses a folder 
@@ -935,6 +948,20 @@ public class BinaryAnalyser {
         public void doFinish () throws IOException {
             
         }        
+    }
+
+    private class DeletedContinuation extends Continuation {
+
+        @Override
+        protected Result doExecute() throws IOException {
+            index.clear();
+            return Result.FINISHED;
+        }
+
+        @Override
+        protected void doFinish() throws IOException {
+        }
+
     }
     
 }
