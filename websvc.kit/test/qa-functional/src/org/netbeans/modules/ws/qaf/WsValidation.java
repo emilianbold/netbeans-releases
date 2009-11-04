@@ -481,7 +481,11 @@ public class WsValidation extends WebServicesTestBase {
         Sources s = getProject().getLookup().lookup(Sources.class);
         SourceGroup[] sg = s.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         FileObject fo = sg[0].getRootFolder().getFileObject(getWsPackage().replace('.', '/')); //NOI18N
-        File handlerCfg = new File(FileUtil.toFile(fo), getWsName() + "_handler.xml"); //NOI18N
+        String wsName = getWsName();
+        if (!getProjectType().isAntBasedProject()) {
+            wsName += "Service"; //NOI18N
+        }
+        File handlerCfg = new File(FileUtil.toFile(fo), wsName + "_handler.xml"); //NOI18N
         Node serviceNode = new Node(getProjectRootNode(), WEB_SERVICES_NODE_NAME + "|" + getWsName()); //NOI18N
         configureHandlers(serviceNode, handlerCfg, true);
     }
@@ -492,16 +496,22 @@ public class WsValidation extends WebServicesTestBase {
         createHandler(getHandlersPackage(), "WsMsgHandler2", HandlerType.MESSAGE); //NOI18N
         createHandler(getHandlersPackage(), "WsLogHandler1", HandlerType.LOGICAL); //NOI18N
         createHandler(getHandlersPackage(), "WsLogHandler2", HandlerType.LOGICAL); //NOI18N
-        FileObject fo = getProject().getProjectDirectory().getFileObject("src/conf/"); //NOI18N
-        if (fo == null) {
-            fo = getProject().getProjectDirectory();
-        }
         String wsName = getWsName();
         if (wsName.contains("Web")) { //NOI18N
             wsName += "Service"; //NOI18N
         }
-        String path = "xml-resources/web-service-references/" + wsName + "/bindings/"; //NOI18N
-        File handlerCfg = new File(FileUtil.toFile(fo), path + wsName + "_handler.xml"); //NOI18N
+        File handlerCfg = null;
+        if (getProjectType().isAntBasedProject()) {
+            FileObject fo = getProject().getProjectDirectory().getFileObject("src/conf/"); //NOI18N
+            if (fo == null) {
+                fo = getProject().getProjectDirectory();
+            }
+            String path = "xml-resources/web-service-references/" + wsName + "/bindings/"; //NOI18N
+            handlerCfg = new File(FileUtil.toFile(fo), path + wsName + "_handler.xml"); //NOI18N
+        } else {
+            handlerCfg = new File(FileUtil.toFile(getProject().getProjectDirectory()),
+                    "src/jaxws-bindings/" + wsName + "_handler.xml"); //NOI18N
+        }
         Node clientNode = new Node(getProjectRootNode(), WEB_SERVICE_CLIENTS_NODE_NAME + "|" + getWsName()); //NOI18N
         configureHandlers(clientNode, handlerCfg, false);
     }
@@ -656,9 +666,7 @@ public class WsValidation extends WebServicesTestBase {
         if (isService) {
             eo = new EditorOperator(getWsName());
             assertTrue("missing @HandlerChain", //NOI18N
-                    eo.contains("@HandlerChain(file = \"" + getWsName())); //NOI18N
-            assertTrue("missing _handler def", //NOI18N
-                    eo.contains("_handler.xml\")")); //NOI18N
+                    eo.getText().contains("@HandlerChain(file = \"" + handlerCfg.getName() + "\")")); //NOI18N
         } else {
             boolean isAnt = getProjectType().isAntBasedProject();
             waitForWsImport(isAnt ? "wsimport-client" : "wsimport", isAnt); //NOI18N
@@ -676,7 +684,7 @@ public class WsValidation extends WebServicesTestBase {
         ndo.ok();
         if (isService) {
             assertTrue("missing @HandlerChain", //NOI18N
-                    eo.contains("@HandlerChain(file = \"" + getWsName() + "_handler.xml\")")); //NOI18N
+                    eo.getText().contains("@HandlerChain(file = \"" + handlerCfg.getName() + "\")")); //NOI18N
         } else {
             boolean isAnt = getProjectType().isAntBasedProject();
             waitForWsImport(isAnt ? "wsimport-client" : "wsimport", isAnt); //NOI18N
@@ -898,6 +906,7 @@ public class WsValidation extends WebServicesTestBase {
         Node actual;
         NbDialogOperator ccr;
         boolean isAnt = getProjectType().isAntBasedProject();
+        String refreshActionLbl = Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.jaxws.actions.Bundle", "LBL_RefreshAction");
         if (type.equalsIgnoreCase("service")) {
             prjnd = new ProjectRootNode(prjtree, getWsProjectName());
             if (!wsname.equalsIgnoreCase("")) {
@@ -905,7 +914,7 @@ public class WsValidation extends WebServicesTestBase {
             } else {
                 actual = new Node(prjnd, "Web Services|" + getWsName()); //NOI18N
             }
-            actual.performPopupActionNoBlock(Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.jaxws.actions.Bundle", "LBL_RefreshServiceAction")); //NOI18N
+            actual.performPopupActionNoBlock(refreshActionLbl); //NOI18N
             ccr = new NbDialogOperator("Confirm Service Refresh"); //NOI18N
             new EventTool().waitNoEvent(1000);
             if (includeSources) {
@@ -926,12 +935,7 @@ public class WsValidation extends WebServicesTestBase {
             } else {
                 actual = new Node(prjnd, "Web Service References|" + getWsName() + "Service"); //NOI18N
             }
-            //XXX - replace if with common action name as soon as it will be defined in a bundle
-            if (isAnt) {
-                actual.performPopupActionNoBlock(Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.jaxws.actions.Bundle", "LBL_RefreshClientAction")); //NOI18N
-            } else {
-                actual.performPopupActionNoBlock("Refresh"); //NOI18N
-            }
+            actual.performPopupActionNoBlock(refreshActionLbl); //NOI18N
             ccr = new NbDialogOperator("Confirm Client Refresh"); //NOI18N
             new EventTool().waitNoEvent(1000);
             if (includeSources) {
