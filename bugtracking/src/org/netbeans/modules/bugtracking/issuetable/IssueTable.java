@@ -263,10 +263,10 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
         @Override
         public String toString() {
             StringBuffer sb = new StringBuffer();
-            sb.append("[");
-            sb.append("bounds=");
+            sb.append("[");             // NOI18N
+            sb.append("bounds=");       // NOI18N
             sb.append(bounds);
-            sb.append("]");
+            sb.append("]");             // NOI18N
             return sb.toString();
         }
         public void actionPerformed(ActionEvent e) {
@@ -304,12 +304,12 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
         @Override
         public String toString() {
             StringBuffer sb = new StringBuffer();
-            sb.append("[");
-            sb.append("row=");
+            sb.append("[");         // NOI18N
+            sb.append("row=");      // NOI18N
             sb.append(row);
-            sb.append(",column=");
+            sb.append(",column=");  // NOI18N
             sb.append(column);
-            sb.append("]");
+            sb.append("]");         // NOI18N
             return sb.toString();
         }
     }
@@ -465,7 +465,6 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
     public void mouseClicked(MouseEvent e) {
         int row = table.rowAtPoint(e.getPoint());
         int column = table.columnAtPoint(e.getPoint());
-        Rectangle rect;
         if (SwingUtilities.isLeftMouseButton(e)) {
             if (row == -1) return;
             row = sorter.modelIndex(row);
@@ -503,7 +502,7 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
     }
 
     public void keyTyped(KeyEvent e) {
-        if (e.getKeyChar() == '\n') {
+        if (e.getKeyChar() == '\n') {                                     // NOI18N
             int row = table.getSelectedRow();
             if (row != -1) {
                 Action action = tableModel.getNodes()[row].getPreferredAction();
@@ -515,7 +514,7 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
     }
 
     public void keyPressed(KeyEvent e) {
-        if (e.getKeyChar() == '\n') {
+        if (e.getKeyChar() == '\n') {                                     // NOI18N
             int row = table.getSelectedRow();
             if (row != -1) {
                 // Hack for bug 4486444
