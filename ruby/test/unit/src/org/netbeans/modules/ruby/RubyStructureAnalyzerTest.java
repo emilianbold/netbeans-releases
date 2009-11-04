@@ -293,4 +293,8 @@ public class RubyStructureAnalyzerTest extends RubyTestBase {
         checkStructure("testfiles/type_inference.rb");
     }
 
+    public void testTypeInferenceInstVars() throws Exception {
+        checkStructure("testfiles/inst_var_type_inference.rb");
+    }
+
 }
