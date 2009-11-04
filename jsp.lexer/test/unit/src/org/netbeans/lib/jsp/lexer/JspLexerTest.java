@@ -167,8 +167,6 @@ public class JspLexerTest extends NbTestCase {
 
     }
 
-    //test whether content of <jsp:expression>...</jsp:expression> is java
-    //http://www.netbeans.org/issues/show_bug.cgi?id=162546
     public void testScriptletExpressionInTagAttribute() {
         TokenHierarchy th = TokenHierarchy.create("<jsp:xxx attr=\"<%=expr%>\">", JspTokenId.language());
         TokenSequence ts = th.tokenSequence();
