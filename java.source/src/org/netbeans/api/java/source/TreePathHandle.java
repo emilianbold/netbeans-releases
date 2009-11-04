@@ -65,6 +65,8 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.swing.text.Position;
 import javax.swing.text.Position.Bias;                                                                                                                                                                                         
+import javax.tools.JavaFileObject;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.usages.Index;
@@ -130,9 +132,10 @@ public final class TreePathHandle {
     
     /**                                                                                                                                                                                                                        
      * getter for FileObject from give TreePathHandle                                                                                                                                                                          
-     * @return FileObject for which was this handle created                                                                                                                                                                    
+     * @return FileObject for which was this handle created,
+     *         or <code>null</code> if not available
      */                                                                                                                                                                                                                        
-    public FileObject getFileObject() {
+    public @CheckForNull FileObject getFileObject() {
         return this.delegate.getFileObject();
     }                                                                                                                                                                                                                          
                                                                                                                                                                                                                                
@@ -258,9 +261,15 @@ public final class TreePathHandle {
         } else {
             clsSym = (Symbol.ClassSymbol) SourceUtils.getEnclosingTypeElement(element);
         }
-        if (clsSym != null && clsSym.classfile != null) {
+        if (clsSym != null && (clsSym.classfile != null || clsSym.sourcefile != null)) {
             try {
-                u = clsSym.classfile.toUri().toURL();
+                if (   clsSym.sourcefile != null
+                    && clsSym.sourcefile.getKind() == JavaFileObject.Kind.SOURCE
+                    && clsSym.sourcefile.toUri().isAbsolute()) {
+                    u = clsSym.sourcefile.toUri().toURL();
+                } else {
+                    u = clsSym.classfile.toUri().toURL();
+                }
             } catch (MalformedURLException ex) {
                 Exceptions.printStackTrace(ex);
             }

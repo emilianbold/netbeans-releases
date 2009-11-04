@@ -65,6 +65,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.WeakHashMap;
 import java.util.concurrent.CountDownLatch;
@@ -794,7 +795,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
     private static final String PROP_OWNING_SOURCE_ROOT = RepositoryUpdater.class.getName() + "-owning-source-root"; //NOI18N
     /* test */ static final List<URL> EMPTY_DEPS = Collections.unmodifiableList(new LinkedList<URL>());
 
-    private final Map<URL, List<URL>>scannedRoots2Dependencies = Collections.synchronizedMap(new HashMap<URL, List<URL>>());
+    private final Map<URL, List<URL>>scannedRoots2Dependencies = Collections.synchronizedMap(new TreeMap<URL, List<URL>>(new LexicographicComparator(true)));
     private final Set<URL>scannedBinaries = Collections.synchronizedSet(new HashSet<URL>());
     private final Set<URL>scannedUnknown = Collections.synchronizedSet(new HashSet<URL>());
     private final Set<URL>sourcesForBinaryRoots = Collections.synchronizedSet(new HashSet<URL>());
@@ -807,8 +808,6 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
     private Lookup.Result<? extends IndexingActivityInterceptor> indexingActivityInterceptors = null;
     private IndexingController controller;
 
-    private Reference<FileObject> lastOwningSourceRootRef = null;
-    private URL lastOwningSourceRootUrl = null;
     private final String lastOwningSourceRootCacheLock = new String("lastOwningSourceRootCacheLock"); //NOI18N
 
     private boolean ignoreIndexerCacheEvents = false;
@@ -1020,21 +1019,13 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             
             URL owningSourceRootUrl = null;
             FileObject owningSourceRoot = null;
-            FileObject rootFo = lastOwningSourceRootRef == null ? null : lastOwningSourceRootRef.get();
-            if (lastOwningSourceRootUrl != null && rootFo != null && rootFo.isValid() && FileUtil.isParentOf(rootFo, file)) {
-                owningSourceRootUrl = lastOwningSourceRootUrl;
-                owningSourceRoot = rootFo;
-            } else {
-                List<URL> clone = new ArrayList<URL> (this.scannedRoots2Dependencies.keySet());
-                for (URL root : clone) {
-                    rootFo = URLCache.getInstance().findFileObject(root);
-                    if (rootFo != null && FileUtil.isParentOf(rootFo,file)) {
-                        owningSourceRootUrl = root;
-                        owningSourceRoot = rootFo;
-                        lastOwningSourceRootUrl = owningSourceRootUrl;
-                        lastOwningSourceRootRef = new WeakReference<FileObject>(owningSourceRoot);
-                        break;
-                    }
+            List<URL> clone = new ArrayList<URL> (this.scannedRoots2Dependencies.keySet());
+            for (URL root : clone) {
+                FileObject rootFo = URLCache.getInstance().findFileObject(root);
+                if (rootFo != null && FileUtil.isParentOf(rootFo,file)) {
+                    owningSourceRootUrl = root;
+                    owningSourceRoot = rootFo;
+                    break;
                 }
             }
 
@@ -3679,6 +3670,19 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             }
         }
     } // End of FSRefreshInterceptor class
+
+    /* test */ static final class LexicographicComparator implements Comparator<URL> {
+        private final boolean reverse;
+
+        public LexicographicComparator(boolean reverse) {
+            this.reverse = reverse;
+        }
+
+        public int compare(URL o1, URL o2) {
+            int order = o1.toString().compareTo(o2.toString());
+            return reverse ? -1 * order : order;
+        }
+    } // End of LexicographicComparator class
 
     // -----------------------------------------------------------------------
     // Methods for tests
