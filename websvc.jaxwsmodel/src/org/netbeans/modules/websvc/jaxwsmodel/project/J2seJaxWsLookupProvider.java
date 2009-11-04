@@ -46,8 +46,11 @@ import java.io.FileReader;
 import java.io.IOException;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
@@ -113,6 +116,7 @@ public class J2seJaxWsLookupProvider implements LookupProvider {
                                 if (project_xml != null) {
                                     removeCompileDependencies(prj, project_xml, ext);
                                 }
+                                addJaxWsApiEndorsed(prj);
                             }
                         } catch (IOException ex) {
                             ex.printStackTrace();
@@ -298,5 +302,16 @@ public class J2seJaxWsLookupProvider implements LookupProvider {
         EditableProperties props = WSUtils.getEditableProperties(prj, AntProjectHelper.PROJECT_PROPERTIES_PATH);
         props.remove(COMPILE_ON_SAVE_UNSUPPORTED);
         WSUtils.storeEditableProperties(prj,  AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+    }
+
+    private void addJaxWsApiEndorsed(Project prj) throws IOException {
+        SourceGroup[] sourceGroups = ProjectUtils.getSources(prj).getSourceGroups(
+        JavaProjectConstants.SOURCES_TYPE_JAVA);
+        if (sourceGroups!=null && sourceGroups.length>0) {
+            String java_version = System.getProperty("java.version"); //NOI18N
+            if (java_version.compareTo("1.6") >= 0) {
+                WSUtils.addJaxWsApiEndorsed(prj, sourceGroups[0].getRootFolder());
+            }
+        }
     }
 }

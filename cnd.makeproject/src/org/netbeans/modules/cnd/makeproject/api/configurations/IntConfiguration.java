@@ -114,6 +114,11 @@ public class IntConfiguration {
         return def;
     }
 
+    public void setDefault(int def) {
+        this.def = def;
+        setModified(value != getDefault());
+    }
+
     public void reset() {
         value = getDefault();
         setModified(false);

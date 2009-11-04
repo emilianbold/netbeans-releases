@@ -53,7 +53,7 @@ public class JiraIssueFinder extends IssueFinder {
 
     private static final int[] EMPTY_INT_ARR = new int[0];
 
-    public int[] getIssueSpans(String text) {
+    public int[] getIssueSpans(CharSequence text) {
         int[] result = findBoundaries(text);
         return (result != null) ? result : EMPTY_INT_ARR;
     }
@@ -71,18 +71,20 @@ public class JiraIssueFinder extends IssueFinder {
         assert issueHyperlinkText.charAt(pos) == '-';
         pos--;              //skip the hyphen
         assert pos >= 1;
-        assert Impl.isUppercaseAscii(issueHyperlinkText.charAt(pos));
-        pos--;              //skip the last charcter left of hyphen
-        assert pos >= 0;
-        assert Impl.isUppercaseAscii(issueHyperlinkText.charAt(pos));
+        assert Impl.isPrjKeyChar(issueHyperlinkText.charAt(pos));
         do {
-            pos--;          //skip remaining part of sequence of uppercase chars
-        } while ((pos >= 0) && Impl.isUppercaseAscii(issueHyperlinkText.charAt(pos)));
+            pos--;          //skip the project key
+        } while ((pos >= 0) && Impl.isPrjKeyChar(issueHyperlinkText.charAt(pos)));
 
-        return issueHyperlinkText.substring(pos + 1);
+        pos++;  //jump back to the last matching character
+        if (issueHyperlinkText.charAt(pos) == '#') {
+            pos++;
+        }
+
+        return issueHyperlinkText.substring(pos);
     }
 
-    private static int[] findBoundaries(String str) {
+    private static int[] findBoundaries(CharSequence str) {
         return getImpl().findBoundaries(str);
     }
 
@@ -98,36 +100,59 @@ public class JiraIssueFinder extends IssueFinder {
 
     private static final class Impl {
 
-        private static final String[] BUGWORDS = new String[] {"bug", "issue",  //NOI18N
-                                                               "Bug", "Issue",  //NOI18N
-                                                               "BUG", "ISSUE"}; //NOI18N
+        /*
+         * This implementation is quite simple because of the following
+         * precondition:
+         *
+         * #1 - all defined bug-words ("bug", "issue") consist of lowercase
+         *      characters from the basic latin alphabet (a-z), no spaces
+         */
+
+        private static final String[] BUGWORDS = new String[] {"bug", "issue"}; //NOI18N
 
         private static final String PUNCT_CHARS = ",:;()[]{}";          //NOI18N
 
-        private static final int INIT       = 0;
-        private static final int ID_CHARS   = 1;
-        private static final int CHARS      = 2;
-        private static final int HASH       = 3;
-        private static final int HASH_SPC   = 4;
-        private static final int NUM        = 5;
-        private static final int BUGWORD    = 6;
-        private static final int BUGWORD_NL = 7;
-        private static final int DASH       = 8;
-        private static final int STAR       = 9;
-        private static final int GARBAGE    = 10;
+        private static final int LOWER_A = 'a';     //automatic conversion to int
+        private static final int LOWER_Z = 'z';     //automatic conversion to int
 
-        private String str;
+        private static final int INIT        = 0;
+        private static final int BUGWORD_OR_PRJKEY = 1;
+        private static final int PRJKEY      = 2;
+        private static final int HASH        = 3;
+        private static final int HASH_SPC    = 4;
+        private static final int BUGWORD_SPC = 5;
+        private static final int BUGWORD_NL  = 6;
+        private static final int BUGWORD_NL_STAR = 7;
+        private static final int DASH        = 8;
+        private static final int NUM         = 9;
+        private static final int GARBAGE     = 10;
+
+        private CharSequence str;
         private int pos;
         private int state;
 
+        static {
+            boolean asserts = false;
+            assert asserts = true;
+            if (asserts) {
+                /*
+                 * Checks that precondition #1 is met
+                 * - all bugwords the bug number prefix are lowercase:
+                 */
+                for (int i = 0; i < BUGWORDS.length; i++) {
+                    assert BUGWORDS[i].equals(BUGWORDS[i].toLowerCase());
+                }
+            }
+        }
+
         int start;
         int end;
-        int bugIdStart;
+        int startOfBugwordOrPrjkey;
         int[] result;
 
         private Impl() { }
 
-        private int[] findBoundaries(String str) {
+        private int[] findBoundaries(CharSequence str) {
             reset();
 
             this.str = str;
@@ -148,7 +173,7 @@ public class JiraIssueFinder extends IssueFinder {
 
             start = -1;
             end = -1;
-            bugIdStart = -1;
+            startOfBugwordOrPrjkey = -1;
 
             result = null;
         }
@@ -160,48 +185,39 @@ public class JiraIssueFinder extends IssueFinder {
                     if (c == '#') {
                         rememberIsStart();
                         newState = HASH;
-                    } else if (isUppercaseAscii(c)) {
+                    } else if (isAsciiLetter(c)) {
                         rememberIsStart();
-                        newState = ID_CHARS;
-                    } else if (Character.isLetter(c)) {
+                        rememberIsBugwordOrPrjkeyStart();
+                        newState = BUGWORD_OR_PRJKEY;
+                    } else if (isPrjKeyChar(c)) {
                         rememberIsStart();
-                        newState = CHARS;
+                        newState = PRJKEY;
                     } else {
                         newState = getInitialState(c);
                     }
                     break;
-                case ID_CHARS:
-                    if (isUppercaseAscii(c)) {
-                        newState = ID_CHARS;
-                    } else if (Character.isLetter(c)) {
-                        newState = CHARS;
+                case BUGWORD_OR_PRJKEY:
+                    if (isAsciiLetter(c)) {
+                        newState = BUGWORD_OR_PRJKEY;
                     } else if (c == '-') {
-                        if (checkIdIsAtLeastTwoCharsLong()) {
-                            newState = DASH;
-                        } else {
-                            newState = getInitialState(c);
-                        }
-                    } else if ((c == ' ') || (c == '\t') || (c == '\r') || (c == '\n')) {
-                        if (isBugword()) {
-                            newState = ((c == ' ') || (c == '\t')) ? BUGWORD
-                                                                   : BUGWORD_NL;
-                        } else {
-                            newState = getInitialState(c);
-                        }
+                        newState = DASH;
+                    } else if (isPrjKeyChar(c)) {
+                        newState = PRJKEY;
+                    } else if ((       (c == ' ')  || (c == '\t')
+                                    || (c == '\r') || (c == '\n')   )
+                               && isBugword(startOfBugwordOrPrjkey)) {
+                        rememberIsStart(startOfBugwordOrPrjkey);
+                        newState = ((c == ' ') || (c == '\t')) ? BUGWORD_SPC
+                                                               : BUGWORD_NL;
                     } else {
                         newState = getInitialState(c);
                     }
                     break;
-                case CHARS:
-                    if (Character.isLetter(c)) {
-                        newState = CHARS;
-                    } else if ((c == ' ') || (c == '\t') || (c == '\r') || (c == '\n')) {
-                        if (isBugword()) {
-                            newState = ((c == ' ') || (c == '\t')) ? BUGWORD
-                                                                   : BUGWORD_NL;
-                        } else {
-                            newState = getInitialState(c);
-                        }
+                case PRJKEY:
+                    if (c == '-') {
+                        newState = DASH;
+                    } else if (isPrjKeyChar(c)) {
+                        newState = PRJKEY;
                     } else {
                         newState = getInitialState(c);
                     }
@@ -209,8 +225,9 @@ public class JiraIssueFinder extends IssueFinder {
                 case HASH:
                     if ((c == ' ') || (c == '\t')) {
                         newState = HASH_SPC;
-                    } else if (isUppercaseAscii(c)) {
-                        newState = ID_CHARS;
+                    } else if (isPrjKeyChar(c)) {
+                        //bugword immediately after '#' is not allowed
+                        newState = PRJKEY;
                     } else {
                         newState = getInitialState(c);
                     }
@@ -218,68 +235,74 @@ public class JiraIssueFinder extends IssueFinder {
                 case HASH_SPC:
                     if ((c == ' ') || (c == '\t')) {
                         newState = HASH_SPC;
-                    } else if (isUppercaseAscii(c)) {
-                        newState = ID_CHARS;
-                    } else if (Character.isLetter(c)) {
-                        newState = CHARS;
+                    } else if (isAsciiLetter(c)) {
+                        rememberIsBugwordOrPrjkeyStart();
+                        newState = BUGWORD_OR_PRJKEY;
+                    } else if (isPrjKeyChar(c)) {
+                        newState = PRJKEY;
                     } else {
                         newState = getInitialState(c);
                     }
                     break;
-                case NUM:
-                    if (isDigit(c)) {
-                        newState = NUM;
-                    } else {
-                        newState = getInitialState(c);
-                    }
-                    break;
-                case BUGWORD:
+                case BUGWORD_SPC:
                     if ((c == ' ') || (c == '\t')) {
-                        newState = BUGWORD;
+                        newState = BUGWORD_SPC;
                     } else if ((c == '\r') || (c == '\n')) {
                         newState = BUGWORD_NL;
                     } else if (c == '#') {
                         newState = HASH;
-                    } else if (isUppercaseAscii(c)) {
-                        newState = ID_CHARS;
+                    } else if (isAsciiLetter(c)) {
+                        rememberIsBugwordOrPrjkeyStart();
+                        newState = BUGWORD_OR_PRJKEY;
+                    } else if (isPrjKeyChar(c)) {
+                        newState = PRJKEY;
                     } else {
                         newState = getInitialState(c);
                     }
                     break;
                 case BUGWORD_NL:
-                    if ((c == '\r') || (c == '\n') || (c == ' ') || (c == '\t')) {
+                    if ((c == ' ') || (c == '\t') || (c == '\r') || (c == '\n')) {
                         newState = BUGWORD_NL;
                     } else if (c == '*') {
-                        newState = STAR;
+                        newState = BUGWORD_NL_STAR;
                     } else if (c == '#') {
                         newState = HASH;
-                    } else if (isUppercaseAscii(c)) {
-                        newState = ID_CHARS;
+                    } else if (isAsciiLetter(c)) {
+                        rememberIsBugwordOrPrjkeyStart();
+                        newState = BUGWORD_OR_PRJKEY;
+                    } else if (isPrjKeyChar(c)) {
+                        newState = PRJKEY;
+                    } else {
+                        newState = getInitialState(c);
+                    }
+                    break;
+                case BUGWORD_NL_STAR:
+                    if ((c == ' ') || (c == '\t')) {
+                        newState = BUGWORD_SPC;
+                    } else if ((c == '\r') || (c == '\n')) {
+                        newState = BUGWORD_NL;
                     } else {
                         newState = getInitialState(c);
                     }
                     break;
                 case DASH:
                     if (c == '#') {
-                        rememberIsStart();
                         newState = HASH;
                     } else if (isDigit(c)) {
                         newState = NUM;
-                    } else if (isUppercaseAscii(c)) {
-                        rememberIsStart();
-                        newState = ID_CHARS;
-                    } else if (Character.isLetter(c)) {
-                        rememberIsStart();
-                        newState = CHARS;
+                    } else if (isPrjKeyChar(c)) {
+                        newState = PRJKEY;
                     } else {
                         newState = INIT;
                     }
                     break;
-                case STAR:
-                    if ((c == ' ') || (c == '\t')) {
-                        newState = BUGWORD;
-                    } else if ((c == '\r') || (c == '\n')) {
-                        newState = BUGWORD_NL;
+                case NUM:
+                    if (c == '-') {
+                        newState = DASH;
+                    } else if (isDigit(c)) {
+                        newState = NUM;
+                    } else if (isPrjKeyChar(c)) {
+                        newState = PRJKEY;
                     } else {
                         newState = getInitialState(c);
                     }
@@ -292,19 +315,12 @@ public class JiraIssueFinder extends IssueFinder {
                     newState = getInitialState(c);
                     break;
             }
-            if ((state == NUM) && (newState != NUM)) {
-                if (isSpaceOrPunct(c)) {
-                    storeResult(start, pos);
-                }
+            if ((state == NUM) && (newState == INIT)) {
+                storeResult(start, pos);
             }
             if ((newState == INIT) || (newState == GARBAGE)) {
                 start = -1;
-            }
-            if (newState != ID_CHARS) {
-                bugIdStart = -1;
-            }
-            if ((newState == ID_CHARS) && (state != ID_CHARS)) {
-                bugIdStart = pos;
+                startOfBugwordOrPrjkey = -1;
             }
             state = newState;
         }
@@ -314,7 +330,15 @@ public class JiraIssueFinder extends IssueFinder {
         }
 
         private void rememberIsStart() {
+            rememberIsStart(pos);
+        }
+
+        private void rememberIsStart(int pos) {
             start = pos;
+        }
+
+        private void rememberIsBugwordOrPrjkeyStart() {
+            startOfBugwordOrPrjkey = pos;
         }
 
         private void storeResult(int start, int end) {
@@ -330,12 +354,18 @@ public class JiraIssueFinder extends IssueFinder {
             }
         }
 
+        private static boolean isPrjKeyChar(int c) {
+            return (c > 0x20) && (c <= 0xff) && (c != ',');
+        }
+
         private static boolean isDigit(int c) {
             return ((c >= '0') && (c <= '9'));
         }
 
-        private static boolean isUppercaseAscii(int c) {
-            return (c >= 'A') && (c <= 'Z');
+        private static boolean isAsciiLetter(int c) {
+            /* relies on precondition #1 (see the top of the class) */
+            c |= 0x20;
+            return ((c >= LOWER_A) && (c <= LOWER_Z));
         }
 
         private static boolean isSpaceOrPunct(int c) {
@@ -347,18 +377,36 @@ public class JiraIssueFinder extends IssueFinder {
             return PUNCT_CHARS.indexOf(c) != -1;
         }
 
-        private boolean checkIdIsAtLeastTwoCharsLong() {
-            return (pos - bugIdStart) >= 2;
+        private boolean isBugword() {
+            return isBugword(start);
         }
 
-        private boolean isBugword() {
-            String word = str.substring(start, pos);
+        private boolean isBugword(int startPos) {
+            /* relies on precondition #1 (see the top of the class) */
+            CharSequence word = str.subSequence(startPos, pos);
             for (int i = 0; i < BUGWORDS.length; i++) {
-                if (word.equals(BUGWORDS[i])) {
+                if (equalsIgnoreCase(BUGWORDS[i], word)) {
                     return true;
                 }
             }
             return false;
+        }
+
+        private static boolean equalsIgnoreCase(CharSequence pattern, CharSequence str) {
+            final int patternLength = pattern.length();
+
+            if (str.length() != patternLength) {
+                return false;
+            }
+
+            /* relies on precondition #1 (see the top of the class) */
+            for (int i = 0; i < patternLength; i++) {
+                if ((str.charAt(i) | 0x20) != pattern.charAt(i)) {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
     }

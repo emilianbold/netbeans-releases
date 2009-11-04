@@ -41,11 +41,9 @@
 
 package org.netbeans.modules.java.source.parsing;
 
-import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
@@ -66,7 +64,7 @@ import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
-import org.openide.ErrorManager;
+import org.netbeans.modules.parsing.api.Source;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -74,7 +72,6 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.JarFileSystem;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.NbDocument;
 
 /**
@@ -87,7 +84,7 @@ public class SourceFileObject implements DocumentProvider, FileObjects.Inferable
     final FileObject root;
     private final Kind kind;
     private URI uri;        //Cache for URI
-    private String text;
+    private volatile String text;
     private TokenHierarchy<?> tokens;
     private final JavaFileFilterImplementation filter;
     private static Logger log = Logger.getLogger(SourceFileObject.class.getName());
@@ -106,22 +103,13 @@ public class SourceFileObject implements DocumentProvider, FileObjects.Inferable
         this (file, root, filter);
         update(content);
     }
-    
-    //where
-    private String toString (final CharSequence c) {
-        if (c instanceof String) {
-            return (String) c;
-        }
-        else {
-            return c.toString();
-        }
-    }
+        
     
     /** Creates a new instance of SourceFileObject */
     public SourceFileObject (final FileObject file, final FileObject root, final JavaFileFilterImplementation filter, final boolean renderNow) throws IOException {
         this (file, root, filter);
-        if (renderNow && this.kind != Kind.CLASS) {
-            getCharContentImpl(true);
+        if (renderNow) {
+            update();
         }
     }
     
@@ -137,7 +125,8 @@ public class SourceFileObject implements DocumentProvider, FileObjects.Inferable
     
     public void update () throws IOException {
         if (this.kind != Kind.CLASS) {
-            getCharContentImpl(true);
+            //Side effect assigns the text
+            getContent(true);
         }
     }
     
@@ -146,10 +135,9 @@ public class SourceFileObject implements DocumentProvider, FileObjects.Inferable
             update();
         }
         else {            
-            final CharBuffer charBuffer = CharBuffer.wrap (content);
             this.text = toString(content);
-            tokens = TokenHierarchy.create(charBuffer, false, JavaTokenId.language(), null, null);
         }
+        this.tokens = null;
     }
     
 
@@ -159,66 +147,35 @@ public class SourceFileObject implements DocumentProvider, FileObjects.Inferable
     }
 
     public CharBuffer getCharContent(boolean ignoreEncodingErrors) throws IOException {
-        String _text;
-        synchronized (this) {
-            _text = this.text;
+        String _text = this.text;
+        if (_text == null) {
+            _text = getContent(false);
         }
-        if (_text != null) {
-            return CharBuffer.wrap(_text);
-        }
-        else {
-            return getCharContentImpl(false);
-        }
+        return CharBuffer.wrap(_text);
     }
     
     public TokenHierarchy<?> getTokenHierarchy() throws IOException {
-        if (tokens == null)
-            getCharContentImpl(false);
-        
-        return tokens;
+        if (this.tokens == null) {
+            final CharBuffer charBuffer = getCharContent(true);
+            this.tokens = TokenHierarchy.create(charBuffer, false, JavaTokenId.language(), null, null); //TODO: .createSnapshot();
+        }
+        return this.tokens;
     }
    
-
     public java.io.Writer openWriter() throws IOException {
         return new OutputStreamWriter (this.openOutputStream(), FileEncodingQuery.getEncoding(file));
     }
 
     public Reader openReader(boolean ignoreEncodingErrors) throws IOException {        
-        String _text;
-        synchronized (this) {
-            _text = text;
+        String _text = text;
+        if (_text == null) {
+            _text = getContent(false);
         }
-        if (_text != null) {
-            return new StringReader (_text);
-        }
-        else {
-            final Document doc = getDocument(isOpened());
-            if (doc == null) {
-                Reader r = new InputStreamReader (new BufferedInputStream (this.file.getInputStream()),FileEncodingQuery.getEncoding(file));
-                if (filter != null) {
-                    r = filter.filterReader(r);
-                }
-                return r;
-            }
-            else {
-                final StringBuilder builder = new StringBuilder ();
-                doc.render(new Runnable() {
-                    public void run () {
-                      try {
-                            builder.append(doc.getText(0, doc.getLength()));
-                        } catch (BadLocationException e) {
-                          if (log.isLoggable(Level.SEVERE))
-                              log.log(Level.SEVERE, e.getMessage(), e);
-                      }  
-                    }
-                });
-                return new StringReader (builder.toString());
-            }
-        }       
+        return new StringReader(_text);
     }
 
     public java.io.OutputStream openOutputStream() throws IOException {
-        final StyledDocument doc = getDocument(isOpened());
+        final StyledDocument doc = getDocument();
         if (doc == null) {
             return new LckStream (this.file);
         }
@@ -228,33 +185,11 @@ public class SourceFileObject implements DocumentProvider, FileObjects.Inferable
     }
 
     public InputStream openInputStream() throws IOException {
-        String _text;
-        synchronized (this) {
-            _text = text;
-        }
-        if (_text != null) {
-            return new ByteArrayInputStream (_text.getBytes());
-        }
-        else {
-            final Document doc = getDocument(isOpened());
-            if (doc == null) {
-                return this.file.getInputStream();
-            }
-            else {
-                final StringBuilder builder = new StringBuilder ();
-                doc.render(new Runnable() {
-                    public void run () {
-                      try {
-                            builder.append(doc.getText(0, doc.getLength()));
-                        } catch (BadLocationException e) {
-                          if (log.isLoggable(Level.SEVERE))
-                              log.log(Level.SEVERE, e.getMessage(), e);
-                      }  
-                    }
-                });
-                return new ByteArrayInputStream (builder.toString().getBytes());
-            }
-        }
+        String _text = text;
+        if (_text == null) {
+            _text= getContent(false);
+        }                    
+        return new ByteArrayInputStream (_text.getBytes());
     }
 
     public boolean delete() {
@@ -364,8 +299,12 @@ public class SourceFileObject implements DocumentProvider, FileObjects.Inferable
     }
     
     public StyledDocument getDocument() {
-        EditorCookie ec = isOpened();
-        return ec != null ? getDocument(ec) : null;       
+        final Source src = Source.create(file);
+        if (src == null) {
+            return null;
+        }
+        final Document doc = src.getDocument(false);
+        return (doc instanceof StyledDocument) ?  ((StyledDocument)doc) : null;
     }
     
     public void runAtomic(final Runnable r) {
@@ -391,81 +330,34 @@ public class SourceFileObject implements DocumentProvider, FileObjects.Inferable
         }
         return null;
     }
-    
-    public EditorCookie isOpened () {
-        try {
-            if (this.kind == JavaFileObject.Kind.CLASS) {
-                return null;
+
+    private String getContent(boolean assign) throws IOException {
+        final Source source = Source.create(file);
+        if (source == null) {
+            throw new IOException("No source for: " + FileUtil.getFileDisplayName(file));   //NOI18N
+        }
+        CharSequence content = toString(source.createSnapshot().getText());
+        if (source.getDocument(false)!=null) {
+            //Snapshot is from Document we have to filter it
+            if (filter != null) {
+                content = filter.filterCharSequence(content);
             }
-            DataObject dobj = DataObject.find(this.file);
-            return dobj.getCookie(EditorCookie.class);
-        } catch (DataObjectNotFoundException dnf) {
-            return null;
+        }
+        String result = toString(content);
+        if (assign) {
+            this.text = result;
+        }
+        return result;
+    }
+
+    private String toString (final CharSequence c) {
+        if (c instanceof String) {
+            return (String) c;
+        }
+        else {
+            return c.toString();
         }
     }
-    
-    private CharBuffer getCharContentImpl (boolean assign) throws IOException {
-        final Document doc = getDocument(isOpened());
-	char[] result = null;
-        int length = 0;
-        if (doc == null) {
-	    Reader in = this.openReader (true);
-            int red = 0, rv;
-            try {
-                int len = (int)this.file.getSize();
-                result = new char [len+1];
-                while ((rv=in.read(result,red,len-red))>0 && (red=red+rv)<len);
-            } finally {
-                in.close();
-            }
-            int j=0;
-            for (int i=0; i<red;i++) {
-                if (result[i] =='\r') {                                          //NOI18N
-                    if (i+1>=red || result[i+1]!='\n') {                         //NOI18N
-                        result[j++] = '\n';                                      //NOI18N
-                    }
-                }
-                else {
-                    result[j++] = result[i];
-                }
-            }
-            length = j;
-        }
-        else {            
-            final CharSequence[] _text = new CharSequence[1];
-            doc.render(new Runnable() {
-                public void run () {
-                    try {
-                        _text[0] = doc.getText(0, doc.getLength());
-                    } catch (BadLocationException e) {
-                        if (log.isLoggable(Level.SEVERE))
-                            log.log(Level.SEVERE, e.getMessage(), e);
-                    }
-                }
-            });
-            if (_text[0] != null) {
-                if (filter != null) {
-                    _text[0] = filter.filterCharSequence(_text[0]);
-                }
-                int len = _text[0].length();
-                result = new char[len+1];
-                _text[0].toString().getChars(0,len,result,0);
-                length = len;
-            }
-        }
-	result[length]='\n'; //NOI18N
-        
-        String str = new String(result,0,length);
-	CharBuffer charBuffer = CharBuffer.wrap (str);
-        tokens = TokenHierarchy.create(charBuffer, false, JavaTokenId.language(), null, null); //TODO: .createSnapshot();
-        if (assign) text = str;
-        return charBuffer;
-    }
-            
-    private static StyledDocument getDocument (EditorCookie ec) {
-        return ec == null ? null : ec.getDocument();
-    }    
-    
     
     private class LckStream extends OutputStream {
         
@@ -501,9 +393,7 @@ public class SourceFileObject implements DocumentProvider, FileObjects.Inferable
                 this.delegate.close();
             } finally {
                 this.lock.releaseLock();
-                synchronized (SourceFileObject.this) {
-                    text = null;
-                }
+                text = null;                
             }            
         }                
     }
@@ -572,10 +462,8 @@ public class SourceFileObject implements DocumentProvider, FileObjects.Inferable
                             }
                         }
                     });
-            } finally {
-                synchronized (SourceFileObject.this) {
-                    text = null;
-                }
+            } finally {                
+                text = null;                
             }
         }        
     }

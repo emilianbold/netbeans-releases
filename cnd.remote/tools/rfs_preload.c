@@ -193,34 +193,102 @@ static int on_open(const char *path, int flags) {
     return result;
 }
 
-static pid_t real_fork(const char* function_name, pid_t (*wrapper_addr)(void)) {
+pid_t fork() {
     pid_t result;
     static pid_t (*prev)(void);
         if (!prev) {
-            prev = (pid_t (*)(void)) _get_real_addr(function_name, wrapper_addr);
+            prev = (pid_t (*)(void)) _get_real_addr("fork", fork);
         }
         if (prev) {
             result = prev();
         } else {
-            trace("Could not find original \"%s\" function\n", function_name);
+            trace("Could not find original \"%s\" function\n", "fork");
             errno = EFAULT;
             result = -1;
         }
     if (result == 0) {
         release_socket(); // child
     } else {
-        trace("%s -> %ld\n", function_name, result);
+        trace("%s -> %ld\n", "fork", result);
     }
     return result;
-}
-
-pid_t fork() {
-    real_fork("fork", fork);
 }
 
 //pid_t vfork() {
 //    real_fork("vfork", vfork);
 //}
+
+/** gets current process short name */
+static char* get_procname(char* name, int len) {
+    #ifdef __linux__
+    char path[PATH_MAX];
+    if (readlink ("/proc/self/exe", path, sizeof path) != -1) {
+        trace("0 %d\n", path);
+        char *res = basename(path);
+        if (res) {
+            strncpy(name, res, len);
+            return name;
+        }
+    }
+    return 0;
+    #else
+    // not yet implemented for Solaris
+    return 0;
+    #endif
+}
+
+static void sleep_if_need() {
+    const char* env_sleep_var = "RFS_PRELOAD_SLEEP";
+    const char *env_sleep = getenv(env_sleep_var);
+    // examples are:
+    // RFS_PRELOAD_SLEEP=*,20
+    //      means that we sleep 20 seconds on any process
+    // RFS_PRELOAD_SLEEP=CC,10
+    //      means that we sleep 10 seconds in CC
+    if (env_sleep) {
+        char trace_procname[80]; // name of the process
+        const char *strtime; // time to sleep string representation
+        if (*env_sleep == '*') {
+            strtime = env_sleep + 2; // skip ','
+            trace_procname[0] = 0;
+        } else  {
+            strtime = strchr(env_sleep, ',');            
+            if (strtime) {
+                int size = strtime - env_sleep;
+                if (size + 1 < sizeof trace_procname) {
+                    strncpy(trace_procname, env_sleep, size);
+                    trace_procname[size] = 0;
+                    strtime++;
+                } else {
+                    strtime = 0; // the case when strtime==0 is processed lower
+                }
+            }
+            // the case when strtime==0 is processed lower
+        }
+
+        if (*trace_procname) {
+            char curr_procname[80];
+            if (!get_procname(curr_procname, sizeof curr_procname)) {
+                return;
+            }
+            if (strcmp(trace_procname, curr_procname) != 0) {
+                return;
+            }
+        }
+
+        int time = strtime ? atoi(strtime) : -1;
+        if (time > 0) {
+            fprintf(stderr, "%s=%s is set. Process %d, sleeping %d seconds...\n", env_sleep_var, env_sleep, getpid(), time);
+            fflush(stderr);
+            sleep(time);
+            fprintf(stderr, "... awoke.\n");
+            fflush(stderr);
+        } else {
+            fprintf(stderr, "Incorrect value, should be a positive integer: %s=%s\n", env_sleep_var, env_sleep);
+            fflush(stderr);
+        }
+    }
+}
 
 #pragma init(rfs_startup)
 static void
@@ -260,22 +328,7 @@ rfs_startup(void) {
 
     release_socket();
     trace_sd("startup");
-
-    const char* env_sleep_var = "RFS_PRELOAD_SLEEP";
-    char *env_sleep = getenv(env_sleep_var);
-    if (env_sleep) {
-        int time = atoi(env_sleep);
-        if (time > 0) {
-            fprintf(stderr, "%s is set. Process %d, sleeping %d seconds...\n", env_sleep_var, getpid(), time);
-            fflush(stderr);
-            sleep(time);
-            fprintf(stderr, "... awoke.\n");
-            fflush(stderr);
-        } else {
-            fprintf(stderr, "Incorrect value, should be a positive integer: %s=%s\n", env_sleep_var, env_sleep);
-            fflush(stderr);
-        }
-    }
+    sleep_if_need();
 }
 
 #pragma init(rfs_shutdown)
@@ -407,6 +460,39 @@ FILE *fopen64(const char * filename, const char * mode) {
 }
 #endif
 //#endif
+
+#define real_freopen(function, path, mode, stream) \
+    inside_open++; \
+    trace("%s %s %s\n", #function, path, mode); \
+    FILE* result = NULL; \
+    int int_mode = (strchr(mode, 'w') || strchr(mode, '+'))  ? O_WRONLY : O_RDONLY; \
+    if (on_open(path, int_mode)) { \
+        static FILE* (*prev)(const char *, const char *, FILE *); \
+        if (!prev) { \
+            prev = (FILE* (*)(const char *, const char *, FILE *)) get_real_addr(function); \
+        } \
+        if (prev) { \
+            result = prev(path, mode, stream); \
+        } else { \
+            trace("Could not find original \"%s\" function\n", #function); \
+            errno = EFAULT; \
+            result = NULL; \
+        } \
+    } \
+    trace("%s %s -> %d\n", #function, path, result); \
+    inside_open--; \
+    return result;
+    //result ? -12345 : fileno(result)
+
+FILE *freopen(const char *path, const char *mode, FILE *stream) {
+    real_freopen(freopen, path, mode, stream)
+}
+
+#if _FILE_OFFSET_BITS != 64
+FILE *freopen64(const char *path, const char *mode, FILE *stream) {
+    real_freopen(freopen64, path, mode, stream)
+}
+#endif
 
 // TODO: int openat(int fd, const char *path, int flags, ...);
 // TODO: int openat64(int fd, const char *path, int flags, ...);

@@ -46,17 +46,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import javax.swing.text.Position;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.AstNode.Attribute;
 import org.netbeans.editor.ext.html.parser.AstNodeUtils;
 import org.netbeans.editor.ext.html.parser.AstNodeVisitor;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.el.lexer.api.ELTokenId;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.web.jsf.editor.JsfSupport;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
@@ -167,6 +172,8 @@ public class LibraryDeclarationChecker extends HintsProvider {
                 }
             }, AstNode.NodeType.OPEN_TAG);
 
+            usages[0] += isFunctionLibraryPrefixUsadInEL(context, lib) ? 1 : 0;
+
             if (usages[0] == 0) {
                 //unused declaration
                 Attribute declAttr = namespace2Attribute.get(lib.getNamespace());
@@ -201,6 +208,31 @@ public class LibraryDeclarationChecker extends HintsProvider {
             hints.add(hint);
         }
 
+    }
+
+    private boolean isFunctionLibraryPrefixUsadInEL(RuleContext context, FaceletsLibrary lib) {
+        String libraryPrefix = ((HtmlParserResult)context.parserResult).getNamespaces().get(lib.getNamespace());
+        Document doc = context.doc;
+
+        //lets suppose we operate on the xhtml document which has a top level lexer and the EL
+        //is always embedded on the first embedding level
+        TokenHierarchy<Document> th = TokenHierarchy.get(doc);
+        TokenSequence<?> ts = th.tokenSequence();
+        ts.moveStart();
+        while(ts.moveNext()) {
+            TokenSequence<ELTokenId> elts = ts.embeddedJoined(ELTokenId.language());
+            if(elts != null) {
+                //check the EL expression for the function library prefix usages
+                elts.moveStart();
+                while(elts.moveNext()) {
+                    if(elts.token().id() == ELTokenId.TAG_LIB_PREFIX && CharSequenceUtilities.equals(libraryPrefix, elts.token().text())) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
     }
 
     private static class RemoveUnusedLibraryDeclarationHintFix extends RemoveUnusedLibrariesDeclarationHintFix {

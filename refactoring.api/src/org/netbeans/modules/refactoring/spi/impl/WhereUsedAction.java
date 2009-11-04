@@ -71,6 +71,6 @@ public class WhereUsedAction extends RefactoringGlobalAction {
     }
 
     protected boolean enable(Lookup context) {
-        return ActionsImplementationFactory.canFindUsages(context);
+        return true;
     }
 }

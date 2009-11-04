@@ -48,6 +48,7 @@ import javax.swing.text.Document;
 import org.jrubyparser.ast.CallNode;
 import org.jrubyparser.ast.ClassNode;
 import org.jrubyparser.ast.FCallNode;
+import org.jrubyparser.ast.NewlineNode;
 import org.jrubyparser.ast.Node;
 import org.jrubyparser.ast.NodeType;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -115,7 +116,7 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
         final TokenHierarchy<Document> th = request.th;
         final AstPath path = request.path;
         final QuerySupport.Kind kind = request.kind;
-        final Node target = request.target;
+        final Node target = request.target != null ? AstUtilities.findNextNonNewLineNode(request.target) : null;
 
         TokenSequence<? extends RubyTokenId> ts = LexUtilities.getRubyTokenSequence(th, lexOffset);
 
@@ -167,6 +168,10 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
                     // up and do it a bit more cleverly
                     type = getTypesForConstant(lhs);
                     if (!type.isKnown()) {
+                        // try fqn
+                        type = getTypesForConstant(AstUtilities.getFqnName(path, lhs));
+                    }
+                    if (!type.isKnown()) {
                         type = createTypeInferencer(request, method).inferType(_lhs);
                     }
                     if (type.isKnown() && call.isLHSConstant()) {
@@ -179,10 +184,18 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
                     type = callType;
                 }
             } else { // try method chaining
-                if (target.getNodeType() == NodeType.CALLNODE) {
+                if (AstUtilities.isCall(target)) {
                     Node receiver = ((CallNode) target).getReceiverNode();
                     type = RubyTypeInferencer.create(request.createContextKnowledge()).inferType(receiver);
+                } else if (AstUtilities.isAssignmentNode(target)){
+                    if (!target.childNodes().isEmpty()) {
+                        Node child = target.childNodes().get(0);
+                        if (AstUtilities.isCall(child)) {
+                            type = RubyTypeInferencer.create(request.createContextKnowledge()).inferType(child);
+                        }
+                    }
                 }
+
             }
         }
 

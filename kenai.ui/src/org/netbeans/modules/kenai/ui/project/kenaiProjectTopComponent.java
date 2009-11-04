@@ -80,7 +80,7 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
 
     private final RequestProcessor SingleDataRequestProcessor = new RequestProcessor("KENAI_SINGLE_DATA_REQUEST_PROCESSOR", 1, true); //NOI18N
     private final RequestProcessor SingleImageRequestProcessor = new RequestProcessor("KENAI_SINGLE_IMG_REQUEST_PROCESSOR", 1, true); //NOI18N
-    private final ImageIcon loadingIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/wait.gif", true);
+    private final ImageIcon loadingIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/wait.gif", true); // NOI18N
 
     private RequestProcessor.Task loadingImageTask = null;
     private RequestProcessor.Task loadingDynamicContentTask = null;
@@ -661,7 +661,7 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
                     SwingUtilities.invokeLater(new Runnable() {
 
                         public void run() {
-                            projectImage.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/default.jpg", true));
+                            projectImage.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/default.jpg", true)); // NOI18N
                         }
                     });
                 }

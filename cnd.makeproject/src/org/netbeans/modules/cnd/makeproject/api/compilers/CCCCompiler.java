@@ -46,27 +46,30 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.cnd.api.execution.LinkSupport;
-import org.netbeans.modules.cnd.api.remote.CommandProvider;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.openide.util.Lookup;
+import org.netbeans.modules.nativeexecution.api.NativeProcess;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 public abstract class CCCCompiler extends BasicCompiler {
+
+    private static final String DEV_NULL = "/dev/null"; // NOI18N
+
     private volatile Pair compilerDefinitions;
-    private static File tmpFile = null;
+    private static File emptyFile = null;
     
     protected CCCCompiler(ExecutionEnvironment env, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
         super(env, flavor, kind, name, displayName, path);
@@ -141,9 +144,13 @@ public abstract class CCCCompiler extends BasicCompiler {
     }
 
     @Override
-    public void waitReady() {
+    public void waitReady(boolean reset) {
         CndUtils.assertNonUiThread();
-        getSystemIncludesAndDefines();
+        if (reset) {
+            resetSystemIncludesAndDefines();
+        } else {
+            getSystemIncludesAndDefines();
+        }
     }
 
     private synchronized void getSystemIncludesAndDefines() {
@@ -168,7 +175,7 @@ public abstract class CCCCompiler extends BasicCompiler {
         compilerDefinitions = getFreshSystemIncludesAndDefines();
         saveSystemIncludesAndDefines();
     }
-
+    
     public String getMTLevelOptions(int value) {
         CompilerDescriptor compiler = getDescriptor();
         if (compiler != null && compiler.getMultithreadingFlags() != null && compiler.getMultithreadingFlags().length > value){
@@ -176,7 +183,7 @@ public abstract class CCCCompiler extends BasicCompiler {
         }
         return ""; // NOI18N
     }
-    
+
     public String getLibraryLevelOptions(int value) {
         CompilerDescriptor compiler = getDescriptor();
         if (compiler != null && compiler.getLibraryFlags() != null && compiler.getLibraryFlags().length > value){
@@ -201,74 +208,46 @@ public abstract class CCCCompiler extends BasicCompiler {
         return ""; // NOI18N
     }
     
-    protected void getSystemIncludesAndDefines(String arguments, boolean stdout, Pair pair) throws IOException {
-        String path = getPath();
-        if (path != null && path.length() == 0) {
+    protected final void getSystemIncludesAndDefines(String arguments, boolean stdout, Pair pair) throws IOException {
+        String compilerPath = getPath();
+        if (compilerPath == null || compilerPath.length() == 0) {
             return;
         }
-        if (path == null || !PlatformInfo.getDefault(getExecutionEnvironment()).fileExists(path)) {
-            path = getDefaultPath();
+        ExecutionEnvironment execEnv = getExecutionEnvironment();
+        if (execEnv.isLocal() && Utilities.isWindows()) {
+            compilerPath = LinkSupport.resolveWindowsLink(compilerPath);
         }
-        String command = path;
-        path = IpeUtils.getDirName(path);
-        if (getExecutionEnvironment().isLocal() && Utilities.isWindows()) {
-            command = LinkSupport.resolveWindowsLink(command);
+        if (!HostInfoUtils.fileExists(execEnv, compilerPath)) {
+            compilerPath = getDefaultPath();
+        }
+        if (!HostInfoUtils.fileExists(execEnv, compilerPath)) {
+            return;
         }
 
-        Process process;
-        InputStream is = null;
-        BufferedReader reader;
+        List<String> argsList = new ArrayList<String>();
+        argsList.addAll(Arrays.asList(arguments.trim().split(" +"))); // NOI18N
+        argsList.add(getEmptyFile(execEnv));
 
-        PlatformInfo pi = PlatformInfo.getDefault(getExecutionEnvironment());
-        Map<String, String> env = pi.getEnv();
-        if (getExecutionEnvironment().isRemote()) {
-            CommandProvider provider = Lookup.getDefault().lookup(CommandProvider.class);
-            if (provider != null) {
-                String newPath = env.get(pi.getPathName());
-                newPath = newPath == null ? "" : newPath + pi.pathSeparator();
-                newPath += path;
-                env.put(pi.getPathName(), newPath);
+        PlatformInfo pi = PlatformInfo.getDefault(execEnv);
+        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
+        npb.setExecutable(compilerPath);
+        npb.setArguments(argsList.toArray(new String[argsList.size()]));
+        npb.getEnvironment().prependPathVariable(pi.getPathName(), IpeUtils.getDirName(compilerPath));
 
-                provider.run(getExecutionEnvironment(), remote_command(command + arguments, stdout), env);
-                reader = new BufferedReader(new StringReader(provider.getOutput()));
-            } else {
-                Logger.getLogger("cnd.remote.logger").warning("CommandProvider for remote run is not found"); //NOI18N
-                return;
-            }
-        } else {
-            List<String> newEnv = new ArrayList<String>();
-            for (Map.Entry<String, String> entry : env.entrySet()) {
-                String key = entry.getKey();
-                String value = entry.getValue();
-                if (key.equals(pi.getPathName())) {
-                    newEnv.add(pi.getPathName() + "=" + path + pi.pathSeparator() + value); // NOI18N
-                } else {
-                    newEnv.add(key + "=" + (value != null ? value : "")); // NOI18N
-                }
-            }
-            process = Runtime.getRuntime().exec(command + arguments + " " + tmpFile(), newEnv.toArray(new String[newEnv.size()])); // NOI18N
-            if (stdout) {
-                is = process.getInputStream();
-            } else {
-                is = process.getErrorStream();
-            }
-            reader = new BufferedReader(new InputStreamReader(is));
-        }
-        parseCompilerOutput(reader, pair);
         try {
-            if (is != null) {
-                is.close();
+            NativeProcess process = npb.call();
+            InputStream stream = stdout? process.getInputStream() : process.getErrorStream();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
+            try {
+                parseCompilerOutput(reader, pair);
+            } finally {
+                reader.close();
             }
         } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
-    
-    //TODO: move to a more convenient place and remove fixed tempfile name
-    private String remote_command(String command, boolean use_stdout) {
-        String diversion = use_stdout ? "" : "2>&1 "; // NOI18N
-        return "sh -c \"" + command + " /dev/null " + diversion + "\""; // NOI18N
-    }
-    
+
     // To be overridden
     protected abstract void parseCompilerOutput(BufferedReader reader, Pair pair);
 
@@ -288,10 +267,10 @@ public abstract class CCCCompiler extends BasicCompiler {
      * @param macroToFind the name of the macro to search for
      * @return true if macro with the given name is found, otherwise false
      */
-    protected boolean containsMacro(List macrosList, String macroToFind) {
+    protected boolean containsMacro(List<String> macrosList, String macroToFind) {
 	int len = macroToFind.length();
-	for (Iterator it = macrosList.iterator(); it.hasNext();) {
-	    String macro = (String) it.next();
+	for (Iterator<String> it = macrosList.iterator(); it.hasNext();) {
+	    String macro = it.next();
 	    if (macro.startsWith(macroToFind) ) {
 		if( macro.length() == len ) {
 		    return true; // they are just equal
@@ -330,22 +309,24 @@ public abstract class CCCCompiler extends BasicCompiler {
             }
         }
     }
-    
-    private String tmpFile() {
-        if (tmpFile == null) {
-            try {
-                tmpFile = File.createTempFile("xyz", ".c"); // NOI18N
-                tmpFile.deleteOnExit();
-            } catch (IOException ioe) {
+
+    private String getEmptyFile(ExecutionEnvironment execEnv) {
+        if (execEnv.isLocal() && Utilities.isWindows()) {
+            // no /dev/null on Windows, so we need a real file
+            if (emptyFile == null) {
+                try {
+                    File tmpFile = File.createTempFile("xyz", ".c"); // NOI18N
+                    tmpFile.deleteOnExit();
+                    emptyFile = tmpFile;
+                } catch (IOException ioe) {
+                }
             }
-        }
-        if (tmpFile != null) {
-            return tmpFile.getAbsolutePath();
+            return emptyFile == null? DEV_NULL : emptyFile.getAbsolutePath();
         } else {
-            return "/dev/null"; // NOI18N
+            return DEV_NULL;
         }
     }
-    
+
     protected String getUniqueID() {
         if (getCompilerSet() == null || getCompilerSet().isAutoGenerated()) {
             return getClass().getName() +

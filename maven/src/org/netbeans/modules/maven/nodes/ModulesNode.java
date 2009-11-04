@@ -230,7 +230,6 @@ public class ModulesNode extends AbstractNode {
                                 File norm = FileUtil.normalizeFile(rel);
                                 FileObject folder = FileUtil.toFileObject(norm);
                                 if (folder != null && folder.equals(project.getProjectDirectory())) {
-                                    model.startTransaction();
                                     model.getProject().removeModule(path);
                                     break;
                                 }

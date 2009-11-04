@@ -41,11 +41,13 @@ package org.netbeans.modules.xml.jaxb.model;
 
 import java.math.BigDecimal;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.xml.jaxb.cfg.schema.Schemas;
 import org.netbeans.modules.xml.jaxb.util.JAXBWizModuleConstants;
 import org.netbeans.modules.xml.jaxb.util.ProjectHelper;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
+import org.openide.util.Mutex;
 
 /**
  *
@@ -75,6 +77,16 @@ public class JAXBWizProjectOpenedHookImpl extends ProjectOpenedHook{
             if ((v == null) || (JAXBWizModuleConstants.LATEST_CFG_VERSION.compareTo(v) > 0)){
                 ProjectHelper.migrateProjectFromPreDot5Version(prj);
             }
+            // Update privat.properties for headless run.
+
+            ProjectManager.mutex().writeAccess(
+                    new Mutex.Action() {
+                        public Object run() {
+                            ProjectHelper.setPrivateProjPros(prj);
+                            return null;
+                        }
+                    });
+
         }
     }
 }

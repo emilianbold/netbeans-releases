@@ -44,6 +44,7 @@ import java.awt.datatransfer.Transferable;
 import java.io.IOException;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.refactoring.api.impl.ActionsImplementationFactory;
 import org.netbeans.modules.refactoring.api.ui.ExplorerContext;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.netbeans.modules.refactoring.spi.impl.Util;
@@ -76,8 +77,8 @@ public class ClipboardConvertor implements Convertor {
             ExplorerContext td = new ExplorerContext();
             ic.add(td);
             Lookup l = new AbstractLookup(ic);
-            Action move = RefactoringActionsFactory.moveAction().createContextAwareInstance(l);
-            if (move.isEnabled()) {
+            if (ActionsImplementationFactory.canMove(l)) {
+                Action move = RefactoringActionsFactory.moveAction().createContextAwareInstance(l);
                 ExTransferable tr = ExTransferable.create(t);
                 tr.put(NodeTransfer.createPaste(new RefactoringPaste(t, ic, move, td)));
                 return tr;
@@ -93,8 +94,8 @@ public class ClipboardConvertor implements Convertor {
             ExplorerContext td = new ExplorerContext();
             ic.add(td);
             Lookup l = new AbstractLookup(ic);
-            Action copy = RefactoringActionsFactory.copyAction().createContextAwareInstance(l);
-            if (copy.isEnabled()) {
+            if (ActionsImplementationFactory.canCopy(l)) {
+                Action copy = RefactoringActionsFactory.copyAction().createContextAwareInstance(l);
                 ExTransferable tr = ExTransferable.create(t);
                 tr.put(NodeTransfer.createPaste(new RefactoringPaste(t, ic, copy, td)));
                 return tr;
@@ -130,9 +131,7 @@ public class ClipboardConvertor implements Convertor {
             }
             
             public boolean canHandle() {
-                if (refactor==null)
-                    return false;
-                return refactor.isEnabled();
+                return refactor != null;
             }
             public Transferable paste() throws IOException {
                 SwingUtilities.invokeLater(new Runnable() {

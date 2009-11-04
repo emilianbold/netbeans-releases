@@ -69,7 +69,7 @@ public class SaveAllActionTest extends NbTestCase {
     }
 
     public void testThatTheActionIsInvokeOutsideOfAWTThreadAndOnlyOnceAtATime () throws Exception {
-        SaveAllAction a = (SaveAllAction)SaveAllAction.get (SaveAllAction.class);
+        SaveAllAction a = SaveAllAction.get(SaveAllAction.class);
         a.setEnabled (true);
         assertTrue ("Is enabled", a.isEnabled ());
         

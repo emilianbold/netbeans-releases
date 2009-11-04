@@ -50,10 +50,10 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
+import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
@@ -77,6 +77,7 @@ import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodControlle
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 public class Utils {
     
@@ -342,7 +343,19 @@ public class Utils {
             result.append(firstChar);
             result.append(token.substring(1));
         }
-        
+
+        return result.toString();
+    }
+
+    public static String makeJavaIdentifierPart(String identifier){
+        StringBuilder result = new StringBuilder(identifier.length());
+        for (int i = 0; i < identifier.length(); i++){
+            if (Character.isJavaIdentifierPart(identifier.charAt(i))){
+                result.append(identifier.charAt(i));
+            } else {
+                result.append('_');
+            }
+        }
         return result.toString();
     }
 
@@ -397,6 +410,38 @@ public class Utils {
             }
         }
         return true;
+    }
+
+    public static String getBeanType(final EjbReference ref) throws IOException{
+        String type = ref.getEjbModule().getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, String>(){
+            public String run(EjbJarMetadata metadata) throws Exception {
+                Session[] sessionEJBs = metadata.getRoot().getEnterpriseBeans().getSession();
+                for(Session session: sessionEJBs){
+                    if (session.getEjbClass().equals(ref.getEjbClass())){
+                        return session.getSessionType();
+                    }
+                }
+                return null;
+            }
+        });
+        return type;
+    }
+
+    public static boolean isServlet(FileObject fileObject, final String className){
+        final boolean[] result = new boolean[]{false};
+        try {
+            JavaSource js = JavaSource.forFileObject(fileObject);
+            js.runUserActionTask(new Task<CompilationController>() {
+                public void run(CompilationController cc) throws Exception {
+                    cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                    TypeElement typeElement = cc.getElements().getTypeElement(className);
+                    result[0] =  cc.getTypes().isSubtype(typeElement.asType(), cc.getElements().getTypeElement("javax.servlet.Servlet").asType());
+                }
+            }, true);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return result[0];
     }
 
 //    public static ExecutableElement[] getMethods(EjbMethodController c, boolean checkLocal, boolean checkRemote) {

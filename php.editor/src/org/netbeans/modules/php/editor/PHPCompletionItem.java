@@ -227,7 +227,9 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                         break;
                     }
                 case UNQUALIFIED:
-                    if (!(elem instanceof IndexedNamespace)) {
+                    boolean fncFromDefaultNamespace = ((ifq instanceof IndexedFunction) && ifq.getIn() == null &&
+                            NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME.equals(ifq.getNamespaceName()));
+                    if (!(elem instanceof IndexedNamespace) && !fncFromDefaultNamespace) {
                         Model model = request.result.getModel();
                         NamespaceDeclaration namespaceDeclaration = findEnclosingNamespace(request.result, request.anchor);
                         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(namespaceDeclaration, model.getFileScope());
@@ -607,7 +609,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                 typeName = indexedConstant.getTypeName();
             }
             if (typeName == null) {
-                typeName = "?"; //NOI18N
+                typeName = indexedConstant.isTypeResolved() ? "?" : ""; //NOI18N
             }
             return typeName;
         }
@@ -738,7 +740,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
         @Override
         protected String getFunctionBodyForTemplate() {
-            return "${cursor};\n";//NOI18N
+            return "${cursor}\n";//NOI18N
         }
     }
 

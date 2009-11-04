@@ -50,7 +50,9 @@ import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.InvalidObjectException;
 import java.io.ObjectInputStream;
+import java.io.ObjectInputValidation;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
@@ -61,7 +63,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
@@ -680,9 +684,10 @@ public class DataEditorSupport extends CloneableEditorSupport {
         * Not private for tests.
         */
         transient FileLock fileLock;
+        
         /** did we warned about the size of the file?
          */
-        private transient boolean warned;
+        private transient static Set<FileObject> warnedFiles = new HashSet<FileObject>();
 
         /** Atomic action used to ignore fileChange event from FileObject.refresh */
         private transient FileSystem.AtomicAction action = null;
@@ -775,7 +780,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
         */
         public InputStream inputStream() throws IOException {
             final FileObject fo = getFileImpl ();
-            if (!warned && fo.getSize () > 1024 * 1024) {
+            if (!warnedFiles.contains(fo) && fo.getSize () > 1024 * 1024) {
                 throw new ME (fo.getSize ());
             }
             InputStream is = getFileImpl ().getInputStream ();
@@ -958,21 +963,13 @@ public class DataEditorSupport extends CloneableEditorSupport {
             firePropertyChange("expectedTime", null, getTime()); // NOI18N
         }
         
-        @Override
-        public CloneableOpenSupport findCloneableOpenSupport() {
-            CloneableOpenSupport cos = super.findCloneableOpenSupport ();
-            if (cos instanceof DataEditorSupport) {
-                Object o = ((DataEditorSupport)cos).env;
-                if (o != this && o instanceof Env) {
-                   ((Env)o).warned = this.warned;
-                }
-            }
-            return cos;
-        }
-        
         private void readObject (ObjectInputStream ois) throws ClassNotFoundException, IOException {
             ois.defaultReadObject ();
-            warned = true;
+            ois.registerValidation(new ObjectInputValidation() {
+                public void validateObject() throws InvalidObjectException {
+                    warnedFiles.add(getFileImpl());
+                }
+            }, 0);
         }
         
         private class SaveAsCapableImpl implements SaveAsCapable {
@@ -1006,9 +1003,9 @@ public class DataEditorSupport extends CloneableEditorSupport {
                 };
                 return NbBundle.getMessage(DataObject.class, "MSG_ObjectIsTooBig", arr);
             }
-
+            
             public void confirmed () {
-                warned = true;
+                warnedFiles.add(getFileImpl());
             }
         } // end of ME
     } // end of Env

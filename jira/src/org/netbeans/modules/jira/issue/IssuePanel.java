@@ -45,7 +45,9 @@ import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -78,6 +80,9 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListModel;
+import javax.swing.Scrollable;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -130,7 +135,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Jan Stola
  */
-public class IssuePanel extends javax.swing.JPanel {
+public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private static final Color ORIGINAL_ESTIMATE_COLOR = new Color(137, 175, 215);
     private static final Color REMAINING_ESTIMATE_COLOR = new Color(236, 142, 0);
     private static final Color TIME_SPENT_COLOR = new Color(81, 168, 37);
@@ -375,6 +380,7 @@ public class IssuePanel extends javax.swing.JPanel {
         componentList.addListSelectionListener(new CancelHighlightListener(componentLabel));
         affectsVersionList.addListSelectionListener(new CancelHighlightListener(affectsVersionLabel));
         fixVersionList.addListSelectionListener(new CancelHighlightListener(fixVersionLabel));
+        addCommentArea.getDocument().addDocumentListener(new RevalidatingListener());
     }
 
     private void attachHideStatusListener() {
@@ -1211,7 +1217,22 @@ public class IssuePanel extends javax.swing.JPanel {
         environmentArea = new javax.swing.JTextArea();
         addCommentLabel = new javax.swing.JLabel();
         addCommentScrollPane = new javax.swing.JScrollPane();
-        addCommentArea = new javax.swing.JTextArea();
+        addCommentArea = new javax.swing.JTextArea() {
+            @Override
+            public Dimension getPreferredScrollableViewportSize() {
+                Dimension dim = super.getPreferredScrollableViewportSize();
+                JScrollPane scrollPane = (JScrollPane)SwingUtilities.getAncestorOfClass(JScrollPane.class, this);
+                int delta = 0;
+                if (scrollPane != null) {
+                    Component comp = scrollPane.getHorizontalScrollBar();
+                    delta = comp.isVisible() ? comp.getHeight() : 0;
+                }
+                Insets insets = getInsets();
+                int prefHeight = 5 * getRowHeight() + insets.top + insets.bottom;
+                dim = new Dimension(dim.width, delta + ((dim.height < prefHeight) ? prefHeight : dim.height));
+                return dim;
+            }
+        };
         separator = new javax.swing.JSeparator();
         submitButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
@@ -1361,7 +1382,7 @@ public class IssuePanel extends javax.swing.JPanel {
 
         addCommentLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.addCommentLabel.text")); // NOI18N
 
-        addCommentArea.setRows(5);
+        addCommentScrollPane.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
         addCommentScrollPane.setViewportView(addCommentArea);
 
         submitButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.submitButton.text")); // NOI18N
@@ -1635,15 +1656,15 @@ public class IssuePanel extends javax.swing.JPanel {
                 .addContainerGap())
         );
 
+        layout.linkSize(new java.awt.Component[] {issueTypeCombo, priorityCombo, projectCombo, resolutionCombo, statusCombo}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+
         layout.linkSize(new java.awt.Component[] {affectsVersionScrollPane, componentScrollPane, fixVersionScrollPane}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+
+        layout.linkSize(new java.awt.Component[] {cancelButton, submitButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
 
         layout.linkSize(new java.awt.Component[] {originalEstimateField, remainingEstimateField, timeSpentField}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
 
         layout.linkSize(new java.awt.Component[] {assigneeField, dueField}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
-
-        layout.linkSize(new java.awt.Component[] {issueTypeCombo, priorityCombo, projectCombo, resolutionCombo, statusCombo}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
-
-        layout.linkSize(new java.awt.Component[] {cancelButton, submitButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
 
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -1759,11 +1780,11 @@ public class IssuePanel extends javax.swing.JPanel {
                 .add(dummyCommentPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        layout.linkSize(new java.awt.Component[] {remainingEstimateField, remainingEstimatePanel}, org.jdesktop.layout.GroupLayout.VERTICAL);
+        layout.linkSize(new java.awt.Component[] {originalEstimateField, originalEstimatePanel}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
         layout.linkSize(new java.awt.Component[] {timeSpentField, timeSpentPanel}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
-        layout.linkSize(new java.awt.Component[] {originalEstimateField, originalEstimatePanel}, org.jdesktop.layout.GroupLayout.VERTICAL);
+        layout.linkSize(new java.awt.Component[] {remainingEstimateField, remainingEstimatePanel}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
     }// </editor-fold>//GEN-END:initComponents
 
@@ -2205,6 +2226,37 @@ public class IssuePanel extends javax.swing.JPanel {
     private javax.swing.JLabel updatedLabel;
     // End of variables declaration//GEN-END:variables
 
+    public Dimension getPreferredScrollableViewportSize() {
+        return getPreferredSize();
+    }
+
+    public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
+        return getUnitIncrement();
+    }
+
+    public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
+        return (orientation==SwingConstants.VERTICAL) ? visibleRect.height : visibleRect.width;
+    }
+
+    public boolean getScrollableTracksViewportWidth() {
+        return true;
+    }
+
+    public boolean getScrollableTracksViewportHeight() {
+        return false;
+    }
+
+    private int unitIncrement;
+    private int getUnitIncrement() {
+        if (unitIncrement == 0) {
+            Font font = UIManager.getFont("Label.font"); // NOI18N
+            if (font != null) {
+                unitIncrement = (int)(font.getSize()*1.5);
+            }
+        }
+        return unitIncrement;
+    }
+
     class CancelHighlightListener implements DocumentListener, ActionListener, ListSelectionListener {
         private JLabel label;
 
@@ -2233,6 +2285,30 @@ public class IssuePanel extends javax.swing.JPanel {
                 return;
             }
             cancelHighlight(label);
+        }
+    }
+
+    class RevalidatingListener implements DocumentListener, Runnable {
+        private boolean ignoreUpdate;
+
+        public void insertUpdate(DocumentEvent e) {
+            changedUpdate(e);
+        }
+
+        public void removeUpdate(DocumentEvent e) {
+            changedUpdate(e);
+        }
+
+        public void changedUpdate(DocumentEvent e) {
+            if (ignoreUpdate) return;
+            ignoreUpdate = true;
+            EventQueue.invokeLater(this);
+        }
+
+        public void run() {
+            revalidate();
+            repaint();
+            ignoreUpdate = false;
         }
     }
 

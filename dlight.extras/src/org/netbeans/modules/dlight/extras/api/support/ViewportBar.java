@@ -80,6 +80,8 @@ import org.openide.util.NbBundle;
  */
 /*package*/ class ViewportBar extends JComponent implements ChangeListener, DataFilterListener {
 
+    private static final long NANOS_PER_SECOND = 1000000000L;
+
     private static final Image VIEWPORT_HANDLE = ImageUtilities.loadImage("org/netbeans/modules/dlight/extras/resources/viewport_handle.png"); // NOI18N
     private static final Color VIEWPORT_HANDLE_COLOR = new Color(0x72, 0x8A, 0x84);
     private static final int VIEWPORT_HANDLE_WIDTH = VIEWPORT_HANDLE.getWidth(null);
@@ -220,7 +222,9 @@ import org.openide.util.NbBundle;
             protected void setPosition(int pos, boolean isAdjusting) {
                 ViewportModelState vms = getViewportModelState();
                 Range<Long> selection = ViewportBar.this.getTimeSelection();
-                Long startTime = DLightMath.map(pos, leftMargin, getWidth() - rightMargin, vms.getLimits().getStart(), vms.getLimits().getEnd());
+                Long startTime = DLightMath.prevMultipleOf(NANOS_PER_SECOND,
+                        DLightMath.map(pos, leftMargin, getWidth() - rightMargin, vms.getLimits().getStart(), vms.getLimits().getEnd()));
+                startTime = Math.max(0, startTime);
                 if (selection == null || startTime < selection.getEnd()) {
                     Long endTime = selection == null? Long.MAX_VALUE : selection.getEnd();
                     setTimeSelection(new Range<Long>(startTime, endTime), isAdjusting);
@@ -273,7 +277,8 @@ import org.openide.util.NbBundle;
                     // special case: stick time filter to the right
                     endTime = Long.MAX_VALUE;
                 } else {
-                    endTime = DLightMath.map(pos, leftMargin, getWidth() - rightMargin, vms.getLimits().getStart(), vms.getLimits().getEnd());
+                    endTime = DLightMath.nextMultipleOf(NANOS_PER_SECOND,
+                            DLightMath.map(pos, leftMargin, getWidth() - rightMargin, vms.getLimits().getStart(), vms.getLimits().getEnd()));
                 }
                 if (selection == null || selection.getStart() < endTime) {
                     Long startTime = selection == null? Long.MIN_VALUE : selection.getStart();
@@ -314,7 +319,7 @@ import org.openide.util.NbBundle;
 
         this.timeMarksProvider = TimeMarksProvider.newInstance();
 
-        DraggingSupport dragAdapter = new DraggingSupport(this,
+        /*DraggingSupport dragAdapter =*/ new DraggingSupport(this,
                 Arrays.asList(viewportStartMark, viewportEndMark, selectionStartMark, selectionEndMark));
     }
 

@@ -117,7 +117,7 @@ public class IndexingSupportTest extends NbTestCase {
         doc2.addPair("class", "Object", true, true);
         doc2.addPair("package", "java.lang", true, true);        
         is.addDocument(doc2);
-        SupportAccessor.getInstance().store(is);
+        SupportAccessor.getInstance().store(is,true);
 
         // query
         Constructor<QuerySupport> c = QuerySupport.class.getDeclaredConstructor(FileObject.class, String.class, Integer.TYPE);

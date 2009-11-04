@@ -41,7 +41,6 @@ package org.netbeans.modules.dlight.core.stack.ui;
 import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Image;
-import java.util.ArrayList;
 import java.util.Vector;
 import javax.swing.Action;
 import javax.swing.Icon;
@@ -96,7 +95,7 @@ final class MultipleCallStackRootNode extends AbstractNode {
 //    public String getHtmlDisplayName() {
 //        return "<h2>" + getDisplayName() + "</h2>"; // NOI18N
 //    }
-    class MyIcon implements Icon {
+    private static class MyIcon implements Icon {
 
         public void paintIcon(Component c, Graphics g, int x, int y) {
         }

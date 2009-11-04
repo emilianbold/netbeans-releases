@@ -74,11 +74,13 @@ public final class NativeProcessExecutionService {
     }
 
     public ProcessInfo getProcessInfo() {
-        if (task.process == null) {
-            throw new IllegalThreadStateException("Not started yet"); // NOI18N
-        }
+        synchronized (task) {
+            if (task.process == null) {
+                throw new IllegalThreadStateException("Not started yet"); // NOI18N
+            }
 
-        return task.process.getProcessInfo();
+            return task.process.getProcessInfo();
+        }
     }
 
     private static class ExecutionTask implements Callable<Integer> {

@@ -47,6 +47,7 @@ import java.awt.Cursor;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 
+import java.util.List;
 import javax.swing.JFrame;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
@@ -64,6 +65,7 @@ import org.openide.util.NbBundle;
 
 import java.io.IOException;
 
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -80,6 +82,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.WindowManager;
@@ -165,7 +168,7 @@ public final class InspectMembersAtCaretAction extends BaseAction {
                                 FileObject elementFileObject = NbEditorUtilities.getFileObject(document);
                                 if (elementFileObject != null) {
                                     if (element instanceof TypeElement) {
-                                        show(elementFileObject, new Element[] {element}, compilationController);
+                                        show(elementFileObject, new Element[] {element});
                                     } else if (element instanceof VariableElement) {
                                         TypeMirror typeMirror = ((VariableElement) element).asType();
 
@@ -173,7 +176,7 @@ public final class InspectMembersAtCaretAction extends BaseAction {
                                             element = ((DeclaredType) typeMirror).asElement();
 
                                             if (element != null) {
-                                                show(elementFileObject, new Element[] {element}, compilationController);
+                                                show(elementFileObject, new Element[] {element});
                                             }
                                         }
                                     } else if (element instanceof ExecutableElement) {
@@ -185,14 +188,14 @@ public final class InspectMembersAtCaretAction extends BaseAction {
                                                 element = ((DeclaredType) typeMirror).asElement();
 
                                                 if (element != null) {
-                                                    show(elementFileObject, new Element[] {element}, compilationController);
+                                                    show(elementFileObject, new Element[] {element});
                                                 }
                                             }
                                         } else if (element.getKind() == ElementKind.CONSTRUCTOR) {
                                             element = element.getEnclosingElement();
 
                                             if (element != null) {
-                                                show(elementFileObject, new Element[] {element}, compilationController);
+                                                show(elementFileObject, new Element[] {element});
                                             }
                                         }
                                     }
@@ -214,10 +217,14 @@ public final class InspectMembersAtCaretAction extends BaseAction {
         });                
     }
 
-    private void show(final FileObject fileObject, final Element[] elements, final CompilationController compilationController) {
+    private void show(final FileObject fileObject, final Element[] elements) {
+        final List<ElementHandle<?>> handles = new ArrayList<ElementHandle<?>>(elements.length);
+        for (Element element : elements) {
+            handles.add (ElementHandle.create(element));
+        }
         SwingUtilities.invokeLater(new Runnable() {
             public void run () {
-                JavaMembers.show(fileObject, elements, compilationController);
+                JavaMembers.show(fileObject, handles.toArray(new ElementHandle[handles.size()]));
             }
         });
     }

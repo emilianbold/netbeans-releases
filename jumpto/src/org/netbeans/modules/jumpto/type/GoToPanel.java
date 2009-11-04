@@ -83,7 +83,7 @@ public class GoToPanel extends javax.swing.JPanel {
     private static final int BRIGHTER_COLOR_COMPONENT = 10;
     private ContentProvider contentProvider;
     private boolean containsScrollPane;
-    private JLabel messageLabel;
+    JLabel messageLabel;
     private TypeDescriptor selectedType;
     
     private String oldText;
@@ -135,7 +135,7 @@ public class GoToPanel extends javax.swing.JPanel {
         searchHistory.saveHistory();
         super.removeNotify();
     }
-    
+
     /** Sets the model from different therad
      */
     public void setModel( final ListModel model ) { 
@@ -360,7 +360,7 @@ public class GoToPanel extends javax.swing.JPanel {
     private javax.swing.JPanel listPanel;
     private javax.swing.JList matchesList;
     private javax.swing.JScrollPane matchesScrollPane1;
-    private javax.swing.JTextField nameField;
+    javax.swing.JTextField nameField;
     // End of variables declaration//GEN-END:variables
         
     

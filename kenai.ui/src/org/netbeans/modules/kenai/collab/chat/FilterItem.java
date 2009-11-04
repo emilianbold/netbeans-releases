@@ -73,9 +73,7 @@ public class FilterItem {
             if (name == null) {
                 return NbBundle.getMessage(FilterItem.class, "FilterItem.All"); // NOI18N
             }
-            return "<html><b>"+ // NOI18N
-                    Kenai.getDefault().getProject(name).getDisplayName() +
-                    "</b></html>"; // NOI18N
+            return Kenai.getDefault().getProject(name).getDisplayName();
         } catch (KenaiException ex) {
             Exceptions.printStackTrace(ex);
         }

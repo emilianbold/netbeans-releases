@@ -41,10 +41,13 @@
 
 package org.netbeans.modules.j2ee.dd.impl.ejb.annotation;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -101,8 +104,8 @@ public class SessionImpl extends PersistentObject implements Session {
     
     // lazy initialization
     private Set<String> interfacesSet;
-    private String[] businessLocal;
-    private String[] businessRemote;
+    private Set<String> businessLocal = new HashSet<String>();
+    private Set<String> businessRemote = new HashSet<String>();
     private EjbRef[] ejbRefs;
     private EjbLocalRef[] ejbLocalRefs;
     private ServiceRef[] serviceRefs;
@@ -110,6 +113,10 @@ public class SessionImpl extends PersistentObject implements Session {
     private ResourceEnvRef[] resourceEnvRefs = null;
     private EnvEntry[] envEntries = null;
     private MessageDestinationRef[] messageDestinationRefs = null;
+
+    private PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
+    private static final String PROPERTY_BUSINESS_LOCAL = "BusinessLocal";       //NOI18N
+    private static final String PROPERTY_BUSINESS_REMOTE = "BusinessRemote";       //NOI18N
     
     public SessionImpl(Kind kind, AnnotationModelHelper helper, TypeElement typeElement) {
         super(helper, typeElement);
@@ -145,6 +152,8 @@ public class SessionImpl extends PersistentObject implements Session {
         ParseResult parseResult = parser.parse(annotationMirror);
         ejbName = parseResult.get("name", String.class); // NOI18N
         ejbClass = typeElement.getQualifiedName().toString();
+
+        initBusinessInterfaces();
         return true;
     }
     
@@ -154,7 +163,8 @@ public class SessionImpl extends PersistentObject implements Session {
      * Initializes businessLocal and businessRemote fields
      */
     private void initBusinessInterfaces() {
-    
+        Set<String> businessLocalOld = new HashSet<String>(businessLocal);
+        Set<String> businessRemoteOld = new HashSet<String>(businessRemote);
         // try to remember set of interfaces from last initialization
         // and if it is changed, reinitialize again
         
@@ -191,8 +201,8 @@ public class SessionImpl extends PersistentObject implements Session {
         TypeElement typeElement = getTypeElement();
 
         interfacesSet = new HashSet<String>();
-        businessLocal = new String[] {};
-        businessRemote = new String[] {};
+        businessLocal.clear();
+        businessRemote.clear();
         
         if (typeElement == null) {
             return;
@@ -236,25 +246,32 @@ public class SessionImpl extends PersistentObject implements Session {
             if (beanRemoteAnnotation == null && /*annotatedLocalInterfaces.size() == 0 &&*/
                 annotatedRemoteInterfaces.size() == 0)
             {
-                businessLocal = new String[] { interfaces.get(0).getQualifiedName().toString() };
+                businessLocal.add(interfaces.get(0).getQualifiedName().toString()) ;
             } else if (beanLocalAnnotation == null && /*beanRemoteAnnotation != null &&*/
                 annotatedLocalInterfaces.size() == 0 /*&& annotatedRemoteInterfaces.size() == 0*/)
             {
-                businessRemote = new String[] { interfaces.get(0).getQualifiedName().toString() };
+                businessRemote.add(interfaces.get(0).getQualifiedName().toString());
             }
         } else {
             if (beanLocalAnnotation != null) {
                 List<String> annotationsValues = getClassesFromLocalOrRemote(beanLocalAnnotation);
-                businessLocal = annotationsValues.toArray(new String[annotationsValues.size()]);
+                businessLocal.addAll(annotationsValues);
             } else {
-                businessLocal = annotatedLocalInterfaces.toArray(new String[annotatedLocalInterfaces.size()]);
+                businessLocal.addAll(annotatedLocalInterfaces);
             }
             if (beanRemoteAnnotation != null) {
                 List<String> annotationsValues = getClassesFromLocalOrRemote(beanRemoteAnnotation);
-                businessRemote = annotationsValues.toArray(new String[annotationsValues.size()]);
+                businessRemote.addAll(annotationsValues);
             } else {
-                businessRemote = annotatedRemoteInterfaces.toArray(new String[annotatedRemoteInterfaces.size()]);
+                businessRemote.addAll(annotatedRemoteInterfaces);
             }
+        }
+
+        if (!businessLocalOld.equals(businessLocal)){
+            fireChange(new PropertyChangeEvent(this, PROPERTY_BUSINESS_LOCAL, businessLocalOld, businessLocal));
+        }
+        if (!businessRemoteOld.equals(businessRemote)){
+            fireChange(new PropertyChangeEvent(this, PROPERTY_BUSINESS_REMOTE, businessRemoteOld, businessRemote));
         }
     }
     
@@ -336,6 +353,18 @@ public class SessionImpl extends PersistentObject implements Session {
         }
         messageDestinationRefs = CommonAnnotationHelper.getMessageDestinationRefs(getHelper(), getTypeElement());
     }
+
+    public void addPropertyChangeListener(PropertyChangeListener pcl) {
+        changeSupport.addPropertyChangeListener(pcl);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener pcl) {
+        changeSupport.removePropertyChangeListener(pcl);
+    }
+
+    private void fireChange(PropertyChangeEvent pce){
+        changeSupport.firePropertyChange(pce);
+    }
     // </editor-fold>
 
     // <editor-fold desc="Model implementation">
@@ -354,12 +383,12 @@ public class SessionImpl extends PersistentObject implements Session {
     
     public String[] getBusinessLocal() throws VersionNotSupportedException {
         initBusinessInterfaces();
-        return businessLocal;
+        return businessLocal.toArray(new String[businessLocal.size()]);
     }
     
     public String[] getBusinessRemote() throws VersionNotSupportedException {
         initBusinessInterfaces();
-        return businessRemote;
+        return businessRemote.toArray(new String[businessRemote.size()]);
     }
     
     public EjbRef[] getEjbRef() {
@@ -1090,14 +1119,6 @@ public class SessionImpl extends PersistentObject implements Session {
     }
     
     public ServiceRef newServiceRef() throws VersionNotSupportedException {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-    
-    public void addPropertyChangeListener(PropertyChangeListener pcl) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-    
-    public void removePropertyChangeListener(PropertyChangeListener pcl) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
     

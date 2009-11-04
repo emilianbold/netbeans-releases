@@ -41,6 +41,9 @@
 
 package org.netbeans.performance.languages.actions;
 
+import java.io.File;
+import java.net.URISyntaxException;
+import java.net.URL;
 import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.languages.Projects;
@@ -78,9 +81,22 @@ public class ScriptingExpandFolderTest extends PerformanceTestCase {
         super(testName,performanceDataName);
     }
 
-    public static NbTestSuite suite() {
+    public static NbTestSuite suite() throws URISyntaxException {
+        URL u = ScriptingExpandFolderTest.class.getProtectionDomain().getCodeSource().getLocation();
+        File f = new File(u.toURI());
+        while (f != null) {
+            File hg = new File(f, ".hg");
+            if (hg.isDirectory()) {
+                System.setProperty("versioning.unversionedFolders", f.getPath());
+                System.err.println("ignoring Hg folder: " + f);
+                break;
+            }
+            f = f.getParentFile();
+        }
+
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ScriptingSetup.class)
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.emptyConfiguration().
+             honorAutoloadEager(true).addTest(ScriptingSetup.class)
              .addTest(ScriptingExpandFolderTest.class)
              .enableModules(".*").clusters(".*")));
         return suite;
@@ -123,7 +139,7 @@ public class ScriptingExpandFolderTest extends PerformanceTestCase {
     }
 
     public void testExpandRubyProjectNode() {
-        WAIT_AFTER_OPEN = 2000;
+        WAIT_AFTER_OPEN = 1000;
         project = Projects.RUBY_PROJECT;
         pathToFolderNode = "";
         expectedTime = 1000;
@@ -131,7 +147,7 @@ public class ScriptingExpandFolderTest extends PerformanceTestCase {
     }
 
     public void testExpandFolderWith100RubyFiles() {
-        WAIT_AFTER_OPEN = 2000;
+        WAIT_AFTER_OPEN = 1000;
         project = Projects.RUBY_PROJECT;
         pathToFolderNode = "Source Files" + "|" + "100RbFiles";
         expectedTime = 1000;
@@ -139,7 +155,7 @@ public class ScriptingExpandFolderTest extends PerformanceTestCase {
     }
 
     public void testExpandRailsProjectNode() {
-        WAIT_AFTER_OPEN = 2000;
+        WAIT_AFTER_OPEN = 1000;
         project = Projects.RAILS_PROJECT;
         pathToFolderNode = "";
         expectedTime = 1000;
@@ -147,7 +163,7 @@ public class ScriptingExpandFolderTest extends PerformanceTestCase {
     }
 
     public void testExpandPHPProjectNode() {
-        WAIT_AFTER_OPEN = 2000;
+        WAIT_AFTER_OPEN = 1000;
         project = Projects.PHP_PROJECT;
         pathToFolderNode = "";
         expectedTime = 1000;
@@ -155,28 +171,28 @@ public class ScriptingExpandFolderTest extends PerformanceTestCase {
     }
 
     public void testExpandFolderWith100RailsFiles() {
-        WAIT_AFTER_OPEN = 2000;
+        WAIT_AFTER_OPEN = 1000;
         project = Projects.RAILS_PROJECT;
         pathToFolderNode = "Unit Tests" + "|" + "100RhtmlFiles";
         expectedTime = 1000;
         doMeasurement();        
     }
     public void testExpandFolderWith100JSFiles() {
-        WAIT_AFTER_OPEN = 2000;
+        WAIT_AFTER_OPEN = 1000;
         project = Projects.SCRIPTING_PROJECT;
         pathToFolderNode = "Web Pages" + "|" + "100JsFiles";
         expectedTime = 1000;
         doMeasurement();           
     }
     public void testExpandFolderWith100CssFiles() {
-        WAIT_AFTER_OPEN = 2000;
+        WAIT_AFTER_OPEN = 1000;
         project = Projects.SCRIPTING_PROJECT;
         pathToFolderNode = "Web Pages" + "|" + "100CssFiles";
         expectedTime = 1000;
         doMeasurement();           
     }  
     public void testExpandFolderWith100PhpFiles() {
-        WAIT_AFTER_OPEN = 2000;
+        WAIT_AFTER_OPEN = 1000;
         project = Projects.PHP_PROJECT;
         pathToFolderNode = "Source Files" + "|" + "100PhpFiles";
         expectedTime = 1000;

@@ -73,92 +73,8 @@ public class PHPFormatterTest extends PHPTestBase {
             // Ignore -- we've already registered this either via layers or other means
         }
     }
-  
-     public void testSpacesAfterObjectRefereneces() throws Exception {
-        reformatFileContents("testfiles/formatting/real_life/spacesAfterObjectReferences.php");
-    }
-
-    /**
-     * issue 160996
-     * @throws Exception
-     */
-      
-    public void testStatementsWithoutSpaces() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/160996.php");
-    }
-
-    /**
-     * issue 162320
-     * @throws Exception
-     */
-
-    public void testCommentsInStatements() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/162320.php");
-    }
-
-    /**
-     * issue 162586
-     * @throws Exception
-     */
-
-    public void testCommentsFormattingMixedWithHTML() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/162586.php");
-    }
-
-    /**
-     * issue 173899
-     * @throws Exception
-     */
-
-    public void test173899() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/173899.php");
-    }
-    /**
-     * issue 173903
-     * @throws Exception
-     */
-    public void test173903() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/173903.php");
-    }
-
-    /**
-     * issue 173906
-     * @throws Exception
-     */
-    public void test173906_1() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/173906_1.php");
-    }
-    public void test173906_2() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/173906_2.php");
-    }
-
-
-     /**
-     * issue 173908
-     * @throws Exception
-     */
-    public void test173908() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/173908.php");
-    }
-
-    /**
-     * issue 174579
-     * @throws Exception
-     */
-    public void test174579() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/174579.php");
-    }
-
-    /**
-     * issue 174578
-     * @throws Exception
-     */
-    public void test174578() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/174578.php");
-    }
-
-    public void testIfElseStatement() throws Exception {
-        reformatFileContents("testfiles/formatting/real_life/else_if.php");
+      public void test174595() throws Exception {
+        reformatFileContents("testfiles/formatting/issue174595.php");
     }
 
     public void testContinuedExpression() throws Exception {
@@ -199,6 +115,14 @@ public class PHPFormatterTest extends PHPTestBase {
 
     public void testArrays2() throws Exception {
         reformatFileContents("testfiles/formatting/arrays2.php");
+    }
+
+    public void testFragment1() throws Exception {
+        reformatFileContents("testfiles/formatting/format_fragment1.php");
+    }
+
+    public void testNestedArrays1() throws Exception {
+        reformatFileContents("testfiles/formatting/nested_array1.php");
     }
 
     public void testSubsequentQuotes() throws Exception {
@@ -260,6 +184,10 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/issue162320.php");
     }
 
+    public void test173906_dowhile() throws Exception {
+        reformatFileContents("testfiles/formatting/issue173906_dowhile.php");
+    }
+
     public void test164381() throws Exception {
         reformatFileContents("testfiles/formatting/issue164381.php");
     }
@@ -272,10 +200,10 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/issue174563.php");
     }
 
-    public void test173352() throws Exception {
-        reformatFileContents("testfiles/formatting/issue173352.php");
+    public void test172475() throws Exception {
+        reformatFileContents("testfiles/formatting/issue172475.php");
     }
-
+  
     private void reformatFileContents(String file) throws Exception {
         reformatFileContents(file, new IndentPrefs(2, 2));
     }

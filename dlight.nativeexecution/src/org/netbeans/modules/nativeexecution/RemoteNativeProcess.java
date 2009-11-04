@@ -99,7 +99,7 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
                 String error = null;
 
                 if (exception != null) {
-                    error = exception.getMessage() == null ? exception.toString() : exception.getMessage();
+                    error = (exception.getMessage() == null ? exception.toString() : exception.getMessage()) + "\n"; // NOI18N
                 }
 
                 streams = new ChannelStreams(null,

@@ -54,12 +54,20 @@ and are applied only to your installation of the IDE.
 <tr>
 </td>
 <td valign="top"><tt>build</tt></td>
-<td valign="top">The output directory for object (<tt>.o</tt>) files.
+<td valign="top">The output directory for object (<tt>.o</tt>) files.  This directory may contain
+    subdirectories that are named for the project configuration and tool collection that were used to build the project.
+    For example, if you build your project while the Debug configuration is active, and you are using the
+    Sun Studio tool collection on a Solaris OS on an x86 system, you will have Debug and SunStudio-Solaris-x86
+    subdirectories. These subdirectories enable you to keep separate build products for different build environments.
 </td>
 </tr>
 <tr>
 <td valign="top"><tt>dist</tt></td>
-<td>The output directory for executable (<tt>.exe</tt>) files and library files.
+<td>The output directory for executable (<tt>.exe</tt>) files and library files. This directory may contain
+    subdirectories that are named for the project configuration and tool collection that were used to build the project.
+    For example, if you build your project while the Debug configuration is active, and you are using the
+    Sun Studio tool collection on a Solaris OS on an x86 system, you will have Debug and SunStudio-Solaris-x86
+    subdirectories. These subdirectories enable you to keep separate build products for different build environments.
 </td>
 </tr>
 <tr>

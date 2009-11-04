@@ -46,14 +46,13 @@ public class GizmoStringConfiguration {
 
     private GizmoOptionsImpl gizmoOptionsImpl;
     private GizmoStringConfiguration master = null;
-    private String def;
+    private String def = null;
     ;
     private String value;
     private boolean modified;
 
-    public GizmoStringConfiguration(GizmoOptionsImpl gizmoOptionsImpl, GizmoStringConfiguration master, String def) {
+    public GizmoStringConfiguration(GizmoOptionsImpl gizmoOptionsImpl) {
         this.gizmoOptionsImpl = gizmoOptionsImpl;
-        this.def = def;
         reset();
     }
 
@@ -135,7 +134,7 @@ public class GizmoStringConfiguration {
 
     @Override
     public GizmoStringConfiguration clone() {
-        GizmoStringConfiguration clone = new GizmoStringConfiguration(gizmoOptionsImpl, master, def);
+        GizmoStringConfiguration clone = new GizmoStringConfiguration(gizmoOptionsImpl);
         clone.setValue(getValue());
         clone.setModified(getModified());
         return clone;

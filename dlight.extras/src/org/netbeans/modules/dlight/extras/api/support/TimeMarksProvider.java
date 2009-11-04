@@ -70,7 +70,7 @@ public final class TimeMarksProvider extends AbstractCachingAxisMarksProvider {
         long labelInterval = getLabelInterval(viewportEnd - viewportStart, axisSize, axisFontMetrics);
         List<AxisMark> marks = new ArrayList<AxisMark>();
         for (long value = viewportStart;
-                value <= viewportEnd; value = DLightMath.nextProductOf(tickInterval, value)) {
+                value <= viewportEnd; value = DLightMath.nextMultipleOf(tickInterval, value)) {
             if (value % tickInterval == 0) {
                 String text = null;
                 if (value % labelInterval == 0) {

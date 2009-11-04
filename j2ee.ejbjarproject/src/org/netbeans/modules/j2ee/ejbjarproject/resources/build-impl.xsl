@@ -264,13 +264,7 @@ is divided into following sections:
                 </condition> 
                 <property name="javadoc.encoding.used" value="${{source.encoding}}"/>
                 <property name="includes" value="**"/>
-                <property name="excludes" value=""/>
-                <condition property="javac.compilerargs.jaxws" value="-Djava.endorsed.dirs='${{jaxws.endorsed.dir}}'" else="">
-                    <and>
-                        <isset property="jaxws.endorsed.dir"/>
-                        <available file="nbproject/jaxws-build.xml"/>
-                    </and>
-                </condition>             
+                <property name="excludes" value=""/>            
                 <path id="endorsed.classpath.path" path="${{endorsed.classpath}}"/>
                 <condition property="endorsed.classpath.cmd.line.arg" value="-Xbootclasspath/p:'${{toString:endorsed.classpath.path}}'" else="">
                     <length length="0" string="${{endorsed.classpath}}" when="greater"/>
@@ -407,7 +401,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                                 <path path="@{{classpath}}"/>
                             </classpath>
                             <compilerarg line="${{endorsed.classpath.cmd.line.arg}}"/>
-                            <compilerarg line="${{javac.compilerargs}} ${{javac.compilerargs.jaxws}}"/>
+                            <compilerarg line="${{javac.compilerargs}}"/>
                             <customize/>
                         </javac>
                     </sequential>
@@ -437,6 +431,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                             <xsl:attribute name="dir">${basedir}</xsl:attribute> <!-- #47474: match <java> --> 
                             <xsl:attribute name="failureproperty">tests.failed</xsl:attribute>
                             <xsl:attribute name="errorproperty">tests.failed</xsl:attribute>
+                            <xsl:attribute name="tempdir">${java.io.tmpdir}</xsl:attribute>
                             <xsl:if test="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:explicit-platform">
                                 <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
                             </xsl:if>
@@ -1361,7 +1356,7 @@ exists or setup the property manually. For example like this:
                 <xsl:comment> the directory must exist, otherwise the XML formatter would fail </xsl:comment>
                 <mkdir dir="${{build.test.results.dir}}"/>
                 <ejbjarproject1:debug classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner"
-                                      classpath="${{ant.home}}/lib/ant.jar:${{ant.home}}/lib/ant-junit.jar:${{debug.test.classpath}}"
+                                      classpath="${{ant.home}}/lib/ant.jar:${{ant.home}}/lib/ant-junit.jar:${{debug.test.classpath}}:${{j2ee.platform.embeddableejb.classpath}}"
                                       args="${{test.class}}">
                     <customize>
                         <arg value="showoutput=true"/>

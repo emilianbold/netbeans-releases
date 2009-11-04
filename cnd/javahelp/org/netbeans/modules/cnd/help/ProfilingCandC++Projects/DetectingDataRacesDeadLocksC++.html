@@ -1,0 +1,175 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!--
+Copyright &copy; 2009 Sun Microsystems, Inc. All rights reserved.
+Use is subject to license terms.
+ -->
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<!--            <link href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css"
+ -->
+    <link href="/org/netbeans/modules/usersguide/ide.css" type="text/css" rel="StyleSheet">
+    <meta content="Helen" name="generator">
+    <title>Detecting Data Races and Deadlocks in C/C++ Projects</title>
+  </head>
+  <body>
+    <h2>
+       Detecting Data Races and Deadlocks in C/C++ Projects
+    </h2>
+    <p>
+       <small><a href="#seealso">See Also</a></small>
+    </p>
+    <p>
+       When you use the Sun Studio tool collection with the IDE on the Solaris 10 OS or OpenSolaris
+      OS or on Linux platforms, you can use the Data Race and Deadlock Detection tool to analyze
+      your C/C++ programs. This tool helps find data races and actual or potential deadlocks in
+      your running code.
+    </p>
+    <p>
+       A <b>data race</b> occurs in a multithreaded process when <b>all</b> of the following
+      conditions exist:
+    </p>
+    <ul>
+      <li>
+        Two or more threads in the process access the same memory location concurrently
+      </li>
+      <li>
+        At least one of the accesses is for writing
+      </li>
+      <li>
+        The threads are not using exclusive locks to control their accesses to that memory
+      </li>
+    </ul>
+    <p>
+       These conditions cause the order of accesses to be non-deterministic, and the computation
+      might give different results from run to run depending on the order of accesses. Some data
+      races might be benign (for example, when the memory access is used for a busy-wait), but many
+      data races are bugs in the program.
+    </p>
+    <p>
+       A <b>deadlock</b> occurs when two or more threads are blocked forever because they are
+      waiting for each other. Deadlocks can be caused by many conditions, and one of the most
+      common is the misuse of mutual exclusion locks. The Data Race and Deadlock Detection tool
+      detects this common cause of deadlocks.
+    </p>
+    <p>
+       A process with two or more threads can deadlock when <b>any</b> of the following conditions
+      exist:
+    </p>
+    <ul>
+      <li>
+        Threads that are already holding locks request new locks
+      </li>
+      <li>
+        The requests for new locks are made concurrently
+      </li>
+      <li>
+        Two or more threads form a circular chain in which each thread waits for a lock which is
+        held by the next thread in the chain
+      </li>
+    </ul>
+    <p>
+       <b>To detect data races or deadlocks in your project:</b>
+    </p>
+    <ol>
+      <li>
+        In the Projects window, select the project you want to analyze.
+      </li>
+      <li>Set the project to use the Sun Studio tool collection for building. <br>
+          See <a href="../WorkingWithCandC++Projects/ConfiguringBuildTools.html">Configuring C and C++ Build Tools</a>< for information
+          about setting your tool collection and
+          <a href="../WorkingWithCandC++Projects/SettingCandC++ProjectProperties.html">Setting Project Properties</a>./li>
+      <li>
+        Right-click and select Set as Main Project if the project is not already the main project.
+      </li>
+      <li>
+        Click <img alt="Number one" src="../images/dataraceicon.png"> in the toolbar.
+      </li>
+      <li>
+        In the Thread Data Collection Profile dialog box, specify which thread problem you want to
+        look for in the Collection Data For option.
+      </li>
+      <li>
+        The amount of load placed on the system for the option you select is displayed as Overhead.
+        The performance of other programs running on your system might be affected when the
+        overhead is High, which occurs when you detect both Data Races and Deadlocks.
+      </li>
+      <li>
+        Specify how you want to start collecting data: at the beginning of the project run, or
+        interactively during the project run. With each choice, you can use the tool's buttons to
+        pause, restart and stop the data collection. When you choose the interactive option, the
+        data collection does not start until you click the start button in the tool.
+      </li>
+      <li>
+        Click OK in the Thread Data Collection Profile dialog box.
+      </li>
+      <li>
+        If you are prompted to integrate the Profiler with the project, click OK.
+      </li>
+      <li>
+        The project is recompiled to place instrumentation into the built program. This
+        instrumentation is needed to gather data about your program, and can be removed later.
+        You will be prompted to remove it when you build or debug the project.
+      </li>
+      <li>
+        The Data Races and Detection window opens, displaying the buttons to control the data
+        collection, some status messages, and results of the analysis.
+      </li>
+      <li>
+        Click the links in the results panel to get more information about the results. The Thread Analysis
+        window opens to show where the data races or deadlocks occur. You can click on the functions shown
+        to open the source files at the problem areas.
+      </li>
+    </ol>
+    <p>
+       Note: The Data Races and Deadlock Detection tool uses the Sun Studio compilers,
+      <tt>collect</tt> program, and Thread Analyzer (<tt>tha</tt>) to generate the data from your
+      program. The Thread Analyzer can provide even more detailed information about your program's
+      threading issues.
+    </p>
+    <table>
+      <tr>
+        <th colspan="2" align="left">
+          <a name="seealso">See also</a> 
+        </th>
+      </tr>
+      <tr>
+        <td width="23">
+          &nbsp;
+        </td>
+        <td>
+      
+                <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                    <param name="content" value="http://docs.sun.com/app/docs/doc/820-0619">
+                    <param name="text" value="<html><u>Sun Studio 12: Thread Analyzer (Web document)</u></html>">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue">
+                </object>
+      
+       
+        </td>
+      </tr>
+    </table>
+    <hr>
+    <p>
+       <small><a href="../credits.html">Legal Notices</a></small>
+    </p>
+    <table border="0" cellpadding="20">
+      <tr>
+        <td>
+          &nbsp;
+        </td>
+      </tr>
+      <tr>
+        <td>
+          &nbsp;
+        </td>
+      </tr>
+      <tr>
+        <td>
+          &nbsp;
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

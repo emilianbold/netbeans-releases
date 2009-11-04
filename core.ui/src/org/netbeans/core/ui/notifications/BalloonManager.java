@@ -53,7 +53,6 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
@@ -75,7 +74,6 @@ import java.awt.geom.Point2D;
 import java.awt.geom.RoundRectangle2D;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLayeredPane;
@@ -484,12 +482,9 @@ class BalloonManager {
     static class DismissButton extends JButton {
 
         public DismissButton() {
-            Image img = ImageUtilities.loadImage( "org/netbeans/core/ui/resources/dismiss_enabled.png" );
-            setIcon( new ImageIcon( img ) );
-            img = ImageUtilities.loadImage( "org/netbeans/core/ui/resources/dismiss_rollover.png" );
-            setRolloverIcon(new ImageIcon( img ));
-            img = ImageUtilities.loadImage( "org/netbeans/core/ui/resources/dismiss_pressed.png" );
-            setPressedIcon(new ImageIcon( img ));
+            setIcon( ImageUtilities.loadImageIcon( "org/netbeans/core/ui/resources/dismiss_enabled.png", true ) );
+            setRolloverIcon(ImageUtilities.loadImageIcon( "org/netbeans/core/ui/resources/dismiss_rollover.png", true ));
+            setPressedIcon(ImageUtilities.loadImageIcon( "org/netbeans/core/ui/resources/dismiss_pressed.png", true ));
 
             setBorder( BorderFactory.createEmptyBorder() );
             setBorderPainted( false );

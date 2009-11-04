@@ -82,7 +82,8 @@ made subject to such option by the copyright holder.
     <folder name="OptionsExport">
         <folder name="Advanced">
             <file name="ProjectLibraries">
-                <attr name="include" stringvalue="config/org-netbeans-api-project-libraries/Libraries/.*\.xml|build\.properties"/>
+                <attr name="include" stringvalue="config/org-netbeans-api-project-libraries/Libraries/.*\.xml|build[.]properties#nbplatform[.].+[.].+|var[.].*"/>
+                <attr name="exclude" stringvalue="build[.]properties#nbplatform[.]default[.]netbeans[.]dest[.]dir"/>
                 <attr name="displayName" bundlevalue="org.netbeans.modules.project.libraries.Bundle#ProjectLibraries.Options.Export.displayName"/>
             </file>
         </folder>

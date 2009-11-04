@@ -324,6 +324,9 @@ public class AttachmentsPanel extends JPanel {
         int index = filename.lastIndexOf('.'); // NOI18N
         String prefix = (index == -1) ? filename : filename.substring(0, index);
         String suffix = (index == -1) ? null : filename.substring(index);
+        if (prefix.length()<3) {
+            prefix = prefix+"tmp"; // NOI18N
+        }
         File file = File.createTempFile(prefix, suffix);
         attachment.getAttachementData(new FileOutputStream(file));
         return file;

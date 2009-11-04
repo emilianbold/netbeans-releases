@@ -76,6 +76,8 @@ public class ServerLocationManager  {
 
     public static final int GF_V2point1 = 911;
 
+    public static final int GF_V2point1point1 = 912;
+
     public static final String INSTALL_ROOT_PROP_NAME = "com.sun.aas.installRoot"; //NOI18N
     private static final String JAR_BRIGDES_DEFINITION_LAYER="/J2EE/SunAppServer/Bridge"; //NOI18N
     private static Map serverLocationAndClassLoaderMap = Collections.synchronizedMap((Map)new HashMap(2,1));
@@ -371,7 +373,10 @@ public class ServerLocationManager  {
             File as90 = new File((asInstallRoot)+"/lib/dtds/sun-domain_1_2.dtd");   // NOI18N
             File as91 = new File((asInstallRoot)+"/lib/dtds/sun-domain_1_3.dtd");   // NOI18N
             File as911 = new File((asInstallRoot)+"/lib/dtds/sun-ejb-jar_3_0-1.dtd");   // NOI18N
-            if (as911.exists()) {
+            File as211 = new File((asInstallRoot)+"/lib/install/applications/jmsra/imqstomp.jar"); // NOI18N
+            if (as211.exists()) {
+                version = GF_V2point1point1;
+            } else if (as911.exists()) {
                 version = GF_V2point1;
             } else if(as91.exists()){
                 version = GF_V2; 

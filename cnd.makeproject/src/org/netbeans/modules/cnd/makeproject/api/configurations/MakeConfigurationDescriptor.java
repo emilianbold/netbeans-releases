@@ -593,8 +593,8 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
      * Check needed header extensions and store list in the NB/project properties.
      * @param needAdd list of needed extensions of header files.
      */
-    public void addAdditionalHeaderExtensions(Collection<String> needAdd) {
-        ((MakeProject) getProject()).addAdditionalHeaderExtensions(needAdd);
+    public boolean addAdditionalHeaderExtensions(Collection<String> needAdd) {
+        return ((MakeProject) getProject()).addAdditionalHeaderExtensions(needAdd);
     }
 
     public CndVisibilityQuery getFolderVisibilityQuery() {

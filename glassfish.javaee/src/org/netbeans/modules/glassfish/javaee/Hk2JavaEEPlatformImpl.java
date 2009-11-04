@@ -77,7 +77,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
     
     private Hk2DeploymentManager dm;
     private final LibraryImplementation lib = new J2eeLibraryTypeProvider().createLibrary();
-    private LibraryImplementation[] libraries = { lib };
+    private final LibraryImplementation[] libraries = { lib };
     private Hk2JavaEEPlatformFactory pf;
 
     /**
@@ -341,7 +341,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
      * @return 
      */
     public LibraryImplementation[] getLibraries() {
-        synchronized (lib) {
+        synchronized (libraries) {
             return libraries.clone();
         }
     }
@@ -389,7 +389,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
     private void initLibraries() {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-                synchronized (lib) {
+                synchronized (libraries) {
                     lib.setName(pf.getLibraryName());
                     lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH, dm.getProperties().getClasses());
                     lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC, dm.getProperties().getJavadocs());

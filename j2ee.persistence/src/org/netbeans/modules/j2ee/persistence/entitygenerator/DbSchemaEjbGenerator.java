@@ -49,6 +49,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.dbschema.ColumnElement;
 import org.netbeans.modules.dbschema.ColumnPairElement;
 import org.netbeans.modules.dbschema.DBIdentifier;
@@ -73,7 +75,9 @@ public class DbSchemaEjbGenerator {
     private SchemaElement schemaElement;
     private Set<String> tablesReferecedByOtherTables;
     private final CollectionType colectionType;
-    
+    private final static Logger LOGGER = Logger.getLogger(DbSchemaEjbGenerator.class.getName());
+    //private ArrayList<String> warningMessages;
+   
     /**
      * Creates a generator for a set of beans.
      *
@@ -95,6 +99,7 @@ public class DbSchemaEjbGenerator {
         this.schemaElement = schemaElement;
         this.genTables = genTables;
         this.colectionType = collectionType;
+        //warningMessages = new ArrayList<String>();
 
         tablesReferecedByOtherTables = getTablesReferecedByOtherTables(schemaElement);
         buildCMPSet();
@@ -260,12 +265,29 @@ public class DbSchemaEjbGenerator {
         // create role A
         EntityClass roleAHelper = getBean(tableAName);
         EntityClass roleBHelper = getBean(tableBName);
+
+        String roleAClassName = roleAHelper!=null ? roleAHelper.getClassName() : null;
+        String roleBClassName = roleBHelper!=null ? roleBHelper.getClassName() : null;
+        // some tables may not be generate in this sessin (either not selected in wizard or pregenerated in libraries), see issue #173160
+        if(roleAClassName == null || roleBClassName == null)
+        {
+            //as it's not in this generation process, skip addition of relationship to missed/preexistent entities
+            //in some cases it's impossible to generate relationship as there are no classes or classes are in library(read only)
+            //TODO: later it's good to not skip in case if both entities exist and at least one is not read only, need additional evaluation.
+            //TODO: consider to add message to ui or visible log
+            LOGGER.log(Level.INFO, 
+                    "Skip relationships generation for \""+table.getName().getName()+"\" join table, next referenced tables was not selected in new wizard: "//NOI18N
+                    + (roleAClassName == null ? tableAName : "") + (roleAClassName == null &&  roleBClassName == null ? ", " : "") + (roleBClassName == null ? tableBName : ""));//NOI18N
+            //warningMessages.add("There was a problem relationships generation from join table[s].");//NOI18N
+            return;
+        }
+
         
-        String roleAname = getRoleName(foreignKeys[0], roleAHelper.getClassName());
-        String roleBname = getRoleName(foreignKeys[1], roleBHelper.getClassName());
+        String roleAname = getRoleName(foreignKeys[0], roleAClassName);
+        String roleBname = getRoleName(foreignKeys[1], roleBClassName);
         
-        String roleACmr = EntityMember.makeRelationshipFieldName(roleBHelper.getClassName(), colectionType, true);
-        String roleBCmr = EntityMember.makeRelationshipFieldName(roleAHelper.getClassName(), colectionType, true);
+        String roleACmr = EntityMember.makeRelationshipFieldName(roleBClassName, colectionType, true);
+        String roleBCmr = EntityMember.makeRelationshipFieldName(roleAClassName, colectionType, true);
         
         roleACmr = uniqueAlgorithm(getFieldNames(roleAHelper), roleACmr, null);
         List roleBFieldNames = getFieldNames(roleBHelper);

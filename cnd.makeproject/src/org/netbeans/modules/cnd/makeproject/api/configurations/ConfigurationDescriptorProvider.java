@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationXMLReader;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -192,6 +193,10 @@ public class ConfigurationDescriptorProvider {
     }
 
     public static void recordMetrics(String msg, MakeConfigurationDescriptor descr) {
+        if (CndUtils.isUnitTestMode()) {
+            // we don't want to count own tests
+            return;
+        }
         if (!(descr instanceof MakeConfigurationDescriptor)) {
             return;
         }

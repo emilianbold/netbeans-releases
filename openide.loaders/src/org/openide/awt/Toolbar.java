@@ -418,6 +418,9 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
                     DataObject file = cookiesToObjects.get(obj);
 
                     if (obj instanceof Presenter.Toolbar) {
+                        if (obj instanceof Action && file != null) {
+                            setAccelerator((Action)obj, file.getPrimaryFile());
+                        }
                         obj = ((Presenter.Toolbar) obj).getToolbarPresenter();
                     }
                     if (obj instanceof Component) {

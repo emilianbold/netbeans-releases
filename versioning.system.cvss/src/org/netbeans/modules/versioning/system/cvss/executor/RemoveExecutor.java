@@ -43,8 +43,6 @@ package org.netbeans.modules.versioning.system.cvss.executor;
 
 import org.openide.util.NbBundle;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.versioning.system.cvss.*;
 import org.netbeans.lib.cvsclient.command.GlobalOptions;
 import org.netbeans.lib.cvsclient.command.Command;
@@ -127,10 +125,6 @@ public class RemoveExecutor extends ExecutorSupport {
         File [] files = xcmd.getFiles();
         for (int i = 0; i < files.length; i++) {
             refreshRecursively(files[i]);
-            FileObject fo = FileUtil.toFileObject(files[i]);
-            if (fo != null) {
-                fo.refresh(true);
-            }
         }
     }
 

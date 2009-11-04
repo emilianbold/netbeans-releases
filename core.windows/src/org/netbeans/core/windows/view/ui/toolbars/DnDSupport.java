@@ -251,22 +251,24 @@ final class DnDSupport implements DragSourceListener, DragGestureListener, DropT
             } else if( Boolean.TRUE.equals( ((JComponent) c).getClientProperty(ToolbarContainer.PROP_DRAGGER) ) ) {
                 //dragging the whole toolbar
                 final ToolbarContainer container = (ToolbarContainer) c.getParent().getParent();
-                sourceContainer = container;
-                sourceRow = (ToolbarRow) container.getParent();
-                t = new ExTransferable.Single(toolbarDataFlavor) {
+                if( container.isShowing() ) {
+                    sourceContainer = container;
+                    sourceRow = (ToolbarRow) container.getParent();
+                    t = new ExTransferable.Single(toolbarDataFlavor) {
 
-                    public Object getData() {
-                        return container;
-                    }
-                };
-                isToolbarDrag = true;
-                isButtonDrag = false;
-                startingPoint = new Point(e.getDragOrigin());
-                Rectangle bounds = new Rectangle(sourceContainer.getPreferredSize());
-                bounds.setLocation(sourceContainer.getLocationOnScreen());
-                dragImage = createContentImage(sourceContainer, bounds.getSize());
-                sourceRow.dragStarted( sourceContainer );
-                dragWindow = createDragWindow( dragImage, bounds );
+                        public Object getData() {
+                            return container;
+                        }
+                    };
+                    isToolbarDrag = true;
+                    isButtonDrag = false;
+                    startingPoint = new Point(e.getDragOrigin());
+                    Rectangle bounds = new Rectangle(sourceContainer.getPreferredSize());
+                    bounds.setLocation(sourceContainer.getLocationOnScreen());
+                    dragImage = createContentImage(sourceContainer, bounds.getSize());
+                    sourceRow.dragStarted( sourceContainer );
+                    dragWindow = createDragWindow( dragImage, bounds );
+                }
             }
             if( c instanceof JButton ) {
                 ((JButton) c).getModel().setArmed(false);

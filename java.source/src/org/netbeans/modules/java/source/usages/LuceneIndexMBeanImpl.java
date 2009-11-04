@@ -43,7 +43,6 @@ package org.netbeans.modules.java.source.usages;
 import javax.management.NotCompliantMBeanException;
 import javax.management.StandardMBean;
 import org.apache.lucene.index.IndexWriter;
-import org.openide.ErrorManager;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;

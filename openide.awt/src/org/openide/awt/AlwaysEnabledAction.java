@@ -21,8 +21,6 @@ import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
-import javax.swing.KeyStroke;
-import javax.swing.text.Keymap;
 import org.netbeans.modules.openide.util.ActionsBridge;
 import org.netbeans.modules.openide.util.ActionsBridge.ActionRunnable;
 import org.openide.util.ContextAwareAction;
@@ -43,30 +41,9 @@ implements PropertyChangeListener, ContextAwareAction {
     // -J-Dorg.openide.awt.AlwaysEnabledAction.level=FINE
     private static final Logger LOG = Logger.getLogger(AlwaysEnabledAction.class.getName());
 
-    /**
-     * Action property for key in {@link java.util.prefs.Preferences}.
-     * <code>
-     *   String key = (String) action.getValue("PreferencesKey");
-     *   boolean selected = preferencesNode.getBoolean(key, false);
-     * </code>
-     */
-    private static final String PREFERENCES_KEY = "PreferencesKey"; // NOI18N
+    private static final String PREFERENCES_NODE = "preferencesNode"; // NOI18N
 
-    /**
-     * Action property for retrieving {@link java.util.prefs.Preferences} node.
-     * Its value can be a String:
-     * <ul>
-     *   <li>"system:/path" for {@link java.util.prefs.Preferences#systemRoot() }.</li>
-     *   <li>"user:/key" for {@link java.util.prefs.Preferences#userRoot() }.</li>
-     *   <li>"nb:/key" for {@link org.openide.util.NbPreferences#root() }.</li>
-     * </ul>
-     * or a method value returning one of the following:
-     * <ul>
-     *   <li>{@link java.util.prefs.Preferences } instance.</li>
-     *   <li>{@link org.openide.util.Lookup }.</li>
-     * </ul>
-     */
-    private static final String PREFERENCES_NODE = "PreferencesNode"; // NOI18N
+    private static final String PREFERENCES_KEY = "preferencesKey"; // NOI18N
 
     static AlwaysEnabledAction create(Map m) {
         return (m.containsKey(PREFERENCES_KEY)) ? new CheckBox(m) : new AlwaysEnabledAction(m);
@@ -101,7 +78,7 @@ implements PropertyChangeListener, ContextAwareAction {
         return a;
     }
 
-    private ActionListener getDelegate() {
+    protected ActionListener getDelegate() {
         if (delegate == null) {
             Object listener = map.get("delegate"); // NOI18N
             if (!(listener instanceof ActionListener)) {
@@ -119,7 +96,7 @@ implements PropertyChangeListener, ContextAwareAction {
     }
 
     private void syncActionDelegateProperty(String propertyName, Action actionDelegate) {
-        Object value = extractCommonAttribute(map, this, propertyName);
+        Object value = extractCommonAttribute(map, propertyName);
         Object delegateValue = actionDelegate.getValue(propertyName);
         if (value != null) {
             if (delegateValue == null) {
@@ -179,12 +156,13 @@ implements PropertyChangeListener, ContextAwareAction {
                 return null;
             }
         }
-        Object o = extractCommonAttribute(map, this, name);
+        Object o = extractCommonAttribute(map, name);
         // cf. #137709 JG18:
         return o != null ? o : super.getValue(name);
     }
 
-    static final Object extractCommonAttribute(Map fo, Action action, String name) {
+    static final Object extractCommonAttribute(Map fo, String name) {
+        try {
         if (Action.NAME.equals(name)) {
             String actionName = (String) fo.get("displayName"); // NOI18N
             // NOI18N
@@ -231,7 +209,9 @@ implements PropertyChangeListener, ContextAwareAction {
         if (!"delegate".equals(name) && !"instanceCreate".equals(name)) {
             return fo == null ? null : fo.get(name);
         }
-
+        } catch (RuntimeException x) { // noted in #172103
+            LOG.log(Level.WARNING, "Could not get action attribute " + name, x);
+        }
         return null;
     }
 
@@ -283,6 +263,12 @@ implements PropertyChangeListener, ContextAwareAction {
 
         private static final long serialVersionUID = 1L;
 
+        private static final ActionListener EMPTY = new ActionListener() {
+            public void actionPerformed(ActionEvent ae) {
+                // Do nothing
+            }
+        };
+
         private JCheckBoxMenuItem menuItem;
 
         private JCheckBoxMenuItem popupItem;
@@ -329,6 +315,11 @@ implements PropertyChangeListener, ContextAwareAction {
 
         public void preferenceChange(PreferenceChangeEvent pce) {
             updateItemsSelected();
+        }
+
+        @Override
+        protected ActionListener getDelegate() {
+            return EMPTY;
         }
 
         @Override
@@ -389,18 +380,15 @@ implements PropertyChangeListener, ContextAwareAction {
                                 preferencesNode = null;
                             }
                         }
-                    } else if (nodeName.startsWith("nb:")) {
+                    } else {
                         preferencesNode = NbPreferences.root();
                         if (preferencesNode != null) {
-                            nodeName = nodeName.substring("nb:".length());;
                             try {
                                 preferencesNode = preferencesNode.nodeExists(nodeName) ? preferencesNode.node(nodeName) : null;
                             } catch (BackingStoreException ex) {
                                 preferencesNode = null;
                             }
                         }
-                    } else {
-                        preferencesNode = null;
                     }
 
                 } else if (prefsNodeOrLookup instanceof Preferences) {

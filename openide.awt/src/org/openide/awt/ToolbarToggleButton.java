@@ -46,9 +46,10 @@ package org.openide.awt;
  * feel issues.  All implementation code has been removed.  It is here only
  * for backward compatibility.
  */
+@Deprecated
 public class ToolbarToggleButton extends javax.swing.JToggleButton {
     /** generated Serialized Version UID */
-    static final long serialVersionUID = -4783163952526348942L;
+    private static final long serialVersionUID = -4783163952526348942L;
 
     public ToolbarToggleButton() {
     }

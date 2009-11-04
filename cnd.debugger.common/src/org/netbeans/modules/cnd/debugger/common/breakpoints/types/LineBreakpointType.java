@@ -41,9 +41,12 @@
 
 package org.netbeans.modules.cnd.debugger.common.breakpoints.types;
 
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import javax.swing.JComponent;
 import org.netbeans.modules.cnd.debugger.common.breakpoints.customizers.LineBreakpointPanel;
 import org.netbeans.spi.debugger.ui.BreakpointType;
+import org.netbeans.spi.debugger.ui.Controller;
 import org.openide.util.NbBundle;
 
 /**
@@ -53,13 +56,27 @@ import org.openide.util.NbBundle;
  */
 public class LineBreakpointType extends BreakpointType {
 
+    private Reference<LineBreakpointPanel> customizerRef = new WeakReference<LineBreakpointPanel>(null);
+
     public String getCategoryDisplayName() {
         return NbBundle.getMessage(LineBreakpointType.class,
                     "CTL_Common_breakpoint_events_category_name"); // NOI18N
     }
     
-    public JComponent getCustomizer() {
-        return new LineBreakpointPanel ();
+    public JComponent getCustomizer () {
+        LineBreakpointPanel panel = new LineBreakpointPanel();
+        customizerRef = new WeakReference<LineBreakpointPanel>(panel);
+        return panel;
+    }
+
+    @Override
+    public Controller getController() {
+        LineBreakpointPanel panel = customizerRef.get();
+        if (panel != null) {
+            return panel.getController();
+        } else {
+            return null;
+        }
     }
     
     @Override

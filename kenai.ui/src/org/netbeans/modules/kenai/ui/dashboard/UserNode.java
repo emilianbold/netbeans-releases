@@ -44,28 +44,16 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.net.MalformedURLException;
-import java.net.URL;
 import javax.swing.AbstractAction;
-import javax.swing.ButtonGroup;
-import javax.swing.ButtonModel;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JRadioButtonMenuItem;
-import javax.swing.SwingUtilities;
-import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.ui.treelist.LeafNode;
 import org.netbeans.modules.kenai.ui.spi.LoginHandle;
 import org.netbeans.modules.kenai.ui.spi.ProjectAccessor;
-import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.netbeans.modules.kenai.ui.treelist.TreeLabel;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  * The very first node in dashboard window showing logged-in user name.
@@ -83,7 +71,7 @@ public class UserNode extends LeafNode {
     private LinkButton btnRefresh;
     private LinkButton btnLogin;
     private LinkButton btnNewProject;
-    private LinkButton btnChangeInstance;
+    private String progressTitle;
 
     private LoginHandle login;
     private boolean projectsAvailable = false;
@@ -105,7 +93,7 @@ public class UserNode extends LeafNode {
             btnLogin = new LinkButton(NbBundle.getMessage(UserNode.class, "LBL_LoginToKenai"), //NOI18N
                     dashboard.createLoginAction());
             lblUser = new TreeLabel();
-            lblProgress = createProgressLabel(NbBundle.getMessage(UserNode.class, "LBL_Authenticating")); //NOI18N
+            lblProgress = createProgressLabel(progressTitle); //NOI18N
             btnOpenProject = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/open_kenai_project.png", true), ProjectAccessor.getDefault().getOpenNonMemberProjectAction()); //NOI18N
             btnOpenProject.setToolTipText(NbBundle.getMessage(UserNode.class, "LBL_OpenProject"));
             btnNewProject = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/new_kenai_project.png", true), ProjectAccessor.getDefault().getNewKenaiProjectAction()); //NOI18N
@@ -116,7 +104,6 @@ public class UserNode extends LeafNode {
                 }
             });
             btnRefresh.setToolTipText(NbBundle.getMessage(UserNode.class, "LBL_Refresh"));
-            btnChangeInstance = new LinkButton("[i]", new ChangeInstanceAction());
 
             panel.add( btnLogin, new GridBagConstraints(0,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 4), 0,0));
             panel.add( lblUser, new GridBagConstraints(1,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 4), 0,0));
@@ -124,8 +111,6 @@ public class UserNode extends LeafNode {
             panel.add( lblProgress, new GridBagConstraints(3,0,1,1,0.0,0.0,GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
             panel.add( new JLabel(), new GridBagConstraints(4,0,1,1,1.0,0.0,GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
             panel.add( btnRefresh, new GridBagConstraints(5,0,1,1,0.0,0.0,GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
-            if (Boolean.parseBoolean(System.getProperty("kenai.instance.switcher", "false")))
-                panel.add( btnChangeInstance, new GridBagConstraints(6,0,1,1,0.0,0.0,GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0,0));
             panel.add( btnNewProject, new GridBagConstraints(7,0,1,1,0.0,0.0,GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0,0));
             panel.add( btnOpenProject, new GridBagConstraints(8,0,1,1,0.0,0.0,GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0,0));
         }
@@ -150,8 +135,11 @@ public class UserNode extends LeafNode {
         return panel;
     }
 
-    void loadingStarted() {
+    void loadingStarted(String title) {
         synchronized( LOCK ) {
+            progressTitle = title;
+            if (lblProgress!=null)
+                lblProgress.setText(title);
             loadingCounter++;
             fireContentChanged();
         }
@@ -170,68 +158,5 @@ public class UserNode extends LeafNode {
         this.projectsAvailable = projectsAvailable;
         this.login = login;
         fireContentChanged();
-    }
-
-    private class ChangeInstanceAction extends AbstractAction {
-        final JRadioButtonMenuItem ke = new JRadioButtonMenuItem("kenai.com");
-        final JRadioButtonMenuItem nb = new JRadioButtonMenuItem("netbeans.org (stg)");
-        final JRadioButtonMenuItem nb2 = new JRadioButtonMenuItem("netbeans.org (test)");
-        final JRadioButtonMenuItem oo = new JRadioButtonMenuItem("odftoolkit.org");
-        final JRadioButtonMenuItem tk = new JRadioButtonMenuItem("testkenai.com");
-        final ButtonGroup gr = new ButtonGroup();
-        JPopupMenu menu = new JPopupMenu();
-
-        public ChangeInstanceAction() {
-            gr.add(ke);
-            gr.add(nb);
-            gr.add(oo);
-            gr.add(tk);
-            gr.add(nb2);
-            menu.add(ke);
-            menu.add(nb);
-            menu.add(nb2);
-            menu.add(oo);
-            menu.add(tk);
-            gr.setSelected(ke.getModel(), true);
-            ke.addActionListener(new ActionL(ke.getModel(), "https://kenai.com"));
-            nb.addActionListener(new ActionL(nb.getModel(), "https://stg.network.org"));
-            nb2.addActionListener(new ActionL(nb2.getModel(), "https://test.netbeans.org"));
-            oo.addActionListener(new ActionL(oo.getModel(), "https://odftoolkit.org"));
-            tk.addActionListener(new ActionL(tk.getModel(), "https://testkenai.com"));
-        }
-        private class ActionL implements ActionListener {
-            private ButtonModel m;
-            private URL url;
-            private ActionL (ButtonModel m, String url) {
-                try {
-                    this.url = new URL(url);
-                } catch (MalformedURLException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-                this.m=m;
-            }
-
-            public void actionPerformed(ActionEvent e) {
-                RequestProcessor.getDefault().post(new Runnable() {
-
-                    public void run() {
-                        Kenai.getDefault().setUrl(url);
-                        SwingUtilities.invokeLater(new Runnable() {
-                            public void run() {
-                                gr.setSelected(m, true);
-                                UIUtils.tryLogin(false);
-                                DashboardImpl.getInstance().refreshNonMemberProjects();
-                            }
-                        });
-                    }
-                });
-            }
-
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            menu.show(dashboard.dashboardComponent, dashboard.dashboardComponent.getSize().width-45, 8);
-        }
-
     }
 }

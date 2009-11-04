@@ -68,6 +68,7 @@ public class MouseUtils extends Object {
     * @return true if the event is originated from the right mouse button, false otherwise
     * @deprecated Offers no advantages over the standard {@link SwingUtilities#isRightMouseButton}.
     */
+    @Deprecated
     public static boolean isRightMouseButton(MouseEvent e) {
         return SwingUtilities.isRightMouseButton(e);
     }
@@ -77,6 +78,7 @@ public class MouseUtils extends Object {
     * @return true if the event is originated from the left mouse button, false otherwise
     * @deprecated Offers no advantages over the standard {@link SwingUtilities#isLeftMouseButton}.
     */
+    @Deprecated
     public static boolean isLeftMouseButton(MouseEvent e) {
         return javax.swing.SwingUtilities.isLeftMouseButton(e);
     }
@@ -152,6 +154,7 @@ public class MouseUtils extends Object {
         /** @deprecated Obsoleted as of 3.4, PopupMouseAdapter now uses isPopupTrigger properly.
             Threshold does nothing, please use default constructor without treshold.
          */
+        @Deprecated
         public static final int DEFAULT_THRESHOLD = 5;
 
         /** Creates a new PopupMouseAdapter with specified threshold
@@ -160,6 +163,7 @@ public class MouseUtils extends Object {
          * This constructor now just delegates to super constructor, please use
          * default constructor instead.
          */
+        @Deprecated
         public PopupMouseAdapter(int threshold) {
             this();
         }

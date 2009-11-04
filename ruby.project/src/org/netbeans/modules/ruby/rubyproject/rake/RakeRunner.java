@@ -95,7 +95,7 @@ public final class RakeRunner {
         RakeRunner runner = new RakeRunner(project);
         runner.showWarnings(true);
         if (taskParams != null) {
-            runner.setParameters(taskParams);
+            runner.setParameters(Utilities.parseParameters(taskParams));
         }
         runner.setDebug(debug);
         runner.run(task);

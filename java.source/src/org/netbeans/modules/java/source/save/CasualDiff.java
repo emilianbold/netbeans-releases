@@ -1286,8 +1286,24 @@ public class CasualDiff {
         int[] lhsBounds = getBounds(oldT.lhs);
         copyTo(localPointer, lhsBounds[0]);
         localPointer = diffTree(oldT.lhs, newT.lhs, lhsBounds);
-        // rhs
         int[] rhsBounds = getBounds(oldT.rhs);
+
+        //#174552: '=' may be missing if this is a synthetic annotation attribute assignment (of attribute name "value"):
+        if (   oldT.lhs.getKind() == Kind.IDENTIFIER
+            && newT.lhs.getKind() == Kind.IDENTIFIER
+            && !((JCIdent) oldT.lhs).name.equals(((JCIdent) newT.lhs).name)) {
+            tokenSequence.move(rhsBounds[0]);
+            moveToSrcRelevant(tokenSequence, Direction.BACKWARD);
+            if (tokenSequence.token().id() != JavaTokenId.EQ) {
+                if (VeryPretty.getCodeStyle(workingCopy).spaceAroundAssignOps())
+                    printer.print(" = ");
+                else
+                    printer.print("=");
+            }
+        }
+        //#174552 end
+        
+        // rhs
         copyTo(localPointer, rhsBounds[0]);
         localPointer = diffTree(oldT.rhs, newT.rhs, rhsBounds);
 
@@ -2420,7 +2436,13 @@ public class CasualDiff {
                 case INSERT: {
                     int pos = estimator.getInsertPos(i);
                     if (pos > localPointer) {
-                        copyTo(localPointer, localPointer = pos);
+                        tokenSequence.move(pos);
+                        moveToDifferentThan(tokenSequence, Direction.BACKWARD, EnumSet.of(JavaTokenId.WHITESPACE));
+                        tokenSequence.moveNext();
+                        pos = tokenSequence.offset();
+                        if (pos > localPointer) {
+                            copyTo(localPointer, localPointer = pos);
+                        }
                     }
                     int oldPos = item.element.getKind() != Kind.VARIABLE ? getOldPos(item.element) : item.element.pos;
                     boolean found = false;
@@ -2453,7 +2475,7 @@ public class CasualDiff {
                             int index = oldList.indexOf(lastdel);
                             int[] poss = estimator.getPositions(index);
                             //TODO: should the original text between the return position of the following method and poss[1] be copied into the new text?
-                            diffTree(lastdel, item.element, poss);
+                            localPointer = diffTree(lastdel, item.element, poss);
                             printer.print(this.printer.toString());
                             this.printer = oldPrinter;
                             this.printer.undent(old);
@@ -2473,7 +2495,8 @@ public class CasualDiff {
                     }
                     lastdel = oldList.get(i);
                     ++i;
-                    localPointer = pos[1];
+                    CommentSet ch = comments.getComments(lastdel);
+                    localPointer = Math.max(pos[1], Math.max(commentEnd(ch, CommentSet.RelativePosition.INLINE), commentEnd(ch, CommentSet.RelativePosition.TRAILING)));
                     break;
                 }
                 case NOCHANGE: {
@@ -2482,7 +2505,12 @@ public class CasualDiff {
                         // print fill-in
                         copyTo(localPointer, pos[0], printer);
                     }
-                    copyTo(pos[0], localPointer = pos[1], printer);
+                    localPointer = pos[0];
+                    if (pos.length > 3 && pos[3] != (-1) && j + 1 < result.length) {
+                        copyTo(localPointer, localPointer = pos[3], printer);
+                        printer.print(estimator.append(i));
+                    }
+                    copyTo(localPointer, localPointer = pos[1], printer);
                     lastdel = null;
                     ++i;
                     break;
@@ -2492,34 +2520,77 @@ public class CasualDiff {
         return localPointer;
     }
 
-    protected void diffPrecedingComments(JCTree oldT, JCTree newT) {
+    protected int diffPrecedingComments(JCTree oldT, JCTree newT, int localPointer) {
         CommentSet cs = comments.getComments(newT);
-        if (!cs.hasChanges())
-            return;
-        List<Comment> oldComments = comments.getComments(oldT).getPrecedingComments();
-        List<Comment> newComments = cs.getPrecedingComments();
-        diffCommentLists(oldT, newT, oldComments, newComments, false);
+        CommentSet old = comments.getComments(oldT);
+        List<Comment> oldPrecedingComments = old.getComments(CommentSet.RelativePosition.PRECEDING);
+        List<Comment> newPrecedingComments = cs.getComments(CommentSet.RelativePosition.PRECEDING);
+        if (sameComments(oldPrecedingComments, newPrecedingComments))
+            return localPointer;
+        return diffCommentLists(oldT, newT, oldPrecedingComments, newPrecedingComments, false, localPointer);
     }
 
-    protected void diffTrailingComments(JCTree oldT, JCTree newT) {
+    protected int diffTrailingComments(JCTree oldT, JCTree newT, int localPointer) {
         CommentSet cs = comments.getComments(newT);
-        if (!cs.hasChanges())
-            return;
-        List<Comment> oldComments = comments.getComments(oldT).getTrailingComments();
-        List<Comment> newComments = cs.getTrailingComments();
-        diffCommentLists(oldT, newT, oldComments, newComments, true);
+        CommentSet old = comments.getComments(oldT);
+        List<Comment> oldInlineComments = old.getComments(CommentSet.RelativePosition.INLINE);
+        List<Comment> newInlineComments = cs.getComments(CommentSet.RelativePosition.INLINE);
+        List<Comment> oldTrailingComments = old.getComments(CommentSet.RelativePosition.TRAILING);
+        List<Comment> newTrailingComments = cs.getComments(CommentSet.RelativePosition.TRAILING);
+        if (sameComments(oldInlineComments, newInlineComments) && sameComments(oldTrailingComments, newTrailingComments))
+            return localPointer;
+
+        localPointer = diffCommentLists(oldT, newT, oldInlineComments, newInlineComments, false, localPointer);
+
+        boolean containedEmbeddedNewLine = false;
+        boolean containsEmbeddedNewLine = false;
+
+        for (Comment oldComment : oldInlineComments) {
+            if (oldComment.style() == Style.LINE) containedEmbeddedNewLine = true;
+        }
+        
+        for (Comment nueComment : newInlineComments) {
+            if (nueComment.style() == Style.LINE) containsEmbeddedNewLine = true;
+        }
+
+        if (containedEmbeddedNewLine  && !containsEmbeddedNewLine) {
+            printer.print("\n");
+        }
+
+        return diffCommentLists(oldT, newT, oldTrailingComments, newTrailingComments, true, localPointer);
     }
 
+    private boolean sameComments(List<Comment> oldList, List<Comment> newList) {
+        Iterator<Comment> oldIter = oldList.iterator();
+        Iterator<Comment> newIter = newList.iterator();
+        Comment oldC = safeNext(oldIter);
+        Comment newC = safeNext(newIter);
+        
+        while (oldC != null && newC != null) {
+            oldC = safeNext(oldIter);
+            newC = safeNext(newIter);
+        }
+
+        return !((oldC == null) ^ (newC == null));
+    }
+    
     // refactor it! make it better
-    private void diffCommentLists(JCTree oldT, JCTree newT, List<Comment>oldList,
-                                  List<Comment>newList, boolean trailing) {
+    private int diffCommentLists(JCTree oldT, JCTree newT, List<Comment>oldList,
+                                  List<Comment>newList, boolean trailing, int localPointer) {
         int lastPos = getOldPos(oldT);
         Iterator<Comment> oldIter = oldList.iterator();
         Iterator<Comment> newIter = newList.iterator();
         Comment oldC = safeNext(oldIter);
         Comment newC = safeNext(newIter);
+        boolean first = true;
         while (oldC != null && newC != null) {
             lastPos = oldC.pos();
+            int cStart = commentStartCorrect(oldC);
+            if (first && trailing && localPointer < cStart) {
+                copyTo(localPointer, cStart);
+            }
+            first = false;
+            localPointer = Math.max(localPointer, oldC.endPos());
             if (commentsMatch(oldC, newC)) {
                 oldC = safeNext(oldIter);
                 newC = safeNext(newIter);
@@ -2541,6 +2612,12 @@ public class CasualDiff {
         }
         while (oldC != null) {
 //            append(Diff.delete(oldT, newT, oldC));
+            int cStart = commentStartCorrect(oldC);
+            if (first && trailing && localPointer < cStart) {
+                copyTo(localPointer, cStart);
+            }
+            first = false;
+            localPointer = Math.max(localPointer, oldC.endPos());
             oldC = safeNext(oldIter);
         }
         while (newC != null) {
@@ -2551,6 +2628,8 @@ public class CasualDiff {
             }
             newC = safeNext(oldIter);
         }
+
+        return localPointer;
     }
 
     private Comment safeNext(Iterator<Comment> iter) {
@@ -2570,6 +2649,44 @@ public class CasualDiff {
             if (c.equals(comment))
                 return true;
         return false;
+    }
+
+    private int commentStartCorrect(Comment c) {
+        tokenSequence.move(c.pos());
+
+        while (tokenSequence.movePrevious()) {
+            if (tokenSequence.token().id() != JavaTokenId.WHITESPACE) {
+                return tokenSequence.offset() + tokenSequence.token().length();
+            }
+
+            int lastNewLine = tokenSequence.token().text().toString().lastIndexOf('\n');
+
+            if (lastNewLine != (-1)) {
+                return tokenSequence.offset() + lastNewLine + 1;
+            }
+        }
+
+        return tokenSequence.offset();
+    }
+
+    private int commentStart(CommentSet comments, CommentSet.RelativePosition pos) {
+        List<Comment> list = comments.getComments(pos);
+
+        if (list.isEmpty()) {
+            return Integer.MAX_VALUE;
+        } else {
+            return list.get(0).pos();
+        }
+    }
+
+    private int commentEnd(CommentSet comments, CommentSet.RelativePosition pos) {
+        List<Comment> list = comments.getComments(pos);
+
+        if (list.isEmpty()) {
+            return -1;
+        } else {
+            return list.get(list.size() - 1).endPos();
+        }
     }
 
     // from TreesService
@@ -2687,7 +2804,7 @@ public class CasualDiff {
             return tokenSequence.offset();
         }
 
-        diffPrecedingComments(oldT, newT);
+        elementBounds[0] = diffPrecedingComments(oldT, newT, elementBounds[0]);
         int retVal = -1;
 
         if (oldT.getTag() != newT.getTag()) {
@@ -2704,6 +2821,8 @@ public class CasualDiff {
             }
         }
 
+        elementBounds[1] = Math.min(elementBounds[1], Math.min(commentStart(comments.getComments(oldT), CommentSet.RelativePosition.INLINE), commentStart(comments.getComments(oldT), CommentSet.RelativePosition.TRAILING)));
+
         switch (oldT.getTag()) {
           case JCTree.TOPLEVEL:
               diffTopLevel((JCCompilationUnit)oldT, (JCCompilationUnit)newT);
@@ -2718,7 +2837,8 @@ public class CasualDiff {
               retVal = diffMethodDef((JCMethodDecl)oldT, (JCMethodDecl)newT, elementBounds);
               break;
           case JCTree.VARDEF:
-              return diffVarDef((JCVariableDecl)oldT, (JCVariableDecl)newT, elementBounds);
+              retVal = diffVarDef((JCVariableDecl)oldT, (JCVariableDecl)newT, elementBounds);
+              break;
           case JCTree.SKIP:
               copyTo(elementBounds[0], elementBounds[1]);
               retVal = elementBounds[1];
@@ -2902,8 +3022,7 @@ public class CasualDiff {
                   " " + oldT.getClass().getName();
               throw new AssertionError(msg);
         }
-        diffTrailingComments(oldT, newT);
-        return retVal;
+        return diffTrailingComments(oldT, newT, retVal);
     }
 
     /**

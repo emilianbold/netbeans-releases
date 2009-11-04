@@ -22,3 +22,8 @@ set -e
 if [ -d "/Library/Receipts/openesb.pkg" ] ; then
     rm -rf "/Library/Receipts/openesb.pkg"
 fi
+
+if [ -d "/private/var/db/receipts" ] ; then
+    rm -rf "/private/var/db/receipts/openesb.plist"
+    rm -rf "/private/var/db/receipts/openesb.bom"
+fi

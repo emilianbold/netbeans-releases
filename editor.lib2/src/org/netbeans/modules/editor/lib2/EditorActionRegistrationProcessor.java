@@ -39,13 +39,14 @@
 
 package org.netbeans.modules.editor.lib2;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import org.netbeans.modules.editor.lib2.actions.EditorActionUtilities;
 import org.netbeans.modules.editor.lib2.actions.PresenterEditorAction;
 import java.util.Set;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
-import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
@@ -69,10 +70,14 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=Processor.class)
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
-@SupportedAnnotationTypes({ "org.netbeans.api.editor.EditorActionRegistration", // NOI18N
-                            "org.netbeans.api.editor.EditorActionRegistrations" // NOI18N
-                          })
 public final class EditorActionRegistrationProcessor extends LayerGeneratingProcessor {
+
+    public @Override Set<String> getSupportedAnnotationTypes() {
+        return new HashSet<String>(Arrays.asList(
+            EditorActionRegistration.class.getCanonicalName(),
+            EditorActionRegistrations.class.getCanonicalName()
+        ));
+    }
 
     @Override
     protected boolean handleProcess(Set<? extends TypeElement> annotations,
@@ -292,8 +297,8 @@ public final class EditorActionRegistrationProcessor extends LayerGeneratingProc
         }
 
         if (preferencesKey.length() > 0) {
-            file.stringvalue("PreferencesKey", preferencesKey);
-            file.methodvalue("PreferencesNode", EditorActionUtilities.class.getName(), "getGlobalPreferences");
+            file.stringvalue("preferencesKey", preferencesKey);
+            file.methodvalue("preferencesNode", EditorActionUtilities.class.getName(), "getGlobalPreferences");
         }
 
         // Deafult helpID is action's name
@@ -314,7 +319,8 @@ public final class EditorActionRegistrationProcessor extends LayerGeneratingProc
             }
 
         } else { // Create always enabled action
-            file.methodvalue("instanceCreate", "org.openide.awt.Actions", "alwaysEnabled");
+            file.methodvalue("instanceCreate", "org.openide.awt.Actions",
+                    checkBoxPresenter ? "checkbox" : "alwaysEnabled");
             file.stringvalue("displayName", actionName);
 
             if (methodName != null) {

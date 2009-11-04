@@ -39,6 +39,9 @@
 
 package org.netbeans.modules.cnd.spi.compilers;
 
+import java.io.File;
+import java.io.PrintWriter;
+import java.io.Reader;
 import org.netbeans.modules.cnd.api.execution.*;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
@@ -47,6 +50,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
  * @author gordonp
  * @deprecated  Use {@link @org-netbeans-modules-nativexecution@} instead
  */
+@Deprecated
 public interface NativeExecutionProvider {
 
     /**
@@ -62,5 +66,6 @@ public interface NativeExecutionProvider {
      * @return an instance of the NativeExecution for the given environment.
      * It shold be null only in the case isApplicable returned false for this environment.
      */
-    NativeExecution getNativeExecution(ExecutionEnvironment execEnv);
+    NativeExecution getNativeExecution(ExecutionEnvironment execEnv, File runDirFile, String executable,
+            String arguments, String[] envp, boolean unbuffer, boolean x11forwarding);
 }

@@ -236,7 +236,7 @@ public class BugtrackingUtil {
         return Scrambler.getInstance().descramble(str);
     }
 
-    public static Issue selectIssue(String message, Repository repository, JPanel caller) {
+    public static Issue selectIssue(String message, Repository repository, JPanel caller, HelpCtx helpCtx) {
         QuickSearchComboBar bar = new QuickSearchComboBar(caller);
         bar.setRepository(repository);
         bar.setAlignmentX(0f);
@@ -277,7 +277,7 @@ public class BugtrackingUtil {
                 ok,
                 null);
         descriptor.setOptions(new Object [] {ok, cancel});
-        descriptor.setHelpCtx(new HelpCtx("org.netbeans.modules.bugtracking.issueChooser")); // NOI18N
+        descriptor.setHelpCtx(helpCtx);
         DialogDisplayer.getDefault().createDialog(descriptor).setVisible(true);
         if (descriptor.getValue() == ok) {
             issue = bar.getIssue();

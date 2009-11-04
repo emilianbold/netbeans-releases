@@ -137,7 +137,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         return findProject(id);
     }
 
-    public CsmProject _getProject(Object id) {
+    /*package*/final CsmProject _getProject(Object id) {
         ProjectBase prj = null;
         if (id != null) {
             synchronized (lock) {
@@ -435,12 +435,12 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         }
 
         // clearFileExistenceCache all opened projects, UIDs will be removed in disposeProject
-        for (Iterator projIter = prjsColl.iterator(); projIter.hasNext();) {
+        for (Iterator<CsmProject> projIter = prjsColl.iterator(); projIter.hasNext();) {
             ProjectBase project = (ProjectBase) projIter.next();
             libs.addAll(project.getLibraries());
             disposeProject(project);
         }
-        for (Iterator projIter = libs.iterator(); projIter.hasNext();) {
+        for (Iterator<CsmProject> projIter = libs.iterator(); projIter.hasNext();) {
             disposeProject((ProjectBase) projIter.next());
         }
         LibraryManager.getInstance().shutdown();
@@ -656,6 +656,42 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         CndFileUtils.clearFileExistenceCache();
         APTSystemStorage.getDefault().dispose();
     }
+
+    public void scheduleReparse(Collection<CsmProject> projects) {
+        CndFileUtils.clearFileExistenceCache();
+        Collection<LibProjectImpl> libs = new HashSet<LibProjectImpl>();
+        Collection<ProjectBase> toReparse = new HashSet<ProjectBase>();
+        for (CsmProject csmProject : projects) {
+            if (csmProject instanceof ProjectBase) {
+                ProjectBase project = (ProjectBase) csmProject;
+                toReparse.add(project);
+                for (CsmProject csmLib : project.getLibraries()) {
+                    if (csmLib instanceof LibProjectImpl) {
+                        LibProjectImpl lib = (LibProjectImpl) csmLib;
+                        if (!libs.contains(lib)) {
+                            lib.initFields();
+                            libs.add(lib);
+                        }
+                    }
+                }
+            }
+        }
+        Collection<Object> platformProjects = new ArrayList<Object>();
+        for (ProjectBase projectBase : toReparse) {
+            final Object platformProject = projectBase.getPlatformProject();
+            platformProjects.add(platformProject);
+            closeProject(platformProject, true);
+        }
+        for (ProjectBase lib : libs) {
+            closeProject(lib.getPlatformProject(), true);
+        }
+        LibraryManager.getInstance().cleanLibrariesData(libs);
+        for (Object platformProject : platformProjects) {
+            CsmProject newPrj = _getProject(platformProject);
+            ((ProjectBase)newPrj).scheduleReparse();
+        }
+    }
+
     private static final class Lock {}
     private final Object lock = new Lock();
     /** maps platform project to project */

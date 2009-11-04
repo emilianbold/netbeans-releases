@@ -45,6 +45,7 @@
 package org.netbeans.modules.kenai.collab.chat;
 
 import java.awt.Component;
+import java.awt.Font;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import javax.swing.UIManager;
@@ -61,6 +62,7 @@ public class FilterRenderer extends javax.swing.JPanel implements ListCellRender
         initComponents();
         setOpaque(true);
         groupLabel.setOpaque(true);
+        groupLabel.setFont(groupLabel.getFont().deriveFont(Font.BOLD));
     }
 
     /** This method is called from within the constructor to
@@ -92,11 +94,11 @@ public class FilterRenderer extends javax.swing.JPanel implements ListCellRender
         groupLabel.setIcon(item.getIcon());
         groupLabel.setOpaque(isSelected);
         if (isSelected) {
-            groupLabel.setBackground(UIManager.getColor("ComboBox.selectionBackground"));
-            groupLabel.setForeground(UIManager.getColor("ComboBox.selectionForeground"));
+            groupLabel.setBackground(UIManager.getColor("ComboBox.selectionBackground")); // NOI18N
+            groupLabel.setForeground(UIManager.getColor("ComboBox.selectionForeground")); // NOI18N
         } else {
-            groupLabel.setBackground(UIManager.getColor("ComboBox.background"));
-            groupLabel.setForeground(UIManager.getColor("ComboBox.foreground"));
+            groupLabel.setBackground(UIManager.getColor("ComboBox.background")); // NOI18N
+            groupLabel.setForeground(UIManager.getColor("ComboBox.foreground")); // NOI18N
         }
         return this;
     }

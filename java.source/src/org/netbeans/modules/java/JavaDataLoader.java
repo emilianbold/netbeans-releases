@@ -50,7 +50,6 @@ import java.util.Map;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.loaders.JavaDataSupport;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.CreateFromTemplateAttributesProvider;
@@ -214,7 +213,7 @@ public final class JavaDataLoader extends UniFileLoader {
             if (cp != null) {
                 resourcePath = cp.getResourceName(target);
             } else {
-                ErrorManager.getDefault().log(ErrorManager.WARNING, "No classpath was found for folder: "+target);
+                Logger.getLogger(JavaDataLoader.class.getName()).warning("No classpath was found for folder: "+target);
             }
             map.put("NAME", n); // NOI18N
             // Yes, this is package sans filename (target is a folder).

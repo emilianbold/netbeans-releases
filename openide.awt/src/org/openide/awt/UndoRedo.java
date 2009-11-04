@@ -243,6 +243,7 @@ public interface UndoRedo {
     /** Empty implementation that does not support any undoable edits.
     * @deprecated Use {@link UndoRedo#NONE} rather than instantiating this.
     */
+    @Deprecated
     public static final class Empty extends Object implements UndoRedo {
         public boolean canUndo() {
             return false;

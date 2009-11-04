@@ -82,7 +82,10 @@ public interface CsmDeclaration extends CsmQualifiedNamedElement,
         
         CLASS_FORWARD_DECLARATION,
 
-        CLASS_FRIEND_DECLARATION
+        CLASS_FRIEND_DECLARATION,
+
+        FUNCTION_FRIEND,
+        FUNCTION_FRIEND_DEFINITION
     }
     
     Kind getKind();

@@ -51,6 +51,7 @@ import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.modules.groovy.grailsproject.GrailsSources;
 import org.netbeans.modules.groovy.grailsproject.SourceCategory;
+import org.netbeans.modules.groovy.grailsproject.plugins.GrailsPlugin;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -78,6 +79,14 @@ public class SourceRoots {
         if (project != null) {
             result.addAll(addPluginRoots(project.getBuildConfig().getProjectPluginsDir()));
             result.addAll(addPluginRoots(project.getBuildConfig().getGlobalPluginsDir()));
+
+            // in-place plugins
+            File root = FileUtil.toFile(projectRoot);
+            for (GrailsPlugin plugin : project.getBuildConfig().getLocalPlugins()) {
+                if (plugin.getPath() != null) {
+                    addGrailsSourceRoots(FileUtil.toFileObject(plugin.getPath()), result);
+                }
+            }
         }
 
         return result.toArray(new FileObject[result.size()]);

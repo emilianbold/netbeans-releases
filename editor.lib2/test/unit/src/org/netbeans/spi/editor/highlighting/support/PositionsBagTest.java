@@ -48,6 +48,7 @@ import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
 import javax.swing.text.Position;
 import javax.swing.text.SimpleAttributeSet;
+import junit.framework.AssertionFailedError;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.editor.util.GapList;
 import org.netbeans.spi.editor.highlighting.*;
@@ -543,6 +544,171 @@ public class PositionsBagTest extends NbTestCase {
             atttributes.get(3));
     }
     
+    public void testRemoveHighlights_165270() throws Exception {
+        PositionsBag hs = new PositionsBag(doc);
+        hs.addHighlight(pos(5), pos(10), EMPTY);
+        assertEquals("Sequence size", 2, hs.getMarks().size());
+        hs.removeHighlights(pos(5), pos(10), true);
+        assertEquals("Highlights were not removed", 0, hs.getMarks().size());
+
+        hs.addHighlight(pos(10), pos(20), EMPTY);
+        hs.addHighlight(pos(30), pos(40), EMPTY);
+        hs.addHighlight(pos(50), pos(60), EMPTY);
+        assertEquals("Sequence size", 6, hs.getMarks().size());
+        hs.removeHighlights(pos(30), pos(40), true);
+        assertEquals("Highlights were not removed", 4, hs.getMarks().size());
+        assertMarks("Wrong highlights after remove", createPositionsBag(10, 20, EMPTY, 50, 60, EMPTY), hs);
+    }
+
+    public void testRemoveHighlights_114642() throws Exception {
+        PositionsBag hs = new PositionsBag(doc);
+        hs.addHighlight(pos(5), pos(10), EMPTY);
+        assertEquals("Sequence size", 2, hs.getMarks().size());
+
+        final PositionsBag expected = createPositionsBag(5, 10, EMPTY);
+        hs.removeHighlights(pos(1), pos(5), true);
+        assertMarks("Highlights should not be removed by <1, 5, true>", expected, hs);
+
+        hs.removeHighlights(pos(10), pos(15), true);
+        assertMarks("Highlights should not be removed <10, 15, true>", expected, hs);
+
+        hs.removeHighlights(pos(1), pos(5), false);
+        assertMarks("Highlights should not be removed <1, 5, false>", expected, hs);
+
+        hs.removeHighlights(pos(10), pos(15), false);
+        assertMarks("Highlights should not be removed <10, 15, false>", expected, hs);
+    }
+
+    public void testRemoveHighlights_114642_2() throws Exception {
+        PositionsBag expected = createPositionsBag(10, 20, EMPTY, 30, 40, EMPTY, 50, 60, EMPTY);
+        PositionsBag hs = createPositionsBag(10, 20, EMPTY, 30, 40, EMPTY, 50, 60, EMPTY);
+        assertEquals("Sequence size", 6, hs.getMarks().size());
+
+        hs.removeHighlights(pos(25), pos(30), true);
+        assertMarks("Highlights should not be removed <25, 30, true>", expected, hs);
+
+        hs.removeHighlights(pos(40), pos(45), true);
+        assertMarks("Highlights should not be removed <40, 45, true>", expected, hs);
+
+        hs.removeHighlights(pos(25), pos(30), false);
+        assertMarks("Highlights should not be removed <25, 30, false>", expected, hs);
+
+        hs.removeHighlights(pos(40), pos(45), false);
+        assertMarks("Highlights should not be removed <40, 45, false>", expected, hs);
+    }
+
+    public void test158249_AddToRemoveFromLeft() {
+        PositionsBag bag = new PositionsBag(doc);
+        bag.addHighlight(pos(0), pos(1), EMPTY);
+        assertMarks("Expecting 1 highlight", createPositionsBag(0, 1, EMPTY), bag);
+        bag.addHighlight(pos(1), pos(2), EMPTY);
+        assertMarks("Expecting 2 highlights", createPositionsBag(0, 1, EMPTY, 1, 2, EMPTY), bag);
+        bag.addHighlight(pos(2), pos(3), EMPTY);
+        assertMarks("Expecting 3 highlights", createPositionsBag(0, 1, EMPTY, 1, 2, EMPTY, 2, 3, EMPTY), bag);
+        bag.addHighlight(pos(3), pos(4), EMPTY);
+        assertMarks("Expecting 4 highlights", createPositionsBag(0, 1, EMPTY, 1, 2, EMPTY, 2, 3, EMPTY, 3, 4, EMPTY), bag);
+
+        bag.removeHighlights(pos(3), pos(4), false);
+        assertMarks("Expecting 3 highlights", createPositionsBag(0, 1, EMPTY, 1, 2, EMPTY, 2, 3, EMPTY), bag);
+        bag.removeHighlights(pos(2), pos(3), false);
+        assertMarks("Expecting 2 highlights", createPositionsBag(0, 1, EMPTY, 1, 2, EMPTY), bag);
+        bag.removeHighlights(pos(1), pos(2), false);
+        assertMarks("Expecting 1 highlights", createPositionsBag(0, 1, EMPTY), bag);
+        bag.removeHighlights(pos(0), pos(1), false);
+        assertMarks("Expecting no highlights", createPositionsBag(), bag);
+    }
+
+    public void test158249_AddToRemoveFromLeftClip() {
+        PositionsBag bag = new PositionsBag(doc);
+        bag.addHighlight(pos(0), pos(1), EMPTY);
+        assertMarks("Expecting 1 highlight", createPositionsBag(0, 1, EMPTY), bag);
+        bag.addHighlight(pos(1), pos(2), EMPTY);
+        assertMarks("Expecting 2 highlights", createPositionsBag(0, 1, EMPTY, 1, 2, EMPTY), bag);
+        bag.addHighlight(pos(2), pos(3), EMPTY);
+        assertMarks("Expecting 3 highlights", createPositionsBag(0, 1, EMPTY, 1, 2, EMPTY, 2, 3, EMPTY), bag);
+        bag.addHighlight(pos(3), pos(4), EMPTY);
+        assertMarks("Expecting 4 highlights", createPositionsBag(0, 1, EMPTY, 1, 2, EMPTY, 2, 3, EMPTY, 3, 4, EMPTY), bag);
+
+        bag.removeHighlights(pos(3), pos(4), true);
+        assertMarks("Expecting 3 highlights", createPositionsBag(0, 1, EMPTY, 1, 2, EMPTY, 2, 3, EMPTY), bag);
+        bag.removeHighlights(pos(2), pos(3), true);
+        assertMarks("Expecting 2 highlights", createPositionsBag(0, 1, EMPTY, 1, 2, EMPTY), bag);
+        bag.removeHighlights(pos(1), pos(2), true);
+        assertMarks("Expecting 1 highlights", createPositionsBag(0, 1, EMPTY), bag);
+        bag.removeHighlights(pos(0), pos(1), true);
+        assertMarks("Expecting no highlights", createPositionsBag(), bag);
+    }
+
+    public void test158249_AddToRemoveFromRight() {
+        PositionsBag bag = new PositionsBag(doc);
+        bag.addHighlight(pos(3), pos(4), EMPTY);
+        assertMarks("Expecting 1 highlight", createPositionsBag(3, 4, EMPTY), bag);
+        bag.addHighlight(pos(2), pos(3), EMPTY);
+        assertMarks("Expecting 2 highlights", createPositionsBag(2, 3, EMPTY, 3, 4, EMPTY), bag);
+        bag.addHighlight(pos(1), pos(2), EMPTY);
+        assertMarks("Expecting 3 highlights", createPositionsBag(1, 2, EMPTY, 2, 3, EMPTY, 3, 4, EMPTY), bag);
+        bag.addHighlight(pos(0), pos(1), EMPTY);
+        assertMarks("Expecting 4 highlights", createPositionsBag(0, 1, EMPTY, 1, 2, EMPTY, 2, 3, EMPTY, 3, 4, EMPTY), bag);
+
+        bag.removeHighlights(pos(0), pos(1), false);
+        assertMarks("Expecting 3 highlights", createPositionsBag(1, 2, EMPTY, 2, 3, EMPTY, 3, 4, EMPTY), bag);
+        bag.removeHighlights(pos(1), pos(2), false);
+        assertMarks("Expecting 2 highlights", createPositionsBag(2, 3, EMPTY, 3, 4, EMPTY), bag);
+        bag.removeHighlights(pos(2), pos(3), false);
+        assertMarks("Expecting 1 highlights", createPositionsBag(3, 4, EMPTY), bag);
+        bag.removeHighlights(pos(3), pos(4), false);
+        assertMarks("Expecting no highlights", createPositionsBag(), bag);
+    }
+
+    public void test158249_AddToRemoveFromRightClip() {
+        PositionsBag bag = new PositionsBag(doc);
+        bag.addHighlight(pos(3), pos(4), EMPTY);
+        assertMarks("Expecting 1 highlight", createPositionsBag(3, 4, EMPTY), bag);
+        bag.addHighlight(pos(2), pos(3), EMPTY);
+        assertMarks("Expecting 2 highlights", createPositionsBag(2, 3, EMPTY, 3, 4, EMPTY), bag);
+        bag.addHighlight(pos(1), pos(2), EMPTY);
+        assertMarks("Expecting 3 highlights", createPositionsBag(1, 2, EMPTY, 2, 3, EMPTY, 3, 4, EMPTY), bag);
+        bag.addHighlight(pos(0), pos(1), EMPTY);
+        assertMarks("Expecting 4 highlights", createPositionsBag(0, 1, EMPTY, 1, 2, EMPTY, 2, 3, EMPTY, 3, 4, EMPTY), bag);
+
+        bag.removeHighlights(pos(0), pos(1), true);
+        assertMarks("Expecting 3 highlights", createPositionsBag(1, 2, EMPTY, 2, 3, EMPTY, 3, 4, EMPTY), bag);
+        bag.removeHighlights(pos(1), pos(2), true);
+        assertMarks("Expecting 2 highlights", createPositionsBag(2, 3, EMPTY, 3, 4, EMPTY), bag);
+        bag.removeHighlights(pos(2), pos(3), true);
+        assertMarks("Expecting 1 highlights", createPositionsBag(3, 4, EMPTY), bag);
+        bag.removeHighlights(pos(3), pos(4), true);
+        assertMarks("Expecting no highlights", createPositionsBag(), bag);
+    }
+
+    public void test158249_AddRemove() {
+        PositionsBag bag = createPositionsBag(0, 1, EMPTY, 1, 2, EMPTY, 2, 3, EMPTY, 3, 4, EMPTY);
+        bag.removeHighlights(pos(1), pos(3), false);
+        assertMarks("Expecting 2 highlights", createPositionsBag(0, 1, EMPTY, 3, 4, EMPTY), bag);
+
+        bag = createPositionsBag(0, 10, EMPTY, 10, 20, EMPTY, 20, 30, EMPTY, 30, 40, EMPTY);
+        bag.removeHighlights(pos(15), pos(25), false);
+        assertMarks("Expecting 2 highlights", createPositionsBag(0, 10, EMPTY, 30, 40, EMPTY), bag);
+
+        bag = createPositionsBag(0, 10, EMPTY, 10, 20, EMPTY, 20, 30, EMPTY, 30, 40, EMPTY);
+        bag.removeHighlights(pos(5), pos(35), false);
+        assertMarks("Expecting no highlights", createPositionsBag(), bag);
+    }
+
+    public void test158249_AddRemoveClip() {
+        PositionsBag bag = createPositionsBag(0, 1, EMPTY, 1, 2, EMPTY, 2, 3, EMPTY, 3, 4, EMPTY);
+        bag.removeHighlights(pos(1), pos(3), true);
+        assertMarks("Expecting 2 highlights", createPositionsBag(0, 1, EMPTY, 3, 4, EMPTY), bag);
+
+        bag = createPositionsBag(0, 10, EMPTY, 10, 20, EMPTY, 20, 30, EMPTY, 30, 40, EMPTY);
+        bag.removeHighlights(pos(15), pos(25), true);
+        assertMarks("Expecting 4 highlights", createPositionsBag(0, 10, EMPTY, 10, 15, EMPTY, 25, 30, EMPTY, 30, 40, EMPTY), bag);
+
+        bag = createPositionsBag(0, 10, EMPTY, 10, 20, EMPTY, 20, 30, EMPTY, 30, 40, EMPTY);
+        bag.removeHighlights(pos(5), pos(35), true);
+        assertMarks("Expecting 2 highlights", createPositionsBag(0, 5, EMPTY, 35, 40, EMPTY), bag);
+    }
+
     public void testAddAll() {
         PositionsBag hsA = new PositionsBag(doc);
         PositionsBag hsB = new PositionsBag(doc);
@@ -692,10 +858,10 @@ public class PositionsBagTest extends NbTestCase {
     }
 
     public void testDocumentChanges() throws BadLocationException {
-        Document doc = new PlainDocument();
-        doc.insertString(0, "01234567890123456789012345678901234567890123456789", SimpleAttributeSet.EMPTY);
+        Document d = new PlainDocument();
+        d.insertString(0, "01234567890123456789012345678901234567890123456789", SimpleAttributeSet.EMPTY);
         
-        PositionsBag bag = new PositionsBag(doc);
+        PositionsBag bag = new PositionsBag(d);
         
         SimpleAttributeSet attribsA = new SimpleAttributeSet();
         SimpleAttributeSet attribsB = new SimpleAttributeSet();
@@ -703,8 +869,8 @@ public class PositionsBagTest extends NbTestCase {
         attribsA.addAttribute("set-name", "attribsA");
         attribsB.addAttribute("set-name", "attribsB");
         
-        bag.addHighlight(doc.createPosition(0), doc.createPosition(30), attribsA);
-        bag.addHighlight(doc.createPosition(10), doc.createPosition(20), attribsB);
+        bag.addHighlight(d.createPosition(0), d.createPosition(30), attribsA);
+        bag.addHighlight(d.createPosition(10), d.createPosition(20), attribsB);
         GapList<Position> marks = bag.getMarks();
         GapList<AttributeSet> atttributes = bag.getAttributes();
         
@@ -722,7 +888,7 @@ public class PositionsBagTest extends NbTestCase {
         assertEquals("3. highlight - wrong attribs", "attribsA", atttributes.get(2).getAttribute("set-name"));
         assertNull("  3. highlight - wrong end", atttributes.get(3));
         
-        doc.insertString(12, "----", SimpleAttributeSet.EMPTY);
+        d.insertString(12, "----", SimpleAttributeSet.EMPTY);
         
         assertEquals("Wrong number of highlights", 4, marks.size());
         assertEquals("1. highlight - wrong start offset", 0, marks.get(0).getOffset());
@@ -738,7 +904,7 @@ public class PositionsBagTest extends NbTestCase {
         assertEquals("3. highlight - wrong attribs", "attribsA", atttributes.get(2).getAttribute("set-name"));
         assertNull("  3. highlight - wrong end", atttributes.get(3));
         
-        doc.remove(1, 5);
+        d.remove(1, 5);
         
         assertEquals("Wrong number of highlights", 4, marks.size());
         assertEquals("1. highlight - wrong start offset", 0, marks.get(0).getOffset());
@@ -765,5 +931,70 @@ public class PositionsBagTest extends NbTestCase {
     
     private Position pos(int offset) {
         return new SimplePosition(offset);
+    }
+
+    private PositionsBag createPositionsBag(Object... triples) {
+        assert triples != null;
+        assert triples.length % 3 == 0;
+
+        PositionsBag bag = new PositionsBag(doc);
+        for(int i = 0; i < triples.length / 3; i++) {
+            bag.addHighlight(pos((Integer) triples[3 * i]), pos((Integer) triples[3 * i + 1]), (AttributeSet) triples[3 * i + 2]);
+        }
+
+        return bag;
+    }
+
+    private void assertMarks(String message, PositionsBag expected, PositionsBag actual) {
+        try {
+            GapList<Position> expectedPositions = expected.getMarks();
+            GapList<Position> actualPositions = actual.getMarks();
+            GapList<AttributeSet> expectedAttributes = expected.getAttributes();
+            GapList<AttributeSet> actualAttributes = actual.getAttributes();
+            assertEquals("Different number of marks", expectedPositions.size(), actualPositions.size());
+            for(int i = 0; i < expectedPositions.size(); i++) {
+                Position expectedPos = expectedPositions.get(i);
+                Position actualPos = actualPositions.get(i);
+                assertEquals("Different offset at the " + i + "-th mark", expectedPos.getOffset(), actualPos.getOffset());
+
+                AttributeSet expectedAttrib = expectedAttributes.get(i);
+                AttributeSet actualAttrib = actualAttributes.get(i);
+                assertSame("Different attributes at the " + i + "-th mark", expectedAttrib, actualAttrib);
+            }
+        } catch (AssertionFailedError afe) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(message);
+            sb.append('\n');
+            sb.append("Expected marks (size=");
+            sb.append(expected.getMarks().size());
+            sb.append("):\n");
+            dumpMarks(expected, sb);
+            sb.append('\n');
+            sb.append("Actual marks (size=");
+            sb.append(actual.getMarks().size());
+            sb.append("):\n");
+            dumpMarks(actual, sb);
+            sb.append('\n');
+
+            AssertionFailedError afe2 = new AssertionFailedError(sb.toString());
+            afe2.initCause(afe);
+            throw afe2;
+        }
+    }
+
+    private StringBuilder dumpMarks(PositionsBag bag, StringBuilder sb) {
+        for (int i = 0; i < bag.getMarks().size(); i++) {
+            Position pos = bag.getMarks().get(i);
+            sb.append('[').append(i).append("] = {");
+            sb.append(pos.toString());
+            sb.append("; attribs=");
+            AttributeSet attribs = bag.getAttributes().get(i);
+            sb.append(attribs);
+            sb.append('}');
+            if (i + 1 < bag.getMarks().size()) {
+                sb.append('\n');
+            }
+        }
+        return sb;
     }
 }

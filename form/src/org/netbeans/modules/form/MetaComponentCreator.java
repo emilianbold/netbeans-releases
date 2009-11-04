@@ -1597,12 +1597,21 @@ public class MetaComponentCreator {
     private static void defaultTargetInit(RADComponent metacomp, RADComponent target) {
         Object targetComp = target != null ? target.getBeanInstance() : null;
 
-        if (metacomp.getBeanClass().equals(JSeparator.class) && targetComp instanceof JToolBar) {
-            // hack: change JSeparator to JToolBar.Separator
-            try {
-                metacomp.initInstance(JToolBar.Separator.class);
-            } catch (Exception ex) {} // should not fail with JDK class
-            return;
+        if (metacomp.getBeanClass().equals(JSeparator.class)) {
+            if (targetComp instanceof JToolBar) {
+                // hack: change JSeparator to JToolBar.Separator
+                try {
+                    metacomp.initInstance(JToolBar.Separator.class);
+                } catch (Exception ex) {} // should not fail with JDK class
+                return;
+            } else if (targetComp instanceof JMenu || targetComp instanceof JPopupMenu) {
+                // hack: change JSeparator to JPopupMenu.Separator
+                try {
+                    metacomp.initInstance(JPopupMenu.Separator.class);
+                } catch (Exception ex) {} // should not fail with JDK class
+                return;
+
+            }
         }
 
         Object comp = metacomp.getBeanInstance();

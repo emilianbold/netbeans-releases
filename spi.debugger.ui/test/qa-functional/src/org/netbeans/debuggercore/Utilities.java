@@ -473,7 +473,12 @@ public class Utilities {
     public static boolean checkConsoleLastLineForText(String text) {
         OutputTabOperator op = new OutputTabOperator(debuggerConsoleTitle);
         int n =op.getLineCount();
-        if ( (n>0) && (op.getLine(n-1).startsWith(text)) ) {
+        /*
+         * line numbers start at 0 and the last line is always empty (new line),
+         * so we need the line before the last one -> n-2
+         */
+        if ( (n>1) && (op.getLine(n-2).startsWith(text)) )
+        {
             return true;
         }
         return false;
@@ -500,18 +505,10 @@ public class Utilities {
         return number;
     }
 
-    public static void captureScreen(JellyTestCase testCase) {
-        try {
-            PNGEncoder.captureScreen(testCase.getWorkDir().getAbsolutePath() + File.separator + "screenBeforeCleanup.png");
-        } catch (Exception e1) {
-            // ignore it
-        }
-    }
-
     public static void waitStatusOrConsoleText(String text) throws Throwable
     {
         try {
-                Utilities.waitStatusText(text);
+                Utilities.waitStatusText(text);            
             }
         catch (Throwable e) {
             if (!Utilities.checkConsoleLastLineForText(text)) {

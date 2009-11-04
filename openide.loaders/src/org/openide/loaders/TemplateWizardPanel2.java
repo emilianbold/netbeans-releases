@@ -134,7 +134,7 @@ final class TemplateWizardPanel2 implements WizardDescriptor.FinishablePanel<Wiz
      *
      */
     public void readSettings(WizardDescriptor settings) {
-        this.settings = (WizardDescriptor)settings;
+        this.settings = settings;
         getPanelUI ().implReadSettings (settings);
     }
     

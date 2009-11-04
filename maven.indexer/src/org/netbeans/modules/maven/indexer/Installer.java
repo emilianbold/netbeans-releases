@@ -39,6 +39,7 @@
 package org.netbeans.modules.maven.indexer;
 
 import java.util.Collection;
+import java.util.logging.Logger;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.spi.RepositoryIndexerImplementation;
 import org.openide.modules.ModuleInstall;
@@ -49,10 +50,18 @@ import org.openide.util.Lookup;
  * often not needed at all.
  */
 public class Installer extends ModuleInstall {
+    private static final Logger LOG = Logger.getLogger(Installer.class.getName());
 
     @Override
     public void close() {
         super.close();
+
+        // ugly brutal, please fix if you know better solution
+        for (Thread t : RemoteIndexTransferListener.getActiveTransfersOrScans()) {
+            LOG.warning("Killing Maven Repo Transfer thread on system exit..."); //NOI18N
+            t.stop();
+        }
+
         Collection<? extends RepositoryIndexerImplementation> res = Lookup.getDefault().lookupAll(RepositoryIndexerImplementation.class);
         for (RepositoryIndexerImplementation impl : res) {
             if (impl.getType().equals(RepositoryPreferences.TYPE_NEXUS)) {
