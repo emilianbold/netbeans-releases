@@ -45,6 +45,7 @@ import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -63,9 +64,8 @@ public class GroupListItem implements ContactListItem {
     @Override
     public String toString() {
         try {
-            return "<html><b>"+
-                    Kenai.getDefault().getProject(group.getName()).getDisplayName() +
-                    "</b><i> (chat room)</i></html>";
+            return NbBundle.getMessage(GroupListItem.class, "ChatRoomRenderer", 
+                    Kenai.getDefault().getProject(group.getName()).getDisplayName());
         } catch (KenaiException ex) {
             Exceptions.printStackTrace(ex);
         }
