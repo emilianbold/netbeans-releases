@@ -270,7 +270,7 @@ public class SummaryWizardPanelGUI extends javax.swing.JPanel {
             Mnemonics.setLocalizedText(projectsMoveLabel, NbBundle.getMessage(SummaryWizardPanelGUI.class, "SummaryWizardPanelGUI.projectsMoveLabelNoSelection.text"));
         }
         localRoot.setVisible(!inPlaceRepository && scmCreated);
-        localRoot.setText("<html><b>"+newPrjScmLocal+"</b></html>");
+        localRoot.setText("<html><b>"+newPrjScmLocal+"</b></html>"); // NOI18N
 
         String issues = (String) settings.getProperty(NewKenaiProjectWizardIterator.PROP_ISSUES);
         issueTrackingLabel.setVisible(KenaiService.Names.BUGZILLA.equals(issues) || KenaiService.Names.JIRA.equals(issues));

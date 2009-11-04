@@ -235,7 +235,7 @@ public class ChatPanel extends javax.swing.JPanel {
             SwingUtilities.invokeLater(new Runnable() {
 
                 public void run() { // issue ID format: PROJECT_NAME-123
-                    KenaiIssueAccessor.getDefault().open(proj, proj.getName().toUpperCase().replaceAll("-", "_") + "-" + issueNumber);
+                    KenaiIssueAccessor.getDefault().open(proj, proj.getName().toUpperCase().replaceAll("-", "_") + "-" + issueNumber); // NOI18N
                 }
             });
         } else if (trackers[0].getService().equals(KenaiService.Names.BUGZILLA)) {
@@ -400,7 +400,7 @@ public class ChatPanel extends javax.swing.JPanel {
             public void hyperlinkUpdate(HyperlinkEvent e) {
                 if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
                     URL url = e.getURL();
-                    if (url!=null && !(url.getProtocol().equals("file") || url.getProtocol().equals("issue")) ) {
+                    if (url!=null && !(url.getProtocol().equals("file") || url.getProtocol().equals("issue")) ) { // NOI18N
                         URLDisplayer.getDefault().showURL(url);
                     } else {
                         String link = e.getDescription();
@@ -942,7 +942,7 @@ public class ChatPanel extends javax.swing.JPanel {
     private String rgb = null;
 
     private String getMessageBody(Message m) {
-        final NotificationExtension ne = (NotificationExtension) m.getExtension("notification", NotificationExtensionProvider.NAMESPACE);
+        final NotificationExtension ne = (NotificationExtension) m.getExtension("notification", NotificationExtensionProvider.NAMESPACE); // NOI18N
         String b = m.getBody();
         if (ne==null) {
             return b;
@@ -960,11 +960,11 @@ public class ChatPanel extends javax.swing.JPanel {
         }
         String id = n.getModifications().get(0).getId();
         String projectName = StringUtils.parseName(m.getFrom());
-        if (projectName.contains("@")) {
+        if (projectName.contains("@")) { // NOI18N
             projectName = StringUtils.parseName(projectName);
         }
-        String url = Kenai.getDefault().getUrl().toString()+ "/projects/" + projectName + "/sources/" + n.getServiceName() + "/revision/" + id;
-        return body + "\n" + url;
+        String url = Kenai.getDefault().getUrl().toString()+ "/projects/" + projectName + "/sources/" + n.getServiceName() + "/revision/" + id; // NOI18N
+        return body + "\n" + url; // NOI18N
     }
 
     protected void insertMessage(Message message) {

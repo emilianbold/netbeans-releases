@@ -64,9 +64,9 @@ public class KenaiInstancesManager {
     private static KenaiInstancesManager instance;
     private List<KenaiInstance> instances = new ArrayList();
     private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
-    public static final String PROP_INSTANCES = "prop_instances";
+    public static final String PROP_INSTANCES = "prop_instances"; // NOI18N
     private Preferences prefs = NbPreferences.forModule(Kenai.class);
-    private static final String INSTANCES_PREF="kenai.instances";
+    private static final String INSTANCES_PREF="kenai.instances"; // NOI18N
 
     public static synchronized KenaiInstancesManager getDefault() {
         if (instance==null) {
@@ -80,7 +80,7 @@ public class KenaiInstancesManager {
         if (s.length() > 1) {
             for (String inst : s.split(";")) { // NOI18N
                 if (inst.length()>0) {
-                    instances.add(new KenaiInstance(inst.split(",")[0], inst.split(",")[1]));
+                    instances.add(new KenaiInstance(inst.split(",")[0], inst.split(",")[1])); // NOI18N
                 }
             }
         }

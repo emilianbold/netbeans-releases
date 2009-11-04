@@ -216,7 +216,7 @@ public class SourceAccessorImpl extends SourceAccessor {
 
         return new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
-                WindowManager.getDefault().findTopComponent("favorites").requestActive();
+                WindowManager.getDefault().findTopComponent("favorites").requestActive(); // NOI18N
                 try {
                     FileObject fo = FileUtil.toFileObject(src.getWorkingDirectory());
                     Favorites.getDefault().selectWithAddition(fo);

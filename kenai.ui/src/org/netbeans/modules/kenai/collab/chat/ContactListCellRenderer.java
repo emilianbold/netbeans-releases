@@ -98,7 +98,7 @@ public class ContactListCellRenderer extends javax.swing.JPanel implements ListC
         buddyLabel.setBorder(new EmptyBorder(0,item.getIcon()==null?19:0,0,0));
         buddyLabel.setIcon(item.getIcon());
         if (item.hasMessages()) {
-            messageLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/collab/resources/newmessage.png", true));
+            messageLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/collab/resources/newmessage.png", true)); // NOI18N
             messageLabel.setBorder(new EmptyBorder(0,3,0,0));
         } else {
             messageLabel.setIcon(null);
