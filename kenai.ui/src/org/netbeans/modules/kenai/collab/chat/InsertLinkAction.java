@@ -76,7 +76,7 @@ public class InsertLinkAction extends AbstractAction {
         int line = NbDocument.findLineNumber((StyledDocument) document, component.getCaretPosition()) + 1;
         ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
         if (insertLineNumber) {
-            putValue(NAME, fo.getNameExt() + ":" + line);
+            putValue(NAME, fo.getNameExt() + ":" + line); // NOI18N
             putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_L, KeyEvent.CTRL_DOWN_MASK));
         } else {
             putValue(NAME, fo.getNameExt());
@@ -94,13 +94,13 @@ public class InsertLinkAction extends AbstractAction {
         if (insertLineNumber)
             outText += ":" + line; //NOI18N
         this.out = out;
-        outText =  "FILE:" + outText;
+        outText =  "FILE:" + outText; // NOI18N
     }
 
     public InsertLinkAction(IssueHandle issueHandle, JTextPane outbox) {
         putValue(NAME, issueHandle.getShortDisplayName());
         this.out=outbox;
-        outText = "ISSUE:" + issueHandle.getID();
+        outText = "ISSUE:" + issueHandle.getID(); // NOI18N
     }
 
     public void actionPerformed(ActionEvent e) {

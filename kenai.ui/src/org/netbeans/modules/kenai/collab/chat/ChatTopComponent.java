@@ -71,7 +71,7 @@ import org.openide.windows.WindowManager;
  * @author Jan Becicka
  */
 public class ChatTopComponent extends TopComponent {
-    private static final String KENAI_OPEN_CHATS_PREF = ".open.chats.";
+    private static final String KENAI_OPEN_CHATS_PREF = ".open.chats."; // NOI18N
     private static ChatTopComponent instance;
 
     /** path to the icon used by the component and its open action */
@@ -337,7 +337,7 @@ public class ChatTopComponent extends TopComponent {
     }
 
     public static final String createPrivateName(String name) {
-        return "private." + name;
+        return "private." + name; // NOI18N
     }
 
     public void addChat(ChatPanel chatPanel) { 

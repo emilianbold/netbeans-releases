@@ -50,6 +50,7 @@ import java.awt.Dimension;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import javax.swing.border.EmptyBorder;
+import org.openide.awt.HtmlRenderer;
 import org.openide.util.ImageUtilities;
 
 /**
@@ -75,7 +76,7 @@ public class ContactListCellRenderer extends javax.swing.JPanel implements ListC
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        buddyLabel = new javax.swing.JLabel();
+        buddyLabel = HtmlRenderer.createLabel();
         messageLabel = new javax.swing.JLabel();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 3, 1, 5));
@@ -97,7 +98,7 @@ public class ContactListCellRenderer extends javax.swing.JPanel implements ListC
         buddyLabel.setBorder(new EmptyBorder(0,item.getIcon()==null?19:0,0,0));
         buddyLabel.setIcon(item.getIcon());
         if (item.hasMessages()) {
-            messageLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/collab/resources/newmessage.png", true));
+            messageLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/collab/resources/newmessage.png", true)); // NOI18N
             messageLabel.setBorder(new EmptyBorder(0,3,0,0));
         } else {
             messageLabel.setIcon(null);

@@ -80,9 +80,9 @@ import org.openide.util.RequestProcessor;
  */
 public class KenaiConnection implements PropertyChangeListener {
 
-    public static final String PROP_XMPP_STARTED = "xmpp_started";
+    public static final String PROP_XMPP_STARTED = "xmpp_started"; // NOI18N
 
-    public static final String PROP_XMPP_FINISHED = "xmpp_finished";
+    public static final String PROP_XMPP_FINISHED = "xmpp_finished"; // NOI18N
 
     //Map <kenai project name, message listener>
     private HashMap<String, PacketListener> groupListeners = new HashMap<String, PacketListener>();
@@ -119,7 +119,7 @@ public class KenaiConnection implements PropertyChangeListener {
             instance = new KenaiConnection();
             ProviderManager providerManager = ProviderManager.getInstance();
             providerManager.addExtensionProvider("delay", "urn:xmpp:delay", new DelayExtensionProvider());//NOI18N
-            providerManager.addExtensionProvider("notification", NotificationExtensionProvider.NAMESPACE, new NotificationExtensionProvider());
+            providerManager.addExtensionProvider("notification", NotificationExtensionProvider.NAMESPACE, new NotificationExtensionProvider()); // NOI18N
             Kenai.getDefault().addPropertyChangeListener(instance);
         }
         return instance;
@@ -305,12 +305,12 @@ public class KenaiConnection implements PropertyChangeListener {
             synchronized (KenaiConnection.this) {
                 final Message msg = (Message) packet;
                 String n = StringUtils.parseName(msg.getFrom());
-                if (n.contains("@")) {
+                if (n.contains("@")) { // NOI18N
                     n = StringUtils.parseName(n);
                 }
                 final String name = n;
-                final NotificationExtension ne = (NotificationExtension) msg.getExtension("notification", NotificationExtensionProvider.NAMESPACE);
-                if (ne != null && msg.getExtension("x", "jabber:x:delay") == null) {
+                final NotificationExtension ne = (NotificationExtension) msg.getExtension("notification", NotificationExtensionProvider.NAMESPACE); // NOI18N
+                if (ne != null && msg.getExtension("x", "jabber:x:delay") == null) { // NOI18N
                     post(new Runnable() {
                         public void run() {
                             try {
@@ -458,7 +458,7 @@ public class KenaiConnection implements PropertyChangeListener {
 
 
     private String getChatroomName(KenaiFeature prj) {
-        return prj.getName() + "@muc." + Kenai.getDefault().getUrl().getHost();
+        return prj.getName() + "@muc." + Kenai.getDefault().getUrl().getHost(); // NOI18N
     }
 
     public Collection<KenaiFeature> getMyChats() {

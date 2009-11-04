@@ -59,8 +59,8 @@ import org.openide.util.NbBundle;
 public class KenaiInstanceProperties extends HashMap<String,String> {
     
     private Sheet.Set set;
-    public static final String INSTANCE_URL = "url";
-    public static final String INSTANCE_NAME = "display_name";
+    public static final String INSTANCE_URL = "url"; // NOI18N
+    public static final String INSTANCE_NAME = "display_name"; // NOI18N
     
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     
