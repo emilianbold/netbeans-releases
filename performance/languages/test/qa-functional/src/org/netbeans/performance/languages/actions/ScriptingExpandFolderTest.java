@@ -41,6 +41,9 @@
 
 package org.netbeans.performance.languages.actions;
 
+import java.io.File;
+import java.net.URISyntaxException;
+import java.net.URL;
 import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.languages.Projects;
@@ -78,9 +81,22 @@ public class ScriptingExpandFolderTest extends PerformanceTestCase {
         super(testName,performanceDataName);
     }
 
-    public static NbTestSuite suite() {
+    public static NbTestSuite suite() throws URISyntaxException {
+        URL u = ScriptingExpandFolderTest.class.getProtectionDomain().getCodeSource().getLocation();
+        File f = new File(u.toURI());
+        while (f != null) {
+            File hg = new File(f, ".hg");
+            if (hg.isDirectory()) {
+                System.setProperty("versioning.unversionedFolders", f.getPath());
+                System.err.println("ignoring Hg folder: " + f);
+                break;
+            }
+            f = f.getParentFile();
+        }
+
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ScriptingSetup.class)
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.emptyConfiguration().
+             honorAutoloadEager(true).addTest(ScriptingSetup.class)
              .addTest(ScriptingExpandFolderTest.class)
              .enableModules(".*").clusters(".*")));
         return suite;
