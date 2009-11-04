@@ -161,9 +161,7 @@ public class ResourceRegistrationHelper {
           changedData = checkResources(aoFinder, "resources.admin-object-resource.", allRemoteData, changedData, dm); // NOI18N
           changedData = checkResources(mailFinder, "resources.mail-resource.", allRemoteData, changedData, dm); // NOI18N
 
-          System.out.println("Done checking === ");
           if(changedData.size() > 0) {
-            System.out.println("No of changes === " + changedData.size());
             putResourceData(changedData, dm);
           }
     }
