@@ -121,6 +121,9 @@ public class StopTask extends BasicTask<OperationState> {
                     Thread.sleep(1000); // flush the process
                 } catch (InterruptedException e) {
                 }
+                LogViewMgr logger = LogViewMgr.getInstance(ip.get(GlassfishModule.URL_ATTR));
+                logger.stopReaders();
+
                 return fireOperationStateChanged(OperationState.COMPLETED, 
                         "MSG_SERVER_STOPPED", instanceName); // NOI18N
             }
