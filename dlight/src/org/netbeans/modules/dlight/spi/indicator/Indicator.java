@@ -120,7 +120,14 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
     }
 
     protected final String getActionTooltip() {
-        return actionTooltip;
+        if (actionTooltip == null){
+            return null;
+        }
+        StringBuilder st = new StringBuilder();
+        st.append("<html><body>");//NOI18N
+        st.append(actionTooltip.replaceAll("\n", "<br>"));//NOI18N
+        st.append("</body></html>");//NOI18N
+        return st.toString();
     }
 
     private void notifyListeners(VisualizerConfiguration vc) {
@@ -159,7 +166,7 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
         };
         defaultAction.putValue(Action.NAME, actionDisplayName);
         if (actionTooltip != null){
-            defaultAction.putValue(Action.SHORT_DESCRIPTION, actionTooltip);
+            defaultAction.putValue(Action.SHORT_DESCRIPTION, getActionTooltip());
         }
     }
 
