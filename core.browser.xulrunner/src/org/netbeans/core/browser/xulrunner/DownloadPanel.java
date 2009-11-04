@@ -87,9 +87,16 @@ public class DownloadPanel extends JPanel {
         setError(" "); // NOI18N
     }
 
-    void setError(String msg) {
-        assert SwingUtilities.isEventDispatchThread ();
-        errorLabel.setText(msg);
+    void setError(final String msg) {
+        if( SwingUtilities.isEventDispatchThread() ) {
+            errorLabel.setText(msg);
+        } else {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    setError(msg);
+                }
+            });
+        }
     }
 
     /** This method is called from within the constructor to
