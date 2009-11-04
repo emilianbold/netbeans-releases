@@ -365,11 +365,12 @@ public final class CookieSet extends Object implements Lookup.Provider {
             throw new IllegalArgumentException();
         }
 
+        final CookieEntry ce = new CookieEntry(factory, cookieClass);
         synchronized (this) {
-            registerCookie(cookieClass, new CookieEntry(factory, cookieClass));
+            registerCookie(cookieClass, ce);
         }
         if (ic != null) {
-            ic.add(new FactAndClass(cookieClass, factory), C.INSTANCE);
+            ic.add(ce, C.INSTANCE);
         }
         fireChangeEvent();
     }
@@ -380,15 +381,17 @@ public final class CookieSet extends Object implements Lookup.Provider {
             throw new IllegalArgumentException();
         }
 
+        CookieEntry[] arr = new CookieEntry[cookieClass.length];
         synchronized (this) {
             for (int i = 0; i < cookieClass.length; i++) {
-                registerCookie(cookieClass[i], new CookieEntry(factory, cookieClass[i]));
+                registerCookie(cookieClass[i], arr[i] = new CookieEntry(factory, cookieClass[i]));
             }
         }
 
         if (ic != null) {
+            int i = 0;
             for (Class<? extends Node.Cookie> c : cookieClass) {
-                ic.add(new FactAndClass(c, factory), C.INSTANCE);
+                ic.add(arr[i++], C.INSTANCE);
             }
         }
         fireChangeEvent();
@@ -403,6 +406,7 @@ public final class CookieSet extends Object implements Lookup.Provider {
             throw new IllegalArgumentException();
         }
 
+        CookieEntry ce = null;
         synchronized (this) {
             R r = findR(cookieClass);
 
@@ -410,7 +414,7 @@ public final class CookieSet extends Object implements Lookup.Provider {
                 Node.Cookie c = r.cookie();
 
                 if (c instanceof CookieEntry) {
-                    CookieEntry ce = (CookieEntry) c;
+                    ce = (CookieEntry) c;
 
                     if (ce.factory == factory) {
                         unregisterCookie(cookieClass, c);
@@ -418,8 +422,8 @@ public final class CookieSet extends Object implements Lookup.Provider {
                 }
             }
         }
-        if (ic != null) {
-            ic.remove(new FactAndClass(cookieClass, factory), C.INSTANCE);
+        if (ic != null && ce != null) {
+            ic.remove(ce, C.INSTANCE);
         }
 
         fireChangeEvent();
@@ -434,6 +438,7 @@ public final class CookieSet extends Object implements Lookup.Provider {
             throw new IllegalArgumentException();
         }
 
+        CookieEntry[] arr = new CookieEntry[cookieClass.length];
         synchronized (this) {
             for (int i = 0; i < cookieClass.length; i++) {
                 R r = findR(cookieClass[i]);
@@ -443,6 +448,7 @@ public final class CookieSet extends Object implements Lookup.Provider {
 
                     if (c instanceof CookieEntry) {
                         CookieEntry ce = (CookieEntry) c;
+                        arr[i] = ce;
 
                         if (ce.factory == factory) {
                             unregisterCookie(cookieClass[i], c);
@@ -453,8 +459,10 @@ public final class CookieSet extends Object implements Lookup.Provider {
         }
         
         if (ic != null) {
-            for (Class<? extends Node.Cookie> c : cookieClass) {
-                ic.remove(new FactAndClass(c, factory), C.INSTANCE);
+            for (CookieEntry ce : arr) {
+                if (ce != null) {
+                    ic.remove(ce, C.INSTANCE);
+                }
             }
         }
 
@@ -685,10 +693,12 @@ public final class CookieSet extends Object implements Lookup.Provider {
             return item.getDisplayName();
         }
 
+        @Override
         public int hashCode() {
             return 777 + item.hashCode();
         }
 
+        @Override
         public boolean equals(Object object) {
             if (object instanceof PairWrap) {
                 PairWrap p = (PairWrap)object;
@@ -732,10 +742,12 @@ public final class CookieSet extends Object implements Lookup.Provider {
             return k.isAssignableFrom(entry.klass);
         }
 
+        @Override
         public int hashCode() {
             return entry.hashCode() + 5;
         }
 
+        @Override
         public boolean equals(Object obj) {
             if (obj instanceof CookieEntryPair) {
                 return ((CookieEntryPair) obj).entry == entry;
@@ -744,47 +756,26 @@ public final class CookieSet extends Object implements Lookup.Provider {
             return false;
         }
     } // end of CookieEntryPair
+  
     
-    private static final class FactAndClass {
-        final Class<? extends Node.Cookie> clazz;
-        final Factory factory;
-        
-        public FactAndClass(Class<? extends Node.Cookie> clazz, Factory factory) {
-            this.clazz = clazz;
-            this.factory = factory;
-        }
-        
-        public int hashCode() {
-            return clazz.hashCode() + factory.hashCode();
-        }
-        
-        public boolean equals(Object o) {
-            if (o instanceof FactAndClass) {
-                FactAndClass f = (FactAndClass)o;
-                return f.clazz.equals(clazz) && f.factory == factory;
-            }
-            return false;
-        }
-    }
-    
-    private static class C implements InstanceContent.Convertor<FactAndClass, Node.Cookie> {
+    static class C implements InstanceContent.Convertor<CookieEntry, Node.Cookie> {
         static final C INSTANCE = new C();
         
 
-        public Node.Cookie convert(CookieSet.FactAndClass obj) {
-            return obj.factory.createCookie(obj.clazz);
+        public Node.Cookie convert(CookieSet.CookieEntry obj) {
+            return obj.getCookie(true);
         }
 
-        public Class<? extends Node.Cookie> type(CookieSet.FactAndClass obj) {
-            return obj.clazz;
+        public Class<? extends Node.Cookie> type(CookieSet.CookieEntry obj) {
+            return obj.klass;
         }
 
-        public String id(CookieSet.FactAndClass obj) {
-            return obj.clazz.getName();
+        public String id(CookieSet.CookieEntry obj) {
+            return obj.klass.getName();
         }
 
-        public String displayName(CookieSet.FactAndClass obj) {
-            return obj.clazz.getName();
+        public String displayName(CookieSet.CookieEntry obj) {
+            return obj.klass.getName();
         }
     }
 }
