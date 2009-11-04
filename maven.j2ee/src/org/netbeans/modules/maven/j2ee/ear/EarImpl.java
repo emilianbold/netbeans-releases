@@ -395,24 +395,23 @@ class EarImpl implements EarImplementation, EarImplementation2,
                             a.getArtifactId().equals(d.getArtifactId()) &&
                             StringUtils.equals(a.getClassifier(), d.getClassifier())) {
                         File fil = a.getFile();
-                        FileObject fo = FileUtil.toFileObject(fil);
+                        URI uri = FileUtilities.convertStringToUri(FileUtil.normalizeFile(fil).getAbsolutePath());
+                        //#174744 - it's of essence we use the URI based method. items in local repo might not be available yet.
+                        Project owner = FileOwnerQuery.getOwner(uri);
                         boolean found = false;
-                        if (fo != null) {
-                            Project owner = FileOwnerQuery.getOwner(fo);
-                            if (owner != null) {
-                                J2eeModuleProvider prov = owner.getLookup().lookup(J2eeModuleProvider.class);
-                                if (prov != null) {
-                                    J2eeModule mod = prov.getJ2eeModule();
-                                    EarImpl.MavenModule m = findMavenModule(a, mm);
-                                    J2eeModule module = J2eeModuleFactory.createJ2eeModule(new ProxyJ2eeModule(mod, m, fileNameMapping));
-                                    //#162173 respect order in pom configuration.. shall we?
-                                    if (m.pomIndex > -1 && toRet.size() > m.pomIndex) {
-                                        toRet.add(m.pomIndex, module);
-                                    } else {
-                                        toRet.add(module);
-                                    }
-                                    found = true;
+                        if (owner != null) {
+                            J2eeModuleProvider prov = owner.getLookup().lookup(J2eeModuleProvider.class);
+                            if (prov != null) {
+                                J2eeModule mod = prov.getJ2eeModule();
+                                EarImpl.MavenModule m = findMavenModule(a, mm);
+                                J2eeModule module = J2eeModuleFactory.createJ2eeModule(new ProxyJ2eeModule(mod, m, fileNameMapping));
+                                //#162173 respect order in pom configuration.. shall we?
+                                if (m.pomIndex > -1 && toRet.size() > m.pomIndex) {
+                                    toRet.add(m.pomIndex, module);
+                                } else {
+                                    toRet.add(module);
                                 }
+                                found = true;
                             }
                         }
                         if (!found) {
