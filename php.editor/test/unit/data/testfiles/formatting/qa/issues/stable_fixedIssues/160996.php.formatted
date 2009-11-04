@@ -1,7 +1,7 @@
 <?php
 if(true) {
-    echo "test";
+  echo "test";
 } else {
-    echo "test";
+  echo "test";
 }
 ?>
