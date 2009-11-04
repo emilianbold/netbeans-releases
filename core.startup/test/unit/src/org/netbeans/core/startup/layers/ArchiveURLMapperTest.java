@@ -53,6 +53,7 @@ import org.netbeans.ProxyURLStreamHandlerFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.JarFileSystem;
 import org.openide.util.test.TestFileUtils;
@@ -122,6 +123,7 @@ public class ArchiveURLMapperTest extends NbTestCase {
         assertTrue (jarFileURL.equals(jarFile.toURI().toURL()));
     }
 
+    @RandomlyFails
     public void testNestedJars() throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         JarOutputStream jos = new JarOutputStream(baos);
