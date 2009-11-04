@@ -9,7 +9,7 @@ Searchable Keys:
   field : dialogs|PRIVATE
   field : dianum|PRIVATE;;Fixnum;
   field : diarefs|PRIVATE;;Hash;
-  field : footer|PRIVATE
+  field : footer|PRIVATE;;NilClass;
   field : header|PRIVATE;;String;
   field : lnum|PRIVATE;;Fixnum;
   field : output|PRIVATE
