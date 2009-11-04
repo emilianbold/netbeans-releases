@@ -298,6 +298,7 @@ public class ConnectionNode extends BaseNode {
 
                     } else {
                         connection.setMetadataModel(null);
+                        ConnectionNode.this.getNodeRegistry().removeAllNodes();  //#170935 - workaround
                         refresh();
                     }
 
