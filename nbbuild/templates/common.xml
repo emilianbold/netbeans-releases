@@ -62,6 +62,15 @@ made subject to such option by the copyright holder.
     <import file="${testcoverage.import}"/>
 
     <target name="basic-init" depends="common-init,-jdk-init">
+        <fixdependencies antfile="../../build.xml" failonerror="false" sanitycheck="false">
+            <replace codenamebase="org.openide.util" addcompiletime="true" >
+                <module codenamebase="org.openide.util" spec="8.0"/>
+                <module codenamebase="org.openide.util.lookup" spec="8.0"/>
+            </replace>
+            <fileset dir="nbproject" >
+                <include name="project.xml" />
+            </fileset>
+        </fixdependencies>
         <!-- Synch the following property loads with NbModuleProject.makeEvalDefs: -->
         <property file="nbproject/private/private.properties"/>
         <property file="nbproject/project.properties"/>
