@@ -44,10 +44,10 @@ package org.netbeans.modules.editor.lib2.highlighting;
 import java.lang.ref.WeakReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import javax.swing.text.Position;
 import javax.swing.text.StyleConstants;
 import org.netbeans.spi.editor.highlighting.HighlightsChangeEvent;
 import org.netbeans.spi.editor.highlighting.HighlightsChangeListener;
@@ -55,6 +55,7 @@ import org.netbeans.spi.editor.highlighting.HighlightsContainer;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.support.AbstractHighlightsContainer;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
+import org.openide.util.WeakListeners;
 
 /**
  *
@@ -64,12 +65,6 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
 
     private static final Logger LOG = Logger.getLogger(CompoundHighlightsContainer.class.getName());
     
-    private static final Position MAX_POSITION = new Position() {
-        public int getOffset() {
-            return Integer.MAX_VALUE;
-        }
-    };
-
     private static final int MIN_CACHE_SIZE = 128;
     
     private Document doc;
@@ -82,8 +77,7 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
 
     private OffsetsBag cache;
     private boolean cacheObsolete;
-    private Position cacheLowestPos;
-    private Position cacheHighestPos;
+    private CacheBoundaries cacheBoundaries;
     
     public CompoundHighlightsContainer() {
         this(null, null);
@@ -123,9 +117,9 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
             }
 
             int [] update = null;
-            
-            int lowest = cacheLowestPos == null ? -1 : cacheLowestPos.getOffset();
-            int highest = cacheHighestPos == null ? -1 : cacheHighestPos.getOffset();
+
+            int lowest = cacheBoundaries.getLowerBoundary();
+            int highest = cacheBoundaries.getUpperBoundary();
 
             if (cacheObsolete) {
                 cacheObsolete = false;
@@ -175,17 +169,17 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
                 }
                 
                 if (lowest == -1 || highest == -1) {
-                    cacheLowestPos = createPosition(update[0]);
-                    cacheHighestPos = createPosition(update[update.length - 1]);
+                    cacheBoundaries.setBoundaries(update[0], update[update.length - 1]);
                 } else {
-                    cacheLowestPos = createPosition(Math.min(lowest, update[0]));
-                    cacheHighestPos = createPosition(Math.max(highest, update[update.length - 1]));
+                    cacheBoundaries.setBoundaries(Math.min(lowest, update[0]), Math.max(highest, update[update.length - 1]));
                 }
                 
                 if (LOG.isLoggable(Level.FINE)) {
+                    int lower = cacheBoundaries.getLowerBoundary();
+                    int upper = cacheBoundaries.getUpperBoundary();
                     LOG.fine("Cache boundaries: " + //NOI18N
-                        "<" + (cacheLowestPos == null ? "-" : cacheLowestPos.getOffset()) + //NOI18N
-                        ", " + (cacheHighestPos == null ? "-" : cacheHighestPos.getOffset()) + "> " + //NOI18N
+                        "<" + (lower == -1 ? "-" : lower) + //NOI18N
+                        ", " + (upper == -1 ? "-" : upper) + "> " + //NOI18N
                         "when asked for <" + startOffset + ", " + endOffset + ">"); //NOI18N
                 }
             }
@@ -238,6 +232,7 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
             this.layers = layers;
             this.blacklisted = layers == null ? null : new boolean [layers.length];
             this.cacheObsolete = true;
+            this.cacheBoundaries = doc == null ? null : new CacheBoundaries(doc);
             increaseVersion();
 
             // Add the listener to the new layers
@@ -386,22 +381,6 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
         }
     }
     
-    private Position createPosition(int offset) {
-        try {
-            if (offset == Integer.MAX_VALUE) {
-                return MAX_POSITION;
-            } else {
-                return doc.createPosition(offset);
-            }
-        } catch (BadLocationException e) {
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.log(Level.FINE, "Invalid document position: offset = " + offset + //NOI18N
-                    ", document.lenght = " + doc.getLength() + ", will not cache."); //NOI18N
-            }
-            return null;
-        }
-    }
-
     private void increaseVersion() {
         version++;
         if (LOG.isLoggable(Level.FINE)) {
@@ -539,4 +518,52 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
             return this.version == CompoundHighlightsContainer.this.version;
         }
     } // End of Seq class
+
+    private static final class CacheBoundaries implements DocumentListener {
+
+        private final OffsetGapList<OffsetGapList.Offset> boundaries;
+        private final Document doc;
+
+        public CacheBoundaries(Document doc) {
+            this.boundaries = new OffsetGapList<OffsetGapList.Offset>(false);
+            this.doc = doc;
+            this.doc.addDocumentListener(WeakListeners.document(this, this.doc));
+        }
+
+        public int getLowerBoundary() {
+            if (boundaries.size() == 2) {
+                return boundaries.get(0).getOffset();
+            } else {
+                return -1;
+            }
+        }
+
+        public int getUpperBoundary() {
+            if (boundaries.size() == 2) {
+                OffsetGapList.Offset higher = boundaries.get(1);
+                return higher.getOffset() >= doc.getLength() ? Integer.MAX_VALUE : higher.getOffset();
+            } else {
+                return -1;
+            }
+        }
+
+        public void setBoundaries(int lowerOffset, int higherOffset) {
+            boundaries.clear();
+            boundaries.add(new OffsetGapList.Offset(lowerOffset));
+            boundaries.add(new OffsetGapList.Offset(Math.min(higherOffset, doc.getLength() + 1)));
+        }
+
+        public void insertUpdate(DocumentEvent e) {
+            boundaries.defaultInsertUpdate(e.getOffset(), e.getLength());
+        }
+
+        public void removeUpdate(DocumentEvent e) {
+            boundaries.defaultRemoveUpdate(e.getOffset(), e.getLength());
+        }
+
+        public void changedUpdate(DocumentEvent e) {
+            // ignored
+        }
+
+    } // End of CacheBoundaries class
 }
