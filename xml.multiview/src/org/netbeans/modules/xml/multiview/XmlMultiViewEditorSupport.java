@@ -185,7 +185,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
     /** method enabled to create Cloneable Editor
      */
     protected CloneableEditor createCloneableEditor() {
-        return super.createCloneableEditor();
+        return new XmlCloneableEditor(this);
     }
     
     public InputStream getInputStream() throws IOException {
@@ -796,6 +796,28 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
                     }
                 }
             }
+        }
+    }
+
+    static final class XmlCloneableEditor extends CloneableEditor {
+        public XmlCloneableEditor(XmlMultiViewEditorSupport s) {
+            super(s);
+        }
+
+        protected void componentActivated() {
+            super.componentActivated();
+        }
+
+        protected void componentClosed() {
+            super.componentClosed();
+        }
+
+        protected void componentShowing() {
+            super.componentShowing();
+        }
+
+        protected void componentOpened() {
+            super.componentOpened();
         }
     }
 }
