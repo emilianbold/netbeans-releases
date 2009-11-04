@@ -270,13 +270,9 @@ public class FakeJiraSupport {
     private ActionListener getJiraListener(final String urlString) {
         return new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
-                    public void run() {
-                        if(JiraUpdater.notifyJiraDownload(urlString)) {
-                            JiraUpdater.getInstance().downloadAndInstall();
-                        } 
-                    }
-                });
+                if(JiraUpdater.notifyJiraDownload(urlString)) {
+                    JiraUpdater.getInstance().downloadAndInstall();
+                }
             }
         };
     }
