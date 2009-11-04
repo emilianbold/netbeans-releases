@@ -92,7 +92,7 @@
                 <dependency>
                     <code-name-base>org.netbeans.modules.editor.kit</code-name-base>
                     <run-dependency>
-                        <specification-version>1.3.3</specification-version>
+                        <specification-version>1.3.4</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
