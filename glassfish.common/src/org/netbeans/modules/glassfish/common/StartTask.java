@@ -231,6 +231,7 @@ public class StartTask extends BasicTask<OperationState> {
                 if (!support.isReady(true,30,TimeUnit.SECONDS)) {
                     state = OperationState.FAILED;
                     messageKey = "MSG_START_SERVER_FAILED"; // NOI18N
+                    logger.stopReaders();
                 }
                 return fireOperationStateChanged(state, messageKey, instanceName);
             }
@@ -268,6 +269,7 @@ public class StartTask extends BasicTask<OperationState> {
         Logger.getLogger("glassfish").log(Level.INFO, "V3 Failed to start, killing process: " + serverProcess+" after "+  // NOI18N
                 (System.currentTimeMillis() - start));
         serverProcess.destroy();
+        logger.stopReaders();
         return fireOperationStateChanged(OperationState.FAILED,
                 "MSG_START_SERVER_FAILED2", instanceName); // NOI18N
     }
