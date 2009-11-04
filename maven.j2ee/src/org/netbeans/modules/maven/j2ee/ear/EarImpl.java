@@ -450,19 +450,18 @@ class EarImpl implements EarImplementation, EarImplementation2,
                             a.getArtifactId().equals(d.getArtifactId()) &&
                             StringUtils.equals(a.getClassifier(), d.getClassifier())) {
                         File fil = a.getFile();
-                        FileObject fo = FileUtil.toFileObject(fil);
-                        if (fo != null) {
-                            Project owner = FileOwnerQuery.getOwner(fo);
-                            if (owner != null) {
-                                EarImpl.MavenModule m = findMavenModule(a, mm);
-                                //#162173 respect order in pom configuration.. shall we?
-                                if (m.pomIndex > -1 && toRet.size() > m.pomIndex) {
-                                    toRet.add(m.pomIndex, owner);
-                                } else {
-                                    toRet.add(owner);
-                                }
-
+                        URI uri = FileUtilities.convertStringToUri(FileUtil.normalizeFile(fil).getAbsolutePath());
+                        //#174744 - it's of essence we use the URI based method. items in local repo might not be available yet.
+                        Project owner = FileOwnerQuery.getOwner(uri);
+                        if (owner != null) {
+                            EarImpl.MavenModule m = findMavenModule(a, mm);
+                            //#162173 respect order in pom configuration.. shall we?
+                            if (m.pomIndex > -1 && toRet.size() > m.pomIndex) {
+                                toRet.add(m.pomIndex, owner);
+                            } else {
+                                toRet.add(owner);
                             }
+
                         }
                     }
                 }
