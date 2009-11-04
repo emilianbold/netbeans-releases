@@ -27,10 +27,18 @@
  */
 
 package org.netbeans.api.java.source;
+import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.util.TreePath;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.List;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeMirror;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.source.TestUtil;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
@@ -107,4 +115,38 @@ public class ElementsTest extends NbTestCase {
         }, true);
     }
 
+    public void test175535() throws Exception {
+        prepareTest();
+        FileObject otherFO = FileUtil.createData(sourceRoot, "test/A.java");
+        TestUtilities.copyStringToFile(FileUtil.toFile(otherFO),
+                "package test;" +
+                "public class A implements Runnable {" +
+                "    @Override" +
+                "    public void run() {}" +
+                "}");
+        TestUtilities.copyStringToFile(FileUtil.toFile(testFO),
+                "public class Test {" +
+                "}");
+        SourceUtilsTestUtil.compileRecursively(sourceRoot);
+        JavaSource javaSource = JavaSource.forFileObject(testFO);
+        javaSource.runUserActionTask(new Task<CompilationController>() {
+            public void run(CompilationController controller) throws IOException {
+                controller.toPhase(JavaSource.Phase.RESOLVED);
+                TypeElement typeElement = controller.getElements().getTypeElement("test.A");
+                assertNotNull(typeElement);
+                Element el = typeElement.getEnclosedElements().get(1);
+                assertNotNull(el);
+                assertEquals("run", el.getSimpleName().toString());
+                TreePath mpath = controller.getTrees().getPath(el);
+                MethodTree mtree = (MethodTree) mpath.getLeaf();
+                assertNotNull(mtree);
+                List<? extends AnnotationTree> annotations = mtree.getModifiers().getAnnotations();
+                TypeMirror annotation = controller.getTrees().getTypeMirror(new TreePath(mpath, annotations.get(0)));
+                assertNotNull(annotation);
+                Element e = controller.getTrees().getElement(new TreePath(mpath, annotations.get(0)));
+                assertNotNull(e);
+                assertEquals(((DeclaredType)annotation).asElement(), e);
+            }
+        }, true);
+    }
 }

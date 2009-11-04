@@ -147,7 +147,7 @@ public final class EditorFindSupport {
     /** Find properties */
     private Map<String, Object> findProps;
 
-    private WeakHashMap<JTextComponent, Map<String, WeakReference<BlockHighlighting>>> comp2layer = 
+    private final WeakHashMap<JTextComponent, Map<String, WeakReference<BlockHighlighting>>> comp2layer =
         new WeakHashMap<JTextComponent, Map<String, WeakReference<BlockHighlighting>>>();
     
     /** Support for firing change events */
