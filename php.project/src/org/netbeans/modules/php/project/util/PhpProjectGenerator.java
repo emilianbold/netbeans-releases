@@ -42,13 +42,10 @@ package org.netbeans.modules.php.project.util;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
+import java.util.Arrays;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
-import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpProjectType;
 import org.netbeans.modules.php.project.api.PhpLanguageOptions;
 import org.netbeans.modules.php.project.api.PhpLanguageOptions.PhpVersion;
@@ -69,7 +66,6 @@ import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
-import org.openide.util.NbBundle;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -302,17 +298,11 @@ public final class PhpProjectGenerator {
         assert projectDir != null;
         assert sourceDir != null;
 
-        LogRecord logRecord = new LogRecord(Level.INFO, "USG_PROJECT_CREATE_PHP"); // NOI18N
-        logRecord.setLoggerName(PhpProject.USG_LOGGER_NAME);
-        logRecord.setResourceBundle(NbBundle.getBundle(PhpProjectGenerator.class));
-        logRecord.setResourceBundleName(PhpProjectGenerator.class.getPackage().getName() + ".Bundle"); // NOI18N
-        logRecord.setParameters(new Object[] {
-            FileUtil.isParentOf(projectDir, sourceDir) ?  "EXTRA_SRC_DIR_NO" : "EXTRA_SRC_DIR_YES", // NOI18N
-            runAs != null ? runAs.name() : "", // NOI18N
-            "1", // NOI18N
-            (copyFiles != null && copyFiles == Boolean.TRUE) ? "COPY_FILES_YES" : "COPY_FILES_NO" // NOI18N
-        });
-        Logger.getLogger(PhpProject.USG_LOGGER_NAME).log(logRecord);
+        PhpProjectUtils.logUsage(PhpProjectGenerator.class, "USG_PROJECT_CREATE_PHP", Arrays.asList(
+                FileUtil.isParentOf(projectDir, sourceDir) ? "EXTRA_SRC_DIR_NO" : "EXTRA_SRC_DIR_YES", // NOI18N
+                runAs != null ? runAs.name() : "", // NOI18N
+                "1", // NOI18N
+                (copyFiles != null && copyFiles == Boolean.TRUE) ? "COPY_FILES_YES" : "COPY_FILES_NO")); // NOI18N
     }
 
     /**
