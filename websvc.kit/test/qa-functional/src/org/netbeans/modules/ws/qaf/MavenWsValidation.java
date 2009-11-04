@@ -53,6 +53,11 @@ public class MavenWsValidation extends WsValidation {
     }
 
     @Override
+    public String getProjectName() {
+        return "Mvn" + super.getProjectName();
+    }
+
+    @Override
     protected ProjectType getProjectType() {
         return ProjectType.MAVEN_WEB;
     }
@@ -73,9 +78,9 @@ public class MavenWsValidation extends WsValidation {
                 "testCallWsOperationInServlet",
 // IZ# 175976              "testCallWsOperationInJSP",
                 "testCallWsOperationInJavaClass",
-                "testRefreshClient",
+// IZ# 175977              "testRefreshClient",
 // IZ# 175977              "testWsClientHandlers",
-                "testRunWsClientProject",
+// IZ# 175977                "testRunWsClientProject",
                 "testUndeployProjects",
                 "testStopServer").enableModules(".*").clusters(".*"));
     }

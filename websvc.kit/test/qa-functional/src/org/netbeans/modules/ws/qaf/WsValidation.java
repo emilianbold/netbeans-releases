@@ -46,7 +46,10 @@ import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import junit.framework.Test;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.NbDialogOperator;
@@ -475,8 +478,9 @@ public class WsValidation extends WebServicesTestBase {
         createHandler(getHandlersPackage(), "WsMsgHandler2", HandlerType.MESSAGE); //NOI18N
         createHandler(getHandlersPackage(), "WsLogHandler1", HandlerType.LOGICAL); //NOI18N
         createHandler(getHandlersPackage(), "WsLogHandler2", HandlerType.LOGICAL); //NOI18N
-        FileObject fo = getProject().getProjectDirectory().getFileObject(
-                "src/java/" + getWsPackage().replace('.', '/')); //NOI18N
+        Sources s = getProject().getLookup().lookup(Sources.class);
+        SourceGroup[] sg = s.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        FileObject fo = sg[0].getRootFolder().getFileObject(getWsPackage().replace('.', '/')); //NOI18N
         File handlerCfg = new File(FileUtil.toFile(fo), getWsName() + "_handler.xml"); //NOI18N
         Node serviceNode = new Node(getProjectRootNode(), WEB_SERVICES_NODE_NAME + "|" + getWsName()); //NOI18N
         configureHandlers(serviceNode, handlerCfg, true);
@@ -652,7 +656,9 @@ public class WsValidation extends WebServicesTestBase {
         if (isService) {
             eo = new EditorOperator(getWsName());
             assertTrue("missing @HandlerChain", //NOI18N
-                    eo.contains("@HandlerChain(file = \"" + getWsName() + "_handler.xml\")")); //NOI18N
+                    eo.contains("@HandlerChain(file = \"" + getWsName())); //NOI18N
+            assertTrue("missing _handler def", //NOI18N
+                    eo.contains("_handler.xml\")")); //NOI18N
         } else {
             boolean isAnt = getProjectType().isAntBasedProject();
             waitForWsImport(isAnt ? "wsimport-client" : "wsimport", isAnt); //NOI18N
@@ -797,13 +803,8 @@ public class WsValidation extends WebServicesTestBase {
             //ignore
         }
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", 600000); //NOI18N
-        if (isAnt) {
-            oto.waitText("(total time: "); //NOI18N
-            dumpOutput();
-        } else {
-            oto.waitText("Total time: "); //NOI18N
-            dumpOutput();
-        }
+        oto.waitText(isAnt ? "(total time: " : "Total time: "); //NOI18N
+        dumpOutput();
         assertTrue(oto.getText().indexOf("BUILD SUCCESSFUL") > -1); //NOI18N
         try {
             Thread.sleep(500);
@@ -896,6 +897,7 @@ public class WsValidation extends WebServicesTestBase {
         ProjectRootNode prjnd;
         Node actual;
         NbDialogOperator ccr;
+        boolean isAnt = getProjectType().isAntBasedProject();
         if (type.equalsIgnoreCase("service")) {
             prjnd = new ProjectRootNode(prjtree, getWsProjectName());
             if (!wsname.equalsIgnoreCase("")) {
@@ -912,7 +914,6 @@ public class WsValidation extends WebServicesTestBase {
             }
             ccr.yes();
             try {
-                boolean isAnt = getProjectType().isAntBasedProject();
                 waitForWsImport(isAnt ? "wsimport-service" : "wsimport", isAnt); //NOI18N
             } catch (IOException ex) {
                 LOG.log(Level.WARNING, null, ex);
@@ -925,7 +926,12 @@ public class WsValidation extends WebServicesTestBase {
             } else {
                 actual = new Node(prjnd, "Web Service References|" + getWsName() + "Service"); //NOI18N
             }
-            actual.performPopupActionNoBlock(Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.jaxws.actions.Bundle", "LBL_RefreshClientAction")); //NOI18N
+            //XXX - replace if with common action name as soon as it will be defined in a bundle
+            if (isAnt) {
+                actual.performPopupActionNoBlock(Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.jaxws.actions.Bundle", "LBL_RefreshClientAction")); //NOI18N
+            } else {
+                actual.performPopupActionNoBlock("Refresh"); //NOI18N
+            }
             ccr = new NbDialogOperator("Confirm Client Refresh"); //NOI18N
             new EventTool().waitNoEvent(1000);
             if (includeSources) {
@@ -933,7 +939,6 @@ public class WsValidation extends WebServicesTestBase {
                 new EventTool().waitNoEvent(1000);
             }
             ccr.yes();
-            boolean isAnt = getProjectType().isAntBasedProject();
             try {
                 waitForWsImport(isAnt ? "wsimport-client-" : "wsimport", isAnt); //NOI18N
             } catch (IOException ex) {

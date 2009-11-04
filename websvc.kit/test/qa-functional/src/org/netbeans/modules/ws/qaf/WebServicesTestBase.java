@@ -633,6 +633,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
         switch (getProjectType()) {
             case SAMPLE:
             case WEB:
+            case MAVEN_WEB:
                 if (ServerType.TOMCAT.equals(REGISTERED_SERVER)) {
                     appsNode = new Node(serverNode, webLabel);
                 } else {
@@ -640,6 +641,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
                 }
                 break;
             case EJB:
+            case MAVEN_EJB:
                 appsNode = new Node(serverNode, applicationsLabel + "|" + ejbLabel);
                 break;
             case APPCLIENT:
@@ -674,6 +676,9 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
         if (jtpo != null) {
             for (int i = 0; i < jtpo.getTabCount(); i++) {
                 String tabTitle = jtpo.getTitleAt(i);
+                if (!jtpo.getComponentAt(i).isShowing()) {
+                    continue;
+                }
                 jtpo.selectPage(i);
                 OutputTabOperator oto = null;
                 if (tabTitle.indexOf("<html>") < 0) { //NOI18N
