@@ -296,6 +296,24 @@ public class JspLexer implements Lexer<JspTokenId> {
     private boolean followsJspTag() {
         return isJspTag(getPossibleTagName());
     }
+
+    private boolean followsScriptletExpressionDelimiter(int actChar) {
+        if(actChar == '<') {
+            int next = input.read();
+            if(next == '%') {
+                next = input.read();
+                if(next == '=') {
+                    //yes, it follows
+                    return true;
+                } else {
+                    input.backup(2); //backup %+next
+                }
+            } else {
+                input.backup(1); //backup next
+            }
+        }
+        return false;
+    }
     
     public Token<JspTokenId> nextToken() {
         int actChar;
@@ -664,7 +682,28 @@ public class JspLexer implements Lexer<JspTokenId> {
                         lexerState = ((lexerState == ISI_TAG_STRING2) ? ISP_TAG : ISP_DIR);
                         return token(JspTokenId.ATTR_VALUE);
                     }
-                    
+
+                    if(followsScriptletExpressionDelimiter(actChar)) {
+                        if(input.readLength() == 3) {
+                            //just the delimiter in buffer, we may make the token
+
+                            //remember where we jumped into the scriptlet,
+                            //we'll return to the state once we reach end of the
+                            //scriptlet
+                            lexerStateBeforeScriptlet = lexerState;
+                            lexerStateJspScriptlet = JAVA_EXPRESSION;
+                            lexerState = ISI_SCRIPTLET;
+                            
+                            return token(JspTokenId.SYMBOL2);
+                            
+                        } else {
+                            //first tokenize the text before
+                            input.backup(3); //backup <%=
+                            //keep the state
+                            return token(JspTokenId.ATTR_VALUE);
+                        }
+                    }
+
                     switch (actChar) {
                         case '\\':
                             switch (lexerState) {
@@ -848,7 +887,7 @@ public class JspLexer implements Lexer<JspTokenId> {
                         case '>':
                             if(input.readLength() == 2) {
                                 //just the '%>' symbol read
-                                lexerState = INIT;
+                                lexerState = lexerStateBeforeScriptlet;
                                 lexerStateJspScriptlet = INIT;
                                 return token(JspTokenId.SYMBOL2);
                             } else {
