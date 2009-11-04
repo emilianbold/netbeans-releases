@@ -135,6 +135,7 @@ public final class MESourceEditorView implements DataEditorView {
     }
 
     public void componentShowing () {
+        editor.componentShowing();
     }
 
     public void componentHidden () {
@@ -179,5 +180,12 @@ public final class MESourceEditorView implements DataEditorView {
         final void componentActivatedSuper() {
             componentActivated();
         }
+
+        @Override
+        public void componentShowing() {
+            super.componentShowing();
+        }
+
+
     }
 }
