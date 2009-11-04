@@ -229,7 +229,9 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
         List<DLightTool> tools = new ArrayList<DLightTool>(getDLightConfiguration().getToolsSet());
         Collection<String> result = new ArrayList<String>();
         for (DLightTool tool : tools) {
-            result.add(tool.getID());
+            if (tool.isEnabled()) {
+                result.add(tool.getID());
+            }
         }
         return result;
     }
@@ -263,7 +265,6 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
 //            pcs.firePropertyChange(propertyName, oldValue, newValue);
 //        }
 //    }
-
     /**
      * Profile On Run
      */
