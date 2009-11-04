@@ -45,6 +45,7 @@
 package org.netbeans.modules.kenai.collab.chat;
 
 import java.awt.Component;
+import java.awt.Font;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import javax.swing.UIManager;
@@ -61,6 +62,7 @@ public class FilterRenderer extends javax.swing.JPanel implements ListCellRender
         initComponents();
         setOpaque(true);
         groupLabel.setOpaque(true);
+        groupLabel.setFont(groupLabel.getFont().deriveFont(Font.BOLD));
     }
 
     /** This method is called from within the constructor to
