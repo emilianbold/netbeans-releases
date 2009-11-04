@@ -87,7 +87,7 @@ public class LookupProviderImpl implements LookupProvider {
             cp, // ClassPathProvider
             new SourceLevelQueryImpl(projectHelper, projectEvaluator, aux), // SourceLevelQueryImplementation
             new SourceForBinaryQueryImpl(projectHelper, projectEvaluator, aux), // SourceForBinaryQueryImplementation
-            new OpenHook(cp), // ProjectOpenedHook
+            new OpenHook(project, cp), // ProjectOpenedHook
             new TestQuery(projectHelper, projectEvaluator, aux), // MultipleRootsUnitTestForSourceQueryImplementation
             new JavadocQuery(projectHelper, projectEvaluator, aux), // JavadocForBinaryQueryImplementation
             new PrivilegedTemplatesImpl(), // PrivilegedTemplates
@@ -110,15 +110,18 @@ public class LookupProviderImpl implements LookupProvider {
     }
     
     private static class OpenHook extends ProjectOpenedHook {
-        
+
+        private final Project project;
         private final Classpaths cp;
         
-        public OpenHook(Classpaths cp) {
+        public OpenHook(Project project, Classpaths cp) {
+            this.project = project;
             this.cp = cp;
         }
         
         protected void projectOpened() {
             cp.opened();
+            UsageLogger.log(project);
         }
         
         protected void projectClosed() {
