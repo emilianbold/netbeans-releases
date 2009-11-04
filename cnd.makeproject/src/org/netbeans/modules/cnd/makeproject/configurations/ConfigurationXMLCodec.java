@@ -80,6 +80,7 @@ import org.netbeans.modules.cnd.makeproject.api.PackagerInfoElement;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.xml.sax.Attributes;
@@ -832,7 +833,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         // here we need to handle tags added between version.
         // becase such tags will not be handled in "endElement" callbacks        
         if (descriptorVersion < 46) {
-            host = CompilerSetManager.LOCALHOST;
+            host = HostInfoUtils.LOCALHOST;
         } else {
             host = CompilerSetManager.getDefaultDevelopmentHost();
         }

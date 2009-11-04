@@ -228,7 +228,7 @@ public class SummaryWizardPanelGUI extends javax.swing.JPanel {
                 settings.getProperty(NewKenaiProjectWizardIterator.PROP_PRJ_TITLE),
                 settings.getProperty(NewKenaiProjectWizardIterator.PROP_PRJ_LICENSE))
         );
-        projectURL.setText("<html><b>" + NameAndLicenseWizardPanelGUI.PRJ_NAME_PREVIEW_PREFIX + settings.getProperty(NewKenaiProjectWizardIterator.PROP_PRJ_NAME)+"</b></html>");
+        projectURL.setText("<html><b>" + NameAndLicenseWizardPanelGUI.getPreviewPrefix() + settings.getProperty(NewKenaiProjectWizardIterator.PROP_PRJ_NAME)+"</b></html>");
 
         boolean autoCommit = Boolean.valueOf((String) settings.getProperty(NewKenaiProjectWizardIterator.PROP_AUTO_COMMIT));
         commitedLabel.setText(NbBundle.getMessage(SummaryWizardPanelGUI.class, "SummaryWizardPanelGUI.commitedLabel.text",
@@ -243,23 +243,29 @@ public class SummaryWizardPanelGUI extends javax.swing.JPanel {
         List<SharedItem> sharedItems = (List<SharedItem>) settings.getProperty(NewKenaiProjectWizardIterator.PROP_FOLDERS_TO_SHARE);
         commitedItems.setListData(sharedItems.toArray(new SharedItem[sharedItems.size()]));
 
-        commitPrepareLabel.setVisible(sharedItems.size() > 0 && !autoCommit);
-        commitedLabel.setVisible(sharedItems.size() > 0 && autoCommit);
-        repoLabel.setVisible(sharedItems.size() == 0);
-        jScrollPane1.setVisible(sharedItems.size() > 0);
-        tobeSharedLabel.setVisible(sharedItems.size() > 0);
+        String  scmType = (String) settings.getProperty(NewKenaiProjectWizardIterator.PROP_SCM_TYPE);
+        boolean scmCreated = KenaiService.Names.SUBVERSION.equals(scmType) || KenaiService.Names.MERCURIAL.equals(scmType);
+
+        commitPrepareLabel.setVisible(sharedItems.size() > 0 && !autoCommit && scmCreated);
+        commitedLabel.setVisible(sharedItems.size() > 0 && autoCommit && scmCreated);
+        repoLabel.setVisible(sharedItems.size() == 0 && scmCreated);
+        jScrollPane1.setVisible(sharedItems.size() > 0 && scmCreated);
+        tobeSharedLabel.setVisible(sharedItems.size() > 0 && scmCreated);
 
         String newPrjScmLocal = (String) settings.getProperty(NewKenaiProjectWizardIterator.PROP_SCM_LOCAL);
         boolean inPlaceRepository = NewKenaiProjectWizardIterator.isCommonParent(sharedItems, newPrjScmLocal);
-        projectsMoveLabel.setVisible(!inPlaceRepository);
+        projectsMoveLabel.setVisible(!inPlaceRepository && scmCreated);
         if (sharedItems.size()==0) {
             Mnemonics.setLocalizedText(projectsMoveLabel, NbBundle.getMessage(SummaryWizardPanelGUI.class, "SummaryWizardPanelGUI.projectsMoveLabelNoSelection.text"));
         }
-        localRoot.setVisible(!inPlaceRepository);
+        localRoot.setVisible(!inPlaceRepository && scmCreated);
         localRoot.setText("<html><b>"+newPrjScmLocal+"</b></html>");
 
         String issues = (String) settings.getProperty(NewKenaiProjectWizardIterator.PROP_ISSUES);
         issueTrackingLabel.setVisible(KenaiService.Names.BUGZILLA.equals(issues) || KenaiService.Names.JIRA.equals(issues));
+
+        repoURL.setVisible(scmCreated);
+
         validate();
     }
 

@@ -45,8 +45,6 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
-import com.sun.source.util.SourcePositions;
-import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
 import java.util.ArrayList;
@@ -58,7 +56,6 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
@@ -66,10 +63,8 @@ import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
 import org.netbeans.api.java.source.CancellableTask;
@@ -291,7 +286,8 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         for( Iterator<? extends VariableElement> it = params.iterator(); it.hasNext(); ) {
             VariableElement param = it.next(); 
             sb.append( "<font color=" + TYPE_COLOR + ">" ); // NOI18N
-            sb.append(print( param.asType()));
+            final boolean vararg = !it.hasNext() && e.isVarArgs();
+            sb.append(printArg(param.asType(),vararg));
             sb.append("</font>"); // NOI18N
             sb.append(" "); // NOI18N
             sb.append(param.getSimpleName());
@@ -446,6 +442,19 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         }
 
         return sb.toString();
+    }
+
+    private String printArg(final TypeMirror tm, final boolean varArg) {
+        if (varArg) {
+            assert tm.getKind() == TypeKind.ARRAY;
+            final ArrayType at = (ArrayType)tm;
+            final StringBuilder sb = new StringBuilder( print(at.getComponentType()) );
+            sb.append("...");   //NOI18N
+            return sb.toString();
+        }
+        else {
+            return print(tm);
+        }
     }
 
     private String print( TypeMirror tm ) {

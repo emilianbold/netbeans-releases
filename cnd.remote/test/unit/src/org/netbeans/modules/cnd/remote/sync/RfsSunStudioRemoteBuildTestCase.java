@@ -40,14 +40,12 @@
 package org.netbeans.modules.cnd.remote.sync;
 
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 import junit.framework.Test;
 import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
-import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 /**
  *
@@ -71,7 +69,6 @@ public class RfsSunStudioRemoteBuildTestCase extends RfsBaseRemoteBuildTestCase 
 
     @ForAllEnvironments(section="remote.platforms.smart.secure.copy")
     public void testBuildRfsSampleArgsSunStudio() throws Exception {
-        RemoteUtil.LOGGER.setLevel(Level.ALL);
         setDefaultCompilerSet("SunStudio");
         FileObject projectDirFO = prepareSampleProject("Arguments", "Args_SunStudio_01");
         removeRemoteHome();

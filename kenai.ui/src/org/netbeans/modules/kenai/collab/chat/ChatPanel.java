@@ -132,7 +132,7 @@ public class ChatPanel extends javax.swing.JPanel {
     private CompoundUndoManager undo;
     private MessageHistoryManager history = new MessageHistoryManager();
 
-    private static final String ISSUE_REPORT_STRING = "(issue |bug |ISSUE:)#?([A-Z_]+-)*([0-9]+)"; //NOI18N
+    private static final String ISSUE_REPORT_STRING = "(issue |bug |ISSUE:|ISSUE: )#?([A-Z_]+-)*([0-9]+)"; //NOI18N
     /**
      * Pattern for matching issue references in the form "issue 123", "issue #123", "bug 123" and "bug #123"
      */
@@ -231,19 +231,20 @@ public class ChatPanel extends javax.swing.JPanel {
         if (trackers.length == 0) { // No issue trackers found for the project
             return;
         }
-        if (trackers[0].getService().equals(KenaiService.Names.BUGZILLA)) { // open BZ issue in the IDE
+        if (trackers[0].getService().equals(KenaiService.Names.JIRA)) {
+            SwingUtilities.invokeLater(new Runnable() {
+
+                public void run() { // issue ID format: PROJECT_NAME-123
+                    KenaiIssueAccessor.getDefault().open(proj, proj.getName().toUpperCase().replaceAll("-", "_") + "-" + issueNumber);
+                }
+            });
+        } else if (trackers[0].getService().equals(KenaiService.Names.BUGZILLA)) {
             SwingUtilities.invokeLater(new Runnable() {
 
                 public void run() {
                     KenaiIssueAccessor.getDefault().open(proj, issueNumber);
                 }
             });
-        } else { //... and open Jira issues in the browser
-            try {
-                URLDisplayer.getDefault().showURL(new URL(trackers[0].getWebLocation() + "-" + issueNumber));
-            } catch (MalformedURLException ex) {
-                //
-            }
         }
     }
 

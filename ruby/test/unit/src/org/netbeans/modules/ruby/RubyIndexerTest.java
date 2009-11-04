@@ -91,7 +91,9 @@ public class RubyIndexerTest extends RubyTestBase {
         } else if (RubyIndexer.FIELD_FIELD_NAME.equals(key)) {
             // Decode the attributes
             int attributeIndex = value.indexOf(';');
-            if (attributeIndex != -1) {
+            if (attributeIndex != -1 &&
+                    (attributeIndex + 1) < value.length() &&
+                    value.charAt(attributeIndex + 1) != ';') {
                 int flags = IndexedElement.stringToFlag(value, attributeIndex + 1);
                 if (flags != 0) {
                     String desc = IndexedField.decodeFlags(flags);

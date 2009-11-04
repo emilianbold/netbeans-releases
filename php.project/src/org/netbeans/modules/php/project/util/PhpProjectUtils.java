@@ -45,8 +45,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -54,12 +52,9 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.editor.indent.api.Reformat;
-import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpSources;
 import org.netbeans.modules.php.project.PhpVisibilityQuery;
-import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.netbeans.modules.php.project.api.PhpLanguageOptions.PhpVersion;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
@@ -72,8 +67,6 @@ import org.openide.nodes.Node;
 import org.openide.text.Line;
 import org.openide.text.Line.Set;
 import org.openide.util.Mutex;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
 
 /**
  * Utility methods.
@@ -105,18 +98,6 @@ public final class PhpProjectUtils {
             return null;
         }
         return project.getLookup().lookup(PhpProject.class);
-    }
-
-    public static XMLReader createXmlReader() throws SAXException {
-        SAXParserFactory factory = SAXParserFactory.newInstance();
-        factory.setValidating(false);
-        factory.setNamespaceAware(false);
-
-        try {
-            return factory.newSAXParser().getXMLReader();
-        } catch (ParserConfigurationException ex) {
-            throw new SAXException("Cannot create SAX parser", ex);
-        }
     }
 
     /**
@@ -235,21 +216,5 @@ public final class PhpProjectUtils {
             fo = fo.getParent();
         }
         return true;
-    }
-
-    /**
-     * Get the fully quilified name of a PHP class depending on project's PHP version.
-     * @param phpProject PHP project the PHP class comes from
-     * @param phpClass PHP class
-     * @return the fully quilified name of a PHP class depending on project's PHP version
-     */
-    public static String getFullyQualifiedName(PhpProject phpProject, PhpClass phpClass) {
-        assert phpProject != null;
-        assert phpClass != null;
-
-        if (PhpVersion.PHP_5.equals(ProjectPropertiesSupport.getPhpVersion(phpProject))) {
-            return phpClass.getName();
-        }
-        return phpClass.getFullyQualifiedName();
     }
 }

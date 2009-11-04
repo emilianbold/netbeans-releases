@@ -845,7 +845,7 @@ public class TabbedContainer extends JComponent implements Accessible {
     //+++++++++++++++++++++++++
     //Begin: Transparency support 
     //+++++++++++++++++++++++++
-    private static final float ALPHA_TRESHOLD = 0.2f;
+    private static final float ALPHA_TRESHOLD = 0.1f;
     private float currentAlpha = 1.0f;
     
     /**
@@ -860,6 +860,11 @@ public class TabbedContainer extends JComponent implements Accessible {
      * @param transparent True to make the container transparent
      */
     public void setTransparent( boolean transparent ) {
+        _setTransparent( transparent );
+        inTransparentMode = transparent;
+    }
+
+    private void _setTransparent( boolean transparent ) {
         if( isSliding() ) {
             //#129444 - AWT events may be retargeted icorrectly sometimes
             float oldAlpha = currentAlpha;
@@ -869,39 +874,34 @@ public class TabbedContainer extends JComponent implements Accessible {
             }
         }
     }
-    
+
+    private boolean inTransparentMode = false;
     AWTEventListener awtListener = null;
     private AWTEventListener getAWTListener() {
         if( null == awtListener ) {
             awtListener = new AWTEventListener() {
                 public void eventDispatched(AWTEvent event) {
-                    if( event.getID() == MouseEvent.MOUSE_PRESSED ) {
+                    if( !isSliding() )
+                        return;
+                    if( event.getID() == MouseEvent.MOUSE_PRESSED 
+                            || event.getID() == MouseEvent.MOUSE_RELEASED
+                            || event.getID() == MouseEvent.MOUSE_WHEEL) {
                         //ignore mouse clicks outside this container
                         if( event.getSource() instanceof Component
                             && !SwingUtilities.isDescendingFrom((Component)event.getSource(), TabbedContainer.this) )
                             return;
-                        if( ((MouseEvent)event).getButton() != MouseEvent.BUTTON3 )
-                            setTransparent( false );
+                        _setTransparent( false );
                     } else if( event.getID() == KeyEvent.KEY_PRESSED ) {
                         KeyEvent ke = (KeyEvent)event;
                         //TODO make shortcut configurable
-                        if( ke.getKeyCode() == KeyEvent.VK_NUMPAD0 && ke.isControlDown() ) {
-                            setTransparent( !isTransparent() );
+                        if( ke.getKeyCode() == KeyEvent.VK_NUMPAD0 && ke.isControlDown() && !inTransparentMode ) {
+                            setTransparent( true );
                             ke.consume();
                             return;
                         }
-                        if( !(ke.getKeyCode() == KeyEvent.VK_ALT 
-                                || ke.getKeyCode() == KeyEvent.VK_SHIFT
-                                || ke.getKeyCode() == KeyEvent.VK_META
-                                || ke.getKeyCode() == KeyEvent.VK_CONTROL) ) {
-                            setTransparent( false );
-                        }
-                    } else if( event.getID() == MouseEvent.MOUSE_PRESSED ) {
+                    } else if( event.getID() == KeyEvent.KEY_RELEASED ) {
                         setTransparent( false );
-                    } else if( event.getID() == KeyEvent.KEY_PRESSED ) {
-                        KeyEvent ke = (KeyEvent)event;
-                        if( !(ke.getKeyCode() == KeyEvent.VK_ALT || ke.getKeyCode() == KeyEvent.VK_SHIFT) )
-                            setTransparent( false );
+                        return;
                     }
                 }
             };

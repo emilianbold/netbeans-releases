@@ -118,213 +118,161 @@ public class MethodBreakpointsTest extends DebuggerTestCase {
     /**
      *
      */
-    public void testMethodBreakpointCreation() throws Throwable {
+    public void testMethodBreakpointCreation() {        
+        Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
+        new OpenAction().performAPI(beanNode);
+        EditorOperator eo = new EditorOperator("MemoryView.java");
         try {
-            Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
-            new OpenAction().performAPI(beanNode);
-            EditorOperator eo = new EditorOperator("MemoryView.java");
-            try {
-                eo.clickMouse(50,50,1);
-            } catch (Throwable t) {
-                System.err.println(t.getMessage());
-            }
-            NbDialogOperator dialog = Utilities.newBreakpoint(92);
-            setBreakpointType(dialog, "Method");
-            new JTextFieldOperator(dialog, 1).setText("examples.advanced.MemoryView");
-            new JTextFieldOperator(dialog, 0).setText("updateStatus()");
-            dialog.ok();
-            Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
-            JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.breakpointsViewTitle));
-            assertEquals("Method MemoryView.updateStatus", jTableOperator.getValueAt(0, 0).toString());
-        } catch (Throwable th) {
-            Utilities.captureScreen(this);
-            throw th;
+            eo.clickMouse(50,50,1);
+        } catch (Throwable t) {
+            System.err.println(t.getMessage());
         }
+        NbDialogOperator dialog = Utilities.newBreakpoint(92);
+        setBreakpointType(dialog, "Method");
+        new JTextFieldOperator(dialog, 1).setText("examples.advanced.MemoryView");
+        new JTextFieldOperator(dialog, 0).setText("updateStatus()");
+        dialog.ok();
+        Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
+        JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.breakpointsViewTitle));
+        assertEquals("Method MemoryView.updateStatus", jTableOperator.getValueAt(0, 0).toString());
     }
     
     /**
      *
      */
-    public void testMethodBreakpointPrefilledConstructor() throws Throwable {
-        try {
-            //open source
-            Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
-            new OpenAction().performAPI(beanNode);
-            EditorOperator eo = new EditorOperator("MemoryView.java");
-            NbDialogOperator dialog = Utilities.newBreakpoint(53);            
-            setBreakpointType(dialog, "Method");
-            assertEquals("Class Name was not set to correct value.", "examples.advanced.MemoryView", new JTextFieldOperator(dialog, 1).getText());
-            assertEquals("Method Name was not set to correct value.", "MemoryView ()", new JTextFieldOperator(dialog, 0).getText());
-            dialog.cancel();
-        } catch (Throwable th) {
-            Utilities.captureScreen(this);
-            throw th;
-        }
+    public void testMethodBreakpointPrefilledConstructor() {        
+        //open source
+        Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
+        new OpenAction().performAPI(beanNode);
+        EditorOperator eo = new EditorOperator("MemoryView.java");
+        NbDialogOperator dialog = Utilities.newBreakpoint(53);
+        setBreakpointType(dialog, "Method");
+        assertEquals("Class Name was not set to correct value.", "examples.advanced.MemoryView", new JTextFieldOperator(dialog, 1).getText());
+        assertEquals("Method Name was not set to correct value.", "MemoryView ()", new JTextFieldOperator(dialog, 0).getText());
+        dialog.cancel();
     }
 
     /**
      *
      */
-    public void testMethodBreakpointPrefilledMethod() throws Throwable {
-        try {
-            NbDialogOperator dialog = Utilities.newBreakpoint(92);
-            setBreakpointType(dialog, "Method");
-            assertEquals("Class Name was not set to correct value.", "examples.advanced.MemoryView", new JTextFieldOperator(dialog, 1).getText());
-            assertEquals("Method Name was not set to correct value.", "updateStatus ()", new JTextFieldOperator(dialog, 0).getText());
-            dialog.cancel();
-        } catch (Throwable th) {
-            Utilities.captureScreen(this);
-            throw th;
-        }
+    public void testMethodBreakpointPrefilledMethod() {        
+        NbDialogOperator dialog = Utilities.newBreakpoint(92);
+        setBreakpointType(dialog, "Method");
+        assertEquals("Class Name was not set to correct value.", "examples.advanced.MemoryView", new JTextFieldOperator(dialog, 1).getText());
+        assertEquals("Method Name was not set to correct value.", "updateStatus ()", new JTextFieldOperator(dialog, 0).getText());
+        dialog.cancel();
     }
 
     /**
      *
      */
-    public void testMethodBreakpointFunctionalityInPrimaryClass() throws Throwable {
+    public void testMethodBreakpointFunctionalityInPrimaryClass() {
+        NbDialogOperator dialog = Utilities.newBreakpoint(92);
+        setBreakpointType(dialog, "Method");
+        dialog.ok();
         try {
-            NbDialogOperator dialog = Utilities.newBreakpoint(92);
-            setBreakpointType(dialog, "Method");            
-            dialog.ok();
-            try {
-                Utilities.startDebugger();
-            } catch (Throwable th) {
-                new EventTool().waitNoEvent(500);
-                dialog.ok();
-                new EventTool().waitNoEvent(1500);
-                Utilities.startDebugger();
-            }
-            Utilities.waitStatusText("Thread main stopped at MemoryView.java:92");
-        } catch (Throwable th) {
-            Utilities.captureScreen(this);
-            throw th;
-        }
-    }
-
-    /**
-     *
-     */
-    public void testMethodBreakpointFunctionalityInSecondClass() throws Throwable {
-        try {
-            NbDialogOperator dialog = Utilities.newBreakpoint(154);
-            setBreakpointType(dialog, "Method");
-            dialog.ok();
             Utilities.startDebugger();
-            Utilities.waitStatusText("Thread main stopped at MemoryView.java:154");
         } catch (Throwable th) {
-            Utilities.captureScreen(this);
-            throw th;
+            new EventTool().waitNoEvent(500);
+            dialog.ok();
+            new EventTool().waitNoEvent(1500);
+            Utilities.startDebugger();
         }
+        Utilities.waitStatusText("Thread main stopped at MemoryView.java:92");
+    }
+
+    /**
+     *
+     */
+    public void testMethodBreakpointFunctionalityInSecondClass() {        
+        NbDialogOperator dialog = Utilities.newBreakpoint(154);
+        setBreakpointType(dialog, "Method");
+        dialog.ok();
+        Utilities.startDebugger();
+        Utilities.waitStatusText("Thread main stopped at MemoryView.java:154");
     }
 
     /**
      *
      */
     public void testMethodBreakpointFunctionalityOnAllMethods() throws Throwable {
-        try {
-            NbDialogOperator dialog = Utilities.newBreakpoint(37);
-            setBreakpointType(dialog, "Method");
-            dialog.ok();
-            Utilities.startDebugger();
-            Utilities.waitStatusOrConsoleText("Thread main stopped at MemoryView.java:39");
-            new ContinueAction().perform();
-            Utilities.waitStatusOrConsoleText("Thread main stopped at MemoryView.java:114");
-            new ContinueAction().perform();
-            Utilities.waitStatusOrConsoleText("Thread main stopped at MemoryView.java:50");
-            new ContinueAction().perform();
-            Utilities.waitStatusOrConsoleText("Thread main stopped at MemoryView.java:121");
-            new ContinueAction().perform();
-
-            //TODO: change if neccessary once http://www.netbeans.org/issues/show_bug.cgi?id=172027 is resolved
-            if (System.getProperty("java.version").startsWith("1.6"))
-            {
-                Utilities.waitStatusOrConsoleText("Thread main stopped at MemoryView.java:32");
-                new ContinueAction().perform();
-            }
-
-            Utilities.waitStatusOrConsoleText("Thread main stopped at MemoryView.java:79");
-            new ContinueAction().perform();
-            Utilities.waitStatusOrConsoleText("Thread main stopped at MemoryView.java:92");
-        } catch (Throwable th) {
-            Utilities.captureScreen(this);
-            throw th;
-        }
+        NbDialogOperator dialog = Utilities.newBreakpoint(37);
+        setBreakpointType(dialog, "Method");
+        dialog.ok();
+        Utilities.startDebugger();
+        Utilities.waitStatusOrConsoleText("Thread main stopped at MemoryView.java:39");
+        new ContinueAction().perform();
+        Utilities.waitStatusOrConsoleText("Thread main stopped at MemoryView.java:114");
+        new ContinueAction().perform();
+        Utilities.waitStatusOrConsoleText("Thread main stopped at MemoryView.java:50");
+        new ContinueAction().perform();
+        Utilities.waitStatusOrConsoleText("Thread main stopped at MemoryView.java:121");
+        new ContinueAction().perform();
+        Utilities.waitStatusOrConsoleText("Thread main stopped at MemoryView.java:79");
+        new ContinueAction().perform();
+        Utilities.waitStatusOrConsoleText("Thread main stopped at MemoryView.java:92");
     }
 
-    public void testMethodBreakpointFunctionalityOnExit() throws Throwable {
-        try {
-            NbDialogOperator dialog = Utilities.newBreakpoint(54);
-            setBreakpointType(dialog, "Method");
-            new JComboBoxOperator(dialog, 2).setSelectedItem(Bundle.getString("org.netbeans.modules.debugger.jpda.ui.breakpoints.Bundle", "LBL_Method_Breakpoint_Type_Entry_or_Exit")); //method entry
-            dialog.ok();
+    public void testMethodBreakpointFunctionalityOnExit() {        
+        NbDialogOperator dialog = Utilities.newBreakpoint(54);
+        setBreakpointType(dialog, "Method");
+        new JComboBoxOperator(dialog, 2).setSelectedItem(Bundle.getString("org.netbeans.modules.debugger.jpda.ui.breakpoints.Bundle", "LBL_Method_Breakpoint_Type_Entry_or_Exit")); //method entry
+        dialog.ok();
 
-            dialog = Utilities.newBreakpoint(80);
-            setBreakpointType(dialog, "Method");
-            new JComboBoxOperator(dialog, 2).setSelectedItem(Bundle.getString("org.netbeans.modules.debugger.jpda.ui.breakpoints.Bundle", "LBL_Method_Breakpoint_Type_Entry")); //method entry
-            dialog.ok();
+        dialog = Utilities.newBreakpoint(80);
+        setBreakpointType(dialog, "Method");
+        new JComboBoxOperator(dialog, 2).setSelectedItem(Bundle.getString("org.netbeans.modules.debugger.jpda.ui.breakpoints.Bundle", "LBL_Method_Breakpoint_Type_Entry")); //method entry
+        dialog.ok();
 
-            dialog = Utilities.newBreakpoint(102);
-            setBreakpointType(dialog, "Method");
-            new JComboBoxOperator(dialog, 2).setSelectedItem(Bundle.getString("org.netbeans.modules.debugger.jpda.ui.breakpoints.Bundle", "LBL_Method_Breakpoint_Type_Exit")); //method entry
-            dialog.ok();
+        dialog = Utilities.newBreakpoint(102);
+        setBreakpointType(dialog, "Method");
+        new JComboBoxOperator(dialog, 2).setSelectedItem(Bundle.getString("org.netbeans.modules.debugger.jpda.ui.breakpoints.Bundle", "LBL_Method_Breakpoint_Type_Exit")); //method entry
+        dialog.ok();
 
-            Utilities.startDebugger();
-            Utilities.waitStatusText("Thread main stopped at MemoryView.java:50");
-            new ContinueAction().perform();
-            Utilities.waitStatusText("Thread main stopped at MemoryView.java:76");
-            new ContinueAction().perform();
-            Utilities.waitStatusText("Thread main stopped at MemoryView.java:79");
-            new ContinueAction().perform();
-            Utilities.waitStatusText("Thread main stopped at MemoryView.java:109");
-        } catch (Throwable th) {
-            Utilities.captureScreen(this);
-            throw th;
-        }
+        Utilities.startDebugger();
+        Utilities.waitStatusText("Thread main stopped at MemoryView.java:50");
+        new ContinueAction().perform();
+        Utilities.waitStatusText("Thread main stopped at MemoryView.java:76");
+        new ContinueAction().perform();
+        Utilities.waitStatusText("Thread main stopped at MemoryView.java:79");
+        new ContinueAction().perform();
+        Utilities.waitStatusText("Thread main stopped at MemoryView.java:109");
     }
 
-    public void testConditionalMethodBreakpointFunctionality() throws Throwable {
-        try {
-            NbDialogOperator dialog = Utilities.newBreakpoint(104);
-            setBreakpointType(dialog, "Method");
-            new JComboBoxOperator(dialog, 2).setSelectedItem(Bundle.getString("org.netbeans.modules.debugger.jpda.ui.breakpoints.Bundle", "LBL_Method_Breakpoint_Type_Entry")); //method entry
-            new JCheckBoxOperator(dialog, 1).changeSelection(true);
-            new JEditorPaneOperator(dialog, 0).setText("UPDATE_TIME >= 1001");
+    public void testConditionalMethodBreakpointFunctionality() {        
+        NbDialogOperator dialog = Utilities.newBreakpoint(104);
+        setBreakpointType(dialog, "Method");
+        new JComboBoxOperator(dialog, 2).setSelectedItem(Bundle.getString("org.netbeans.modules.debugger.jpda.ui.breakpoints.Bundle", "LBL_Method_Breakpoint_Type_Entry")); //method entry
+        new JCheckBoxOperator(dialog, 1).changeSelection(true);
+        new JEditorPaneOperator(dialog, 0).setText("UPDATE_TIME >= 1001");
 
-            dialog.ok();
-            EditorOperator eo = new EditorOperator("MemoryView.java");
-            //toggle control line breakpoint
-            Utilities.toggleBreakpoint(eo, 104);
+        dialog.ok();
+        EditorOperator eo = new EditorOperator("MemoryView.java");
+        //toggle control line breakpoint
+        Utilities.toggleBreakpoint(eo, 104);
 
-            Utilities.startDebugger();
-            Utilities.waitStatusText("Thread main stopped at MemoryView.java:104");
-            new ContinueAction().perform();
-            Utilities.waitStatusText("Thread main stopped at MemoryView.java:92");
-        } catch (Throwable th) {
-            Utilities.captureScreen(this);
-            throw th;
-        }
+        Utilities.startDebugger();
+        Utilities.waitStatusText("Thread main stopped at MemoryView.java:104");
+        new ContinueAction().perform();
+        Utilities.waitStatusText("Thread main stopped at MemoryView.java:92");
     }
 
-    public void testMethodBreakpointsValidation() throws Throwable {
-        try {
-            NbDialogOperator dialog = Utilities.newBreakpoint(104);
-            setBreakpointType(dialog, "Method");
-            String wrongname = "wrong";
-            new JTextFieldOperator(dialog, 0).setText(wrongname);
-            dialog.ok();
+    public void testMethodBreakpointsValidation() {
 
-            Utilities.startDebugger();
-            Utilities.waitStatusText("Not able to submit breakpoint MethodBreakpoint [examples.advanced.MemoryView]." + wrongname);
-            dialog = Utilities.newBreakpoint(104);
-            setBreakpointType(dialog, "Method");
-            wrongname = "wrong2";
-            new JTextFieldOperator(dialog, 0).setText(wrongname);
-            dialog.ok();
-            Utilities.waitStatusText("Not able to submit breakpoint MethodBreakpoint [examples.advanced.MemoryView]." + wrongname);
-        } catch (Throwable th) {
-            Utilities.captureScreen(this);
-            throw th;
-        }        
+        NbDialogOperator dialog = Utilities.newBreakpoint(104);
+        setBreakpointType(dialog, "Method");
+        String wrongname = "wrong";
+        new JTextFieldOperator(dialog, 0).setText(wrongname);
+        dialog.ok();
+
+        Utilities.startDebugger();
+        Utilities.waitStatusText("Not able to submit breakpoint MethodBreakpoint [examples.advanced.MemoryView]." + wrongname);
+        dialog = Utilities.newBreakpoint(104);
+        setBreakpointType(dialog, "Method");
+        wrongname = "wrong2";
+        new JTextFieldOperator(dialog, 0).setText(wrongname);
+        dialog.ok();
+        Utilities.waitStatusText("Not able to submit breakpoint MethodBreakpoint [examples.advanced.MemoryView]." + wrongname);
     }
 
     protected void setBreakpointType(NbDialogOperator dialog, String type) {

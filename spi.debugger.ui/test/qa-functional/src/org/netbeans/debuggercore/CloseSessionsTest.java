@@ -52,9 +52,6 @@ import junit.textui.TestRunner;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.actions.DebugProjectAction;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.debugger.actions.DebugJavaFileAction;
 import org.netbeans.jellytools.nodes.Node;
@@ -97,47 +94,42 @@ public class CloseSessionsTest extends DebuggerTestCase {
 
 
 
-    public void testAllSessionsClosed() throws Throwable {
+    public void testAllSessionsClosed() {        
+        //open source
+        Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
+        new OpenAction().perform(beanNode); // NOI18N
+        EditorOperator eo = new EditorOperator("MemoryView.java");
         try {
-            //open source            
-            Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
-            new OpenAction().perform(beanNode); // NOI18N
-            EditorOperator eo = new EditorOperator("MemoryView.java");
-            try {
-                eo.clickMouse(50,50,1);
-            } catch (Throwable t) {
-                System.err.println(t.getMessage());
-            }
-            new EventTool().waitNoEvent(1000);
-            //place breakpoint
-            Utilities.toggleBreakpoint(eo, 104);
-            //start debugging
-            new DebugJavaFileAction().perform(beanNode);
-            //wait for breakpoint
-            Utilities.waitStatusText("Thread main stopped at MemoryView.java:104");
-            List<? extends JPDADebugger> list = DebuggerManager
-                    .getDebuggerManager()
-                    .getCurrentSession()
-                    .lookup(null, JPDADebugger.class);
-            JPDADebugger debugger = list.get(0);
-            WeakReference<? extends JPDADebugger> debuggerRef = new WeakReference(debugger);
-            
-            //finish debugging
-            Utilities.endAllSessions();
-            //close sources
-            eo.close();
-            //nulling all temporary variables which could hold some references to debugger
-            list = null;
-            debugger = null;
-            System.gc();
-            try {
-                NbTestCase.assertGC("All the debugging sessions were not correctly closed", debuggerRef);
-            } catch (OutOfMemoryError u) {
-                System.out.println(u.getMessage());
-            }            
-        } catch (Throwable th) {
-            Utilities.captureScreen(this);
-            throw th;
+            eo.clickMouse(50,50,1);
+        } catch (Throwable t) {
+            System.err.println(t.getMessage());
+        }
+        new EventTool().waitNoEvent(1000);
+        //place breakpoint
+        Utilities.toggleBreakpoint(eo, 104);
+        //start debugging
+        new DebugJavaFileAction().perform(beanNode);
+        //wait for breakpoint
+        Utilities.waitStatusText("Thread main stopped at MemoryView.java:104");
+        List<? extends JPDADebugger> list = DebuggerManager
+                .getDebuggerManager()
+                .getCurrentSession()
+                .lookup(null, JPDADebugger.class);
+        JPDADebugger debugger = list.get(0);
+        WeakReference<? extends JPDADebugger> debuggerRef = new WeakReference(debugger);
+
+        //finish debugging
+        Utilities.endAllSessions();
+        //close sources
+        eo.close();
+        //nulling all temporary variables which could hold some references to debugger
+        list = null;
+        debugger = null;
+        System.gc();
+        try {
+            NbTestCase.assertGC("All the debugging sessions were not correctly closed", debuggerRef);
+        } catch (OutOfMemoryError u) {
+            System.out.println(u.getMessage());
         }
     }
 }

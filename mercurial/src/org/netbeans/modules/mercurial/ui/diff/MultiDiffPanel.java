@@ -77,6 +77,8 @@ import java.util.List;
 import java.util.logging.Level;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 
 /**
  *
@@ -592,6 +594,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
         }
 
         public void run() {
+            IOException exception = null;
             for (int i = 0; i < prepareSetups.length; i++) {
                 if (prepareSetups != setups) return;
                 try {
@@ -613,8 +616,16 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
                         }
                     });
                 } catch (IOException e) {
-                    ErrorManager.getDefault().notify(e);
+                    Mercurial.LOG.log(Level.INFO, null, e);
+                    if (exception == null) {
+                        // save only the first exception
+                        exception = e;
+                    }
                 }
+            }
+            if (exception != null) {
+                // notify user of the failure
+                DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Exception(exception));
             }
         }
     }

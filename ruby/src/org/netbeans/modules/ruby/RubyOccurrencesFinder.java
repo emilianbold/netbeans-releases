@@ -585,7 +585,7 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
                             highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
                         }
                     } else {
-                        OffsetRange range = AstUtilities.getRange(node);
+                        OffsetRange range = AstUtilities.getRangeIncludeNil(node);
                         highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
                     }
                 }

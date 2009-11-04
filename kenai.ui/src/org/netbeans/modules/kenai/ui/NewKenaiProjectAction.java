@@ -46,6 +46,7 @@ import java.text.MessageFormat;
 import java.util.Set;
 import javax.swing.Action;
 import javax.swing.JButton;
+import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.ui.NewKenaiProjectWizardIterator.CreatedProjectInfo;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
@@ -81,7 +82,7 @@ public final class NewKenaiProjectAction implements ActionListener {
     private void showLandingPage(Set<CreatedProjectInfo> projects) {
 
         Object options[] = new Object[3];
-        options[0] = new JButton(NbBundle.getMessage(NewKenaiProjectAction.class, "NewKenaiProjectAction.goToKenai"));
+        options[0] = new JButton(NbBundle.getMessage(NewKenaiProjectAction.class, "NewKenaiProjectAction.goToKenai", Kenai.getDefault().getName()));
         options[1] = new JButton(NbBundle.getMessage(NewKenaiProjectAction.class, "NewKenaiProjectAction.createNewProject"));
         options[2] = new JButton(NbBundle.getMessage(NewKenaiProjectAction.class, "NewKenaiProjectAction.close"));
 

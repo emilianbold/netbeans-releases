@@ -55,6 +55,7 @@ import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
@@ -193,10 +194,9 @@ public abstract class SQLDataStorage implements DataStorage {
         this.serviceInfoDataStorage = serviceInfoStorage;
     }
 
-    protected final ServiceInfoDataStorage getServiceInfoDataStorage(){
+    protected final ServiceInfoDataStorage getServiceInfoDataStorage() {
         return serviceInfoDataStorage;
     }
-
 
     public boolean shutdown() {
         disable();
@@ -204,6 +204,7 @@ public abstract class SQLDataStorage implements DataStorage {
             try {
                 connection.close();
             } catch (SQLException ex) {
+                Exceptions.printStackTrace(ex);
                 return false;
             }
         }
@@ -247,22 +248,18 @@ public abstract class SQLDataStorage implements DataStorage {
             return tableName;
         }
         String viewName = tableName + "_DLIGHT_VIEW"; // NOI18N
-        String dropViewQuery = "DROP VIEW IF EXISTS " + viewName; // NOI18N
-        Statement stmt = null;
 
         try {
-            stmt = connection.createStatement();
-            stmt.execute(dropViewQuery);
+            Statement stmt = connection.createStatement();
+            try {
+                stmt.execute("DROP VIEW IF EXISTS " + viewName); // NOI18N
+            } finally {
+                stmt.close();
+            }
         } catch (SQLException ex) {
             logger.log(Level.SEVERE, null, ex);
-        } finally {
-            if (stmt != null) {
-                try {
-                    stmt.close();
-                } catch (SQLException ex) {
-                }
-            }
         }
+
         StringBuilder createViewQuery = new StringBuilder("CREATE  VIEW " + viewName + " AS "); //NOI18N
         createViewQuery.append("SELECT "); // NOI18N
         createViewQuery.append(new EnumStringConstructor<Column>().constructEnumString(columns,
@@ -291,21 +288,18 @@ public abstract class SQLDataStorage implements DataStorage {
             return tableName;
         }
 
-        stmt = null;
-
         try {
-            stmt = connection.createStatement();
-            stmt.execute(createViewQuery.toString());
-        } catch (SQLException ex) {
-            return tableName;
-        } finally {
-            if (stmt != null) {
-                try {
-                    stmt.close();
-                } catch (SQLException ex) {
-                }
+            Statement stmt = connection.createStatement();
+            try {
+                stmt.execute(createViewQuery.toString());
+            } finally {
+                stmt.close();
             }
+        } catch (SQLException ex) {
+            logger.log(Level.SEVERE, null, ex);
+            return tableName;
         }
+
         return viewName;
     }
 
@@ -327,7 +321,12 @@ public abstract class SQLDataStorage implements DataStorage {
         logger.fine("About to execute query: " + sb.toString()); //NOI18N
 
         try {
-            connection.prepareCall(sb.toString()).execute();
+            Statement stmt = connection.createStatement();
+            try {
+                stmt.execute(sb.toString());
+            } finally {
+                stmt.close();
+            }
         } catch (SQLException ex) {
             logger.log(Level.SEVERE, null, ex);
             return false;
@@ -339,10 +338,15 @@ public abstract class SQLDataStorage implements DataStorage {
 
         for (Column col : metadata.getIndexedColumns()) {
             try {
-                connection.prepareStatement(
-                        "create index " + tableName + "_" // NOI18N
-                        + col.getColumnName() + "_index on " // NOI18N
-                        + tableName + "(" + col.getColumnName() + ")").execute(); // NOI18N
+                Statement stmt = connection.createStatement();
+                try {
+                    stmt.execute(
+                            "create index " + tableName + "_" // NOI18N
+                            + col.getColumnName() + "_index on " // NOI18N
+                            + tableName + "(" + col.getColumnName() + ")"); // NOI18N
+                } finally {
+                    stmt.close();
+                }
             } catch (SQLException ex) {
                 logger.log(Level.SEVERE, null, ex);
             }
@@ -387,13 +391,19 @@ public abstract class SQLDataStorage implements DataStorage {
                 logger.fine("SQL: dispatching " + query.toString()); //NOI18N
             }
 
+            PreparedStatement stmt = null;
+
             try {
-                synchronized (insertPreparedStatments) {
-                    insertPreparedStatments.put(tableName, connection.prepareStatement(query.toString()));
-                }
-                //insert(tableName, row);
+                stmt = connection.prepareStatement(query.toString());
             } catch (SQLException ex) {
-                Exceptions.printStackTrace(ex);
+                logger.log(Level.SEVERE, null, ex);
+            }
+
+            if (stmt != null) {
+                synchronized (insertPreparedStatments) {
+                    insertPreparedStatments.put(tableName, stmt);
+                    //insert(tableName, row);
+                }
             }
             return statement;
         }
@@ -430,17 +440,17 @@ public abstract class SQLDataStorage implements DataStorage {
                 return select(tableName, columns, sqlQuery);
             }
             if (sqlQuery == null) {
-                return select(viewName, columns, sqlQuery);
+                return select(viewName, columns, null);
             }
         }
-        Iterator<String> tableNames = renamedTableNames.keySet().iterator();
-        String sqlQueryNew = sqlQuery;
-        while (tableNames.hasNext()) {
-            String key = tableNames.next();
-            sqlQueryNew = sqlQuery.replaceAll(key, renamedTableNames.get(key));
-        }
-        return select(tableName, columns, sqlQueryNew);
 
+        String sqlQueryNew = sqlQuery;
+
+        for (Entry<String, String> entry : renamedTableNames.entrySet()) {
+            sqlQueryNew = sqlQueryNew.replaceAll(entry.getKey(), entry.getValue());
+        }
+
+        return select(tableName, columns, sqlQueryNew);
     }
 
     public final ResultSet select(String tableName, List<Column> columns, String sqlQuery) {
@@ -464,14 +474,14 @@ public abstract class SQLDataStorage implements DataStorage {
         try {
             rs = connection.createStatement().executeQuery(sqlQuery);
         } catch (SQLException ex) {
-	    Throwable cause = ex.getCause();
-	    if (cause != null &&
-		(cause instanceof InterruptedIOException ||
-		 cause instanceof InterruptedException)) {
-		// skip exception
-	    } else {
-		logger.log(Level.SEVERE, null, ex);
-	    }
+            Throwable cause = ex.getCause();
+            if (cause != null &&
+                    (cause instanceof InterruptedIOException ||
+                    cause instanceof InterruptedException)) {
+                // skip exception
+            } else {
+                logger.log(Level.SEVERE, null, ex);
+            }
         }
 
         return rs;
@@ -539,7 +549,7 @@ public abstract class SQLDataStorage implements DataStorage {
         try {
             return connection.prepareStatement(query.toString());
         } catch (SQLException ex) {
-            Exceptions.printStackTrace(ex);
+            logger.log(Level.SEVERE, null, ex);
             return null;
         }
     }

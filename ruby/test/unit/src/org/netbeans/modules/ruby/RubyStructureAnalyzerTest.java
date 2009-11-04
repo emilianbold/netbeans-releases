@@ -284,4 +284,13 @@ public class RubyStructureAnalyzerTest extends RubyTestBase {
         checkStructure("testfiles/method_type_inference.rb");
     }
 
+    public void testMultipleAssignments() throws Exception {
+        checkStructure("testfiles/multiple_assignments.rb");
+    }
+
+    public void testTypeInferenceFQN() throws Exception {
+        // see #175920
+        checkStructure("testfiles/type_inference.rb");
+    }
+
 }

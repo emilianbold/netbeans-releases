@@ -86,8 +86,7 @@ public class AstAttributeElement extends AstElement {
         if (AstUtilities.isCAttr(creationNode)) {
             return EnumSet.of(Modifier.PUBLIC, Modifier.STATIC);
         }
-        // TODO compute!
-        return Collections.emptySet();
+        return EnumSet.of(Modifier.PUBLIC);
     }
 
     @Override

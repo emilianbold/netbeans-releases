@@ -75,35 +75,32 @@ class LocalNativeExecution extends NativeExecution {
     private static ResourceBundle bundle = NbBundle.getBundle(LocalNativeExecution.class);
     private OutputReaderThread outputReaderThread = null; // Thread for running process
     private InputReaderThread inputReaderThread = null; // Thread for running process
+    private volatile Thread executionThread = null;
     //private Process executionProcess = null;
     //private PrintWriter out;
 
     private static Logger execLog;
 
+    private final File runDirFile;
+    private final String executable;
+    private final String arguments;
+    private final String[] envp;
+    private final boolean unbuffer;
+
+
     /* package-local */
-    LocalNativeExecution(ExecutionEnvironment execEnv) {
+    LocalNativeExecution(ExecutionEnvironment execEnv, File runDirFile, String executable,
+            String arguments, String[] envp, boolean unbuffer, boolean x11forwarding) {
+
         assert execEnv.isLocal();
+        this.runDirFile = runDirFile;
+        this.executable = executable;
+        this.arguments = arguments;
+        this.envp = envp;
+        this.unbuffer = unbuffer;
     }
 
-    /**
-     * Execute an executable, a makefile, or a script
-     * @param runDir absolute path to directory from where the command should be executed
-     * @param executable absolute or relative path to executable, makefile, or script
-     * @param arguments space separated list of arguments
-     * @param envp environment variables (name-value pairs of the form ABC=123)
-     * @param out Output
-     * @param io Input
-     * @param parseOutput true if output should be parsed for compiler errors
-     * @return completion code
-     */
-    public int executeCommand(
-            File runDirFile,
-            String executable,
-            String arguments,
-            String[] envp,
-            PrintWriter out,
-            Reader in,
-            boolean unbuffer) throws IOException, InterruptedException {
+    public int execute(PrintWriter out, Reader in) throws IOException, InterruptedException {
         int rc = -1;
 
         //this.runDirFile = runDirFile;
@@ -117,6 +114,7 @@ class LocalNativeExecution extends NativeExecution {
         }
 
         Process executionProcess = exec(executable, arguments, envp, runDirFile);
+        executionThread = Thread.currentThread();
         outputReaderThread = new OutputReaderThread(executionProcess.getInputStream(), out);
         outputReaderThread.start();
         if (in != null) {
@@ -142,7 +140,7 @@ class LocalNativeExecution extends NativeExecution {
         } catch (InterruptedException ex2) {
             // On Windows join() throws InterruptedException if process was terminated/interrupted
         }
-
+        executionThread = null; // 'just in case' cleanup
         return rc;
     }
 
@@ -192,6 +190,10 @@ class LocalNativeExecution extends NativeExecution {
     }
 
     public void stop() {
+        Thread et = executionThread;
+        if (et != null) {
+            et.interrupt();
+        }
         /*
         if (executionThread != null) {
             executionThread.interrupt();

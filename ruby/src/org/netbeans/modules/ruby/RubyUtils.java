@@ -768,6 +768,10 @@ public class RubyUtils {
     }
 
     static String join(final Iterable<? extends String> iterable, final String separator) {
+        return join(iterable, separator, separator);
+    }
+
+    static String join(final Iterable<? extends String> iterable, final String separator, final String lastSeparator) {
         Iterator<? extends String> it = iterable.iterator();
         if (!it.hasNext()) {
             return "";
@@ -775,8 +779,13 @@ public class RubyUtils {
         StringBuffer buf = new StringBuffer(60);
         buf.append(it.next());
         while (it.hasNext()) {
-            buf.append(separator);
-            buf.append(it.next());
+            String next = it.next();
+            if (it.hasNext()) {
+                buf.append(separator);
+            } else {
+                buf.append(lastSeparator);
+            }
+            buf.append(next);
         }
 
         return buf.toString();

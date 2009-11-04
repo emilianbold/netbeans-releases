@@ -331,6 +331,10 @@ public class HtmlCompletionQueryTest extends TestBase {
         assertItems("<div><bla>|", arr(), Match.EMPTY, 0);
     }
 
+    public void testJustBeforeTag() throws BadLocationException, ParseException {
+        assertItems("<|<table>", arr("div"), Match.CONTAINS);
+        assertItems("<div></|<table>", arr("div"), Match.CONTAINS);
+    }
 
     //helper methods ------------
 

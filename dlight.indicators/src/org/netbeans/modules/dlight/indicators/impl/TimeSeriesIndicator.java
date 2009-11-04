@@ -41,12 +41,15 @@ package org.netbeans.modules.dlight.indicators.impl;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -66,11 +69,13 @@ import org.netbeans.modules.dlight.spi.indicator.Indicator;
 import org.netbeans.modules.dlight.extras.api.ViewportAware;
 import org.netbeans.modules.dlight.extras.api.ViewportModel;
 import org.netbeans.modules.dlight.indicators.graph.TimeSeriesDataContainer;
+import org.netbeans.modules.dlight.spi.indicator.IndicatorActionsProvider;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.dlight.util.UIUtilities;
 import org.netbeans.modules.dlight.util.ui.DLightUIPrefs;
+import org.openide.util.Lookup;
 
 /**
  * Indicator capable of drawing one or more time series.
@@ -84,29 +89,47 @@ public final class TimeSeriesIndicator
     private final static Logger log = DLightLogger.getLogger(TimeSeriesIndicator.class);
     private final DataRowToTimeSeries dataRowHandler;
     private final TimeSeriesDataContainer data;
-    private final GraphPanel<TimeSeriesPlot, Legend> panel;
-    private final TimeSeriesPlot graph;
-    private final Legend legend;
-    private final JButton button;
+    private GraphPanel<TimeSeriesPlot, Legend> panel;
+    private TimeSeriesPlot graph;
+    private Legend legend;
+    private JButton button;
     private final int graphCount;
     private int tickCounter;
+    private List<Action> popupActions;
+    private volatile boolean isInitialized = false;
+    private final TimeSeriesIndicatorConfiguration configuration;
+    private final UILock uiLock = new UILock();
 
     public TimeSeriesIndicator(TimeSeriesIndicatorConfiguration configuration) {
         super(configuration);
+        this.configuration = configuration;
         TimeSeriesIndicatorConfigurationAccessor accessor = TimeSeriesIndicatorConfigurationAccessor.getDefault();
         this.dataRowHandler = accessor.getDataRowHandler(configuration);
         this.graphCount = accessor.getTimeSeriesDescriptors(configuration).size();
         this.data = new TimeSeriesDataContainer(accessor.getGranularity(configuration), accessor.getAggregation(configuration), graphCount, accessor.getLastNonNull(configuration));
         this.data.put(0, new float[graphCount]);
-        this.graph = createGraph(configuration, data);
-        this.legend = new Legend(accessor.getTimeSeriesDescriptors(configuration), accessor.getDetailDescriptors(configuration));
-        this.button = new JButton(getDefaultAction());
-        this.panel = new GraphPanel<TimeSeriesPlot, Legend>(accessor.getTitle(configuration), graph, legend, graph.getHorizontalAxis(), graph.getVerticalAxis(), button);
+
+    }
+
+    private final void initUI() {
+        synchronized (uiLock) {
+            this.graph = createGraph(configuration, data);
+            TimeSeriesIndicatorConfigurationAccessor accessor = TimeSeriesIndicatorConfigurationAccessor.getDefault();
+            this.legend = new Legend(accessor.getTimeSeriesDescriptors(configuration), accessor.getDetailDescriptors(configuration));
+            this.button = getDefaultAction().isEnabled() ? new JButton(getDefaultAction()) : null;
+            this.panel = new GraphPanel<TimeSeriesPlot, Legend>(accessor.getTitle(configuration), graph,
+                    legend, graph.getHorizontalAxis(), graph.getVerticalAxis(), button);
+            panel.setPopupActions(popupActions);
+            isInitialized = true;
+        }
     }
 
     private static TimeSeriesPlot createGraph(TimeSeriesIndicatorConfiguration configuration, TimeSeriesDataContainer data) {
-        TimeSeriesIndicatorConfigurationAccessor accessor = TimeSeriesIndicatorConfigurationAccessor.getDefault();
-        TimeSeriesPlot graph = new TimeSeriesPlot(accessor.getGraphScale(configuration), accessor.getLabelRenderer(configuration), accessor.getTimeSeriesDescriptors(configuration), data);
+        TimeSeriesIndicatorConfigurationAccessor accessor =
+                TimeSeriesIndicatorConfigurationAccessor.getDefault();
+        TimeSeriesPlot graph =
+                new TimeSeriesPlot(accessor.getGraphScale(configuration),
+                accessor.getLabelRenderer(configuration), accessor.getTimeSeriesDescriptors(configuration), data);
         graph.setBorder(BorderFactory.createLineBorder(DLightUIPrefs.getColor(DLightUIPrefs.INDICATOR_BORDER_COLOR)));
         Dimension graphSize = new Dimension(
                 DLightUIPrefs.getInt(DLightUIPrefs.INDICATOR_GRAPH_WIDTH),
@@ -138,6 +161,7 @@ public final class TimeSeriesIndicator
     protected void repairNeeded(boolean needed) {
         if (needed) {
             final RepairPanel repairPanel = new RepairPanel(getRepairActionProvider().getValidationStatus());
+            repairPanel.setPopupActions(popupActions);
             repairPanel.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent e) {
@@ -173,6 +197,7 @@ public final class TimeSeriesIndicator
             final JEditorPane label = UIUtilities.createJEditorPane(getRepairActionProvider().getMessage(getRepairActionProvider().getValidationStatus()),
                     false, DLightUIPrefs.getColor(DLightUIPrefs.INDICATOR_LEGEND_FONT_COLOR));
             UIThread.invoke(new Runnable() {
+
                 public void run() {
                     panel.setOverlay(label);
                 }
@@ -194,7 +219,7 @@ public final class TimeSeriesIndicator
                 float[] plotData = dataRowHandler.getData(row);
                 if (plotData != null) {
                     long realTimestamp = DataUtil.getTimestamp(row);
-                    this.data.put(0 <= realTimestamp? realTimestamp : 1000000000L * tickCounter, plotData);
+                    this.data.put(0 <= realTimestamp ? realTimestamp : 1000000000L * tickCounter, plotData);
                 }
             } catch (Exception ex) {
                 if (log.isLoggable(Level.WARNING)) {
@@ -222,10 +247,39 @@ public final class TimeSeriesIndicator
 
     @Override
     public JComponent getComponent() {
+        synchronized (uiLock) {
+            if (!isInitialized) {
+                initUI();
+            }
+        }
         return panel;
     }
 
     public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
         graph.dataFiltersChanged(newSet, isAdjusting);
+    }
+
+    @Override
+    public void setIndicatorActionsProviderContext(Lookup context) {
+        List<Action> actions = new ArrayList<Action>();
+        Lookup.Template<IndicatorActionsProvider> template = new Lookup.Template<IndicatorActionsProvider>(IndicatorActionsProvider.class);
+        Lookup.Result<IndicatorActionsProvider> result = Lookup.getDefault().lookup(template);
+        Iterator iterator = result.allInstances().iterator();
+        while (iterator.hasNext()) {
+            Object caop = iterator.next();
+            if (caop instanceof IndicatorActionsProvider) {
+                List<Action> list = ((IndicatorActionsProvider) caop).getIndicatorActions(context); // FIXUP: add DLightConfiguration, DLightTool, ... to lookup
+                for (Action action : list) {
+                    actions.add(action);
+                }
+            }
+        }
+        if (panel != null) {
+            panel.setPopupActions(actions);
+        }
+        this.popupActions = actions;
+    }
+
+    private final static class UILock {
     }
 }

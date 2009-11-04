@@ -65,7 +65,12 @@ public class Call {
     /**
      * Pattern for recognizing constructor calls.
      */
-    private static final Pattern callToNew = Pattern.compile(".+(\\.new(\\z|\\(.*\\)))"); //NOI18N
+    private static final Pattern CALL_TO_NEW = Pattern.compile(".+(\\.new(\\z|\\(.*\\)))"); //NOI18N
+
+    /**
+     * Pattern for recognizing whether a method invocation chain contains a call to new
+     */
+    private static final Pattern CALL_TO_NEW_IN_CHAIN = Pattern.compile(".+(\\.new(\\z|\\(.*\\)\\.?\\w*|\\.\\w?.*))"); //NOI18N
 
     public static final Call LOCAL = new Call(RubyType.createUnknown(), null, false, false);
     public static final Call NONE = new Call(RubyType.createUnknown(), null, false, false);
@@ -412,7 +417,7 @@ public class Call {
                         String type = RubyUtils.RUBY_PREDEF_VARS_CLASSES.get(lhs);
                          // predefined vars are instances
                         // also if it was a call to a constructor, the call is not static
-                        boolean isStatic = (type == null && constructorCallLength == -1) || constantExpected;
+                        boolean isStatic = (type == null && !containsCallToNew(lhs)) || constantExpected;
 
                         boolean isLHSConstant = RubyUtils.isValidConstantFQN(lhs);
                         if (type == null /* not predef. var */ && isLHSConstant) {
@@ -450,11 +455,15 @@ public class Call {
      *  the given <code>lhs</code> did not represent a constructor call.
      */
     private static int isCallToNew(String lhs) {
-        Matcher matcher = callToNew.matcher(lhs);
+        Matcher matcher = CALL_TO_NEW.matcher(lhs);
         if (!matcher.matches()) {
             return -1;
         }
         return matcher.group(1).length();
+    }
+
+    private static boolean containsCallToNew(String lhs) {
+        return CALL_TO_NEW_IN_CHAIN.matcher(lhs).matches();
     }
 
     private static Call tryLiteral(final TokenId id, final boolean methodExpected, final String tokenText) {

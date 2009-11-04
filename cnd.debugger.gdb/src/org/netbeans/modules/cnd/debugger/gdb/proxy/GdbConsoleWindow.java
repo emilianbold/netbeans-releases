@@ -184,7 +184,7 @@ public class GdbConsoleWindow extends TopComponent implements ActionListener, Pr
         } else {
             return;
         }
-        if (command == null) {
+        if (command == null || command.length() == 0) {
             return;
         }
         addCommandToList(command);

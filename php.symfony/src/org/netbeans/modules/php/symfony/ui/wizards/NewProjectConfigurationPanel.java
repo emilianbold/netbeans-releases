@@ -62,6 +62,7 @@ import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.symfony.SymfonyScript;
+import org.netbeans.modules.php.symfony.ui.options.SymfonyOptions;
 import org.openide.awt.Mnemonics;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
@@ -71,13 +72,11 @@ import org.openide.util.Utilities;
  * @author Tomas Mysik
  */
 public class NewProjectConfigurationPanel extends JPanel {
-    private static final long serialVersionUID = -17850189546528594L;
-    private static final String DEFAULT_SECRET = "UniqueSecret"; // NOI18N
-    private static final String DEFAULT_PARAMS = "--escaping-strategy=on --csrf-secret=" + DEFAULT_SECRET; // NOI18N
+    private static final long serialVersionUID = -1785087564128594L;
     private static final String APP_FRONTEND = "frontend"; // NOI18N
     private static final String APP_BACKEND = "backend"; // NOI18N
     private static final Pattern APP_NAME_PATTERN = Pattern.compile("\\S+"); // NOI18N
-    private static final Pattern SECRET_PATTERN = Pattern.compile("\\b" + DEFAULT_SECRET + "\\b"); // NOI18N
+    private static final Pattern SECRET_PATTERN = Pattern.compile("\\b" + SymfonyOptions.DEFAULT_SECRET + "\\b"); // NOI18N
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
@@ -86,9 +85,11 @@ public class NewProjectConfigurationPanel extends JPanel {
         // work around - keep the label on the right side
         optionsLabel.setMaximumSize(optionsLabel.getPreferredSize());
 
-        frontendParamsTextField.setText(DEFAULT_PARAMS);
-        backendParamsTextField.setText(DEFAULT_PARAMS);
-        otherParamsTextField.setText(DEFAULT_PARAMS);
+        projectParamsTextField.setText(getOptions().getDefaultParamsForProject());
+        String defaultParamsForApps = getOptions().getDefaultParamsForApps();
+        frontendParamsTextField.setText(defaultParamsForApps);
+        backendParamsTextField.setText(defaultParamsForApps);
+        otherParamsTextField.setText(defaultParamsForApps);
 
         initApp(frontendCheckBox, frontendParamsLabel, frontendParamsTextField, null);
         initApp(backendCheckBox, backendParamsLabel, backendParamsTextField, null);
@@ -105,7 +106,7 @@ public class NewProjectConfigurationPanel extends JPanel {
         otherNameTextField.getDocument().addDocumentListener(defaultDocumentListener);
         otherParamsTextField.getDocument().addDocumentListener(defaultDocumentListener);
 
-        generateAppLabel.addPropertyChangeListener("enabled", new PropertyChangeListener() { // NOI18N
+        generateProjectLabel.addPropertyChangeListener("enabled", new PropertyChangeListener() { // NOI18N
             public void propertyChange(PropertyChangeEvent evt) {
                 enableOptionsLabel();
             }
@@ -121,7 +122,11 @@ public class NewProjectConfigurationPanel extends JPanel {
         changeSupport.removeChangeListener(listener);
     }
 
-    // < app name , params >
+    public String[] getProjectParams() {
+        return Utilities.parseParameters(projectParamsTextField.getText().trim());
+    }
+
+    // < app-name , params[] >
     public List<Pair<String, String[]>> getApps() {
         List<Pair<String, String[]>> apps = new LinkedList<Pair<String, String[]>>();
         if (frontendCheckBox.isSelected()) {
@@ -151,20 +156,20 @@ public class NewProjectConfigurationPanel extends JPanel {
     public String getWarningMessage() {
         String warn = null;
         if (frontendCheckBox.isSelected()) {
-            warn = validateParams(APP_FRONTEND, frontendParamsTextField);
+            warn = validateAppParams(APP_FRONTEND, frontendParamsTextField);
             if (warn != null) {
                 return warn;
             }
         }
         if (backendCheckBox.isSelected()) {
-            warn = validateParams(APP_BACKEND, backendParamsTextField);
+            warn = validateAppParams(APP_BACKEND, backendParamsTextField);
             if (warn != null) {
                 return warn;
             }
         }
         if (otherCheckBox.isSelected()) {
             String otherAppName = getOtherAppName();
-            warn = validateParams(otherAppName, otherParamsTextField);
+            warn = validateAppParams(otherAppName, otherParamsTextField);
             if (warn != null) {
                 return warn;
             }
@@ -185,16 +190,16 @@ public class NewProjectConfigurationPanel extends JPanel {
     }
 
     void enableOptionsLabel() {
-        optionsLabel.setVisible(generateAppLabel.isEnabled());
+        optionsLabel.setVisible(generateProjectLabel.isEnabled());
     }
 
     private String getOtherAppName() {
         return otherNameTextField.getText().trim();
     }
 
-    private String validateParams(String appName, JTextField paramsTextField) {
+    private String validateAppParams(String appName, JTextField paramsTextField) {
         if (SECRET_PATTERN.matcher(paramsTextField.getText()).find()) {
-            return NbBundle.getMessage(NewProjectConfigurationPanel.class, "MSG_DefaultParamUsed", DEFAULT_SECRET, appName);
+            return NbBundle.getMessage(NewProjectConfigurationPanel.class, "MSG_DefaultParamUsed", SymfonyOptions.DEFAULT_SECRET, appName);
         }
         return null;
     }
@@ -208,6 +213,10 @@ public class NewProjectConfigurationPanel extends JPanel {
         visibleApp(nameCheckBox.isSelected(), paramsLabel, paramsTextField, nameTextField);
     }
 
+    private SymfonyOptions getOptions() {
+        return SymfonyOptions.getInstance();
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -217,8 +226,11 @@ public class NewProjectConfigurationPanel extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        generateAppLabel = new JLabel();
+        generateProjectLabel = new JLabel();
         optionsLabel = new JLabel();
+        projectParamsLabel = new JLabel();
+        projectParamsTextField = new JTextField();
+        generateAppsLabel = new JLabel();
         frontendCheckBox = new JCheckBox();
         frontendParamsLabel = new JLabel();
         frontendParamsTextField = new JTextField();
@@ -229,10 +241,11 @@ public class NewProjectConfigurationPanel extends JPanel {
         otherNameTextField = new JTextField();
         otherParamsLabel = new JLabel();
         otherParamsTextField = new JTextField();
+        infoLabel = new JLabel();
 
-        generateAppLabel.setLabelFor(frontendCheckBox);
+        generateProjectLabel.setLabelFor(frontendCheckBox);
 
-        Mnemonics.setLocalizedText(generateAppLabel, NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.generateAppLabel.text"));
+        Mnemonics.setLocalizedText(generateProjectLabel, NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.generateProjectLabel.text"));
         Mnemonics.setLocalizedText(optionsLabel, NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.optionsLabel.text"));
         optionsLabel.setToolTipText(NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.optionsLabel.toolTipText")); // NOI18N
         optionsLabel.addMouseListener(new MouseAdapter() {
@@ -244,6 +257,11 @@ public class NewProjectConfigurationPanel extends JPanel {
             }
         });
 
+        projectParamsLabel.setLabelFor(projectParamsTextField);
+
+
+        Mnemonics.setLocalizedText(projectParamsLabel, NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.projectParamsLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(generateAppsLabel, NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.generateAppsLabel.text"));
         frontendCheckBox.setSelected(true);
 
         Mnemonics.setLocalizedText(frontendCheckBox, NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.frontendCheckBox.text")); // NOI18N
@@ -259,7 +277,9 @@ public class NewProjectConfigurationPanel extends JPanel {
         Mnemonics.setLocalizedText(otherCheckBox, NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.otherCheckBox.text"));
         otherParamsLabel.setLabelFor(otherParamsTextField);
 
+
         Mnemonics.setLocalizedText(otherParamsLabel, NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.otherParamsLabel.text"));
+        Mnemonics.setLocalizedText(infoLabel, NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.infoLabel.text"));
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -271,7 +291,7 @@ public class NewProjectConfigurationPanel extends JPanel {
                         .add(21, 21, 21)
                         .add(backendParamsLabel)
                         .addPreferredGap(LayoutStyle.RELATED)
-                        .add(backendParamsTextField, GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE))
+                        .add(backendParamsTextField, GroupLayout.DEFAULT_SIZE, 341, Short.MAX_VALUE))
                     .add(backendCheckBox))
                 .add(0, 0, 0))
             .add(layout.createSequentialGroup()
@@ -283,29 +303,47 @@ public class NewProjectConfigurationPanel extends JPanel {
                     .add(otherCheckBox))
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(GroupLayout.TRAILING)
-                    .add(otherParamsTextField, GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE)
-                    .add(otherNameTextField, GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE))
+                    .add(otherParamsTextField, GroupLayout.DEFAULT_SIZE, 341, Short.MAX_VALUE)
+                    .add(otherNameTextField, GroupLayout.DEFAULT_SIZE, 341, Short.MAX_VALUE))
                 .add(0, 0, 0))
             .add(layout.createSequentialGroup()
-                .add(generateAppLabel)
-                .addPreferredGap(LayoutStyle.RELATED, 132, Short.MAX_VALUE)
-                .add(optionsLabel))
+                .add(generateProjectLabel)
+                .addPreferredGap(LayoutStyle.RELATED, 290, Short.MAX_VALUE)
+                .add(optionsLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
             .add(GroupLayout.TRAILING, layout.createSequentialGroup()
                 .add(29, 29, 29)
                 .add(frontendParamsLabel)
                 .addPreferredGap(LayoutStyle.RELATED)
-                .add(frontendParamsTextField, GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE))
+                .add(frontendParamsTextField, GroupLayout.DEFAULT_SIZE, 341, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(frontendCheckBox)
-                .addContainerGap(306, Short.MAX_VALUE))
+                .addContainerGap(367, Short.MAX_VALUE))
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(infoLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(projectParamsLabel)
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(projectParamsTextField, GroupLayout.DEFAULT_SIZE, 358, Short.MAX_VALUE))
+            .add(layout.createSequentialGroup()
+                .add(generateAppsLabel)
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(generateAppLabel)
-                    .add(optionsLabel))
+                    .add(generateProjectLabel)
+                    .add(optionsLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(GroupLayout.BASELINE)
+                    .add(projectParamsTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .add(projectParamsLabel))
+                .addPreferredGap(LayoutStyle.UNRELATED)
+                .add(generateAppsLabel)
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(frontendCheckBox)
                 .addPreferredGap(LayoutStyle.RELATED)
@@ -325,7 +363,9 @@ public class NewProjectConfigurationPanel extends JPanel {
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(GroupLayout.BASELINE)
                     .add(otherParamsLabel)
-                    .add(otherParamsTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
+                    .add(otherParamsTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(LayoutStyle.UNRELATED)
+                .add(infoLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -345,12 +385,16 @@ public class NewProjectConfigurationPanel extends JPanel {
     private JCheckBox frontendCheckBox;
     private JLabel frontendParamsLabel;
     private JTextField frontendParamsTextField;
-    private JLabel generateAppLabel;
+    private JLabel generateAppsLabel;
+    private JLabel generateProjectLabel;
+    private JLabel infoLabel;
     private JLabel optionsLabel;
     private JCheckBox otherCheckBox;
     private JTextField otherNameTextField;
     private JLabel otherParamsLabel;
     private JTextField otherParamsTextField;
+    private JLabel projectParamsLabel;
+    private JTextField projectParamsTextField;
     // End of variables declaration//GEN-END:variables
 
     private final class DefaultItemListener implements ItemListener {

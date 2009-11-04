@@ -159,6 +159,7 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
         LayerBuilder.File f = lb.file(path + "/" + basename + ".instance");
         f.stringvalue(SERVICE_NAME, className).
           stringvalue("serviceClass", providerClass.getName()).
+          stringvalue("instanceOf", providerClass.getName()).
           methodvalue("instanceCreate", providerClass.getName()+"$ContextAware", "createService").
           write();
     }

@@ -56,6 +56,7 @@ import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 import org.openide.util.WeakListeners;
 import org.openide.util.WeakSet;
 
@@ -67,6 +68,7 @@ public class DeadlockDetectorImpl extends DeadlockDetector implements PropertyCh
     
     private final Set<JPDAThread> suspendedThreads = new WeakSet<JPDAThread>();
     private final RequestProcessor rp = new RequestProcessor("Deadlock Detector", 1); // NOI18N
+    private final Set<Task> unfinishedTasks = new HashSet<Task>();
     
     private Map<Long, Node> monitorToNode;
 
@@ -97,20 +99,40 @@ public class DeadlockDetectorImpl extends DeadlockDetector implements PropertyCh
                     suspendedThreads.add(thread);
                     tempSuspThreads = new HashSet<JPDAThread>(suspendedThreads);
                 }
-                rp.post(new Runnable() {
-                    public void run() {
-                        Set<Deadlock> deadlocks;
-                        deadlocks = findDeadlockedThreads(tempSuspThreads);
-                        if (deadlocks != null) {
-                            setDeadlocks(deadlocks);
+                final Task[] taskPtr = new Task[] { null };
+                synchronized (unfinishedTasks) {
+                    Task task = rp.post(new Runnable() {
+                        public void run() {
+                            Set<Deadlock> deadlocks;
+                            deadlocks = findDeadlockedThreads(tempSuspThreads);
+                            if (deadlocks != null) {
+                                setDeadlocks(deadlocks);
+                            }
+                            synchronized (unfinishedTasks) {
+                                unfinishedTasks.remove(taskPtr[0]);
+                            }
                         }
-                    }
-                });
+                    });
+                    unfinishedTasks.add(task);
+                    taskPtr[0] = task;
+                }
             } else {
                 synchronized (suspendedThreads) {
                     suspendedThreads.remove(thread);
                 }
             }
+        }
+    }
+
+    public void waitForUnfinishedTasks(long timeout) throws InterruptedException {
+        Set<Task> tasks = new HashSet<Task>();
+        synchronized (unfinishedTasks) {
+            tasks.addAll(unfinishedTasks);
+        }
+        while (!tasks.isEmpty()) {
+            Task task = tasks.iterator().next();
+            task.waitFinished(timeout);
+            tasks.remove(task);
         }
     }
     

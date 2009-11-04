@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -62,18 +63,6 @@ class RfsLocalController implements Runnable {
         responseStream.flush();
     }
 
-    private String toLocalFilePath(String remoteFilePath) {
-        if (remoteFilePath.startsWith(remoteDir)) {
-            String localPath =  remoteFilePath.substring(remoteDir.length());
-            if (Utilities.isWindows()) {
-                localPath = WindowsSupport.getInstance().convertFromMSysPath(localPath);
-            }
-            return localPath;
-        } else {
-            return null;
-        }
-    }
-
     private String toRemoteFilePathName(String localAbsFilePath) {
         String out = localAbsFilePath;
         if (Utilities.isWindows()) {
@@ -89,6 +78,7 @@ class RfsLocalController implements Runnable {
 
     public void run() {
         long totalCopyingTime = 0;
+        RemotePathMap mapper = RemotePathMap.getPathMap(execEnv);
         while (true) {
             try {
                 String request = requestReader.readLine();
@@ -104,7 +94,7 @@ class RfsLocalController implements Runnable {
                 } else {
                     processedFiles.add(remoteFile);
                 }
-                String localFilePath = toLocalFilePath(remoteFile);
+                String localFilePath = mapper.getLocalPath(remoteFile);
                 if (localFilePath != null) {
                     File localFile = new File(localFilePath);
                     if (localFile.exists() && !localFile.isDirectory()) {
@@ -197,9 +187,10 @@ class RfsLocalController implements Runnable {
     void feedFiles(OutputStream rcOutputStream, SharabilityFilter filter) {
         PrintWriter writer = new PrintWriter(rcOutputStream);
         List<FileGatheringInfo> files = new ArrayList<FileGatheringInfo>(512);
+        RemotePathMap mapper = RemotePathMap.getPathMap(execEnv);
         for (File localDir : localDirs) {
             localDir = CndFileUtils.normalizeFile(localDir);
-            final String toRemoteFilePathName = toRemoteFilePathName(localDir.getAbsolutePath());
+            final String toRemoteFilePathName = mapper.getRemotePath(localDir.getAbsolutePath());
             File[] children = localDir.listFiles(filter);
             if (children != null) {
                 for (File child : children) {
@@ -259,7 +250,7 @@ class RfsLocalController implements Runnable {
                     "State shouldn't be " + newState); //NOI18N
             writer.printf("%c %d %s\n", newState.id, file.length(), relPath); // NOI18N
             writer.flush(); //TODO: remove?
-            fileData.setState(file, FileState.TOUCHED);
+            fileData.setState(file, newState);
         }
     }
 

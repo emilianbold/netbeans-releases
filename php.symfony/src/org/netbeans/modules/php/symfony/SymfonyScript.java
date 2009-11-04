@@ -156,13 +156,18 @@ public class SymfonyScript extends PhpProgram {
         return new SymfonyScript(command).validate();
     }
 
-    public boolean initProject(PhpModule phpModule) {
+    public boolean initProject(PhpModule phpModule, String[] params) {
         String projectName = phpModule.getDisplayName();
+
+        String[] cmdParams = mergeArrays(new String[]{projectName}, params);
         SymfonyCommandSupport commandSupport = SymfonyPhpFrameworkProvider.getInstance().getFrameworkCommandSupport(phpModule);
-        ExternalProcessBuilder processBuilder = commandSupport.createSilentCommand(CMD_INIT_PROJECT, projectName);
-        assert processBuilder != null;
+        ExternalProcessBuilder processBuilder = commandSupport.createSilentCommand(CMD_INIT_PROJECT, cmdParams);
+        if (processBuilder == null) {
+            // #172777
+            return false;
+        }
         ExecutionDescriptor executionDescriptor = commandSupport.getDescriptor();
-        runService(processBuilder, executionDescriptor, commandSupport.getOutputTitle(CMD_INIT_PROJECT, projectName), false);
+        runService(processBuilder, executionDescriptor, commandSupport.getOutputTitle(CMD_INIT_PROJECT, cmdParams), false);
         return SymfonyPhpFrameworkProvider.getInstance().isInPhpModule(phpModule);
     }
 
@@ -183,7 +188,7 @@ public class SymfonyScript extends PhpProgram {
         assert command != null;
 
         FrameworkCommandSupport commandSupport = SymfonyPhpFrameworkProvider.getInstance().getFrameworkCommandSupport(phpModule);
-        ExternalProcessBuilder processBuilder = commandSupport.createSilentCommand("help", command.getCommand());
+        ExternalProcessBuilder processBuilder = commandSupport.createSilentCommand("help", command.getCommand()); // NOI18N
         assert processBuilder != null;
 
         final HelpLineProcessor lineProcessor = new HelpLineProcessor();

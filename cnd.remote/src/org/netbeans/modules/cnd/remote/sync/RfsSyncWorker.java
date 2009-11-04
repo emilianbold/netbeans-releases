@@ -39,150 +39,73 @@
 
 package org.netbeans.modules.cnd.remote.sync;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.InterruptedIOException;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.text.ParseException;
+import java.util.Map;
+import java.util.MissingResourceException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
+import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
+import org.netbeans.modules.cnd.remote.support.RemoteException;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.NativeProcess;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
-import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
-import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author Vladimir Kvashin
  */
-final class RfsSyncWorker extends ZipSyncWorker {
+/*package*/ final class RfsSyncWorker extends BaseSyncWorker implements RemoteSyncWorker {
 
-    private static Parameters lastParameters;
-    private static final boolean allAtOnce = false;
-    
-    /*package*/ static final class Parameters {
-        public final File[] localDirs;
-        public final String remoteDir;
-        public final ExecutionEnvironment executionEnvironment;
-        public final PrintWriter out;
-        public final PrintWriter err;
-        public final File privProjectStorageDir;
-        public Parameters(File[] localDirs, String remoteDir, ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, File privProjectStorageDir) {
-            this.localDirs = localDirs;
-            this.remoteDir = remoteDir;
-            this.executionEnvironment = executionEnvironment;
-            this.out = out;
-            this.err = err;
-            this.privProjectStorageDir = privProjectStorageDir;
-        }
-    }
+    private NativeProcess remoteControllerProcess;
+    private RfsLocalController localController;
+    private String remoteDir;
 
-    public RfsSyncWorker( ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, File privProjectStorageDir, File... localDirs) {
+    public RfsSyncWorker(ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, File privProjectStorageDir, File... localDirs) {
         super(executionEnvironment, out, err, privProjectStorageDir, localDirs);
     }
 
-    /** FIXUP: this should be done via ActionHandler.*/
-    /*package*/ static Parameters getLastParameters() {
-        return lastParameters;
-    }
-
-    /** FIXUP: this should be done via ActionHandler.*/
-    /*package*/ static void cleanLastParameters() {
-        lastParameters = null;
-    }
-
     @Override
-    protected void synchronizeImpl(String remoteDir) throws InterruptedException, ExecutionException, IOException {
-        Future<Integer> mkDir = CommonTasksSupport.mkDir(executionEnvironment, remoteDir, err);
-        if (mkDir.get() != 0) {
-            throw new IOException("Can not create directory " + remoteDir); //NOI18N
-        }
-        lastParameters = new Parameters(localDirs, remoteDir, executionEnvironment, out, err, privProjectStorageDir);
-        // no actual sinc here - only store parameters
-    }
-
-    @Override
-    protected String getRemoteSyncRoot() {
-        String root;
-        root = System.getProperty("cnd.remote.sync.root." + executionEnvironment.getHost()); //NOI18N
-        if (root != null) {
-            return root;
-        }
-        root = System.getProperty("cnd.remote.sync.root"); //NOI18N
-        if (root != null) {
-            return root;
-        }
-        String home = RemoteUtil.getHomeDirectory(executionEnvironment);
-        final ExecutionEnvironment local = ExecutionEnvironmentFactory.getLocal();
-        MacroExpander expander = MacroExpanderFactory.getExpander(local);
-        String localHostID = local.getHost();
-        try {
-            localHostID = expander.expandPredefinedMacros("${hostname}-${osname}-${platform}${_isa}"); // NOI18N
-        } catch (ParseException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        // each local host maps into own remote folder to prevent collisions on path mapping level
-        return (home == null) ? null : home + "/.netbeans/remote/" + localHostID; // NOI18N
-    }
-
-    @Override
-    public boolean synchronize() {
-        // Later we'll allow user to specify where to copy project files to
-        String remoteParent = getRemoteSyncRoot();
-        if (remoteParent == null) {
+    public boolean startup(Map<String, String> env2add) {
+        RemotePathMap mapper = RemotePathMap.getPathMap(executionEnvironment);
+        remoteDir = mapper.getRemotePath("/", false); // NOI18N
+        if (remoteDir == null) {
             if (err != null) {
                 err.printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Cant_find_sync_root", ServerList.get(executionEnvironment).toString()));
             }
             return false; // TODO: error processing
         }
-//        if (topLocalDir == null) {
-//            if (err != null) {
-//                err.printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Cant_find_top_dir"));
-//            }
-//        }
-//        String remoteDir = remoteParent + '/' + topLocalDir.getName(); //NOI18N
 
         boolean success = false;
         try {
-//            boolean same;
-//            try {
-//                same = RemotePathMap.isTheSame(executionEnvironment, remoteDir, topLocalDir);
-//            } catch (InterruptedException e) {
-//                return false;
-//            }
-//            if (RemoteUtil.LOGGER.isLoggable(Level.FINEST)) {
-//                RemoteUtil.LOGGER.finest(executionEnvironment.getHost() + ":" + remoteDir + " and " + topLocalDir.getAbsolutePath() + //NOI18N
-//                        (same ? " are same - skipping" : " arent same - copying")); //NOI18N
-//            }
-//            if (!same) {
-                if (out != null) {
-                    out.printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Copying",
-                            remoteParent, ServerList.get(executionEnvironment).toString()));
-                }
-                RemotePathMap mapper = RemotePathMap.getPathMap(executionEnvironment);
-                mapper.clear();
-                if (Utilities.isWindows()) {
-                    for (File folder : localDirs) {
-                        int colon = folder.getAbsolutePath().indexOf(':'); // NOI18N
-                        if (colon > 0) {
-                            CharSequence disk = folder.getAbsolutePath().subSequence(0, colon);
-                            mapper.addMapping(disk + ":", remoteParent + "/" + disk); // NOI18N
-                        }
-                    }
-                } else {
-                    mapper.addMapping("/", remoteParent); // NOI18N
-                }
-                synchronizeImpl(remoteParent);
-//            }
+            if (out != null) {
+                out.printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Copying",
+                        remoteDir, ServerList.get(executionEnvironment).toString()));
+            }
+            Future<Integer> mkDir = CommonTasksSupport.mkDir(executionEnvironment, remoteDir, err);
+            if (mkDir.get() != 0) {
+                throw new IOException("Can not create directory " + remoteDir); //NOI18N
+            }
+            startupImpl(env2add);
             success = true;
+        } catch (RemoteException ex) {
+            printErr(ex);
         } catch (InterruptedException ex) {
             // reporting does not make sense, just return false
             RemoteUtil.LOGGER.finest(ex.getMessage());
@@ -193,15 +116,171 @@ final class RfsSyncWorker extends ZipSyncWorker {
             RemoteUtil.LOGGER.log(Level.FINE, null, ex);
             if (err != null) {
                 err.printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Error_Copying",
-                        remoteParent, ServerList.get(executionEnvironment).toString(), ex.getLocalizedMessage()));
+                        remoteDir, ServerList.get(executionEnvironment).toString(), ex.getLocalizedMessage()));
             }
         } catch (IOException ex) {
             RemoteUtil.LOGGER.log(Level.FINE, null, ex);
             if (err != null) {
                 err.printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Error_Copying",
-                        remoteParent, ServerList.get(executionEnvironment).toString(), ex.getLocalizedMessage()));
+                        remoteDir, ServerList.get(executionEnvironment).toString(), ex.getLocalizedMessage()));
             }
         }
         return success;
     }
+
+    private void printErr(Exception ex) throws MissingResourceException {
+        RemoteUtil.LOGGER.finest(ex.getMessage());
+        if (err != null) {
+            String message = NbBundle.getMessage(getClass(), "MSG_Error_Copying", remoteDir, ServerList.get(executionEnvironment).toString(), ex.getLocalizedMessage());
+            err.printf("%s\n", message); // NOI18N
+            err.printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Build_Failed"));
+            err.printf("%s\n", message); // NOI18N
+        }
+    }
+
+
+    private void startupImpl(Map<String, String> env2add) throws IOException, InterruptedException, ExecutionException, RemoteException {
+        String remoteControllerPath;
+        String ldLibraryPath;
+        try {
+            remoteControllerPath = RfsSetupProvider.getControllerPath(executionEnvironment);
+            CndUtils.assertTrue(remoteControllerPath != null);
+            ldLibraryPath = RfsSetupProvider.getLdLibraryPath(executionEnvironment);
+            CndUtils.assertTrue(ldLibraryPath != null);
+        } catch (ParseException ex) {
+            throw new ExecutionException(ex);
+        }
+
+        NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(executionEnvironment);
+        // nobody calls this concurrently => no synchronization
+        remoteControllerCleanup(); // just in case
+        pb.setExecutable(remoteControllerPath); //I18N
+        pb.setWorkingDirectory(remoteDir);
+        remoteControllerProcess = pb.call();
+
+        RequestProcessor.getDefault().post(new ErrorReader(remoteControllerProcess.getErrorStream(), err));
+
+        final InputStream rcInputStream = remoteControllerProcess.getInputStream();
+        final OutputStream rcOutputStream = remoteControllerProcess.getOutputStream();
+        localController = new RfsLocalController(
+                executionEnvironment, localDirs,  remoteDir, rcInputStream,
+                rcOutputStream, err, new FileData(privProjectStorageDir, executionEnvironment));
+
+        localController.feedFiles(rcOutputStream, new SharabilityFilter());
+
+        // read port
+        String line = new BufferedReader(new InputStreamReader(rcInputStream)).readLine();
+        String port;
+        if (line != null && line.startsWith("PORT ")) { // NOI18N
+            port = line.substring(5);
+        } else if (line == null) {
+            int rc = remoteControllerProcess.waitFor();
+            throw new ExecutionException(String.format("Remote controller failed; rc=%d\n", rc), null); // NOI18N
+        } else {
+            String message = String.format("Protocol error: read \"%s\" expected \"%s\"\n", line,  "PORT <port-number>"); //NOI18N
+            System.err.printf(message); // NOI18N
+            remoteControllerProcess.destroy();
+            throw new ExecutionException(message, null); //NOI18N
+        }
+        RemoteUtil.LOGGER.fine("Remote Controller listens port " + port); // NOI18N
+        RequestProcessor.getDefault().post(localController);
+
+        String preload = RfsSetupProvider.getPreloadName(executionEnvironment);
+        CndUtils.assertTrue(preload != null);
+        // to be able to trace what we're doing, first put it all to a map
+
+        //Alas, this won't work
+        //MacroMap mm = MacroMap.forExecEnv(executionEnvironment);
+        //mm.prependPathVariable("LD_LIBRARY_PATH", ldLibraryPath);
+        //mm.prependPathVariable("LD_PRELOAD", preload); // NOI18N
+
+        env2add.put("LD_PRELOAD", preload); // NOI18N
+        String ldLibPathVar = "LD_LIBRARY_PATH"; // NOI18N
+        String oldLdLibPath = RemoteUtil.getEnv(executionEnvironment, ldLibPathVar);
+        if (oldLdLibPath != null) {
+            ldLibraryPath += ":" + oldLdLibPath; // NOI18N
+        }
+        env2add.put(ldLibPathVar, ldLibraryPath); // NOI18N
+        env2add.put("RFS_CONTROLLER_DIR", remoteDir); // NOI18N
+        env2add.put("RFS_CONTROLLER_PORT", port); // NOI18N
+
+        addRemoteEnv(env2add, "cnd.rfs.preload.sleep", "RFS_PRELOAD_SLEEP"); // NOI18N
+        addRemoteEnv(env2add, "cnd.rfs.preload.log", "RFS_PRELOAD_LOG"); // NOI18N
+        addRemoteEnv(env2add, "cnd.rfs.controller.log", "RFS_CONTROLLER_LOG"); // NOI18N
+        addRemoteEnv(env2add, "cnd.rfs.controller.port", "RFS_CONTROLLER_PORT"); // NOI18N
+        addRemoteEnv(env2add, "cnd.rfs.controller.host", "RFS_CONTROLLER_HOST"); // NOI18N
+
+        RemoteUtil.LOGGER.fine("Setting environment:");
+    }
+
+    private void addRemoteEnv(Map<String, String> env2add, String localJavaPropertyName, String remoteEnvVarName) {
+        String value = System.getProperty(localJavaPropertyName, null);
+        if (value != null) {
+            env2add.put(remoteEnvVarName, value);
+        }
+    }
+
+    @Override
+    public void shutdown() {
+        shutdownImpl();
+    }
+
+    @Override
+    public boolean cancel() {
+        return false;
+    }
+
+    private void shutdownImpl() {
+        remoteControllerCleanup();
+        localControllerCleanup();
+    }
+
+    private void localControllerCleanup() {
+        RfsLocalController lc;
+        synchronized (this) {
+            lc = localController;
+            localController = null;
+        }
+        if (lc != null) {
+            lc.shutdown();
+        }
+    }
+    
+    private void remoteControllerCleanup() {
+        NativeProcess rc;
+        synchronized (this) {
+            rc = remoteControllerProcess;
+            remoteControllerProcess = null;
+        }
+        if (rc != null) {
+            rc.destroy();
+            rc = null;
+        }
+    }
+
+
+    private static class ErrorReader implements Runnable {
+
+        private final BufferedReader errorReader;
+        private final PrintWriter errorWriter;
+
+        public ErrorReader(InputStream errorStream, PrintWriter errorWriter) {
+            this.errorReader = new BufferedReader(new InputStreamReader(errorStream));
+            this.errorWriter = errorWriter;
+        }
+        public void run() {
+            try {
+                String line;
+                while ((line = errorReader.readLine()) != null) {
+                    if (errorWriter != null) {
+                         errorWriter.println(line);
+                    }
+                    RemoteUtil.LOGGER.fine(line);
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }
+
 }

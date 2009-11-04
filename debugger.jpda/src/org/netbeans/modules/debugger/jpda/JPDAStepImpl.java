@@ -599,11 +599,11 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
             ThreadReference tr = LocatableEventWrapper.thread (event);
             JPDAThreadImpl t = debuggerImpl.getThread (tr);
             t.accessLock.readLock().lock();
-            if (!t.isSuspended()) {
-                return false; // Already running.
-            }
             try {
                 try {
+                    if (!ThreadReferenceWrapper.isSuspended(tr)) {
+                        return false;   // Already running.
+                    }
                     // Synthetic method?
                     Method m = LocationWrapper.method(StackFrameWrapper.location(ThreadReferenceWrapper.frame(tr, 0)));
                     boolean doStepAgain = false;

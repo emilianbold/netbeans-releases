@@ -121,6 +121,14 @@ public final class ParallelAdviserTopComponent extends TopComponent implements P
         }
     }
 
+    @Override
+    public void requestActive() {
+        super.requestActive();
+        if(tipsPane != null) {
+            tipsPane.requestFocus(true);
+        }
+    }
+
     /**
      * Updates tips.
      */
@@ -161,6 +169,7 @@ public final class ParallelAdviserTopComponent extends TopComponent implements P
 
         scrollPane.setViewportView(tipPanels);
 
+        tipsPane = scrollPane;
         add(scrollPane, BorderLayout.CENTER);
         validate();
     }
@@ -180,7 +189,8 @@ public final class ParallelAdviserTopComponent extends TopComponent implements P
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
     // End of variables declaration//GEN-END:variables
-
+    private JScrollPane tipsPane;
+    
     /**
      * Gets default instance. Do not use directly: reserved for *.settings files only,
      * i.e. deserialization routines; otherwise you could get a non-deserialized instance.

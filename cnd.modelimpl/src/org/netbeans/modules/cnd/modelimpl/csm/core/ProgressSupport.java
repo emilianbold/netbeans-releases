@@ -145,6 +145,7 @@ public class ProgressSupport {
         if (TraceFlags.TRACE_PARSER_QUEUE || TraceFlags.TRACE_PARSER_PROGRESS) {
             System.err.println("fireProjectParsingFinished " + project.getName());
         }
+        FileImpl.incParseCount();
         for (CsmProgressListener listener : getProgressListeners()) {
             try { // have to do this to not allow a listener to crush code model threads
                 listener.projectParsingFinished(project);

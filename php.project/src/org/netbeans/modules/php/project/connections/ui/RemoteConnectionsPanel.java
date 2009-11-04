@@ -646,18 +646,22 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
         }
 
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            assert value instanceof ConfigManager.Configuration;
             setName("ComboBox.listRenderer"); // NOI18N
             Color errorColor = UIManager.getColor("nb.errorForeground"); // NOI18N
-            ConfigManager.Configuration cfg = (ConfigManager.Configuration) value;
-            setText(cfg.getDisplayName());
+            boolean cfgValid = true;
+            if (value != null) {
+                assert value instanceof ConfigManager.Configuration;
+                ConfigManager.Configuration cfg = (ConfigManager.Configuration) value;
+                setText(cfg.getDisplayName());
+                cfgValid = cfg.isValid();
+            }
             setIcon(null);
             if (isSelected) {
                 setBackground(list.getSelectionBackground());
-                setForeground(cfg.isValid() ? list.getSelectionForeground() : errorColor);
+                setForeground(cfgValid ? list.getSelectionForeground() : errorColor);
             } else {
                 setBackground(list.getBackground());
-                setForeground(cfg.isValid() ? list.getForeground() : errorColor);
+                setForeground(cfgValid ? list.getForeground() : errorColor);
             }
             return this;
         }

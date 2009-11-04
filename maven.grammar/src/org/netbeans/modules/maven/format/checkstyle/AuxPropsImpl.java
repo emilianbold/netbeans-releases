@@ -40,8 +40,10 @@
 
 package org.netbeans.modules.maven.format.checkstyle;
 
+import hidden.org.codehaus.plexus.util.IOUtil;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -163,13 +165,20 @@ public class AuxPropsImpl implements AuxiliaryProperties, PropertyChangeListener
                                     final URL url = new URL(loc);
                                     RP.post(new Runnable() {
                                         public void run() {
+                                            InputStream urlis = null;
                                             try {
-                                                copyToCacheDir(url.openStream());
+                                                urlis = url.openStream();
+                                                byte[] arr = IOUtil.toByteArray(urlis);
                                                 synchronized (AuxPropsImpl.this) {
+                                                    //#174401
+                                                    ByteArrayInputStream bais = new ByteArrayInputStream(arr);
+                                                    copyToCacheDir(bais);
                                                     recheck = true;
                                                 }
                                             } catch (IOException ex) {
                                                 ex.printStackTrace();
+                                            } finally {
+                                                IOUtil.close(urlis);
                                             }
                                         }
                                     });

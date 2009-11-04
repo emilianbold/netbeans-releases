@@ -59,6 +59,7 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.jpda.DeadlockDetector;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.modules.debugger.jpda.DeadlockDetectorImpl;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
@@ -128,6 +129,9 @@ public class CheckDeadlocksAction extends AbstractAction
                 }
             }
             DeadlockDetector detector = debugger.getThreadsCollector().getDeadlockDetector();
+            try {
+                ((DeadlockDetectorImpl) detector).waitForUnfinishedTasks(5000);
+            } catch (InterruptedException ex) {}
             Set dealocks = detector.getDeadlocks();
             if (dealocks == null || dealocks.size() == 0) {
                 String msg = NbBundle.getMessage(CheckDeadlocksAction.class, "CTL_No_Deadlock"); // NOI18N

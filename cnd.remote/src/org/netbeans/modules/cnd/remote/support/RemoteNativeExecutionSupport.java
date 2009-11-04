@@ -47,14 +47,12 @@ import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.Reader;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.logging.Level;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.openide.util.Utilities;
 
@@ -66,11 +64,33 @@ import org.openide.util.Utilities;
  */
 public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
 
-    public RemoteNativeExecutionSupport(ExecutionEnvironment execEnv, File dirf, String cmd,
-            String args, Map<String, String> env, PrintWriter out, Reader userInput) {
-        super(execEnv);
+    private NativeProcess process;
+    private final Object procLock = new Object();
 
-        Process process;
+    private final File dirf;
+    private final String cmd;
+    private final String args;
+    private final Map<String, String> env;
+    private final boolean x11forwarding;
+
+    public RemoteNativeExecutionSupport(ExecutionEnvironment execEnv, File dirf, String cmd,
+            String args, Map<String, String> env) {
+        this(execEnv, dirf, cmd, args, env, false);
+    }
+
+    public RemoteNativeExecutionSupport(ExecutionEnvironment execEnv, File dirf, String cmd,
+            String args, Map<String, String> env, boolean x11forwarding) {
+        super(execEnv);
+        this.args = args;
+        this.dirf = dirf;
+        this.cmd = cmd;
+        this.env = env;
+        this.x11forwarding = x11forwarding;
+    }
+
+
+    public void execute(PrintWriter out, Reader userInput) {
+        CndUtils.assertTrue(process == null, "Instance of " + getClass().getSimpleName() + " should not be reused"); //NOI18N
         try {
             //String cmd = makeCommand(dirf, exe, args, envp);
             NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(executionEnvironment);
@@ -82,7 +102,7 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
             }
 
             pb.redirectError();
-            if (env == null || !env.containsKey("DISPLAY")) { // NOI18N
+            if (x11forwarding) {
                 pb.setX11Forwarding(true);
             }
 
@@ -95,7 +115,10 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
                 pb = pb.setWorkingDirectory(path);
             }
             RemoteUtil.LOGGER.fine("RNES<Init>: Running [" + cmd + "] on " + executionEnvironment + " in " + path);
-            process = pb.call();
+            synchronized (procLock) {
+                process = pb.call();
+            }
+            // no use to synchronize in the rest of the method
             InputStream is = process.getInputStream();
             Reader in = new InputStreamReader(is);
             if (userInput != null) {
@@ -119,7 +142,7 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
                 }
 //            } while (!channel.isClosed());
 
-            int rc = process.waitFor();            
+            int rc = process.waitFor();
             if (rc != 0 && RemoteUtil.LOGGER.isLoggable(Level.FINEST)) {
                     RemoteUtil.LOGGER.finest("RNES: " + cmd + " on " + executionEnvironment + " in " + path + " finished; rc=" + rc);
                     if (env == null) {
@@ -142,8 +165,12 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
 
         } catch (InterruptedException ie) {
             // this occurs, for example, when user stops running program - need no report
+            RemoteUtil.LOGGER.fine("RNES: interrupted (1)");
+            kill();
         } catch (InterruptedIOException ie) {
             // this occurs, for example, when user stops running program - need no report
+            RemoteUtil.LOGGER.fine("RNES: interrupted (2)");
+            kill();
         } catch (IOException ioe) {
             RemoteUtil.LOGGER.log(Level.WARNING, ioe.getMessage(), ioe);
         } catch (Exception ex) {
@@ -154,23 +181,23 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
         }
     }
 
-    private static String displayString ;
-
-    private static String getDisplayString() {
-        if (displayString == null) {
-            try {
-                String localDisplay = PlatformInfo.getDefault(ExecutionEnvironmentFactory.getLocal()).getEnv().get("DISPLAY"); //NOI18N
-                if (localDisplay == null) {
-                    localDisplay = ":.0"; //NOI18N
-                }
-                displayString = "DISPLAY=" + InetAddress.getLocalHost().getHostAddress() + localDisplay; //NOI18N
-            } catch (UnknownHostException ex) {
-                displayString = "";
-            }
+    private void kill() {
+        Process p = null;
+        synchronized (procLock) {
+            p = process;
         }
-        return displayString;
+        if (p == null) {
+            RemoteUtil.LOGGER.fine("RNES: process is null, can't kill");
+        } else {
+            RemoteUtil.LOGGER.fine("RNES: killing " + p);
+            p.destroy();
+        }
     }
 
+    public void stop() {
+        RemoteUtil.LOGGER.fine("RNES: stop " + process);
+        kill();
+    }
 
     /** Helper class to read the input from the build */
     private static final class InputReaderThread extends Thread {

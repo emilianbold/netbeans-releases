@@ -204,6 +204,27 @@ final class Erprint {
         }
     }
 
+    Metrics getExperimentMetrics() throws IOException{
+         synchronized (this) {
+            // Get current metrics ...
+            String[] data = exec(ErprintCommand.metrics());
+
+            if (data == null || data.length != 2) {
+                return null;
+            }
+
+            Matcher specMatcher = specPattern.matcher(data[0]);
+            Matcher sortMatcher = sortPattern.matcher(data[1]);
+            Metrics prevMetrics = null;
+
+            if (specMatcher.matches() && sortMatcher.matches()) {
+                prevMetrics = new Metrics(specMatcher.group(1), sortMatcher.group(1));
+            }
+
+            return prevMetrics;
+        }
+    }
+
     String[] getHotFunctions(ErprintCommand command, int limit) throws IOException {
         String[] stat = exec(command);
         ArrayList<String> result = new ArrayList<String>();

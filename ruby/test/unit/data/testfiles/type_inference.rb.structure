@@ -1,0 +1,5 @@
+Foo:MODULE:[]:ESCAPED{Foo}:
+  Bar:MODULE:[]:ESCAPED{Bar}:
+    Baz:CLASS:[]:ESCAPED{Baz}:
+      qux:METHOD:[PUBLIC]:ESCAPED{qux}<font color='#777777'> : ESCAPED{Fixnum}</font>:
+seventy_seven:VARIABLE:[]:ESCAPED{seventy_seven}<font color='#777777'> : ESCAPED{Fixnum}</font>:

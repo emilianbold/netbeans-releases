@@ -162,7 +162,7 @@ public class PHPFormatter implements Formatter {
                 TokenId id = token.id();
                 // If we're in a string literal (or regexp or documentation) leave
                 // indentation alone!
-                if (id == PHPTokenId.PHP_COMMENT || id == PHPTokenId.PHP_COMMENT_START || id == PHPTokenId.PHP_COMMENT_END ||
+                if (id == PHPTokenId.PHP_COMMENT ||
                     id == PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE ||
 
 // TODO: please review!! without this line PHP formatter clobers
@@ -317,6 +317,10 @@ public class PHPFormatter implements Formatter {
                                     ? indentDelta : lineDelta + indentDelta);
                         }
 
+                        boolean templateEdit = doc.getProperty("code-template-insert-handler") != null; //NOI18N
+
+
+
                         for (int i = 0, currentIndent = 0; i < numberOfLines; i++) {
                             int lineStart = Utilities.getRowStartFromLineOffset(doc, i);
                             Integer lineDelta = indentDeltaByLine.get(i);
@@ -336,11 +340,13 @@ public class PHPFormatter implements Formatter {
                                     }
                                 }
 
-                                if (i >= firstLine && !indentBiasCalculated) {
+                                if (!indentBiasCalculated
+                                        && (templateEdit && i >= firstLine
+                                        || !templateEdit && i >= firstLine - 1)){
                                     indentBias = currentIndent - GsfUtilities.getLineIndent(doc, lineStart) - htmlSuggestion;
                                     indentBiasCalculated = true;
                                 }
-
+                                
 //                                System.err.println("lineDelta[" + i + "]=" + lineDelta);
 //                                System.err.println("htmlSuggestion[" + i + "]=" + htmlSuggestion);
                                 //TODO:

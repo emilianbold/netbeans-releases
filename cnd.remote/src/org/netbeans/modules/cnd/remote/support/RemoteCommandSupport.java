@@ -43,7 +43,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.InterruptedIOException;
-import java.io.StringWriter;
 import java.util.Map;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
@@ -59,8 +58,8 @@ import org.openide.util.Exceptions;
  */
 public class RemoteCommandSupport extends RemoteConnectionSupport {
 
-    private BufferedReader in;
-    private StringWriter out;
+    private final StringBuilder out = new StringBuilder();
+    private final StringBuilder err = new StringBuilder();
     private final String cmd;
     private final Map<String, String> env;
     private final String[] args;
@@ -111,6 +110,8 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
                     RemoteUtil.LOGGER.warning(text);
                 }
             }
+            BufferedReader remoteProcessOut = null;
+            BufferedReader remoteProcessErr = null;
             try {
 //                final String substitutedCommand = substituteCommand();
                 NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(executionEnvironment);
@@ -126,16 +127,19 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
 
                 Process process = pb.call();
                 InputStream is = process.getInputStream();
+                InputStream er = process.getErrorStream();
                 if (is == null) { // otherwise we can get an NPE in reader
                     throw new IOException("process (" + process.getClass().getName() + ") returned null input stream"); //NOI18N
                 }
-                in = new BufferedReader(new InputStreamReader(is));
-                out = new StringWriter();
+                if (er == null) { // otherwise we can get an NPE in reader
+                    throw new IOException("process (" + process.getClass().getName() + ") returned null error stream"); //NOI18N
+                }
+                remoteProcessOut = new BufferedReader(new InputStreamReader(is));
+                remoteProcessErr = new BufferedReader(new InputStreamReader(er));
                 String line;
-                while ((line = in.readLine()) != null) {
+                while ((line = remoteProcessOut.readLine()) != null) {
                     if (line != null) {
-                        out.write(line + '\n');
-                        out.flush();
+                        out.append(line).append('\n');
                     }
                 }
 // TODO (execution) should we revive this?
@@ -145,11 +149,13 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
 //                }
                 int rc = process.waitFor();
                 RemoteUtil.LOGGER.fine("RemoteCommandSupport: " + cmd + " on " + executionEnvironment + " finished; rc=" + rc);
-                if (rc != 0 && RemoteUtil.LOGGER.isLoggable(Level.FINEST)) {
-                    String errMsg;
-                    final BufferedReader reader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-                    while ((errMsg = reader.readLine()) != null) {
-                        RemoteUtil.LOGGER.finest("RemoteCommandSupport ERROR: " + errMsg);
+                String errMsg;
+                while ((errMsg = remoteProcessErr.readLine()) != null) {
+                    if (errMsg != null) {
+                        err.append(errMsg).append('\n');
+                        if (RemoteUtil.LOGGER.isLoggable(Level.FINEST)) {
+                            RemoteUtil.LOGGER.finest("RemoteCommandSupport ERROR: " + errMsg);
+                        }
                     }
                 }
                 setExitStatus(rc);
@@ -163,12 +169,17 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
                 RemoteUtil.LOGGER.log(Level.FINEST, "Interrupted", ie);
             } catch (IOException ex) {
                 RemoteUtil.LOGGER.warning("IO failure during running " + cmd);
-//            } finally {
-//                disconnect();
             } finally {
-                if (in != null) {
+                if (remoteProcessOut != null) {
                     try {
-                        in.close();
+                        remoteProcessOut.close();
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+                if (remoteProcessErr != null) {
+                    try {
+                        remoteProcessErr.close();
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex);
                     }
@@ -184,10 +195,10 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
     }
 
     public String getOutput() {
-        if (out != null) {
-            return out.toString();
-        } else {
-            return "";
-        }
+        return out.toString();
+    }
+
+    public String getErr() {
+        return err.toString();
     }
 }

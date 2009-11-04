@@ -72,17 +72,21 @@ public class MarkOccurrencesHighlighterFactory extends CaretAwareCsmFileTaskFact
                 // Exceptions.printStackTrace(ex);
             }
         }
-        return ph != null ? ph :new PhaseRunner() {
+        return ph != null ? ph : new PhaseRunner() {
+
+            private boolean valid = true;
 
             public void run(Phase phase) {
+                valid = !enabled();
                 // rest
             }
 
             public boolean isValid() {
-                return !enabled();
+                return valid;
             }
             
             public void cancel() {
+                valid = !enabled();
             }
 
             public boolean isHighPriority() {

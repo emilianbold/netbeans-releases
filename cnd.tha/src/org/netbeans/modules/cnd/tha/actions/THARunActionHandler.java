@@ -50,6 +50,8 @@ import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.extexecution.print.LineConvertors;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
+import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.gizmo.support.GizmoServiceInfo;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
@@ -117,8 +119,13 @@ public class THARunActionHandler implements ProjectActionHandler, DLightTargetLi
 
         targetConf.setExecutionEnvironment(execEnv);
 
-        if (execEnv.isRemote() && !envVars.containsKey("DISPLAY")) { // NOI18N
-            targetConf.setX11Forwarding(true);
+        if (execEnv.isRemote()) {
+            PathMap mapper = HostInfoProvider.getMapper(execEnv);
+            runDirectory = mapper.getRemotePath(runDirectory, true);
+
+            if (!envVars.containsKey("DISPLAY")) { // NOI18N
+                targetConf.setX11Forwarding(true);
+            }
         }
 
         targetConf.putInfo(THAServiceInfo.THA_RUN, "true"); // NOI18N
@@ -130,13 +137,13 @@ public class THARunActionHandler implements ProjectActionHandler, DLightTargetLi
         targetConf.putInfo("sunstudio.datafilter.collectedobjects", System.getProperty("sunstudio.datafilter.collectedobjects", "")); // NOI18N
         targetConf.putInfo("sunstudio.hotspotfunctionsfilter", System.getProperty("sunstudio.hotspotfunctionsfilter", "")); //, "with-source-code-only")); // NOI18N
         THAConfiguration thaConf = pae.getContext().lookup(THAConfiguration.class);
-        if ( thaConf!= null){
-            targetConf.putInfo(THAConfiguration.THA_DATA_FILTER_NAME,!thaConf.collectDataRaces() ? THAConfiguration.DEADLOCK_ONLY_FILTER_VALUE : THAConfiguration.DEADLOCK_AND_RACES_FILTER_VALUE); //, "with-source-code-only")); // NOI18N
-            if (thaConf.collectFromBeginning()){
+        if (thaConf != null) {
+            targetConf.putInfo(THAConfiguration.THA_DATA_FILTER_NAME, !thaConf.collectDataRaces() ? THAConfiguration.DEADLOCK_ONLY_FILTER_VALUE : THAConfiguration.DEADLOCK_AND_RACES_FILTER_VALUE); //, "with-source-code-only")); // NOI18N
+            if (thaConf.collectFromBeginning()) {
                 targetConf.putInfo(THAConfiguration.THA_STARTUP_FILTER_NAME, THAConfiguration.START_AT_STARTUP);
             }
         }
-        
+
 
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
         String binDir = compilerSet.getDirectory();
@@ -145,7 +152,7 @@ public class THARunActionHandler implements ProjectActionHandler, DLightTargetLi
             demangle_utility = GNU_FAMILIY;
         }
         String dem_util_path = binDir + "/" + demangle_utility; //NOI18N BTW: isn't it better to use File.Separator?
-        targetConf.putInfo(GizmoServiceInfo.GIZMO_DEMANGLE_UTILITY, dem_util_path);        
+        targetConf.putInfo(GizmoServiceInfo.GIZMO_DEMANGLE_UTILITY, dem_util_path);
         targetConf.putInfo(GizmoServiceInfo.CPP_COMPILER, compilerSet.isGnuCompiler() ? CppSymbolDemanglerFactory.CPPCompiler.GNU.toString() : CppSymbolDemanglerFactory.CPPCompiler.SS.toString());
         targetConf.putInfo(GizmoServiceInfo.CPP_COMPILER_BIN_PATH, binDir);
         targetConf.setWorkingDirectory(runDirectory);
@@ -171,12 +178,12 @@ public class THARunActionHandler implements ProjectActionHandler, DLightTargetLi
         DLightConfiguration configuration = DLightConfigurationManager.getInstance().getConfigurationByName("THA");//NOI18N
         DLightConfigurationOptions options = configuration.getConfigurationOptions(false);
         if (options instanceof THAConfigurationOptions) {
-            ((THAConfigurationOptions) options).configure(pae.getContext().lookup(THAConfiguration.class));
-        }        
+            ((THAConfigurationOptions) options).configure(pae.getProject());
+        }
         NativeExecutableTarget target = new NativeExecutableTarget(targetConf);
         target.addTargetListener(this);
         DLightTargetListener listener = pae.getContext().lookup(DLightTargetListener.class);
-        if (listener != null){
+        if (listener != null) {
             target.addTargetListener(listener);
         }
 
@@ -231,7 +238,7 @@ public class THARunActionHandler implements ProjectActionHandler, DLightTargetLi
     }
 
     public void targetStateChanged(DLightTargetChangeEvent event) {
-        
+
         switch (event.state) {
             case INIT:
             case STARTING:
@@ -251,7 +258,7 @@ public class THARunActionHandler implements ProjectActionHandler, DLightTargetLi
                 break;
         }
         List<DLightTargetListener> targetListeners = THAProjectSupport.getSupportFor(pae.getProject()).getTargetListeners();
-        for (DLightTargetListener l : targetListeners){
+        for (DLightTargetListener l : targetListeners) {
             l.targetStateChanged(event);
         }
     }

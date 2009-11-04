@@ -292,8 +292,8 @@ public final class EditorActionRegistrationProcessor extends LayerGeneratingProc
         }
 
         if (preferencesKey.length() > 0) {
-            file.stringvalue("PreferencesKey", preferencesKey);
-            file.methodvalue("PreferencesNode", EditorActionUtilities.class.getName(), "getGlobalPreferences");
+            file.stringvalue("preferencesKey", preferencesKey);
+            file.methodvalue("preferencesNode", EditorActionUtilities.class.getName(), "getGlobalPreferences");
         }
 
         // Deafult helpID is action's name
@@ -314,7 +314,8 @@ public final class EditorActionRegistrationProcessor extends LayerGeneratingProc
             }
 
         } else { // Create always enabled action
-            file.methodvalue("instanceCreate", "org.openide.awt.Actions", "alwaysEnabled");
+            file.methodvalue("instanceCreate", "org.openide.awt.Actions",
+                    checkBoxPresenter ? "checkbox" : "alwaysEnabled");
             file.stringvalue("displayName", actionName);
 
             if (methodName != null) {

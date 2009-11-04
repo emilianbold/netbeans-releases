@@ -63,7 +63,9 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.Future;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
@@ -100,6 +102,7 @@ import org.netbeans.modules.dlight.threadmap.api.ThreadSummaryData;
 import org.netbeans.modules.dlight.threadmap.spi.dataprovider.ThreadMapDataProvider;
 import org.netbeans.modules.dlight.threadmap.spi.dataprovider.ThreadMapSummaryDataQuery;
 import org.netbeans.modules.dlight.tools.ProcDataProviderConfiguration;
+import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.Range;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -124,6 +127,7 @@ public class ParallelAdviserMonitor implements IndicatorNotificationsListener, D
     private CpuHighLoadIntervalFinder highLoadFinder;
     private UnnecessaryThreadsIntervalFinder unnecessaryThreadsFinder;
     Collection<Advice> notificationTips;
+    private Future<Boolean> task;
 
     public static ParallelAdviserMonitor getInstance() {
         return instance;
@@ -157,42 +161,56 @@ public class ParallelAdviserMonitor implements IndicatorNotificationsListener, D
     }
 
     public void sessionStateChanged(DLightSession session, SessionState oldState, SessionState newState) {
-        InputOutput io = session.getInputOutput();
+        final InputOutput io = session.getInputOutput();
         if (newState == SessionState.ANALYZE) {
-            CsmProject project = getProject();
-            if (project != null) {
-                LoopParallelizationTipsProvider.clearTipsForProject(project);
-                UnnecessaryThreadsTipsProvider.clearTipsForProject(project);
+            if (task != null && !task.isDone()) {
+                task.cancel(true);
             }
 
-            analyzeDataCollectors();
+            task = DLightExecutorService.submit(new Callable<Boolean>() {
 
-            if (!notificationTips.isEmpty() && io != null) {
-                try {
-                    io.getErr().println("Parallel Adviser: ", // NOI18N
-                            new OutputListener() {
-
-                        public void outputLineSelected(OutputEvent ev) {
-                        }
-
-                        public void outputLineAction(OutputEvent ev) {
-                            ParallelAdviser.showParallelAdviserView();
-                        }
-
-                        public void outputLineCleared(OutputEvent ev) {
-                        }
-                    });
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                public Boolean call() {
+                    analyze(io);
+                    return Boolean.TRUE;
                 }
-                for (Advice advice : notificationTips) {
-                    advice.addNotification(io.getErr());
-                }
+            }, "Parallel Adviser Analyzing Phaze"); // NOI18N
+        }
+    }
 
-                ParallelAdviserFileTaskFactory hints = Lookup.getDefault().lookup(ParallelAdviserFileTaskFactory.class);
-                if (hints != null) {
-                    hints.propertyChange(null);
-                }
+    private void analyze(InputOutput io) {
+        CsmProject project = getProject();
+        if (project != null) {
+            LoopParallelizationTipsProvider.clearTipsForProject(project);
+            UnnecessaryThreadsTipsProvider.clearTipsForProject(project);
+        }
+
+        analyzeDataCollectors();
+        
+        if (!notificationTips.isEmpty() && io != null) {
+            try {
+                io.getErr().println("Parallel Adviser: ", // NOI18N
+                        new OutputListener() {
+
+                    public void outputLineSelected(OutputEvent ev) {
+                    }
+
+                    public void outputLineAction(OutputEvent ev) {
+                        ParallelAdviser.showParallelAdviserView();
+                    }
+
+                    public void outputLineCleared(OutputEvent ev) {
+                    }
+                });
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            for (Advice advice : notificationTips) {
+                advice.addNotification(io.getErr());
+            }
+
+            ParallelAdviserFileTaskFactory hints = Lookup.getDefault().lookup(ParallelAdviserFileTaskFactory.class);
+            if (hints != null) {
+                hints.propertyChange(null);
             }
         }
     }
@@ -444,7 +462,9 @@ public class ParallelAdviserMonitor implements IndicatorNotificationsListener, D
                 Collections.sort(functions, new Comparator<FunctionCallWithMetric>() {
 
                     public int compare(FunctionCallWithMetric o1, FunctionCallWithMetric o2) {
-                        return (int) (((Time) o2.getMetricValue(c_iUser.getColumnName())).getNanos() - ((Time) o1.getMetricValue(c_iUser.getColumnName())).getNanos());
+                        long l1 = ((Time) o2.getMetricValue(c_iUser.getColumnName())).getNanos();
+                        long l2 = ((Time) o1.getMetricValue(c_iUser.getColumnName())).getNanos();
+                        return (l1 < l2) ? -1 : (l1 > l2) ? 1 : 0;
                     }
                 });
                 return functions;

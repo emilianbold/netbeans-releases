@@ -43,7 +43,7 @@ made subject to such option by the copyright holder.
 
 <toolchaindefinition xmlns="http://www.netbeans.org/ns/cnd-toolchain-definition/1">
     <toolchain name="SunStudio" display="Sun Studio Compiler Collection" family="SunStudio" qmakespec="${os}-cc"/>
-    <platforms stringvalue="sun_intel,sun_sparc"/>
+    <platforms stringvalue="sun_intel,sun_sparc,linux"/>
     <makefile_writer class="org.netbeans.modules.cnd.makeproject.api.configurations.DefaultMakefileWriter"/>
     <c>
         <compiler name="cc"/>
@@ -54,13 +54,13 @@ made subject to such option by the copyright holder.
         <user_include flags="-I"/>
         <user_macro flags="-D"/>
         <development_mode>
-            <fast_build flags=""/>
-            <debug flags="-g" default="true"/>
-            <performance_debug flags="-g -xO3 -xhwcprof"/>
-            <test_coverage flags="-xprofile=tcov -xinline="/>
-            <diagnosable_release flags="-g -xO2"/>
-            <release flags="-fast"/>
-            <performance_release flags="-xO5 -xipo=1 -xdepend -fsimple=1 -xlibmil -xlibmopt -xvector -xbuiltin"/>
+           <fast_build flags=""/>
+           <debug flags="-g" default="true"/>
+           <performance_debug flags="-g -xO2"/>
+           <test_coverage flags="-xprofile=tcov -xinline="/>
+           <diagnosable_release flags="-g -O"/>
+           <release flags="-fast -xipo"/>
+           <performance_release flags="-fast -xipo"/>
         </development_mode>
         <warning_level>
             <no_warnings flags="-w"/>
@@ -70,8 +70,8 @@ made subject to such option by the copyright holder.
         </warning_level>
         <architecture>
             <default flags="" default="true"/>
-            <bits_32 flags=""/>
-            <bits_64 flags="-xarch=generic64"/>
+            <bits_32 flags="-m32"/>
+            <bits_64 flags="-m64"/>
         </architecture>
         <strip flags="-s"/>
         <multithreading>
@@ -103,13 +103,13 @@ made subject to such option by the copyright holder.
         <user_include flags="-I"/>
         <user_macro flags="-D"/>
         <development_mode>
-            <fast_build flags=""/>
-            <debug flags="-g" default="true"/>
-            <performance_debug flags="-g0 -xO3 -xhwcprof"/>
-            <test_coverage flags="-xprofile=tcov +d -xinline="/>
-            <diagnosable_release flags="-g0 -xO2"/>
-            <release flags="-fast"/>
-            <performance_release flags="-xO5 -xipo=1 -xdepend -fsimple=1 -xlibmil -xlibmopt -xvector -xbuiltin -sync_stdio=no"/>
+           <fast_build flags=""/>
+           <debug flags="-g" default="true"/>
+           <performance_debug flags="-g0 -xO2"/>
+           <test_coverage flags="-xprofile=tcov +d -xinline="/>
+           <diagnosable_release flags="-g0 -O"/>
+           <release flags="-fast -xipo"/>
+           <performance_release flags="-fast -xipo"/>
         </development_mode>
         <warning_level>
             <no_warnings flags="-w"/>
@@ -119,8 +119,8 @@ made subject to such option by the copyright holder.
         </warning_level>
         <architecture>
             <default flags="" default="true"/>
-            <bits_32 flags=""/>
-            <bits_64 flags="-xarch=generic64"/>
+            <bits_32 flags="-m32"/>
+            <bits_64 flags="-m64"/>
         </architecture>
         <strip flags="-s"/>
         <multithreading>
@@ -155,13 +155,13 @@ made subject to such option by the copyright holder.
         <recognizer pattern=".*(SUNWspro|/prod/bin)" or_exist_folder="../prod"/>
         <version flags="-V"/>
         <development_mode>
-            <fast_build flags=""/>
-            <debug flags="-g" default="true"/>
-            <performance_debug flags="-g -O"/>
-            <test_coverage flags="-g"/>
-            <diagnosable_release flags="-g -O2"/>
-            <release flags="-fast"/>
-            <performance_release flags="-O4"/>
+           <fast_build flags=""/>
+           <debug flags="-g" default="true"/>
+           <performance_debug flags="-g -O2"/>
+           <test_coverage flags="-g"/>
+           <diagnosable_release flags="-g -O"/>
+           <release flags="-fast"/>
+           <performance_release flags="-fast"/>
         </development_mode>
         <warning_level>
             <no_warnings flags="-w"/>
@@ -171,10 +171,16 @@ made subject to such option by the copyright holder.
         </warning_level>
         <architecture>
             <default flags="" default="true"/>
-            <bits_32 flags=""/>
-            <bits_64 flags="-xarch=generic64"/>
+            <bits_32 flags="-m32"/>
+            <bits_64 flags="-m64"/>
         </architecture>
         <strip flags="-s"/>
+        <multithreading>
+            <none flags="" default="true"/>
+            <safe flags="-mt"/>
+            <automatic flags="-xautopar -xvector -xreduction -xloopinfo -O3"/>
+            <open_mp flags="-xopenmp -O3"/>
+        </multithreading>
         <output_object_file flags="-o " />
     </fortran>
     <assembler>
@@ -243,7 +249,7 @@ made subject to such option by the copyright holder.
             <path toolchain_name="*"/>
             <path directory="$PATH"/>
         </alternative_path>
-        <version flags="-V" />
+        <version flags="-v" />
     </debugger>
     <qmake>
         <tool name="qmake"/>

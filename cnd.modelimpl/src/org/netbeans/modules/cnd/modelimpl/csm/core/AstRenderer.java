@@ -59,6 +59,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.deep.*;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.Exceptions;
 
 /**
  * @author Vladimir Kvasihn
@@ -232,7 +233,7 @@ public class AstRenderer {
                     break;
                 }
                 case CPPTokenTypes.CSM_USING_DECLARATION: {
-                    UsingDeclarationImpl using = new UsingDeclarationImpl(token, file, currentNamespace, !isRenderingLocalContext());
+                    UsingDeclarationImpl using = new UsingDeclarationImpl(token, file, currentNamespace, !isRenderingLocalContext(), CsmVisibility.PUBLIC);
                     container.addDeclaration(using);
                     currentNamespace.addDeclaration(using);
                     break;
@@ -322,7 +323,9 @@ public class AstRenderer {
                 }
                 AST child = node.getFirstChild();
                 if (child != null) {
-                    if (child.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN) {
+                    if (child.getType() == CPPTokenTypes.LITERAL_const) {
+                        return true;
+                    } else if (child.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN) {
                         return true;
                     } else if (child.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND) {
                         CsmType type = TypeFactory.createType(child, file, null, 0);
@@ -418,7 +421,7 @@ public class AstRenderer {
         }
     }
 
-    private AST skipTemplateParameters(AST node) {
+    public static AST skipTemplateParameters(AST node) {
         int depth = 0;
         while (node != null) {
             switch (node.getType()) {
@@ -481,7 +484,13 @@ public class AstRenderer {
         if (findGlobal(file.getProject(), uname, new ArrayList<CsmProject>())) {
             return true;
         }
-        CsmFilter filter = CsmSelect.getFilterBuilder().createKindFilter(CsmDeclaration.Kind.NAMESPACE_DEFINITION, CsmDeclaration.Kind.FUNCTION, CsmDeclaration.Kind.FUNCTION_DEFINITION);
+        uname = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION_FRIEND) +
+                OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR + "::" + name; // NOI18N
+        if (findGlobal(file.getProject(), uname, new ArrayList<CsmProject>())) {
+            return true;
+        }
+        CsmFilter filter = CsmSelect.getFilterBuilder().createKindFilter(CsmDeclaration.Kind.NAMESPACE_DEFINITION, CsmDeclaration.Kind.FUNCTION, CsmDeclaration.Kind.FUNCTION_DEFINITION,
+                CsmDeclaration.Kind.FUNCTION_FRIEND, CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION);
         return findFunction(name, CsmSelect.getDeclarations(file, filter), offset, filter);
     }
 
@@ -539,11 +548,13 @@ public class AstRenderer {
             }
             switch (decl.getKind()) {
                 case FUNCTION:
+                case FUNCTION_FRIEND:
                     if (CharSequenceKey.Comparator.compare(name, ((CsmFunction) decl).getName()) == 0) {
                         return true;
                     }
                     break;
                 case FUNCTION_DEFINITION:
+                case FUNCTION_FRIEND_DEFINITION:
                     if (CharSequenceKey.Comparator.compare(name, ((CsmFunctionDefinition) decl).getQualifiedName()) == 0) {
                         return true;
                     }
@@ -1272,6 +1283,7 @@ public class AstRenderer {
             if (nextToken == null ||
                     nextToken.getType() == CPPTokenTypes.LSQUARE ||
                     nextToken.getType() == CPPTokenTypes.CSM_VARIABLE_DECLARATION ||
+                    nextToken.getType() == CPPTokenTypes.CSM_VARIABLE_LIKE_FUNCTION_DECLARATION ||
                     nextToken.getType() == CPPTokenTypes.CSM_ARRAY_DECLARATION ||
                     nextToken.getType() == CPPTokenTypes.ASSIGNEQUAL) {
 
@@ -1309,6 +1321,27 @@ public class AstRenderer {
                             processVariable(token, ptrOperator, (theOnly ? ast : token), typeAST/*tokType*/, namespaceContainer, container2, file, _static, _extern, false);
                             ptrOperator = null;
                             break;
+                        case CPPTokenTypes.CSM_VARIABLE_LIKE_FUNCTION_DECLARATION:
+                            AST inner = token.getFirstChild();
+                            if (inner != null) {
+                                theOnly = false;
+                                TypeImpl type = null;
+                                if (tokType.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN) {
+                                    AST typeNameToken = tokType.getFirstChild();
+                                    if (typeNameToken != null) {
+                                        type = TypeFactory.createBuiltinType(typeNameToken.getText(), ptrOperator, 0, tokType, file);
+                                    }
+                                } else {
+                                    type = TypeFactory.createType(tokType, file, ptrOperator, 0);
+                                }
+                                if (isVariableLikeFunc(token)) {
+                                    CsmScope scope = (namespaceContainer instanceof CsmNamespace) ? (CsmNamespace) namespaceContainer : null;
+                                    processFunction(token, file, type, namespaceContainer, container2, scope);
+                                } else {
+                                    processVariable(token, ptrOperator, (theOnly ? ast : token), typeAST/*tokType*/, namespaceContainer, container2, file, _static, _extern, false);
+                                    ptrOperator = null;
+                                }
+                            }
                     }
                 }
                 if (!hasVariables && functionParameter) {
@@ -1401,6 +1434,30 @@ public class AstRenderer {
         var.setStatic(_static);
         var.setExtern(_extern);
         return var;
+    }
+
+    protected void processFunction(AST token, CsmFile file, CsmType type,
+             MutableDeclarationsContainer container1,
+             MutableDeclarationsContainer container2, CsmScope scope) {
+        FunctionImpl fun = createFunction(token, file, type, scope);
+        if (fun != null) {
+            if (container2 != null) {
+                container2.addDeclaration(fun);
+            }
+            if (container2 != null && NamespaceImpl.isNamespaceScope(fun)) {
+                container1.addDeclaration(fun);
+            }
+        }
+    }
+
+    protected FunctionImpl createFunction(AST ast, CsmFile file, CsmType type, CsmScope scope) {
+        FunctionImpl fun = null;
+        try {
+            fun = new FunctionImpl(ast, file, type, scope, !isRenderingLocalContext(), !isRenderingLocalContext());
+        } catch (AstRendererException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return fun;
     }
 
     public static List<CsmParameter> renderParameters(AST ast, final CsmFile file, CsmScope scope, boolean isRenderingLocalContext) {
@@ -1522,7 +1579,7 @@ public class AstRenderer {
                 return true;
             }
             case CPPTokenTypes.CSM_USING_DECLARATION: {
-                UsingDeclarationImpl using = new UsingDeclarationImpl(token, file, currentNamespace, !isRenderingLocalContext());
+                UsingDeclarationImpl using = new UsingDeclarationImpl(token, file, currentNamespace, !isRenderingLocalContext(), CsmVisibility.PUBLIC);
                 container.addDeclaration(using);
                 currentNamespace.addDeclaration(using);
                 return true;
@@ -1761,7 +1818,7 @@ public class AstRenderer {
                 tokenType < CPPTokenTypes.CSM_STATEMENTS_END;
     }
 
-    private AST skipTemplateSibling(AST template) {
+    public static AST skipTemplateSibling(AST template) {
         assert template.getType() == CPPTokenTypes.LITERAL_template;
         AST next = template.getNextSibling();
         if (template.getFirstChild() != null) {

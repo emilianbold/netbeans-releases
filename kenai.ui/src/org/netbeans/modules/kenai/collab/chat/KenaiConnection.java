@@ -321,6 +321,9 @@ public class KenaiConnection implements PropertyChangeListener {
                         }
                     });
                 }
+                if (ne!=null && !Boolean.parseBoolean(System.getProperty("kenai.show.notifications.in.chat", "true"))) {
+                    return;
+                }
                 final LinkedList<Message> thisQ = groupMessageQueue.get(name);
                 thisQ.add(msg);
                 final PacketListener listener = groupListeners.get(name);
@@ -445,8 +448,6 @@ public class KenaiConnection implements PropertyChangeListener {
 
     private String USER;
     
-    private static final String CHAT_ROOM = "@muc." + Kenai.getDefault().getName(); // NOI18N
-
     /**
      * TODO: should return kenai account name
      * @return
@@ -457,7 +458,7 @@ public class KenaiConnection implements PropertyChangeListener {
 
 
     private String getChatroomName(KenaiFeature prj) {
-        return prj.getName() + CHAT_ROOM;
+        return prj.getName() + "@muc." + Kenai.getDefault().getUrl().getHost();
     }
 
     public Collection<KenaiFeature> getMyChats() {

@@ -76,9 +76,7 @@ public final class EditorActionUtilities {
 
     private static Map<String,Boolean> mimeType2ListenerPresent = new HashMap<String, Boolean>();
 
-    private static Reference<EditorKit> globalActionsKitRef;
-
-    private static LookupListener globalActionsKitListener;
+    private static SearchableEditorKit globalActionsKit;
 
     private static final Map<EditorKit,SearchableEditorKit> kit2searchable = new WeakHashMap<EditorKit,SearchableEditorKit>();
 
@@ -86,31 +84,12 @@ public final class EditorActionUtilities {
         // No instances
     }
 
-    public static EditorKit getGlobalActionsKit() {
-        synchronized (kit2searchable) {
-            EditorKit globalKit = (globalActionsKitRef != null) ? globalActionsKitRef.get() : null;
-            if (globalKit == null) {
-                Lookup.Result<EditorKit> result = MimeLookup.getLookup("").lookupResult(EditorKit.class);
-                Iterator<? extends EditorKit> instancesIterator = result.allInstances().iterator();
-                globalKit = instancesIterator.hasNext() ? instancesIterator.next() : null;
-                if (globalKit == null) {
-                    globalKit = SearchableEditorKitImpl.createGlobalKit();
-                }
-                if (globalKit != null) {
-                    globalActionsKitRef = new WeakReference<EditorKit>(globalKit);
-                }
-                if (globalActionsKitListener == null) {
-                    globalActionsKitListener = new LookupListener() {
-                        public void resultChanged(LookupEvent evt) {
-                            synchronized (kit2searchable) {
-                                globalActionsKitRef = null;
-                            }
-                        }
-                    };
-                    result.addLookupListener(globalActionsKitListener);
-                }
+    public static SearchableEditorKit getGlobalActionsKit() {
+        synchronized (EditorActionUtilities.class) {
+            if (globalActionsKit == null) {
+                globalActionsKit = new SearchableEditorKitImpl("");
             }
-            return globalKit;
+            return globalActionsKit;
         }
     }
 

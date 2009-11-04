@@ -42,6 +42,7 @@ package org.netbeans.modules.kenai.api;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
@@ -59,6 +60,10 @@ import org.netbeans.modules.kenai.FeatureData;
 import org.netbeans.modules.kenai.LicenceData;
 import org.netbeans.modules.kenai.ProjectData;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
+import org.netbeans.modules.kenai.util.NbModuleOwnerSupport;
+import org.netbeans.modules.kenai.util.NbModuleOwnerSupport.OwnerInfo;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * IDE-side representation of a Kenai project.
@@ -253,9 +258,31 @@ public final class KenaiProject {
     }
     
     private static Pattern getRepositoryPattern() {
-        return Pattern.compile("(https|http)://([a-z]+\\.)?" + Kenai.getDefault().getName().replace(".", "\\.") + "/(svn|hg)/(\\S*)~(.*)");
+        return Pattern.compile("(https|http)://([a-z]+\\.)?" + Kenai.getDefault().getUrl().getHost().replace(".", "\\.") + "/(svn|hg)/(\\S*)~(.*)");
     }
     private static final int repositoryPatternProjectGroup = 4;
+
+    /**
+     * Looks up project by File
+     * @param file file to look for
+     * @return instance of KenaiProject which belongs to file
+     * @throws KenaiException 
+     */
+    public static KenaiProject forFile(File file) throws KenaiException {
+        OwnerInfo info = NbModuleOwnerSupport.getInstance().getOwner(".kenai", file);//NOI18N
+        if (info!=null) {
+            return KenaiProject.get(info.getOwner());
+        } else {
+            FileObject f = FileUtil.toFileObject(file);
+            if (f!=null) {
+                String remoteLocation = (String) f.getAttribute("ProvidedExtensions.RemoteLocation");//NOI18N
+                if (remoteLocation!=null) {
+                    return forRepository(remoteLocation);
+                }
+            }
+        }
+        return null;
+    }
 
     /**
      * Looks up a project by repository location.

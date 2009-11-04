@@ -168,90 +168,102 @@ made subject to such option by the copyright holder.
     </folder>	<!-- Services -->
     <folder name="CND">
         <folder name="ToolChain">
-            <file name="SunStudio.xml" url="toolchain/SunStudio.xml">
-                <attr name="position" intvalue="1000"/>
+            <file name="SunStudio_12.2.xml" url="toolchain/SunStudio_12.2.xml">
+                <attr name="position" intvalue="1120"/>
+                <attr name="extends" stringvalue="SunStudio_12"/>
             </file>
-            <file name="SunStudio_8.xml" url="toolchain/SunStudio_8.xml">
-                <attr name="position" intvalue="1100"/>
-                <attr name="extends" stringvalue="SunStudio"/>
+            <file name="SunStudioExpressAten.xml" url="toolchain/SunStudioExpressAten.xml">
+                <attr name="position" intvalue="1130"/>
+                <attr name="extends" stringvalue="SunStudio_12"/>
             </file>
-            <file name="SunStudio_9.xml" url="toolchain/SunStudio_9.xml">
-                <attr name="position" intvalue="1200"/>
-                <attr name="extends" stringvalue="SunStudio"/>
+            <file name="SunStudio_12.1.xml" url="toolchain/SunStudio_12.1.xml">
+                <attr name="position" intvalue="1140"/>
+                <attr name="extends" stringvalue="SunStudio_12"/>
             </file>
-            <file name="SunStudio_10.xml" url="toolchain/SunStudio_10.xml">
-                <attr name="position" intvalue="1300"/>
+            <file name="SunStudioExpressCeres.xml" url="toolchain/SunStudioExpressCeres.xml">
+                <attr name="position" intvalue="1150"/>
+                <attr name="extends" stringvalue="SunStudio_12"/>
+            </file>
+            <file name="SunStudio_12.xml" url="toolchain/SunStudio_12.xml">
+                <attr name="position" intvalue="1160"/>
                 <attr name="extends" stringvalue="SunStudio"/>
             </file>
             <file name="SunStudio_11.xml" url="toolchain/SunStudio_11.xml">
-                <attr name="position" intvalue="1400"/>
+                <attr name="position" intvalue="1170"/>
                 <attr name="extends" stringvalue="SunStudio"/>
             </file>
-            <file name="SunStudio_12.xml" url="toolchain/SunStudio_12.xml">
-                <attr name="position" intvalue="1500"/>
+            <file name="SunStudio_10.xml" url="toolchain/SunStudio_10.xml">
+                <attr name="position" intvalue="1180"/>
                 <attr name="extends" stringvalue="SunStudio"/>
             </file>
-            <file name="SunStudioExpress.xml" url="toolchain/SunStudioExpress.xml">
-                <attr name="position" intvalue="1600"/>
+            <file name="SunStudio_9.xml" url="toolchain/SunStudio_9.xml">
+                <attr name="position" intvalue="1210"/>
+                <attr name="extends" stringvalue="SunStudio"/>
             </file>
-            <file name="SunStudio_12.1.xml" url="toolchain/SunStudio_12.1.xml">
-                <attr name="position" intvalue="1700"/>
+            <file name="SunStudio_8.xml" url="toolchain/SunStudio_8.xml">
+                <attr name="position" intvalue="1220"/>
+                <attr name="extends" stringvalue="SunStudio"/>
+            </file>
+            <!-- General SunStudio -->
+            <file name="SunStudio.xml" url="toolchain/SunStudio.xml">
+                <attr name="position" intvalue="1910"/>
+            </file>
+            <!-- SunStudio on Update Center -->
+            <file name="SunStudioLite.xml" url="toolchain/SunStudioLite.xml">
+                <attr name="position" intvalue="1920"/>
                 <attr name="extends" stringvalue="SunStudio_12"/>
             </file>
-            <file name="SunStudio_Linux.xml" url="toolchain/SunStudio_Linux.xml">
-                <attr name="position" intvalue="2050"/>
-                <attr name="extends" stringvalue="SunStudio"/>
-            </file>
-            <file name="Cygwin.xml" url="toolchain/Cygwin.xml">
-                <attr name="position" intvalue="2100"/>
+            <!-- Windows -->
+            <file name="Cygwin_4.x.xml" url="toolchain/Cygwin_4.x.xml">
+                <attr name="position" intvalue="3010"/>
                 <attr name="extends" stringvalue="GNU"/>
             </file>
-            <file name="Cygwin_4.x.xml" url="toolchain/Cygwin_4.x.xml">
-                <attr name="position" intvalue="2150"/>
+            <file name="Cygwin.xml" url="toolchain/Cygwin.xml">
+                <attr name="position" intvalue="3020"/>
                 <attr name="extends" stringvalue="GNU"/>
             </file>
             <file name="MinGW.xml" url="toolchain/MinGW.xml">
-                <attr name="position" intvalue="2200"/>
+                <attr name="position" intvalue="3110"/>
                 <attr name="extends" stringvalue="GNU"/>
             </file>
             <file name="MinGW_TDM.xml" url="toolchain/MinGW_TDM.xml">
-                <attr name="position" intvalue="2250"/>
+                <attr name="position" intvalue="3120"/>
                 <attr name="extends" stringvalue="GNU"/>
             </file>
             <file name="Interix.xml" url="toolchain/Interix.xml">
-                <attr name="position" intvalue="2300"/>
+                <attr name="position" intvalue="3310"/>
                 <attr name="extends" stringvalue="GNU"/>
             </file>
             <!-- Ready  but commented -->
             <!--file name="Intel.xml" url="toolchain/Intel.xml">
-                <attr name="position" intvalue="2400"/>
+                <attr name="position" intvalue="3410"/>
                 <attr name="extends" stringvalue="GNU"/>
             </file-->
             <!-- Not ready yet -->
             <!--file name="Intel_windows.xml" url="toolchain/Intel_windows.xml">
-                <attr name="position" intvalue="2500"/>
+                <attr name="position" intvalue="3420"/>
                 <attr name="extends" stringvalue="GNU"/>
             </file-->
             <!-- Ready  but commented -->
             <!--file name="Icecream.xml" url="toolchain/Icecream.xml">
-                <attr name="position" intvalue="2600"/>
+                <attr name="position" intvalue="3510"/>
                 <attr name="extends" stringvalue="GNU"/>
             </file-->
+            <!-- Partly ready and commented -->
+            <!--file name="MSVC.xml" url="toolchain/MSVC.xml">
+               <attr name="position" intvalue="3610"/>
+            </file-->
             <file name="GNU_solaris.xml" url="toolchain/GNU_solaris.xml">
-                <attr name="position" intvalue="2700"/>
+                <attr name="position" intvalue="4010"/>
                 <attr name="extends" stringvalue="GNU"/>
             </file>
             <file name="GNU_mac.xml" url="toolchain/GNU_mac.xml">
-                <attr name="position" intvalue="2800"/>
+                <attr name="position" intvalue="4020"/>
                 <attr name="extends" stringvalue="GNU"/>
             </file>
             <file name="GNU.xml" url="toolchain/GNU.xml">
-                <attr name="position" intvalue="3000"/>
+                <attr name="position" intvalue="4030"/>
             </file>
-            <!-- Partly ready and commented -->
-            <!--file name="MSVC.xml" url="toolchain/MSVC.xml">
-               <attr name="position" intvalue="4000"/>
-            </file-->
         </folder>
         <folder name="Extensions">
             <file name="Header">

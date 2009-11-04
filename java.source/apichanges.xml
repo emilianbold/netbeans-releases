@@ -105,6 +105,20 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="GeneratorUtilities.copyComments">
+             <api name="general"/>
+             <summary>Added GeneratorUtilities.copyComments method.</summary>
+             <version major="0" minor="51"/>
+             <date day="27" month="10" year="2009"/>
+             <author login="jlahoda"/>
+             <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                 Added <code>GeneratorUtilities.copyComments</code> method, which
+                 copies comments from one tree to another tree.
+             </description>
+             <class package="org.netbeans.api.java.source" name="GeneratorUtilities"/>
+             <issue number="175020"/>
+        </change>
         <change id="TreeUtilities.isEnumConstant">
              <api name="general"/>
              <summary>Added TreeUtilities.isEnumConstant() method.</summary>
@@ -144,6 +158,7 @@ is the proper place.
                  These methods are not needed anymore and will be removed.
              </description>
              <class package="org.netbeans.api.java.source" name="JavaSource"/>
+             <issue number="169974"/>
         </change>
         <change id="TreeMaker.Method">
              <api name="general"/>

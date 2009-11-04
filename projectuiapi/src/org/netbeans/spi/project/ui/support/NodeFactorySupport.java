@@ -129,7 +129,7 @@ public class NodeFactorySupport {
     }
 
     private static NodeListKeyWrapper LOADING_KEY = new NodeListKeyWrapper(null, null);
-    
+
     static class DelegateChildren extends Children.Keys<NodeListKeyWrapper> implements LookupListener, ChangeListener {
 
 
@@ -139,6 +139,7 @@ public class NodeFactorySupport {
         private List<NodeFactory> factories = new ArrayList<NodeFactory>();
         private Lookup.Result<NodeFactory> result;
         private final HashMap<NodeList<?>, List<NodeListKeyWrapper>> keys;
+        private RequestProcessor.Task task;
         
         public DelegateChildren(Project proj, String path) {
             folderPath = path;
@@ -152,6 +153,7 @@ public class NodeFactorySupport {
         }
         
        protected Node[] createNodes(NodeListKeyWrapper key) {
+           // XXX cleaner to use Children.create w/ asynch ChildFactory; getNodes(true) then works for free
            if (key == LOADING_KEY) {
                return new Node[] { createWaitNode() };
            }
@@ -183,7 +185,7 @@ public class NodeFactorySupport {
         protected @Override void addNotify() {
             super.addNotify();
             setKeys(Collections.singleton(LOADING_KEY));
-            RequestProcessor.getDefault().post(new Runnable() {
+            task = RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     synchronized (this) {
                         result = createLookup().lookupResult(NodeFactory.class);
@@ -202,8 +204,29 @@ public class NodeFactorySupport {
                         result.addLookupListener(DelegateChildren.this);
                     }
                     setKeys(createKeys());
+                    task = null;
                 }
             });
+        }
+
+        public @Override Node[] getNodes(boolean optimalResult) {
+            Node[] ns = super.getNodes(optimalResult);
+            RequestProcessor.Task _task = task;
+            if (optimalResult && _task != null) {
+                _task.waitFinished();
+                ns = super.getNodes(optimalResult);
+            }
+            return ns;
+        }
+
+        public @Override int getNodesCount(boolean optimalResult) {
+            int cnt = super.getNodesCount(optimalResult);
+            RequestProcessor.Task _task = task;
+            if (optimalResult && _task != null) {
+                _task.waitFinished();
+                cnt = super.getNodesCount(optimalResult);
+            }
+            return cnt;
         }
         
         protected @Override void removeNotify() {

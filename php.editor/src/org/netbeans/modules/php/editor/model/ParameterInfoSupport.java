@@ -419,7 +419,7 @@ public class ParameterInfoSupport {
         sb.append(parameter.getName());
         String defaultValue = parameter.getDefaultValue();
         if (defaultValue != null) {
-            sb.append("=").append(defaultValue).append(" "); //NOI18N
+            sb.append(" = ").append(defaultValue); //NOI18N
         }
         final String paramString = sb.toString();
         return paramString;

@@ -290,6 +290,7 @@ public class MyProjectNode extends LeafNode {
                 boolean hasMsgs = btnMessages != null && btnMessages.isVisible();
                 btnBugs = new LinkButton(bug.getText(), ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/bug.png", true), qaccessor.getOpenQueryResultAction(bug));
                 btnBugs.setHorizontalTextPosition(JLabel.LEFT);
+                btnBugs.setToolTipText(bug.getToolTipText());
                 component.add( btnBugs, new GridBagConstraints(3,0,1,1,0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
                 boolean visible = hasMsgs || !"0".equals(bug.getText());
                 leftPar.setVisible(visible);

@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.util.logging.Level;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.RepositoriesSupport;
+import org.netbeans.modules.bugtracking.jira.JiraUpdater;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.Repository;
 
@@ -61,8 +62,11 @@ public class RepositorySelector {
 
     public Repository create() {
         BugtrackingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
+        connectors = addJiraProxyIfNeeded(connectors);
         selectorPanel.setConnectors(connectors);
-        if(!selectorPanel.open()) return null;
+        if(!selectorPanel.open()) {
+            return null;
+        }
         Repository repo = selectorPanel.getRepository();
         try {
             repo.getController().applyChanges();
@@ -75,7 +79,9 @@ public class RepositorySelector {
     }
 
     public boolean edit(Repository repository, String errorMessage) {
-        if(!selectorPanel.edit(repository, errorMessage)) return false;
+        if(!selectorPanel.edit(repository, errorMessage)) {
+            return false;
+        }
         Repository repo = selectorPanel.getRepository();
         try {
             repo.getController().applyChanges();
@@ -84,6 +90,16 @@ public class RepositorySelector {
             return false;
         }
         return true;
+    }
+
+    private BugtrackingConnector[] addJiraProxyIfNeeded(BugtrackingConnector[] connectors) {
+        if(!JiraUpdater.isJiraInstalled()) {
+            BugtrackingConnector[] ret = new BugtrackingConnector[connectors.length + 1];
+            System.arraycopy(connectors, 0, ret, 0, connectors.length);
+            ret[ret.length - 1] = JiraUpdater.getInstance().getConnector();
+            connectors = ret;
+        }
+        return connectors;
     }
 
 }

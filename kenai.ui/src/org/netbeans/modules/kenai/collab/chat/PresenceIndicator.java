@@ -62,6 +62,7 @@ import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiUser;
+import org.netbeans.modules.kenai.ui.Utilities;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -153,8 +154,10 @@ public class PresenceIndicator {
                     JPopupMenu menu = new JPopupMenu();
                     final JMenuItem contactListMenu = new JMenuItem(NbBundle.getMessage(PresenceIndicator.class, "CTL_WhoIsOnlineAction"));
                     menu.add(contactListMenu);
+                    contactListMenu.setEnabled(s==Kenai.Status.ONLINE);
                     final JCheckBoxMenuItem onlineCheckBox = new JCheckBoxMenuItem(NbBundle.getMessage(PresenceIndicator.class, "CTL_OnlineCheckboxMenuItem"),s==Kenai.Status.ONLINE); // NOI18N
                     menu.add(onlineCheckBox);
+                    onlineCheckBox.setEnabled(Utilities.isChatSupported());
                     final JMenuItem logoutItem = new JMenuItem(NbBundle.getMessage(PresenceIndicator.class, "CTL_LogoutMenuItem")); // NOI18N
                     menu.add(logoutItem);
                     final Kenai kenai = Kenai.getDefault();

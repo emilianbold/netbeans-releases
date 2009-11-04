@@ -41,6 +41,7 @@
 package org.netbeans.modules.cnd.ui.options;
 
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Font;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
@@ -209,10 +210,22 @@ public final class ToolsPanel extends JPanel implements ActionListener,
             return;
         }
 
-        CompilerSet cs = panel.getCompilerSet();
-        csm.add(cs);
-        changed = true;
-        update(false, cs);
+        final CompilerSet cs = panel.getCompilerSet();
+        updating = true;
+        final Cursor oldCursor = getCursor();
+        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        RequestProcessor.getDefault().post(new Runnable(){
+            public void run() {
+                csm.add(cs);
+                changed = true;
+                SwingUtilities.invokeLater(new Runnable(){
+                    public void run() {
+                        update(false, cs);
+                        setCursor(oldCursor);
+                    }
+                });
+            }
+        });
     }
 
     private void duplicateCompilerSet() {
@@ -316,6 +329,8 @@ public final class ToolsPanel extends JPanel implements ActionListener,
     public void update(final boolean doInitialize, final CompilerSet selectedCS) {
         updating = true;
         if (!initialized || doInitialize) {
+            final Cursor oldCursor = getCursor();
+            setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             RequestProcessor.getDefault().post(new Runnable(){
                 public void run() {
                      initializeLong();
@@ -323,6 +338,7 @@ public final class ToolsPanel extends JPanel implements ActionListener,
                         public void run() {
                             initializeUI();
                             updateUI(doInitialize, selectedCS);
+                            setCursor(oldCursor);
                         }
                      });
                 }
@@ -915,19 +931,24 @@ public final class ToolsPanel extends JPanel implements ActionListener,
 private void btVersionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btVersionsActionPerformed
     btVersions.setEnabled(false);
 
+    final Cursor oldCursor = getCursor();
+    setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
     RequestProcessor.getDefault().post(new Runnable() {
 
         public void run() {
-            String versions = getToolCollectionPanel().getVersion(currentCompilerSet);
+            CompilerSet set = currentCompilerSet;
+            if (set != null) {
+                String versions = getToolCollectionPanel().getVersion(set);
 
-            NotifyDescriptor nd = new NotifyDescriptor.Message(versions);
-            nd.setTitle(getString("LBL_VersionInfo_Title")); // NOI18N
-            DialogDisplayer.getDefault().notify(nd);
-
+                NotifyDescriptor nd = new NotifyDescriptor.Message(versions);
+                nd.setTitle(getString("LBL_VersionInfo_Title")); // NOI18N
+                DialogDisplayer.getDefault().notify(nd);
+            }
             SwingUtilities.invokeLater(new Runnable() {
 
                 public void run() {
                     btVersions.setEnabled(true);
+                    setCursor(oldCursor);
                 }
             });
         }
@@ -971,6 +992,10 @@ private void btVersionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     }
 
 private void btRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRestoreActionPerformed
+    if (csm == null) {
+        // restore is available after long initialization
+        return;
+    }
     NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
             getString("RESTORE_TXT"),
             getString("RESTORE_TITLE"),

@@ -41,6 +41,8 @@
 package org.netbeans.modules.ruby;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -70,7 +72,6 @@ import org.jrubyparser.ast.LocalAsgnNode;
 import org.jrubyparser.ast.MethodDefNode;
 import org.jrubyparser.ast.ModuleNode;
 import org.jrubyparser.ast.MultipleAsgnNode;
-import org.jrubyparser.ast.NewlineNode;
 import org.jrubyparser.ast.Node;
 import org.jrubyparser.ast.NodeType;
 import org.jrubyparser.ast.SClassNode;
@@ -79,6 +80,17 @@ import org.jrubyparser.ast.SymbolNode;
 import org.jrubyparser.ast.VCallNode;
 import org.jrubyparser.ast.INameNode;
 import org.jrubyparser.SourcePosition;
+import org.jrubyparser.ast.ArrayNode;
+import org.jrubyparser.ast.CaseNode;
+import org.jrubyparser.ast.DSymbolNode;
+import org.jrubyparser.ast.HashNode;
+import org.jrubyparser.ast.ILiteralNode;
+import org.jrubyparser.ast.IfNode;
+import org.jrubyparser.ast.NewlineNode;
+import org.jrubyparser.ast.NilNode;
+import org.jrubyparser.ast.OrNode;
+import org.jrubyparser.ast.ReturnNode;
+import org.jrubyparser.ast.WhenNode;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.Modifier;
@@ -681,6 +693,23 @@ public class AstUtilities {
                 node.getNodeType() == NodeType.VCALLNODE ||
                 node.getNodeType() == NodeType.CALLNODE;
     }
+
+    static boolean isAssignmentNode(Node node) {
+        return node.getNodeType() == NodeType.INSTASGNNODE ||
+                node.getNodeType() == NodeType.LOCALASGNNODE ||
+                node.getNodeType() == NodeType.CLASSVARASGNNODE ||
+                node.getNodeType() == NodeType.GLOBALASGNNODE ||
+                node.getNodeType() == NodeType.ATTRASSIGNNODE ||
+                node.getNodeType() == NodeType.MULTIPLEASGNNODE;
+    }
+
+    static Node findNextNonNewLineNode(Node target) {
+        if (target.getNodeType() != NodeType.NEWLINENODE) {
+            return target;
+        }
+        NewlineNode newlineNode = (NewlineNode) target;
+        return findNextNonNewLineNode(newlineNode.getNextNode());
+    }
     
     public static String getCallName(Node node) {
         assert isCall(node);
@@ -1055,11 +1084,12 @@ public class AstUtilities {
             break;
 
         case FCALLNODE:
-            if (isAttr(node) || isNamedScope(node) || isActiveRecordAssociation(node)) {
-                SymbolNode[] symbols = getSymbols(node);
-                for (SymbolNode sym : symbols) {
-                    if (name.equals(sym.getName())) {
-                        return sym;
+            if (isAttr(node) || isNamedScope(node)
+                    || isActiveRecordAssociation(node) || isNodeNameIn(node, "alias_method")) { //NOI18N
+                List<Node> values = getChildValues(node);
+                for (Node each : values) {
+                    if (name.equals(getNameOrValue(each))) {
+                        return each;
                     }
                 }
             }
@@ -1156,6 +1186,30 @@ public class AstUtilities {
         return ((offset >= pos.getStartOffset()) && (offset <= pos.getEndOffset()));
     }
 
+    /**
+     * Like {@link #getRange(org.jrubyparser.ast.Node) }, but returns a position
+     * for <code>NilNode</code>s too (but <strong>not</strong> for 
+     * <code>NilImplicitNode</code>s!!). This is needed for highlightning 
+     * exit points, <code>nil</code> is a common return value. Possibly 
+     * {@link #getRange(org.jrubyparser.ast.Node) } itself should return a range
+     * for <code>NilNode</code>s, but I'm too afraid to change it now as it 
+     * is used in a lot of places.
+     * @param node
+     * @return
+     */
+    static OffsetRange getRangeIncludeNil(Node node) {
+        if (node != null && node.getClass().equals(NilNode.class)) {
+            SourcePosition pos = node.getPosition();
+            try {
+                return new OffsetRange(pos.getStartOffset(), pos.getEndOffset());
+            } catch (Throwable t) {
+                // ...because there are some problems -- see AstUtilities.testStress
+                Exceptions.printStackTrace(t);
+                return OffsetRange.NONE;
+            }
+        }
+        return getRange(node);
+    }
     /**
      * Return a range that matches the given node's source buffer range
      */
@@ -1527,26 +1581,54 @@ public class AstUtilities {
         return node instanceof FCallNode || node instanceof VCallNode;
     }
 
-    static SymbolNode[] getSymbols(Node node) {
-        List<Node> list = node.childNodes();
-
-        for (Node child : list) {
-            if (child instanceof ListNode) {
-                List<Node> symbols = child.childNodes();
-                List<SymbolNode> symbolList = new ArrayList<SymbolNode>(symbols.size());
-
-                for (Node symbol : symbols) {
-                    if (symbol instanceof SymbolNode) {
-                        symbolList.add((SymbolNode)symbol);
-                    }
-                }
-
-                return symbolList.toArray(new SymbolNode[symbolList.size()]);
+    /**
+     * Gets the name or the value of given node, depending on its type.
+     * 
+     * @param node the node whose value to get.
+     * @return the name or value of the given node or <code>null</code>.
+     */
+    public static String getNameOrValue(Node node) {
+        if (node instanceof SymbolNode) {
+            return ((SymbolNode) node).getName();
+        }
+        if (node instanceof StrNode) {
+            return ((StrNode) node).getValue();
+        }
+        if (node instanceof INameNode) {
+            return getName(node);
+        }
+        if (node instanceof DSymbolNode) {
+            if (!node.childNodes().isEmpty()) {
+                Node child = node.childNodes().get(0);
+                return getNameOrValue(child);
             }
         }
-
-        return new SymbolNode[0];
+        return null;
     }
+
+    static SymbolNode[] getSymbols(Node node) {
+        List<SymbolNode> symbolList = new ArrayList<SymbolNode>();
+        for (Node child : getChildValues(node)) {
+            if (child instanceof SymbolNode) {
+                symbolList.add((SymbolNode) child);
+            }
+
+        }
+        return symbolList.toArray(new SymbolNode[symbolList.size()]);
+    }
+
+    static List<Node> getChildValues(Node node) {
+        List<Node> result = new ArrayList<Node>();
+        for (Node child : node.childNodes()) {
+            if (child instanceof ListNode) {
+                List<Node> values = child.childNodes();
+                result.addAll(values);
+            }
+        }
+        return result;
+
+    }
+
     public static SymbolNode[] getAttrSymbols(Node node) {
         assert isAttr(node);
         return getSymbols(node);
@@ -2207,43 +2289,69 @@ public class AstUtilities {
      * @param defNode {@link MethodDefNode method definition node}
      * @param exits accumulator for found exit points
      */
-    public static void findExitPoints(final MethodDefNode defNode, final Set<? super Node> exits) {
+    public static void findExitPoints(final MethodDefNode defNode, final Collection<? super Node> exits) {
         Node body = defNode.getBodyNode();
         if (body != null) { // method with empty body
             findNonLastExitPoints(body, exits);
-            Node last = findLastNode(body);
-            if (last != null) {
-                exits.add(last);
-            }
+            findLastNodes(body, exits);
         }
     }
 
-    private static Node findLastNode(final Node node) {
-        Node last = null;
-        List<Node> list = node.childNodes();
-        for (int i = list.size() - 1; i >= 0; i--) {
-            last = list.get(i);
-
-            if (last instanceof ArgsNode || last instanceof ArgumentNode) {
+    private static void findLastNodes(final Node node, Collection<? super Node> result) {
+        if (node == null) {
+            return;
+        }
+        List<Node> children = findExitChidren(node);
+        if (children.isEmpty()) {
+            result.add(node);
+            return;
+        }
+        for (Node child : children) {
+            if (child instanceof ArgsNode || child instanceof ArgumentNode) {
                 // Done - no valid statement
-                return null;
+                result.add(node);
+                return;
             }
-
-            if (last instanceof ListNode) {
-                last = last.childNodes().get(last.childNodes().size() - 1);
-            }
-
-            if (last instanceof NewlineNode && (last.childNodes().size() > 0)) {
-                last = last.childNodes().get(last.childNodes().size() - 1);
-                break;
-            }
-            break;
+            findLastNodes(child, result);
         }
-        return last;
     }
+
+    private static List<Node> findExitChidren(Node node) {
+        if (node instanceof IfNode) {
+            IfNode ifNode = (IfNode) node;
+            return Arrays.asList(ifNode.getThenBody(), ifNode.getElseBody());
+        }
+        if (node instanceof CaseNode) {
+            CaseNode caseNode = (CaseNode) node;
+            ListNode cases = caseNode.getCases();
+            List<Node> result = new ArrayList<Node>(cases.childNodes());
+            result.add(caseNode.getElseNode());
+            return result;
+        }
+        if (node instanceof WhenNode) {
+            WhenNode whenNode = (WhenNode) node;
+            return Collections.singletonList(whenNode.getBodyNode());
+        }
+        if (node instanceof OrNode) {
+            return node.childNodes();
+        }
+        if (node instanceof ReturnNode
+                || isCall(node)
+                || node instanceof ILiteralNode
+                || node instanceof HashNode) {
+            return Collections.emptyList();
+        }
+        List<Node> children = node.childNodes();
+        if (!children.isEmpty()) {
+            Node lastChild = children.get(children.size() -1);
+            return Collections.singletonList(lastChild);
+        }
+        return children;
+    }
+
 
     /** Helper for {@link #findExitPoints}. */
-    private static void findNonLastExitPoints(final Node node, final Set<? super Node> exits) {
+    private static void findNonLastExitPoints(final Node node, final Collection<? super Node> exits) {
         switch (node.getNodeType()) {
             case RETURNNODE:
             case YIELDNODE:

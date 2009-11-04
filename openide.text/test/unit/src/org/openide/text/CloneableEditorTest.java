@@ -76,11 +76,13 @@ implements CloneableEditorSupport.Env {
         super(s);
     }
     
+    @Override
     protected void setUp () {
         support = new CES (this, Lookup.EMPTY);
         RUNNING = this;
     }
     
+    @Override
     protected boolean runInEQ() {
         return true;
     }
@@ -178,6 +180,7 @@ implements CloneableEditorSupport.Env {
         if (cannotBeModified != null) {
             final String notify = cannotBeModified;
             IOException e = new IOException () {
+                @Override
                 public String getLocalizedMessage () {
                     return notify;
                 }

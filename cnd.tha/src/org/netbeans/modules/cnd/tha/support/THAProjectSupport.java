@@ -149,7 +149,13 @@ public final class THAProjectSupport implements PropertyChangeListener {
      */
     public boolean canInstrument() {
         MakeConfigurationDescriptor mcd = MakeConfigurationDescriptor.getMakeConfigurationDescriptor(project);
+        if (mcd == null) {
+            return false;
+        }
         MakeConfiguration mc = mcd.getActiveConfiguration();
+        if (mc == null) {
+            return false;
+        }
         CompilerSet compilerSet = mc.getCompilerSet().getCompilerSet();
 
         if (compilerSet == null || !compilerSet.isSunCompiler()) {
@@ -175,7 +181,13 @@ public final class THAProjectSupport implements PropertyChangeListener {
 
         //if it is sparc it means we do not need option
         MakeConfigurationDescriptor mcd = MakeConfigurationDescriptor.getMakeConfigurationDescriptor(project);
+        if (mcd == null) {
+            return false;
+        }
         MakeConfiguration mc = mcd.getActiveConfiguration();
+        if (mc == null) {
+            return false;
+        }
         if (mc.isMakefileConfiguration()){
             return isConfiguredForInstrumentationMakefile();
         }
@@ -221,8 +233,17 @@ public final class THAProjectSupport implements PropertyChangeListener {
         }
 
         MakeConfigurationDescriptor mcd = MakeConfigurationDescriptor.getMakeConfigurationDescriptor(project);
+        if (mcd == null) {
+            return false;
+        }
         MakeConfiguration mc = mcd.getActiveConfiguration();
+        if (mc == null) {
+            return false;
+        }
         CompilerSet compilerSet = mc.getCompilerSet().getCompilerSet();
+        if (compilerSet == null) {
+            return false;
+        }
 
         Tool ccTool = compilerSet.getTool(Tool.CCCompiler);
         String ccPath = ccTool.getPath();
@@ -267,7 +288,13 @@ public final class THAProjectSupport implements PropertyChangeListener {
         }
 
         MakeConfigurationDescriptor mcd = MakeConfigurationDescriptor.getMakeConfigurationDescriptor(project);
+        if (mcd == null) {
+            return false;
+        }
         MakeConfiguration mc = mcd.getActiveConfiguration();
+        if (mc == null) {
+            return false;
+        }
         if (mc.isMakefileConfiguration()){
             return doInstrumentationMakefile();
         }
@@ -323,7 +350,13 @@ public final class THAProjectSupport implements PropertyChangeListener {
         boolean changed = false;
 
         MakeConfigurationDescriptor mcd = MakeConfigurationDescriptor.getMakeConfigurationDescriptor(project);
+        if (mcd == null) {
+            return Collections.<String>emptyList();
+        }
         MakeConfiguration mc = mcd.getActiveConfiguration();
+        if (mc == null) {
+            return Collections.<String>emptyList();
+        }
         if (mc.isMakefileConfiguration()){
             return undoInstrumentationMakefile();
         }
@@ -394,11 +427,17 @@ public final class THAProjectSupport implements PropertyChangeListener {
         return NbBundle.getMessage(THAProjectSupport.class, key, params);
     }
 
-    private boolean activeCompilerIsSunStudio() {
+    public boolean activeCompilerIsSunStudio() {
         boolean result = false;
         try {
             MakeConfigurationDescriptor mcd = MakeConfigurationDescriptor.getMakeConfigurationDescriptor(project);
+            if (mcd == null) {
+                return false;
+            }
             MakeConfiguration mc = mcd.getActiveConfiguration();
+            if (mc == null) {
+                return false;
+            }
             CompilerSet compilerSet = mc.getCompilerSet().getCompilerSet();
             if (compilerSet != null) {
                 result = compilerSet.isSunCompiler();
@@ -424,6 +463,9 @@ public final class THAProjectSupport implements PropertyChangeListener {
             return false;
         }
         MakeConfiguration mc = mcd.getActiveConfiguration();
+        if (mc == null) {
+            return false;
+        }
         int configurationType = mc.getConfigurationType().getValue();
         return THAServiceInfo.isPlatformSupported(mc.getDevelopmentHost().getBuildPlatformDisplayName()) &&
                 (configurationType == MakeConfiguration.TYPE_MAKEFILE ||
@@ -447,24 +489,20 @@ public final class THAProjectSupport implements PropertyChangeListener {
         }
 
         MakeConfigurationDescriptor mcd = MakeConfigurationDescriptor.getMakeConfigurationDescriptor(project);
-        MakeConfiguration mc = mcd.getActiveConfiguration();
-        CompilerSet compilerSet = mc.getCompilerSet().getCompilerSet();
-        if (compilerSet == null) {
+        if (mcd == null) {
             return null;
         }
-        Tool ccTool = compilerSet.getTool(Tool.CCCompiler);
-        String ccPath = ccTool.getPath();
-        String sunstudioBinDir = ccPath.substring(0, ccPath.length() - ccTool.getName().length());
-
+        MakeConfiguration mc = mcd.getActiveConfiguration();
+        if (mc == null) {
+            return null;
+        }
+        CompilerSet compilerSet = mc.getCompilerSet().getCompilerSet();
+        if (compilerSet == null || compilerSet.isGnuCompiler()) {
+            return null;
+        }
+        String sunstudioBinDir = compilerSet.getDirectory();
         ExecutionEnvironment execEnv = mc.getDevelopmentHost().getExecutionEnvironment();
         return THAInstrumentationSupport.getSupport(execEnv, sunstudioBinDir);
-//        // ensure that connection is established and ServerRecord exists for the
-//        // development host....
-//        if (ServerListUI.ensureRecordOnline(execEnv)) {
-//            return THAInstrumentationSupport.getSupport(execEnv, sunstudioBinDir);
-//        } else {
-//            return null;
-//        }
     }
 
     private void setModified() {

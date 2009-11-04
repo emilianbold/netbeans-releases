@@ -69,7 +69,7 @@ import org.netbeans.api.debugger.Session;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetUtils;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -396,8 +396,6 @@ public class GdbDebugger implements PropertyChangeListener {
                     // for anonymous breakpoints to be set correctly, see IZ 139388
                     gdb.up_silently(1024);
 
-                    gdb.data_list_register_names("");
-                    
                     setLoading();
                 }
             } else {
@@ -434,7 +432,6 @@ public class GdbDebugger implements PropertyChangeListener {
                     // WinAPI apps don't have a "main" function. Use "WinMain" if Windows.
                     gdb.break_insert_temporary("WinMain"); // NOI18N
                 }
-                gdb.data_list_register_names("");
 
                 String inRedir = "";
                 if (ioProxy != null) {
@@ -633,7 +630,7 @@ public class GdbDebugger implements PropertyChangeListener {
         String csdirs = cs.getCompilerSetManager().getCompilerSet(csname).getDirectory();
 
         if (cs.getCompilerSetManager().getCompilerSet(csname).getCompilerFlavor().isMinGWCompiler()) {
-            String msysBase = CompilerSetManager.getMSysBase();
+            String msysBase = CompilerSetUtils.getMSysBase();
             if (msysBase != null && msysBase.length() > 0) {
                 csdirs += File.pathSeparator + msysBase + "/bin"; // NOI18N;
             }
@@ -768,6 +765,9 @@ public class GdbDebugger implements PropertyChangeListener {
             if (evt.getNewValue() == State.LOADING) {
                 shareToken = gdb.info_share(false).getID();
             } else if (evt.getNewValue() == State.READY) {
+                // request register names only when we stopeed in main
+                // IZ 172402
+                gdb.data_list_register_names("");
                 if (platform == PlatformTypes.PLATFORM_WINDOWS) {
                     gdb.break_insert("dlopen"); // NOI18N
                 } else {
@@ -1215,13 +1215,17 @@ public class GdbDebugger implements PropertyChangeListener {
         }
     }
 
+    private static final String CONSOLE_MSG_END = "\\n"; // NOI18N
+
     /** Handle gdb responses starting with '~' */
     public void consoleStreamOutput(int token, String omsg) {
         String msg;
 
-        if (omsg.endsWith("\\n")) { // NOI18N
+        if (omsg.endsWith(CONSOLE_MSG_END)) { // NOI18N
             msg = omsg.substring(0, omsg.length() - 2);
         } else {
+            // append endline if needed, see IZ 172314
+            omsg = omsg + CONSOLE_MSG_END;
             msg = omsg;
         }
 
@@ -2001,6 +2005,10 @@ public class GdbDebugger implements PropertyChangeListener {
     }
 
     public String getOSPath(String path) {
+        if (path == null) {
+            return null;
+        }
+        
         if (platform == PlatformTypes.PLATFORM_WINDOWS) {
             if (isCygwin()) { // NOI18N
                 return WindowsSupport.getInstance().convertFromCygwinPath(path);
@@ -2217,6 +2225,11 @@ public class GdbDebugger implements PropertyChangeListener {
      */
     private void stackUpdate(List<String> stack) {
         synchronized (callstack) {
+            //destroy old callstacks
+            for (GdbCallStackFrame frame : callstack) {
+                frame.destroy();
+            }
+
             callstack.clear();
 
             for (int i = 0; i < stack.size(); i++) {
@@ -2389,11 +2402,11 @@ public class GdbDebugger implements PropertyChangeListener {
     }
 
     // TODO: unify with requestWhatis and requestValueEx
-    public String requestSymbolType(String type) {
+    public String requestBaseClassType(String type) {
         assert !Thread.currentThread().getName().equals("GdbReaderRP"); // NOI18N
 
         if (state == State.STOPPED && type != null && type.length() > 0) {
-            CommandBuffer cb = gdb.symbol_type(type);
+            CommandBuffer cb = gdb.symbol_type("class " + type); //NOI18N
             String info = cb.getResponse();
             if (info.length() == 0 || !cb.isOK()) {
                 if (cb.isError()) {

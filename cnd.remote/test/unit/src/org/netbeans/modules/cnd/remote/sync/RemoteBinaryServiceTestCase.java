@@ -52,11 +52,6 @@ import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
  */
 public class RemoteBinaryServiceTestCase extends RemoteTestBase {
 
-    static {
-//        System.setProperty("cnd.remote.testuserinfo", "rdtest:********@endif.russia");
-//        System.setProperty("cnd.remote.logger.level", "0");
-//        System.setProperty("nativeexecution.support.logger.level", "0");
-    }
     public RemoteBinaryServiceTestCase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
     }

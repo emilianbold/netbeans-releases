@@ -65,35 +65,35 @@
 
     <!--"semantic" highlighting:-->
     <fontcolor name="mod-unused" waveUnderlined="999999"/>
-    <fontcolor name="mod-abstract" />
+    <!--<fontcolor name="mod-abstract" />-->
     <fontcolor name="mod-field" default="field"/>
-    <fontcolor name="mod-local-variable" />
-    <fontcolor name="mod-parameter" foreColor="A06001"/>
+    <!--<fontcolor name="mod-local-variable" />-->
+    <!--<fontcolor name="mod-parameter" foreColor="A06001"/>-->
     <fontcolor name="mod-method" foreColor="000000" >
         <font style="bold" />
     </fontcolor>
-    <fontcolor name="mod-constructor" >
+    <!--<fontcolor name="mod-constructor" >
         <font style="bold" />
     </fontcolor>
     <fontcolor name="mod-class" >
         <font style="bold" />
-    </fontcolor>
+    </fontcolor>-->
 <!--currently not used:-->
 <!--    <fontcolor name="mod-interface" />
     <fontcolor name="mod-annotation-type" />
     <fontcolor name="mod-enum" /> -->
-    <fontcolor name="mod-deprecated" strikeThrough="404040" />
+    <!--<fontcolor name="mod-deprecated" strikeThrough="404040" />-->
     <fontcolor name="mod-static" >
         <font style="italic" />
     </fontcolor>
-    <fontcolor name="mod-private" />
+    <!--<fontcolor name="mod-private" />-->
 <!--currently not used:-->
 <!--    <fontcolor name="mod-package-private" /> -->
-    <fontcolor name="mod-protected" />
+    <!--<fontcolor name="mod-protected" />
     <fontcolor name="mod-public" />
     <fontcolor name="mod-custom1" >
         <font style="bold" />
-    </fontcolor>
+    </fontcolor>-->
 
     <!--currently not used:-->
 <!--    <fontcolor name="mod-type-parameter-declaration" bgColor="lightGray"/>

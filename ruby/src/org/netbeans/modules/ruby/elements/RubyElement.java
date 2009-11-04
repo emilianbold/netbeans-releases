@@ -48,6 +48,7 @@ import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.ruby.RubyType;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -85,6 +86,10 @@ public abstract class RubyElement implements Element {
 
     public OffsetRange getOffsetRange(ParserResult result) {
         return OffsetRange.NONE;
+    }
+
+    public RubyType getType() {
+        return null;
     }
 
 }

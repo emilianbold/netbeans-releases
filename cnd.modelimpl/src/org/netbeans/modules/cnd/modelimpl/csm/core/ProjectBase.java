@@ -124,7 +124,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         initFields();
     }
 
-    private void initFields() {
+    /*package*/final void initFields() {
         NamespaceImpl ns = new NamespaceImpl(this, false);
         assert ns != null;
         this.globalNamespaceUID = UIDCsmConverter.namespaceToUID(ns);
@@ -537,8 +537,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
     }
 
-    @Override
-    public void scheduleReparse() {
+    /*package*/ final void scheduleReparse() {
         ensureFilesCreated();
         DeepReparsingUtils.reparseOnEdit(this.getAllFileImpls(), this, true);
     }

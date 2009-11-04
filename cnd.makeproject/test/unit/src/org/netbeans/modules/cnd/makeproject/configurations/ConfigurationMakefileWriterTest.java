@@ -108,6 +108,7 @@ public class ConfigurationMakefileWriterTest {
             System.out.println("-----------------------------------------------------" + testName);
         }
         System.setProperty("org.netbeans.modules.cnd.makeproject.api.runprofiles", "true"); // NOI18N
+        System.setProperty("cnd.remote.fs", "false");
         Logger logger = Logger.getLogger(NbPreferences.class.getName());
         logger.setLevel(Level.SEVERE);
         logger = Logger.getLogger("org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory"); // NOI18N

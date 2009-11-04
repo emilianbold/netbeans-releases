@@ -79,6 +79,7 @@ import org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.LocationWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.StackFrameWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.util.JPDAUtils;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
@@ -199,7 +200,7 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
                     }
                 }
                 boolean isNotDone = currentOperation != lastOperation;
-                if (isNotDone) {
+                if (isNotDone && CallStackFrameImpl.canFindOperationArguments()) {
                     ret[0] = "operationArguments " + currentOperation.getMethodName(); // NOI18N
                 }
                 List<Operation> operations = frame.getThread().getLastOperations();
@@ -383,11 +384,11 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
         if (o.equals ("NoInfo")) // NOI18N
             return true;
         if (o instanceof JPDAClassType) return false;
-        if (o instanceof Operation) return false;
+        if (o instanceof Operation) return !JPDAUtils.IS_JDK_16;
         if (o == "lastOperations") return false;
         if (o == NO_DEBUG_INFO) return true;
         if (o instanceof String && ((String) o).startsWith("operationArguments")) { // NOI18N
-            return false;
+            return !JPDAUtils.IS_JDK_16;
         }
         throw new UnknownTypeException (o);
     }

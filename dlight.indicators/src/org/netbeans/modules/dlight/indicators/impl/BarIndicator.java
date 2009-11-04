@@ -52,6 +52,7 @@ import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.indicators.BarIndicatorConfiguration;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
+import org.openide.util.Lookup;
 
 
 
@@ -126,6 +127,10 @@ public class BarIndicator extends Indicator<BarIndicatorConfiguration> {
     //reset indicator
     //throw new UnsupportedOperationException("Not supported yet.");
   }
+
+    @Override
+    public void setIndicatorActionsProviderContext(Lookup context) {
+    }
 
   private class BarIndicatorPanel extends JPanel {
     List<JLabel> barLabels = new ArrayList<JLabel>();

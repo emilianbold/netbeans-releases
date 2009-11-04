@@ -30,7 +30,7 @@ CLASS C (C ) [5:1/44-22:2/412] lcurly=52 SCOPE: $Global$
             UNIQUE NAME f:C::operator const char*()
             DECLARATION: operator const char*  [10:5/123-12:6/179]
             PARAMETERS:
-            RETURNS const char TEXT=const char  [10:14/132-10:19/137]
+            RETURNS const *char TEXT=const char*  [10:14/132-10:19/137]
             STATEMENT COMPOUND  [10:34/152-12:6/179] SCOPE: operator const char* 
                 STATEMENT RETURN  [11:9/162-11:20/173] SCOPE: Stmt  [10:34/152-12:6/179] text: 'return msg;'
         FUNCTION DEFINITION operator  ns::string  [13:5/184-15:6/239] MethodDDImpl SCOPE: C 
@@ -76,7 +76,7 @@ CLASS C (C ) [5:1/44-22:2/412] lcurly=52 SCOPE: $Global$
             UNIQUE NAME f:C::operator const char*()
             DECLARATION: operator const char*  [10:5/123-12:6/179]
             PARAMETERS:
-            RETURNS const char TEXT=const char  [10:14/132-10:19/137]
+            RETURNS const *char TEXT=const char*  [10:14/132-10:19/137]
             STATEMENT COMPOUND  [10:34/152-12:6/179] SCOPE: operator const char* 
                 STATEMENT RETURN  [11:9/162-11:20/173] SCOPE: Stmt  [10:34/152-12:6/179] text: 'return msg;'
         FUNCTION DEFINITION operator  ns::string  [13:5/184-15:6/239] MethodDDImpl SCOPE: C 

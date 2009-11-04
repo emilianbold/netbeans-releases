@@ -1000,8 +1000,8 @@ public final class WebProject implements Project, AntProjectListener {
             File buildProperties = new File(System.getProperty("netbeans.user"), "build.properties"); // NOI18N
             ep.setProperty("user.properties.file", buildProperties.getAbsolutePath()); //NOI18N
 
-            // set jaxws.endorsed.dir property (for endorsed mechanism to be used with wsimport, wsgen)
-            WSUtils.setJaxWsEndorsedDirProperty(ep);
+            //remove jaxws.endorsed.dir property
+            ep.remove("jaxws.endorsed.dir");
             
             filterBrokenLibraryRefs();
 
@@ -1432,6 +1432,8 @@ public final class WebProject implements Project, AntProjectListener {
 
         private String webInfValue = null;
 
+        private File resources = null;
+
         private String buildWeb = null;
 
         private final List<ArtifactListener> listeners = new CopyOnWriteArrayList<ArtifactListener>();
@@ -1454,6 +1456,7 @@ public final class WebProject implements Project, AntProjectListener {
             docBaseValue = evaluator().getProperty(WebProjectProperties.WEB_DOCBASE_DIR);
             webInf = getWebModule().getWebInf();
             webInfValue = evaluator().getProperty(WebProjectProperties.WEBINF_DIR);
+            resources = getWebModule().getResourceDirectory();
             buildWeb = evaluator().getProperty(WebProjectProperties.BUILD_WEB_DIR);
 
             FileSystem docBaseFileSystem = null;
@@ -1466,6 +1469,10 @@ public final class WebProject implements Project, AntProjectListener {
                 if (!webInf.getFileSystem().equals(docBaseFileSystem)) {
                     webInf.getFileSystem().addFileChangeListener(this);
                 }
+            }
+
+            if (resources != null) {
+                FileUtil.addFileChangeListener(this, resources);
             }
 
             LOGGER.log(Level.FINE, "Web directory is {0}", docBaseValue);
@@ -1485,12 +1492,17 @@ public final class WebProject implements Project, AntProjectListener {
                     webInf.getFileSystem().removeFileChangeListener(this);
                 }
             }
+            if (resources != null) {
+                FileUtil.removeFileChangeListener(this, resources);
+            }
+
             WebProject.this.evaluator().removePropertyChangeListener(this);
         }
 
         public void propertyChange(PropertyChangeEvent evt) {
             if (WebProjectProperties.WEB_DOCBASE_DIR.equals(evt.getPropertyName())
-                    || WebProjectProperties.WEBINF_DIR.equals(evt.getPropertyName())) {
+                    || WebProjectProperties.WEBINF_DIR.equals(evt.getPropertyName())
+                    || WebProjectProperties.RESOURCE_DIR.equals(evt.getPropertyName())) {
                 try {
                     cleanup();
                     initialize();
@@ -1507,7 +1519,9 @@ public final class WebProject implements Project, AntProjectListener {
         @Override
         public void fileChanged(FileEvent fe) {
             try {
-                handleCopyFileToDestDir(fe.getFile());
+                if (!handleResource(fe)) {
+                    handleCopyFileToDestDir(fe.getFile());
+                }
             } catch (IOException e) {
                 LOGGER.log(Level.INFO, null, e);
             }
@@ -1516,7 +1530,9 @@ public final class WebProject implements Project, AntProjectListener {
         @Override
         public void fileDataCreated(FileEvent fe) {
             try {
-                handleCopyFileToDestDir(fe.getFile());
+                if (!handleResource(fe)) {
+                    handleCopyFileToDestDir(fe.getFile());
+                }
             } catch (IOException e) {
                 LOGGER.log(Level.INFO, null, e);
             }
@@ -1525,6 +1541,10 @@ public final class WebProject implements Project, AntProjectListener {
         @Override
         public void fileRenamed(FileRenameEvent fe) {
             try {
+                if (handleResource(fe)) {
+                    return;
+                }
+
                 FileObject fo = fe.getFile();
                 handleCopyFileToDestDir(fo);
 
@@ -1573,6 +1593,10 @@ public final class WebProject implements Project, AntProjectListener {
         @Override
         public void fileDeleted(FileEvent fe) {
             try {
+                if (handleResource(fe)) {
+                    return;
+                }
+
                 FileObject fo = fe.getFile();
 
                 FileObject webInf = getWebModule().resolveWebInf(docBaseValue, webInfValue, false, true);
@@ -1617,6 +1641,18 @@ public final class WebProject implements Project, AntProjectListener {
             for (ArtifactListener listener : listeners) {
                 listener.artifactsUpdated(artifacts);
             }
+        }
+
+        private boolean handleResource(FileEvent fe) {
+            FileObject resourceFo = FileUtil.toFileObject(resources);
+            if (resourceFo != null
+                    && (resourceFo.equals(fe.getFile()) || FileUtil.isParentOf(resourceFo, fe.getFile()))) {
+
+                fireArtifactChange(Collections.singleton(
+                        Artifact.forFile(FileUtil.toFile(fe.getFile())).serverResource()));
+                return true;
+            }
+            return false;
         }
 
         private void handleDeleteFileInDestDir(String resourcePath) throws IOException {

@@ -548,6 +548,7 @@ public final class ToolchainManagerImpl {
                             element.setAttribute("uc_url", descriptor.getUpdateCenterUrl()); // NOI18N
                             element.setAttribute("module_id", descriptor.getModuleID()); // NOI18N
                             element.setAttribute("uc_display", descriptor.getUpdateCenterDisplayName()); // NOI18N
+                            element.setAttribute("upgrade_url", descriptor.getUpgradeUrl()); // NOI18N
                             root.appendChild(element);
                         }
 
@@ -1015,6 +1016,11 @@ public final class ToolchainManagerImpl {
             c.setAttribute("pattern", scanner.getChangeDirectoryPattern()); // NOI18N
             element.appendChild(c);
         }
+        if (scanner.getMakeAllInDirectoryPattern() != null) {
+            c = doc.createElement("making_all_in_directory"); // NOI18N
+            c.setAttribute("pattern", scanner.getMakeAllInDirectoryPattern()); // NOI18N
+            element.appendChild(c);
+        }
         if (scanner.getLeaveDirectoryPattern() != null) {
             c = doc.createElement("leave_directory"); // NOI18N
             c.setAttribute("pattern", scanner.getLeaveDirectoryPattern()); // NOI18N
@@ -1163,6 +1169,7 @@ public final class ToolchainManagerImpl {
         String platforms;
         String uc;
         String ucName;
+        String upgrage;
         String module;
         String driveLetterPrefix;
         List<FolderInfo> baseFolder;
@@ -1271,6 +1278,7 @@ public final class ToolchainManagerImpl {
         String changeDirectoryPattern;
         String enterDirectoryPattern;
         String leaveDirectoryPattern;
+        String makingAllInDirectoryPattern;
         String stackHeaderPattern;
         String stackNextPattern;
         List<String> filterOut = new ArrayList<String>();
@@ -1585,6 +1593,7 @@ public final class ToolchainManagerImpl {
                 v.uc = getValue(attributes, "uc_url"); // NOI18N
                 v.ucName = getValue(attributes, "uc_display"); // NOI18N
                 v.module = getValue(attributes, "module_id"); // NOI18N
+                v.upgrage = getValue(attributes, "upgrade_url"); // NOI18N
                 return;
             } else if (path.endsWith(".drive_letter_prefix")) { // NOI18N
                 v.driveLetterPrefix = getValue(attributes, "stringvalue"); // NOI18N
@@ -1756,6 +1765,8 @@ public final class ToolchainManagerImpl {
                     s.stackNextPattern = getValue(attributes, "pattern"); // NOI18N
                 } else if (path.endsWith(".filter_out")) { // NOI18N
                     s.filterOut.add(getValue(attributes, "pattern")); // NOI18N
+                } else if (path.endsWith(".making_all_in_directory")) { // NOI18N
+                    s.makingAllInDirectoryPattern = getValue(attributes, "pattern"); // NOI18N
                 }
                 return;
             }
@@ -2072,6 +2083,10 @@ public final class ToolchainManagerImpl {
 
         public String getUpdateCenterDisplayName() {
             return v.ucName;
+        }
+
+        public String getUpgradeUrl() {
+            return v.upgrage;
         }
 
         public String getModuleID() {
@@ -2404,6 +2419,10 @@ public final class ToolchainManagerImpl {
 
         public String getLeaveDirectoryPattern() {
             return s.leaveDirectoryPattern;
+        }
+
+        public String getMakeAllInDirectoryPattern() {
+            return s.makingAllInDirectoryPattern;
         }
 
         public String getStackHeaderPattern() {

@@ -216,8 +216,8 @@ public class GdbCallStackFrame extends CallStackFrame {
 
     public StyledDocument getDocument() {
         if (document == null) {
-            if (fullname != null && fullname.length() > 0) {
-                File docFile = new File(fullname);
+            if (resolvedName != null && resolvedName.length() > 0) {
+                File docFile = new File(resolvedName);
                 if (docFile.exists()) {
                     FileObject fo = FileUtil.toFileObject(CndFileUtils.normalizeFile(docFile));
                     document = (StyledDocument) CsmUtilities.getDocument(fo);
@@ -262,7 +262,7 @@ public class GdbCallStackFrame extends CallStackFrame {
 
     public AbstractVariable[] getAutos() {
         if (cachedAutos == null) {
-            Set<String> res = Autos.get(getDocument(), getOffset());
+            Set<String> res = Autos.get(getDocument(), lineNumber-1);
             cachedAutos = new AbstractVariable[res.size()];
             int i = 0;
             for (String name : res) {
@@ -270,6 +270,20 @@ public class GdbCallStackFrame extends CallStackFrame {
             }
         }
         return cachedAutos;
+    }
+
+    public void destroy() {
+        if (cachedLocalVariables != null) {
+            for (AbstractVariable var : cachedLocalVariables) {
+                var.destroy();
+            }
+        }
+
+        if (cachedAutos != null) {
+            for (AbstractVariable var : cachedAutos) {
+                var.destroy();
+            }
+        }
     }
 
     @Override

@@ -376,12 +376,6 @@ public class PushAction extends ContextAction {
             }
             if (bLocalPush && !bNoChanges) {
                 HgUtils.forceStatusRefresh(pushFile);
-                // refresh filesystem to take account of deleted files
-                FileObject rootObj = FileUtil.toFileObject(pushFile);
-                try {
-                    rootObj.getFileSystem().refresh(true);
-                } catch (java.lang.Exception ex) {
-                }
             }
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);

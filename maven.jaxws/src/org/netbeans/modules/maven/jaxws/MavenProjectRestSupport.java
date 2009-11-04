@@ -120,7 +120,7 @@ public class MavenProjectRestSupport extends WebRestSupport {
                 return;
             }
 
-            Servlet adaptorServlet = getRestServletAdaptor(webApp);
+            Servlet adaptorServlet = getRestServletAdaptorByName(webApp, REST_SERVLET_ADAPTOR);
             if (adaptorServlet != null) {
                 // Starting with jersey 0.8, the adaptor class is under 
                 // com.sun.jersey package instead of com.sun.we.rest package.
@@ -140,7 +140,7 @@ public class MavenProjectRestSupport extends WebRestSupport {
 
     @Override
     public void ensureRestDevelopmentReady() throws IOException {
-        addResourceConfigToWebApp();
+        addResourceConfigToWebApp(RestSupport.REST_SERVLET_ADAPTOR_MAPPING);
         addSwdpLibrary();
     }
 
@@ -313,14 +313,19 @@ public class MavenProjectRestSupport extends WebRestSupport {
     
     @Override
     public FileObject generateTestClient(File testdir) throws IOException {
-        FileObject resourcesFolder =
-                project.getProjectDirectory().getFileObject("src/main/resources"); //NOI18N
-        if (resourcesFolder != null) {
-            FileObject restFolder = resourcesFolder.getFileObject("rest"); //NOI18N
-            if (restFolder == null) {
-                restFolder = resourcesFolder.createFolder("rest"); //NOI18N
+        FileObject mainFolder = project.getProjectDirectory().getFileObject("src/main"); //NOI18N
+        if (mainFolder != null) {
+            FileObject resourcesFolder = mainFolder.getFileObject("resources"); //NOI18N
+            if (resourcesFolder == null) {
+                resourcesFolder = mainFolder.createFolder("resources"); //NOI18N
             }
-            return generateMavenTester(FileUtil.toFile(restFolder), getBaseURL());
+            if (resourcesFolder != null) {
+                FileObject restFolder = resourcesFolder.getFileObject("rest"); //NOI18N
+                if (restFolder == null) {
+                    restFolder = resourcesFolder.createFolder("rest"); //NOI18N
+                }
+                return generateMavenTester(FileUtil.toFile(restFolder), getBaseURL());
+            }
         }
         return null;
     }

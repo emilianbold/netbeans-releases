@@ -138,10 +138,6 @@ class ViewModelListener extends DebuggerManagerAdapter {
         models.add(cp.lookup(viewType, NodeActionsProviderFilter.class));
         models.add(cp.lookup(viewType, ColumnModel.class));
         models.add(cp.lookup(viewType, Model.class));
-        RequestProcessor rp = (e != null) ? e.lookupFirst(null, RequestProcessor.class) : null;
-        if (rp != null) {
-            models.add(rp);
-        }
         
         Models.setModelsToView (
             view, 

@@ -131,6 +131,7 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
         layer(e).instanceFile(path, null, providerClass).
                 stringvalue(SERVICE_NAME, className).
                 stringvalue("serviceClass", providerClass.getName()).
+                stringvalue("instanceOf", providerClass.getName()).
                 //methodvalue("instanceCreate", providerClass.getName()+"$ContextAware", "createService").
                 methodvalue("instanceCreate", "org.netbeans.modules.debugger.ui.registry."+providerClass.getSimpleName()+"ContextAware", "createService").
                 position(position).
@@ -150,6 +151,7 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
         layer(e).instanceFile(path, null, providerClass).
                 stringvalue(SERVICE_NAME, className).
                 stringvalue("serviceClass", providerClass.getName()).
+                stringvalue("instanceOf", providerClass.getName()).
                 bundlevalue("displayName", displayName).
                 methodvalue("instanceCreate", providerClass.getName()+"$ContextAware", "createService").
                 position(position).

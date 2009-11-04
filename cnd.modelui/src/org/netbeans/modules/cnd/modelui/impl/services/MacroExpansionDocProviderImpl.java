@@ -487,11 +487,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
                         sb.append(ic.getMacroExpansion().toString().substring(startShift, endShift));
                     }
                 } else if (ic.outInterval.length() != 0) {
-                    try {
-                        sb.append(doc.getText(ic.inInterval.start + startShift, endShift - startShift));
-                    } catch (BadLocationException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
+                    sb.append(getDocumentText(doc, ic.inInterval.start + startShift, endShift - startShift));
                 }
             } 
         }
@@ -779,13 +775,25 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
 
     private void copyInterval(Document inDoc, int length, TransformationTable tt, StringBuilder expandedString) {
         if (length != 0) {
-            try {
-                addString(inDoc.getText(tt.currentIn.start, length), expandedString);
-            } catch (BadLocationException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            addString(getDocumentText(inDoc, tt.currentIn.start, length), expandedString);
             tt.appendInterval(length, length, false);
         }
+    }
+
+    static private String getDocumentText(Document doc, int startOffset, int length) {
+        try {
+            int docLength = doc.getLength();
+            startOffset = startOffset > 0 ? startOffset : 0;
+            startOffset = startOffset < docLength ? startOffset : docLength;
+            length = length > 0 ? length : 0;
+            length = startOffset + length <= docLength ? length : docLength - startOffset;
+            if (length > 0) {
+                return doc.getText(startOffset, length);
+            }
+        } catch (BadLocationException ex) {
+            //
+        }
+        return ""; // NOI18N
     }
 
     private boolean isWhitespace(Token<CppTokenId> docToken) {

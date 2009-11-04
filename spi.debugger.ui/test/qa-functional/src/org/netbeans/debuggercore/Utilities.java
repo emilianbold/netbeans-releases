@@ -500,14 +500,6 @@ public class Utilities {
         return number;
     }
 
-    public static void captureScreen(JellyTestCase testCase) {
-        try {
-            PNGEncoder.captureScreen(testCase.getWorkDir().getAbsolutePath() + File.separator + "screenBeforeCleanup.png");
-        } catch (Exception e1) {
-            // ignore it
-        }
-    }
-
     public static void waitStatusOrConsoleText(String text) throws Throwable
     {
         try {

@@ -120,6 +120,23 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
                 return def;
             }
         }
+        if(decl == null) {
+            uname = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION_FRIEND) + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix();
+            decl = findDeclaration(prj, uname);
+            if (decl != null && decl.getKind() == CsmDeclaration.Kind.FUNCTION_FRIEND) {
+                if (!isStatic() || CsmKindUtilities.isClassMember(this)
+                        || !CsmKindUtilities.isOffsetableDeclaration(decl)
+                        || getContainingFile().equals(((CsmOffsetableDeclaration)decl).getContainingFile())) {
+                    return (CsmFunction) decl;
+                }
+            }
+            for (CsmProject lib : prj.getLibraries()) {
+                CsmFunction def = findDeclaration(lib, uname);
+                if (def != null) {
+                    return def;
+                }
+            }
+        }
         return this;
     }
 
@@ -130,7 +147,8 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
 
     private CsmFunction findDeclaration(CsmProject prj, String uname){
         CsmDeclaration decl = prj.findDeclaration(uname);
-        if( decl != null && decl.getKind() == CsmDeclaration.Kind.FUNCTION ) {
+        if( decl != null && (decl.getKind() == CsmDeclaration.Kind.FUNCTION ||
+                decl.getKind() == CsmDeclaration.Kind.FUNCTION_FRIEND)) {
             return (CsmFunction) decl;
         }
         FunctionParameterListImpl parameterList = getParameterList();

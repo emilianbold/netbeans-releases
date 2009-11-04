@@ -56,12 +56,6 @@ public interface CsmProject extends CsmNamedElement, CsmValidable {
      * If all files file are already parsed, immediately returns.
      */
     void waitParse();
-
-    /**
-     * Schedules complete project reparse.
-     * Does not wait until it is completed.
-     */
-    void scheduleReparse();
     
     /** Gets an object, which represents correspondent IDE project */
     Object getPlatformProject();

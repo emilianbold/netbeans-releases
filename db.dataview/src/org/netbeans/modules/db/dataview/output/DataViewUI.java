@@ -42,8 +42,6 @@ package org.netbeans.modules.db.dataview.output;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -433,8 +431,7 @@ class DataViewUI extends JXPanel {
         toolbar.add(limitRow);
 
         //add refresh text field
-        refreshField = new JTextField();
-        refreshField.setColumns(2);
+        refreshField = new JTextField(2);
         refreshField.addFocusListener(new FocusAdapter() {
             @Override
             public void focusGained(FocusEvent e) {
@@ -556,9 +553,6 @@ class DataViewUI extends JXPanel {
 
         JXPanel panel = new JXPanel();
         panel.setBorder(BorderFactory.createEtchedBorder());
-        GridBagLayout gl = new GridBagLayout();
-        GridBagConstraints c = new GridBagConstraints();
-        panel.setLayout(gl);
 
         ActionListener outputListener = createOutputListener();
         initVerticalToolbar(outputListener);
@@ -576,13 +570,18 @@ class DataViewUI extends JXPanel {
         }
         initToolbar(toolbar, outputListener);
 
-        c.weightx = 1.0;
-        c.weighty = 1.0;
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.gridwidth = GridBagConstraints.RELATIVE;
-        c.anchor = GridBagConstraints.FIRST_LINE_START;
-        panel.add(toolbar, c);
-        this.validate();
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(panel);
+        panel.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .add(toolbar, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 205, Short.MAX_VALUE))
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .add(toolbar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+        );
         return panel;
     }
 

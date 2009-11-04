@@ -72,7 +72,7 @@ import org.openide.util.actions.NodeAction;
  */
 public class AddCmpFieldAction extends NodeAction {
 
-    private static final String NAME = NbBundle.getMessage(AddCmpFieldAction.class, "LBL_AddCmpFieldAction");
+    private final String NAME = NbBundle.getMessage(AddCmpFieldAction.class, "LBL_AddCmpFieldAction");
     
     public String getName() {
         return NAME;

@@ -253,7 +253,7 @@ public class JspLineBreakpoint extends Breakpoint {
         if ( (url == this.url) ||
              ((url != null) && (this.url != null) && url.equals (this.url))
         ) return;
-        String old = url;
+        String old = this.url;
         this.url = url;
         firePropertyChange(PROP_URL, old, url);
     }

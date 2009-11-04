@@ -200,6 +200,7 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
         layer(e).instanceFile(path, null, providerClass).
                 stringvalue("serviceName", className).
                 stringvalue("serviceClass", providerClass.getName()).
+                stringvalue("instanceOf", providerClass.getName()).
                 methodvalue("instanceCreate", providerClass.getName()+"$ContextAware", "createService").
                 write();
     }
@@ -242,14 +243,22 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
 
     private boolean implementsInterfaces(Element e, String classNames) {
         Set<String> interfaces = new HashSet(Arrays.asList(classNames.split("[, ]+")));
+        return implementsInterfaces(e, interfaces);
+    }
+
+    private boolean implementsInterfaces(Element e, Set<String> interfaces) {
         switch (e.getKind()) {
-            case CLASS: {
+            case CLASS:
+            case INTERFACE: {
                 TypeElement te = (TypeElement) e;
                 List<? extends TypeMirror> interfs = te.getInterfaces();
                 for (TypeMirror tm : interfs) {
                     e = ((DeclaredType) tm).asElement();
                     String clazz = processingEnv.getElementUtils().getBinaryName((TypeElement) e).toString();
-                    interfaces.remove(clazz);
+                    boolean contains = interfaces.remove(clazz);
+                    if (!contains) {
+                        implementsInterfaces(e, interfaces);
+                    }
                 }
                 break;
             }

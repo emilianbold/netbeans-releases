@@ -41,13 +41,16 @@ package org.netbeans.api.debugger;
 
 import java.util.List;
 
+import junit.framework.Test;
 import org.netbeans.api.debugger.providers.TestActionProvider;
 import org.netbeans.api.debugger.providers.TestAttachType;
 import org.netbeans.api.debugger.providers.TestBreakpointType;
 import org.netbeans.api.debugger.providers.TestColumnModel;
+import org.netbeans.api.debugger.providers.TestExtendedNodeModelFilter;
 import org.netbeans.api.debugger.providers.TestLazyActionsManagerListenerAnnotated;
 import org.netbeans.api.debugger.providers.TestLazyDebuggerManagerListenerAnnotated;
 import org.netbeans.api.debugger.providers.TestThreeModels;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.debugger.ui.models.ColumnModels;
 import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
@@ -55,7 +58,9 @@ import org.netbeans.spi.debugger.SessionProvider;
 import org.netbeans.spi.debugger.ui.AttachType;
 import org.netbeans.spi.debugger.ui.BreakpointType;
 import org.netbeans.spi.viewmodel.ColumnModel;
+import org.netbeans.spi.viewmodel.ExtendedNodeModelFilter;
 import org.netbeans.spi.viewmodel.NodeModel;
+import org.netbeans.spi.viewmodel.NodeModelFilter;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TreeModel;
 
@@ -68,6 +73,15 @@ public class ProvidersAnnotationTest  extends DebuggerApiTestBase {
     public ProvidersAnnotationTest(String s) {
         super(s);
     }
+
+    /* TODO:  Add this to simulate the IDE runtime behavior
+     *
+     *  PLEASE NOTE THAT THIS IS REQUIRED TO HAVE RELIABLE TEST OF SERVICES!
+     * 
+    public static Test suite() {
+        return NbModuleSuite.create(NbModuleSuite.createConfiguration(ProvidersAnnotationTest.class));
+    }
+     */
 
     public void testProviders() throws Exception {
         Lookup.MetaInf l = new Lookup.MetaInf("unittest");
@@ -166,6 +180,11 @@ public class ProvidersAnnotationTest  extends DebuggerApiTestBase {
         assertInstanceOf("Wrong looked up object", list3.get(0), TableModel.class);
         assertEquals("One provider instance should be created!", 1, TestThreeModels.INSTANCES.size());
         
+        List<? extends NodeModelFilter> list4 = l.lookup(null, NodeModelFilter.class);
+        assertEquals("Wrong looked up object", 1, list4.size());
+        assertInstanceOf("Wrong looked up object", list4.get(0), NodeModelFilter.class);
+        assertInstanceOf("Wrong looked up object", list4.get(0), ExtendedNodeModelFilter.class);
+        assertEquals("One provider instance should be created!", 1, TestExtendedNodeModelFilter.INSTANCES.size());
         }
     }
 

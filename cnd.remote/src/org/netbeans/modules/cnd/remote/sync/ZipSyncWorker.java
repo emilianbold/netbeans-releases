@@ -44,24 +44,29 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.InterruptedIOException;
 import java.io.PrintWriter;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
+import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.remote.sync.FileData.FileInfo;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Vladimir Kvashin
  */
-/*package-local*/ class ZipSyncWorker extends BaseSyncWorker implements RemoteSyncWorker {
+/*package-local*/ final class ZipSyncWorker extends BaseSyncWorker implements RemoteSyncWorker {
 
     private TimestampAndSharabilityFilter filter;
 
@@ -129,8 +134,7 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
         return tmpFile.exists() ? tmpFile : null;
     }
 
-    @Override
-    protected void synchronizeImpl(String remoteDir) throws InterruptedException, ExecutionException, IOException {
+    private void synchronizeImpl(String remoteDir) throws InterruptedException, ExecutionException, IOException {
 
         totalCount = uploadCount = 0;
         totalSize = uploadSize = 0;
@@ -258,6 +262,71 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
                     strTotalSize, totalCount, executionEnvironment, remoteDir,
                     strUploadSize, uploadCount, time, success ? "OK" : "FAILURE", speed); // NOI18N
         }
+    }
+
+
+    public boolean startup(Map<String, String> env2add) {
+        // Later we'll allow user to specify where to copy project files to
+        String remoteParent = RemotePathMap.getRemoteSyncRoot(executionEnvironment);
+        if (remoteParent == null) {
+            if (err != null) {
+                err.printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Cant_find_sync_root", ServerList.get(executionEnvironment).toString()));
+            }
+            return false; // TODO: error processing
+        }
+        if (topLocalDir == null) {
+            if (err != null) {
+                err.printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Cant_find_top_dir"));
+            }
+            return false;
+        }
+        String remoteDir = remoteParent + '/' + topLocalDir.getName(); //NOI18N
+
+        boolean success = false;
+        try {
+            boolean same;
+            try {
+                same = RemotePathMap.isTheSame(executionEnvironment, remoteDir, topLocalDir);
+            } catch (InterruptedException e) {
+                return false;
+            }
+            if (RemoteUtil.LOGGER.isLoggable(Level.FINEST)) {
+                RemoteUtil.LOGGER.finest(executionEnvironment.getHost() + ":" + remoteDir + " and " + topLocalDir.getAbsolutePath() + //NOI18N
+                        (same ? " are same - skipping" : " arent same - copying")); //NOI18N
+            }
+            if (!same) {
+                if (out != null) {
+                    out.printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Copying",
+                            remoteDir, ServerList.get(executionEnvironment).toString()));
+                }
+                RemotePathMap mapper = RemotePathMap.getPathMap(executionEnvironment);
+                synchronizeImpl(remoteDir);
+            }
+            success = true;
+        } catch (InterruptedException ex) {
+            // reporting does not make sense, just return false
+            RemoteUtil.LOGGER.finest(ex.getMessage());
+        } catch (InterruptedIOException ex) {
+            // reporting does not make sense, just return false
+            RemoteUtil.LOGGER.finest(ex.getMessage());
+        } catch (ExecutionException ex) {
+            RemoteUtil.LOGGER.log(Level.FINE, null, ex);
+            if (err != null) {
+                err.printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Error_Copying",
+                        remoteDir, ServerList.get(executionEnvironment).toString(), ex.getLocalizedMessage()));
+            }
+        } catch (IOException ex) {
+            RemoteUtil.LOGGER.log(Level.FINE, null, ex);
+            if (err != null) {
+                err.printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Error_Copying",
+                        remoteDir, ServerList.get(executionEnvironment).toString(), ex.getLocalizedMessage()));
+            }
+        }
+        return success;
+    }
+
+    @Override
+    public void shutdown() {
     }
 
     @Override

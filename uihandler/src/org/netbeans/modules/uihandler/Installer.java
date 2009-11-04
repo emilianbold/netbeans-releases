@@ -1574,7 +1574,9 @@ public class Installer extends ModuleInstall implements Runnable {
                     LOG.info("ALREADY SUBMITTING"); // NOI18N
                     return;
                 }
-                reportPanel.showCheckingPassword();
+		if (report){
+                    reportPanel.showCheckingPassword();
+		}
                 RP_SUBMIT.post(new Runnable() {
 
                     public void run() {

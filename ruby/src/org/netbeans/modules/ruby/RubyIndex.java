@@ -898,17 +898,23 @@ public final class RubyIndex {
     }
     
     /** 
-     * Gets the most distant method in the hierarchy that the given method overrides or
+     * Gets either the most distant or the closest method in the hierarchy that the given method overrides or
      * the method itself if it doesn't override any super methods.
+     *
+     * @param className the name of class where the given <code>methodName</code> is.
+     * @param methodName the name of the method.
+     * @param closest if true, gets the closest super method, otherwise the most distant.
      * 
      * @return method or <code>null</code> if the was no such method.
      */
-    public IndexedMethod getSuperMethod(String className, String methodName) {
+    public IndexedMethod getSuperMethod(String className, String methodName, boolean closest) {
         Set<IndexedMethod> methods = getInheritedMethods(className, methodName, QuerySupport.Kind.EXACT);
 
         // todo: performance?
         List<IndexedClass> superClasses = getSuperClasses(className);
-        Collections.reverse(superClasses);
+        if (!closest) {
+            Collections.reverse(superClasses);
+        }
 
         for (IndexedClass superClass : superClasses) {
             for (IndexedMethod method : methods) {
@@ -951,7 +957,7 @@ public final class RubyIndex {
      */
     public Set<IndexedMethod> getAllOverridingMethodsInHierachy(String methodName, String className) {
 
-        IndexedMethod superMethod = getSuperMethod(className, methodName);
+        IndexedMethod superMethod = getSuperMethod(className, methodName, false);
         if (superMethod == null) {
             return Collections.emptySet();
         }

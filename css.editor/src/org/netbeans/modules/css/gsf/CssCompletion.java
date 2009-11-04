@@ -106,8 +106,7 @@ public class CssCompletion implements CodeCompletionHandler {
         int caretOffset = context.getCaretOffset();
         String prefix = context.getPrefix() != null ? context.getPrefix() : "";
 
-        TokenHierarchy th = snapshot.getTokenHierarchy();
-        @SuppressWarnings("unchecked")
+        TokenHierarchy<?> th = snapshot.getTokenHierarchy();
         TokenSequence<CssTokenId> ts = th.tokenSequence(CssTokenId.language());
 
         assert ts != null;
@@ -501,7 +500,7 @@ public class CssCompletion implements CodeCompletionHandler {
             return null;
         }
         final String[] retval = new String[1];
-        ((BaseDocument) document).runAtomic(new Runnable() {
+        ((BaseDocument) document).render(new Runnable() {
             public void run() {
                 retval[0] = getPrefix(LexerUtils.getCssTokenSequence(document, caretOffset), caretOffset);
             }
@@ -570,6 +569,17 @@ public class CssCompletion implements CodeCompletionHandler {
 
     @Override
     public QueryType getAutoQuery(JTextComponent component, String typedText) {
+        int offset = component.getCaretPosition();
+        TokenSequence<CssTokenId> ts = LexerUtils.getJoinedTokenSequence(component.getDocument(), offset);
+        if(ts != null) {
+            if(ts.movePrevious() || ts.moveNext()) {
+                TokenId tid = ts.token().id();
+                if(tid == CssTokenId.IDENT) {
+                    return QueryType.COMPLETION;
+                }
+            }
+        }
+
         if (typedText == null || typedText.length() == 0) {
             return QueryType.NONE;
         }
@@ -581,6 +591,7 @@ public class CssCompletion implements CodeCompletionHandler {
                 return QueryType.STOP;
             }
             case ':':
+            case ' ':
             case ',': {
                 return QueryType.COMPLETION;
             }
@@ -786,7 +797,7 @@ public class CssCompletion implements CodeCompletionHandler {
 
         @Override
         public String getInsertPrefix() {
-            return super.getInsertPrefix() + ":"; //NOI18N
+            return super.getInsertPrefix() + ": "; //NOI18N
         }
     }
 

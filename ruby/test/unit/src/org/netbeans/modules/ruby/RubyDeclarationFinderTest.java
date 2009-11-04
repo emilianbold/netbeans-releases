@@ -77,7 +77,7 @@ public class RubyDeclarationFinderTest extends RubyTestBase {
     }
 
     public void testAttrDeclaration2() throws Exception {
-        checkDeclaration("testfiles/attr_declaration.rb", "attr_accessor :th^ud", "attr_declaration.rb", 58);
+        checkDeclaration("testfiles/attr_declaration.rb", "attr_accessor :th^ud", "attr_declaration.rb", 135);
     }
 
     public void testAttrDeclaration3() throws Exception {
@@ -110,6 +110,14 @@ public class RubyDeclarationFinderTest extends RubyTestBase {
 
     public void testNamedScopes2() throws Exception {
         checkDeclaration("testfiles/named_scopes_client.rb", "my_model.to^ka", "named_scopes.rb", 91);
+    }
+
+    public void testAliasMethod() throws Exception {
+        checkDeclaration("testfiles/alias_method.rb", "Far.new.far_far_aw^ay", "alias_method.rb", 48);
+    }
+
+    public void testSuperMethod() throws Exception {
+        checkDeclaration("testfiles/super_method.rb", "sup^er", "super_method.rb", 13);
     }
 
     //public void testDeclaration6() throws Exception {

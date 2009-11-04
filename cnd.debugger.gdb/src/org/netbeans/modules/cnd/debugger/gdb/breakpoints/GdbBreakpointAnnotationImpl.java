@@ -57,7 +57,10 @@ public class GdbBreakpointAnnotationImpl implements SessionBreakpointAnnotationP
         BreakpointImpl<?> bptImpl = GdbDebugger.getBreakpointImpl(b);
         if (bptImpl instanceof FunctionBreakpointImpl) {
             if (fo.getPath().equals(bptImpl.getFullname())) {
-                return new int[] {bptImpl.getLine()};
+                int line = bptImpl.getLine();
+                if (line >= 0) {
+                    return new int[] {line};
+                }
             }
         } else if (bptImpl instanceof AddressBreakpointImpl) {
             DisassemblyService disProvider = EditorContextBridge.getCurrentDisassemblyService();

@@ -61,6 +61,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
 /**
  * @author Chris Webster
@@ -80,7 +81,7 @@ public final class SessionChildren extends Children.Keys<SessionChildren.Key> im
     private final String ejbClass;
     private final EjbJar ejbModule;;
     private final SessionMethodController controller;
-    
+
     public SessionChildren(EjbViewController ejbViewController) {
         this.cpInfo = ejbViewController.getClasspathInfo();
         this.ejbClass = ejbViewController.getEjbClass();
@@ -109,6 +110,7 @@ public final class SessionChildren extends Children.Keys<SessionChildren.Key> im
                     results[REMOTE] = entity.getRemote() != null;
                     results[LOCAL] = entity.getLocal() != null;
 //                    results[BEAN] = controller.allowsNoInterface();
+                    entity.addPropertyChangeListener(WeakListeners.propertyChange(SessionChildren.this, entity));
                 }
                 return null;
             }
@@ -158,7 +160,6 @@ public final class SessionChildren extends Children.Keys<SessionChildren.Key> im
     
     public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
         SwingUtilities.invokeLater(new Runnable() {
-            
             public void run() {
                 try {
                     updateKeys();

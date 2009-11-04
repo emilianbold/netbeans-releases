@@ -368,14 +368,14 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
                 }
                 JPDADebugger lastDebugger = debuggerRef.get();
                 if (lastDebugger != null && debugger != lastDebugger) {
-                    lastDebugger.removePropertyChangeListener(JPDADebugger.PROP_CURRENT_THREAD, CodeEvaluator.this);
+                    lastDebugger.removePropertyChangeListener(JPDADebugger.PROP_CURRENT_CALL_STACK_FRAME, CodeEvaluator.this);
                     lastDebugger.removePropertyChangeListener(JPDADebugger.PROP_STATE, CodeEvaluator.this);
                     debuggerRef = new WeakReference(null);
                     displayResult(null);
                 }
                 if (debugger != null) {
                     debuggerRef = new WeakReference(debugger);
-                    debugger.addPropertyChangeListener(JPDADebugger.PROP_CURRENT_THREAD, CodeEvaluator.this);
+                    debugger.addPropertyChangeListener(JPDADebugger.PROP_CURRENT_CALL_STACK_FRAME, CodeEvaluator.this);
                     debugger.addPropertyChangeListener(JPDADebugger.PROP_STATE, CodeEvaluator.this);
                 } else {
                     history.clear();
@@ -659,7 +659,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
     // PropertyChangeListener on current thread .................................
 
     public void propertyChange(PropertyChangeEvent event) {
-        if (JPDADebugger.PROP_CURRENT_THREAD.equals(event.getPropertyName())) {
+        if (JPDADebugger.PROP_CURRENT_CALL_STACK_FRAME.equals(event.getPropertyName())) {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     synchronized (this) {

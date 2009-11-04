@@ -142,6 +142,15 @@ public final class PaletteController {
      * Default value is "CommonPalette".
      */
     public static final String ATTR_HELP_ID = "helpId";
+    /**
+     * Boolean attribute to be set on palette's root node or palette's root folder
+     * in XML layer to make the palette visible by default. When set to "false"
+     * then the palette window won't be visible when a document the palette is associated
+     * with is activated and user must open palette window manually for the first time.
+     * The default value is "true"
+     * @since 1.20
+     */
+    public static final String ATTR_PALETTE_DEFAULT_VISIBILITY = "paletteDefaultVisible"; //NOI18N
 
     /**
      * Palette clients should listen to changes of this property if they want to

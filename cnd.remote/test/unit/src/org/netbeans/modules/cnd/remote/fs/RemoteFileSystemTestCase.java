@@ -41,6 +41,7 @@ package org.netbeans.modules.cnd.remote.fs;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import org.netbeans.modules.cnd.remote.support.*;
 import java.io.InputStreamReader;
@@ -55,6 +56,7 @@ import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
+import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -65,16 +67,11 @@ import org.openide.filesystems.FileObject;
  */
 public class RemoteFileSystemTestCase extends RemoteTestBase {
 
-    static {
-        System.setProperty("cnd.remote.logger.level", "0");
-        System.setProperty("nativeexecution.support.logger.level", "0");
-    }
-
     private final RemoteFileSystem fs;
     private final FileObject rootFO;
     private final ExecutionEnvironment execEnv;
     
-    public RemoteFileSystemTestCase(String testName, ExecutionEnvironment execEnv) {
+    public RemoteFileSystemTestCase(String testName, ExecutionEnvironment execEnv) throws IOException, FormatException {
         super(testName, execEnv);
         this.execEnv = execEnv;
         fs = RemoteFileSystemManager.getInstance().get(execEnv);

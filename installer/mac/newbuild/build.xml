@@ -174,7 +174,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="build-pkg" depends="unzip-nb" description="Builds NB and packs packages" >                  
         <ant target="size-pack-module">
             <property name="module.name" value="baseide"/>
-            <property name="module.builddir" value="${basedir}/netBeans/${module.name}/build"/>
+            <property name="module.builddir" value="${basedir}/netBeans/baseide/build"/>
         </ant>            
         <ant dir="${basedir}/netBeans/baseide"/>          
         <ant target="build-modules"/>       
@@ -246,7 +246,6 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="init-bundles">
         <property name="main.bundles" value="
-                                                  (./build/baseide.pkg ./build/javase.pkg ./build/javaee.pkg ./build/cpp.pkg ./build/ruby.pkg ./build/php.pkg ./build/groovy.pkg ./build/ergonomics.pkg ./build/glassfish-v3.pkg ./build/tomcat.pkg),
                                              -javase(./build/baseide.pkg ./build/javase.pkg),
                                              -java(./build/baseide.pkg ./build/javase.pkg ./build/javaee.pkg ./build/groovy.pkg ./build/ergonomics.pkg ./build/glassfish-v3.pkg ./build/tomcat.pkg),
                                              -cpp(./build/baseide.pkg ./build/cpp.pkg),
@@ -255,7 +254,7 @@ Microsystems, Inc. All Rights Reserved.
                                              "/>
 
         <property name="fx.bundles" value="    
-                                               -javafx-full(./build/*pkg), 
+                                               (./build/*pkg), 
                                                -javafx(./build/baseide.pkg ./build/javase.pkg ./build/javafx.pkg)
                                           "/>
 

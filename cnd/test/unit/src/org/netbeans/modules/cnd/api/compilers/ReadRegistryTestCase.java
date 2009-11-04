@@ -261,11 +261,11 @@ public class ReadRegistryTestCase extends NbTestCase {
         String[] DEVELOPMENT_MODE_OPTIONS = {
             "", // Fast Build // NOI18N
             "-g", // Debug" // NOI18N
-            "-g -xO3 -xhwcprof", // Performance Debug" // NOI18N
+            "-g -xO2", // Performance Debug" // NOI18N
             "-xprofile=tcov -xinline=", // Test Coverage // NOI18N
-            "-g -xO2", // Dianosable Release // NOI18N
-            "-fast", // Release // NOI18N
-            "-xO5 -xipo=1 -xdepend -fsimple=1 -xlibmil -xlibmopt -xvector -xbuiltin", // Performance Release // NOI18N
+            "-g -O", // Dianosable Release // NOI18N
+            "-fast -xipo", // Release // NOI18N
+            "-fast -xipo", // Performance Release // NOI18N
         };
         String[] WARNING_LEVEL_OPTIONS = {
             "-w", // No Warnings // NOI18N
@@ -306,11 +306,11 @@ public class ReadRegistryTestCase extends NbTestCase {
         String[] DEVELOPMENT_MODE_OPTIONS = {
             "", // Fast Build // NOI18N
             "-g", // Debug" // NOI18N
-            "-g0 -xO3 -xhwcprof", // Performance Debug" // NOI18N
+            "-g0 -xO2", // Performance Debug" // NOI18N
             "-xprofile=tcov +d -xinline=", // Test Coverage // NOI18N
-            "-g0 -xO2", // Dianosable Release // NOI18N
-            "-fast", // Release // NOI18N
-            "-xO5 -xipo=1 -xdepend -fsimple=1 -xlibmil -xlibmopt -xvector -xbuiltin -sync_stdio=no", // Performance Release // NOI18N
+            "-g0 -O", // Dianosable Release // NOI18N
+            "-fast -xipo", // Release // NOI18N
+            "-fast -xipo", // Performance Release // NOI18N
         };
         String[] WARNING_LEVEL_OPTIONS = {
             "-w", // No Warnings // NOI18N
@@ -358,11 +358,11 @@ public class ReadRegistryTestCase extends NbTestCase {
         String[] DEVELOPMENT_MODE_OPTIONS = {
             "", // Fast Build // NOI18N
             "-g", // Debug" // NOI18N
-            "-g -O", // Performance Debug" // NOI18N
+            "-g -O2", // Performance Debug" // NOI18N
             "-g", // Test Coverage // NOI18N
-            "-g -O2", // Dianosable Release // NOI18N
+            "-g -O", // Dianosable Release // NOI18N
             "-fast", // Release // NOI18N
-            "-O4", // Performance Release // NOI18N
+            "-fast", // Performance Release // NOI18N
         };
         String[] WARNING_LEVEL_OPTIONS = {
             "-w", // No Warnings // NOI18N

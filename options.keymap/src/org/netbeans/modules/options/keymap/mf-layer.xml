@@ -85,7 +85,7 @@ made subject to such option by the copyright holder.
             <attr name="displayName" bundlevalue="org.netbeans.modules.options.keymap.Bundle#Keymaps.Options.Export.Category.displayName"/>
             <attr name="position" intvalue="600"/>
             <file name="Profiles">
-                <attr name="include" stringvalue="config/Keymaps/([^/]*)/.*|config/Shortcuts/.*"/>
+                <attr name="include" stringvalue="config/Keymaps/([^/]*)/.*|config/Shortcuts/.*|config/Editors/Keybindings/.*"/>
                 <attr name="displayName" bundlevalue="org.netbeans.modules.options.keymap.Bundle#Keymaps.Options.Export.Profiles.displayName"/>
             </file>
         </folder>

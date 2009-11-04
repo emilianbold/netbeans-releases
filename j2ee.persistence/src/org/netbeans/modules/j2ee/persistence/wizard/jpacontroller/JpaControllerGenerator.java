@@ -814,7 +814,7 @@ public class JpaControllerGenerator {
                         (
                         Persistence.VERSION_2_0.equals(version) ?
                             "CriteriaQuery cq = em.getCriteriaBuilder().createQuery();\n"+
-                            "Root<DiscountCode> rt = cq.from("+simpleEntityName+".class); "+
+                            "Root<"+simpleEntityName+"> rt = cq.from("+simpleEntityName+".class); "+
                             "cq.select(em.getCriteriaBuilder().count(rt));\n"+
                             "Query q = em.createQuery(cq);\n"
                             :

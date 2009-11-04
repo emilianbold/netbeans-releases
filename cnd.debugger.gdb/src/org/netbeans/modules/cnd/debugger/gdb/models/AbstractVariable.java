@@ -117,7 +117,7 @@ public abstract class AbstractVariable implements LocalVariable {
         for (Field field : fields) {
             // we only care about AbstractFields here, other implementations should care themselves
             if (field instanceof AbstractField) {
-                getDebugger().removePropertyChangeListener(GdbDebugger.PROP_VALUE_CHANGED, (AbstractField)field);
+                ((AbstractField)field).destroy();
             }
         }
         fields.clear();
@@ -231,16 +231,17 @@ public abstract class AbstractVariable implements LocalVariable {
                     value = value.equals("true") ? "1" : "0"; // NOI18N - gdb doesn't handle
                 }
                 this.value = getDebugger().updateVariable(fullname, value);
+                getDebugger().variableChanged(this);
+
+                // update parent if needed
                 if (this instanceof AbstractField) {
                     // This code transfers changes between Local Variables and Watches
                     AbstractVariable parent = ((AbstractField) this).parent;
                     while (parent instanceof AbstractField) {
-                        parent.value = getDebugger().requestValue(parent.getFullName());
-                        getDebugger().variableChanged(parent);
+                        parent.updateVariable();
                         parent = ((AbstractField) parent).parent;
                     }
-                    parent.value = getDebugger().requestValue(parent.getName());
-                    getDebugger().variableChanged(parent);
+                    parent.updateVariable();
 
                     // Special case: If a Watch is changed before the Local Variables view
                     // is displayed, the AbstractVariable will be created from the GdbVariable.
@@ -250,7 +251,6 @@ public abstract class AbstractVariable implements LocalVariable {
                     // No need to file this, locals update should be handled through getDebugger().variableChanged(parent);
                     //getDebugger().fireLocalsRefresh(parent);
                 }
-                getDebugger().variableChanged(this);
             }
         }
         if (msg != null) {
@@ -650,8 +650,10 @@ public abstract class AbstractVariable implements LocalVariable {
                     } else if (isNumber(fValue)) {
                         fType = "int"; // NOI18N - best guess (std::string drops an "int")
                     } else {
-                        log.warning("Cannot determine field type for " + fName); // NOI18N
-                        return anon_count;
+                        // see IZ 163290 (type is not provided for base class fields)
+                        fType = null;
+                        //log.warning("Cannot determine field type for " + fName); // NOI18N
+                        //return anon_count;
                     }
                 }
                 fields.add(new AbstractField(parent, fName, fType, fValue));
@@ -906,6 +908,7 @@ public abstract class AbstractVariable implements LocalVariable {
         assert GdbDebugger.PROP_VALUE_CHANGED.equals(evt.getPropertyName());
         assert evt.getNewValue() instanceof AbstractVariable;
         AbstractVariable av = (AbstractVariable) evt.getNewValue();
+        // find other variables and watches with the same name
         if (av != this && av.getFullName().equals(getFullName())) {
             if (av instanceof AbstractField) {
                 final AbstractVariable ancestor = ((AbstractField) this).getAncestor();
@@ -921,12 +924,8 @@ public abstract class AbstractVariable implements LocalVariable {
     }
 
     private void updateVariable() {
-        value = getDebugger().requestValue("\"" + getName() + "\""); // NOI18N
-//        String rt = getTypeInfo().getResolvedType(this);
-//        if (GdbUtils.isPointer(rt)) {
-//            derefValue = getDebugger().requestValue('*' + getName());
-//        }
-        setModifiedValue(value);
+        String newValue = getDebugger().requestValue("\"" + getFullName() + "\""); // NOI18N
+        setModifiedValue(newValue);
     }
 
     @Override
@@ -958,6 +957,17 @@ public abstract class AbstractVariable implements LocalVariable {
 
     protected String getFullName(boolean showBase) {
         return getName();
+    }
+
+    protected abstract void selfDestroy();
+
+    public void destroy() {
+        selfDestroy();
+        for (Field field : fields) {
+            if (field instanceof AbstractField) {
+                ((AbstractField) field).destroy();
+            }
+        }
     }
 
     private static class AbstractField extends AbstractVariable implements Field, PropertyChangeListener {
@@ -994,6 +1004,10 @@ public abstract class AbstractVariable implements LocalVariable {
             }
             
             parent.debugger.addPropertyChangeListener(GdbDebugger.PROP_VALUE_CHANGED, this);
+        }
+        
+        protected void selfDestroy() {
+            getDebugger().removePropertyChangeListener(GdbDebugger.PROP_VALUE_CHANGED, this);
         }
 
         protected AbstractVariable getAncestor() {

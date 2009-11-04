@@ -205,7 +205,7 @@ class ArchiveViews {
     private static final class DocBaseNode extends FilterNode {
 
         private static final DataFilter VISIBILITY_QUERY_FILTER = new VisibilityQueryDataFilter();
-        private static final Image CONFIGURATION_FILES_BADGE = ImageUtilities.loadImage( "org/netbeans/modules/j2ee/earproject/ui/resources/archive.gif", true ); // NOI18N
+        private final Image CONFIGURATION_FILES_BADGE = ImageUtilities.loadImage( "org/netbeans/modules/j2ee/earproject/ui/resources/archive.gif", true ); // NOI18N
         
         public DocBaseNode(DataFolder folder) {
             super(folder.getNodeDelegate(), folder.createNodeChildren(VISIBILITY_QUERY_FILTER));

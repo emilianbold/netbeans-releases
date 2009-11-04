@@ -552,8 +552,9 @@ public class SunStudioDataCollector
         this.notifyIndicators(data);
     }
 
-    /*package*/ void notifyIndicatorsThatProviderFinished() {
+    /*package*/ void notifyIndicatorsThatProviderFinished() {        
         super.suggestIndicatorsRepaint();
+        this.notifyIndicators(Arrays.asList(new DataRow(Arrays.asList("sunstudio.finished"),Arrays.asList(Boolean.TRUE) )));//NOI18N
     }
 
     private void targetStarted(DLightTarget source) {

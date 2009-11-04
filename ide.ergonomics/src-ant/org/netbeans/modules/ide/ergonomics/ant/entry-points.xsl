@@ -381,7 +381,7 @@
             <xsl:otherwise>
                 <xsl:variable name="prefix" select="substring-before($filename, '.xml')"/>
                 <xsl:attribute name="urlvalue">
-                    <xsl:text>nbresloc:/</xsl:text>
+                    <xsl:text>ergoloc:/</xsl:text>
                     <xsl:value-of select="translate($prefix, '.', '/')"/>
                     <xsl:text>/</xsl:text>
                     <xsl:value-of select="$url"/>

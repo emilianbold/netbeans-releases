@@ -70,6 +70,8 @@ public class AddDomainLocationVisualPanel extends javax.swing.JPanel {
         initComponents();
         registerLocalRB.setSelected(true);
         registerRemoteRB.setSelected(false);
+        hostNameField.setEnabled(false);
+        portValueField.setEnabled(false);
         setName(NbBundle.getMessage(AddDomainLocationVisualPanel.class, "TITLE_DomainLocation"));
         //domainField.getEditor().getEditorComponent().addKeyListener(arg0);
     }
@@ -197,11 +199,11 @@ public class AddDomainLocationVisualPanel extends javax.swing.JPanel {
             .add(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, explanationLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 391, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, explanationLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 401, Short.MAX_VALUE)
                     .add(jPanel1Layout.createSequentialGroup()
                         .add(domainFieldLabel)
                         .add(4, 4, 4)
-                        .add(domainField, 0, 334, Short.MAX_VALUE)))
+                        .add(domainField, 0, 342, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -264,7 +266,7 @@ public class AddDomainLocationVisualPanel extends javax.swing.JPanel {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(registerLocalRB)
-                .addContainerGap(236, Short.MAX_VALUE))
+                .addContainerGap(263, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
