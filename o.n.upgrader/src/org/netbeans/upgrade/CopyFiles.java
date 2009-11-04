@@ -40,14 +40,24 @@
  */
 package org.netbeans.upgrade;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.Reader;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JDialog;
+import javax.swing.JOptionPane;
+import org.netbeans.util.Util;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.EditableProperties;
 
 /** Does copy of files according to include/exclude patterns.
  *
@@ -57,17 +67,29 @@ final class CopyFiles extends Object {
 
     private File sourceRoot;
     private File targetRoot;
-    private IncludeExclude includeExclude;
+    private EditableProperties currentProperties;
+    private Set<String> includePatterns = new HashSet<String>();
+    private Set<String> excludePatterns = new HashSet<String>();
     private static final Logger LOGGER = Logger.getLogger(CopyFiles.class.getName());
 
-    private CopyFiles(File source, File target, IncludeExclude includeExclude) {
+    private CopyFiles(File source, File target, File patternsFile) {
         this.sourceRoot = source;
         this.targetRoot = target;
-        this.includeExclude = includeExclude;
+        try {
+            InputStream is = new FileInputStream(patternsFile);
+            Reader reader = new InputStreamReader(is, "utf-8"); // NOI18N
+            readPatterns(reader);
+            reader.close();
+        } catch (IOException ex) {
+            // show error message and continue
+            JDialog dialog = Util.createJOptionDialog(new JOptionPane(ex, JOptionPane.ERROR_MESSAGE), ex.getMessage());
+            dialog.setVisible(true);
+            return;
+        }
     }
 
-    public static void copyDeep(File source, File target, IncludeExclude includeExclude) throws IOException {
-        CopyFiles copyFiles = new CopyFiles(source, target, includeExclude);
+    public static void copyDeep(File source, File target, File patternsFile) throws IOException {
+        CopyFiles copyFiles = new CopyFiles(source, target, patternsFile);
         LOGGER.fine("Copying from: " + copyFiles.sourceRoot + "\nto: " + copyFiles.targetRoot);  //NOI18N
         copyFiles.copyFolder(copyFiles.sourceRoot);
     }
@@ -78,11 +100,7 @@ final class CopyFiles extends Object {
             if (child.isDirectory()) {
                 copyFolder(child);
             } else {
-                String relativePath = getRelativePath(this.sourceRoot, child);
-                if (includeExclude.contains(relativePath)) {
-                    LOGGER.fine("Path: " + relativePath);
-                    copyFile(child, new File(targetRoot, relativePath));
-                }
+                copyFile(child);
             }
         }
     }
@@ -120,6 +138,116 @@ final class CopyFiles extends Object {
         }
     }
 
+    /** Copy given file to target root dir if matches include/exclude patterns.
+     * If properties pattern is applicable, it copies only matching keys.
+     * @param sourceFile source file
+     * @throws java.io.IOException if copying fails
+     */
+    private void copyFile(File sourceFile) throws IOException {
+        String relativePath = getRelativePath(sourceRoot, sourceFile);
+        currentProperties = null;
+        boolean includeFile = false;
+        Set<String> includeKeys = new HashSet<String>();
+        Set<String> excludeKeys = new HashSet<String>();
+        for (String pattern : includePatterns) {
+            if (pattern.contains("#")) {  //NOI18N
+                includeKeys.addAll(matchingKeys(relativePath, pattern));
+            } else {
+                if (relativePath.matches(pattern)) {
+                    includeFile = true;
+                    includeKeys.clear();  // include entire file
+                    break;
+                }
+            }
+        }
+        if (includeFile || !includeKeys.isEmpty()) {
+            // check excludes
+            for (String pattern : excludePatterns) {
+                if (pattern.contains("#")) {  //NOI18N
+                    excludeKeys.addAll(matchingKeys(relativePath, pattern));
+                } else {
+                    if (relativePath.matches(pattern)) {
+                        includeFile = false;
+                        includeKeys.clear();  // exclude entire file
+                        break;
+                    }
+                }
+            }
+        }
+        LOGGER.log(Level.FINEST, "{0}, includeFile={1}, includeKeys={2}, excludeKeys={3}", new Object[]{relativePath, includeFile, includeKeys, excludeKeys});  //NOI18N
+        if (!includeFile && includeKeys.isEmpty()) {
+            // nothing matches
+            return;
+        }
+
+        File targetFile = new File(targetRoot, relativePath);
+        LOGGER.log(Level.FINE, "Path: {0}", relativePath);  //NOI18N
+        if (includeKeys.isEmpty() && excludeKeys.isEmpty()) {
+            // copy entire file
+            copyFile(sourceFile, targetFile);
+        } else {
+            if (!includeKeys.isEmpty()) {
+                currentProperties.keySet().retainAll(includeKeys);
+            }
+            currentProperties.keySet().removeAll(excludeKeys);
+            // copy just selected keys
+            LOGGER.log(Level.FINE, "  Only keys: {0}", currentProperties.keySet());
+            OutputStream out = null;
+            try {
+                ensureParent(targetFile);
+                out = new FileOutputStream(targetFile);
+                currentProperties.store(out);
+            } finally {
+                if (out != null) {
+                    out.close();
+                }
+            }
+        }
+    }
+
+    /** Returns set of keys matching given pattern.
+     * @param relativePath path relative to sourceRoot
+     * @param propertiesPattern pattern like file.properties#keyPattern
+     * @return set of matching keys, never null
+     * @throws IOException if properties cannot be loaded
+     */
+    private Set<String> matchingKeys(String relativePath, String propertiesPattern) throws IOException {
+        Set<String> matchingKeys = new HashSet<String>();
+        String[] patterns = propertiesPattern.split("#", 2);
+        String filePattern = patterns[0];
+        String keyPattern = patterns[1];
+        if (relativePath.matches(filePattern)) {
+            if (currentProperties == null) {
+                currentProperties = getProperties(relativePath);
+            }
+            for (String key : currentProperties.keySet()) {
+                if (key.matches(keyPattern)) {
+                    matchingKeys.add(key);
+                }
+            }
+        }
+        return matchingKeys;
+    }
+
+    /** Returns properties from relative path.
+     * @param relativePath relative path
+     * @return properties from relative path.
+     * @throws IOException if cannot open stream
+     */
+    private EditableProperties getProperties(String relativePath) throws IOException {
+        EditableProperties properties = new EditableProperties(false);
+        InputStream in = null;
+        try {
+            in = new FileInputStream(new File(sourceRoot, relativePath));
+            properties.load(in);
+        } finally {
+            if (in != null) {
+                in.close();
+            }
+        }
+        return properties;
+    }
+
     /** Creates parent of given file, if doesn't exist. */
     private static void ensureParent(File file) throws IOException {
         final File parent = file.getParentFile();
@@ -128,5 +256,105 @@ final class CopyFiles extends Object {
                 throw new IOException("Cannot create folder: " + parent.getAbsolutePath());  //NOI18N
             }
         }
+    }
+
+    /** Reads the include/exclude set from a given reader.
+     * @param r reader
+     */
+    private void readPatterns(Reader r) throws IOException {
+        BufferedReader buf = new BufferedReader(r);
+        for (;;) {
+            String line = buf.readLine();
+            if (line == null) {
+                break;
+            }
+            line = line.trim();
+            if (line.length() == 0 || line.startsWith("#")) {  //NOI18N
+                continue;
+            }
+            if (line.startsWith("include ")) {  //NOI18N
+                line = line.substring(8);
+                if (line.length() > 0) {
+                    includePatterns.addAll(parsePattern(line));
+                }
+            } else if (line.startsWith("exclude ")) {  //NOI18N
+                line = line.substring(8);
+                if (line.length() > 0) {
+                    excludePatterns.addAll(parsePattern(line));
+                }
+            } else {
+                throw new java.io.IOException("Wrong line: " + line);  //NOI18N
+            }
+        }
+    }
+
+    enum ParserState {
+
+        START,
+        IN_KEY_PATTERN,
+        AFTER_KEY_PATTERN,
+        IN_BLOCK
+    }
+
+    /** Parses given compound string pattern into set of single patterns.
+     * @param pattern compound pattern in form filePattern1#keyPattern1#|filePattern2#keyPattern2#|filePattern3
+     * @return set of single patterns containing just one # (e.g. [filePattern1#keyPattern1, filePattern2#keyPattern2, filePattern3])
+     */
+    private static Set<String> parsePattern(String pattern) {
+        Set<String> patterns = new HashSet<String>();
+        if (pattern.contains("#")) {  //NOI18N
+            StringBuilder partPattern = new StringBuilder();
+            ParserState state = ParserState.START;
+            int blockLevel = 0;
+            for (int i = 0; i < pattern.length(); i++) {
+                char c = pattern.charAt(i);
+                switch (state) {
+                    case START:
+                        if (c == '#') {
+                            state = ParserState.IN_KEY_PATTERN;
+                            partPattern.append(c);
+                        } else if (c == '(') {
+                            state = ParserState.IN_BLOCK;
+                            blockLevel++;
+                            partPattern.append(c);
+                        } else if (c == '|') {
+                            patterns.add(partPattern.toString());
+                            partPattern = new StringBuilder();
+                        } else {
+                            partPattern.append(c);
+                        }
+                        break;
+                    case IN_KEY_PATTERN:
+                        if (c == '#') {
+                            state = ParserState.AFTER_KEY_PATTERN;
+                        } else {
+                            partPattern.append(c);
+                        }
+                        break;
+                    case AFTER_KEY_PATTERN:
+                        if (c == '|') {
+                            state = ParserState.START;
+                            patterns.add(partPattern.toString());
+                            partPattern = new StringBuilder();
+                        } else {
+                            assert false : "Wrong OptionsExport pattern " + pattern + ". Only format like filePattern1#keyPattern#|filePattern2 is supported.";  //NOI18N
+                        }
+                        break;
+                    case IN_BLOCK:
+                        partPattern.append(c);
+                        if (c == ')') {
+                            blockLevel--;
+                            if (blockLevel == 0) {
+                                state = ParserState.START;
+                            }
+                        }
+                        break;
+                }
+            }
+            patterns.add(partPattern.toString());
+        } else {
+            patterns.add(pattern);
+        }
+        return patterns;
     }
 }
