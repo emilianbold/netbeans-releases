@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -62,7 +62,7 @@ import org.openide.util.NbBundle;
  * @author gordonp
  */
 public class RemoteServerSetup {
-    
+
     private final Map<String, String> binarySetupMap;
     private final Map<ExecutionEnvironment, List<String>> updateMap;
     private final ExecutionEnvironment executionEnvironment;
@@ -71,15 +71,15 @@ public class RemoteServerSetup {
     private boolean failed;
     private String reason;
     private String libDir;
-    
+
     /*package*/ RemoteServerSetup(ExecutionEnvironment executionEnvironment) {
         this.executionEnvironment = executionEnvironment;
         Lookup.Result<SetupProvider> results = Lookup.getDefault().lookup(new Lookup.Template<SetupProvider>(SetupProvider.class));
         Collection<? extends SetupProvider> list = results.allInstances();
         SetupProvider[] providers = list.toArray(new SetupProvider[list.size()]);
         libDir = HostInfoProvider.getLibDir(executionEnvironment); //NB: should contain trailing '/'
-        if (!libDir.endsWith("/")) {
-            libDir += "/";
+        if (!libDir.endsWith("/")) { // NOI18N
+            libDir += "/"; // NOI18N
         }
         // Binary setup map
         binarySetupMap = new HashMap<String, String>();
@@ -91,12 +91,12 @@ public class RemoteServerSetup {
                 }
             }
         }
-        
+
         updateMap = new HashMap<ExecutionEnvironment, List<String>>();
     }
 
     /*package*/ boolean needsSetupOrUpdate() {
-        List<String> updateList = new ArrayList<String>();        
+        List<String> updateList = new ArrayList<String>();
         updateMap.clear();
         if (!isFailedOrCanceled()) {
             updateList = getBinaryUpdates(updateList);
@@ -104,7 +104,7 @@ public class RemoteServerSetup {
         if (isFailedOrCanceled()) {
             return false;
         }
-        
+
         if (!updateList.isEmpty()) {
             updateMap.put(executionEnvironment, updateList);
             return true;
@@ -112,7 +112,7 @@ public class RemoteServerSetup {
             return false;
         }
     }
-    
+
     protected  void setup() {
         List<String> list = updateMap.remove(executionEnvironment);
         for (String path : list) {
@@ -140,10 +140,10 @@ public class RemoteServerSetup {
                 String cmd = String.format("sh -c \"if [ ! -d %s ]; then mkdir -p %s; fi\"", remoteDir, remoteDir); // NOI18N
                 RemoteCommandSupport.run(executionEnvironment, cmd);
             }
-        }        
+        }
         return RemoteCopySupport.copyTo(executionEnvironment, file.getAbsolutePath(), remoteFilePath);
     }
-        
+
     private List<String> getBinaryUpdates(List<String> list) {
 
         StringBuilder sb = new StringBuilder("sh -c \""); // NOI18N
@@ -172,17 +172,17 @@ public class RemoteServerSetup {
         }
         return list;
     }
-    
+
     /**
      * Map the reason to a more human readable form. The original reason is currently
      * always in English. This method would need changing were that to change.
-     * 
+     *
      * @return The reason, possibly localized and more readable
      */
     public String getReason() {
         return reason;
     }
-    
+
     protected boolean isCancelled() {
         return cancelled;
     }
@@ -198,5 +198,5 @@ public class RemoteServerSetup {
 
     private boolean isFailedOrCanceled() {
         return failed || cancelled;
-    }    
+    }
 }
