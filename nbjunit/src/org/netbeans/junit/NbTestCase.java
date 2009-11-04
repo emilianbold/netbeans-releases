@@ -80,6 +80,7 @@ import org.netbeans.insane.scanner.CountingVisitor;
 import org.netbeans.insane.scanner.ScannerUtils;
 import org.netbeans.junit.diff.Diff;
 import org.netbeans.junit.internal.MemoryPreferencesFactory;
+import org.netbeans.junit.internal.NbModuleLogHandler;
 /**
  * NetBeans extension to JUnit's {@link TestCase}.
  * Adds various abilities such as comparing golden files, getting a working
@@ -1271,7 +1272,9 @@ public abstract class NbTestCase extends TestCase implements NbTest {
      *  assertGC("WeakMap does not hold the key", ref, Collections.singleton(map));
      * </pre>
      */
-    public static void assertGC(String text, Reference<?> ref, Set<?> rootsHint) {
+    public static void assertGC(final String text, final Reference<?> ref, final Set<?> rootsHint) {
+        NbModuleLogHandler.whileIgnoringOOME(new Runnable() {
+            public void run() {
         List<byte[]> alloc = new ArrayList<byte[]>();
         int size = 100000;
         for (int i = 0; i < 50; i++) {
@@ -1310,6 +1313,8 @@ public abstract class NbTestCase extends TestCase implements NbTest {
             // OK
         }
         fail(text + ":\n" + str);
+            }
+        });
     }
     
     /** Assert size of some structure. Traverses the whole reference
