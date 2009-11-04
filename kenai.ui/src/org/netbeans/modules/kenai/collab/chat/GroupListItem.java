@@ -63,7 +63,7 @@ public class GroupListItem implements ContactListItem {
     @Override
     public String toString() {
         try {
-            return "<html><b>"+ 
+            return "<html><b>"+
                     Kenai.getDefault().getProject(group.getName()).getDisplayName() +
                     "</b><i> (chat room)</i></html>";
         } catch (KenaiException ex) {

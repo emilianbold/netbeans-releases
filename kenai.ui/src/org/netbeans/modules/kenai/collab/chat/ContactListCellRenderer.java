@@ -50,6 +50,7 @@ import java.awt.Dimension;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import javax.swing.border.EmptyBorder;
+import org.openide.awt.HtmlRenderer;
 import org.openide.util.ImageUtilities;
 
 /**
@@ -75,7 +76,7 @@ public class ContactListCellRenderer extends javax.swing.JPanel implements ListC
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        buddyLabel = new javax.swing.JLabel();
+        buddyLabel = HtmlRenderer.createLabel();
         messageLabel = new javax.swing.JLabel();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 3, 1, 5));
