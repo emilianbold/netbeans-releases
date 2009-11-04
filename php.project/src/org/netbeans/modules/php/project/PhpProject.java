@@ -48,6 +48,7 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -78,6 +79,7 @@ import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.IgnorePathSupport;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.phpunit.PhpUnit;
+import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleIgnoredFilesExtender;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -652,7 +654,7 @@ public class PhpProject implements Project {
             PhpFrameworks.addFrameworksListener(frameworksListener);
             // do it in a background thread
             getIgnoredFiles();
-            getFrameworks();
+            List<PhpFrameworkProvider> frameworkProviders = getFrameworks();
             getName();
 
             ClassPathProviderImpl cpProvider = lookup.lookup(ClassPathProviderImpl.class);
@@ -673,6 +675,16 @@ public class PhpProject implements Project {
 
             // #164073 - for the first time, let's do it not in AWT thread
             PhpUnit.validateVersion(CommandUtils.getPhpUnit(false));
+
+            // log usage
+            StringBuilder buffer = new StringBuilder(200);
+            for (PhpFrameworkProvider provider : frameworkProviders) {
+                if (buffer.length() > 0) {
+                    buffer.append("|"); // NOI18N
+                }
+                buffer.append(provider.getName());
+            }
+            PhpProjectUtils.logUsage(PhpProject.class, "USG_PROJECT_OPEN_PHP", Arrays.asList(buffer.toString())); // NOI18N
         }
 
         protected void projectClosed() {
