@@ -94,11 +94,11 @@ public class FilterRenderer extends javax.swing.JPanel implements ListCellRender
         groupLabel.setIcon(item.getIcon());
         groupLabel.setOpaque(isSelected);
         if (isSelected) {
-            groupLabel.setBackground(UIManager.getColor("ComboBox.selectionBackground"));
-            groupLabel.setForeground(UIManager.getColor("ComboBox.selectionForeground"));
+            groupLabel.setBackground(UIManager.getColor("ComboBox.selectionBackground")); // NOI18N
+            groupLabel.setForeground(UIManager.getColor("ComboBox.selectionForeground")); // NOI18N
         } else {
-            groupLabel.setBackground(UIManager.getColor("ComboBox.background"));
-            groupLabel.setForeground(UIManager.getColor("ComboBox.foreground"));
+            groupLabel.setBackground(UIManager.getColor("ComboBox.background")); // NOI18N
+            groupLabel.setForeground(UIManager.getColor("ComboBox.foreground")); // NOI18N
         }
         return this;
     }

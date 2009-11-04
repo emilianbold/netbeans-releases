@@ -155,7 +155,7 @@ public class ProjectNode extends TreeListNode {
                 btnClose = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/close.png", true), new RemoveProjectAction(project)); //NOI18N
                 btnClose.setToolTipText(NbBundle.getMessage(ProjectNode.class, "LBL_Close"));
                 btnClose.setRolloverEnabled(true);
-                btnClose.setRolloverIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/close_over.png", true));
+                btnClose.setRolloverIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/close_over.png", true)); // NOI18N
                 component.add( btnClose, new GridBagConstraints(4,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
             }
             lbl.setForeground(foreground);

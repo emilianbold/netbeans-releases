@@ -110,7 +110,7 @@ public class MemberHandleImpl extends MemberHandle {
 
     @Override
     public String getFullName() {
-        return delegate.getKenaiUser().getFirstName() + " " + delegate.getKenaiUser().getLastName();
+        return delegate.getKenaiUser().getFirstName() + " " + delegate.getKenaiUser().getLastName(); // NOI18N
     }
 
     public int compareTo(MemberHandle o) {

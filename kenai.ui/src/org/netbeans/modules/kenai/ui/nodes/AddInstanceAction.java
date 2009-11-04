@@ -65,7 +65,7 @@ public class AddInstanceAction extends AbstractAction {
     private static KenaiInstance showInputDialog() {
         String ret = "";
         KenaiInstanceCustomizer kenaiInstanceCustomizer = new KenaiInstanceCustomizer();
-        DialogDescriptor dd = new DialogDescriptor(kenaiInstanceCustomizer, "New Kenai Instance");
+        DialogDescriptor dd = new DialogDescriptor(kenaiInstanceCustomizer, NbBundle.getMessage(AddInstanceAction.class, "CTL_NewKenaiInstance"));
         kenaiInstanceCustomizer.setNotificationsSupport(dd.createNotificationLineSupport());
         kenaiInstanceCustomizer.setDialogDescriptor(dd);
         if (DialogDisplayer.getDefault().notify(dd).equals(DialogDescriptor.OK_OPTION)) {
