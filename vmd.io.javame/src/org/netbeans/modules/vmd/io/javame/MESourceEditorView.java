@@ -129,9 +129,11 @@ public final class MESourceEditorView implements DataEditorView {
     }
 
     public void componentOpened () {
+        editor.componentOpened();
     }
 
     public void componentClosed () {
+        editor.componentClosed();
     }
 
     public void componentShowing () {
@@ -182,10 +184,19 @@ public final class MESourceEditorView implements DataEditorView {
         }
 
         @Override
-        public void componentShowing() {
+        protected  void componentShowing() {
             super.componentShowing();
         }
 
+        @Override
+        protected void componentOpened() {
+            super.componentOpened();
+        }
+
+        @Override
+        protected void componentClosed() {
+            super.componentClosed();
+        }
 
     }
 }
