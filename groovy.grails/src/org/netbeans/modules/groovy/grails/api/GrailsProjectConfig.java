@@ -42,6 +42,8 @@ package org.netbeans.modules.groovy.grails.api;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
@@ -71,6 +73,8 @@ public final class GrailsProjectConfig {
     public static final String GRAILS_PROJECT_PLUGINS_DIR_PROPERTY = "grails.project.plugins.dir"; // NOI18N
 
     public static final String GRAILS_GLOBAL_PLUGINS_DIR_PROPERTY = "grails.global.plugins.dir"; // NOI18N
+
+    public static final String GRAILS_LOCAL_PLUGINS_PROPERTY = "grails.local.plugins"; // NOI18N
 
     public static final String GRAILS_VM_OPTIONS_PROPERTY = "grails.vm.options"; // NOI18N
 
@@ -339,5 +343,45 @@ public final class GrailsProjectConfig {
         }
         propertyChangeSupport.firePropertyChange(GRAILS_GLOBAL_PLUGINS_DIR_PROPERTY, oldValue, dir);
     }
-    
+
+    public Map<String, File> getLocalPlugins() {
+        synchronized (settings) {
+            Map<String, String> value = settings.getLocalPluginsForProject(prj);
+            if (value != null) {
+                File base = FileUtil.toFile(prj.getProjectDirectory());
+                Map<String, File> ret = new HashMap<String, File>();
+                for (Map.Entry<String, String> entry : value.entrySet()) {
+                    File file = new File(entry.getValue());
+                    if (!file.isAbsolute()) {
+                        file = new File(base, entry.getValue());
+                    }
+                    ret.put(entry.getKey(), file);
+                }
+                return ret;
+            }
+            return null;
+        }
+    }
+
+    public void setLocalPlugins(Map<String, File> plugins) {
+        Map<String, File> oldValue;
+        boolean changed = false;
+        synchronized (this) {
+            oldValue = getLocalPlugins();
+            Map<String, String> prepared = new HashMap<String, String>();
+            for (Map.Entry<String, File> entry : plugins.entrySet()) {
+                prepared.put(entry.getKey(), entry.getValue().getAbsolutePath());
+
+                File oldFile = oldValue.remove(entry.getKey());
+                if (oldFile == null || !oldFile.equals(entry.getValue())) {
+                    changed = true;
+                }
+            }
+            settings.setLocalPluginsForProject(prj, prepared);
+        }
+
+        if (changed || !oldValue.isEmpty()) {
+            propertyChangeSupport.firePropertyChange(GRAILS_LOCAL_PLUGINS_PROPERTY, oldValue, plugins);
+        }
+    }
 }

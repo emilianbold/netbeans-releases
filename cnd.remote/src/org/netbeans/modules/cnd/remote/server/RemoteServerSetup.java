@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,16 +31,15 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.cnd.remote.server;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -48,15 +47,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CancellationException;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.SetupProvider;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.cnd.remote.support.RemoteCopySupport;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.HostInfo;
-import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -66,7 +62,7 @@ import org.openide.util.NbBundle;
  * @author gordonp
  */
 public class RemoteServerSetup {
-    
+
     private final Map<String, String> binarySetupMap;
     private final Map<ExecutionEnvironment, List<String>> updateMap;
     private final ExecutionEnvironment executionEnvironment;
@@ -75,7 +71,7 @@ public class RemoteServerSetup {
     private boolean failed;
     private String reason;
     private String libDir;
-    
+
     /*package*/ RemoteServerSetup(ExecutionEnvironment executionEnvironment) {
         this.executionEnvironment = executionEnvironment;
         Lookup.Result<SetupProvider> results = Lookup.getDefault().lookup(new Lookup.Template<SetupProvider>(SetupProvider.class));
@@ -95,12 +91,12 @@ public class RemoteServerSetup {
                 }
             }
         }
-        
+
         updateMap = new HashMap<ExecutionEnvironment, List<String>>();
     }
 
     /*package*/ boolean needsSetupOrUpdate() {
-        List<String> updateList = new ArrayList<String>();        
+        List<String> updateList = new ArrayList<String>();
         updateMap.clear();
         if (!isFailedOrCanceled()) {
             updateList = getBinaryUpdates(updateList);
@@ -108,7 +104,7 @@ public class RemoteServerSetup {
         if (isFailedOrCanceled()) {
             return false;
         }
-        
+
         if (!updateList.isEmpty()) {
             updateMap.put(executionEnvironment, updateList);
             return true;
@@ -116,7 +112,7 @@ public class RemoteServerSetup {
             return false;
         }
     }
-    
+
     protected  void setup() {
         List<String> list = updateMap.remove(executionEnvironment);
         for (String path : list) {
@@ -144,47 +140,14 @@ public class RemoteServerSetup {
                 String cmd = String.format("sh -c \"if [ ! -d %s ]; then mkdir -p %s; fi\"", remoteDir, remoteDir); // NOI18N
                 RemoteCommandSupport.run(executionEnvironment, cmd);
             }
-        }        
-        return RemoteCopySupport.copyTo(executionEnvironment, file.getAbsolutePath(), remoteFilePath);
-    }
-
-    private String getUpdateCommand(String path, HostInfo hostInfo) {
-        if (hostInfo == null) {
-            return String.format("if [ ! -x %s ]; then echo %s; fi", path, path); // NOI18N
-        } else {
-            String localFileName = binarySetupMap.get(path);
-            File file = InstalledFileLocator.getDefault().locate(localFileName, null, false);
         }
+        return RemoteCopySupport.copyTo(executionEnvironment, file.getAbsolutePath(), remoteFilePath);
     }
 
     private List<String> getBinaryUpdates(List<String> list) {
 
-        String md5pattern = null; // parameters: path, checksum, path
-        String existencePattern = null; // parameters: path, path
-        
-        try {
-            HostInfo hostIinfo = HostInfoUtils.getHostInfo(executionEnvironment);
-            switch (hostIinfo.getOSFamily()) {
-                case LINUX:
-                    break;
-                case SUNOS:
-                    break;
-            }
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        } catch (CancellationException ex) {
-            // don't report CancellationException
-        }
-
-        if (md5pattern == null) {
-            existencePattern =
-        }
-
-
         StringBuilder sb = new StringBuilder("sh -c \""); // NOI18N
         for (String path : binarySetupMap.keySet()) {
-
-
             sb.append(String.format("if [ ! -x %s ]; then echo %s; fi;", path, path)); // NOI18N
         }
         sb.append("\""); // NOI18N
@@ -209,17 +172,17 @@ public class RemoteServerSetup {
         }
         return list;
     }
-    
+
     /**
      * Map the reason to a more human readable form. The original reason is currently
      * always in English. This method would need changing were that to change.
-     * 
+     *
      * @return The reason, possibly localized and more readable
      */
     public String getReason() {
         return reason;
     }
-    
+
     protected boolean isCancelled() {
         return cancelled;
     }
@@ -235,5 +198,5 @@ public class RemoteServerSetup {
 
     private boolean isFailedOrCanceled() {
         return failed || cancelled;
-    }    
+    }
 }

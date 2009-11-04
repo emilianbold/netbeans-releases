@@ -33,5 +33,7 @@
             <attr name="instanceOf" stringvalue="org.netbeans.spi.server.ServerInstanceProvider"/>
         </file>
 
+        <folder name="GlassFish">
+        </folder>
  </folder>
 </filesystem>

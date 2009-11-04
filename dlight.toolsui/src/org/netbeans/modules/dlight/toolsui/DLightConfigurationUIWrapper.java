@@ -88,7 +88,7 @@ public class DLightConfigurationUIWrapper {
             toolToAdd = toolToAdd == null ? dlightTool : toolToAdd;
             if (toolToAdd != null && toolToAdd.isVisible()) {
                 boolean canEnable = dlightConfiguration.getToolByID(dlightTool.getID()) != null;
-                boolean enabled = canEnable ? inList(dlightTool, confDlightTools) : false;
+                boolean enabled = toolToAdd.isEnabled() ? inList(dlightTool, confDlightTools) : false;
                 tools.add(new DLightToolUIWrapper(toolToAdd, enabled, canEnable));
             }
         }

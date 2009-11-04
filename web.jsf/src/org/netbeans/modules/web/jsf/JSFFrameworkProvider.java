@@ -52,6 +52,7 @@ import java.math.BigInteger;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -81,13 +82,13 @@ import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.web.api.webmodule.ExtenderController;
-import org.netbeans.modules.web.api.webmodule.ExtenderController.Properties;
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.api.facesmodel.Application;
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
 import org.netbeans.modules.web.jsf.api.facesmodel.ViewHandler;
+import org.netbeans.modules.web.jsf.palette.JSFPaletteUtilities;
 import org.netbeans.modules.web.project.api.WebPropertyEvaluator;
 import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
 import org.openide.util.NbBundle;
@@ -106,7 +107,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
     private static final String J2EE_SERVER_INSTANCE = "j2ee.server.instance";  //NOI18N
     private static String WELCOME_JSF = "welcomeJSF.jsp";   //NOI18N
     private static String WELCOME_XHTML = "index.xhtml"; //NOI18N
-    private static String WELCOME_XHTML_TEMPLATE = "simpleFacelets.template"; //NOI18N
+    private static String WELCOME_XHTML_TEMPLATE = "/Templates/JSP_Servlet/JSP.xhtml"; //NOI18N
     private static String TEMPLATE_XHTML = "template.xhtml"; //NOI18N
     private static String TEMPLATE_XHTML2 = "template-jsf2.xhtml"; //NOI18N
     private static String CSS_FOLDER = "css"; //NOI18N
@@ -568,11 +569,13 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
 //                    createFile(target, content, encoding.name());
 //                }
                 if (webModule.getDocumentBase().getFileObject(WELCOME_XHTML) == null){
-                    is = JSFFrameworkProvider.class.getClassLoader()
-                    .getResourceAsStream(FL_RESOURCE_FOLDER + WELCOME_XHTML_TEMPLATE);
-                    content = readResource(is, encoding.name());
                     target = FileUtil.createData(webModule.getDocumentBase(), WELCOME_XHTML);
-                    createFile(target, content, encoding.name());
+                    FileObject template = FileUtil.getConfigRoot().getFileObject(WELCOME_XHTML_TEMPLATE);
+                    HashMap<String, Object> params = new HashMap<String, Object>();
+                    if (isJSF20) {
+                        params.put("isJSF20", Boolean.TRUE);    //NOI18N
+                    }
+                    JSFPaletteUtilities.expandJSFTemplate(template, params, target);
                 }
 //                String defaultCSSFolder = CSS_FOLDER;
 //                if (isJSF20) {

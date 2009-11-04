@@ -199,10 +199,10 @@ public class ToolsManagerPanel extends PanelWithApply {
             for (DLightToolUIWrapper toolUI : configuration.getTools()) {
                 if (toolUI.isModified()) {
                     //if it was disabled and now enabled: should register
-                    if (!toolUI.isEnabled()) {
+                    if (!toolUI.canEnable()) {
                         DLightConfigurationSupport.getInstance().deleteTool(configuration.getName(), toolUI.getDLightTool());
                     } else {
-                        DLightConfigurationSupport.getInstance().registerTool(configuration.getName(), toolUI.getDLightTool().getID(), true);
+                        DLightConfigurationSupport.getInstance().registerTool(configuration.getName(), toolUI.getDLightTool().getID(), toolUI.isEnabled());
                     }
                 }
             }

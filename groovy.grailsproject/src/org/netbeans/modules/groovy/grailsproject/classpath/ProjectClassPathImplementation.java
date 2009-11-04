@@ -65,6 +65,7 @@ import org.netbeans.modules.groovy.grails.api.GrailsPlatform;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.modules.groovy.grailsproject.SourceCategory;
+import org.netbeans.modules.groovy.grailsproject.config.BuildConfig;
 import org.netbeans.modules.groovy.grailsproject.plugins.GrailsPlugin;
 import org.netbeans.modules.groovy.grailsproject.plugins.GrailsPluginSupport;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
@@ -98,7 +99,8 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
         GrailsProjectConfig config = GrailsProjectConfig.forProject(project);
         ProjectClassPathImplementation impl = new ProjectClassPathImplementation(config);
 
-        config.addPropertyChangeListener(WeakListeners.propertyChange(impl, config));
+        BuildConfig build = ((GrailsProject) config.getProject()).getBuildConfig();
+        build.addPropertyChangeListener(WeakListeners.propertyChange(impl, config));
 
         return impl;
     }
@@ -111,8 +113,7 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
-        if (GrailsProjectConfig.GRAILS_PROJECT_PLUGINS_DIR_PROPERTY.equals(evt.getPropertyName())
-                || GrailsProjectConfig.GRAILS_GLOBAL_PLUGINS_DIR_PROPERTY.equals(evt.getPropertyName())) {
+        if (BuildConfig.BUILD_CONFIG_PLUGINS.equals(evt.getPropertyName())) {
             synchronized (this) {
                 this.resources = null;
             }
@@ -157,6 +158,16 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
             }
         }
 
+        // in-place plugins
+        List<GrailsPlugin> localPlugins = ((GrailsProject) projectConfig.getProject()).getBuildConfig().getLocalPlugins();
+        for (GrailsPlugin plugin : localPlugins) {
+            if (plugin.getPath() != null) {
+                addLibs(plugin.getPath(), result);
+            }
+        }
+        // TODO listeners ?
+
+        // project plugins
         File oldPluginsDir = pluginsDir;
         File currentPluginsDir = ((GrailsProject) projectConfig.getProject()).getBuildConfig().getProjectPluginsDir();
 
@@ -183,6 +194,7 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
             }
         }
 
+        // global plugins
         // TODO philosophical question: Is the global plugin boot or compile classpath?
         File oldGlobalPluginsDir = globalPluginsDir;
         File currentGlobalPluginsDir = ((GrailsProject) projectConfig.getProject()).getBuildConfig().getGlobalPluginsDir();
@@ -234,7 +246,14 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
     }
 
     private void addLibs(File root, List<PathResourceImplementation> result) {
+        if (!root.exists() || !root.isDirectory()) {
+            return;
+        }
+
         File libDir = new File(root, SourceCategory.LIB.getRelativePath());
+        if (!libDir.exists() || !libDir.isDirectory()) {
+            return;
+        }
 
         addJars(libDir, result, false);
     }
@@ -277,7 +296,6 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
         }
 
         public void fileAttributeChanged(FileAttributeEvent fe) {
-            fireChange();
         }
 
         public void fileChanged(FileEvent fe) {
