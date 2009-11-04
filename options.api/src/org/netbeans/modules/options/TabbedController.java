@@ -42,6 +42,7 @@ package org.netbeans.modules.options;
 import java.awt.Component;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -62,6 +63,7 @@ import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  * Common Controller for all options categories composed by subpanels
@@ -74,6 +76,7 @@ public class TabbedController extends OptionsPanelController {
     private Lookup.Result<AdvancedOption> options;
     private Map<String, OptionsPanelController> id2Controller;
     private Map<JComponent, OptionsPanelController> component2Option;
+    private Lookup masterLookup;
     private final LookupListener lookupListener = new LookupListener() {
         public void resultChanged(LookupEvent ev) {
             readPanels();
@@ -146,9 +149,10 @@ public class TabbedController extends OptionsPanelController {
         if (pane == null) {
             pane = new JTabbedPane();
             pane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(TabbedController.class, "TabbedController.pane.AD"));
+            this.masterLookup = masterLookup;
             component2Option = new HashMap<JComponent, OptionsPanelController>();
             for (OptionsPanelController c : getControllers()) {
-                JComponent comp = c.getComponent( c.getLookup());
+                JComponent comp = c.getComponent(masterLookup);
                 comp.setBorder(new EmptyBorder(8, 8, 8, 8));
                 pane.add( controllers2Options.get(c).getDisplayName(), comp);
                 component2Option.put(comp, c);
@@ -195,9 +199,25 @@ public class TabbedController extends OptionsPanelController {
         if (controller == null) {
             return;
         }
-        JComponent c = controller.getComponent(controller.getLookup());
+        JComponent c = controller.getComponent(masterLookup);
         if (c != pane.getSelectedComponent()) {
             pane.setSelectedComponent(c);
+        }
+    }
+
+    @Override
+    public Lookup getLookup() {
+        List<Lookup> lookups = new ArrayList<Lookup>();
+        for (OptionsPanelController controller : getControllers()) {
+            Lookup lookup = controller.getLookup();
+            if (lookup != Lookup.EMPTY) {
+                lookups.add(lookup);
+            }
+        }
+        if (lookups.isEmpty()) {
+            return Lookup.EMPTY;
+        } else {
+            return new ProxyLookup(lookups.toArray(new Lookup[lookups.size()]));
         }
     }
 
