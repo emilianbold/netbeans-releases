@@ -189,7 +189,7 @@ public final class ReferenceImplementation extends SunJavaCardServer {
                     getContactedProtocol(),
                     "-contactlessport", //NOI18N
                     getContactlessPort(),
-                    noSuspend ? "-nosuspend" : "", //NOI18N
+                    forDebug? (noSuspend ? "-nosuspend" : "") : "", //NOI18N
                 };
     }
 

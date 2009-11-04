@@ -143,7 +143,8 @@ public class FromWSDLTSuite extends WsValidation {
         //the format of port selection is: "<serviceName>#<portName>"
         jtfo.waitText("#"); //NOI18N
         op.finish();
-        waitForWsImport("(wsimport-service-" + name); //NOI18N
+        boolean isAnt = getProjectType().isAntBasedProject();
+        waitForWsImport("(wsimport-service-" + name, isAnt); //NOI18N
     }
     
     @Override

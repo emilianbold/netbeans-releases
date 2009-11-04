@@ -38,40 +38,20 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.websvc.core.jaxws.actions;
 
-import org.netbeans.modules.websvc.jaxws.api.JaxWsRefreshCookie;
-import org.openide.util.actions.CookieAction;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.nodes.Node;
 
-public class JaxWsRefreshAction extends CookieAction {
-    public String getName() {
-        return NbBundle.getMessage(JaxWsRefreshAction.class, "LBL_RefreshAction");
+package org.netbeans.modules.websvc.rest.samples.ui;
+
+
+public class LeanServiceECBSamplePanelVisual extends SampleWizardPanelVisual{
+    private static final long serialVersionUID = 1L;
+    /** Creates new form PanelProjectLocationVisual */
+    public LeanServiceECBSamplePanelVisual(SampleWizardPanel panel) {
+        super(panel);
     }
-    
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-    
-    protected int mode() {
-        return MODE_EXACTLY_ONE;
-    }
-    
-    protected Class[] cookieClasses() {
-        return new Class[] {JaxWsRefreshCookie.class};
-    }
-    
+
     @Override
-    protected boolean asynchronous() {
-        return true;
+    protected String getDefaultProjectName() {
+        return "LeanServiceECBComponentWithAjax"; // NOI18N
     }
-    
-    protected void performAction(Node[] activatedNodes) {
-        JaxWsRefreshCookie cookie = 
-           activatedNodes[0].getCookie(JaxWsRefreshCookie.class);
-        cookie.refreshService(true);
-    }
-  
 }

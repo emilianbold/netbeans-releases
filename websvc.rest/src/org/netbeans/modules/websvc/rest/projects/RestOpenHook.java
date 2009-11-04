@@ -84,7 +84,6 @@ public class RestOpenHook extends ProjectOpenedHook {
         if (support == null) return;
         try {
             final RestServicesModel model = getModel(support);
-            assert model != null : "null model";
             if (model != null) {
                 model.runReadActionWhenReady(new MetadataModelAction<RestServicesMetadata, Void>() {
                     public Void run(RestServicesMetadata metadata) throws IOException {
@@ -108,7 +107,6 @@ public class RestOpenHook extends ProjectOpenedHook {
         if (support == null) return;
         try {
             RestServicesModel model = getModel(support);
-            assert model != null : "null model";
             if (model != null) {
                 model.runReadActionWhenReady(new MetadataModelAction<RestServicesMetadata, Void>() {
                     public Void run(RestServicesMetadata metadata) throws IOException {

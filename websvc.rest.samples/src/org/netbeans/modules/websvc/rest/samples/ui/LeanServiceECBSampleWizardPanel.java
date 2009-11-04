@@ -38,38 +38,27 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.websvc.core.jaxws.actions;
 
-import org.netbeans.modules.websvc.jaxws.api.JaxWsRefreshCookie;
-import org.openide.util.actions.CookieAction;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.nodes.Node;
 
-public class JaxWsRefreshClientAction extends CookieAction {
-    public String getName() {
-        return NbBundle.getMessage(JaxWsRefreshClientAction.class, "LBL_RefreshClientAction");
+package org.netbeans.modules.websvc.rest.samples.ui;
+
+/**
+ * Panel just asking for basic info.
+ */
+public class LeanServiceECBSampleWizardPanel extends SampleWizardPanel {
+
+    private SampleWizardPanelVisual myComponent;
+
+    /** Creates a new instance of templateWizardPanel */
+    public LeanServiceECBSampleWizardPanel() {
+        super();
     }
-    
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-    
-    protected int mode() {
-        return MODE_EXACTLY_ONE;
-    }
-    
-    protected Class[] cookieClasses() {
-        return new Class[] {JaxWsRefreshCookie.class};
-    }
-    
-    protected boolean asynchronous() {
-        return true;
-    }
-    
-    protected void performAction(Node[] activatedNodes) {
-        JaxWsRefreshCookie cookie = 
-           activatedNodes[0].getCookie(JaxWsRefreshCookie.class);
-        if (cookie != null) cookie.refreshService(true);
+
+    @Override
+    public SampleWizardPanelVisual getComponent() {
+        if (myComponent == null) {
+            myComponent = new LeanServiceECBSamplePanelVisual(this);
+        }
+        return myComponent;
     }
 }

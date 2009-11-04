@@ -38,40 +38,65 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.websvc.core.jaxws.actions;
 
-import org.netbeans.modules.websvc.jaxws.api.JaxWsRefreshCookie;
-import org.openide.util.actions.CookieAction;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.nodes.Node;
+package org.netbeans.modules.websvc.rest.samples.ui;
 
-public class JaxWsRefreshAction extends CookieAction {
-    public String getName() {
-        return NbBundle.getMessage(JaxWsRefreshAction.class, "LBL_RefreshAction");
-    }
+import java.io.File;
+import java.io.IOException;
+import java.util.Set;
+import org.netbeans.spi.project.ui.support.ProjectChooser;
+import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+
+/**
+ *
+ * @author Peter Liu
+ * 
+ */
+public class LeanServiceECBSampleWizardIterator extends SampleWizardIterator {
+    private static final long serialVersionUID = 1L;
     
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
+    public LeanServiceECBSampleWizardIterator() {}
     
-    protected int mode() {
-        return MODE_EXACTLY_ONE;
-    }
-    
-    protected Class[] cookieClasses() {
-        return new Class[] {JaxWsRefreshCookie.class};
+    public static LeanServiceECBSampleWizardIterator createIterator() {
+        return new LeanServiceECBSampleWizardIterator();
     }
     
     @Override
-    protected boolean asynchronous() {
-        return true;
+    protected WizardDescriptor.Panel[] createPanels() {
+        return new WizardDescriptor.Panel[] {
+            new LeanServiceECBSampleWizardPanel(),
+        };
     }
     
-    protected void performAction(Node[] activatedNodes) {
-        JaxWsRefreshCookie cookie = 
-           activatedNodes[0].getCookie(JaxWsRefreshCookie.class);
-        cookie.refreshService(true);
-    }
-  
+    @Override
+    public Set instantiate() throws IOException {
+        setProjectConfigNamespace(null);
+        Set resultSet = super.instantiate();
+        
+        //replace tokens
+        String[][] tokens = { {"LeanServiceECBComponentWithAjax", (String) wiz.getProperty(NAME)} };
+        String[] files = 
+            {   "web/WEB-INF/sun-web.xml", 
+                "nbproject/project.properties", "nbproject/project.xml", 
+                "build.xml"
+            };        
+        replaceTokens(getProject().getProjectDirectory(), files, tokens);
+        
+        FileObject dirParent = null;
+        
+        if( getProject()!= null && getProject().getProjectDirectory()!=null)
+            dirParent = getProject().getProjectDirectory().getParent();
+                
+        // See issue 80520.
+        // On some machines the project just created is not immediately detected.
+        // For those cases use determine the directory with lines below.
+        if(dirParent == null) {            
+            dirParent = FileUtil.toFileObject(FileUtil.normalizeFile((File) wiz.getProperty(PROJDIR)));
+        } 
+        
+        ProjectChooser.setProjectsFolder(FileUtil.toFile(dirParent.getParent()));
+        return resultSet;
+    }    
 }
