@@ -259,5 +259,9 @@ public class RubyIndexerTest extends RubyTestBase {
         checkIndexer("testfiles/named_scopes.rb");
     }
 
+    public void testTypeInferenceInstVars() throws Exception {
+        checkIndexer("testfiles/inst_var_type_inference.rb");
+    }
+
     // TODO - test :nodoc: on methods and classes!!!
 }
