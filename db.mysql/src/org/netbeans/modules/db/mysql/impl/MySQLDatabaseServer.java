@@ -86,6 +86,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
+import org.openide.windows.InputOutput;
 
 /**
  * Model for a server.  Currently just uses MySQLOptions since we only
@@ -326,6 +327,7 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
                 setShortDescription(Utils.getMessage("LBL_ServerShortDescriptionError", configError));
             }
         }
+        closeOutput();
     }
 
     public String getShortDescription() {
@@ -809,6 +811,7 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
             runProcess(adminCommand, getAdminArgs(),
                     true, Utils.getMessage(
                         "LBL_MySQLOutputTab"));
+            closeOutput();
         } else {
             throw new DatabaseException(NbBundle.getMessage(
                     DatabaseServer.class,
@@ -908,6 +911,14 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
 
     public synchronized boolean hasConfigurationError() {
         return runstate == ServerState.CONFIGERR;
+    }
+
+    private static void closeOutput() {
+        InputOutput io = org.openide.windows.IOProvider.getDefault().getIO(
+                Utils.getMessage("LBL_MySQLOutputTab"), false); // NOI18N
+        if (io != null && io.getOut() != null) {
+            io.getOut().close();
+        }
     }
 
     private abstract class DatabaseCommand implements Runnable {
@@ -1015,6 +1026,7 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
             } finally {
                 if (proc != null) {
                     proc.destroy();
+                closeOutput();
                 }
                 handle.finish();
             }
@@ -1022,6 +1034,7 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
         
         public boolean cancel() {
             proc.destroy();
+            closeOutput();
             return true;
         }
 
