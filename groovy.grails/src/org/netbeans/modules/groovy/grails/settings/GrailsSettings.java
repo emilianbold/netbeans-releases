@@ -32,9 +32,13 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
@@ -73,6 +77,8 @@ public final class GrailsSettings {
     private static final String GRAILS_PROJECT_PLUGINS_DIR_KEY = "grailsPrj-ProjectPluginsDir-"; // NOI18N
 
     private static final String GRAILS_GLOBAL_PLUGINS_DIR_KEY = "grailsPrj-GlobalPluginsDir-"; // NOI18N
+
+    private static final String GRAILS_LOCAL_PLUGINS_KEY = "grailsPrj-LocalPlugins-"; // NOI18N
 
     private static GrailsSettings instance;
 
@@ -222,6 +228,49 @@ public final class GrailsSettings {
         getPreferences().put(getGlobalPluginsDirKey(prj), dir);
     }
 
+    public Map<String, String> getLocalPluginsForProject(Project prj) {
+        assert prj != null;
+
+        Preferences prefs = getPreferences();
+        Preferences subPrefs = prefs.node(getLocalPluginsKey(prj));
+        Map<String, String> ret = new HashMap<String, String>();
+        try {
+            for (String name : subPrefs.keys()) {
+                String value = subPrefs.get(name, null);
+                if (value != null) {
+                    ret.put(name, value);
+                }
+            }
+        } catch (BackingStoreException ex) {
+            return Collections.emptyMap();
+        }
+        return ret;
+    }
+
+    public void setLocalPluginsForProject(Project prj, Map<String, String> plugins) {
+        assert prj != null;
+
+        Preferences prefs = getPreferences();
+        Preferences subPrefs = prefs.node(getLocalPluginsKey(prj));
+
+        Set<String> keys = null;
+        try {
+            keys = new HashSet<String>(Arrays.asList(subPrefs.keys()));
+        } catch (BackingStoreException ex) {
+            keys = Collections.emptySet();
+        }
+
+        for (Map.Entry<String, String> entry : plugins.entrySet()) {
+            if (entry.getKey() != null && entry.getValue() != null) {
+                subPrefs.put(entry.getKey(), entry.getValue());
+                keys.remove(entry.getKey());
+            }
+        }
+        for (String key : keys) {
+            subPrefs.remove(key);
+        }
+    }
+
     private String getProjectName(Project prj) {
         assert prj != null;
 
@@ -270,6 +319,11 @@ public final class GrailsSettings {
         return GRAILS_GLOBAL_PLUGINS_DIR_KEY + getProjectName(prj);
     }
 
+    private String getLocalPluginsKey(Project prj) {
+        assert prj != null;
+        return GRAILS_LOCAL_PLUGINS_KEY + getProjectName(prj);
+    }
+
     private Preferences getPreferences() {
         return NbPreferences.forModule(GrailsSettings.class);
     }
@@ -312,7 +366,7 @@ public final class GrailsSettings {
      *
      * I don't know if it could be included into a shared module.
     */
-    public static Iterable<String> dirsOnPath() {
+    private static Iterable<String> dirsOnPath() {
         String rawPath = System.getenv("PATH"); // NOI18N
         if (rawPath == null) {
             rawPath = System.getenv("Path"); // NOI18N
