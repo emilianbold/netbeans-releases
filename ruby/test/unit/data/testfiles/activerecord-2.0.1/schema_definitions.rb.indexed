@@ -2,11 +2,11 @@
 
 Document 0
 Searchable Keys:
-  attribute : columns
+  attribute : columns;;Array;
   class : TableDefinition
   class-ig : tabledefinition
-  field : base
-  field : columns
+  field : base|PRIVATE
+  field : columns|PRIVATE;;Array;
   fqn : ActiveRecord::ConnectionAdapters::TableDefinition
   method : [](name)|DOCUMENTED|
   method : column(name,type,options)|DOCUMENTED|;;TableDefinition;
@@ -30,50 +30,50 @@ Searchable Keys:
   attribute : default
   attribute : limit
   attribute : name
-  attribute : null
+  attribute : null;;TrueClass;
   attribute : precision
-  attribute : primary
+  attribute : primary;;NilClass;
   attribute : scale
-  attribute : sql_type
+  attribute : sql_type;;NilClass;
   attribute : type
   class : Column
   class-ig : column
-  field : default
-  field : limit
-  field : name
-  field : null
-  field : precision
-  field : primary
-  field : scale
-  field : sql_type
-  field : type
+  field : default|PRIVATE
+  field : limit|PRIVATE
+  field : name|PRIVATE
+  field : null|PRIVATE;;TrueClass;
+  field : precision|PRIVATE
+  field : primary|PRIVATE;;NilClass;
+  field : scale|PRIVATE
+  field : sql_type|PRIVATE;;NilClass;
+  field : type|PRIVATE
   fqn : ActiveRecord::ConnectionAdapters::Column
   method : binary_to_string(value)|DOCUMENTED|STATIC|
   method : extract_default(default)
-  method : extract_limit(sql_type)|PRIVATE|
-  method : extract_precision(sql_type)|PRIVATE|
-  method : extract_scale(sql_type)|PRIVATE|
+  method : extract_limit(sql_type)|PRIVATE|;;Integer;
+  method : extract_precision(sql_type)|PRIVATE|;;Integer;
+  method : extract_scale(sql_type)|PRIVATE|;;Fixnum|Integer;
   method : fallback_string_to_date(string)|PROTECTED|STATIC|
   method : fallback_string_to_time(string)|PROTECTED|STATIC|
   method : fast_string_to_date(string)|PROTECTED|STATIC|
   method : fast_string_to_time(string)|DOCUMENTED|PROTECTED|STATIC|
   method : human_name|DOCUMENTED|
-  method : initialize(name,default,sql_type,null)|DOCUMENTED|PRIVATE|
+  method : initialize(name,default,sql_type,null)|DOCUMENTED|PRIVATE|;;NilClass;
   method : klass|DOCUMENTED|
   method : microseconds(time)|DOCUMENTED|PROTECTED|STATIC|;;Integer;
-  method : new(name,default,sql_type,null)|DOCUMENTED|PRIVATE|STATIC|
-  method : new_date(year,mon,mday)|PROTECTED|STATIC|
+  method : new(name,default,sql_type,null)|DOCUMENTED|PRIVATE|STATIC|;;NilClass;
+  method : new_date(year,mon,mday)|PROTECTED|STATIC|;;Date;
   method : new_time(year,mon,mday,hour,min,sec,microsec)|PROTECTED|STATIC|;;NilClass;
   method : number?;;TrueClass|FalseClass;
-  method : simplified_type(field_type)|PRIVATE|
+  method : simplified_type(field_type)|PRIVATE|;;Symbol;
   method : string_to_binary(value)|DOCUMENTED|STATIC|
   method : string_to_date(string)|STATIC|;;NilClass;
   method : string_to_dummy_time(string)|STATIC|;;NilClass;
   method : string_to_time(string)|STATIC|;;NilClass;
   method : text?;;TrueClass|FalseClass;
-  method : type_cast(value)|DOCUMENTED|;;NilClass;
-  method : type_cast_code(var_name)
-  method : value_to_boolean(value)|DOCUMENTED|STATIC|
+  method : type_cast(value)|DOCUMENTED|;;NilClass|Integer|Float;
+  method : type_cast_code(var_name);;NilClass|String;
+  method : value_to_boolean(value)|DOCUMENTED|STATIC|;;TrueClass|FalseClass;
   method : value_to_decimal(value)|DOCUMENTED|STATIC|
   require : schema_definitions
 

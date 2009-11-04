@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.WeakHashMap;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -220,8 +221,8 @@ public final class ToolchainManagerImpl {
     public boolean isMyFolder(String path, ToolchainDescriptor d, int platform, boolean known) {
         boolean res = isMyFolderImpl(path, d, platform, known);
         if (TRACE && res) {
-            System.err.println("Path [" + path + "] belongs to tool chain " + d.getName());
-        } // NOI18N
+            System.err.println("Path [" + path + "] belongs to tool chain " + d.getName()); // NOI18N
+        }
         return res;
     }
 
@@ -271,14 +272,14 @@ public final class ToolchainManagerImpl {
         }
         pattern = Pattern.compile(c.getVersionPattern());
         String command = LinkSupport.resolveWindowsLink(file.getAbsolutePath());
-        String s = getCommandOutput(path, command + " " + flag, true); // NOI18N
+        String s = getCommandOutput(path, command + " " + flag); // NOI18N
         boolean res = pattern.matcher(s).find();
         if (TRACE && !res) {
-            System.err.println("No match for pattern [" + c.getVersionPattern() + "]:");
-        } // NOI18N
+            System.err.println("No match for pattern [" + c.getVersionPattern() + "]:"); // NOI18N
+        }
         if (TRACE && !res) {
-            System.err.println("Run " + path + "/" + c.getNames()[0] + " " + flag + "\n" + s);
-        } // NOI18N
+            System.err.println("Run " + path + "/" + c.getNames()[0] + " " + flag + "\n" + s); // NOI18N
+        }
         return res;
     }
 
@@ -357,8 +358,8 @@ public final class ToolchainManagerImpl {
         String base = null;
         try {
             if (TRACE) {
-                System.err.println("Read registry " + key);
-            } // NOI18N
+                System.err.println("Read registry " + key); // NOI18N
+            }
             Process process = pb.start();
             BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
             Pattern p = Pattern.compile(pattern);
@@ -366,14 +367,14 @@ public final class ToolchainManagerImpl {
             while ((line = br.readLine()) != null) {
                 line = line.trim();
                 if (TRACE) {
-                    System.err.println("\t" + line);
-                } // NOI18N
+                    System.err.println("\t" + line); // NOI18N
+                }
                 Matcher m = p.matcher(line);
                 if (m.find() && m.groupCount() == 1) {
                     base = m.group(1).trim();
                     if (TRACE) {
-                        System.err.println("\tFound " + base);
-                    } // NOI18N
+                        System.err.println("\tFound " + base); // NOI18N
+                    }
                 }
             }
         } catch (Exception ex) {
@@ -388,8 +389,8 @@ public final class ToolchainManagerImpl {
         return base;
     }
 
-    private static String getCommandOutput(String path, String command, boolean stdout) {
-        StringBuilder buf = new StringBuilder();
+    private static final WeakHashMap<String, String> commandCache = new WeakHashMap<String, String>();
+    private static String getCommandOutput(String path, String command) {
         if (path == null) {
             path = ""; // NOI18N
         }
@@ -403,6 +404,12 @@ public final class ToolchainManagerImpl {
                 envp.add(entry);
             }
         }
+        String res = commandCache.get(command); // NOI18N
+        if (res != null) {
+            //System.err.println("Get command output from cache #"+command); // NOI18N
+            return res;
+        }
+        StringBuilder buf = new StringBuilder();
         try {
             Process process = Runtime.getRuntime().exec(command, envp.toArray(new String[envp.size()])); // NOI18N
             InputStream is = process.getInputStream();
@@ -454,6 +461,7 @@ public final class ToolchainManagerImpl {
                 ex.printStackTrace();
             }
         }
+        commandCache.put(command, buf.toString()); // NOI18N
         return buf.toString();
     }
 
@@ -548,6 +556,7 @@ public final class ToolchainManagerImpl {
                             element.setAttribute("uc_url", descriptor.getUpdateCenterUrl()); // NOI18N
                             element.setAttribute("module_id", descriptor.getModuleID()); // NOI18N
                             element.setAttribute("uc_display", descriptor.getUpdateCenterDisplayName()); // NOI18N
+                            element.setAttribute("upgrade_url", descriptor.getUpgradeUrl()); // NOI18N
                             root.appendChild(element);
                         }
 
@@ -1015,6 +1024,11 @@ public final class ToolchainManagerImpl {
             c.setAttribute("pattern", scanner.getChangeDirectoryPattern()); // NOI18N
             element.appendChild(c);
         }
+        if (scanner.getMakeAllInDirectoryPattern() != null) {
+            c = doc.createElement("making_all_in_directory"); // NOI18N
+            c.setAttribute("pattern", scanner.getMakeAllInDirectoryPattern()); // NOI18N
+            element.appendChild(c);
+        }
         if (scanner.getLeaveDirectoryPattern() != null) {
             c = doc.createElement("leave_directory"); // NOI18N
             c.setAttribute("pattern", scanner.getLeaveDirectoryPattern()); // NOI18N
@@ -1163,6 +1177,7 @@ public final class ToolchainManagerImpl {
         String platforms;
         String uc;
         String ucName;
+        String upgrage;
         String module;
         String driveLetterPrefix;
         List<FolderInfo> baseFolder;
@@ -1271,6 +1286,7 @@ public final class ToolchainManagerImpl {
         String changeDirectoryPattern;
         String enterDirectoryPattern;
         String leaveDirectoryPattern;
+        String makingAllInDirectoryPattern;
         String stackHeaderPattern;
         String stackNextPattern;
         List<String> filterOut = new ArrayList<String>();
@@ -1585,6 +1601,7 @@ public final class ToolchainManagerImpl {
                 v.uc = getValue(attributes, "uc_url"); // NOI18N
                 v.ucName = getValue(attributes, "uc_display"); // NOI18N
                 v.module = getValue(attributes, "module_id"); // NOI18N
+                v.upgrage = getValue(attributes, "upgrade_url"); // NOI18N
                 return;
             } else if (path.endsWith(".drive_letter_prefix")) { // NOI18N
                 v.driveLetterPrefix = getValue(attributes, "stringvalue"); // NOI18N
@@ -1756,6 +1773,8 @@ public final class ToolchainManagerImpl {
                     s.stackNextPattern = getValue(attributes, "pattern"); // NOI18N
                 } else if (path.endsWith(".filter_out")) { // NOI18N
                     s.filterOut.add(getValue(attributes, "pattern")); // NOI18N
+                } else if (path.endsWith(".making_all_in_directory")) { // NOI18N
+                    s.makingAllInDirectoryPattern = getValue(attributes, "pattern"); // NOI18N
                 }
                 return;
             }
@@ -2072,6 +2091,10 @@ public final class ToolchainManagerImpl {
 
         public String getUpdateCenterDisplayName() {
             return v.ucName;
+        }
+
+        public String getUpgradeUrl() {
+            return v.upgrage;
         }
 
         public String getModuleID() {
@@ -2404,6 +2427,10 @@ public final class ToolchainManagerImpl {
 
         public String getLeaveDirectoryPattern() {
             return s.leaveDirectoryPattern;
+        }
+
+        public String getMakeAllInDirectoryPattern() {
+            return s.makingAllInDirectoryPattern;
         }
 
         public String getStackHeaderPattern() {

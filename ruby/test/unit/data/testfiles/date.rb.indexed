@@ -12,21 +12,21 @@ Searchable Keys:
   constant : ITALY;Fixnum
   constant : JULIAN;FalseClass
   constant : MONTHNAMES;Array
-  field : ajd
-  field : of
-  field : sg
+  field : ajd|PRIVATE;;Fixnum;
+  field : of|PRIVATE;;Fixnum;
+  field : sg|PRIVATE;;Fixnum;
   fqn : Date
-  method : +(n)|DOCUMENTED|
-  method : -(x)|DOCUMENTED|
+  method : +(n)|DOCUMENTED|;;Date;
+  method : -(x)|DOCUMENTED|;;Date;
   method : <<(n)|DOCUMENTED|
   method : <=>(other)|DOCUMENTED|;;Fixnum|NilClass;
   method : ===(other)|DOCUMENTED|;;TrueClass|FalseClass;
   method : >>(n)|DOCUMENTED|;;Date;
   method : _dump(limit)|DOCUMENTED|
   method : _load(str)|DOCUMENTED|STATIC|
-  method : ajd_to_amjd(ajd)|DOCUMENTED|STATIC|;;Fixnum;
+  method : ajd_to_amjd(ajd)|DOCUMENTED|STATIC|
   method : ajd_to_jd(ajd,of)|DOCUMENTED|STATIC|
-  method : ajd|DOCUMENTED|
+  method : ajd|DOCUMENTED|;;Fixnum;
   method : amjd_to_ajd(amjd)|DOCUMENTED|STATIC|
   method : amjd|DOCUMENTED|
   method : civil(y,m,d,sg)|DOCUMENTED|PRIVATE|STATIC|
@@ -38,6 +38,7 @@ Searchable Keys:
   method : cwday|DOCUMENTED|
   method : cweek|DOCUMENTED|
   method : cwyear|DOCUMENTED|
+  method : day
   method : day_fraction_to_time(fr)|DOCUMENTED|STATIC|;;Array;
   method : day_fraction|DOCUMENTED|
   method : downto(min,&block)|DOCUMENTED|
@@ -47,7 +48,7 @@ Searchable Keys:
   method : gregorian|DOCUMENTED|
   method : hash|DOCUMENTED|
   method : hour|DOCUMENTED|PRIVATE|
-  method : initialize(ajd,of,sg)|DOCUMENTED|PRIVATE|
+  method : initialize(ajd,of,sg)|DOCUMENTED|PRIVATE|;;Array;
   method : inspect|DOCUMENTED|
   method : italy|DOCUMENTED|
   method : jd(jd,sg)|DOCUMENTED|STATIC|
@@ -64,18 +65,22 @@ Searchable Keys:
   method : ld_to_jd(ld)|DOCUMENTED|STATIC|
   method : ld|DOCUMENTED|
   method : leap?|DOCUMENTED|;;TrueClass|FalseClass;
+  method : leap?|STATIC|;;TrueClass|FalseClass;
   method : mday|DOCUMENTED|
   method : min|DOCUMENTED|PRIVATE|
   method : mjd_to_jd(mjd)|DOCUMENTED|STATIC|
   method : mjd|DOCUMENTED|
+  method : month
   method : mon|DOCUMENTED|
-  method : new(ajd,of,sg)|DOCUMENTED|PRIVATE|STATIC|
+  method : new(ajd,of,sg)|DOCUMENTED|PRIVATE|STATIC|;;Array;
   method : new_offset(of)|PRIVATE|
   method : new_start(sg)|DOCUMENTED|
   method : new_with_hash(elem,sg)|STATIC|
+  method : new|STATIC|
+  method : next;;Date;
   method : ns?(jd,sg)|DOCUMENTED|STATIC|;;TrueClass|FalseClass;
   method : ns?|DOCUMENTED|;;TrueClass|FalseClass;
-  method : offset|PRIVATE|
+  method : offset|PRIVATE|;;Fixnum;
   method : once(*ids)|PRIVATE|STATIC|
   method : ordinal(y,d,sg)|DOCUMENTED|PRIVATE|STATIC|
   method : ordinal_to_jd(y,d,sg)|DOCUMENTED|STATIC|
@@ -85,7 +90,7 @@ Searchable Keys:
   method : parse(str,comp,sg)|DOCUMENTED|STATIC|
   method : sec_fraction|DOCUMENTED|PRIVATE|
   method : sec|DOCUMENTED|PRIVATE|
-  method : start|DOCUMENTED|
+  method : start|DOCUMENTED|;;Fixnum;
   method : step(limit,step)|DOCUMENTED|;;Date;
   method : strptime(str,fmt,sg)|DOCUMENTED|STATIC|
   method : succ|DOCUMENTED|;;Date;
@@ -96,6 +101,7 @@ Searchable Keys:
   method : upto(max,&block)|DOCUMENTED|
   method : valid_civil?(y,m,d,sg)|DOCUMENTED|STATIC|;;TrueClass|FalseClass;
   method : valid_commercial?(y,w,d,sg)|DOCUMENTED|STATIC|;;TrueClass|FalseClass;
+  method : valid_date?|STATIC|;;TrueClass|FalseClass;
   method : valid_jd?(jd,sg)|DOCUMENTED|STATIC|;;TrueClass|FalseClass;
   method : valid_ordinal?(y,d,sg)|DOCUMENTED|STATIC|;;TrueClass|FalseClass;
   method : wday|DOCUMENTED|
@@ -132,6 +138,7 @@ Searchable Keys:
   method : commercial(y,w,d,h,min,s,of,sg)|DOCUMENTED|STATIC|
   method : jd(jd,h,min,s,of,sg)|DOCUMENTED|STATIC|
   method : new_with_hash(elem,sg)|STATIC|
+  method : new|STATIC|
   method : now(sg)|DOCUMENTED|STATIC|
   method : ordinal(y,d,h,min,s,of,sg)|DOCUMENTED|STATIC|
   method : parse(str,comp,sg)|DOCUMENTED|STATIC|

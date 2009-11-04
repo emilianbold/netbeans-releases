@@ -70,7 +70,7 @@ import org.openide.awt.StatusDisplayer;
 
 public class JCProjectActionProvider implements ActionProvider, PropertyChangeListener {
 
-    private static final String[] appSupportedActions = {
+    private static final String[] webOrExtAppSupportedActions = {
         COMMAND_BUILD,
         COMMAND_CLEAN,
         COMMAND_RUN,
@@ -83,8 +83,26 @@ public class JCProjectActionProvider implements ActionProvider, PropertyChangeLi
         ActionNames.COMMAND_JC_LOAD,
         ActionNames.COMMAND_JC_CREATE,
         ActionNames.COMMAND_JC_DELETE,
-        ActionNames.COMMAND_JC_UNLOAD,};
-    private static final String[] libSupportedActions = {
+        ActionNames.COMMAND_JC_UNLOAD,
+    };
+    private static final String[] classicAppSupportedActions = {
+        COMMAND_BUILD,
+        COMMAND_CLEAN,
+        COMMAND_RUN,
+        //COMMAND_DEBUG,
+        COMMAND_REBUILD,
+        COMMAND_DELETE,
+        COMMAND_COPY,
+        COMMAND_MOVE,
+        COMMAND_RENAME,
+        ActionNames.COMMAND_JC_LOAD,
+        ActionNames.COMMAND_JC_CREATE,
+        ActionNames.COMMAND_JC_DELETE,
+        ActionNames.COMMAND_JC_UNLOAD,
+        ActionNames.COMMAND_JC_GENPROXY,
+    };
+
+    private static final String[] extLibSupportedActions = {
         COMMAND_BUILD,
         COMMAND_CLEAN,
         COMMAND_REBUILD,
@@ -94,6 +112,18 @@ public class JCProjectActionProvider implements ActionProvider, PropertyChangeLi
         COMMAND_RENAME,
         ActionNames.COMMAND_JC_LOAD,
         ActionNames.COMMAND_JC_UNLOAD,
+    };
+    private static final String[] classicLibSupportedActions = {
+        COMMAND_BUILD,
+        COMMAND_CLEAN,
+        COMMAND_REBUILD,
+        COMMAND_DELETE,
+        COMMAND_COPY,
+        COMMAND_MOVE,
+        COMMAND_RENAME,
+        ActionNames.COMMAND_JC_LOAD,
+        ActionNames.COMMAND_JC_UNLOAD,
+        ActionNames.COMMAND_JC_GENPROXY,
     };
 
     private Set<String> supportedActionsSet;
@@ -105,8 +135,7 @@ public class JCProjectActionProvider implements ActionProvider, PropertyChangeLi
     public JCProjectActionProvider(JCProject project) {
         this.project = project;
         supportedActionsSet = new HashSet<String>();
-        String[] supportedActions = project.kind().isApplication() ? appSupportedActions : libSupportedActions;
-        supportedActionsSet.addAll (Arrays.asList(supportedActions));
+        supportedActionsSet.addAll (Arrays.asList(getSupportedActions()));
         modifiedFiles = new TreeSet<String>();
         SourceRoots roots = project.getRoots();
         for (FileObject srcRoot : roots.getRoots()) {
@@ -154,7 +183,22 @@ public class JCProjectActionProvider implements ActionProvider, PropertyChangeLi
     }
 
     public String[] getSupportedActions() {
-        return project.kind().isApplication() ? appSupportedActions : libSupportedActions;
+        String[] sa = null;
+        if(project.kind().isApplication()) {
+            if(project.kind().isClassic()) {
+                sa = classicAppSupportedActions;
+            } else {
+                sa = webOrExtAppSupportedActions;
+    }
+        } else { // library
+            if(project.kind().isClassic()) { // classic library
+                sa = classicLibSupportedActions;
+            } else {
+                sa = extLibSupportedActions;
+            }
+        }
+
+        return sa;
     }
 
     public void invokeAction(final String command, final Lookup context)
@@ -363,6 +407,8 @@ public class JCProjectActionProvider implements ActionProvider, PropertyChangeLi
             targets.add("delete-instance");
         } else if (ActionNames.COMMAND_JC_UNLOAD.equals(command)) {
             targets.add("unload-bundle");
+        } else if (ActionNames.COMMAND_JC_GENPROXY.equals(command)) {
+            targets.add("generate-sio-proxies");
         }
 
         return targets.toArray(new String[targets.size()]);

@@ -44,9 +44,11 @@ package org.netbeans.spi.palette;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.palette.Utils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
+import org.openide.nodes.Node;
 
 /**
  * A class that listens to changes to the set of opened TopComponents and to the
@@ -70,8 +72,14 @@ final class PaletteVisibility {
         FileObject fo = findPaletteTopComponentSettings();
         boolean res = defValue;
         Object val = null == fo ? null : fo.getAttribute( "_palette_visible_"+paletteId );
-        if( val instanceof Boolean )
+        if( val instanceof Boolean ) {
             res = ((Boolean)val).booleanValue();
+        } else if( null != pc ) {
+            Node rootNode = pc.getRoot().lookup(Node.class);
+            if( null != rootNode ) {
+                res = Utils.getBoolean(rootNode, PaletteController.ATTR_PALETTE_DEFAULT_VISIBILITY, defValue);
+            }
+        }
         return res;
     }
     

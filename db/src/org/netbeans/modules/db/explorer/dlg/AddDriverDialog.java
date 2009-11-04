@@ -174,11 +174,13 @@ public class AddDriverDialog extends javax.swing.JPanel {
                     fileName = diskFile.getAbsolutePath();
                 }
             } else {
-                try {
-                    fileName = new File(new URI(url.toExternalForm())).getAbsolutePath();
-                } catch (URISyntaxException e) {
-                    Exceptions.printStackTrace(e);
-                    fileName = null;
+                if (url.getProtocol().equals("file")) {  //NOI18N
+                    try {
+                        fileName = new File(new URI(url.toExternalForm())).getAbsolutePath();
+                    } catch (URISyntaxException e) {
+                        Exceptions.printStackTrace(e);
+                        fileName = null;
+                    }
                 }
             }
             if (fileName != null) {
@@ -370,8 +372,9 @@ public class AddDriverDialog extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void drvClassComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_drvClassComboBoxActionPerformed
-        if (!customizer)
+        if (!customizer) {
             nameTextField.setText(DriverListUtil.findFreeName(DriverListUtil.getName((String) drvClassComboBox.getSelectedItem())));
+        }
     }//GEN-LAST:event_drvClassComboBoxActionPerformed
 
     private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
@@ -381,9 +384,9 @@ public class AddDriverDialog extends javax.swing.JPanel {
         int count = dlm.getSize();
         int i = 0;
         
-        if (count < 1)
+        if (count < 1) {
             return;
-        
+        }
         do {
             if (lsm.isSelectedIndex(i)) {
                 dlm.remove(i);
@@ -464,7 +467,7 @@ public class AddDriverDialog extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
     
     private boolean isDriverClass(URLClassLoader jarloader, String className) {
-        Class clazz;
+        Class<?> clazz;
 
         try {
             clazz = jarloader.loadClass(className);
@@ -521,9 +524,11 @@ public class AddDriverDialog extends javax.swing.JPanel {
 
                 File file = new File(new URI(url.toExternalForm()));
                 jf = new JarFile(file);
-                for (int j = 0; j < drivers.length; j++)
-                    if (jf.getEntry(drivers[j].replace('.', '/') + ".class") != null) //NOI18N
+                for (int j = 0; j < drivers.length; j++) {
+                    if (jf.getEntry(drivers[j].replace('.', '/') + ".class") != null) {  //NOI18N
                         addDriverClass(drivers[j]);
+                    }
+                }
                 jf.close();
             } catch (IOException exc) {
                 //PENDING
@@ -584,8 +589,9 @@ public class AddDriverDialog extends javax.swing.JPanel {
     }
     
     private void addDriverClass(String drv) {
-        if (((DefaultComboBoxModel) drvClassComboBox.getModel()).getIndexOf(drv) < 0)
+        if (((DefaultComboBoxModel) drvClassComboBox.getModel()).getIndexOf(drv) < 0) {
             drvClassComboBox.addItem(drv);
+        }
     }
     
     private void startProgress() {

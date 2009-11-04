@@ -126,7 +126,12 @@ public class ProjectFolder extends JPanel implements ActionListener, DocumentLis
     }
 
     private void setWarning(boolean enabled) {
-        projectFolderScrollPane.setVisible(enabled && isProjectDifferentFromSources());
+        boolean visible = enabled && isProjectDifferentFromSources();
+        if (projectFolderScrollPane.isVisible() != visible) {
+            projectFolderScrollPane.setVisible(visible);
+            revalidate();
+            repaint();
+        }
     }
 
     // #169784

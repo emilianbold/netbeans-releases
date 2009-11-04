@@ -158,6 +158,8 @@ public class ModuleFactoryAlienTest extends SetupHid {
             AlienModule am = (AlienModule)m2;
             am.loader.l = new URLClassLoader(new URL[] { am.jar.toURI().toURL() }, m1.getClassLoader());
 
+            assertFalse("Finish without exception", m2.provides("false"));
+
 
             Class<?> clazz = m2.getClassLoader().loadClass("org.bar.SomethingElse");
             Class<?> sprclass = m2.getClassLoader().loadClass("org.foo.Something");

@@ -51,6 +51,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 import javax.swing.Icon;
 import javax.swing.JLabel;
 import javax.swing.text.Document;
@@ -59,6 +60,8 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.util.KenaiUtil;
+import org.netbeans.modules.kenai.api.KenaiException;
+import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiNotification;
 import org.netbeans.modules.kenai.api.KenaiNotification.Modification;
 import org.netbeans.modules.kenai.api.KenaiProject;
@@ -69,6 +72,7 @@ import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.netbeans.modules.versioning.util.VCSKenaiSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -256,11 +260,15 @@ public class VCSKenaiSupportImpl extends VCSKenaiSupport implements PropertyChan
     private class VCSKenaiNotificationImpl extends VCSKenaiNotification {
         private final KenaiNotification kn;
         private final File projectDir;
+        private final KenaiProject kp;
+        private String serviceName;
 
-        public VCSKenaiNotificationImpl(KenaiNotification kn, File projectDir) {
+        public VCSKenaiNotificationImpl(KenaiNotification kn, KenaiProject kp, File projectDir) {
+            assert kp != null;
             assert kn != null;
             assert kn.getType() == KenaiService.Type.SOURCE;
             this.kn = kn;
+            this.kp = kp;
             this.projectDir = projectDir;
         }
 
@@ -273,12 +281,34 @@ public class VCSKenaiSupportImpl extends VCSKenaiSupport implements PropertyChan
         }
 
         public Service getService() {
-            if(kn.getServiceName().equals(KenaiService.Names.SUBVERSION)) {
-                return Service.VCS_SVN;
-            } else if (kn.getServiceName().equals(KenaiService.Names.MERCURIAL)) {
-                return Service.VCS_HG;
+            if(serviceName == null) {
+                KenaiFeature[] features = null;
+                try {
+                    features = kp.getFeatures(KenaiService.Type.SOURCE);
+                    for (KenaiFeature kf : features) {
+                        if(kf.getName().equals(kn.getServiceName())) {
+                            serviceName = kf.getService();
+                            break;
+                        }
+                    }
+                } catch (KenaiException ex) {
+                    LOG.log(Level.WARNING, null, ex);
+                }
+                if(serviceName == null) {
+                    // fallback
+                    serviceName = kn.getServiceName();
+                }
+
             }
-            return Service.UNKNOWN;
+
+            if(serviceName.equals(KenaiService.Names.SUBVERSION)) {
+                return Service.VCS_SVN;
+            } else if (serviceName.equals(KenaiService.Names.MERCURIAL)) {
+                return Service.VCS_HG;
+            } else {
+                LOG.warning("Unknown kenai scm service name " + serviceName);
+                return Service.UNKNOWN;
+            }
         }
 
         public List<VCSKenaiModification> getModifications() {
@@ -375,9 +405,16 @@ public class VCSKenaiSupportImpl extends VCSKenaiSupport implements PropertyChan
                 if (!url.equals(kn.getUri().toString())) {
                     continue;
                 }
-                String name = KenaiProject.getNameForRepository(url);
+                KenaiProject kp;
+                try {
+                    kp = KenaiProject.forRepository(url);
+                } catch (KenaiException ex) {
+                    LOG.log(Level.WARNING, null, ex);
+                    return;
+                }
+                String name = kp.getName();
                 if (name.equals(projectName)) {
-                    support.firePropertyChange(PROP_KENAI_VCS_NOTIFICATION, null, new VCSKenaiNotificationImpl(kn, FileUtil.toFile(projectDir)));
+                    support.firePropertyChange(PROP_KENAI_VCS_NOTIFICATION, null, new VCSKenaiNotificationImpl(kn, kp, FileUtil.toFile(projectDir)));
                 }
             }
         }

@@ -64,12 +64,12 @@ public class InstantiateAction extends NodeAction {
 
     protected boolean enable (Node[] activatedNodes) {
         if (activatedNodes.length != 1) return false;
-        DataObject obj = (DataObject)activatedNodes[0].getCookie (DataObject.class);
+        DataObject obj = activatedNodes[0].getCookie(DataObject.class);
         return obj != null && obj.isTemplate ();
     }
 
     protected void performAction (Node[] activatedNodes) {
-        DataObject obj = (DataObject)activatedNodes[0].getCookie (DataObject.class);
+        DataObject obj = activatedNodes[0].getCookie(DataObject.class);
         if (obj != null && obj.isTemplate ()) {
             try {
                 instantiateTemplate (obj);

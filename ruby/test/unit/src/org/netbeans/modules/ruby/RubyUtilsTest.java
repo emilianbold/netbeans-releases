@@ -43,6 +43,7 @@ package org.netbeans.modules.ruby;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import junit.framework.TestCase;
 
 /**
@@ -261,5 +262,24 @@ public class RubyUtilsTest extends TestCase {
         assertTrue(RubyUtils.isRails23OrHigher(activesupport24));
 
         assertFalse(RubyUtils.isRails23OrHigher(notRails));
+    }
+
+    public void testGetParentModules() {
+        List<String> result = RubyUtils.getParentModules("Foo::Bar::Baz::Qux");
+        assertEquals(3, result.size());
+        assertEquals("Foo::Bar::Baz", result.get(0));
+        assertEquals("Foo::Bar", result.get(1));
+        assertEquals("Foo", result.get(2));
+
+        result = RubyUtils.getParentModules("Qux::");
+        assertEquals(1, result.size());
+        assertEquals("Qux", result.get(0));
+
+        result = RubyUtils.getParentModules("Qux");
+        assertTrue(result.isEmpty());
+
+        result = RubyUtils.getParentModules("");
+        assertTrue(result.isEmpty());
+
     }
 }

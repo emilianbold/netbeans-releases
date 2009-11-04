@@ -41,14 +41,16 @@ package org.netbeans.modules.cnd.gizmo;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.netbeans.modules.dlight.spi.CppSymbolDemanglerFactory.CPPCompiler;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.test.Conditional;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import static org.junit.Assert.*;
 
 /**
  * @author Alexey Vladykin
  */
-public class CppSymbolDemanglerImplTest extends CndBaseTestCase {
+public class CppSymbolDemanglerImplTest extends NativeExecutionBaseTestCase {
 
     private static final List<String> UNMANGLED_NAMES = Arrays.asList(
             "_start",
@@ -74,24 +76,32 @@ public class CppSymbolDemanglerImplTest extends CndBaseTestCase {
         super(name);
     }
 
+    public CppSymbolDemanglerImplTest(String name, ExecutionEnvironment execEnv) {
+        super(name, execEnv);
+    }
+
+    @Conditional(section = "demangler", key = "GNU", defaultValue = true)
     public void testDemangleGnu() {
         CppSymbolDemanglerImpl d = new CppSymbolDemanglerImpl(CPPCompiler.GNU);
         doTestDemangle(d, GNU_MANGLED_NAMES, true);
         doTestDemangle(d, GNU_MANGLED_NAMES, false);
     }
 
+    @Conditional(section = "demangler", key = "GNU", defaultValue = true)
     public void testBatchDemangleGnu() {
         CppSymbolDemanglerImpl d = new CppSymbolDemanglerImpl(CPPCompiler.GNU);
         doTestBatchDemangle(d, GNU_MANGLED_NAMES, true);
         doTestBatchDemangle(d, GNU_MANGLED_NAMES, false);
     }
 
+    @Conditional(section = "demangler", key = "Sun", defaultValue = true)
     public void testDemangleSun() {
         CppSymbolDemanglerImpl d = new CppSymbolDemanglerImpl(CPPCompiler.SS);
         doTestDemangle(d, SUN_MANGLED_NAMES, true);
         doTestDemangle(d, SUN_MANGLED_NAMES, false);
     }
 
+    @Conditional(section = "demangler", key = "Sun", defaultValue = true)
     public void testBatchDemangleSun() {
         CppSymbolDemanglerImpl d = new CppSymbolDemanglerImpl(CPPCompiler.SS);
         doTestBatchDemangle(d, SUN_MANGLED_NAMES, true);
@@ -110,40 +120,21 @@ public class CppSymbolDemanglerImplTest extends CndBaseTestCase {
     private void doTestDemangle(CppSymbolDemanglerImpl d, List<String> data, boolean dtrace) {
         d.clearCache();
         data = addUnmangled(data);
-        if (d.isToolAvailable()) {
-            for (int i = 0; i < data.size(); i += 2) {
-                String sym = data.get(i);
-                if (dtrace) {
-                    sym = dtrace(sym);
-                }
-                assertEquals(data.get(i + 1), d.demangle(sym));
+        for (int i = 0; i < data.size(); i += 2) {
+            String sym = data.get(i);
+            if (dtrace) {
+                sym = dtrace(sym);
             }
-        } else if (dtrace) {
-            warn("Demangler tool is not available. Running minimal check (dtrace=true).");
-            for (int i = 0; i < data.size(); i += 2) {
-                String sym = data.get(i);
-                assertEquals(sym, d.demangle(dtrace(sym)));
-            }
-        } else {
-            warn("Demangler tool is not available. Skipping test (dtrace=false).");
+            assertEquals(data.get(i + 1), d.demangle(sym));
         }
     }
 
     private void doTestBatchDemangle(CppSymbolDemanglerImpl d, List<String> data, boolean dtrace) {
         d.clearCache();
         data = addUnmangled(data);
-        if (d.isToolAvailable()) {
-            List<String> input = prepareInput(data, dtrace);
-            List<String> output = prepareOutput(data, true);
-            assertEquals(output, d.demangle(input));
-        } else if (dtrace) {
-            warn("Demangler tool is not available. Running minimal check (dtrace=true).");
-            List<String> input = prepareInput(data, true);
-            List<String> output = prepareOutput(data, false);
-            assertEquals(output, d.demangle(input));
-        } else {
-            warn("Demangler tool is not available. Skipping test (dtrace=false).");
-        }
+        List<String> input = prepareInput(data, dtrace);
+        List<String> output = prepareOutput(data, true);
+        assertEquals(output, d.demangle(input));
     }
 
     private String dtrace(String sym) {
@@ -168,9 +159,5 @@ public class CppSymbolDemanglerImplTest extends CndBaseTestCase {
             output.add(data.get(i));
         }
         return output;
-    }
-
-    private void warn(String msg) {
-        System.err.println(getName() + ": " + msg);
     }
 }

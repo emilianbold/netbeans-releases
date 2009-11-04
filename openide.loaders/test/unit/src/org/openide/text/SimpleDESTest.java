@@ -133,7 +133,7 @@ public final class SimpleDESTest extends NbTestCase {
             
         }
         
-        OpenCookie open = (OpenCookie)obj.getCookie (OpenCookie.class);
+        OpenCookie open = obj.getCookie(OpenCookie.class);
         open.open ();
         
         javax.swing.text.Document d = c.getDocument();
@@ -159,7 +159,7 @@ public final class SimpleDESTest extends NbTestCase {
         os.close ();
         lock.releaseLock();
         
-        return (EditorCookie)obj.getCookie (EditorCookie.class);
+        return obj.getCookie(EditorCookie.class);
     }
     
     //
@@ -191,7 +191,7 @@ public final class SimpleDESTest extends NbTestCase {
         
         
         public SO (FileObject fo) throws org.openide.loaders.DataObjectExistsException {
-            super (fo, (SL)SL.getLoader(SL.class));
+            super (fo, SL.getLoader(SL.class));
             
             if (fo.getNameExt().indexOf ("MaskEdit") == -1) {
                 getCookieSet ().add (cookie);

@@ -40,6 +40,7 @@
 package org.netbeans.modules.bugtracking.ui.search;
 
 import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.bugtracking.util.TextUtils;
 
 /**
  *
@@ -70,6 +71,9 @@ abstract class PopupItem {
         public String highlite(String text, String displayText) {
             if(text == null || text.trim().equals("")) return displayText;      // NOI18N
             StringBuffer sb = new StringBuffer();
+
+            text = TextUtils.escapeForHTMLLabel(text);
+            displayText = TextUtils.escapeForHTMLLabel(displayText);
 
             String displayTextLower = displayText.toLowerCase();
             String textLower = text.toLowerCase();

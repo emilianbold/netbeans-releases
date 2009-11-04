@@ -42,16 +42,19 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
+import org.netbeans.modules.cnd.remote.support.RemoteProjectSupport;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
-import org.netbeans.modules.cnd.remote.support.SystemIncludesUtils;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.spi.remote.ServerListImplementation;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -118,6 +121,7 @@ public class RemoteServerList implements ServerListImplementation {
                 }
             }
         }
+        defaultIndex = Math.min(defaultIndex, items.size() - 1);
         refresh();
     }
 
@@ -149,6 +153,14 @@ public class RemoteServerList implements ServerListImplementation {
         RemoteServerRecord record = new RemoteServerRecord(env, null, RemoteSyncFactory.getDefault(), false);
         unlisted.add(record);
         return record;
+    }
+
+    public ServerRecord get(Project project) {
+        ExecutionEnvironment execEnv = RemoteProjectSupport.getExecutionEnvironment(project);
+        if( execEnv != null) {
+            return get(execEnv);
+        }
+        return null;
     }
 
     @Override
@@ -193,6 +205,9 @@ public class RemoteServerList implements ServerListImplementation {
             RemoteSyncFactory syncFactory, boolean asDefault, boolean connect) {
 
         RemoteServerRecord record = null;
+        if (syncFactory == null) {
+            syncFactory = RemoteSyncFactory.getDefault();
+        }
 
         // First off, check if we already have this record
         for (RemoteServerRecord r : items) {
@@ -222,8 +237,9 @@ public class RemoteServerList implements ServerListImplementation {
             unlisted.remove(record);
         }
         items.add(record);
+        Collections.sort(items, RECORDS_COMPARATOR);
         if (asDefault) {
-            defaultIndex = items.size() - 1;
+            defaultIndex = items.indexOf(record);
         }
         refresh();
         storePreferences(record);
@@ -257,15 +273,6 @@ public class RemoteServerList implements ServerListImplementation {
         }
     }
 
-    public synchronized void removeServer(ServerRecord record) {
-        RemoteUtil.LOGGER.finest("ServerList: remove " + record);
-        SystemIncludesUtils.cancel(record.getExecutionEnvironment());
-        if (items.remove(record)) {
-            removeFromPreferences(record);
-            refresh();
-        }
-    }
-
     @Override
     public synchronized void set(List<ServerRecord> records, ServerRecord defaultRecord) {
         RemoteUtil.LOGGER.finest("ServerList: set " + records);
@@ -275,7 +282,6 @@ public class RemoteServerList implements ServerListImplementation {
             removed.remove(rec.getExecutionEnvironment());
         }
         setDefaultRecord(defaultRecord);
-        SystemIncludesUtils.cancel(removed);
     }
 
     private Collection<ExecutionEnvironment> clear() {
@@ -355,5 +361,31 @@ public class RemoteServerList implements ServerListImplementation {
 
     private static Preferences getPreferences() {
         return NbPreferences.forModule(RemoteServerList.class);
+    }
+
+    private static final Comparator<RemoteServerRecord> RECORDS_COMPARATOR = new Comparator<RemoteServerRecord> () {
+        public int compare(RemoteServerRecord o1, RemoteServerRecord o2) {
+            if (o1 == o2) {
+                return 0;
+            }
+
+            // make localhosts first in the list
+            boolean o1local = o1.getExecutionEnvironment().isLocal();
+            boolean o2local = o2.getExecutionEnvironment().isLocal();
+            if (o1local != o2local) {
+                if (o1local) {
+                    return -1;
+                } else if (o2local) {
+                    return 1;
+                }
+            }
+
+            // others sort in alphabetical order
+            return o1.getServerName().compareTo(o2.getServerName());
+        }
+    };
+
+    public ServerRecord createServerRecord(ExecutionEnvironment env, String displayName, RemoteSyncFactory syncFactory) {
+        return new RemoteServerRecord(env, displayName, syncFactory, false);
     }
 }

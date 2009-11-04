@@ -55,7 +55,8 @@ public class TestInstallerAndUninstallerRuby extends Installer {
 
         // Pages
         // Welcome
-        Utils.stepWelcome(); // Checkbox for GF installation
+        Utils.CheckPrelude( data );
+        Utils.stepWelcome( ); // Checkbox for GF installation
         // Agreement
         Utils.stepLicense();
         // Location

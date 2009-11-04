@@ -40,15 +40,17 @@ package org.netbeans.modules.cnd.tha.ui;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
+import java.awt.Color;
 import java.awt.Component;
-import java.awt.Container;
-import java.awt.FocusTraversalPolicy;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.MissingResourceException;
 import java.util.Vector;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
@@ -85,6 +87,7 @@ import org.openide.windows.WindowManager;
  * Top component which displays something.
  */
 public final class THAIndicatorsTopComponent extends TopComponent implements ExplorerManager.Provider {
+
     private THAControlPanel controlPanel;
     private static THAIndicatorsTopComponent instance;
     private DLightSession session;
@@ -102,17 +105,15 @@ public final class THAIndicatorsTopComponent extends TopComponent implements Exp
     private boolean dock;
     private final ExplorerManager manager = new ExplorerManager();
     private JComponent lastFocusedComponent = null;
-    private final FocusTraversalPolicy focusPolicy = new FocusTraversalPolicyImpl();
     private THAIndicatorsTopComponentActionsProvider actionsProvider = null;
     private final PopupAction popupAction = new PopupAction("popupTHAIndicatorTopComponentAction");//NOI18N
     private THAConfiguration thaConfiguration = null;
     private THAActionsProvider thaActionsProvider;
-
+    private JPanel topPanel;
 
     static {
         THAIndicatorTopComponentRegsitry.getRegistry();
     }
-
 
     private THAIndicatorsTopComponent() {
         this(false);
@@ -132,15 +133,32 @@ public final class THAIndicatorsTopComponent extends TopComponent implements Exp
                 }
             }
         }
-        setFocusTraversalPolicyProvider(true);
-        setFocusTraversalPolicy(focusPolicy);
         ActionMap map = new ActionMap();
         map.put("org.openide.actions.PopupAction", popupAction);//NOI18N
         this.associateLookup(ExplorerUtils.createLookup(manager, map));
         installActions();
+        putClientProperty("KeepNonPersistentTCInModelWhenClosed", true); // NOI18N
     }
 
-    void setConfiguration(THAActionsProvider thaActionsProvider, THAConfiguration thaConfiguration){
+    @Override
+    public boolean requestFocus(boolean temporary) {
+        if (controlPanel != null) {
+            return controlPanel.requestFocus(temporary);
+
+        }
+        return super.requestFocus(temporary);
+    }
+
+    @Override
+    public boolean requestFocusInWindow() {
+        if (controlPanel != null) {
+            return controlPanel.requestFocusInWindow();
+
+        }
+        return super.requestFocusInWindow(false);
+    }
+
+    void setConfiguration(THAActionsProvider thaActionsProvider, THAConfiguration thaConfiguration) {
         this.thaConfiguration = thaConfiguration;
         this.thaActionsProvider = thaActionsProvider;
     }
@@ -157,7 +175,6 @@ public final class THAIndicatorsTopComponent extends TopComponent implements Exp
     private Action getPopupAction() {
         return null;
     }
-
 
     void initComponents() {
         cardsLayoutPanel = new JPanel(cardLayout);
@@ -191,17 +208,48 @@ public final class THAIndicatorsTopComponent extends TopComponent implements Exp
         return (showFirstPanel ? panel2 : panel1);
     }
 
-    DLightSession setProject(Project project){
+    DLightSession setProject(Project project) {
         this.project = project;
-        if (controlPanel != null){
-            this.remove(controlPanel);
+        if (controlPanel != null && topPanel != null) {
+            topPanel.remove(controlPanel);
         }
         controlPanel = THAControlPanel.create(thaActionsProvider, project, thaConfiguration);
-        add(controlPanel, BorderLayout.NORTH);
+
+        if (topPanel == null) {
+            topPanel = new JPanel();
+            add(topPanel, BorderLayout.NORTH);
+        } else {
+            topPanel.removeAll();
+        }
+
+        topPanel.setLayout(new BorderLayout());
+        topPanel.add(controlPanel, BorderLayout.CENTER);
+        final StatusLabel statusLabel = new StatusLabel(thaConfiguration);
+
+        thaActionsProvider.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                if (THAActionsProvider.SUSPEND_COMMAND.equals(e.getActionCommand())) {
+                    statusLabel.setColoredText("THAControlPanel.Paused"); // NOI18N
+                } else if (THAActionsProvider.RESUME_COMMAND.equals(e.getActionCommand())) {
+                    statusLabel.setColoredText("THAControlPanel.Recording"); // NOI18N
+                } else if (THAActionsProvider.STOP_COMMAND.equals(e.getActionCommand())) {
+                    statusLabel.setColoredText("THAControlPanel.Stopped"); // NOI18N
+                } else if (THAActionsProvider.PROCESSING_REQUEST_COMMAND.equals(e.getActionCommand())) {
+                    statusLabel.setColoredText("THAControlPanel.ProcessingRequest"); // NOI18N
+                }else if (THAActionsProvider.STOPPING_COMMAND.equals(e.getActionCommand())){
+                    statusLabel.setColoredText("THAControlPanel.Stopping"); // NOI18N
+                }
+            }
+        });
+
+        statusLabel.setColoredText("THAControlPanel.Preparing"); // NOI18N
+        topPanel.add(statusLabel, BorderLayout.SOUTH);
+
         DLightSession oldSession = getSession();
         setSession(null);
-            setDisplayName(getMessage("CTL_DLightIndicatorsTopComponent.withSession", ProjectUtils.getInformation(project).getDisplayName())); // NOI18N
-            setToolTipText(getMessage("CTL_DLightIndicatorsTopComponent.withSession", ProjectUtils.getInformation(project).getDisplayName())); // NOI18N
+        setDisplayName(getMessage("CTL_DLightIndicatorsTopComponent.withSession", ProjectUtils.getInformation(project).getDisplayName())); // NOI18N
+        setToolTipText(getMessage("CTL_DLightIndicatorsTopComponent.withSession", ProjectUtils.getInformation(project).getDisplayName())); // NOI18N
         repaint();
         return oldSession;
     }
@@ -209,8 +257,12 @@ public final class THAIndicatorsTopComponent extends TopComponent implements Exp
     public void setSession(DLightSession session) {
         if (this.session != null && this.session != session) {
             DLightManager.getDefault().closeSessionOnExit(this.session);//should close session which was opened here before
+            this.session.removeIndicatorNotificationListener(thaActionsProvider);
         }
         this.session = session;
+        if (session != null){
+            session.addIndicatorNotificationListener(thaActionsProvider);
+        }
         List<Indicator<?>> indicators = null;
         if (session != null) {
             setDisplayName(getMessage("CTL_DLightIndicatorsTopComponent.withSession", session.getDisplayName())); // NOI18N
@@ -221,7 +273,7 @@ public final class THAIndicatorsTopComponent extends TopComponent implements Exp
             setToolTipText(getMessage("CTL_DLightIndicatorsTopComponent")); // NOI18N
             indicators = null;//Collections.emptyList();//DefaultIndicatorComponentEmptyContentProvider.getInstance().getEmptyContent("THA"); // NOI18N
         }
-        if (indicators != null){
+        if (indicators != null) {
             Collections.sort(indicators, new Comparator<Indicator<?>>() {
 
                 public int compare(Indicator<?> o1, Indicator<?> o2) {
@@ -251,7 +303,7 @@ public final class THAIndicatorsTopComponent extends TopComponent implements Exp
             int freeSizeComponentsNumber = 0;
             for (int i = 0; i < indicators.size(); ++i) {
                 JComponent component = indicators.get(i).getComponent();
-                if(!component.isMaximumSizeSet()) {
+                if (!component.isMaximumSizeSet()) {
                     freeSizeComponentsNumber++;
                 }
             }
@@ -263,7 +315,7 @@ public final class THAIndicatorsTopComponent extends TopComponent implements Exp
                     splitPane.setBorder(BorderFactory.createEmptyBorder());
                     splitPane.setContinuousLayout(true);
                     splitPane.setDividerSize(5);
-                    if(!component.isMaximumSizeSet()) {
+                    if (!component.isMaximumSizeSet()) {
                         splitPane.setResizeWeight(1.0 / (freeSizeComponentsNumber - i));
                     }
                     splitPane.setTopComponent(component);
@@ -333,11 +385,11 @@ public final class THAIndicatorsTopComponent extends TopComponent implements Exp
     public static synchronized TopComponent activateInstance() {
         //find and open VisualizerDispAction
         THAIndicatorTopComponentRegsitry registry = THAIndicatorTopComponentRegsitry.getRegistry();
-        if (registry.getOpened() == null || registry.getOpened().size() == 0){
+        if (registry.getOpened() == null || registry.getOpened().size() == 0) {
             return findInstance();
         }
         THAIndicatorsTopComponent activatedTopComponent = registry.getActivated();
-        if (activatedTopComponent == null){
+        if (activatedTopComponent == null) {
             activatedTopComponent = registry.getOpened().iterator().next();
         }
         activatedTopComponent.requestActive();
@@ -381,10 +433,9 @@ public final class THAIndicatorsTopComponent extends TopComponent implements Exp
         super.componentActivated();
         if (lastFocusedComponent != null) {
             lastFocusedComponent.requestFocus();
-        } else {
-            focusPolicy.getFirstComponent(this).requestFocus();
+        } else if (controlPanel != null) {
+            controlPanel.requestFocus();
         }
-
     }
 
     @Override
@@ -400,7 +451,7 @@ public final class THAIndicatorsTopComponent extends TopComponent implements Exp
         return session;
     }
 
-    Project getProject(){
+    Project getProject() {
         return project;
     }
 
@@ -429,78 +480,6 @@ public final class THAIndicatorsTopComponent extends TopComponent implements Exp
 
     private static String getMessage(String name, Object... params) {
         return NbBundle.getMessage(THAIndicatorsTopComponent.class, name, params);
-    }
-
-
-
-    private final class FocusTraversalPolicyImpl extends FocusTraversalPolicy {
-
-        @Override
-        public Component getComponentAfter(Container aContainer, Component aComponent) {
-            if (aComponent == getCurrentPanel()) {
-                return controlPanel;
-            }
-            if (aComponent == controlPanel){
-                return getCurrentPanel();
-            }
-            if (indicatorPanels == null){
-                return controlPanel;
-            }
-            int indexOf = indicatorPanels.indexOf(aComponent);
-            if (indexOf == -1) {
-                return getCurrentPanel();
-            }
-            if (indexOf == indicatorPanels.size() - 1) {
-                return indicatorPanels.get(0);
-            }
-            return indicatorPanels.get(indexOf + 1);
-        }
-
-        @Override
-        public Component getComponentBefore(Container aContainer, Component aComponent) {
-            if (aComponent == getCurrentPanel()) {
-                return controlPanel;//no path to go
-            }
-            if (aComponent == controlPanel){
-                return getCurrentPanel();
-            }
-            if (indicatorPanels == null){
-                return controlPanel;
-            }
-            int indexOf = indicatorPanels.indexOf(aComponent);
-            if (indexOf == -1) {
-                return getCurrentPanel();
-            }
-            if (indexOf == 0) {
-                return indicatorPanels.get(indicatorPanels.size() - 1);
-            }
-            return indicatorPanels.get(indexOf - 1);
-        }
-
-        @Override
-        public Component getFirstComponent(Container aContainer) {
-            return controlPanel;
-//            if (indicatorPanels == null || indicatorPanels.size() == 0) {
-//                return getCurrentPanel();
-//            }
-//            return indicatorPanels.get(0);
-        }
-
-        @Override
-        public Component getLastComponent(Container aContainer) {
-            if (indicatorPanels == null || indicatorPanels.size() == 0) {
-                return getCurrentPanel();
-            }
-            return indicatorPanels.get(indicatorPanels.size() - 1);
-        }
-
-        @Override
-        public Component getDefaultComponent(Container aContainer) {
-            if (indicatorPanels == null || indicatorPanels.size() == 0) {
-                return getCurrentPanel();
-            }
-            return indicatorPanels.get(0);
-        }
     }
 
     private class PopupAction extends AbstractAction implements Runnable {
@@ -540,6 +519,45 @@ public final class THAIndicatorsTopComponent extends TopComponent implements Exp
             if (prevFocusedTc != null) {
                 prevFocusedTc.requestActive();
             }
+        }
+    }
+
+    private final static class StatusLabel extends JLabel {
+
+        private final static HashMap<String, Color> colors = new HashMap<String, Color>() {
+
+            {
+                put("THAControlPanel.Paused", new Color(204, 0, 0)); // NOI18N
+                put("THAControlPanel.Recording", new Color(51, 153, 0)); // NOI18N
+                put("THAControlPanel.Stopped", Color.BLUE); // NOI18N
+            }
+        };
+        private final String collectionKind;
+
+        public StatusLabel(THAConfiguration thaConfiguration) {
+            super();
+            collectionKind = getMessage(thaConfiguration.collectDataRaces()
+                    ? "THAControlPanel.DeadlocksAndRaces" // NOI18N
+                    : "THAControlPanel.Deadlocks"); // NOI18N
+        }
+
+        public synchronized void setColoredText(String propID) {
+            if (propID == null) {
+                super.setText(null);
+                return;
+            }
+
+            Color color = colors.get(propID);
+            super.setForeground(color == null ? Color.DARK_GRAY : color);
+
+            String msg = null;
+
+            try {
+                msg = getMessage(propID, collectionKind);
+            } catch (MissingResourceException ex) {
+            }
+
+            super.setText(msg == null ? propID : msg);
         }
     }
 }

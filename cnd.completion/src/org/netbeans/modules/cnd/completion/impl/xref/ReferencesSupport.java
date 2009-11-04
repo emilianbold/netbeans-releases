@@ -51,8 +51,6 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -100,6 +98,7 @@ import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
 import org.netbeans.modules.cnd.api.model.CsmFunctionPointerType;
 import org.netbeans.modules.cnd.api.model.CsmListeners;
+import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmProgressAdapter;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
@@ -181,6 +180,7 @@ public final class ReferencesSupport {
 
     /*package*/ CsmObject findReferencedObject(CsmFile csmFile, final BaseDocument doc,
             final int offset, TokenItem<CppTokenId> jumpToken, FileReferencesContext fileReferencesContext) {
+        long oldVersion = CsmFileInfoQuery.getDefault().getFileVersion(csmFile);
         CsmObject csmItem = null;
         // emulate hyperlinks order
         // first ask includes handler if offset in include sring token
@@ -217,13 +217,13 @@ public final class ReferencesSupport {
             if (key < 0) {
                 key = offset;
             }
-            csmItem = getReferencedObject(csmFile, key);
+            csmItem = getReferencedObject(csmFile, key, oldVersion);
             if (csmItem == null) {
                 csmItem = findDeclaration(csmFile, doc, jumpToken, key, fileReferencesContext);
                 if (csmItem == null) {
-                    putReferencedObject(csmFile, key, FAKE);
+                    putReferencedObject(csmFile, key, FAKE, oldVersion);
                 } else {
-                    putReferencedObject(csmFile, key, csmItem);
+                    putReferencedObject(csmFile, key, csmItem, oldVersion);
                 }
             } else if (csmItem == FAKE) {
                 csmItem = null;
@@ -250,8 +250,22 @@ public final class ReferencesSupport {
         // macros have max priority in file
         List<CsmReference> macroUsages = CsmFileInfoQuery.getDefault().getMacroUsages(csmFile);
         csmItem = findMacro(macroUsages, offset);
-        if (csmItem != null) {
-            return csmItem;
+        if (csmItem instanceof CsmMacro) {
+            CsmMacro macro = (CsmMacro) csmItem;
+            List<CharSequence> macroParameters = macro.getParameters();
+            if (macroParameters == null || macroParameters.isEmpty() || CompletionUtilities.conatinsVaArgs(macroParameters)) {
+                return csmItem;
+            } else {
+                int paramsNumber = CompletionUtilities.getMethodParamsNumber(doc, offset);
+                if (paramsNumber != 0) {
+                    if (paramsNumber == macroParameters.size()) {
+                        return csmItem;
+                    } else {
+                        return null;
+                    }
+                }
+            }
+            csmItem = null;
         }
         CsmObject objUnderOffset = CsmOffsetResolver.findObject(csmFile, offset, fileReferencesContext);
         // TODO: it would be great to check position in named element, but we don't
@@ -631,7 +645,8 @@ public final class ReferencesSupport {
     }
     private final CsmProgressListener progressListener;
     private static final int MAX_CACHE_SIZE = 10;
-    private final ReadWriteLock cacheLock = new ReentrantReadWriteLock();
+    private final Object cacheLock = new CacheLock();
+    private final static class CacheLock {};
     private Map<CsmFile, Map<Integer, CsmObject>> cache = new HashMap<CsmFile, Map<Integer, CsmObject>>();
     private static CsmObject FAKE = new CsmObject() {
 
@@ -642,22 +657,29 @@ public final class ReferencesSupport {
 
     };
 
-    private CsmObject getReferencedObject(CsmFile file, int offset) {
-        try {
-            cacheLock.readLock().lock();
+    private CsmObject getReferencedObject(CsmFile file, int offset, long oldVersion) {
+        synchronized (cacheLock) {
             Map<Integer, CsmObject> map = cache.get(file);
+            CsmObject out = null;
             if (map != null) {
-                return map.get(offset);
+                out = map.get(offset);
+                if (out == FAKE && CsmFileInfoQuery.getDefault().getFileVersion(file) != oldVersion) {
+                    // we don't beleive in such fake and put null instead
+                    map.put(offset, null);
+                    out = null;
+                }
             }
-            return null;
-        } finally {
-            cacheLock.readLock().unlock();
+            return out;
         }
     }
 
-    private void putReferencedObject(CsmFile file, int offset, CsmObject object) {
-        try {
-            cacheLock.writeLock().lock();
+    private void putReferencedObject(CsmFile file, int offset, CsmObject object, long oldVersion) {
+        synchronized (cacheLock) {
+            if (object == FAKE && CsmFileInfoQuery.getDefault().getFileVersion(file) != oldVersion) {
+                // we don't beleive in such fake
+//                System.err.println("skip caching FAKE NULL at " + offset + " in " + file);
+                return;
+            }
             Map<Integer, CsmObject> map = cache.get(file);
             if (map == null) {
                 if (cache.size() > MAX_CACHE_SIZE) {
@@ -667,21 +689,16 @@ public final class ReferencesSupport {
                 cache.put(file, map);
             }
             map.put(offset, object);
-        } finally {
-            cacheLock.writeLock().unlock();
         }
     }
 
     private void clearFileReferences(CsmFile file) {
-        try {
-            cacheLock.writeLock().lock();
+        synchronized (cacheLock) {
             if (file == null) {
                 cache.clear();
             } else {
                 cache.remove(file);
             }
-        } finally {
-            cacheLock.writeLock().unlock();
         }
     }
 
@@ -712,12 +729,12 @@ public final class ReferencesSupport {
         if (index >= 0) {
             CsmReference macroRef = macroUsages.get(index);
             CsmObject csmItem = macroRef.getReferencedObject();
-            assert csmItem != null : "must be referenced macro" + macroRef;
+            assert csmItem != null : "referenced macro is null. ref " + macroRef + ", file " + macroRef.getContainingFile() + ", name " + macroRef.getText();
             return csmItem;
         }
         return null;
     }
-    
+
     private static final class RefOffsetKey implements CsmReference {
 
         private final int offset;

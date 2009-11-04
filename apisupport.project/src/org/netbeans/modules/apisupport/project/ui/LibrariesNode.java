@@ -49,6 +49,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -58,10 +59,8 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
@@ -84,6 +83,7 @@ import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
 import org.openide.actions.DeleteAction;
 import org.openide.actions.FindAction;
 import org.openide.awt.HtmlBrowser;
@@ -101,7 +101,6 @@ import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.openide.util.actions.CookieAction;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
@@ -409,13 +408,14 @@ final class LibrariesNode extends AbstractNode {
             ModuleDependency[] newDeps = AddModulePanel.selectDependencies(props);
             ProjectXMLManager pxm = new ProjectXMLManager(project);
             try {
-                for (ModuleDependency dep : newDeps) {
-                    pxm.addDependency(dep);
-                }
+                pxm.addDependencies(new HashSet<ModuleDependency>(Arrays.asList(newDeps)));
                 ProjectManager.getDefault().saveProject(project);
             } catch (IOException e) {
                 ErrorManager.getDefault().annotate(e, "Cannot add selected dependencies: " + Arrays.asList(newDeps)); // NOI18N
                 ErrorManager.getDefault().notify(e);
+            } catch (ProjectXMLManager.CyclicDependencyException ex) {
+                NotifyDescriptor.Message msg = new NotifyDescriptor.Message(ex.getLocalizedMessage(), NotifyDescriptor.WARNING_MESSAGE);
+                DialogDisplayer.getDefault().notify(msg);
             }
         }
     }
@@ -466,6 +466,9 @@ final class LibrariesNode extends AbstractNode {
                     ErrorManager.getDefault().annotate(e, "Cannot get dependency for module: " + codeNameBase); // NOI18N
                 }
                 ErrorManager.getDefault().notify(e);
+            } catch (ProjectXMLManager.CyclicDependencyException ex) {
+                NotifyDescriptor.Message msg = new NotifyDescriptor.Message(ex.getLocalizedMessage(), NotifyDescriptor.WARNING_MESSAGE);
+                DialogDisplayer.getDefault().notify(msg);
             } finally {
                 if (d != null) {
                     d.dispose();

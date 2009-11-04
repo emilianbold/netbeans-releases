@@ -148,7 +148,7 @@ public class FormatPanel extends javax.swing.JPanel{
             }
         });
 
-        jLabel3.setLabelFor(issueInfoTextArea);
+        jLabel3.setLabelFor(revisionTextArea);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.jLabel3.text")); // NOI18N
 
         revisionTextArea.setColumns(20);
@@ -191,14 +191,14 @@ public class FormatPanel extends javax.swing.JPanel{
                     .add(jLabel4)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 220, Short.MAX_VALUE)
-                            .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 220, Short.MAX_VALUE))
+                            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 233, Short.MAX_VALUE)
+                            .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 233, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 216, Short.MAX_VALUE)
+                            .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
                             .add(org.jdesktop.layout.GroupLayout.LEADING, jLabel3, 0, 0, Short.MAX_VALUE)))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(warningLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 424, Short.MAX_VALUE)
+                        .add(warningLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 454, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(placeholder, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 14, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
@@ -237,6 +237,7 @@ public class FormatPanel extends javax.swing.JPanel{
         aboveCommitRadio.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.aboveRadio.AccessibleContext.accessibleDescription")); // NOI18N
         belowCommitRadio.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.beloveRadio.AccessibleContext.accessibleDescription")); // NOI18N
         resetCommitButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.jButton1.AccessibleContext.accessibleDescription")); // NOI18N
+        resetIssueButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.resetIssueButton.AccessibleContext.accessibleDescription")); // NOI18N
 
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents

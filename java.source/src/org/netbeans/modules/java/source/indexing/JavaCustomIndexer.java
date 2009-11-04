@@ -214,7 +214,9 @@ public class JavaCustomIndexer extends CustomIndexer {
                             javaContext.checkSums.store();
                             javaContext.sa.store();
                             javaContext.uq.typesEvent(_at, _rt, compileResult.addedTypes);
-                            BuildArtifactMapperImpl.classCacheUpdated(context.getRootURI(), JavaIndex.getClassFolder(context.getRootURI()), removedFiles, compileResult.createdFiles, false);
+                            if (!context.checkForEditorModifications()) { // #152222
+                                BuildArtifactMapperImpl.classCacheUpdated(context.getRootURI(), JavaIndex.getClassFolder(context.getRootURI()), removedFiles, compileResult.createdFiles, false);
+                            }
                             return null;
                         }
                     });

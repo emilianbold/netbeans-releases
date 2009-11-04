@@ -211,7 +211,7 @@ public final class M2RepositoryBrowserTopComponent extends TopComponent implemen
     }// </editor-fold>//GEN-END:initComponents
     private void btnIndexActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnIndexActionPerformed
         btnIndex.setEnabled(false);
-        RequestProcessor.getDefault().post(new Runnable() {
+        new RequestProcessor("Maven Repo Index Transfer/Scan").post(new Runnable() {  // NOI18N
             public void run() {
                 List<RepositoryInfo> infos = RepositoryPreferences.getInstance().getRepositoryInfos();
                 for (RepositoryInfo ri : infos) {

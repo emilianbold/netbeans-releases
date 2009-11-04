@@ -630,9 +630,9 @@ implements Lookup.Provider, ContextActionEnabler<ContextActionTest.Openable> {
     }
 
     private static <T> ContextAwareAction context(
-        ContextActionPerformer<? super T> a, ContextActionEnabler<? super T> e, ContextSelection s, Lookup lookupProxy, Class<T> c
+        ContextActionPerformer<T> a, ContextActionEnabler<T> e, ContextSelection s, Lookup lookupProxy, Class<T> c
     ) {
-        ContextAction.Performer perf = new ContextAction.Performer(a, e);
+        ContextAction.Performer<T> perf = new ContextAction.Performer<T>(a, e);
         return GeneralAction.context(perf, s, lookupProxy, c);
     }
     

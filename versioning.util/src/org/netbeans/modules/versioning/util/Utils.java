@@ -120,6 +120,10 @@ public final class Utils {
     static {
         try {
             String uf = VersioningSupport.getPreferences().get("unversionedFolders", null);
+            String ufProp = System.getProperty("versioning.unversionedFolders", null); //NOI18N
+            if (ufProp != null && ufProp.length() > 0) {
+                uf = uf == null || uf.length() == 0 ? ufProp : uf + ";" + ufProp; //NOI18N
+            }
             if (uf == null || uf.length() == 0) {
                 unversionedFolders = new File[0];
             } else {
@@ -132,7 +136,7 @@ public final class Utils {
             }
         } catch (Exception e) {
             unversionedFolders = new File[0];
-            Logger.getLogger(Utils.class.getName()).log(Level.WARNING, e.getMessage(), e);
+            Logger.getLogger(Utils.class.getName()).log(Level.INFO, e.getMessage(), e);
         }
     }
 

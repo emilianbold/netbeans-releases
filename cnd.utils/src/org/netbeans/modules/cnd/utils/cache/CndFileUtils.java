@@ -122,6 +122,10 @@ public final class CndFileUtils {
         if (normalized == null) {
             // small optimization for true case sensitive OSs
             boolean caseSensitive = isSystemCaseSensitive();
+            if (!caseSensitive) {
+                // with case sensitive "path"s returned by remote compilers
+                path = FileSystemsProvider.getCaseInsensitivePath(path);
+            }
             if (!caseSensitive || (path.endsWith("/.") || path.endsWith("\\.") || path.contains("..") || path.contains("./") || path.contains(".\\"))) { // NOI18N
                 normalized = FileUtil.normalizeFile(new File(path)).getAbsolutePath();
             } else {

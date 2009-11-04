@@ -156,6 +156,7 @@ public final class JSFPaletteUtilities {
             final String str = (s == null) ? "" : s;
         
             final BaseDocument baseDoc = (BaseDocument) doc;
+            final Reformat formatter = Reformat.get(baseDoc);
             Runnable edit = new Runnable() {
                 public void run() {
                     try {
@@ -164,20 +165,21 @@ public final class JSFPaletteUtilities {
                         // format the inserted text
                         if (reformat && start >= 0) {
                             int end = start + str.length();
-                            Reformat reformat = Reformat.get(baseDoc);
-                            reformat.lock();
-                            try {
-                                reformat.reformat(start, end);
-                            } finally {
-                                reformat.unlock();
-                            }
+                            formatter.reformat(start, end);
+                            
                         }
                     } catch (BadLocationException e) {
                         Exceptions.printStackTrace(e);
                     }
                 }
             };
-            baseDoc.runAtomic(edit);
+            
+            formatter.lock();
+            try {
+                baseDoc.runAtomic(edit);
+            }finally {
+                formatter.unlock();
+            }
         }
     }
     

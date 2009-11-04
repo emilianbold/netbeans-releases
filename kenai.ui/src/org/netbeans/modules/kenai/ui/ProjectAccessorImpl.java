@@ -146,13 +146,13 @@ public class ProjectAccessorImpl extends ProjectAccessor {
             return new Action[]{
                         getOpenAction(project),
                         new RefreshAction(project),
-                        (Action) getDetailsAction(project),
+                        getDetailsAction(project),
             };
         } else {
             return new Action[]{
                         new RemoveProjectAction(project),
                         new RefreshAction(project),
-                        (Action) getDetailsAction(project)
+                        getDetailsAction(project)
             };
         }
     }
@@ -197,7 +197,7 @@ public class ProjectAccessorImpl extends ProjectAccessor {
     public Action getNewKenaiProjectAction() {
         return new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
-                ShareAction.actionPerformed(new Node[0]);
+                new NewKenaiProjectAction().actionPerformed(null);
             }
         };
     }

@@ -125,6 +125,7 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
     public DLightToolConfiguration create() {
         DLightToolConfiguration toolConfiguration = new DLightToolConfiguration(ID, TOOL_NAME);
         toolConfiguration.setLongName(TOOL_DESCRIPTION);
+        toolConfiguration.setDescription(loc("SyncTool.ToolDescription.Details"));//NOI18N
         toolConfiguration.setIcon("org/netbeans/modules/dlight/sync/resources/threads.png");//NOI18N
         List<DataCollectorConfiguration> dcConfigurations = initDataCollectorConfigurations();
         for (DataCollectorConfiguration dc : dcConfigurations) {
@@ -181,6 +182,7 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
                     Arrays.asList(threadsColumn, ProcDataProviderConfiguration.THREADS, LLDataCollectorConfiguration.threads_count),
                     Arrays.asList(locksColumn, SunStudioDCConfiguration.c_ulockSummary, LLDataCollectorConfiguration.LOCKS_COUNT)));
         indicatorConfiguration.setActionDisplayName(loc("indicator.action")); // NOI18N
+        indicatorConfiguration.setActionTooltip(loc("indicator.action.tooltip"));//NOI18N
 
         indicatorConfiguration.addVisualizerConfiguration(getDetails(rawTableMetadata));
 

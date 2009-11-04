@@ -42,11 +42,14 @@ package org.netbeans.modules.ruby;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.jrubyparser.ast.ArrayNode;
+import org.jrubyparser.ast.INameNode;
 import org.jrubyparser.ast.IfNode;
 import org.jrubyparser.ast.ListNode;
 import org.jrubyparser.ast.MultipleAsgnNode;
 import org.jrubyparser.ast.Node;
 import org.jrubyparser.ast.NodeType;
+import org.jrubyparser.ast.ToAryNode;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -97,7 +100,64 @@ public final class RubyTypeAnalyzer {
             analyzed = true;
         }
     }
-    
+
+    /**
+     * Collects the variables initialized in the given <code>multipleAsgnNode</code>.
+     * @param multipleAsgnNode
+     * @param typeInferencer
+     * 
+     * @return a map containing the variable nodes and types of the variables in the given <code>multipleAsgnNode</code>.
+     */
+    static void collectMultipleAsgnVars(MultipleAsgnNode multipleAsgnNode, RubyTypeInferencer typeInferencer, Map<Node, RubyType> result) {
+        ListNode head = multipleAsgnNode.getHeadNode();
+        Node value = multipleAsgnNode.getValueNode();
+        if (head == null || value == null) {
+            return;
+        }
+        // special case
+        if (value.getNodeType() == NodeType.TOARYNODE) {
+            value = ((ToAryNode) value).getValue();
+        }
+        if (value.childNodes().size() != head.childNodes().size()) {
+            return;
+        }
+        for (int i = 0; i < head.childNodes().size(); i++) {
+            Node var = head.childNodes().get(i);
+            collectTypes(var, value.childNodes().get(i), typeInferencer, result);
+        }
+    }
+
+    private static void collectTypes(Node head, Node value, RubyTypeInferencer typeInferencer, Map<Node, RubyType> result) {
+        if (head == null || value == null) {
+            return;
+        }
+        if (value.getNodeType() == NodeType.TOARYNODE) {
+            value = ((ToAryNode) value).getValue();
+        }
+        // nested multiple asgn
+        // if we have a multiple asgn of form (a,(b,c))=[1,[2,3]] the nested multipleAsgnNode don't
+        // contain the correct value node, we need to get the value from the "parent" multipleAsgnNode
+        if (head.getNodeType() == NodeType.MULTIPLEASGNNODE) {
+            MultipleAsgnNode multipleAsgnNode = (MultipleAsgnNode) head;
+            if (multipleAsgnNode.getHeadNode().childNodes().size() == value.childNodes().size()) {
+                for (int i = 0; i < multipleAsgnNode.getHeadNode().childNodes().size(); i++) {
+                    Node var = multipleAsgnNode.getHeadNode().childNodes().get(i);
+                    collectTypes(var, value.childNodes().get(i), typeInferencer, result);
+                }
+            }
+        } else if (head.getNodeType() == NodeType.ARRAYNODE && value.getNodeType() == NodeType.ARRAYNODE) {
+            ArrayNode headArray = (ArrayNode) head;
+            ArrayNode valueArray = (ArrayNode) value;
+            if (headArray.size() == valueArray.size()) {
+                for (int i = 0; i < headArray.size(); i++) {
+                    collectTypes(headArray.get(i), valueArray.get(i), typeInferencer, result);
+                }
+            }
+        } else {
+            result.put(head, typeInferencer.inferType(value));
+        }
+    }
+
     /**
      * Analyze the given code block down to the given offset. The {@link
      * #inferType} method can then be used to read out the symbol type if any at
@@ -124,27 +184,32 @@ public final class RubyTypeAnalyzer {
         switch (node.getNodeType()) {
             case MULTIPLEASGNNODE: {
                 MultipleAsgnNode multipleAsgnNode = (MultipleAsgnNode) node;
-                ListNode head = multipleAsgnNode.getHeadNode();
-                Node value = multipleAsgnNode.getValueNode();
-                if (head == null || value == null) {
-                    break;
-                }
-                if (value.childNodes().size() != head.childNodes().size()) {
-                    break;
-                }
-                for (int i = 0; i < head.childNodes().size(); i++) {
-                    RubyType type = RubyTypeInferencer.create(knowledge).inferType(value.childNodes().get(i));
-                    String symbol = AstUtilities.getName(head.childNodes().get(i));
-                    maybePutTypeForSymbol(typesForSymbols, symbol, type, override);
+                Map<Node, RubyType> vars = new HashMap<Node, RubyType>();
+                collectMultipleAsgnVars(multipleAsgnNode, RubyTypeInferencer.create(knowledge), vars);
+                for (Node each : vars.keySet()) {
+                    if (each instanceof INameNode) {
+                        String name = AstUtilities.getName(each);
+                        maybePutTypeForSymbol(typesForSymbols, name, vars.get(each), override);
+                    }
                 }
                 return;
             }
-            case LOCALASGNNODE:
+            case LOCALASGNNODE: {
+                RubyType type = RubyTypeInferencer.create(knowledge).inferTypesOfRHS(node);
+                String symbol = RubyTypeInferencer.getLocalVarPath(new AstPath(knowledge.getRoot(), node), AstUtilities.getName(node));
+                maybePutTypeForSymbol(typesForSymbols, symbol, type, override);
+                break;
+            }
+            case CONSTDECLNODE: {
+                RubyType type = RubyTypeInferencer.create(knowledge).inferTypesOfRHS(node);
+                String fqn  = AstUtilities.getFqnName(knowledge.getRoot(), node);
+                maybePutTypeForSymbol(typesForSymbols, fqn, type, override);
+                break;
+            }
             case INSTASGNNODE:
             case GLOBALASGNNODE:
             case CLASSVARASGNNODE:
             case CLASSVARDECLNODE:
-            case CONSTDECLNODE:
             case DASGNNODE: {
                 RubyType type = RubyTypeInferencer.create(knowledge).inferTypesOfRHS(node);
 

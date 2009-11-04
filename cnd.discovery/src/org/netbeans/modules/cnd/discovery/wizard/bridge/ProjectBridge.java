@@ -54,6 +54,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetUtils;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
@@ -70,6 +71,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.util.Utilities;
 
 /**
@@ -100,7 +102,7 @@ public class ProjectBridge {
     public ProjectBridge(String baseFolder) throws IOException{
         this.baseFolder = baseFolder;
         // TODO: create localhost based project
-        MakeConfiguration extConf = new MakeConfiguration(baseFolder, "Default", MakeConfiguration.TYPE_MAKEFILE, CompilerSetManager.LOCALHOST); // NOI18N
+        MakeConfiguration extConf = new MakeConfiguration(baseFolder, "Default", MakeConfiguration.TYPE_MAKEFILE, HostInfoUtils.LOCALHOST); // NOI18N
         String workingDir = baseFolder;
         String workingDirRel = IpeUtils.toRelativePath(baseFolder, FilePathAdaptor.naturalize(workingDir));
         workingDirRel = FilePathAdaptor.normalize(workingDirRel);
@@ -159,9 +161,19 @@ public class ProjectBridge {
                 }
             }
         }
-        makeConfigurationDescriptor.addAdditionalHeaderExtensions(extensions);
+        Set<Item> old = new HashSet<Item>();
+        for(Item item : getAllSources()) {
+            old.add(item);
+        }
+        if (makeConfigurationDescriptor.addAdditionalHeaderExtensions(extensions)) {
+            for(Item item : getAllSources()) {
+                if (!old.contains(item)) {
+                    ProjectBridge.setExclude(item,true);
+                }
+            }
+        }
     }
-    
+
     private Item findByCanonicalName(String path){
         if (canonicalItems == null) {
             canonicalItems = new HashMap<String,Item>();
@@ -491,7 +503,7 @@ public class ProjectBridge {
     }
 
     public String getCygwinDrive(){
-        String res =CompilerSetManager.getCygwinBase();
+        String res =CompilerSetUtils.getCygwinBase();
         if (res != null && res.endsWith("/")){ // NOI18N
             res = res.substring(0,res.length()-1);
         }

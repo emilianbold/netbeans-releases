@@ -63,6 +63,7 @@ import org.apache.tools.ant.module.api.AntTargetExecutor;
 import org.apache.tools.ant.module.api.support.AntScriptUtils;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.project.runner.JavaRunner;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -214,7 +215,7 @@ public class ProjectRunnerImpl implements JavaRunnerImplementation {
         }
         {
             FileObject source = toRun;
-            final Charset charset = getValue(properties, "runtime.encoding", Charset.class);   //NOI18N
+            final Charset charset = getValue(properties, JavaRunner.PROP_RUNTIME_ENCODING, Charset.class);   //NOI18N
             String encoding = charset != null && Charset.isSupported(charset.name()) ? charset.name() : null;
             if (encoding == null) {
                 if (source == null) {

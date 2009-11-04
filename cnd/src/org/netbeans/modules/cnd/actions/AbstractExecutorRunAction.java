@@ -46,6 +46,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
@@ -53,6 +54,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.extexecution.ExecutionDescriptor.LineConvertorFactory;
 import org.netbeans.api.extexecution.print.ConvertedLine;
 import org.netbeans.api.extexecution.print.LineConvertor;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
@@ -61,6 +63,9 @@ import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.compilers.ToolchainProject;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
+import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
+import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
@@ -72,6 +77,7 @@ import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.spi.project.FileOwnerQueryImplementation;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.SaveCookie;
@@ -117,6 +123,17 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
     }
 
     protected abstract boolean accept(DataObject object);
+
+    protected static Project getProject(Node node) {
+        DataObject dataObject = node.getCookie(DataObject.class);
+        if (dataObject != null) {
+            FileObject fileObject = dataObject.getPrimaryFile();
+            if (fileObject != null) {
+                return FileOwnerQuery.getOwner(fileObject);
+            }
+        }
+        return null;
+    }
 
     protected static ExecutionEnvironment getExecutionEnvironment(FileObject fileObject, Project project) {
         if (project == null) {
@@ -491,17 +508,38 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         }
     }
 
+    protected static boolean checkConnection(ExecutionEnvironment execEnv) {
+        if (execEnv.isRemote()) {
+            try {
+                ConnectionManager.getInstance().connectTo(execEnv);
+                ServerRecord record = ServerList.get(execEnv);
+                if (record.isOffline()) {
+                    record.validate(true);
+                }
+                return record.isOnline();
+            } catch (IOException ex) {
+                return false;
+            } catch (CancellationException ex) {
+                return false;
+            }
+        } else {
+            return true;
+        }
+    }
+
     protected static final class ProcessChangeListener implements ChangeListener, Runnable {
         private final ExecutionListener listener;
         private final InputOutput tab;
         private final String resourceKey;
+        private final RemoteSyncWorker syncWorker;
         private long startTimeMillis;
         private Runnable postRunnable;
 
-        public ProcessChangeListener(ExecutionListener listener, InputOutput tab, String resourceKey) {
+        public ProcessChangeListener(ExecutionListener listener, InputOutput tab, String resourceKey, RemoteSyncWorker syncWorker) {
             this.listener = listener;
             this.tab = tab;
             this.resourceKey = resourceKey;
+            this.syncWorker = syncWorker;
         }
 
         public void stateChanged(ChangeEvent e) {
@@ -536,6 +574,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
                             StatusDisplayer.getDefault().setStatusText(statusMessage);
                         }
                     };
+                    shutdownSyncWorker();
                     break;
                 }
                 case ERROR:
@@ -543,6 +582,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
                     if (listener != null) {
                         listener.executionFinished(-1);
                     }
+                    shutdownSyncWorker();
                     postRunnable = new Runnable() {
                         public void run() {
                             String message = getString("Output."+resourceKey+"FailedToStart"); // NOI18N
@@ -560,6 +600,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
                     if (listener != null) {
                         listener.executionFinished(process.exitValue());
                     }
+                    shutdownSyncWorker();
                     postRunnable = new Runnable() {
                         public void run() {
                             String message;
@@ -585,6 +626,12 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         public void run() {
             if (postRunnable != null) {
                 postRunnable.run();
+            }
+        }
+
+        private void shutdownSyncWorker() {
+            if (syncWorker != null) {
+                syncWorker.shutdown();
             }
         }
     }

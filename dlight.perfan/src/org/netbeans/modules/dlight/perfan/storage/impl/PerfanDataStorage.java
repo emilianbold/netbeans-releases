@@ -42,6 +42,7 @@ import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -52,6 +53,8 @@ import org.netbeans.module.dlight.threads.api.Deadlock;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
+import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
+import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.modules.dlight.perfan.spi.datafilter.SunStudioFiltersProvider;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
@@ -60,6 +63,7 @@ import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.openide.util.Exceptions;
 
 public final class PerfanDataStorage implements DataStorage {
 
@@ -71,6 +75,7 @@ public final class PerfanDataStorage implements DataStorage {
     private ExecutionEnvironment env;
     private final List<DataTableMetadata> tableMetadatas;
     private ServiceInfoDataStorage serviceInfoDataStorage;
+    private volatile boolean isOMPExperiment = false;
 
     public PerfanDataStorage() {
         super();
@@ -98,14 +103,29 @@ public final class PerfanDataStorage implements DataStorage {
         er_print.setFilter(filter);
     }
 
+    public boolean hasOMPCollected() {
+        //TODO: re-write, should ask one time per experiment only
+        try {
+            isOMPExperiment = false;
+            Metrics metrics = er_print.getMetrics(true);
+            if (metrics.mspec.indexOf("omp") != -1) {//NOI18N
+                isOMPExperiment = true;
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return isOMPExperiment;
+    }
+
     public void init(ExecutionEnvironment execEnv, String sproHome,
             String experimentDirectory, SunStudioFiltersProvider dataFiltersProvider) {
         synchronized (this) {
+
             if (er_print != null) {
                 er_print.close();
             }
-
             er_print = ErprintSession.createNew(execEnv, sproHome, experimentDirectory, dataFiltersProvider);
+
         }
     }
 
@@ -135,6 +155,17 @@ public final class PerfanDataStorage implements DataStorage {
         }
 
         return result == null ? new String[0] : result;
+    }
+
+    public Metrics getCollectedMetrics() {
+        try {
+            return er_print.getMetrics(true);
+        } catch (InterruptedIOException ex) {
+            // it was terminated while getting metrics...
+        } catch (IOException ex) {
+            log.log(Level.FINEST, "getMetrics: " + ex.toString()); // NOI18N
+        }
+        return Metrics.constructFrom(Arrays.asList(SunStudioDCConfiguration.c_name), Arrays.asList(SunStudioDCConfiguration.c_name));
     }
 
     public String[] getTopFunctions(ErprintCommand command, Metrics metrics, int limit) throws InterruptedException {

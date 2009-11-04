@@ -94,6 +94,7 @@ public class SelectionHintsTask extends ParserResultTask<ParserResult> {
             Math.max(evt.getMarkOffset(), evt.getCaretOffset())
         };
         if (range == null || range.length != 2 || range[0] == -1 || range[1] == -1 || range[0] == range[1]) {
+            HintsController.setErrors(fileObject, SelectionHintsTask.class.getName(), Collections.<ErrorDescription>emptyList());
             return;
         }
 

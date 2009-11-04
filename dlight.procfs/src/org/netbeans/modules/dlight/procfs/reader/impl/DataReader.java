@@ -38,18 +38,19 @@
  */
 package org.netbeans.modules.dlight.procfs.reader.impl;
 
+import java.nio.ByteOrder;
 import java.util.concurrent.atomic.AtomicInteger;
 
 class DataReader {
 
-    private final boolean bigendian;
+    private final ByteOrder byteOrder;
     private final AtomicInteger data_offset;
     private final ReusableByteBuffer buffer;
     private final int buffer_offset;
 
-    DataReader(final ReusableByteBuffer buffer, final int offset, final boolean bigendian) {
+    DataReader(final ReusableByteBuffer buffer, final int offset, final ByteOrder byteOrder) {
         this.buffer = buffer;
-        this.bigendian = bigendian;
+        this.byteOrder = byteOrder;
         buffer_offset = offset;
         data_offset = new AtomicInteger(0);
     }
@@ -68,7 +69,7 @@ class DataReader {
         int b3 = 0xFF & buffer.buffer[data_offset.getAndIncrement()];
         int b4 = 0xFF & buffer.buffer[data_offset.getAndIncrement()];
 
-        return bigendian ? (b1 << 24 | b2 << 16 | b3 << 8 | b4) : (b4 << 24 | b3 << 16 | b2 << 8 | b1);
+        return byteOrder == ByteOrder.BIG_ENDIAN ? (b1 << 24 | b2 << 16 | b3 << 8 | b4) : (b4 << 24 | b3 << 16 | b2 << 8 | b1);
     }
 
     long _time() {

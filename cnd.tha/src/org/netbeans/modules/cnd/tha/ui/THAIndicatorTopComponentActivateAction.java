@@ -50,7 +50,7 @@ import org.openide.windows.TopComponent;
 public class THAIndicatorTopComponentActivateAction extends AbstractAction {
 
      public THAIndicatorTopComponentActivateAction() {
-        super("activateRunMonitor");//NOI18N
+        super("activateTHAMonitor");//NOI18N
     }
 
     public void actionPerformed(ActionEvent e) {

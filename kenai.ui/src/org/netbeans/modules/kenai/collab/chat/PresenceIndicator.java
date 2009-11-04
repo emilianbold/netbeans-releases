@@ -62,6 +62,7 @@ import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiUser;
+import org.netbeans.modules.kenai.ui.Utilities;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -94,7 +95,7 @@ public class PresenceIndicator {
                 label.setToolTipText(NbBundle.getMessage(PresenceIndicator.class, "LBL_LoggedInButNotOnChat_Tooltip")); // NOI18N
                 break;
             case ONLINE:
-                label.setToolTipText(NbBundle.getMessage(PresenceIndicator.class, "LBL_LoggedIn_Tooltip")); // NOI18N
+                label.setToolTipText(NbBundle.getMessage(PresenceIndicator.class, "LBL_LoggedIn_Tooltip", KenaiUser.getOnlineUserCount()>0?KenaiUser.getOnlineUserCount()-1:"")); // NOI18N
                 break;
         }
             label.setVisible(status!=Kenai.Status.OFFLINE);
@@ -153,8 +154,10 @@ public class PresenceIndicator {
                     JPopupMenu menu = new JPopupMenu();
                     final JMenuItem contactListMenu = new JMenuItem(NbBundle.getMessage(PresenceIndicator.class, "CTL_WhoIsOnlineAction"));
                     menu.add(contactListMenu);
+                    contactListMenu.setEnabled(s==Kenai.Status.ONLINE);
                     final JCheckBoxMenuItem onlineCheckBox = new JCheckBoxMenuItem(NbBundle.getMessage(PresenceIndicator.class, "CTL_OnlineCheckboxMenuItem"),s==Kenai.Status.ONLINE); // NOI18N
                     menu.add(onlineCheckBox);
+                    onlineCheckBox.setEnabled(Utilities.isChatSupported());
                     final JMenuItem logoutItem = new JMenuItem(NbBundle.getMessage(PresenceIndicator.class, "CTL_LogoutMenuItem")); // NOI18N
                     menu.add(logoutItem);
                     final Kenai kenai = Kenai.getDefault();
@@ -193,7 +196,8 @@ public class PresenceIndicator {
          * @param packet
          */
         public void processPacket(Packet packet) {
-            PresenceIndicator.getDefault().label.setText(String.valueOf(KenaiUser.getOnlineUserCount()));
+            PresenceIndicator.getDefault().label.setText(KenaiUser.getOnlineUserCount()>0?KenaiUser.getOnlineUserCount()-1+"":"");
+            PresenceIndicator.getDefault().label.setToolTipText(NbBundle.getMessage(PresenceIndicator.class, "LBL_LoggedIn_Tooltip", KenaiUser.getOnlineUserCount()>0?KenaiUser.getOnlineUserCount()-1:""));
             for (MultiUserChat muc : KenaiConnection.getDefault().getChats()) {
                 String chatName = StringUtils.parseName(muc.getRoom());
                 assert chatName != null : "muc.getRoom() = " + muc.getRoom(); // NOI18N

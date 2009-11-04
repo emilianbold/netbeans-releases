@@ -38,16 +38,21 @@
  */
 package org.netbeans.modules.cnd.tha.actions;
 
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.List;
 import java.util.MissingResourceException;
+import javax.naming.event.EventDirContext;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
 import org.netbeans.modules.cnd.api.remote.ServerListUI;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configurations;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
@@ -70,7 +75,7 @@ import org.openide.util.NbBundle;
  *
  * @author mt154047
  */
-public final class THAMainProjectAction extends AbstractAction implements PropertyChangeListener, Runnable {
+public final class THAMainProjectAction extends AbstractAction implements PropertyChangeListener, Runnable, NativeProjectItemsListener {
 
     private Project currentProject = null;
     private final Action sensorMainAction;
@@ -85,11 +90,13 @@ public final class THAMainProjectAction extends AbstractAction implements Proper
         putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/tha/resources/deadlocks.png", false)); // NOI18N
         SwingUtilities.invokeLater(this);
     }
-    
+
     public void run() {
+        sensorMainAction.setEnabled(isEnabledFor());
         setEnabled(isEnabled());
+
     }
-    
+
     private static String loc(String key, String... params) {
         try {
             return NbBundle.getMessage(THAMainProjectAction.class, key, params);
@@ -106,12 +113,19 @@ public final class THAMainProjectAction extends AbstractAction implements Proper
 
     private boolean ensureConnected() {
         MakeConfigurationDescriptor mcd = MakeConfigurationDescriptor.getMakeConfigurationDescriptor(currentProject);
+        if (mcd == null) {
+            return false;
+        }
         MakeConfiguration mc = mcd.getActiveConfiguration();
+        if (mc == null) {
+            return false;
+        }
         ExecutionEnvironment execEnv = mc.getDevelopmentHost().getExecutionEnvironment();
         // ensure that connection is established and ServerRecord exists for the
         // development host....
         return ServerListUI.ensureRecordOnline(execEnv);
     }
+
     public void actionPerformed(ActionEvent e) {
         if (!THAProjectSupport.isSupported(currentProject)) {
             return;
@@ -119,8 +133,19 @@ public final class THAMainProjectAction extends AbstractAction implements Proper
         //show dialog here with the configuration
         JButton startB = new JButton(NbBundle.getMessage(THAMainProjectAction.class, "THAMainProjectAction.ConfigureDialog.Start"));//NOI18N
         Object[] options = new Object[]{DialogDescriptor.CANCEL_OPTION, startB};
-        THAConfigurationPanel configurationPanel = new THAConfigurationPanel();
-        DialogDescriptor dialogDescriptor = new DialogDescriptor(configurationPanel, 
+        NativeProject nativeProject = currentProject.getLookup().lookup(NativeProject.class);
+
+        String statusText = null;
+        if (nativeProject != null) {
+            String projectName = nativeProject.getProjectDisplayName();
+
+            if (!THAProjectSupport.getSupportFor(currentProject).activeCompilerIsSunStudio()) {
+                statusText = loc("THA_ReconfigureProjectWithSunStudio", projectName);//NOI18N
+                startB.setEnabled(false);
+            }
+        }
+        THAConfigurationPanel configurationPanel = new THAConfigurationPanel(statusText);
+        DialogDescriptor dialogDescriptor = new DialogDescriptor(configurationPanel,
                 NbBundle.getMessage(THAMainProjectAction.class, "THAMainProjectAction.ConfigureDialog.Title"),//NOI18N
                 true, options, startB, DialogDescriptor.BOTTOM_ALIGN, null, null);
         Object ret = DialogDisplayer.getDefault().notify(dialogDescriptor);
@@ -167,22 +192,40 @@ public final class THAMainProjectAction extends AbstractAction implements Proper
         if (!evt.getPropertyName().equals("mainProject") && !Configurations.PROP_ACTIVE_CONFIGURATION.equals(evt.getPropertyName())) { // NOI18N
             return;
         }
-        sensorMainAction.setEnabled(isEnabledFor());
-        setEnabled(isEnabled());
+        SwingUtilities.invokeLater(this);
     }
 
     private boolean isEnabledFor() {
-        if (currentProject == null) {
-            return false;
-        }
-        NativeProject nativeProject = currentProject.getLookup().lookup(NativeProject.class);
-
-        if (nativeProject == null) {
-            return false;
-        }
-        MakeConfigurationDescriptor mcd = MakeConfigurationDescriptor.getMakeConfigurationDescriptor(currentProject);
-        MakeConfiguration mc = mcd.getActiveConfiguration();
         return THAProjectSupport.isSupported(currentProject);
+    }
+
+    public void fileAdded(NativeFileItem fileItem) {
+    }
+
+    public void filesAdded(List<NativeFileItem> fileItems) {
+    }
+
+    public void fileRemoved(NativeFileItem fileItem) {
+    }
+
+    public void filesRemoved(List<NativeFileItem> fileItems) {
+    }
+
+    public void filePropertiesChanged(NativeFileItem fileItem) {
+    }
+
+    public void filesPropertiesChanged() {
+        SwingUtilities.invokeLater(this);
+    }
+
+    public void fileRenamed(String oldPath, NativeFileItem newFileIetm) {
+    }
+
+    public void projectDeleted(NativeProject nativeProject) {
+    }
+
+    public void filesPropertiesChanged(List<NativeFileItem> fileItems) {
+        SwingUtilities.invokeLater(this);
     }
 
     private final class ProjectActionPerformerImpl implements ProjectActionPerformer {
@@ -191,35 +234,40 @@ public final class THAMainProjectAction extends AbstractAction implements Proper
             if (project != currentProject && currentProject != null) {
                 //remove property change listener
                 MakeConfigurationDescriptor mcd = MakeConfigurationDescriptor.getMakeConfigurationDescriptor(THAMainProjectAction.this.currentProject);
-                if (mcd != null){
+                if (mcd != null) {
                     MakeConfiguration mc = mcd.getActiveConfiguration();
-                    mc.removePropertyChangeListener(THAMainProjectAction.this);
-                    Configurations c = mcd.getConfs();
-                    if (c != null){
-                        c.removePropertyChangeListener(THAMainProjectAction.this);
+                    if (mc != null) {
+                        mc.removePropertyChangeListener(THAMainProjectAction.this);
+                        Configurations c = mcd.getConfs();
+                        if (c != null) {
+                            c.removePropertyChangeListener(THAMainProjectAction.this);
+                        }
                     }
                 }
             }
-
+            if (project == null){
+                currentProject = null;
+                return false;
+            }
             boolean isEnabled = THAProjectSupport.isSupported(project);
-            if (isEnabled) {
-                NativeProject nativeProject = project.getLookup().lookup(NativeProject.class);
+            NativeProject nativeProject = project.getLookup().lookup(NativeProject.class);
 
-                if (nativeProject == null) {
-                    return false;
-                }
-                THAMainProjectAction.this.currentProject = project;
-                MakeConfigurationDescriptor mcd = MakeConfigurationDescriptor.getMakeConfigurationDescriptor(THAMainProjectAction.this.currentProject);
-                if (mcd != null){
-                    MakeConfiguration mc = mcd.getActiveConfiguration();
+            if (nativeProject == null) {
+                currentProject = null;
+                return false;
+            }
+            THAMainProjectAction.this.currentProject = project;
+            nativeProject.addProjectItemsListener(THAMainProjectAction.this);
+            MakeConfigurationDescriptor mcd = MakeConfigurationDescriptor.getMakeConfigurationDescriptor(THAMainProjectAction.this.currentProject);
+            if (mcd != null) {
+                MakeConfiguration mc = mcd.getActiveConfiguration();
+                if (mc != null) {
                     mc.addPropertyChangeListener(THAMainProjectAction.this);
                     Configurations c = mcd.getConfs();
                     c.addPropertyChangeListener(THAMainProjectAction.this);
                 }
-
-            } else {
-                THAMainProjectAction.this.currentProject = null;
             }
+
 
             return isEnabled;
         }

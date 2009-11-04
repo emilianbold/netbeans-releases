@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.indicators.graph;
 
 import java.lang.reflect.Array;
@@ -52,10 +51,8 @@ class CyclicArray<T> {
 
     /** array that stores elements */
     private T[] data;
-
     /** last element index */
     private int last;
-
     /** elements count */
     private int size;
 
@@ -83,9 +80,9 @@ class CyclicArray<T> {
             if (size < data.length) {
                 size++;
                 return false;
-            }            
+            }
         } else {
-            data[last = 0] = value;            
+            data[last = 0] = value;
         }
         return true;
     }
@@ -121,7 +118,6 @@ class CyclicArray<T> {
         return size;
     }
 
-
     /** returns the capacity of this cyclic array */
     public int capacity() {
         return data.length;
@@ -133,12 +129,12 @@ class CyclicArray<T> {
         T[] newData = (T[]) new Object[newCapacity];
         int oldIndex = (newCapacity < size) ? size - newCapacity : 0;
         int newIndex = 0;
-        while(oldIndex < size()) {
+        while (oldIndex < size()) {
             newData[newIndex++] = get(oldIndex++);
         }
 
         data = newData;
-        last = (size < data.length) ? size-1 : data.length-1;
+        last = (size < data.length) ? size - 1 : data.length - 1;
         if (size > data.length) {
             size = data.length;
         }
@@ -151,11 +147,11 @@ class CyclicArray<T> {
         }
     }
 
-    public static final <T> boolean  areEqual(CyclicArray<T> a1, CyclicArray<T> a2) {
+    public static final <T> boolean areEqual(CyclicArray<T> a1, CyclicArray<T> a2) {
         if (a1 == null) {
             return a2 == null;
         } else if (a2 == null) {
-            return a1 == null;
+            return false;
         } else {
             if (a1.size() != a2.size()) {
                 return false;
@@ -163,10 +159,17 @@ class CyclicArray<T> {
             for (int i = 0; i < a1.size(); i++) {
                 T v1 = a1.get(i);
                 T v2 = a2.get(i);
-                if (v1 == null && v2 != null) {
-                    return false;
-                } else if(!v1.equals(v2)) {
-                    return false;
+
+                if (v1 == null) {
+                    if (v2 != null) {
+                        return false;
+                    }
+                } else {
+                    if (v2 == null) {
+                        return false;
+                    } else if (!v1.equals(v2)) {
+                        return false;
+                    }
                 }
             }
             return true;
@@ -191,7 +194,7 @@ class CyclicArray<T> {
     private String toString(Object v) {
         if (v == null) {
             return "null"; // NOI18N
-        } else if(v.getClass().isArray()) {
+        } else if (v.getClass().isArray()) {
             int length = Array.getLength(v);
             StringBuilder sb = new StringBuilder("["); // NOI18N
             for (int i = 0; i < length; i++) {
@@ -206,5 +209,4 @@ class CyclicArray<T> {
             return v.toString();
         }
     }
-    
 }

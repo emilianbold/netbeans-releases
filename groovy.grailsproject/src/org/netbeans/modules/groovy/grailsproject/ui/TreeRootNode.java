@@ -48,6 +48,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -72,7 +74,6 @@ import org.openide.util.WeakListeners;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
-import java.io.File;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 
 /**
@@ -211,7 +212,7 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
                 FileObject folder = fo.isFolder() ? fo : fo.getParent();
                 String relPath = FileUtil.getRelativePath(groupRoot, folder);
                 List<String> path = new ArrayList<String>();
-                StringTokenizer strtok = new StringTokenizer(relPath, File.separator); // NOI18N
+                StringTokenizer strtok = new StringTokenizer(relPath, "/"); // NOI18N
                 while (strtok.hasMoreTokens()) {
                     String token = strtok.nextToken();
                     path.add(token);
@@ -230,7 +231,7 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
                         }
                     }
                 } catch (NodeNotFoundException e) {
-                    e.printStackTrace();
+                    Logger.getLogger(TreeRootNode.class.getName()).log(Level.INFO, null, e);
                 }
             } else if (groupRoot.equals(fo)) {
                 return rootNode;

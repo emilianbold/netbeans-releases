@@ -270,7 +270,7 @@ public class Hk2InstanceNode extends AbstractNode implements ChangeListener { //
         return dn != null ? dn : "Bogus display name"; // NOI18N NbBundle.getMessage(Hk2InstanceNode.class, "TXT_GlassfishPreludeInstanceNode");
     }
 
-    public String getAdminUrl() {
+    private String getAdminUrl() {
         String result = null;
         
         Map<String, String> ip = getInstanceProperties();
@@ -278,7 +278,7 @@ public class Hk2InstanceNode extends AbstractNode implements ChangeListener { //
         String adminPort = !"false".equals(System.getProperty("glassfish.useadminport")) ?
             ip.get(GlassfishModule.ADMINPORT_ATTR) : ip.get(GlassfishModule.HTTPPORT_ATTR);
         if(host != null && host.length() > 0) {
-            result = "http://" + host + ":" + adminPort;
+            result = "http://" + host + ":" + adminPort; // this is just a display string...
         }
         
         return result;

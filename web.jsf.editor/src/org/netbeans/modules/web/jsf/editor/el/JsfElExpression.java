@@ -82,8 +82,10 @@ import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
+import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -181,10 +183,10 @@ public class JsfElExpression extends ELExpression {
                 ParserManager.parse(Collections.singleton(source), new UserTask() {
                     @Override
                     public void run(ResultIterator resultIterator) throws Exception {
-                        Result result = resultIterator.getParserResult(offset);
+                        Result result = getEmbeddedParserResult(resultIterator, "text/html"); //NOI18N
                         if (result instanceof HtmlParserResult) {
                             JsfVariablesModel model = JsfVariablesModel.getModel((HtmlParserResult)result);
-                            _value[0] = model.resolveExpression(expr, result.getSnapshot().getEmbeddedOffset(offset), NESTING_AWARE);
+                            _value[0] = model.resolveExpression(expr, findNearestMapableOffsetForward(result.getSnapshot(), offset), NESTING_AWARE);
                         }
                     }
                 });
@@ -220,6 +222,17 @@ public class JsfElExpression extends ELExpression {
 
         //unknown context
         return EL_UNKNOWN;
+    }
+
+    //workaround for parsing api - we need to find a document offset for the given astoffset
+    private int findNearestMapableOffsetForward(Snapshot s, int astOffset) {
+        for(int i = astOffset; i < s.getText().length(); i ++ ) {
+            int documentOffset = s.getEmbeddedOffset(i);
+            if(documentOffset != -1) {
+                return documentOffset;
+            }
+        }
+        return -1;
     }
 
     /**
@@ -424,7 +437,8 @@ public class JsfElExpression extends ELExpression {
 
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
-                    Result result = resultIterator.getParserResult(getContextOffset());
+                    //one level - works only if xhtml is top level
+                    Result result = getEmbeddedParserResult(resultIterator, "text/html"); //NOI18N
                     if (result instanceof HtmlParserResult) {
                         JsfVariablesModel model = JsfVariablesModel.getModel((HtmlParserResult) result);
                         List<JsfVariableContext> contexts = model.getAllAvailableVariables(getContextOffset(), false);
@@ -443,6 +457,15 @@ public class JsfElExpression extends ELExpression {
         }
 
         return items;
+    }
+
+    private Result getEmbeddedParserResult(ResultIterator resultIterator, String mimeType) throws ParseException {
+        for(Embedding e : resultIterator.getEmbeddings()) {
+            if(e.getMimeType().equals(mimeType)) {
+                return resultIterator.getResultIterator(e).getParserResult();
+            }
+        }
+        return null;
     }
 
     //generic properties completion
@@ -765,7 +788,9 @@ public class JsfElExpression extends ELExpression {
                 CompilationController compilationController)
         {
             // Fix for IZ#173117 -  multiplied EL completion items
-            if ( super.checkMethod(method, compilationController)){
+            if ( super.checkMethodParameters(method, compilationController)&& 
+                    super.checkMethod(method, compilationController))
+            {
                 return false;
             }
             return JsfElExpression.this.checkMethod(method, compilationController);

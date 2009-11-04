@@ -110,6 +110,6 @@ public class NameAndLicenseWizardPanel implements WizardDescriptor.Panel,
     }
 
     public boolean isFinishPanel() {
-        return true;
+        return false;
     }
 }

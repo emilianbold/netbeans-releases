@@ -80,7 +80,7 @@ import org.openide.util.NbBundle;
  * @author Tomas Mysik
  */
 public class SymfonyOptionsPanel extends JPanel {
-    private static final long serialVersionUID = -13766303191714740L;
+    private static final long serialVersionUID = -1384644114740L;
     private static final String SYMFONY_LAST_FOLDER_SUFFIX = ".symfony";
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
@@ -114,6 +114,22 @@ public class SymfonyOptionsPanel extends JPanel {
 
     public void setSymfony(String symfony) {
         symfonyTextField.setText(symfony);
+    }
+
+    public String getDefaultParamsForProject() {
+        return defaultParametersForProjectTextField.getText();
+    }
+
+    public void setDefaultParamsForProject(String params) {
+        defaultParametersForProjectTextField.setText(params);
+    }
+
+    public String getDefaultParamsForApps() {
+        return defaultParametersForAppsTextField.getText();
+    }
+
+    public void setDefaultParamsForApps(String params) {
+        defaultParametersForAppsTextField.setText(params);
     }
 
     public void setError(String message) {
@@ -155,6 +171,12 @@ public class SymfonyOptionsPanel extends JPanel {
         searchButton = new JButton();
         symfonyScriptUsageLabel = new JLabel();
         runningInfoLabel = new JLabel();
+        defaultParametersLabel = new JLabel();
+        defaultParametersForProjectLabel = new JLabel();
+        defaultParametersForProjectTextField = new JTextField();
+        jLabel1 = new JLabel();
+        defaultParametersForAppsLabel = new JLabel();
+        defaultParametersForAppsTextField = new JTextField();
         noteLabel = new JLabel();
         includePathInfoLabel = new JLabel();
         installationInfoLabel = new JLabel();
@@ -166,10 +188,7 @@ public class SymfonyOptionsPanel extends JPanel {
 
 
 
-
-
-
-        Mnemonics.setLocalizedText(symfonyLabel, NbBundle.getMessage(SymfonyOptionsPanel.class, "SymfonyOptionsPanel.symfonyLabel.text"));
+        Mnemonics.setLocalizedText(symfonyLabel, NbBundle.getMessage(SymfonyOptionsPanel.class, "SymfonyOptionsPanel.symfonyLabel.text")); // NOI18N
         Mnemonics.setLocalizedText(browseButton, NbBundle.getMessage(SymfonyOptionsPanel.class, "SymfonyOptionsPanel.browseButton.text"));
         browseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -184,6 +203,19 @@ public class SymfonyOptionsPanel extends JPanel {
         });
         Mnemonics.setLocalizedText(symfonyScriptUsageLabel, "HINT");
         Mnemonics.setLocalizedText(runningInfoLabel, NbBundle.getMessage(SymfonyOptionsPanel.class, "SymfonyOptionsPanel.runningInfoLabel.text"));
+        Mnemonics.setLocalizedText(defaultParametersLabel, NbBundle.getMessage(SymfonyOptionsPanel.class, "SymfonyOptionsPanel.defaultParametersLabel.text"));
+        defaultParametersForProjectLabel.setLabelFor(defaultParametersForAppsTextField);
+
+
+        Mnemonics.setLocalizedText(defaultParametersForProjectLabel, NbBundle.getMessage(SymfonyOptionsPanel.class, "SymfonyOptionsPanel.defaultParametersForProjectLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(jLabel1, NbBundle.getMessage(SymfonyOptionsPanel.class, "SymfonyOptionsPanel.jLabel1.text"));
+        defaultParametersForAppsLabel.setLabelFor(defaultParametersForAppsTextField);
+
+
+
+
+
+        Mnemonics.setLocalizedText(defaultParametersForAppsLabel, NbBundle.getMessage(SymfonyOptionsPanel.class, "SymfonyOptionsPanel.defaultParametersForAppsLabel.text"));
         Mnemonics.setLocalizedText(noteLabel, NbBundle.getMessage(SymfonyOptionsPanel.class, "SymfonyOptionsPanel.noteLabel.text"));
         Mnemonics.setLocalizedText(includePathInfoLabel, NbBundle.getMessage(SymfonyOptionsPanel.class, "SymfonyOptionsPanel.includePathInfoLabel.text"));
         Mnemonics.setLocalizedText(installationInfoLabel, NbBundle.getMessage(SymfonyOptionsPanel.class, "SymfonyOptionsPanel.installationInfoLabel.text"));
@@ -202,33 +234,8 @@ public class SymfonyOptionsPanel extends JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(0, 0, 0)
-                .add(layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(layout.createParallelGroup(GroupLayout.LEADING)
-                        .add(layout.createSequentialGroup()
-                            .add(runningInfoLabel)
-                            .addContainerGap())
-                        .add(layout.createSequentialGroup()
-                            .add(errorLabel)
-                            .add(447, 447, 447))
-                        .add(layout.createSequentialGroup()
-                            .add(symfonyLabel)
-                            .addPreferredGap(LayoutStyle.RELATED)
-                            .add(layout.createParallelGroup(GroupLayout.LEADING)
-                                .add(layout.createSequentialGroup()
-                                    .add(symfonyScriptUsageLabel)
-                                    .addContainerGap())
-                                .add(layout.createSequentialGroup()
-                                    .add(symfonyTextField, GroupLayout.DEFAULT_SIZE, 293, Short.MAX_VALUE)
-                                    .addPreferredGap(LayoutStyle.RELATED)
-                                    .add(browseButton)
-                                    .addPreferredGap(LayoutStyle.RELATED)
-                                    .add(searchButton)
-                                    .add(0, 0, 0)))))
-                    .add(noteLabel)))
-            .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(includePathInfoLabel)
+                .add(includePathInfoLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(138, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .addContainerGap()
@@ -236,8 +243,52 @@ public class SymfonyOptionsPanel extends JPanel {
                 .addContainerGap(206, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(learnMoreLabel)
+                .add(learnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(509, Short.MAX_VALUE))
+            .add(layout.createSequentialGroup()
+                .add(0, 0, 0)
+                .add(layout.createParallelGroup(GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(defaultParametersLabel)
+                        .addContainerGap())
+                    .add(layout.createParallelGroup(GroupLayout.LEADING)
+                        .add(layout.createParallelGroup(GroupLayout.LEADING)
+                            .add(layout.createSequentialGroup()
+                                .add(runningInfoLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                .addContainerGap())
+                            .add(layout.createSequentialGroup()
+                                .add(errorLabel)
+                                .add(447, 447, 447))
+                            .add(layout.createSequentialGroup()
+                                .add(symfonyLabel)
+                                .addPreferredGap(LayoutStyle.RELATED)
+                                .add(layout.createParallelGroup(GroupLayout.LEADING)
+                                    .add(layout.createSequentialGroup()
+                                        .add(symfonyScriptUsageLabel)
+                                        .addContainerGap())
+                                    .add(layout.createSequentialGroup()
+                                        .add(symfonyTextField, GroupLayout.DEFAULT_SIZE, 293, Short.MAX_VALUE)
+                                        .addPreferredGap(LayoutStyle.RELATED)
+                                        .add(browseButton)
+                                        .addPreferredGap(LayoutStyle.RELATED)
+                                        .add(searchButton)
+                                        .add(0, 0, 0)))))
+                        .add(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))))
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(layout.createParallelGroup(GroupLayout.LEADING)
+                    .add(defaultParametersForAppsLabel)
+                    .add(defaultParametersForProjectLabel))
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(jLabel1)
+                        .addContainerGap())
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(GroupLayout.LEADING)
+                            .add(defaultParametersForProjectTextField, GroupLayout.DEFAULT_SIZE, 486, Short.MAX_VALUE)
+                            .add(defaultParametersForAppsTextField, GroupLayout.DEFAULT_SIZE, 486, Short.MAX_VALUE))
+                        .add(0, 0, 0))))
         );
 
         layout.linkSize(new Component[] {browseButton, searchButton}, GroupLayout.HORIZONTAL);
@@ -252,16 +303,28 @@ public class SymfonyOptionsPanel extends JPanel {
                     .add(browseButton))
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(symfonyScriptUsageLabel)
+                .addPreferredGap(LayoutStyle.UNRELATED)
+                .add(runningInfoLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                 .add(18, 18, 18)
-                .add(runningInfoLabel)
-                .add(18, 18, 18)
-                .add(noteLabel)
+                .add(defaultParametersLabel)
                 .addPreferredGap(LayoutStyle.RELATED)
-                .add(includePathInfoLabel)
+                .add(layout.createParallelGroup(GroupLayout.BASELINE)
+                    .add(defaultParametersForProjectLabel)
+                    .add(defaultParametersForProjectTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(jLabel1)
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(GroupLayout.BASELINE)
+                    .add(defaultParametersForAppsLabel)
+                    .add(defaultParametersForAppsTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .add(18, 18, 18)
+                .add(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(includePathInfoLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                 .add(18, 18, 18)
                 .add(installationInfoLabel)
                 .addPreferredGap(LayoutStyle.RELATED)
-                .add(learnMoreLabel)
+                .add(learnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(LayoutStyle.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .add(errorLabel)
                 .add(0, 0, 0))
@@ -322,9 +385,15 @@ public class SymfonyOptionsPanel extends JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JButton browseButton;
+    private JLabel defaultParametersForAppsLabel;
+    private JTextField defaultParametersForAppsTextField;
+    private JLabel defaultParametersForProjectLabel;
+    private JTextField defaultParametersForProjectTextField;
+    private JLabel defaultParametersLabel;
     private JLabel errorLabel;
     private JLabel includePathInfoLabel;
     private JLabel installationInfoLabel;
+    private JLabel jLabel1;
     private JLabel learnMoreLabel;
     private JLabel noteLabel;
     private JLabel runningInfoLabel;

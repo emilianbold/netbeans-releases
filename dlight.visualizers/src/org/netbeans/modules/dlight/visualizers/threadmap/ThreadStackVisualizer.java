@@ -49,7 +49,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Vector;
-import java.util.concurrent.CountDownLatch;
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -138,11 +137,6 @@ public final class ThreadStackVisualizer extends JPanel implements Visualizer<Th
             final String timeString = TimeLineUtils.getMillisValue(time);
             final String rootName = NbBundle.getMessage(ThreadStackVisualizer.class, "ThreadStackVisualizerStackAt", timeString); //NOI18N
             //collect all and then update UI
-            final CountDownLatch doneFlag = new CountDownLatch(descriptor.getThreadStates().size());
-//            for (final ThreadSnapshot stack : descriptor.getThreadStates()) {
-//                final MSAState msa = stack.getState();
-//                final ThreadStateResources res = ThreadStateResources.forState(msa);
-//                if (res != null) {
             DLightExecutorService.submit(new Runnable() {
 
                 public void run() {

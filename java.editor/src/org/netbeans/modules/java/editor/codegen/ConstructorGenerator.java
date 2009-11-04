@@ -52,7 +52,9 @@ import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.NestingKind;
+import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
@@ -109,6 +111,13 @@ public class ConstructorGenerator implements CodeGenerator {
             if (superClassType.getKind() == TypeKind.DECLARED) {
                 superClass = (TypeElement) ((DeclaredType) superClassType).asElement();
                 for (ExecutableElement executableElement : ElementFilter.constructorsIn(superClass.getEnclosedElements())) {
+                    PackageElement currentPackage = controller.getElements().getPackageOf(typeElement);
+                    PackageElement ctorPackage = controller.getElements().getPackageOf(executableElement);
+                    Set<Modifier> ctorMods = executableElement.getModifiers();
+                    if ((currentPackage != ctorPackage && !(ctorMods.contains(Modifier.PUBLIC) || ctorMods.contains(Modifier.PROTECTED)))
+                            || ctorMods.contains(Modifier.PRIVATE)) {
+                        continue;
+                    }
                     inheritedConstructors.add(executableElement);
                 }
             }

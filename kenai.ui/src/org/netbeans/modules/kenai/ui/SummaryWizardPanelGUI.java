@@ -116,78 +116,89 @@ public class SummaryWizardPanelGUI extends javax.swing.JPanel {
 
 
 
-        Mnemonics.setLocalizedText(tobeSharedLabel, NbBundle.getMessage(SummaryWizardPanelGUI.class, "SummaryWizardPanelGUI.tobeSharedLabel.text"));
+        Mnemonics.setLocalizedText(tobeSharedLabel, NbBundle.getMessage(SummaryWizardPanelGUI.class, "SummaryWizardPanelGUI.tobeSharedLabel.text")); // NOI18N
         Mnemonics.setLocalizedText(projectsMoveLabel, NbBundle.getMessage(SummaryWizardPanelGUI.class, "SummaryWizardPanelGUI.projectsMoveLabel.text"));
         Mnemonics.setLocalizedText(localRoot, NbBundle.getMessage(SummaryWizardPanelGUI.class, "SummaryWizardPanelGUI.localRoot.text"));
-        GroupLayout layout = new GroupLayout(this);
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(layout.createParallelGroup(GroupLayout.LEADING)
-                            .add(projectCreatedLabel, GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE)
-                            .add(jLabel1, GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE)))
-                    .add(layout.createSequentialGroup()
-                        .add(24, 24, 24)
-                        .add(projectURL, GroupLayout.DEFAULT_SIZE, 470, Short.MAX_VALUE))
-                    .add(GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(tobeSharedLabel, GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE))
-                    .add(GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(24, 24, 24)
-                        .add(jScrollPane1, GroupLayout.DEFAULT_SIZE, 470, Short.MAX_VALUE))
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(projectsMoveLabel, GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE))
-                    .add(GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(24, 24, 24)
-                        .add(localRoot, GroupLayout.DEFAULT_SIZE, 470, Short.MAX_VALUE))
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(layout.createParallelGroup(GroupLayout.LEADING)
-                            .add(GroupLayout.TRAILING, repoLabel, GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE)
-                            .add(GroupLayout.TRAILING, commitPrepareLabel, GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE)
-                            .add(commitedLabel, GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE)
-                            .add(GroupLayout.TRAILING, layout.createSequentialGroup()
-                                .add(12, 12, 12)
-                                .add(repoURL, GroupLayout.DEFAULT_SIZE, 472, Short.MAX_VALUE))
-                            .add(issueTrackingLabel, GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE)
-                            .add(GroupLayout.TRAILING, chatroomLabel, GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE))))
+                .add(24, 24, 24)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(projectURL, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 472, Short.MAX_VALUE)
+                    .add(localRoot, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 472, Short.MAX_VALUE)
+                    .add(repoURL, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 472, Short.MAX_VALUE))
+                .addContainerGap())
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(issueTrackingLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE)
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(commitedLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE)
+                .addContainerGap())
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .addContainerGap()
+                .add(commitPrepareLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE)
+                .addContainerGap())
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(projectsMoveLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE)
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .add(24, 24, 24)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 472, Short.MAX_VALUE)
+                .add(12, 12, 12))
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .addContainerGap()
+                .add(tobeSharedLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE)
+                .addContainerGap())
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(projectCreatedLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE)
+                    .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE))
+                .addContainerGap())
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(chatroomLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE)
+                .addContainerGap())
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(repoLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(jLabel1)
                 .add(18, 18, 18)
                 .add(projectCreatedLabel)
-                .addPreferredGap(LayoutStyle.RELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(projectURL)
-                .addPreferredGap(LayoutStyle.UNRELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(tobeSharedLabel)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(jScrollPane1, GroupLayout.PREFERRED_SIZE, 77, GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(LayoutStyle.UNRELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 77, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(projectsMoveLabel)
-                .addPreferredGap(LayoutStyle.RELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(localRoot)
-                .addPreferredGap(LayoutStyle.UNRELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(repoLabel)
-                .addPreferredGap(LayoutStyle.UNRELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(commitPrepareLabel)
-                .addPreferredGap(LayoutStyle.UNRELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(commitedLabel)
-                .addPreferredGap(LayoutStyle.RELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(repoURL)
-                .addPreferredGap(LayoutStyle.UNRELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(issueTrackingLabel)
-                .addPreferredGap(LayoutStyle.UNRELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(chatroomLabel)
-                .addContainerGap(29, Short.MAX_VALUE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(SummaryWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.AccessibleContext.accessibleName")); // NOI18N
@@ -228,7 +239,7 @@ public class SummaryWizardPanelGUI extends javax.swing.JPanel {
                 settings.getProperty(NewKenaiProjectWizardIterator.PROP_PRJ_TITLE),
                 settings.getProperty(NewKenaiProjectWizardIterator.PROP_PRJ_LICENSE))
         );
-        projectURL.setText("<html><b>" + NameAndLicenseWizardPanelGUI.PRJ_NAME_PREVIEW_PREFIX + settings.getProperty(NewKenaiProjectWizardIterator.PROP_PRJ_NAME)+"</b></html>");
+        projectURL.setText("<html><b>" + NameAndLicenseWizardPanelGUI.getPreviewPrefix() + settings.getProperty(NewKenaiProjectWizardIterator.PROP_PRJ_NAME)+"</b></html>");
 
         boolean autoCommit = Boolean.valueOf((String) settings.getProperty(NewKenaiProjectWizardIterator.PROP_AUTO_COMMIT));
         commitedLabel.setText(NbBundle.getMessage(SummaryWizardPanelGUI.class, "SummaryWizardPanelGUI.commitedLabel.text",
@@ -243,23 +254,29 @@ public class SummaryWizardPanelGUI extends javax.swing.JPanel {
         List<SharedItem> sharedItems = (List<SharedItem>) settings.getProperty(NewKenaiProjectWizardIterator.PROP_FOLDERS_TO_SHARE);
         commitedItems.setListData(sharedItems.toArray(new SharedItem[sharedItems.size()]));
 
-        commitPrepareLabel.setVisible(sharedItems.size() > 0 && !autoCommit);
-        commitedLabel.setVisible(sharedItems.size() > 0 && autoCommit);
-        repoLabel.setVisible(sharedItems.size() == 0);
-        jScrollPane1.setVisible(sharedItems.size() > 0);
-        tobeSharedLabel.setVisible(sharedItems.size() > 0);
+        String  scmType = (String) settings.getProperty(NewKenaiProjectWizardIterator.PROP_SCM_TYPE);
+        boolean scmCreated = KenaiService.Names.SUBVERSION.equals(scmType) || KenaiService.Names.MERCURIAL.equals(scmType);
+
+        commitPrepareLabel.setVisible(sharedItems.size() > 0 && !autoCommit && scmCreated);
+        commitedLabel.setVisible(sharedItems.size() > 0 && autoCommit && scmCreated);
+        repoLabel.setVisible(sharedItems.size() == 0 && scmCreated);
+        jScrollPane1.setVisible(sharedItems.size() > 0 && scmCreated);
+        tobeSharedLabel.setVisible(sharedItems.size() > 0 && scmCreated);
 
         String newPrjScmLocal = (String) settings.getProperty(NewKenaiProjectWizardIterator.PROP_SCM_LOCAL);
         boolean inPlaceRepository = NewKenaiProjectWizardIterator.isCommonParent(sharedItems, newPrjScmLocal);
-        projectsMoveLabel.setVisible(!inPlaceRepository);
+        projectsMoveLabel.setVisible(!inPlaceRepository && scmCreated);
         if (sharedItems.size()==0) {
             Mnemonics.setLocalizedText(projectsMoveLabel, NbBundle.getMessage(SummaryWizardPanelGUI.class, "SummaryWizardPanelGUI.projectsMoveLabelNoSelection.text"));
         }
-        localRoot.setVisible(!inPlaceRepository);
+        localRoot.setVisible(!inPlaceRepository && scmCreated);
         localRoot.setText("<html><b>"+newPrjScmLocal+"</b></html>");
 
         String issues = (String) settings.getProperty(NewKenaiProjectWizardIterator.PROP_ISSUES);
         issueTrackingLabel.setVisible(KenaiService.Names.BUGZILLA.equals(issues) || KenaiService.Names.JIRA.equals(issues));
+
+        repoURL.setVisible(scmCreated);
+
         validate();
     }
 

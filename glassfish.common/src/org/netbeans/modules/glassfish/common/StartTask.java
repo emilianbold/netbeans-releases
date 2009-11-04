@@ -121,40 +121,8 @@ public class StartTask extends BasicTask<OperationState> {
         listeners.add(new OperationStateListener() {
             public void operationStateChanged(OperationState newState, String message) {
                 if (OperationState.COMPLETED.equals(newState)) {
-                RequestProcessor.getDefault().post(new Runnable() {
-
-                    public void run() {
-                        GetPropertyCommand gpc = new GetPropertyCommand("*.comet-support-enabled");
-                        Future<OperationState> result = support.execute(gpc);
-                                //((GlassfishModule) si.getBasicNode().getLookup().lookup(GlassfishModule.class)).execute(gpc);
-                        try {
-                            if (result.get(10, TimeUnit.SECONDS) == OperationState.COMPLETED) {
-                                Map<String, String> retVal = gpc.getData();
-                                String newValue = support.getInstanceProperties().get(GlassfishModule.COMET_FLAG);
-                                if (null == newValue || newValue.trim().length() < 1) {
-                                    newValue = "false";
-                                }
-                                for (Entry<String,String> entry : retVal.entrySet()) {
-                                    String key = entry.getKey();
-                                    // do not update the admin listener....
-                                    if (null != key && !key.contains("admin-listener")) {
-                                        SetPropertyCommand spc = new SetPropertyCommand(key,newValue);
-                                        Future<OperationState> results = support.execute(spc);
-                                            //((GlassfishModule) si.getBasicNode().getLookup().lookup(GlassfishModule.class)).execute(gpc);
-                                        results.get(10, TimeUnit.SECONDS);
-                                    }
-                                }
-                            }
-                        } catch (InterruptedException ex) {
-                            Logger.getLogger("glassfish").log(Level.INFO, null, ex); // NOI18N
-                        } catch (ExecutionException ex) {
-                            Logger.getLogger("glassfish").log(Level.INFO, null, ex); // NOI18N
-                        } catch (TimeoutException ex) {
-                            Logger.getLogger("glassfish").log(Level.INFO, null, ex); // NOI18N
-                        }
-                    }
-                });
                     // attempt to sync the comet support
+                    RequestProcessor.getDefault().post(new EnableComet(support));
                 }
             }
 
@@ -399,7 +367,9 @@ public class StartTask extends BasicTask<OperationState> {
         List<String> optList = new ArrayList<String>(10);
         Map<String, String> argMap = new HashMap<String, String>();
         Map<String, String> propMap = new HashMap<String, String>();
-        readJvmArgs(domainDir, optList, argMap, propMap);
+        if (!readJvmArgs(domainDir, optList, argMap, propMap)) {
+            throw new ProcessCreationException(null, "MSG_START_SERVER_FAILED_DOMAIN_FNF"); // NOI18N
+        }
         
         if (null != jvmArgs) {
             optList.addAll(jvmArgs);
@@ -600,7 +570,7 @@ public class StartTask extends BasicTask<OperationState> {
         return ip.get(GlassfishModule.DOMAIN_NAME_ATTR);
     }
     
-    private void readJvmArgs(File domainRoot, List<String> optList, 
+    private boolean readJvmArgs(File domainRoot, List<String> optList,
             Map<String, String> argMap, Map<String, String> propMap) {
         Map<String, String> varMap = new HashMap<String, String>();
 
@@ -610,16 +580,28 @@ public class StartTask extends BasicTask<OperationState> {
         varMap.put("com.sun.aas.derbyRoot", getJavaDBLocation()); // NOI18N
 
         File domainXml = new File(domainRoot, "config/domain.xml"); // NOI18N
-        JvmConfigReader reader = new JvmConfigReader(optList, argMap, varMap, propMap);
-        List<TreeParser.Path> pathList = new ArrayList<TreeParser.Path>();
-        pathList.add(new TreeParser.Path("/domain/servers/server", reader.getServerFinder())); // NOI18N
-        pathList.add(new TreeParser.Path("/domain/configs/config", reader.getConfigFinder())); // NOI18N
-        pathList.add(new TreeParser.Path("/domain/configs/config/java-config", reader));  // NOI18N
-        try {
-            TreeParser.readXml(domainXml, pathList);
-        } catch(IllegalStateException ex) {
-            Logger.getLogger("glassfish").log(Level.WARNING, ex.getLocalizedMessage(), ex); // NOI18N
+        if (domainXml.exists()) {
+            JvmConfigReader reader = new JvmConfigReader(optList, argMap, varMap, propMap);
+            List<TreeParser.Path> pathList = new ArrayList<TreeParser.Path>();
+            pathList.add(new TreeParser.Path("/domain/servers/server", reader.getServerFinder())); // NOI18N
+            pathList.add(new TreeParser.Path("/domain/configs/config", reader.getConfigFinder())); // NOI18N
+            pathList.add(new TreeParser.Path("/domain/configs/config/java-config", reader));  // NOI18N
+
+            // this option does not apply to installs that do not have the btrace-agent.jar
+            // so check for that first.
+            File irf = new File(ip.get(GlassfishModule.GLASSFISH_FOLDER_ATTR));
+            File btrace = new File(irf, "lib/monitor/btrace-agent.jar"); // NOI18N
+            if (btrace.exists()) {
+                pathList.add(new TreeParser.Path("/domain/configs/config/monitoring-service", reader.getMonitoringFinder(btrace)));  // NOI18N
+            }
+            try {
+                TreeParser.readXml(domainXml, pathList);
+                return true;
+            } catch(IllegalStateException ex) {
+                Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex); // NOI18N
+            }
         }
+        return false;
     }
 
     private String getJavaDBLocation() {

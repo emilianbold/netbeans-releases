@@ -78,7 +78,7 @@ import org.openide.windows.OutputWriter;
 /**
  * Test build-impl.xml functionality.
  * Large portion of this class was copied from JavaAntLoggerTest.
- * @author Jesse Glick, David Konecny
+ * @author Jesse Glick, David Konecny, Tomas Zezula
  */
 public final class BuildImplTest extends NbTestCase {
 
@@ -738,6 +738,50 @@ public final class BuildImplTest extends NbTestCase {
         assertEquals(9, countOfOutput("clean:"));
         assertEquals(9, countOfOutput("jar:"));
     }
+
+    public void testRecompileDependencyInRunSingle() throws Exception {
+        final AntProjectHelper aph = setupProject(0, false);
+        FileObject buildXml = aph.getProjectDirectory().getFileObject("build.xml");
+        FileObject d = aph.getProjectDirectory();
+        FileObject x = TestFileUtils.writeFile(d, "src/p/Main.java", "package p; public class Main { public static void main (String[] args) {System.out.println(Test.getMessage());}}");
+        FileObject y = TestFileUtils.writeFile(d, "src/p/Test.java", "package p; public class Test { public static String getMessage() {return \"__Test__\";}}");
+        Properties p = new Properties(getProperties());
+        p.setProperty("run.class", "p.Main");
+        p.setProperty("javac.includes","p/Main.java");
+        assertBuildSuccess(ActionUtils.runTarget(buildXml, new String[] {"run-single"}, p));
+        boolean found = false;
+        for (String line : output) {
+            if ("__Test__".equals(line)) {
+                found = true;
+                break;
+            }
+        }
+        assertTrue(found);
+        Thread.sleep(5000); //Give fs some time to assign higher time stamp (2s on Win)
+        y = TestFileUtils.writeFile(d, "src/p/Test.java", "package p; public class Test { public static String getMessage() {return \"__TestNew__\";}}");
+        p = new Properties(getProperties());
+        p.setProperty("run.class", "p.Main");
+        p.setProperty("javac.includes","p/Main.java");
+        assertBuildSuccess(ActionUtils.runTarget(buildXml, new String[] {"run-single"}, p));
+        found = false;
+        for (String line : output) {
+            if ("__TestNew__".equals(line)) {
+                found = true;
+                break;
+            }
+        }
+        assertTrue(found);
+    }
+
+    public void testCyclicBuildWarnings() throws Exception { // #174799
+        AntProjectHelper aph = setupProject(1, true);
+        FileObject buildXml = aph.getProjectDirectory().getFileObject("build.xml");
+        assertNotNull("Must have build.xml", buildXml);
+        Properties p = getProperties();
+        assertBuildSuccess(ActionUtils.runTarget(buildXml, new String[] {"jar", "test"}, p));
+        assertOutput("Cycle detected: testCyclicBuildWarnings was already built");
+    }
+
     private J2SEProject mkprj(String name) throws Exception {
         return (J2SEProject) ProjectManager.getDefault().findProject(setupProject(name, 1, false).getProjectDirectory());
     }

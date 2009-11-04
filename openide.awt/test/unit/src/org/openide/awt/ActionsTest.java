@@ -142,7 +142,7 @@ public class ActionsTest extends NbTestCase {
      * work for SystemAction.
      */
     public void testIconsSystemAction() throws Exception {
-        SystemAction saInstance = SystemAction.get(TestSystemAction.class);
+        Action saInstance = SystemAction.get(TestSystemAction.class);
         
         JButton jb = new JButton();
         Actions.connect(jb, saInstance);
@@ -207,7 +207,7 @@ public class ActionsTest extends NbTestCase {
      * work for SystemAction.
      */
     public void testIconsSystemAction24() throws Exception {
-        SystemAction saInstance = SystemAction.get(TestSystemAction.class);
+        Action saInstance = SystemAction.get(TestSystemAction.class);
         
         JButton jb = new JButton();
         jb.putClientProperty("PreferredIconSize",new Integer(24));

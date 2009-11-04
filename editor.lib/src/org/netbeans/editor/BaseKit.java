@@ -1710,10 +1710,14 @@ public class BaseKit extends DefaultEditorKit {
                             Caret caret = target.getCaret();
                             int startOffset = target.getSelectionStart();
                             IN_PASTE.set(true);
+                            if (target.getSelectedText() != null) {
+                                doc.putProperty(DOC_REPLACE_SELECTION_PROPERTY, true);
+                            }
                             try {
                                 target.paste();
                             } finally {
                                 IN_PASTE.set(false);
+                                doc.putProperty(DOC_REPLACE_SELECTION_PROPERTY, null);
                             }
                             int endOffset = caret.getDot();
                             if (formatted) {

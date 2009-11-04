@@ -1,6 +1,6 @@
 Date:CLASS:[]:ESCAPED{Date}:
-  +:METHOD:[PUBLIC]:ESCAPED{+}(PARAMETERS{ESCAPED{n}}):
-  -:METHOD:[PUBLIC]:ESCAPED{-}(PARAMETERS{ESCAPED{x}}):
+  +:METHOD:[PUBLIC]:ESCAPED{+}(PARAMETERS{ESCAPED{n}})<font color='#777777'> : ESCAPED{Date}</font>:
+  -:METHOD:[PUBLIC]:ESCAPED{-}(PARAMETERS{ESCAPED{x}})<font color='#777777'> : ESCAPED{Date}</font>:
   <<:METHOD:[PUBLIC]:ESCAPED{<<}(PARAMETERS{ESCAPED{n}})<font color='#777777'> : ESCAPED{Date}</font>:
   <=>:METHOD:[PUBLIC]:ESCAPED{<=>}(PARAMETERS{ESCAPED{other}})<font color='#777777'> : ESCAPED{Fixnum, NilClass}</font>:
   ===:METHOD:[PUBLIC]:ESCAPED{===}(PARAMETERS{ESCAPED{other}})<font color='#777777'> : ESCAPED{TrueClass, FalseClass}</font>:
@@ -15,9 +15,9 @@ Date:CLASS:[]:ESCAPED{Date}:
   MONTHNAMES:CONSTANT:[]:ESCAPED{MONTHNAMES}<font color='#777777'> : ESCAPED{Array}</font>:
   _dump:METHOD:[PUBLIC]:ESCAPED{_dump}(PARAMETERS{ESCAPED{limit}})<font color='#777777'> : ESCAPED{IO}</font>:
   _load:METHOD:[PUBLIC, STATIC]:ESCAPED{_load}(PARAMETERS{ESCAPED{str}}):
-  ajd:METHOD:[PUBLIC]:ESCAPED{ajd}:
-  ajd:FIELD:[]:ESCAPED{ajd}:
-  ajd_to_amjd:METHOD:[PUBLIC, STATIC]:ESCAPED{ajd_to_amjd}(PARAMETERS{ESCAPED{ajd}})<font color='#777777'> : ESCAPED{Fixnum, Unknown}</font>:
+  ajd:METHOD:[PUBLIC]:ESCAPED{ajd}<font color='#777777'> : ESCAPED{Fixnum}</font>:
+  ajd:FIELD:[PRIVATE]:ESCAPED{ajd}<font color='#777777'> : ESCAPED{Fixnum}</font>:
+  ajd_to_amjd:METHOD:[PUBLIC, STATIC]:ESCAPED{ajd_to_amjd}(PARAMETERS{ESCAPED{ajd}}):
   ajd_to_jd:METHOD:[PUBLIC, STATIC]:ESCAPED{ajd_to_jd}(PARAMETERS{ESCAPED{ajd}, ESCAPED{of}}):
   amjd:METHOD:[PUBLIC]:ESCAPED{amjd}:
   amjd_to_ajd:METHOD:[PUBLIC, STATIC]:ESCAPED{amjd_to_ajd}(PARAMETERS{ESCAPED{amjd}}):
@@ -37,9 +37,9 @@ Date:CLASS:[]:ESCAPED{Date}:
   eql?:METHOD:[PUBLIC]:ESCAPED{eql?}(PARAMETERS{ESCAPED{other}})<font color='#777777'> : ESCAPED{TrueClass, FalseClass}</font>:
   gregorian:METHOD:[PUBLIC]:ESCAPED{gregorian}:
   gregorian_leap?:METHOD:[PUBLIC, STATIC]:ESCAPED{gregorian_leap?}(PARAMETERS{ESCAPED{y}})<font color='#777777'> : ESCAPED{TrueClass, FalseClass}</font>:
-  hash:METHOD:[PUBLIC]:ESCAPED{hash}:
+  hash:METHOD:[PUBLIC]:ESCAPED{hash}<font color='#777777'> : ESCAPED{Fixnum}</font>:
   hour:METHOD:[PRIVATE]:ESCAPED{hour}:
-  initialize:CONSTRUCTOR:[PRIVATE]:ESCAPED{initialize}(PARAMETERS{ESCAPED{ajd}, ESCAPED{of}, ESCAPED{sg}}):
+  initialize:CONSTRUCTOR:[PRIVATE]:ESCAPED{initialize}(PARAMETERS{ESCAPED{ajd}, ESCAPED{of}, ESCAPED{sg}})<font color='#777777'> : ESCAPED{Array}</font>:
   inspect:METHOD:[PUBLIC]:ESCAPED{inspect}<font color='#777777'> : ESCAPED{String}</font>:
   italy:METHOD:[PUBLIC]:ESCAPED{italy}:
   jd:METHOD:[PUBLIC, STATIC]:ESCAPED{jd}(PARAMETERS{ESCAPED{jd}, ESCAPED{sg}}):
@@ -66,8 +66,8 @@ Date:CLASS:[]:ESCAPED{Date}:
   new_with_hash:METHOD:[PUBLIC, STATIC]:ESCAPED{new_with_hash}(PARAMETERS{ESCAPED{elem}, ESCAPED{sg}}):
   ns?:METHOD:[PUBLIC, STATIC]:ESCAPED{ns?}(PARAMETERS{ESCAPED{jd}, ESCAPED{sg}})<font color='#777777'> : ESCAPED{TrueClass, FalseClass}</font>:
   ns?:METHOD:[PUBLIC]:ESCAPED{ns?}<font color='#777777'> : ESCAPED{TrueClass, FalseClass}</font>:
-  of:FIELD:[]:ESCAPED{of}:
-  offset:METHOD:[PRIVATE]:ESCAPED{offset}:
+  of:FIELD:[PRIVATE]:ESCAPED{of}<font color='#777777'> : ESCAPED{Fixnum}</font>:
+  offset:METHOD:[PRIVATE]:ESCAPED{offset}<font color='#777777'> : ESCAPED{Fixnum}</font>:
   ordinal:METHOD:[STATIC, PRIVATE]:ESCAPED{ordinal}(PARAMETERS{ESCAPED{y}, ESCAPED{d}, ESCAPED{sg}}):
   ordinal:METHOD:[PRIVATE]:ESCAPED{ordinal}:
   ordinal_to_jd:METHOD:[PUBLIC, STATIC]:ESCAPED{ordinal_to_jd}(PARAMETERS{ESCAPED{y}, ESCAPED{d}, ESCAPED{sg}}):
@@ -82,8 +82,8 @@ Date:CLASS:[]:ESCAPED{Date}:
   self:CLASS:[]:ESCAPED{self}:
   self:CLASS:[]:ESCAPED{self}:
     once:METHOD:[STATIC, PRIVATE]:ESCAPED{once}(PARAMETERS{ESCAPED{*ids}}):
-  sg:FIELD:[]:ESCAPED{sg}:
-  start:METHOD:[PUBLIC]:ESCAPED{start}:
+  sg:FIELD:[PRIVATE]:ESCAPED{sg}<font color='#777777'> : ESCAPED{Fixnum}</font>:
+  start:METHOD:[PUBLIC]:ESCAPED{start}<font color='#777777'> : ESCAPED{Fixnum}</font>:
   step:METHOD:[PUBLIC]:ESCAPED{step}(PARAMETERS{ESCAPED{limit}, ESCAPED{step}})<font color='#777777'> : ESCAPED{Date, Unknown}</font>:
   strptime:METHOD:[PUBLIC, STATIC]:ESCAPED{strptime}(PARAMETERS{ESCAPED{str}, ESCAPED{fmt}, ESCAPED{sg}}):
   succ:METHOD:[PUBLIC]:ESCAPED{succ}<font color='#777777'> : ESCAPED{Date}</font>:

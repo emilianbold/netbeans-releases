@@ -219,7 +219,7 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
         }
         return false;
     }
-    
+
     /** Computes whether a class defines equals and hashcode or not.
      * @param compilationInfo context 
      * @param type the class element to check
@@ -237,32 +237,36 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
         if (type == null || type.getKind() != ElementKind.CLASS) {
             return ret;
         }
-        
+
+        TypeMirror objAsType = el.asType();
+
+        if (objAsType == null || objAsType.getKind() != TypeKind.DECLARED) {
+            return ret;
+        }
+
         ExecutableElement hashCode = null;
         ExecutableElement equals = null;
         
-        for (Element method : el.getEnclosedElements()) {
+        for (ExecutableElement method : ElementFilter.methodsIn(el.getEnclosedElements())) {
             if (stop != null && stop[0]) {
                 return ret;
             }
-            if (method.getKind() == ElementKind.METHOD) {
-                if (method.getSimpleName().contentEquals("equals")) { // NOI18N
+            if (method.getSimpleName().contentEquals("equals") && method.getParameters().size() == 1 && !method.getModifiers().contains(Modifier.STATIC)) { // NOI18N
+                if (compilationInfo.getTypes().isSameType(objAsType, method.getParameters().get(0).asType())) {
                     assert equals == null;
                     equals = (ExecutableElement)method;
                 }
-                if (method.getSimpleName().contentEquals("hashCode")) { // NOI18N
-                    assert hashCode == null;
-                    hashCode = (ExecutableElement)method;
-                }
+            }
+            if (method.getSimpleName().contentEquals("hashCode") && method.getParameters().isEmpty() && !method.getModifiers().contains(Modifier.STATIC)) { // NOI18N
+                assert hashCode == null;
+                hashCode = (ExecutableElement)method;
             }
         }
 
         //#162267: With Java Card's runtime, there *is* no Object.hashCode() method
-        if (hashCode == null) {
+        if (hashCode == null || equals == null) {
             return ret;
         }
-
-        assert equals != null;
         
         TypeElement clazz = (TypeElement)type;
         for (Element ee : type.getEnclosedElements()) {

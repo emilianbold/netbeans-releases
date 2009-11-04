@@ -308,5 +308,9 @@ public class RemoteServerRecord implements ServerRecord {
             }
         }
         return true;
-    }    
+    }
+
+    public boolean getX11Forwarding() {
+        return Boolean.getBoolean("cnd.remote.X11"); //NOI18N
+    }
 }

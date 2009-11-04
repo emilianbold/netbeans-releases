@@ -218,6 +218,10 @@ public final class RubyType {
         return RubyUtils.join(realTypes, delimiter);
     }
 
+    String asString(final String delimiter, final String lastDelimiter) {
+        return RubyUtils.join(realTypes, delimiter, lastDelimiter);
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {

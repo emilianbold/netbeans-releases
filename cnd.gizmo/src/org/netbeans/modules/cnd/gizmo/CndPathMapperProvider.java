@@ -58,7 +58,7 @@ public class CndPathMapperProvider implements PathMapperProvider{
          return new PathMapperImpl(mapper);
     }
 
-    private class PathMapperImpl implements PathMapper{
+    private static class PathMapperImpl implements PathMapper {
         private final PathMap pathMap;
 
         public PathMapperImpl(PathMap pathMap) {

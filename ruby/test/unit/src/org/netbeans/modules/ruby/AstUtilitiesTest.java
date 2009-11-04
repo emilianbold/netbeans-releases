@@ -52,11 +52,14 @@ import java.util.Set;
 import org.jrubyparser.ast.AliasNode;
 import org.jrubyparser.ast.ArrayNode;
 import org.jrubyparser.ast.AssignableNode;
+import org.jrubyparser.ast.CallNode;
 import org.jrubyparser.ast.ClassNode;
 import org.jrubyparser.ast.Colon2Node;
 import org.jrubyparser.ast.DStrNode;
 import org.jrubyparser.ast.DefnNode;
 import org.jrubyparser.ast.FCallNode;
+import org.jrubyparser.ast.FalseNode;
+import org.jrubyparser.ast.FixnumNode;
 import org.jrubyparser.ast.IterNode;
 import org.jrubyparser.ast.MethodDefNode;
 import org.jrubyparser.ast.Node;
@@ -64,6 +67,10 @@ import org.jrubyparser.ast.NodeType;
 import org.jrubyparser.ast.ReturnNode;
 import org.jrubyparser.ast.StrNode;
 import org.jrubyparser.ast.INameNode;
+import org.jrubyparser.ast.NilNode;
+import org.jrubyparser.ast.OrNode;
+import org.jrubyparser.ast.TrueNode;
+import org.jrubyparser.ast.VCallNode;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -193,6 +200,79 @@ public class AstUtilitiesTest extends RubyTestBase {
         assertEquals("one exit point, was: " + exits, 1, exits.size());
         Iterator<Node> it = exits.iterator();
         assertTrue("return node", it.next() instanceof FCallNode);
+    }
+
+    public void testExitPointsBaz() {
+        Node root = getRootNode("testfiles/exit_points.rb");
+        MethodDefNode methodDef = (MethodDefNode) AstUtilities.findBySignature(root, "Dummy#baz");
+        List<Node> exits = new ArrayList<Node>();
+        AstUtilities.findExitPoints(methodDef, exits);
+        assertEquals("two exit points, was: " + exits, 2, exits.size());
+        assertTrue(exits.get(0) instanceof StrNode);
+        assertTrue(exits.get(1) instanceof FixnumNode);
+    }
+
+    public void testExitPointsBar() {
+        Node root = getRootNode("testfiles/exit_points.rb");
+        MethodDefNode methodDef = (MethodDefNode) AstUtilities.findBySignature(root, "Dummy#bar");
+        List<Node> exits = new ArrayList<Node>();
+        AstUtilities.findExitPoints(methodDef, exits);
+        assertEquals("Was: " + exits, 3, exits.size());
+        assertEquals("if", AstUtilities.getNameOrValue(exits.get(0)));
+        assertEquals("elsif", AstUtilities.getNameOrValue(exits.get(1)));
+        assertEquals("else", AstUtilities.getNameOrValue(exits.get(2)));
+    }
+
+    public void testExitPointsQux() {
+        Node root = getRootNode("testfiles/exit_points.rb");
+        MethodDefNode methodDef = (MethodDefNode) AstUtilities.findBySignature(root, "Dummy#qux");
+        List<Node> exits = new ArrayList<Node>();
+        AstUtilities.findExitPoints(methodDef, exits);
+        assertEquals("Was: " + exits, 3, exits.size());
+        assertEquals("1", AstUtilities.getNameOrValue(exits.get(0)));
+        assertEquals("2", AstUtilities.getNameOrValue(exits.get(1)));
+        assertTrue(exits.get(2) instanceof FixnumNode);
+    }
+
+    public void testExitPointsThud() {
+        Node root = getRootNode("testfiles/exit_points.rb");
+        MethodDefNode methodDef = (MethodDefNode) AstUtilities.findBySignature(root, "Dummy#thud");
+        List<Node> exits = new ArrayList<Node>();
+        AstUtilities.findExitPoints(methodDef, exits);
+        assertEquals("Was: " + exits, 1, exits.size());
+        assertEquals("2", AstUtilities.getNameOrValue(exits.get(0)));
+    }
+
+    public void testExitPointsCorge() {
+        Node root = getRootNode("testfiles/exit_points.rb");
+        MethodDefNode methodDef = (MethodDefNode) AstUtilities.findBySignature(root, "Dummy#corge(z)");
+        List<Node> exits = new ArrayList<Node>();
+        AstUtilities.findExitPoints(methodDef, exits);
+        assertEquals("Was: " + exits, 2, exits.size());
+        assertEquals("a", AstUtilities.getNameOrValue(exits.get(0)));
+        assertTrue(exits.get(1) instanceof NilNode);
+    }
+
+    public void testExitPointsQuux() {
+        Node root = getRootNode("testfiles/exit_points.rb");
+        MethodDefNode methodDef = (MethodDefNode) AstUtilities.findBySignature(root, "Dummy#quux");
+        List<Node> exits = new ArrayList<Node>();
+        AstUtilities.findExitPoints(methodDef, exits);
+        assertEquals("Was: " + exits, 4, exits.size());
+        assertTrue(exits.get(0) instanceof TrueNode);
+        assertTrue(exits.get(1) instanceof FalseNode);
+        assertTrue(exits.get(2) instanceof VCallNode);
+        assertTrue(exits.get(3) instanceof CallNode);
+    }
+
+    public void testExitPointsFred() {
+        Node root = getRootNode("testfiles/exit_points.rb");
+        MethodDefNode methodDef = (MethodDefNode) AstUtilities.findBySignature(root, "Dummy#fred");
+        List<Node> exits = new ArrayList<Node>();
+        AstUtilities.findExitPoints(methodDef, exits);
+        assertEquals("Was: " + exits, 1, exits.size());
+        Node node = exits.get(0);
+        assertTrue("Was " + node, node instanceof CallNode);
     }
 
     public void testGetMethodName() {
