@@ -39,20 +39,19 @@
 
 package org.netbeans.modules.bugtracking.jira;
 
-import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTextPane;
-import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkListener;
+import javax.swing.SwingUtilities;
 import org.jdesktop.layout.GroupLayout;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
@@ -64,6 +63,7 @@ import org.netbeans.modules.bugtracking.spi.RepositoryUser;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.HtmlBrowser;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -135,31 +135,20 @@ public class JiraUpdater {
      * @return true if the user pushes the Download button, otherwise false
      */
     public static boolean notifyJiraDownload(String url) {
-        JButton download = new JButton(NbBundle.getMessage(DownloadPlugin.class, "CTL_Action_Download"));     // NOI18N
+        final JButton download = new JButton(NbBundle.getMessage(DownloadPlugin.class, "CTL_Action_Download"));     // NOI18N
         JButton cancel = new JButton(NbBundle.getMessage(DownloadPlugin.class, "CTL_Action_Cancel"));   // NOI18N
 
-        String msg = NbBundle.getMessage(FakeJiraSupport.class, "MSG_PROJECT_NEEDS_JIRA");              // NOI18N
-        if(url != null) {
-            msg += "<div><br>" + NbBundle.getMessage(FakeJiraSupport.class, "MSG_PROJECT_NEEDS_JIRA_URL", url);// NOI18N
-        }
-        msg = "<html>" + msg + "</body>";                                       // NOI18N                                                             // NOI18N
-        
-        JPanel panel = createNotificationPanel(msg, new HyperlinkListener() {
-            public void hyperlinkUpdate(HyperlinkEvent e) {
-                if(e.getEventType() != HyperlinkEvent.EventType.ACTIVATED) {
-                    return;
-                }
-                HtmlBrowser.URLDisplayer displayer = HtmlBrowser.URLDisplayer.getDefault ();
-                if (displayer != null) {
-                    displayer.showURL(e.getURL());
-                } else {
-                    // XXX nice error message?
-                    BugtrackingManager.LOG.warning("No URLDisplayer found.");             // NOI18N
-                }
+        URL openURL = null;
+        if (url != null) {
+            try {
+                openURL = new URL(url);
+            } catch (MalformedURLException ex) {
+                Exceptions.printStackTrace(ex);
             }
-        });
+        }
+        JPanel panel = createNotificationPanel(openURL);
 
-        final DialogDescriptor dd =
+        DialogDescriptor dd =
             new DialogDescriptor(
                 panel,
                 NbBundle.getMessage(FakeJiraSupport.class, "CTL_MissingJiraPlugin"),                    // NOI18N
@@ -169,36 +158,54 @@ public class JiraUpdater {
                 DialogDescriptor.DEFAULT_ALIGN,
                 new HelpCtx(JiraUpdater.class),
                 null);
+
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                download.requestFocusInWindow();
+            }
+        });
         return DialogDisplayer.getDefault().notify(dd) == download;
     }
 
-    private static JPanel createNotificationPanel(String msg, HyperlinkListener hl) {
+    private static JPanel createNotificationPanel(final URL url) {
         JPanel panel = new JPanel();
 
-        JTextPane pane = new JTextPane();
-        pane.setBackground(panel.getBackground());
-        pane.setContentType("text/html"); // NOI18N
-        pane.setText(msg);
-        pane.setEditable(false);
-        pane.addHyperlinkListener(hl);
-        
-        panel.setPreferredSize(new Dimension(650, 100));
+        JLabel msgLabel = new JLabel("<html>" + NbBundle.getMessage(JiraUpdater.class, "MSG_PROJECT_NEEDS_JIRA")); // NOI18N
+        JButton linkButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+        org.openide.awt.Mnemonics.setLocalizedText(linkButton, NbBundle.getMessage(JiraUpdater.class, "MSG_PROJECT_NEEDS_JIRA_LINK")); // NOI18N
+        if (url != null) {
+            linkButton.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    HtmlBrowser.URLDisplayer displayer = HtmlBrowser.URLDisplayer.getDefault ();
+                    if (displayer != null) {
+                        displayer.showURL(url);
+                    } else {
+                        // XXX nice error message?
+                        BugtrackingManager.LOG.warning("No URLDisplayer found.");             // NOI18N
+                    }
+                }
+            });
+        } else {
+            linkButton.setVisible(false);
+        }
+
         GroupLayout layout = new GroupLayout(panel);
         panel.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup().addContainerGap()
+            layout.createSequentialGroup()
+                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(pane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 200, Short.MAX_VALUE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
+                    .add(msgLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 470, Short.MAX_VALUE)
+                    .add(linkButton))
+                .addContainerGap()
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup().addContainerGap()
-                .add(pane)
+            layout.createSequentialGroup()
+                .addContainerGap()
+                .add(msgLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE))
-                .addContainerGap(60, Short.MAX_VALUE))
+                .add(linkButton)
+                .addContainerGap(25, Short.MAX_VALUE)
         );
 
         return panel;
