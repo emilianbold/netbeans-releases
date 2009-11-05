@@ -354,7 +354,14 @@ public class ActionFactory {
                         try {
                             int bolPos = Utilities.getRowStart(target, target.getSelectionStart());
                             int eolPos = Utilities.getRowEnd(target, target.getSelectionEnd());
-                            eolPos = Math.min(eolPos + 1, doc.getLength()); // include '\n'
+                            if (eolPos == doc.getLength()) {
+                                // Ending newline can't be removed so instead remove starting newline if it exist
+                                if (bolPos > 0) {
+                                    bolPos--;
+                                }
+                            } else { // Not the last line
+                                eolPos++;
+                            }
                             doc.remove(bolPos, eolPos - bolPos);
                             // Caret will be at bolPos due to removal
                         } catch (BadLocationException e) {
