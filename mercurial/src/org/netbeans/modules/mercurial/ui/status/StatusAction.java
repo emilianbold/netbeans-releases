@@ -110,6 +110,8 @@ public class StatusAction extends ContextAction {
                 if (repository == null) {
                     continue;
                 }
+                // XXX Why in the hell is this still here? cache.refreshCached(context) should be enough
+                // This logic seems to be pointless
                 refreshFile(root, repository, support, cache);
                 if (support.isCanceled()) {
                     return;
@@ -128,6 +130,7 @@ public class StatusAction extends ContextAction {
         Calendar end = Calendar.getInstance();
         if (root.isDirectory()) {
             Map<File, FileInformation> interestingFiles;
+            // XXX Why so complex? cache.refreshAllRoots should do the work and there would be only one entry point for hg status call
             interestingFiles = HgCommand.getInterestingStatus(repository, java.util.Collections.singletonList(root));
             if (!interestingFiles.isEmpty()) {
                 Collection<File> files = interestingFiles.keySet();
