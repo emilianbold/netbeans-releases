@@ -408,7 +408,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
             cleanEmptyKeys( fo );                
 //            add( fo, false);
             findNonExcludedPackages( fo );
-            refreshKeys();
+            refreshKeysAsync();
         }
     }
     
