@@ -118,7 +118,7 @@ public class CommentOutRule extends GroovySelectionRule {
     }
 
     public HintSeverity getDefaultSeverity() {
-        return HintSeverity.WARNING;
+        return HintSeverity.CURRENT_LINE_WARNING;
     }
 
     static private class SimpleFix implements HintFix {

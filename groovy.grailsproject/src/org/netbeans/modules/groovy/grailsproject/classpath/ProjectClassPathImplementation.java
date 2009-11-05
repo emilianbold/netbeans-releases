@@ -177,21 +177,8 @@ final class ProjectClassPathImplementation implements ClassPathImplementation {
             this.pluginsDir = currentPluginsDir;
         }
 
-        if (pluginsDir.isDirectory()) {
-            if (GrailsPlatform.Version.VERSION_1_1.compareTo(projectConfig.getGrailsPlatform().getVersion()) <= 0) {
-                List<GrailsPlugin> plugins = pluginSupport != null
-                        ? pluginSupport.loadInstalledPlugins11()
-                        : Collections.<GrailsPlugin>emptyList();
-
-                Set<String> pluginDirs = new HashSet<String>();
-                for (GrailsPlugin plugin : plugins) {
-                    pluginDirs.add(plugin.getDirName());
-                }
-
-                addPlugins(pluginsDir, result, pluginDirs);
-            } else {
-                addPlugins(pluginsDir, result, null);
-            }
+        if (pluginSupport != null && pluginsDir.isDirectory()) {
+            addPlugins(pluginsDir, result, pluginSupport.getProjectPluginFilter());
         }
 
         // global plugins
@@ -235,10 +222,10 @@ final class ProjectClassPathImplementation implements ClassPathImplementation {
         }
     }
 
-    private void addPlugins(File dir, List<PathResourceImplementation> result, Set<String> names) {
+    private void addPlugins(File dir, List<PathResourceImplementation> result, GrailsPluginSupport.FolderFilter filter) {
         for (String name : dir.list()) {
             File file = new File(dir, name);
-            if (file.isDirectory() && (names == null || names.contains(name))) {
+            if (file.isDirectory() && (filter == null || filter.accept(name))) {
                 // lib directories of installed plugins
                 addLibs(file, result);
             }

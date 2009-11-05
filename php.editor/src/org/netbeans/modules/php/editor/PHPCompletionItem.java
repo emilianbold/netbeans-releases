@@ -39,6 +39,7 @@
 package org.netbeans.modules.php.editor;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -68,6 +69,7 @@ import org.netbeans.modules.php.editor.index.IndexedTypedElement;
 import org.netbeans.modules.php.editor.index.IndexedVariable;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.index.PredefinedSymbolElement;
+import org.netbeans.modules.php.editor.model.FileScope;
 import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
@@ -437,16 +439,13 @@ public abstract class PHPCompletionItem implements CompletionProposal {
     }
 
     static class NamespaceItem extends PHPCompletionItem {
+        Boolean isSmart;
         NamespaceItem(IndexedNamespace namespace, CompletionRequest request, QualifiedNameKind generateAs) {
             super(namespace, request, generateAs);
         }
-        NamespaceItem(IndexedNamespace namespace, CompletionRequest request) {
-            this(namespace, request, null);
-        }
-
         @Override
         public int getSortPrioOverride() {
-            return -10001;
+            return isSmart() ? -10001 : super.getSortPrioOverride();
         }
 
         @Override public String getLhsHtml(HtmlFormatter formatter) {
@@ -483,7 +482,37 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
         @Override
         public boolean isSmart() {
-            return true;
+            if (isSmart == null) {
+                String namespaceName = getIndexedNamespace().getNamespaceName();
+                isSmart =  !(namespaceName == null || !NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME.equals(namespaceName));
+                if (!isSmart) {
+                    FileScope fileScope = request.result.getModel().getFileScope();
+                    NamespaceScope namespaceScope = (fileScope != null) ?
+                        ModelUtils.getNamespaceScope(fileScope, request.anchor) : null;
+                    if (namespaceScope != null) {
+                        IndexedNamespace ifq = getIndexedNamespace();
+                        LinkedList<String> segments = QualifiedName.create(ifq.getFullyQualifiedName()).getSegments();
+                        QualifiedName fqna = QualifiedName.create(false, segments);
+                        Collection<QualifiedName> relativeUses = QualifiedName.getRelativesToUses(namespaceScope, fqna);
+                        for (QualifiedName qualifiedName : relativeUses) {
+                            if (qualifiedName.getSegments().size() == 1) {
+                                isSmart = true;
+                                break;
+                            }
+                        }
+                        if (!isSmart) {
+                            relativeUses = QualifiedName.getRelativesToNamespace(namespaceScope, fqna);
+                            for (QualifiedName qualifiedName : relativeUses) {
+                                if (qualifiedName.getSegments().size() == 1) {
+                                    isSmart = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return isSmart;
         }
     }
 
