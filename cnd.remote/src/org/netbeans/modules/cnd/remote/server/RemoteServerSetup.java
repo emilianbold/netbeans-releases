@@ -39,20 +39,33 @@
 
 package org.netbeans.modules.cnd.remote.server;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CancellationException;
+import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.SetupProvider;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.cnd.remote.support.RemoteCopySupport;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -99,7 +112,7 @@ public class RemoteServerSetup {
         List<String> updateList = new ArrayList<String>();
         updateMap.clear();
         if (!isFailedOrCanceled()) {
-            updateList = getBinaryUpdates(updateList);
+            updateList = getBinaryUpdates();
         }
         if (isFailedOrCanceled()) {
             return false;
@@ -144,33 +157,152 @@ public class RemoteServerSetup {
         return RemoteCopySupport.copyTo(executionEnvironment, file.getAbsolutePath(), remoteFilePath);
     }
 
-    private List<String> getBinaryUpdates(List<String> list) {
-
-        StringBuilder sb = new StringBuilder("sh -c \""); // NOI18N
-        for (String path : binarySetupMap.keySet()) {
-            sb.append(String.format("if [ ! -x %s ]; then echo %s; fi;", path, path)); // NOI18N
+    private List<String> getBinaryUpdates() {
+        try {
+            return getBinaryUpdatesByChecksum();
+            // getBinaryUpdatesByExistence(list);
+        } catch (CancellationException ex) {
+            cancelled = true;
+            return Collections.<String>emptyList();
+        } catch (NoSuchAlgorithmException ex) {
+            RemoteUtil.LOGGER.warning(ex.getMessage());
+        } catch (IOException ex) {
+            RemoteUtil.LOGGER.log(Level.WARNING, ex.getMessage(), ex);
+        } catch (CheckSumException ex) {
+            RemoteUtil.LOGGER.warning(ex.getMessage());
         }
-        sb.append("\""); // NOI18N
+        // can't check md5 sums => update them all!
+        return new ArrayList<String>(binarySetupMap.keySet());
+    }
 
-        RemoteCommandSupport support = new RemoteCommandSupport(executionEnvironment, sb.toString());
+    private static class CheckSumException extends Exception {
+        public CheckSumException(String message) {
+            super(message);
+        }
+    }
+
+    private List<String> getBinaryUpdatesByChecksum() throws NoSuchAlgorithmException, CancellationException, IOException, CheckSumException {
+        
+        String md5pattern = null;
+
+        HostInfo hostIinfo = HostInfoUtils.getHostInfo(executionEnvironment);
+        final OSFamily oSFamily = hostIinfo.getOSFamily();
+        switch (oSFamily) {
+            case LINUX:
+                md5pattern = "/usr/bin/md5sum -b %s";
+                break;
+            case SUNOS:
+                md5pattern = "/usr/bin/digest -a md5 %s";
+                break;
+            default:
+                throw new NoSuchAlgorithmException("Unexpected OS: " + oSFamily);
+        }
+
+        // gather 
+        // 1) file list separated by spaces
+        // 2) an array of paths in the same order
+        List<String> paths2check = new ArrayList<String>(binarySetupMap.size());
+        StringBuilder sb = new StringBuilder();
+        for (String path : binarySetupMap.keySet()) {
+            paths2check.add(path);
+            if (sb.length() > 0) {
+                sb.append(' ');
+            }
+            sb.append(String.format(path)); // NOI18N
+        }
+
+
+        String cmd = String.format(md5pattern, sb);
+        RemoteCommandSupport support = new RemoteCommandSupport(executionEnvironment, cmd);
         support.run();
-        if (!support.isFailed()) {
-            RemoteUtil.LOGGER.fine("RSS.getBinaryUpdates: GET_LIB_INFO returned " + support.getExitStatus());
-            if (support.isCancelled()) {
-                cancelled = true;
-            } else {
-                String val = support.getOutput();
-                for (String line : val.split("\n")) { // NOI18N
-                    if (line.length() > 0) {
-                        list.add(line);
-                    }
+        RemoteUtil.LOGGER.fine("RSS.getBinaryUpdatesByChecksum: RC " + support.getExitStatus());
+        if (support.isFailed() || support.getExitStatus() != 0) {
+            throw new NoSuchAlgorithmException("Running " + cmd + " failed on remote host: " + support.getFailureReason()); //NOI18N
+        }
+
+        if (support.isCancelled()) {
+            throw new CancellationException();
+        } 
+        String val = support.getOutput();
+        List<String> result = new ArrayList<String>();
+        int idx = 0;
+        String[] lines = val.split("\n");
+        if (lines[lines.length-1].equals("")) { // the last one is usuall empthy, throw it away
+            String[] corrected = new String[lines.length-1];
+            System.arraycopy(lines, 0, corrected, 0, corrected.length);
+            lines = corrected;
+        }
+        if (paths2check.size() != lines.length) {
+            throw new CheckSumException(String.format("Incorrect line count: %d, should equal to the amount of files to check: %d", lines.length, paths2check.size())); //NOI18N
+        }
+        for (String line : lines) { // NOI18N
+            // in Linux, it has form ﻿34f1cc1cefbded98edae74d9690a7c44 */usr/include/stdio.h
+            if (line.length() > 0) {
+                String[] parts = line.split(" ");
+                if (parts.length == 0) {
+                    throw new CheckSumException("Line shouldn't be empty");
+                }
+                String path = paths2check.get(idx++);
+                String remoteCheckSum = parts[0];
+                String localCheckSum = getLocalChecksum(path);
+                RemoteUtil.LOGGER.fine(String.format("Checking %s: remote: %s local: %s", path, localCheckSum, remoteCheckSum));
+                if (!remoteCheckSum.equals(localCheckSum)) {
+                    result.add(path);
                 }
             }
-        } else {
-            // failed
-            setFailed(support.getFailureReason());
         }
-        return list;
+        return result;
+    }
+
+    private String getLocalChecksum(String remotePath) throws NoSuchAlgorithmException, FileNotFoundException, IOException {
+        String localFileName = binarySetupMap.get(remotePath);
+        File file = InstalledFileLocator.getDefault().locate(localFileName, null, false);
+        if (file != null || file.exists()) {
+            MessageDigest md5 = MessageDigest.getInstance("MD5");
+            InputStream is = new BufferedInputStream(new FileInputStream(file));
+            byte[] buf = new byte[8192];
+            int read;
+            while ((read = is.read(buf)) != -1) {
+                md5.update(buf, 0, read);
+            }
+            byte[] checkSum = md5.digest();
+            return toHexString(checkSum);
+        } else {
+            return null;
+        }
+    }
+
+    private static String toHexString(byte[] data) {
+        char[] result = new char[data.length*2];
+        for (int i = 0; i < data.length; i++) {
+            //buf.append(String.format("%x", data[i]));
+            for (int j = 0; j < 2; j++) {
+                int half = (j == 0) ? (data[i] & 0x0F0) >>> 4 : data[i] & 0x0F;
+                if (0 <= half && half <= 9) {
+                    result[2*i+j] = (char) ('0' + half);
+                } else {
+                    result[2*i+j] = (char) ('a' + (half - 10));
+                }
+            }
+        }
+        return new String(result);
+    }
+
+
+    private static String toHexString2(byte[] data) {
+        StringBuffer buf = new StringBuffer();
+        for (int i = 0; i < data.length; i++) {
+            int halfbyte = (data[i] >>> 4) & 0x0F;
+            int two_halfs = 0;
+            do {
+                if ((0 <= halfbyte) && (halfbyte <= 9))
+                    buf.append((char) ('0' + halfbyte));
+                else
+                    buf.append((char) ('a' + (halfbyte - 10)));
+                halfbyte = data[i] & 0x0F;
+            } while(two_halfs++ < 1);
+        }
+        return buf.toString();
     }
 
     /**
