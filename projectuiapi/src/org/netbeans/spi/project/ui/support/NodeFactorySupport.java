@@ -187,7 +187,7 @@ public class NodeFactorySupport {
             setKeys(Collections.singleton(LOADING_KEY));
             task = RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
-                    synchronized (this) {
+                    synchronized (DelegateChildren.this) {
                         result = createLookup().lookupResult(NodeFactory.class);
                         for (NodeFactory factory : result.allInstances()) {
                             NodeList<?> lst = factory.createNodes(project);
