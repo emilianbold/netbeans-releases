@@ -52,6 +52,7 @@ import java.awt.GraphicsEnvironment;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
+import java.awt.Window;
 import java.awt.event.AWTEventListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
@@ -63,8 +64,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
-import javax.swing.Popup;
-import javax.swing.PopupFactory;
+import javax.swing.JWindow;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
@@ -86,6 +86,8 @@ import org.netbeans.modules.versioning.util.VCSKenaiSupport.KenaiUser;
  */
 class TooltipWindow implements AWTEventListener, MouseMotionListener, MouseListener {
 
+    private static final int SCREEN_BORDER = 20;
+
     /**
      * Parent caller
      */
@@ -102,7 +104,7 @@ class TooltipWindow implements AWTEventListener, MouseMotionListener, MouseListe
     /**
      * Currently showing popup
      */
-    private Popup popup;
+    private JWindow contentWindow;
     private TooltipContentPanel cp;
 
     public TooltipWindow(AnnotationBar master, final AnnotateLine al) {
@@ -124,9 +126,23 @@ class TooltipWindow implements AWTEventListener, MouseMotionListener, MouseListe
 
         // showing the popup tooltip
         cp = new TooltipContentPanel(master.getTextComponent());
-        popup = PopupFactory.getSharedInstance().getPopup(SwingUtilities.windowForComponent(master.getTextComponent()),
-                cp, (int)location.getX(), (int)location.getY());
-        popup.show();
+        Window w = SwingUtilities.windowForComponent(master.getTextComponent());
+        contentWindow = new JWindow(w);
+        contentWindow.add(cp);
+        contentWindow.pack();
+        Dimension dim = contentWindow.getSize();
+
+        if (location.y + dim.height + SCREEN_BORDER > screenBounds.y + screenBounds.height) {
+            dim.height = (screenBounds.y + screenBounds.height) - (location.y + SCREEN_BORDER);
+        }
+        if (location.x + dim.width + SCREEN_BORDER > screenBounds.x + screenBounds.width) {
+            dim.width = (screenBounds.x + screenBounds.width) - (location.x + SCREEN_BORDER);
+        }
+
+        contentWindow.setSize(dim);
+
+        contentWindow.setLocation(location.x, location.y - 1);  // slight visual adjustment
+        contentWindow.setVisible(true);
         Toolkit.getDefaultToolkit().addAWTEventListener(this, AWTEvent.MOUSE_EVENT_MASK | AWTEvent.KEY_EVENT_MASK);
     }
 
@@ -166,10 +182,10 @@ class TooltipWindow implements AWTEventListener, MouseMotionListener, MouseListe
      */
     void shutdown() {
         Toolkit.getDefaultToolkit().removeAWTEventListener(this);
-        if (popup != null) {
-            popup.hide();
+        if (contentWindow != null) {
+            contentWindow.dispose();
         }
-        popup = null;
+        contentWindow = null;
     }
 
     public void mouseDragged(MouseEvent e) {
