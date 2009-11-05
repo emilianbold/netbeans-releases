@@ -179,6 +179,7 @@ public class CreateAction extends ContextAction {
                 try {
                     FileStatusCache cache = hg.getFileStatusCache();
                     Calendar start = Calendar.getInstance();
+                    // XXX Why so complex? cache.refreshAllRoots should do the work and there would be only one entry point for hg status call
                     repositoryFiles = HgCommand.getUnknownStatus(rootToManage, rootToManage);
                     Calendar end = Calendar.getInstance();
                     Mercurial.LOG.log(Level.FINE, "getUnknownStatus took {0} millisecs", end.getTimeInMillis() - start.getTimeInMillis()); // NOI18N
