@@ -770,7 +770,11 @@ public final class DefaultProjectOperationsImplementation {
     }
     
     private static void open(final Project prj, final boolean setAsMain) {
-        Mutex.EVENT.readAccess(new Runnable() {
+        //#176017 -used to be Mutex.EVENT.readAccess but that goes against the
+        // regular means of opening projects (via open project dialog) that
+        //opens projects in non-awt thread. OpenProjectHooks shall not IMO
+        //be called in AWT.
+        RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 OpenProjects.getDefault().open(new Project[] {prj}, false);
                 if (setAsMain) {
