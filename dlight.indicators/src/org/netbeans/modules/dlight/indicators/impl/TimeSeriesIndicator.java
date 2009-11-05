@@ -111,6 +111,13 @@ public final class TimeSeriesIndicator
 
     }
 
+    @Override
+    protected void targetStarted() {
+        legend.updateWithInfoProvided(getColumnsProvided());
+    }
+
+
+
     private final void initUI() {
         synchronized (uiLock) {
             this.graph = createGraph(configuration, data);
