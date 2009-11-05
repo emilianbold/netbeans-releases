@@ -58,7 +58,7 @@ public class KenaiLoginTask implements Runnable {
     @SuppressWarnings("deprecation")
     public void run() {
         synchronized (monitor) {
-            Preferences prefs = NbPreferences.forModule(LoginPanel.class);
+            Preferences prefs = NbPreferences.forModule(KenaiLoginTask.class);
             try {
                 if (prefs.keys().length > 0) {
                     UIUtils.tryLogin(false);
