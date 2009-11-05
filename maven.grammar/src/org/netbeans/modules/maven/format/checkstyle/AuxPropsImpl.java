@@ -101,11 +101,13 @@ public class AuxPropsImpl implements AuxiliaryProperties, PropertyChangeListener
     }
 
     private FileObject copyToCacheDir(FileObject fo) throws IOException {
+        assert Thread.holdsLock(this);
         CacheDirectoryProvider prov = project.getLookup().lookup(CacheDirectoryProvider.class);
         return FileUtil.copyFile(fo, prov.getCacheDirectory(), "checkstyle-checker", "xml");
     }
 
     private FileObject copyToCacheDir(InputStream in) throws IOException {
+        assert Thread.holdsLock(this);
         CacheDirectoryProvider prov = project.getLookup().lookup(CacheDirectoryProvider.class);
         FileObject file = prov.getCacheDirectory().getFileObject("checkstyle-checker", "xml");
         if (file == null) {
@@ -115,7 +117,7 @@ public class AuxPropsImpl implements AuxiliaryProperties, PropertyChangeListener
         OutputStream outst = null;
         try {
             outst = file.getOutputStream();
-            FileUtil.copy(in, file.getOutputStream());
+            FileUtil.copy(in, outst);
         } finally {
             IOUtil.close(inst);
             IOUtil.close(outst);
