@@ -96,11 +96,12 @@ public class JPAAnnotations {
     public static final String JOIN_COLUMN = "javax.persistence.JoinColumn"; // NOI18N
     public static final String JOIN_COLUMNS = "javax.persistence.JoinColumns"; // NOI18N
     public static final String JOIN_TABLE = "javax.persistence.JoinTable"; //NOI18N
+    public static final String ELEMENT_COLLECTION = "javax.persistence.ElementCollection"; //NOI18N
     
     public static final Set<String> MEMBER_LEVEL = new TreeSet<String>(Arrays.asList(
             ID, EMBEDDED_ID, EMBEDDED, TRANSIENT, VERSION, BASIC, ENUMERATED,
             GENERATED_VALUE,ONE_TO_ONE, ONE_TO_MANY, MANY_TO_ONE, MANY_TO_MANY,
-            MAP_KEY, LOB, TEMPORAL, COLUMN, JOIN_COLUMN, JOIN_COLUMNS,JOIN_TABLE));
+            MAP_KEY, LOB, TEMPORAL, COLUMN, JOIN_COLUMN, JOIN_COLUMNS,JOIN_TABLE, ELEMENT_COLLECTION));
     
     // annotation methods...
     //nullable attribute in annotations like Column, JoinColumn etc.

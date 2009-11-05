@@ -258,7 +258,10 @@ public class PHPIndex {
                     }
                 }
                 int offset = sig.integer(2);
-                IndexedConstant constant = new IndexedConstant(constName, null, this, map.getUrl().toString(), offset, 0, null);
+                String namespaceName = sig.string(3);
+
+                boolean useNamespaceName = namespaceName != null && !NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME.equalsIgnoreCase(namespaceName);
+                IndexedConstant constant = new IndexedConstant(constName, null,useNamespaceName ? namespaceName : null, this, map.getUrl().toString(), offset, 0, null, ElementKind.CONSTANT);
                 //constant.setResolved(context != null && isReachable(context, map.getPersistentUrl()));
                 constants.add(constant);
             }
@@ -891,7 +894,7 @@ public class PHPIndex {
                     type = null;
                 }
 
-                IndexedConstant prop = new IndexedConstant(propName, typeName,
+                IndexedConstant prop = new IndexedConstant(propName, typeName, null,
                         this, pair.second.getUrl().toString(), offset, flags, type,ElementKind.FIELD);
 
                 fields.add(prop);

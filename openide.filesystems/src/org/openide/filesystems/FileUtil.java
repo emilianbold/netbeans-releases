@@ -921,11 +921,9 @@ public final class FileUtil extends Object {
         File retVal = (File) fo.getAttribute("java.io.File"); // NOI18N;        
 
         if (retVal == null) {
-            URL fileURL = null;
-            int[] types = new int[] { URLMapper.INTERNAL, URLMapper.EXTERNAL };
-
-            for (int i = 0; ((fileURL == null) || "file".equals(fileURL.getProtocol())) && (i < types.length); i++) { // NOI18N
-                fileURL = URLMapper.findURL(fo, types[i]);
+            URL fileURL = URLMapper.findURL(fo, URLMapper.INTERNAL);
+            if (fileURL == null || !"file".equals(fileURL.getProtocol())) {  //NOI18N
+                fileURL = URLMapper.findURL(fo, URLMapper.EXTERNAL);
             }
 
             if ((fileURL != null) && "file".equals(fileURL.getProtocol())) {

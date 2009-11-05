@@ -43,7 +43,6 @@ package org.netbeans.modules.java.source.usages;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.Collections;
 import java.util.Iterator;
@@ -59,7 +58,6 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
-import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
@@ -72,6 +70,7 @@ public class PersistentClassIndex extends ClassIndexImpl {
     
     private final Index index;
     private final URL root;
+    private final File cacheRoot;
     private final boolean isSource;
     private URL dirty;
     private static final Logger LOGGER = Logger.getLogger(PersistentClassIndex.class.getName());
@@ -83,12 +82,13 @@ public class PersistentClassIndex extends ClassIndexImpl {
         assert root != null;
         this.root = root;
         assert indexFactory != null;
+        this.cacheRoot = cacheRoot;
         this.index = indexFactory.create(cacheRoot);
         this.isSource = source;
     }
     
     public BinaryAnalyser getBinaryAnalyser () {
-        return new BinaryAnalyser (this.index);
+        return new BinaryAnalyser (this.index, this.cacheRoot);
     }
     
     public SourceAnalyser getSourceAnalyser () {        

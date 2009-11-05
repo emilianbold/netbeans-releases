@@ -222,7 +222,9 @@ public class PHPFormatterQATest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/qa/issues/stable_partialTests/174873_173906.php");
     }
 
-
+    public void test174873_173906_1_stablePartial() throws Exception {
+        reformatFileContents("testfiles/formatting/qa/issues/stable_partialTests/174873_173906_1.php");
+    }
 
     private void reformatFileContents(String file) throws Exception {
         reformatFileContents(file, new IndentPrefs(2, 2));

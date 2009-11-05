@@ -120,6 +120,7 @@ class OccurenceBuilder {
     private Map<ASTNodeInfo<Scalar>, ConstantElement> constDeclarations;
     private Map<ConstantDeclarationInfo, ConstantElement> constDeclarations53;
     private Map<ASTNodeInfo<Scalar>, Scope> constInvocations;
+    private Map<ASTNodeInfo<Expression>, Scope> nsConstInvocations;
     private Map<ASTNodeInfo<FunctionDeclaration>, FunctionScope> fncDeclarations;
     private Map<ASTNodeInfo<MethodDeclaration>, MethodScope> methodDeclarations;
     private Map<MagicMethodDeclarationInfo, MethodScope> magicMethodDeclarations;
@@ -152,6 +153,7 @@ class OccurenceBuilder {
     OccurenceBuilder(int offset) {
         this.offset = offset;
         this.constInvocations = new HashMap<ASTNodeInfo<Scalar>, Scope>();
+        this.nsConstInvocations = new HashMap<ASTNodeInfo<Expression>, Scope>();
         this.constDeclarations = new HashMap<ASTNodeInfo<Scalar>, ConstantElement>();
         this.constDeclarations53 = new HashMap<ConstantDeclarationInfo, ConstantElement>();
         this.includes = new HashMap<IncludeInfo, IncludeElement>();
@@ -270,6 +272,14 @@ class OccurenceBuilder {
                     break;
                 case IFACE:
                     ifaceIDs.put(nodeInfo, scope);
+                    break;
+                case CONSTANT:
+                    if (node instanceof NamespaceName) {
+                        nsConstInvocations.put(nodeInfo, scope);
+                        if (currentContextInfo != null) {
+                            return;
+                        }
+                    }
                     break;
                 default:
                     throw new IllegalStateException();
@@ -506,6 +516,17 @@ class OccurenceBuilder {
                 }
             }
         }
+        for (Entry<ASTNodeInfo<Expression>, Scope> entry : nsConstInvocations.entrySet()) {
+            ASTNodeInfo<Expression> nodeInfo = entry.getKey();
+            Expression originalNode = nodeInfo.getOriginalNode();
+            if (originalNode instanceof  NamespaceName && idName.equalsIgnoreCase(nodeInfo.getName())) {
+                List<? extends ModelElement> elems = CachingSupport.getConstants(idName, fileScope);
+                if (!elems.isEmpty()) {
+                    fileScope.addOccurence(new OccurenceImpl(elems, nodeInfo.getRange(), fileScope));
+                }
+            }
+        }
+
     }
 
     private void buildConstantDeclarations(ElementInfo nodeCtxInfo, FileScopeImpl fileScope) {

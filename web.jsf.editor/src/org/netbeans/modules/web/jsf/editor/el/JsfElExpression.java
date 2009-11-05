@@ -225,11 +225,14 @@ public class JsfElExpression extends ELExpression {
     }
 
     //workaround for parsing api - we need to find a document offset for the given astoffset
-    private int findNearestMapableOffsetForward(Snapshot s, int astOffset) {
-        for(int i = astOffset; i < s.getText().length(); i ++ ) {
-            int documentOffset = s.getEmbeddedOffset(i);
-            if(documentOffset != -1) {
-                return documentOffset;
+    private int findNearestMapableOffsetForward(Snapshot s, int documentOffset) {
+        Document doc = s.getSource().getDocument(false);
+        assert doc != null;
+
+        for(int i = documentOffset; i < doc.getLength(); i ++ ) {
+            int embeddedOffset = s.getEmbeddedOffset(i);
+            if(embeddedOffset != -1) {
+                return embeddedOffset;
             }
         }
         return -1;

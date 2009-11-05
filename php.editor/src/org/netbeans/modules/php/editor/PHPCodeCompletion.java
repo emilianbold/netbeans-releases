@@ -401,7 +401,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         NamespaceIndexFilter<IndexedInterface> completionSupport = new NamespaceIndexFilter<IndexedInterface>(request.prefix);
         final Collection<IndexedInterface> interfaces = request.index.getInterfaces(request.result, completionSupport.getName(), nameKind);
         for (IndexedInterface iface : completionSupport.filter(interfaces)) {
-            proposals.add(new PHPCompletionItem.InterfaceItem(iface, request, kind));
+            proposals.add(new PHPCompletionItem.InterfaceItem(iface, request, kind, false));
         }
     }
     private void autoCompleteTypeNames(List<CompletionProposal> proposals, PHPCompletionItem.CompletionRequest request) {
@@ -412,7 +412,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         if (ifaceSupport.getName().trim().length() > 0) {
             final Collection<IndexedInterface> interfaces = request.index.getInterfaces(request.result, ifaceSupport.getName(), nameKind);
             for (IndexedInterface iface : ifaceSupport.filter(interfaces)) {
-                proposals.add(new PHPCompletionItem.InterfaceItem(iface, request, kind));
+                proposals.add(new PHPCompletionItem.InterfaceItem(iface, request, kind, false));
             }
             NamespaceIndexFilter<IndexedClass> classSupport = new NamespaceIndexFilter<IndexedClass>(request.prefix);
             final Collection<IndexedClass> classes = request.index.getClasses(request.result, ifaceSupport.getName(), nameKind);
@@ -434,7 +434,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 if (indexedElement instanceof IndexedClass) {
                     proposals.add(new PHPCompletionItem.ClassItem((IndexedClass)indexedElement, request, false, kind));
                 } else if (indexedElement instanceof IndexedInterface) {
-                    proposals.add(new PHPCompletionItem.InterfaceItem((IndexedInterface)indexedElement, request, kind));
+                    proposals.add(new PHPCompletionItem.InterfaceItem((IndexedInterface)indexedElement, request, kind, false));
                 }
             }
         }
@@ -771,9 +771,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 request.prefix, request.anchor, request.currentlyEditedFileURL);
 
         // all toplevel variables from index, which are unique. They comes only from one file
-        Map<String, IndexedConstant> allUniqueVars = new LinkedHashMap<String, IndexedConstant>();
+        Map<String, IndexedVariable> allUniqueVars = new LinkedHashMap<String, IndexedVariable>();
         // all toplevel variables, wchich are defined in more files
-        Map<String, IndexedConstant> allUnUniqueVars = new LinkedHashMap<String, IndexedConstant>();
+        Map<String, IndexedVariable> allUnUniqueVars = new LinkedHashMap<String, IndexedVariable>();
 
         NamespaceIndexFilter<IndexedElement> completionSupport = new NamespaceIndexFilter<IndexedElement>(request.prefix);
         QualifiedNameKind kind = completionSupport.getKind();
@@ -801,13 +801,13 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             else if (element instanceof IndexedClass) {
                 proposals.add(new PHPCompletionItem.ClassItem((IndexedClass) element, request, true, null));
             } else  if (element instanceof IndexedInterface) {
-                proposals.add(new PHPCompletionItem.InterfaceItem((IndexedInterface) element, request));
+                proposals.add(new PHPCompletionItem.InterfaceItem((IndexedInterface) element, request, true));
             } else if (element instanceof IndexedVariable) {
                 if (localVars.globalContext) {
                     // are we in global context?
-                    IndexedConstant topLevelVar = (IndexedConstant) element;
+                    IndexedVariable topLevelVar = (IndexedVariable) element;
                     if (!request.currentlyEditedFileURL.equals(topLevelVar.getFilenameUrl())) {
-                        IndexedConstant localVar = allUniqueVars.get(topLevelVar.getName());
+                        IndexedVariable localVar = allUniqueVars.get(topLevelVar.getName());
                         if (localVar == null) {
                             // the indexed variable is unique or first one, with the name
                             allUniqueVars.put(topLevelVar.getName(), topLevelVar);
@@ -826,20 +826,20 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
 
         // add local variables
-        for (IndexedConstant var : localVars.vars) {
+        for (IndexedVariable var : localVars.vars) {
             allUniqueVars.put(var.getName(), var);
             // remove local varibales from the indexed varibles
             allUnUniqueVars.remove(var.getName());
         }
 
-        for (IndexedConstant var : allUnUniqueVars.values()) {
+        for (IndexedVariable var : allUnUniqueVars.values()) {
             // remove ununique variables from unique varibles
             allUniqueVars.remove(var.getName());
             CompletionProposal proposal = new PHPCompletionItem.UnUniqueVaraibaleItems(var, request);
             proposals.add(proposal);
         }
 
-        for (IndexedConstant var : allUniqueVars.values()) {
+        for (IndexedVariable var : allUniqueVars.values()) {
             CodeUtils.resolveFunctionType(request.result, index, allUniqueVars, var);
             CompletionProposal proposal = new PHPCompletionItem.VariableItem(var, request);
             proposals.add(proposal);
@@ -878,7 +878,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         }
     }
     private void autoCompleteGlobals(List<CompletionProposal> proposals, PHPCompletionItem.CompletionRequest request) {
-        Map<String, IndexedConstant> allVars = new LinkedHashMap<String, IndexedConstant>();
+        Map<String, IndexedVariable> allVars = new LinkedHashMap<String, IndexedVariable>();
         VariablesScope ccVariablesScope = OptionsUtils.codeCompletionVariablesScope();
         Collection<IndexedElement> allTopLevel = null;
         if (ccVariablesScope.equals(VariablesScope.ALL)) {
@@ -890,12 +890,12 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         }
         for (IndexedElement element : allTopLevel) {
             if (element instanceof IndexedVariable) {
-                IndexedConstant topLevelVar = (IndexedConstant) element;
+                IndexedVariable topLevelVar = (IndexedVariable) element;
                 allVars.put(topLevelVar.getName(), topLevelVar);
             }
         }
-        Collection<IndexedConstant> values = allVars.values();
-        for (IndexedConstant idxConstant : values) {
+        Collection<IndexedVariable> values = allVars.values();
+        for (IndexedVariable idxConstant : values) {
             String tName = idxConstant.getTypeName();
             //TODO: just impl. as hotfix - should be reviewed
             if (idxConstant.isResolved() && (tName == null || !tName.startsWith("@"))) {//NOI18N
@@ -910,10 +910,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             PHPCompletionItem.CompletionRequest request){
 
         Collection<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
-        Collection<IndexedConstant> allVars = getVariables(request.result, request.index,
+        Collection<IndexedVariable> allVars = getVariables(request.result, request.index,
                 request.prefix, request.anchor, request.currentlyEditedFileURL);
 
-        for (IndexedConstant localVar : allVars){
+        for (IndexedVariable localVar : allVars){
             CompletionProposal proposal = new PHPCompletionItem.VariableItem(localVar, request);
             proposals.add(proposal);
         }
@@ -928,26 +928,26 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         return proposals;
     }
 
-    public Collection<IndexedConstant> getVariables(PHPParseResult context,  PHPIndex index,
+    public Collection<IndexedVariable> getVariables(PHPParseResult context,  PHPIndex index,
             String namePrefix, int position, String localFileURL){
 
         LocalVariables localVars = getLocalVariables(context, namePrefix, position, localFileURL);
-        Map<String, IndexedConstant> allVars = new LinkedHashMap<String, IndexedConstant>();
+        Map<String, IndexedVariable> allVars = new LinkedHashMap<String, IndexedVariable>();
 
-        for (IndexedConstant var : localVars.vars){
+        for (IndexedVariable var : localVars.vars){
             allVars.put(var.getName(), var);
         }
 
         if (localVars.globalContext){
-            for (IndexedConstant topLevelVar : index.getTopLevelVariables(context, namePrefix, QuerySupport.Kind.PREFIX)){
+            for (IndexedVariable topLevelVar : index.getTopLevelVariables(context, namePrefix, QuerySupport.Kind.PREFIX)){
                 if (!localFileURL.equals(topLevelVar.getFilenameUrl())){
-                    IndexedConstant localVar = allVars.get(topLevelVar.getName());
+                    IndexedVariable localVar = allVars.get(topLevelVar.getName());
                     // TODO this is not good solution. The varibles, which
                     // are not unique (are defined in more files),
                     // should be presented in different way. It is solved
                     // in autoCompleteExpression method. No time to rewrite for 6.5
                      if (localVar == null || localVar.getOffset() != topLevelVar.getOffset()){
-                        IndexedConstant original = allVars.put(topLevelVar.getName(), topLevelVar);
+                        IndexedVariable original = allVars.put(topLevelVar.getName(), topLevelVar);
                         if (original != null && localVars.vars.contains(original)) {
                             allVars.put(original.getName(), original);
                         }
@@ -956,7 +956,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             }
         }
 
-        for (IndexedConstant var : allVars.values()){
+        for (IndexedVariable var : allVars.values()){
             CodeUtils.resolveFunctionType(context, index, allVars, var);
         }
 
@@ -979,12 +979,12 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     }
 
     private class LocalVariables{
-        Collection<IndexedConstant> vars;
+        Collection<IndexedVariable> vars;
         boolean globalContext;
     }
 
     private LocalVariables getLocalVariables(final PHPParseResult context, final String namePrefix, final int position, final String localFileURL) {
-        Map<String, IndexedConstant> localVars = new HashMap<String, IndexedConstant>();
+        Map<String, IndexedVariable> localVars = new HashMap<String, IndexedVariable>();
         LocalVariables result = new LocalVariables();
         result.vars = localVars.values();
         Model model = context.getModel();
@@ -1005,7 +1005,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     }
                     final Collection<? extends String> typeNames = varName.getTypeNames(position);
                     String typeName = typeNames.size() > 1 ? "mixed" : ModelUtils.getFirst(typeNames);//NOI18N
-                    IndexedConstant ic = new IndexedConstant(name, null, null, localFileURL, -1, 0, typeName);
+                    IndexedVariable ic = new IndexedVariable(name, null, null, localFileURL, -1, 0, typeName);
                     localVars.put(name, ic);
                 }
             }

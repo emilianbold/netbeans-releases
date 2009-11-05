@@ -39,7 +39,6 @@
 package org.netbeans.modules.php.editor;
 
 import java.util.Collections;
-import java.util.concurrent.Future;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
@@ -53,7 +52,9 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 import static org.netbeans.modules.php.editor.CompletionContextFinder.CompletionContext;
+import org.openide.util.RequestProcessor.Task;
 
 /**
  *
@@ -61,42 +62,38 @@ import static org.netbeans.modules.php.editor.CompletionContextFinder.Completion
  */
 public class PHPCodeTemplateFilter extends UserTask implements CodeTemplateFilter {
 
-    private boolean accept = false;
+    private volatile boolean accept = false;
     private int caretOffset;
-    private volatile boolean cancelled;
-    private volatile CompletionContext context;
+    private CompletionContext context;
+    private static final RequestProcessor requestProcessor = new RequestProcessor("PHPCodeTemplateFilter");//NOI18N
+    private final Task postedTask;
 
     public PHPCodeTemplateFilter(final JTextComponent component, final int offset) {
         this.caretOffset = offset;
-        Source js = Source.create (component.getDocument());
-        if (js != null) {
-            try {
-                Future<Void> f = ParserManager.parseWhenScanFinished(Collections.singleton(js), this);
-                if (!f.isDone()) {
-                    f.cancel(true);
-                    cancelled = true;
-                }
-            } catch (ParseException ex) {
-                Exceptions.printStackTrace(ex);
+        postedTask = requestProcessor.post(new Runnable() {
+            public void run() {
+                parseDocument(component);
             }
-        }
+        });
     }
 
     public boolean accept(CodeTemplate template) {
-        if (!cancelled && context != null) {
-            if (context == CompletionContext.CLASS_CONTEXT_KEYWORDS) {
-                return template.getAbbreviation().equals("fnc"); //NOI18N
+        try {
+            if (postedTask.waitFinished(300)) {
+                if (context == CompletionContext.CLASS_CONTEXT_KEYWORDS) {
+                    return template.getAbbreviation().equals("fnc"); //NOI18N
+                    }
+                return accept;
+            } else {
+                postedTask.cancel();
             }
-            return accept;
+        } catch (InterruptedException ex) {
         }
         return false;
     }
 
     @Override
     public  void run(ResultIterator resultIterator) throws Exception {
-        if (cancelled) {
-            return;
-        }
         ParserResult parameter = null;
         String mimeType = resultIterator.getSnapshot().getMimeType();
         if (!mimeType.equals(FileUtils.PHP_MIME_TYPE)) {
@@ -110,7 +107,7 @@ public class PHPCodeTemplateFilter extends UserTask implements CodeTemplateFilte
         }
         if (mimeType.equals(FileUtils.PHP_MIME_TYPE)) {
             parameter = (ParserResult) resultIterator.getParserResult();
-            BaseDocument document = (BaseDocument) parameter.getSnapshot().getSource().getDocument(false);
+            BaseDocument document = parameter != null ? (BaseDocument) parameter.getSnapshot().getSource().getDocument(false) : null;
             if (document != null) {
                 document.readLock();
 
@@ -135,6 +132,14 @@ public class PHPCodeTemplateFilter extends UserTask implements CodeTemplateFilte
 
         public CodeTemplateFilter createFilter(JTextComponent component, int offset) {
             return new PHPCodeTemplateFilter(component, offset);
+        }
+    }
+
+    private void parseDocument(final JTextComponent component) {
+        try {
+            ParserManager.parseWhenScanFinished(Collections.singleton(Source.create(component.getDocument())), this);
+        } catch (ParseException ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
 }
