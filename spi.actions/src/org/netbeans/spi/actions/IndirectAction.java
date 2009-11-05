@@ -132,6 +132,20 @@ final class IndirectAction<T extends Lookup.Provider, R> extends ContextAction<T
         return delegateStub.isEnabled();
     }
 
+    @Override
+    public boolean equals (Object o) {
+        return o != null && o.getClass() == IndirectAction.class && delegate.equals(((IndirectAction) o).delegate);
+    }
+
+    /**
+     * Returns getClass().hashCode();
+     * @return The hash code of this type.
+     */
+    @Override
+    public int hashCode() {
+        return delegate.hashCode();
+    }
+
     private final class PCL implements PropertyChangeListener {
 
         public void propertyChange(PropertyChangeEvent evt) {

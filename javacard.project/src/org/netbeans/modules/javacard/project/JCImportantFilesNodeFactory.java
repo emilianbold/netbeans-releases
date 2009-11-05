@@ -41,7 +41,6 @@
 package org.netbeans.modules.javacard.project;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.javacard.api.ProjectKind;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeFactorySupport;
 import org.netbeans.spi.project.ui.support.NodeList;
@@ -54,6 +53,9 @@ import org.openide.util.Exceptions;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.javacard.common.JCConstants;
+import org.netbeans.modules.javacard.spi.ProjectKind;
+import org.openide.util.NbBundle;
 
 public class JCImportantFilesNodeFactory implements NodeFactory {
 
@@ -66,8 +68,8 @@ public class JCImportantFilesNodeFactory implements NodeFactory {
 
         List<Node> nodes = new ArrayList<Node>();
 
-        String[] fileNames = kind.importantFilenames();
-        String[] displayNames = kind.importantFileDisplayNames();
+        String[] fileNames = importantFilenames(kind);
+        String[] displayNames = importantFileDisplayNames(kind);
 
         for (int i = 0; i < fileNames.length; i++) {
             FileObject file = p.getProjectDirectory()
@@ -96,4 +98,73 @@ public class JCImportantFilesNodeFactory implements NodeFactory {
         }
     }
 
+    /**
+     * Get an array of display names for the project's important files
+     * @return An array of localized names corresponding to the return value of
+     * <code>importantFilenames()</code>
+     */
+    public static String[] importantFileDisplayNames(ProjectKind kind) {
+        String[] keys;
+        switch (kind) {
+            case WEB:
+                keys = new String[]{
+                            "JAVA_CARD_RUNTIME_DESCRIPTOR", //NOI18N
+                            "WEBAPP_DEPLOYMENT_DESCRIPTOR", //NOI18N
+                            "JAVA_CARD_PLATFORM_SPECIFIC_APPLICATION_DESCRIPTOR"}; //NOI18N
+                break;
+            case CLASSIC_APPLET:
+            case EXTENDED_APPLET:
+                keys = new String[]{
+                            "JAVA_CARD_RUNTIME_DESCRIPTOR", //NOI18N
+                            "JAVA_CARD_APPLET_DESCRIPTOR", //NOI18N
+                            "JAVA_CARD_PLATFORM_SPECIFIC_APPLICATION_DESCRIPTOR" //NOI18N
+                        };
+                break;
+            case CLASSIC_LIBRARY:
+            case EXTENSION_LIBRARY:
+                keys = new String[]{"MANIFEST_FILE"}; //NOI18N
+                break;
+            default:
+                throw new AssertionError();
+        }
+        for (int i = 0; i < keys.length; i++) {
+            keys[i] = NbBundle.getMessage(JCImportantFilesNodeFactory.class, keys[i]);
+        }
+        return keys;
+    }
+
+    /**
+     * Expected project-relative paths to files that should be shown
+     * in a given project-type's important files node
+     * @return An array of file names
+     */
+    public static String[] importantFilenames(ProjectKind kind) {
+        switch (kind) {
+            case WEB:
+                return new String[]{
+                            JCConstants.MANIFEST_PATH,
+                            JCConstants.WEB_DESCRIPTOR_PATH,
+                            JCConstants.JAVACARD_XML_PATH,
+                        };
+            case CLASSIC_APPLET:
+                return new String[]{
+                            JCConstants.MANIFEST_PATH,
+                            JCConstants.APPLET_DESCRIPTOR_PATH,
+                            JCConstants.JAVACARD_XML_PATH,
+                        };
+            case EXTENDED_APPLET:
+                return new String[]{
+                            JCConstants.MANIFEST_PATH,
+                            JCConstants.APPLET_DESCRIPTOR_PATH,
+                            JCConstants.JAVACARD_XML_PATH,
+                        };
+            case CLASSIC_LIBRARY:
+            case EXTENSION_LIBRARY:
+                return new String[]{
+                            JCConstants.MANIFEST_PATH,
+                        };
+            default:
+                throw new AssertionError();
+        }
+    }
 }
