@@ -277,7 +277,11 @@ public class KenaiPopupMenu extends CookieAction {
                                     }
                                 }
                             } catch (KenaiException e) {
-                                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(KenaiPopupMenu.class, "ERROR_CONNECTION", e.getLocalizedMessage()))); //NOI18N
+                                String err = e.getLocalizedMessage();
+                                if (err == null) {
+                                    err = e.getCause().getLocalizedMessage();
+                                }
+                                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(KenaiPopupMenu.class, "ERROR_CONNECTION", err))); //NOI18N
                             } finally {
                                 handle.finish();
                             }
@@ -314,7 +318,11 @@ public class KenaiPopupMenu extends CookieAction {
                                     }
                                 }
                             } catch (KenaiException e) {
-                                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(KenaiPopupMenu.class, "ERROR_CONNECTION", e.getLocalizedMessage()))); //NOI18N
+                                String err = e.getLocalizedMessage();
+                                if (err == null) {
+                                    err = e.getCause().getLocalizedMessage();
+                                }
+                                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(KenaiPopupMenu.class, "ERROR_CONNECTION", err))); //NOI18N
                             } finally {
                                 handle.finish();
                             }
@@ -352,7 +360,11 @@ public class KenaiPopupMenu extends CookieAction {
                                     DashboardImpl.getInstance().addProject(pHandle, false, true);
                                 }
                             } catch (KenaiException e) {
-                                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(KenaiPopupMenu.class, "ERROR_CONNECTION", e.getLocalizedMessage()))); //NOI18N
+                                String err = e.getLocalizedMessage();
+                                if (err == null) {
+                                    err = e.getCause().getLocalizedMessage();
+                                }
+                                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(KenaiPopupMenu.class, "ERROR_CONNECTION", err))); //NOI18N
                             } finally {
                                 if (handle != null) {
                                     handle.finish();
