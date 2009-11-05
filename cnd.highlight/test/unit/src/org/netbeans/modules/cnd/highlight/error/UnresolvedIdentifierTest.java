@@ -257,6 +257,11 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         performStaticTest("iz175782.cpp");
     }
 
+    public void testIZ175782_2() throws Exception {
+        // IZ#175782 : False positive used prior to declaration warnings
+        performStaticTest("iz175782_2.cpp");
+    }
+
     /////////////////////////////////////////////////////////////////////
     // FAILS
 
