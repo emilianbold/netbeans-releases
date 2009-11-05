@@ -679,11 +679,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                                 int row = subTaskTable.rowAtPoint(p);
                                 TableModel model = subTaskTable.getModel();
                                 final String issueKey = (String)model.getValueAt(row,0);
-                                RequestProcessor.getDefault().post(new Runnable() {
-                                   public void run() {
-                                       issue.getRepository().getIssue(issueKey).open();
-                                   }
-                                });
+                                Issue.open(issue.getRepository(), issueKey);
                             }
                         }
                     });
