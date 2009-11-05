@@ -49,19 +49,19 @@ made subject to such option by the copyright holder.
         <platform os="sun_intel" directory="/opt/sunstudio12.2/bin"/>
     </default_locations>
     <c>
-        <version flags="-V" pattern=".*Sun C 5.11"/>
+        <version flags="-V" pattern=".*Sun C 5.11\s\S*\s(?!Aten)"/>
         <development_mode>
            <performance_release flags="-fast -xipo -xvector=simd -g"/>
         </development_mode>
     </c>
     <cpp>
-        <version flags="-V" pattern=".*Sun C\+\+ 5.11"/>
+        <version flags="-V" pattern=".*Sun C\+\+ 5.11\s\S*\s(?!Aten)"/>
         <development_mode>
            <performance_release flags="-fast -xipo -xvector=simd -g0"/>
         </development_mode>
     </cpp>
     <fortran>
-        <version flags="-V" pattern=".*Sun Fortran 95 8.5"/>
+        <version flags="-V" pattern=".*Sun Fortran 95 8.5\s\S*\s(?!Aten)"/>
         <development_mode>
            <performance_release flags="-fast -xvector=simd -g"/>
         </development_mode>

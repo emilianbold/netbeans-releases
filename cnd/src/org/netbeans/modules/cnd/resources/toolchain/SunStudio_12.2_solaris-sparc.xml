@@ -48,12 +48,12 @@ made subject to such option by the copyright holder.
         <platform os="sun_sparc" directory="/opt/sunstudio12.2/bin"/>
     </default_locations>
     <c>
-        <version flags="-V" pattern=".*Sun C 5.11"/>
+        <version flags="-V" pattern="^.*Sun C 5.11\s\S*\s(?!Aten)"/>
     </c>
     <cpp>
-        <version flags="-V" pattern=".*Sun C\+\+ 5.11"/>
+        <version flags="-V" pattern=".*Sun C\+\+ 5.11\s\S*\s(?!Aten)"/>
     </cpp>
     <fortran>
-        <version flags="-V" pattern=".*Sun Fortran 95 8.5"/>
+        <version flags="-V" pattern=".*Sun Fortran 95 8.5\s\S*\s(?!Aten)"/>
     </fortran>
 </toolchaindefinition>

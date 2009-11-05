@@ -226,6 +226,14 @@ public final class ToolchainManagerImpl {
         return res;
     }
 
+    /**
+     *
+     * @param path
+     * @param d
+     * @param platform
+     * @param known if path known the methdod does not check path pattern
+     * @return
+     */
     private boolean isMyFolderImpl(String path, ToolchainDescriptor d, int platform, boolean known) {
         CompilerDescriptor c = d.getC();
         if (c == null || c.getNames().length == 0) {
@@ -548,6 +556,9 @@ public final class ToolchainManagerImpl {
                         element.setAttribute("family", unsplit(descriptor.getFamily())); // NOI18N
                         if (descriptor.getQmakeSpec() != null) {
                             element.setAttribute("qmakespec", descriptor.getQmakeSpec()); // NOI18N
+                        }
+                        if (descriptor.isAbstract()) {
+                            element.setAttribute("abstract", "true"); // NOI18N
                         }
                         root.appendChild(element);
 
@@ -1179,6 +1190,7 @@ public final class ToolchainManagerImpl {
         String ucName;
         String upgrage;
         String module;
+        boolean isAbstract;
         String driveLetterPrefix;
         List<FolderInfo> baseFolder;
         List<FolderInfo> commandFolder;
@@ -1593,6 +1605,7 @@ public final class ToolchainManagerImpl {
                 v.toolChainDisplay = getValue(attributes, "display"); // NOI18N
                 v.family = getValue(attributes, "family"); // NOI18N
                 v.qmakespec = getValue(attributes, "qmakespec"); // NOI18N
+                v.isAbstract = "true".equals(getValue(attributes, "abstract"));
                 return;
             } else if (path.endsWith(".platforms")) { // NOI18N
                 v.platforms = getValue(attributes, "stringvalue"); // NOI18N
@@ -2101,6 +2114,10 @@ public final class ToolchainManagerImpl {
             return v.module;
         }
 
+        public boolean isAbstract() {
+            return v.isAbstract;
+        }
+
         public String getDriveLetterPrefix() {
             return v.driveLetterPrefix;
         }
@@ -2207,6 +2224,11 @@ public final class ToolchainManagerImpl {
                 cmake = new CMakeDescriptorImpl(v.cmake);
             }
             return cmake;
+        }
+
+        @Override
+        public String toString() {
+            return getName();
         }
     }
 
@@ -2372,6 +2394,10 @@ public final class ToolchainManagerImpl {
             return tool.precompiledHeaderSuffixAppend;
         }
 
+        @Override
+        public String toString() {
+            return "Path="+getPathPattern()+" Folder="+getExistFolder()+" Version="+getVersionPattern();
+        }
     }
     
     private static final class PredefinedMacroImpl implements PredefinedMacro {
