@@ -179,18 +179,21 @@ public class JPDAStart extends Task implements Runnable {
     }
     
     public void addClasspath (Path path) {
+        logger.fine("addClasspath("+path+")");
         if (classpath != null)
             throw new BuildException ("Only one classpath subelement is supported");
         classpath = path;
     }
     
     public void addBootclasspath (Path path) {
+        logger.fine("addBootclasspath("+path+")");
         if (bootclasspath != null)
             throw new BuildException ("Only one bootclasspath subelement is supported");
         bootclasspath = path;
     }
     
     public void addSourcepath (Sourcepath path) {
+        logger.fine("addSourcepath("+path+")");
         if (sourcepath != null)
             throw new BuildException ("Only one sourcepath subelement is supported");
         sourcepath = path;
@@ -216,7 +219,7 @@ public class JPDAStart extends Task implements Runnable {
     public void execute () throws BuildException {
         verifyPaths(getProject(), classpath);
         //verifyPaths(getProject(), bootclasspath); Do not check the paths on bootclasspath (see issue #70930).
-        verifyPaths(getProject(), sourcepath);
+        verifyPaths(getProject(), sourcepath.getPlainPath());
         try {
             logger.fine("JPDAStart.execute()"); // NOI18N
             debug ("Execute started"); // NOI18N
@@ -364,7 +367,7 @@ public class JPDAStart extends Task implements Runnable {
                 if (logger.isLoggable(Level.FINE)) {
                     logger.fine("Create sourcepath:"); // NOI18N
                     logger.fine("    classpath : " + classpath); // NOI18N
-                    logger.fine("    sourcepath : " + sourcepath); // NOI18N
+                    logger.fine("    sourcepath : " + sourcepath.getPlainPath()); // NOI18N
                     logger.fine("    bootclasspath : " + bootclasspath); // NOI18N
                     logger.fine("    >> sourcePath : " + sourcePath); // NOI18N
                     logger.fine("    >> jdkSourcePath : " + jdkSourcePath); // NOI18N
@@ -548,10 +551,10 @@ public class JPDAStart extends Task implements Runnable {
         Sourcepath sourcepath
     ) {
         if (sourcepath != null && sourcepath.isExclusive()) {
-            return convertToClassPath (project, sourcepath);
+            return convertToClassPath (project, sourcepath.getPlainPath());
         }
         ClassPath cp = convertToSourcePath (project, classpath);
-        ClassPath sp = convertToClassPath (project, sourcepath);
+        ClassPath sp = convertToClassPath (project, sourcepath.getPlainPath());
         
         ClassPath sourcePath = ClassPathSupport.createProxyClassPath (
             new ClassPath[] {cp, sp}
@@ -693,9 +696,18 @@ public class JPDAStart extends Task implements Runnable {
     public static class Sourcepath extends Path {
 
         private boolean isExclusive;
+        private String path = null;
+        private Path plainPath;
 
         public Sourcepath(Project p) {
             super(p);
+            logger.fine("new Sourcepath("+p+")");
+        }
+
+        public Sourcepath(Project p, String path) {
+            super(p, path);
+            this.path = path;
+            logger.fine("new Sourcepath("+p+", "+path+")");
         }
 
         public void setExclusive(String exclusive) {
@@ -705,6 +717,27 @@ public class JPDAStart extends Task implements Runnable {
         boolean isExclusive() {
             return isExclusive;
         }
+
+        public Path getPlainPath() {
+            if (plainPath == null) {
+                Path pp;
+                if (path != null) {
+                    pp = new Path(getProject(), path);
+                } else {
+                    pp = new Path(getProject());
+                }
+                pp.setLocation(getLocation());
+                pp.setDescription(getDescription());
+                if (getRefid() != null) {
+                    pp.setRefid(getRefid());
+                }
+                //pp.setChecked(isChecked());
+                //pp.union = union == null ? union : (Union) union.clone();
+                plainPath = pp;
+            }
+            return plainPath;
+        }
+
     }
     
     private static class Listener extends DebuggerManagerAdapter {
