@@ -299,30 +299,40 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
         }
     }
 
-    private void initPackages() {
+    private Problem initPackages() {
         if (foldersToMove.isEmpty()) {
             packages = Collections.emptySet();
-            return;
+            return null;
         } else {
             packages = new HashSet<String>();
         }
         
         for (List<FileObject> folders : foldersToMove) {
             ClassPath cp = ClassPath.getClassPath(folders.get(0), ClassPath.SOURCE);
+            if (cp == null) {
+                return new Problem(true, NbBundle.getMessage(
+                        MoveRefactoringPlugin.class,
+                        "ERR_ClasspathNotFound",
+                        folders.get(0)));
+            }
             for (FileObject folder : folders) {
                 String pkgName = cp.getResourceName(folder, '.', false);
                 packages.add(pkgName);
             }
         }
+        return null;
     }
     
     public Problem prepare(RefactoringElementsBag elements) {
         fireProgressListenerStart(ProgressEvent.START, -1);
         initClasses();
-        initPackages();
+        Problem p = initPackages();
+        if (p != null) {
+            return p;
+        }
         
         Set<FileObject> a = getRelevantFiles();
-        Problem p = checkProjectDeps(a);
+        p = checkProjectDeps(a);
         fireProgressListenerStep(a.size());
         MoveTransformer t;
         TransformTask task = new TransformTask(t=new MoveTransformer(this), null);
