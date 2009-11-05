@@ -81,18 +81,12 @@ public class SourceRoots {
 
         if (project != null) {
             GrailsPluginSupport pluginSupport = GrailsPluginSupport.forProject(project);
-            // FIXME optimize
-            List<GrailsPlugin> plugins = pluginSupport.loadInstalledPlugins();
-            Set<String> pluginDirs = new HashSet<String>();
-            for (GrailsPlugin plugin : plugins) {
-                pluginDirs.add(plugin.getDirName());
+            if (pluginSupport != null) {
+                result.addAll(addPluginRoots(project.getBuildConfig().getProjectPluginsDir(), pluginSupport.getProjectPluginFilter()));
             }
-
-            result.addAll(addPluginRoots(project.getBuildConfig().getProjectPluginsDir(), pluginDirs));
             result.addAll(addPluginRoots(project.getBuildConfig().getGlobalPluginsDir(), null));
 
             // in-place plugins
-            File root = FileUtil.toFile(projectRoot);
             for (GrailsPlugin plugin : project.getBuildConfig().getLocalPlugins()) {
                 if (plugin.getPath() != null) {
                     addGrailsSourceRoots(FileUtil.toFileObject(plugin.getPath()), result);
@@ -115,14 +109,15 @@ public class SourceRoots {
         return urls;
     }
 
-    private List<FileObject> addPluginRoots(File pluginsDirFile, Set<String> names) {
+    private List<FileObject> addPluginRoots(File pluginsDirFile, GrailsPluginSupport.FolderFilter filter) {
         FileObject pluginsDir = (pluginsDirFile == null) ? null : FileUtil.toFileObject(pluginsDirFile);
         if (pluginsDir != null) {
             List<FileObject> result = new ArrayList<FileObject>();
-            Enumeration<? extends FileObject> subfolders = pluginsDir.getFolders(false);
-            while (subfolders.hasMoreElements()) {
+            for(Enumeration<? extends FileObject> subfolders = pluginsDir.getFolders(false);
+                    subfolders.hasMoreElements();) {
+
                 FileObject subFolder = subfolders.nextElement();
-                if (names == null || names.contains(subFolder.getNameExt())) {
+                if (filter == null || filter.accept(subFolder.getNameExt())) {
                     addGrailsSourceRoots(subFolder, result);
                 }
             }
