@@ -3,7 +3,10 @@ package org.netbeans.modules.php.editor.model.impl;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.model.ConstantElement;
+import org.netbeans.modules.php.editor.model.ModelUtils;
+import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.model.PhpKind;
+import org.netbeans.modules.php.editor.model.QualifiedName;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.netbeans.modules.php.editor.model.nodes.ClassConstantDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
@@ -35,6 +38,10 @@ class ConstantElementImpl extends ModelElementImpl implements ConstantElement {
         sb.append(getName().toLowerCase()).append(";");//NOI18N
         sb.append(getName()).append(";");//NOI18N
         sb.append(getOffset()).append(";");//NOI18N
+        NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(this);
+        QualifiedName qualifiedName = namespaceScope.getQualifiedName();
+        sb.append(qualifiedName.toString()).append(";");//NOI18N
+
         return sb.toString();
     }    
 }
