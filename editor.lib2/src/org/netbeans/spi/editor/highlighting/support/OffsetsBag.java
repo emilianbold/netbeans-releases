@@ -719,11 +719,12 @@ public final class OffsetsBag extends AbstractHighlightsContainer {
             marks.set(endIdx, new Mark(endOffset, marks.get(endIdx).getAttributes()));
             endIdx--;
 
-            startIdx++;
-            if (startIdx <= endIdx) {
-                marks.set(startIdx, new Mark(startOffset, attributes));
+            if (startIdx != -1 && marks.get(startIdx).getOffset() == startOffset) {
+                marks.get(startIdx).setAttributes(attributes);
+            } else if (startIdx + 1 <= endIdx) {
+                marks.set(++startIdx, new Mark(startOffset, attributes));
             } else {
-                marks.add(startIdx, new Mark(startOffset, attributes));
+                marks.add(++startIdx, new Mark(startOffset, attributes));
                 lastAddIndex++; // Increase the index after addition
             }
             startIdx++;
