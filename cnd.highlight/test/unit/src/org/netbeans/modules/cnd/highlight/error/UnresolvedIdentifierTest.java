@@ -242,11 +242,6 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         performStaticTest("iz171453.cpp");
     }
 
-    public void testIZ175231() throws Exception {
-        // IZ#175231 : Error parser doesn't handle linenumber:column correctly
-        performStaticTest("iz175231.cpp");
-    }
-
     public void testIZ161565() throws Exception {
         // IZ#161565 : Usage of not-yet-declared function is not highlighted as error
         performStaticTest("iz161565.cpp");
@@ -274,6 +269,11 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         @Override
         protected Class<?> getTestCaseDataClass() {
             return UnresolvedIdentifierTest.class;
+        }
+
+        public void testIZ175231() throws Exception {
+            // IZ#175231 : Error parser doesn't handle linenumber:column correctly
+            performStaticTest("iz175231.cpp");
         }
     }
 }
