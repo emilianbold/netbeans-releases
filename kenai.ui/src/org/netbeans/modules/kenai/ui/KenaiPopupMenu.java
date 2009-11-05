@@ -41,39 +41,34 @@ package org.netbeans.modules.kenai.ui;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.MissingResourceException;
 import java.util.WeakHashMap;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
+import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
-import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.ui.dashboard.DashboardImpl;
-import org.netbeans.modules.kenai.ui.spi.Dashboard;
-import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 import org.netbeans.modules.kenai.ui.spi.QueryAccessor;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -82,9 +77,10 @@ import org.openide.util.actions.CookieAction;
 import org.openide.util.actions.Presenter;
 import org.openide.util.actions.SystemAction;
 
+
+// TODO: Do not use CookieAction -> needs to be rewritten
 public class KenaiPopupMenu extends CookieAction {
 
-    private static HashMap<VersioningSystem, JComponent[]> versioningItemMap = new HashMap<VersioningSystem, JComponent[]>();
     private static Map<Project, String> repoForProjCache = new WeakHashMap<Project, String>();
 
     @Override
@@ -119,7 +115,6 @@ public class KenaiPopupMenu extends CookieAction {
     private final class KenaiPopupMenuPresenter extends AbstractAction implements Presenter.Popup {
 
         private final Project proj;
-        private final int MAX_VERSIONING_ITEMS = 2;
 
         private KenaiPopupMenuPresenter(Lookup actionContext) {
             proj = actionContext.lookup(Project.class);
@@ -129,79 +124,55 @@ public class KenaiPopupMenu extends CookieAction {
             // show for Kenai projects
             final JMenu kenaiPopup = new JMenu(NbBundle.getMessage(KenaiPopupMenu.class, "KENAI_POPUP")); //NOI18N
             kenaiPopup.setVisible(true);
-            KenaiFeature[] issueTrackers = null;
-            try {
+            /* Add action to navigate to Kenai project - based on repository URL (not on Kenai dashboard at the moment) */
+            // if isKenaiProject==true, there must be cached result + it is different from ""
+            String projRepo = repoForProjCache.get(proj);
+            String kpName = KenaiProject.getNameForRepository(projRepo);
+            kenaiPopup.add(new LazyOpenKenaiProjectAction(kpName));
+            kenaiPopup.addSeparator();
+            if (kpName != null) {
+                kenaiPopup.add(new LazyFindIssuesAction(proj, kpName));
+                kenaiPopup.add(new LazyNewIssuesAction(proj, kpName));
+                kenaiPopup.addSeparator();
                 /* Show actions related to versioning - commit/update */
                 VersioningSystem owner = VersioningSupport.getOwner(FileUtil.toFile(proj.getProjectDirectory()));
+                JMenu versioning = new JMenu(NbBundle.getMessage(KenaiPopupMenu.class, "MSG_VERSIONING")); //NOI18N
                 JComponent[] items = createVersioningSystemItems(owner, getActivatedNodes());
                 for (int i = 0; i < items.length; i++) {
                     JComponent item = items[i];
                     if (item != null) {
-                        kenaiPopup.add(item);
+                        versioning.add(item);
                     }
                 }
-                kenaiPopup.addSeparator();
-                /* Add action to navigate to Kenai project - based on repository URL (not on Kenai dashboard at the moment) */
-                // if isKenaiProject==true, there must be cached result + it is different from ""
-                String projRepo = repoForProjCache.get(proj);
-                String kpName = KenaiProject.getNameForRepository(projRepo);
-                if (kpName != null) {
-                    if (inDashboard(kpName)) {
-                        issueTrackers = Kenai.getDefault().getProject(kpName).getFeatures(Type.ISSUES);
-                        if (issueTrackers != null && issueTrackers.length > 0) {
-                            kenaiPopup.add(new LazyFindIssuesAction(proj, kpName));
-                            kenaiPopup.add(new LazyNewIssuesAction(proj, kpName));
-                        }
-                    } else {
-                        JMenuItem issuesNAItem = new JMenuItem(NbBundle.getMessage(KenaiPopupMenu.class, "LBL_NA_SERVICES"));
-                        issuesNAItem.setEnabled(false);
-                        issuesNAItem.setVisible(true);
-                        kenaiPopup.add(issuesNAItem);
-                    }
-                    kenaiPopup.addSeparator();
-                    kenaiPopup.add(new LazyOpenKenaiProjectAction(kpName));
-                }
-            } catch (KenaiException ex) {
-                Exceptions.printStackTrace(ex);
+                kenaiPopup.add(versioning);
+            } else {
+                kenaiPopup.setVisible(false);
             }
             return kenaiPopup;
         }
 
-        private boolean isDesiredAction(Action action) {
-            final String[] DESIRED_ACTIONS = {"commit", "update"}; //NOI18N
-            String correctedName = ((String)action.getValue(Action.NAME)).replaceAll("[&.]", "").toLowerCase(); //NOI18N
-            return Arrays.asList(DESIRED_ACTIONS).contains(correctedName);
-        }
-
         private JComponent[] createVersioningSystemItems(VersioningSystem owner, Node[] nodes) {
-            JComponent[] items = versioningItemMap.get(owner);
-            if (items != null) {
-                return items;
-            }
             VCSAnnotator an = owner.getVCSAnnotator();
-            if (an == null) {
-                return null;
-            }
+            if (an == null) return null;
             VCSContext ctx = VCSContext.forNodes(nodes);
-            Action[] actions = an.getActions(ctx, VCSAnnotator.ActionDestination.MainMenu);
-            items = new JComponent[MAX_VERSIONING_ITEMS];
+            Action [] actions = an.getActions(ctx, VCSAnnotator.ActionDestination.PopupMenu);
+            JComponent [] items = new JComponent[actions.length];
             int i = 0;
             for (Action action : actions) {
                 if (action != null) {
-                    if (!isDesiredAction(action)) {
-                        continue;
-                    }
                     JMenuItem item = createmenuItem(action);
                     items[i++] = item;
-                    if (i == MAX_VERSIONING_ITEMS) {
-                        break;
-                    }
+                } else {
+                    items[i++] = createJSeparator();
                 }
             }
-            /* XXX #176013
-            versioningItemMap.put(owner, items);
-            */
             return items;
+        }
+
+        public JSeparator createJSeparator() {
+            JMenu menu = new JMenu();
+            menu.addSeparator();
+            return (JSeparator)menu.getPopupMenu().getComponent(0);
         }
 
         private JMenuItem createmenuItem(Action action) {
@@ -209,7 +180,6 @@ public class KenaiPopupMenu extends CookieAction {
             if (action instanceof SystemAction) {
                 final SystemAction sa = (SystemAction) action;
                 item = new JMenuItem(new AbstractAction(sa.getName()) {
-
                     public void actionPerformed(ActionEvent e) {
                         sa.actionPerformed(e);
                     }
@@ -225,7 +195,7 @@ public class KenaiPopupMenu extends CookieAction {
             JMenu kenaiPopup = new JMenu(); //NOI18N
             kenaiPopup.setVisible(false);
             if (proj == null || !isKenaiProject(proj) || getActivatedNodes().length > 1) { // hide for non-Kenai projects
-                if (repoForProjCache.get(proj) == null && getActivatedNodes().length == 1) {
+                if (repoForProjCache.get(proj) == null && getActivatedNodes().length == 1) { // start caching request, show dummy item...
                     final JMenu dummy = new JMenu(NbBundle.getMessage(KenaiPopupMenu.class, "LBL_CHECKING")); //NOI18N
                     dummy.setVisible(true);
                     dummy.setEnabled(false);
@@ -233,8 +203,8 @@ public class KenaiPopupMenu extends CookieAction {
 
                         public void run() {
                             String s = (String) proj.getProjectDirectory().getAttribute("ProvidedExtensions.RemoteLocation"); //NOI18N
-                            if (s == null) {
-                                repoForProjCache.put(proj, ""); // null cannot be used - project with no repo is null, "" is to indicate I already checked this one...
+                            if (s == null || KenaiProject.getNameForRepository(s) == null) {
+                                repoForProjCache.put(proj, ""); //NOI18N null cannot be used - project with no repo is null, "" is to indicate I already checked this one...
                                 dummy.setVisible(false);
                             } else {
                                 repoForProjCache.put(proj, s);
@@ -244,12 +214,13 @@ public class KenaiPopupMenu extends CookieAction {
 
                                     public void run() {
                                         tmp.revalidate();
-                                        dummy.setText(NbBundle.getMessage(KenaiPopupMenu.class, "KENAI_POPUP"));
+                                        dummy.setText(NbBundle.getMessage(KenaiPopupMenu.class, "KENAI_POPUP")); //NOI18N
                                         dummy.setEnabled(true);
                                         for (int i = 0; i < c.length; i++) {
                                             Component item = c[i];
                                             dummy.add(item);
                                         }
+                                        dummy.getParent().validate();
                                     }
                                 });
                             }
@@ -269,24 +240,13 @@ public class KenaiPopupMenu extends CookieAction {
             if (projRepo == null) { // repo is not cached - has to be cached on the background before
                 return false;
             }
-            if (!projRepo.equals("")) {
+            if (!projRepo.equals("")) { //NOI18N
                 return KenaiProject.getNameForRepository(projRepo) !=null;
             }
             return false;
         }
 
         public void actionPerformed(ActionEvent e) {
-        }
-
-        private boolean inDashboard(String projID) {
-            ProjectHandle[] prj = Dashboard.getDefault().getOpenProjects();
-            for (int i = 0; i < prj.length; i++) {
-                ProjectHandle ph = prj[i];
-                if (ph.getId().equals(projID)) {
-                    return true;
-                }
-            }
-            return false;
         }
 
     }
@@ -306,13 +266,22 @@ public class KenaiPopupMenu extends CookieAction {
                             try {
                                 final KenaiProject kp = Kenai.getDefault().getProject(kenaiProjectUniqueName);
                                 if (kp != null) {
-                                    final ProjectHandleImpl pHandle = new ProjectHandleImpl(kp);
-                                    DashboardImpl.getInstance().addProject(pHandle, false, true);
-                                    QueryAccessor.getDefault().getFindIssueAction(pHandle).actionPerformed(e);
-                                    return;
+                                    if (kp.getFeatures(Type.ISSUES).length > 0) {
+                                        final ProjectHandleImpl pHandle = new ProjectHandleImpl(kp);
+                                        DashboardImpl.getInstance().addProject(pHandle, false, true);
+                                        QueryAccessor.getDefault().getFindIssueAction(pHandle).actionPerformed(e);
+                                        return;
+                                    } else {
+                                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(KenaiPopupMenu.class, "ERROR_ISSUETRACKER"))); //NOI18N
+                                        return;
+                                    }
                                 }
                             } catch (KenaiException e) {
-                                e.printStackTrace();
+                                String err = e.getLocalizedMessage();
+                                if (err == null) {
+                                    err = e.getCause().getLocalizedMessage();
+                                }
+                                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(KenaiPopupMenu.class, "ERROR_CONNECTION", err))); //NOI18N
                             } finally {
                                 handle.finish();
                             }
@@ -338,12 +307,22 @@ public class KenaiPopupMenu extends CookieAction {
                             try {
                                 final KenaiProject kp = Kenai.getDefault().getProject(kenaiProjectUniqueName);
                                 if (kp != null) {
-                                    final ProjectHandleImpl pHandle = new ProjectHandleImpl(kp);
-                                    DashboardImpl.getInstance().addProject(pHandle, false, true);
-                                    QueryAccessor.getDefault().getCreateIssueAction(pHandle).actionPerformed(e);
+                                    if (kp.getFeatures(Type.ISSUES).length > 0) {
+                                        final ProjectHandleImpl pHandle = new ProjectHandleImpl(kp);
+                                        DashboardImpl.getInstance().addProject(pHandle, false, true);
+                                        QueryAccessor.getDefault().getCreateIssueAction(pHandle).actionPerformed(e);
+                                        return;
+                                    } else {
+                                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(KenaiPopupMenu.class, "ERROR_ISSUETRACKER"))); //NOI18N
+                                        return;
+                                    }
                                 }
                             } catch (KenaiException e) {
-                                e.printStackTrace();
+                                String err = e.getLocalizedMessage();
+                                if (err == null) {
+                                    err = e.getCause().getLocalizedMessage();
+                                }
+                                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(KenaiPopupMenu.class, "ERROR_CONNECTION", err))); //NOI18N
                             } finally {
                                 handle.finish();
                             }
@@ -380,8 +359,12 @@ public class KenaiPopupMenu extends CookieAction {
                                     final ProjectHandleImpl pHandle = new ProjectHandleImpl(kp);
                                     DashboardImpl.getInstance().addProject(pHandle, false, true);
                                 }
-                            } catch (KenaiException ex) {
-                                Exceptions.printStackTrace(ex);
+                            } catch (KenaiException e) {
+                                String err = e.getLocalizedMessage();
+                                if (err == null) {
+                                    err = e.getCause().getLocalizedMessage();
+                                }
+                                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(KenaiPopupMenu.class, "ERROR_CONNECTION", err))); //NOI18N
                             } finally {
                                 if (handle != null) {
                                     handle.finish();
