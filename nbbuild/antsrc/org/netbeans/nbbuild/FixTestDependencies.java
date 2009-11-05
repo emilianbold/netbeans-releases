@@ -56,6 +56,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 
@@ -132,8 +134,7 @@ public class FixTestDependencies extends Task {
                 // test if project.xml contains test-deps
                 if (xml.contains("<test-dependencies>") && !testFix) {
                     // yes -> exit
-                    log("<test-dependencies> already exists.");
-                    log("update only schema version");
+                    xml = fixOpenideUtil(xml);
                     PrintStream ps = new PrintStream(projectXmlFile);
                     ps.print(xml);
                     ps.close();                  
@@ -220,7 +221,7 @@ public class FixTestDependencies extends Task {
                 resultXml.append(xml.substring(moduleDepEnd + 1, xml.length()));
                 if (!testFix) {
                    PrintStream ps = new PrintStream(projectXmlFile);
-                   ps.print(resultXml);
+                   ps.print(fixOpenideUtil(resultXml.toString()));
                    ps.close();
                 } else {
                     System.out.println(resultXml);
@@ -444,6 +445,33 @@ public class FixTestDependencies extends Task {
             retLines.add(line);
         }
         return retLines;
-    } 
+    }
+
+    private String fixOpenideUtil(String xml) {
+        Pattern l = Pattern.compile(
+                "^ *<test-dependency>[^/]*" +
+                "<code-name-base>org.openide.util.lookup</code-name-base>", Pattern.MULTILINE);
+        if (l.matcher(xml).find()) {
+            return xml;
+        }
+
+        Pattern p = Pattern.compile(
+                "^ *<test-dependency>[^/]*" +
+                "<code-name-base>org.openide.util</code-name-base>", Pattern.MULTILINE);
+
+        Matcher m = p.matcher(xml);
+        if (m.find()) {
+            final String txt = "</test-dependency>";
+            final int s = m.start();
+            int end = xml.indexOf(txt, s);
+            if (end == -1) {
+                throw new BuildException("No end of dependency " + xml);
+            }
+            final int e = end + txt.length();
+            String dep = xml.substring(s, e);
+            return xml.substring(0, s) + dep + '\n' + dep.replace("org.openide.util", "org.openide.util.lookup") + xml.substring(e);
+        }
+        return xml;
+    }
 
 }
