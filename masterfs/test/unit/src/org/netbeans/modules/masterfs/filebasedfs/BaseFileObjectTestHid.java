@@ -720,8 +720,13 @@ public class BaseFileObjectTestHid extends TestBaseHid{
     
     public void testIssue45485 () {
         assertNotNull(root);        
-        final FileObject testdir = root.getFileObject("testdir.");
+        FileObject testdir = root.getFileObject("testdir.");        
         assertNull(testdir);
+        // #176032
+        testdir = root.getFileObject(".");
+        assertNotNull(testdir);
+        testdir = root.getFileObject("..");
+        assertNotNull(testdir);
     }
     
     public void testDeleteNoCaptureExternalChanges () throws Exception {
