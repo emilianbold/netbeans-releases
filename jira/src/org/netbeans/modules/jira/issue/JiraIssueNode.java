@@ -95,11 +95,13 @@ public class JiraIssueNode extends IssueNode {
         }
         @Override
         public int compareTo(IssueProperty p) {
-            if(p == null) return 1;
+            if(p == null) {
+                return 1;
+            }
             String id = getIssue().getID();
             String pid = p.getIssue().getID();
-            int idx = id.lastIndexOf("-");
-            int pidx = pid.lastIndexOf("-");
+            int idx = id.lastIndexOf("-");      // NOI18N
+            int pidx = pid.lastIndexOf("-");    // NOI18N
 
             if(idx > -1 && pidx > -1) {
                 String projectId = id.substring(0, idx);
