@@ -535,7 +535,7 @@ public class ToolCollectionPanel extends javax.swing.JPanel implements DocumentL
         }
     }
 
-    private boolean selectCompiler(JTextField tf, Tool tool) {
+    private boolean selectCompiler(JTextField tf) {
         String seed = tfBaseDirectory.getText();
         FileChooser fileChooser = new FileChooser(ToolsPanel.getString("SELECT_TOOL_TITLE"), null, JFileChooser.FILES_ONLY, null, seed, false); // NOI18N
         int ret = fileChooser.showOpenDialog(this);
@@ -553,10 +553,7 @@ public class ToolCollectionPanel extends javax.swing.JPanel implements DocumentL
                 aPath = aPath.substring(0, aPath.length() - 4);
             }
         }
-        tf.setText(aPath);
-        tool.setPath(tf.getText());
-        manager.fireCompilerSetChange();
-        manager.fireCompilerSetModified();
+        tf.setText(aPath); // compiler set is updated by textfield's listener
         return true;
     }
 
@@ -573,7 +570,7 @@ public class ToolCollectionPanel extends javax.swing.JPanel implements DocumentL
                 aPath = aPath.substring(0, aPath.length() - 4);
             }
         }
-        tf.setText(aPath);
+        tf.setText(aPath); // compiler set is updated by textfield's listener
         return true;
     }
 
@@ -582,27 +579,51 @@ public class ToolCollectionPanel extends javax.swing.JPanel implements DocumentL
     }
 
     public void insertUpdate(DocumentEvent ev) {
-        if (!manager.isUpdatindOrChangingCompilerSet()) {
+        boolean userChange = !manager.isUpdatindOrChangingCompilerSet();
+        if (userChange) {
             manager.setChanged(true);
         }
         Document doc = ev.getDocument();
         String title = (String) doc.getProperty(Document.TitleProperty);
+        int toolKind = -1;
+        String toolPath = null;
         if (title.equals(MAKE_NAME)) {
             validateMakePathField();
+            toolKind = Tool.MakeTool;
+            toolPath = tfMakePath.getText();
         } else if (title.equals(DEBUGGER_NAME)) {
             validateGdbPathField();
+            toolKind = Tool.DebuggerTool;
+            toolPath = tfDebuggerPath.getText();
         } else if (title.equals(C_NAME)) {
             validateCPathField();
+            toolKind = Tool.CCompiler;
+            toolPath = tfCPath.getText();
         } else if (title.equals(CPP_NAME)) {
             validateCppPathField();
+            toolKind = Tool.CCCompiler;
+            toolPath = tfCppPath.getText();
         } else if (title.equals(FORTRAN_NAME)) {
             validateFortranPathField();
+            toolKind = Tool.FortranCompiler;
+            toolPath = tfFortranPath.getText();
         } else if (title.equals(ASSEMBLER_NAME)) {
             validateAsPathField();
+            toolKind = Tool.Assembler;
+            toolPath = tfAsPath.getText();
         } else if (title.equals(QMAKE_NAME)) {
             validateQMakePathField();
+            toolKind = Tool.QMakeTool;
+            toolPath = tfQMakePath.getText();
         } else if (title.equals(CMAKE_NAME)) {
             validateCMakePathField();
+            toolKind = Tool.CMakeTool;
+            toolPath = tfCMakePath.getText();
+        }
+        if (userChange && 0 <= toolKind) {
+            manager.getCurrentCompilerSet().getTool(toolKind).setPath(toolPath);
+            manager.fireCompilerSetChange();
+            manager.fireCompilerSetModified();
         }
     }
 
@@ -1173,15 +1194,15 @@ public class ToolCollectionPanel extends javax.swing.JPanel implements DocumentL
 }//GEN-LAST:event_btDebuggerBrowseActionPerformed
 
     private void btCBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btCBrowseActionPerformed
-        selectCompiler(tfCPath, manager.getCurrentCompilerSet().getTool(Tool.CCompiler));
+        selectCompiler(tfCPath);
 }//GEN-LAST:event_btCBrowseActionPerformed
 
     private void btCppBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btCppBrowseActionPerformed
-        selectCompiler(tfCppPath, manager.getCurrentCompilerSet().getTool(Tool.CCCompiler));
+        selectCompiler(tfCppPath);
 }//GEN-LAST:event_btCppBrowseActionPerformed
 
     private void btFortranBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btFortranBrowseActionPerformed
-        selectCompiler(tfFortranPath, manager.getCurrentCompilerSet().getTool(Tool.FortranCompiler));
+        selectCompiler(tfFortranPath);
 }//GEN-LAST:event_btFortranBrowseActionPerformed
 
     private void btBaseDirectoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btBaseDirectoryActionPerformed
@@ -1208,7 +1229,7 @@ public class ToolCollectionPanel extends javax.swing.JPanel implements DocumentL
     }//GEN-LAST:event_btBaseDirectoryActionPerformed
 
     private void btAsBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btAsBrowseActionPerformed
-        selectCompiler(tfAsPath, manager.getCurrentCompilerSet().getTool(Tool.Assembler));
+        selectCompiler(tfAsPath);
 }//GEN-LAST:event_btAsBrowseActionPerformed
 
     private void btQMakeBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btQMakeBrowseActionPerformed
