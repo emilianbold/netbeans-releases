@@ -340,42 +340,57 @@ public class SunStudioDataCollector
             Set<CollectedInfo> ci = EnumSet.<CollectedInfo>copyOf(collectedInfo);
             Set<DataTableMetadata> dtm = new HashSet<DataTableMetadata>();
             boolean bAttachable = true;
-
+            boolean isChanged = false;
             if (ci.contains(CollectedInfo.DEADLOCKS) || ci.contains(CollectedInfo.DATARACES)) {
-                ci.retainAll(EnumSet.of(CollectedInfo.DEADLOCKS, CollectedInfo.DATARACES));
+                isChanged = ci.retainAll(EnumSet.of(CollectedInfo.DEADLOCKS, CollectedInfo.DATARACES));
             }
+            if (!isChanged){//is we do not have THA
+                for (CollectedInfo info : collectedInfo) {
+                    ci.add(info);
 
-            for (CollectedInfo info : collectedInfo) {
-                ci.add(info);
+                    switch (info) {
+                        case FUNCTIONS_LIST:
+                            dtm.add(cpuInfoTable);
+                            break;
+                        case MEMORY:
+                            dtm.add(memInfoTable);
+                            bAttachable = false;
+                            break;
+                        case MEMSUMMARY:
+                            dtm.add(memSummaryInfoTable);
+                            bAttachable = false;
+                            break;
+                        case SYNCHRONIZATION:
+                            dtm.add(syncInfoTable);
+                            bAttachable = false;
+                            break;
+                        case SYNCSUMMARY:
+                            dtm.add(summaryInfoTable);
+                            bAttachable = false;
+                            break;
+                        case DEADLOCKS:
+                            dtm.add(deadlocksSummaryInfoTable);
+                            bAttachable = false;
+                            break;
+                        case DATARACES:
+                            dtm.add(dataracesSummaryInfoTable);
+                            bAttachable = false;
+                            break;
+                    }
+                }
+            }else{
+                for (CollectedInfo info : ci) {
+                    switch (info) {
 
-                switch (info) {
-                    case FUNCTIONS_LIST:
-                        dtm.add(cpuInfoTable);
-                        break;
-                    case MEMORY:
-                        dtm.add(memInfoTable);
-                        bAttachable = false;
-                        break;
-                    case MEMSUMMARY:
-                        dtm.add(memSummaryInfoTable);
-                        bAttachable = false;
-                        break;
-                    case SYNCHRONIZATION:
-                        dtm.add(syncInfoTable);
-                        bAttachable = false;
-                        break;
-                    case SYNCSUMMARY:
-                        dtm.add(summaryInfoTable);
-                        bAttachable = false;
-                        break;
-                    case DEADLOCKS:
-                        dtm.add(deadlocksSummaryInfoTable);
-                        bAttachable = false;
-                        break;
-                    case DATARACES:
-                        dtm.add(dataracesSummaryInfoTable);
-                        bAttachable = false;
-                        break;
+                        case DEADLOCKS:
+                            dtm.add(deadlocksSummaryInfoTable);
+                            bAttachable = false;
+                            break;
+                        case DATARACES:
+                            dtm.add(dataracesSummaryInfoTable);
+                            bAttachable = false;
+                            break;
+                    }
                 }
             }
 

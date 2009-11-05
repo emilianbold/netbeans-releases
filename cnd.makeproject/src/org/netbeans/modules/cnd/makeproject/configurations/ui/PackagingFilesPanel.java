@@ -237,7 +237,7 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
     class AddFilesButtonAction implements java.awt.event.ActionListener {
 //        private PackagingAddingFilesProgressPanel progressPanel;
 
-        private boolean cancelled = false;
+        private boolean cancelled;
 
         public void actionPerformed(java.awt.event.ActionEvent evt) {
             String seed = null;
@@ -257,7 +257,7 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
             }
             final File dir = fileChooser.getSelectedFile();
 
-
+            cancelled = false;
             JButton stopButton = new JButton(getString("PackagingAddingFilesProgressPanel.Stop.Button.text"));
             stopButton.setMnemonic(getString("PackagingAddingFilesProgressPanel.Stop.Button.text").charAt(0));
             stopButton.addActionListener(new StopButtonAction());

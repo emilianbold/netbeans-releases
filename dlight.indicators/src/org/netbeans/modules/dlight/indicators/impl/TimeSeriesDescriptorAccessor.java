@@ -36,81 +36,50 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.indicators;
+
+package org.netbeans.modules.dlight.indicators.impl;
 
 import java.awt.Color;
-import java.util.ArrayList;
 import java.util.Collection;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
-import org.netbeans.modules.dlight.indicators.impl.TimeSeriesDescriptorAccessor;
+import org.netbeans.modules.dlight.indicators.TimeSeriesDescriptor;
+import org.netbeans.modules.dlight.indicators.TimeSeriesDescriptor.Kind;
 
 /**
- * Describes a time series representation.
  *
- * @author Alexey Vladykin
+ * @author mt154047
  */
-public final class TimeSeriesDescriptor {
+abstract public class TimeSeriesDescriptorAccessor {
+private static volatile TimeSeriesDescriptorAccessor DEFAULT;
 
-    static{
-        TimeSeriesDescriptorAccessor.setDefault(new TimeSeriesDescriptorAccessorImpl());
-    }
-
-    private final Color color;
-    private final String displayName;
-    private final Kind kind;
-    private Collection<Column> columns;
-
-    public TimeSeriesDescriptor(Color color, String displayName, Kind kind) {
-        this.color = color;
-        this.displayName = displayName;
-        this.kind = kind;
-    }
-
-    public final void setSourceColumns(Collection<Column> columns){
-        this.columns = columns;
-    }
-
-    private Color getColor() {
-        return color;
-    }
-
-    private String getDisplayName() {
-        return displayName;
-    }
-
-    
-
-    private Kind getKind() {
-        return kind;
-    }
-
-    public static enum Kind {
-        LINE,
-        ABS_SURFACE,
-        REL_SURFACE
-    }
-
-    private static class TimeSeriesDescriptorAccessorImpl extends TimeSeriesDescriptorAccessor{
-
-        @Override
-        public Color getColor(TimeSeriesDescriptor descriptor) {
-            return descriptor.getColor();
+    public static TimeSeriesDescriptorAccessor getDefault() {
+        TimeSeriesDescriptorAccessor a = DEFAULT;
+        if (a != null) {
+            return a;
         }
 
-        @Override
-        public String getDisplayName(TimeSeriesDescriptor descriptor) {
-            return descriptor.getDisplayName();
+        try {
+            Class.forName(TimeSeriesDescriptor.class.getName(), true, TimeSeriesDescriptor.class.getClassLoader());//
+        } catch (Exception e) {
         }
-
-        @Override
-        public Kind getKind(TimeSeriesDescriptor descriptor) {
-            return descriptor.getKind();
-        }
-
-        @Override
-        public Collection<Column> getSourceColumns(TimeSeriesDescriptor descriptor) {
-            return descriptor.columns;
-        }
-
+        return DEFAULT;
     }
+
+    public static void setDefault(TimeSeriesDescriptorAccessor accessor) {
+        if (DEFAULT != null) {
+            throw new IllegalStateException();
+        }
+        DEFAULT = accessor;
+    }
+
+    public TimeSeriesDescriptorAccessor() {
+    }
+
+    public abstract Color getColor(TimeSeriesDescriptor descriptor);
+
+    public abstract String getDisplayName(TimeSeriesDescriptor descriptor);
+
+    public abstract Kind getKind(TimeSeriesDescriptor descriptor);
+
+    public abstract Collection<Column> getSourceColumns(TimeSeriesDescriptor descriptor);
 }
