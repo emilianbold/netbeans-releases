@@ -53,6 +53,7 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.ruby.RubyPredefinedVariable;
 import org.netbeans.modules.ruby.RubyType;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.openide.util.Exceptions;
@@ -414,26 +415,26 @@ public class Call {
                             }
                         }
 
-                        String type = RubyUtils.RUBY_PREDEF_VARS_CLASSES.get(lhs);
+                        RubyType type = RubyPredefinedVariable.getType(lhs);
                          // predefined vars are instances
                         // also if it was a call to a constructor, the call is not static
                         boolean isStatic = (type == null && !containsCallToNew(lhs)) || constantExpected;
 
                         boolean isLHSConstant = RubyUtils.isValidConstantFQN(lhs);
                         if (type == null /* not predef. var */ && isLHSConstant) {
-                            type = lhs;
+                            type = RubyType.create(lhs);
                         }
 
-                        RubyType rubyType = type == null ? RubyType.createUnknown() : RubyType.create(type);
+                        RubyType rubyType = type == null ? RubyType.createUnknown() : type;
                         Call call = new Call(rubyType, lhs, isStatic, methodExpected, constantExpected);
                         call.setLHSConstant(isLHSConstant);
 
                         return call;
                     } else {
                         // try __FILE__ or __LINE__
-                        String typeS = RubyUtils.RUBY_PREDEF_VARS_CLASSES.get(lhs);
+                        RubyType typeS = RubyPredefinedVariable.getType(lhs);
 
-                        RubyType type = typeS == null ? RubyType.createUnknown() : RubyType.create(typeS);
+                        RubyType type = typeS == null ? RubyType.createUnknown() : typeS;
                         return new Call(type, lhs, false, methodExpected, constantExpected);
                     }
                 } catch (BadLocationException ble) {

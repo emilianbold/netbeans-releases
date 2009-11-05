@@ -123,6 +123,9 @@ class IssueStorage {
                 is = getDataInputStream(data);
                 ret = is.readLong();
                 return ret;
+            } catch (EOFException ex) {
+                BugtrackingManager.LOG.log(Level.SEVERE, data.getAbsolutePath(), ex);
+                return -1;
             } catch (InterruptedException ex) {
                 BugtrackingManager.LOG.log(Level.WARNING, null, ex);
                 IOException ioe = new IOException(ex.getMessage());
@@ -194,7 +197,7 @@ class IssueStorage {
         assert !SwingUtilities.isEventDispatchThread() : "should not access the issue storage in awt"; // NOI18N
         BugtrackingManager.LOG.log(Level.FINE, "start reading issue {0} - {1}", new Object[] {nameSpace, entry.getId()}); // NOI18N
         DataInputStream is = null;
-        try {          
+        try {
             is = getIssueInputStream(getNameSpaceFolder(nameSpace), entry.getId());
             if(is == null) {
                 return;
@@ -267,7 +270,7 @@ class IssueStorage {
 
     long getQueryTimestamp(String nameSpace, String name) {
         File folder = getNameSpaceFolder(nameSpace);
-        File file = new File(folder, encode(name) + QUERY_SUFIX);
+        File file = new File(folder, TextUtils.encodeURL(name) + QUERY_SUFIX);
         return file.lastModified();
     }
 
@@ -324,11 +327,11 @@ class IssueStorage {
         BugtrackingManager.LOG.log(Level.FINE, "start removing query {0} - {1}", new Object[] {nameSpace, queryName}); // NOI18N
         try {
             File folder = getNameSpaceFolder(nameSpace);
-            File query = new File(folder, encode(queryName) + QUERY_SUFIX);
+            File query = new File(folder, TextUtils.encodeURL(queryName) + QUERY_SUFIX);
             if(query.exists()) {
                 BugtrackingUtil.deleteRecursively(query);
             }
-            File queryArchived = new File(folder, encode(queryName) + QUERY_ARCHIVED_SUFIX);
+            File queryArchived = new File(folder, TextUtils.encodeURL(queryName) + QUERY_ARCHIVED_SUFIX);
             if(queryArchived.exists()) {
                 BugtrackingUtil.deleteRecursively(queryArchived);
             }
@@ -590,7 +593,7 @@ class IssueStorage {
     }
 
     private File getNameSpaceFolder(String url) {
-        File folder = new File(storage, encode(url));
+        File folder = new File(storage, TextUtils.encodeURL(url));
         if(!folder.exists()) {
             folder.mkdirs();
         }
@@ -598,44 +601,13 @@ class IssueStorage {
     }
 
     private DataOutputStream getQueryOutputStream(File folder, String queryName, boolean archived) throws IOException, InterruptedException {
-        File f = new File(folder, encode(queryName) + (archived ? QUERY_ARCHIVED_SUFIX : QUERY_SUFIX));
+        File f = new File(folder, TextUtils.encodeURL(queryName) + (archived ? QUERY_ARCHIVED_SUFIX : QUERY_SUFIX));
         return getDataOutputStream(f, false);
     }
 
     private DataInputStream getQueryInputStream(File folder, String queryName, boolean archived) throws IOException, InterruptedException {
-        File f = new File(folder, encode(queryName) + (archived ? QUERY_ARCHIVED_SUFIX : QUERY_SUFIX));
+        File f = new File(folder, TextUtils.encodeURL(queryName) + (archived ? QUERY_ARCHIVED_SUFIX : QUERY_SUFIX));
         if(!f.exists()) return null;
         return getDataInputStream(f);
     }
-
-    /**
-     * Encodes URI by encoding to %XX escape sequences.
-     *
-     * @param url url to decode
-     * @return decoded url
-     */
-    private String encode(String url) {
-        if (url == null) return null;
-        StringBuffer sb = new StringBuffer(url.length());
-
-        for (int i = 0; i < url.length(); i++) {
-            char c = url.charAt(i);
-            if (!isAlowedChar(c)) {
-                sb.append('%');                                                 // NOI18N
-                sb.append(Integer.toHexString(c).toUpperCase());
-            } else {
-                sb.append(c);
-            }
-        }
-        return sb.toString();
-    }
-
-    private static boolean isAlowedChar(char c) {
-        return c >= '0' && c <= '9' ||                                          // NOI18N
-               c >= 'A' && c <= 'Z' ||                                          // NOI18N
-               c >= 'a' && c <= 'z' ||                                          // NOI18N
-               c == '.' ||                                                      // NOI18N
-               c == '_';                                                        // NOI18N
-    }
-
 }

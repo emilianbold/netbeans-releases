@@ -43,10 +43,10 @@ import java.util.Map;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
-import org.netbeans.modules.cnd.remote.server.RemoteServerSetup;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.cnd.spi.remote.HostInfoProviderFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 
 /**
  *
@@ -74,25 +74,18 @@ public class RemoteHostInfoProviderFactory implements HostInfoProviderFactory {
 
         @Override
         public String getLibDir() {
-            String base = getHome();
-            if (base == null) {
-                return null;
+            String tmpDir;
+            try {
+                tmpDir = HostInfoUtils.getHostInfo(executionEnvironment).getTempDir();
+            } catch (Throwable ex) {
+                tmpDir = "/var/tmp"; // NOI18N
             }
-            return base + "/" + RemoteServerSetup.REMOTE_LIB_DIR; // NOI18N
+            String libDir = tmpDir + "/tools"; // NOI18N
+            return libDir;
         }
 
         private RemoteHostInfo(ExecutionEnvironment executionEnvironment) {
             this.executionEnvironment = executionEnvironment;
-        }
-
-        private String getHome() {
-            if (home == null) {
-                RemoteCommandSupport support = new RemoteCommandSupport(executionEnvironment, "pwd"); // NOI18N
-                if (support.run() == 0) {
-                    home = support.getOutput().trim();
-                }
-            }
-            return home;
         }
 
         @Override

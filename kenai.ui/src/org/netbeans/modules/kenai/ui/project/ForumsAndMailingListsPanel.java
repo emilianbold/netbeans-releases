@@ -146,7 +146,7 @@ public class ForumsAndMailingListsPanel extends javax.swing.JPanel implements Re
             innerStr = String.format("<div class=\"section\"><h2>%s</h2>", NbBundle.getMessage(ForumsAndMailingListsPanel.class, "MSG_FORUMS")); //NOI18N
             for (int i = 0; i < forums.length; i++) {
                 KenaiFeature forum = forums[i];
-                innerStr += String.format("<div class=\"item\">%s&nbsp;<a href=\"%s\">%s</a> - <i>%s</i></div>",
+                innerStr += String.format("<div class=\"item\">%s&nbsp;<a href=\"%s\">%s</a> - <i>%s</i></div>", // NOI18N
                         kenaiProjectTopComponent.linkImageHTML,
                         forum.getWebLocation(),
                         forum.getDisplayName(),
@@ -169,7 +169,7 @@ public class ForumsAndMailingListsPanel extends javax.swing.JPanel implements Re
             innerStr += String.format("<div class=\"section\"><h2>%s</h2>", NbBundle.getMessage(ForumsAndMailingListsPanel.class, "MSG_MAILING_LISTS")); //NOI18N
             for (int i = 0; i < mails.length; i++) {
                 KenaiFeature mail = mails[i];
-                innerStr += String.format("<div class=\"item\">%s&nbsp;<a href=\"%s\">%s</a> - <i>%s</i></div>",
+                innerStr += String.format("<div class=\"item\">%s&nbsp;<a href=\"%s\">%s</a> - <i>%s</i></div>", // NOI18N
                         kenaiProjectTopComponent.linkImageHTML,
                         mail.getWebLocation(),
                         mail.getDisplayName(),

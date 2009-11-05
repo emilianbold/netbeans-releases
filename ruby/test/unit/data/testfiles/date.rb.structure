@@ -1,6 +1,6 @@
 Date:CLASS:[]:ESCAPED{Date}:
-  +:METHOD:[PUBLIC]:ESCAPED{+}(PARAMETERS{ESCAPED{n}}):
-  -:METHOD:[PUBLIC]:ESCAPED{-}(PARAMETERS{ESCAPED{x}})<font color='#777777'> : ESCAPED{Fixnum, Unknown}</font>:
+  +:METHOD:[PUBLIC]:ESCAPED{+}(PARAMETERS{ESCAPED{n}})<font color='#777777'> : ESCAPED{Date}</font>:
+  -:METHOD:[PUBLIC]:ESCAPED{-}(PARAMETERS{ESCAPED{x}})<font color='#777777'> : ESCAPED{Date}</font>:
   <<:METHOD:[PUBLIC]:ESCAPED{<<}(PARAMETERS{ESCAPED{n}})<font color='#777777'> : ESCAPED{Date}</font>:
   <=>:METHOD:[PUBLIC]:ESCAPED{<=>}(PARAMETERS{ESCAPED{other}})<font color='#777777'> : ESCAPED{Fixnum, NilClass}</font>:
   ===:METHOD:[PUBLIC]:ESCAPED{===}(PARAMETERS{ESCAPED{other}})<font color='#777777'> : ESCAPED{TrueClass, FalseClass}</font>:
@@ -82,8 +82,8 @@ Date:CLASS:[]:ESCAPED{Date}:
   self:CLASS:[]:ESCAPED{self}:
   self:CLASS:[]:ESCAPED{self}:
     once:METHOD:[STATIC, PRIVATE]:ESCAPED{once}(PARAMETERS{ESCAPED{*ids}}):
-  sg:FIELD:[PRIVATE]:ESCAPED{sg}:
-  start:METHOD:[PUBLIC]:ESCAPED{start}:
+  sg:FIELD:[PRIVATE]:ESCAPED{sg}<font color='#777777'> : ESCAPED{Fixnum}</font>:
+  start:METHOD:[PUBLIC]:ESCAPED{start}<font color='#777777'> : ESCAPED{Fixnum}</font>:
   step:METHOD:[PUBLIC]:ESCAPED{step}(PARAMETERS{ESCAPED{limit}, ESCAPED{step}})<font color='#777777'> : ESCAPED{Date, Unknown}</font>:
   strptime:METHOD:[PUBLIC, STATIC]:ESCAPED{strptime}(PARAMETERS{ESCAPED{str}, ESCAPED{fmt}, ESCAPED{sg}}):
   succ:METHOD:[PUBLIC]:ESCAPED{succ}<font color='#777777'> : ESCAPED{Date}</font>:

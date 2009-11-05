@@ -43,8 +43,10 @@ package org.netbeans.modules.web.core.syntax;
 
 
 import java.awt.Toolkit;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
 import javax.servlet.jsp.tagext.TagFileInfo;
@@ -54,14 +56,17 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.UiUtils;
 import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider;
@@ -377,11 +382,26 @@ public class JspHyperlinkProvider implements HyperlinkProvider {
                         ClasspathInfo cpInfo = ClasspathInfo.create(jspSup.getFileObject());
                         JavaSource source = JavaSource.create(cpInfo, Collections.EMPTY_LIST);
 
-                        TypeElement typeElement = RunOffAWT.computeOffAWT(new RunOffAWT.Worker<TypeElement>() {
-                            public TypeElement process(CompilationInfo info) {
-                                return info.getElements().getTypeElement(className);
-                            }
-                        }, NbBundle.getMessage(JspHyperlinkProvider.class, "MSG_goto-source"), source, Phase.ELEMENTS_RESOLVED);
+                        AtomicBoolean cancel = new AtomicBoolean();
+                        Compute<TypeElement> compute = new Compute<TypeElement>(cancel,
+                                source,
+                                Phase.ELEMENTS_RESOLVED,
+                                new Worker<TypeElement>() {
+                                    public TypeElement process(CompilationInfo info) {
+                                        return info.getElements().getTypeElement(className);
+                                    }
+                                });
+
+                        ProgressUtils.runOffEventDispatchThread(compute,
+                                NbBundle.getMessage(JspHyperlinkProvider.class, "MSG_goto-source"),
+                                cancel,
+                                false);
+
+                        if(cancel.get()) {
+                            return ;
+                        }
+                        
+                        TypeElement typeElement = compute.result();
 
                         //if resolved in time limit, open it
                         if(typeElement != null) {
@@ -548,5 +568,52 @@ public class JspHyperlinkProvider implements HyperlinkProvider {
         StatusDisplayer.getDefault().setStatusText(msg);
         Toolkit.getDefaultToolkit().beep();
     }
-    
+
+    private static final class Compute<T> implements Runnable, Task<CompilationController> {
+
+        private final AtomicBoolean cancel;
+        private final JavaSource source;
+        private final Phase phase;
+        private final Worker<T> worker;
+        private       T result;
+
+        public Compute(AtomicBoolean cancel, JavaSource source, Phase phase, Worker<T> worker) {
+            this.cancel = cancel;
+            this.source = source;
+            this.phase = phase;
+            this.worker = worker;
+        }
+
+        public void run() {
+            try {
+                source.runUserActionTask(this, true);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+                result = null;
+            }
+        }
+
+        public void run(CompilationController parameter) throws Exception {
+            if (cancel.get()) return ;
+
+            parameter.toPhase(phase);
+
+            if (cancel.get()) return ;
+
+            T t = worker.process(parameter);
+
+            if (cancel.get()) return ;
+
+            result = t;
+        }
+
+        public T result() {
+            return result;
+        }
+
+    }
+
+    public static interface Worker<T> {
+        T process(CompilationInfo info);
+    }
 }

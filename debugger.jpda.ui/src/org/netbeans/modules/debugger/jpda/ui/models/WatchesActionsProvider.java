@@ -69,7 +69,7 @@ import org.openide.DialogDisplayer;
 public class WatchesActionsProvider implements NodeActionsProvider {
 
     
-    private static final Action NEW_WATCH_ACTION = new AbstractAction
+    static final Action NEW_WATCH_ACTION = new AbstractAction
         (NbBundle.getBundle(WatchesActionsProvider.class).getString("CTL_WatchAction_AddNew")) {
             public void actionPerformed (ActionEvent e) {
                 newWatch ();

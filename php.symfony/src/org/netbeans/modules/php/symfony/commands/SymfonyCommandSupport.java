@@ -39,7 +39,16 @@
 
 package org.netbeans.modules.php.symfony.commands;
 
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -72,7 +81,7 @@ import org.openide.windows.InputOutput;
  * @author Tomas Mysik
  */
 public final class SymfonyCommandSupport extends FrameworkCommandSupport {
-    private static final Logger LOGGER = Logger.getLogger(SymfonyCommandSupport.class.getName());
+    static final Logger LOGGER = Logger.getLogger(SymfonyCommandSupport.class.getName());
 
     static final Pattern COMMAND_PATTERN = Pattern.compile("^\\:(\\S+)\\s+(.+)$"); // NOI18N
     static final Pattern PREFIX_PATTERN = Pattern.compile("^(\\w+)$"); // NOI18N
@@ -93,6 +102,37 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
         String displayName = getOutputTitle(commandDescriptor);
         ExecutionService service = ExecutionService.newService(callable, descriptor, displayName);
         service.run();
+    }
+
+    public File redirectScriptOutput(String command, String... arguments) {
+        ExternalProcessBuilder processBuilder = createSilentCommand(command, arguments);
+        assert processBuilder != null;
+
+        File output = null;
+        try {
+            final RedirectOutputProcessor inputProcessor = new RedirectOutputProcessor();
+            ExecutionDescriptor executionDescriptor = new ExecutionDescriptor().inputOutput(InputOutput.NULL).outProcessorFactory(
+                    new ExecutionDescriptor.InputProcessorFactory() {
+                        public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+                            return inputProcessor;
+                        }
+                    }
+            );
+            ExecutionService service = ExecutionService.newService(processBuilder, executionDescriptor, "output redirect for: " + getOutputTitle(command, arguments)); // NOI18N
+            Future<Integer> task = service.run();
+            try {
+                if (task.get().intValue() == 0) {
+                    output = inputProcessor.getOutputFile();
+                }
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            } catch (ExecutionException ex) {
+                UiUtils.processExecutionException(ex, SymfonyScript.getOptionsSubPath());
+            }
+        } catch (IOException exc) {
+            LOGGER.log(Level.WARNING, null, exc);
+        }
+        return output;
     }
 
     @Override
@@ -130,6 +170,12 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
 
     @Override
     protected List<FrameworkCommand> getFrameworkCommandsInternal() {
+
+        List<FrameworkCommand> freshCommands = getFrameworkCommandsInternalXml();
+        if (freshCommands != null) {
+            return freshCommands;
+        }
+
         ExternalProcessBuilder processBuilder = createCommand("list"); // NOI18N
         if (processBuilder == null) {
             return null;
@@ -144,7 +190,7 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
             }
         }));
 
-        List<FrameworkCommand> freshCommands = Collections.emptyList();
+        freshCommands = Collections.emptyList();
         ExecutionService service = ExecutionService.newService(processBuilder, descriptor, "help"); // NOI18N
         Future<Integer> task = service.run();
         try {
@@ -159,9 +205,80 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
         return freshCommands;
     }
 
+    private List<FrameworkCommand> getFrameworkCommandsInternalXml() {
+        File output = redirectScriptOutput("list", "--xml"); // NOI18N
+        if (output == null) {
+            return null;
+        }
+        Reader reader;
+        try {
+            // use utf-8 always
+            reader = new BufferedReader(new InputStreamReader(new FileInputStream(output), "UTF-8")); // NOI18N
+        } catch (UnsupportedEncodingException ex) {
+            LOGGER.log(Level.WARNING, null, ex);
+            return null;
+        } catch (FileNotFoundException ex) {
+            assert false;
+            return null;
+        }
+        List<SymfonyCommandVO> commandsVO = new ArrayList<SymfonyCommandVO>();
+        SymfonyCommandsXmlParser.parse(reader, commandsVO);
+        if (commandsVO.isEmpty()) {
+            // ??? try to read them from output
+            LOGGER.info("Symfony commands from XML should be parsed");
+            return null;
+        }
+        List<FrameworkCommand> commands = new ArrayList<FrameworkCommand>(commandsVO.size());
+        for (SymfonyCommandVO command : commandsVO) {
+            commands.add(new SymfonyCommand(phpModule, command.getCommand(), command.getDescription(), command.getCommand()));
+        }
+        return commands;
+    }
+
     @Override
     protected File getPluginsDirectory() {
         return new File(FileUtil.toFile(phpModule.getSourceDirectory()), "plugins"); // NOI18N
+    }
+
+    private static class RedirectOutputProcessor implements InputProcessor {
+        private final File outputFile;
+        private final FileOutputStream fos;
+        private final BufferedOutputStream bos;
+
+        public RedirectOutputProcessor() throws IOException {
+            outputFile = File.createTempFile("nb-symfony-xml-", ".xml"); // NOI18N
+            fos = new FileOutputStream(outputFile);
+            bos = new BufferedOutputStream(fos);
+
+            outputFile.deleteOnExit();
+        }
+
+        public void processInput(char[] chars) throws IOException {
+            for (char c : chars) {
+                bos.write((byte) c);
+            }
+        }
+
+        public void reset() {
+        }
+
+        public void close() {
+            try {
+                bos.close();
+            } catch (IOException exc) {
+                LOGGER.log(Level.WARNING, null, exc);
+            } finally {
+                try {
+                    fos.close();
+                } catch (IOException exc) {
+                    LOGGER.log(Level.WARNING, null, exc);
+                }
+            }
+        }
+
+        public File getOutputFile() {
+            return outputFile;
+        }
     }
 
     class CommandsLineProcessor implements LineProcessor {

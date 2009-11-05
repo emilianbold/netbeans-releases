@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.cnd.makeproject;
 
+import java.io.IOException;
 import java.util.concurrent.CancellationException;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import java.awt.Dialog;
@@ -108,7 +109,12 @@ import org.netbeans.modules.cnd.ui.options.ToolsPanel;
 import org.netbeans.modules.cnd.ui.options.ToolsPanelModel;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.Shell;
+import org.netbeans.modules.nativeexecution.api.util.ShellValidationSupport;
+import org.netbeans.modules.nativeexecution.api.util.ShellValidationSupport.ShellValidationStatus;
+import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
@@ -123,6 +129,7 @@ import org.openide.nodes.Node;
 import org.openide.util.Cancellable;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
 import org.openide.windows.WindowManager;
 
@@ -389,7 +396,7 @@ public class MakeActionProvider implements ActionProvider {
     public final static boolean useRsync = Boolean.getBoolean("cnd.remote.useRsync");
     public static final String REMOTE_BASE_PATH = "~/NetBeansProjects/remote"; //NOI18N
 
-    public void addAction(ArrayList<ProjectActionEvent> actionEvents, String projectName, 
+    public void addAction(ArrayList<ProjectActionEvent> actionEvents, String projectName,
             MakeConfigurationDescriptor pd, MakeConfiguration conf, String command, Lookup context,
             AtomicBoolean cancelled) throws IllegalArgumentException {
 
@@ -417,336 +424,305 @@ public class MakeActionProvider implements ActionProvider {
                 if (removeInstrumentation != null && removeInstrumentation.contains(targetName)) {
                     continue;
                 }
-                addTarget(targetName, actionEvents, projectName, pd, conf, context, cancelled, validated);
+                if (!addTarget(targetName, actionEvents, projectName, pd, conf, context, cancelled, validated)) {
+                    break;
+                }
             }
         }
     }
 
     private boolean addTarget(String targetName, ArrayList<ProjectActionEvent> actionEvents, String projectName,
             MakeConfigurationDescriptor pd, MakeConfiguration conf, Lookup context, AtomicBoolean cancelled, AtomicBoolean validated) throws IllegalArgumentException {
-            ProjectActionEvent.Type actionEvent;
-            if (targetName.equals(BUILD_STEP)) {
-                actionEvent = ProjectActionEvent.Type.BUILD;
-            } else if (targetName.equals(BUILD_PACKAGE_STEP)) {
-                actionEvent = ProjectActionEvent.Type.BUILD;
-            } else if (targetName.equals(CLEAN_STEP)) {
-                actionEvent = ProjectActionEvent.Type.CLEAN;
-            } else if (targetName.equals(COMPILE_SINGLE_STEP)) {
-                actionEvent = ProjectActionEvent.Type.BUILD;
-            } else if (targetName.equals(RUN_STEP)) {
-                actionEvent = ProjectActionEvent.Type.RUN;
-            } else if (targetName.equals(RUN_SINGLE_STEP)) {
-                actionEvent = ProjectActionEvent.Type.RUN;
-            } else if (targetName.equals(DEBUG_STEP)) {
-                actionEvent = ProjectActionEvent.Type.DEBUG;
-            } else if (targetName.equals(DEBUG_STEPINTO_STEP)) {
-                actionEvent = ProjectActionEvent.Type.DEBUG_STEPINTO;
-            } else if (targetName.equals(DEBUG_LOAD_ONLY_STEP)) {
-                actionEvent = ProjectActionEvent.Type.DEBUG_LOAD_ONLY;
-            } else if (targetName.equals(CUSTOM_ACTION_STEP)) {
-                actionEvent = ProjectActionEvent.Type.CUSTOM_ACTION;
-            } else if (targetName.equals(CONFIGURE_STEP)) {
-                actionEvent = ProjectActionEvent.Type.CONFIGURE;
-            } else {
-                // All others
-                actionEvent = ProjectActionEvent.Type.RUN;
+        ProjectActionEvent.Type actionEvent;
+        if (targetName.equals(BUILD_STEP)) {
+            actionEvent = ProjectActionEvent.Type.BUILD;
+        } else if (targetName.equals(BUILD_PACKAGE_STEP)) {
+            actionEvent = ProjectActionEvent.Type.BUILD;
+        } else if (targetName.equals(CLEAN_STEP)) {
+            actionEvent = ProjectActionEvent.Type.CLEAN;
+        } else if (targetName.equals(COMPILE_SINGLE_STEP)) {
+            actionEvent = ProjectActionEvent.Type.BUILD;
+        } else if (targetName.equals(RUN_STEP)) {
+            actionEvent = ProjectActionEvent.Type.RUN;
+        } else if (targetName.equals(RUN_SINGLE_STEP)) {
+            actionEvent = ProjectActionEvent.Type.RUN;
+        } else if (targetName.equals(DEBUG_STEP)) {
+            actionEvent = ProjectActionEvent.Type.DEBUG;
+        } else if (targetName.equals(DEBUG_STEPINTO_STEP)) {
+            actionEvent = ProjectActionEvent.Type.DEBUG_STEPINTO;
+        } else if (targetName.equals(DEBUG_LOAD_ONLY_STEP)) {
+            actionEvent = ProjectActionEvent.Type.DEBUG_LOAD_ONLY;
+        } else if (targetName.equals(CUSTOM_ACTION_STEP)) {
+            actionEvent = ProjectActionEvent.Type.CUSTOM_ACTION;
+        } else if (targetName.equals(CONFIGURE_STEP)) {
+            actionEvent = ProjectActionEvent.Type.CONFIGURE;
+        } else {
+            // All others
+            actionEvent = ProjectActionEvent.Type.RUN;
+        }
+
+        if (cancelled.get()) {
+            return false; // getPlatformInfo() might be costly for remote host
+            }
+        PlatformInfo pi = conf.getPlatformInfo();
+
+        if (targetName.equals(SAVE_STEP)) {
+            // Save all files and projects
+            if (MakeOptions.getInstance().getSave()) {
+                LifecycleManager.getDefault().saveAll();
+            }
+            if (!ProjectSupport.saveAllProjects(getString("NeedToSaveAllText"))) { // NOI18N
+                return false;
             }
 
-            if (cancelled.get()) {
-                return false; // getPlatformInfo() might be costly for remote host
-            }
-            PlatformInfo pi = conf.getPlatformInfo();
-
-            if (targetName.equals(SAVE_STEP)) {
-                // Save all files and projects
-                if (MakeOptions.getInstance().getSave()) {
-                    LifecycleManager.getDefault().saveAll();
-                }
-                if (!ProjectSupport.saveAllProjects(getString("NeedToSaveAllText"))) { // NOI18N
-                    return false;
-                }
-
-                if (useRsync && !conf.getDevelopmentHost().isLocalhost()) {
-                    final String rsyncLocalPath = "rsync"; //NOI18N
-                    CommandProvider provider = Lookup.getDefault().lookup(CommandProvider.class);
-                    int result = provider.run(conf.getDevelopmentHost().getExecutionEnvironment(), "which rsync", null); //NOI18N
+            if (useRsync && !conf.getDevelopmentHost().isLocalhost()) {
+                final String rsyncLocalPath = "rsync"; //NOI18N
+                CommandProvider provider = Lookup.getDefault().lookup(CommandProvider.class);
+                int result = provider.run(conf.getDevelopmentHost().getExecutionEnvironment(), "which rsync", null); //NOI18N
                     String rsyncRemotePath = (result != 0 || provider.getOutput().indexOf(' ')>-1) ? "/opt/csw/bin/rsync" : provider.getOutput(); //NOI18N //YESCHEAT
-                    // do sync
-                    RunProfile runSyncProfile = conf.getProfile().clone(conf);
-                    // TODO: remote and local rsync paths from toolchain
-                    // TODO: real project name
-                    String lpath = project.getProjectDirectory().getNameExt();
-                    String remotePath = REMOTE_BASE_PATH + pi.separator() + lpath;
-                    //String rsyncLocalPath = HostFacadeFactory.createLocalHostFacade().findInPath("rsync");
-                    if (rsyncRemotePath == null || rsyncRemotePath.length() == 0 || rsyncLocalPath == null || rsyncLocalPath.length() == 0) {
-                        System.err.println("Rsync not fould in Toolchain: sources can not be synchronized");
-                        return false;
-                    } else {
-                        // TODO: using getName() does not suite for non-standard ssh port
-                        String rsyncArgs = " --rsh=ssh --recursive --verbose --perms --links --delete --rsync-path=" + rsyncRemotePath + //NOI18N
-                                " --exclude \"build*\" --exclude \"dist*\" --cvs-exclude . " + //NOI18N
-                                conf.getDevelopmentHost().getHostKey() + ":" + remotePath; //NOI18N
-                        runSyncProfile.setArgs(rsyncArgs);
-                        runSyncProfile.getConsoleType().setValue(RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW);
-
-                        MakeConfiguration syncConf = (MakeConfiguration) conf.clone();
-                        syncConf.setDevelopmentHost(new DevelopmentHostConfiguration(ExecutionEnvironmentFactory.getLocal())); // rsync should be ran only locally
-                        ProjectActionEvent projectActionEvent = new ProjectActionEvent(
-                                project,
-                                actionEvent,
-                                projectName + " (Sync)", // NOI18N
-                                rsyncLocalPath, // NOI18N
-                                syncConf,
-                                runSyncProfile,
-                                false);
-                        actionEvents.add(projectActionEvent);
-                    }
-                }
-            } else if (targetName.equals(RUN_STEP) || targetName.equals(DEBUG_STEP) || targetName.equals(DEBUG_STEPINTO_STEP) || targetName.equals(DEBUG_LOAD_ONLY_STEP)) {
-                if (!validateBuildSystem(pd, conf, validated.get(), cancelled)) {
+                // do sync
+                RunProfile runSyncProfile = conf.getProfile().clone(conf);
+                // TODO: remote and local rsync paths from toolchain
+                // TODO: real project name
+                String lpath = project.getProjectDirectory().getNameExt();
+                String remotePath = REMOTE_BASE_PATH + pi.separator() + lpath;
+                //String rsyncLocalPath = HostFacadeFactory.createLocalHostFacade().findInPath("rsync");
+                if (rsyncRemotePath == null || rsyncRemotePath.length() == 0 || rsyncLocalPath == null || rsyncLocalPath.length() == 0) {
+                    System.err.println("Rsync not fould in Toolchain: sources can not be synchronized");
                     return false;
-                }
-                validated.set(true);
-                if (conf.isMakefileConfiguration()) {
-                    String path;
-                    if (targetName.equals(RUN_STEP)) {
-                        path = conf.getMakefileConfiguration().getOutput().getValue();
-                        if (path.length() > 0 && !IpeUtils.isPathAbsolute(path)) {
-                            // make path relative to run working directory
-                            // path here should always be in unix style, see issue 149404
-                            path = conf.getMakefileConfiguration().getAbsOutput();
-                            path = IpeUtils.toRelativePath(conf.getProfile().getRunDirectory(), path);
-                        }
-                    } else {
-                        // Always absolute
-                        path = conf.getMakefileConfiguration().getAbsOutput();
-                        path = FilePathAdaptor.normalize(path);
-                    }
+                } else {
+                    // TODO: using getName() does not suite for non-standard ssh port
+                    String rsyncArgs = " --rsh=ssh --recursive --verbose --perms --links --delete --rsync-path=" + rsyncRemotePath + //NOI18N
+                            " --exclude \"build*\" --exclude \"dist*\" --cvs-exclude . " + //NOI18N
+                            conf.getDevelopmentHost().getHostKey() + ":" + remotePath; //NOI18N
+                    runSyncProfile.setArgs(rsyncArgs);
+                    runSyncProfile.getConsoleType().setValue(RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW);
+
+                    MakeConfiguration syncConf = (MakeConfiguration) conf.clone();
+                    syncConf.setDevelopmentHost(new DevelopmentHostConfiguration(ExecutionEnvironmentFactory.getLocal())); // rsync should be ran only locally
                     ProjectActionEvent projectActionEvent = new ProjectActionEvent(
                             project,
                             actionEvent,
-                            getActionName(projectName, targetName, conf),
-                            path,
-                            conf,
-                            null,
+                            projectName + " (Sync)", // NOI18N
+                            rsyncLocalPath, // NOI18N
+                            syncConf,
+                            runSyncProfile,
                             false);
                     actionEvents.add(projectActionEvent);
-                    RunDialogPanel.addElementToExecutablePicklist(path);
-                } else if (conf.isLibraryConfiguration()) {
-                    // Should never get here...
-                    assert false;
-                    return false;
-                } else if (conf.isApplicationConfiguration()) {
-                    RunProfile runProfile = null;
-                    int platform = conf.getDevelopmentHost().getBuildPlatform();
-                    if (platform == Platform.PLATFORM_WINDOWS) {
-                        // On Windows we need to add paths to dynamic libraries from subprojects to PATH
-                        runProfile = conf.getProfile().clone(conf);
-                        Set<String> subProjectOutputLocations = conf.getSubProjectOutputLocations();
-                        String path = ""; // NOI18N
-                        // Add paths from subprojetcs
-                        Iterator<String> iter = subProjectOutputLocations.iterator();
-                        while (iter.hasNext()) {
-                            String location = FilePathAdaptor.naturalize(iter.next());
-                            path = location + ";" + path; // NOI18N
-                        }
-                        // Add paths from -L option
-                        List<String> list = conf.getLinkerConfiguration().getAdditionalLibs().getValue();
-                        iter = list.iterator();
-                        while (iter.hasNext()) {
-                            String location = FilePathAdaptor.naturalize(iter.next());
-                            path = location + ";" + path; // NOI18N
-                        }
-                        String userPath = runProfile.getEnvironment().getenv(pi.getPathName());
-                        if (userPath == null) {
-                                if (cancelled.get()) {
-                                    return false; // getEnv() might be costly for remote host
-                                }
-                            userPath = HostInfoProvider.getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get(pi.getPathName());
-                        }
-                        path = path + ";" + userPath; // NOI18N
-                        runProfile.getEnvironment().putenv(pi.getPathName(), path);
-                    } else if (platform == Platform.PLATFORM_MACOSX) {
-                        // On Mac OS X we need to add paths to dynamic libraries from subprojects to DYLD_LIBRARY_PATH
-                        StringBuilder path = new StringBuilder();
-                        Set<String> subProjectOutputLocations = conf.getSubProjectOutputLocations();
-                        // Add paths from subprojetcs
-                        Iterator<String> iter = subProjectOutputLocations.iterator();
-                        while (iter.hasNext()) {
-                            String location = FilePathAdaptor.naturalize(iter.next());
-                            if (path.length() > 0) {
-                                path.append(":"); // NOI18N
-                            }
-                            path.append(location);
-                        }
-                        // Add paths from -L option
-                        List<String> list = conf.getLinkerConfiguration().getAdditionalLibs().getValue();
-                        iter = list.iterator();
-                        while (iter.hasNext()) {
-                            String location = FilePathAdaptor.naturalize(iter.next());
-                            if (path.length() > 0) {
-                                path.append(":"); // NOI18N
-                            }
-                            path.append(location);
-                        }
-                        if (path.length() > 0) {
-                            runProfile = conf.getProfile().clone(conf);
-                            String extPath = runProfile.getEnvironment().getenv("DYLD_LIBRARY_PATH"); // NOI18N
-                            if (extPath == null) {
-                                if (cancelled.get()) {
-                                    return false; // getEnv() might be costly for remote host
-                                }
-                                extPath = HostInfoProvider.getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get("DYLD_LIBRARY_PATH"); // NOI18N
-                            }
-                            if (extPath != null) {
-                                path.append(":" + extPath); // NOI18N
-                            }
-                            runProfile.getEnvironment().putenv("DYLD_LIBRARY_PATH", path.toString()); // NOI18N
-                        }
-                    } else if (platform == Platform.PLATFORM_SOLARIS_INTEL ||
-                            platform == Platform.PLATFORM_SOLARIS_SPARC ||
-                            platform == Platform.PLATFORM_LINUX) {
-                        // Add paths from -L option
-                        StringBuilder path = new StringBuilder();
-                        List<String> list = conf.getLinkerConfiguration().getAdditionalLibs().getValue();
-                        Iterator<String> iter = list.iterator();
-                        while (iter.hasNext()) {
-                            String location = FilePathAdaptor.naturalize(iter.next());
-                            if (path.length() > 0) {
-                                path.append(":"); // NOI18N
-                            }
-                            path.append(location);
-                        }
-                        if (path.length() > 0) {
-                            runProfile = conf.getProfile().clone(conf);
-                            String extPath = runProfile.getEnvironment().getenv("LD_LIBRARY_PATH"); // NOI18N
-                            if (extPath == null) {
-                                if (cancelled.get()) {
-                                    return false; // getEnv() might be costly for remote host
-                                }
-                                extPath = HostInfoProvider.getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get("LD_LIBRARY_PATH"); // NOI18N
-                            }
-                            if (extPath != null) {
-                                path.append(":" + extPath); // NOI18N
-                            }
-                            runProfile.getEnvironment().putenv("LD_LIBRARY_PATH", path.toString()); // NOI18N
-                        }
+                }
+            }
+        } else if (targetName.equals(RUN_STEP) || targetName.equals(DEBUG_STEP) || targetName.equals(DEBUG_STEPINTO_STEP) || targetName.equals(DEBUG_LOAD_ONLY_STEP)) {
+//            if (!validateBuildSystem(pd, conf, validated.get(), cancelled)) {
+//                return false;
+//            }
+            validated.set(true);
+            if (conf.isMakefileConfiguration()) {
+                String path;
+                if (targetName.equals(RUN_STEP)) {
+                    path = conf.getMakefileConfiguration().getOutput().getValue();
+                    if (path.length() > 0 && !IpeUtils.isPathAbsolute(path)) {
+                        // make path relative to run working directory
+                        // path here should always be in unix style, see issue 149404
+                        path = conf.getMakefileConfiguration().getAbsOutput();
+                        path = IpeUtils.toRelativePath(conf.getProfile().getRunDirectory(), path);
                     }
-
-                    if (platform == Platform.PLATFORM_MACOSX ||
-                            platform == Platform.PLATFORM_SOLARIS_INTEL ||
-                            platform == Platform.PLATFORM_SOLARIS_SPARC ||
-                            platform == Platform.PLATFORM_LINUX) {
-                        // Make sure DISPLAY variable has been set
+                } else {
+                    // Always absolute
+                    path = conf.getMakefileConfiguration().getAbsOutput();
+                    path = FilePathAdaptor.normalize(path);
+                }
+                ProjectActionEvent projectActionEvent = new ProjectActionEvent(
+                        project,
+                        actionEvent,
+                        getActionName(projectName, targetName, conf),
+                        path,
+                        conf,
+                        null,
+                        false);
+                actionEvents.add(projectActionEvent);
+                RunDialogPanel.addElementToExecutablePicklist(path);
+            } else if (conf.isLibraryConfiguration()) {
+                // Should never get here...
+                assert false;
+                return false;
+            } else if (conf.isApplicationConfiguration()) {
+                RunProfile runProfile = null;
+                int platform = conf.getDevelopmentHost().getBuildPlatform();
+                if (platform == Platform.PLATFORM_WINDOWS) {
+                    // On Windows we need to add paths to dynamic libraries from subprojects to PATH
+                    runProfile = conf.getProfile().clone(conf);
+                    Set<String> subProjectOutputLocations = conf.getSubProjectOutputLocations();
+                    String path = ""; // NOI18N
+                    // Add paths from subprojetcs
+                    Iterator<String> iter = subProjectOutputLocations.iterator();
+                    while (iter.hasNext()) {
+                        String location = FilePathAdaptor.naturalize(iter.next());
+                        path = location + ";" + path; // NOI18N
+                        }
+                    // Add paths from -L option
+                    List<String> list = conf.getLinkerConfiguration().getAdditionalLibs().getValue();
+                    iter = list.iterator();
+                    while (iter.hasNext()) {
+                        String location = FilePathAdaptor.naturalize(iter.next());
+                        path = location + ";" + path; // NOI18N
+                        }
+                    String userPath = runProfile.getEnvironment().getenv(pi.getPathName());
+                    if (userPath == null) {
                         if (cancelled.get()) {
                             return false; // getEnv() might be costly for remote host
                         }
-                        if (conf.getDevelopmentHost().getExecutionEnvironment().isLocal() &&
-                                HostInfoProvider.getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get("DISPLAY") == null && // NOI18N
-                                conf.getProfile().getEnvironment().getenv("DISPLAY") == null) { // NOI18N
-                            // DISPLAY hasn't been set
-                            if (runProfile == null) {
-                                runProfile = conf.getProfile().clone(conf);
+                        userPath = HostInfoProvider.getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get(pi.getPathName());
+                    }
+                    path = path + ";" + userPath; // NOI18N
+                    runProfile.getEnvironment().putenv(pi.getPathName(), path);
+                } else if (platform == Platform.PLATFORM_MACOSX) {
+                    // On Mac OS X we need to add paths to dynamic libraries from subprojects to DYLD_LIBRARY_PATH
+                    StringBuilder path = new StringBuilder();
+                    Set<String> subProjectOutputLocations = conf.getSubProjectOutputLocations();
+                    // Add paths from subprojetcs
+                    Iterator<String> iter = subProjectOutputLocations.iterator();
+                    while (iter.hasNext()) {
+                        String location = FilePathAdaptor.naturalize(iter.next());
+                        if (path.length() > 0) {
+                            path.append(":"); // NOI18N
                             }
-                            runProfile.getEnvironment().putenv("DISPLAY", ":0.0"); // NOI18N
-                        }
+                        path.append(location);
                     }
+                    // Add paths from -L option
+                    List<String> list = conf.getLinkerConfiguration().getAdditionalLibs().getValue();
+                    iter = list.iterator();
+                    while (iter.hasNext()) {
+                        String location = FilePathAdaptor.naturalize(iter.next());
+                        if (path.length() > 0) {
+                            path.append(":"); // NOI18N
+                            }
+                        path.append(location);
+                    }
+                    if (path.length() > 0) {
+                        runProfile = conf.getProfile().clone(conf);
+                        String extPath = runProfile.getEnvironment().getenv("DYLD_LIBRARY_PATH"); // NOI18N
+                        if (extPath == null) {
+                            if (cancelled.get()) {
+                                return false; // getEnv() might be costly for remote host
+                                }
+                            extPath = HostInfoProvider.getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get("DYLD_LIBRARY_PATH"); // NOI18N
+                            }
+                        if (extPath != null) {
+                            path.append(":" + extPath); // NOI18N
+                            }
+                        runProfile.getEnvironment().putenv("DYLD_LIBRARY_PATH", path.toString()); // NOI18N
+                        }
+                } else if (platform == Platform.PLATFORM_SOLARIS_INTEL ||
+                        platform == Platform.PLATFORM_SOLARIS_SPARC ||
+                        platform == Platform.PLATFORM_LINUX) {
+                    // Add paths from -L option
+                    StringBuilder path = new StringBuilder();
+                    List<String> list = conf.getLinkerConfiguration().getAdditionalLibs().getValue();
+                    Iterator<String> iter = list.iterator();
+                    while (iter.hasNext()) {
+                        String location = FilePathAdaptor.naturalize(iter.next());
+                        if (path.length() > 0) {
+                            path.append(":"); // NOI18N
+                            }
+                        path.append(location);
+                    }
+                    if (path.length() > 0) {
+                        runProfile = conf.getProfile().clone(conf);
+                        String extPath = runProfile.getEnvironment().getenv("LD_LIBRARY_PATH"); // NOI18N
+                        if (extPath == null) {
+                            if (cancelled.get()) {
+                                return false; // getEnv() might be costly for remote host
+                                }
+                            extPath = HostInfoProvider.getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get("LD_LIBRARY_PATH"); // NOI18N
+                            }
+                        if (extPath != null) {
+                            path.append(":" + extPath); // NOI18N
+                            }
+                        runProfile.getEnvironment().putenv("LD_LIBRARY_PATH", path.toString()); // NOI18N
+                        }
+                }
 
-                    MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
-                    String path;
-                    if (targetName.equals(RUN_STEP)) {
-                        // naturalize if relative
-                        path = makeArtifact.getOutput();
-                        //TODO: we also need remote aware IpeUtils..........
-                        if (!IpeUtils.isPathAbsolute(path)) {
-                            // make path relative to run working directory
-                            path = makeArtifact.getWorkingDirectory() + "/" + path; // NOI18N
-                            path = FilePathAdaptor.naturalize(path);
-                            path = IpeUtils.toRelativePath(conf.getProfile().getRunDirectory(), path);
-                            path = FilePathAdaptor.naturalize(path);
+                if (platform == Platform.PLATFORM_MACOSX ||
+                        platform == Platform.PLATFORM_SOLARIS_INTEL ||
+                        platform == Platform.PLATFORM_SOLARIS_SPARC ||
+                        platform == Platform.PLATFORM_LINUX) {
+                    // Make sure DISPLAY variable has been set
+                    if (cancelled.get()) {
+                        return false; // getEnv() might be costly for remote host
                         }
-                    } else {
-                        // Always absolute
-                        path = IpeUtils.toAbsolutePath(conf.getBaseDir(), makeArtifact.getOutput());
+                    if (conf.getDevelopmentHost().getExecutionEnvironment().isLocal() &&
+                            HostInfoProvider.getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get("DISPLAY") == null && // NOI18N
+                            conf.getProfile().getEnvironment().getenv("DISPLAY") == null) { // NOI18N
+                        // DISPLAY hasn't been set
+                        if (runProfile == null) {
+                            runProfile = conf.getProfile().clone(conf);
+                        }
+                        runProfile.getEnvironment().putenv("DISPLAY", ":0.0"); // NOI18N
+                        }
+                }
+
+                MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
+                String path;
+                if (targetName.equals(RUN_STEP)) {
+                    // naturalize if relative
+                    path = makeArtifact.getOutput();
+                    //TODO: we also need remote aware IpeUtils..........
+                    if (!IpeUtils.isPathAbsolute(path)) {
+                        // make path relative to run working directory
+                        path = makeArtifact.getWorkingDirectory() + "/" + path; // NOI18N
+                        path = FilePathAdaptor.naturalize(path);
+                        path = IpeUtils.toRelativePath(conf.getProfile().getRunDirectory(), path);
+                        path = FilePathAdaptor.naturalize(path);
                     }
-                    ProjectActionEvent projectActionEvent = new ProjectActionEvent(
-                            project,
-                            actionEvent,
-                            getActionName(projectName, targetName, conf),
-                            path,
-                            conf,
-                            runProfile,
-                            false);
-                    actionEvents.add(projectActionEvent);
-                    RunDialogPanel.addElementToExecutablePicklist(path);
                 } else {
-                    assert false;
+                    // Always absolute
+                    path = IpeUtils.toAbsolutePath(conf.getBaseDir(), makeArtifact.getOutput());
                 }
-            } else if (targetName.equals(RUN_SINGLE_STEP) || targetName.equals(DEBUG_SINGLE_STEP)) {
-                // FIXUP: not sure this is used...
-                if (conf.isMakefileConfiguration()) {
-                    DataObject d = context.lookup(DataObject.class);
-                    String path = FileUtil.toFile(d.getPrimaryFile()).getPath();
-                    ProjectActionEvent projectActionEvent = new ProjectActionEvent(
-                            project,
-                            actionEvent,
-                            getActionName(projectName, RUN_STEP, conf),
-                            path,
-                            conf,
-                            null,
-                            false);
-                    actionEvents.add(projectActionEvent);
-                    RunDialogPanel.addElementToExecutablePicklist(path);
-                } else {
-                    assert false;
+                ProjectActionEvent projectActionEvent = new ProjectActionEvent(
+                        project,
+                        actionEvent,
+                        getActionName(projectName, targetName, conf),
+                        path,
+                        conf,
+                        runProfile,
+                        false);
+                actionEvents.add(projectActionEvent);
+                RunDialogPanel.addElementToExecutablePicklist(path);
+            } else {
+                assert false;
+            }
+        } else if (targetName.equals(RUN_SINGLE_STEP) || targetName.equals(DEBUG_SINGLE_STEP)) {
+            // FIXUP: not sure this is used...
+            if (conf.isMakefileConfiguration()) {
+                DataObject d = context.lookup(DataObject.class);
+                String path = FileUtil.toFile(d.getPrimaryFile()).getPath();
+                ProjectActionEvent projectActionEvent = new ProjectActionEvent(
+                        project,
+                        actionEvent,
+                        getActionName(projectName, RUN_STEP, conf),
+                        path,
+                        conf,
+                        null,
+                        false);
+                actionEvents.add(projectActionEvent);
+                RunDialogPanel.addElementToExecutablePicklist(path);
+            } else {
+                assert false;
+            }
+        } else if (targetName.equals(BUILD_STEP)) {
+            if (conf.isCompileConfiguration() && !validateProject(conf)) {
+                return true;
+            }
+            if (validateBuildSystem(pd, conf, validated.get(), cancelled)) {
+                MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
+                String buildCommand = makeArtifact.getBuildCommand(getMakeCommand(pd, conf), "");
+                String args = "";
+                int index = buildCommand.indexOf(' ');
+                if (index > 0) {
+                    args = buildCommand.substring(index + 1);
+                    buildCommand = buildCommand.substring(0, index);
                 }
-            } else if (targetName.equals(BUILD_STEP)) {
-                if (conf.isCompileConfiguration() && !validateProject(conf)) {
-                    return true;
-                }
-                if (validateBuildSystem(pd, conf, validated.get(), cancelled)) {
-                    MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
-                    String buildCommand = makeArtifact.getBuildCommand(getMakeCommand(pd, conf), "");
-                    String args = "";
-                    int index = buildCommand.indexOf(' ');
-                    if (index > 0) {
-                        args = buildCommand.substring(index + 1);
-                        buildCommand = buildCommand.substring(0, index);
-                    }
-                    RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform());
-                    profile.setArgs(args);
-                    ProjectActionEvent projectActionEvent = new ProjectActionEvent(
-                            project,
-                            actionEvent,
-                            getActionName(projectName, targetName, conf),
-                            buildCommand,
-                            conf,
-                            profile,
-                            true);
-                    actionEvents.add(projectActionEvent);
-                } else {
-                    return false; // Stop here
-                }
-                validated.set(true);
-            } else if (targetName.equals(BUILD_PACKAGE_STEP)) {
-                if (!validatePackaging(conf)) {
-                    actionEvents.clear();
-                    return true;
-                }
-                String buildCommand;
-                String args;
-                if (conf.getDevelopmentHost().getBuildPlatform() == Platform.PLATFORM_WINDOWS) {
-                    buildCommand = "cmd.exe"; // NOI18N
-                    args = "/c sh "; // NOI18N
-                } else {
-                    buildCommand = "bash"; // NOI18N
-                    args = "";
-                }
-                if (conf.getPackagingConfiguration().getVerbose().getValue()) {
-                    args += " -x "; // NOI18N
-                }
-                args += "nbproject/Package-" + conf.getName() + ".bash"; // NOI18N
-                RunProfile profile = new RunProfile(conf.getBaseDir(), conf.getDevelopmentHost().getBuildPlatform());
+                RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform());
                 profile.setArgs(args);
                 ProjectActionEvent projectActionEvent = new ProjectActionEvent(
                         project,
@@ -757,146 +733,179 @@ public class MakeActionProvider implements ActionProvider {
                         profile,
                         true);
                 actionEvents.add(projectActionEvent);
-            } else if (targetName.equals(CLEAN_STEP)) {
+            } else {
+                return false; // Stop here
+                }
+            validated.set(true);
+        } else if (targetName.equals(BUILD_PACKAGE_STEP)) {
+            if (!validatePackaging(conf)) {
+                actionEvents.clear();
+                return true;
+            }
+            String buildCommand;
+            String args;
+            if (conf.getDevelopmentHost().getBuildPlatform() == Platform.PLATFORM_WINDOWS) {
+                buildCommand = "cmd.exe"; // NOI18N
+                args = "/c sh "; // NOI18N
+                } else {
+                buildCommand = "bash"; // NOI18N
+                args = "";
+            }
+            if (conf.getPackagingConfiguration().getVerbose().getValue()) {
+                args += " -x "; // NOI18N
+                }
+            args += "nbproject/Package-" + conf.getName() + ".bash"; // NOI18N
+            RunProfile profile = new RunProfile(conf.getBaseDir(), conf.getDevelopmentHost().getBuildPlatform());
+            profile.setArgs(args);
+            ProjectActionEvent projectActionEvent = new ProjectActionEvent(
+                    project,
+                    actionEvent,
+                    getActionName(projectName, targetName, conf),
+                    buildCommand,
+                    conf,
+                    profile,
+                    true);
+            actionEvents.add(projectActionEvent);
+        } else if (targetName.equals(CLEAN_STEP)) {
 //                if (conf.isCompileConfiguration() && !validateProject(conf)) {
 //                    break;
 //                }
-                if (validateBuildSystem(pd, conf, validated.get(), cancelled)) {
-                    MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
-                    String buildCommand = makeArtifact.getCleanCommand(getMakeCommand(pd, conf), ""); // NOI18N
-                    String args = ""; // NOI18N
-                    int index = buildCommand.indexOf(' '); // NOI18N
-                    if (index > 0) {
-                        args = buildCommand.substring(index + 1);
-                        buildCommand = buildCommand.substring(0, index);
-                    }
-                    RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform());
-                    profile.setArgs(args);
-                    ProjectActionEvent projectActionEvent = new ProjectActionEvent(
-                            project,
-                            actionEvent,
-                            getActionName(projectName, targetName, conf),
-                            buildCommand,
-                            conf,
-                            profile,
-                            true);
-                    actionEvents.add(projectActionEvent);
-                } else {
-                    return false; // Stop here
+            if (validateBuildSystem(pd, conf, validated.get(), cancelled)) {
+                MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
+                String buildCommand = makeArtifact.getCleanCommand(getMakeCommand(pd, conf), ""); // NOI18N
+                String args = ""; // NOI18N
+                int index = buildCommand.indexOf(' '); // NOI18N
+                if (index > 0) {
+                    args = buildCommand.substring(index + 1);
+                    buildCommand = buildCommand.substring(0, index);
                 }
-                validated.set(true);
-            } else if (targetName.equals(CONFIGURE_STEP)) {
-                if (validateBuildSystem(pd, conf, validated.get(), cancelled)) {
-                    ProjectActionEvent projectActionEvent = new ProjectActionEvent(
-                            project,
-                            actionEvent,
-                            getActionName(projectName, targetName, conf),
-                            null,
-                            conf,
-                            null,
-                            true);
-                    actionEvents.add(projectActionEvent);
-                } else {
-                    return false; // Stop here
-                }
-                validated.set(true);
-            } else if (targetName.equals(COMPILE_SINGLE_STEP)) {
-                if (validateBuildSystem(pd, conf, validated.get(), cancelled)) {
-                    Iterator<? extends Node> it = context.lookupAll(Node.class).iterator();
-                    while (it.hasNext()) {
-                        Node node = it.next();
-                        Item item = getNoteItem(node); // NOI18N
-                        if (item == null) {
-                            return false;
-                        }
-                        ItemConfiguration itemConfiguration = item.getItemConfiguration(conf);//ItemConfiguration)conf.getAuxObject(ItemConfiguration.getId(item.getPath()));
-                        if (itemConfiguration == null) {
-                            return false;
-                        }
-                        if (itemConfiguration.getExcluded().getValue()) {
-                            return false;
-                        }
-                        if (itemConfiguration.getTool() == Tool.CustomTool && !itemConfiguration.getCustomToolConfiguration().getModified()) {
-                            return false;
-                        }
-                        MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
-                        String outputFile = null;
-                        if (itemConfiguration.getTool() == Tool.CCompiler) {
-                            CCompilerConfiguration cCompilerConfiguration = itemConfiguration.getCCompilerConfiguration();
-                            outputFile = cCompilerConfiguration.getOutputFile(item, conf, true);
-                        } else if (itemConfiguration.getTool() == Tool.CCCompiler) {
-                            CCCompilerConfiguration ccCompilerConfiguration = itemConfiguration.getCCCompilerConfiguration();
-                            outputFile = ccCompilerConfiguration.getOutputFile(item, conf, true);
-                        } else if (itemConfiguration.getTool() == Tool.FortranCompiler) {
-                            FortranCompilerConfiguration fortranCompilerConfiguration = itemConfiguration.getFortranCompilerConfiguration();
-                            outputFile = fortranCompilerConfiguration.getOutputFile(item, conf, true);
-                        } else if (itemConfiguration.getTool() == Tool.Assembler) {
-                            AssemblerConfiguration assemblerConfiguration = itemConfiguration.getAssemblerConfiguration();
-                            outputFile = assemblerConfiguration.getOutputFile(item, conf, true);
-                        } else if (itemConfiguration.getTool() == Tool.CustomTool) {
-                            CustomToolConfiguration customToolConfiguration = itemConfiguration.getCustomToolConfiguration();
-                            outputFile = customToolConfiguration.getOutputs().getValue();
-                        }
-                        outputFile = conf.expandMacros(outputFile);
-                        // Clean command
-                        String commandLine;
-                        String args;
-                        if (conf.getDevelopmentHost().getBuildPlatform() == Platform.PLATFORM_WINDOWS) {
-                            commandLine = "cmd.exe"; // NOI18N
-                            args = "/c rm -rf " + outputFile; // NOI18N
-                        } else {
-                            commandLine = "rm"; // NOI18N
-                            args = "-rf " + outputFile; // NOI18N
-                        }
-                        RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform());
-                        profile.setArgs(args);
-                        ProjectActionEvent projectActionEvent = new ProjectActionEvent(
-                                project,
-                                ProjectActionEvent.Type.CLEAN,
-                                getActionName(projectName, CLEAN_STEP, conf),
-                                commandLine,
-                                conf,
-                                profile,
-                                true);
-                        actionEvents.add(projectActionEvent);
-                        // Build commandLine
-                        commandLine = getMakeCommand(pd, conf) + " -f nbproject" + '/' + "Makefile-" + conf.getName() + ".mk " + outputFile; // Unix path // NOI18N
-                        args = ""; // NOI18N
-                        int index = commandLine.indexOf(' '); // NOI18N
-                        if (index > 0) {
-                            args = commandLine.substring(index + 1);
-                            commandLine = commandLine.substring(0, index);
-                        }
-                        // Add the build commandLine
-                        profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform());
-                        profile.setArgs(args);
-                        projectActionEvent = new ProjectActionEvent(
-                                project,
-                                actionEvent,
-                                getActionName(projectName, targetName, conf),
-                                commandLine,
-                                conf,
-                                profile,
-                                true);
-                        actionEvents.add(projectActionEvent);
-                    }
-                } else {
-                    return false; // Stop here
-                }
-                validated.set(true);
-            } else if (targetName.equals(CUSTOM_ACTION_STEP)) {
-                String exe = conf.getAbsoluteOutputValue();
+                RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform());
+                profile.setArgs(args);
                 ProjectActionEvent projectActionEvent = new ProjectActionEvent(
                         project,
                         actionEvent,
                         getActionName(projectName, targetName, conf),
-                        exe,
+                        buildCommand,
+                        conf,
+                        profile,
+                        true);
+                actionEvents.add(projectActionEvent);
+            } else {
+                return false; // Stop here
+                }
+            validated.set(true);
+        } else if (targetName.equals(CONFIGURE_STEP)) {
+            if (validateBuildSystem(pd, conf, validated.get(), cancelled)) {
+                ProjectActionEvent projectActionEvent = new ProjectActionEvent(
+                        project,
+                        actionEvent,
+                        getActionName(projectName, targetName, conf),
+                        null,
                         conf,
                         null,
-                        true, context);
+                        true);
                 actionEvents.add(projectActionEvent);
-            }
-            return true;
+            } else {
+                return false; // Stop here
+                }
+            validated.set(true);
+        } else if (targetName.equals(COMPILE_SINGLE_STEP)) {
+            if (validateBuildSystem(pd, conf, validated.get(), cancelled)) {
+                Iterator<? extends Node> it = context.lookupAll(Node.class).iterator();
+                while (it.hasNext()) {
+                    Node node = it.next();
+                    Item item = getNoteItem(node); // NOI18N
+                    if (item == null) {
+                        return false;
+                    }
+                    ItemConfiguration itemConfiguration = item.getItemConfiguration(conf);//ItemConfiguration)conf.getAuxObject(ItemConfiguration.getId(item.getPath()));
+                    if (itemConfiguration == null) {
+                        return false;
+                    }
+                    if (itemConfiguration.getExcluded().getValue()) {
+                        return false;
+                    }
+                    if (itemConfiguration.getTool() == Tool.CustomTool && !itemConfiguration.getCustomToolConfiguration().getModified()) {
+                        return false;
+                    }
+                    MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
+                    String outputFile = null;
+                    if (itemConfiguration.getTool() == Tool.CCompiler) {
+                        CCompilerConfiguration cCompilerConfiguration = itemConfiguration.getCCompilerConfiguration();
+                        outputFile = cCompilerConfiguration.getOutputFile(item, conf, true);
+                    } else if (itemConfiguration.getTool() == Tool.CCCompiler) {
+                        CCCompilerConfiguration ccCompilerConfiguration = itemConfiguration.getCCCompilerConfiguration();
+                        outputFile = ccCompilerConfiguration.getOutputFile(item, conf, true);
+                    } else if (itemConfiguration.getTool() == Tool.FortranCompiler) {
+                        FortranCompilerConfiguration fortranCompilerConfiguration = itemConfiguration.getFortranCompilerConfiguration();
+                        outputFile = fortranCompilerConfiguration.getOutputFile(item, conf, true);
+                    } else if (itemConfiguration.getTool() == Tool.Assembler) {
+                        AssemblerConfiguration assemblerConfiguration = itemConfiguration.getAssemblerConfiguration();
+                        outputFile = assemblerConfiguration.getOutputFile(item, conf, true);
+                    } else if (itemConfiguration.getTool() == Tool.CustomTool) {
+                        CustomToolConfiguration customToolConfiguration = itemConfiguration.getCustomToolConfiguration();
+                        outputFile = customToolConfiguration.getOutputs().getValue();
+                    }
+                    outputFile = conf.expandMacros(outputFile);
+                    // Clean command
+                    String commandLine;
+                    String args;
+                    if (conf.getDevelopmentHost().getBuildPlatform() == Platform.PLATFORM_WINDOWS) {
+                        commandLine = "cmd.exe"; // NOI18N
+                        args = "/c rm -rf " + outputFile; // NOI18N
+                        } else {
+                        commandLine = "rm"; // NOI18N
+                        args = "-rf " + outputFile; // NOI18N
+                        }
+                    RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform());
+                    profile.setArgs(args);
+                    ProjectActionEvent projectActionEvent = new ProjectActionEvent(
+                            project,
+                            ProjectActionEvent.Type.CLEAN,
+                            getActionName(projectName, CLEAN_STEP, conf),
+                            commandLine,
+                            conf,
+                            profile,
+                            true);
+                    actionEvents.add(projectActionEvent);
+                    // Build commandLine
+                    commandLine = getMakeCommand(pd, conf) + " -f nbproject" + '/' + "Makefile-" + conf.getName() + ".mk " + outputFile; // Unix path // NOI18N
+                    args = ""; // NOI18N
+                    int index = commandLine.indexOf(' '); // NOI18N
+                    if (index > 0) {
+                        args = commandLine.substring(index + 1);
+                        commandLine = commandLine.substring(0, index);
+                    }
+                    // Add the build commandLine
+                    profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform());
+                    profile.setArgs(args);
+                    projectActionEvent = new ProjectActionEvent(
+                            project,
+                            actionEvent,
+                            getActionName(projectName, targetName, conf),
+                            commandLine,
+                            conf,
+                            profile,
+                            true);
+                    actionEvents.add(projectActionEvent);
+                }
+            } else {
+                return false; // Stop here
+                }
+            validated.set(true);
+        } else if (targetName.equals(CUSTOM_ACTION_STEP)) {
+            String exe = conf.getAbsoluteOutputValue();
+            ProjectActionEvent projectActionEvent = new ProjectActionEvent(
+                    project,
+                    actionEvent,
+                    getActionName(projectName, targetName, conf),
+                    exe,
+                    conf,
+                    null,
+                    true, context);
+            actionEvents.add(projectActionEvent);
+        }
+        return true;
     }
 
     private static String getActionName(String projectName, String targetName, MakeConfiguration conf) {
@@ -1075,10 +1084,6 @@ public class MakeActionProvider implements ActionProvider {
 
     private boolean validateBuildSystem(MakeConfigurationDescriptor pd, MakeConfiguration conf,
             boolean validated, AtomicBoolean cancelled) {
-        RunProfile runProfile = (RunProfile)conf.getAuxObject(RunProfile.PROFILE_ID);
-        if (runProfile != null && !runProfile.getBuildFirst()) {
-            return true;
-        }
         CompilerSet2Configuration csconf = conf.getCompilerSet();
         ExecutionEnvironment env = ExecutionEnvironmentFactory.fromUniqueID(conf.getDevelopmentHost().getHostKey());
         ArrayList<String> errs = new ArrayList<String>();
@@ -1106,7 +1111,7 @@ public class MakeActionProvider implements ActionProvider {
                 lastValidation = false;
                 runBTA = true;
             }
-        // TODO: all validation below works, but it may be more efficient to make a verifying script
+            // TODO: all validation below works, but it may be more efficient to make a verifying script
         }
 
         // Check build/run/debug platform vs. host platform
@@ -1216,6 +1221,11 @@ public class MakeActionProvider implements ActionProvider {
         if (cancelled.get()) {
             return false;
         }
+
+        // user counting mode
+        if (cs.getCompilerFlavor().isSunStudioCompiler()) {
+            registerSunStudio(cs.getDirectory(), execEnv);
+        }
         if (runBTA) {
             if (CndUtils.isUnitTestMode()) {
                 // do not show any dialogs in unit test mode, just silently fail validation
@@ -1266,9 +1276,54 @@ public class MakeActionProvider implements ActionProvider {
         } else {
             lastValidation = true;
         }
+
+        if (lastValidation == true) {
+            if (cs.getCompilerFlavor().isCygwinCompiler()) {
+                Shell activeShell = WindowsSupport.getInstance().getActiveShell();
+                ShellValidationStatus shellValidationStatus = ShellValidationSupport.getValidationStatus(activeShell);
+                boolean isOK = shellValidationStatus.isValid() && !shellValidationStatus.hasWarnings();
+
+                if (!isOK) {
+                    String binDir = cs.getDirectory();
+
+                    if (activeShell == null || !binDir.equals(activeShell.bindir.getAbsolutePath())) {
+                        // Perhaps one that is provided is better?
+                        WindowsSupport.getInstance().init(binDir);
+                        activeShell = WindowsSupport.getInstance().getActiveShell();
+                        shellValidationStatus = ShellValidationSupport.getValidationStatus(activeShell);
+                        isOK = shellValidationStatus.isValid() && !shellValidationStatus.hasWarnings();
+                    }
+                }
+
+                if (!isOK) {
+                    lastValidation = ShellValidationSupport.confirm(shellValidationStatus);
+                }
+            }
+        }
+
         return lastValidation;
     }
 
+    private static boolean DISABLED_REGISTRATION = true; //Boolean.getBoolean("disable.sunstudio.registration");
+    private static RequestProcessor REGISTRATION = new RequestProcessor("SunStudio toolchain registration"); // NOI18N
+    private static void registerSunStudio(final String basePath, final ExecutionEnvironment execEnv) {
+        if (!DISABLED_REGISTRATION && !CndUtils.isUnitTestMode() && ConnectionManager.getInstance().isConnectedTo(execEnv)) {
+            REGISTRATION.post(new Runnable() {
+                public void run() {
+                    System.err.println("sunstudio with path " + basePath+"../prod/bin/sunstudio_registration");
+                    NativeProcessBuilder nb = NativeProcessBuilder.newProcessBuilder(execEnv).setExecutable("/var/tmp/register_sunstudio"); // NOI18N
+                    try {
+                        nb.call();
+                    } catch (IOException ex) {
+                        if (CndUtils.isDebugMode()) {
+                            ex.printStackTrace(System.err);
+                        }
+                    }
+                }
+            });
+        }
+    }
+    
     private boolean validatePackaging(MakeConfiguration conf) {
         String errormsg = null;
 
@@ -1338,14 +1393,14 @@ public class MakeActionProvider implements ActionProvider {
                 return true;
             }
         }
-        
+
         boolean result;
         if (checkExecutable) {
             result = ServerList.isValidExecutable(execEnv, path);
         } else {
             result = pi.fileExists(path) || pi.isWindows() && pi.fileExists(path+".lnk") || pi.findCommand(path) != null; // NOI18N
         }
-        
+
         if (result) {
             synchronized (map) {
                 map.put(key, Boolean.TRUE);

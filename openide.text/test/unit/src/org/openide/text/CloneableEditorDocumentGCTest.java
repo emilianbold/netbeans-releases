@@ -55,9 +55,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import javax.swing.text.Document;
-import javax.swing.text.EditorKit;
 import org.netbeans.junit.NbTestCase;
-import org.openide.text.Line.Set;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.windows.CloneableOpenSupport;
@@ -94,7 +92,6 @@ implements CloneableEditorSupport.Env {
 
     private static final Object LOCK = new Object();
     private boolean waiting;
-    private boolean isNbLikeEditorKit;
     
     public CloneableEditorDocumentGCTest(String s) {
         super(s);
@@ -160,11 +157,6 @@ implements CloneableEditorSupport.Env {
         synchronized(LOCK) {
             LOCK.notifyAll();
         }
-    }
-
-    public void testDocumentGCedOnNbLike () throws Exception {
-        isNbLikeEditorKit = true;
-        testDocumentGCed();
     }
     
     //
@@ -247,16 +239,6 @@ implements CloneableEditorSupport.Env {
     private final class CES extends CloneableEditorSupport {
         public CES (Env env, Lookup l) {
             super (env, l);
-        }
-
-        protected @Override EditorKit createEditorKit() {
-            EditorKit retValue;
-            if (isNbLikeEditorKit) {
-                retValue = new NbLikeEditorKit();
-            } else {
-                retValue = super.createEditorKit();
-            }
-            return retValue;
         }
         
         public CloneableTopComponent.Ref getRef () {

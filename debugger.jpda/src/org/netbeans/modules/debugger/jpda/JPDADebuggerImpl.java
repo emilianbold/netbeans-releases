@@ -522,14 +522,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
     public SmartSteppingFilter getSmartSteppingFilter () {
         if (smartSteppingFilter == null) {
             smartSteppingFilter = lookupProvider.lookupFirst(null, SmartSteppingFilter.class);
-            smartSteppingFilter.addExclusionPatterns (
-                (Set) Properties.getDefault ().getProperties ("debugger").
-                    getProperties ("sources").getProperties ("class_filters").
-                    getCollection (
-                        "enabled",
-                        Collections.EMPTY_SET
-                    )
-            );
         }
         return smartSteppingFilter;
     }
@@ -820,7 +812,11 @@ public class JPDADebuggerImpl extends JPDADebugger {
                     };
                 Lookup context;
                 if (var != null) {
-                    context = Lookups.fixed(csf, var, sf, stackDepth, v, methodToBeInvokedNotifier);
+                    if (v != null) {
+                        context = Lookups.fixed(csf, var, sf, stackDepth, v, methodToBeInvokedNotifier);
+                    } else {
+                        context = Lookups.fixed(csf, var, sf, stackDepth, methodToBeInvokedNotifier);
+                    }
                 } else {
                     context = Lookups.fixed(csf, sf, stackDepth, methodToBeInvokedNotifier);
                 }

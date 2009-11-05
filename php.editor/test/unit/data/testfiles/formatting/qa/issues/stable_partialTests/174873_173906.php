@@ -4,7 +4,7 @@ try {
             else{
                 return false; 
             }
-        }catch(InvalidArgumentException $e) {
+        } catch(InvalidArgumentException $e) {
             echo "an exception";
             return false; 
         }

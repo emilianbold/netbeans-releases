@@ -2,7 +2,7 @@
 
 Document 0
 Searchable Keys:
-  attribute : columns
+  attribute : columns;;Array;
   class : TableDefinition
   class-ig : tabledefinition
   field : base|PRIVATE
@@ -30,11 +30,11 @@ Searchable Keys:
   attribute : default
   attribute : limit
   attribute : name
-  attribute : null
+  attribute : null;;TrueClass;
   attribute : precision
-  attribute : primary
+  attribute : primary;;NilClass;
   attribute : scale
-  attribute : sql_type
+  attribute : sql_type;;NilClass;
   attribute : type
   class : Column
   class-ig : column

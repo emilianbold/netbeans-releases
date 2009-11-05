@@ -1456,6 +1456,9 @@ public final class WebProject implements Project, AntProjectListener {
             docBaseValue = evaluator().getProperty(WebProjectProperties.WEB_DOCBASE_DIR);
             webInf = getWebModule().getWebInf();
             webInfValue = evaluator().getProperty(WebProjectProperties.WEBINF_DIR);
+            if (resources != null) {
+                FileUtil.removeFileChangeListener(this, resources);
+            }
             resources = getWebModule().getResourceDirectory();
             buildWeb = evaluator().getProperty(WebProjectProperties.BUILD_WEB_DIR);
 
@@ -1471,7 +1474,9 @@ public final class WebProject implements Project, AntProjectListener {
                 }
             }
 
-            FileUtil.addFileChangeListener(this, resources);
+            if (resources != null) {
+                FileUtil.addFileChangeListener(this, resources);
+            }
 
             LOGGER.log(Level.FINE, "Web directory is {0}", docBaseValue);
             LOGGER.log(Level.FINE, "WEB-INF directory is {0}", webInfValue);
@@ -1490,7 +1495,9 @@ public final class WebProject implements Project, AntProjectListener {
                     webInf.getFileSystem().removeFileChangeListener(this);
                 }
             }
-            FileUtil.removeFileChangeListener(this, resources);
+            if (resources != null) {
+                FileUtil.removeFileChangeListener(this, resources);
+            }
 
             WebProject.this.evaluator().removePropertyChangeListener(this);
         }
@@ -1640,6 +1647,9 @@ public final class WebProject implements Project, AntProjectListener {
         }
 
         private boolean handleResource(FileEvent fe) {
+            if (resources == null) {
+                return false;
+            }
             FileObject resourceFo = FileUtil.toFileObject(resources);
             if (resourceFo != null
                     && (resourceFo.equals(fe.getFile()) || FileUtil.isParentOf(resourceFo, fe.getFile()))) {

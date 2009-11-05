@@ -39,78 +39,69 @@
 package org.netbeans.modules.kenai.ui;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.io.File;
 import java.text.MessageFormat;
 import java.util.Set;
 import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.kenai.api.KenaiProject;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.kenai.ui.NewKenaiProjectWizardIterator.CreatedProjectInfo;
 import org.netbeans.modules.kenai.ui.dashboard.DashboardImpl;
 import org.netbeans.modules.subversion.api.Subversion;
+import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
-import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.CookieAction;
-import org.openide.util.actions.Presenter;
+import org.openide.windows.WindowManager;
 
-public final class ShareAction extends CookieAction {
+public final class ShareAction extends AbstractAction {
 
-    protected void performAction(Node[] activatedNodes) {
-        actionPerformed(activatedNodes);
+    private static ShareAction inst = null;
+
+    private ShareAction() {
     }
 
-    protected int mode() {
-        return CookieAction.MODE_ANY;
+    public static synchronized ShareAction getDefault() {
+        if (inst == null) {
+            inst = new ShareAction();
+            inst.putValue(NAME, NbBundle.getMessage(ShareAction.class, "CTL_ShareAction"));
+        }
+        return inst;
     }
 
-    public String getName() {
-        return NbBundle.getMessage(ShareAction.class, "CTL_ShareAction");
+    public void actionPerformed(ActionEvent e) {
+        Node[] n = WindowManager.getDefault().getRegistry().getActivatedNodes();
+        if (n.length > 0) {
+            ShareAction.actionPerformed(n);
+        } else {
+            ShareAction.actionPerformed((Node []) null);
+        }
     }
 
-    protected Class[] cookieClasses() {
-        return new Class[]{Project.class, DataFolder.class};
-    }
-
-    @Override
-    protected void initialize() {
-        super.initialize();
-        // see org.openide.util.actions.SystemAction.iconResource() Javadoc for more details
-        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
-    }
-
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-
-    @Override
-    protected boolean asynchronous() {
-        return false;
-    }
-
-    static boolean isSupported(FileObject fo) {
-        String remoteLocation = (String) fo.getAttribute("ProvidedExtensions.RemoteLocation"); // NOI18N
-        return remoteLocation == null;
-    }
-
-    public static void actionPerformed(Node [] e) {
+    public static void actionPerformed(Node[] e) {
+        if (e != null) {
+            for (Node node : e) {
+                Project prj = node.getLookup().lookup(Project.class);
+                if (prj != null) {
+                    File file = FileUtil.toFile(prj.getProjectDirectory());
+                    if (VersioningSupport.getOwner(file) != null) {
+                        JOptionPane.showMessageDialog(WindowManager.getDefault().getMainWindow(),
+                                NbBundle.getMessage(ShareAction.class, "NameAndLicenseWizardPanelGUI.versioningNotSupported", ProjectUtils.getInformation(prj).getDisplayName()));
+                        return;
+                    }
+                }
+            }
+        }
         if (Subversion.isClientAvailable(true)) {
 
             WizardDescriptor wizardDescriptor = new WizardDescriptor(new NewKenaiProjectWizardIterator(e));
             // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
             wizardDescriptor.setTitleFormat(new MessageFormat("{0}")); // NOI18N
             wizardDescriptor.setTitle(NbBundle.getMessage(NewKenaiProjectAction.class,
-                    "ShareAction.dialogTitle")); // NOI18N
+                    "NewKenaiProjectAction.dialogTitle")); // NOI18N
 
             DialogDisplayer.getDefault().notify(wizardDescriptor);
 
@@ -130,46 +121,5 @@ public final class ShareAction extends CookieAction {
 
     }
 
-    @Override
-    public Action createContextAwareInstance(Lookup actionContext) {
-        return new ShareActionPresenter(actionContext);
-    }
-
-    private final class ShareActionPresenter extends AbstractAction implements Presenter.Popup {
-
-        private final Project proj;
-
-        private ShareActionPresenter(Lookup actionContext) {
-            proj = actionContext.lookup(Project.class);
-        }
-
-        private boolean isKenaiProject(Project proj) {
-            assert proj != null;
-            String projRepo = (String) proj.getProjectDirectory().getAttribute("ProvidedExtensions.RemoteLocation");
-            if (projRepo != null) {
-                return KenaiProject.getNameForRepository(projRepo)!=null;
-            }
-            return false;
-        }
-
-        public JMenuItem getPopupPresenter() {
-            JMenuItem item = new JMenuItem(NbBundle.getMessage(ShareAction.class, "CTL_ShareAction"));
-            item.addActionListener(new ActionListener() {
-
-                public void actionPerformed(ActionEvent e) {
-                    performAction(getActivatedNodes());
-                }
-            });
-            return item;
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            try {
-                ShareAction.actionPerformed(new Node [] { DataObject.find(proj.getProjectDirectory()).getNodeDelegate() });
-            } catch (DataObjectNotFoundException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-    }
 }
 

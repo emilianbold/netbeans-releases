@@ -40,17 +40,9 @@
 package org.netbeans.modules.cnd.remote.sync;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InterruptedIOException;
 import java.io.PrintWriter;
-import java.util.concurrent.ExecutionException;
-import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
-import org.netbeans.modules.cnd.api.remote.ServerList;
-import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
-import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.util.NbBundle;
 
 /**
  * A common base class for RemoteSyncWorker implementations
@@ -58,8 +50,6 @@ import org.openide.util.NbBundle;
  */
 /*package-local*/ abstract class BaseSyncWorker implements RemoteSyncWorker {
 
-    protected final File topLocalDir;
-    protected final File topDir;
     protected final File[] localDirs;
     protected final File privProjectStorageDir;
     protected final ExecutionEnvironment executionEnvironment;
@@ -69,43 +59,9 @@ import org.openide.util.NbBundle;
     public BaseSyncWorker(ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, File privProjectStorageDir, File... localDirs) {
         this.localDirs = new File[localDirs.length];
         System.arraycopy(localDirs, 0, this.localDirs, 0, localDirs.length);
-        this.topLocalDir = getTopDir(localDirs);
         this.privProjectStorageDir = privProjectStorageDir;
         this.executionEnvironment = executionEnvironment;
         this.out = out;
         this.err = err;
-        topDir = findCommonTop(localDirs);
     }
-
-    private static File getTopDir(File[] dirs) {
-        if (dirs == null || dirs.length == 0) {
-            return null;
-        }
-        if (dirs.length == 1) {
-            return dirs[0];
-        }
-        File top = dirs[0];
-        while (top != null) {
-            boolean isParent = true;
-            for (int i = 1; i < dirs.length; i++) {
-                String currPath = dirs[i].getAbsolutePath();
-                if (!currPath.startsWith(top.getAbsolutePath())) {
-                    isParent = false;
-                    break;
-                }
-            }
-            if (isParent) {
-                return top;
-            } else {
-                top = top.getParentFile();
-            }
-        }
-        return null;
-    }
-
-    private File findCommonTop(File[] dirs) {
-        // TODO: implement
-        return dirs[0];
-    }
-
 }

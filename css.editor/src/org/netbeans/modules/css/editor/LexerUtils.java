@@ -105,4 +105,30 @@ public class LexerUtils {
         }
         return null;
     }
+
+
+    /** returns top most joined html token seuence for the document at the specified offset. */
+    public static TokenSequence<CssTokenId> getJoinedTokenSequence(Document doc, int offset) {
+        TokenHierarchy th = TokenHierarchy.get(doc);
+        TokenSequence ts = th.tokenSequence();
+        ts.move(offset);
+
+        while(ts.moveNext() || ts.movePrevious()) {
+            if(ts.language() == CssTokenId.language()) {
+                return ts;
+            }
+
+            ts = ts.embeddedJoined();
+
+            if(ts == null) {
+                break;
+            }
+
+            //position the embedded ts so we can search deeper
+            ts.move(offset);
+        }
+
+        return null;
+
+    }
 }

@@ -84,6 +84,7 @@ import org.netbeans.modules.glassfish.spi.ResourceDesc;
 import org.netbeans.modules.glassfish.spi.ServerCommand;
 import org.netbeans.modules.glassfish.spi.ServerCommand.GetPropertyCommand;
 import org.netbeans.modules.glassfish.spi.ServerCommand.SetPropertyCommand;
+import org.netbeans.modules.glassfish.spi.CommandFactory;
 import org.netbeans.modules.glassfish.spi.Utils;
 
 
@@ -114,10 +115,12 @@ public class CommandRunner extends BasicTask<OperationState> {
     
     /** Has been the last access to  manager web app authorized? */
     private boolean authorized;
+    private final CommandFactory cf;
     
     
-    public CommandRunner(Map<String, String> properties, OperationStateListener... stateListener) {
+    public CommandRunner(CommandFactory cf, Map<String, String> properties, OperationStateListener... stateListener) {
         super(properties, stateListener);
+        this.cf =cf;
     }
     
     /**
@@ -255,7 +258,7 @@ public class CommandRunner extends BasicTask<OperationState> {
             String compValue = data.get(k);
 
             try {
-                SetPropertyCommand cmd = new ServerCommand.SetPropertyCommand(compName, compValue);
+                SetPropertyCommand cmd = cf.getSetPropertyCommand(compName, compValue);
                 serverCmd = cmd;
                 Future<OperationState> task = executor().submit(this);
                 OperationState state = task.get();

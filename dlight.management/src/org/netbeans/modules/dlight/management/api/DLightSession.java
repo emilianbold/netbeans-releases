@@ -99,6 +99,7 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
     private static final Logger log = DLightLogger.getLogger(DLightSession.class);
     private List<ExecutionContext> contexts = new ArrayList<ExecutionContext>();
     private List<SessionStateListener> sessionStateListeners = null;
+    private List<IndicatorDataProvider<?>> idps;
     private final List<IndicatorNotificationsListener> indicatorNotificationListeners = Collections.synchronizedList(new ArrayList<IndicatorNotificationsListener>());
     private List<DataStorage> storages = null;
     private ServiceInfoDataStorage serviceInfoDataStorage = null;
@@ -228,13 +229,13 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
                 for (ExecutionContext context : contexts) {
                     sb.append(context.getTarget().toString()).append("; "); // NOI18N
                 }
-                
+
                 targets = sb.toString();
             }
-            
+
             description = loc("DLightSession.description", String.valueOf(sessionID), targets); // NOI18N
         }
-        
+
         return description;
     }
 
@@ -265,7 +266,7 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
                 result.add(entry.getValue());
             }
         }
-        
+
         return result;
 
     }
@@ -448,6 +449,12 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
         if (!indicatorNotificationListeners.contains(l)) {
             indicatorNotificationListeners.add(l);
         }
+        if (idps == null || idps.isEmpty()) {
+            return;
+        }
+        for (IndicatorDataProvider<?> idp : idps) {
+            IndicatorDataProviderAccessor.getDefault().addIndicatorDataProviderListener(idp, l);
+        }
     }
 
     /**
@@ -514,7 +521,7 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
             //there can be the situation when IndicatorDataProvider is collector
             //and not attacheble
             List<Indicator<?>> subscribedIndicators = new ArrayList<Indicator<?>>();
-            List<IndicatorDataProvider<?>> idps = context.getDLightConfiguration().
+            idps = context.getDLightConfiguration().
                     getConfigurationOptions(false).getIndicatorDataProviders(tool);
 
             if (idps != null) {
@@ -525,7 +532,7 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
                         }
 
                         if (idp instanceof DataCollector) {
-			    DataCollector<?> dataCollector = (DataCollector<?>) idp;
+                            DataCollector<?> dataCollector = (DataCollector<?>) idp;
                             if (!collectors.contains(dataCollector)) {
                                 collectors.add(dataCollector);
                             }
@@ -910,7 +917,7 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
         isActive = b;
     }
 
-    private static String loc(String key, String ... params) {
+    private static String loc(String key, String... params) {
         return NbBundle.getMessage(DLightSession.class, key, params);
     }
 }

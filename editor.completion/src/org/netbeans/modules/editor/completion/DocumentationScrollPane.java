@@ -111,7 +111,7 @@ public class DocumentationScrollPane extends JScrollPane {
         super();
  
         // Determine and use fixed preferred size
-        documentationPreferredSize = CompletionSettings.getInstance().documentationPopupPreferredSize();
+        documentationPreferredSize = CompletionSettings.getInstance(editorComponent).documentationPopupPreferredSize();
         setPreferredSize(null); // Use the documentationPopupPreferredSize
         
         Color bgColor = new JEditorPane().getBackground();

@@ -249,6 +249,10 @@ public abstract class RemotePathMap extends PathMap {
     }
 
     public void addMapping(String localParent, String remoteParent) {
+        addMappingImpl(localParent, remoteParent);
+    }
+
+    protected void addMappingImpl(String localParent, String remoteParent) {
         CndUtils.assertNotNull(localParent, "local path shouldn't be null"); //NOI18N
         CndUtils.assertNotNull(remoteParent, "remote path shouldn't be null"); //NOI18N
         if (localParent == null || remoteParent == null) {
@@ -257,13 +261,17 @@ public abstract class RemotePathMap extends PathMap {
         synchronized( map ) {
             Map<String, String> clone = new LinkedHashMap<String, String>(map);
             clone.put(localParent,remoteParent);
-            updatePathMap(clone);
+            updatePathMapImpl(clone);
         }
     }
 
 
     // Utility
     public void updatePathMap(Map<String, String> newPathMap) {
+        updatePathMapImpl(newPathMap);
+    }
+
+    protected void updatePathMapImpl(Map<String, String> newPathMap) {
         synchronized( map ) {
             map.clear();
             StringBuilder sb = new StringBuilder();
@@ -395,7 +403,9 @@ public abstract class RemotePathMap extends PathMap {
     }
 
     private final static class FixedRemotePathMap extends RemotePathMap {
+
         private volatile String remoteBase;
+        
         private FixedRemotePathMap(ExecutionEnvironment exc) {
             super(exc);
             initRemoteBase(false);
@@ -405,7 +415,7 @@ public abstract class RemotePathMap extends PathMap {
         public void init() {
             if (!loadFromPrefs()) {
                 if (remoteBase != null) {
-                    addMapping("/", remoteBase); // NOI18N
+                    super.addMappingImpl("/", remoteBase); // NOI18N
                 }
             }
         }
@@ -444,11 +454,20 @@ public abstract class RemotePathMap extends PathMap {
             if (remoteBase == null) {
                 remoteBase = getRemoteSyncRoot(super.execEnv);
                 if (addMapping && remoteBase != null) {
-                    addMapping("/", remoteBase); // NOI18N
+                    addMappingImpl("/", remoteBase); // NOI18N
                 }
             }
         }
 
+        @Override
+        public void addMapping(String localParent, String remoteParent) {
+            CndUtils.assertTrue(false, "Should never be called for " + getClass().getSimpleName()); //NOI18N
+        }
+
+        @Override
+        public void updatePathMap(Map<String, String> newPathMap) {
+            CndUtils.assertTrue(false, "Should never be called for " + getClass().getSimpleName()); //NOI18N
+        }
     }
 
     public static String getRemoteSyncRoot(ExecutionEnvironment executionEnvironment) {

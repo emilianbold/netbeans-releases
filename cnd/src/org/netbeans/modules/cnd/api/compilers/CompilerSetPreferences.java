@@ -41,10 +41,12 @@ package org.netbeans.modules.cnd.api.compilers;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 
 /**
@@ -84,6 +86,14 @@ final class CompilerSetPreferences {
 
     static void putEnv(ExecutionEnvironment executionEnvironment, int platform){
         getPreferences().putInt(CSM + ExecutionEnvironmentFactory.toUniqueID(executionEnvironment) + SET_PLATFORM, platform);
+    }
+
+    static void clearPersistence() {
+        try {
+            getPreferences().clear();
+        } catch (BackingStoreException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     static void saveToDisk(CompilerSetManager manager) {

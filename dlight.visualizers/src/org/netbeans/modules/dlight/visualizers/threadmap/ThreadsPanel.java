@@ -1111,18 +1111,6 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         return !notificationPanel.isShowing();
     }
 
-    @Override
-    public void requestFocus() {
-        SwingUtilities.invokeLater(new Runnable() { // must be invoked lazily to override default focus of first component
-
-            public void run() {
-                if (table != null) {
-                    table.requestFocus();
-                }
-            }
-        });
-    }
-
     public void threadsMonitoringDisabled() {
         threadsMonitoringEnabled = false;
         ((CardLayout) (contentPanel.getLayout())).show(contentPanel, ENABLE_THREADS_PROFILING);

@@ -161,9 +161,19 @@ public class ProjectBridge {
                 }
             }
         }
-        makeConfigurationDescriptor.addAdditionalHeaderExtensions(extensions);
+        Set<Item> old = new HashSet<Item>();
+        for(Item item : getAllSources()) {
+            old.add(item);
+        }
+        if (makeConfigurationDescriptor.addAdditionalHeaderExtensions(extensions)) {
+            for(Item item : getAllSources()) {
+                if (!old.contains(item)) {
+                    ProjectBridge.setExclude(item,true);
+                }
+            }
+        }
     }
-    
+
     private Item findByCanonicalName(String path){
         if (canonicalItems == null) {
             canonicalItems = new HashMap<String,Item>();

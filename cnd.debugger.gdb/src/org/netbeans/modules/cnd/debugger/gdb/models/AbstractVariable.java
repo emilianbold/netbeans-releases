@@ -117,7 +117,7 @@ public abstract class AbstractVariable implements LocalVariable {
         for (Field field : fields) {
             // we only care about AbstractFields here, other implementations should care themselves
             if (field instanceof AbstractField) {
-                getDebugger().removePropertyChangeListener(GdbDebugger.PROP_VALUE_CHANGED, (AbstractField)field);
+                ((AbstractField)field).destroy();
             }
         }
         fields.clear();
@@ -959,6 +959,17 @@ public abstract class AbstractVariable implements LocalVariable {
         return getName();
     }
 
+    protected abstract void selfDestroy();
+
+    public void destroy() {
+        selfDestroy();
+        for (Field field : fields) {
+            if (field instanceof AbstractField) {
+                ((AbstractField) field).destroy();
+            }
+        }
+    }
+
     private static class AbstractField extends AbstractVariable implements Field, PropertyChangeListener {
         private AbstractVariable parent;
         private final String name;
@@ -993,6 +1004,10 @@ public abstract class AbstractVariable implements LocalVariable {
             }
             
             parent.debugger.addPropertyChangeListener(GdbDebugger.PROP_VALUE_CHANGED, this);
+        }
+        
+        protected void selfDestroy() {
+            getDebugger().removePropertyChangeListener(GdbDebugger.PROP_VALUE_CHANGED, this);
         }
 
         protected AbstractVariable getAncestor() {

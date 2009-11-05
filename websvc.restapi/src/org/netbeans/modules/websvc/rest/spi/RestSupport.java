@@ -298,14 +298,6 @@ public abstract class RestSupport {
 
     public abstract void extendBuildScripts() throws IOException;
     
-    private boolean buildExtensionInited = false;
-    public void initBuildScripts() throws IOException {
-        if (! buildExtensionInited) {
-            extendBuildScripts();
-            buildExtensionInited = true;
-        }
-        
-    }
     
     /**
      * Generates test client.  Typically RunTestClientAction would need to call 
@@ -315,7 +307,6 @@ public abstract class RestSupport {
      * @return test file object, containing token BASE_URL_TOKEN whether used or not.
      */
     public FileObject generateTestClient(File testdir) throws IOException {        
-        initBuildScripts();
         
         if (! testdir.isDirectory()) {
             FileUtil.createFolder(testdir);
@@ -569,6 +560,22 @@ public abstract class RestSupport {
             return null;
         }
         return helper.getStandardPropertyEvaluator().getProperty(name);
+    }
+
+    public void removeProjectProperties(String[] propertyNames) {
+        if (getAntProjectHelper() == null) {
+            return;
+        }
+        EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        for (String name : propertyNames) {
+            ep.remove(name);
+        }
+        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+        try {
+            ProjectManager.getDefault().saveProject(getProject());
+        } catch(IOException ioe) {
+            Logger.getLogger(this.getClass().getName()).log(Level.INFO, ioe.getLocalizedMessage(), ioe);
+        }
     }
     
     protected boolean ignorePlatformRestLibrary() {

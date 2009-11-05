@@ -42,13 +42,12 @@ package org.netbeans.modules.php.project.util;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Map;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
-import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpProjectType;
 import org.netbeans.modules.php.project.api.PhpLanguageOptions;
 import org.netbeans.modules.php.project.api.PhpLanguageOptions.PhpVersion;
@@ -56,6 +55,8 @@ import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.UploadFiles;
+import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
+import org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
@@ -69,7 +70,6 @@ import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
-import org.openide.util.NbBundle;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -110,7 +110,7 @@ public final class PhpProjectGenerator {
         AntProjectHelper helper = createProject0(projectPropertiesCopy);
 
         // usage logging
-        logUsage(helper.getProjectDirectory(), sourceDir, projectPropertiesCopy.getRunAsType(), projectPropertiesCopy.isCopySources());
+        logUsage(helper.getProjectDirectory(), sourceDir, projectPropertiesCopy.getRunAsType(), projectPropertiesCopy.isCopySources(), projectPropertiesCopy.getFrameworkExtenders());
 
         // index file
         String indexFile = projectPropertiesCopy.getIndexFile();
@@ -298,21 +298,25 @@ public final class PhpProjectGenerator {
     }
 
     // http://wiki.netbeans.org/UsageLoggingSpecification
-    private static void logUsage(FileObject projectDir, FileObject sourceDir, RunAsType runAs, Boolean copyFiles) {
+    private static void logUsage(FileObject projectDir, FileObject sourceDir, RunAsType runAs, Boolean copyFiles,
+            Map<PhpFrameworkProvider, PhpModuleExtender> frameworkExtenders) {
         assert projectDir != null;
         assert sourceDir != null;
 
-        LogRecord logRecord = new LogRecord(Level.INFO, "USG_PROJECT_CREATE_PHP"); // NOI18N
-        logRecord.setLoggerName(PhpProject.USG_LOGGER_NAME);
-        logRecord.setResourceBundle(NbBundle.getBundle(PhpProjectGenerator.class));
-        logRecord.setResourceBundleName(PhpProjectGenerator.class.getPackage().getName() + ".Bundle"); // NOI18N
-        logRecord.setParameters(new Object[] {
-            FileUtil.isParentOf(projectDir, sourceDir) ?  "EXTRA_SRC_DIR_NO" : "EXTRA_SRC_DIR_YES", // NOI18N
-            runAs != null ? runAs.name() : "", // NOI18N
-            "1", // NOI18N
-            (copyFiles != null && copyFiles == Boolean.TRUE) ? "COPY_FILES_YES" : "COPY_FILES_NO" // NOI18N
-        });
-        Logger.getLogger(PhpProject.USG_LOGGER_NAME).log(logRecord);
+        StringBuilder buffer = new StringBuilder(200);
+        for (PhpFrameworkProvider provider : frameworkExtenders.keySet()) {
+            if (buffer.length() > 0) {
+                buffer.append("|"); // NOI18N
+            }
+            buffer.append(provider.getName());
+        }
+
+        PhpProjectUtils.logUsage(PhpProjectGenerator.class, "USG_PROJECT_CREATE_PHP", Arrays.asList(
+                FileUtil.isParentOf(projectDir, sourceDir) ? "EXTRA_SRC_DIR_NO" : "EXTRA_SRC_DIR_YES", // NOI18N
+                runAs != null ? runAs.name() : "", // NOI18N
+                "1", // NOI18N
+                (copyFiles != null && copyFiles == Boolean.TRUE) ? "COPY_FILES_YES" : "COPY_FILES_NO", // NOI18N
+                buffer.toString()));
     }
 
     /**
@@ -333,6 +337,7 @@ public final class PhpProjectGenerator {
         private RemoteConfiguration remoteConfiguration;
         private String remoteDirectory;
         private PhpProjectProperties.UploadFiles uploadFiles;
+        private Map<PhpFrameworkProvider, PhpModuleExtender> frameworkExtenders; // for USAGES only
 
         public ProjectProperties() {
         }
@@ -352,6 +357,7 @@ public final class PhpProjectGenerator {
             setRemoteConfiguration(properties.remoteConfiguration);
             setRemoteDirectory(properties.remoteDirectory);
             setUploadFiles(properties.uploadFiles);
+            setFrameworkExtenders(properties.frameworkExtenders);
         }
 
         public String getName() {
@@ -528,6 +534,24 @@ public final class PhpProjectGenerator {
          */
         public ProjectProperties setUploadFiles(UploadFiles uploadFiles) {
             this.uploadFiles = uploadFiles;
+            return this;
+        }
+
+
+        public Map<PhpFrameworkProvider, PhpModuleExtender> getFrameworkExtenders() {
+            if (frameworkExtenders == null) {
+                return Collections.emptyMap();
+            }
+            return frameworkExtenders;
+        }
+
+        /**
+         * <b>! USED ONLY FOR NB USAGES !</b>
+         * @param frameworkExtenders frameworks, empty map for no frameworks
+         */
+        public ProjectProperties setFrameworkExtenders(Map<PhpFrameworkProvider, PhpModuleExtender> frameworkExtenders) {
+            assert frameworkExtenders != null;
+            this.frameworkExtenders = frameworkExtenders;
             return this;
         }
     }

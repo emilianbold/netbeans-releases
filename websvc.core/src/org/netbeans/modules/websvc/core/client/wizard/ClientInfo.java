@@ -724,14 +724,12 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
         try {
             settingFields = true;
             
-            Project p = Templates.getProject(d);
-            
-            jLblProjectName.setText(ProjectUtils.getInformation(p).getDisplayName());
+            jLblProjectName.setText(ProjectUtils.getInformation(project).getDisplayName());
             jTxtWsdlURL.setText((String) d.getProperty(ClientWizardProperties.WSDL_DOWNLOAD_URL));
             jTxtLocalFilename.setText(retriever != null ? retriever.getWsdlFileName() : ""); //NOI18N
             jTxtWsdlURL.setText((String) d.getProperty(ClientWizardProperties.WSDL_FILE_PATH));
             
-            jCbxPackageName.setModel(getPackageModel(p));
+            jCbxPackageName.setModel(getPackageModel(project));
             String pName = (String) d.getProperty(ClientWizardProperties.WSDL_PACKAGE_NAME);
             String jaxwsVersion = (String)this.jComboBoxJaxVersion.getSelectedItem();
             if (Util.isJavaEE5orHigher(project) ||
@@ -760,7 +758,7 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
             // Then set the stub list and current selected stub only if there was one
             // saved *and* it's in the list that the current project supports.
             WebServicesClientSupport clientSupport =
-                    WebServicesClientSupport.getWebServicesClientSupport(p.getProjectDirectory());
+                    WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory());
             
             Object selectedStub = d.getProperty(ClientWizardProperties.CLIENT_STUB_TYPE);
             DefaultComboBoxModel stubModel = new DefaultComboBoxModel();
@@ -813,7 +811,7 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
         return null;
     }
     
-    public void validatePanel() throws WizardValidationException {
+    void validatePanel() throws WizardValidationException {
         if (!valid(wizardDescriptor))
             throw new WizardValidationException(this, "", ""); //NOI18N
         
@@ -836,8 +834,8 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
             } else
                 wizardDescriptor.putProperty(ClientWizardProperties.WSDL_FILE_PATH, retriever == null ? "" : retriever.getWsdlFileName()); //NOI18N
         }
-        if(jComboBoxJaxVersion.getSelectedItem().equals(ClientWizardProperties.JAX_WS)
-                &&  (wsdlSource != WSDL_FROM_FILE)){
+        if (jComboBoxJaxVersion.getSelectedItem().equals(ClientWizardProperties.JAX_WS)
+                &&  (wsdlSource != WSDL_FROM_FILE)) {
             boolean rpcEncoded = false;
             File tmpWsdl = null;
             try {
@@ -848,10 +846,7 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
                         proxies.isEmpty()?null:proxies.get(0), tmpWsdl);
                 rpcEncoded = isRpcEncoded(tmpWsdl);
             } catch (Exception e) {
-                ErrorManager.getDefault().annotate(e, ErrorManager.WARNING,
-                        "Unable to check if wsdl is rpc encoded.", 
-                        NbBundle.getMessage(ClientInfo.class, "ERR_UnableToDetermineRPCEncoded"),
-                        e.getCause(), new java.util.Date());
+                Logger.getLogger(ClientInfo.class.getName()).log(Level.INFO, NbBundle.getMessage(ClientInfo.class, "ERR_UnableToDetermineRPCEncoded"), e);
             }
             if (tmpWsdl != null)
                 tmpWsdl.delete();
@@ -970,7 +965,6 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
     }
     
     boolean valid(final WizardDescriptor wizardDescriptor) {
-        Project p = Templates.getProject(wizardDescriptor);
         
         // Project must currently have a target server that supports wscompile.
         /*
@@ -1157,7 +1151,7 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
         }
         
         // Don't allow to create java artifacts to package already used by other service/client
-        JaxWsModel jaxWsModel = (JaxWsModel)p.getLookup().lookup(JaxWsModel.class);
+        JaxWsModel jaxWsModel = (JaxWsModel)project.getLookup().lookup(JaxWsModel.class);
         if (packageName != null && packageName.length() > 0 && jaxWsModel!=null) {
             Service[] services = jaxWsModel.getServices();
             for (int i=0;i<services.length;i++) {
@@ -1291,7 +1285,6 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
      * its Java source level must be at least 1.5
      */
     private boolean checkNonJsr109Valid(WizardDescriptor wizardDescriptor){
-        Project project = Templates.getProject(wizardDescriptor);
         ProjectInfo pInfo = new ProjectInfo(project);
         // javase client should be source level 1.4 or higher
         // other types of projects should have source level 1.5 or higher

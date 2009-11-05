@@ -237,6 +237,8 @@ public final class THAIndicatorsTopComponent extends TopComponent implements Exp
                     statusLabel.setColoredText("THAControlPanel.Stopped"); // NOI18N
                 } else if (THAActionsProvider.PROCESSING_REQUEST_COMMAND.equals(e.getActionCommand())) {
                     statusLabel.setColoredText("THAControlPanel.ProcessingRequest"); // NOI18N
+                }else if (THAActionsProvider.STOPPING_COMMAND.equals(e.getActionCommand())){
+                    statusLabel.setColoredText("THAControlPanel.Stopping"); // NOI18N
                 }
             }
         });
@@ -255,8 +257,12 @@ public final class THAIndicatorsTopComponent extends TopComponent implements Exp
     public void setSession(DLightSession session) {
         if (this.session != null && this.session != session) {
             DLightManager.getDefault().closeSessionOnExit(this.session);//should close session which was opened here before
+            this.session.removeIndicatorNotificationListener(thaActionsProvider);
         }
         this.session = session;
+        if (session != null){
+            session.addIndicatorNotificationListener(thaActionsProvider);
+        }
         List<Indicator<?>> indicators = null;
         if (session != null) {
             setDisplayName(getMessage("CTL_DLightIndicatorsTopComponent.withSession", session.getDisplayName())); // NOI18N

@@ -106,6 +106,7 @@ public class DownloadPanel extends javax.swing.JPanel {
 
         jTextArea1.setBackground(jLabel1.getBackground());
         jTextArea1.setColumns(20);
+        jTextArea1.setEditable(false);
         jTextArea1.setLineWrap(true);
         jTextArea1.setRows(5);
         jTextArea1.setText(org.openide.util.NbBundle.getMessage(DownloadPanel.class, "DownloadPanel.jTextArea1.text")); // NOI18N

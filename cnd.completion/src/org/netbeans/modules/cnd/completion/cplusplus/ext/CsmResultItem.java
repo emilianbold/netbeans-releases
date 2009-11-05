@@ -90,11 +90,13 @@ import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.completion.cplusplus.CsmCompletionUtils;
+import org.netbeans.modules.cnd.completion.spi.dynhelp.CompletionDocumentationProvider;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.modelutil.CsmPaintComponent;
 import org.netbeans.modules.cnd.modelutil.ParamStr;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -274,7 +276,9 @@ public abstract class CsmResultItem implements CompletionItem {
     }
 
     public CompletionTask createDocumentationTask() {
-        return null;
+        CompletionDocumentationProvider p = Lookup.getDefault().lookup(CompletionDocumentationProvider.class);
+
+        return p != null ? p.createDocumentationTask(this) : null;
 //        return new AsyncCompletionTask(new JavaCompletionProvider.DocQuery(this),
 //            org.netbeans.editor.Registry.getMostActiveComponent());
     }

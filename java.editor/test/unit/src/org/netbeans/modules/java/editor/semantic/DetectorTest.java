@@ -96,91 +96,91 @@ public class DetectorTest extends TestBase {
     public void testReadUseInstanceOf() throws Exception {
         performTest("ReadUseInstanceOf");
     }
-    
+
     public void testReadUseTypeCast() throws Exception {
         performTest("ReadUseTypeCast");
     }
-    
+
     public void testReadUseArrayIndex() throws Exception {
         performTest("ReadUseArrayIndex");
     }
-    
+
     public void testReadUseUnaryOperator() throws Exception {
         performTest("ReadUseUnaryOperator");
     }
-    
+
     public void testReadUseReturn() throws Exception {
         performTest("ReadUseReturn");
     }
-    
+
     public void testCompoundPackage() throws Exception {
 	performTest("CompoundPackage");
     }
-    
+
     public void testSemanticInnerClasses() throws Exception {
 	performTest("SemanticInnerClasses");
     }
-    
+
     public void testForEach() throws Exception {
 	performTest("ForEach");
     }
-    
+
     public void testWriteUseArgument() throws Exception {
 	performTest("WriteUseArgument");
     }
-    
+
     public void testReturnType() throws Exception {
 	performTest("ReturnType");
     }
-    
+
     public void testFieldByThis1() throws Exception {
 	performTest("FieldByThis1");
     }
-    
+
     public void testFieldByThis2() throws Exception {
         performTest("FieldByThis2");
     }
-    
+
     public void testWriteUseCatch() throws Exception {
 	performTest("WriteUseCatch");
     }
-    
+
     public void testReadWriteUseArgumentOfAbstractMethod() throws Exception {
 	performTest("ReadWriteUseArgumentOfAbstractMethod");
     }
-    
+
     public void testReadUseExprIsIdent1() throws Exception {
 	performTest("ReadUseExprIsIdent1");
     }
-    
+
     public void testReadUseExprIsIdent2() throws Exception {
 	performTest("ReadUseExprIsIdent2");
     }
-    
+
     public void testReadUseExprIsIdent3() throws Exception {
 	performTest("ReadUseExprIsIdent3");
     }
-    
+
     public void testReadUseExprIsIdent4() throws Exception {
 	performTest("ReadUseExprIsIdent4");
     }
-    
+
     public void testClassUseNewInstance() throws Exception {
 	performTest("ClassUseNewInstance");
     }
-    
+
     public void testExecUseMethodCall() throws Exception {
 	performTest("ExecUseMethodCall");
     }
-    
+
     public void testReadUseArrayInit() throws Exception {
 	performTest("ReadUseArrayInit");
     }
-    
+
     public void testReadUseNewArrayIndex() throws Exception {
 	performTest("ReadUseNewArrayIndex");
     }
-    
+
     public void testUsages2() throws Exception {
         performTest("Usages2");
     }
@@ -188,7 +188,7 @@ public class DetectorTest extends TestBase {
     public void testCommentedGenerics() throws Exception {
         performTest("CommentedGenerics");
     }
-    
+
     public void testRetentionPolicy() throws Exception {
         performTest("RetentionPolicyTest");
     }
@@ -196,95 +196,95 @@ public class DetectorTest extends TestBase {
     public void testSimpleGeneric() throws Exception {
         performTest("SimpleGeneric");
     }
-    
+
     public void testReadUseMathSet() throws Exception {
         performTest("ReadUseMathSet");
     }
-    
+
     public void testReadUseMathSet2() throws Exception {
         performTest("ReadUseMathSet2");
     }
-    
+
     public void testReadUseTernaryOperator() throws Exception {
         performTest("ReadUseTernaryOperator");
     }
-    
+
     public void testUseInGenerics() throws Exception {
         performTest("UseInGenerics");
     }
-    
+
     public void testFieldIsWritten1() throws Exception {
         performTest("FieldIsWritten1");
     }
-    
+
     public void testFieldIsWritten2() throws Exception {
         performTest("FieldIsWritten2");
     }
-    
+
     public void testConstructorsAreMethods() throws Exception {
         performTest("ConstructorsAreMethods");
     }
-    
+
     public void testConstructorsAreMethods2() throws Exception {
         performTest("ConstructorsAreMethods2");
     }
-    
+
     public void testDoubleBrackets() throws Exception {
         performTest("DoubleBrackets");
     }
-    
+
     public void testConstructorsAreMethods3() throws Exception {
         performTest("ConstructorsAreMethods3");
     }
-    
+
     public void testMethodWithArrayAtTheEnd() throws Exception {
         performTest("MethodWithArrayAtTheEnd");
     }
-    
+
     public void testReadUseAssert() throws Exception {
         performTest("ReadUseAssert");
     }
-    
+
     public void testSuperIsKeyword() throws Exception {
         performTest("SuperIsKeyword");
     }
-    
+
     public void testNewArrayIsClassUse() throws Exception {
         performTest("NewArrayIsClassUse");
     }
-    
+
     public void testNotKeywords() throws Exception {
         performTest("NotKeywords");
     }
-    
+
     public void testArrayThroughInitializer() throws Exception {
         performTest("ArrayThroughInitializer");
     }
-    
+
     public void testReadUseAssert2() throws Exception {
         performTest("ReadUseAssert2");
     }
-    
+
     public void testConstructorUsedBySuper1() throws Exception {
         performTest("ConstructorUsedBySuper1");
     }
-    
+
     public void testConstructorUsedBySuper2() throws Exception {
         performTest("ConstructorUsedBySuper2");
     }
-    
+
     public void testConstructorUsedByThis() throws Exception {
         performTest("ConstructorUsedByThis");
     }
-    
+
     public void testEnums() throws Exception {
         performTest("Enums");
     }
-    
+
     public void testReadUseThrow() throws Exception {
         performTest("ReadUseThrow");
     }
-    
+
     public void testGenericBoundIsClassUse() throws Exception {
         performTest("GenericBoundIsClassUse");
     }
@@ -302,62 +302,62 @@ public class DetectorTest extends TestBase {
             public void flush() {}
         });
         performTest("BLE91246");
-        
+
         assertFalse("BLE was not thrown", wasThrown[0]);
     }
-    
+
     public void testArrayAccess() throws Exception {
         performTest("ArrayAccess");
     }
-    
+
     public void test88119() throws Exception {
         performTest("package-info");
     }
-    
+
     public void test111113() throws Exception {
         performTest("UnusedImport111113");
     }
-    
+
     public void test89356() throws Exception {
         performTest("SerialVersionUID89356");
     }
-    
+
     public void testFullMemberSelect109886() throws Exception {
 	performTest("FullMemberSelect109886");
     }
-    
+
     public void testMultiFields116520a() throws Exception {
 	performTest("MultiFields");
     }
-    
+
     public void testMultiFields116520b() throws Exception {
 	performTest("MultiFields");
     }
-    
+
     public void testUnusedParameters() throws Exception {
 	performTest("UnusedParameters");
     }
-    
+
     public void testUsedInFor() throws Exception {
 	performTest("UsedInFor");
     }
-    
+
     public void testCastIsClassUse() throws Exception {
 	performTest("CastIsClassUse");
     }
-    
+
     public void testWildcardBoundIsClassUse() throws Exception {
 	performTest("WildcardBoundIsClassUse");
     }
-    
+
     public void testStaticImport128662() throws Exception {
 	performTest("StaticImport128662");
     }
-    
+
     public void testUsedImport129988() throws Exception {
 	performTest("UsedImport129988");
     }
-    
+
     public void testUsedImport132980() throws Exception {
 	performTest("UsedImport132980");
     }
@@ -365,11 +365,11 @@ public class DetectorTest extends TestBase {
     public void testUsedImport159773() throws Exception {
 	performTest("UsedImport159773");
     }
-    
+
     public void testReadUse132342() throws Exception {
 	performTest("ReadUse132342");
     }
-    
+
     public void testRecursiveExecutionIsNotUse() throws Exception {
 	performTest("RecursiveExecutionIsNotUse");
     }
@@ -384,6 +384,10 @@ public class DetectorTest extends TestBase {
 
     public void testWriteThroughThis() throws Exception {
         performTest("WriteThroughThis");
+    }
+
+    public void testTwoPackagePrivateConstructors() throws Exception {
+        performTest("TwoPackagePrivateConstructors");
     }
 
     private void performTest(String fileName) throws Exception {

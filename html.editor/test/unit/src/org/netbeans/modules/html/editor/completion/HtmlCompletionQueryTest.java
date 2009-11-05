@@ -331,7 +331,14 @@ public class HtmlCompletionQueryTest extends TestBase {
         assertItems("<div><bla>|", arr(), Match.EMPTY, 0);
     }
 
+    public void testJustBeforeTag() throws BadLocationException, ParseException {
+        assertItems("<|<table>", arr("div"), Match.CONTAINS);
+        assertItems("<div></|<table>", arr("div"), Match.CONTAINS);
+    }
 
+    public void testNoCompletionInDoctype() throws BadLocationException, ParseException {
+        assertItems("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" |  \"http://www.w3.org/TR/html40/strict.dtd\">", arr(), Match.EMPTY);
+    }
     //helper methods ------------
 
     //test HTML 4.01

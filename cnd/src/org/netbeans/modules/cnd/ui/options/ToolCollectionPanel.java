@@ -677,6 +677,10 @@ public class ToolCollectionPanel extends javax.swing.JPanel implements DocumentL
         handle.progress(++i);
         versions.append(getToolVersion(cs.findTool(Tool.CMakeTool), tfCMakePath)).append('\n'); // NOI18N
         handle.finish();
+        String upgradeUrl = cs.getCompilerFlavor().getToolchainDescriptor().getUpgradeUrl();
+        if (upgradeUrl != null) {
+            versions.append('\n').append(ToolsPanel.getString("TOOL_UPGRADE", upgradeUrl)).append('\n'); // NOI18N
+        }
         return versions.toString();
     }
 

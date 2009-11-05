@@ -116,7 +116,7 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
         final TokenHierarchy<Document> th = request.th;
         final AstPath path = request.path;
         final QuerySupport.Kind kind = request.kind;
-        final Node target = AstUtilities.findNextNonNewLineNode(request.target);
+        final Node target = request.target != null ? AstUtilities.findNextNonNewLineNode(request.target) : null;
 
         TokenSequence<? extends RubyTokenId> ts = LexUtilities.getRubyTokenSequence(th, lexOffset);
 
@@ -167,6 +167,10 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
                     // TODO - if the lhs is "foo.bar." I need to split this
                     // up and do it a bit more cleverly
                     type = getTypesForConstant(lhs);
+                    if (!type.isKnown()) {
+                        // try fqn
+                        type = getTypesForConstant(AstUtilities.getFqnName(path, lhs));
+                    }
                     if (!type.isKnown()) {
                         type = createTypeInferencer(request, method).inferType(_lhs);
                     }

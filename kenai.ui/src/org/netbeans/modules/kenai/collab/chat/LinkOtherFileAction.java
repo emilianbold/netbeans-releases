@@ -60,11 +60,11 @@ public class LinkOtherFileAction extends AbstractAction {
     }
 
     public void actionPerformed(ActionEvent e) {
-        String outText = "FILE:foo/bar/Test.java:23";
+        String outText = "FILE:foo/bar/Test.java:23"; // NOI18N
         try {
             out.requestFocus();
             int caretPosition = out.getCaretPosition();
-            out.getDocument().insertString( caretPosition, " " + outText + " ", null);
+            out.getDocument().insertString( caretPosition, " " + outText + " ", null); // NOI18N
             out.setSelectionStart(caretPosition+6);
             out.setSelectionEnd(caretPosition+outText.length()+1);
         } catch (BadLocationException ex) {

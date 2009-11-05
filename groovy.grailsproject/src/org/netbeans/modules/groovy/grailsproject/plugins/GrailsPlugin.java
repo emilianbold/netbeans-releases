@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.groovy.grailsproject.plugins;
 
+import java.io.File;
+
 /**
  * plugin pojo class
  *
@@ -48,7 +50,7 @@ public class GrailsPlugin implements Comparable<GrailsPlugin> {
     private final String name;
     private final String version;
     private final String description;
-    private final String path;
+    private final File path;
     private final String dirName;
     private final String zipName;
 
@@ -57,7 +59,7 @@ public class GrailsPlugin implements Comparable<GrailsPlugin> {
     }
 
     // FIXME null values
-    public GrailsPlugin(String name, String version, String description, String path) {
+    public GrailsPlugin(String name, String version, String description, File path) {
         this.name = name;
         this.version = version;
         this.description = description;
@@ -78,7 +80,7 @@ public class GrailsPlugin implements Comparable<GrailsPlugin> {
         return description;
     }
 
-    public String getPath() {
+    public File getPath() {
         return path;
     }
 

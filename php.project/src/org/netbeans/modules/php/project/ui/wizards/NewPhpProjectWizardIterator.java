@@ -167,7 +167,8 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
                 .setCopySourcesTarget(getCopySrcTarget())
                 .setRemoteConfiguration((RemoteConfiguration) descriptor.getProperty(RunConfigurationPanel.REMOTE_CONNECTION))
                 .setRemoteDirectory((String) descriptor.getProperty(RunConfigurationPanel.REMOTE_DIRECTORY))
-                .setUploadFiles(wizardType == WizardType.REMOTE ? UploadFiles.ON_SAVE : (UploadFiles) descriptor.getProperty(RunConfigurationPanel.REMOTE_UPLOAD));
+                .setUploadFiles(wizardType == WizardType.REMOTE ? UploadFiles.ON_SAVE : (UploadFiles) descriptor.getProperty(RunConfigurationPanel.REMOTE_UPLOAD))
+                .setFrameworkExtenders(frameworkExtenders);
 
         PhpProjectGenerator.Monitor monitor = null;
         switch (wizardType) {

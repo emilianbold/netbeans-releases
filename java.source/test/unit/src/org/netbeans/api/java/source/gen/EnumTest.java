@@ -45,6 +45,7 @@ import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import java.util.Collections;
+import java.util.EnumSet;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
@@ -77,6 +78,8 @@ public class EnumTest extends GeneratorTest {
 //        suite.addTest(new EnumTest("testRenameConstantContainingBody3"));
 //        suite.addTest(new EnumTest("testConstantAddition"));
 //        suite.addTest(new EnumTest("testImplementsChange153066"));
+//        suite.addTest(new EnumTest("testAddFirstMemberWithoutSemicolon"));
+//        suite.addTest(new EnumTest("testAddFirstMemberWithSemicolonOneConstant"));
         return suite;
     }
 
@@ -1040,6 +1043,137 @@ public class EnumTest extends GeneratorTest {
 
                 //ensure the whole file is rewritten:
                 workingCopy.rewrite(cut, make.addCompUnitImport(cut, make.Import(make.Identifier("java.lang.Object"), false)));
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    //duplicates "testAddMethodAfterConstants":
+//    public void testAddFirstMemberWithSemicolon() throws Exception {
+//        testAddFirstMember("package hierbas.del.litoral;\n" +
+//                           "public enum Test {\n" +
+//                           "    A, B, C;\n" +
+//                           "}\n",
+//                           "package hierbas.del.litoral;\n" +
+//                           "public enum Test {\n" +
+//                           "    A, B, C;\n\n" +
+//                           "    public void run() {\n" +
+//                           "    }\n" +
+//                           "}\n");
+//    }
+
+    public void testAddFirstMemberWithoutSemicolon() throws Exception {
+        testAddFirstMember("package hierbas.del.litoral;\n" +
+                           "public enum Test {\n" +
+                           "    A, B, C\n" +
+                           "}\n",
+                           "package hierbas.del.litoral;\n" +
+                           "public enum Test {\n" +
+                           "    A, B, C;\n\n" +
+                           "    public void run() {\n" +
+                           "    }\n" +
+                           "}\n");
+    }
+
+    public void testAddFirstMemberWithComma() throws Exception {
+        testAddFirstMember("package hierbas.del.litoral;\n" +
+                           "public enum Test {\n" +
+                           "    A, B, C,\n" +
+                           "}\n",
+                           "package hierbas.del.litoral;\n" +
+                           "public enum Test {\n" +
+                           "    A, B, C,;\n\n" +
+                           "    public void run() {\n" +
+                           "    }\n" +
+                           "}\n");
+    }
+
+    public void testAddFirstMemberWithCommaAndSemicolon() throws Exception {
+        testAddFirstMember("package hierbas.del.litoral;\n" +
+                           "public enum Test {\n" +
+                           "    A, B, C,;\n" +
+                           "}\n",
+                           "package hierbas.del.litoral;\n" +
+                           "public enum Test {\n" +
+                           "    A, B, C,;\n\n" +
+                           "    public void run() {\n" +
+                           "    }\n" +
+                           "}\n");
+    }
+
+    public void testAddFirstMemberWithSemicolonOneConstant() throws Exception {
+        testAddFirstMember("package hierbas.del.litoral;\n" +
+                           "public enum Test {\n" +
+                           "    A;\n" +
+                           "}\n",
+                           "package hierbas.del.litoral;\n" +
+                           "public enum Test {\n" +
+                           "    A;\n\n" +
+                           "    public void run() {\n" +
+                           "    }\n" +
+                           "}\n");
+    }
+
+    public void testAddFirstMemberWithoutSemicolonOneConstant() throws Exception {
+        testAddFirstMember("package hierbas.del.litoral;\n" +
+                           "public enum Test {\n" +
+                           "    A\n" +
+                           "}\n",
+                           "package hierbas.del.litoral;\n" +
+                           "public enum Test {\n" +
+                           "    A;\n\n" +
+                           "    public void run() {\n" +
+                           "    }\n" +
+                           "}\n");
+    }
+
+    public void testAddFirstMemberWithCommaOneConstant() throws Exception {
+        testAddFirstMember("package hierbas.del.litoral;\n" +
+                           "public enum Test {\n" +
+                           "    A,\n" +
+                           "}\n",
+                           "package hierbas.del.litoral;\n" +
+                           "public enum Test {\n" +
+                           "    A,;\n\n" +
+                           "    public void run() {\n" +
+                           "    }\n" +
+                           "}\n");
+    }
+
+    public void testAddFirstMemberWithCommaAndSemicolonOneConstant() throws Exception {
+        testAddFirstMember("package hierbas.del.litoral;\n" +
+                           "public enum Test {\n" +
+                           "    A,;\n" +
+                           "}\n",
+                           "package hierbas.del.litoral;\n" +
+                           "public enum Test {\n" +
+                           "    A,;\n\n" +
+                           "    public void run() {\n" +
+                           "    }\n" +
+                           "}\n");
+    }
+
+    private void testAddFirstMember(String code, String golden) throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, code);
+        JavaSource src = getJavaSource(testFile);
+
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            public void run(final WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                final TreeMaker make = workingCopy.getTreeMaker();
+
+                ModifiersTree mods = make.Modifiers(EnumSet.of(Modifier.PUBLIC));
+                Tree ret = make.Type(workingCopy.getTypes().getNoType(TypeKind.VOID));
+                MethodTree mt = make.Method(mods, "run", ret, Collections.<TypeParameterTree>emptyList(), Collections.<VariableTree>emptyList(), Collections.<ExpressionTree>emptyList(), "{}", null);
+
+                ClassTree en = (ClassTree) cut.getTypeDecls().get(0);
+                workingCopy.rewrite(en, make.addClassMember(en, mt));
             }
 
         };

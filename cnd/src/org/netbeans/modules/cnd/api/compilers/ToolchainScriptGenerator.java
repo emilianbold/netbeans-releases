@@ -51,7 +51,7 @@ import org.openide.util.NbBundle;
  * @author Alexander Simon
  */
 final class ToolchainScriptGenerator {
-    private static final boolean TRACE = false;
+    private static final boolean TRACE = true;
     private static final String[] platforms = new String[]{
             "PLATFORM_SOLARIS_SPARC", // NOI18N
             "PLATFORM_SOLARIS_INTEL", // NOI18N
@@ -137,6 +137,12 @@ final class ToolchainScriptGenerator {
     }
     private void platformPath(int platform){
         for (ToolchainDescriptor d : ToolchainManager.getImpl().getToolchains(platform)) {
+            if (d.isAbstract()) {
+                continue;
+            }
+            if (d.getModuleID() != null) {
+                continue;
+            }
             CompilerDescriptor c = d.getC();
             if (c == null || c.getNames().length == 0) {
                 continue;
@@ -200,15 +206,14 @@ final class ToolchainScriptGenerator {
             if (d.getQMake() != null) {
                 addTool("qmake", d.getQMake().getNames(), platform); // NOI18N
             }
+            line("  addNewToolChain"); // NOI18N
             line("  break"); // NOI18N
             line("done"); // NOI18N
-            line("addNewToolChain"); // NOI18N
         }
     }
 
     private void addTool(String kind, String[] names, int platform){
         if (names != null) {
-            line("status="); // NOI18N
             StringBuilder list = new StringBuilder();
             for(String name : names) {
                 if (list.length()>0) {
@@ -219,28 +224,8 @@ final class ToolchainScriptGenerator {
                     }
                 }
                 list.append(name);
-                line("if [ ! -n \"$status\" ]; then"); // NOI18N
-                line("  if [ -x \"$f/"+name+"\" ]; then"); // NOI18N
-                line("    line=\"$line;"+kind+"=$f/"+name+"\""); // NOI18N
-                line("    status=1"); // NOI18N
-                if (platform == PlatformTypes.PLATFORM_WINDOWS) {
-                    line("  else"); // NOI18N
-                    line("    if [ -x \"$f/"+name+".exe\" ]; then"); // NOI18N
-                    line("    line=\"$line;"+kind+"=$f/"+name+".exe\""); // NOI18N
-                    line("      status=1"); // NOI18N
-                    line("    fi"); // NOI18N
-                }
-                line("  fi"); // NOI18N
-                line("fi"); // NOI18N
             }
-            if (list.length()>0) {
-                line("if [ ! -n \"$status\" ]; then"); // NOI18N
-                line("  status=`findInPath \""+list.toString()+"\"`"); // NOI18N
-                line("  if [ -n \"$status\" ]; then"); // NOI18N
-                line("    line=\"$line;"+kind+"(PATH)=$status\""); // NOI18N
-                line("  fi"); // NOI18N
-                line("fi"); // NOI18N
-            }
+            line("findCompiler \""+list.toString()+"\" \""+kind+"\""); // NOI18N
         }
     }
 

@@ -50,6 +50,7 @@ import org.netbeans.modules.dlight.spi.impl.IndicatorActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.AbstractAction;
@@ -101,6 +102,7 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
     private DLightTarget target;
     private boolean visible;
     private final Action defaultAction;
+    private final Collection<Column> columnsProvided = new ArrayList<Column>();
 
     static {
         IndicatorAccessor.setDefault(new IndicatorAccessorImpl());
@@ -120,7 +122,14 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
     }
 
     protected final String getActionTooltip() {
-        return actionTooltip;
+        if (actionTooltip == null){
+            return null;
+        }
+        StringBuilder st = new StringBuilder();
+        st.append("<html><body>");//NOI18N
+        st.append(actionTooltip.replaceAll("\n", "<br>"));//NOI18N
+        st.append("</body></html>");//NOI18N
+        return st.toString();
     }
 
     private void notifyListeners(VisualizerConfiguration vc) {
@@ -159,7 +168,7 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
         };
         defaultAction.putValue(Action.NAME, actionDisplayName);
         if (actionTooltip != null){
-            defaultAction.putValue(Action.SHORT_DESCRIPTION, actionTooltip);
+            defaultAction.putValue(Action.SHORT_DESCRIPTION, getActionTooltip());
         }
     }
 
@@ -226,11 +235,21 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
         synchronized (lock) {
             this.target = target;
             IndicatorTickerService.getInstance().subsribe(tickerListener);
+            targetStarted();
         }
+    }
+
+    protected void targetStarted(){
+
+    }
+
+    protected final Collection<Column> getColumnsProvided(){
+        return columnsProvided;
     }
 
     private void targetFinished(DLightTarget target) {
         synchronized (lock) {
+            columnsProvided.clear();
             IndicatorTickerService.getInstance().unsubscribe(tickerListener);
         }
     }
@@ -377,6 +396,10 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
      */
     protected List<Column> getMetadataColumns() {
         return metadata.getColumns();
+    }
+
+    final void columnProvided(Column c){
+        columnsProvided.add(c);
     }
 
     /**

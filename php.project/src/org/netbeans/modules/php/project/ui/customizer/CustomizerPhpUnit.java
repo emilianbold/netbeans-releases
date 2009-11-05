@@ -40,6 +40,8 @@
 package org.netbeans.modules.php.project.ui.customizer;
 
 import java.awt.Component;
+import java.awt.Container;
+import java.awt.FocusTraversalPolicy;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -236,7 +238,6 @@ public class CustomizerPhpUnit extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-
         phpUnitLabel = new JLabel();
         bootstrapLabel = new JLabel();
         bootstrapTextField = new JTextField();
@@ -254,9 +255,92 @@ public class CustomizerPhpUnit extends JPanel {
         suiteBrowseButton = new JButton();
         suiteInfoLabel = new JLabel();
 
-        Mnemonics.setLocalizedText(phpUnitLabel, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.phpUnitLabel.text")); // NOI18N
-        bootstrapLabel.setLabelFor(bootstrapTextField);
+        setFocusTraversalPolicy(new FocusTraversalPolicy() {
 
+
+
+            public Component getDefaultComponent(Container focusCycleRoot){
+                return suiteTextField;
+            }//end getDefaultComponent
+            public Component getFirstComponent(Container focusCycleRoot){
+                return suiteTextField;
+            }//end getFirstComponent
+            public Component getLastComponent(Container focusCycleRoot){
+                return suiteBrowseButton;
+            }//end getLastComponent
+            public Component getComponentAfter(Container focusCycleRoot, Component aComponent){
+                if(aComponent ==  suiteTextField){
+                    return suiteBrowseButton;
+                }
+                if(aComponent ==  suiteCheckBox){
+                    return suiteTextField;
+                }
+                if(aComponent ==  bootstrapCheckBox){
+                    return bootstrapTextField;
+                }
+                if(aComponent ==  configurationGenerateButton){
+                    return suiteCheckBox;
+                }
+                if(aComponent ==  configurationBrowseButton){
+                    return configurationGenerateButton;
+                }
+                if(aComponent ==  configurationCheckBox){
+                    return configurationTextField;
+                }
+                if(aComponent ==  bootstrapGenerateButton){
+                    return configurationCheckBox;
+                }
+                if(aComponent ==  bootstrapBrowseButton){
+                    return bootstrapGenerateButton;
+                }
+                if(aComponent ==  bootstrapTextField){
+                    return bootstrapBrowseButton;
+                }
+                if(aComponent ==  configurationTextField){
+                    return configurationBrowseButton;
+                }
+                return suiteTextField;//end getComponentAfter
+            }
+            public Component getComponentBefore(Container focusCycleRoot, Component aComponent){
+                if(aComponent ==  suiteBrowseButton){
+                    return suiteTextField;
+                }
+                if(aComponent ==  suiteTextField){
+                    return suiteCheckBox;
+                }
+                if(aComponent ==  bootstrapTextField){
+                    return bootstrapCheckBox;
+                }
+                if(aComponent ==  suiteCheckBox){
+                    return configurationGenerateButton;
+                }
+                if(aComponent ==  configurationGenerateButton){
+                    return configurationBrowseButton;
+                }
+                if(aComponent ==  configurationTextField){
+                    return configurationCheckBox;
+                }
+                if(aComponent ==  configurationCheckBox){
+                    return bootstrapGenerateButton;
+                }
+                if(aComponent ==  bootstrapGenerateButton){
+                    return bootstrapBrowseButton;
+                }
+                if(aComponent ==  bootstrapBrowseButton){
+                    return bootstrapTextField;
+                }
+                if(aComponent ==  configurationBrowseButton){
+                    return configurationTextField;
+                }
+                return suiteBrowseButton;//end getComponentBefore
+
+            }}
+        );
+
+        phpUnitLabel.setLabelFor(this);
+        Mnemonics.setLocalizedText(phpUnitLabel, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.phpUnitLabel.text")); // NOI18N
+
+        bootstrapLabel.setLabelFor(bootstrapTextField);
 
 
         Mnemonics.setLocalizedText(bootstrapLabel, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.bootstrapLabel.text")); // NOI18N
@@ -273,8 +357,8 @@ public class CustomizerPhpUnit extends JPanel {
             }
         });
         Mnemonics.setLocalizedText(configurationCheckBox, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.configurationCheckBox.text"));
-        configurationLabel.setLabelFor(configurationTextField);
 
+        configurationLabel.setLabelFor(configurationTextField);
 
 
 
@@ -293,8 +377,8 @@ public class CustomizerPhpUnit extends JPanel {
             }
         });
         Mnemonics.setLocalizedText(suiteCheckBox, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.suiteCheckBox.text"));
-        suiteLabel.setLabelFor(suiteTextField);
 
+        suiteLabel.setLabelFor(suiteTextField);
 
         Mnemonics.setLocalizedText(suiteLabel, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.suiteLabel.text"));
         Mnemonics.setLocalizedText(suiteBrowseButton, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.suiteBrowseButton.text"));
@@ -303,9 +387,13 @@ public class CustomizerPhpUnit extends JPanel {
                 suiteBrowseButtonActionPerformed(evt);
             }
         });
+
+        suiteInfoLabel.setLabelFor(this);
+
         Mnemonics.setLocalizedText(suiteInfoLabel, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.suiteInfoLabel.text"));
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
+
         layout.setHorizontalGroup(
             layout.createParallelGroup(GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
@@ -381,6 +469,40 @@ public class CustomizerPhpUnit extends JPanel {
                 .add(suiteInfoLabel)
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        phpUnitLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.phpUnitLabel.AccessibleContext.accessibleName")); // NOI18N
+        phpUnitLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.phpUnitLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        bootstrapLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.bootstrapLabel.AccessibleContext.accessibleName")); // NOI18N
+        bootstrapLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.bootstrapLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        bootstrapTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.bootstrapTextField.AccessibleContext.accessibleName")); // NOI18N
+        bootstrapTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.bootstrapTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        bootstrapBrowseButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.bootstrapBrowseButton.AccessibleContext.accessibleName")); // NOI18N
+        bootstrapBrowseButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.bootstrapBrowseButton.AccessibleContext.accessibleDescription")); // NOI18N
+        bootstrapGenerateButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.bootstrapGenerateButton.AccessibleContext.accessibleName")); // NOI18N
+        bootstrapGenerateButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.bootstrapGenerateButton.AccessibleContext.accessibleDescription")); // NOI18N
+        configurationCheckBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.configurationCheckBox.AccessibleContext.accessibleName")); // NOI18N
+        configurationCheckBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.configurationCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+        configurationLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.configurationLabel.AccessibleContext.accessibleName")); // NOI18N
+        configurationLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.configurationLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        configurationTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.configurationTextField.AccessibleContext.accessibleName")); // NOI18N
+        configurationTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.configurationTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        configurationBrowseButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.configurationBrowseButton.AccessibleContext.accessibleName")); // NOI18N
+        configurationBrowseButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.configurationBrowseButton.AccessibleContext.accessibleDescription")); // NOI18N
+        bootstrapCheckBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.bootstrapCheckBox.AccessibleContext.accessibleName")); // NOI18N
+        bootstrapCheckBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.bootstrapCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+        configurationGenerateButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.configurationGenerateButton.AccessibleContext.accessibleName")); // NOI18N
+        configurationGenerateButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.configurationGenerateButton.AccessibleContext.accessibleDescription")); // NOI18N
+        suiteCheckBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.suiteCheckBox.AccessibleContext.accessibleName")); // NOI18N
+        suiteCheckBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.suiteCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+        suiteLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.suiteLabel.AccessibleContext.accessibleName")); // NOI18N
+        suiteLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.suiteLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        suiteTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.suiteTextField.AccessibleContext.accessibleName")); // NOI18N
+        suiteTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.suiteTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        suiteBrowseButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.suiteBrowseButton.AccessibleContext.accessibleName")); // NOI18N
+        suiteBrowseButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.suiteBrowseButton.AccessibleContext.accessibleDescription")); // NOI18N
+        suiteInfoLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.suiteInfoLabel.AccessibleContext.accessibleName")); // NOI18N
+        suiteInfoLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.suiteInfoLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void bootstrapBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_bootstrapBrowseButtonActionPerformed

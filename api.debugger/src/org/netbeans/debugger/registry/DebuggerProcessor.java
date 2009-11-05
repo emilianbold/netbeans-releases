@@ -48,19 +48,15 @@ import java.util.Map;
 import java.util.Set;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
-import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.MirroredTypeException;
-import javax.lang.model.type.NoType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
@@ -70,7 +66,6 @@ import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.debugger.SessionProvider;
-import org.openide.filesystems.annotations.LayerBuilder.File;
 import org.openide.filesystems.annotations.LayerGeneratingProcessor;
 import org.openide.filesystems.annotations.LayerGenerationException;
 import org.openide.util.lookup.ServiceProvider;
@@ -81,14 +76,17 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=Processor.class)
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
-@SupportedAnnotationTypes({"org.netbeans.spi.debugger.ActionsProvider.Registration",        //NOI18N
-                           "org.netbeans.spi.debugger.DebuggerEngineProvider.Registration", //NOI18N
-                           "org.netbeans.spi.debugger.SessionProvider.Registration",        //NOI18N
-                           "org.netbeans.api.debugger.LazyActionsManagerListener.Registration", //NOI18N
-                           "org.netbeans.spi.debugger.DebuggerServiceRegistration"          //NOI18N
-                          })
 public class DebuggerProcessor extends LayerGeneratingProcessor {
 
+    public @Override Set<String> getSupportedAnnotationTypes() {
+        return new HashSet<String>(Arrays.asList(
+            ActionsProvider.Registration.class.getCanonicalName(),
+            DebuggerEngineProvider.Registration.class.getCanonicalName(),
+            SessionProvider.Registration.class.getCanonicalName(),
+            LazyActionsManagerListener.Registration.class.getCanonicalName(),
+            DebuggerServiceRegistration.class.getCanonicalName()
+        ));
+    }
 
     @Override
     protected boolean handleProcess(
@@ -200,6 +198,7 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
         layer(e).instanceFile(path, null, providerClass).
                 stringvalue("serviceName", className).
                 stringvalue("serviceClass", providerClass.getName()).
+                stringvalue("instanceOf", providerClass.getName()).
                 methodvalue("instanceCreate", providerClass.getName()+"$ContextAware", "createService").
                 write();
     }

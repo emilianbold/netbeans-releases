@@ -86,7 +86,7 @@ final class SwingBrowserImpl extends HtmlBrowser.Impl implements Runnable {
     private static final int NO_NAVIGATION = 1;
     private static final int NAVIGATION_BACK = 2;
     private static final int NAVIGATION_FWD = 3;
-    private static RequestProcessor rp = new RequestProcessor("Swing Browser"); //NOI18N
+    private static final RequestProcessor rp = new RequestProcessor("Swing Browser"); //NOI18N
 
     /** Current URL. */
     private URL url;
@@ -280,10 +280,10 @@ final class SwingBrowserImpl extends HtmlBrowser.Impl implements Runnable {
             //            System.err.println("Title from document is " + title);
             if ((title == null) || (title.trim().length() == 0)) {
                 //                System.err.println("No title from document, trying from url ");
-                URL url = getURL();
+                URL u = getURL();
 
-                if (url != null) {
-                    title = url.getFile();
+                if (u != null) {
+                    title = u.getFile();
 
                     if (title.length() == 0) {
                         title = NbBundle.getMessage(SwingBrowserImpl.class, "LBL_Untitled"); //NOI18N
@@ -535,7 +535,7 @@ final class SwingBrowserImpl extends HtmlBrowser.Impl implements Runnable {
          *
          * @param page  the URL of the page
          */
-        protected InputStream getStream(URL page) throws IOException {
+        protected @Override InputStream getStream(URL page) throws IOException {
             SwingUtilities.invokeLater(SwingBrowserImpl.this);
 
             try {
@@ -564,7 +564,7 @@ final class SwingBrowserImpl extends HtmlBrowser.Impl implements Runnable {
             }
         }
 
-        public Dimension getPreferredSize() {
+        public @Override Dimension getPreferredSize() {
             try {
                 return super.getPreferredSize();
             } catch (RuntimeException e) {
@@ -573,7 +573,7 @@ final class SwingBrowserImpl extends HtmlBrowser.Impl implements Runnable {
             }
         }
 
-        public void paint(Graphics g) {
+        public @Override void paint(Graphics g) {
             try {
                 super.paint(g);
                 lastPaintException = false;
@@ -596,6 +596,7 @@ final class SwingBrowserImpl extends HtmlBrowser.Impl implements Runnable {
         }
 
         @Override
+        @Deprecated
         public void layout() {
             try {
                 super.layout();
@@ -650,42 +651,42 @@ final class SwingBrowserImpl extends HtmlBrowser.Impl implements Runnable {
             }
         }
 
-        public int available() throws IOException {
+        public @Override int available() throws IOException {
             openStream();
 
             return super.available();
         }
 
-        public long skip(long n) throws IOException {
+        public @Override long skip(long n) throws IOException {
             openStream();
 
             return super.skip(n);
         }
 
-        public void reset() throws IOException {
+        public @Override void reset() throws IOException {
             openStream();
             super.reset();
         }
 
-        public void close() throws IOException {
+        public @Override void close() throws IOException {
             openStream();
             super.close();
             Mutex.EVENT.readAccess(browser);
         }
 
-        public int read(byte[] b) throws IOException {
+        public @Override int read(byte[] b) throws IOException {
             openStream();
 
             return super.read(b);
         }
 
-        public int read(byte[] b, int off, int len) throws IOException {
+        public @Override int read(byte[] b, int off, int len) throws IOException {
             openStream();
 
             return super.read(b, off, len);
         }
 
-        public int read() throws IOException {
+        public @Override int read() throws IOException {
             openStream();
 
             return super.read();

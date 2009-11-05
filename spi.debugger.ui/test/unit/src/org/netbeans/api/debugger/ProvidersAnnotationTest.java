@@ -41,6 +41,7 @@ package org.netbeans.api.debugger;
 
 import java.util.List;
 
+import junit.framework.Test;
 import org.netbeans.api.debugger.providers.TestActionProvider;
 import org.netbeans.api.debugger.providers.TestAttachType;
 import org.netbeans.api.debugger.providers.TestBreakpointType;
@@ -49,6 +50,7 @@ import org.netbeans.api.debugger.providers.TestExtendedNodeModelFilter;
 import org.netbeans.api.debugger.providers.TestLazyActionsManagerListenerAnnotated;
 import org.netbeans.api.debugger.providers.TestLazyDebuggerManagerListenerAnnotated;
 import org.netbeans.api.debugger.providers.TestThreeModels;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.debugger.ui.models.ColumnModels;
 import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
@@ -71,6 +73,15 @@ public class ProvidersAnnotationTest  extends DebuggerApiTestBase {
     public ProvidersAnnotationTest(String s) {
         super(s);
     }
+
+    /* TODO:  Add this to simulate the IDE runtime behavior
+     *
+     *  PLEASE NOTE THAT THIS IS REQUIRED TO HAVE RELIABLE TEST OF SERVICES!
+     * 
+    public static Test suite() {
+        return NbModuleSuite.create(NbModuleSuite.createConfiguration(ProvidersAnnotationTest.class));
+    }
+     */
 
     public void testProviders() throws Exception {
         Lookup.MetaInf l = new Lookup.MetaInf("unittest");

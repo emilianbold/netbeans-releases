@@ -697,11 +697,11 @@ public final class ModuleUpdater extends Thread {
         for( int j = 0; j < files.length; j++ ) {
             if ( files[j].isDirectory() ) {
                 deleteDir( files[j] );
-                if (! files[j].delete()) {
+            }
+            if (! files[j].delete()) {
                     System.out.println("Error: Cannot delete " + files [j]); //NOI18N
                     assert false : "Cannot delete " + files [j];
-                }
-            }
+            }            
         }
     }
         

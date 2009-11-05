@@ -418,7 +418,7 @@ public class AlwaysEnabledActionTest extends NbTestCase implements PropertyChang
     private static int myIconResourceCounter;
     private static String myIconResource() {
         myIconResourceCounter++;
-        return "/org/openide/awt/TestIcon.png";
+        return "org/openide/awt/TestIcon.png";
     }
     
     

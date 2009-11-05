@@ -86,7 +86,14 @@ import org.openide.util.actions.SystemAction;
 *
 * @author   Jaroslav Tulach
 */
-public class Actions extends Object {
+public class Actions {
+
+    /**
+     * @deprecated should not be used
+     */
+    @Deprecated
+    public Actions() {}
+
     /**
      * Make sure an icon is not null, so that e.g. menu items for javax.swing.Action's
      * with no specified icon are correctly aligned. SystemAction already does this so
@@ -147,6 +154,7 @@ public class Actions extends Object {
     * @param popup create popup or menu item
      * @deprecated Use {@link #connect(JMenuItem, Action, boolean)} instead.
     */
+    @Deprecated
     public static void connect(JMenuItem item, SystemAction action, boolean popup) {
         connect(item, (Action) action, popup);
     }
@@ -199,6 +207,7 @@ public class Actions extends Object {
     * @param action the action
      * @deprecated Use {@link #connect(AbstractButton, Action)} instead.
     */
+    @Deprecated
     public static void connect(AbstractButton button, SystemAction action) {
         connect(button, (Action) action);
     }
@@ -249,6 +258,7 @@ public class Actions extends Object {
     *           as Mnemonic.
     * @deprecated Use either {@link AbstractButton#setText} or {@link Mnemonics#setLocalizedText(AbstractButton, String)} as appropriate.
     */
+    @Deprecated
     public static void setMenuText(AbstractButton item, String text, boolean useMnemonic) {
         if (useMnemonic) {
             Mnemonics.setLocalizedText(item, text);
@@ -663,7 +673,9 @@ public class Actions extends Object {
     /** Interface for the creating Actions.SubMenu. It provides the methods for
     * all items in submenu: name shortcut and perform method. Also has methods
     * for notification of changes of the model.
-    */
+     * @deprecated used by deprecated {@link SubMenu}
+     */
+    @Deprecated
     public static interface SubMenuModel {
         /** @return count of the submenu items. */
         public int getCount();
@@ -1429,7 +1441,7 @@ public class Actions extends Object {
     * @author   Ian Formanek, Jan Jancura
     */
     public static class CheckboxMenuItem extends javax.swing.JCheckBoxMenuItem {
-        static final long serialVersionUID = 6190621106981774043L;
+        private static final long serialVersionUID = 6190621106981774043L;
 
         /** Constructs a new ActCheckboxMenuItem with the specified label
         *  and connects it to the given BooleanStateAction.
@@ -1444,8 +1456,9 @@ public class Actions extends Object {
     /** Component shown in toolbar, representing an action.
     * @deprecated extends deprecated ToolbarButton
     */
+    @Deprecated
     public static class ToolbarButton extends org.openide.awt.ToolbarButton {
-        static final long serialVersionUID = 6564434578524381134L;
+        private static final long serialVersionUID = 6564434578524381134L;
 
         public ToolbarButton(SystemAction aAction) {
             super(null);
@@ -1480,8 +1493,9 @@ public class Actions extends Object {
     *
     * @deprecated extends deprecated ToolbarToggleButton
     */
+    @Deprecated
     public static class ToolbarToggleButton extends org.openide.awt.ToolbarToggleButton {
-        static final long serialVersionUID = -4783163952526348942L;
+        private static final long serialVersionUID = -4783163952526348942L;
 
         /** Constructs a new ActToolbarToggleButton for specified action */
         public ToolbarToggleButton(BooleanStateAction aAction) {
@@ -1510,9 +1524,11 @@ public class Actions extends Object {
 
     /** SubMenu provides easy way of displaying submenu items based on
     * SubMenuModel.
-    */
+     * @deprecated extends deprecated {@link JMenuPlus}
+     */
+    @Deprecated
     public static class SubMenu extends JMenuPlus implements DynamicMenuContent {
-        static final long serialVersionUID = -4446966671302959091L;
+        private static final long serialVersionUID = -4446966671302959091L;
 
         private SubMenuBridge bridge;
 

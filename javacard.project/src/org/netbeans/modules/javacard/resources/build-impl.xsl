@@ -246,6 +246,21 @@ No emulator found at ${emulator.executable}]]>
                     <pathelement path="${{javacard.nbtasksClassPath}}"/>
                     <pathelement path="${{javacard.toolClasspath}}"/>
                 </path>
+                <taskdef name="jc-pack" classname="${{javacard.tasks.packTaskClass}}">
+                    <classpath>
+                        <path refid="javacard.tasks.path"/>
+                    </classpath>
+                </taskdef>
+                <taskdef name="jc-sign" classname="${{javacard.tasks.signTaskClass}}">
+                    <classpath>
+                        <path refid="javacard.tasks.path"/>
+                    </classpath>
+                </taskdef>
+                <taskdef name="jc-proxy" classname="${{javacard.tasks.proxyTaskClass}}">
+                    <classpath>
+                        <path refid="javacard.tasks.path"/>
+                    </classpath>
+                </taskdef>
                 <taskdef name="jc-load" classname="${{javacard.tasks.loadTaskClass}}">
                     <classpath>
                         <path refid="javacard.tasks.path"/>
@@ -324,54 +339,28 @@ No emulator found at ${emulator.executable}]]>
 
             </xsl:choose>
 
-            <target name="pack" depends="unpack-dependencies,pack-unsigned,pack-signed"/>
+            <target name="pack" depends="unpack-dependencies,do-pack,do-sign"/>
 
-            <target name="pack-unsigned" unless="sign.bundle">
-                <java classname="${{javacard.packagerClass}}" dir="${{javacard.home}}/bin" classpath="${{javacard.toolClassPath}}" fork="true" failonerror="true">
-                    <arg value="create"/>
-                    <arg value="--type"/>
-                    <arg value="${{deployment.type.arg}}"/>
-                    <arg value="--out"/>
-                    <arg file="${{dist.bundle}}"/>
-                    <xsl:choose>
-                        <xsl:when test="$classiclibraryproject">
-                            <arg value="--packageaid"/>
-                            <arg value="${{package.aid}}"/>
-                        </xsl:when>
-                    </xsl:choose>
-                    <arg file="${{build.dir}}"/>
-                    <arg value="--force"/>
-                    <sysproperty key="jc.home" value="${{javacard.home}}"/>
-                </java>
+            <target name="do-pack">
+                <jc-pack failonerror="true"/>
             </target>
 
-            <target name="pack-signed" if="sign.bundle">
-                <java classname="${{javacard.packagerClass}}" dir="${{javacard.home}}/bin" classpath="${{javacard.toolClassPath}}" fork="true" failonerror="true">
-                    <arg value="create"/>
-                    <arg value="--type"/>
-                    <arg value="${{deployment.type.arg}}"/>
-                    <arg value="--out"/>
-                    <arg file="${{dist.bundle}}"/>
-                    <xsl:choose>
-                        <xsl:when test="$classiclibraryproject">
-                            <arg value="--packageaid"/>
-                            <arg value="${{package.aid}}"/>
-                        </xsl:when>
-                    </xsl:choose>
-                    <arg value="--sign"/>
-                    <arg value="-K"/>
-                    <arg file="${{keystore.resolved}}"/>
-                    <arg value="-P"/>
-                    <arg value="password"/>
-                    <arg value="-S"/>
-                    <arg value="password"/>
-                    <arg value="-A"/>
-                    <arg value="ri"/>
-                    <arg file="${{build.dir}}"/>
-                    <arg value="--force"/>
-                    <sysproperty key="jc.home" value="${{javacard.home}}"/>
-                </java>
+            <target name="do-sign" if="sign.bundle">
+                <jc-sign failonerror="true"/>
             </target>
+
+            <xsl:if test="$classicappletproject or $classiclibraryproject">
+                <target name="-print-message-for-use-my-proxies" unless="${{use.my.proxies}}">
+                    <echo></echo>
+                    <echo>!!!!SIO-Proxy Generation!!!!</echo>
+                    <echo>Source for Proxies is generated. To use these sources, Use My Proxies option in Packaging settings of the project must be enabled.</echo>
+                    <echo></echo>
+                </target>
+                <target name="generate-sio-proxies" depends="-init">
+                    <jc-proxy failonerror="true"/>
+                    <antcall target="-print-message-for-use-my-proxies"/>
+                </target>
+            </xsl:if>
 
             <xsl:choose>
                 <xsl:when test="$classiclibraryproject or $extensionlibraryproject">

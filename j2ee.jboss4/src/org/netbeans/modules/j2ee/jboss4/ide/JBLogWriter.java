@@ -163,6 +163,10 @@ public final class JBLogWriter {
                     }
                 }
             }
+
+            public void close() {
+                out.close();
+            }
         }, null, LOGGER_TYPE.FILE);
     }
     
@@ -200,7 +204,11 @@ public final class JBLogWriter {
                     }
                 }
             }
-            
+
+            public void close() {
+                out.close();
+            }
+
             /**
              * Fires the progress events when the server startup process begins and finishes
              * (either sucessfully or not)
@@ -240,6 +248,10 @@ public final class JBLogWriter {
                         err.println(line);
                     }
                 }
+            }
+
+            public void close() {
+                err.close();
             }
         },
         LOGGER_TYPE.PROCESS);
@@ -283,6 +295,7 @@ public final class JBLogWriter {
      */
     private interface LineProcessor {
         void processLine(String line);
+        void close();
     }
     
     /**
@@ -602,6 +615,14 @@ public final class JBLogWriter {
             lineProcessor.processLine(lineReader.getTrailingLine());
             if (errorLineProcessor != null && errorLineReader != null) {
                 errorLineProcessor.processLine(errorLineReader.getTrailingLine());
+            }
+
+            lineProcessor.close();
+            if (errorLineProcessor != null) {
+                errorLineProcessor.close();
+            } else {
+                // ugly :/ we should start using extexecution asap
+                err.close();
             }
 
             if (LOGGER.isLoggable(Level.FINER)) {

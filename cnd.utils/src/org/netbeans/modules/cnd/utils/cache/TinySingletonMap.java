@@ -93,8 +93,8 @@ public final class TinySingletonMap<K, V> implements Map<K, V> {
         return key.equals(aKey);
     }
 
-    public boolean containsValue(Object value) {
-        return value != null && value.equals(value);
+    public boolean containsValue(Object aValue) {
+        return value != null && value.equals(aValue);
     }
 
     public V get(Object aKey) {

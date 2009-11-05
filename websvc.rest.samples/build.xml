@@ -54,6 +54,7 @@ made subject to such option by the copyright holder.
                                 zip-rest-customer-db-spring,
                                 zip-rest-customer-db-client,
                                 zip-message-board-war,
+                                zip-lean-service-ecb-war,
                                 projectized-common.jar"/>
 
     <!-- initialize necessary properties for Identity sample targets-->
@@ -100,6 +101,14 @@ made subject to such option by the copyright holder.
         <zip destfile="${rest.samples.resources}/MessageBoard.zip"
             update="true">
         <zipfileset dir="MessageBoard"/>
+        </zip>
+    </target>
+
+      <!-- Target for LeanServiceECBSample sample -->
+    <target name="zip-lean-service-ecb-war" depends="init-zip-samples">
+        <zip destfile="${rest.samples.resources}/LeanServiceECBComponentWithAjax.zip"
+            update="true">
+        <zipfileset dir="LeanServiceECBComponentWithAjax"/>
         </zip>
     </target>
     

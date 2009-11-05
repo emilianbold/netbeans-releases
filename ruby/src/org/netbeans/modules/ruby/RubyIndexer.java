@@ -1449,21 +1449,23 @@ public class RubyIndexer extends EmbeddingIndexer {
             AstAttributeElement attributeElement = (AstAttributeElement) child;
             String attribute = attributeElement.getName();
 
+            int flags = getModifiersFlag(child.getModifiers());
             boolean isDocumented = isDocumented(attributeElement.getNode());
 
-            int flags = isDocumented ? IndexedMethod.DOCUMENTED : 0;
+            if(isDocumented) {
+                flags |= IndexedMethod.DOCUMENTED;
+            }
             if (nodoc) {
                 flags |= IndexedElement.NODOC;
             }
-            boolean isStatic = AstUtilities.isCAttr(attributeElement.getCreationNode());
-            if (isStatic) {
-                flags |= IndexedElement.STATIC;
-            }
-            
-            if (isDocumented || isStatic) {
+            if (flags != 0) {
                 char first = IndexedElement.flagToFirstChar(flags);
                 char second = IndexedElement.flagToSecondChar(flags);
                 attribute = attribute + (";" + first) + second;
+            }
+            RubyType type = child.getType();
+            if (type.isKnown()) {
+                attribute += ";;" + type.asIndexedString() + ";";
             }
             
             document.addPair(FIELD_ATTRIBUTE_NAME, attribute, true, true);

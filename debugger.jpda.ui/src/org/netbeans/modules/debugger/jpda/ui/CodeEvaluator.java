@@ -42,7 +42,6 @@ package org.netbeans.modules.debugger.jpda.ui;
 import java.awt.AWTKeyStroke;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.KeyboardFocusManager;
 import java.awt.Point;
@@ -137,15 +136,29 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
         codePane.setMinimumSize(new Dimension(0,0));
         history = new History();
 
-        rightPanel.setPreferredSize(new Dimension(evaluateButton.getPreferredSize().width + 6, 0));
-
         dropDownButton = createDropDownButton();
-        GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
-        gridBagConstraints.insets = new java.awt.Insets(3, 3, 0, 3);
-        rightPanel.add(dropDownButton, gridBagConstraints);
+
+        org.jdesktop.layout.GroupLayout rightPanelLayout = new org.jdesktop.layout.GroupLayout(rightPanel);
+        rightPanel.setLayout(rightPanelLayout);
+        rightPanelLayout.setHorizontalGroup(
+            rightPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(rightPanelLayout.createSequentialGroup()
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(dropDownButton)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 2, 2))
+            .add(rightPanelLayout.createSequentialGroup()
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 2, 2)
+                .add(evaluateButton)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 2, 2))
+        );
+        rightPanelLayout.setVerticalGroup(
+            rightPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(rightPanelLayout.createSequentialGroup()
+                .add(dropDownButton)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(evaluateButton))
+        );
+        
         setupContext();
         editorScrollPane.setViewportView(codePane);
         codePane.addKeyListener(this);
@@ -409,67 +422,59 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
 
+        evaluateButton = new javax.swing.JButton();
         editorScrollPane = new javax.swing.JScrollPane();
         separatorPanel = new javax.swing.JPanel();
         rightPanel = new javax.swing.JPanel();
-        evaluateButton = new javax.swing.JButton();
-        emptyPanel = new javax.swing.JPanel();
-
-        setLayout(new java.awt.GridBagLayout());
-
-        editorScrollPane.setBorder(null);
-        editorScrollPane.setMinimumSize(new java.awt.Dimension(0, 0));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        add(editorScrollPane, gridBagConstraints);
-
-        separatorPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("Separator.foreground"));
-        separatorPanel.setMaximumSize(new java.awt.Dimension(1, 32767));
-        separatorPanel.setMinimumSize(new java.awt.Dimension(0, 0));
-        separatorPanel.setPreferredSize(new java.awt.Dimension(1, 10));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
-        add(separatorPanel, gridBagConstraints);
-
-        rightPanel.setPreferredSize(new java.awt.Dimension(48, 0));
-        rightPanel.setLayout(new java.awt.GridBagLayout());
 
         evaluateButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/debugger/jpda/resources/evaluate.png"))); // NOI18N
         evaluateButton.setText(org.openide.util.NbBundle.getMessage(CodeEvaluator.class, "CodeEvaluator.evaluateButton.text")); // NOI18N
         evaluateButton.setToolTipText(org.openide.util.NbBundle.getMessage(CodeEvaluator.class, "HINT_Evaluate_Button")); // NOI18N
         evaluateButton.setEnabled(false);
-        evaluateButton.setPreferredSize(new java.awt.Dimension(40, 22));
+        evaluateButton.setPreferredSize(new java.awt.Dimension(38, 22));
         evaluateButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 evaluateButtonActionPerformed(evt);
             }
         });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
-        gridBagConstraints.insets = new java.awt.Insets(0, 3, 3, 3);
-        rightPanel.add(evaluateButton, gridBagConstraints);
 
-        emptyPanel.setMinimumSize(new java.awt.Dimension(0, 0));
-        emptyPanel.setPreferredSize(new java.awt.Dimension(0, 0));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weighty = 1.0;
-        rightPanel.add(emptyPanel, gridBagConstraints);
+        editorScrollPane.setBorder(null);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
-        add(rightPanel, gridBagConstraints);
+        separatorPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("Separator.foreground"));
+        separatorPanel.setMaximumSize(new java.awt.Dimension(1, 32767));
+        separatorPanel.setMinimumSize(new java.awt.Dimension(1, 10));
+        separatorPanel.setPreferredSize(new java.awt.Dimension(1, 10));
+
+        rightPanel.setMinimumSize(new java.awt.Dimension(0, 0));
+        rightPanel.setPreferredSize(new java.awt.Dimension(48, 0));
+
+        org.jdesktop.layout.GroupLayout rightPanelLayout = new org.jdesktop.layout.GroupLayout(rightPanel);
+        rightPanel.setLayout(rightPanelLayout);
+        rightPanelLayout.setHorizontalGroup(
+            rightPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 48, Short.MAX_VALUE)
+        );
+        rightPanelLayout.setVerticalGroup(
+            rightPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 22, Short.MAX_VALUE)
+        );
+
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .add(editorScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 450, Short.MAX_VALUE)
+                .add(separatorPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(rightPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(editorScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 22, Short.MAX_VALUE)
+            .add(separatorPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 22, Short.MAX_VALUE)
+            .add(rightPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 22, Short.MAX_VALUE)
+        );
     }// </editor-fold>//GEN-END:initComponents
 
     private void evaluateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_evaluateButtonActionPerformed
@@ -479,7 +484,6 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JScrollPane editorScrollPane;
-    private javax.swing.JPanel emptyPanel;
     private javax.swing.JButton evaluateButton;
     private javax.swing.JPanel rightPanel;
     private javax.swing.JPanel separatorPanel;
@@ -503,7 +507,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
 
     @Override
     public boolean requestFocusInWindow() {
-        codePane.requestFocusInWindow(); // [TODO}
+        codePane.requestFocusInWindow(); // [TODO]
         return super.requestFocusInWindow();
     }
 

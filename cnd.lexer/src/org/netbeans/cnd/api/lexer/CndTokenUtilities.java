@@ -43,6 +43,7 @@ package org.netbeans.cnd.api.lexer;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.PartType;
@@ -66,9 +67,15 @@ public class CndTokenUtilities {
      * @return
      */
     public static boolean isInPreprocessorDirective(Document doc, int offset) {
-        TokenSequence<CppTokenId> cppTokenSequence = CndLexerUtilities.getCppTokenSequence(doc, offset, false, true);
-        if (cppTokenSequence != null) {
-            return cppTokenSequence.token().id() == CppTokenId.PREPROCESSOR_DIRECTIVE;
+        AbstractDocument aDoc = (AbstractDocument)doc;
+        aDoc.readLock();
+        try {
+            TokenSequence<CppTokenId> cppTokenSequence = CndLexerUtilities.getCppTokenSequence(doc, offset, false, true);
+            if (cppTokenSequence != null) {
+                return cppTokenSequence.token().id() == CppTokenId.PREPROCESSOR_DIRECTIVE;
+            }
+        } finally {
+            aDoc.readUnlock();
         }
         return false;
     }
@@ -142,21 +149,27 @@ public class CndTokenUtilities {
         if (pos == 0) {
             return 0;
         }
-        TokenSequence<CppTokenId> ts = CndLexerUtilities.getCppTokenSequence(doc, pos, true, true);
-        if (ts == null) {
-            return 0;
-        }
-        do {
-            switch (ts.token().id()) {
-                case SEMICOLON:
-                case LBRACE:
-                case RBRACE:
-                    return ts.offset();
+        AbstractDocument aDoc = (AbstractDocument)doc;
+        aDoc.readLock();
+        try {
+            TokenSequence<CppTokenId> ts = CndLexerUtilities.getCppTokenSequence(doc, pos, true, true);
+            if (ts == null) {
+                return 0;
             }
-        } while (ts.movePrevious());
-        ts.moveStart();
-        if (ts.moveNext()) {
-            return ts.offset();
+            do {
+                switch (ts.token().id()) {
+                    case SEMICOLON:
+                    case LBRACE:
+                    case RBRACE:
+                        return ts.offset();
+                }
+            } while (ts.movePrevious());
+            ts.moveStart();
+            if (ts.moveNext()) {
+                return ts.offset();
+            }
+        } finally {
+            aDoc.readUnlock();
         }
         return 0;
     }

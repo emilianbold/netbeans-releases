@@ -491,7 +491,9 @@ public final class TopLogging {
                 for (;;) {
                     try {
                         // queue is full, schedule its clearing
-                        schedule(0);
+                        if (!schedule(0)) {
+                            return;
+                        }
                         queue.put(record);
                         Thread.yield();
                         break;
@@ -503,7 +505,7 @@ public final class TopLogging {
             schedule(delay);
         }
 
-        private void schedule(int d) {
+        private boolean schedule(int d) {
             if (!Boolean.TRUE.equals(FLUSHING.get())) {
                 try {
                     FLUSHING.set(true);
@@ -511,6 +513,9 @@ public final class TopLogging {
                 } finally {
                     FLUSHING.set(false);
                 }
+                return true;
+            } else {
+                return false;
             }
         }
 

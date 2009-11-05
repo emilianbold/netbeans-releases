@@ -40,8 +40,8 @@
 package org.netbeans.modules.cnd.remote.support;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
@@ -86,7 +86,7 @@ public class RemoteProjectSupport {
             return new File[] { baseDir };
         }
         // the project itself
-        List<File> extraSourceRoots = new ArrayList<File>();
+        Set<File> extraSourceRoots = new HashSet<File>();
         MakeConfigurationDescriptor mcs = MakeConfigurationDescriptor.getMakeConfigurationDescriptor(project);
         for(String soorceRoot : mcs.getSourceRoots()) {
             String path = IpeUtils.toAbsolutePath(baseDir.getAbsolutePath(), soorceRoot);
@@ -109,7 +109,7 @@ public class RemoteProjectSupport {
                 extraSourceRoots.add(file);
             }
         }
-        List<File> allFiles = new ArrayList<File>(extraSourceRoots.size() + 1);
+        Set<File> allFiles = new HashSet<File>(extraSourceRoots.size() + 1);
         allFiles.add(baseDir);
         allFiles.addAll(extraSourceRoots);
         return allFiles.toArray(new File[allFiles.size()]);

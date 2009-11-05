@@ -121,6 +121,7 @@ public class RemoteServerList implements ServerListImplementation {
                 }
             }
         }
+        defaultIndex = Math.min(defaultIndex, items.size() - 1);
         refresh();
     }
 
@@ -383,4 +384,8 @@ public class RemoteServerList implements ServerListImplementation {
             return o1.getServerName().compareTo(o2.getServerName());
         }
     };
+
+    public ServerRecord createServerRecord(ExecutionEnvironment env, String displayName, RemoteSyncFactory syncFactory) {
+        return new RemoteServerRecord(env, displayName, syncFactory, false);
+    }
 }

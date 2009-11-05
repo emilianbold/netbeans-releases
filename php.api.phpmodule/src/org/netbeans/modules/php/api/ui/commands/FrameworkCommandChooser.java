@@ -486,6 +486,60 @@ public final class FrameworkCommandChooser extends JPanel {
         keepOpenedCheckBox = new javax.swing.JCheckBox();
 
         org.openide.awt.Mnemonics.setLocalizedText(debugCheckbox, org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.debugCheckbox.text")); // NOI18N
+        debugCheckbox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.debugCheckbox.AccessibleContext.accessibleName")); // NOI18N
+        debugCheckbox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.debugCheckbox.AccessibleContext.accessibleDescription")); // NOI18N
+
+        setFocusTraversalPolicy(new java.awt.FocusTraversalPolicy() {
+            public java.awt.Component getDefaultComponent(java.awt.Container focusCycleRoot){
+                return matchingTaskList;
+            }//end getDefaultComponent
+
+            public java.awt.Component getFirstComponent(java.awt.Container focusCycleRoot){
+                return matchingTaskList;
+            }//end getFirstComponent
+
+            public java.awt.Component getLastComponent(java.awt.Container focusCycleRoot){
+                return keepOpenedCheckBox;
+            }//end getLastComponent
+
+            public java.awt.Component getComponentAfter(java.awt.Container focusCycleRoot, java.awt.Component aComponent){
+                if(aComponent ==  matchingTaskList){
+                    return helpTextArea;
+                }
+                if(aComponent ==  helpTextArea){
+                    return previewTextField;
+                }
+                if(aComponent ==  taskField){
+                    return taskParametersComboBox;
+                }
+                if(aComponent ==  previewTextField){
+                    return keepOpenedCheckBox;
+                }
+                if(aComponent ==  taskParametersComboBox){
+                    return matchingTaskList;
+                }
+                return matchingTaskList;//end getComponentAfter
+            }
+            public java.awt.Component getComponentBefore(java.awt.Container focusCycleRoot, java.awt.Component aComponent){
+                if(aComponent ==  helpTextArea){
+                    return matchingTaskList;
+                }
+                if(aComponent ==  previewTextField){
+                    return helpTextArea;
+                }
+                if(aComponent ==  taskParametersComboBox){
+                    return taskField;
+                }
+                if(aComponent ==  keepOpenedCheckBox){
+                    return previewTextField;
+                }
+                if(aComponent ==  matchingTaskList){
+                    return taskParametersComboBox;
+                }
+                return keepOpenedCheckBox;//end getComponentBefore
+
+            }}
+        );
 
         taskLabel.setLabelFor(taskField);
         org.openide.awt.Mnemonics.setLocalizedText(taskLabel, org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.taskLabel.text")); // NOI18N
@@ -499,10 +553,16 @@ public final class FrameworkCommandChooser extends JPanel {
             }
         });
         taskFieldPanel.add(taskField, java.awt.BorderLayout.NORTH);
+        taskField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.taskField.AccessibleContext.accessibleName")); // NOI18N
+        taskField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.taskField.AccessibleContext.accessibleDescription")); // NOI18N
 
+        taskHint.setLabelFor(this);
         org.openide.awt.Mnemonics.setLocalizedText(taskHint, org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.taskHint.text")); // NOI18N
         taskFieldPanel.add(taskHint, java.awt.BorderLayout.SOUTH);
+        taskHint.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.taskHint.AccessibleContext.accessibleName")); // NOI18N
+        taskHint.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.taskHint.AccessibleContext.accessibleDescription")); // NOI18N
 
+        taskParamLabel.setLabelFor(taskParametersComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(taskParamLabel, org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.taskParamLabel.text")); // NOI18N
 
         taskParametersComboBox.setEditable(true);
@@ -523,16 +583,24 @@ public final class FrameworkCommandChooser extends JPanel {
             }
         });
         matchingTaskSP.setViewportView(matchingTaskList);
+        matchingTaskList.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.matchingTaskList.AccessibleContext.accessibleName")); // NOI18N
+        matchingTaskList.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.matchingTaskList.AccessibleContext.accessibleDescription")); // NOI18N
 
         splitPane.setTopComponent(matchingTaskSP);
+        matchingTaskSP.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.matchingTaskSP.AccessibleContext.accessibleName")); // NOI18N
+        matchingTaskSP.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.matchingTaskSP.AccessibleContext.accessibleDescription")); // NOI18N
 
         helpTextArea.setBackground(javax.swing.UIManager.getDefaults().getColor("Label.background"));
         helpTextArea.setColumns(20);
         helpTextArea.setEditable(false);
         helpTextArea.setRows(5);
         helpScrollPane.setViewportView(helpTextArea);
+        helpTextArea.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.helpTextArea.AccessibleContext.accessibleName")); // NOI18N
+        helpTextArea.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.helpTextArea.AccessibleContext.accessibleDescription")); // NOI18N
 
         splitPane.setRightComponent(helpScrollPane);
+        helpScrollPane.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.helpScrollPane.AccessibleContext.accessibleName")); // NOI18N
+        helpScrollPane.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.helpScrollPane.AccessibleContext.accessibleDescription")); // NOI18N
 
         previewTextField.setEditable(false);
 
@@ -587,6 +655,26 @@ public final class FrameworkCommandChooser extends JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(keepOpenedCheckBox))
         );
+
+        taskLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.taskLabel.AccessibleContext.accessibleName")); // NOI18N
+        taskLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.taskLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        taskFieldPanel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.taskFieldPanel.AccessibleContext.accessibleName")); // NOI18N
+        taskFieldPanel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.taskFieldPanel.AccessibleContext.accessibleDescription")); // NOI18N
+        taskParamLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.taskParamLabel.AccessibleContext.accessibleName")); // NOI18N
+        taskParamLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.taskParamLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        taskParametersComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.taskParametersComboBox.AccessibleContext.accessibleDescription")); // NOI18N
+        matchingTaskLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.matchingTaskLabel.AccessibleContext.accessibleName")); // NOI18N
+        matchingTaskLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.matchingTaskLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        splitPane.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.splitPane.AccessibleContext.accessibleName")); // NOI18N
+        splitPane.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.splitPane.AccessibleContext.accessibleDescription")); // NOI18N
+        previewTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.previewTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        previewLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.previewLabel.AccessibleContext.accessibleName")); // NOI18N
+        previewLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.previewLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        keepOpenedCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.keepOpenedCheckBox.AccessibleContext.accessibleName")); // NOI18N
+        keepOpenedCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.keepOpenedCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void handleNavigationKeys(KeyEvent evt) {

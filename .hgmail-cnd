@@ -1,3 +1,3 @@
 [usersubs]
-cvs@cnd.netbeans.org=cnd*/*,asm/*,lib.terminalemulator/*
-cvs@dlight.netbeans.org=dlight*/*
+commits@cnd.netbeans.org=cnd*/*,asm/*,lib.terminalemulator/*
+dlight-commits@cnd.netbeans.org=dlight*/*

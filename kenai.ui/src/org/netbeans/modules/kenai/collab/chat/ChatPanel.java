@@ -46,7 +46,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.DateFormat;
 import java.util.*;
@@ -132,7 +131,7 @@ public class ChatPanel extends javax.swing.JPanel {
     private CompoundUndoManager undo;
     private MessageHistoryManager history = new MessageHistoryManager();
 
-    private static final String ISSUE_REPORT_STRING = "(issue |bug |ISSUE:)#?([A-Z_]+-)*([0-9]+)"; //NOI18N
+    private static final String ISSUE_REPORT_STRING = "(issue |bug |ISSUE:|ISSUE: )#?([A-Z_]+-)*([0-9]+)"; //NOI18N
     /**
      * Pattern for matching issue references in the form "issue 123", "issue #123", "bug 123" and "bug #123"
      */
@@ -215,13 +214,44 @@ public class ChatPanel extends javax.swing.JPanel {
     }
     private void selectIssueReport(Matcher m) {
         final String issueNumber = m.group(3);
-        final KenaiProject proj;
+        KenaiProject _proj = null;
         try {
-            proj = Kenai.getDefault().getProject(StringUtils.parseName(this.muc.getRoom())); // project name ~ chatroom name
+            if (isPrivate()) {
+                try { // in case of private chats, use the first project's repo with the correct type of issuetracker
+                    Iterator<KenaiProject> it = Kenai.getDefault().getMyProjects().iterator();
+                    _proj = it.next();
+                    if (m.group(2) == null || m.group(2).equals("")) { //Bugzilla issue?
+                        while (it.hasNext()) { // iterate over all your projects and find any project with BZ issuetracker
+                            KenaiFeature[] bt = _proj.getFeatures(Type.ISSUES);
+                            if (bt.length == 0) continue;
+                            KenaiFeature btinst = bt[0];
+                            if (btinst.getService().equals(KenaiService.Names.BUGZILLA)) {
+                                break;
+                            }
+                            _proj = it.next();
+                        }
+                    } else { //Jira issue?
+                        while (it.hasNext()) { // find the project according to the part of the issue, for example "bug SAMPLE_PROJECT-1"=>sample-project
+                            System.out.println(_proj.getName());
+                            String s = m.group(2).replaceAll("-", "_").toLowerCase();
+                            s = s.substring(0, s.length() - 1);
+                            if (_proj.getName().replaceAll("-", "_").toLowerCase().equals(s)) {
+                                break;
+                            }
+                            _proj = it.next();
+                        }
+                    }
+                } catch (KenaiException ex1) {
+                    Exceptions.printStackTrace(ex1);
+                }
+            } else {
+                _proj = Kenai.getDefault().getProject(StringUtils.parseName(this.muc.getRoom())); // project name ~ chatroom name
+            }
         } catch (KenaiException ex) {
-            // no project with given name was found or 1to1 chat -> return
-            return;
+            ex.printStackTrace();
         }
+        final KenaiProject proj = _proj;
+        if (proj == null) return;
         KenaiFeature[] trackers = null;
         try {
             trackers = proj.getFeatures(Type.ISSUES);
@@ -235,7 +265,7 @@ public class ChatPanel extends javax.swing.JPanel {
             SwingUtilities.invokeLater(new Runnable() {
 
                 public void run() { // issue ID format: PROJECT_NAME-123
-                    KenaiIssueAccessor.getDefault().open(proj, proj.getName().toUpperCase().replaceAll("-", "_") + "-" + issueNumber);
+                    KenaiIssueAccessor.getDefault().open(proj, proj.getName().toUpperCase().replaceAll("-", "_") + "-" + issueNumber); // NOI18N
                 }
             });
         } else if (trackers[0].getService().equals(KenaiService.Names.BUGZILLA)) {
@@ -247,6 +277,7 @@ public class ChatPanel extends javax.swing.JPanel {
             });
         }
     }
+
 
     private void selectStackTrace(Matcher m) {
         String pkg = m.group(2);
@@ -400,7 +431,7 @@ public class ChatPanel extends javax.swing.JPanel {
             public void hyperlinkUpdate(HyperlinkEvent e) {
                 if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
                     URL url = e.getURL();
-                    if (url!=null && !(url.getProtocol().equals("file") || url.getProtocol().equals("issue")) ) {
+                    if (url!=null && !(url.getProtocol().equals("file") || url.getProtocol().equals("issue")) ) { // NOI18N
                         URLDisplayer.getDefault().showURL(url);
                     } else {
                         String link = e.getDescription();
@@ -500,26 +531,8 @@ public class ChatPanel extends javax.swing.JPanel {
         String result = body.replaceAll("(http|https|ftp)://([a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,4}(/[^ ]*)*", "<a href=\"$0\">$0</a>"); //NOI18N
 
         result = RESOURCES.matcher(result).replaceAll("<a href=\"$0\">$0</a>");  //NOI18N
-
-        KenaiProject proj = null; // This try/catch block is just to determine if the project has some issue trackers
-        try {
-            if (this.muc != null) {
-                proj = Kenai.getDefault().getProject(StringUtils.parseName(this.muc.getRoom())); // project name ~ chatroom name
-                if (proj != null) {
-                    KenaiFeature[] trackers = null;
-                    try {
-                        trackers = proj.getFeatures(Type.ISSUES);
-                    } catch (KenaiException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                    if (trackers.length != 0) { // Issue trackers found, replace issue references
-                        result = ISSUE_REPORT.matcher(result).replaceAll("<a href=\"$0\">$0</a>"); //NOI18N
-                    }
-                }
-            }
-        } catch (KenaiException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        
+        result = ISSUE_REPORT.matcher(result).replaceAll("<a href=\"$0\">$0</a>"); //NOI18N
 
         return result.replaceAll("  ", " &nbsp;"); //NOI18N
     }
@@ -942,7 +955,7 @@ public class ChatPanel extends javax.swing.JPanel {
     private String rgb = null;
 
     private String getMessageBody(Message m) {
-        final NotificationExtension ne = (NotificationExtension) m.getExtension("notification", NotificationExtensionProvider.NAMESPACE);
+        final NotificationExtension ne = (NotificationExtension) m.getExtension("notification", NotificationExtensionProvider.NAMESPACE); // NOI18N
         String b = m.getBody();
         if (ne==null) {
             return b;
@@ -960,11 +973,11 @@ public class ChatPanel extends javax.swing.JPanel {
         }
         String id = n.getModifications().get(0).getId();
         String projectName = StringUtils.parseName(m.getFrom());
-        if (projectName.contains("@")) {
+        if (projectName.contains("@")) { // NOI18N
             projectName = StringUtils.parseName(projectName);
         }
-        String url = Kenai.getDefault().getUrl().toString()+ "/projects/" + projectName + "/sources/" + n.getServiceName() + "/revision/" + id;
-        return body + "\n" + url;
+        String url = Kenai.getDefault().getUrl().toString()+ "/projects/" + projectName + "/sources/" + n.getServiceName() + "/revision/" + id; // NOI18N
+        return body + "\n" + url; // NOI18N
     }
 
     protected void insertMessage(Message message) {

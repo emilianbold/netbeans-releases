@@ -69,4 +69,6 @@ public interface ServerListImplementation {
     public ServerRecord addServer(ExecutionEnvironment env, String displayName, RemoteSyncFactory syncFactory, boolean asDefault, boolean connect);
 
     public abstract boolean isValidExecutable(ExecutionEnvironment env, String path);
+
+    public abstract  ServerRecord createServerRecord(ExecutionEnvironment env, String displayName, RemoteSyncFactory syncFactory);
 }

@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.php.editor.indent;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -334,17 +335,29 @@ public class PHPBracketCompleter implements KeystrokeHandler {
             int indent = GsfUtilities.getLineIndent(doc, offset);
             StringBuilder sb = new StringBuilder();
             // the new line will not be added, if we are in middle of array declaration
-            Token<?extends PHPTokenId> helpToken = token;
-            if (ts.movePrevious()) {
-                do {
-                    helpToken = ts.token();
-                } while ((helpToken.id() == PHPTokenId.WHITESPACE
-                        || helpToken.id() == PHPTokenId.PHP_LINE_COMMENT)
-                        && ts.movePrevious());
+            if (LexUtilities.textEquals(token.text(), ')') && ts.movePrevious()) {
+                Token<?extends PHPTokenId> helpToken = LexUtilities.findPrevious(ts, Arrays.asList(
+                        PHPTokenId.WHITESPACE,
+                        PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHPDOC_COMMENT_START,
+                        PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_COMMENT_START,
+                        PHPTokenId.PHP_LINE_COMMENT));
+                if (helpToken.id() == PHPTokenId.PHP_TOKEN
+                        && (helpToken.text().charAt(0) == ',' || helpToken.text().charAt(0) == '(') && ts.movePrevious()) {
+                    // only in array declaration we will add new line
+                    helpToken = LexUtilities.findPrevious(ts, Arrays.asList(
+                            PHPTokenId.WHITESPACE,
+                            PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHPDOC_COMMENT_START,
+                            PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_COMMENT_START,
+                            PHPTokenId.PHP_LINE_COMMENT));
+                    if (helpToken.id() == PHPTokenId.PHP_ARRAY) {
+                        sb.append("\n"); // NOI18N
+                    }
+                }
             }
-            if (!(helpToken.id() == PHPTokenId.PHP_TOKEN && helpToken.text().charAt(0) == ',')) {
+            else {
                 sb.append("\n"); // NOI18N
             }
+            
             sb.append(IndentUtils.createIndentString(doc, indent));
 
             int insertOffset = offset; // offset < length ? offset+1 : offset;
@@ -686,6 +699,22 @@ public class PHPBracketCompleter implements KeystrokeHandler {
             // There is one more opening token on the line than a corresponding
             // closing token.  (If there's is more than one we don't try to help.)
             int indent = GsfUtilities.getLineIndent(doc, offset);
+            if (braceBalance == 1) {
+                TokenSequence<?extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, offset);
+
+                if (ts != null) {
+                    ts.move(offset);
+                    if (ts.moveNext() && ts.movePrevious()) {
+                        Token<?extends PHPTokenId> token = LexUtilities.findPrevious(ts, Arrays.asList(
+                                PHPTokenId.PHP_CURLY_OPEN, PHPTokenId.WHITESPACE,
+                                PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHPDOC_COMMENT_START,
+                                PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_COMMENT_START,
+                                PHPTokenId.PHP_LINE_COMMENT));
+                        int startExpression = PHPNewLineIndenter.findStartTokenOfExpression(ts);
+                        indent = GsfUtilities.getLineIndent(doc, startExpression);
+                    }
+                }
+            }
 
             // Look for the next nonempty line, and if its indent is > indent,
             // or if its line balance is -1 (e.g. it's an end) we're done

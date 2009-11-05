@@ -89,7 +89,7 @@ public class FieldBreakpointPanel extends JPanel implements Controller, org.open
         FieldBreakpoint mb = FieldBreakpoint.create (
             className,
             fieldName,
-            FieldBreakpoint.TYPE_ACCESS
+            FieldBreakpoint.TYPE_ACCESS | FieldBreakpoint.TYPE_MODIFICATION
         );
         mb.setPrintText (
             NbBundle.getBundle (FieldBreakpointPanel.class).getString 

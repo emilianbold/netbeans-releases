@@ -51,8 +51,11 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.modules.nativeexecution.api.util.ShellValidationSupport.ShellValidationStatus;
 import org.netbeans.modules.nativeexecution.support.Computable;
 import org.netbeans.modules.nativeexecution.support.Logger;
+import org.netbeans.modules.nativeexecution.api.util.Shell.PathType;
+import org.netbeans.modules.nativeexecution.api.util.Shell.ShellType;
 import org.netbeans.modules.nativeexecution.support.TasksCachedProcessor;
 import org.openide.util.Utilities;
 
@@ -67,9 +70,7 @@ public final class WindowsSupport {
     private final TasksCachedProcessor<PathConverterParams, String> converter =
             new TasksCachedProcessor<PathConverterParams, String>(new PathConverter(), false);
     private final boolean isWindows;
-    private ShellType type = ShellType.NO_SHELL;
-    private String shell = null;
-    private String bin = null;
+    private Shell activeShell = null;
     private Map<String, String> env = null;
     private String REG_EXE;
 
@@ -78,10 +79,10 @@ public final class WindowsSupport {
 
         init();
 
-        if (type == ShellType.NO_SHELL) {
+        if (activeShell == null) {
             log.fine("WindowsSupport: no shell found"); // NOI18N
         } else {
-            log.fine("WindowsSupport: found " + type + " shell in " + bin); // NOI18N
+            log.fine("WindowsSupport: found " + activeShell.type + " shell in " + activeShell.bindir.getAbsolutePath()); // NOI18N
         }
     }
 
@@ -90,13 +91,25 @@ public final class WindowsSupport {
     }
 
     public String getShell() {
-        return shell;
+        return activeShell == null ? null : activeShell.shell;
     }
 
-    public void init() {
+    public synchronized void init() {
+        init(null);
+    }
+
+    public void init(String searchDir) {
         if (!isWindows) {
             return;
         }
+
+        converter.resetCache();
+        activeShell = findShell(searchDir);
+    }
+
+    private Shell findShell(String searchDir) {
+        Shell shell = null;
+        Shell candidate = null;
 
         String reg_exe = "reg.exe"; // NOI18N
 
@@ -110,66 +123,56 @@ public final class WindowsSupport {
 
         REG_EXE = reg_exe;
 
+
         // 1. Try to find cygwin ...
-        String cygwinRoot = queryWindowsRegistry(
-                "HKLM\\SOFTWARE\\Cygnus Solutions\\Cygwin\\mounts v2\\/", // NOI18N
-                "native", // NOI18N
-                ".*native.*REG_SZ(.*)"); // NOI18N
 
-        if (cygwinRoot == null) {
-            cygwinRoot = queryWindowsRegistry(
-                    "HKLM\\SOFTWARE\\cygwin\\setup\\", // NOI18N
-                    "rootdir", // NOI18N
-                    ".*rootdir.*REG_SZ(.*)"); // NOI18N
-        }
+        String[][] cygwinRegKeys = new String[][]{
+            new String[]{"HKLM\\SOFTWARE\\cygwin\\setup\\", "rootdir", ".*rootdir.*REG_SZ(.*)"}, // NOI18N
+            new String[]{"HKLM\\SOFTWARE\\Wow6432Node\\cygwin\\setup\\", "rootdir", ".*rootdir.*REG_SZ(.*)"}, // NOI18N
+            new String[]{"HKLM\\SOFTWARE\\Cygnus Solutions\\Cygwin\\mounts v2\\/", "native", ".*native.*REG_SZ(.*)"}, // NOI18N
+            new String[]{"HKLM\\SOFTWARE\\Wow6432Node\\Cygnus Solutions\\Cygwin\\mounts v2\\/", "native", ".*native.*REG_SZ(.*)"}, // NOI18N
+        };
 
-        if (cygwinRoot == null) {
-            cygwinRoot = queryWindowsRegistry(
-                    "HKLM\\SOFTWARE\\Wow6432Node\\Cygnus Solutions\\Cygwin\\mounts v2\\/", // NOI18N
-                    "native", // NOI18N
-                    ".*native.*REG_SZ(.*)"); // NOI18N
-        }
+        for (String[] regKey : cygwinRegKeys) {
+            shell = initShell(ShellType.CYGWIN, queryWindowsRegistry(
+                    regKey[0], regKey[1], regKey[2]));
 
-        if (cygwinRoot != null) {
-            File sh = new File(cygwinRoot + "/bin/sh.exe"); // NOI18N
-            if (sh.exists() && sh.canRead()) {
-                type = ShellType.CYGWIN;
-                shell = sh.getAbsolutePath();
-                bin = sh.getParentFile().getAbsolutePath();
-                return;
+            // If found cygwin in registry - it is assumed to be valid -
+            // just choose one
+            if (shell != null) {
+                return shell;
             }
         }
 
-        // 2. Try msys
-        String msysRoot = queryWindowsRegistry(
-                "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\MSYS-1.0_is1", // NOI18N
-                "Inno Setup: App Path", // NOI18N
-                ".*REG_SZ(.*)"); // NOI18N
+        // No cygwin in the registry...
+        // try msys
 
-        if (msysRoot == null) {
-            msysRoot = queryWindowsRegistry(
-                    "HKLM\\SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\MSYS-1.0_is1", // NOI18N
+        String[] msysRegKeys = new String[]{
+            "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\MSYS-1.0_is1", // NOI18N
+            "HKLM\\SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\MSYS-1.0_is1", // NOI18N
+        };
+
+        for (String regKey : msysRegKeys) {
+            shell = initShell(ShellType.MSYS, queryWindowsRegistry(
+                    regKey,
                     "Inno Setup: App Path", // NOI18N
-                    ".*REG_SZ(.*)"); // NOI18N
-        }
+                    ".*REG_SZ(.*)")); // NOI18N
 
-        if (msysRoot != null) {
-            File sh = new File(msysRoot + "/bin/sh.exe"); // NOI18N
-            if (sh.exists() && sh.canRead()) {
-                type = ShellType.MSYS;
-                shell = sh.getAbsolutePath();
-                bin = sh.getParentFile().getAbsolutePath();
-                return;
+            if (shell != null) {
+                // Again, if found one - use it
+                return shell;
             }
         }
 
-        // 3. Search in PATH
+        // Registry search failed ;(
+        // Try to find something in PATH
         String paths = System.getenv("PATH"); // NOI18N
-        if (paths != null) {
-            String foundBin = null;
-            String foundShell = null;
-            ShellType foundType = ShellType.NO_SHELL;
 
+        if (searchDir != null && searchDir.length() > 0) {
+            paths = searchDir + ';' + paths;
+        }
+
+        if (paths != null) {
             for (String path : paths.split(";")) { // NOI18N
                 File sh = new File(path, "sh.exe"); // NOI18N
                 File parent = sh.getParentFile();
@@ -179,41 +182,33 @@ public final class WindowsSupport {
                         // Looks like we have found something...
                         // An attempt to understand what exactly we have found
                         if (new File(parent, "cygcheck.exe").exists()) { // NOI18N
-                            // Cygwin found! No need to continue further search
-                            bin = parent.getAbsolutePath();
-                            shell = sh.getAbsolutePath();
-                            type = ShellType.CYGWIN;
-                            return;
-                        } else {
-                            // If we found msys already - we are not intresting in this entry
-                            // (which is either UNKNOWN shell or MSYS)
-                            // (is it possible to have several msys installations? If yes - then this will
-                            //  a guarantee that we are using the one that is the first in the PATH)
-                            if (foundType == ShellType.MSYS) {
-                                continue;
+                            // Well ...
+                            // The problem is that is is not in registry...
+                            // I.e. we will use it if on msys found on the system...
+                            if (candidate == null) {
+                                candidate = new Shell(ShellType.CYGWIN, sh.getAbsolutePath(), parent);
                             }
+                            // Still there is a chance that this installation is
+                            // OK (even if it is not in the registry).
+                            // This could be the case if it is in [?]:/cygwin
+                            ShellValidationStatus validationStatus = ShellValidationSupport.getValidationStatus(candidate);
 
-                            // We never found msys before... Perhaps this one is msys?
-                            if (new File(parent, "msysinfo").exists()) { // NOI18N
-                                // Looks like it is...
-                                // Still will continue search - perhaps next one will be a preferred Cygwin.
-                                foundType = ShellType.MSYS;
-                            } else {
-                                // This is some unknown shell ...
-                                foundType = ShellType.UNKNOWN;
+                            if (validationStatus.isValid() && !validationStatus.hasWarnings()) {
+                                return candidate;
                             }
-
-                            foundBin = parent.getAbsolutePath();
-                            foundShell = sh.getAbsolutePath();
+                        } else if (new File(parent, "msysinfo").exists()) { // NOI18N
+                            // Looks like this one is msys...
+                            // As no valid cygwin was found - use it
+                            return new Shell(ShellType.MSYS, sh.getAbsolutePath(), parent);
                         }
                     }
                 }
             }
-
-            bin = foundBin;
-            shell = foundShell;
-            type = foundType;
         }
+
+        // if we found some "broken" cygwin - it will be in candidate...
+        // or it will be null if nothing found
+        return candidate;
     }
 
     private String queryWindowsRegistry(String key, String param, String regExpr) {
@@ -248,39 +243,19 @@ public final class WindowsSupport {
     }
 
     public String convertToCygwinPath(String winPath) {
-        try {
-            return converter.compute(new PathConverterParams(PathType.WINDOWS, PathType.CYGWIN, winPath, true));
-        } catch (InterruptedException ex) {
-        }
-
-        return winPath;
+        return convert(PathType.WINDOWS, PathType.CYGWIN, winPath, true);
     }
 
     public String convertFromCygwinPath(String cygwinPath) {
-        try {
-            return converter.compute(new PathConverterParams(PathType.CYGWIN, PathType.WINDOWS, cygwinPath, true));
-        } catch (InterruptedException ex) {
-        }
-
-        return cygwinPath;
+        return convert(PathType.CYGWIN, PathType.WINDOWS, cygwinPath, true);
     }
 
     public String convertToMSysPath(String winPath) {
-        try {
-            return converter.compute(new PathConverterParams(PathType.WINDOWS, PathType.MSYS, winPath, true));
-        } catch (InterruptedException ex) {
-        }
-
-        return winPath;
+        return convert(PathType.WINDOWS, PathType.MSYS, winPath, true);
     }
 
     public String convertFromMSysPath(String msysPath) {
-        try {
-            return converter.compute(new PathConverterParams(PathType.MSYS, PathType.WINDOWS, msysPath, true));
-        } catch (InterruptedException ex) {
-        }
-
-        return msysPath;
+        return convert(PathType.MSYS, PathType.WINDOWS, msysPath, true);
     }
 
     /**
@@ -288,39 +263,35 @@ public final class WindowsSupport {
      * installed we will always use it's for shell
      */
     public String convertToShellPath(String path) {
-        try {
-            return converter.compute(new PathConverterParams(
-                    PathType.WINDOWS,
-                    type == ShellType.MSYS ? PathType.MSYS : PathType.CYGWIN,
-                    path, true));
-        } catch (InterruptedException ex) {
-        }
-
-        return path;
+        return activeShell == null ? null : convert(PathType.WINDOWS, activeShell.type.toPathType(), path, true);
     }
 
     public String convertToWindowsPath(String path) {
-        try {
-            return converter.compute(new PathConverterParams(
-                    type == ShellType.MSYS ? PathType.MSYS : PathType.CYGWIN,
-                    PathType.WINDOWS,
-                    path, true));
-        } catch (InterruptedException ex) {
-        }
-
-        return path;
+        return activeShell == null ? null : convert(activeShell.type.toPathType(), PathType.WINDOWS, path, true);
     }
 
     public String convertToAllShellPaths(String paths) {
+        return activeShell == null ? null : convert(PathType.WINDOWS, activeShell.type.toPathType(), paths, false);
+    }
+
+    private String convert(PathType from, PathType to, String path, boolean isSinglePath) {
+        if (to == null || from == null) {
+            return null;
+        }
+
+        if (from == PathType.CYGWIN || to == PathType.CYGWIN) {
+            if (activeShell == null || activeShell.type != ShellType.CYGWIN) {
+                // This means we don't know how to correctly deal with cygwin paths
+                return null;
+            }
+        }
+
         try {
-            return converter.compute(new PathConverterParams(
-                    PathType.WINDOWS,
-                    type == ShellType.MSYS ? PathType.MSYS : PathType.CYGWIN,
-                    paths, false));
+            return converter.compute(new PathConverterParams(from, to, path, isSinglePath));
         } catch (InterruptedException ex) {
         }
 
-        return paths;
+        return null;
     }
 
     public synchronized Map<String, String> getEnv() {
@@ -372,12 +343,22 @@ public final class WindowsSupport {
         return result;
     }
 
-    private enum ShellType {
+    private Shell initShell(ShellType type, String root) {
+        if (root == null) {
+            return null;
+        }
 
-        NO_SHELL,
-        CYGWIN,
-        MSYS,
-        UNKNOWN
+        File sh = new File(root + "/bin/sh.exe"); // NOI18N
+
+        if (!sh.exists() || !sh.canRead()) {
+            return null;
+        }
+
+        return new Shell(type, sh.getAbsolutePath(), sh.getParentFile().getAbsoluteFile());
+    }
+
+    public Shell getActiveShell() {
+        return activeShell;
     }
 
     private static class CaseInsensitiveComparator implements Comparator<String>, Serializable {
@@ -400,13 +381,6 @@ public final class WindowsSupport {
 
             return s1.toUpperCase().compareTo(s2.toUpperCase());
         }
-    }
-
-    private enum PathType {
-
-        CYGWIN,
-        MSYS,
-        WINDOWS
     }
 
     private static final class PathConverterParams {
@@ -472,11 +446,7 @@ public final class WindowsSupport {
                 switch (taskArguments.srcType) {
                     case CYGWIN:
                         List<String> paths = cygpath("-w", Arrays.asList(path)); // NOI18N
-
-                        if (paths != null) {
-                            result = paths.get(0);
-                        }
-                        break;
+                        return (paths == null) ? null : paths.get(0);
                     case MSYS:
                         if (path.startsWith("/") && path.charAt(2) == '/') { // NOI18N
                             result = path.charAt(1) + ":"; // NOI18N
@@ -492,12 +462,7 @@ public final class WindowsSupport {
                 switch (taskArguments.trgType) {
                     case CYGWIN:
                         List<String> paths = cygpath("-u", Arrays.asList(path)); // NOI18N
-
-                        if (paths != null) {
-                            result = paths.get(0);
-                        }
-
-                        break;
+                        return (paths == null) ? null : paths.get(0);
                     case MSYS:
                         result = path;
 
@@ -526,12 +491,21 @@ public final class WindowsSupport {
                 switch (taskArguments.trgType) {
                     case CYGWIN:
                         // Will start cygpath only once...
-                        convertedPaths.addAll(cygpath("-u", Arrays.asList(origPaths))); // NOI18N
+                        List<String> res = cygpath("-u", Arrays.asList(origPaths)); // NOI18N
+
+                        if (res == null) {
+                            return null;
+                        }
+
+                        convertedPaths.addAll(res);
                         break;
                     case MSYS:
                         for (String path : origPaths) {
                             if (path.trim().length() > 0) {
-                                convertedPaths.add(convertSingle(new PathConverterParams(PathType.WINDOWS, PathType.MSYS, path.trim(), true)));
+                                String p = convertSingle(new PathConverterParams(PathType.WINDOWS, PathType.MSYS, path.trim(), true));
+                                if (p != null) {
+                                    convertedPaths.add(p);
+                                }
                             }
                         }
                         break;
@@ -554,7 +528,16 @@ public final class WindowsSupport {
         }
 
         private List<String> cygpath(String opts, List<String> paths) {
-            File cygpath = new File(bin, "cygpath"); // NOI18N
+            if (activeShell == null) {
+                return null;
+            }
+
+            final File cygpath = new File(activeShell.bindir, "cygpath.exe"); // NOI18N
+
+            if (!cygpath.exists()) {
+                return null;
+            }
+
             List<String> cmd = new ArrayList<String>();
             cmd.add(cygpath.getAbsolutePath());
             cmd.add(opts);

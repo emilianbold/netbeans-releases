@@ -228,6 +228,14 @@ public class PHPFormatter implements Formatter {
         return false;
     }
 
+    private static boolean isSectionBorderLine(BaseDocument doc, int lineStart) throws BadLocationException{
+        int firstNonWS = Utilities.getFirstNonWhiteFwd(doc, lineStart);
+        TokenSequence<? extends PHPTokenId> ts = LexUtilities.getPositionedSequence(doc, firstNonWS);
+        PHPTokenId id = ts.token().id();
+
+        return id == PHPTokenId.PHP_CLOSETAG || id == PHPTokenId.PHP_OPENTAG;
+    }
+
     private void prettyPrint(final Context context, final ParserResult info) {
         final BaseDocument doc = (BaseDocument) context.document();
         final String openingBraceStyle = CodeStyle.get(doc).getOpeningBraceStyle();
@@ -282,6 +290,8 @@ public class PHPFormatter implements Formatter {
         return null;
     }
 
+
+
     private void astReformat(final Context context, final Map<Position, Integer> indentLevels) {
         Document document = context.document();
         document.putProperty("HTML_FORMATTER_ACTS_ON_TOP_LEVEL", Boolean.TRUE); //NOI18N
@@ -298,6 +308,7 @@ public class PHPFormatter implements Formatter {
                     int indentBias = 0;
                     boolean indentBiasCalculated = (startOffset == 0);
                     try {
+                        int initIndentSize = CodeStyle.get(doc).getInitialIndent();
                         int numberOfLines = Utilities.getLineOffset(doc, doc.getLength() - 1) + 1;
                         Map<Integer, Integer> indentDeltaByLine = new LinkedHashMap<Integer, Integer>();
 
@@ -343,7 +354,9 @@ public class PHPFormatter implements Formatter {
                                 if (!indentBiasCalculated
                                         && (templateEdit && i >= firstLine
                                         || !templateEdit && i >= firstLine - 1)){
-                                    indentBias = currentIndent - GsfUtilities.getLineIndent(doc, lineStart) - htmlSuggestion;
+
+                                    int initialIndent = isSectionBorderLine(doc, lineStart) ? 0 : initIndentSize;
+                                    indentBias = currentIndent - GsfUtilities.getLineIndent(doc, lineStart) - htmlSuggestion + initIndentSize;
                                     indentBiasCalculated = true;
                                 }
                                 
@@ -352,9 +365,10 @@ public class PHPFormatter implements Formatter {
                                 //TODO:
                                 if (lineStart >= context.startOffset() && lineStart <= context.endOffset()) {
                                     int actualIndent = 0;
+                                    int initialIndent = isSectionBorderLine(doc, lineStart) ? 0 : initIndentSize;
 
-                                    if (currentIndent + htmlSuggestion > indentBias) {
-                                        actualIndent = currentIndent + htmlSuggestion - indentBias;
+                                    if (currentIndent + htmlSuggestion  + initialIndent > indentBias) {
+                                        actualIndent = currentIndent + htmlSuggestion + initialIndent - indentBias;
                                     }
 
                                     GsfUtilities.setLineIndentation(doc, lineStart, actualIndent);

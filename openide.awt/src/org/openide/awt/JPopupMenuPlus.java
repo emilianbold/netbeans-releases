@@ -51,6 +51,7 @@ import javax.swing.SwingUtilities;
  * not stretch off the edges of the screen.
  * @deprecated - doesn't do anything special anymore. (since org.openide.awt 6.5)
  */
+@Deprecated
 public class JPopupMenuPlus extends JPopupMenu {
 //    private static final boolean NO_POPUP_PLACEMENT_HACK = Boolean.getBoolean("netbeans.popup.no_hack"); // NOI18N
 

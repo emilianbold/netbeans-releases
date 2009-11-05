@@ -60,7 +60,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.util.ResourceBundle;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -229,10 +228,10 @@ class EditPanelQuery extends DataDisplay {
 				labelInsets,
 				0, 0);
 
-	    gridy = addParamTable(this, params2, gridy);
+	    gridy = addParamTable(this, gridy);
+            setEnablings();
 	}
 	
-	setEnablings();
 
 	// Housekeeping
 	this.setMaximumSize(this.getPreferredSize()); 
@@ -240,7 +239,7 @@ class EditPanelQuery extends DataDisplay {
 
     }
 
-    private int addParamTable(JPanel panel, Param[] params, int gridy) {
+    private int addParamTable(JPanel panel, int gridy) {
 	
 	JScrollPane scrollpane = new JScrollPane(paramTable);
 

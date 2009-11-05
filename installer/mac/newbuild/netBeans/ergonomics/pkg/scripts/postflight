@@ -24,3 +24,8 @@ script_dir=`dirname "$0"`
 if [ -d "/Library/Receipts/ergonomics.pkg" ] ; then
     rm -rf "/Library/Receipts/ergonomics.pkg"
 fi
+
+if [ -d "/private/var/db/receipts" ] ; then
+    rm -rf "/private/var/db/receipts/org.netbeans.ide.ergonomics.plist"
+    rm -rf "/private/var/db/receipts/org.netbeans.ide.ergonomics.bom"
+fi

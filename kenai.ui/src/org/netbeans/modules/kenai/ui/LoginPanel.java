@@ -65,7 +65,7 @@ public class LoginPanel extends javax.swing.JPanel {
 
     private static URL getForgetPasswordUrl() {
         try {
-            return new URL(Kenai.getDefault().getUrl().toString() + "/people/forgot_password");
+            return new URL(Kenai.getDefault().getUrl().toString() + "/people/forgot_password"); // NOI18N
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -74,7 +74,7 @@ public class LoginPanel extends javax.swing.JPanel {
 
     private static URL getRegisterUrl() {
         try {
-            return new URL(Kenai.getDefault().getUrl().toString() + "/people/signup");
+            return new URL(Kenai.getDefault().getUrl().toString() + "/people/signup"); // NOI18N
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -85,7 +85,7 @@ public class LoginPanel extends javax.swing.JPanel {
     public LoginPanel(boolean isChatSupported) {
         initComponents();
         final Preferences preferences = NbPreferences.forModule(LoginPanel.class);
-        chkIsOnline.setSelected(Boolean.parseBoolean(preferences.get(UIUtils.getPrefName(UIUtils.ONLINE_ON_CHAT_PREF), "true")));
+        chkIsOnline.setSelected(Boolean.parseBoolean(preferences.get(UIUtils.getPrefName(UIUtils.ONLINE_ON_CHAT_PREF), "true"))); // NOI18N
         lblKenaiLogoCenter.setBorder(null);
         lblKenaiLogoLeft.setBorder(null);
         lblKenaiLogoRight.setBorder(null);

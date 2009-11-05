@@ -144,7 +144,7 @@ final class GeneralAction {
         throw new IllegalStateException("Cannot parse selectionType value: " + obj); // NOI18N
     }
     static final Object extractCommonAttribute(Map fo, Action action, String name) {
-        return AlwaysEnabledAction.extractCommonAttribute(fo, action, name);
+        return AlwaysEnabledAction.extractCommonAttribute(fo, name);
     }
 
     public Logger getLOG() {

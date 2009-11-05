@@ -295,4 +295,8 @@ public class FileModel2Test extends TraceModelTestBase {
         performTest("iz168253.cc");
     }
 
+    public void testIZ175653() throws Exception {
+        // IZ#175653 : Support for binary constants
+        performTest("iz175653.cc");
+    }
 }

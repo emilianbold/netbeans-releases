@@ -224,6 +224,7 @@ import org.openide.util.NbBundle;
                 Range<Long> selection = ViewportBar.this.getTimeSelection();
                 Long startTime = DLightMath.prevMultipleOf(NANOS_PER_SECOND,
                         DLightMath.map(pos, leftMargin, getWidth() - rightMargin, vms.getLimits().getStart(), vms.getLimits().getEnd()));
+                startTime = Math.max(0, startTime);
                 if (selection == null || startTime < selection.getEnd()) {
                     Long endTime = selection == null? Long.MAX_VALUE : selection.getEnd();
                     setTimeSelection(new Range<Long>(startTime, endTime), isAdjusting);
