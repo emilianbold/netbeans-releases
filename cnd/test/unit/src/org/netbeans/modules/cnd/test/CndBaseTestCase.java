@@ -183,6 +183,7 @@ public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
         
         Logger.getLogger("org.netbeans.modules.editor.settings.storage.Utils").setLevel(Level.SEVERE);
         System.setProperty("cnd.mode.unittest", "true");
+        System.setProperty("SUNW_NO_UPDATE_NOTIFY", "true");
         List<Class> list = new ArrayList<Class>();
         list.add(MockMimeLookup.class);
         for(Class cls : getServises()){
