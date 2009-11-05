@@ -934,7 +934,7 @@ public class BaseKit extends DefaultEditorKit {
             if (actions == null || actionMap == null) {
                 // Initialize actions - use the following actions:
                 // 1. Declared "global" actions (declared in the xml layer under "Editors/Actions")
-                // 2. Declared "mime-type actions (declared in the xml layer under "Editors/content-type/Actions")
+                // 2. Declared "mime-type" actions (declared in the xml layer under "Editors/mime-type/Actions")
                 // 3. Result of createActions()
                 // 4. Custom actions (EditorPreferencesKeys.CUSTOM_ACTION_LIST)
                 // Higher levels override actions with same Action.NAME
