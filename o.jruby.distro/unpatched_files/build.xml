@@ -626,11 +626,11 @@
             <arg value="activerecord-2.3.4"/>
             <arg value="actionmailer-2.3.4"/>
             <arg value="activeresource-2.3.4"/>
-            <arg value="activerecord-jdbc-adapter-0.9.1"/>
+            <arg value="activerecord-jdbc-adapter-0.9.2"/>
             <arg value="jdbc-mysql-5.0.4"/>
-            <arg value="activerecord-jdbcmysql-adapter-0.9.1"/>
-            <arg value="jdbc-postgres-8.2"/>
-            <arg value="activerecord-jdbcpostgresql-adapter-0.9.1"/>
+            <arg value="activerecord-jdbcmysql-adapter-0.9.2"/>
+            <arg value="jdbc-postgres-8.3.604"/>
+            <arg value="activerecord-jdbcpostgresql-adapter-0.9.2"/>
             <arg value="rails"/>
             <arg value="rcov"/>
               <!-- Ruby Debugger -->
