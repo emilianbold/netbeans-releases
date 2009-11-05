@@ -46,6 +46,7 @@ import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.Insets;
+import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.DateFormat;
@@ -72,8 +73,10 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
@@ -112,7 +115,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Jan Stola
  */
-public class IssuePanel extends javax.swing.JPanel {
+public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private static final Color HIGHLIGHT_COLOR = new Color(217, 255, 217);
     private BugzillaIssue issue;
     private CommentsPanel commentsPanel;
@@ -2142,6 +2145,37 @@ public class IssuePanel extends javax.swing.JPanel {
     private javax.swing.JLabel versionLabel;
     private javax.swing.JLabel versionWarning;
     // End of variables declaration//GEN-END:variables
+
+    public Dimension getPreferredScrollableViewportSize() {
+        return getPreferredSize();
+    }
+
+    public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
+        return getUnitIncrement();
+    }
+
+    public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
+        return (orientation==SwingConstants.VERTICAL) ? visibleRect.height : visibleRect.width;
+    }
+
+    public boolean getScrollableTracksViewportWidth() {
+        return true;
+    }
+
+    public boolean getScrollableTracksViewportHeight() {
+        return false;
+    }
+
+    private int unitIncrement;
+    private int getUnitIncrement() {
+        if (unitIncrement == 0) {
+            Font font = UIManager.getFont("Label.font"); // NOI18N
+            if (font != null) {
+                unitIncrement = (int)(font.getSize()*1.5);
+            }
+        }
+        return unitIncrement;
+    }
 
     class CancelHighlightDocumentListener implements DocumentListener {
         private JLabel label;
