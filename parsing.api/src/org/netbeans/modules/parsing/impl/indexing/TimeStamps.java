@@ -94,8 +94,10 @@ public final class TimeStamps {
                         unseen.add((String)k);
                     }
                 }
-            } catch (IOException e) {
-                //In case of IOException props are empty, everything is scanned
+            } catch (Exception e) {
+                // #176001: catching all exceptions, because j.u.Properties can throw IllegalArgumentException
+                // from its load() method
+                // In case of any exception props are empty, everything is scanned
                 LOG.log(Level.FINE, null, e);
             }
         }

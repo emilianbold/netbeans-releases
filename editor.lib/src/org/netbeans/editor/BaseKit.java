@@ -1626,13 +1626,37 @@ public class BaseKit extends DefaultEditorKit {
                     DocumentUtilities.setTypingModification(doc, true);
                     try {
                         // If there is no selection then pre-select a current line including newline
+                        // If on last line (without newline) then insert newline at very end temporarily
+                        // then cut and remove previous newline.
+                        int removeNewlineOffset = -1;
                         if (!Utilities.isSelectionShowing(target)) {
                             Element elem = ((AbstractDocument) target.getDocument()).getParagraphElement(
                                     target.getCaretPosition());
-                            target.select(elem.getStartOffset(), elem.getEndOffset());
+                            int lineStartOffset = elem.getStartOffset();
+                            int lineEndOffset = elem.getEndOffset();
+                            if (lineEndOffset == doc.getLength() + 1) { // Very end
+                                // Temporarily insert extra newline
+                                try {
+                                    doc.insertString(lineEndOffset - 1, "\n", null);
+                                    if (lineStartOffset > 0) { // Only when not on first line
+                                        removeNewlineOffset = lineStartOffset - 1;
+                                    }
+                                } catch (BadLocationException e) {
+                                    // could not insert extra newline
+                                }
+                            }
+                            target.select(lineStartOffset, lineEndOffset);
                         }
 
                         target.cut();
+
+                        if (removeNewlineOffset != -1) {
+                            try {
+                                doc.remove(removeNewlineOffset, 1);
+                            } catch (BadLocationException e) {
+                                // Could not remove ending newline
+                            }
+                        }
                     } finally {
                         DocumentUtilities.setTypingModification(doc, false);
                     }
