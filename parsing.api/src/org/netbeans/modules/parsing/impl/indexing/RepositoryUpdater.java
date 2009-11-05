@@ -2818,7 +2818,6 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 List<URL> deps = depCtx.newBinaries2InvDeps.get(root);
                 if (deps == null) {
                     deps = EMPTY_DEPS;
-                    System.out.println("No deps for: " + root);
                 }
                 scannedBinaries2InvDependencies.put(root, deps);
             }
