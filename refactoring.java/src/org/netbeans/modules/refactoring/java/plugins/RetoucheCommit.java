@@ -132,6 +132,9 @@ public class RetoucheCommit implements Transaction {
     }
 
     private static void openNewFiles(Set<File> newFiles) {
+        if (newFiles == null) {
+            return;
+        }
         for (File file : newFiles) {
             FileObject fo = FileUtil.toFileObject(file);
             if (fo != null) {
