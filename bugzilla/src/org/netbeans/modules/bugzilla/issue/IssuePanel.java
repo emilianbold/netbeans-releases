@@ -401,6 +401,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 JLabel label = ku.createUserWidget();
                 label.setText(null);
                 ((GroupLayout)getLayout()).replace(assignedToStatusLabel, label);
+                label.setVisible(assignedToStatusLabel.isVisible());
                 assignedToStatusLabel = label;
             }
             if (force) {
@@ -553,24 +554,51 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         priorityCombo.setRenderer(new PriorityRenderer());
         severityCombo.setModel(toComboModel(bc.getSeverities()));
 
-        Collection<RepositoryUser> users =  repository.getUsers();
-        DefaultComboBoxModel assignedModel = new DefaultComboBoxModel();
-        for (RepositoryUser user: users) {
-            assignedModel.addElement(user);
-        }
-        assignedCombo.setModel(assignedModel);
-        assignedCombo.setRenderer(new RepositoryUserRenderer());
-        GroupLayout layout = (GroupLayout)getLayout();
-        if ((assignedCombo.getParent()==null) != users.isEmpty()) {
-            layout.replace(users.isEmpty() ? assignedCombo : assignedField, users.isEmpty() ? assignedField : assignedCombo);
-            assignedLabel.setLabelFor(users.isEmpty() ? assignedField : assignedCombo);
-        }
+        initAssignedCombo();
 
         if (BugzillaUtil.isNbRepository(repository)) {
             issueTypeCombo.setModel(toComboModel(bc.getIssueTypes()));
         }
 
         // stausCombo and resolution fields are filled in reloadForm
+    }
+
+    private void initAssignedCombo() {
+        assignedCombo.setRenderer(new RepositoryUserRenderer());
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                BugzillaRepository repository = issue.getBugzillaRepository();
+                final Collection<RepositoryUser> users = repository.getUsers();
+                final DefaultComboBoxModel assignedModel = new DefaultComboBoxModel();
+                for (RepositoryUser user: users) {
+                    assignedModel.addElement(user);
+                }
+                EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        reloading = true;
+                        try {
+                            Object assignee = (assignedField.getParent() == null) ? assignedCombo.getSelectedItem() : assignedField.getText();
+                            if (assignee == null) {
+                                assignee = ""; //NOI18N
+                            }
+                            assignedCombo.setModel(assignedModel);
+                            GroupLayout layout = (GroupLayout)getLayout();
+                            if ((assignedCombo.getParent()==null) != users.isEmpty()) {
+                                layout.replace(users.isEmpty() ? assignedCombo : assignedField, users.isEmpty() ? assignedField : assignedCombo);
+                                assignedLabel.setLabelFor(users.isEmpty() ? assignedField : assignedCombo);
+                            }
+                            if (assignedField.getParent() == null) {
+                                assignedCombo.setSelectedItem(assignee);
+                            } else {
+                                assignedField.setText(assignee.toString());
+                            }
+                        } finally {
+                            reloading = false;
+                        }
+                    }
+                });
+            }
+        });
     }
 
     private void initStatusCombo(String status) {
@@ -1982,7 +2010,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                             Object priority = priorityCombo.getSelectedItem();
                             Object severity = severityCombo.getSelectedItem();
                             Object resolution = resolutionCombo.getSelectedItem();
-                            Object assignee = assignedCombo.getSelectedItem();
                             Object issueType = issueTypeCombo.getSelectedItem();
                             initCombos();
                             selectInCombo(productCombo, product, false);
@@ -1992,7 +2019,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                             selectInCombo(severityCombo, severity, false);
                             initStatusCombo(statusCombo.getSelectedItem().toString());
                             selectInCombo(resolutionCombo, resolution, false);
-                            assignedCombo.setSelectedItem(assignee);
                             if (BugzillaUtil.isNbRepository(issue.getRepository())) {
                                 issueTypeCombo.setSelectedItem(issueType);
                             }
