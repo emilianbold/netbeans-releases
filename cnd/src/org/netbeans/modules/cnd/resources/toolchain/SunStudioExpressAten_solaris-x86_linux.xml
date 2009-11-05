@@ -49,21 +49,21 @@ made subject to such option by the copyright holder.
         <platform os="sun_intel" directory="/opt/aten/bin"/>
     </default_locations>
     <c>
-        <recognizer pattern=".*(SunStudioExpress|/prod/bin|/sunstudioaten/|/aten/)" or_exist_folder="../prod"/>
+        <recognizer pattern=".*(SunStudioExpress|/prod/bin|/sunstudioaten/|/aten/|SUNWspro/bin)" or_exist_folder="../prod"/>
         <version flags="-V" pattern=".*Sun.*Aten"/>
         <development_mode>
            <performance_release flags="-fast -xipo -xvector=simd -g"/>
         </development_mode>
     </c>
     <cpp>
-        <recognizer pattern=".*(SunStudioExpress|/prod/bin|/sunstudioaten/|/aten/)" or_exist_folder="../prod"/>
+        <recognizer pattern=".*(SunStudioExpress|/prod/bin|/sunstudioaten/|/aten/|SUNWspro/bin)" or_exist_folder="../prod"/>
         <version flags="-V" pattern=".*Sun.*Aten"/>
         <development_mode>
            <performance_release flags="-fast -xipo -xvector=simd -g0"/>
         </development_mode>
     </cpp>
     <fortran>
-        <recognizer pattern=".*(SunStudioExpress|/prod/bin|/sunstudioaten/|/aten/)" or_exist_folder="../prod"/>
+        <recognizer pattern=".*(SunStudioExpress|/prod/bin|/sunstudioaten/|/aten/|SUNWspro/bin)" or_exist_folder="../prod"/>
         <version flags="-V" pattern=".*Sun.*Aten"/>
         <development_mode>
            <performance_release flags="-fast -xvector=simd -g"/>
