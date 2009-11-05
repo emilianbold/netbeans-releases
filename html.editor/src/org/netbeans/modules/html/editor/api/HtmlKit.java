@@ -92,7 +92,6 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
     }
     static final long serialVersionUID = -1381945567613910297L;
     public static final String HTML_MIME_TYPE = "text/html"; // NOI18N
-    public static final String shiftInsertBreakAction = "shift-insert-break"; // NOI18N
 
     public HtmlKit() {
         this(HTML_MIME_TYPE);

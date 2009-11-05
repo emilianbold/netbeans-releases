@@ -921,6 +921,98 @@ public class PositionsBagTest extends NbTestCase {
         assertNull("  3. highlight - wrong end", atttributes.get(3));
     }
     
+    public void test122663_AddLeftMatches() throws BadLocationException {
+        doc.insertString(0, "01234567890123456789", null);
+
+        SimpleAttributeSet attribsA = new SimpleAttributeSet();
+        SimpleAttributeSet attribsB = new SimpleAttributeSet();
+        attribsA.addAttribute("set-name", "attribsA");
+        attribsB.addAttribute("set-name", "attribsB");
+
+        PositionsBag bag = new PositionsBag(doc);
+        bag.addHighlight(pos(5), pos(10), attribsA);
+        bag.addHighlight(pos(5), pos(15), attribsB);
+
+        assertMarks("Wrong highlights", createPositionsBag(5, 15, attribsB), bag);
+    }
+
+    public void test122663_AddMultipleLeftMatches() throws BadLocationException {
+        doc.insertString(0, "01234567890123456789", null);
+
+        SimpleAttributeSet attribsA = new SimpleAttributeSet();
+        SimpleAttributeSet attribsB = new SimpleAttributeSet();
+        attribsA.addAttribute("set-name", "attribsA");
+        attribsB.addAttribute("set-name", "attribsB");
+
+        PositionsBag bag = new PositionsBag(doc);
+        bag.addHighlight(pos(5), pos(10), attribsA);
+        bag.addHighlight(pos(15), pos(20), attribsA);
+        bag.addHighlight(pos(25), pos(30), attribsA);
+        bag.addHighlight(pos(5), pos(35), attribsB);
+
+        assertMarks("Wrong highlights", createPositionsBag(5, 35, attribsB), bag);
+    }
+
+    public void test122663_AddRightMatches() throws BadLocationException {
+        doc.insertString(0, "01234567890123456789", null);
+
+        SimpleAttributeSet attribsA = new SimpleAttributeSet();
+        SimpleAttributeSet attribsB = new SimpleAttributeSet();
+        attribsA.addAttribute("set-name", "attribsA");
+        attribsB.addAttribute("set-name", "attribsB");
+
+        PositionsBag bag = new PositionsBag(doc);
+        bag.addHighlight(pos(10), pos(15), attribsA);
+        bag.addHighlight(pos(5), pos(15), attribsB);
+        assertMarks("Wrong highlights", createPositionsBag(5, 15, attribsB), bag);
+    }
+
+    public void test122663_AddMultipleRightMatches() throws BadLocationException {
+        doc.insertString(0, "01234567890123456789", null);
+
+        SimpleAttributeSet attribsA = new SimpleAttributeSet();
+        SimpleAttributeSet attribsB = new SimpleAttributeSet();
+        attribsA.addAttribute("set-name", "attribsA");
+        attribsB.addAttribute("set-name", "attribsB");
+
+        PositionsBag bag = new PositionsBag(doc);
+        bag.addHighlight(pos(30), pos(35), attribsA);
+        bag.addHighlight(pos(20), pos(25), attribsA);
+        bag.addHighlight(pos(10), pos(15), attribsA);
+        bag.addHighlight(pos(5), pos(35), attribsB);
+        assertMarks("Wrong highlights", createPositionsBag(5, 35, attribsB), bag);
+    }
+
+    public void test122663_AddBothMatch() throws BadLocationException {
+        doc.insertString(0, "01234567890123456789", null);
+
+        SimpleAttributeSet attribsA = new SimpleAttributeSet();
+        SimpleAttributeSet attribsB = new SimpleAttributeSet();
+        attribsA.addAttribute("set-name", "attribsA");
+        attribsB.addAttribute("set-name", "attribsB");
+
+        PositionsBag bag = new PositionsBag(doc);
+        bag.addHighlight(pos(10), pos(15), attribsA);
+        bag.addHighlight(pos(10), pos(15), attribsB);
+        assertMarks("Wrong highlights", createPositionsBag(10, 15, attribsB), bag);
+    }
+
+    public void test122663_AddMultipleBothMatch() throws BadLocationException {
+        doc.insertString(0, "01234567890123456789", null);
+
+        SimpleAttributeSet attribsA = new SimpleAttributeSet();
+        SimpleAttributeSet attribsB = new SimpleAttributeSet();
+        attribsA.addAttribute("set-name", "attribsA");
+        attribsB.addAttribute("set-name", "attribsB");
+
+        PositionsBag bag = new PositionsBag(doc);
+        bag.addHighlight(pos(10), pos(15), attribsA);
+        bag.addHighlight(pos(20), pos(25), attribsA);
+        bag.addHighlight(pos(30), pos(35), attribsA);
+        bag.addHighlight(pos(10), pos(35), attribsB);
+        assertMarks("Wrong highlights", createPositionsBag(10, 35, attribsB), bag);
+    }
+
     private void dumpHighlights(HighlightsSequence seq) {
         System.out.println("Dumping highlights from: " + seq + "{");
         while(seq.moveNext()) {
