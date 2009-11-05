@@ -172,7 +172,7 @@ public final class CodeModelSourceFileInfoProvider implements SourceFileInfoProv
                         res.put(name, set);
                     }
 
-                    set.add(new SourceFileInfo(file.getAbsolutePath(), func.getStartPosition().getLine(), 0));
+                    set.add(new SourceFileInfo(file.getAbsolutePath().toString(), func.getStartPosition().getOffset()));
                 }
             }
         }

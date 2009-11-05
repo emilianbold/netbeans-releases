@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.groovy.grailsproject.commands;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -68,6 +70,7 @@ import org.netbeans.modules.groovy.grails.api.GrailsPlatform;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.modules.groovy.grailsproject.GrailsServerState;
 import org.netbeans.modules.groovy.grailsproject.actions.RefreshProjectRunnable;
+import org.netbeans.modules.groovy.grailsproject.config.BuildConfig;
 import org.netbeans.modules.groovy.support.api.GroovySettings;
 import org.netbeans.modules.web.client.tools.api.JSToNbJSLocationMapper;
 import org.netbeans.modules.web.client.tools.api.LocationMappersFactory;
@@ -83,6 +86,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.InputOutput;
 
@@ -108,9 +112,11 @@ public final class GrailsCommandSupport {
 
     private final GrailsProject project;
 
-    private PluginListener pluginListener;
-
     private List<GrailsCommand> commands;
+
+    private BuildConfigListener buildConfigListener;
+
+    private ProjectConfigListener projectConfigListener;
 
     public GrailsCommandSupport(GrailsProject project) {
         this.project = project;
@@ -201,14 +207,20 @@ public final class GrailsCommandSupport {
         }
 
         synchronized (this) {
-            // FIXME this is 1.0 code only
-            if (pluginListener == null) {
-                pluginListener = new PluginListener();
-                File folder = FileUtil.toFile(project.getProjectDirectory());
-                // weakly referenced
-                FileUtil.addFileChangeListener(pluginListener, new File(folder, "plugins")); // NOI18N
+            if (buildConfigListener == null) {
+                BuildConfig buildConfig = project.getBuildConfig();
+                buildConfigListener = new BuildConfigListener();
+                buildConfigListener.attachListeners(buildConfig);
+                buildConfig.addPropertyChangeListener(WeakListeners.propertyChange(buildConfigListener, buildConfig));
             }
 
+            if (projectConfigListener == null) {
+                GrailsProjectConfig projectConfig = project.getLookup().lookup(GrailsProjectConfig.class);
+                if (projectConfig != null) {
+                    projectConfigListener = new ProjectConfigListener();
+                    projectConfig.addPropertyChangeListener(WeakListeners.propertyChange(projectConfigListener, projectConfig));
+                }
+            }
             this.commands = freshCommands;
         }
     }
@@ -388,6 +400,71 @@ public final class GrailsCommandSupport {
         }
     }
 
+    private class ProjectConfigListener implements PropertyChangeListener {
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (GrailsProjectConfig.GRAILS_PLATFORM_PROPERTY.equals(evt.getPropertyName())) {
+                synchronized (GrailsCommandSupport.this) {
+                    commands = null;
+                }
+            }
+        }
+    }
+
+    private class BuildConfigListener implements PropertyChangeListener {
+
+        private final PluginListener pluginListener = new PluginListener();
+
+        private File globalPluginsDir;
+
+        private File projectPluginsDir;
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (BuildConfig.BUILD_CONFIG_PLUGINS.equals(evt.getPropertyName())) {
+                synchronized (GrailsCommandSupport.this) {
+                    attachListeners((BuildConfig) evt.getSource());
+                    commands = null;
+                }
+            }
+        }
+
+        public void attachListeners(BuildConfig config) {
+            synchronized (GrailsCommandSupport.this) {
+                // attach listener for global plugins
+                File currentGlobalPluginsDir = config.getGlobalPluginsDir();
+                updateListener(pluginListener, globalPluginsDir, currentGlobalPluginsDir);
+                globalPluginsDir = currentGlobalPluginsDir;
+
+                // if the directories are same we can't attach same listener twice
+                File currentProjectPluginsDir = config.getProjectPluginsDir();
+                if ((currentGlobalPluginsDir == null && currentGlobalPluginsDir == currentProjectPluginsDir)
+                        || currentGlobalPluginsDir.equals(currentProjectPluginsDir)) {
+
+                    if (projectPluginsDir != null) {
+                        FileUtil.removeFileChangeListener(pluginListener, projectPluginsDir);
+                    }
+                    projectPluginsDir = null;
+                    return;
+                }
+
+                // attach listener for project plugins
+                updateListener(pluginListener, projectPluginsDir, currentProjectPluginsDir);
+                projectPluginsDir = currentProjectPluginsDir;
+            }
+        }
+
+        private void updateListener(FileChangeListener listener, File oldDir, File newDir) {
+            if (oldDir == null || !oldDir.equals(newDir)) {
+                if (oldDir != null) {
+                    FileUtil.removeFileChangeListener(listener, oldDir);
+                }
+                if (newDir != null) {
+                    FileUtil.addFileChangeListener(listener, newDir);
+                }
+            }
+        }
+    }
+
     private class PluginListener implements FileChangeListener {
 
         public void fileAttributeChanged(FileAttributeEvent fe) {
@@ -415,8 +492,6 @@ public final class GrailsCommandSupport {
         }
 
         private void changed() {
-            // FIXME check only script changes
-
             synchronized (GrailsCommandSupport.this) {
                 commands = null;
             }

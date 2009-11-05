@@ -218,7 +218,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
             waitPID(terminalProcess, pidFileFile);
         } catch (Throwable ex) {
-            String msg = ex.getMessage() == null ? ex.toString() : ex.getMessage();
+            String msg = (ex.getMessage() == null ? ex.toString() : ex.getMessage()) + "\n"; // NOI18N
             processError = new ByteArrayInputStream(msg.getBytes());
             resultFile = null;
             throw ex;
@@ -341,6 +341,8 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
     }
 
     private void waitPID(Process termProcess, File pidFile) throws IOException {
+        int count = 10;
+
         while (!isInterrupted()) {
             /**
              * The following sleep appears after an attempt to support konsole
@@ -376,16 +378,25 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                 break;
             }
 
+            if (count-- == 0) {
+                // PID is not available after limit attempts
+                // Wrapping everything up...
+                termProcess.destroy();
+                throw new IOException(loc("TerminalLocalNativeProcess.terminalRunFailed.text")); // NOI18N
+            }
+
             try {
                 int result = termProcess.exitValue();
 
                 if (result != 0) {
+                    String err = ProcessUtils.readProcessErrorLine(termProcess);
                     log.info(loc("TerminalLocalNativeProcess.terminalFailed.text")); // NOI18N
-                    ProcessUtils.logError(Level.INFO, log, termProcess);
+                    log.info(err);
+                    throw new IOException(err);
                 }
 
                 // No exception - means process is finished..
-                interrupt();
+                break;
             } catch (IllegalThreadStateException ex) {
                 // expected ... means that terminal process exists
             }

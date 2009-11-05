@@ -129,10 +129,12 @@ public class HtmlPaletteCompletionProvider implements CompletionProvider {
 
                     //end tag autocompletion workaround - we do not want to see the palette items when user finished
                     //an open tag and the end tag autocompletion pops up
+                    //or after the entity reference
                     if(diff == 0 && htmlTs.movePrevious()) {
                         TokenId id = htmlTs.token().id();
                         if(id == HTMLTokenId.TAG_CLOSE_SYMBOL ||
-                           id == HTMLTokenId.TAG_OPEN_SYMBOL) {
+                           id == HTMLTokenId.TAG_OPEN_SYMBOL ||
+                           id == HTMLTokenId.CHARACTER) {
                             return ;
                         }
                     }
@@ -154,6 +156,9 @@ public class HtmlPaletteCompletionProvider implements CompletionProvider {
                     this.completionExpressionStartOffset = creationCaretOffset - prefix.length();
 
                     TopComponent tc = NbEditorUtilities.getTopComponent(component);
+                    if(tc == null) {
+                        return ;
+                    }
 
                     PaletteController pc = tc.getLookup().lookup(PaletteController.class);
                     if (pc != null) {

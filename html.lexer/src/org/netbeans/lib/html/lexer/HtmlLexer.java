@@ -249,7 +249,26 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
      */
 
     private final boolean isWS( int character ) {
-        return Character.isWhitespace(character);
+        //why there is the || character == '@'???
+        //----------------------------------------
+        //see the issue #149968. It is the simpliest
+        //and not very harmful solution to that.
+        //In principle we need to recognize three at signs
+        // (@@@) anywhere in the html code and ignore it.
+        //This mark can occure in the generated virtual
+        //html code and denotes the places where there is
+        //some templating language in the real document.
+        //To fix this completely properly I would have to
+        //either somehow preprocess the text or introduce some
+        //more states to the already complicated lexer.
+        //The sideeffect of this change is that a single at sign
+        //wont be signalled as error in the editor and lexed as whitespace
+        //which doesn't sound too bad.
+        //
+        //note: the language construct where one generates
+        //attribute name doesn't work, but I consider this a quite
+        //unusuall: <div <? echo "align"; ?>="center" />
+        return Character.isWhitespace(character) || character == '@';
     }
 
     private boolean isJavascriptEventHandlerName(CharSequence attributeName) {

@@ -273,8 +273,8 @@ public final class Kenai {
 
     private void logout(boolean setPropId) {
         PasswordAuthentication old=auth;
-        auth = null;
         synchronized(this) {
+            auth = null;
             myProjects=null;
             xmppDisconnect(setPropId);
         }
@@ -617,8 +617,13 @@ public final class Kenai {
                 xmppConnection.addPacketListener(packetListener, new PacketTypeFilter(Presence.class));
                 xmppConnection.login(auth.getUserName(), new String(auth.getPassword()), "NetBeans"); //NOI18N
             } catch (XMPPException xMPPException) {
+                xmppConnection = null;
                 propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_XMPP_LOGIN_FAILED, null, null));
                 throw new KenaiException(xMPPException);
+            } catch (IllegalStateException ise) {
+                xmppConnection = null;
+                propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_XMPP_LOGIN_FAILED, null, null));
+                throw new KenaiException(ise);
             }
         }
         propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_XMPP_LOGIN, null, xmppConnection));

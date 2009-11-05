@@ -77,7 +77,6 @@ public class NbinstURLMapperTest extends NbTestCase {
         
         MockServices.setServices(
                 TestInstalledFileLocator.class,
-                NbinstURLStreamHandlerFactory.class,
                 NbinstURLMapper.class);
 
         org.netbeans.core.startup.Main.initializeURLFactory ();

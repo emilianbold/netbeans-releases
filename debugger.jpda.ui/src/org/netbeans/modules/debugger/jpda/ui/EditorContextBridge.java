@@ -146,7 +146,9 @@ public class EditorContextBridge {
                     s = s.substring (i + 1);
                 if (id.equals (s))
                     return CLASS;
-                return FIELD;
+                else if (s.length() > 0) {
+                    return FIELD;
+                }
             } else {
                 String s = getMostRecentFieldName();
                 if (s != null && s.length () > 0)

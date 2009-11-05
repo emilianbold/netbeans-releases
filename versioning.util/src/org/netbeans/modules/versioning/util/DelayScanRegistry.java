@@ -92,7 +92,9 @@ public final class DelayScanRegistry {
         if (scan.afterProjetOpenning && IndexingBridge.getInstance().isIndexingInProgress()
                 && scan.waitingLoops * WAITING_PERIOD < MAX_WAITING_TIME) {
             // do not steal disk from openning projects and indexing tasks
-            Level level = ++scan.waitingLoops < 20 ? Level.FINE : Level.INFO;
+            boolean asserts = false;
+            assert asserts = true;
+            Level level = ++scan.waitingLoops < 20 || !asserts ? Level.FINE : Level.INFO;
             logger.log(level, logMessagePrefix + ": Scanning in progress, trying again in " + WAITING_PERIOD + "ms"); //NOI18N
             task.schedule(WAITING_PERIOD); // try again in 5 seconds
             rescheduled = true;

@@ -60,7 +60,7 @@ public class MemberListNode extends SectionNode {
 
     private MessagingHandle msg;
     private PropertyChangeListener l;
-    private static final String PROP_MEMBERS = "members";
+    private static final String PROP_MEMBERS = "members"; // NOI18N
 
     public MemberListNode( ProjectNode parent ) {
         super(getText(MessagingAccessor.getDefault().getMessaging(parent.getProject())),

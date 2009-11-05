@@ -38,14 +38,16 @@
  */
 package org.netbeans.modules.dlight.spi.support;
 
-import java.util.Map;
+import java.util.List;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.netbeans.modules.dlight.api.impl.DLightToolConfigurationAccessor;
-import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
+import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import static org.junit.Assert.*;
 import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
 import org.openide.filesystems.FileObject;
@@ -72,7 +74,7 @@ public class DLightToolConfigurationProviderFactoryTest {
 
     @Before
     public void setUp() {
-        folder = FileUtil.getConfigFile("DLight/XMLToolConfigurations");
+        folder = FileUtil.getConfigFile("DLight/Fops.Configuration");
         assertNotNull("testing layer is loaded: ", folder);
     }
 
@@ -86,10 +88,20 @@ public class DLightToolConfigurationProviderFactoryTest {
     @Test
     public void testCreate() {
         System.out.println("create");
-        Map map = null;
         DLightToolConfiguration result = null;
         try {
-             result = readAction("XMLFopsToolConfiguration.instance");
+            FileObject fo = folder.getFileObject("XMLToolConfiguration.instance");
+            assertNotNull("file " + "DLight/Fops.Configuration/XMLFopsToolConfiguration.instance", fo);
+
+            Object obj = fo.getAttribute("instanceCreate");
+            assertNotNull("File object has not null instanceCreate attribute", obj);
+
+
+            if (!(obj instanceof DLightToolConfiguration)) {
+                fail("Object needs to be DLightConfiguration: " + obj);
+            }
+            result = (DLightToolConfiguration)obj;
+
         } catch (Exception ex) {
             fail("Test is not passed");
         }
@@ -99,22 +111,148 @@ public class DLightToolConfigurationProviderFactoryTest {
         System.out.println("displayedName=" + toolConfigurationAccessor.getDetailedToolName(result));
         System.out.println("id=" + result.getID());
         // TODO review the generated test code and remove the default call to fail.
-        
+
     }
 
-     private DLightToolConfiguration readAction(String fileName) throws Exception {
-        FileObject fo = this.folder.getFileObject(fileName);
-        assertNotNull("file " + fileName, fo);
+    @Test
+    public void testCreateTable() {
+        System.out.println("createTable");
+        DataTableMetadata result = null;
+        try {
+            FileObject fo = folder.getFileObject("DtraceDatatableMetadata.instance");
+            assertNotNull("file " + "DLight/Fops.Configuration/DtraceDatatableMetadata.instance", fo);
 
-        Object obj = fo.getAttribute("instanceCreate");
-        assertNotNull("File object has not null instanceCreate attribute", obj);
-        
+            Object obj = fo.getAttribute("instanceCreate");
+            assertNotNull("File object should have not null instanceCreate attribute", obj);
 
-        if (!(obj instanceof DLightToolConfiguration)) {
-            fail("Object needs to be DLightConfiguration: " + obj);
+            if (!(obj instanceof DataTableMetadata)) {
+                fail("Object needs to be DatatableMetadata: " + obj);
+            }
+            result = (DataTableMetadata)obj;
+
+        } catch (Exception ex) {
+            fail("Test is not passed");
         }
-
-        return (DLightToolConfiguration)obj;
+        assertNotNull("DataTableMetadata should not be null", result);
+        System.out.println("table name=" + result.getName());
     }
-    
+
+    @Test
+    public void testCreateDetailsTable() {
+        System.out.println("createDetaiklsTable");
+        DataTableMetadata result = null;
+        try {
+            FileObject fo = folder.getFileObject("DtraceDetailsDatatableMetadata.instance");
+            assertNotNull("file " + "DLight/Fops.Configuration/DtraceDetailsDatatableMetadata.instance", fo);
+
+            Object obj = fo.getAttribute("instanceCreate");
+            assertNotNull("File object should have not null instanceCreate attribute", obj);
+
+            if (!(obj instanceof DataTableMetadata)) {
+                fail("Object needs to be DatatableMetadata: " + obj);
+            }
+            result = (DataTableMetadata)obj;
+
+        } catch (Exception ex) {
+            fail("Test is not passed");
+        }
+        assertNotNull("DataTableMetadata should not be null", result);
+        System.out.println("****************************************");
+        System.out.println("table name=" + result.getName());
+        System.out.println("*********************columns*********************");
+        List<Column> columns = result.getColumns();
+        for (Column c: columns ){
+            print(c);
+        }
+        System.out.println("****************************************");
+    }
+
+    @Test
+    public void testCreateColumnsList(){
+        System.out.println("createColumnsList");
+        List<Column> result = null;
+        try {
+            FileObject fo = folder.getFileObject("FopsColumns.List");
+            assertNotNull("file " + "DLight/Fops.Configuration/FopsColumns.List", fo);
+
+            Object obj = fo.getAttribute("instanceCreate");
+            assertNotNull("File object should have not null instanceCreate attribute", obj);
+
+            if (!(obj instanceof List)) {
+                fail("Object needs to be List of Column: " + obj);
+            }
+            result = (List<Column>)obj;
+
+        } catch (Exception ex) {
+            fail("Test is not passed");
+        }
+        assertNotNull("List<Column> should not be null", result);
+        System.out.println("columns count=" + result.size());
+        for (Column c : result){
+            print(c);
+        }
+    }
+
+    @Test
+    public void testCreateColumn(){
+        System.out.println("createColumn");
+        Column result = null;
+        try {
+            FileObject fo = folder.getFileObject("FopsColumns/Column1.instance");
+            assertNotNull("file " + "DLight/Fops.Configuration/FopsColumns/Column1.instance", fo);
+
+            Object obj = fo.getAttribute("instanceCreate");
+            assertNotNull("File object should have not null instanceCreate attribute", obj);
+
+            if (!(obj instanceof Column)) {
+                fail("Object needs to be a Column: " + obj);
+            }
+            result = (Column)obj;
+
+        } catch (Exception ex) {
+            fail("Test is not passed");
+        }
+        assertNotNull("Column should not be null", result);
+        print(result);
+    }
+
+    @Test
+    public void testIndicatorMetadata(){
+        System.out.println("createIndicatorMetadata");
+        IndicatorMetadata result = null;
+        try {
+            FileObject fo = folder.getFileObject("IndicatorMetadata.instance");
+            assertNotNull("file " + "DLight/Fops.Configuration/IndicatorMetadata.instance", fo);
+
+            Object obj = fo.getAttribute("instanceCreate");
+            assertNotNull("File object should have not null instanceCreate attribute", obj);
+
+            if (!(obj instanceof IndicatorMetadata)) {
+                fail("Object needs to be a IndicatorMetadata: " + obj);
+            }
+            result = (IndicatorMetadata)obj;
+
+        } catch (Exception ex) {
+            fail("Test is not passed");
+        }
+        assertNotNull("IndicatorMetadata should not be null", result);
+    }
+
+    public void testDTDCConfiguration(){
+        System.out.println("DtraceDataCollectorConfiguration");
+    }
+
+
+   
+
+
+    private void print(Column column){
+        System.out.println("-------------print column----------------------");
+        System.out.println("column name=" + column.getColumnName());
+        System.out.println("column class=" + column.getColumnClass());
+        System.out.println("column displayed name=" + column.getColumnUName());
+        System.out.println("column expression=" + column.getExpression());
+        
+    }
+
 }

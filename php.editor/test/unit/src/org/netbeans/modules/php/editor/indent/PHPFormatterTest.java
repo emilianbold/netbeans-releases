@@ -38,10 +38,12 @@
  */
 package org.netbeans.modules.php.editor.indent;
 
+import java.util.prefs.Preferences;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.csl.api.Formatter;
+import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
 import org.netbeans.modules.php.editor.PHPTestBase;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.openide.filesystems.FileObject;
@@ -133,6 +135,10 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/multiline_string.php");
     }
 
+    public void testInitialIndent1() throws Exception {
+        reformatFileContents("testfiles/formatting/initial_indent1.php", 5);
+    }
+
     public void testIfElseAlternativeSyntax() throws Exception {
         reformatFileContents("testfiles/formatting/ifelse_alternative_syntax.php");
     }
@@ -184,6 +190,10 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/issue162320.php");
     }
 
+    public void test173906_dowhile() throws Exception {
+        reformatFileContents("testfiles/formatting/issue173906_dowhile.php");
+    }
+
     public void test164381() throws Exception {
         reformatFileContents("testfiles/formatting/issue164381.php");
     }
@@ -204,8 +214,16 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents(file, new IndentPrefs(2, 2));
     }
 
+    private void reformatFileContents(String file, int initialIndent) throws Exception {
+        reformatFileContents(file, new IndentPrefs(2, 2), initialIndent);
+    }
+
     @Override
     protected void reformatFileContents(String file, IndentPrefs preferences) throws Exception {
+        reformatFileContents(file, preferences, 0);
+    }
+
+    protected void reformatFileContents(String file, IndentPrefs preferences, int initialIndent) throws Exception {
         FileObject fo = getTestFile(file);
         assertNotNull(fo);
         BaseDocument doc = getDocument(fo);
@@ -228,6 +246,9 @@ public class PHPFormatterTest extends PHPTestBase {
         //assertNotNull("getFormatter must be implemented", formatter);
 
         setupDocumentIndentation(doc, preferences);
+
+        Preferences prefs = CodeStylePreferences.get(doc).getPreferences();
+        prefs.putInt(FmtOptions.initialIndent, initialIndent);
         format(doc, formatter, formatStart, formatEnd, false);
 
         String after = doc.getText(0, doc.getLength());

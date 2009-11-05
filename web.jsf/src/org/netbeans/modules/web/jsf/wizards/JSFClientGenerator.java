@@ -60,6 +60,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
@@ -178,6 +179,8 @@ public class JSFClientGenerator {
     private static final String TABLE_BODY_VAR = "__TABLE_BODY__"; //NOI18N
     private static final String JSF_UTIL_CLASS_VAR = "__JSF_UTIL_CLASS__"; //NOI18N
     private static final String LINK_TO_INDEX_VAR = "__LINK_TO_INDEX__"; //NOI18N
+    private static final String INDENT = "            "; // TODO: jsut reformat generated code
+
     
     public static void generateJSFPages(ProgressContributor progressContributor, ProgressPanel progressPanel, final Project project, final String entityClass, String jsfFolderBase, String jsfFolderName, final String controllerPackage, final String controllerClass, FileObject pkg, FileObject controllerFileObject, final EmbeddedPkSupport embeddedPkSupport, final List<String> entities, final boolean ajaxify, String jpaControllerPackage, FileObject jpaControllerFileObject, FileObject converterFileObject, final boolean genSessionBean, int progressIndex) throws IOException {
         final boolean isInjection = Util.isContainerManaged(project); //Util.isSupportedJavaEEVersion(project);
@@ -371,7 +374,7 @@ public class JSFClientGenerator {
                 simpleEntityName, idGetter.get(0), managedBean, jpaControllerClass, genSessionBean, isInjection);
         
         final String styleAndScriptTags = "<link rel=\"stylesheet\" type=\"text/css\" href=\"" + rootRelativePathToWebFolder + JSFCRUD_STYLESHEET + "\" />" +
-            (ajaxify ? "<%@ include file=\"/" + JSPF_FOLDER + "/" + JSFCRUD_AJAX_JSPF + "\" %><scfaceript type=\"text/javascript\" src=\"" + rootRelativePathToWebFolder + JSFCRUD_JAVASCRIPT + "\"></script>" : "");
+            (ajaxify ? "<%@ include file=\"/" + JSPF_FOLDER + "/" + JSFCRUD_AJAX_JSPF + "\" %><script type=\"text/javascript\" src=\"" + rootRelativePathToWebFolder + JSFCRUD_JAVASCRIPT + "\"></script>" : "");
             
         boolean welcomePageExists = addLinkToListJspIntoIndexJsp(wm, simpleEntityName, styleAndScriptTags, projectEncoding, "");
         final String linkToIndex = welcomePageExists ? "<br />\n<h:commandLink value=\"Index\" action=\"welcome\" immediate=\"true\" />\n" : "";  //NOI18N
@@ -497,6 +500,12 @@ public class JSFClientGenerator {
                 templateContent = templateContent.replace(justTitleEnd, replaceHeadWith); //NOI18N
                 JSFFrameworkProvider.createFile(templatefl,templateContent, projectEncoding);
             }
+            //insert style and script tags if not already present
+            if (content.indexOf(styleAndScriptTags) == -1) {
+                String justTitleEnd = "</title>"; //NOI18N
+                String replaceHeadWith = justTitleEnd + endLine + styleAndScriptTags;    //NOI18N
+                content = content.replace(justTitleEnd, replaceHeadWith); //NOI18N
+            }
             
             //make sure <f:view> is outside of <html>
             String html = "<html>";
@@ -518,7 +527,17 @@ public class JSFClientGenerator {
             }
 
             String find = "</h:body>"; //NOI18N
-            if ( content.indexOf(find) > -1){
+            boolean isFound = false;
+            if (content.indexOf(find)>-1) {
+                isFound = true;
+            } else {
+                find = "</body>";   //NOI18N
+                if (content.indexOf(find)>-1) {
+                    isFound = true;
+                }
+            }
+
+            if ( isFound ){
                 StringBuffer replace = new StringBuffer();
                 String managedBeanName = getManagedBeanName(simpleEntityName);
                 String commandLink = "";
@@ -1000,8 +1019,14 @@ public class JSFClientGenerator {
         StringBuffer getIdBody = null;
         if (embeddable[0]) {
             getIdBody = new StringBuffer();
-            getIdBody.append(idPropertyType[0] + " id = new " + idPropertyType[0] + "();\n");
             int params = paramSetters.size();
+            if(params > 0){
+                getIdBody.append(idPropertyType[0] + " id = new " + idPropertyType[0] + "();\n");
+            }
+            else {
+                getIdBody.append(idPropertyType[0] + " id;\n");//do not initialize, user need to update code and may be use not default constructor
+            }
+
             getIdBody.append("String params[] = new String[" + params + "];\n" +
                     "int p = 0;\n" +
                     "int grabStart = 0;\n" +
@@ -1026,14 +1051,16 @@ public class JSFClientGenerator {
                     "params[i] = params[i].replace(escape + escape, escape);\n" +
                     "}\n\n"
                     );
-                    
             for (int i = 0; i < paramSetters.size(); i++) {
                 MethodModel setter = paramSetters.get(i);
                 String type = setter.getParameters().get(0).getType();
-                getIdBody.append("id." + setter.getName() + "(" 
+                getIdBody.append("id." + setter.getName() + "("
                         + createIdFieldInitialization(type, "params[" + i + "]") + ");\n");
             }
             
+            if( params==0) {
+                     getIdBody.append(NbBundle.getMessage(JSFClientGenerator.class, "ERR_NO_SETTERS_CONVERTER", new String[]{INDENT, idPropertyType[0], "getId()"})+"\n");//NOI18N;
+            }
             getIdBody.append("return id;\n");
         }
         
@@ -1095,6 +1122,7 @@ public class JSFClientGenerator {
                 getAsStringBody.append(propName);
             }
             getAsStringBody.append(";\n");
+            getAsStringBody.append(NbBundle.getMessage(JSFClientGenerator.class, "ERR_NO_SETTERS_CONVERTER", new String[]{INDENT, idPropertyType[0], "getAsString()"})+"\n");//NOI18N;
         } else {
             String oDotGetId = "o." + idGetterName[0] + "()";
             if (isPrimitiveIdPropertyType[0]) {
@@ -1106,6 +1134,7 @@ public class JSFClientGenerator {
         getAsStringBody.append("} else {\n"
                 + "throw new IllegalArgumentException(\"object \" + object + \" is of type \" + object.getClass().getName() + \"; expected type: " + entityClass +"\");\n}");
         
+
         final MethodModel getAsString = MethodModel.create(
                 "getAsString",
                 "java.lang.String",
@@ -1346,11 +1375,19 @@ public class JSFClientGenerator {
                     TypeElement entityType = workingCopy.getElements().getTypeElement(entityClass);
                     StringBuffer codeToPopulatePkFields = new StringBuffer();
                     if (embeddable[0]) {
-                        for (ExecutableElement pkMethod : embeddedPkSupport.getPkAccessorMethods(workingCopy, entityType)) {
+                        Set<ExecutableElement> methods = embeddedPkSupport.getPkAccessorMethods(workingCopy, entityType);
+                        boolean missedSetters = false;
+                        for (ExecutableElement pkMethod : methods) {
                             if (embeddedPkSupport.isRedundantWithRelationshipField(workingCopy, entityType, pkMethod)) {
                                 codeToPopulatePkFields.append(fieldName + "." +idGetterName[0] + "().s" + pkMethod.getSimpleName().toString().substring(1) + "(" +  //NOI18N
                                     fieldName + "." + embeddedPkSupport.getCodeToPopulatePkField(workingCopy, entityType, pkMethod) + ");\n");
+                                if(!embeddedPkSupport.getPkSetterMethodExist(workingCopy, entityType, pkMethod)) {
+                                    missedSetters = true;
+                                }
                             }
+                        }
+                        if(missedSetters){
+                            codeToPopulatePkFields.append(NbBundle.getMessage(JSFClientGenerator.class, "ERR_NO_SETTERS_CONTROLLER", new String[]{INDENT, idPropertyType[0]})+"\n");//NOI18N;
                         }
                     }
 

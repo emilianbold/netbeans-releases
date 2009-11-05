@@ -273,6 +273,7 @@ tokens {
 	Vocabulary;
 	NUMBER;
 	ID;
+        BINARYINT;
 
     // preprocessor specific tokens
     INCLUDE_STRING;
@@ -898,6 +899,10 @@ NUMBER
 		(LongSuffix                //{type = LongHexConst;}
 		|UnsignedSuffix            //{type = UnsignedHexConst;}
 		)*                         {$setType(HEXADECIMALINT);}   
+	|	'0' ('b' | 'B') ('0'|'1')*
+		(LongSuffix
+		|UnsignedSuffix
+		)*                         {$setType(BINARYINT);}
 	;
 
 // Everything that can be treated lke ID

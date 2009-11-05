@@ -65,7 +65,7 @@ public class RemoteUtil {
         if (rc != 0) {
             throw new RemoteException(String.format("Failed to run %s at %s", cmd, env.getDisplayName())); // NOI18N
         }
-        String result = rcs.getOutput();
+        String result = rcs.getOutput().trim();
         return result;
     }
 

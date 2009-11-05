@@ -41,12 +41,17 @@
 package org.netbeans.modules.ruby;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import org.jrubyparser.ast.ArrayNode;
+import org.jrubyparser.ast.INameNode;
 import org.jrubyparser.ast.IfNode;
 import org.jrubyparser.ast.ListNode;
 import org.jrubyparser.ast.MultipleAsgnNode;
 import org.jrubyparser.ast.Node;
 import org.jrubyparser.ast.NodeType;
+import org.jrubyparser.ast.ToAryNode;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -80,6 +85,26 @@ public final class RubyTypeAnalyzer {
     private boolean targetReached;
 
     /**
+     * The names of the methods that have been analyzed. Needed to keep track on
+     * when types of instance/class vars should be overridden - we don't want to
+     * override the types when an inst var is assigned in different methods, e.g.:
+     * <pre>
+     *  def foo
+     *   &#64;baz = 1
+     *  end
+     *  def bar
+     *   &#64;baz = "str"
+     *  end
+     *  def whats_my_return_type
+     *   &#64;baz
+     *  end
+     * </pre>
+     *
+     * In the above <code>@baz</code> should be inferred both as <code>Fixnum</code>
+     * and <code>String</code>.
+     */
+    private final Set<String> analyzedMethods = new HashSet<String>();
+    /**
      * Creates a new instance of RubyTypeAnalyzer for a given position. The
      * {@link #inferType} method will do the rest.
      */
@@ -93,20 +118,83 @@ public final class RubyTypeAnalyzer {
             RubyTypeAnalyzer.initFileTypeVars(knowledge);
             RDocAnalyzer.collectTypeAssertions(knowledge);
 
-            analyze(knowledge.getRoot(), knowledge.getTypesForSymbols(), true);
+            analyze(knowledge.getRoot(), knowledge.getTypesForSymbols(), true, null);
             analyzed = true;
         }
     }
-    
+
+    /**
+     * Collects the variables initialized in the given <code>multipleAsgnNode</code>.
+     * @param multipleAsgnNode
+     * @param typeInferencer
+     * 
+     * @return a map containing the variable nodes and types of the variables in the given <code>multipleAsgnNode</code>.
+     */
+    static void collectMultipleAsgnVars(MultipleAsgnNode multipleAsgnNode, RubyTypeInferencer typeInferencer, Map<Node, RubyType> result) {
+        ListNode head = multipleAsgnNode.getHeadNode();
+        Node value = multipleAsgnNode.getValueNode();
+        if (head == null || value == null) {
+            return;
+        }
+        // special case
+        if (value.getNodeType() == NodeType.TOARYNODE) {
+            value = ((ToAryNode) value).getValue();
+        }
+        if (value.childNodes().size() != head.childNodes().size()) {
+            return;
+        }
+        for (int i = 0; i < head.childNodes().size(); i++) {
+            Node var = head.childNodes().get(i);
+            collectTypes(var, value.childNodes().get(i), typeInferencer, result);
+        }
+    }
+
+    private static void collectTypes(Node head, Node value, RubyTypeInferencer typeInferencer, Map<Node, RubyType> result) {
+        if (head == null || value == null) {
+            return;
+        }
+        if (value.getNodeType() == NodeType.TOARYNODE) {
+            value = ((ToAryNode) value).getValue();
+        }
+        // nested multiple asgn
+        // if we have a multiple asgn of form (a,(b,c))=[1,[2,3]] the nested multipleAsgnNode don't
+        // contain the correct value node, we need to get the value from the "parent" multipleAsgnNode
+        if (head.getNodeType() == NodeType.MULTIPLEASGNNODE) {
+            MultipleAsgnNode multipleAsgnNode = (MultipleAsgnNode) head;
+            if (multipleAsgnNode.getHeadNode().childNodes().size() == value.childNodes().size()) {
+                for (int i = 0; i < multipleAsgnNode.getHeadNode().childNodes().size(); i++) {
+                    Node var = multipleAsgnNode.getHeadNode().childNodes().get(i);
+                    collectTypes(var, value.childNodes().get(i), typeInferencer, result);
+                }
+            }
+        } else if (head.getNodeType() == NodeType.ARRAYNODE && value.getNodeType() == NodeType.ARRAYNODE) {
+            ArrayNode headArray = (ArrayNode) head;
+            ArrayNode valueArray = (ArrayNode) value;
+            if (headArray.size() == valueArray.size()) {
+                for (int i = 0; i < headArray.size(); i++) {
+                    collectTypes(headArray.get(i), valueArray.get(i), typeInferencer, result);
+                }
+            }
+        } else {
+            result.put(head, typeInferencer.inferType(value));
+        }
+    }
+
     /**
      * Analyze the given code block down to the given offset. The {@link
      * #inferType} method can then be used to read out the symbol type if any at
-     * that point. Returns the type of the current expression, if known.
+     * that point.
+     *
+     * @param currentMethod the method we're currently analyzing (may be null).
      */
     private void analyze(
             final Node node,
             final Map<String, RubyType> typesForSymbols,
-            final boolean override) {
+            final boolean override, String currentMethod) {
+
+        if (node.getNodeType() == NodeType.DEFNNODE || node.getNodeType() == NodeType.DEFSNODE) {
+            currentMethod = AstUtilities.getName(node);
+        }
         // Avoid including definitions appearing later in the context than the
         // caret. (This only works for local variable analysis; for fields it
         // could be complicated by code earlier than the caret calling code
@@ -124,39 +212,39 @@ public final class RubyTypeAnalyzer {
         switch (node.getNodeType()) {
             case MULTIPLEASGNNODE: {
                 MultipleAsgnNode multipleAsgnNode = (MultipleAsgnNode) node;
-                ListNode head = multipleAsgnNode.getHeadNode();
-                Node value = multipleAsgnNode.getValueNode();
-                if (head == null || value == null) {
-                    break;
-                }
-                if (value.childNodes().size() != head.childNodes().size()) {
-                    break;
-                }
-                for (int i = 0; i < head.childNodes().size(); i++) {
-                    RubyType type = RubyTypeInferencer.create(knowledge).inferType(value.childNodes().get(i));
-                    String symbol = AstUtilities.getName(head.childNodes().get(i));
-                    maybePutTypeForSymbol(typesForSymbols, symbol, type, override);
+                Map<Node, RubyType> vars = new HashMap<Node, RubyType>();
+                collectMultipleAsgnVars(multipleAsgnNode, RubyTypeInferencer.create(knowledge), vars);
+                for (Node each : vars.keySet()) {
+                    if (each instanceof INameNode) {
+                        String name = AstUtilities.getName(each);
+                        maybePutTypeForSymbol(typesForSymbols, name, vars.get(each), override, currentMethod);
+                    }
                 }
                 return;
             }
             case LOCALASGNNODE: {
                 RubyType type = RubyTypeInferencer.create(knowledge).inferTypesOfRHS(node);
                 String symbol = RubyTypeInferencer.getLocalVarPath(new AstPath(knowledge.getRoot(), node), AstUtilities.getName(node));
-                maybePutTypeForSymbol(typesForSymbols, symbol, type, override);
+                maybePutTypeForSymbol(typesForSymbols, symbol, type, override, currentMethod);
+                break;
+            }
+            case CONSTDECLNODE: {
+                RubyType type = RubyTypeInferencer.create(knowledge).inferTypesOfRHS(node);
+                String fqn  = AstUtilities.getFqnName(knowledge.getRoot(), node);
+                maybePutTypeForSymbol(typesForSymbols, fqn, type, override, currentMethod);
                 break;
             }
             case INSTASGNNODE:
             case GLOBALASGNNODE:
             case CLASSVARASGNNODE:
             case CLASSVARDECLNODE:
-            case CONSTDECLNODE:
             case DASGNNODE: {
                 RubyType type = RubyTypeInferencer.create(knowledge).inferTypesOfRHS(node);
 
                 // null element in types set means that we are not able to infer
                 // the expression
                 String symbol = AstUtilities.getName(node);
-                maybePutTypeForSymbol(typesForSymbols, symbol, type, override);
+                maybePutTypeForSymbol(typesForSymbols, symbol, type, override, currentMethod);
                 break;
             }
 //        case ITERNODE: {
@@ -172,28 +260,28 @@ public final class RubyTypeAnalyzer {
         }
 
         if (node.getNodeType() == NodeType.IFNODE) {
-            analyzeIfNode((IfNode) node, typesForSymbols);
+            analyzeIfNode((IfNode) node, typesForSymbols, currentMethod);
         } else {
             for (Node child : node.childNodes()) {
                 if (child.isInvisible()) {
                     continue;
                 }
-                analyze(child, typesForSymbols, override);
+                analyze(child, typesForSymbols, override, currentMethod);
             }
         }
     }
 
-    private void analyzeIfNode(final IfNode ifNode, final Map<String, RubyType> typesForSymbols) {
+    private void analyzeIfNode(final IfNode ifNode, final Map<String, RubyType> typesForSymbols, String currentMethod) {
         Node thenBody = ifNode.getThenBody();
         Map<String, RubyType> ifTypesAccu = new HashMap<String, RubyType>();
         if (thenBody != null) { // might happen with e.g. 'unless'
-            analyze(thenBody, ifTypesAccu, true);
+            analyze(thenBody, ifTypesAccu, true, currentMethod);
         }
 
         Node elseBody = ifNode.getElseBody();
         Map<String, RubyType> elseTypesAccu = new HashMap<String, RubyType>();
         if (elseBody != null) {
-            analyze(elseBody, elseTypesAccu, true);
+            analyze(elseBody, elseTypesAccu, true, currentMethod);
         }
 
         Map<String, RubyType> allTypesForSymbols = new HashMap<String, RubyType>();
@@ -201,10 +289,10 @@ public final class RubyTypeAnalyzer {
         // accumulate 'then' and 'else' bodies into one collection so they will
         // not override each other
         for (Map.Entry<String, RubyType> entry : elseTypesAccu.entrySet()) {
-            maybePutTypeForSymbol(allTypesForSymbols, entry.getKey(), entry.getValue(), false);
+            maybePutTypeForSymbol(allTypesForSymbols, entry.getKey(), entry.getValue(), false, currentMethod);
         }
         for (Map.Entry<String, RubyType> entry : ifTypesAccu.entrySet()) {
-            maybePutTypeForSymbol(allTypesForSymbols, entry.getKey(), entry.getValue(), false);
+            maybePutTypeForSymbol(allTypesForSymbols, entry.getKey(), entry.getValue(), false, currentMethod);
         }
 
         // if there is no 'then' or 'else' body do not override assignment in
@@ -212,7 +300,7 @@ public final class RubyTypeAnalyzer {
         for (Map.Entry<String, RubyType> entry : allTypesForSymbols.entrySet()) {
             String var = entry.getKey();
             boolean override = ifTypesAccu.containsKey(var) && elseTypesAccu.containsKey(var);
-            maybePutTypeForSymbol(typesForSymbols, var, entry.getValue(), override);
+            maybePutTypeForSymbol(typesForSymbols, var, entry.getValue(), override, currentMethod);
         }
     }
 
@@ -285,8 +373,19 @@ public final class RubyTypeAnalyzer {
             final Map<String, RubyType> typesForSymbols,
             final String symbol,
             final RubyType newType,
-            final boolean override) {
+            boolean override,
+            final String currentMethod) {
+        
         RubyType mapType = typesForSymbols.get(symbol);
+
+        if (symbol.startsWith("@")
+                && currentMethod != null 
+                && !analyzedMethods.contains(currentMethod)) {
+            
+            analyzedMethods.add(currentMethod);
+            override = false;
+        }
+
         if (mapType == null || override) {
             mapType = new RubyType();
             typesForSymbols.put(symbol, mapType);

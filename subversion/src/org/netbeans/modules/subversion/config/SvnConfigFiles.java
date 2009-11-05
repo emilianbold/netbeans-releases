@@ -103,7 +103,7 @@ public class SvnConfigFiles implements PreferenceChangeListener {
     private static final List<String> DEFAULT_GLOBAL_IGNORES = 
             parseGlobalIgnores("*.o *.lo *.la #*# .*.rej *.rej .*~ *~ .#* .DS_Store");                                          // NOI18N
 
-    private boolean recentUrlsChanged = true; // force rewrite on first run in a session
+    private String recentUrl;
 
     private interface IniFilePatcher {
         void patch(Ini file);
@@ -165,7 +165,7 @@ public class SvnConfigFiles implements PreferenceChangeListener {
 
     public void preferenceChange(PreferenceChangeEvent evt) {
         if(evt.getKey().startsWith(SvnModuleConfig.KEY_RECENT_URL)) {
-            recentUrlsChanged = true;
+            recentUrl = null; // force rewrite
         }
     }
 
@@ -180,8 +180,9 @@ public class SvnConfigFiles implements PreferenceChangeListener {
                         
         assert url != null : "can\'t do anything for a null host";     // NOI18N
                          
-        if(!(url.getProtocol().startsWith("http") ||
-             url.getProtocol().startsWith("https")) ) 
+        if(!(url.getProtocol().startsWith("http") ||                    //NOI18N
+             url.getProtocol().startsWith("https") ||                   //NOI18N
+             url.getProtocol().startsWith("svn+")) )                    //NOI18N
         {            
             // we need the settings only for remote http and https repositories
             return;
@@ -191,7 +192,8 @@ public class SvnConfigFiles implements PreferenceChangeListener {
         Ini nbServers = new Ini();   
         Ini.Section nbGlobalSection = nbServers.add(GLOBAL_SECTION);
 
-        changes = recentUrlsChanged;
+        String repositoryUrl = url.toString();
+        changes = !repositoryUrl.equals(recentUrl);
         ProxySettings ps = new ProxySettings();
         if(proxySettings != null && ps.equals(proxySettings)) {
             // do nothing
@@ -201,17 +203,21 @@ public class SvnConfigFiles implements PreferenceChangeListener {
         }
 
         if(changes) {
+            RepositoryConnection rc = SvnModuleConfig.getDefault().getRepositoryConnection(repositoryUrl);
+            if (rc != null && url.getProtocol().startsWith("svn+")) {   //NOI18N
+                // must set tunnel info for the repository url
+                setExternalCommand(SvnUtils.getTunnelName(url.getProtocol()), rc.getExternalCommand());
+            }
             if(url.getProtocol().startsWith("https")) {
-                setSSLCert(url, nbGlobalSection);
+                setSSLCert(rc, nbGlobalSection);
             }
             setProxy(url, nbGlobalSection);
             storeIni(nbServers, "servers");                    // NOI18N
+            recentUrl = url.toString();
         }
-    }        
+    }
 
-    private boolean setSSLCert(SVNUrl url, Ini.Section nbGlobalSection) {
-        recentUrlsChanged = false;
-        RepositoryConnection rc = SvnModuleConfig.getDefault().getRepositoryConnection(url.toString());
+    private boolean setSSLCert(RepositoryConnection rc, Ini.Section nbGlobalSection) {
         if(rc == null) {
             return true;
         }
@@ -290,6 +296,9 @@ public class SvnConfigFiles implements PreferenceChangeListener {
     }
     
     public void setExternalCommand(String tunnelName, String command) {
+        if (command == null) {
+            return;
+        }
         Ini.Section tunnels = getSection(config, "tunnels", true);
         tunnels.put(tunnelName, command);
         storeIni(config, "config");                                                     // NOI18N

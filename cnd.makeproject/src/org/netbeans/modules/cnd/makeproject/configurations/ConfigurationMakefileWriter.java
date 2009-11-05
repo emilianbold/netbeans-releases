@@ -306,8 +306,11 @@ public class ConfigurationMakefileWriter {
                 }
                 if (compilerConf != null && compilerConf.getTool().getModified()) {
                     return compilerConf.getTool().getValue();
-                } else {
+                } else if (0 < compiler.getName().length()) {
                     return compiler.getName();
+                } else if (compilerSet.isUrlPointer()) {
+                    // Fake tool, get name from the descriptor (see IZ#174566).
+                    return compiler.getDescriptor().getNames()[0];
                 }
             }
         }

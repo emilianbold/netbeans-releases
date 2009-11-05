@@ -80,9 +80,31 @@ public class MessagePanel extends JPanel {
         messageLabel = new JLabel();
         doNotShowAgainCheckBox = new JCheckBox();
 
-        messageLabel.setLabelFor(this);
+        setFocusTraversalPolicy(new FocusTraversalPolicy() {
 
+
+
+            public Component getDefaultComponent(Container focusCycleRoot){
+                return doNotShowAgainCheckBox;
+            }//end getDefaultComponent
+            public Component getFirstComponent(Container focusCycleRoot){
+                return doNotShowAgainCheckBox;
+            }//end getFirstComponent
+            public Component getLastComponent(Container focusCycleRoot){
+                return doNotShowAgainCheckBox;
+            }//end getLastComponent
+            public Component getComponentAfter(Container focusCycleRoot, Component aComponent){
+                return doNotShowAgainCheckBox;//end getComponentAfter
+            }
+            public Component getComponentBefore(Container focusCycleRoot, Component aComponent){
+                return doNotShowAgainCheckBox;//end getComponentBefore
+
+            }}
+        );
+
+        messageLabel.setLabelFor(this);
         Mnemonics.setLocalizedText(messageLabel, "DUMMY"); // NOI18N
+
         doNotShowAgainCheckBox.setSelected(true);
 
         Mnemonics.setLocalizedText(doNotShowAgainCheckBox, NbBundle.getMessage(MessagePanel.class, "MessagePanel.doNotShowAgainCheckBox.text"));

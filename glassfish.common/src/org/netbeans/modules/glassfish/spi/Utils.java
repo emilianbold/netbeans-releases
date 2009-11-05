@@ -148,6 +148,8 @@ public class Utils {
             }
         } catch (ConnectException ex) {
             Logger.getLogger("glassfish").log(Level.INFO, null, ex);
+        } catch (SocketException ex) {
+            Logger.getLogger("glassfish").log(Level.FINE, null, ex);
         } catch (SocketTimeoutException ex) {
             Logger.getLogger("glassfish").log(Level.INFO, null, ex);
         } catch (IOException ex) {

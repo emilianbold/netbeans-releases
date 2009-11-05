@@ -94,6 +94,10 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
     /** Flag indicating if AWT is waiting in getEditorPane on initVisual.
      It is static for now when we have only one worker thread/RP */
     private static boolean waitingOnInitVisual;
+
+    /** Flag indicating if modal dialog for handling UQE is displayed.
+     If it is yes we cannot handle call of getEditorPane from modal EQ because it results in deadlock. */
+    private static boolean isModalDialog;
     
     /** Flag to detect if document loading in initNonVisual was canceled by user */
     private boolean isDocLoadingCanceled = false;
@@ -249,9 +253,9 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                     ex.getLocalizedMessage(), NotifyDescriptor.YES_NO_OPTION
                 );
             nd.setOptions(new Object[] { NotifyDescriptor.YES_OPTION, NotifyDescriptor.NO_OPTION });
-
+            isModalDialog = true;
             Object res = DialogDisplayer.getDefault().notify(nd);
-
+            isModalDialog = false;
             if (NotifyDescriptor.OK_OPTION.equals(res)) {
                 isConfirmed = true;
             } else {
@@ -418,18 +422,11 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                                         e.getLocalizedMessage(), NotifyDescriptor.YES_NO_OPTION
                                     );
                                 nd.setOptions(new Object[] { NotifyDescriptor.YES_OPTION, NotifyDescriptor.NO_OPTION });
-
+                                isModalDialog = true;
                                 Object res = DialogDisplayer.getDefault().notify(nd);
-
+                                isModalDialog = false;
                                 if (NotifyDescriptor.OK_OPTION.equals(res)) {
                                     doInit.confirmed = true;
-                                    try {
-                                        e.confirmed();
-                                    } catch (IOException ex1) {
-                                        Exceptions.printStackTrace(ex1);
-
-                                        return;
-                                    }
                                 } else {
                                     return;
                                 }
@@ -486,6 +483,10 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                                 SwingUtilities.invokeLater(query);
                                 if (query.awaitAWT()) {
                                     query.waitRest();
+                                } else {
+                                    //#175956: If AWT is blocked so user could not answer UQE.
+                                    //In such case open document anyway.
+                                    confirmed = true;
                                 }
                                 synchronized (query) {
                                     query.finished = true;
@@ -496,6 +497,12 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                         }
                         if (confirmed) {
                             isDocLoadingCanceled = false;
+                            UserQuestionException e = (UserQuestionException) ex.getCause();
+                            try {
+                                e.confirmed();
+                            } catch (IOException ex1) {
+                                Exceptions.printStackTrace(ex1);
+                            }
                             prepareTask = support.prepareDocument();
                             assert prepareTask != null : "Failed to get prepareTask";
                             prepareTask.waitFinished();
@@ -813,7 +820,14 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             pane.setEditorKit(null);
         }
 
-        removeAll();
+        // #175576 - EditorRegistry listens on TopComponent.getRegistry() and iterates through
+        // children of closed TCs to registered JEditorPanes and close them as well. Calling
+        // removeAll() here directly means that ER will have no children to search through.
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                removeAll();
+            }
+        });
         customComponent = null;
         customToolbar = null;
         pane = null;
@@ -1176,6 +1190,19 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         assert SwingUtilities.isEventDispatchThread();
         //User selected not to load document
         if (isDocLoadingCanceled || !isComponentOpened) {
+            return null;
+        }
+        //#175528: This case should not happen as modal dialog handling UQE should
+        //not be displayed during IDE start ie. during component deserialization.
+        if (isModalDialog) {
+            LOG.log(Level.WARNING,"AWT is blocked by modal dialog. Return null from CloneableEditor.getEditorPane."
+            + " Please report this to IZ.");
+            LOG.log(Level.WARNING,"support:" + support.getClass().getName());
+            Exception ex = new Exception();
+            StringWriter sw = new StringWriter(500);
+            PrintWriter pw = new PrintWriter(sw);
+            ex.printStackTrace(pw);
+            LOG.log(Level.WARNING,sw.toString());
             return null;
         }
         initialize();

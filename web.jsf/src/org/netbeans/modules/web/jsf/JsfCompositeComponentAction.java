@@ -168,17 +168,19 @@ public final class JsfCompositeComponentAction extends CookieAction {
 
     @Override
     protected boolean enable(Node[] activatedNodes) {
-        EditorCookie editorCookie = activatedNodes[0].getLookup().lookup(EditorCookie.class);
-        Document doc = editorCookie.getDocument();
-        if (editorCookie != null) {
-            JEditorPane[] panes = editorCookie.getOpenedPanes();
-            if (panes.length>0) {
-                int cursor = panes[0].getCaret().getDot();
-                String selection = panes[0].getSelectedText();
-                int startOffset = panes[0].getSelectionStart();
-                int endOffset = panes[0].getSelectionEnd();
-                if (selection != null && isValid(doc, startOffset, endOffset)) {
-                    return true;
+        if (activatedNodes != null && activatedNodes.length > 0) {
+            EditorCookie editorCookie = activatedNodes[0].getLookup().lookup(EditorCookie.class);
+            Document doc = editorCookie.getDocument();
+            if (editorCookie != null) {
+                JEditorPane[] panes = editorCookie.getOpenedPanes();
+                if (panes.length>0) {
+                    int cursor = panes[0].getCaret().getDot();
+                    String selection = panes[0].getSelectedText();
+                    int startOffset = panes[0].getSelectionStart();
+                    int endOffset = panes[0].getSelectionEnd();
+                    if (selection != null && isValid(doc, startOffset, endOffset)) {
+                        return true;
+                    }
                 }
             }
         }

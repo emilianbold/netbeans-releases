@@ -1560,6 +1560,9 @@ is divided into following sections:
             <property name="built-{$kind}.properties" location="${{build.dir}}/built-{$kind}.properties"/>
             <delete file="${{built-{$kind}.properties}}" quiet="true"/>
         </target>
+        <target name="-warn-already-built-{$kind}" if="already.built.{$kind}.${{basedir}}">
+            <echo level="warn" message="Cycle detected: {/p:project/p:configuration/j2seproject3:data/j2seproject3:name} was already built"/>
+        </target>
         <target name="deps-{$kind}" depends="init,-deps-{$kind}-init">
             <xsl:attribute name="unless">no.deps</xsl:attribute>
 
@@ -1567,11 +1570,7 @@ is divided into following sections:
             <touch file="${{built-{$kind}.properties}}" verbose="false"/>
             <property file="${{built-{$kind}.properties}}" prefix="already.built.{$kind}."/>
             <!--<echo message="from deps-{$kind} of {/p:project/p:configuration/j2seproject3:data/j2seproject3:name}:"/><echoproperties prefix="already.built.{$kind}."/>-->
-            <fail message="Cycle detected: {/p:project/p:configuration/j2seproject3:data/j2seproject3:name} was already built">
-                <condition>
-                    <isset property="already.built.{$kind}.${{basedir}}"/>
-                </condition>
-            </fail>
+            <antcall target="-warn-already-built-{$kind}"/>
             <propertyfile file="${{built-{$kind}.properties}}">
                 <entry key="${{basedir}}" value=""/>
             </propertyfile>

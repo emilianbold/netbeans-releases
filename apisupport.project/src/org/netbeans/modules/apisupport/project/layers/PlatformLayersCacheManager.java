@@ -84,6 +84,7 @@ import org.openide.util.RequestProcessor;
  * @author Richard Michalsky
  */
 class PlatformLayersCacheManager {
+    static final String CACHE_PATH = "var/cache/nbplfsc";
 
     static class PLFSCacheEntry {
         private File jarFile;
@@ -159,7 +160,8 @@ class PlatformLayersCacheManager {
     }
 
     // <cluster root folder> --> <already loaded layer cache> mapping
-    private static Map<File, PLFSCache> loadedCaches = new HashMap<File, PLFSCache>();
+    // also used for cache synchronization
+    private static final Map<File, PLFSCache> loadedCaches = new HashMap<File, PLFSCache>();
     // XXX maybe some runtime cleanup of long unused caches from memory? WeakHashMap is too agile, nothing is usually left even for saving.
     // maybe just keep strong collection until caches are saved.
 
@@ -172,12 +174,15 @@ class PlatformLayersCacheManager {
     private static Logger LOGGER = Logger.getLogger(PlatformLayersCacheManager.class.getName());
 
     static {
-        cacheLocation = new File(System.getProperty("netbeans.user"), "var/cache/nbplfsc");
+        resetCacheLocation();
+    }
+
+    private static void resetCacheLocation() {
+        cacheLocation = new File(System.getProperty("netbeans.user"),CACHE_PATH);
         if (! cacheLocation.exists()) {
             if (! cacheLocation.mkdirs())
-                throw new RuntimeException("Cannot create cache dir " + System.getProperty("netbeans.user") + "/var/cache/nbplfsc");
+                throw new RuntimeException("Cannot create cache dir " + System.getProperty("netbeans.user") + CACHE_PATH);
         }
-
     }
 
     /**
@@ -228,6 +233,17 @@ class PlatformLayersCacheManager {
     }
 
     /**
+     * Clears caches from memory (not from disk).
+     * Only for use from unit tests!
+     */
+    static void reset() {
+        synchronized (loadedCaches) {
+            loadedCaches.clear();
+            cacheIndex = null;
+            resetCacheLocation();
+        }
+    }
+    /**
      * Returns cache for given cluster dirs.
      * Note that this call may block for some time if the cache is invalid,
      * in such case it gets rebuilt here.
@@ -239,55 +255,61 @@ class PlatformLayersCacheManager {
      */
     static Collection<FileSystem> getCache(File[] clusters, FileFilter filter) throws IOException {
         List<FileSystem> entries = new ArrayList<FileSystem>();
-        
-        ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(OpenLayerFilesAction.class, "MSG_scanning_layers"));
-        try {
-            handle.start(clusters.length + 1);
-            int c = 0;
-            for (File cl : clusters) {
-                assert cl.isDirectory();
-                boolean mustUpdate = true;
-                PLFSCache oc = loadedCaches.get(cl);
-                if (oc == null) {
-                    oc = loadCache(cl);
+        LOGGER.fine("getCache for clusters: " + Arrays.toString(clusters) + (filter != null ? ", FILTERED" : ""));
+        synchronized (loadedCaches) {
+            ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(OpenLayerFilesAction.class, "MSG_scanning_layers"));
+            try {
+                handle.start(clusters.length + 1);
+                int c = 0;
+                for (File cl : clusters) {
+                    assert cl.isDirectory();
+                    boolean mustUpdate = true;
+                    PLFSCache oc = loadedCaches.get(cl);
                     if (oc == null) {
-                        oc = fillCache(cl);
-                        cacheIndex.put(cl, cacheIndex.size());
-                        mustUpdate = false;
+                        oc = loadCache(cl);
+                        if (oc == null) {
+                            oc = fillCache(cl);
+                            cacheIndex.put(cl, cacheIndex.size());
+                            mustUpdate = false;
+                        }
+                        loadedCaches.put(new File(cl.getAbsolutePath()), oc);   // so that weak map keys are not referenced from within oc
                     }
-                    loadedCaches.put(new File(cl.getAbsolutePath()), oc);   // so that weak map keys are not referenced from within oc
-                }
 
-                handle.progress(c++);
-                File[] jars = getClusterJars(cl);
-                for (File jar : jars) {
-                    PLFSCacheEntry entry = oc.getEntry(jar);
-                    if (entry == null) {
-                        entry = new PLFSCacheEntry(jar, 0, 0, false, false, null, null);    // bogus entry, will get refreshed
-                        oc.add(entry);
-                    }
-                    if (!entry.ignored && (filter == null || filter.accept(entry.getJar()))) {
-                        if (mustUpdate && !entry.checkUpToDate()) {
-                            refreshEntry(oc, entry);
-                            LOGGER.log(Level.FINE, "Loading of layer cache for cluster " + cl + " failed due to modifications in " + jar);
+                    handle.progress(c++);
+                    File[] jars = getClusterJars(cl);
+                    for (File jar : jars) {
+                        if (filter != null && !filter.accept(jar)) {
+                            continue;
+
                         }
-                        assert entry.checkUpToDate() : "entry not up-to-date even immediately after refresh()";
-                        if (entry.isMasked()) // masked entries (with "_hidden" files) come first, "Not as good as following module deps but probably close enough."
-                        // according to original code in LayerUtils
-                        {
-                            entries.add(0, entry.getFS());
-                        } else {
-                            entries.add(entry.getFS());
+                        PLFSCacheEntry entry = oc.getEntry(jar);
+                        if (entry == null) {
+                            entry = new PLFSCacheEntry(jar, 0, 0, false, false, null, null);    // bogus entry, will get refreshed
+                            oc.add(entry);
+                        }
+                        if (!entry.ignored) {
+                            if (mustUpdate && !entry.checkUpToDate()) {
+                                refreshEntry(oc, entry);
+                                LOGGER.log(Level.FINE, "Loading of layer cache for cluster " + cl + " failed due to modifications in " + jar);
+                            }
+                            assert entry.checkUpToDate() : "entry not up-to-date even immediately after refresh()";
+                            if (entry.isMasked()) // masked entries (with "_hidden" files) come first, "Not as good as following module deps but probably close enough."
+                            // according to original code in LayerUtils
+                            {
+                                entries.add(0, entry.getFS());
+                            } else {
+                                entries.add(entry.getFS());
+                            }
                         }
                     }
                 }
+                // XXX "scan all caches" bg task on apisupport project load hook?
+                // getCache would wait for finishing its cache, optionally scheduling it as priority
+                storeCaches();
+                handle.progress(c++);
+            } finally {
+                handle.finish();
             }
-            // XXX "scan all caches" bg task on apisupport project load hook?
-            // getCache would wait for finishing its cache, optionally scheduling it as priority
-            storeCaches();
-            handle.progress(c++);
-        } finally {
-            handle.finish();
         }
         return entries;
     }
@@ -300,10 +322,12 @@ class PlatformLayersCacheManager {
      */
     static File findOriginatingJar(FileSystem fs) {
         Parameters.notNull("fs", fs);
-        for (PLFSCache cache : loadedCaches.values()) {
-            for (PLFSCacheEntry entry : cache.allEntries.values()) {
-                if (fs.equals(entry.getFS()))
-                    return entry.getJar();
+        synchronized (loadedCaches) {
+            for (PLFSCache cache : loadedCaches.values()) {
+                for (PLFSCacheEntry entry : cache.allEntries.values()) {
+                    if (fs.equals(entry.getFS()))
+                        return entry.getJar();
+                }
             }
         }
         return null;
@@ -371,11 +395,13 @@ class PlatformLayersCacheManager {
     }
 
     private static RequestProcessor RP = new RequestProcessor(PlatformLayersCacheManager.class.getName(), 1);
-    private static RequestProcessor.Task storeTask;
+    static RequestProcessor.Task storeTask; // package-private for tests
 
     private static void storeCaches() {
-        if (! anyModified)
+        if (! anyModified) {
+            LOGGER.fine("Nothing to store");
             return;
+        }
         if (storeTask == null) {
             storeTask = RP.create(new Runnable() {
                 public void run() {
@@ -383,41 +409,46 @@ class PlatformLayersCacheManager {
                 }
             });
         }
+        LOGGER.fine("Will store caches");
         storeTask.schedule(0);
     }
 
     private static void doStoreCaches() {
         // store cache index
-        ObjectOutputStream oos = null;
-        File indexF = null;
-        try {
+        synchronized (loadedCaches) {
+            LOGGER.fine("Storing caches in background");
+            ObjectOutputStream oos = null;
+            File indexF = null;
             try {
-                indexF = new File(cacheLocation, "index.ser");
-                oos = new ObjectOutputStream(new FileOutputStream(indexF));
-                oos.writeInt(1);    // index version
-                oos.writeInt(cacheIndex.size());
-                Date now = Calendar.getInstance().getTime();
-                int c = 0;
-                for (File clusterDir : cacheIndex.keySet()) {
-                    oos.writeObject(clusterDir.getAbsolutePath());
-                    oos.writeObject(now);   // XXX ignored so far, in future maybe write last access time of loaded caches
-                    PLFSCache cache = loadedCaches.get(clusterDir);
-                    if (cache != null && cache.isModified()) {
-                        File cf = new File(cacheLocation, String.format(CACHE_FILE_FMT, c));
-                        storeCache(cache, cf);
+                try {
+                    indexF = new File(cacheLocation, "index.ser");
+                    oos = new ObjectOutputStream(new FileOutputStream(indexF));
+                    oos.writeInt(1);    // index version
+                    oos.writeInt(cacheIndex.size());
+                    Date now = Calendar.getInstance().getTime();
+                    int c = 0;
+                    for (File clusterDir : cacheIndex.keySet()) {
+                        oos.writeObject(clusterDir.getAbsolutePath());
+                        oos.writeObject(now);   // XXX ignored so far, in future maybe write last access time of loaded caches
+                        PLFSCache cache = loadedCaches.get(clusterDir);
+                        if (cache != null && cache.isModified()) {
+                            File cf = new File(cacheLocation, String.format(CACHE_FILE_FMT, c));
+                            storeCache(cache, cf);
+                        }
+                        c++;
                     }
-                    c++;
+                    LOGGER.fine("Stored " + c + " modified caches");
+                } finally {
+                    if (oos != null) {
+                        oos.close();
+                    }
                 }
-            } finally {
-                if (oos != null) {
-                    oos.close();
-                }
+            } catch (IOException ex) {
+                LOGGER.log(Level.WARNING, "Saving platform layers cache index into " +  indexF
+                        + " failed with exception: " + ex.getLocalizedMessage(), ex);
             }
-        } catch (IOException ex) {
-            LOGGER.log(Level.WARNING, "Saving platform layers cache index into " +  indexF
-                    + " failed with exception: " + ex.getLocalizedMessage(), ex);
+            anyModified = false;
         }
-        anyModified = false;
     }
 
     private static void storeCache(PLFSCache cache, File cf) {
@@ -455,11 +486,12 @@ class PlatformLayersCacheManager {
         cache.modified = false;
     }
 
+    private static final String[] MODULE_DIRS = { "modules", "lib", "core" };
+
     private static File[] getClusterJars(File clusterDir) {
-        String[] moduleDirs = { "modules", "lib", "core" };
         Collection<File> allJars = new ArrayList<File>();
 
-        for (String mds : moduleDirs) {
+        for (String mds : MODULE_DIRS) {
             File[] jars;
             File modulesDir = new File(clusterDir, mds);
             if (modulesDir.isDirectory()) {
@@ -526,14 +558,13 @@ class PlatformLayersCacheManager {
             PLFSCacheEntry ce = new PLFSCacheEntry(jar, jar.length(), jar.lastModified(), false, isMasked, fs, bytes);
             cache.add(ce);
         }
+        LOGGER.fine("Cache for cluster " + clusterDir + " successfully created.");
         return cache;
         // XXX if storing bytes in memory takes too much memory, store cache directly on disk (possible slowdown due to disk IO)
     }
 
     private static PLFSCache loadCache(File clusterDir) {
         assert ClusterUtils.isValidCluster(clusterDir);
-
-        File modulesDir = new File(clusterDir, "modules");
         PLFSCache cache = new PLFSCache();
         LayerCacheManager man = LayerCacheManager.manager(true);
 
@@ -545,6 +576,10 @@ class PlatformLayersCacheManager {
             }
             FileInputStream fis = null;
             try {
+                File[] moduleDirs = new File[MODULE_DIRS.length];
+                for (int i = 0; i < moduleDirs.length; i++) {
+                    moduleDirs[i] = new File(clusterDir, MODULE_DIRS[i]);
+                }
                 fis = new FileInputStream(cacheFile);
                 ObjectInputStream ois = new ObjectInputStream(fis);
                 // cache file starts with version number (int), number of entries (int) and continues with a sequence of entries in format:
@@ -555,7 +590,12 @@ class PlatformLayersCacheManager {
                 int count = ois.readInt();
                 for (int c = 0; c < count; c++) {
                     String jarName = (String) ois.readObject();
-                    File jarFile = new File(modulesDir, jarName);
+                    File jarFile = null;
+                    for (File dir : moduleDirs) {
+                        jarFile = new File(dir, jarName);
+                        if (jarFile.exists())
+                            break;
+                    }
                     long jarSize = ois.readLong();
                     long jarTS = ois.readLong();
                     boolean isIgnored = ois.readBoolean();
@@ -584,6 +624,7 @@ class PlatformLayersCacheManager {
             } finally {
                 fis.close();
             }
+            LOGGER.fine("Cache for cluster " + clusterDir + " successfully loaded from cache file " + cacheFile);
         } catch (IOException ex) {
             // corrupted cache or index file, throw the cache away
             LOGGER.log(Level.WARNING, "IOException during loading project layers cache (for cluster " + clusterDir + "): " + ex.toString());

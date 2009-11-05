@@ -104,7 +104,7 @@ public class JsfUtils {
                 return null;
             }
             //try find the html root node first
-            HtmlParserResult result = _result[0];
+            final HtmlParserResult result = _result[0];
             AstNode root = null;
             //no html root node, we need to find a root node of some other ast tree
             //belonging to some namespace
@@ -176,7 +176,11 @@ public class JsfUtils {
                             //if there are no attributes, just add the new one at the end of the tag,
                             //if there are some, add the new one on a new line and reformat the tag
 
-                            int insertPosition = rootNode.endOffset() - 1; //just before the closing symbol
+                            int insertPosition = result.getSnapshot().getOriginalOffset(rootNode.endOffset() - 1); //just before the closing symbol
+                            if(insertPosition == -1) {
+                                //cannot be mapped to the document for some reason, just ignore
+                                return ;
+                            }
                             String text = (!noAttributes ? "\n" : "") + " xmlns:" + prefixToDeclare + //NOI18N
                                     "=\"" + library.getNamespace() + "\""; //NOI18N
 

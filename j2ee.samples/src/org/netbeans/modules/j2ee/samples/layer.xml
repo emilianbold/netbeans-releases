@@ -105,15 +105,6 @@
                         <attr name="prjType" stringvalue="web"/>
                     </file>
 
-                    <file name="LeanServiceECBComponentWithAjax.zip" url="LeanServiceECBComponentWithAjax.zip">
-                        <attr name="position" intvalue="487"/>
-                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.samples.Bundle"/>
-                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.samples.JavaEESamplesWizardIterator.createIterator"/>
-                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/samples/descriptions/LeanServiceECBComponentWithAjax.html"/>
-                        <attr name="template" boolvalue="true"/>
-                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif"/>
-                        <attr name="prjType" stringvalue="web"/>
-                    </file>
                 </folder>
             </folder>
         </folder>

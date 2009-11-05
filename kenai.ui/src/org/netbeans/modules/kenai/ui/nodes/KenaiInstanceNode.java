@@ -66,7 +66,7 @@ public class KenaiInstanceNode extends AbstractNode implements PropertyChangeLis
         setName(kenaiInstance.getUrl());
         Kenai.getDefault().addPropertyChangeListener(Kenai.PROP_URL_CHANGED, this);
         setDisplayName(instance.getDisplayName());
-        setShortDescription(instance.getDisplayName() + " (" + instance.getUrl() + ")");
+        setShortDescription(instance.getDisplayName() + " (" + instance.getUrl() + ")"); // NOI18N
         setIconBaseWithExtension("org/netbeans/modules/kenai/ui/resources/kenai-small.png");//NOI18N
         properties = new KenaiInstanceProperties(instance.getDisplayName(),instance.getUrl());
     }
@@ -83,7 +83,7 @@ public class KenaiInstanceNode extends AbstractNode implements PropertyChangeLis
     @Override
     public String getHtmlDisplayName() {
         if (Kenai.getDefault().getUrl().toString().equals(kenaiInstance.getUrl())) {
-            return "<b>" + getDisplayName() + "</b>";
+            return "<b>" + getDisplayName() + "</b>"; // NOI18N
         }
         return super.getHtmlDisplayName();
     }

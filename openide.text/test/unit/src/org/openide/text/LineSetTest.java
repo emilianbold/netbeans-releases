@@ -42,15 +42,11 @@
 package org.openide.text;
 
 import java.beans.PropertyChangeListener;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import junit.framework.AssertionFailedError;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
-import org.openide.text.Line.Set;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -206,47 +202,6 @@ public class LineSetTest extends NbTestCase implements CloneableEditorSupport.En
         assertEquals ("They will not part", one, two);
         
         assertEquals ("Line number is 0", 0, one.getLineNumber ());
-    }
-
-    public void testGCLineSet () throws Exception {
-        content = "111\n2\n";
-        javax.swing.text.Document doc = support.openDocument ();
-
-        Line.Set set = support.getLineSet ();
-
-        Line one = set.getOriginal (0);
-        Line two = set.getOriginal (1);
-
-        assertEquals ("New line after first line", "\n", doc.getText (3, 1));
-
-        doc.remove (3, 1);
-
-        assertEquals ("Joined", one, two);
-
-        doc.insertString (2, "\n", null);
-
-        assertEquals ("They will not part", one, two);
-
-        assertEquals ("Line number is 0", 0, one.getLineNumber ());
-
-        assertTrue("Is modified", support.isModified());
-        Reference<Line.Set> ref = new WeakReference<Line.Set>(set);
-        set = null;
-        assertNotGC(ref);
-
-        support.saveDocument();
-
-        assertFalse("No longer modified", support.isModified());
-        assertGC("Can disapper", ref);
-    }
-
-    private void assertNotGC(Reference<?> ref) {
-        try {
-            assertGC("Should not be GC as document is modified", ref);
-        } catch (AssertionFailedError ex) {
-            return;
-        }
-        fail("Shall not be GCed, when document exists: " + support.getDocument());
     }
     
     public void testGetLinesIndexOfDoesNotCreateAllLines () throws Exception {

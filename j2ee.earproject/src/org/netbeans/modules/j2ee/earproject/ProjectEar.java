@@ -644,13 +644,17 @@ public final class ProjectEar extends J2eeApplicationProvider
         public void initialize() throws FileStateInvalidException {
             resources = getResourceDirectory();
 
-            FileUtil.addFileChangeListener(this, resources);
+            if (resources != null) {
+                FileUtil.addFileChangeListener(this, resources);
+            }
 
             ProjectEar.this.project.evaluator().addPropertyChangeListener(this);
         }
 
         public void cleanup() throws FileStateInvalidException {
-            FileUtil.removeFileChangeListener(this, resources);
+            if (resources != null) {
+                FileUtil.removeFileChangeListener(this, resources);
+            }
 
             ProjectEar.this.project.evaluator().removePropertyChangeListener(this);
         }

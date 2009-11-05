@@ -128,6 +128,7 @@ public class WatchesTest extends DebuggerTestCase {
         //open source
         org.netbeans.jellytools.nodes.Node beanNode = new org.netbeans.jellytools.nodes.Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
         new OpenAction().performAPI(beanNode); // NOI18N
+        new EventTool().waitNoEvent(5000);
         EditorOperator eo = new EditorOperator("MemoryView.java");
         try {
             eo.clickMouse(50,50,1);

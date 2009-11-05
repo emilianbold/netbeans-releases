@@ -66,11 +66,13 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerUtil;
 import org.netbeans.modules.web.jsf.palette.JSFPaletteUtilities;
+import org.netbeans.modules.web.jsf.wizards.JSFClientGenerator;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 public abstract class FromEntityBase {
 
@@ -313,10 +315,8 @@ public abstract class FromEntityBase {
                     }
                 }
                 if (index == 0) {
-                    key.append(INDENT+"// TODO: no setter methods were found in your entity class\n"+
-                            INDENT+"//    "+keyTypeFQN+"\n"+INDENT+"// and therefore Converter.getKey() method could not be pre-generated.");
-                    stringKey.append(INDENT+"// TODO: no setter methods were found in your entity class\n"+
-                            INDENT+"//    "+keyTypeFQN+"\n"+INDENT+"// and therefore Converter.getStringKey() method could not be pre-generated.");
+                     key.append(NbBundle.getMessage(FromEntityBase.class, "ERR_NO_SETTERS", new String[]{INDENT, keyTypeFQN, "Converter.getKey()"}));//NOI18N;
+                     stringKey.append(NbBundle.getMessage(FromEntityBase.class, "ERR_NO_SETTERS", new String[]{INDENT, keyTypeFQN, "Converter.getKey()"}));//NOI18N;
                 }
             } else {
                 params.put("keyEmbedded", Boolean.FALSE);

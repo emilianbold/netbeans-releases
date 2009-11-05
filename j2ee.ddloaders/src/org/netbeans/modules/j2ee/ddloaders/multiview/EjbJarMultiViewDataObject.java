@@ -227,9 +227,9 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
     public EjbJar getEjbJar() {
         if (ejbJar == null) {
             try {
-                parseDocument();
+               parseDocument();
             } catch (IOException e) {
-                Utils.notifyError(e);
+               Logger.getLogger("global").log(Level.INFO, null, e);
             }
         }
         return ejbJar;

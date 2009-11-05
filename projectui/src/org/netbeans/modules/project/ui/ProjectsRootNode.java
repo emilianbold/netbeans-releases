@@ -781,11 +781,7 @@ public class ProjectsRootNode extends AbstractNode {
         
         // sources change
         public void stateChanged(ChangeEvent e) {
-            Hacks.RP.post(new Runnable () {
-                public void run() {
-                    setProjectFiles();
-                }
-            });
+            fsRefreshTask.schedule(DELAY);
         }
 
         @Override

@@ -89,8 +89,10 @@ public class VariablesActionsProvider implements NodeActionsProvider {
     }
 
     public Action[] getActions (Object node) throws UnknownTypeException {
-        if (node == TreeModel.ROOT) 
-            return new Action [0];
+        if (node == TreeModel.ROOT)
+            return new Action[] {
+                WatchesActionsProvider.NEW_WATCH_ACTION
+            };
         if (node instanceof Field)
             return new Action [] {
                 GO_TO_SOURCE_ACTION

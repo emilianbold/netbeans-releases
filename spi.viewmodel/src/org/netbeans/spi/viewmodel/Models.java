@@ -3725,55 +3725,55 @@ public final class Models {
             while (it.hasNext ()) {
                 Object model = it.next ();
                 boolean first = model.getClass ().getName ().endsWith ("First");
-                if (model instanceof TreeModel) {
+                if (model instanceof TreeModel && !treeModels.contains((TreeModel) model)) {
                     treeModels = new ArrayList<TreeModel>(treeModels);
                     treeModels.add((TreeModel) model);
                 }
-                if (model instanceof TreeModelFilter) {
+                if (model instanceof TreeModelFilter && !treeModelFilters.contains((TreeModelFilter) model)) {
                     treeModelFilters = new ArrayList<TreeModelFilter>(treeModelFilters);
                     if (first)
                         treeModelFilters.add((TreeModelFilter) model);
                     else
                         treeModelFilters.add(0, (TreeModelFilter) model);
                 }
-                if (model instanceof TreeExpansionModel) {
+                if (model instanceof TreeExpansionModel && !treeExpansionModels.contains((TreeExpansionModel) model)) {
                     treeExpansionModels = new ArrayList<TreeExpansionModel>(treeExpansionModels);
                     treeExpansionModels.add((TreeExpansionModel) model);
                 }
-                if (model instanceof TreeExpansionModelFilter) {
+                if (model instanceof TreeExpansionModelFilter && !treeExpansionModelFilters.contains((TreeExpansionModelFilter) model)) {
                     treeExpansionModelFilters = new ArrayList<TreeExpansionModelFilter>(treeExpansionModelFilters);
                     if (first)
                         treeExpansionModelFilters.add((TreeExpansionModelFilter) model);
                     else
                         treeExpansionModelFilters.add(0, (TreeExpansionModelFilter) model);
                 }
-                if (model instanceof NodeModel) {
+                if (model instanceof NodeModel && !nodeModels.contains((NodeModel) model)) {
                     nodeModels = new ArrayList<NodeModel>(nodeModels);
                     nodeModels.add((NodeModel) model);
                 }
-                if (model instanceof NodeModelFilter) {
+                if (model instanceof NodeModelFilter && !nodeModelFilters.contains((NodeModelFilter) model)) {
                     nodeModelFilters = new ArrayList<NodeModelFilter>(nodeModelFilters);
                     if (first)
                         nodeModelFilters.add((NodeModelFilter) model);
                     else
                         nodeModelFilters.add(0, (NodeModelFilter) model);
                 }
-                if (model instanceof TableModel) {
+                if (model instanceof TableModel && !tableModels.contains((TableModel) model)) {
                     tableModels = new ArrayList<TableModel>(tableModels);
                     tableModels.add((TableModel) model);
                 }
-                if (model instanceof TableModelFilter) {
+                if (model instanceof TableModelFilter && !tableModelFilters.contains((TableModelFilter) model)) {
                     tableModelFilters = new ArrayList<TableModelFilter>(tableModelFilters);
                     if (first)
                         tableModelFilters.add((TableModelFilter) model);
                     else
                         tableModelFilters.add(0, (TableModelFilter) model);
                 }
-                if (model instanceof NodeActionsProvider) {
+                if (model instanceof NodeActionsProvider && !nodeActionsProviders.contains((NodeActionsProvider) model)) {
                     nodeActionsProviders = new ArrayList<NodeActionsProvider>(nodeActionsProviders);
                     nodeActionsProviders.add((NodeActionsProvider) model);
                 }
-                if (model instanceof NodeActionsProviderFilter) {
+                if (model instanceof NodeActionsProviderFilter && !nodeActionsProviderFilters.contains((NodeActionsProviderFilter) model)) {
                     nodeActionsProviderFilters = new ArrayList<NodeActionsProviderFilter>(nodeActionsProviderFilters);
                     if (first)
                         nodeActionsProviderFilters.add((NodeActionsProviderFilter) model);
@@ -3784,7 +3784,7 @@ public final class Models {
                     asynchModels = new ArrayList<AsynchronousModel>(asynchModels);
                     asynchModels.add((AsynchronousModel) model);
                 }*/
-                if (model instanceof AsynchronousModelFilter) {
+                if (model instanceof AsynchronousModelFilter && !asynchModelFilters.contains((AsynchronousModelFilter) model)) {
                     asynchModelFilters = new ArrayList<AsynchronousModelFilter>(asynchModelFilters);
                     if (first)
                         asynchModelFilters.add((AsynchronousModelFilter) model);
@@ -3792,7 +3792,7 @@ public final class Models {
                         asynchModelFilters.add(0, (AsynchronousModelFilter) model);
                 }
 
-                if (model instanceof ColumnModel) {
+                if (model instanceof ColumnModel && !columnModels.contains((ColumnModel) model)) {
                     columnModels = new ArrayList<ColumnModel>(columnModels);
                     columnModels.add((ColumnModel) model);
                 }

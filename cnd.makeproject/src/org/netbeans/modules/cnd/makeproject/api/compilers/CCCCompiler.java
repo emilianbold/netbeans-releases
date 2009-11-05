@@ -53,11 +53,9 @@ import java.util.List;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.cnd.api.execution.LinkSupport;
-import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.utils.CndUtils;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
@@ -146,9 +144,13 @@ public abstract class CCCCompiler extends BasicCompiler {
     }
 
     @Override
-    public void waitReady() {
+    public void waitReady(boolean reset) {
         CndUtils.assertNonUiThread();
-        getSystemIncludesAndDefines();
+        if (reset) {
+            resetSystemIncludesAndDefines();
+        } else {
+            getSystemIncludesAndDefines();
+        }
     }
 
     private synchronized void getSystemIncludesAndDefines() {
@@ -173,7 +175,7 @@ public abstract class CCCCompiler extends BasicCompiler {
         compilerDefinitions = getFreshSystemIncludesAndDefines();
         saveSystemIncludesAndDefines();
     }
-
+    
     public String getMTLevelOptions(int value) {
         CompilerDescriptor compiler = getDescriptor();
         if (compiler != null && compiler.getMultithreadingFlags() != null && compiler.getMultithreadingFlags().length > value){
@@ -181,7 +183,7 @@ public abstract class CCCCompiler extends BasicCompiler {
         }
         return ""; // NOI18N
     }
-    
+
     public String getLibraryLevelOptions(int value) {
         CompilerDescriptor compiler = getDescriptor();
         if (compiler != null && compiler.getLibraryFlags() != null && compiler.getLibraryFlags().length > value){
@@ -207,21 +209,19 @@ public abstract class CCCCompiler extends BasicCompiler {
     }
     
     protected final void getSystemIncludesAndDefines(String arguments, boolean stdout, Pair pair) throws IOException {
-        String path = getPath();
-        if (path != null && path.length() == 0) {
+        String compilerPath = getPath();
+        if (compilerPath == null || compilerPath.length() == 0) {
             return;
         }
         ExecutionEnvironment execEnv = getExecutionEnvironment();
-        if (path == null) {
-            path = getDefaultPath();
-        }
-        if (! HostInfoUtils.fileExists(execEnv, path)) {
-            return;
-        }
-        String command = path;
-        path = IpeUtils.getDirName(path);
         if (execEnv.isLocal() && Utilities.isWindows()) {
-            command = LinkSupport.resolveWindowsLink(command);
+            compilerPath = LinkSupport.resolveWindowsLink(compilerPath);
+        }
+        if (!HostInfoUtils.fileExists(execEnv, compilerPath)) {
+            compilerPath = getDefaultPath();
+        }
+        if (!HostInfoUtils.fileExists(execEnv, compilerPath)) {
+            return;
         }
 
         List<String> argsList = new ArrayList<String>();
@@ -230,9 +230,9 @@ public abstract class CCCCompiler extends BasicCompiler {
 
         PlatformInfo pi = PlatformInfo.getDefault(execEnv);
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
-        npb.setExecutable(command);
+        npb.setExecutable(compilerPath);
         npb.setArguments(argsList.toArray(new String[argsList.size()]));
-        npb.getEnvironment().prependPathVariable(pi.getPathName(), path);
+        npb.getEnvironment().prependPathVariable(pi.getPathName(), IpeUtils.getDirName(compilerPath));
 
         try {
             NativeProcess process = npb.call();
@@ -267,10 +267,10 @@ public abstract class CCCCompiler extends BasicCompiler {
      * @param macroToFind the name of the macro to search for
      * @return true if macro with the given name is found, otherwise false
      */
-    protected boolean containsMacro(List macrosList, String macroToFind) {
+    protected boolean containsMacro(List<String> macrosList, String macroToFind) {
 	int len = macroToFind.length();
-	for (Iterator it = macrosList.iterator(); it.hasNext();) {
-	    String macro = (String) it.next();
+	for (Iterator<String> it = macrosList.iterator(); it.hasNext();) {
+	    String macro = it.next();
 	    if (macro.startsWith(macroToFind) ) {
 		if( macro.length() == len ) {
 		    return true; // they are just equal

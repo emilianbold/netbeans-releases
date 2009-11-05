@@ -39,8 +39,10 @@
 package org.netbeans.modules.maven.model.settings.visitor;
 
 import org.netbeans.modules.maven.model.settings.SettingsComponent;
+import org.netbeans.modules.xml.xam.AbstractComponent;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.ComponentUpdater;
+import org.netbeans.modules.xml.xam.dom.DocumentComponent;
 
 /**
  * Visitor to add or remove a child of a domain component.
@@ -48,10 +50,8 @@ import org.netbeans.modules.xml.xam.ComponentUpdater;
  * @author mkleint
  */
 public class ChildComponentUpdateVisitor<T extends SettingsComponent>
-        extends DefaultVisitor
         implements ComponentUpdater<T> {
     
-    private Operation operation;
     private SettingsComponent parent;
     private int index;
     private boolean canAdd = false;
@@ -77,114 +77,25 @@ public class ChildComponentUpdateVisitor<T extends SettingsComponent>
         assert child != null;
 
         this.parent = target;
-        this.operation = operation;
         this.index = index;
-        child.accept(this);
+        //#165465
+        if (operation != null) {
+            if (operation == Operation.REMOVE) {
+                //TODO what property shall be fired? is it important?
+                removeChild("XXX", child);
+                return;
+            } else {
+                //TODO what property shall be fired? is it important?
+                addChild("XXX", child);
+            }
+        }
     }
-    
-    /*
+
     private void addChild(String eventName, DocumentComponent child) {
         ((AbstractComponent) parent).insertAtIndex(eventName, child, index);
     }
-    
+
     private void removeChild(String eventName, DocumentComponent child) {
         ((AbstractComponent) parent).removeChild(eventName, child);
     }
-    public void visit(Definitions child) {
-        checkOperationOnUnmatchedParent();
-    }
-
-    public void visit(Types child) {
-        if (parent instanceof Definitions) {
-            if (operation == Operation.ADD) {
-                addChild(Definitions.TYPES_PROPERTY, child);
-            } else if (operation == Operation.REMOVE) {
-                removeChild(Definitions.TYPES_PROPERTY, child);
-            } else if (operation == null) {
-                canAdd = true;
-            }
-        } else {
-            checkOperationOnUnmatchedParent();
-        }
-    }
-    
-    
-    public void visit(Input child) {
-        if (parent instanceof OneWayOperation ||
-            parent instanceof RequestResponseOperation ||
-            parent instanceof SolicitResponseOperation) 
-        {
-            if (operation == Operation.ADD) {
-                addChild(org.netbeans.modules.xml.wsdl.model.Operation.INPUT_PROPERTY, child);
-            } else if (operation == Operation.REMOVE) {
-                removeChild(org.netbeans.modules.xml.wsdl.model.Operation.INPUT_PROPERTY, child);
-            } else if (operation == null) {
-                canAdd = true;
-            }
-        } else {
-            checkOperationOnUnmatchedParent();
-        }
-    }
-    
-   
-    private void update(org.netbeans.modules.xml.wsdl.model.Operation child) {
-        if (parent instanceof PortType) {
-            PortType target = (PortType)parent;
-            if (operation == Operation.ADD) {
-                addChild(target.OPERATION_PROPERTY, child);
-            } else if (operation == Operation.REMOVE) {
-                target.removeOperation(child);
-            } else if (operation == null) {
-                canAdd = true;
-            }
-        } else {
-            checkOperationOnUnmatchedParent();
-        }
-    }
-    
-    public void visit(NotificationOperation child) {
-        update(child);
-    }
-    
-    public void visit(SolicitResponseOperation child) {
-        update(child);
-    }
-
-    
-    public void visit(ExtensibilityElement child) {
-        if (parent instanceof ExtensibilityElement.UpdaterProvider) {
-            ExtensibilityElement.UpdaterProvider target = (ExtensibilityElement.UpdaterProvider) parent;
-            ComponentUpdater<ExtensibilityElement> updater = target.getComponentUpdater();
-            if (operation != null) {
-                updater.update(target, child, index, operation);
-            } else {
-                canAdd = false;
-                if (updater instanceof ComponentUpdater.Query) {
-                    canAdd = ((ComponentUpdater.Query) updater).canAdd(target, child);
-                } 
-            }
-        } else {
-            if (operation == Operation.ADD) {
-                parent.addExtensibilityElement(child);
-            } else if (operation == Operation.REMOVE) {
-                parent.removeExtensibilityElement(child);
-            } else if (operation == null) {
-                canAdd = true;
-                if (child instanceof ExtensibilityElement.ParentSelector) {
-                    canAdd = ((ExtensibilityElement.ParentSelector)child).canBeAddedTo(parent);
-                }
-            }
-        }
-    }
-
-    private void checkOperationOnUnmatchedParent() {
-        if (operation != null) {
-            // note this unmatch should be caught by validation, 
-            // we don't want the UI view to go blank on invalid but still well-formed document
-            //throw new IllegalArgumentException("Unmatched parent-child components"); //NO18N
-        } else {
-            canAdd = false;
-        }
-    }
-    */
 }

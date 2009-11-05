@@ -401,6 +401,50 @@ public class PHPNewLineIndenterTest extends PHPTestBase {
         testIndentInFile("testfiles/indent/linecomment_4.php");
     }
 
+    public void testLineComment_175685_1() throws Exception {
+        testIndentInFile("testfiles/indent/linecomment_175685_1.php");
+    }
+
+    public void testLineComment_175685_2() throws Exception {
+        testIndentInFile("testfiles/indent/linecomment_175685_2.php");
+    }
+
+    public void testLineComment_175685_3() throws Exception {
+        testIndentInFile("testfiles/indent/linecomment_175685_3.php");
+    }
+
+    public void testLineComment_175685_4() throws Exception {
+        testIndentInFile("testfiles/indent/linecomment_175685_4.php");
+    }
+
+    public void testLineComment_175685_5() throws Exception {
+        testIndentInFile("testfiles/indent/linecomment_175685_5.php");
+    }
+
+    public void testLineComment_175685_6() throws Exception {
+        testIndentInFile("testfiles/indent/linecomment_175685_6.php");
+    }
+
+    public void testLineComment_175685_7() throws Exception {
+        testIndentInFile("testfiles/indent/linecomment_175685_7.php");
+    }
+
+    public void testLineComment_175685_8() throws Exception {
+        testIndentInFile("testfiles/indent/linecomment_175685_8.php");
+    }
+
+    public void testLineComment_175685_9() throws Exception {
+        testIndentInFile("testfiles/indent/linecomment_175685_9.php");
+    }
+
+    public void testLineComment_175685_10() throws Exception {
+        testIndentInFile("testfiles/indent/linecomment_175685_10.php");
+    }
+
+    public void testLineComment_175685_11() throws Exception {
+        testIndentInFile("testfiles/indent/linecomment_175685_11.php");
+    }
+
     @Override
     protected boolean runInEQ() {
         return true;

@@ -2225,6 +2225,11 @@ public class GdbDebugger implements PropertyChangeListener {
      */
     private void stackUpdate(List<String> stack) {
         synchronized (callstack) {
+            //destroy old callstacks
+            for (GdbCallStackFrame frame : callstack) {
+                frame.destroy();
+            }
+
             callstack.clear();
 
             for (int i = 0; i < stack.size(); i++) {

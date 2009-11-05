@@ -362,9 +362,8 @@ public class IssuePanel extends javax.swing.JPanel {
             boolean isKenaiRepository = (issue.getRepository() instanceof KenaiRepository);
             if (!isNew) {
                 format = NbBundle.getMessage(IssuePanel.class, "IssuePanel.reportedLabel.format"); // NOI18N
-                String creationTxt = issue.getFieldValue(BugzillaIssue.IssueField.CREATION);
                 Date creation = issue.getCreatedDate();
-                creationTxt = DateFormat.getDateInstance(DateFormat.DEFAULT).format(creation);
+                String creationTxt = creation != null ? DateFormat.getDateInstance(DateFormat.DEFAULT).format(creation) : ""; // NOI18N
                 String reporterName = issue.getFieldValue(BugzillaIssue.IssueField.REPORTER_NAME);
                 String reporter = issue.getFieldValue(BugzillaIssue.IssueField.REPORTER);
                 String reporterTxt = ((reporterName == null) || (reporterName.trim().length() == 0)) ? reporter : reporterName;
@@ -383,9 +382,8 @@ public class IssuePanel extends javax.swing.JPanel {
                 }
 
                 // modified field
-                String modifiedTxt = issue.getFieldValue(BugzillaIssue.IssueField.MODIFICATION);
                 Date modification = issue.getCreatedDate();
-                modifiedTxt = DateFormat.getDateTimeInstance().format(modification);
+                String modifiedTxt = modification != null ? DateFormat.getDateTimeInstance().format(modification) : ""; // NOI18N
                 modifiedField.setText(modifiedTxt);
                 fixPrefSize(modifiedField);
             }

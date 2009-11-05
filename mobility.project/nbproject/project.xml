@@ -469,6 +469,7 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.spi.mobility.project.support</package>
                 <package>org.netbeans.spi.mobility.project.ui.customizer</package>
                 <package>org.netbeans.spi.mobility.project.ui.customizer.support</package>
+                <package>net.sf.jmunit.netbeans.plugin</package>
             </friend-packages>
             <extra-compilation-unit>
                 <package-root>antsrc</package-root>

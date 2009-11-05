@@ -177,11 +177,13 @@ public class HtmlCompletionQuery extends UserTask {
         assert ts != null; //should be ensured by the parsing.api that we always get html token sequence from the snapshot
 
         int diff = ts.move(astOffset);
+        boolean backward = false;
         if (ts.moveNext()) {
             if (diff == 0 && (ts.token().id() == HTMLTokenId.TEXT || ts.token().id() == HTMLTokenId.WS ||
-                    ts.token().id() == HTMLTokenId.TAG_CLOSE_SYMBOL)) {
+                    ts.token().id() == HTMLTokenId.TAG_CLOSE_SYMBOL || ts.token().id() == HTMLTokenId.TAG_OPEN_SYMBOL)) {
                 //looks like we are on a boundary of a text or whitespace, need the previous token
                 //or we are just before tag closing symbol
+                backward = true;
                 if (!ts.movePrevious()) {
                     //we cannot get previous token
                     return null;
@@ -214,7 +216,7 @@ public class HtmlCompletionQuery extends UserTask {
         //adjust the astOffset if at the end of the file
         int searchAstOffset = astOffset == snapshot.getText().length() ? astOffset - 1 : astOffset;
 
-        AstNode node = parserResult.findLeaf(searchAstOffset);
+        AstNode node = parserResult.findLeaf(searchAstOffset, backward);
         if (node == null) {
             return null;
         }
@@ -222,7 +224,7 @@ public class HtmlCompletionQuery extends UserTask {
 
         //namespace is null for html content
         String namespace = (String) root.getProperty(AstNode.NAMESPACE_PROPERTY);
-        boolean queryHtmlContent = namespace == null || parserResult.getHtmlVersion().getDefaultNamespace().equals(namespace);
+        boolean queryHtmlContent = namespace == null || namespace.equals(parserResult.getHtmlVersion().getDefaultNamespace());
 
         /* Character reference finder */
         int ampIndex = preText.lastIndexOf('&'); //NOI18N
@@ -262,7 +264,8 @@ public class HtmlCompletionQuery extends UserTask {
             }
 
 
-        } else if (id != HTMLTokenId.BLOCK_COMMENT && preText.endsWith("<")) { // NOI18N
+        } else if ((id != HTMLTokenId.BLOCK_COMMENT && preText.endsWith("<")) || 
+                (id == HTMLTokenId.TAG_OPEN_SYMBOL && "<".equals(item.text().toString()))) { // NOI18N
             //complete open tags with no prefix
             anchor = offset;
             result = new ArrayList<CompletionItem>();
@@ -309,8 +312,10 @@ public class HtmlCompletionQuery extends UserTask {
                 }
                 result = items;
             } else {
-                if (node.type() == AstNode.NodeType.UNKNOWN_TAG || node.type() == AstNode.NodeType.ROOT) {
-                    //nothing to complete in an unknown tag
+                if (node.type() == AstNode.NodeType.UNKNOWN_TAG ||
+                        node.type() == AstNode.NodeType.DECLARATION ||
+                        node.type() == AstNode.NodeType.ROOT) {
+                    //nothing to complete in an unknown tag or declaration
                     return null;
                 }
                 //should be open tag if not unknown or root in case of the text being broken

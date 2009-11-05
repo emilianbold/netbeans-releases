@@ -92,6 +92,7 @@ public class FmtOptions {
     public static final String indentHtml = "indentHtml"; //NOI18N
     public static final String rightMargin = SimpleValueNames.TEXT_LIMIT_WIDTH;
     public static final String openingBraceStyle = "openingBraceStyle"; //NOI18N
+    public static final String initialIndent = "init.indent"; //NOI18N
     
     private FmtOptions() {}
 
@@ -133,6 +134,7 @@ public class FmtOptions {
             { indentHtml, TRUE }, //NOI18N
             { rightMargin, "80"}, //NOI18N
             { openingBraceStyle, OBRACE_SAMELINE},
+            { initialIndent, "0"}
         };
         
         defaults = new HashMap<String,String>();

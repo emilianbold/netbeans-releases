@@ -440,7 +440,7 @@ public final class ToolbarConfiguration implements ToolbarPool.Configuration {
             boolean isQuickSearch = "QuickSearch".equals(toolbarName); //NOI18N
             tc = new ToolbarConstraints(toolbarName,
                     isQuickSearch ? ToolbarConstraints.Align.right : ToolbarConstraints.Align.left,
-                    true, !isQuickSearch);
+                    true, true);
             ToolbarRow row = null; //TODO find / add row with the best available space
             if( rows.isEmpty() ) {
                 row = new ToolbarRow();

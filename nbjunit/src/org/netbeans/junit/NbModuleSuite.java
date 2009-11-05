@@ -52,6 +52,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -642,15 +643,15 @@ public class NbModuleSuite {
                     path.add(f.getCanonicalFile());
                 }
             }
+            if (path == null) {
+                path = new HashSet<File>(Arrays.asList(plat.getParentFile().listFiles()));
+            }
             for (String c : regExps) {
-                for (File f : plat.getParentFile().listFiles()) {
+                for (File f : path) {
                     if (f.equals(plat)) {
                         continue;
                     }
                     if (!f.getName().matches(c)) {
-                        continue;
-                    }
-                    if (path != null && !path.contains(f)) {
                         continue;
                     }
                     File m = new File(new File(f, "config"), "Modules");

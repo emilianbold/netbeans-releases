@@ -41,13 +41,13 @@ package org.netbeans.modules.openide.modules;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
-import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
@@ -60,8 +60,11 @@ import org.openide.util.lookup.ServiceProvider;
 
 @ServiceProvider(service=Processor.class)
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
-@SupportedAnnotationTypes("org.openide.modules.PatchedPublic")
 public class PatchedPublicProcessor extends AbstractProcessor {
+
+    public @Override Set<String> getSupportedAnnotationTypes() {
+        return Collections.singleton(PatchedPublic.class.getCanonicalName());
+    }
 
     private List<Element> originatingElements;
 

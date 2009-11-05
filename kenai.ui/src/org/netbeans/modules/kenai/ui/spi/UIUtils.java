@@ -284,7 +284,7 @@ public final class UIUtils {
     static JLabel createUserWidget(final KenaiUserUI u) {
         final JLabel result = new JLabel(u.getUserName());
         result.setIcon(u.getIcon());
-        final String name = u.getKenaiUser().getFirstName() + " " + u.getKenaiUser().getLastName();
+        final String name = u.getKenaiUser().getFirstName() + " " + u.getKenaiUser().getLastName(); // NOI18N
         result.setToolTipText(NbBundle.getMessage(UserNode.class, u.getKenaiUser().isOnline()?"LBL_ONLINE_MEMBER_TOOLTIP": "LBL_OFFLINE_MEMBER_TOOLTIP", u.getUserName(), name));
         u.user.addPropertyChangeListener(new PropertyChangeListener() {
 

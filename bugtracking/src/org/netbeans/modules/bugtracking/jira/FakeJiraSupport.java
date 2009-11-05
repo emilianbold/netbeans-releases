@@ -171,7 +171,7 @@ public class FakeJiraSupport {
      */
     public QueryHandle getAllIssuesQuery() {
         List<QueryHandle> queries = getQueries();
-        String allIssuesName = NbBundle.getMessage(QueryAccessorImpl.class, "LBL_AllIssues");   // NOI18N
+        String allIssuesName = NbBundle.getMessage(FakeJiraSupport.class, "LBL_AllIssues");   // NOI18N
         for (QueryHandle queryHandle : queries) {
             if(queryHandle.getDisplayName().equals(allIssuesName)) {
                 return queryHandle;
@@ -197,9 +197,12 @@ public class FakeJiraSupport {
         private final String displayName;
         private static List<QueryResultHandle> results;
         private final String projectUrl;
+        private final String notAvailableResult;
+
         public FakeJiraQueryHandle(String displayName, String projectUrl) {
             this.displayName = displayName;
             this.projectUrl = projectUrl;
+            notAvailableResult = NbBundle.getMessage(FakeJiraSupport.class, "LBL_NotAvailable");                     // NOI18N
         }
         @Override
         public String getDisplayName() {
@@ -218,20 +221,14 @@ public class FakeJiraSupport {
         public List<QueryResultHandle> getQueryResults() {
             if(results == null) {
                 List<QueryResultHandle> r = new ArrayList<QueryResultHandle>(1);
-                r.add(new FakeJiraQueryResultHandle(
-                            NbBundle.getMessage(
-                                QueryAccessorImpl.class,
-                                "LBL_QueryResultTotal",  // NOI18N
-                                new Object[] {0}),
-                                ResultType.NAMED_RESULT,
-                                projectUrl));
+                r.add(new FakeJiraQueryResultHandle(notAvailableResult, ResultType.NAMED_RESULT, projectUrl));
                 results = r;
             }
             return results; 
         }
 
         public QueryResultHandle getUnseenResult() {
-            return new FakeJiraQueryResultHandle("0", ResultType.ALL_CHANGES_RESULT, projectUrl); // NOI18N
+            return new FakeJiraQueryResultHandle(notAvailableResult, ResultType.ALL_CHANGES_RESULT, projectUrl);
         }
     }
 
@@ -248,6 +245,10 @@ public class FakeJiraSupport {
         public String getText() {
             return label;
         }
+        @Override
+        public String getToolTipText() {
+            return NbBundle.getMessage(FakeJiraQueryHandle.class, "LBL_NotAvailableTooltip");   // NOI18N
+        }
         public void actionPerformed(ActionEvent e) {
             if(JiraUpdater.notifyJiraDownload(projectUrl)) {
                 JiraUpdater.getInstance().downloadAndInstall();
@@ -261,21 +262,17 @@ public class FakeJiraSupport {
 
     private List<QueryHandle> createQueryHandles() {
         List<QueryHandle> l = new ArrayList<QueryHandle>(2);
-        l.add(new FakeJiraQueryHandle(NbBundle.getMessage(QueryAccessorImpl.class, "LBL_MyIssues"), projectUrl));  // NOI18N
-        l.add(new FakeJiraQueryHandle(NbBundle.getMessage(QueryAccessorImpl.class, "LBL_AllIssues"), projectUrl)); // NOI18N
+        l.add(new FakeJiraQueryHandle(NbBundle.getMessage(FakeJiraSupport.class, "LBL_MyIssues"), projectUrl));  // NOI18N
+        l.add(new FakeJiraQueryHandle(NbBundle.getMessage(FakeJiraSupport.class, "LBL_AllIssues"), projectUrl)); // NOI18N
         return l;
     }
 
     private ActionListener getJiraListener(final String urlString) {
         return new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
-                    public void run() {
-                        if(JiraUpdater.notifyJiraDownload(urlString)) {
-                            JiraUpdater.getInstance().downloadAndInstall();
-                        } 
-                    }
-                });
+                if(JiraUpdater.notifyJiraDownload(urlString)) {
+                    JiraUpdater.getInstance().downloadAndInstall();
+                }
             }
         };
     }

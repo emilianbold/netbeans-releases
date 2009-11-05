@@ -848,7 +848,7 @@ class RDocFormatter {
             signature.append(element.getName());
         }
 
-        RubyType type = element.getType();
+        RubyType type = getElementType(element);
         if (type != null && type.isKnown()) {
             signature.append("<br>");
             signature.append("<i>");
@@ -861,6 +861,15 @@ class RDocFormatter {
         signature.append("</pre>\n");
 
         return signature.toString();
+    }
+
+    private RubyType getElementType(Element element) {
+        // best not to show the inferred type for 'new' at all as ATM we can't 
+        // infer it correctly (it's inferred as Object, the return type of Class#new)
+        if (element instanceof MethodElement && "new".equals(element.getName())) {
+            return RubyType.createUnknown();
+        }
+        return element.getType();
     }
 
     private static String getHtmlColor(Color c) {

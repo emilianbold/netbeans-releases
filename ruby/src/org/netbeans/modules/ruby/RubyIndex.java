@@ -1306,6 +1306,9 @@ public final class RubyIndex {
         Set<IndexedConstant> constants = new HashSet<IndexedConstant>();
         for (String realType : classFqn.getRealTypes()) {
             constants.addAll(getConstants(realType, prefix));
+            for (String parentModule : RubyUtils.getParentModules(realType)) {
+                constants.addAll(getConstants(parentModule, prefix));
+            }
         }
         return constants;
     }

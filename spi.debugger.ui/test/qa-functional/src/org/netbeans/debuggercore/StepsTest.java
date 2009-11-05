@@ -116,6 +116,7 @@ public void testStepOver() throws Throwable {
     //wait for breakpoint
     Utilities.waitStatusText("Thread main stopped at MemoryView.java:80");
     new StepOverAction().performMenu();
+    new EventTool().waitNoEvent(1000);
     assertFalse("CurrentPC annotation remains on line 80", Utilities.checkAnnotation(eo, 80, "CurrentPC"));
     assertTrue("CurrentPC annotation is not on line 82", Utilities.checkAnnotation(eo, 82, "CurrentPC"));
 }
@@ -131,6 +132,7 @@ public void testStepOver() throws Throwable {
     Utilities.setCaret(eo, 109);
     //run to cursor
     new RunToCursorAction().performMenu();
+    new EventTool().waitNoEvent(1000);
     assertFalse("Current PC annotation remains on line 80", Utilities.checkAnnotation(eo, 80, "CurrentPC"));
     assertTrue("Current PC annotation is not on line 109", Utilities.checkAnnotation(eo, 109, "CurrentPC"));
 }
@@ -143,6 +145,7 @@ public void testStepOver() throws Throwable {
         //wait for breakpoint
         Utilities.waitStatusText("Thread main stopped at MemoryView.java:94");
         new StepOutAction().performMenu();
+        new EventTool().waitNoEvent(1000);
         assertFalse("Current PC annotation remains on line 94", Utilities.checkAnnotation(eo, 94, "CurrentPC"));
         assertTrue("Current PC annotation is not on line 80", Utilities.checkAnnotation(eo, 80, "CurrentExpressionLine"));
     }
@@ -154,20 +157,26 @@ public void testStepOver() throws Throwable {
         //wait for breakpoint
         Utilities.waitStatusText("Thread main stopped at MemoryView.java:104");
         Utilities.toggleBreakpoint(eo, 104, false);
-        new EventTool().waitNoEvent(500);
-        String sOE = Utilities.runMenu + "|" + Utilities.stepOverExpresItem;
-        new Action(Utilities.runMenu + "|" + "Toggle Line Breakpoint",null).performMenu();
-        new Action(sOE, null).performMenu();
+        new EventTool().waitNoEvent(1000);
+
+        Utilities.getStepOverExpressionAction().perform();
+        new EventTool().waitNoEvent(2000);
+
         assertTrue("CurrentExpressionLine annotation is not on line 105", Utilities.checkAnnotation(eo, 105, "CurrentExpressionLine"));
-        new Action(sOE, null).performMenu();
+        Utilities.getStepOverExpressionAction().perform();
+        new EventTool().waitNoEvent(700);
         assertTrue("CurrentExpressionLine annotation is not on line 106", Utilities.checkAnnotation(eo, 106, "CurrentExpressionLine"));
-        new Action(sOE, null).performMenu();
+        Utilities.getStepOverExpressionAction().perform();
+        new EventTool().waitNoEvent(700);
         assertTrue("CurrentExpressionLine annotation is not on line 107", Utilities.checkAnnotation(eo, 107, "CurrentExpressionLine"));
-        new Action(sOE, null).performMenu();
+        Utilities.getStepOverExpressionAction().perform();
+        new EventTool().waitNoEvent(700);
         assertTrue("CurrentExpressionLine annotation is not on line 104", Utilities.checkAnnotation(eo, 104, "CurrentExpressionLine"));
-        new Action(sOE, null).performMenu();
+        Utilities.getStepOverExpressionAction().perform();
+        new EventTool().waitNoEvent(700);
         assertTrue("CurrentExpressionLine annotation is not on line 104", Utilities.checkAnnotation(eo, 104, "CurrentExpressionLine"));
-        new Action(sOE, null).performMenu();
+        Utilities.getStepOverExpressionAction().perform();
+        new EventTool().waitNoEvent(700);
         assertTrue("Current PC annotation is not on line 109", Utilities.checkAnnotation(eo, 109, "CurrentPC"));
     }
 

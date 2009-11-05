@@ -2,18 +2,18 @@
 
 Document 0
 Searchable Keys:
-  attribute : aa
-  attribute : additional
-  attribute : answer
-  attribute : authority
+  attribute : aa;;Fixnum;
+  attribute : additional;;Array;
+  attribute : answer;;Array;
+  attribute : authority;;Array;
   attribute : id
-  attribute : opcode
-  attribute : qr
-  attribute : question
-  attribute : ra
-  attribute : rcode
-  attribute : rd
-  attribute : tc
+  attribute : opcode;;Fixnum;
+  attribute : qr;;Fixnum;
+  attribute : question;;Array;
+  attribute : ra;;Fixnum;
+  attribute : rcode;;Fixnum;
+  attribute : rd;;Fixnum;
+  attribute : tc;;Fixnum;
   class : Message
   class-ig : message
   field : aa|PRIVATE;;Fixnum;
@@ -166,7 +166,7 @@ Searchable Keys:
   method : initialize(address)|PRIVATE|
   method : inspect;;String;
   method : new(address)|PRIVATE|STATIC|
-  method : to_name;;Name;
+  method : to_name;;DNS::Name;
   method : to_s;;String;
   require : resolv
 
@@ -345,10 +345,10 @@ Not Searchable Keys:
 
 Document 13
 Searchable Keys:
-  attribute : port
-  attribute : priority
+  attribute : port;;Integer;
+  attribute : priority;;Integer;
   attribute : target
-  attribute : weight
+  attribute : weight;;Integer;
   class : SRV
   class-ig : srv
   constant : ClassValue;
@@ -505,7 +505,7 @@ Searchable Keys:
   field : config|PRIVATE;;Config;
   field : initialized|PRIVATE;;NilClass|TrueClass;
   field : mutex|PRIVATE;;Mutex;
-  field : requester|PRIVATE;;UnconnectedUDP|ConnectedUDP|NilClass;
+  field : requester|PRIVATE;;Requester::UnconnectedUDP|Requester::ConnectedUDP|NilClass;
   fqn : Resolv::DNS
   method : close
   method : each_address(name)
@@ -565,7 +565,7 @@ Searchable Keys:
   constant : DefaultFileName;
   constant : DefaultFileName;String
   field : addr2name|PRIVATE;;Hash;
-  field : filename|PRIVATE
+  field : filename|PRIVATE;;String;
   field : initialized|PRIVATE;;NilClass|TrueClass;
   field : mutex|PRIVATE;;Mutex;
   field : name2addr|PRIVATE;;Hash;
@@ -624,7 +624,7 @@ Searchable Keys:
   field : limit|PRIVATE
   fqn : Resolv::DNS::Message::MessageDecoder
   method : get_bytes(len)
-  method : get_label;;Str;
+  method : get_label;;Label::Str;
   method : get_labels(limit);;Array;
   method : get_length16
   method : get_name;;Name;

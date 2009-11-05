@@ -104,7 +104,10 @@ public class ConnectManager {
                         Mutex.EVENT.postReadRequest(new Runnable() {
                             public void run() {
                                 PropertiesDialog dialog = new PropertiesDialog(server);
-                                dialog.displayDialog();
+                                boolean ok = dialog.displayDialog();
+                                if (ok) {
+                                    ConnectManager.getDefault().reconnect(server);
+                                }
                             }
                         });
                     }

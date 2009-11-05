@@ -174,13 +174,16 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
                 indicatorMetadata, INDICATOR_POSITION);
         indicatorConfiguration.setTitle(loc("indicator.title")); // NOI18N
         indicatorConfiguration.setGraphScale(2);
+        final TimeSeriesDescriptor threadsDesciptor = new TimeSeriesDescriptor(new Color(0xB2, 0xBC, 0x00), loc("graph.description.threads"), TimeSeriesDescriptor.Kind.ABS_SURFACE);
+        final TimeSeriesDescriptor syncDescriptor = new TimeSeriesDescriptor(new Color(231, 111, 0), loc("graph.description.locks"), TimeSeriesDescriptor.Kind.ABS_SURFACE);
+        final List<Column> threadColumnsList = Arrays.asList(threadsColumn, ProcDataProviderConfiguration.THREADS, LLDataCollectorConfiguration.threads_count);
+        final List<Column> lockColumnsList = Arrays.asList(locksColumn, SunStudioDCConfiguration.c_ulockSummary, LLDataCollectorConfiguration.LOCKS_COUNT);
+        threadsDesciptor.setSourceColumns(threadColumnsList);
+        syncDescriptor.setSourceColumns(lockColumnsList);
         indicatorConfiguration.addTimeSeriesDescriptors(
-                new TimeSeriesDescriptor(new Color(0xB2, 0xBC, 0x00), loc("graph.description.threads"), TimeSeriesDescriptor.Kind.ABS_SURFACE), // NOI18N
-                new TimeSeriesDescriptor(new Color(0xE7, 0x6F, 0x00), loc("graph.description.locks"), TimeSeriesDescriptor.Kind.ABS_SURFACE)); // NOI18N
+                threadsDesciptor,syncDescriptor); // NOI18N
         indicatorConfiguration.setDataRowHandler(
-                new DataRowToSync(
-                    Arrays.asList(threadsColumn, ProcDataProviderConfiguration.THREADS, LLDataCollectorConfiguration.threads_count),
-                    Arrays.asList(locksColumn, SunStudioDCConfiguration.c_ulockSummary, LLDataCollectorConfiguration.LOCKS_COUNT)));
+                new DataRowToSync( threadColumnsList,lockColumnsList));
         indicatorConfiguration.setActionDisplayName(loc("indicator.action")); // NOI18N
         indicatorConfiguration.setActionTooltip(loc("indicator.action.tooltip"));//NOI18N
 

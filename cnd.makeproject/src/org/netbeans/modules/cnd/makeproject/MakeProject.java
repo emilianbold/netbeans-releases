@@ -294,7 +294,7 @@ public final class MakeProject implements Project, AntProjectListener {
      * Check needed header extensions and store list in the NB/project properties.
      * @param needAdd list of needed extensions of header files.
      */
-    public void addAdditionalHeaderExtensions(Collection<String> needAdd) {
+    public boolean addAdditionalHeaderExtensions(Collection<String> needAdd) {
         Set<String> headerExtension = MakeProject.getHeaderSuffixes();
         Set<String> sourceExtension = MakeProject.getSourceSuffixes();
         Set<String> usedExtension = MakeProject.createExtensionSet();
@@ -310,7 +310,9 @@ public final class MakeProject implements Project, AntProjectListener {
             addMIMETypeExtensions(usedExtension, MIMENames.HEADER_MIME_TYPE);
             headerExtensions.addAll(usedExtension);
             saveAdditionalExtensions();
+            return true;
         }
+        return false;
     }
 
     private void addMIMETypeExtensions(Collection<String> extensions, String mime) {
@@ -318,6 +320,7 @@ public final class MakeProject implements Project, AntProjectListener {
         for (String ext : extensions) {
             exts.addExtension(ext);
         }
+        CndFileVisibilityQuery.getDefault().stateChanged(null);
     }
 
     private Set<String> getUnknownExtensions(Set<String> inLoader, Set<String> inProject) {
