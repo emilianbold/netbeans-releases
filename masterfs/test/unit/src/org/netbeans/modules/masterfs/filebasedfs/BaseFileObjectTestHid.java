@@ -40,26 +40,43 @@
  */
 
 package org.netbeans.modules.masterfs.filebasedfs;
+
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.ref.WeakReference;
-import java.util.*;
-import org.openide.filesystems.*;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
-import java.util.zip.ZipEntry;
+import java.util.Set;
 import java.util.jar.JarOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-
-import org.openide.util.io.NbMarshalledObject;
-import org.openide.util.Utilities;
-
+import java.util.zip.ZipEntry;
 import javax.swing.filechooser.FileSystemView;
-import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.WriteLockUtils;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensionsTest;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileObjectTestHid;
+import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.JarFileSystem;
+import org.openide.filesystems.LocalFileSystem;
+import org.openide.filesystems.Repository;
+import org.openide.filesystems.TestBaseHid;
+import org.openide.filesystems.URLMapper;
+import org.openide.util.Utilities;
+import org.openide.util.io.NbMarshalledObject;
+
 
 public class BaseFileObjectTestHid extends TestBaseHid{
     private FileObject root;
@@ -68,6 +85,7 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         super(name);
     }
 
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         root = testedFS.findResource(getResourcePrefix());
@@ -92,18 +110,19 @@ public class BaseFileObjectTestHid extends TestBaseHid{
     public void testRootToFileObject() throws Exception {
         FileObjectFactory fs = FileObjectFactory.getInstance(getWorkDir());
         assertNotNull(fs);
-        FileObject root = fs.getRoot();
-        assertNotNull(root);
-        assertNotNull(FileUtil.toFile(root));
+        FileObject root1 = fs.getRoot();
+        assertNotNull(root1);
+        assertNotNull(FileUtil.toFile(root1));
     }
     
     public void testRefresh109490() throws Exception {
         final File wDir = new File(getWorkDir(), getName());
         wDir.mkdir();
         final FileObject wDirFo = FileUtil.toFileObject(wDir);
-        final List fileEvents = new ArrayList();
+        final List<FileEvent> fileEvents = new ArrayList<FileEvent>();
         FileSystem fs = wDirFo.getFileSystem();
         FileChangeListener fListener = new FileChangeAdapter(){
+            @Override
                 public void fileDataCreated(FileEvent fe) {
                     super.fileDataCreated(fe);
                     fileEvents.add(fe);
@@ -138,8 +157,9 @@ public class BaseFileObjectTestHid extends TestBaseHid{
 
         FileSystem fs = fo.getFileSystem();
         assertNotNull(fs);
-        final Set s = new HashSet();
+        final Set<FileObject> s = new HashSet<FileObject>();
         fs.addFileChangeListener(new FileChangeAdapter(){
+            @Override
             public void fileFolderCreated(FileEvent fe) {
                 s.add(fe.getFile());
             }            
@@ -171,13 +191,15 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         FileUtil.createData(testFo, "f");        
         FileObject[] childs = testFo.getChildren();
         assertEquals(6, childs.length);
-        final List l = new ArrayList();
+        final List<FileObject> l = new ArrayList<FileObject>();
         FileChangeListener fclFS = new FileChangeAdapter(){
+            @Override
             public void fileDeleted(FileEvent fe) {
                 l.add(fe.getFile());
             }            
         };
         FileChangeListener fclFo = new FileChangeAdapter(){
+            @Override
             public void fileDeleted(FileEvent fe) {
                 fe.getFile().getChildren();
                 fe.getFile().getParent().getChildren();
@@ -361,7 +383,7 @@ public class BaseFileObjectTestHid extends TestBaseHid{
             dirF.mkdir();
             new FileOutputStream(fileF).close();
             root.getFileSystem().refresh(false);
-            final List valid = new ArrayList();
+            final List<Boolean> valid = new ArrayList<Boolean>();
             FileObject fo = FileUtil.toFileObject(fileF);
             fo.addFileChangeListener(new FileChangeListener() {
                 public void fileAttributeChanged(FileAttributeEvent fe) {
@@ -391,7 +413,7 @@ public class BaseFileObjectTestHid extends TestBaseHid{
                         f = f.getParentFile();
                     }
                     
-                    valid.add(Boolean.valueOf(fo.isValid()));
+                    valid.add(fo.isValid());
                 }
             });
             fileF.delete();
@@ -400,8 +422,8 @@ public class BaseFileObjectTestHid extends TestBaseHid{
             
             assertTrue("at least one event", valid.size() > 0);
             
-            for (Iterator i = valid.iterator(); i.hasNext(); ) {
-                assertTrue("valid=" + valid + ", count=" + cntr, ((Boolean) i.next()).booleanValue());
+            for (boolean item : valid) {
+                assertTrue("valid=" + valid + ", count=" + cntr, item);
             }
         }
     }
@@ -413,11 +435,12 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         thisTest.createNewFile();
         FileObject testf = FileUtil.toFileObject(thisTest);
         assertNotNull(testf);
-        assertGC("",new WeakReference(testf.getParent()));        
+        assertGC("",new WeakReference<FileObject>(testf.getParent()));
         modifyFileObject(testf, "abc");
         FileSystem fs = testf.getFileSystem();
-        final List l = new ArrayList();
+        final List<FileEvent> l = new ArrayList<FileEvent>();
         FileChangeListener fcl = new FileChangeAdapter() {
+            @Override
             public void fileChanged(FileEvent fe) {
                 l.add(fe);
             }
@@ -474,18 +497,21 @@ public class BaseFileObjectTestHid extends TestBaseHid{
     }
 
     private class TestListener extends FileChangeAdapter {
-        private List fileObjects;
-        TestListener(List fileObjects) {
+        private List<FileObject> fileObjects;
+        TestListener(List<FileObject> fileObjects) {
             this.fileObjects = fileObjects;
         }
+        @Override
         public void fileFolderCreated(FileEvent fe) {
             assertTrue(fileObjects.remove(fe.getFile())); 
         }
 
+        @Override
         public void fileDeleted(FileEvent fe) {
             assertTrue(fileObjects.remove(fe.getFile())); 
         }
 
+        @Override
         public void fileDataCreated(FileEvent fe) {
             assertTrue(fileObjects.remove(fe.getFile())); 
         }        
@@ -497,8 +523,8 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         assertNotNull(fs);        
         FileObject main = root.createData("Main.java");
         FileUtil.createData(root,"subpackage/newclass.java");
-        final List fileObjects = new ArrayList();
-        final Set allSubPackages = new HashSet();
+        final List<FileObject> fileObjects = new ArrayList<FileObject>();
+        final Set<FileObject> allSubPackages = new HashSet<FileObject>();
         final TestListener tl = new TestListener(fileObjects);
         fs.addFileChangeListener(tl);
         try {
@@ -556,7 +582,7 @@ public class BaseFileObjectTestHid extends TestBaseHid{
     }
     
     public void testRefresh60479 () throws Exception {
-        final List l = new ArrayList();
+        final List<FileEvent> l = new ArrayList<FileEvent>();
         File rootFile = FileUtil.toFile(root);
         assertTrue(rootFile.exists());
         
@@ -588,6 +614,7 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         }
         
         testFo.addFileChangeListener(new FileChangeAdapter(){
+            @Override
             public void fileChanged(FileEvent fe) {
                 l.add(fe);
             }
@@ -629,6 +656,7 @@ public class BaseFileObjectTestHid extends TestBaseHid{
                         
         class FCLImpl extends FileChangeAdapter {
             boolean created;
+            @Override
             public void fileDataCreated(FileEvent e) {
                 created = true;
                 synchronized(BaseFileObjectTestHid.this) {
@@ -673,7 +701,7 @@ public class BaseFileObjectTestHid extends TestBaseHid{
     }
     
         
-    
+    @SuppressWarnings("deprecation")
     public void testFileUtilFromFile () throws Exception {        
         assertNotNull(root);
         
@@ -692,8 +720,8 @@ public class BaseFileObjectTestHid extends TestBaseHid{
     
     public void testIssue45485 () {
         assertNotNull(root);        
-        final FileObject testdir = root.getFileObject("testdir.");        
-        assertNull(testdir);        
+        final FileObject testdir = root.getFileObject("testdir.");
+        assertNull(testdir);
     }
     
     public void testDeleteNoCaptureExternalChanges () throws Exception {
@@ -731,7 +759,7 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         assertTrue(!f.exists());       
         assertTrue(f.getAbsolutePath(),f.createNewFile());
         fileObject.refresh();
-        assertNotNull(((FileBasedFileSystem)testedFS).getFileObject(f));
+        assertNotNull(FileBasedFileSystem.getFileObject(f));
     }
 
     public void testGetFileObjectNoCaptureExternalChanges () throws Exception {
@@ -740,9 +768,8 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         FileObject fileObject = root.getFileObject("testdir");        
         assertNotNull(fileObject);
         File f = FileUtil.toFile(fileObject);
-        FileBasedFileSystem fs = (FileBasedFileSystem) testedFS;
         
-        assertNull(fs.getFileObject(new File (f, externalName)));
+        assertNull(FileBasedFileSystem.getFileObject(new File (f, externalName)));
         assertNull(fileObject.getFileObject(externalName));
         
         assertNotNull(f);
@@ -756,7 +783,6 @@ public class BaseFileObjectTestHid extends TestBaseHid{
     }
     
     public void testToFileObjectCaptureExternalChanges () throws Exception {
-        FileBasedFileSystem fs = (FileBasedFileSystem) testedFS;        
         FileObject testFolder_Fo = FileUtil.toFileObject(getWorkDir()).createFolder(getName());        
         assertNotNull(testFolder_Fo);
         File testFolder = FileUtil.normalizeFile(FileUtil.toFile(testFolder_Fo));
@@ -766,7 +792,7 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         String externalName = "newfile.external3";                
         File newFile = new File (testFolder, externalName);
         assertFalse(newFile.exists());        
-        assertNull(fs.getFileObject(newFile));
+        assertNull(FileBasedFileSystem.getFileObject(newFile));
         assertNull(testFolder_Fo.getFileObject(newFile.getName()));
         assertNull(FileUtil.toFileObject(newFile));        
         
@@ -797,15 +823,15 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         File[] roots = File.listRoots();
         boolean validRoot = false;
         for (int i = 0; i < roots.length; i++) {
-            FileObject root = FileUtil.toFileObject(roots[i]);
+            FileObject root1 = FileUtil.toFileObject(roots[i]);
             if (!roots[i].exists()) {
-               assertNull(root);
+               assertNull(root1);
                continue; 
             }
             
-            assertNotNull(roots[i].getAbsolutePath (),root);
-            assertTrue(root.isValid());            
-            if (testedFS == root.getFileSystem()) {
+            assertNotNull(roots[i].getAbsolutePath (),root1);
+            assertTrue(root1.isValid());
+            if (testedFS == root1.getFileSystem()) {
                 validRoot = true;
             }
         }
@@ -864,17 +890,18 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         }
         
 
-        ArrayList all = new ArrayList ();
+        ArrayList<FileObject> all = new ArrayList<FileObject>();
         FileObject jfsRoot = jfs.getRoot();
-        Enumeration en = jfsRoot.getChildren(true);
+        Enumeration<? extends FileObject> en = jfsRoot.getChildren(true);
         while (en.hasMoreElements()) {
             all.add ((FileObject) en.nextElement());                        
         }
 
         assertTrue (all.size() > 0); 
         
-        final ArrayList deleted = new ArrayList ();
+        final ArrayList<FileObject> deleted = new ArrayList<FileObject>();
         jfs.addFileChangeListener(new FileChangeAdapter() {
+            @Override
             public void fileDeleted(FileEvent fe) {
                 super.fileDeleted(fe);
                 deleted.add (fe.getFile());
@@ -887,7 +914,7 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         assertEquals (deleted.size(), all.size());
 
         for (int i = 0; i < all.size(); i++) {
-            FileObject fileObject = (FileObject) all.get(i);
+            FileObject fileObject = all.get(i);
             assertFalse (fileObject.isValid());
         }
         
@@ -948,10 +975,12 @@ public class BaseFileObjectTestHid extends TestBaseHid{
             
         };        
         
+        @Override
         public org.openide.filesystems.FileSystem.Status getStatus() {
             return status;
         }
         
+        @Override
         protected String[] children(String name) {
             String[] strings = super.children(name);
             return strings;
