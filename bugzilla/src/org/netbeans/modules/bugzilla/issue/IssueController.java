@@ -58,6 +58,7 @@ public class IssueController extends BugtrackingController {
         IssuePanel panel = new IssuePanel();
         panel.setIssue(issue);
         JScrollPane scrollPane = new JScrollPane(panel);
+        scrollPane.getViewport().setBackground(panel.getBackground());
         scrollPane.setBorder(null);
         Font font = UIManager.getFont("Label.font"); // NOI18N
         if (font != null) {
