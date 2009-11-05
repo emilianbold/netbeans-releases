@@ -1314,6 +1314,7 @@ public class NbJiraIssue extends Issue {
             IssuePanel panel = new IssuePanel();
             panel.setIssue(NbJiraIssue.this);
             JScrollPane scrollPane = new JScrollPane(panel);
+            scrollPane.getViewport().setBackground(panel.getBackground());
             scrollPane.setBorder(null);
             Font font = UIManager.getFont("Label.font"); // NOI18N
             if (font != null) {
