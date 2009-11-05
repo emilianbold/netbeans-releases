@@ -944,6 +944,9 @@ public class ChatPanel extends javax.swing.JPanel {
     private String getMessageBody(Message m) {
         final NotificationExtension ne = (NotificationExtension) m.getExtension("notification", NotificationExtensionProvider.NAMESPACE); // NOI18N
         String b = m.getBody();
+        if (b==null) {
+            b="";
+        }
         if (ne==null) {
             return b;
         }
