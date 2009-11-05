@@ -643,7 +643,10 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         }
 
         public void setSelectedItem(Object item) {
-            assert item instanceof DatabaseUser;
+            if (item == null || item.toString().trim().length() == 0) {
+                return;
+            }
+            assert item instanceof DatabaseUser : item + "[" + item.getClass() + "] must be instanceof DatabaseUser";
             if (item instanceof DatabaseUser) {
                 selected = (DatabaseUser)item;
             }
