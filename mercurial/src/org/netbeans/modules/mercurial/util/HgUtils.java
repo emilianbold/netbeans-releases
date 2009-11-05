@@ -1124,7 +1124,7 @@ itor tabs #66700).
         
             if (file.isDirectory()) {
                 Map<File, FileInformation> interestingFiles;
-                interestingFiles = HgCommand.getInterestingStatus(repository, file);
+                interestingFiles = HgCommand.getInterestingStatus(repository, Collections.singletonList(file));
                 if (!interestingFiles.isEmpty()){
                     Collection<File> files = interestingFiles.keySet();
                     for (File aFile : files) {

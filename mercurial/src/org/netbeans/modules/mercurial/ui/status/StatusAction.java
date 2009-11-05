@@ -128,7 +128,7 @@ public class StatusAction extends ContextAction {
         Calendar end = Calendar.getInstance();
         if (root.isDirectory()) {
             Map<File, FileInformation> interestingFiles;
-            interestingFiles = HgCommand.getInterestingStatus(repository, root);
+            interestingFiles = HgCommand.getInterestingStatus(repository, java.util.Collections.singletonList(root));
             if (!interestingFiles.isEmpty()) {
                 Collection<File> files = interestingFiles.keySet();
                 Map<File, Map<File, FileInformation>> interestingDirs = HgUtils.getInterestingDirs(interestingFiles, files);
