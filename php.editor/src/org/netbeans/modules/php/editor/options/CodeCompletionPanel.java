@@ -39,6 +39,9 @@
 
 package org.netbeans.modules.php.editor.options;
 
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.FocusTraversalPolicy;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.prefs.Preferences;
@@ -302,6 +305,95 @@ public class CodeCompletionPanel extends JPanel {
         unqualifiedRadioButton = new JRadioButton();
         unqualifiedInfoLabel = new JLabel();
 
+        setFocusTraversalPolicy(new FocusTraversalPolicy() {
+
+
+
+            public Component getDefaultComponent(Container focusCycleRoot){
+                return unqualifiedRadioButton;
+            }//end getDefaultComponent
+            public Component getFirstComponent(Container focusCycleRoot){
+                return unqualifiedRadioButton;
+            }//end getFirstComponent
+            public Component getLastComponent(Container focusCycleRoot){
+                return unqualifiedRadioButton;
+            }//end getLastComponent
+            public Component getComponentAfter(Container focusCycleRoot, Component aComponent){
+                if(aComponent ==  autoCompletionFullRadioButton){
+                    return autoCompletionCustomizeRadioButton;
+                }
+                if(aComponent ==  autoCompletionCustomizeRadioButton){
+                    return autoCompletionVariablesCheckBox;
+                }
+                if(aComponent ==  autoCompletionVariablesCheckBox){
+                    return autoCompletionTypesCheckBox;
+                }
+                if(aComponent ==  autoCompletionTypesCheckBox){
+                    return autoCompletionNamespacesCheckBox;
+                }
+                if(aComponent ==  codeCompletionStaticMethodsCheckBox){
+                    return codeCompletionNonStaticMethodsCheckBox;
+                }
+                if(aComponent ==  autoCompletionNamespacesCheckBox){
+                    return codeCompletionStaticMethodsCheckBox;
+                }
+                if(aComponent ==  codeCompletionNonStaticMethodsCheckBox){
+                    return allVariablesRadioButton;
+                }
+                if(aComponent ==  currentFileVariablesRadioButton){
+                    return smartRadioButton;
+                }
+                if(aComponent ==  allVariablesRadioButton){
+                    return currentFileVariablesRadioButton;
+                }
+                if(aComponent ==  smartRadioButton){
+                    return fullyQualifiedRadioButton;
+                }
+                if(aComponent ==  fullyQualifiedRadioButton){
+                    return unqualifiedRadioButton;
+                }
+                return unqualifiedRadioButton;//end getComponentAfter
+            }
+            public Component getComponentBefore(Container focusCycleRoot, Component aComponent){
+                if(aComponent ==  autoCompletionCustomizeRadioButton){
+                    return autoCompletionFullRadioButton;
+                }
+                if(aComponent ==  autoCompletionVariablesCheckBox){
+                    return autoCompletionCustomizeRadioButton;
+                }
+                if(aComponent ==  autoCompletionTypesCheckBox){
+                    return autoCompletionVariablesCheckBox;
+                }
+                if(aComponent ==  autoCompletionNamespacesCheckBox){
+                    return autoCompletionTypesCheckBox;
+                }
+                if(aComponent ==  codeCompletionNonStaticMethodsCheckBox){
+                    return codeCompletionStaticMethodsCheckBox;
+                }
+                if(aComponent ==  codeCompletionStaticMethodsCheckBox){
+                    return autoCompletionNamespacesCheckBox;
+                }
+                if(aComponent ==  allVariablesRadioButton){
+                    return codeCompletionNonStaticMethodsCheckBox;
+                }
+                if(aComponent ==  smartRadioButton){
+                    return currentFileVariablesRadioButton;
+                }
+                if(aComponent ==  currentFileVariablesRadioButton){
+                    return allVariablesRadioButton;
+                }
+                if(aComponent ==  fullyQualifiedRadioButton){
+                    return smartRadioButton;
+                }
+                if(aComponent ==  unqualifiedRadioButton){
+                    return fullyQualifiedRadioButton;
+                }
+                return unqualifiedRadioButton;//end getComponentBefore
+
+            }}
+        );
+
+        enableAutocompletionLabel.setLabelFor(autoCompletionFullRadioButton);
         Mnemonics.setLocalizedText(enableAutocompletionLabel, NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.enableAutocompletionLabel.text")); // NOI18N
 
         autoCompletionButtonGroup.add(autoCompletionFullRadioButton);
@@ -311,19 +403,21 @@ public class CodeCompletionPanel extends JPanel {
 
 
 
-
         Mnemonics.setLocalizedText(autoCompletionCustomizeRadioButton, NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.autoCompletionCustomizeRadioButton.text")); // NOI18N
         Mnemonics.setLocalizedText(autoCompletionVariablesCheckBox, NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.autoCompletionVariablesCheckBox.text"));
         Mnemonics.setLocalizedText(autoCompletionTypesCheckBox, NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.autoCompletionTypesCheckBox.text"));
         Mnemonics.setLocalizedText(autoCompletionNamespacesCheckBox, NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.autoCompletionNamespacesCheckBox.text"));
-        Mnemonics.setLocalizedText(methodCodeCompletionLabel, NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.methodCodeCompletionLabel.text"));
+
+        methodCodeCompletionLabel.setLabelFor(codeCompletionStaticMethodsCheckBox);
+        Mnemonics.setLocalizedText(methodCodeCompletionLabel, NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.methodCodeCompletionLabel.text")); // NOI18N
 
         codeCompletionStaticMethodsCheckBox.setSelected(true);
 
-
         Mnemonics.setLocalizedText(codeCompletionStaticMethodsCheckBox, NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.codeCompletionStaticMethodsCheckBox.text")); // NOI18N
         Mnemonics.setLocalizedText(codeCompletionNonStaticMethodsCheckBox, NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.codeCompletionNonStaticMethodsCheckBox.text"));
-        Mnemonics.setLocalizedText(codeCompletionVariablesScopeLabel, NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.codeCompletionVariablesScopeLabel.text"));
+
+        codeCompletionVariablesScopeLabel.setLabelFor(allVariablesRadioButton);
+        Mnemonics.setLocalizedText(codeCompletionVariablesScopeLabel, NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.codeCompletionVariablesScopeLabel.text")); // NOI18N
 
         codeCompletionVariablesScopeButtonGroup.add(allVariablesRadioButton);
         Mnemonics.setLocalizedText(allVariablesRadioButton, NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.allVariablesRadioButton.text")); // NOI18N
@@ -354,6 +448,7 @@ public class CodeCompletionPanel extends JPanel {
         Mnemonics.setLocalizedText(unqualifiedInfoLabel, NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.unqualifiedInfoLabel.text"));
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
+
         layout.setHorizontalGroup(
             layout.createParallelGroup(GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
@@ -432,6 +527,45 @@ public class CodeCompletionPanel extends JPanel {
                 .add(unqualifiedInfoLabel)
                 .addContainerGap(64, Short.MAX_VALUE))
         );
+
+        enableAutocompletionLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.enableAutocompletionLabel.AccessibleContext.accessibleName")); // NOI18N
+        enableAutocompletionLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.enableAutocompletionLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        autoCompletionFullRadioButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.autoCompletionFullRadioButton.AccessibleContext.accessibleName")); // NOI18N
+        autoCompletionFullRadioButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.autoCompletionFullRadioButton.AccessibleContext.accessibleDescription")); // NOI18N
+        autoCompletionCustomizeRadioButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.autoCompletionCustomizeRadioButton.AccessibleContext.accessibleName")); // NOI18N
+        autoCompletionCustomizeRadioButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.autoCompletionCustomizeRadioButton.AccessibleContext.accessibleDescription")); // NOI18N
+        autoCompletionVariablesCheckBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.autoCompletionVariablesCheckBox.AccessibleContext.accessibleName")); // NOI18N
+        autoCompletionVariablesCheckBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.autoCompletionVariablesCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+        autoCompletionTypesCheckBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.autoCompletionTypesCheckBox.AccessibleContext.accessibleName")); // NOI18N
+        autoCompletionTypesCheckBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.autoCompletionTypesCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+        autoCompletionNamespacesCheckBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.autoCompletionNamespacesCheckBox.AccessibleContext.accessibleName")); // NOI18N
+        autoCompletionNamespacesCheckBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.autoCompletionNamespacesCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+        methodCodeCompletionLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.methodCodeCompletionLabel.AccessibleContext.accessibleName")); // NOI18N
+        methodCodeCompletionLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.methodCodeCompletionLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        codeCompletionStaticMethodsCheckBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.codeCompletionStaticMethodsCheckBox.AccessibleContext.accessibleName")); // NOI18N
+        codeCompletionStaticMethodsCheckBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.codeCompletionStaticMethodsCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+        codeCompletionNonStaticMethodsCheckBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.codeCompletionNonStaticMethodsCheckBox.AccessibleContext.accessibleName")); // NOI18N
+        codeCompletionNonStaticMethodsCheckBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.codeCompletionNonStaticMethodsCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+        codeCompletionVariablesScopeLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.codeCompletionVariablesScopeLabel.AccessibleContext.accessibleName")); // NOI18N
+        codeCompletionVariablesScopeLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.codeCompletionVariablesScopeLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        allVariablesRadioButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.allVariablesRadioButton.AccessibleContext.accessibleName")); // NOI18N
+        allVariablesRadioButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.allVariablesRadioButton.AccessibleContext.accessibleDescription")); // NOI18N
+        currentFileVariablesRadioButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.currentFileVariablesRadioButton.AccessibleContext.accessibleName")); // NOI18N
+        currentFileVariablesRadioButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.currentFileVariablesRadioButton.AccessibleContext.accessibleDescription")); // NOI18N
+        codeCompletionTypeLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.codeCompletionTypeLabel.AccessibleContext.accessibleName")); // NOI18N
+        codeCompletionTypeLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.codeCompletionTypeLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        smartRadioButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.smartRadioButton.AccessibleContext.accessibleName")); // NOI18N
+        smartRadioButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.smartRadioButton.AccessibleContext.accessibleDescription")); // NOI18N
+        smartInfoLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.smartInfoLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        fullyQualifiedRadioButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.fullyQualifiedRadioButton.AccessibleContext.accessibleName")); // NOI18N
+        fullyQualifiedRadioButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.fullyQualifiedRadioButton.AccessibleContext.accessibleDescription")); // NOI18N
+        fullyQualifiedInfoLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.fullyQualifiedInfoLabel.AccessibleContext.accessibleName")); // NOI18N
+        fullyQualifiedInfoLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.fullyQualifiedInfoLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        unqualifiedRadioButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.unqualifiedRadioButton.AccessibleContext.accessibleName")); // NOI18N
+        unqualifiedRadioButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.unqualifiedRadioButton.AccessibleContext.accessibleDescription")); // NOI18N
+        unqualifiedInfoLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.unqualifiedInfoLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 
