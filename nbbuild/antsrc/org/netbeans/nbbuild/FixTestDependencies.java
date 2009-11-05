@@ -131,8 +131,9 @@ public class FixTestDependencies extends Task {
                 if (cnb.length() <= 0) {
                     throw new BuildException("Invalid codename base:" + cnb);
                 }
+                final boolean td = xml.contains("<test-dependencies>");
                 // test if project.xml contains test-deps
-                if (xml.contains("<test-dependencies>") && !testFix) {
+                if (td && !testFix) {
                     // yes -> exit
                     xml = fixOpenideUtil(xml);
                     PrintStream ps = new PrintStream(projectXmlFile);
@@ -154,10 +155,16 @@ public class FixTestDependencies extends Task {
                 Set<String> runtimeTestCNB = new TreeSet<String>();
 
                 Properties projectProperties = getTestProperties();
-                readCodeNameBases(compileCNB,compileTestCNB,projectProperties,"test.unit.cp",allCnbs,entries);
-                readCodeNameBases(compileCNB,compileTestCNB,projectProperties,"test.unit.cp.extra",allCnbs,entries);
-                readCodeNameBases(runtimeCNB,runtimeTestCNB,projectProperties,"test.unit.run.cp",allCnbs,entries);
-                readCodeNameBases(runtimeCNB,runtimeTestCNB,projectProperties,"test.unit.run.cp.extra",allCnbs,entries);
+                boolean found;
+                found = readCodeNameBases(compileCNB,compileTestCNB,projectProperties,"test.unit.cp",allCnbs,entries);
+                found |= readCodeNameBases(compileCNB,compileTestCNB,projectProperties,"test.unit.cp.extra",allCnbs,entries);
+                found |= readCodeNameBases(runtimeCNB,runtimeTestCNB,projectProperties,"test.unit.run.cp",allCnbs,entries);
+                found |= readCodeNameBases(runtimeCNB,runtimeTestCNB,projectProperties,"test.unit.run.cp.extra",allCnbs,entries);
+
+                if (!found && !td) {
+                    return;
+                }
+
                 updateProperties(projectProperties,new String[]{"test.unit.cp","test.unit.cp.extra","test.unit.run.cp","test.unit.run.cp.extra"});
 
                 StringWriter writer = new StringWriter();
@@ -256,7 +263,7 @@ public class FixTestDependencies extends Task {
     }
     /** parses all codenamebases from path
      */
-     void readCodeNameBases(Set<String> compileCNB,
+     boolean readCodeNameBases(Set<String> compileCNB,
             Set <String> testsCNB,
             Properties projectPropertis,
             String property,
@@ -344,7 +351,9 @@ public class FixTestDependencies extends Task {
                 }
             } // while
             projectPropertis.setProperty(property,newProp.toString());
+            return true;
         }
+        return false;
     }
     
     private void addDependencies(PrintWriter buffer, Set<String> moduleCNB, Set<String> testCNB, boolean compile, boolean recursive) {
@@ -371,7 +380,7 @@ public class FixTestDependencies extends Task {
     
     private Properties getTestProperties() throws IOException {
         if (propertiesFile == null || !propertiesFile.isFile()) {
-            throw new BuildException("Property file doesn't exist");
+            return new Properties();
         }
         Properties props = new Properties();
         FileInputStream fis = new FileInputStream(propertiesFile);
@@ -394,22 +403,30 @@ public class FixTestDependencies extends Task {
         return null;
     }
     private void updateProperties(Properties projectProperties,String names[]) {
+        if (propertiesFile == null) {
+            return;
+        }
         try {
-            
-            // read properties
-            BufferedReader reader = new BufferedReader (new FileReader(propertiesFile));
             List<String> lines = new ArrayList<String>();
-            String line = null;
-            while ((line = reader.readLine()) != null) {
-                lines.add(line);
+            if (propertiesFile.isFile()) {
+                // read properties
+                BufferedReader reader = new BufferedReader (new FileReader(propertiesFile));
+                String line = null;
+                while ((line = reader.readLine()) != null) {
+                    lines.add(line);
+                }
+                reader.close();
             }
-            reader.close();
             
             // merge properties
             for (String propName : names) {
                String value = projectProperties.getProperty(propName);
                lines = replaceProperty(propName,value,lines);    
             }
+            if (lines.isEmpty() && !propertiesFile.isFile()) {
+                return;
+            }
+
             // store properties
             PrintStream ps = new PrintStream(propertiesFile);
             for (String l : lines) {

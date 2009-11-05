@@ -87,6 +87,22 @@ public class FixTestDependenciesTest extends NbTestCase {
             fail("org.openide.util.lookup should be there: " + result);
         }
     }
+    public void testNoChangeForProjectsWithoutTests() throws IOException, Exception {
+        File prjFile = copyFile("FixTestDependencies-o.apache.xml.resolver.xml");
+        String before = PublicPackagesInProjectizedXMLTest.readFile(prjFile);
+        File propertiesFile = new File(getWorkDir(), "some.properties");
+        Properties np = new Properties();
+        np.put("is.autoload", "true");
+        np.store(new FileOutputStream(propertiesFile), "");
+        FixTestDependencies ftd = newFixTestDependencies();
+        ftd.setPropertiesFile(propertiesFile);
+        ftd.setProjectXml(prjFile);
+        ftd.cachedEntries = getEntries();
+        ftd.execute();
+
+        String result = PublicPackagesInProjectizedXMLTest.readFile(prjFile);
+        assertEquals("No change expected", before, result);
+    }
 
     public void testSimple() throws IOException, Exception {
           File prjFile = copyFile("FixTestDependenciesProject.xml");
