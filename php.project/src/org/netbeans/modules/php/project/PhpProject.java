@@ -262,8 +262,9 @@ public class PhpProject implements Project {
         String srcDirProperty = eval.getProperty(PhpProjectProperties.SRC_DIR);
         // # 168390 - more logging
         if (srcDirProperty == null) {
-            Logger.getLogger(PhpProject.class.getName()).info("[evaluator] Properties: " + eval.getProperties());
-            Logger.getLogger(PhpProject.class.getName()).info("[helper] Properties: " + helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH));
+            LOGGER.info("[helper] project.properties: " + helper.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH));
+            LOGGER.info("[evaluator] Properties: " + eval.getProperties());
+            LOGGER.info("[helper] Properties: " + helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH));
         }
         assert srcDirProperty != null : "Property for Sources must be defined";
         FileObject srcDir = helper.resolveFileObject(srcDirProperty);
