@@ -181,38 +181,44 @@ public class RemoteServerSetup {
         }
     }
 
-    private List<String> getBinaryUpdatesByChecksum() throws NoSuchAlgorithmException, CancellationException, IOException, CheckSumException {
-        
-        String md5pattern = null;
+    private String getMd5command(List<String> paths2check) throws NoSuchAlgorithmException, IOException {
+
+        StringBuilder sb;
 
         HostInfo hostIinfo = HostInfoUtils.getHostInfo(executionEnvironment);
         final OSFamily oSFamily = hostIinfo.getOSFamily();
         switch (oSFamily) {
             case LINUX:
-                md5pattern = "/usr/bin/md5sum -b %s";
-                break;
+                sb = new StringBuilder("/usr/bin/md5sum -b"); // NOI18N
+                for (String path : paths2check) {
+                    sb.append(' ');
+                    sb.append(path); // NOI18N
+                }
+                return sb.toString();
             case SUNOS:
-                md5pattern = "/usr/bin/digest -a md5 %s";
-                break;
+                sb = new StringBuilder("sh -c \""); // NOI18N
+                for (String path : paths2check) {
+                    sb.append("/usr/bin/digest -a md5 "); // NOI18N
+                    sb.append(path);
+                    sb.append(";"); // NOI18N
+                }
+                sb.append("\""); // NOI18N
+                return sb.toString();
             default:
-                throw new NoSuchAlgorithmException("Unexpected OS: " + oSFamily);
+                throw new NoSuchAlgorithmException("Unexpected OS: " + oSFamily); // NOI18N
         }
+    }
 
+    private List<String> getBinaryUpdatesByChecksum() throws NoSuchAlgorithmException, CancellationException, IOException, CheckSumException {
         // gather 
         // 1) file list separated by spaces
         // 2) an array of paths in the same order
         List<String> paths2check = new ArrayList<String>(binarySetupMap.size());
-        StringBuilder sb = new StringBuilder();
         for (String path : binarySetupMap.keySet()) {
             paths2check.add(path);
-            if (sb.length() > 0) {
-                sb.append(' ');
-            }
-            sb.append(String.format(path)); // NOI18N
         }
+        String cmd = getMd5command(paths2check);
 
-
-        String cmd = String.format(md5pattern, sb);
         RemoteCommandSupport support = new RemoteCommandSupport(executionEnvironment, cmd);
         support.run();
         RemoteUtil.LOGGER.fine("RSS.getBinaryUpdatesByChecksum: RC " + support.getExitStatus());
@@ -226,7 +232,7 @@ public class RemoteServerSetup {
         String val = support.getOutput();
         List<String> result = new ArrayList<String>();
         int idx = 0;
-        String[] lines = val.split("\n");
+        String[] lines = val.split("\n"); // NOI18N
         if (lines[lines.length-1].equals("")) { // the last one is usuall empthy, throw it away
             String[] corrected = new String[lines.length-1];
             System.arraycopy(lines, 0, corrected, 0, corrected.length);
@@ -238,9 +244,9 @@ public class RemoteServerSetup {
         for (String line : lines) { // NOI18N
             // in Linux, it has form ﻿34f1cc1cefbded98edae74d9690a7c44 */usr/include/stdio.h
             if (line.length() > 0) {
-                String[] parts = line.split(" ");
+                String[] parts = line.split(" "); // NOI18N
                 if (parts.length == 0) {
-                    throw new CheckSumException("Line shouldn't be empty");
+                    throw new CheckSumException("Line shouldn't be empty"); // NOI18N
                 }
                 String path = paths2check.get(idx++);
                 String remoteCheckSum = parts[0];
@@ -258,7 +264,7 @@ public class RemoteServerSetup {
         String localFileName = binarySetupMap.get(remotePath);
         File file = InstalledFileLocator.getDefault().locate(localFileName, null, false);
         if (file != null || file.exists()) {
-            MessageDigest md5 = MessageDigest.getInstance("MD5");
+            MessageDigest md5 = MessageDigest.getInstance("MD5"); // NOI18N
             InputStream is = new BufferedInputStream(new FileInputStream(file));
             byte[] buf = new byte[8192];
             int read;
