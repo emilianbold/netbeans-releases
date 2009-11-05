@@ -55,7 +55,10 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.php.editor.index.IndexedClassMember;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
+import org.netbeans.modules.php.editor.index.IndexedElement;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
+import org.netbeans.modules.php.editor.index.IndexedTypedElement;
+import org.netbeans.modules.php.editor.index.IndexedVariable;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
@@ -287,7 +290,7 @@ public class CodeUtils {
         return null;
     }
 
-    public static boolean isVariableTypeResolved(IndexedConstant var){
+    public static boolean isTypeResolved(IndexedTypedElement var){
 
         if (var.getTypeName() != null && var.getTypeName().startsWith("@")){
             return false;
@@ -297,7 +300,7 @@ public class CodeUtils {
     }
 
     private static String findClassNameEnclosingDeclaration(PHPParseResult context,
-            IndexedConstant variable) {
+            IndexedElement variable) {
         if (context.getSnapshot().getSource().getFileObject().equals(variable.getFileObject())){
             return findClassNameEnclosingDeclaration(context.getProgram(), variable);
         }
@@ -313,23 +316,23 @@ public class CodeUtils {
     }
 
     private static class ClassNameExtractor extends UserTask {
-        IndexedConstant variable;
-        String className;
+        private IndexedElement element;
+        private String className;
 
-        public ClassNameExtractor(IndexedConstant variable) {
-            this.variable = variable;
+        public ClassNameExtractor(IndexedElement element) {
+            this.element = element;
         }
 
         @Override
         public void run(ResultIterator resultIterator) throws Exception {
             ParserResult parameter = (ParserResult)resultIterator.getParserResult();
             Program program = Utils.getRoot(parameter);
-            className = findClassNameEnclosingDeclaration(program, variable);
+            className = findClassNameEnclosingDeclaration(program, element);
         }
     }
 
     private static String findClassNameEnclosingDeclaration(Program program,
-            IndexedConstant variable) {
+            IndexedElement variable) {
         ASTNode node = Utils.getNodeAtOffset(program,
                 variable.getOffset(), ClassDeclaration.class);
 
@@ -343,12 +346,12 @@ public class CodeUtils {
 
     public static void resolveFunctionType(PHPParseResult context,
             PHPIndex index,
-            Map<String, IndexedConstant> varStack,
-            IndexedConstant variable){
+            Map<String, IndexedVariable> varStack,
+            IndexedVariable variable){
 
         String rawType = variable.getTypeName();
 
-        if (!isVariableTypeResolved(variable)){
+        if (!isTypeResolved(variable)){
             String varType = null;
             boolean unresolvedType = true;
 
@@ -384,7 +387,7 @@ public class CodeUtils {
                 if ("$this".equals(varName)) { //NOI18N
                     className = findClassNameEnclosingDeclaration(context, variable);
                 } else {
-                    IndexedConstant dispatcher = varStack.get(varName);
+                    IndexedVariable dispatcher = varStack.get(varName);
 
                     if (dispatcher != null
                             // preventing infinite loop

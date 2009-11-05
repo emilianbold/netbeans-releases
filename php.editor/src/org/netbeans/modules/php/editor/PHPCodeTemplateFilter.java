@@ -107,7 +107,7 @@ public class PHPCodeTemplateFilter extends UserTask implements CodeTemplateFilte
         }
         if (mimeType.equals(FileUtils.PHP_MIME_TYPE)) {
             parameter = (ParserResult) resultIterator.getParserResult();
-            BaseDocument document = (BaseDocument) parameter.getSnapshot().getSource().getDocument(false);
+            BaseDocument document = parameter != null ? (BaseDocument) parameter.getSnapshot().getSource().getDocument(false) : null;
             if (document != null) {
                 document.readLock();
 
