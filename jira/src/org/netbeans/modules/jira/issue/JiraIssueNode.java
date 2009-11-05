@@ -96,7 +96,27 @@ public class JiraIssueNode extends IssueNode {
         @Override
         public int compareTo(IssueProperty p) {
             if(p == null) return 1;
-            return getIssue().getID().compareTo(p.getIssue().getID());
+            String id = getIssue().getID();
+            String pid = p.getIssue().getID();
+            int idx = id.lastIndexOf("-");
+            int pidx = pid.lastIndexOf("-");
+
+            if(idx > -1 && pidx > -1) {
+                String projectId = id.substring(0, idx);
+                String projectPid = id.substring(0, pidx);
+                int c = projectId.compareTo(projectPid);
+                if(c != 0) {
+                    return c;
+                }
+                try {
+                    Long lid = Long.parseLong(id.substring(idx + 1));
+                    Long lpid = Long.parseLong(pid.substring(pidx + 1));
+                    if(lid != null && lpid != null) {
+                        return lid.compareTo(lpid);
+                    }
+                } catch (NumberFormatException ex) {}
+            }
+            return id.compareTo(pid);
         }
     }
 
