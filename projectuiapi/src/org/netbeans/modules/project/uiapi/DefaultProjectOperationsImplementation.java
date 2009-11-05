@@ -774,14 +774,14 @@ public final class DefaultProjectOperationsImplementation {
         // regular means of opening projects (via open project dialog) that
         //opens projects in non-awt thread. OpenProjectHooks shall not IMO
         //be called in AWT.
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
+//        RequestProcessor.getDefault().post(new Runnable() {
+//            public void run() {
                 OpenProjects.getDefault().open(new Project[] {prj}, false);
                 if (setAsMain) {
                     OpenProjects.getDefault().setMainProject(prj);
                 }
-            }
-        });
+//            }
+//        });
     }
     
     static interface Executor {
