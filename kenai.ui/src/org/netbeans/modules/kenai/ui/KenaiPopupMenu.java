@@ -67,49 +67,39 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataFolder;
 import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.actions.CookieAction;
 import org.openide.util.actions.Presenter;
 import org.openide.util.actions.SystemAction;
+import org.openide.windows.WindowManager;
 
 
-// TODO: Do not use CookieAction -> needs to be rewritten
-public class KenaiPopupMenu extends CookieAction {
+public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction {
 
     private static Map<Project, String> repoForProjCache = new WeakHashMap<Project, String>();
+
+    private static KenaiPopupMenu inst = null;
+
+    private KenaiPopupMenu() {
+    }
+
+    public static synchronized KenaiPopupMenu getDefault() {
+        if (inst == null) {
+            inst = new KenaiPopupMenu();
+        }
+        return inst;
+    }
 
     @Override
     public Action createContextAwareInstance(Lookup actionContext) {
         return new KenaiPopupMenuPresenter(actionContext);
     }
 
-    @Override
-    protected int mode() {
-        return CookieAction.MODE_EXACTLY_ONE;
-    }
-
-    @Override
-    protected Class<?>[] cookieClasses() {
-        return new Class[]{Project.class, DataFolder.class};
-    }
-
-    @Override
-    protected void performAction(Node[] activatedNodes) {
-    }
-
-    @Override
-    public String getName() {
-        return NbBundle.getMessage(KenaiPopupMenu.class, "KENAI_POPUP"); //NOI18N
-    }
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
+    public void actionPerformed(ActionEvent e) {
+        assert false;
     }
 
     private final class KenaiPopupMenuPresenter extends AbstractAction implements Presenter.Popup {
@@ -118,6 +108,50 @@ public class KenaiPopupMenu extends CookieAction {
 
         private KenaiPopupMenuPresenter(Lookup actionContext) {
             proj = actionContext.lookup(Project.class);
+        }
+
+        public JMenuItem getPopupPresenter() {
+            JMenu kenaiPopup = new JMenu(); //NOI18N
+            Node[] nodes = WindowManager.getDefault().getRegistry().getActivatedNodes();
+            kenaiPopup.setVisible(false);
+            if (proj == null || !isKenaiProject(proj) || nodes.length > 1) { // hide for non-Kenai projects
+                if (repoForProjCache.get(proj) == null && nodes.length == 1) { // start caching request, show dummy item...
+                    final JMenu dummy = new JMenu(NbBundle.getMessage(KenaiPopupMenu.class, "LBL_CHECKING")); //NOI18N
+                    dummy.setVisible(true);
+                    dummy.setEnabled(false);
+                    RequestProcessor.getDefault().post(new Runnable() { // cache the results, update the popup menu
+
+                        public void run() {
+                            String s = (String) proj.getProjectDirectory().getAttribute("ProvidedExtensions.RemoteLocation"); //NOI18N
+                            if (s == null || KenaiProject.getNameForRepository(s) == null) {
+                                repoForProjCache.put(proj, ""); //NOI18N null cannot be used - project with no repo is null, "" is to indicate I already checked this one...
+                                dummy.setVisible(false);
+                            } else {
+                                repoForProjCache.put(proj, s);
+                                final JMenu tmp = constructKenaiMenu();
+                                final Component[] c = tmp.getMenuComponents();
+                                SwingUtilities.invokeLater(new Runnable() {
+
+                                    public void run() {
+                                        tmp.revalidate();
+                                        dummy.setText(NbBundle.getMessage(KenaiPopupMenu.class, "KENAI_POPUP")); //NOI18N
+                                        dummy.setEnabled(true);
+                                        for (int i = 0; i < c.length; i++) {
+                                            Component item = c[i];
+                                            dummy.add(item);
+                                        }
+                                        dummy.getParent().validate();
+                                    }
+                                });
+                            }
+                        }
+                    });
+                    return dummy;
+                }
+            } else { // show for Kenai projects
+                kenaiPopup = constructKenaiMenu();
+            }
+            return kenaiPopup;
         }
 
         private JMenu constructKenaiMenu() {
@@ -137,7 +171,7 @@ public class KenaiPopupMenu extends CookieAction {
                 /* Show actions related to versioning - commit/update */
                 VersioningSystem owner = VersioningSupport.getOwner(FileUtil.toFile(proj.getProjectDirectory()));
                 JMenu versioning = new JMenu(NbBundle.getMessage(KenaiPopupMenu.class, "MSG_VERSIONING")); //NOI18N
-                JComponent[] items = createVersioningSystemItems(owner, getActivatedNodes());
+                JComponent[] items = createVersioningSystemItems(owner, WindowManager.getDefault().getRegistry().getActivatedNodes());
                 for (int i = 0; i < items.length; i++) {
                     JComponent item = items[i];
                     if (item != null) {
@@ -189,49 +223,6 @@ public class KenaiPopupMenu extends CookieAction {
             }
             Mnemonics.setLocalizedText(item, (String) action.getValue(Action.NAME));
             return item;
-        }
-
-        public JMenuItem getPopupPresenter() {
-            JMenu kenaiPopup = new JMenu(); //NOI18N
-            kenaiPopup.setVisible(false);
-            if (proj == null || !isKenaiProject(proj) || getActivatedNodes().length > 1) { // hide for non-Kenai projects
-                if (repoForProjCache.get(proj) == null && getActivatedNodes().length == 1) { // start caching request, show dummy item...
-                    final JMenu dummy = new JMenu(NbBundle.getMessage(KenaiPopupMenu.class, "LBL_CHECKING")); //NOI18N
-                    dummy.setVisible(true);
-                    dummy.setEnabled(false);
-                    RequestProcessor.getDefault().post(new Runnable() { // cache the results, update the popup menu
-
-                        public void run() {
-                            String s = (String) proj.getProjectDirectory().getAttribute("ProvidedExtensions.RemoteLocation"); //NOI18N
-                            if (s == null || KenaiProject.getNameForRepository(s) == null) {
-                                repoForProjCache.put(proj, ""); //NOI18N null cannot be used - project with no repo is null, "" is to indicate I already checked this one...
-                                dummy.setVisible(false);
-                            } else {
-                                repoForProjCache.put(proj, s);
-                                final JMenu tmp = constructKenaiMenu();
-                                final Component[] c = tmp.getMenuComponents();
-                                SwingUtilities.invokeLater(new Runnable() {
-
-                                    public void run() {
-                                        tmp.revalidate();
-                                        dummy.setText(NbBundle.getMessage(KenaiPopupMenu.class, "KENAI_POPUP")); //NOI18N
-                                        dummy.setEnabled(true);
-                                        for (int i = 0; i < c.length; i++) {
-                                            Component item = c[i];
-                                            dummy.add(item);
-                                        }
-                                        dummy.getParent().validate();
-                                    }
-                                });
-                            }
-                        }
-                    });
-                    return dummy;
-                }
-            } else { // show for Kenai projects
-                kenaiPopup = constructKenaiMenu();
-            }
-            return kenaiPopup;
         }
 
         boolean isKenaiProject(final Project proj) {
