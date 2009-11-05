@@ -47,6 +47,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -110,7 +111,15 @@ public class AuxPropsImpl implements AuxiliaryProperties, PropertyChangeListener
         if (file == null) {
             file = prov.getCacheDirectory().createData("checkstyle-checker", "xml");
         }
-        FileUtil.copy(in, file.getOutputStream());
+        InputStream inst = in;
+        OutputStream outst = null;
+        try {
+            outst = file.getOutputStream();
+            FileUtil.copy(in, file.getOutputStream());
+        } finally {
+            IOUtil.close(inst);
+            IOUtil.close(outst);
+        }
         return file;
     }
 
