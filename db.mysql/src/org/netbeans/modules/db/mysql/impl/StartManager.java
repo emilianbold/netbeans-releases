@@ -51,8 +51,6 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.db.mysql.DatabaseServer;
 import org.netbeans.modules.db.mysql.ui.PropertiesDialog;
-import org.netbeans.modules.db.mysql.ui.PropertiesDialog.Tab;
-import org.netbeans.modules.db.mysql.util.DatabaseUtils;
 import org.netbeans.modules.db.mysql.util.Utils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -151,6 +149,7 @@ public final class StartManager {
                 }
                 finally {
                     handle.finish();
+                    startRequested.set(false);
                 }
             }
 
