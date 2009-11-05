@@ -132,6 +132,27 @@ public class MarkOccurencesPanel extends javax.swing.JPanel {
         onOffCheckBox = new javax.swing.JCheckBox();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
+        setFocusTraversalPolicy(new java.awt.FocusTraversalPolicy() {
+            public java.awt.Component getDefaultComponent(java.awt.Container focusCycleRoot){
+                return onOffCheckBox;
+            }//end getDefaultComponent
+
+            public java.awt.Component getFirstComponent(java.awt.Container focusCycleRoot){
+                return onOffCheckBox;
+            }//end getFirstComponent
+
+            public java.awt.Component getLastComponent(java.awt.Container focusCycleRoot){
+                return onOffCheckBox;
+            }//end getLastComponent
+
+            public java.awt.Component getComponentAfter(java.awt.Container focusCycleRoot, java.awt.Component aComponent){
+                return onOffCheckBox;//end getComponentAfter
+            }
+            public java.awt.Component getComponentBefore(java.awt.Container focusCycleRoot, java.awt.Component aComponent){
+                return onOffCheckBox;//end getComponentBefore
+
+            }}
+        );
 
         org.openide.awt.Mnemonics.setLocalizedText(onOffCheckBox, org.openide.util.NbBundle.getMessage(MarkOccurencesPanel.class, "CTL_OnOff_CheckBox")); // NOI18N
         onOffCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -155,7 +176,11 @@ public class MarkOccurencesPanel extends javax.swing.JPanel {
                 .addContainerGap(273, Short.MAX_VALUE))
         );
 
+        onOffCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(MarkOccurencesPanel.class, "MarkOccurencesPanel.onOffCheckBox.AccessibleContext.accessibleName")); // NOI18N
         onOffCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MarkOccurencesPanel.class, "ACSD_OnOff_CB")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(MarkOccurencesPanel.class, "MarkOccurencesPanel.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MarkOccurencesPanel.class, "MarkOccurencesPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     
