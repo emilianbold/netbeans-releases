@@ -230,6 +230,7 @@
     </folder>
     <folder name="Palettes">
         <folder name="PHP">
+            <attr name="paletteDefaultVisible" boolvalue="false"/>
             <file name="HTML.shadow">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.resources.Bundle"/>
                 <attr name="originalFile" stringvalue="HTMLPalette/HTML"/>
