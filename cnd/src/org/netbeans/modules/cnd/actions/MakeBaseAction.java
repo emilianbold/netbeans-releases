@@ -55,6 +55,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
+import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.execution.CompilerLineConvertor;
 import org.netbeans.modules.cnd.loaders.MakefileDataObject;
 import org.netbeans.modules.cnd.settings.MakeSettings;
@@ -86,7 +88,7 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
     }
 
     protected void performAction(Node node, String target) {
-        performAction(node, target, null, null, null, null, null);
+        performAction(node, target, null, null, getProject(node), null, null);
     }
 
     protected Future<Integer> performAction(final Node node, final String target, final ExecutionListener listener, final Writer outputListener, final Project project,
@@ -123,6 +125,9 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
             args = new String[]{"-f", makefile.getName(), target}; // NOI18N
         }
         final ExecutionEnvironment execEnv = getExecutionEnvironment(fileObject, project);
+        if (!checkConnection(execEnv)) {
+            return null;
+        }
         if (execEnv.isRemote()) {
             String s = HostInfoProvider.getMapper(execEnv).getRemotePath(buildDir.getAbsolutePath());
             if (s != null) {
@@ -150,7 +155,13 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
             }
             inputOutput = tab;
         }
-        ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, inputOutput, "Make"); // NOI18N
+        RemoteSyncWorker syncWorker = RemoteSyncSupport.createSyncWorker(project, inputOutput.getOut(), inputOutput.getErr());
+        if (syncWorker != null) {
+            if (!syncWorker.startup(envMap)) {
+                return null;
+            }
+        }
+        ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, inputOutput, "Make", syncWorker); // NOI18N
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv)
         .setExecutable(executable)
         .setWorkingDirectory(buildDir.getPath())

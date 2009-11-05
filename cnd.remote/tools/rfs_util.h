@@ -51,7 +51,7 @@ void report_error(const char *format, ...);
 static void report_unresolved_path(const char* path) {
     char pwd[PATH_MAX];
     getcwd(pwd, sizeof pwd);
-    report_error("Can not resolve path: %s  cwd: %s: %s\n", path, pwd);
+    report_error("Can not resolve path: %s  cwd: %s\n", path, pwd);
 }
 
 #if TRACE

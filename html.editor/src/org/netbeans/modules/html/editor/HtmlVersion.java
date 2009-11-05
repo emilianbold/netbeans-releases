@@ -48,21 +48,21 @@ import java.util.Collection;
  */
 public enum HtmlVersion {
 
-    UNKNOWN(new String[]{}),
+    UNKNOWN(new String[]{}, -1),
 
-    HTML32(new String[]{"-//W3C//DTD HTML 3.2 Final//EN"}), //NOI18N
+    HTML32(new String[]{"-//W3C//DTD HTML 3.2 Final//EN"}, 0), //NOI18N
 
     HTML40(new String[]{"-//W3C//DTD HTML 4.0//EN", //NOI18N
                         "-//W3C//DTD HTML 4.0 Transitional//EN", //NOI18N
-                        "-//W3C//DTD HTML 4.0 Frameset//EN"}), //NOI18N
+                        "-//W3C//DTD HTML 4.0 Frameset//EN"}, 1), //NOI18N
 
     HTML41(new String[]{"-//W3C//DTD HTML 4.01//EN", //NOI18N
                         "-//W3C//DTD HTML 4.01 Transitional//EN", //NOI18N
-                        "-//W3C//DTD HTML 4.01 Frameset//EN"}), //NOI18N
+                        "-//W3C//DTD HTML 4.01 Frameset//EN"}, 1), //NOI18N
 
     XHTML10(new String[]{"-//W3C//DTD XHTML 1.0 Strict//EN", //NOI18N
                         "-//W3C//DTD XHTML 1.0 Transitional//EN", //NOI18N
-                        "-//W3C//DTD XHTML 1.0 Frameset//EN"}, "http://www.w3.org/1999/xhtml", true); //NOI18N
+                        "-//W3C//DTD XHTML 1.0 Frameset//EN"}, 1, "http://www.w3.org/1999/xhtml", true); //NOI18N
 
     //TODO Add XHTML1.1, XHTML 2.0 and HTML 5 support
 
@@ -75,22 +75,24 @@ public enum HtmlVersion {
         return UNKNOWN;
     }
 
-    private final Collection<String> publicIDs;
+    private final String[] publicIDs;
     private final String defaultNamespace;
     private boolean isXhtml;
+    private int fallbackPublicIdIndex;
 
-    private HtmlVersion(String[] publicIDs) {
-        this(publicIDs, null, false);
+    private HtmlVersion(String[] publicIDs, int index) {
+        this(publicIDs, index, null, false);
     }
 
-    private HtmlVersion(String[] publicIDs, String defaultNamespace, boolean isXhtml) {
-        this.publicIDs = Arrays.asList(publicIDs);
+    private HtmlVersion(String[] publicIDs, int index, String defaultNamespace, boolean isXhtml) {
+        this.publicIDs = publicIDs;
         this.defaultNamespace = defaultNamespace;
         this.isXhtml = isXhtml;
+        this.fallbackPublicIdIndex = index;
     }
 
     public Collection<String> getPublicIDs() {
-        return this.publicIDs;
+        return Arrays.asList(publicIDs);
     }
 
     public String getDefaultNamespace() {
@@ -99,6 +101,10 @@ public enum HtmlVersion {
 
     public boolean isXhtml() {
         return this.isXhtml;
+    }
+
+    public String getFallbackPublicId() {
+        return publicIDs[fallbackPublicIdIndex];
     }
 
 }

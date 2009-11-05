@@ -53,6 +53,7 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -61,6 +62,7 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.EditableProperties;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -83,6 +85,18 @@ public final class OptionsExportModel {
     private List<Category> categories;
     /** Cache of paths relative to source root */
     List<String> relativePaths;
+    /** Target ZipOutputStream for export. */
+    private ZipOutputStream zipOutputStream;
+    /** Target userdir for import. */
+    private File targetUserdir;
+    /** Include patterns. */
+    private Set<String> includePatterns;
+    /** Exclude patterns. */
+    private Set<String> excludePatterns;
+    /** Properties currently being copied. */
+    private EditableProperties currentProperties;
+    /** List of ignored folders in userdir. It speeds up folder scanning. */
+    private static final List<String> IGNORED_FOLDERS = Arrays.asList("var/cache");  // NOI18N
 
     /** Returns instance of export options model.
      * @param source source of export/import. It is either zip file or userdir
@@ -144,13 +158,9 @@ public final class OptionsExportModel {
      * @param targetUserdir target userdir
      */
     void doImport(File targetUserdir) throws IOException {
-        if (source.isFile()) {
-            // zip file
-            extractZipFile(targetUserdir);
-        } else {
-            // userdir
-            copy(targetUserdir);
-        }
+        LOGGER.fine("Copying from: " + source + "\n    to: " + targetUserdir);  //NOI18N
+        this.targetUserdir = targetUserdir;
+        copyFiles();
     }
 
     /** Creates zip file according to current state of model, i.e. only
@@ -159,65 +169,109 @@ public final class OptionsExportModel {
      */
     void doExport(File targetZipFile) {
         try {
-            createZipFile(targetZipFile);
+            ensureParent(targetZipFile);
+            // Create the ZIP file
+            zipOutputStream = new ZipOutputStream(new FileOutputStream(targetZipFile));
+            copyFiles();
+            createProductInfo(zipOutputStream);
+            // Complete the ZIP file
+            zipOutputStream.close();
         } catch (IOException ex) {
             Exceptions.attachLocalizedMessage(ex,
                     NbBundle.getMessage(OptionsExportModel.class, "OptionsExportModel.export.zip.error", targetZipFile));
             Exceptions.printStackTrace(ex);
-        }
-    }
-
-    /** Copies files from source dir to target dir according to current state
-     * of model, i.e. only include/exclude patterns from enabled items are
-     * considered.
-     * @param targetUserdir target userdir
-     * @throws java.io.IOException
-     */
-    private void copy(File targetUserdir) throws IOException {
-        LOGGER.fine("Copying from: " + source + "\nto:" + targetUserdir);  //NOI18N
-        List<String> applicablePaths = getApplicablePaths(getIncludePatterns(), getExcludePatterns());
-        if (!applicablePaths.isEmpty() && !targetUserdir.exists()) {
-            if (!targetUserdir.mkdirs()) {
-                throw new IOException("Cannot create folder: " + targetUserdir.getAbsolutePath());  //NOI18N
+        } finally {
+            if (zipOutputStream != null) {
+                try {
+                    zipOutputStream.close();
+                } catch (IOException ex) {
+                    // ignore
+                }
             }
         }
-        for (String path : applicablePaths) {
-            LOGGER.fine("Path=" + path);  //NOI18N
-            copyFile(new File(source, path), new File(targetUserdir, path));
+    }
+
+    private static enum ParserState {
+
+        START,
+        IN_KEY_PATTERN,
+        AFTER_KEY_PATTERN,
+        IN_BLOCK
+    }
+
+    /** Parses given compound string pattern into set of single patterns.
+     * @param pattern compound pattern in form filePattern1#keyPattern1#|filePattern2#keyPattern2#|filePattern3
+     * @return set of single patterns containing just one # (e.g. [filePattern1#keyPattern1, filePattern2#keyPattern2, filePattern3])
+     */
+    static Set<String> parsePattern(String pattern) {
+        Set<String> patterns = new HashSet<String>();
+        if (pattern.contains("#")) {  //NOI18N
+            StringBuilder partPattern = new StringBuilder();
+            ParserState state = ParserState.START;
+            int blockLevel = 0;
+            for (int i = 0; i < pattern.length(); i++) {
+                char c = pattern.charAt(i);
+                switch(state) {
+                    case START:
+                        if (c == '#') {
+                            state = ParserState.IN_KEY_PATTERN;
+                            partPattern.append(c);
+                        } else if (c == '(') {
+                            state = ParserState.IN_BLOCK;
+                            blockLevel++;
+                            partPattern.append(c);
+                        } else if (c == '|') {
+                            patterns.add(partPattern.toString());
+                            partPattern = new StringBuilder();
+                        } else {
+                            partPattern.append(c);
+                        }
+                        break;
+                    case IN_KEY_PATTERN:
+                        if (c == '#') {
+                            state = ParserState.AFTER_KEY_PATTERN;
+                        } else {
+                            partPattern.append(c);
+                        }
+                        break;
+                    case AFTER_KEY_PATTERN:
+                        if (c == '|') {
+                            state = ParserState.START;
+                            patterns.add(partPattern.toString());
+                            partPattern = new StringBuilder();
+                        } else {
+                            assert false : "Wrong OptionsExport pattern " + pattern + ". Only format like filePattern1#keyPattern#|filePattern2 is supported.";  //NOI18N
+                        }
+                        break;
+                    case IN_BLOCK:
+                        partPattern.append(c);
+                        if (c == ')') {
+                            blockLevel--;
+                            if (blockLevel == 0) {
+                                state = ParserState.START;
+                            }
+                        }
+                        break;
+                }
+            }
+            patterns.add(partPattern.toString());
+        } else {
+            patterns.add(pattern);
         }
+        return patterns;
     }
 
-    /** Extracts files from source zip file to target dir according to current state
-     * of model, i.e. only include/exclude patterns from enabled items are
-     * considered.
-     * @param targetUserdir target userdir
-     */
-    private void extractZipFile(File targetUserdir) throws IOException {
-        LOGGER.fine("Extracting from:" + source + " to:" + targetUserdir);  //NOI18N
-        List<String> applicablePaths = getApplicablePaths(getIncludePatterns(), getExcludePatterns());
-        extractZipFile(source, targetUserdir, applicablePaths);
-    }
-
-    /** Creates zip file from source userdir according to current state
-     * of model, i.e. only include/exclude patterns from enabled items are
-     * considered.
-     * @param targetFile target zip file
-     */
-    private void createZipFile(File targetFile) throws IOException {
-        LOGGER.fine("Creating file:" + targetFile + " from:" + source);  //NOI18N
-        List<String> applicablePaths = getApplicablePaths(getIncludePatterns(), getExcludePatterns());
-        createZipFile(targetFile, source, applicablePaths);
-    }
-
-    /** Returns set of include patterns in this model. */
-    private Set<Pattern> getIncludePatterns() {
-        Set<Pattern> includePatterns = new HashSet<Pattern>();
-        for (OptionsExportModel.Category category : getCategories()) {
-            for (OptionsExportModel.Item item : category.getItems()) {
-                if (item.isEnabled()) {
-                    String include = item.getInclude();
-                    if (include != null && include.length() > 0) {
-                        includePatterns.add(Pattern.compile(include));
+    /** Returns set of include patterns. */
+    private Set<String> getIncludePatterns() {
+        if (includePatterns == null) {
+            includePatterns = new HashSet<String>();
+            for (OptionsExportModel.Category category : getCategories()) {
+                for (OptionsExportModel.Item item : category.getItems()) {
+                    if (item.isEnabled()) {
+                        String include = item.getInclude();
+                        if (include != null && include.length() > 0) {
+                            includePatterns.addAll(parsePattern(include));
+                        }
                     }
                 }
             }
@@ -225,15 +279,17 @@ public final class OptionsExportModel {
         return includePatterns;
     }
 
-    /** Returns set of exclude patterns in this model. */
-    private Set<Pattern> getExcludePatterns() {
-        Set<Pattern> excludePatterns = new HashSet<Pattern>();
-        for (OptionsExportModel.Category category : getCategories()) {
-            for (OptionsExportModel.Item item : category.getItems()) {
-                if (item.isEnabled()) {
-                    String exclude = item.getExclude();
-                    if (exclude != null && exclude.length() > 0) {
-                        excludePatterns.add(Pattern.compile(exclude));
+    /** Returns set of exclude patterns. */
+    private Set<String> getExcludePatterns() {
+        if (excludePatterns == null) {
+            excludePatterns = new HashSet<String>();
+            for (OptionsExportModel.Category category : getCategories()) {
+                for (OptionsExportModel.Item item : category.getItems()) {
+                    if (item.isEnabled()) {
+                        String exclude = item.getExclude();
+                        if (exclude != null && exclude.length() > 0) {
+                            excludePatterns.addAll(parsePattern(exclude));
+                        }
                     }
                 }
             }
@@ -262,6 +318,7 @@ public final class OptionsExportModel {
             this.displayName = displayName;
             this.include = include;
             this.exclude = exclude;
+            assert assertIgnoredFolders(include);
         }
 
         public String getDisplayName() {
@@ -281,11 +338,9 @@ public final class OptionsExportModel {
          * @return true if at least one path in current source
          * matches include/exclude patterns, false otherwise
          */
-        public boolean isApplicable() {
+       public boolean isApplicable() {
             if (!applicableInitialized) {
-                List<String> applicablePaths = getApplicablePaths(
-                        Collections.singleton(Pattern.compile(include)),
-                        Collections.singleton(Pattern.compile(exclude)));
+                List<String> applicablePaths = getApplicablePaths(Collections.singleton(include), Collections.singleton(exclude));
                 LOGGER.fine("    applicablePaths=" + applicablePaths);  //NOI18N
                 applicable = !applicablePaths.isEmpty();
                 applicableInitialized = true;
@@ -305,13 +360,27 @@ public final class OptionsExportModel {
          * @param newState if selected or not
          */
         public void setEnabled(boolean newState) {
-            enabled = newState;
+            if (enabled != newState) {
+                enabled = newState;
+                // reset cached patterns
+                includePatterns = null;
+                excludePatterns = null;
+            }
         }
 
         /** Just for debugging. */
         @Override
         public String toString() {
             return getDisplayName() + ", enabled=" + isEnabled();  //NOI18N
+        }
+
+        /** Check that IGNORED_FOLDERS doesn't contain given pattern. */
+        private boolean assertIgnoredFolders(String pattern) {
+            boolean result = true;
+            for (String folder : IGNORED_FOLDERS) {
+                assert result = !pattern.contains(folder) : "Pattern " + pattern + " matches ignored folder " + folder;
+            }
+            return result;
         }
     }
 
@@ -368,8 +437,8 @@ public final class OptionsExportModel {
         private void resolveGroups(String dispName, String include, String exclude) {
             LOGGER.fine("resolveGroups include=" + include);  //NOI18N
             List<String> applicablePaths = getApplicablePaths(
-                    Collections.singleton(Pattern.compile(include)),
-                    Collections.singleton(Pattern.compile(exclude)));
+                    Collections.singleton(include),
+                    Collections.singleton(exclude));
             Set<String> groups = new HashSet<String>();
             Pattern p = Pattern.compile(include);
             for (String path : applicablePaths) {
@@ -478,14 +547,78 @@ public final class OptionsExportModel {
      * @param excludePatterns exclude patterns
      * @return relative patsh which match include/exclude patterns
      */
-    private List<String> getApplicablePaths(Set<Pattern> includePatterns, Set<Pattern> excludePatterns) {
+    private List<String> getApplicablePaths(Set<String> includePatterns, Set<String> excludePatterns) {
         List<String> applicablePaths = new ArrayList<String>();
         for (String relativePath : getRelativePaths()) {
-            if (include(relativePath, includePatterns, excludePatterns)) {
+            if (matches(relativePath, includePatterns, excludePatterns)) {
                 applicablePaths.add(relativePath);
             }
         }
         return applicablePaths;
+    }
+
+    /** Copy files from source (zip or userdir) into target userdir or fip file
+     * according to current state of model. i.e. only include/exclude patterns from
+     * enabled items are considered.
+     * @throws IOException if copying fails
+     */
+    private void copyFiles() throws IOException {
+        if (source.isFile()) {
+            try {
+                // zip file
+                copyZipFile();
+            } catch (IOException ex) {
+                Exceptions.attachLocalizedMessage(ex, NbBundle.getMessage(OptionsExportModel.class, "OptionsExportModel.invalid.zipfile", source));
+                Exceptions.printStackTrace(ex);
+            }
+        } else {
+            // userdir
+            copyFolder(source);
+        }
+    }
+
+    /** Copy source zip file to target userdir obeying include/exclude patterns.
+     * @throws IOException if copying fails
+     */
+    private void copyZipFile() throws IOException {
+        // Open the ZIP file
+        ZipFile zipFile = new ZipFile(source);
+        try {
+            // Enumerate each entry
+            Enumeration<? extends ZipEntry> entries = zipFile.entries();
+            while (entries.hasMoreElements()) {
+                ZipEntry zipEntry = entries.nextElement();
+                if (!zipEntry.isDirectory()) {
+                    copyFile(zipEntry.getName());
+                }
+            }
+        } finally {
+            if (zipFile != null) {
+                zipFile.close();
+            }
+        }
+    }
+
+    /** Copy given folder to target userdir or zip file obeying include/exclude patterns.
+     * @param file folder to copy
+     * @throws IOException if copying fails
+     */
+    private void copyFolder(File file) throws IOException {
+        String relativePath = getRelativePath(source, file);
+        if (IGNORED_FOLDERS.contains(relativePath)) {
+            return;
+        }
+        File[] children = file.listFiles();
+        if (children == null) {
+            return;
+        }
+        for (File child : children) {
+            if (child.isDirectory()) {
+                copyFolder(child);
+            } else {
+                copyFile(getRelativePath(source, child));
+            }
+        }
     }
 
     /** Returns list of file path relative to current source root. The source is
@@ -517,24 +650,28 @@ public final class OptionsExportModel {
      * @param sourceRoot source root
      * @return list of file path relative to given source root
      */
-    private static List<String> getRelativePaths(File sourceRoot) {
-        List<String> relativePaths = new ArrayList<String>();
-        getRelativePaths(sourceRoot, sourceRoot, relativePaths);
-        return relativePaths;
+    static List<String> getRelativePaths(File sourceRoot) {
+        return getRelativePaths(sourceRoot, sourceRoot);
     }
 
-    private static void getRelativePaths(File source, File sourceRoot, List<String> relativePaths) {
-        if (source.isDirectory()) {
-            File[] children = source.listFiles();
+    private static List<String> getRelativePaths(File root, File file) {
+        String relativePath = getRelativePath(root, file);
+        List<String> result = new ArrayList<String>();
+        if (file.isDirectory()) {
+            if (IGNORED_FOLDERS.contains(relativePath)) {
+                return result;
+            }
+            File[] children = file.listFiles();
             if (children == null) {
-                return;
+                return Collections.emptyList();
             }
             for (File child : children) {
-                getRelativePaths(child, sourceRoot, relativePaths);
+                result.addAll(getRelativePaths(root, child));
             }
         } else {
-            relativePaths.add(getRelativePath(sourceRoot, source));
+            result.add(relativePath);
         }
+        return result;
     }
 
     /** Returns slash separated path relative to given root. */
@@ -555,20 +692,18 @@ public final class OptionsExportModel {
      * @return true if given relative path matches at least one of given include
      * patterns and doesn't match all exclude patterns, false otherwise
      */
-    private static boolean include(String relativePath, Set<Pattern> includePatterns, Set<Pattern> excludePatterns) {
+    private static boolean matches(String relativePath, Set<String> includePatterns, Set<String> excludePatterns) {
         boolean include = false;
-        for (Pattern pattern : includePatterns) {
-            Matcher matcher = pattern.matcher(relativePath);
-            if (matcher.matches()) {
+        for (String pattern : includePatterns) {
+            if (matches(relativePath, pattern)) {
                 include = true;
                 break;
             }
         }
         if (include) {
             // check excludes
-            for (Pattern pattern : excludePatterns) {
-                Matcher matcher = pattern.matcher(relativePath);
-                if (matcher.matches()) {
+            for (String pattern : excludePatterns) {
+                if (matches(relativePath, pattern)) {
                     return false;
                 }
             }
@@ -576,25 +711,180 @@ public final class OptionsExportModel {
         return include;
     }
 
-    /** Copy source file to target file. It creates necessary sub folders.
-     * @param sourceFile source file
-     * @param targetFile target file
+    /** Returns true if given relative path matches pattern.
+     * @param relativePath relative path
+     * @param pattern regex pattern. If contains #, only part before # is taken
+     * into account
+     * @return true if given relative path matches pattern.
+     */
+    private static boolean matches(String relativePath, String pattern) {
+        if (pattern.contains("#")) {  //NOI18N
+            pattern = pattern.split("#", 2)[0];  //NOI18N
+        }
+        return relativePath.matches(pattern);
+    }
+
+    /** Returns set of keys matching given pattern.
+     * @param relativePath path relative to sourceRoot
+     * @param propertiesPattern pattern like file.properties#keyPattern
+     * @return set of matching keys, never null
+     * @throws IOException if properties cannot be loaded
+     */
+    private Set<String> matchingKeys(String relativePath, String propertiesPattern) throws IOException {
+        Set<String> matchingKeys = new HashSet<String>();
+        String[] patterns = propertiesPattern.split("#", 2);
+        String filePattern = patterns[0];
+        String keyPattern = patterns[1];
+        if (relativePath.matches(filePattern)) {
+            if (currentProperties == null) {
+                currentProperties = getProperties(relativePath);
+            }
+            for (String key : currentProperties.keySet()) {
+                if (key.matches(keyPattern)) {
+                    matchingKeys.add(key);
+                }
+            }
+        }
+        return matchingKeys;
+    }
+
+    /** Copy file given by relative path from source zip or userdir to target
+     * userdir or zip file. It creates necessary sub folders.
+     * @param relativePath relative path
      * @throws java.io.IOException if copying fails
      */
-    private static void copyFile(File sourceFile, File targetFile) throws IOException {
-        ensureParent(targetFile);
-        InputStream ins = null;
-        OutputStream out = null;
-        try {
-            ins = new FileInputStream(sourceFile);
-            out = new FileOutputStream(targetFile);
-            FileUtil.copy(ins, out);
-        } finally {
-            if (ins != null) {
-                ins.close();
+    private void copyFile(String relativePath) throws IOException {
+        currentProperties = null;
+        boolean includeFile = false;  // include? entire file
+        Set<String> includeKeys = new HashSet<String>();
+        Set<String> excludeKeys = new HashSet<String>();
+        for (String pattern : getIncludePatterns()) {
+            if (pattern.contains("#")) {  //NOI18N
+                includeKeys.addAll(matchingKeys(relativePath, pattern));
+            } else {
+                if (relativePath.matches(pattern)) {
+                    includeFile = true;
+                    includeKeys.clear();  // include entire file
+                    break;
+                }
             }
-            if (out != null) {
-                out.close();
+        }
+        if (includeFile || !includeKeys.isEmpty()) {
+            // check excludes
+            for (String pattern : getExcludePatterns()) {
+                if (pattern.contains("#")) {  //NOI18N
+                    excludeKeys.addAll(matchingKeys(relativePath, pattern));
+                } else {
+                    if (relativePath.matches(pattern)) {
+                        includeFile = false;
+                        includeKeys.clear();  // exclude entire file
+                        break;
+                    }
+                }
+            }
+        }
+        LOGGER.log(Level.FINEST, "{0}, includeFile={1}, includeKeys={2}, excludeKeys={3}", new Object[]{relativePath, includeFile, includeKeys, excludeKeys});  //NOI18N
+        if (!includeFile && includeKeys.isEmpty()) {
+            // nothing matches
+            return;
+        }
+
+        if (zipOutputStream != null) {  // export to zip
+            LOGGER.log(Level.FINE, "Adding to zip: {0}", relativePath);  //NOI18N
+            // Add ZIP entry to output stream.
+            zipOutputStream.putNextEntry(new ZipEntry(relativePath));
+            // Transfer bytes from the file to the ZIP file
+            copyFileOrProperties(relativePath, includeKeys, excludeKeys, zipOutputStream);
+            // Complete the entry
+            zipOutputStream.closeEntry();
+        } else {  // import to userdir
+            OutputStream out = null;
+            try {
+                File targetFile = new File(targetUserdir, relativePath);
+                LOGGER.log(Level.FINE, "Path: {0}", relativePath);  //NOI18N
+                ensureParent(targetFile);
+                out = new FileOutputStream(targetFile);
+                copyFileOrProperties(relativePath, includeKeys, excludeKeys, out);
+            } finally {
+                if (out != null) {
+                    out.close();
+                }
+            }
+        }
+    }
+
+    /** Copy file from relative path in zip file or userdir to target OutputStream.
+     * It copies either entire file or just selected properties.
+     * @param relativePath relative path
+     * @param includeKeys keys to include
+     * @param excludeKeys keys to exclude
+     * @param out output stream
+     * @throws IOException if coping fails
+     */
+    private void copyFileOrProperties(String relativePath, Set<String> includeKeys, Set<String> excludeKeys, OutputStream out) throws IOException {
+        if (includeKeys.isEmpty() && excludeKeys.isEmpty()) {
+            // copy entire file
+            copyFile(relativePath, out);
+        } else {
+            if (!includeKeys.isEmpty()) {
+                currentProperties.keySet().retainAll(includeKeys);
+            }
+            currentProperties.keySet().removeAll(excludeKeys);
+            // copy just selected properties
+            LOGGER.log(Level.FINE, "  Only keys: {0}", currentProperties.keySet());
+            currentProperties.store(out);
+        }
+    }
+
+    /** Returns properties from relative path in zip or userdir.
+     * @param relativePath relative path
+     * @return properties from relative path in zip or userdir.
+     * @throws IOException if cannot open stream
+     */
+    private EditableProperties getProperties(String relativePath) throws IOException {
+        EditableProperties properties = new EditableProperties(false);
+        InputStream in = null;
+        try {
+            in = getInputStream(relativePath);
+            properties.load(in);
+        } finally {
+            if (in != null) {
+                in.close();
+            }
+        }
+        return properties;
+    }
+
+    /** Returns InputStream from relative path in zip file or userdir.
+     * @param relativePath relative path
+     * @return InputStream from relative path in zip file or userdir.
+     * @throws IOException if stream cannot be open
+     */
+    private InputStream getInputStream(String relativePath) throws IOException {
+        if (source.isFile()) {
+            //zip file
+            ZipFile zipFile = new ZipFile(source);
+            ZipEntry zipEntry = zipFile.getEntry(relativePath);
+            return zipFile.getInputStream(zipEntry);
+        } else {
+            // userdir
+            return new FileInputStream(new File(source, relativePath));
+        }
+    }
+
+    /** Copy file from relative path in zip file or userdir to target OutputStream.
+     * @param relativePath relative path
+     * @param out output stream
+     * @throws java.io.IOException if copying fails
+     */
+    private void copyFile(String relativePath, OutputStream out) throws IOException {
+        InputStream in = null;
+        try {
+            in = getInputStream(relativePath);
+            FileUtil.copy(in, out);
+        } finally {
+            if (in != null) {
+                in.close();
             }
         }
     }
@@ -609,52 +899,17 @@ public final class OptionsExportModel {
         }
     }
 
-    /** Extracts given zip file to target directory but only those files which
-     * match given list.
-     * @param sourceFile source zip file
-     * @param targetDir target directory
-     * @param applicablePaths list of files to be extracted
-     */
-    private static void extractZipFile(File sourceFile, File targetDir, List<String> applicablePaths) throws IOException {
-        ZipFile zipFile = new ZipFile(sourceFile);
-        Enumeration enumeration = zipFile.entries();
-        while (enumeration.hasMoreElements()) {
-            ZipEntry zipEntry = (ZipEntry) enumeration.nextElement();
-            if (zipEntry.isDirectory() || !applicablePaths.contains(zipEntry.getName())) {
-                // skip directories and not matching entries
-                continue;
-            }
-            LOGGER.fine("Extracting:" + zipEntry.getName());  //NOI18N
-            InputStream in = null;
-            FileOutputStream out = null;
-            try {
-                in = zipFile.getInputStream(zipEntry);
-                File outFile = new File(targetDir, zipEntry.getName());
-                ensureParent(outFile);
-                out = new FileOutputStream(outFile);
-                FileUtil.copy(in, out);
-            } finally {
-                if (in != null) {
-                    in.close();
-                }
-                if (out != null) {
-                    out.close();
-                }
-            }
-        }
-    }
-
     /** Returns list of paths from given zip file.
      * @param file zip file
      * @return list of paths from given zip file
      * @throws java.io.IOException
      */
-    private static List<String> listZipFile(File file) throws IOException {
+    static List<String> listZipFile(File file) throws IOException {
         List<String> relativePaths = new ArrayList<String>();
         // Open the ZIP file
         ZipFile zipFile = new ZipFile(file);
         // Enumerate each entry
-        Enumeration entries = zipFile.entries();
+        Enumeration<? extends ZipEntry> entries = zipFile.entries();
         while (entries.hasMoreElements()) {
             ZipEntry zipEntry = (ZipEntry) entries.nextElement();
             if (!zipEntry.isDirectory()) {
@@ -670,7 +925,7 @@ public final class OptionsExportModel {
      * @param relativePaths paths to be added to zip file
      * @throws java.io.IOException
      */
-    private static void createZipFile(File targetFile, File sourceDir, List<String> relativePaths) throws IOException {
+    static void createZipFile(File targetFile, File sourceDir, List<String> relativePaths) throws IOException {
         ensureParent(targetFile);
         ZipOutputStream out = null;
         try {
@@ -678,7 +933,7 @@ public final class OptionsExportModel {
             out = new ZipOutputStream(new FileOutputStream(targetFile));
             // Compress the files
             for (String relativePath : relativePaths) {
-                LOGGER.fine("Adding to zip: " + relativePath);  //NOI18N
+                LOGGER.finest("Adding to zip: " + relativePath);  //NOI18N
                 // Add ZIP entry to output stream.
                 out.putNextEntry(new ZipEntry(relativePath));
                 // Transfer bytes from the file to the ZIP file

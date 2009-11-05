@@ -75,17 +75,14 @@ public class ToolsManagerPanel extends PanelWithApply {
 
     /** Creates new form ToolsManagerPanel */
     public ToolsManagerPanel() {
-//        initComponents();
-//        DLightConfigurationManagerAccessor accessor = DLightConfigurationManagerAccessor.getDefault();
-//        DLightConfigurationManager manager = DLightConfigurationManager.getInstance();
-//        allDLightTools = accessor.getDefaultConfiguration(manager).getToolsSet();
-//        initDialog(DLightConfigurationUIWrapperProvider.getInstance().getDLightConfigurationUIWrappers(), null);
-//        setPreferredSize(new Dimension(700, 400));
         this(null);
     }
 
     public ToolsManagerPanel(String preferredConfigurationName) {
         initComponents();
+        descriptionArea.setBackground(javax.swing.UIManager.getDefaults().getColor("Label.background")); // NOI18N
+        descriptionArea.setOpaque(true);
+
         DLightConfigurationManagerAccessor accessor = DLightConfigurationManagerAccessor.getDefault();
         DLightConfigurationManager manager = DLightConfigurationManager.getInstance();
         allDLightTools = accessor.getDefaultConfiguration(manager).getToolsSet();
@@ -107,8 +104,7 @@ public class ToolsManagerPanel extends PanelWithApply {
         profileConfigurationComboBox.addItem(manageConfigurations);
         if (preferredConfiguration != null) {
             profileConfigurationComboBox.setSelectedItem(preferredConfiguration);
-        }
-        else {
+        } else {
             profileConfigurationComboBox.setSelectedIndex(0);
         }
     }
@@ -159,7 +155,7 @@ public class ToolsManagerPanel extends PanelWithApply {
         for (DLightConfigurationUIWrapper conf : toBeDeleted) {
             DLightConfigurationSupport.getInstance().removeConfiguration(conf.getName());
         }
-        
+
         // Rename renamed configurations
         for (DLightConfigurationUIWrapper configuration : dLightConfigurations) {
             if (configuration.isCustom() && configuration.getCopyOf() == null) {
@@ -187,7 +183,9 @@ public class ToolsManagerPanel extends PanelWithApply {
                 List<String> platforms = origDLightConfiguration.getPlatforms();
                 String collector = origDLightConfiguration.getCollectorProviders();
                 List<String> indicators = origDLightConfiguration.getIndicatorProviders();
-                DLightConfiguration dlightConfiguration = DLightConfigurationSupport.getInstance().registerConfiguration(configuration.getName(), configuration.getDisplayName(), category, platforms, collector, indicators);
+                DLightConfiguration dlightConfiguration = 
+                        DLightConfigurationSupport.getInstance().registerConfigurationAsACopy(configuration.getCopyOf(),
+                        configuration.getName(), configuration.getDisplayName(), category, platforms, collector, indicators);
                 configuration.setDLightConfiguration(dlightConfiguration);
                 for (DLightToolUIWrapper toolUI : configuration.getTools()) {
                     toolUI.setModified(true);
@@ -201,10 +199,10 @@ public class ToolsManagerPanel extends PanelWithApply {
             for (DLightToolUIWrapper toolUI : configuration.getTools()) {
                 if (toolUI.isModified()) {
                     //if it was disabled and now enabled: should register
-                    if (!toolUI.isEnabled()){
+                    if (!toolUI.canEnable()) {
                         DLightConfigurationSupport.getInstance().deleteTool(configuration.getName(), toolUI.getDLightTool());
-                    }else{
-                        DLightConfigurationSupport.getInstance().registerTool(configuration.getName(), toolUI.getDLightTool().getID(), true);
+                    } else {
+                        DLightConfigurationSupport.getInstance().registerTool(configuration.getName(), toolUI.getDLightTool().getID(), toolUI.isEnabled());
                     }
                 }
             }
@@ -229,6 +227,8 @@ public class ToolsManagerPanel extends PanelWithApply {
 //            toolNameLabelField.setText(tool.getDLightTool().getName());
 //            onByDefaultCheckBox.setSelected(tool.isOnByDefault());
             detailsLabel.setText(tool.getDLightTool().getDetailedName());
+            String text = tool.getDLightTool().getDescription();
+            descriptionArea.setText(text == null ? "" : text);
         }
     }
 
@@ -244,118 +244,88 @@ public class ToolsManagerPanel extends PanelWithApply {
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
 
         profileConfigurationLabel = new javax.swing.JLabel();
         profileConfigurationComboBox = new javax.swing.JComboBox();
-        toolsPanel = new javax.swing.JPanel();
+        toolsLabel = new javax.swing.JLabel();
         toolsList = new javax.swing.JScrollPane();
         jList1 = new javax.swing.JList();
-        toolsLabel = new javax.swing.JLabel();
-        toolPropertyPanel = new javax.swing.JPanel();
         detailsLabel = new javax.swing.JLabel();
-        fillLabel = new javax.swing.JLabel();
-
-        setLayout(new java.awt.GridBagLayout());
+        scrollPane = new javax.swing.JScrollPane();
+        descriptionArea = new javax.swing.JTextArea();
 
         profileConfigurationLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/dlight/toolsui/Bundle").getString("ProfilerConfiguration_MN").charAt(0));
         profileConfigurationLabel.setLabelFor(profileConfigurationComboBox);
         profileConfigurationLabel.setText(org.openide.util.NbBundle.getMessage(ToolsManagerPanel.class, "ToolsManagerPanel.profileConfigurationLabel.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
-        add(profileConfigurationLabel, gridBagConstraints);
 
         profileConfigurationComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 profileConfigurationComboBoxActionPerformed(evt);
             }
         });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 4, 0, 12);
-        add(profileConfigurationComboBox, gridBagConstraints);
-
-        toolsPanel.setLayout(new java.awt.GridBagLayout());
-
-        toolsList.setViewportView(jList1);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
-        toolsPanel.add(toolsList, gridBagConstraints);
 
         toolsLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/dlight/toolsui/Bundle").getString("TOOLS_MN").charAt(0));
         toolsLabel.setText(org.openide.util.NbBundle.getMessage(ToolsManagerPanel.class, "ToolsManagerPanel.toolsLabel.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
-        toolsPanel.add(toolsLabel, gridBagConstraints);
 
-        toolPropertyPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-        toolPropertyPanel.setLayout(new java.awt.GridBagLayout());
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 6, 6);
-        toolPropertyPanel.add(detailsLabel, gridBagConstraints);
+        toolsList.setOpaque(false);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 12);
-        toolsPanel.add(toolPropertyPanel, gridBagConstraints);
+        jList1.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        jList1.setOpaque(false);
+        toolsList.setViewportView(jList1);
 
-        fillLabel.setText(org.openide.util.NbBundle.getMessage(ToolsManagerPanel.class, "ToolsManagerPanel.fillLabel.text")); // NOI18N
-        fillLabel.setMaximumSize(new java.awt.Dimension(300, 5));
-        fillLabel.setMinimumSize(new java.awt.Dimension(300, 5));
-        fillLabel.setPreferredSize(new java.awt.Dimension(300, 5));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
-        toolsPanel.add(fillLabel, gridBagConstraints);
+        descriptionArea.setColumns(20);
+        descriptionArea.setEditable(false);
+        descriptionArea.setLineWrap(true);
+        descriptionArea.setRows(5);
+        descriptionArea.setWrapStyleWord(true);
+        descriptionArea.setFocusable(false);
+        scrollPane.setViewportView(descriptionArea);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
-        add(toolsPanel, gridBagConstraints);
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(profileConfigurationLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(profileConfigurationComboBox, 0, 476, Short.MAX_VALUE))
+                    .add(layout.createSequentialGroup()
+                        .add(toolsList, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 288, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(scrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 312, Short.MAX_VALUE)
+                            .add(detailsLabel)))
+                    .add(toolsLabel))
+                .addContainerGap())
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .add(12, 12, 12)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(profileConfigurationComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(profileConfigurationLabel))
+                .add(1, 1, 1)
+                .add(toolsLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(toolsList, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 328, Short.MAX_VALUE)
+                    .add(scrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 328, Short.MAX_VALUE)
+                    .add(detailsLabel))
+                .add(21, 21, 21))
+        );
     }// </editor-fold>//GEN-END:initComponents
 
     private void profileConfigurationComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_profileConfigurationComboBoxActionPerformed
         Object item = profileConfigurationComboBox.getSelectedItem();
         if (item instanceof String && ((String) item).equals(manageConfigurations)) {
+            profileConfigurationComboBox.hidePopup();
             MyListEditorPanel listEditorPanel = new MyListEditorPanel(dLightConfigurations);
 
-            DialogDescriptor descriptor = new DialogDescriptor(listEditorPanel, getString("TXT_ToolsCustomizer"));
+            DialogDescriptor descriptor = new DialogDescriptor(listEditorPanel, getString("TXT_ConfigurationsCustomizer"));
             Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
             try {
                 dlg.setVisible(true);
@@ -400,12 +370,10 @@ public class ToolsManagerPanel extends PanelWithApply {
 //            String newS = notifyDescriptor.getInputText();
 //            return new DLightConfigurationUIWrapper(newS, newS, allDLightTools);
 //        }
-
         private String makeNameUnique(String suggestedName) {
             if (findDLightConfigurationUIWrapper(suggestedName) == null) {
                 return suggestedName;
-            }
-            else {
+            } else {
                 for (int i = 1;; i++) {
                     String newName = suggestedName + "_" + i; // NOI18N
                     if (findDLightConfigurationUIWrapper(newName) == null) {
@@ -420,7 +388,7 @@ public class ToolsManagerPanel extends PanelWithApply {
             newName = newName.replace("/", "_FSLASH_"); // NOI18N
             newName = newName.replace("\\", "_BSLASH_"); // NOI18N
             newName = newName.replace(".", "_DOT_"); // NOI18N
-            return newName;
+            return newName.trim();
         }
 
         private DLightConfigurationUIWrapper findDLightConfigurationUIWrapper(String name) {
@@ -447,7 +415,7 @@ public class ToolsManagerPanel extends PanelWithApply {
             }
             //always link to the original
             DLightConfiguration copyOf = o.getDLightConfiguration();
-            if (o.getCopyOf() != null){
+            if (o.getCopyOf() != null) {
                 copyOf = o.getCopyOf();
             }
             copy.setCopyOf(copyOf);
@@ -463,10 +431,10 @@ public class ToolsManagerPanel extends PanelWithApply {
                 return;
             }
             String newDisplayName = notifyDescriptor.getInputText();
-            if (newDisplayName.length() == 0) {
+            newDisplayName = newDisplayName.trim();
+            if (newDisplayName.trim().length() == 0) {
                 newDisplayName = o.getDisplayName();
-            }
-            else {
+            } else {
                 newDisplayName = makeNameUnique(newDisplayName);
             }
             o.setDisplayName(newDisplayName);
@@ -483,14 +451,13 @@ public class ToolsManagerPanel extends PanelWithApply {
         }
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTextArea descriptionArea;
     private javax.swing.JLabel detailsLabel;
-    private javax.swing.JLabel fillLabel;
     private javax.swing.JList jList1;
     private javax.swing.JComboBox profileConfigurationComboBox;
     private javax.swing.JLabel profileConfigurationLabel;
-    private javax.swing.JPanel toolPropertyPanel;
+    private javax.swing.JScrollPane scrollPane;
     private javax.swing.JLabel toolsLabel;
     private javax.swing.JScrollPane toolsList;
-    private javax.swing.JPanel toolsPanel;
     // End of variables declaration//GEN-END:variables
     }

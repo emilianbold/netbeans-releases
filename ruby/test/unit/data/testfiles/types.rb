@@ -40,10 +40,11 @@ def foo(param1,param2)
   # Make sure that we have a new type for y
   y = 1
 
-  # multiple assigments
+  # multiple assignments
   q,w = 1,2
   e,@r,@t = "e", "r", 5
-  
+  # nested multiple assgns
+  u,(i,(o,p))="u",[1,[2.1,File.new]]
   
   # done 
   

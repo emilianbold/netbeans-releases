@@ -618,6 +618,7 @@ implements AWTEventListener, DragSourceListener, DragSourceMotionListener {
      * creates new separated (floating) window. */
     private Runnable createDropIntoFreeAreaTask(final DragSourceDropEvent evt,
     final Point location, final Set<Component> floatingFrames) {
+        final int dropAction = hackUserDropAction;
         return new Runnable() {
             public void run() {
                 // XXX #21918. Don't move the check sooner
@@ -629,7 +630,7 @@ implements AWTEventListener, DragSourceListener, DragSourceMotionListener {
                 }
 
                 TopComponent[] tcArray = WindowDnDManager.extractTopComponent(
-                    false,
+                    dropAction == DnDConstants.ACTION_COPY,
                     evt.getDragSourceContext().getTransferable()
                 );
                 
@@ -644,7 +645,7 @@ implements AWTEventListener, DragSourceListener, DragSourceMotionListener {
                         windowDnDManager.getController(),
                         floatingFrames,
                         location,
-                        DnDConstants.ACTION_MOVE, // MOVE only
+                        dropAction,
                         evt.getDragSourceContext().getTransferable());
                 
                 }

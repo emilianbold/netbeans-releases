@@ -44,6 +44,7 @@ import java.net.MalformedURLException;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
+import java.util.regex.Pattern;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import org.eclipse.core.runtime.CoreException;
@@ -159,6 +160,7 @@ public class BugzillaUtil {
         return retval;
     }
 
+    private static Pattern netbeansUrlPattern = Pattern.compile("(https|http)://(([a-z]|\\d)+\\.)*([a-z]|\\d)*netbeans([a-z]|\\d)*(([a-z]|\\d)*\\.)+org(.*)"); // NOI18N
     /**
      * Determines wheter the given {@link Repository} is the
      * repository hosting netbeans or not
@@ -168,11 +170,15 @@ public class BugzillaUtil {
      */
     public static boolean isNbRepository(Repository repo) {
         // XXX dummy implementation
+        String url = repo.getUrl();
+        boolean ret = netbeansUrlPattern.matcher(url).matches();
+        if(ret) {
+            return true;
+        }
         String nbUrl = System.getProperty("netbeans.bugzilla.url");  // NOI18N
-        if(nbUrl == null || nbUrl.equals("")) {
+        if(nbUrl == null || nbUrl.equals("")) {                      // NOI18N
             return false;
         }
-        String url = repo.getUrl();
         return url.startsWith(nbUrl);
     }
 }

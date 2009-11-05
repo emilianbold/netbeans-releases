@@ -30,8 +30,7 @@ public final class HostInfoUtils {
     /**
      * String constant that can be used to identify a localhost.
      */
-    public static final String LOCALHOST = "127.0.0.1"; // NOI18N
-    private static final java.util.logging.Logger log = Logger.getInstance();
+    public static final String LOCALHOST = "localhost"; // NOI18N
     private static final List<String> myIPAdresses = new ArrayList<String>();
     private static final TasksCachedProcessor<ExecutionEnvironment, HostInfo> hostInfoCachedProcessor =
             new TasksCachedProcessor<ExecutionEnvironment, HostInfo>(new FetchHostInfoTask(), false);
@@ -40,18 +39,20 @@ public final class HostInfoUtils {
     static {
         NetworkInterface iface = null;
         try {
-            for (Enumeration ifaces = NetworkInterface.getNetworkInterfaces();
+            for (Enumeration<NetworkInterface> ifaces = NetworkInterface.getNetworkInterfaces();
                     ifaces.hasMoreElements();) {
-                iface = (NetworkInterface) ifaces.nextElement();
-                for (Enumeration ips = iface.getInetAddresses();
+                iface = ifaces.nextElement();
+                for (Enumeration<InetAddress> ips = iface.getInetAddresses();
                         ips.hasMoreElements();) {
-                    myIPAdresses.add(
-                            ((InetAddress) ips.nextElement()).getHostAddress());
+                    myIPAdresses.add((ips.nextElement()).getHostAddress());
                 }
             }
         } catch (SocketException ex) {
             Exceptions.printStackTrace(ex);
         }
+    }
+
+    private HostInfoUtils() {
     }
 
     /**

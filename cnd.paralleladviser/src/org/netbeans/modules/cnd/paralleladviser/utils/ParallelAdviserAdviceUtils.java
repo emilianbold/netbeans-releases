@@ -51,6 +51,8 @@
  */
 package org.netbeans.modules.cnd.paralleladviser.utils;
 
+import java.awt.Container;
+import java.awt.event.KeyEvent;
 import java.net.URL;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
@@ -123,7 +125,7 @@ public class ParallelAdviserAdviceUtils {
     }
 
     public static JEditorPane createJEditorPane(String text, boolean needHTMLTags, HyperlinkListener listner) {
-        JEditorPane editorPane = new JEditorPane("text/html", needHTMLTags || !text.startsWith("<html>") ? "<html> <body bgcolor=\"#ffffff\">" + text + "</body></html>" : text); //NOI18N
+        final JEditorPane editorPane = new JEditorPane("text/html", needHTMLTags || !text.startsWith("<html>") ? "<html> <body bgcolor=\"#ffffff\">" + text + "</body></html>" : text); //NOI18N
         if (listner != null) {
             editorPane.addHyperlinkListener(listner);
         }
@@ -135,6 +137,17 @@ public class ParallelAdviserAdviceUtils {
                     if (url != null) {
                         HtmlBrowser.URLDisplayer.getDefault().showURL(url);
                     }
+                }
+            }
+        });
+
+        editorPane.addKeyListener(new java.awt.event.KeyAdapter() {
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+                Container parent = editorPane.getParent();
+                if (parent != null) {
+                    parent.dispatchEvent(e);
                 }
             }
         });

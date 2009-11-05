@@ -146,6 +146,10 @@ public class Updater implements UpdateImplementation {
                 }
                 privateProps.put(ProjectPropertyNames.PROJECT_PROP_USER_PROPERTIES_FILE,
                         userBuildPropertiesPath);
+                privateProps.put(ProjectPropertyNames.PROJECT_PROP_KEYSTORE_ALIAS_PASSWORD,
+                        "password"); //NOI18N
+                privateProps.put(ProjectPropertyNames.PROJECT_PROP_KEYSTORE_PASSWORD,
+                        "password"); //NOI18N
             }
             this.helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProps);
             this.helper.putPrimaryConfigurationData(getUpdatedSharedConfigurationData(), true);

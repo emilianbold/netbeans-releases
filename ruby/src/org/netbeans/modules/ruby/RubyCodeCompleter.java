@@ -1390,6 +1390,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                     (!call.isMethodExpected() && call.getLhs() != null && call.getLhs().length() > 0)))
                     || (showSymbols && !inCall)) {
                 // TODO - allow method calls if you're already entered the first char!
+                RubyConstantCompleter.complete(proposals, request, anchor, caseSensitive, call);
                 RubyClassCompleter.complete(proposals, request, anchor, caseSensitive, call, showSymbols);
             }
         }

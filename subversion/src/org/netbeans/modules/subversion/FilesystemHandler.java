@@ -58,6 +58,7 @@ import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.tigris.subversion.svnclientadapter.*;
 
@@ -81,6 +82,7 @@ class FilesystemHandler extends VCSInterceptor {
      * Stores .svn folders that should be deleted ASAP.
      */
     private final Set<File> invalidMetadata = new HashSet<File>(5);
+    private final RequestProcessor parallelRP = new RequestProcessor("Subversion FS handler", 50);
 
     public FilesystemHandler(Subversion svn) {
         cache = svn.getStatusCache();
@@ -263,7 +265,7 @@ class FilesystemHandler extends VCSInterceptor {
                 }
             };
 
-            Subversion.getInstance().getRequestProcessor().post(outOfAwt).waitFinished();
+            parallelRP.post(outOfAwt).waitFinished();
             if (innerT[0] != null) {
                 if (innerT[0] instanceof IOException) {
                     throw (IOException) innerT[0];
@@ -552,7 +554,8 @@ class FilesystemHandler extends VCSInterceptor {
 
                                 client.revert(from, true);
                                 from.renameTo(to);
-                            } else if (status != null && status.getTextStatus().equals(SVNStatusKind.UNVERSIONED)) {
+                            } else if (status != null && (status.getTextStatus().equals(SVNStatusKind.UNVERSIONED)
+                                    || status.getTextStatus().equals(SVNStatusKind.IGNORED))) { // ignored file CAN'T be moved via svn
                                 // check if the file wasn't just deleted in this session
                                 revertDeleted(client, toStatus, to, false);
 

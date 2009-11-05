@@ -39,12 +39,14 @@
 package org.netbeans.modules.kenai.ui;
 
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import javax.swing.AbstractAction;
+import javax.swing.JButton;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.ui.spi.Dashboard;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 public final class OpenKenaiProjectAction extends AbstractAction {
@@ -53,12 +55,27 @@ public final class OpenKenaiProjectAction extends AbstractAction {
 
     public void actionPerformed(ActionEvent e) {
 
+        final JButton open = new JButton(NbBundle.getMessage(OpenKenaiProjectAction.class, "OpenKenaiProjectAction.OpenFromKenai"));
+        open.setDefaultCapable(true);
+
+        JButton cancel = new JButton(NbBundle.getMessage(OpenKenaiProjectAction.class, "OpenKenaiProjectAction.Cancel"));
+
         KenaiSearchPanel openPanel = new KenaiSearchPanel(KenaiSearchPanel.PanelType.OPEN, true);
+        openPanel.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (KenaiDialogDescriptor.PROP_SELECTION_VALID.equals(evt.getPropertyName())) {
+                    open.setEnabled((Boolean) evt.getNewValue());
+                }
+            }
+        });
+
         DialogDescriptor dialogDesc = new KenaiDialogDescriptor(openPanel, dialogTitle, true, null);
+        dialogDesc.setOptions(new Object[] { open, cancel });
+        dialogDesc.setOptionType(DialogDescriptor.OK_CANCEL_OPTION);
 
         Object option = DialogDisplayer.getDefault().notify(dialogDesc);
 
-        if (NotifyDescriptor.OK_OPTION.equals(option)) {
+        if (open.equals(option)) {
             KenaiProject selProjects[] = openPanel.getSelectedProjects();
             if (null != selProjects && selProjects.length > 0) {
                 for (KenaiProject prj : selProjects) {

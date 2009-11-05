@@ -41,13 +41,19 @@ package org.netbeans.modules.cnd.gizmo;
 import org.netbeans.modules.cnd.gizmo.support.GizmoServiceInfo;
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
@@ -62,6 +68,10 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = SourceFileInfoProvider.class)
 public final class CodeModelSourceFileInfoProvider implements SourceFileInfoProvider {
     private static final boolean TRACE = false;
+    private WeakReference<Map<String, Set<SourceFileInfo>>> staticFileCache = new WeakReference<Map<String, Set<SourceFileInfo>>>(null);
+
+    public CodeModelSourceFileInfoProvider(){
+    }
 
     public SourceFileInfo fileName(String functionQName, int lineNumber, long offset, Map<String, String> serviceInfo) {
         try {
@@ -83,6 +93,9 @@ public final class CodeModelSourceFileInfoProvider implements SourceFileInfoProv
             }
 
             SourceFileInfo res = findFunction(csmProject, functionQName, lineNumber);
+            if (res == null) {
+                res = findStaticFunction(csmProject, functionQName);
+            }
             if (TRACE) {
                 if (res != null) {
                     System.err.println("\tFound: "+res); // NOI18N
@@ -127,5 +140,42 @@ public final class CodeModelSourceFileInfoProvider implements SourceFileInfoProv
         }
         return declaration;
     }
-    
+
+    private SourceFileInfo findStaticFunction(CsmProject project, String qualifiedName){
+        Map<String, Set<SourceFileInfo>> cache = getCache(project);
+        Set<SourceFileInfo> set = cache.get(qualifiedName);
+        if (set == null || set.isEmpty()) {
+            return null;
+        }
+        return set.iterator().next();
+    }
+
+    private synchronized Map<String, Set<SourceFileInfo>> getCache(CsmProject project){
+        Map<String, Set<SourceFileInfo>> cache = staticFileCache.get();
+        if (cache == null) {
+            cache = initStaticFunctions(project);
+            staticFileCache = new WeakReference<Map<String, Set<SourceFileInfo>>>(cache);
+        }
+        return cache;
+    }
+
+    private Map<String, Set<SourceFileInfo>> initStaticFunctions(CsmProject project){
+        Map<String, Set<SourceFileInfo>> res = new HashMap<String, Set<SourceFileInfo>>();
+        for(CsmFile file : project.getAllFiles()){
+            for(CsmOffsetableDeclaration decl : file.getDeclarations()) {
+                if (CsmKindUtilities.isFileLocalFunction(decl)) {
+                    CsmFunction func = (CsmFunction) decl;
+                    String name = func.getQualifiedName().toString();
+                    Set<SourceFileInfo> set = res.get(name);
+                    if (set == null) {
+                        set = new HashSet<SourceFileInfo>();
+                        res.put(name, set);
+                    }
+
+                    set.add(new SourceFileInfo(file.getAbsolutePath().toString(), func.getStartPosition().getOffset()));
+                }
+            }
+        }
+        return res;
+    }
 }

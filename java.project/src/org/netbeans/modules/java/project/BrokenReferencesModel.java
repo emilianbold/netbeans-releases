@@ -66,9 +66,9 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 public class BrokenReferencesModel extends AbstractListModel {
@@ -450,7 +450,7 @@ public class BrokenReferencesModel extends AbstractListModel {
         try {
             p = ProjectManager.getDefault().findProject(myProjDirFO);
         } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
+            Exceptions.printStackTrace(ex);
             p = null;
         }
         final Project proj = p;
@@ -466,7 +466,7 @@ public class BrokenReferencesModel extends AbstractListModel {
                         try {
                             ProjectManager.getDefault().saveProject(proj);
                         } catch (IOException ex) {
-                            ErrorManager.getDefault().notify(ErrorManager.WARNING, ex);
+                            Exceptions.printStackTrace(ex);
                         }
                     }
                 }

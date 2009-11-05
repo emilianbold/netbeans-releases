@@ -958,23 +958,6 @@ private void includesExcludesButtonActionPerformed(java.awt.event.ActionEvent ev
         return srcFolders;
     }
 
-    // XXX: this is copy of FreeformProjectGenerator.getAntScript
-    private static FileObject getAntScript(AntProjectHelper helper, PropertyEvaluator ev) {
-        //assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
-        String antScript = ev.getProperty(ProjectConstants.PROP_ANT_SCRIPT);
-        if (antScript != null) {
-            File f= helper.resolveFile(antScript);
-            if (!f.exists()) {
-                return null;
-            }
-            FileObject fo = FileUtil.toFileObject(f);
-            return fo;
-        } else {
-            FileObject fo = helper.getProjectDirectory().getFileObject("build.xml"); // NOI18N
-            return fo;
-        }
-    }       
-
     private class SourcesModel extends AbstractTableModel {
         
         private boolean tests;

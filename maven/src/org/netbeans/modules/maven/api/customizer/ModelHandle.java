@@ -389,6 +389,8 @@ public final class ModelHandle {
             modModel = true;
         } else if (obj == configurations || configurations.contains(obj)) {
             modConfig = true;
+        } else {
+            assert false : "Unexpected parameter type " + obj.getClass().getName(); //NOI18N
         }
     }
 

@@ -68,6 +68,8 @@
 
     <folder name="XHTMLPalette">
 
+        <attr name="paletteDefaultVisible" boolvalue="false"/>
+
         <file name="HTML.shadow">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.editor.Bundle"/>
             <attr name="originalFile" stringvalue="HTMLPalette/HTML"/>

@@ -73,6 +73,23 @@ made subject to such option by the copyright holder.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+        <change id="java-classpath-processorpath">
+            <api name="classpath"/>
+            <summary>Introducing JavaClassPathConstants.PROCESSOR_PATH</summary>
+            <version major="1" minor="22"/>
+            <date day="18" month="10" year="2009"/>
+            <author login="jlahoda"/>
+            <compatibility addition="yes" modification="no" semantic="compatible" source="compatible" binary="compatible"/>
+            <description>
+                <p>
+                    Class org.netbeans.api.java.classpath.JavaClassPathConstants is created to hold java specific classpath constants.
+                    org.netbeans.api.java.classpath.JavaClassPathConstants.PROCESSOR_PATH constant is created as a key
+                    for Java processor path.
+                </p>
+            </description>
+            <class package="org.netbeans.api.java.classpath" name="JavaClassPathConstants" />
+            <issue number="174202"/>
+        </change>
         <change id="classpath-api-module">
             <api name="classpath"/>
             <summary>Splitting the java API to independent ClassPath API and the rest of the java API</summary>

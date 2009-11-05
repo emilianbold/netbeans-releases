@@ -61,7 +61,7 @@ import org.netbeans.spi.project.ui.templates.support.Templates;
  *
  * @author Peter Williams
  */
-public class WebServiceClientWizardDescriptor implements WizardDescriptor.FinishablePanel, WizardDescriptor.ValidatingPanel {
+public class WebServiceClientWizardDescriptor implements WizardDescriptor.FinishablePanel, WizardDescriptor.AsynchronousValidatingPanel {
 
     private WizardDescriptor wizardDescriptor;
     private ClientInfo component = null;
@@ -154,6 +154,9 @@ public class WebServiceClientWizardDescriptor implements WizardDescriptor.Finish
 
     public void validate() throws org.openide.WizardValidationException {
         component.validatePanel();
+    }
+
+    public void prepareValidation() {
     }
     
 }

@@ -60,6 +60,7 @@ import org.openide.util.Exceptions;
 final class ToolsConfiguration {
 
     private static final String ENABLE_BY_DEFAULT_ATTRIBUTE = "enabledByDefault";//NOI18N
+    private static final String DETAILS_ENABLED = "detailsEnabled";//NOI18N
     static final String KNOWN_TOOLS_SET = "KnownToolsConfigurationProviders"; //NOI18N
     private final FileObject rootFolder;
     private boolean useRootFolder = false;
@@ -118,16 +119,26 @@ final class ToolsConfiguration {
         if (configurationsFolder == null) {
             return false;
         }
-
+        //if we have the file already then we should to
         final String fname = fileObject.getName();
         final String shadowExt = "shadow"; // NOI18N
 
-        if (configurationsFolder.getFileObject(fname, shadowExt) == null) {
+        //check if we have the file itself
+        if (configurationsFolder.getFileObject(fileObject.getNameExt()) != null){
+            try {
+                fileObject.setAttribute(ENABLE_BY_DEFAULT_ATTRIBUTE, isEnabled);
+            } catch (IOException ex) {
+
+                ex.printStackTrace();
+                return false;
+            }
+        }else   if (configurationsFolder.getFileObject(fname, shadowExt) == null) {
             try {
                 FileObject fo = configurationsFolder.createData(fname, shadowExt);
                 fo.setAttribute("originalFile", fileObject.getPath()); // NOI18N
                 fo.setAttribute(ENABLE_BY_DEFAULT_ATTRIBUTE, isEnabled);
             } catch (IOException ex) {
+                ex.printStackTrace();
                 return false;
             }
 
@@ -136,6 +147,7 @@ final class ToolsConfiguration {
             try {
                 fo.setAttribute(ENABLE_BY_DEFAULT_ATTRIBUTE, isEnabled);
             } catch (IOException ex) {
+                ex.printStackTrace();
                 return false;
             }
         }
@@ -196,11 +208,14 @@ final class ToolsConfiguration {
                     DLightTool tool = DLightToolAccessor.getDefault().newDLightTool(configurationProvider.create());
                     toolsProviders.put(tool.getID(), child);
                     boolean enabledByDefault = true;
+                    boolean detailsEnabled = true;
                     while (attrs.hasMoreElements()) {
                         String an = attrs.nextElement();
                         if (ENABLE_BY_DEFAULT_ATTRIBUTE.equals(an)) {
                             enabledByDefault = (Boolean) child.getAttribute(an);
-                            break;
+                        }
+                        if (DETAILS_ENABLED.equals(an)){
+                            detailsEnabled = (Boolean) child.getAttribute(an);
                         }
                     }
                     if (enabledByDefault) {
@@ -208,6 +223,7 @@ final class ToolsConfiguration {
                     } else {
                         tool.disable();
                     }
+                    DLightToolAccessor.getDefault().setDetailsEnabled(tool, detailsEnabled);
                     result.add(tool);
     //        Class<? extends DLightTool.Configuration> clazz = (Class<? extends DLightTool>) ic.instanceClass();
     //        result.add(clazz.getConstructor().newInstance());

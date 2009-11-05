@@ -596,10 +596,10 @@ public class FileStatusCache {
      * Refreshes all files under given roots in the cache.
      * @param rootFiles root files sorted under their's repository roots
      */
-    void refreshAllRoots (Map<File, File> rootFiles) {
-        for (Map.Entry<File, File> refreshEntry : rootFiles.entrySet()) {
+    void refreshAllRoots (Map<File, Set<File>> rootFiles) {
+        for (Map.Entry<File, Set<File>> refreshEntry : rootFiles.entrySet()) {
             File repository = refreshEntry.getKey();
-            File root = refreshEntry.getValue();
+            for (File root : refreshEntry.getValue()) {
             if (Mercurial.LOG.isLoggable(Level.FINE)) {
                 Mercurial.LOG.log(Level.FINE, "refreshAllRoots() root: {0}, repositoryRoot: {1} ", new Object[] {root.getAbsolutePath(), repository.getAbsolutePath()}); // NOI18N
             }
@@ -635,6 +635,7 @@ public class FileStatusCache {
                 }
             } catch (HgException ex) {
                 Mercurial.LOG.log(Level.FINE, "refreshAll() file: {0} {1} {2} ", new Object[] {repository.getAbsolutePath(), root.getAbsolutePath(), ex.toString()}); // NOI18N
+            }
             }
         }
     }

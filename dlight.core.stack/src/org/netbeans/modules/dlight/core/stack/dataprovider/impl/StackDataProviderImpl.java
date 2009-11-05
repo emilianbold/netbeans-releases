@@ -57,7 +57,6 @@ import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.openide.util.Lookup;
 
-
 /**
  * @author Alexey Vladykin
  */
@@ -67,7 +66,7 @@ final class StackDataProviderImpl implements StackDataProvider {
             FunctionMetric.CpuTimeInclusiveMetric, FunctionMetric.CpuTimeExclusiveMetric);
     private StackDataStorage storage;
     private ServiceInfoDataStorage serviceInfoDataStorage;
-    private final Object lock = new String("StackDataProviderImpl.lock");//NOI18N
+    private final Lock lock = new Lock();
     private final List<DataFilter> filters = new ArrayList<DataFilter>();
 
     public void attachTo(DataStorage storage) {
@@ -85,6 +84,7 @@ final class StackDataProviderImpl implements StackDataProvider {
     public List<FunctionCallWithMetric> getCallers(List<FunctionCallWithMetric> path, List<Column> columns, List<Column> orderBy, boolean aggregate) {
         return storage.getCallers(path, columns, orderBy, aggregate);
     }
+
     public List<FunctionCallWithMetric> getCallees(List<FunctionCallWithMetric> path, List<Column> columns, List<Column> orderBy, boolean aggregate) {
         return storage.getCallees(path, columns, orderBy, aggregate);
     }
@@ -150,5 +150,8 @@ final class StackDataProviderImpl implements StackDataProvider {
         }
 
         return null;
+    }
+
+    private final static class Lock {
     }
 }

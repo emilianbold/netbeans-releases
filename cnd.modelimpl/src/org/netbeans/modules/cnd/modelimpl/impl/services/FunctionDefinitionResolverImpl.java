@@ -60,8 +60,9 @@ public class FunctionDefinitionResolverImpl extends CsmFunctionDefinitionResolve
     @Override
     public Collection<CsmOffsetableDeclaration> findDeclarationByName(CsmProject project, String name) {
         if (project instanceof ProjectBase) {
-            return ((ProjectBase)project).findDeclarationsByPrefix(
-                    Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION_DEFINITION) + OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR + name);
+            Collection<CsmOffsetableDeclaration> decls = ((ProjectBase) project).findDeclarationsByPrefix(Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION_DEFINITION) + OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR + name);
+            decls.addAll(((ProjectBase) project).findDeclarationsByPrefix(Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION) + OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR + name));
+            return decls;
         } else {
             return null;
         }

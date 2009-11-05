@@ -70,6 +70,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
 
 public class AddExistingItemAction extends NodeAction {
@@ -132,33 +133,73 @@ public class AddExistingItemAction extends NodeAction {
 	    return;
 
 	File[] files = fileChooser.getSelectedFiles();
-        ArrayList<Item> items = new ArrayList<Item>();
-	for (int i = 0; i < files.length; i++) {
-	    String itemPath;
-	    if (PathPanel.getMode() == PathPanel.REL_OR_ABS)
-		itemPath = IpeUtils.toAbsoluteOrRelativePath(projectDescriptor.getBaseDir(), files[i].getPath());
-	    else if (PathPanel.getMode() == PathPanel.REL)
-		itemPath = IpeUtils.toRelativePath(projectDescriptor.getBaseDir(), files[i].getPath());
-	    else
-		itemPath = files[i].getPath();
-	    itemPath = FilePathAdaptor.normalize(itemPath);
-	    if (((MakeConfigurationDescriptor)projectDescriptor).findProjectItemByPath(itemPath) != null) {
-		String errormsg = getString("AlreadyInProjectError", itemPath); // NOI18N
-		DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
-                //return;
-	    }
-	    else {
-                Item item = new Item(itemPath);
-		folder.addItemAction(item);
-                items.add(item);
-		if (IpeUtils.isPathAbsolute(itemPath))
-		    notifySources = true;
-	    }
-	}
-	MakeLogicalViewProvider.setVisible(project, items.toArray(new Item[items.size()]));
+        addFilesWorker(project, projectDescriptor, folder, files);
+//        ArrayList<Item> items = new ArrayList<Item>();
+//	for (int i = 0; i < files.length; i++) {
+//	    String itemPath;
+//	    if (PathPanel.getMode() == PathPanel.REL_OR_ABS)
+//		itemPath = IpeUtils.toAbsoluteOrRelativePath(projectDescriptor.getBaseDir(), files[i].getPath());
+//	    else if (PathPanel.getMode() == PathPanel.REL)
+//		itemPath = IpeUtils.toRelativePath(projectDescriptor.getBaseDir(), files[i].getPath());
+//	    else
+//		itemPath = files[i].getPath();
+//	    itemPath = FilePathAdaptor.normalize(itemPath);
+//	    if (((MakeConfigurationDescriptor)projectDescriptor).findProjectItemByPath(itemPath) != null) {
+//		String errormsg = getString("AlreadyInProjectError", itemPath); // NOI18N
+//		DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
+//                //return;
+//	    }
+//	    else {
+//                Item item = new Item(itemPath);
+//		folder.addItemAction(item);
+//                items.add(item);
+//		if (IpeUtils.isPathAbsolute(itemPath))
+//		    notifySources = true;
+//	    }
+//	}
+//	MakeLogicalViewProvider.setVisible(project, items.toArray(new Item[items.size()]));
+//
+//	if (notifySources)
+//	    ((MakeSources)ProjectUtils.getSources(project)).descriptorChanged();
+    }
 
-	if (notifySources)
-	    ((MakeSources)ProjectUtils.getSources(project)).descriptorChanged();
+    private void addFilesWorker(final Project project, final ConfigurationDescriptor projectDescriptor, final Folder folder, final File[] files) {
+        RequestProcessor.getDefault().post(new Runnable() {
+
+            public void run() {
+                boolean notifySources = false;
+                ArrayList<Item> items = new ArrayList<Item>();
+                for (int i = 0; i < files.length; i++) {
+                    String itemPath;
+                    if (PathPanel.getMode() == PathPanel.REL_OR_ABS) {
+                        itemPath = IpeUtils.toAbsoluteOrRelativePath(projectDescriptor.getBaseDir(), files[i].getPath());
+                    } else if (PathPanel.getMode() == PathPanel.REL) {
+                        itemPath = IpeUtils.toRelativePath(projectDescriptor.getBaseDir(), files[i].getPath());
+                    } else {
+                        itemPath = files[i].getPath();
+                    }
+                    itemPath = FilePathAdaptor.normalize(itemPath);
+                    if (((MakeConfigurationDescriptor) projectDescriptor).findProjectItemByPath(itemPath) != null) {
+                        String errormsg = getString("AlreadyInProjectError", itemPath); // NOI18N
+                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
+                        //return;
+                    } else {
+                        Item item = new Item(itemPath);
+                        folder.addItemAction(item);
+                        items.add(item);
+                        if (IpeUtils.isPathAbsolute(itemPath)) {
+                            notifySources = true;
+                        }
+                    }
+                }
+                MakeLogicalViewProvider.setVisible(project, items.toArray(new Item[items.size()]));
+
+                if (notifySources) {
+                    ((MakeSources) ProjectUtils.getSources(project)).descriptorChanged();
+                }
+            }
+        });
+
     }
 
     public HelpCtx getHelpCtx() {

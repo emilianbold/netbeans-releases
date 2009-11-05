@@ -104,7 +104,8 @@
     "/>
     <property name="home" value="../.."/>
     <property name="cache" value="${home}/../cache"/>
-    <property name="sierra.build"  value="sierra"/>
+    <property name="sierra.build"  value="main"/>
+    <!--property name="sierra.build"  value="sierra"/-->
     <property name="netbeans.zip" value="netbeans-6.8.zip"/>
     <property name="repository" value="http://hg.netbeans.org/main"/>
     <property name="sierra.user"  value=".netbeans/dev"/>

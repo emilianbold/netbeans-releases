@@ -50,7 +50,7 @@ public interface SourceFileInfoProvider {
 
   public final class SourceFileInfo {
 
-    private final String fileName;
+    private final CharSequence fileName;
     private final int lineNumber;
     private final long offset;
     private final int column;
@@ -60,7 +60,7 @@ public interface SourceFileInfoProvider {
      * @param lineNumber
      * @param column
      */
-    public SourceFileInfo(String fileName, int lineNumber, int column) {
+    public SourceFileInfo(CharSequence fileName, int lineNumber, int column) {
         this(fileName, lineNumber,  column, -1);
     }
 
@@ -70,7 +70,7 @@ public interface SourceFileInfoProvider {
      * @param lineNumber
      * @param offset
      */
-    private SourceFileInfo(String fileName, int lineNumber, int column, long offset) {
+    private SourceFileInfo(CharSequence fileName, int lineNumber, int column, long offset) {
         this.fileName = fileName;
         this.lineNumber = lineNumber;
         this.offset = offset;
@@ -88,7 +88,7 @@ public interface SourceFileInfoProvider {
 
 
     public boolean isSourceKnown() {
-        return (fileName != null && !fileName.equals("(unknown)")); // NOI18N
+        return (fileName != null && !fileName.toString().equals("(unknown)")); // NOI18N
     }
 
     public boolean hasOffset() {
@@ -96,7 +96,7 @@ public interface SourceFileInfoProvider {
     }
 
     public String getFileName() {
-        return fileName;
+        return fileName.toString();
     }
 
     public int getLine() {
@@ -113,7 +113,7 @@ public interface SourceFileInfoProvider {
 
     @Override
     public String toString() {
-        return fileName + ':' + lineNumber + ':' + column;
+        return fileName.toString() + ':' + lineNumber + ':' + column;
     }
 
     static SourceFileInfo valueOf(String toParse) {

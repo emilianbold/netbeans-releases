@@ -123,15 +123,9 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             }
 
             final String commandLine = info.getCommandLineForShell();
-            String wDir = info.getWorkingDirectory(true);
+            final String wDir = info.getWorkingDirectory(true);
 
-            String workingDirectory;
-
-            if (wDir == null || isWindows) {
-                workingDirectory = "."; // NOI18N
-            } else {
-                workingDirectory = new File(wDir).getAbsolutePath();
-            }
+            final File workingDirectory = (wDir == null)? new File(".") : new File(wDir); // NOI18N
 
             pidFileFile = File.createTempFile("dlight", "termexec", hostInfo.getTempDirFile()); // NOI18N
             envFileFile = new File(pidFileFile.getAbsoluteFile() + ".env"); // NOI18N
@@ -147,8 +141,8 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             FileWriter shWriter = new FileWriter(shFileFile);
             shWriter.write("echo $$ > \"" + pidFile + "\" || exit $?\n"); // NOI18N
             shWriter.write(". \"" + envFile + "\" || exit $?\n"); // NOI18N
-            shWriter.write("cd \"" + workingDirectory + "\" || exit $?\n"); // NOI18N
             shWriter.write("exec " + commandLine + "\n"); // NOI18N
+            shWriter.flush();
             shWriter.close();
 
             final ExternalTerminalAccessor terminalInfo =
@@ -171,12 +165,9 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                     terminalArgs);
 
             ProcessBuilder pb = new ProcessBuilder(command);
-            LOG.log(Level.FINEST, "Command: {0}", command);
-
-            if ((isWindows || isMacOS) && wDir != null) {
-                pb.directory(new File(wDir));
-                LOG.log(Level.FINEST, "Working directory: {0}", wDir);
-            }
+            pb.directory(workingDirectory);
+            
+            LOG.log(Level.FINEST, "Command: " + command); // NOI18N
 
             final MacroMap env = info.getEnvironment().clone();
 
@@ -227,7 +218,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
             waitPID(terminalProcess, pidFileFile);
         } catch (Throwable ex) {
-            String msg = ex.getMessage() == null ? ex.toString() : ex.getMessage();
+            String msg = (ex.getMessage() == null ? ex.toString() : ex.getMessage()) + "\n"; // NOI18N
             processError = new ByteArrayInputStream(msg.getBytes());
             resultFile = null;
             throw ex;
@@ -350,6 +341,8 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
     }
 
     private void waitPID(Process termProcess, File pidFile) throws IOException {
+        int count = 10;
+
         while (!isInterrupted()) {
             /**
              * The following sleep appears after an attempt to support konsole
@@ -385,16 +378,25 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                 break;
             }
 
+            if (count-- == 0) {
+                // PID is not available after limit attempts
+                // Wrapping everything up...
+                termProcess.destroy();
+                throw new IOException(loc("TerminalLocalNativeProcess.terminalRunFailed.text")); // NOI18N
+            }
+
             try {
                 int result = termProcess.exitValue();
 
                 if (result != 0) {
+                    String err = ProcessUtils.readProcessErrorLine(termProcess);
                     log.info(loc("TerminalLocalNativeProcess.terminalFailed.text")); // NOI18N
-                    ProcessUtils.logError(Level.INFO, log, termProcess);
+                    log.info(err);
+                    throw new IOException(err);
                 }
 
                 // No exception - means process is finished..
-                interrupt();
+                break;
             } catch (IllegalThreadStateException ex) {
                 // expected ... means that terminal process exists
             }

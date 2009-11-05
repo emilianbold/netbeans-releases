@@ -45,6 +45,8 @@ package org.netbeans.modules.spring.webmvc;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.web.api.webmodule.ExtenderController;
@@ -80,7 +82,7 @@ public class SpringWebFrameworkProvider extends WebFrameworkProvider {
             WebApp webApp = DDProvider.getDefault().getDDRoot(dd);
             return (webApp.findBeanByName("Servlet", "ServletClass", DISPATCHER_SERVLET) != null) || (webApp.findBeanByName("Listener", "ListenerClass", CONTEXT_LOADER) != null); // NOI18N
         } catch (IOException e) {
-            ErrorManager.getDefault().notify(e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
         }
         return false;
     }

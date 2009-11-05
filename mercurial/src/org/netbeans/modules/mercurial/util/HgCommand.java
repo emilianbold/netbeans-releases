@@ -62,12 +62,14 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.openide.util.NbBundle;
@@ -83,6 +85,7 @@ import org.netbeans.modules.mercurial.config.HgConfigFiles;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.netbeans.modules.mercurial.ui.repository.UserCredentialsSupport;
+import org.netbeans.modules.versioning.util.IndexingBridge;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -152,6 +155,7 @@ public class HgCommand {
     private static final String HG_OUT_CMD = "out"; // NOI18N
     private static final String HG_LOG_LIMIT_ONE_CMD = "-l 1"; // NOI18N
     private static final String HG_LOG_LIMIT_CMD = "-l"; // NOI18N
+    private static final String HG_PARENT_CMD = "parents";              //NOI18N
 
     private static final String HG_LOG_NO_MERGES_CMD = "-M";
     private static final String HG_LOG_DEBUG_CMD = "--debug";
@@ -343,6 +347,18 @@ public class HgCommand {
             }
         }
         MAX_COMMANDLINE_SIZE = maxCmdSize;
+    }
+    private static final HashSet<String> GUARDED_COMMANDS;
+    static {
+        GUARDED_COMMANDS = new HashSet<String>(8);
+        GUARDED_COMMANDS.add(HG_BACKOUT_CMD);
+        GUARDED_COMMANDS.add(HG_CLONE_CMD);
+        GUARDED_COMMANDS.add(HG_IMPORT_CMD);
+        GUARDED_COMMANDS.add(HG_FETCH_CMD);
+        GUARDED_COMMANDS.add(HG_PULL_CMD);
+        GUARDED_COMMANDS.add(HG_MERGE_CMD);
+        GUARDED_COMMANDS.add(HG_UNBUNDLE_CMD);
+        GUARDED_COMMANDS.add(HG_UPDATE_ALL_CMD);
     }
 
     /**
@@ -572,8 +588,8 @@ public class HgCommand {
         List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
-        command.add(HG_VERBOSE_CMD);
         command.add(HG_PULL_CMD);
+        command.add(HG_VERBOSE_CMD);
         command.add(HG_UPDATE_CMD);
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
@@ -1719,7 +1735,7 @@ public class HgCommand {
             command.add(HG_CLONE_CMD);
             command.add(HG_VERBOSE_CMD);
             command.add(url);
-            command.add(target);
+            command.add(target); // target must be the last argument
 
             list = exec(command);
             if (!list.isEmpty()) {
@@ -1953,7 +1969,7 @@ public class HgCommand {
         if (repository == null) return;
         if (revertFiles.size() == 0) return;
 
-        List<String> command = new ArrayList<String>();
+        final List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
         command.add(HG_REVERT_CMD);
@@ -1970,7 +1986,13 @@ public class HgCommand {
         for(File f: revertFiles){
             command.add(f.getAbsolutePath());
         }
-        List<String> list = exec(command);
+        List<String> list;
+        Callable<List<String>> callable = new Callable<List<String>>() {
+            public List<String> call() throws Exception {
+                return exec(command);
+            }
+        };
+        list = runWithoutIndexing(callable, revertFiles, HG_REVERT_CMD);
         if (!list.isEmpty() && isErrorNoChangeNeeded(list.get(0)))
             handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_REVERT_FAILED"), logger);
     }
@@ -2157,6 +2179,48 @@ public class HgCommand {
         }else{
             return null;
         }
+    }
+
+    /**
+     * Returns parent revision of the given revision
+     * @param repositoryUrl cannot be null
+     * @param file if not null, parent revision limited on this file will be returned
+     * @param revision cannot be null
+     * @return parent revision, -1 if has no parent and null if error occurs
+     * @throws HgException
+     */
+    public static String getParent (String repositoryUrl, File file, String revision) throws HgException {
+        if (repositoryUrl == null ) return null;
+        if (revision == null ) return null;
+
+        List<String> command = new ArrayList<String>();
+
+        command.add(getHgCommand());
+        command.add(HG_PARENT_CMD);
+        command.add(HG_OPT_REPOSITORY);
+        command.add(repositoryUrl);
+        command.add(HG_FLAG_REV_CMD);
+        command.add(revision);
+        command.add("--template={rev}\t");                              //NOI18N
+
+        List<String> list = null;
+        command.add(file.getAbsolutePath());
+        list = exec(command);
+        String parentRevision = "-1";                                   //NOI18N
+        if (!list.isEmpty() && !isErrorAbort(list.get(0))) {
+            String[] revisions = list.get(0).split("\t");               //NOI18N
+            if (revisions.length > 1) {
+                String rev1 = revisions[0].trim();
+                String rev2 = revisions[1].trim();
+                parentRevision = HgCommand.getCommonAncestor(repositoryUrl, rev1, rev2, OutputLogger.getLogger(null));
+            }
+            else if (revisions.length == 1 && revisions[0].trim().length() > 0) {
+                parentRevision = revisions[0].trim();
+            } else {
+                parentRevision = null;
+            }
+        }
+        return parentRevision;
     }
 
 
@@ -2713,7 +2777,7 @@ public class HgCommand {
      * @param command to execute
      * @return List of the command's output or an exception if one occured
      */
-    private static List<String> execEnv(List<? extends Object> command, List<String> env, boolean logUsage) throws HgException{
+    private static List<String> execEnv(final List<? extends Object> command, List<String> env, boolean logUsage) throws HgException {
         if( EventQueue.isDispatchThread()){
             Mercurial.LOG.log(Level.FINE, "WARNING execEnv():  calling Hg command in AWT Thread - could stall UI"); // NOI18N
         }
@@ -2721,13 +2785,48 @@ public class HgCommand {
         if(logUsage) {
             Utils.logVCSClientEvent("HG", "CLI");
         }
-        final List<String> list = new ArrayList<String>();
-        BufferedReader input = null;
-        BufferedReader error = null;
-        Process proc = null;
+        logCommand(command);
         File outputStyleFile = null;
-        try{
-            if (command.size() > 10)  {
+        try {
+            try {
+                outputStyleFile = createOutputStyleFile(command);
+            } catch (IOException ex) {
+                Mercurial.LOG.log(Level.WARNING, "Failed to create temporary file defining Hg output style."); //NOI18N
+            }
+            final List<String> commandLine = toCommandList(command, outputStyleFile);
+            final ProcessBuilder pb = new ProcessBuilder(commandLine);
+            if (env != null && env.size() > 0) {
+                Map<String, String> envOrig = pb.environment();
+                for (String s : env) {
+                    envOrig.put(s.substring(0, s.indexOf('=')), s.substring(s.indexOf('=') + 1));
+                }
+            }
+            File repository;
+            final String hgCommand = getHgCommandName(command); // command name
+            if (isGuardedCommand(hgCommand) && (repository = getRepositoryFromCommand(command, hgCommand)) != null) {
+                // indexing is supposed to be disabled for the time the command is running
+                return runWithoutIndexing(new Callable<List<String>>() {
+                    public List<String> call() throws Exception {
+                        return exec(command, pb);
+                    }
+                }, Collections.singletonList(repository), hgCommand);
+            } else {
+                return exec(commandLine, pb);
+            }
+        } finally{
+            if (outputStyleFile != null) {
+                outputStyleFile.delete();
+            }
+        }
+    }
+
+    /**
+     * Logs the hg command if allowed
+     * @param command
+     */
+    private static void logCommand (List<? extends Object> command) {
+        if (Mercurial.LOG.isLoggable(Level.FINE)) {
+            if (command.size() > 10) {
                 List<String> smallCommand = new ArrayList<String>();
                 int count = 0;
                 for (Iterator i = command.iterator(); i.hasNext();) {
@@ -2738,20 +2837,15 @@ public class HgCommand {
             } else {
                 Mercurial.LOG.log(Level.FINE, "execEnv(): " + command); // NOI18N
             }
-            try {
-                outputStyleFile = createOutputStyleFile(command);
-            } catch (IOException ex) {
-                Mercurial.LOG.log(Level.WARNING, "Failed to create temporary file defining Hg output style."); //NOI18N
-                //ignore - outputStyleFile will remain <null>
-            }
-            List<String> commandLine = toCommandList(command, outputStyleFile);
-            ProcessBuilder pb = new ProcessBuilder(commandLine);
-            if(env != null && env.size() > 0){
-                Map<String, String> envOrig = pb.environment();
-                for(String s: env){
-                    envOrig.put(s.substring(0,s.indexOf('=')), s.substring(s.indexOf('=')+1));
-                }
-            }
+        }
+    }
+
+    private static List<String> exec (List<? extends Object> command, ProcessBuilder pb) throws HgException {
+        final List<String> list = new ArrayList<String>();
+        BufferedReader input = null;
+        BufferedReader error = null;
+        Process proc = null;
+        try{
             proc = pb.start();
 
             input = new BufferedReader(new InputStreamReader(proc.getInputStream()));
@@ -2818,14 +2912,14 @@ public class HgCommand {
             // even when it fails when for instance adding an already tracked file to
             // the repository - we will have to examine the output in the context of the
             // calling func and raise exceptions there if needed
-            Mercurial.LOG.log(command.contains(HG_VERSION_CMD) ? Level.INFO : Level.SEVERE,
+            Mercurial.LOG.log(command.contains(HG_VERSION_CMD) ? Level.INFO : Level.WARNING,
                     "execEnv():  execEnv(): IOException " + e); // NOI18N
 
             // Handle low level Mercurial failures
             if (isErrorArgsTooLong(e.getMessage())){
                 assert(command.size()> 2);
                 throw new HgException.HgTooLongArgListException(NbBundle.getMessage(HgCommand.class, "MSG_ARG_LIST_TOO_LONG_ERR",
-                            command.get(1), command.size() -2 ));
+                            getHgCommandName(command), command.size() -2 ));
             }else if (isErrorNoHg(e.getMessage()) || isErrorCannotRun(e.getMessage())){
                 throw new HgException(NbBundle.getMessage(Mercurial.class, "MSG_VERSION_NONE_MSG"));
             }else{
@@ -2846,9 +2940,6 @@ public class HgCommand {
                 } catch (IOException ioex) {
                 //Just ignore. Closing streams.
                 }
-            }
-            if (outputStyleFile != null) {
-                outputStyleFile.delete();
             }
         }
         return list;
@@ -3405,6 +3496,64 @@ public class HgCommand {
      */
     private static boolean isTooLongCommand(int commandSize) {
         return (Utilities.isWindows() || Utilities.isMac()) && commandSize > MAX_COMMANDLINE_SIZE;
+    }
+
+    /**
+     * Returns name of the hg command or null if no argument follows {@link #HG_COMMAND_PLACEHOLDER} in commandList
+     * @param commandList commandline arguments
+     * @return name of the hg command or null
+     */
+    private static String getHgCommandName (List<? extends Object> commandList) {
+        String commandName = null;
+        if (commandList.size() > 1 && HG_COMMAND_PLACEHOLDER.equals(commandList.get(0))) {
+            commandName = commandList.get(1).toString();
+        }
+        return commandName;
+    }
+
+    /**
+     * Returns true if the hgCommand belongs among guarded commands for which indexing shall be disabled
+     * @param hgCommand
+     * @return
+     */
+    private static boolean isGuardedCommand(String hgCommand) {
+        return GUARDED_COMMANDS.contains(hgCommand);
+    }
+
+    /**
+     * Tries to find the path to the repository for which the command is invoked
+     * @param commandList
+     * @return
+     */
+    private static File getRepositoryFromCommand (List<? extends Object> commandList, String hgCommand) {
+        File repositoryFile = null;
+        boolean isRepositoryArgument = false;
+        for (ListIterator<? extends Object> it = commandList.listIterator(); it.hasNext(); ) {
+            Object argument = it.next();
+            if (isRepositoryArgument 
+                    || HG_CLONE_CMD.equals(hgCommand) && !it.hasNext()) { // clone command has no --repository argument
+                repositoryFile = new File(argument.toString());
+                break;
+            } else if (HG_OPT_REPOSITORY.equals(argument)) { // repository path follows --repository option
+                isRepositoryArgument = true;
+            }
+        }
+        return repositoryFile;
+    }
+
+    private static List<String> runWithoutIndexing(Callable<List<String>> callable, List<File> files, String hgCommand) throws HgException {
+        try {
+            if (Mercurial.LOG.isLoggable(Level.FINER)) {
+                Mercurial.LOG.log(Level.FINER, "Running command with disabled indexing: [hg {0}] on {1}", //NOI18N
+                        new Object[] {hgCommand, files});
+            }
+            return IndexingBridge.getInstance().runWithoutIndexing(callable, files.toArray(new File[files.size()]));
+        } catch (HgException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            Mercurial.LOG.log(Level.INFO, "Cannot run command hg " + hgCommand + " without indexing", ex); //NOI18N
+            throw new HgException("Cannot run command hg " + hgCommand + " due to: " + ex.getMessage()); //NOI18N
+        }
     }
 
     /**

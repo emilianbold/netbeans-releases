@@ -47,10 +47,16 @@ class A
     nevim
   end
 
+  A_CONSTANT = 777
+  def a_constant
+    A_CONSTANT
+  end
+
 end
 
 a = A.new
 num = a.simple_int
 puts num.abs
 puts a.method_as_exit_point
+puts a.a_constant
 

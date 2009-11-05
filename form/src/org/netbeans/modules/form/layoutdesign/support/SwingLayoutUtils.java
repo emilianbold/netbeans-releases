@@ -41,7 +41,10 @@
 
 package org.netbeans.modules.form.layoutdesign.support;
 
+import java.awt.Component;
 import java.util.*;
+import javax.swing.AbstractButton;
+import javax.swing.JLabel;
 import org.netbeans.modules.form.layoutdesign.LayoutComponent;
 
 /**
@@ -113,10 +116,30 @@ public class SwingLayoutUtils {
      * @return <code>STATUS_RESIZABLE</code>, <code>STATUS_NON_RESIZABLE</code>
      * or <code>STATUS_UNKNOWN</code>.
      */
-    public static int getResizableStatus(Class componentClass) {
-        String className = componentClass.getName();
-        if (resizableComponents.contains(className)) return STATUS_RESIZABLE;
-        if (nonResizableComponents.contains(className)) return STATUS_NON_RESIZABLE;
+    public static int getResizableStatus(Component component) {
+        int status = getSpecialStatus(component);
+        if (status == STATUS_UNKNOWN) {
+            String className = component.getClass().getName();
+            if (resizableComponents.contains(className)) {
+                status = STATUS_RESIZABLE;
+            } else if (nonResizableComponents.contains(className)) {
+                status = STATUS_NON_RESIZABLE;
+            }
+        }
+        return status;
+    }
+
+    private static int getSpecialStatus(Component component) {
+        // hack: labels and buttons with html text are resizable (#73255)
+        String htmlText = null;
+        if (component instanceof JLabel) {
+            htmlText = ((JLabel)component).getText();
+        } else if (component instanceof AbstractButton) {
+            htmlText = ((AbstractButton)component).getText();
+        }
+        if (htmlText != null && htmlText.length() >= 6 && htmlText.trim().toLowerCase().startsWith("<html>")) { // NOI18N
+            return STATUS_RESIZABLE;
+        }
         return STATUS_UNKNOWN;
     }
 

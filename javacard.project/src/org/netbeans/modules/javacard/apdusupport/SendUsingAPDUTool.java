@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.javacard.apdusupport;
 
+import java.io.File;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -66,20 +67,35 @@ public final class SendUsingAPDUTool extends CookieAction {
             Project owner = FileOwnerQuery.getOwner(dataObject.getPrimaryFile());
             ProjectKind kind = owner.getLookup().lookup(ProjectKind.class);
             if (!kind.isApplet()) {
-                NotifyDescriptor d = new NotifyDescriptor.Message("File does not belong to Java Card™ 3 Platform [Connected Edition] Extended Application Project", NotifyDescriptor.ERROR_MESSAGE);
+                NotifyDescriptor d = new NotifyDescriptor.Message(
+                        NbBundle.getMessage(SendUsingAPDUTool.class,
+                        "ERR_NO_PROJECT", dataObject.getName()), //NOI18N
+                        NotifyDescriptor.ERROR_MESSAGE);
                 DialogDisplayer.getDefault().notify(d);
                 return;
             }
             FileObject buildFo = Utils.findBuildXml(owner);
             if (buildFo == null || !buildFo.isValid()) {
                 //The build.xml was deleted after the isActionEnabled was called
-                NotifyDescriptor nd = new NotifyDescriptor.Message("build file not found.", NotifyDescriptor.ERROR_MESSAGE);
+                NotifyDescriptor nd = new NotifyDescriptor.Message(
+                        NbBundle.getMessage(SendUsingAPDUTool.class,
+                        "ERR_NO_BUILD_SCRIPT", dataObject.getName()), //NOI18N
+                        NotifyDescriptor.ERROR_MESSAGE);
                 DialogDisplayer.getDefault().notify(nd);
                 return;
             }
 
             Properties p = new Properties();
-            p.setProperty("apdu.script.file", FileUtil.toFile(dataObject.getPrimaryFile()).getAbsolutePath());
+            File file = FileUtil.toFile(dataObject.getPrimaryFile());
+            if (file == null) {
+                NotifyDescriptor d = new NotifyDescriptor.Message(
+                        NbBundle.getMessage(SendUsingAPDUTool.class,
+                        "ERR_NOT_ON_DISK", dataObject.getName()), //NOI18N
+                        NotifyDescriptor.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notify(d);
+                return;
+            }
+            p.setProperty("apdu.script.file", file.getAbsolutePath());
             ActionUtils.runTarget(buildFo, new String[] {"--run-apdutool--"}, p);
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
@@ -91,7 +107,8 @@ public final class SendUsingAPDUTool extends CookieAction {
     }
 
     public String getName() {
-        return NbBundle.getMessage(SendUsingAPDUTool.class, "CTL_SendUsingAPDUTool");
+        return NbBundle.getMessage(SendUsingAPDUTool.class,
+                "CTL_SendUsingAPDUTool");
     }
 
     protected Class<?>[] cookieClasses() {

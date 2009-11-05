@@ -42,9 +42,12 @@
 package org.openide.loaders;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
@@ -406,4 +409,17 @@ implements java.net.URLStreamHandlerFactory {
         fail ("Cannot find property \"" + name + "\" in node " + n + " it has only " + names + " propeties.");
         return null;
     }
+
+    public void testCreatedShadowFoundInParent() throws Exception {
+        final FileObject r = FileUtil.getConfigRoot();
+        r.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+            public void run() throws IOException {
+                FileObject orig = FileUtil.createData(r, "orig/file.txt");
+                DataFolder f = DataFolder.findFolder(r.createFolder("copy"));
+                DataShadow sh = DataShadow.create(f, DataObject.find(orig));
+                assertEquals(Collections.singletonList(sh), Arrays.asList(f.getChildren()));
+            }
+        });
+    }
+
 }

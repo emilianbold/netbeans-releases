@@ -137,6 +137,13 @@ public class NodeRegistry implements ChangeListener {
         }
     }
 
+    //#170935 - workaround
+    public synchronized void removeAllNodes() {
+        for (NodeProvider provider : providers) {
+            provider.removeAllNodes();
+        }
+    }
+
     /**
      * Get the nodes from all of the registered providers.
      * 

@@ -8,4 +8,5 @@
         |>MARK_OCCURRENCES:return<|
       |>MARK_OCCURRENCES:return<|
       |>MARK_OCCURRENCES:return<|
-    |>MARK_OCCURRENCES:if still_there.class != String<|
+      |>MARK_OCCURRENCES:error "Entry is still in collection post-deletion."<|
+      |>MARK_OCCURRENCES:good "Entry not found in feed after deletion."<|

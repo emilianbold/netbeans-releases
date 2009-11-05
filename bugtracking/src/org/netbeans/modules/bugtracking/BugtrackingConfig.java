@@ -39,6 +39,9 @@
 
 package org.netbeans.modules.bugtracking;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
 import java.util.prefs.Preferences;
 import org.openide.util.NbPreferences;
 
@@ -49,7 +52,8 @@ import org.openide.util.NbPreferences;
 public class BugtrackingConfig {
 
     private static BugtrackingConfig instance = null;
-    private static final String ARCHIVED_TTL  = "bugtracking.archived_time_to_live";      // NOI18N
+    private static final String ARCHIVED_TTL_KEY  = "bugtracking.archived_time_to_live";      // NOI18N
+    private static final String COLUMN_WIDTH_PREFIX  = "bugtracking.issuetable.columnwidth";  // NOI18N
     private static long DEFAULT_ARCHIVED_TTL  = 7; // days
 
     private BugtrackingConfig() { }
@@ -66,11 +70,40 @@ public class BugtrackingConfig {
     }
 
     public void setArchivedIssuesTTL(int l) {
-        getPreferences().putLong(ARCHIVED_TTL, l);
+        getPreferences().putLong(ARCHIVED_TTL_KEY, l);
     }
 
     public long getArchivedIssuesTTL() {
-        return getPreferences().getLong(ARCHIVED_TTL, DEFAULT_ARCHIVED_TTL);
+        return getPreferences().getLong(ARCHIVED_TTL_KEY, DEFAULT_ARCHIVED_TTL);
+    }
+
+    public void storeColumnWidths(String key, int[] widths) {
+        for (int i = 0; i < widths.length; i++) {
+            getPreferences().putInt(COLUMN_WIDTH_PREFIX + "." + key + "." + i, widths[i]); // NOI18N
+        }
+    }
+
+    public int[] getColumnWidths(String key) {
+        List<Integer> retval = new ArrayList<Integer>();
+        try {
+            String[] keys = getPreferences().keys();
+            for (int i = 0; i < keys.length; i++) {
+                String k = keys[i];
+                if (k != null && k.startsWith(COLUMN_WIDTH_PREFIX + "." + key + ".")) { // NOI18N
+                    int idx = Integer.parseInt(k.substring(k.lastIndexOf('.') + 1));    // NOI18N
+                    int value = getPreferences().getInt(k, -1);
+                    retval.add(idx, value);
+                }
+            }
+            int[] ret = new int[retval.size()];
+            for (int i = 0; i < ret.length; i++) {
+                ret[i] = retval.get(i);
+            }
+            return ret;
+        } catch (Exception ex) {
+            BugtrackingManager.LOG.log(Level.INFO, null, ex);
+            return new int[0];
+        }
     }
 
 }

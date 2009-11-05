@@ -73,10 +73,18 @@ final class TimableEventQueue extends EventQueue
 implements Runnable {
     private static final Logger LOG = Logger.getLogger(TimableEventQueue.class.getName());
     private static final RequestProcessor RP = new RequestProcessor("Timeable Event Queue Watch Dog", 1, true); // NOI18N
-    private static final int QUANTUM = Integer.getInteger("org.netbeans.core.TimeableEventQueue.quantum", 100); // NOI18N
-    private static final int REPORT = Integer.getInteger("org.netbeans.core.TimeableEventQueue.report", 3000); // NOI18N
+    private static final int QUANTUM;
+    private static final int REPORT;
+    static {
+        int quantum = 10000; // 10s
+        int report = 20000; // 20s
+        assert (quantum = 100) > 0; // 100ms in not production mode
+        assert (report = 3000) > 0; // 3s in not production mode
+
+        QUANTUM = Integer.getInteger("org.netbeans.core.TimeableEventQueue.quantum", quantum); // NOI18N
+        REPORT = Integer.getInteger("org.netbeans.core.TimeableEventQueue.report", report); // NOI18N
+    } 
     private static final int PAUSE = Integer.getInteger("org.netbeans.core.TimeableEventQueue.pause", 15000); // NOI18N
-    private static final int CLEAR = Integer.getInteger("org.netbeans.core.TimeableEventQueue.clear", 60000); // NOI18N
 
     private final RequestProcessor.Task TIMEOUT;
     private volatile long ignoreTill;

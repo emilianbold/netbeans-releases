@@ -149,11 +149,13 @@ public final class CheckSums {
                         break;
                     case CONSTRUCTOR:
                     case METHOD:
-                        sigs.add(Arrays.toString(ClassFileUtil.createExecutableDescriptor((ExecutableElement) e)) + getExtendedModifiers(elements, e));
+                        if (!e.getModifiers().contains(Modifier.PRIVATE))
+                            sigs.add(Arrays.toString(ClassFileUtil.createExecutableDescriptor((ExecutableElement) e)) + getExtendedModifiers(elements, e));
                         break;
                     case FIELD:
                     case ENUM_CONSTANT:
-                        sigs.add(Arrays.toString(ClassFileUtil.createFieldDescriptor((VariableElement) e)) + getExtendedModifiers(elements, e));
+                        if (!e.getModifiers().contains(Modifier.PRIVATE))
+                            sigs.add(Arrays.toString(ClassFileUtil.createFieldDescriptor((VariableElement) e)) + getExtendedModifiers(elements, e));
                         break;
                 }
             }

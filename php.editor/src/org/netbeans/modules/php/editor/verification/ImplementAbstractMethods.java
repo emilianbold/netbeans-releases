@@ -52,7 +52,6 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.EditList;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
-import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.php.editor.model.ClassScope;
@@ -61,7 +60,6 @@ import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -89,7 +87,7 @@ public class ImplementAbstractMethods extends AbstractRule {
         lineEnd = (lineBegin != -1) ? Utilities.getRowEnd(doc, caretOffset) : -1;
         if (lineBegin != -1 && lineEnd != -1 && caretOffset > lineBegin) {
             Collection<? extends TypeScope> allTypes = ModelUtils.getDeclaredTypes(context.fileScope);
-            for (FixInfo fixInfo : checkHints(allTypes, lineBegin, lineEnd)) {
+            for (FixInfo fixInfo : checkHints(allTypes, lineBegin, lineEnd, context)) {
                 hints.add(new Hint(ImplementAbstractMethods.this, getDisplayName(),
                         context.parserResult.getSnapshot().getSource().getFileObject(), fixInfo.classNameRange,
                         Collections.<HintFix>singletonList(new Fix(context,
@@ -103,7 +101,7 @@ public class ImplementAbstractMethods extends AbstractRule {
         return carret >= left && carret <= right;
     }
 
-    private Collection<FixInfo> checkHints(Collection<? extends TypeScope> allTypes, int lineBegin, int lineEnd) {
+    private Collection<FixInfo> checkHints(Collection<? extends TypeScope> allTypes, int lineBegin, int lineEnd, PHPRuleContext context) throws BadLocationException{
         List<FixInfo> retval = new ArrayList<FixInfo>();
         for (TypeScope typeScope : allTypes) {
             if (!isInside(typeScope.getOffset(), lineBegin, lineEnd)) continue;
@@ -142,10 +140,31 @@ public class ImplementAbstractMethods extends AbstractRule {
                     skeleton = skeleton.replace("abstract ", ""); //NOI18N
                     methodSkeletons.add(skeleton);
                 }
-                retval.add(new FixInfo(typeScope, methodSkeletons));
+                int offset = getOffset(typeScope, context);
+                if (offset != -1) {
+                    retval.add(new FixInfo(typeScope, methodSkeletons, offset));
+                }
             }
         }
         return retval;
+    }
+
+    private static int getOffset(TypeScope typeScope, PHPRuleContext context) throws BadLocationException {
+        int offset = -1;
+        Collection<? extends MethodScope> declaredMethods = typeScope.getDeclaredMethods();
+        for (MethodScope methodScope : declaredMethods) {
+            OffsetRange blockRange = methodScope.getBlockRange();
+            if (blockRange != null && blockRange.getEnd() > offset) {
+                offset = blockRange.getEnd();
+            }
+        }
+        if (offset == -1 && typeScope.getBlockRange() != null) {
+            offset = Utilities.getRowStart(context.doc, typeScope.getBlockRange().getEnd()) - 1;
+        }
+        if (offset != -1) {
+            offset = Utilities.getRowEnd(context.doc, offset);
+        }
+        return offset;
     }
 
     private class Fix implements HintFix {
@@ -178,21 +197,22 @@ public class ImplementAbstractMethods extends AbstractRule {
             BaseDocument doc = context.doc;
             EditList edits = new EditList(doc);
             for (String methodScope : fixInfo.methodSkeletons) {
-                edits.replace(fixInfo.offset, 0, methodScope, true, 0);
+                edits.replace(fixInfo.offset, 0, "\n"+methodScope, true, 0);
             }
             return edits;
         }
     }
 
     private static class FixInfo {
-        private LinkedHashSet<String> methodSkeletons;
+        private List<String> methodSkeletons;
         private int offset;
         private OffsetRange classNameRange;
 
-        FixInfo(TypeScope typeScope, LinkedHashSet<String> methodSkeletons) {
-            this.methodSkeletons = methodSkeletons;
+        FixInfo(TypeScope typeScope, LinkedHashSet<String> methodSkeletons, int offset) {
+            this.methodSkeletons = new ArrayList<String>(methodSkeletons);
+            Collections.sort(this.methodSkeletons);
             this.classNameRange = typeScope.getNameRange();
-            this.offset = typeScope.getBlockRange().getEnd() - 1;
+            this.offset = offset;
         }
     }
 }

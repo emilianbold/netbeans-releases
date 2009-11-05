@@ -82,6 +82,12 @@ public class HtmlAutoCompletion {
         try {
             if (insertIgnore != null) {
                 if (insertIgnore.getOffset() == dotPos && insertIgnore.getChar() == ch) {
+                    //move the caret to specified position if needed
+                    if(insertIgnore.getMoveCaretTo() != -1) {
+                        caret.setDot(insertIgnore.moveCaretTo);
+                        //also close the completion window
+                        Completion.get().hideAll();
+                    }
                     return true;
                 }
             }
@@ -224,7 +230,7 @@ public class HtmlAutoCompletion {
                 doc.insertString(dotPos + 1, ">", null);
 
                 //ignore next &gt; char if typed
-                insertIgnore = new DocumentInsertIgnore(dotPos + 2, '>');
+                insertIgnore = new DocumentInsertIgnore(dotPos + 2, '>', -1);
             }
         }
     }
@@ -311,6 +317,9 @@ public class HtmlAutoCompletion {
                     caret.setDot(dotPosAfterTypedChar);
                     //open completion
                     Completion.get().showCompletion();
+
+                    //ignore '}' char
+                    insertIgnore = new DocumentInsertIgnore(dotPosAfterTypedChar, '}', dotPosAfterTypedChar + 1);
                 } catch (BadLocationException ex) {
                     Exceptions.printStackTrace(ex);
                 }
@@ -323,10 +332,12 @@ public class HtmlAutoCompletion {
 
         private int offset;
         private char ch;
+        private int moveCaretTo;
 
-        public DocumentInsertIgnore(int offset, char ch) {
+        public DocumentInsertIgnore(int offset, char ch, int moveCaretTo) {
             this.offset = offset;
             this.ch = ch;
+            this.moveCaretTo = moveCaretTo;
         }
 
         public char getChar() {
@@ -335,6 +346,10 @@ public class HtmlAutoCompletion {
 
         public int getOffset() {
             return offset;
+        }
+
+        public int getMoveCaretTo() {
+            return moveCaretTo;
         }
     }
 }

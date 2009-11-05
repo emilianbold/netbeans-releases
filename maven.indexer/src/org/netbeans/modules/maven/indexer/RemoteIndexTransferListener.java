@@ -38,6 +38,9 @@
  */
 package org.netbeans.modules.maven.indexer;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import org.apache.maven.wagon.events.TransferEvent;
 import org.apache.maven.wagon.events.TransferListener;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
@@ -64,6 +67,9 @@ public class RemoteIndexTransferListener implements TransferListener {
     private OutputWriter writer;
     private int units;
 
+    private static Map<Thread, Integer> transfers = new HashMap<Thread, Integer>();
+    private static final Object TRANSFERS_LOCK = new Object();
+
     public RemoteIndexTransferListener(RepositoryInfo info) {
 
         this.info = info;
@@ -76,8 +82,8 @@ public class RemoteIndexTransferListener implements TransferListener {
         }
     }
 
-    public void transferInitiated(TransferEvent arg0) {/*EMPTY*/
-
+    public void transferInitiated(TransferEvent arg0) {
+        // noop
     }
 
     public void transferStarted(TransferEvent arg0) {
@@ -126,4 +132,38 @@ public class RemoteIndexTransferListener implements TransferListener {
             writer.println(arg0);
         }
     }
+
+    static void addToActive (Thread t) {
+        synchronized (TRANSFERS_LOCK) {
+            Integer count = transfers.get(t);
+            if (count == null) {
+                count = Integer.valueOf(1);
+            } else {
+                count = Integer.valueOf(count + 1);
+            }
+            transfers.put(t, count);
+        }
+    }
+
+    static void removeFromActive (Thread t) {
+        synchronized (TRANSFERS_LOCK) {
+            Integer count = transfers.get(t);
+            if (count == null) {
+                return;
+            }
+            if (count <= 1) {
+                transfers.remove(t);
+            } else {
+                count = Integer.valueOf(count - 1);
+                transfers.put(t, count);
+            }
+        }
+    }
+
+    static Set<Thread> getActiveTransfersOrScans () {
+        synchronized (TRANSFERS_LOCK) {
+            return transfers.keySet();
+        }
+    }
+
 }

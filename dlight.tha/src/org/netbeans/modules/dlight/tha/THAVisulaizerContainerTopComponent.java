@@ -78,7 +78,7 @@ public final class THAVisulaizerContainerTopComponent extends TopComponent imple
         setName(NbBundle.getMessage(THAVisulaizerContainerTopComponent.class, "CTL_THAVisulaizerContainerTopComponent"));//NOI18N
         setToolTipText(NbBundle.getMessage(THAVisulaizerContainerTopComponent.class, "HINT_THAVisulaizerContainerTopComponent"));//NOI18N
 //        setIcon(ImageUtilities.loadImage(ICON_PATH, true));
-
+        putClientProperty("KeepNonPersistentTCInModelWhenClosed", true); // NOI18N
     }
 
     /** This method is called from within the constructor to

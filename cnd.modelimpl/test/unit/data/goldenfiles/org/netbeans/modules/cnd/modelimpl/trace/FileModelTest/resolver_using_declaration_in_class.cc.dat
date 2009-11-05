@@ -28,6 +28,7 @@ CLASS Derived (Derived ) [8:1/84-15:2/264] lcurly=113 SCOPE: $Global$
     BASE CLASSES:
         CLASS=Base VISIBILITY==PRIVATE virtual==false text='private Base'
     MEMBERS:
+        USING_DECLARATION PRIVATE Base::convert [9:9/116-9:28/135] UsingDeclarationImpl
         CLASS Inner (Derived::Inner ) [11:9/161-13:10/250] lcurly=173 SCOPE: Derived 
             BASE CLASSES:
             MEMBERS:
@@ -62,6 +63,7 @@ CLASS Derived (Derived ) [8:1/84-15:2/264] lcurly=113 SCOPE: $Global$
     BASE CLASSES:
         CLASS=Base VISIBILITY==PRIVATE virtual==false text='private Base'
     MEMBERS:
+        USING_DECLARATION PRIVATE Base::convert [9:9/116-9:28/135] UsingDeclarationImpl
         CLASS Inner (Derived::Inner ) [11:9/161-13:10/250] lcurly=173 SCOPE: Derived 
             BASE CLASSES:
             MEMBERS:

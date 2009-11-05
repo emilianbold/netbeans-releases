@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -74,6 +75,7 @@ import org.netbeans.modules.maven.model.pom.Properties;
 import org.netbeans.modules.maven.model.profile.Profile;
 import org.netbeans.modules.maven.model.profile.ProfilesModel;
 import org.netbeans.modules.maven.spi.customizer.ModelHandleUtils;
+import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -391,9 +393,18 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
             Exceptions.printStackTrace(ex);
         }
         //#109507 workaround
-        POHImpl poh = targetPrj.getLookup().lookup(POHImpl.class);
+        POHImpl poh = project.getLookup().lookup(POHImpl.class);
         poh.hackModuleServerChange();
-        poh = project.getLookup().lookup(POHImpl.class);
-        poh.hackModuleServerChange();
+
+        // refresh all subprojects
+        SubprojectProvider spp = targetPrj.getLookup().lookup(SubprojectProvider.class);
+        Set<? extends Project> childrenProjs = spp.getSubprojects();
+        if (!childrenProjs.contains(project)) {
+            NbMavenProject.fireMavenProjectReload(project);
+        }
+        for (Project curPrj : childrenProjs) {
+            NbMavenProject.fireMavenProjectReload(curPrj);
+        }
+
     }
 }

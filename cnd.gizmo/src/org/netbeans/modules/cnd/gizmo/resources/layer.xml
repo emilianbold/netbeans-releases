@@ -91,7 +91,7 @@
                 <attr name="category" stringvalue="Gizmo"/>
                 <attr name="system" boolvalue="true"/>
                 <attr name="default" boolvalue="true"/>
-                <attr name="platforms" stringvalue="Linux,Solaris"/>
+                <attr name="platforms" stringvalue="Linux"/>
                 <attr name="collector.providers" stringvalue=""/>
                 <attr name="indicator.providers" stringvalue="ProcFSReader,ProcReader,LLTool"/>
                 <folder name="KnownToolsConfigurationProviders">
@@ -103,6 +103,29 @@
                     </file>
                     <file name="MemoryToolConfigurationProvider.shadow">
                         <attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/MemoryToolConfigurationProvider.instance"/>
+                    </file>
+                </folder>
+                <folder name="ConfigurationOptions">
+                    <file name="GizmoConfigurationOptions.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.gizmo.GizmoConfigurationOptions"/>
+                    </file>
+                </folder>
+            </folder>
+
+            <folder name="GizmoSimpleSolaris">
+                <attr name="displayedName" stringvalue="C/C++ Simple Solaris (indicators only)"/>
+                <attr name="category" stringvalue="Gizmo"/>
+                <attr name="system" boolvalue="true"/>
+                <attr name="default" boolvalue="true"/>
+                <attr name="platforms" stringvalue="Solaris"/>
+                <attr name="collector.providers" stringvalue=""/>
+                <attr name="indicator.providers" stringvalue="ProcFSReader,ProcReader"/>
+                <folder name="KnownToolsConfigurationProviders">
+                    <file name="DLightCPUToolConfigurationProvider.shadow">
+                        <attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/DLightCPUToolConfigurationProvider.instance"/>
+                    </file>
+                    <file name="SyncToolConfigurationProvider.shadow">
+                        <attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/SyncToolConfigurationProvider.instance"/>
                     </file>
                 </folder>
                 <folder name="ConfigurationOptions">

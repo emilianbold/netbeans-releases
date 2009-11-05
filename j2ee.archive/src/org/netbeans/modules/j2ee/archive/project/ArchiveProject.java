@@ -51,6 +51,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
@@ -115,7 +117,7 @@ public class ArchiveProject implements org.netbeans.api.project.Project {
     private final GeneratedFilesHelper genFilesHelper;
     private final Lookup lookup;
     private ArchiveProjectProperties projProperties;
-    private static final Icon ARCHIVE_PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/j2ee/archive/project/resources/packaged_archive_16.png", false); // NOI18N
+    private final Icon ARCHIVE_PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/j2ee/archive/project/resources/packaged_archive_16.png", false); // NOI18N
     private final UpdateHelper updateHelper;
     
     private HashMap<String,String> nameMap;
@@ -458,7 +460,7 @@ public class ArchiveProject implements org.netbeans.api.project.Project {
                                 
                             }
                         } catch (IOException ex) {
-                            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "" + ex);
+                            Logger.getLogger("global").log(Level.INFO, null, ex);
                         }
                     } else {
                         ErrorManager.getDefault().log(ErrorManager.WARNING, NbBundle.getMessage(ArchiveProject.class,"WARN_EAR_ARCH_MISSING_APPLICATION_XML",getName()));

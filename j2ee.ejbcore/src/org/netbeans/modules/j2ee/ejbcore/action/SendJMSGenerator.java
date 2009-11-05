@@ -234,7 +234,7 @@ public final class SendJMSGenerator {
      * @return name of the created field.
      */
     private String createInjectedField(FileObject fileObject, String className, String destinationName, String fieldType) throws IOException {
-        String fieldName = Utils.jndiNameToCamelCase(destinationName, true, "jms");
+        String fieldName = Utils.makeJavaIdentifierPart(Utils.jndiNameToCamelCase(destinationName, true, "jms"));
         _RetoucheUtil.generateAnnotatedField(
                 fileObject,
                 className,
@@ -252,7 +252,7 @@ public final class SendJMSGenerator {
             MethodModel.Variable.create("javax.jms.Session", "session"),
             MethodModel.Variable.create(Object.class.getName(), "messageData")
         };
-        String methodName = "createJMSMessageFor" + Utils.jndiNameToCamelCase(destination, true, null);
+        String methodName = "createJMSMessageFor" + Utils.makeJavaIdentifierPart(Utils.jndiNameToCamelCase(destination, true, null));
         final MethodModel methodModel = MethodModel.create(
                 methodName,
                 "javax.jms.Message",
@@ -288,7 +288,7 @@ public final class SendJMSGenerator {
             String destinationFieldName,
             String sendMethodName,
             ServiceLocatorStrategy slStrategy) throws IOException {
-        String destName = destinationName.substring(destinationName.lastIndexOf('/') + 1);
+        String destName = Utils.makeJavaIdentifierPart(destinationName.substring(destinationName.lastIndexOf('/') + 1));
         StringBuffer destBuff = new StringBuffer(destName);
         destBuff.setCharAt(0, Character.toUpperCase(destBuff.charAt(0)));
         

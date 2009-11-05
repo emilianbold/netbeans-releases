@@ -42,14 +42,13 @@
 package org.openide.actions;
 
 import org.netbeans.junit.*;
-import junit.textui.TestRunner;
-import org.openide.actions.*;
 import org.openide.util.actions.SystemAction;
 import org.openide.nodes.Node;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Index;
 import java.util.Arrays;
+import org.openide.windows.TopComponent;
 
 /** Test behavior of MoveUpAction (also MoveDownAction and ReorderAction).
  * @author Jesse Glick
@@ -65,13 +64,9 @@ public class MoveUpActionTest extends NbTestCase {
         super(name);
     }
     
-    public static void main(String[] args) {
-        TestRunner.run(new NbTestSuite(MoveUpActionTest.class));
-    }
-    
     private Node n, n1, n2, n3;
     
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         n1 = new AbstractNode(Children.LEAF);
         n1.setName("n1");
         n2 = new AbstractNode(Children.LEAF);
@@ -82,7 +77,7 @@ public class MoveUpActionTest extends NbTestCase {
             {
                 add(new Node[] {n1, n2, n3});
             }
-            public void reorder() {
+            public @Override void reorder() {
                 reorder(new int[] {1, 2, 0});
             }
         };
@@ -98,7 +93,7 @@ public class MoveUpActionTest extends NbTestCase {
      * in order to run in awt event queue
      * fix for #39789
      */
-    protected boolean runInEQ()
+    protected @Override boolean runInEQ()
     {
         return true;
     }
@@ -108,8 +103,10 @@ public class MoveUpActionTest extends NbTestCase {
         SystemAction mda = SystemAction.get(MoveDownAction.class);
         SystemAction roa = SystemAction.get(ReorderAction.class);
         ActionsInfraHid.WaitPCL l = null;
+        TopComponent tc = new TopComponent();
+        tc.requestActive();
         try {
-            assertNull(ActionsInfraHid.UT.getCurrentNodes());
+            assertNull(tc.getActivatedNodes());
             assertFalse(mua.isEnabled());
             assertFalse(mda.isEnabled());
             assertFalse(roa.isEnabled());
@@ -118,7 +115,7 @@ public class MoveUpActionTest extends NbTestCase {
             assertFalse(mua.isEnabled());
             assertFalse(mda.isEnabled());
             assertFalse(roa.isEnabled());
-            ActionsInfraHid.UT.setCurrentNodes(new Node[] {n});
+            tc.setActivatedNodes(new Node[] {n});
             if (!l.changed()) {
                 Thread.sleep(1000);
             }
@@ -130,7 +127,7 @@ public class MoveUpActionTest extends NbTestCase {
             roa.actionPerformed(null);
             assertEquals(Arrays.asList(new Node[] {n3, n1, n2}), Arrays.asList(n.getChildren().getNodes()));
             assertTrue(roa.isEnabled());
-            ActionsInfraHid.UT.setCurrentNodes(new Node[] {n1, n2});
+            tc.setActivatedNodes(new Node[] {n1, n2});
             if (!l.changed()) {
                 Thread.sleep(1000);
             }
@@ -138,7 +135,7 @@ public class MoveUpActionTest extends NbTestCase {
             assertFalse(mua.isEnabled());
             assertFalse(mda.isEnabled());
             assertFalse(roa.isEnabled());
-            ActionsInfraHid.UT.setCurrentNodes(new Node[] {n1});
+            tc.setActivatedNodes(new Node[] {n1});
             if (!l.changed()) {
                 Thread.sleep(1000);
             }
@@ -155,7 +152,7 @@ public class MoveUpActionTest extends NbTestCase {
             assertTrue("MoveUp is turned off after a node is moved to the very top", !mua.isEnabled());
             assertTrue(mda.isEnabled());
             assertFalse(roa.isEnabled());
-            ActionsInfraHid.UT.setCurrentNodes(new Node[] {n2});
+            tc.setActivatedNodes(new Node[] {n2});
             if (!l.changed()) {
                 Thread.sleep(1000);
             }
@@ -163,7 +160,7 @@ public class MoveUpActionTest extends NbTestCase {
             assertTrue(mua.isEnabled());
             assertFalse(mda.isEnabled());
             assertFalse(roa.isEnabled());
-            ActionsInfraHid.UT.setCurrentNodes(new Node[] {n3});
+            tc.setActivatedNodes(new Node[] {n3});
             if (!l.changed()) {
                 Thread.sleep(1000);
             }
@@ -186,8 +183,8 @@ public class MoveUpActionTest extends NbTestCase {
                 mda.removePropertyChangeListener(l);
                 roa.removePropertyChangeListener(l);
             }
-            ActionsInfraHid.UT.setCurrentNodes(new Node[0]);
-            ActionsInfraHid.UT.setCurrentNodes(null);
+            tc.setActivatedNodes(new Node[0]);
+            tc.setActivatedNodes(null);
         }
     }
     

@@ -341,19 +341,7 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
         
         Manager manager = Manager.getInstance();
         final TestRunnerLineConvertor convertor = new TestRunnerLineConvertor(manager, session, new RspecHandlerFactory());
-        session.setOutputLineHandler(new RubyOutputLineHandler(session.getFileLocator()));
-        taskDescriptor.addOutConvertor(convertor);
-        taskDescriptor.addErrConvertor(convertor);
-        taskDescriptor.lineBased(true);
-        taskDescriptor.setOutProcessorFactory(new TestRunnerInputProcessorFactory(manager, session, false));
-        taskDescriptor.setErrProcessorFactory(new TestRunnerInputProcessorFactory(manager, session, false));
-        taskDescriptor.postBuild(new Runnable() {
-
-            public void run() {
-                TestExecutionManager.getInstance().finish();
-                convertor.refreshSession();
-            }
-        });
+        TestRunnerUtilities.setUpConvertors(session, taskDescriptor, manager, convertor);
         TestRunnerUtilities.addProperties(taskDescriptor, project);
         TestExecutionManager.getInstance().init(taskDescriptor);
         session.setRerunHandler(TestExecutionManager.getInstance());

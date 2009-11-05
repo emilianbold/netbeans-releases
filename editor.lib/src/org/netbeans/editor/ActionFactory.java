@@ -42,7 +42,6 @@
 package org.netbeans.editor;
 
 import java.awt.Component;
-import java.awt.Cursor;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
@@ -65,16 +64,16 @@ import javax.swing.undo.UndoableEdit;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.CannotRedoException;
 import java.awt.Toolkit;
-import java.awt.Window;
 import java.util.Date;
 import java.text.SimpleDateFormat;
 import javax.swing.JMenuItem;
 import javax.swing.JCheckBoxMenuItem;
 import java.awt.event.ItemListener;
 import java.awt.event.ItemEvent;
-import javax.swing.JFrame;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JToggleButton;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.View;
@@ -83,6 +82,7 @@ import org.netbeans.api.editor.EditorActionRegistrations;
 import org.netbeans.api.editor.fold.Fold;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldUtilities;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.editor.lib2.search.EditorFindSupport;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.openide.util.NbBundle;
@@ -707,7 +707,12 @@ public class ActionFactory {
                                     int column = start - startLineStartOffset;
 
                                     // insert it after next line
-                                    doc.insertString(endLineEndOffset, linesText, null);
+                                    if (endLineEndOffset == doc.getLength() + 1) { // extra newline at doc end (not included in doc-len)
+                                        assert (linesText.charAt(linesText.length() - 1) == '\n');
+                                        doc.insertString(endLineEndOffset - 1, "\n" + linesText.substring(0, linesText.length() - 1), null);
+                                    } else { // Regular case
+                                        doc.insertString(endLineEndOffset, linesText, null);
+                                    }
 
                                     if (selection) {
                                         // select moved lines
@@ -1365,20 +1370,23 @@ public class ActionFactory {
                     target.replaceSelection(null);
                 }
 
-                final int dotPos = caret.getDot();
-                final String s = editorUI.getWordMatch().getMatchWord(dotPos, matchNext);
+                final int caretOffset = caret.getDot();
+                final String s = editorUI.getWordMatch().getMatchWord(caretOffset, matchNext);
                 final String prevWord = editorUI.getWordMatch().getPreviousWord();
                 if (s != null) {
                     doc.runAtomicAsUser (new Runnable () {
                         public void run () {
                             DocumentUtilities.setTypingModification(doc, true);
                             try {
-                                int pos = dotPos;
-                                if (prevWord != null && prevWord.length() > 0) {
-                                    pos -= prevWord.length();
-                                    doc.remove(pos, prevWord.length());
+                                int offset = caretOffset;
+                                boolean removePrevWord = (prevWord != null && prevWord.length() > 0);
+                                if (removePrevWord) {
+                                    offset -= prevWord.length();
                                 }
-                                doc.insertString(pos, s, null);
+                                // Create position due to possible text replication (e.g. for variable renaming)
+                                Position pos = doc.createPosition(offset);
+                                doc.remove(offset, prevWord.length());
+                                doc.insertString(pos.getOffset(), s, null);
                             } catch (BadLocationException e) {
                                 target.getToolkit().beep();
                             } finally {
@@ -1601,26 +1609,6 @@ public class ActionFactory {
             //#54893 putValue ("helpID", FormatAction.class.getName ()); // NOI18N
         }
 
-        private void showWaitCursor (Component target) {
-            Window w = SwingUtilities.getWindowAncestor(target);
-
-            if (w instanceof JFrame) {
-                Component c = ((JFrame) w).getGlassPane();
-                c.setVisible(true);
-                c.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-            }
-        }
-
-        private void showNormalCursor (Component target) {
-            Window w = SwingUtilities.getWindowAncestor(target);
-
-             if (w instanceof JFrame) {
-                Component c = ((JFrame) w).getGlassPane();
-                c.setCursor(null);
-                c.setVisible(false);
-             }
-         }
-
         public void actionPerformed (final ActionEvent evt, final JTextComponent target) {
             if (target != null) {
                 if (!target.isEditable() || !target.isEnabled()) {
@@ -1634,64 +1622,76 @@ public class ActionFactory {
                     return;
                 final GuardedDocument gdoc = (doc instanceof GuardedDocument)
                                        ? (GuardedDocument)doc : null;
-                
-                final Formatter formatter = doc.getFormatter();
-                formatter.reformatLock();
-                Formatter.pushFormattingContextDocument(doc);
+
                 try {
-                    // Set hourglass cursor
-                    showWaitCursor(target);
-                    doc.runAtomicAsUser (new Runnable () {
-                        public void run () {
-                            try {
+                final AtomicBoolean canceled = new AtomicBoolean();
+                ProgressUtils.runOffEventDispatchThread(new Runnable() {
+                    public void run() {
+                        if (canceled.get()) return;
+                        final Formatter formatter = doc.getFormatter();
+                        formatter.reformatLock();
+                        Formatter.pushFormattingContextDocument(doc);
+                        try {
+                            if (canceled.get()) return;
+                            doc.runAtomicAsUser (new Runnable () {
+                                public void run () {
+                                    try {
 
-                                int startPos;
-                                Position endPosition;
-                                if (Utilities.isSelectionShowing(caret)) {
-                                    startPos = target.getSelectionStart();
-                                    endPosition = doc.createPosition(target.getSelectionEnd());
-                                } else {
-                                    startPos = 0;
-                                    endPosition = doc.createPosition(doc.getLength());
-                                }
-
-                                int pos = startPos;
-                                if (gdoc != null) {
-                                    pos = gdoc.getGuardedBlockChain().adjustToBlockEnd(pos);
-                                }
-
-                                while (pos < endPosition.getOffset()) {
-                                    int stopPos = endPosition.getOffset();
-                                    if (gdoc != null) { // adjust to start of the next guarded block
-                                        stopPos = gdoc.getGuardedBlockChain().adjustToNextBlockStart(pos);
-                                        if (stopPos == -1 || stopPos > endPosition.getOffset()) {
-                                            stopPos = endPosition.getOffset();
+                                        int startPos;
+                                        Position endPosition;
+                                        if (Utilities.isSelectionShowing(caret)) {
+                                            startPos = target.getSelectionStart();
+                                            endPosition = doc.createPosition(target.getSelectionEnd());
+                                        } else {
+                                            startPos = 0;
+                                            endPosition = doc.createPosition(doc.getLength());
                                         }
-                                    }
 
-                                    if (pos < stopPos) {
-                                        int reformattedLen = formatter.reformat(doc, pos, stopPos);
-                                        pos = pos + reformattedLen;
-                                    } else {
-                                        pos++; //ensure to make progress
-                                    }
+                                        int pos = startPos;
+                                        if (gdoc != null) {
+                                            pos = gdoc.getGuardedBlockChain().adjustToBlockEnd(pos);
+                                        }
 
-                                    if (gdoc != null) { // adjust to end of current block
-                                        pos = gdoc.getGuardedBlockChain().adjustToBlockEnd(pos);
+                                        if (canceled.get()) return;
+                                        // Once we start formatting, the task can't be canceled
+                                        
+                                        while (pos < endPosition.getOffset()) {
+                                            int stopPos = endPosition.getOffset();
+                                            if (gdoc != null) { // adjust to start of the next guarded block
+                                                stopPos = gdoc.getGuardedBlockChain().adjustToNextBlockStart(pos);
+                                                if (stopPos == -1 || stopPos > endPosition.getOffset()) {
+                                                    stopPos = endPosition.getOffset();
+                                                }
+                                            }
+
+                                            if (pos < stopPos) {
+                                                int reformattedLen = formatter.reformat(doc, pos, stopPos);
+                                                pos = pos + reformattedLen;
+                                            } else {
+                                                pos++; //ensure to make progress
+                                            }
+
+                                            if (gdoc != null) { // adjust to end of current block
+                                                pos = gdoc.getGuardedBlockChain().adjustToBlockEnd(pos);
+                                            }
+                                        }
+
+                                    } catch (GuardedException e) {
+                                        target.getToolkit().beep();
+                                    } catch (BadLocationException e) {
+                                        Utilities.annotateLoggable(e);
                                     }
                                 }
-
-                            } catch (GuardedException e) {
-                                target.getToolkit().beep();
-                            } catch (BadLocationException e) {
-                                Utilities.annotateLoggable(e);
-                            }
+                            });
+                        } finally {
+                            Formatter.popFormattingContextDocument(doc);
+                            formatter.reformatUnlock();
                         }
-                    });
-                } finally {
-                    showNormalCursor(target);
-                    Formatter.popFormattingContextDocument(doc);
-                    formatter.reformatUnlock();
+                    }
+                }, NbBundle.getMessage(FormatAction.class, "Format_in_progress"), canceled, false); //NOI18N
+                } catch (Exception e) {
+                    // not sure about this, but was getting j.l.Exception that the operation is too slow - wtf?
+                    Logger.getLogger(FormatAction.class.getName()).log(Level.INFO, null, e);
                 }
             }
         }

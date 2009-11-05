@@ -182,7 +182,7 @@ made subject to such option by the copyright holder.
             <attr name="displayName" bundlevalue="org.netbeans.modules.options.colors.Bundle#FontsAndColors.Options.Export.Category.displayName"/>
             <attr name="position" intvalue="300"/>
             <file name="FontsAndColors">
-                <attr name="include" stringvalue="config/Editors.*/FontsColors/([^/]*)/.*"/>
+                <attr name="include" stringvalue="config/Editors.*/FontsColors/([^/]*)/.*|config/.nbattrs"/>
                 <attr name="displayName" bundlevalue="org.netbeans.modules.options.colors.Bundle#FontsAndColors.Options.Export.displayName"/>
             </file>
         </folder>

@@ -79,7 +79,7 @@ public class CreateStatementAnalyzerTest extends NbTestCase {
 
     public void testDetectKind() {
         assertNull(doDetectKind("foo"));
-        assertEquals(SQLStatementKind.CREATE, doDetectKind("#comment\n create"));
+        assertEquals(SQLStatementKind.CREATE, doDetectKind("# comment\n create"));
         assertEquals(SQLStatementKind.CREATE, doDetectKind("create procedure"));
     }
 
