@@ -50,13 +50,14 @@ made subject to such option by the copyright holder.
         <property name="test.result.dir" location="${java.io.tmpdir}"/>
         <property name="test.result.file"
                   location="${test.result.dir}/TEST-${classname}.xml"/>
+        <property  name="tmp.dir" value="${work.dir}"/>
         <macrodef name="junit-template">
             <element name="test-spec" implicit="yes"/>
             <sequential>
                 <translate-classpath classpath="${classpath}" targetProperty="classpath-translated" />
                 <property name="run.jvmargs" value="" />
                 <property name="work.dir" value="${basedir}"/>
-                <junit showoutput="true" fork="true" dir="${work.dir}" jvm="${platform.java}">
+                <junit showoutput="true" fork="true" dir="${work.dir}" jvm="${platform.java}" tempdir="${tmp.dir}">
                     <test-spec/>
                     <classpath path="${classpath-translated}" />
                     <jvmarg value="-ea"/>
