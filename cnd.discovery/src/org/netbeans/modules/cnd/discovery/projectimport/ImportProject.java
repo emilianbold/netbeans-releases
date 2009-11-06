@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.cnd.discovery.projectimport;
 
+import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.cnd.builds.ImportUtils;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -55,6 +56,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.WeakHashMap;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -65,6 +67,7 @@ import org.netbeans.modules.cnd.actions.CMakeAction;
 import org.netbeans.modules.cnd.actions.MakeAction;
 import org.netbeans.modules.cnd.actions.QMakeAction;
 import org.netbeans.modules.cnd.actions.ShellRunAction;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmListeners;
@@ -75,6 +78,7 @@ import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.api.utils.AllSourceFileFilter;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
@@ -101,6 +105,8 @@ import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -494,6 +500,20 @@ public class ImportProject implements PropertyChangeListener {
         if (!isProjectOpened()) {
             isFinished = true;
             return;
+        }
+        if (makefileFile != null && !makefileFile.exists()) {
+            ExecutionEnvironment developmentHost = CompilerSetManager.getDefaultExecutionEnvironment();
+            if (developmentHost.isRemote()) {
+                String remoteMakefile = HostInfoProvider.getMapper(developmentHost).getRemotePath(makefileFile.getAbsolutePath());
+                 Future<Integer> task = CommonTasksSupport.downloadFile(remoteMakefile, developmentHost, makefileFile.getAbsolutePath(), null);
+                try {
+                    int rc = task.get();
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (ExecutionException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
         }
         if (makefileFile != null && makefileFile.exists()) {
             FileObject makeFileObject = FileUtil.toFileObject(makefileFile);
