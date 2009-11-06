@@ -811,7 +811,6 @@ public class FunctionsListViewVisualizer extends JPanel implements
             PropertyEditor editor = PropertyEditorManager.findEditor(nameColumn.getColumnClass());
 
             Node node = currentChildren.getNodeAt(row);
-            System.out.println("Node @ row " + row + " is " + node.toString());
 
             if (editor != null && node != null && node instanceof FunctionCallNode) {
                 String sval = value.toString().trim();
