@@ -123,7 +123,7 @@ public class QueryHandleImpl extends QueryHandle implements ActionListener, Prop
         return ret;
     }
 
-    void refreshIfNeeded() {
+    synchronized void refreshIfNeeded() {
         if(needsRefresh) {
             needsRefresh = false;
             query.refresh();
