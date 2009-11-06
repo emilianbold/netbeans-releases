@@ -138,5 +138,14 @@ public abstract class ResourceHolder {
     /** Creates template of type clazz. */
     protected abstract DataObject createTemplate(Class clazz) throws IOException;
 
+    @Override
+    public String toString() {
+        return super.toString() +
+               "[resource=" +
+               String.valueOf(resource) +
+               ", resourceClasses=" +
+               Arrays.toString(resourceClasses) + ']'; // NOI18N
+    }
+
 }
 
