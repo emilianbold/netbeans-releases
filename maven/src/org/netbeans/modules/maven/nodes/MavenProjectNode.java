@@ -224,10 +224,11 @@ public class MavenProjectNode extends AbstractNode {
         buf.append(NbBundle.getMessage(MavenProjectNode.class, "DESC_Project2")).append("</i><b> ").append(project.getOriginalMavenProject().getGroupId()).append("</b><br><i>");//NOI18N
         buf.append(NbBundle.getMessage(MavenProjectNode.class, "DESC_Project3")).append("</i><b> ").append(project.getOriginalMavenProject().getArtifactId()).append("</b><br><i>");//NOI18N
         buf.append(NbBundle.getMessage(MavenProjectNode.class, "DESC_Project4")).append("</i><b> ").append(project.getOriginalMavenProject().getVersion()).append("</b><br><i>");//NOI18N
+        buf.append(NbBundle.getMessage(MavenProjectNode.class, "DESC_Project5")).append("</i><b> ").append(project.getOriginalMavenProject().getPackaging()).append("</b><br><i>");//NOI18N
         //TODO escape the short description
-        buf.append(NbBundle.getMessage(MavenProjectNode.class, "DESC_Project5")).append("</i> ").append(breakPerLine(desc, NbBundle.getMessage(MavenProjectNode.class, "DESC_Project5").length()));//NOI18N
+        buf.append(NbBundle.getMessage(MavenProjectNode.class, "DESC_Project6")).append("</i> ").append(breakPerLine(desc, NbBundle.getMessage(MavenProjectNode.class, "DESC_Project5").length()));//NOI18N
         if (reporter.getReports().size() > 0) {
-            buf.append("<br><b>").append(NbBundle.getMessage(MavenProjectNode.class, "DESC_Project6")).append("</b><br><ul>");//NOI18N
+            buf.append("<br><b>").append(NbBundle.getMessage(MavenProjectNode.class, "DESC_Project7")).append("</b><br><ul>");//NOI18N
             Iterator it = reporter.getReports().iterator();
             while (it.hasNext()) {
                 ProblemReport elem = (ProblemReport) it.next();
