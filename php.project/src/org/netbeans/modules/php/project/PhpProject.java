@@ -260,13 +260,38 @@ public class PhpProject implements Project {
 
     private FileObject resolveSourcesDirectory() {
         String srcDirProperty = eval.getProperty(PhpProjectProperties.SRC_DIR);
-        // # 168390 - more logging
+        // #168390, #165494
         if (srcDirProperty == null) {
-            LOGGER.info("[helper] project.properties: " + helper.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH));
-            LOGGER.info("[evaluator] Properties: " + eval.getProperties());
-            LOGGER.info("[helper] Properties: " + helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH));
+            FileObject projectProps = helper.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+            boolean found = projectProps != null;
+
+            StringBuilder buffer = new StringBuilder(2000);
+            buffer.append("Property 'src.dir' was not found in 'nbproject/project.properties' (NB metadata corrupted?)\n");
+            buffer.append("diagnostics:\n");
+            buffer.append("project.properties exists: ");
+            buffer.append(found);
+            if (found) {
+                boolean canRead = projectProps.canRead();
+                buffer.append("\nproject.properties valid: ");
+                buffer.append(projectProps.isValid());
+                buffer.append("\nproject.properties can read: ");
+                buffer.append(canRead);
+                if (canRead) {
+                    buffer.append("\nproject.properties content: [");
+                    try {
+                        buffer.append(projectProps.asText());
+                    } catch (IOException exc) {
+                        buffer.append(exc.getMessage());
+                    }
+                    buffer.append("]");
+                }
+            }
+            buffer.append("\nproperties (helper): ");
+            buffer.append(helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH));
+            buffer.append("\nproperties (evaluator): ");
+            buffer.append(eval.getProperties());
+            throw new IllegalStateException(buffer.toString());
         }
-        assert srcDirProperty != null : "Property for Sources must be defined";
         FileObject srcDir = helper.resolveFileObject(srcDirProperty);
         if (srcDir != null) {
             return srcDir;
