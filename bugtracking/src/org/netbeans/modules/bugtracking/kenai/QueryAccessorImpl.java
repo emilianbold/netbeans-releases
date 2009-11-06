@@ -46,7 +46,6 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -128,13 +127,15 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
             return getQueriesForNoRepo(project);
         }
 
+        // listen on repository events - e.g. a changed query list
         registerRepository(repo, project);
         
-        List<QueryHandle> queries = getQueryHandles(repo, project);
+        List<QueryHandle> queryHandles = getQueryHandles(repo, project);
 
-        registerProject(project, queries);
+        // listen on project events - e.g. project closed
+        registerProject(project, queryHandles);
 
-        return Collections.unmodifiableList(queries);
+        return Collections.unmodifiableList(queryHandles);
     }
 
     private List<QueryHandle> getQueriesForNoRepo(ProjectHandle project) {
@@ -227,7 +228,7 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
             
             if(KenaiSupport.BugtrackingType.JIRA == type) {
                 // JIRA always returns zero issues if not logged in. Showing zero
-                // in the resut would nbe missleading
+                // in the result would be missleading
                 ret = new LinkedList<QueryHandle>();
                 for (Query q : queries) {
                     ret.add(new NotLoggedInQueryHandle(q.getDisplayName()));
@@ -235,7 +236,7 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
             } else if(KenaiSupport.BugtrackingType.BUGZILLA == type) {
                 // not logged in so my issues makes no sense
                 // as we don't know who 'me' actually is. Other queries
-                // contains resonable results so keep them
+                // contain resonable results so keep them
                 ret = getQueryHandles(projectHandle, queries);
                 
                 Query myIssuesQuery = null;
@@ -367,7 +368,7 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
                 queryHandles.clear();
             }
         } else if(evt.getPropertyName().equals(Kenai.PROP_LOGIN)) {
-            if(evt.getNewValue() == null) {
+            if(evt.getNewValue() == null) { // means logged out
                 ProjectHandleListener[] pls;
                 synchronized(projectListeners) {
                     pls = projectListeners.values().toArray(new ProjectHandleListener[projectListeners.values().size()]);
