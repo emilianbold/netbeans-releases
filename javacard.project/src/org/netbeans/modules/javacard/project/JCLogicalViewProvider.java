@@ -43,7 +43,7 @@ package org.netbeans.modules.javacard.project;
 import java.awt.EventQueue;
 import java.awt.Image;
 import org.netbeans.api.project.*;
-import org.netbeans.modules.javacard.constants.ActionNames;
+import org.netbeans.modules.javacard.spi.ActionNames;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
@@ -198,19 +198,16 @@ class JCLogicalViewProvider implements LogicalViewProvider {
                         ActionNames.COMMAND_JC_DELETE,
                         bundle.getString("LBL_JCDelete_Action_Name"), null)); //NOI18N
             }
-
+            if(project.kind().isClassic()) {
+                    actions.add(ProjectSensitiveActions.projectCommandAction(
+                            ActionNames.COMMAND_JC_GENPROXY,
+                            bundle.getString("LBL_JCGenProxy_Action_Name"), null)); //NOI18N
+                    actions.add(null);
+            }
             actions.add(ProjectSensitiveActions.projectCommandAction(
                     ActionNames.COMMAND_JC_UNLOAD,
                     bundle.getString("LBL_JCUnload_Action_Name"), null)); //NOI18N
             actions.add(null);
-
-            if(project.kind().isClassic()) {
-                actions.add(ProjectSensitiveActions.projectCommandAction(
-                        ActionNames.COMMAND_JC_GENPROXY,
-                        bundle.getString("LBL_JCGenProxy_Action_Name"), null)); //NOI18N
-                actions.add(null);
-            }
-
             if (!project.kind().isLibrary()) {
                 actions.add(ProjectSensitiveActions.projectCommandAction(
                         ActionProvider.COMMAND_RUN,

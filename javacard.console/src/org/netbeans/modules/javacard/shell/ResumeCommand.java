@@ -40,6 +40,10 @@
  */
 package org.netbeans.modules.javacard.shell;
 
+import org.netbeans.modules.javacard.spi.CardState;
+import org.netbeans.modules.javacard.spi.capabilities.ResumeCapability;
+import org.openide.util.NbBundle;
+
 /**
  *
  * @author Anki R Nelaturu
@@ -47,7 +51,17 @@ package org.netbeans.modules.javacard.shell;
 final class ResumeCommand implements Command {
 
     public String execute(ShellPanel shellPanel, String[] args) throws ShellException {
-        shellPanel.getServer().resumeServer();
+        CardState state = shellPanel.getCard().getState();
+        if (state.isTransitionalState()) {
+            return NbBundle.getMessage(ResumeCommand.class,
+                    "ERR_TRANSITIONAL_STATE", shellPanel.getCard().getState()); //NOI18N
+        }
+        ResumeCapability cap = shellPanel.getCard().getLookup().lookup(ResumeCapability.class);
+        if (cap != null) {
+            cap.resume().awaitUninterruptibly();
+        } else {
+            return APDUSender.getString("ERR_RESUME_NOT_SUPPORTED");
+        }
         return APDUSender.getString("DONE"); //NOI18N
     }
 
