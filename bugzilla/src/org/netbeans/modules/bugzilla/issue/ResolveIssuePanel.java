@@ -66,6 +66,9 @@ public class ResolveIssuePanel extends javax.swing.JPanel {
     public ResolveIssuePanel(BugzillaIssue issue) {
         this.issue = issue;
         initComponents();
+        // workaround for 0 size container gap caused by invisible duplicatePanel
+        ((org.jdesktop.layout.GroupLayout)getLayout()).setHonorsVisibility(false);
+
         BugzillaRepository repository = issue.getBugzillaRepository();
         BugzillaConfiguration bc = repository.getConfiguration();
         if(bc == null || !bc.isValid()) {
@@ -112,7 +115,7 @@ public class ResolveIssuePanel extends javax.swing.JPanel {
         commentLabel.setLabelFor(textArea);
         org.openide.awt.Mnemonics.setLocalizedText(commentLabel, org.openide.util.NbBundle.getMessage(ResolveIssuePanel.class, "ResolveIssuePanel.commentLabel.text")); // NOI18N
 
-        textArea.setColumns(40);
+        textArea.setColumns(80);
         textArea.setRows(5);
         scrollPane.setViewportView(textArea);
         textArea.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ResolveIssuePanel.class, "ResolveIssuePanel.textArea.AccessibleContext.accessibleDescription")); // NOI18N
@@ -168,7 +171,7 @@ public class ResolveIssuePanel extends javax.swing.JPanel {
                         .add(resolutionCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                         .add(duplicatePanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(scrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 665, Short.MAX_VALUE))
+                    .add(scrollPane))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -183,7 +186,7 @@ public class ResolveIssuePanel extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(commentLabel)
-                    .add(scrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 168, Short.MAX_VALUE))
+                    .add(scrollPane))
                 .addContainerGap())
         );
 
