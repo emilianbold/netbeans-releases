@@ -45,7 +45,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
 import java.io.DataOutput;
 import java.util.*;
 import org.netbeans.modules.cnd.api.model.*;
-import antlr.collections.AST;
+import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.DataInput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.util.UIDs;

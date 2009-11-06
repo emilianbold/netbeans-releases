@@ -41,9 +41,9 @@
 
 package org.netbeans.modules.cnd.modelimpl.parser;
 
-import antlr.BaseAST;
-import antlr.Token;
-import antlr.collections.AST;
+import org.netbeans.modules.cnd.antlr.BaseAST;
+import org.netbeans.modules.cnd.antlr.Token;
+import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;

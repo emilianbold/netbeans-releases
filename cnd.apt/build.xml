@@ -64,13 +64,13 @@ made subject to such option by the copyright holder.
     
     <target name="antlr" depends="init-antlr" unless="up-to-date">
         <mkdir dir="${antlr.apt.output.dir}"/>
-        <java classname="antlr.Tool" fork="true">
+        <java classname="org.netbeans.modules.cnd.antlr.Tool" fork="true">
             <arg value="-o"/>
             <arg value="${antlr.apt.output.dir}"/>
             <arg value="${antlr.apt.grammar.dir}/aptlexer.g"/>
             <classpath path="${antlr.jar}"/>
         </java>        
-        <java classname="antlr.Tool" fork="true">
+        <java classname="org.netbeans.modules.cnd.antlr.Tool" fork="true">
             <arg value="-o"/>
             <arg value="${antlr.apt.output.dir}"/>
             <arg value="${antlr.apt.grammar.dir}/aptexpr.g"/>

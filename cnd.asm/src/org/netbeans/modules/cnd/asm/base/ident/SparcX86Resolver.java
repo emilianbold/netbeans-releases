@@ -49,8 +49,8 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import antlr.Token;
-import antlr.TokenStreamException;
+import org.netbeans.modules.cnd.antlr.Token;
+import org.netbeans.modules.cnd.antlr.TokenStreamException;
 
 import org.netbeans.modules.cnd.asm.model.AbstractAsmModel;
 import org.netbeans.modules.cnd.asm.model.AsmModelProvider;

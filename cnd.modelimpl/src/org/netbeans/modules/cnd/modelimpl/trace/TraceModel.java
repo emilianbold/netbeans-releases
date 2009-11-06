@@ -56,8 +56,8 @@ import java.io.*;
 import java.util.*;
 import java.util.List;
 
-import antlr.*;
-import antlr.collections.*;
+import org.netbeans.modules.cnd.antlr.*;
+import org.netbeans.modules.cnd.antlr.collections.*;
 
 import java.util.concurrent.ConcurrentHashMap;
 import org.netbeans.api.queries.FileEncodingQuery;

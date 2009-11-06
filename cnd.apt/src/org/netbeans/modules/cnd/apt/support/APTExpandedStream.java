@@ -41,10 +41,10 @@
 
 package org.netbeans.modules.cnd.apt.support;
 
-import antlr.RecognitionException;
-import antlr.TokenStream;
-import antlr.TokenStreamException;
-import antlr.TokenStreamSelector;
+import org.netbeans.modules.cnd.antlr.RecognitionException;
+import org.netbeans.modules.cnd.antlr.TokenStream;
+import org.netbeans.modules.cnd.antlr.TokenStreamException;
+import org.netbeans.modules.cnd.antlr.TokenStreamSelector;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;

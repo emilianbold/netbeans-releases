@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.cnd.apt.structure;
 
-import antlr.TokenStream;
+import org.netbeans.modules.cnd.antlr.TokenStream;
 
 /**
  * unknown #-directive with it's content till end of line

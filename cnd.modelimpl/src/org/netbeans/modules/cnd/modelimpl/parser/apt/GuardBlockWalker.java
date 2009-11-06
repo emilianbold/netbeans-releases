@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.cnd.modelimpl.parser.apt;
 
-import antlr.Token;
+import org.netbeans.modules.cnd.antlr.Token;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.structure.APTIfndef;

@@ -41,8 +41,8 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import antlr.ASTVisitor;
-import antlr.collections.AST;
+import org.netbeans.modules.cnd.antlr.ASTVisitor;
+import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;

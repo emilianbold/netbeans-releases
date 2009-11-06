@@ -50,9 +50,9 @@ package org.netbeans.modules.cnd.apt.impl.support.generated;
 import java.io.*;
 import java.util.*;
 
-import antlr.*;
-import antlr.collections.*;
-import antlr.debug.misc.*;
+import org.netbeans.modules.cnd.antlr.*;
+import org.netbeans.modules.cnd.antlr.collections.*;
+import org.netbeans.modules.cnd.antlr.debug.misc.*;
 import org.netbeans.modules.cnd.apt.support.APTMacroCallback;
 import org.netbeans.modules.cnd.apt.support.APTBaseToken;
 import org.netbeans.modules.cnd.apt.support.APTToken;

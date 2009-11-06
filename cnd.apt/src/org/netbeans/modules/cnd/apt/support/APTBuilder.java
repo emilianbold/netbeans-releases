@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.cnd.apt.support;
 
-import antlr.TokenStream;
+import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.apt.impl.structure.APTBuilderImpl;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
