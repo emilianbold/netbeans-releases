@@ -221,7 +221,7 @@ public class ImportProject implements PropertyChangeListener {
         runConfigure = "true".equals(wizard.getProperty("runConfigure")); // NOI18N
         consolidationStrategy = (String) wizard.getProperty("consolidationLevel"); // NOI18N
         @SuppressWarnings("unchecked")
-        Iterator<SourceFolderInfo> it = (Iterator) wizard.getProperty("sourceFolders"); // NOI18N
+        Iterator<SourceFolderInfo> it = (Iterator<SourceFolderInfo>) wizard.getProperty("sourceFolders"); // NOI18N
         sources = it;
         sourceFoldersFilter = (String) wizard.getProperty("sourceFoldersFilter"); // NOI18N
         runConfigure = "true".equals(wizard.getProperty("runConfigure")); // NOI18N
@@ -766,7 +766,7 @@ public class ImportProject implements PropertyChangeListener {
                             logger.log(Level.INFO, "#start fix macros by log file " + makeLog.getAbsolutePath()); // NOI18N
                         }
                         @SuppressWarnings("unchecked")
-                        List<ProjectConfiguration> confs = (List) map.get(DiscoveryWizardDescriptor.CONFIGURATIONS);
+                        List<ProjectConfiguration> confs = (List<ProjectConfiguration>) map.get(DiscoveryWizardDescriptor.CONFIGURATIONS);
                         fixMacros(confs);
                         importResult.put(Step.FixMacros, State.Successful);
                     } else {
