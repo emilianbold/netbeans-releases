@@ -660,6 +660,8 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
             boolean isArray = false;
             while (variable.getKind() == Tree.Kind.ARRAY_ACCESS) {
                 isArray = true;
+                // int[] a; a[a[0]][a[1]] = 0; // scan also array indices
+                scan(((ArrayAccessTree) variable).getIndex(), field);
                 variable = ((ArrayAccessTree) variable).getExpression();
             }
             
