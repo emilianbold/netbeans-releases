@@ -43,29 +43,55 @@ package org.netbeans.modules.javacard.project;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.modules.java.api.common.SourceRoots;
-import org.netbeans.modules.javacard.Utils;
-import org.netbeans.modules.javacard.api.Card;
-import org.netbeans.modules.javacard.constants.ActionNames;
+import org.netbeans.modules.javacard.common.Utils;
+import org.netbeans.modules.javacard.spi.ActionNames;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.execution.ExecutorTask;
-import org.openide.filesystems.*;
 import org.openide.loaders.DataObject;
-import org.openide.util.*;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
-import org.netbeans.modules.javacard.api.CardState;
-import org.netbeans.modules.javacard.api.JavacardPlatform;
-import org.netbeans.modules.javacard.card.ReferenceImplementation;
-import org.netbeans.modules.javacard.card.loader.CardDataObject;
+import org.netbeans.modules.javacard.JCUtil;
+import org.netbeans.modules.javacard.api.RunMode;
+import org.netbeans.modules.javacard.common.NodeRefresher;
+import org.netbeans.modules.javacard.spi.capabilities.AntTargetInterceptor;
+import org.netbeans.modules.javacard.spi.capabilities.AntTarget;
+import org.netbeans.modules.javacard.spi.Card;
+import org.netbeans.modules.javacard.spi.capabilities.CardInfo;
+import org.netbeans.modules.javacard.spi.CardState;
+import org.netbeans.modules.javacard.spi.capabilities.DebugCapability;
+import org.netbeans.modules.javacard.spi.JavacardPlatform;
+import org.netbeans.modules.javacard.spi.capabilities.PortKind;
+import org.netbeans.modules.javacard.spi.capabilities.PortProvider;
+import org.netbeans.modules.javacard.spi.capabilities.StartCapability;
+import org.netbeans.modules.javacard.spi.capabilities.StopCapability;
 import org.openide.awt.StatusDisplayer;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.TaskListener;
 
 
 public class JCProjectActionProvider implements ActionProvider, PropertyChangeListener {
@@ -74,7 +100,7 @@ public class JCProjectActionProvider implements ActionProvider, PropertyChangeLi
         COMMAND_BUILD,
         COMMAND_CLEAN,
         COMMAND_RUN,
-        //COMMAND_DEBUG,
+        COMMAND_DEBUG,
         COMMAND_REBUILD,
         COMMAND_DELETE,
         COMMAND_COPY,
@@ -89,7 +115,7 @@ public class JCProjectActionProvider implements ActionProvider, PropertyChangeLi
         COMMAND_BUILD,
         COMMAND_CLEAN,
         COMMAND_RUN,
-        //COMMAND_DEBUG,
+        COMMAND_DEBUG,
         COMMAND_REBUILD,
         COMMAND_DELETE,
         COMMAND_COPY,
@@ -197,7 +223,6 @@ public class JCProjectActionProvider implements ActionProvider, PropertyChangeLi
                 sa = extLibSupportedActions;
             }
         }
-
         return sa;
     }
 
@@ -222,6 +247,8 @@ public class JCProjectActionProvider implements ActionProvider, PropertyChangeLi
             DefaultProjectOperations.performDefaultRenameOperation(project, null);
             return;
         }
+        final boolean debug = COMMAND_DEBUG.equals(command) || COMMAND_DEBUG_SINGLE.equals(command) ||
+                COMMAND_DEBUG_STEP_INTO.equals(command) || COMMAND_DEBUG_TEST_SINGLE.equals(command);
 
         final Runnable action = new Runnable() {
 
@@ -240,39 +267,52 @@ public class JCProjectActionProvider implements ActionProvider, PropertyChangeLi
                     props = null;
                 }
                 try {
-                    FileObject buildFo = Utils.findBuildXml(project);
+                    FileObject buildFo = JCUtil.findBuildXml(project);
                     if (buildFo == null || !buildFo.isValid()) {
                         //The build.xml was deleted after the isActionEnabled was called
                         NotifyDescriptor nd = new NotifyDescriptor.Message(
                                 NbBundle.getMessage(JCProjectActionProvider.class,
-                                "LBL_No_Build_XML_Found"), NotifyDescriptor.WARNING_MESSAGE);
+                                "LBL_No_Build_XML_Found"), NotifyDescriptor.WARNING_MESSAGE); //NOI18N
                         DialogDisplayer.getDefault().notify(nd);
                     } else {
                         final Card card = project.getCard();
                         boolean start = ActionNames.COMMAND_JC_CREATE.equals(command) || ActionNames.COMMAND_JC_DELETE.equals(command) ||
                                 ActionNames.COMMAND_JC_LOAD.equals(command) || ActionNames.COMMAND_JC_UNLOAD.equals(command);
-                        if (start && card.isNotRunning()) {
+                        CardState state = card.getState();
+                        CardInfo info = card.getCapability(CardInfo.class);
+                        StartCapability starter = card.getCapability(StartCapability.class);
+                        if (start && state.isNotRunning()) {
                             try {
                                 StatusDisplayer.getDefault().setStatusText(
                                     NbBundle.getMessage(JCProjectActionProvider.class,
                                     "MSG_STARTING_SERVER",  //NOI18N
-                                    card.getDisplayName()));
-                                card.startServer(false, project).await();
+                                    info == null ? card.toString() : info.getDisplayName()));
+                                starter.start(debug ? RunMode.DEBUG : RunMode.RUN, project).await();
                             } catch (InterruptedException ex) {
-                                if (!card.isRunning()) {
+                                if (!card.getState().isRunning()) {
+                                    String name = card.getCapability(CardInfo.class) == null ? card.toString() :
+                                        card.getCapability(CardInfo.class).getDisplayName();
                                     StatusDisplayer.getDefault().setStatusText(
                                             NbBundle.getMessage(
                                             JCProjectActionProvider.class,
                                             "MSG_WAIT_FAILED", //NOI18N
-                                            card.getDisplayName()));
+                                            name));
                                     return;
                                 }
                             }
                         }
 
+                        AntTargetInterceptor icept = card.getCapability(AntTargetInterceptor.class);
+                        boolean run = icept == null;
+                        if (!run) {
+                            AntTarget target = AntTarget.forName(command);
+                            run = icept.onBeforeInvokeTarget(project, target, props);
+                        }
+
+                        if (run)
                         ActionUtils.runTarget(buildFo, targetNames, props).addTaskListener(new TaskListener() {
 
-                            public void taskFinished(Task task) {
+                            public void taskFinished(org.openide.util.Task task) {
                                 if (((ExecutorTask) task).result() != 0) {
                                     synchronized (JCProjectActionProvider.this) {
                                         // If build fails, disable optimization
@@ -285,10 +325,13 @@ public class JCProjectActionProvider implements ActionProvider, PropertyChangeLi
                                 }
                                 JavacardPlatform platform = project.getPlatform();
                                 String platformName = platform.getSystemName();
-                                String cardName = card.getId();
+                                CardInfo info = card.getCapability(CardInfo.class);
+                                String cardName = info == null ? card.toString() : info.getSystemId();
                                 DataObject dob = Utils.findDeviceForPlatform(platformName, cardName);
-                                if (dob instanceof CardDataObject) {
-                                    ((CardDataObject) dob).refreshNode();
+                                NodeRefresher n = dob == null ? null :
+                                    dob.getLookup().lookup(NodeRefresher.class);
+                                if (n != null) {
+                                    n.refreshNode();
                                 }
                             }
                         });
@@ -342,29 +385,36 @@ public class JCProjectActionProvider implements ActionProvider, PropertyChangeLi
                 public void run() {
                     try {
                         Card card = project.getCard();
-                        if (card.isRunning()) {
+                        StopCapability stopper = card.getCapability(StopCapability.class);
+                        if (card.getState().isRunning() && stopper != null) {
                             StatusDisplayer.getDefault().setStatusText(
                                     NbBundle.getMessage(JCProjectActionProvider.class, "MSG_STOPPING_SERVER"));
-                            card.stopServer();
+                            stopper.stop().await();
                         }
-                        Condition c = card.startServer(true, project);
-                        assert c != null;
-                        StatusDisplayer.getDefault().setStatusText(
-                                NbBundle.getMessage(JCProjectActionProvider.class, "MSG_WAIT_FOR_SERVER"));
-                        c.await(30000, TimeUnit.MILLISECONDS);
-                        if (card instanceof ReferenceImplementation) {
+                        StartCapability starter = card.getCapability(StartCapability.class);
+
+                        if (starter != null) {
+                            Condition c = starter.start(RunMode.DEBUG, project);
+                            assert c != null;
+                            StatusDisplayer.getDefault().setStatusText(
+                                    NbBundle.getMessage(JCProjectActionProvider.class, "MSG_WAIT_FOR_SERVER"));
+                            c.await(30000, TimeUnit.MILLISECONDS);
+                        }
+                        //XXX move this stuff into a DebugCapability or something
+                        if (card.getCapability(DebugCapability.class) != null && card.getCapability(PortProvider.class)!= null) {
                             //XXX should not need to sleep here, but RI seems
-                            //to need some time to initialize
+                            //to need some time to initialize.
+                            //Pending - parse output and trigger
                             Thread.sleep(4000);
                             // get the port numbers from card instance
-                            String p2iPort = ((ReferenceImplementation) card).getProxy2idePort();
+                            PortProvider p = card.getCapability(PortProvider.class);
+                            int attachPort = p.getPort(PortKind.DEBUG_RUNTIME_TO_IDE_PROXY);
+                            String host = p.getHost();
                             JPDADebugger de = JPDADebugger.attach(
-                                    "localhost", Integer.parseInt(p2iPort),
-                                    new Object[]{card.getId() +
+                                    host, attachPort,
+                                    new Object[]{card.getSystemId() +
                                     " - [Debugger]", "SocketAttach", "dt_socket"}); //NOI18N
                             de.addPropertyChangeListener(JCProjectActionProvider.this);
-                        } else {
-                            throw new UnsupportedOperationException ("Debug only implemented for reference impl");
                         }
                     } catch (Exception ex) {
                         Exceptions.printStackTrace(ex);
@@ -379,49 +429,59 @@ public class JCProjectActionProvider implements ActionProvider, PropertyChangeLi
             if (card == null) {
                 return new String[0];
             }
-            if (card.getState() == CardState.RUNNING_IN_DEBUG_MODE) {
+            StopCapability stopper = card.getCapability(StopCapability.class);
+            if (stopper != null && card.getState() == CardState.RUNNING_IN_DEBUG_MODE) {
                 StatusDisplayer.getDefault().setStatusText(
-                        NbBundle.getMessage(JCProjectActionProvider.class, "MSG_STOPPING_SERVER"));
-                card.stopServer();
+                        NbBundle.getMessage(JCProjectActionProvider.class, "MSG_STOPPING_SERVER")); //NOI18N
+                Condition c = stopper.stop();
+                if (c != null) {
+                    try {
+                        c.await(30000, TimeUnit.MILLISECONDS);
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
             }
-            if (card.getState().isNotRunning()) {
-                Condition c = card.startServer(false, project);
+            StartCapability starter = card.getCapability(StartCapability.class);
+            if (starter != null && card.getState().isNotRunning()) {
+                Condition c = starter.start(RunMode.RUN, project);
                 assert c != null;
                 StatusDisplayer.getDefault().setStatusText(
-                        NbBundle.getMessage(JCProjectActionProvider.class, "MSG_WAIT_FOR_SERVER"));
+                        NbBundle.getMessage(JCProjectActionProvider.class, "MSG_WAIT_FOR_SERVER")); //NOI18N
                 try {
                     c.await(30000, TimeUnit.MILLISECONDS);
                 } catch (InterruptedException ex) {
                     Exceptions.printStackTrace(ex);
                 }
             }
-            targets.add("run");
+            targets.add("run"); //NOI18N
         } else if (ActionNames.COMMAND_JC_LOAD.equals(command)) {
             if (needRebuild) {
-                targets.add("build");
+                targets.add("build"); //NOI18N
             }
-            targets.add("load-bundle");
+            targets.add("load-bundle"); //NOI18N
         } else if (project.kind().isApplication() && ActionNames.COMMAND_JC_CREATE.equals(command)) {
-            targets.add("create-instance");
+            targets.add("create-instance"); //NOI18N
         } else if (project.kind().isApplication() && ActionNames.COMMAND_JC_DELETE.equals(command)) {
-            targets.add("delete-instance");
+            targets.add("delete-instance"); //NOI18N
         } else if (ActionNames.COMMAND_JC_UNLOAD.equals(command)) {
-            targets.add("unload-bundle");
+            targets.add("unload-bundle"); //NOI18N
         } else if (ActionNames.COMMAND_JC_GENPROXY.equals(command)) {
-            targets.add("generate-sio-proxies");
+            targets.add("generate-sio-proxies"); //NOI18N
         }
-
         return targets.toArray(new String[targets.size()]);
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
         String name = evt.getPropertyName();
-        String ov = String.valueOf(evt.getOldValue());
         String nv = String.valueOf(evt.getNewValue());
         //4 - ???
-        if ("state".equals(name) && "4".equals(nv)) {
+        if ("state".equals(name) && "4".equals(nv)) { //NOI18N
             final Card server = project.getCard();
-            server.stopServer();
+            StopCapability stopper = server.getCapability(StopCapability.class);
+            if (stopper != null) {
+                stopper.stop();
+            }
         }
     }
 }

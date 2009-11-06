@@ -40,11 +40,9 @@
  */
 package org.netbeans.modules.javacard.shell;
 
-import com.sun.javacard.apduio.CadTransportException;
-import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.javacard.Utils;
+import org.netbeans.modules.javacard.common.Utils;
 
 /**
  *

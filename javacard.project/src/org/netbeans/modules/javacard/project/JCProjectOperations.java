@@ -42,7 +42,6 @@ package org.netbeans.modules.javacard.project;
 
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.javacard.api.ProjectKind;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.CopyOperationImplementation;
 import org.netbeans.spi.project.DeleteOperationImplementation;
@@ -57,6 +56,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+import org.netbeans.modules.javacard.spi.ProjectKind;
 
 public class JCProjectOperations implements DeleteOperationImplementation,
         CopyOperationImplementation, MoveOperationImplementation {
