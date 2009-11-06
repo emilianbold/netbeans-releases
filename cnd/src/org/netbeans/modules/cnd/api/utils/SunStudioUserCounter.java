@@ -86,6 +86,9 @@ public final class SunStudioUserCounter {
         if (appType == null) {
             // default is CND
             appType = IDEType.CND;
+            if (CndUtils.isUnitTestMode()) {
+                return IDEType.CND;
+            }
             // check for SS IDE
             Collection<? extends ModuleInfo> modules = Lookup.getDefault().lookupAll(ModuleInfo.class);
             for (ModuleInfo moduleInfo : modules) {
@@ -105,6 +108,9 @@ public final class SunStudioUserCounter {
     }
 
     public static void countIDE(final String basePath, final ExecutionEnvironment execEnv) {
+        if (SUNW_NO_UPDATE_NOTIFY) {
+            return;
+        }
         final String tag;
         IDEType type = getIDEType();
         switch (type) {
@@ -121,7 +127,10 @@ public final class SunStudioUserCounter {
     }
 
     public static void countTool(final String basePath, final ExecutionEnvironment execEnv, final String toolTag) {
-        if (!SUNW_NO_UPDATE_NOTIFY && ConnectionManager.getInstance().isConnectedTo(execEnv)) {
+        if (SUNW_NO_UPDATE_NOTIFY) {
+            return;
+        }
+        if (ConnectionManager.getInstance().isConnectedTo(execEnv)) {
             SS_USER_COUNT.post(new Runnable() {
                 public void run() {
                     NativeProcessBuilder nb = NativeProcessBuilder.newProcessBuilder(execEnv).setExecutable(basePath + "/../prod/bin/check_update").setArguments(toolTag); // NOI18N
