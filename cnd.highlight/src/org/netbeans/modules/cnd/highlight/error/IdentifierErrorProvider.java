@@ -158,7 +158,7 @@ public class IdentifierErrorProvider extends CsmErrorProvider {
                     response.addError(new IdentifierErrorInfo(
                             ref.getStartOffset(), ref.getEndOffset(),
                             ref.getText().toString(), severity));
-                } else if (referencedObject instanceof CsmFunction) {
+                } else if (false && referencedObject instanceof CsmFunction) {
                     // Check for function usages befor it's declaration
                     if (CsmReferenceResolver.getDefault().isKindOf(ref, EnumSet.of(CsmReferenceKind.DEFINITION,
                             CsmReferenceKind.DECLARATION,
