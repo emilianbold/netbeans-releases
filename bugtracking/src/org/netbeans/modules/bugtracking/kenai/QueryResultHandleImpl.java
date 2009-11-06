@@ -60,7 +60,6 @@ import org.openide.util.NbBundle;
 public class QueryResultHandleImpl extends QueryResultHandle implements ActionListener {
 
 
-
     private final Query query;
     private final String label;
     private final String tooltip;
@@ -125,15 +124,15 @@ public class QueryResultHandleImpl extends QueryResultHandle implements ActionLi
 
             case IssueCache.ISSUE_STATUS_NOT_SEEN:
 
-                int notIssues = 0;
+                int unseenIssues = 0;
                 issues = query.getIssues(IssueCache.ISSUE_STATUS_NOT_SEEN);
                 if(issues == null || issues.length == 0) {
                     return null;
                 }
-                notIssues = issues.length;
+                unseenIssues = issues.length;
 
-                String label = unseenFormat.format(new Object[] {notIssues}, new StringBuffer(), null).toString();
-                String tooltip = unseenTooltipFormat.format(new Object[] {notIssues}, new StringBuffer(), null).toString();
+                String label = unseenFormat.format(new Object[] {unseenIssues}, new StringBuffer(), null).toString();
+                String tooltip = getUnseenTooltip(unseenIssues);
                 
                 return new QueryResultHandleImpl(
                         query,
@@ -175,7 +174,7 @@ public class QueryResultHandleImpl extends QueryResultHandle implements ActionLi
         return new QueryResultHandleImpl(
                 query,
                 Integer.toString(notIssues),
-                getTotalTooltip(notIssues),
+                getUnseenTooltip(notIssues),
                 Filter.getNotSeenFilter(),
                 ResultType.ALL_CHANGES_RESULT);
     }
@@ -195,4 +194,14 @@ public class QueryResultHandleImpl extends QueryResultHandle implements ActionLi
             return newTooltipFormat.format(new Object[] {newIssues}, new StringBuffer(), null).toString();
         }
     }
+
+    private static String getUnseenTooltip(int unseenIssues) {
+        if(unseenIssues == 1) {
+            return NbBundle.getMessage(QueryResultHandleImpl.class, "LBL_QueryResultUnseen1Tooltip");
+        } else {
+            return unseenTooltipFormat.format(new Object[]{unseenIssues}, new StringBuffer(), null).toString();
+        }
+    }
+
+
 }
