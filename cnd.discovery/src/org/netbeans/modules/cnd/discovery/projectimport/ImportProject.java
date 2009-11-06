@@ -107,6 +107,7 @@ import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -496,25 +497,34 @@ public class ImportProject implements PropertyChangeListener {
         }
     }
 
+    private void downloadRemoteFile(File file){
+        if (file != null && !file.exists()) {
+            ExecutionEnvironment developmentHost = CompilerSetManager.getDefaultExecutionEnvironment();
+            if (developmentHost.isRemote()) {
+                String remoteFile = HostInfoProvider.getMapper(developmentHost).getRemotePath(file.getAbsolutePath());
+                try {
+                    if (HostInfoUtils.fileExists(developmentHost, remoteFile)){
+                        Future<Integer> task = CommonTasksSupport.downloadFile(remoteFile, developmentHost, file.getAbsolutePath(), null);
+                        /*int rc =*/ task.get();
+                    }
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (ExecutionException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+    }
+
     private void makeProject(boolean doClean) {
         if (!isProjectOpened()) {
             isFinished = true;
             return;
         }
-        if (makefileFile != null && !makefileFile.exists()) {
-            ExecutionEnvironment developmentHost = CompilerSetManager.getDefaultExecutionEnvironment();
-            if (developmentHost.isRemote()) {
-                String remoteMakefile = HostInfoProvider.getMapper(developmentHost).getRemotePath(makefileFile.getAbsolutePath());
-                 Future<Integer> task = CommonTasksSupport.downloadFile(remoteMakefile, developmentHost, makefileFile.getAbsolutePath(), null);
-                try {
-                    int rc = task.get();
-                } catch (InterruptedException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (ExecutionException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-        }
+        downloadRemoteFile(makefileFile);
+        downloadRemoteFile(new File(projectFolder, "config.h")); // NOI18N
         if (makefileFile != null && makefileFile.exists()) {
             FileObject makeFileObject = FileUtil.toFileObject(makefileFile);
             DataObject dObj;
