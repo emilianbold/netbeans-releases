@@ -48,9 +48,9 @@ import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.tree.*;
 
-import antlr.*;
-import antlr.debug.misc.*;
-import antlr.collections.*;
+import org.netbeans.modules.cnd.antlr.*;
+import org.netbeans.modules.cnd.antlr.debug.misc.*;
+import org.netbeans.modules.cnd.antlr.collections.*;
 
 /**
  * @author Vladimir Kvasihn

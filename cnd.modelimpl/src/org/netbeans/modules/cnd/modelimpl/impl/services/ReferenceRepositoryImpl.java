@@ -41,8 +41,8 @@
 
 package org.netbeans.modules.cnd.modelimpl.impl.services;
 
-import antlr.TokenStream;
-import antlr.TokenStreamException;
+import org.netbeans.modules.cnd.antlr.TokenStream;
+import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Reader;
