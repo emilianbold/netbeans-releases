@@ -100,6 +100,7 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
     
     private static final Image ICON = ImageUtilities.loadImage("org/netbeans/modules/db/mysql/resources/catalog.gif");
     private static final Image ERROR_BADGE = ImageUtilities.loadImage("org/netbeans/modules/db/mysql/resources/error-badge.gif");
+    private static boolean first = true;
 
     private volatile String displayName;
     private volatile String shortDescription;
@@ -914,7 +915,10 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
         InputOutput io = org.openide.windows.IOProvider.getDefault().getIO(
                 Utils.getMessage("LBL_MySQLOutputTab"), false); // NOI18N
         if (io != null && io.getOut() != null) {
-            io.getOut().println(' ');
+            if (first) {
+                first = false;
+                io.getOut().println(' ');
+            }
             io.getOut().close();
         }
     }
