@@ -45,6 +45,7 @@ import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
 import org.netbeans.modules.websvc.rest.model.api.RestServices;
@@ -92,7 +93,10 @@ public class RestConfigurationAction extends NodeAction  {
             String oldApplicationPath = "/resources"; //NOI18N
             try {
                 if (oldConfigType.equals( WebRestSupport.CONFIG_TYPE_DD)) {
-                    oldApplicationPath = restSupport.getApplicationPath();
+                    String oldPathFromDD = restSupport.getApplicationPathFromDD();
+                    if (oldPathFromDD != null) {
+                        oldApplicationPath = oldPathFromDD;
+                    }
                 } else if (oldConfigType.equals( WebRestSupport.CONFIG_TYPE_IDE)) {
                     String resourcesPath = restSupport.getProjectProperty(WebRestSupport.PROP_REST_RESOURCES_PATH);
                     if (resourcesPath != null && resourcesPath.length()>0) {
