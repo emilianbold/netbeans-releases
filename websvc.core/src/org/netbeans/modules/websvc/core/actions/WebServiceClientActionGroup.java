@@ -44,6 +44,9 @@ import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.websvc.project.api.WebServiceData;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -52,7 +55,6 @@ import org.openide.util.actions.Presenter;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.actions.SystemAction;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
-import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
 import org.openide.util.Lookup;
 
 /**
@@ -104,14 +106,16 @@ public class WebServiceClientActionGroup extends NodeAction implements Presenter
 		Node[] activatedNodes = getActivatedNodes();
 		DataObject dobj = (DataObject)activatedNodes[0].getLookup().lookup(DataObject.class);
 		if(dobj != null) {
-                    JAXWSClientSupport jaxWsClientSupport = JAXWSClientSupport.getJaxWsClientSupport(dobj.getPrimaryFile());
-                    if (jaxWsClientSupport != null) return true;
-                    WebServicesClientSupport clientSupport = WebServicesClientSupport.getWebServicesClientSupport(dobj.getPrimaryFile());
-                    if(clientSupport != null) {
-                            // !PW FIXME add code to confirm that the project actually has
-                            // clients added to it.
-                            return true;
-                    }
+            Project prj = FileOwnerQuery.getOwner(dobj.getPrimaryFile());
+            if (WebServiceData.getWebServiceData(prj) != null) {
+                return true;
+            }
+            WebServicesClientSupport clientSupport = WebServicesClientSupport.getWebServicesClientSupport(dobj.getPrimaryFile());
+            if(clientSupport != null) {
+                    // !PW FIXME add code to confirm that the project actually has
+                    // clients added to it.
+                    return true;
+            }                   
 		}
 		return false;
 	}

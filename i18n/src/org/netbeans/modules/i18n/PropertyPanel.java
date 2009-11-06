@@ -546,15 +546,30 @@ public class PropertyPanel extends JPanel {
         ResourceHolder rh = i18nString.getSupport().getResourceHolder();
         DataObject template;
         try {
-            template = rh.getTemplate(rh.getResourceClasses()[0]);
+            Class resourceClass = rh.getResourceClasses()[0];
+            template = rh.getTemplate(resourceClass);
+            if(template==null) { // #175881
+                throw new NullPointerException(
+                        "A template is not created for the class " +
+                        resourceClass +
+                        "\nPlease, check an implementation of " +
+                        "the createTemplate(Class) method " +
+                        "for the following resource holder:\n" +
+                        rh.toString()); // NOI18N
+            }
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ex);
             return;
         }
-        DataObject resource = SelectorUtils.selectOrCreateBundle(
-                                file,
-                                template,
-                                i18nString.getSupport().getResourceHolder().getResource());
+        catch (NullPointerException ex) {
+            ErrorManager.getDefault().notify(ex);
+            return;
+        }
+        DataObject resource =
+                SelectorUtils.selectOrCreateBundle(
+                     file,
+                     template,
+                     i18nString.getSupport().getResourceHolder().getResource());
 
         //DataObject resource = SelectorUtils.selectBundle(this.project, file);
         if (resource != null) {
