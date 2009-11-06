@@ -1172,7 +1172,7 @@ public class CompilerSetManager {
     }
 
     public List<CompilerSet> getCompilerSets() {
-        return sets;
+        return new ArrayList<CompilerSet>(sets);
     }
 
     public List<String> getCompilerSetDisplayNames() {
