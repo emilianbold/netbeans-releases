@@ -283,10 +283,11 @@ public class PUDataObject extends XmlMultiViewDataObject {
      * classes and schedules update of data.
      * @param persistenceUnit
      * @param clazz fully qualified name of the class to be added.
+     * @param fromPanel true if added with pu design view, false if added for example with refactoring or added as new entity class in project
      * @return true if given class was added, false otherwise (for example when
      * it was already added).
      */
-    public boolean addClass(PersistenceUnit persistenceUnit, String clazz){
+    public boolean addClass(PersistenceUnit persistenceUnit, String clazz, boolean fromPanel){
         String[] existing = persistenceUnit.getClass2();
         for (int i = 0; i < existing.length; i++) {
             if (clazz.equals(existing[i])){
@@ -303,8 +304,9 @@ public class PUDataObject extends XmlMultiViewDataObject {
      * classes and schedules update of data.
      * @param persistenceUnit
      * @param clazz fully qualified name of the class to be removed.
+     * @param fromPanel true if added with pu design view, false if added for example with refactoring
      */
-    public void removeClass(PersistenceUnit persistenceUnit, String clazz){
+    public void removeClass(PersistenceUnit persistenceUnit, String clazz, boolean fromPanel){
         persistenceUnit.removeClass2(clazz);
         modelUpdated();
     }
