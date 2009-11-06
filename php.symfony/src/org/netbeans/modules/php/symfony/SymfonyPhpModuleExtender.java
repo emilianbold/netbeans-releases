@@ -97,9 +97,17 @@ public class SymfonyPhpModuleExtender extends PhpModuleExtender {
             files.add(databases);
         }
         FileObject config = phpModule.getSourceDirectory().getFileObject("config/ProjectConfiguration.class.php"); // NOI18N
-        assert config != null;
         if (config != null) {
+            // #176041
             files.add(config);
+        }
+
+        if (files.isEmpty()) {
+            // open at least index.php
+            FileObject index = phpModule.getSourceDirectory().getFileObject("web/index.php"); // NOI18N
+            if (index != null) {
+                files.add(index);
+            }
         }
 
         return files;
