@@ -2,7 +2,7 @@ package org.netbeans.modules.cnd.antlr.collections.impl;
 
 /* ANTLR Translator Generator
  * Project led by Terence Parr at http://www.cs.usfca.edu
- * Software rights: http://antlr.org/license.html
+ * Software rights: http://www.antlr.org/license.html
  */
 
 import org.netbeans.modules.cnd.antlr.CharFormatter;
