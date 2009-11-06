@@ -514,7 +514,11 @@ public class PHPNewLineIndenterTest extends PHPTestBase {
     public void test175437_8() throws Exception {
         testIndentInFile("testfiles/indent/issue175437_8.php");
     }
-    
+
+    public void test173937_01() throws Exception {
+        testIndentInFile("testfiles/indent/issue173937_01.php");
+    }
+
 //  need to be fiexed the multi line expressions
 //    public void test175437_9() throws Exception {
 //        testIndentInFile("testfiles/indent/issue175437_9.php");

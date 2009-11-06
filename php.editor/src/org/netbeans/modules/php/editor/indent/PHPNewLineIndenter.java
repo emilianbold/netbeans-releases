@@ -250,7 +250,7 @@ public class PHPNewLineIndenter {
         int origOffset = ts.offset();
         Token token = ts.token();
 
-        if (indentComment && token.id() == PHPTokenId.PHP_SEMICOLON) {
+        if (indentComment || token.id() == PHPTokenId.PHP_SEMICOLON) {
             ts.moveNext();
         }
         while (ts.movePrevious()) {
