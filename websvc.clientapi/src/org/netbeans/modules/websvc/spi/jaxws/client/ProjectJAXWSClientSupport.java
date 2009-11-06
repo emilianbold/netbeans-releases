@@ -94,7 +94,11 @@ public abstract class ProjectJAXWSClientSupport implements JAXWSClientSupportImp
     private static final String XNOCOMPILE_OPTION = "xnocompile"; //NOI18N
     private static final String XENDORSED_OPTION = "xendorsed"; //NOI18N
     private static final String PACKAGE_OPTION = "package"; //NOI18N
-    private static final String WSDL_LOCATION = "wsdlLocation"; //NOI18N
+    private static final String WSDL_LOCATION_OPTION = "wsdlLocation"; //NOI18N
+    private static final String TARGET_OPTION = "target"; //NOI18N
+    protected static final String JAVA_EE_VERSION_NONE="java-ee-version-none"; //NOI18N
+    protected static final String JAVA_EE_VERSION_15="java-ee-version-15"; //NOI18N
+    protected static final String JAVA_EE_VERSION_16="java-ee-version-16"; //NOI18N
     
     Project project;
     private FileObject clientArtifactsFolder;
@@ -203,7 +207,7 @@ public abstract class ProjectJAXWSClientSupport implements JAXWSClientSupportImp
                         wsimportOptions.addWsimportOption(wsimportOption);
                     }
                     wsimportOption = wsimportOptions.newWsimportOption();
-                    wsimportOption.setWsimportOptionName(WSDL_LOCATION);
+                    wsimportOption.setWsimportOptionName(WSDL_LOCATION_OPTION);
                     wsimportOption.setWsimportOptionValue(wsdlUrl);
                     wsimportOptions.addWsimportOption(wsimportOption);
                     if (isXnocompile(project)) {
@@ -222,6 +226,12 @@ public abstract class ProjectJAXWSClientSupport implements JAXWSClientSupportImp
                         wsimportOption = wsimportOptions.newWsimportOption();
                         wsimportOption.setWsimportOptionName(PACKAGE_OPTION);
                         wsimportOption.setWsimportOptionValue(packageName); //NOI18N
+                        wsimportOptions.addWsimportOption(wsimportOption);
+                    }
+                    if (JAVA_EE_VERSION_15.equals(getProjectJavaEEVersion())) {
+                        wsimportOption = wsimportOptions.newWsimportOption();
+                        wsimportOption.setWsimportOptionName(TARGET_OPTION);
+                        wsimportOption.setWsimportOptionValue("2.1"); //NOI18N
                         wsimportOptions.addWsimportOption(wsimportOption);
                     }
                 }
@@ -491,6 +501,10 @@ public abstract class ProjectJAXWSClientSupport implements JAXWSClientSupportImp
         if (len1 > len2) return true;
         else if (len1 < len2) return false;
         return true;
+    }
+
+    protected String getProjectJavaEEVersion() {
+        return JAVA_EE_VERSION_NONE;
     }
     
 }
