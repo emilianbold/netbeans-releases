@@ -53,6 +53,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -101,21 +102,32 @@ public final class MethodModelSupport {
         for (VariableElement variableElement : method.getParameters()) {
             String type = getTypeName(variableElement.asType());
             String name = variableElement.getSimpleName().toString();
-            parameters.add(MethodModel.Variable.create(type, name));
+            try{
+                parameters.add(MethodModel.Variable.create(type, name));
+            }catch(IllegalArgumentException iae){
+                //in case of illegal arguments, for ex. illegal parameter/method name
+                return null;
+            }
         }
         List<String> exceptions = new ArrayList<String>();
         for (TypeMirror typeMirror : method.getThrownTypes()) {
             exceptions.add(getTypeName(typeMirror));
         }
-        return MethodModel.create(
-                method.getSimpleName().toString(),
-                getTypeName(method.getReturnType()),
-                //TODO: RETOUCHE get body of method
-                "",
-                parameters,
-                exceptions,
-                method.getModifiers()
-                );
+        MethodModel mm = null;
+        try{
+            mm = MethodModel.create(
+                    method.getSimpleName().toString(),
+                    getTypeName(method.getReturnType()),
+                    //TODO: RETOUCHE get body of method
+                    "",
+                    parameters,
+                    exceptions,
+                    method.getModifiers()
+                    );
+        }catch(IllegalArgumentException iae){
+            return null;
+        }
+        return mm;
     }
     
     /**
