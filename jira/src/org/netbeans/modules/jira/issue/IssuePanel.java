@@ -84,6 +84,7 @@ import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
@@ -2243,6 +2244,11 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private javax.swing.JLabel updatedLabel;
     // End of variables declaration//GEN-END:variables
 
+    @Override
+    public Dimension getPreferredSize() {
+        return getMinimumSize(); // Issue 176085
+    }
+
     public Dimension getPreferredScrollableViewportSize() {
         return getPreferredSize();
     }
@@ -2256,6 +2262,26 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }
 
     public boolean getScrollableTracksViewportWidth() {
+        JScrollPane scrollPane = (JScrollPane)SwingUtilities.getAncestorOfClass(JScrollPane.class, this);
+        if (scrollPane!=null) {
+             // Issue 176085
+            int minWidth = getMinimumSize().width;
+            int width = scrollPane.getSize().width;
+            Insets insets = scrollPane.getInsets();
+            width -= insets.left+insets.right;
+            Border border = scrollPane.getViewportBorder();
+            if (border != null) {
+                insets = border.getBorderInsets(scrollPane);
+                width -= insets.left+insets.right;
+            }
+            JComponent vsb = scrollPane.getVerticalScrollBar();
+            if (vsb!=null && vsb.isVisible()) {
+                width -= vsb.getSize().width;
+            }
+            if (minWidth>width) {
+                return false;
+            }
+        }
         return true;
     }
 
