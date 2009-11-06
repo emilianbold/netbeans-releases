@@ -351,7 +351,8 @@ public class PHPNewLineIndenter {
                         break;
                 }
             }
-            else if (token.id() == PHPTokenId.PHP_SEMICOLON && ts.moveNext()) {
+            else if ((token.id() == PHPTokenId.PHP_SEMICOLON || token.id() == PHPTokenId.PHP_OPENTAG)
+                    && ts.moveNext()) {
                 // we found previous end of expression => find begin of the current.
                 token = LexUtilities.findNext(ts, Arrays.asList(
                         PHPTokenId.WHITESPACE,
