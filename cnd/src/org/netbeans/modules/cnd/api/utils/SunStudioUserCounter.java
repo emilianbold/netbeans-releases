@@ -91,10 +91,10 @@ public final class SunStudioUserCounter {
             for (ModuleInfo moduleInfo : modules) {
                 if (moduleInfo.isEnabled()) {
                     String codeNameBase = moduleInfo.getCodeNameBase();
-                    if ("com.sun.tools.debugger.dbxfacade.ide".equals(codeNameBase)) {
+                    if ("com.sun.tools.debugger.dbxfacade.ide".equals(codeNameBase)) { // NOI18N
                         appType = IDEType.SUN_STUDIO_IDE;
                         break;
-                    } else if ("com.sun.tools.debugger.dbxfacade.tool".equals(codeNameBase)) {
+                    } else if ("com.sun.tools.debugger.dbxfacade.tool".equals(codeNameBase)) { // NOI18N
                         appType = IDEType.DBX_TOOL;
                         break;
                     }
