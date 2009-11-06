@@ -44,6 +44,7 @@ package org.netbeans.modules.j2ee.ejbjarproject.jaxws;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
@@ -104,5 +105,20 @@ public class EjbProjectJAXWSClientSupport extends ProjectJAXWSClientSupport/* im
     @Override
     protected FileObject getXmlArtifactsRoot() {
         return project.getAPIEjbJar().getMetaInf();
+    }
+
+    @Override
+    protected String getProjectJavaEEVersion() {
+        EjbJar ejbModule = EjbJar.getEjbJar(project.getProjectDirectory());
+        if (ejbModule != null) {
+            if (Profile.JAVA_EE_6_WEB.equals(ejbModule.getJ2eeProfile())) {
+                return JAVA_EE_VERSION_16;
+            } else if (Profile.JAVA_EE_6_WEB.equals(ejbModule.getJ2eeProfile())) {
+                return JAVA_EE_VERSION_16;
+            } else if (Profile.JAVA_EE_5.equals(ejbModule.getJ2eeProfile())) {
+                return JAVA_EE_VERSION_15;
+            }
+        }
+        return JAVA_EE_VERSION_NONE;
     }
 }

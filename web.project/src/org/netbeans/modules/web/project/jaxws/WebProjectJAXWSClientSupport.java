@@ -44,6 +44,7 @@ package org.netbeans.modules.web.project.jaxws;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.SourceGroup;
@@ -122,5 +123,20 @@ public class WebProjectJAXWSClientSupport extends ProjectJAXWSClientSupport /*im
     protected FileObject getXmlArtifactsRoot() {
         FileObject confDir = project.getWebModule().getConfDir();
         return confDir == null ? super.getXmlArtifactsRoot():confDir;
+    }
+
+    @Override
+    protected String getProjectJavaEEVersion() {
+        WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
+        if (webModule != null) {
+            if (Profile.JAVA_EE_6_WEB.equals(webModule.getJ2eeProfile())) {
+                return JAVA_EE_VERSION_16;
+            } else if (Profile.JAVA_EE_6_WEB.equals(webModule.getJ2eeProfile())) {
+                return JAVA_EE_VERSION_16;
+            } else if (Profile.JAVA_EE_5.equals(webModule.getJ2eeProfile())) {
+                return JAVA_EE_VERSION_15;
+            }
+        }
+        return JAVA_EE_VERSION_NONE;
     }
 }

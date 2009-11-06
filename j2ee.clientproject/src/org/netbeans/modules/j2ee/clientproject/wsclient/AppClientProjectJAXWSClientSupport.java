@@ -45,6 +45,7 @@ package org.netbeans.modules.j2ee.clientproject.wsclient;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -108,5 +109,20 @@ public class AppClientProjectJAXWSClientSupport extends ProjectJAXWSClientSuppor
     @Override
     protected FileObject getXmlArtifactsRoot() {
         return project.getCarModule().getMetaInf();
+    }
+
+    @Override
+    protected String getProjectJavaEEVersion() {
+        Car j2eeClientModule = Car.getCar(project.getProjectDirectory());
+        if (j2eeClientModule != null) {
+            if (Profile.JAVA_EE_6_WEB.equals(j2eeClientModule.getJ2eeProfile())) {
+                return JAVA_EE_VERSION_16;
+            } else if (Profile.JAVA_EE_6_WEB.equals(j2eeClientModule.getJ2eeProfile())) {
+                return JAVA_EE_VERSION_16;
+            } else if (Profile.JAVA_EE_5.equals(j2eeClientModule.getJ2eeProfile())) {
+                return JAVA_EE_VERSION_15;
+            }
+        }
+        return JAVA_EE_VERSION_NONE;
     }
 }
