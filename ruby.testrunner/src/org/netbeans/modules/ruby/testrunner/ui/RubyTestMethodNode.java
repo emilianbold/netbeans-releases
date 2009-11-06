@@ -78,7 +78,7 @@ public final class RubyTestMethodNode extends TestMethodNode {
     @Override
     public Action getPreferredAction() {
         // the location to jump from the node
-        String testLocation = getTestLocation(testcase, project);
+        String testLocation = testcase.getLocation();
         String stackTrace = getTestCaseLineFromStackTrace(testcase);
         String jumpToLocation = stackTrace != null
                 ? stackTrace
@@ -89,20 +89,7 @@ public final class RubyTestMethodNode extends TestMethodNode {
                 : new JumpToCallStackAction(this, jumpToLocation);
     }
     
-    static String getTestLocation(Testcase testcase, Project project) {
-        if (testcase.getLocation() == null) {
-            return null;
-        }
-        RubyPlatform platform = RubyPlatform.platformFor(project);
-        if (platform != null && platform.isJRuby()) {
-            // XXX: return no location for JRuby -- ExampleMethods#implementation_backtrace
-            // behaves differently for MRI and JRuby, on JRuby the test file itself is not present
-            return null;
-        }
-        return testcase.getLocation();
-    }
-
-        /**
+    /**
      * Gets the line from the stack trace representing the last line in the test class.
      * If that can't be resolved
      * then returns the second line of the stack trace (the
