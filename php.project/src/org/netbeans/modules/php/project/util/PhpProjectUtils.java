@@ -41,7 +41,9 @@ package org.netbeans.modules.php.project.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -67,6 +69,7 @@ import org.openide.nodes.Node;
 import org.openide.text.Line;
 import org.openide.text.Line.Set;
 import org.openide.util.Mutex;
+import org.openide.util.NbBundle;
 
 /**
  * Utility methods.
@@ -74,6 +77,7 @@ import org.openide.util.Mutex;
  */
 public final class PhpProjectUtils {
     private static final Logger LOGGER = Logger.getLogger(PhpProjectUtils.class.getName());
+    private static final Logger USG_LOGGER = Logger.getLogger("org.netbeans.ui.metrics.php"); //NOI18N
 
     private PhpProjectUtils() {
     }
@@ -216,5 +220,26 @@ public final class PhpProjectUtils {
             fo = fo.getParent();
         }
         return true;
+    }
+
+    // http://wiki.netbeans.org/UsageLoggingSpecification
+    /**
+     * Logs usage data.
+     *
+     * @param srcClass source class
+     * @param message message key
+     * @param params message parameters, may be <code>null</code>
+     */
+    public static void logUsage(Class<?> srcClass, String message, List<? extends Object> params) {
+        assert message != null;
+
+        LogRecord logRecord = new LogRecord(Level.INFO, message);
+        logRecord.setLoggerName(USG_LOGGER.getName());
+        logRecord.setResourceBundle(NbBundle.getBundle(srcClass));
+        logRecord.setResourceBundleName(srcClass.getPackage().getName() + ".Bundle"); // NOI18N
+        if (params != null) {
+            logRecord.setParameters(params.toArray(new Object[params.size()]));
+        }
+        USG_LOGGER.log(logRecord);
     }
 }

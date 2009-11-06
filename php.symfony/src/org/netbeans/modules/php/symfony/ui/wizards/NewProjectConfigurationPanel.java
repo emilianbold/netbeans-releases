@@ -39,7 +39,10 @@
 
 package org.netbeans.modules.php.symfony.ui.wizards;
 
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.Cursor;
+import java.awt.FocusTraversalPolicy;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
@@ -243,9 +246,74 @@ public class NewProjectConfigurationPanel extends JPanel {
         otherParamsTextField = new JTextField();
         infoLabel = new JLabel();
 
-        generateProjectLabel.setLabelFor(frontendCheckBox);
+        setFocusTraversalPolicy(new FocusTraversalPolicy() {
 
-        Mnemonics.setLocalizedText(generateProjectLabel, NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.generateProjectLabel.text"));
+
+
+            public Component getDefaultComponent(Container focusCycleRoot){
+                return otherParamsTextField;
+            }//end getDefaultComponent
+            public Component getFirstComponent(Container focusCycleRoot){
+                return otherParamsTextField;
+            }//end getFirstComponent
+            public Component getLastComponent(Container focusCycleRoot){
+                return otherParamsTextField;
+            }//end getLastComponent
+            public Component getComponentAfter(Container focusCycleRoot, Component aComponent){
+                if(aComponent ==  backendCheckBox){
+                    return backendParamsTextField;
+                }
+                if(aComponent ==  otherCheckBox){
+                    return otherNameTextField;
+                }
+                if(aComponent ==  projectParamsTextField){
+                    return frontendCheckBox;
+                }
+                if(aComponent ==  backendParamsTextField){
+                    return otherCheckBox;
+                }
+                if(aComponent ==  frontendCheckBox){
+                    return frontendParamsTextField;
+                }
+                if(aComponent ==  frontendParamsTextField){
+                    return backendCheckBox;
+                }
+                if(aComponent ==  otherNameTextField){
+                    return otherParamsTextField;
+                }
+                return otherParamsTextField;//end getComponentAfter
+            }
+            public Component getComponentBefore(Container focusCycleRoot, Component aComponent){
+                if(aComponent ==  backendParamsTextField){
+                    return backendCheckBox;
+                }
+                if(aComponent ==  otherNameTextField){
+                    return otherCheckBox;
+                }
+                if(aComponent ==  frontendCheckBox){
+                    return projectParamsTextField;
+                }
+                if(aComponent ==  otherCheckBox){
+                    return backendParamsTextField;
+                }
+                if(aComponent ==  frontendParamsTextField){
+                    return frontendCheckBox;
+                }
+                if(aComponent ==  backendCheckBox){
+                    return frontendParamsTextField;
+                }
+                if(aComponent ==  otherParamsTextField){
+                    return otherNameTextField;
+                }
+                return otherParamsTextField;//end getComponentBefore
+
+            }}
+        );
+
+        generateProjectLabel.setLabelFor(frontendCheckBox);
+        Mnemonics.setLocalizedText(generateProjectLabel, NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.generateProjectLabel.text")); // NOI18N
+
+        optionsLabel.setLabelFor(this);
         Mnemonics.setLocalizedText(optionsLabel, NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.optionsLabel.text"));
         optionsLabel.setToolTipText(NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.optionsLabel.toolTipText")); // NOI18N
         optionsLabel.addMouseListener(new MouseAdapter() {
@@ -258,30 +326,33 @@ public class NewProjectConfigurationPanel extends JPanel {
         });
 
         projectParamsLabel.setLabelFor(projectParamsTextField);
-
-
         Mnemonics.setLocalizedText(projectParamsLabel, NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.projectParamsLabel.text")); // NOI18N
-        Mnemonics.setLocalizedText(generateAppsLabel, NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.generateAppsLabel.text"));
+
+        generateAppsLabel.setLabelFor(this);
+        Mnemonics.setLocalizedText(generateAppsLabel, NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.generateAppsLabel.text")); // NOI18N
+
         frontendCheckBox.setSelected(true);
-
         Mnemonics.setLocalizedText(frontendCheckBox, NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.frontendCheckBox.text")); // NOI18N
-        frontendParamsLabel.setLabelFor(frontendParamsTextField);
 
+        frontendParamsLabel.setLabelFor(frontendParamsTextField);
 
         Mnemonics.setLocalizedText(frontendParamsLabel, NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.frontendParamsLabel.text")); // NOI18N
         Mnemonics.setLocalizedText(backendCheckBox, NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.backendCheckBox.text"));
-        backendParamsLabel.setLabelFor(backendParamsTextField);
 
+        backendParamsLabel.setLabelFor(backendParamsTextField);
 
         Mnemonics.setLocalizedText(backendParamsLabel, NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.backendParamsLabel.text")); // NOI18N
         Mnemonics.setLocalizedText(otherCheckBox, NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.otherCheckBox.text"));
+
         otherParamsLabel.setLabelFor(otherParamsTextField);
+        Mnemonics.setLocalizedText(otherParamsLabel, NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.otherParamsLabel.text")); // NOI18N
 
+        infoLabel.setLabelFor(this);
 
-        Mnemonics.setLocalizedText(otherParamsLabel, NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.otherParamsLabel.text"));
         Mnemonics.setLocalizedText(infoLabel, NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.infoLabel.text"));
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
+
         layout.setHorizontalGroup(
             layout.createParallelGroup(GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
@@ -367,6 +438,40 @@ public class NewProjectConfigurationPanel extends JPanel {
                 .addPreferredGap(LayoutStyle.UNRELATED)
                 .add(infoLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
         );
+
+        generateProjectLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.generateProjectLabel.AccessibleContext.accessibleName")); // NOI18N
+        generateProjectLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.generateProjectLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        optionsLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.optionsLabel.AccessibleContext.accessibleName")); // NOI18N
+        optionsLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.optionsLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        projectParamsLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.projectParamsLabel.AccessibleContext.accessibleName")); // NOI18N
+        projectParamsLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.projectParamsLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        projectParamsTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.projectParamsTextField.AccessibleContext.accessibleName")); // NOI18N
+        projectParamsTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.projectParamsTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        generateAppsLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.generateAppsLabel.AccessibleContext.accessibleName")); // NOI18N
+        generateAppsLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.generateAppsLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        frontendCheckBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.frontendCheckBox.AccessibleContext.accessibleName")); // NOI18N
+        frontendCheckBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.frontendCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+        frontendParamsLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.frontendParamsLabel.AccessibleContext.accessibleName")); // NOI18N
+        frontendParamsLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.frontendParamsLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        frontendParamsTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.frontendParamsTextField.AccessibleContext.accessibleName")); // NOI18N
+        frontendParamsTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.frontendParamsTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        backendCheckBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.backendCheckBox.AccessibleContext.accessibleName")); // NOI18N
+        backendCheckBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.backendCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+        backendParamsLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.backendParamsLabel.AccessibleContext.accessibleName")); // NOI18N
+        backendParamsLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.backendParamsLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        backendParamsTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.backendParamsTextField.AccessibleContext.accessibleName")); // NOI18N
+        backendParamsTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.backendParamsTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        otherCheckBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.otherCheckBox.AccessibleContext.accessibleName")); // NOI18N
+        otherCheckBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.otherCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+        otherNameTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.otherNameTextField.AccessibleContext.accessibleName")); // NOI18N
+        otherNameTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.otherNameTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        otherParamsLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.otherParamsLabel.AccessibleContext.accessibleName")); // NOI18N
+        otherParamsLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.otherParamsLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        otherParamsTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.otherParamsTextField.AccessibleContext.accessibleName")); // NOI18N
+        otherParamsTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.otherParamsTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        infoLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.infoLabel.AccessibleContext.accessibleName")); // NOI18N
+        infoLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.infoLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void optionsLabelMouseEntered(MouseEvent evt) {//GEN-FIRST:event_optionsLabelMouseEntered

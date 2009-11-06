@@ -160,26 +160,7 @@ public class CompletionUtilities {
                                 out = getAssociatedObjects(resultx.getItems(), false, currentFile);
                             }
                         }
-                    }
-                    if (!out.isEmpty()) {
-                        Collection<CsmObject> remove = new ArrayList<CsmObject>();
-                        for (CsmObject csmItem : out) {
-                            if (csmItem instanceof CsmMacro) {
-                                CsmMacro macro = (CsmMacro) csmItem;
-                                List<CharSequence> macroParameters = macro.getParameters();
-                                if (macroParameters != null && !macroParameters.isEmpty() && !CompletionUtilities.conatinsVaArgs(macroParameters)) {
-                                    int paramsNumber = CompletionUtilities.getMethodParamsNumber(doc, dotPos);
-                                    if (paramsNumber != macroParameters.size()) {
-                                        remove.add(csmItem);
-                                    }
-                                }
-                            }   
-                        }
-                        out.removeAll(remove);
-                        if(out.isEmpty()) {
-                            continue;
-                        }
-                    }
+                    }                    
                     break;
                 }
             }
@@ -251,83 +232,5 @@ public class CompletionUtilities {
             }
         }
         return -1;
-    }
-
-    public static int getMethodParamsNumber(Document doc, int startPos) {
-        int paramsNumber = 0;
-        int level = 0;
-        boolean inFirstParameter = false;
-        boolean whitespaceAfterName = false;
-        boolean inStringLiteral = false;
-        boolean inCharLiteral = false;
-        boolean escapeSymbol = false;
-        CharSequence text = DocumentUtilities.getText(doc);
-        for (int i = startPos; i < doc.getLength(); i++) {
-            char ch = text.charAt(i);
-
-            // skip string and char litarals
-            if (!inCharLiteral && ch == '"' && !escapeSymbol) {
-                inStringLiteral = !inStringLiteral;
-            }
-            if (!inStringLiteral && ch == '\'' && !escapeSymbol) {
-                inCharLiteral = !inCharLiteral;
-            }
-            if (ch == '\\') {
-                escapeSymbol = true;
-            } else {
-                escapeSymbol = false;
-            }
-            if(inCharLiteral || inStringLiteral) {
-                continue;
-            }
-
-            if (ch == ';') {
-                return paramsNumber;
-            }
-            if(whitespaceAfterName && !Character.isWhitespace(ch) && ch != '(') {
-                return paramsNumber;
-            }
-            if (ch == '(') {
-                level++;
-                if (paramsNumber == 0) {
-                    inFirstParameter = true;
-                }
-                whitespaceAfterName = false;
-            }
-            if (ch == ')') {
-                level--;
-                if (level == 0) {
-                    return paramsNumber;
-                }
-            }
-            if (ch == ',') {
-                if (level == 1) {
-                    paramsNumber++;
-                }
-            }
-            if (!Character.isWhitespace(ch) && ch != ')' && ch != '(') {
-                if (inFirstParameter) {
-                    paramsNumber++;
-                }
-                inFirstParameter = false;
-            }
-            if (!Character.isJavaIdentifierPart(ch) && level == 0) {
-                if(Character.isWhitespace(ch)) {
-                    whitespaceAfterName = true;
-                } else {
-                    break;
-                }
-            }
-        }
-        return paramsNumber;
-    }
-
-    public static boolean conatinsVaArgs(List<CharSequence> macroParameters) {
-        for (CharSequence param : macroParameters) {
-            if (param.toString().equals("__VA_ARGS__")) { // NOI18N
-                return true;
-            }
-        }
-        return false;
     }
 }

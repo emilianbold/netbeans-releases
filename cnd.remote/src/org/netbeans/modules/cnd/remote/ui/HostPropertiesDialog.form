@@ -31,14 +31,14 @@
                       <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
-                              <Component id="tfHost" pref="236" max="32767" attributes="0"/>
+                              <Component id="tfHost" pref="247" max="32767" attributes="0"/>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
                               <Component id="lblPort" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="tfPort" min="-2" pref="54" max="-2" attributes="0"/>
                           </Group>
-                          <Component id="tfUser" pref="347" max="32767" attributes="0"/>
-                          <Component id="tfName" alignment="0" pref="347" max="32767" attributes="0"/>
+                          <Component id="tfUser" pref="354" max="32767" attributes="0"/>
+                          <Component id="tfName" alignment="0" pref="354" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
@@ -46,6 +46,7 @@
                       <EmptySpace type="separate" max="-2" attributes="0"/>
                       <Component id="cbSync" pref="289" max="32767" attributes="0"/>
                   </Group>
+                  <Component id="cbX11" alignment="0" min="-2" pref="226" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -76,6 +77,8 @@
                   <Component id="lblSync" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="cbSync" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
+              <EmptySpace type="separate" max="-2" attributes="0"/>
+              <Component id="cbX11" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
@@ -182,6 +185,13 @@
       <Properties>
         <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
           <StringArray count="0"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="cbX11">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/cnd/remote/ui/Bundle.properties" key="HostPropertiesDialog.cbX11.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>

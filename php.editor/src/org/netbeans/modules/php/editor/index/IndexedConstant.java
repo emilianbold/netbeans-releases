@@ -41,23 +41,25 @@ package org.netbeans.modules.php.editor.index;
 
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.php.editor.model.QualifiedName;
 
 /**
  *
  * @author tomslot
  */
-public class IndexedConstant extends IndexedElement {
+public class IndexedConstant extends IndexedFullyQualified implements IndexedTypedElement {
     private String typeName;
-
+    private String namespaceName;
     public IndexedConstant(String name, String in, PHPIndex index, String fileUrl,
             int offset, int flags, String typeName){
-        this(name, in, index, fileUrl, offset, flags, typeName, ElementKind.CONSTANT);
+        this(name, in, null, index, fileUrl, offset, flags, typeName, ElementKind.CONSTANT);
     }
 
-    protected IndexedConstant(String name, String in, PHPIndex index, String fileUrl,
+    protected IndexedConstant(String name, String in, String namespace, PHPIndex index, String fileUrl,
             int offset, int flags, String typeName, ElementKind kind){
         super(name, in, index, fileUrl, offset, flags, kind);
         this.typeName = typeName;
+        this.namespaceName = namespace;
         // empty string causes a serious performance problem
         if (typeName != null && typeName.length() == 0){
             throw new IllegalArgumentException("typeName cannot be empty string!");
@@ -83,5 +85,15 @@ public class IndexedConstant extends IndexedElement {
         }
 
         this.typeName = typeName;
+    }
+
+    public String getNamespaceName() {
+        final String retval = namespaceName;
+        return retval != null ? retval : "";//NOI18N
+    }
+
+    public String getFullyQualifiedName() {
+        QualifiedName qn = QualifiedName.createFullyQualified(name, getNamespaceName());
+        return qn.toString();
     }
 }

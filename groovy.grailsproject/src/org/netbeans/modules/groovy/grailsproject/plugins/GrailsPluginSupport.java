@@ -49,8 +49,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
@@ -121,6 +123,34 @@ public class GrailsPluginSupport {
             }
         }
         return false;
+    }
+
+    public FolderFilter getProjectPluginFilter() {
+        GrailsProjectConfig projectConfig = project.getLookup().lookup(GrailsProjectConfig.class);
+        if (projectConfig != null) {
+            if (GrailsPlatform.Version.VERSION_1_1.compareTo(projectConfig.getGrailsPlatform().getVersion()) <= 0) {
+                List<GrailsPlugin> plugins = loadInstalledPlugins11();
+
+                final Set<String> pluginDirs = new HashSet<String>();
+                for (GrailsPlugin plugin : plugins) {
+                    pluginDirs.add(plugin.getDirName());
+                }
+
+                return new FolderFilter() {
+
+                    public boolean accept(String folderName) {
+                        return pluginDirs.contains(folderName);
+                    }
+                };
+            }
+        }
+
+        return new FolderFilter() {
+
+            public boolean accept(String folderName) {
+                return true;
+            }
+        };
     }
 
     public List<GrailsPlugin> refreshAvailablePlugins() throws InterruptedException {
@@ -430,6 +460,11 @@ public class GrailsPluginSupport {
                     .item(0).getTextContent(); //NOI18N
         }
         return new GrailsPlugin(name, version, description, path);
+    }
+
+    public interface FolderFilter {
+
+        boolean accept(String folderName);
     }
 
     private static class PluginProcessor implements LineProcessor {

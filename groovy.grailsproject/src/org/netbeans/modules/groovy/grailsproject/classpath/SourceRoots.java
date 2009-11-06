@@ -46,12 +46,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.modules.groovy.grailsproject.GrailsSources;
 import org.netbeans.modules.groovy.grailsproject.SourceCategory;
 import org.netbeans.modules.groovy.grailsproject.plugins.GrailsPlugin;
+import org.netbeans.modules.groovy.grailsproject.plugins.GrailsPluginSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -77,11 +80,13 @@ public class SourceRoots {
         addGrailsSourceRoots(projectRoot, result);
 
         if (project != null) {
-            result.addAll(addPluginRoots(project.getBuildConfig().getProjectPluginsDir()));
-            result.addAll(addPluginRoots(project.getBuildConfig().getGlobalPluginsDir()));
+            GrailsPluginSupport pluginSupport = GrailsPluginSupport.forProject(project);
+            if (pluginSupport != null) {
+                result.addAll(addPluginRoots(project.getBuildConfig().getProjectPluginsDir(), pluginSupport.getProjectPluginFilter()));
+            }
+            result.addAll(addPluginRoots(project.getBuildConfig().getGlobalPluginsDir(), null));
 
             // in-place plugins
-            File root = FileUtil.toFile(projectRoot);
             for (GrailsPlugin plugin : project.getBuildConfig().getLocalPlugins()) {
                 if (plugin.getPath() != null) {
                     addGrailsSourceRoots(FileUtil.toFileObject(plugin.getPath()), result);
@@ -104,13 +109,17 @@ public class SourceRoots {
         return urls;
     }
 
-    private List<FileObject> addPluginRoots(File pluginsDirFile) {
+    private List<FileObject> addPluginRoots(File pluginsDirFile, GrailsPluginSupport.FolderFilter filter) {
         FileObject pluginsDir = (pluginsDirFile == null) ? null : FileUtil.toFileObject(pluginsDirFile);
         if (pluginsDir != null) {
             List<FileObject> result = new ArrayList<FileObject>();
-            Enumeration<? extends FileObject> subfolders = pluginsDir.getFolders(false);
-            while (subfolders.hasMoreElements()) {
-                addGrailsSourceRoots(subfolders.nextElement(), result);
+            for(Enumeration<? extends FileObject> subfolders = pluginsDir.getFolders(false);
+                    subfolders.hasMoreElements();) {
+
+                FileObject subFolder = subfolders.nextElement();
+                if (filter == null || filter.accept(subFolder.getNameExt())) {
+                    addGrailsSourceRoots(subFolder, result);
+                }
             }
             return result;
         }

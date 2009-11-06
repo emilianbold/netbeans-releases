@@ -98,6 +98,7 @@ public class RemoteServerList implements ServerListImplementation {
                 // 1) user@host:port
                 // 2) user@host:port|DisplayName
                 // 3) user@host:port|DisplayName|syncID
+                // 4) user@host:port|DisplayName|syncID|x11possible|x11
                 String displayName = null;
                 RemoteSyncFactory syncFactory = RemoteSyncFactory.getDefault();
                 final String[] arr = serverString.split("\\" + SERVER_RECORD_SEPARATOR); // NOI18N
@@ -117,7 +118,13 @@ public class RemoteServerList implements ServerListImplementation {
                     }
                 }
                 if (env.isRemote()) {
-                    addServer(env, displayName, syncFactory, false, RemoteServerRecord.State.OFFLINE);
+                    RemoteServerRecord record = addServer(env, displayName, syncFactory, false, RemoteServerRecord.State.OFFLINE);
+                    if (arr.length > 3) {
+                        record.setX11forwardingPossible(Boolean.parseBoolean(arr[3]));
+                    }
+                    if (arr.length > 4) {
+                        record.setX11Forwarding(Boolean.parseBoolean(arr[4]));
+                    }
                 }
             }
         }
@@ -194,10 +201,11 @@ public class RemoteServerList implements ServerListImplementation {
         return result;
     }
 
-    private void addServer(ExecutionEnvironment execEnv, String displayName,
+    private RemoteServerRecord addServer(ExecutionEnvironment execEnv, String displayName,
             RemoteSyncFactory syncFactory, boolean asDefault, RemoteServerRecord.State state) {
-        RemoteServerRecord addServer = (RemoteServerRecord) addServer(execEnv, displayName, syncFactory, asDefault, false);
-        addServer.setState(state);
+        RemoteServerRecord record = (RemoteServerRecord) addServer(execEnv, displayName, syncFactory, asDefault, false);
+        record.setState(state);
+        return record;
     }
 
     @Override
@@ -256,7 +264,10 @@ public class RemoteServerList implements ServerListImplementation {
         String hostKey = ExecutionEnvironmentFactory.toUniqueID(record.getExecutionEnvironment());
         String preferencesKey = hostKey + SERVER_RECORD_SEPARATOR +
                 ((displayName == null) ? "" : displayName) + SERVER_RECORD_SEPARATOR +
-                record.getSyncFactory().getID();
+                record.getSyncFactory().getID()  + SERVER_RECORD_SEPARATOR +
+                record.isX11forwardingPossible() + SERVER_RECORD_SEPARATOR +
+                record.getX11Forwarding();
+
         if (slist == null) {
             getPreferences().put(REMOTE_SERVERS, preferencesKey);
         } else {

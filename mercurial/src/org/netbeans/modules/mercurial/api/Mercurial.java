@@ -182,7 +182,7 @@ public class Mercurial {
             throws MalformedURLException {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote repository. Do not call in awt!";
 
-        if(!isClientAvailable()) {
+        if(!isClientAvailable(true)) {
             org.netbeans.modules.mercurial.Mercurial.LOG.log(Level.WARNING, "Mercurial client is unavailable");
             return;
         }
@@ -284,7 +284,7 @@ public class Mercurial {
             org.netbeans.modules.mercurial.Mercurial.LOG.log(Level.INFO, "Trying to show history for an unmanaged file {0}", file.getAbsolutePath());
             return false;
         }
-        if(!isClientAvailable()) {
+        if(!isClientAvailable(true)) {
             org.netbeans.modules.mercurial.Mercurial.LOG.log(Level.WARNING, "Mercurial client is unavailable");
             return false;
         }
@@ -326,8 +326,8 @@ public class Mercurial {
      * @return true if given url denotes an existing mercurial repository
      */
     public static boolean isRepository (final String url) {
-        if(!isClientAvailable()) {
-            org.netbeans.modules.mercurial.Mercurial.LOG.log(Level.WARNING, "Mercurial client is unavailable");
+        if(!isClientAvailable(false)) {
+            org.netbeans.modules.mercurial.Mercurial.LOG.log(Level.INFO, "Mercurial client is unavailable");
             return false;
         }
         boolean retval = false;
@@ -351,7 +351,7 @@ public class Mercurial {
      * @throws java.net.MalformedURLException in case the url is invalid
      */
     public static void openCloneWizard (final String url) throws MalformedURLException {
-        if(!isClientAvailable()) {
+        if(!isClientAvailable(true)) {
             org.netbeans.modules.mercurial.Mercurial.LOG.log(Level.WARNING, "Mercurial client is unavailable");
             return;
         }
@@ -360,7 +360,16 @@ public class Mercurial {
         wiz.performAction();
     }
 
+    /**
+     * Returns true if mercurial client is installed and has a supported version.<br/>
+     * Does not show any warning dialog.
+     * @return true if mercurial client is available.
+     */
     public static boolean isClientAvailable() {
-        return org.netbeans.modules.mercurial.Mercurial.getInstance().isAvailable(true, true);
+        return isClientAvailable(false);
+    }
+
+    private static boolean isClientAvailable (boolean notifyUI) {
+        return org.netbeans.modules.mercurial.Mercurial.getInstance().isAvailable(true, notifyUI);
     }
 }

@@ -46,6 +46,7 @@ import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.php.editor.NamespaceIndexFilter;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
@@ -304,6 +305,21 @@ public class ModelUtils {
         while (retval == null && element != null) {
             element = element.getInScope();
             retval = (NamespaceScope) ((element instanceof NamespaceScope) ? element : null);
+        }
+        return retval;
+    }
+
+    @CheckForNull
+    public static NamespaceScope getNamespaceScope(FileScope fileScope, int offset) {
+        NamespaceScope retval = fileScope.getDefaultDeclaredNamespace();
+        Collection<? extends NamespaceScope> declaredNamespaces = fileScope.getDeclaredNamespaces();
+        for (NamespaceScope namespaceScope : declaredNamespaces) {
+            OffsetRange blockRange = namespaceScope.getBlockRange();
+            if (blockRange != null && blockRange.containsInclusive(offset)) {
+                if (retval == null || !namespaceScope.isDefaultNamespace()) {
+                    retval = namespaceScope;
+                }
+            }
         }
         return retval;
     }
