@@ -47,6 +47,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
@@ -293,12 +295,15 @@ public abstract class FromEntityBase {
             TypeElement bean) throws IOException {
         // primary key type:
         ExecutableElement primaryGetter = findPrimaryKeyGetter(controller, bean);
-        TypeMirror idType = primaryGetter.getReturnType();
+        if (primaryGetter == null) {
+            Logger.getLogger(FromEntityBase.class.getName()).log(Level.WARNING, "Primary Key Getter is null, Controller will not be created");
+        }
+        TypeMirror idType = primaryGetter == null ? null : primaryGetter.getReturnType();
         StringBuffer key = new StringBuffer();
         StringBuffer stringKey = new StringBuffer();
         String keyType;
         String keyTypeFQN;
-        if (TypeKind.DECLARED == idType.getKind()) {
+        if (idType != null && TypeKind.DECLARED == idType.getKind()) {
             DeclaredType declaredType = (DeclaredType) idType;
             TypeElement idClass = (TypeElement) declaredType.asElement();
             boolean embeddable = idClass != null && JpaControllerUtil.isEmbeddableClass(idClass);
@@ -325,8 +330,10 @@ public abstract class FromEntityBase {
         } else {
             params.put("keyEmbedded", Boolean.FALSE);
             //keyType = getCorrespondingType(idType);
-            keyTypeFQN = keyType = idType.toString();
-            addParam(key, stringKey, null, -1, keyType, keyTypeFQN, idType);
+            keyTypeFQN = keyType = idType==null ? null : idType.toString();
+            if (idType !=null) {
+                addParam(key, stringKey, null, -1, keyType, keyTypeFQN, idType);
+            }
         }
         params.put("keyType", keyTypeFQN);
         if (key.toString().endsWith("\n")) {
@@ -337,7 +344,9 @@ public abstract class FromEntityBase {
             stringKey.setLength(stringKey.length()-1);
         }
         params.put("keyStringBody", stringKey.toString());
-        params.put("keyGetter", primaryGetter.getSimpleName().toString());
+        if (primaryGetter !=null) {
+            params.put("keyGetter", primaryGetter.getSimpleName().toString());
+        }
     }
 
     private static void addParam(StringBuffer key, StringBuffer stringKey, String setter,

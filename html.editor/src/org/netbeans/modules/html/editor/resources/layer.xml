@@ -205,6 +205,9 @@ made subject to such option by the copyright holder.
                     <file name="format">
                         <attr name="position" intvalue="1333"/>
                     </file>
+                    <file name="generate-code">
+                        <attr name="position" intvalue="1400"/>
+                    </file>
                     <file name="SeparatorAfterFormat.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1666"/>
