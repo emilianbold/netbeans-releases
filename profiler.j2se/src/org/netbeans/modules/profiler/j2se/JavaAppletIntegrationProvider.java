@@ -157,15 +157,10 @@ public class JavaAppletIntegrationProvider extends AbstractIntegrationProvider {
 
         // Step 2
         if (IntegrationUtils.isWindowsPlatform(targetOS)) {
-            hints.addStep(MessageFormat.format(MANUAL_DIRECT_STEP2_WINDOWS_MESSAGE,
-                                               new Object[] {
-                                                   IntegrationUtils.getProfilerAgentCommandLineArgsWithoutQuotes(targetOS,
-                                                                                                                 getTargetJava(),
-                                                                                                                 attachSettings
-                                                                                                                                                                     .isRemote(),
-                                                                                                                 attachSettings
-                                                                                                                                                                       .getPort())
-                                               }));
+            String args = IntegrationUtils.getProfilerAgentCommandLineArgsWithoutQuotes(
+                    targetOS, getTargetJava(), attachSettings.isRemote(), attachSettings.getPort());
+            if (args.indexOf(' ') != -1) args = "\"" + args + "\""; // NOI18N  Bugfix #173041
+            hints.addStep(MessageFormat.format(MANUAL_DIRECT_STEP2_WINDOWS_MESSAGE, new Object[] { args }));
         } else if (IntegrationUtils.PLATFORM_MAC_OS.equals(targetOS)) {
             hints.addStep(MessageFormat.format(MANUAL_DIRECT_STEP2_MAC_MESSAGE,
                                                new Object[] {
