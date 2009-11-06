@@ -131,7 +131,7 @@ public class WebProjectJAXWSClientSupport extends ProjectJAXWSClientSupport /*im
         if (webModule != null) {
             if (Profile.JAVA_EE_6_WEB.equals(webModule.getJ2eeProfile())) {
                 return JAVA_EE_VERSION_16;
-            } else if (Profile.JAVA_EE_6_WEB.equals(webModule.getJ2eeProfile())) {
+            } else if (Profile.JAVA_EE_6_FULL.equals(webModule.getJ2eeProfile())) {
                 return JAVA_EE_VERSION_16;
             } else if (Profile.JAVA_EE_5.equals(webModule.getJ2eeProfile())) {
                 return JAVA_EE_VERSION_15;
