@@ -365,6 +365,13 @@ public class ChatPanel extends javax.swing.JPanel {
         this.muc=muc;
         setName(StringUtils.parseName(muc.getRoom()));
         init();
+        if (!Kenai.getDefault().getXMPPConnection().isConnected()) {
+            try {
+                KenaiConnection.getDefault().reconnect(muc);
+            } catch (XMPPException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
         this.muc.addParticipantListener(new PacketListener() {
             public void processPacket(Packet presence) {
                 insertPresence((Presence) presence);
