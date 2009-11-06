@@ -76,6 +76,8 @@ public final class StartManager {
     private final AtomicBoolean startRequested = new AtomicBoolean(false);
     private volatile DatabaseServer server;
     private volatile String errorMessage;
+    private volatile boolean waitOnUsersInput;
+    private volatile boolean stopWaiting;
 
     private StartManager() {
     }
@@ -130,17 +132,22 @@ public final class StartManager {
                         NbBundle.getMessage(StartManager.class, "MSG_WaitingForServerToStart"));
                 handle.start();
                 handle.switchToIndeterminate();
+                waitOnUsersInput = false;
+                stopWaiting = false;
 
                 try {
                     for ( ; ; ) {
                         if (waitForStart()) {
                             startRequested.set(false);
                             return;
+                        } else {
+                            if (stopWaiting) {
+                                break;
+                            }
                         }
 
-                        boolean keepTrying = displayServerNotRunning();
-                        if (! keepTrying) {
-                            break;
+                        if (! waitOnUsersInput) {
+                            displayServerNotRunning();
                         }
                     }
                 } catch (DatabaseException dbe) {
@@ -156,56 +163,57 @@ public final class StartManager {
         });
     }
 
-    private boolean displayServerNotRunning() {
-        JButton cancelButton = new JButton();
-        Mnemonics.setLocalizedText(cancelButton, NbBundle.getMessage(StartManager.class, "StartManager.CancelButton")); // NOI18N
-        cancelButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(StartManager.class, "StartManager.CancelButtonA11yDesc")); //NOI18N
-
-        JButton keepWaitingButton = new JButton();
-        Mnemonics.setLocalizedText(keepWaitingButton, NbBundle.getMessage(StartManager.class, "StartManager.KeepWaitingButton")); // NOI18N
-        keepWaitingButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(StartManager.class, "StartManager.KeepWaitingButtonA11yDesc")); //NOI18N
-
-        JButton propsButton = new JButton();
-        Mnemonics.setLocalizedText(propsButton, NbBundle.getMessage(StartManager.class, "StartManager.PropsButton")); // NOI18N
-        propsButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(StartManager.class, "StartManager.PropsButtonA11yDesc")); //NOI18N
-
-        String message = NbBundle.getMessage(StartManager.class, "MSG_ServerDoesNotAppearToHaveStarted", errorMessage);
-        final NotifyDescriptor ndesc = new NotifyDescriptor(message,
-                NbBundle.getMessage(StartManager.class, "StartManager.ServerNotRunningTitle"),
-                NotifyDescriptor.YES_NO_CANCEL_OPTION,
-                NotifyDescriptor.QUESTION_MESSAGE,
-                new Object[] {keepWaitingButton, propsButton, cancelButton},
-                NotifyDescriptor.CANCEL_OPTION); //NOI18N
-
-        Object ret = Mutex.EVENT.readAccess(new Action<Object>() {
-            public Object run() {
-                return DialogDisplayer.getDefault().notify(ndesc);
-            }
-
-        });
-
-        if (cancelButton.equals(ret)) {
-            startRequested.set(false);
-            return false;
-        } else if (keepWaitingButton.equals(ret)) {
-            return true;
-        } else {
-            displayAdminProperties(server);
-            return false;
-        }
-    }
-
-    private void displayAdminProperties(final DatabaseServer server)  {
+    private void displayServerNotRunning() {
+        waitOnUsersInput = true;
         Mutex.EVENT.postReadRequest(new Runnable() {
             public void run() {
-                new PropertiesDialog(server).displayDialog();
+                JButton cancelButton = new JButton();
+                Mnemonics.setLocalizedText(cancelButton, NbBundle.getMessage(StartManager.class, "StartManager.CancelButton")); // NOI18N
+                cancelButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(StartManager.class, "StartManager.CancelButtonA11yDesc")); //NOI18N
+
+                JButton keepWaitingButton = new JButton();
+                Mnemonics.setLocalizedText(keepWaitingButton, NbBundle.getMessage(StartManager.class, "StartManager.KeepWaitingButton")); // NOI18N
+                keepWaitingButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(StartManager.class, "StartManager.KeepWaitingButtonA11yDesc")); //NOI18N
+
+                JButton propsButton = new JButton();
+                Mnemonics.setLocalizedText(propsButton, NbBundle.getMessage(StartManager.class, "StartManager.PropsButton")); // NOI18N
+                propsButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(StartManager.class, "StartManager.PropsButtonA11yDesc")); //NOI18N
+
+                String message = NbBundle.getMessage(StartManager.class, "MSG_ServerDoesNotAppearToHaveStarted", errorMessage);
+                final NotifyDescriptor ndesc = new NotifyDescriptor(message,
+                        NbBundle.getMessage(StartManager.class, "StartManager.ServerNotRunningTitle"),
+                        NotifyDescriptor.YES_NO_CANCEL_OPTION,
+                        NotifyDescriptor.QUESTION_MESSAGE,
+                        new Object[] {keepWaitingButton, propsButton, cancelButton},
+                        NotifyDescriptor.CANCEL_OPTION); //NOI18N
+
+                Object ret = Mutex.EVENT.readAccess(new Action<Object>() {
+                    public Object run() {
+                        return DialogDisplayer.getDefault().notify(ndesc);
+                    }
+
+                });
+
+                if (cancelButton.equals(ret)) {
+                    startRequested.set(false);
+                    stopWaiting = true;
+                } else if (keepWaitingButton.equals(ret)) {
+                    stopWaiting = false;
+                } else {
+                    stopWaiting = ! displayAdminProperties(server);
+                }
+                waitOnUsersInput = false;
             }
         });
+    }
+
+    private boolean displayAdminProperties(final DatabaseServer server)  {
+        return new PropertiesDialog(server).displayDialog();
     }
 
     private boolean waitForStart() throws DatabaseException {
         int tries = 0;
-        while (tries <= 5) {
+        while (tries <= 5 && !stopWaiting) {
             tries++;
 
             try {
