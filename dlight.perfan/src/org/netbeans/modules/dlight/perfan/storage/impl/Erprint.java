@@ -50,9 +50,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.modules.dlight.core.stack.api.Function;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.perfan.spi.datafilter.CollectedObjectsFilter;
 import org.netbeans.modules.dlight.perfan.stack.impl.FunctionCallImpl;
+import org.netbeans.modules.dlight.perfan.stack.impl.FunctionImpl;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
@@ -62,7 +64,7 @@ final class Erprint {
 
     private static final Pattern specPattern = Pattern.compile("[^:]*: (.*)"); // NOI18N
     private static final Pattern sortPattern = Pattern.compile(".* \\( (.*) \\)"); // NOI18N
-    private static final Pattern choicePattern = Pattern.compile("^[ \t]+([0-9]+)\\) .* \\((.*)\\)"); // NOI18N
+    private static final Pattern choicePattern = Pattern.compile("^[ \t]+([0-9]+)\\) .*:0x([0-9a-f]+) +\\((.*)\\)"); // NOI18N
     private static final String choiceMarker = "Available name list:"; // NOI18N
     private final Logger log = DLightLogger.getLogger(Erprint.class);
     private final AtomicInteger locks = new AtomicInteger();
@@ -204,8 +206,8 @@ final class Erprint {
         }
     }
 
-    Metrics getExperimentMetrics() throws IOException{
-         synchronized (this) {
+    Metrics getExperimentMetrics() throws IOException {
+        synchronized (this) {
             // Get current metrics ...
             String[] data = exec(ErprintCommand.metrics());
 
@@ -329,31 +331,45 @@ final class Erprint {
                 return new FunctionStatistic(new String[0]);
             }
 
-            String functionName = functionCall.getFunction().getName();
+            final Function f = functionCall.getFunction();
+            String functionName = f.getName();
             String[] stat = exec(ErprintCommand.fsingle(functionName));
 
             if (stat != null && stat.length > 0 && choiceMarker.equals(stat[0])) { // NOI18N
+                String cfname;
+                String address;
                 String choice = "1"; // NOI18N
 
                 FunctionCallImpl fci = (functionCall instanceof FunctionCallImpl)
                         ? (FunctionCallImpl) functionCall : null;
 
-                String fname = (fci == null) ? null : fci.getFileName();
+                final String fname = (fci == null) ? null : fci.getFileName();
+                long funcRef = -1;
 
-                if (fname != null) {
-                    for (String line : stat) {
-                        Matcher m = choicePattern.matcher(line);
-                        String cfname;
-                        if (m.matches()) {
-                            choice = m.group(1);
-                            cfname = m.group(2);
+                if (f instanceof FunctionImpl) {
+                    funcRef = ((FunctionImpl) f).getRef();
+                }
 
-                            if (cfname.endsWith(fname)) {
+                for (String line : stat) {
+                    Matcher m = choicePattern.matcher(line);
+                    if (m.matches()) {
+                        choice = m.group(1);
+                        address = m.group(2);
+                        cfname = m.group(3);
+
+                        if (fname != null && cfname.endsWith(fname)) {
+                            break;
+                        }
+
+                        try {
+                            if (Long.parseLong(address, 16) == funcRef) {
                                 break;
                             }
+                        } catch (NumberFormatException ex) {
                         }
                     }
                 }
+
 
                 post(choice);
                 stat = outProcessor.getOutput();
