@@ -46,7 +46,6 @@ import java.util.logging.Logger;
 import org.netbeans.editor.TokenContextPath;
 import org.netbeans.editor.Syntax;
 import org.netbeans.editor.TokenID;
-import org.netbeans.modules.web.core.syntax.deprecated.HtmlTokenContext;
 
 /**
 * Syntax for JSP files. This is a MultiSyntax consisting of three slave syntaxes:
@@ -239,6 +238,7 @@ public class JspMultiSyntax extends Syntax {
     *    slave's nextToken() in the current token, may be null !</li>
     *  </ul>
     */
+    @Override
     protected TokenID parseToken() {
         //<editor-fold defaultstate="collapsed" desc="setting states">
         if (state != ISI_LANGUAGE) {
@@ -1866,6 +1866,7 @@ System.out.println("returnuju (16.5) " + firstTokenID + " at " + offset);
     }
   
     /** Store state of this analyzer into given mark state. */
+    @Override
     public void storeState(StateInfo stateInfo) {
         super.storeState(stateInfo);
         JspStateInfo jspsi = (JspStateInfo)stateInfo;
@@ -1942,6 +1943,7 @@ System.out.println("returnuju (16.5) " + firstTokenID + " at " + offset);
         }
     }
 
+    @Override
     public void loadState(StateInfo stateInfo) {
         super.loadState(stateInfo);
         JspStateInfo jspsi = (JspStateInfo)stateInfo;
@@ -2012,6 +2014,7 @@ System.out.println("returnuju (16.5) " + firstTokenID + " at " + offset);
         }
     }
 
+    @Override
     public void loadInitState() {
         super.loadInitState();
         nestMode = MODE_HOST;
@@ -2037,10 +2040,12 @@ System.out.println("returnuju (16.5) " + firstTokenID + " at " + offset);
         super.load(stateInfo, buffer, offset, len, lastBuffer, -1);
     }
 
+    @Override
     public StateInfo createStateInfo() {
         return new JspStateInfo();
     }
   
+    @Override
     public int compareState(StateInfo stateInfo) {
         if (super.compareState(stateInfo) == DIFFERENT_STATE)
             return DIFFERENT_STATE;
@@ -2173,6 +2178,7 @@ System.out.println("returnuju (16.5) " + firstTokenID + " at " + offset);
         }
     }
 
+    @Override
     public String getStateName(int stateNumber) {
         switch(stateNumber) {
             case ISI_LANGUAGE:
@@ -2260,6 +2266,7 @@ System.out.println("returnuju (16.5) " + firstTokenID + " at " + offset);
             return (JspStateInfo.this.getPreScan() != 0);
         }
     
+        @Override
         public String toString(Syntax s) {
             return "JspStateInfo state=" + getState() + ", prescan=" + JspStateInfo.this.getPreScan() + ", nestMode=" + nestMode +    // NOI18N
                 ((JspStateInfo.this.getPreScan() == 0) ? "" : "\n  firstTokenID=" + firstTokenID + ", firstTokenLength=" + firstTokenLength) + // NOI18N

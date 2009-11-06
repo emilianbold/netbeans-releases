@@ -1,6 +1,7 @@
 <?php
     if ($condigionOne
            && $conditionTwo) {
-       echo('ufff');^
+       echo('ufff');
+       ^
    }
 

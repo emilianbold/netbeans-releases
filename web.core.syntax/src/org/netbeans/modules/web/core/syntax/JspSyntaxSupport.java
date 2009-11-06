@@ -150,16 +150,10 @@ public class JspSyntaxSupport extends ExtSyntaxSupport implements FileChangeList
 
     protected FileObject fobj;
 
-    /** Content language SyntaxSupport cached for getContentLanguageSyntaxSupport */
-    private ExtSyntaxSupport contentLanguageSyntaxSupport = null;
-
     /** Special bracket finder is used when caret is in JSP context */
     private boolean useCustomBracketFinder = true;
 
-    private static final TagNameComparator TAG_NAME_COMPARATOR = new TagNameComparator();
-
-    /** Creates new HtmlSyntaxSupport */
-
+    /** Creates new JspSyntaxSupport */
     public static synchronized JspSyntaxSupport get(Document doc) {
         JspSyntaxSupport sup = (JspSyntaxSupport)doc.getProperty(JspSyntaxSupport.class);
         if(sup == null) {
@@ -2118,23 +2112,6 @@ public class JspSyntaxSupport extends ExtSyntaxSupport implements FileChangeList
             return (moveCount != 0);
         }
 
-    }
-
-    private static class TagNameComparator implements Comparator{
-
-        public TagNameComparator() {}
-
-        public int compare(Object o1, Object o2) {
-            if (o1 == o2 || o1 == null || o2 == null){
-                return 0;
-            }
-            String tagNameOne = ((TagInfo)o1).getTagName();
-            String tagNameTwo = ((TagInfo)o2).getTagName();
-            if (tagNameOne == null || tagNameTwo == null){
-                return 0;
-            }
-            return tagNameOne.compareTo(tagNameTwo);
-        }
     }
 
     public void fileFolderCreated(FileEvent fe) {
