@@ -50,7 +50,7 @@ made subject to such option by the copyright holder.
         <property name="test.result.dir" location="${java.io.tmpdir}"/>
         <property name="test.result.file"
                   location="${test.result.dir}/TEST-${classname}.xml"/>
-        <property  name="tmp.dir" value="${work.dir}"/>
+        <property  name="tmp.dir" value="${basedir}"/>
         <macrodef name="junit-template">
             <element name="test-spec" implicit="yes"/>
             <sequential>
