@@ -758,5 +758,9 @@ public final class QueryTopComponent extends TopComponent
         }
     }
 
-}
+    @Override
+    public boolean requestFocusInWindow() {
+        return jPanel2.requestFocusInWindow();
+    }
 
+}
