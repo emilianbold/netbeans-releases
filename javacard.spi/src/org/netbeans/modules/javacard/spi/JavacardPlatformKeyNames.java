@@ -103,13 +103,9 @@ public final class JavacardPlatformKeyNames {
         String pathVal = props.get(PLATFORM_PATH_PROPERTIES);
         Set<String> result = new HashSet<String>();
         if (pathVal == null) {
-            for (String p : getPathPropertyNames()) {
-                if (props.containsKey(p)) {
-                    result.add (p);
-                }
-            }
+            return getPathPropertyNames();
         } else {
-            String[] p = pathVal.split(",");
+            String[] p = pathVal.split(","); //NOI18N
             if (p != null) {
                 for (String s : p) {
                     result.add(s.trim());
@@ -145,7 +141,8 @@ public final class JavacardPlatformKeyNames {
             PLATFORM_CLASSPATH,
             PLATFORM_BOOT_CLASSPATH,
             PLATFORM_CLASSIC_BOOT_CLASSPATH,
-            PLATFORM_SRC_PATH, PLATFORM_JAVADOC_PATH,
+            PLATFORM_SRC_PATH,
+            PLATFORM_JAVADOC_PATH,
             PLATFORM_EMULATOR_PATH,
             PLATFORM_TASKS_CLASSPATH,
             PLATFORM_TOOLS_CLASSPATH,

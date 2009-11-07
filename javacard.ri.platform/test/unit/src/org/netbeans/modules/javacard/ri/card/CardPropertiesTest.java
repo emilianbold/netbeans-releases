@@ -59,9 +59,14 @@ import org.netbeans.modules.javacard.common.Utils;
 import org.netbeans.modules.javacard.spi.ICardCapability;
 import org.netbeans.modules.javacard.spi.JavacardDeviceKeyNames;
 import org.netbeans.modules.javacard.spi.JavacardPlatformKeyNames;
+import org.netbeans.modules.javacard.spi.capabilities.AntTargetInterceptor;
+import org.netbeans.modules.javacard.spi.capabilities.ApduSupport;
+import org.netbeans.modules.javacard.spi.capabilities.CardContentsProvider;
+import org.netbeans.modules.javacard.spi.capabilities.CardCustomizerProvider;
 import org.netbeans.modules.javacard.spi.capabilities.ClearEpromCapability;
 import org.netbeans.modules.javacard.spi.capabilities.DebugCapability;
 import org.netbeans.modules.javacard.spi.capabilities.EpromFileCapability;
+import org.netbeans.modules.javacard.spi.capabilities.PortProvider;
 import org.netbeans.modules.javacard.spi.capabilities.ResumeCapability;
 import org.netbeans.modules.javacard.spi.capabilities.StartCapability;
 import org.netbeans.modules.javacard.spi.capabilities.StopCapability;
@@ -248,6 +253,9 @@ public class CardPropertiesTest {
 
     @Test
     public void testGetDebugProxyCommandLine() {
+        if (!Utilities.isWindows()) { //FIXME
+            return;
+        }
         String[] got = p.getDebugProxyCommandLine(platformProps, "C:\\foo\\a.jar;c:\\foo\b.jar");
         String[] expect = new String[] {
             "cmd",
@@ -268,6 +276,9 @@ public class CardPropertiesTest {
 
     @Test
     public void testGetRunCommandLine() {
+        if (!Utilities.isWindows()) { //FIXME
+            return;
+        }
         String[] got = p.getRunCommandLine(platformProps, true, true);
         String[] expect = new String[] {
             win ? "C:\\Java Card\\JCDK3.0.2\\bin\\cjcre.exe" : "usr/local/java/jcdk3.0.2/bin/cjcre",
@@ -302,6 +313,9 @@ public class CardPropertiesTest {
 
     @Test
     public void testGetResumeCommandLine() {
+        if (!Utilities.isWindows()) { //FIXME
+            return;
+        }
         assertNotNull (platformProps.get("javacard.instance.id"));
         String[] got = p.getResumeCommandLine(platformProps);
         String[] expect = new String[] {
@@ -318,6 +332,9 @@ public class CardPropertiesTest {
 
     @Test
     public void testBasicCommandLine() {
+        if (!Utilities.isWindows()) { //FIXME
+            return;
+        }
         String cmdline = "cmd /c " + "c:\\foo\\cjcre.exe "
                 + "-ramsize 2K "
                 + "-e2psize 2K "
@@ -372,6 +389,9 @@ public class CardPropertiesTest {
 
     @Test
     public void testSpacesInPaths() {
+        if (!Utilities.isWindows()) { //FIXME
+            return;
+        }
         String cmdline = "cmd /c c:\\Program Files\\Java\\Java Card\\cjcre.exe "
                 + "-ramsize 2K "
                 + "-e2psize 2K "
@@ -423,6 +443,9 @@ public class CardPropertiesTest {
 
     @Test
     public void testLeadingSpaces() {
+        if (!Utilities.isWindows()) { //FIXME
+            return;
+        }
         String cmdline = "  cmd /c c:\\Program Files\\Java\\Java Card\\cjcre.exe "
                 + "-ramsize 2K "
                 + "-e2psize 2K "
@@ -477,12 +500,16 @@ public class CardPropertiesTest {
         Set <Class<? extends ICardCapability>> got = p.getSupportedCapabilityTypes();
         Set <Class<? extends ICardCapability>> expect = new HashSet<Class<? extends ICardCapability>>();
         expect.addAll(Arrays.asList(StartCapability.class, StopCapability.class, ResumeCapability.class,
-                EpromFileCapability.class, ClearEpromCapability.class, DebugCapability.class));
+                EpromFileCapability.class, ClearEpromCapability.class, DebugCapability.class, CardCustomizerProvider.class,
+                CardContentsProvider.class, AntTargetInterceptor.class, PortProvider.class, ApduSupport.class));
         assertEquals (expect, got);
     }
 
     @Test
     public void testMultiDashCommandLine() {
+        if (!Utilities.isWindows()) { //FIXME
+            return;
+        }
         String cmdline =         "cmd /c C:\\Java Card\\JCDK3.0.2\\bin\\debugproxy.bat " + //NOI18N
         "--listen 2026 " + //NOI18N
         "--remote localhost:3225 " + //NOI18N
@@ -507,6 +534,9 @@ public class CardPropertiesTest {
 
     @Test
     public void testDashesInPaths() {
+        if (!Utilities.isWindows()) { //FIXME
+            return;
+        }
         String cmdline = "cmd /c c:\\Program Files\\Java\\Java Card\\cjcre.exe "
                 + "-ramsize 2K "
                 + "-e2psize 2K "
