@@ -92,7 +92,7 @@ public class X11ForwardingChecker {
             for (String line : lines) {
                 if (line.startsWith(x11key)) {
                     String rest = line.substring(x11key.length()).trim();
-                    if ("no".equals(rest)) {
+                    if ("no".equalsIgnoreCase(rest)) {
                         return false;
                     }
                 }
