@@ -59,8 +59,7 @@ import org.openide.util.HelpCtx;
     }
 
     public HelpCtx getHelp() {
-        // Show no Help button for this panel:
-        return HelpCtx.DEFAULT_HELP;
+        return new HelpCtx("NewRemoteDevelopmentHostWizardP3");
     }
 
     public boolean isValid() {
