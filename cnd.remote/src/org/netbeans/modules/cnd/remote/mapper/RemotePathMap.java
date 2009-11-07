@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.remote.ui.EditPathMapDialog;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
@@ -304,7 +305,11 @@ public abstract class RemotePathMap extends PathMap {
     // inside path mapper we use only / and lowercase 
     // TODO: lowercase should be only windows issue -- possible flaw
     private static String unifySeparators(String path) {
-        return path.replace('\\', '/').toLowerCase();
+        String result = path.replace('\\', '/');
+        if (!CndFileUtils.isSystemCaseSensitive()) {
+            result = result.toLowerCase();
+        }
+        return result;
     }
 
     public static boolean isSubPath(String path, String pathToValidate) {
