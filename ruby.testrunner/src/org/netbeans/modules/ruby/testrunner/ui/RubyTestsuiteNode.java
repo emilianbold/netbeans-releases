@@ -87,7 +87,7 @@ public final class RubyTestsuiteNode extends TestsuiteNode {
         TestType type = TestType.valueOf(testcase.getType());
         if (TestType.RSPEC == type) {
             //XXX: not the exact location of the class
-            return new JumpToCallStackAction(this, RubyTestMethodNode.getTestLocation(testcase, report.getProject()), 1);
+            return new JumpToCallStackAction(this, testcase.getLocation(), 1);
         }
         return new JumpToTestAction(getFirstTestCase(), report.getProject(), NbBundle.getMessage(RubyTestsuiteNode.class, "LBL_GoToSource"), true);
     }
