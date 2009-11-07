@@ -68,6 +68,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
@@ -90,6 +91,8 @@ final class RIPlatformFactory implements Mutex.ExceptionAction<FileObject> {
     private final FileObject platformsFolder = FileUtil.getConfigFile(
             CommonSystemFilesystemPaths.SFS_JAVA_PLATFORMS_FOLDER); //NOI18N
     private final EditableProperties globalProps = PropertyUtils.getGlobalProperties();
+    public static final SpecificationVersion MINIMUM_SUPPORTED_VERSION =
+            new SpecificationVersion("3.0.2"); //NOI18N
 
     /**
      * Create a platform factory which can create a Java Card platform the IDE
@@ -149,6 +152,16 @@ final class RIPlatformFactory implements Mutex.ExceptionAction<FileObject> {
         this (readPlatformProperties(baseDir), null, baseDir, null, displayName);
     }
 
+    public static boolean canInstall (String javacardVersion) {
+        SpecificationVersion v = new SpecificationVersion(javacardVersion);
+        return v.compareTo(MINIMUM_SUPPORTED_VERSION) >= 0;
+    }
+
+    public static boolean canInstall (Map<? extends Object, ? extends Object> m) {
+        Object o = m.get(JavacardPlatformKeyNames.PLATFORM_JAVACARD_SPECIFICATION_VERSION);
+        return o == null ? false : canInstall(o.toString());
+    }
+
     public FileObject createPlatform() throws IOException {
         try {
             try {
@@ -183,6 +196,12 @@ final class RIPlatformFactory implements Mutex.ExceptionAction<FileObject> {
 
     private FileObject create() throws IOException {
         progress();
+        if (!canInstall(platformProps)) {
+            throw new IOException (NbBundle.getMessage(RIPlatformFactory.class,
+                    "ERR_TOO_OLD", //NOI18N
+                    platformProps.get(JavacardPlatformKeyNames.PLATFORM_JAVACARD_SPECIFICATION_VERSION),
+                    MINIMUM_SUPPORTED_VERSION)); //NOI18N
+        }
         //Translate UNIX-style relative paths into platform-specific absolute
         //paths usable by Ant
         translatePaths(FileUtil.toFile(baseDir), platformProps);
@@ -235,7 +254,7 @@ final class RIPlatformFactory implements Mutex.ExceptionAction<FileObject> {
         save (deviceProps, deviceFile);
         progress();
         File f = FileUtil.toFile (fo);
-        String path = f == null /* unit test */ ? "NONE" : f.getAbsolutePath();
+        String path = f == null /* unit test */ ? "NONE" : f.getAbsolutePath(); //NOI18N
         //Set a property for this platform in $USERDIR/build.properties
         globalProps.setProperty(JCConstants.GLOBAL_PROPERTIES_JCPLATFORM_DEFINITION_PREFIX
                 + filename, path); //NOI18N
@@ -245,7 +264,7 @@ final class RIPlatformFactory implements Mutex.ExceptionAction<FileObject> {
                 + filename + JCConstants.GLOBAL_PROPERTIES_DEVICE_FOLDER_PATH_KEY_SUFFIX;
 
         f = FileUtil.toFile (cardsFolder);
-        path = f == null /* unit test */ ? "NONE" : f.getAbsolutePath();
+        path = f == null /* unit test */ ? "NONE" : f.getAbsolutePath(); //NOI18N
         //And save that to the global properties
         globalProps.setProperty(globalPlatformPointerProperty, path);
         //Store the global properties to disk and we're done
@@ -445,8 +464,8 @@ final class RIPlatformFactory implements Mutex.ExceptionAction<FileObject> {
         EditableProperties result = new EditableProperties(true);
         FileObject platformDefinition = baseDir.getFileObject(JCConstants.PLATFORM_PROPERTIES_PATH);
         if (platformDefinition == null) {
-            throw new IOException ("No platform definition at path " +
-                    JCConstants.PLATFORM_PROPERTIES_PATH + " in " +
+            throw new IOException ("No platform definition at path " + //NOI18N
+                    JCConstants.PLATFORM_PROPERTIES_PATH + " in " + //NOI18N
                     baseDir.getPath());
         }
         read (result, platformDefinition);

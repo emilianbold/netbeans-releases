@@ -106,6 +106,11 @@ abstract class PlatformValidator implements Runnable {
         return failed;
     }
 
+    String failMessage;
+    String failMessage() {
+        return failMessage;
+    }
+
     public final void run() {
         if (!EventQueue.isDispatchThread()) {
             try {
@@ -203,6 +208,12 @@ abstract class PlatformValidator implements Runnable {
             throw new IOException (NbBundle.getMessage(PlatformValidator.class,
                     "ERR_MISSING_REQUIRED_PROPERTIES", fo.getPath(), sb)); //NOI18N
         }
+        if (!RIPlatformFactory.canInstall(props)) {
+            throw new IOException (NbBundle.getMessage(RIPlatformFactory.class,
+                    "ERR_TOO_OLD", //NOI18N
+                    props.get(JavacardPlatformKeyNames.PLATFORM_JAVACARD_SPECIFICATION_VERSION),
+                    RIPlatformFactory.MINIMUM_SUPPORTED_VERSION)); //NOI18N
+        }
 
         String path = props.getProperty(JavacardPlatformKeyNames.PLATFORM_EMULATOR_PATH);
         if (path != null) { //Conceivably a platform may not have an emulator
@@ -213,12 +224,12 @@ abstract class PlatformValidator implements Runnable {
             InputStream err = proc.getErrorStream();
             RequestProcessor.getDefault().post(new Copier(out, stdOut));
             RequestProcessor.getDefault().post(new Copier(err, stdErr));
-            if (proc.waitFor() > 0) {
-                String s = stdOut.toString("UTF-8") + "\n" + //NOI18N
-                        stdErr.toString("UTF-8"); //NOI18N
-                throw new IOException(NbBundle.getMessage(PlatformValidator.class,
-                        "MSG_EXECUTION_FAILED", s)); //NOI18N
-            }
+//            if (proc.waitFor() > 0) {
+//                String s = stdOut.toString("UTF-8") + "\n" + //NOI18N
+//                        stdErr.toString("UTF-8"); //NOI18N
+//                throw new IOException(NbBundle.getMessage(PlatformValidator.class,
+//                        "MSG_EXECUTION_FAILED", s)); //NOI18N
+//            }
         }
     }
 
