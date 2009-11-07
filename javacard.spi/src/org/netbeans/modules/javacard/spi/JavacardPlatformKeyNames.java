@@ -130,7 +130,6 @@ public final class JavacardPlatformKeyNames {
             PLATFORM_CLASSIC_BOOT_CLASSPATH,
             PLATFORM_TASKS_CLASSPATH,
             PLATFORM_TOOLS_CLASSPATH,
-            PLATFORM_HOME,
             PLATFORM_VENDOR,
             PLATFORM_NAME
         ));

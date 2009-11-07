@@ -216,8 +216,8 @@ abstract class PlatformValidator implements Runnable {
             if (proc.waitFor() > 0) {
                 String s = stdOut.toString("UTF-8") + "\n" + //NOI18N
                         stdErr.toString("UTF-8"); //NOI18N
-                throw new IOException(NbBundle.getMessage(PlatformPanel.class,
-                        s));
+                throw new IOException(NbBundle.getMessage(PlatformValidator.class,
+                        "MSG_EXECUTION_FAILED", s)); //NOI18N
             }
         }
     }

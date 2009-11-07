@@ -64,6 +64,8 @@ import java.net.URL;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.api.validation.adapters.WizardDescriptorAdapter;
 import org.netbeans.modules.javacard.common.JCConstants;
@@ -439,8 +441,17 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
     }
 
     public boolean isAllDataValid() {
-        Problem p = group.validateAll();
-        return p == null || !p.isFatal();
+        try {
+            Problem p = group.validateAll();
+            return p == null || !p.isFatal();
+        } catch (StackOverflowError err) {
+            //Stack overflow error in java.util.regex.Pattern - need to
+            //diagnose further
+            Logger.getLogger(DevicePropertiesPanel.class.getName()).log(Level.SEVERE,
+                    null, err);
+            return true;
+        }
+        
     }
 
     void setWizardDescriptor(WizardDescriptor wizardDescriptor) {
