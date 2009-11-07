@@ -323,43 +323,48 @@ public class WebProjectRestSupport extends WebRestSupport {
 
     @Override
     public String getApplicationPath() throws IOException {
-        WebApp webApp = findWebApp();
-        if (webApp == null) {
-            String applPath = getApplicationPathFromAnnotations();
-            return (applPath == null ? super.getApplicationPath() : applPath);
+        String pathFromDD = getApplicationPathFromDD();
+        String applPath = getApplicationPathFromAnnotations(pathFromDD);
+        return (applPath == null ? super.getApplicationPath() : applPath);
+    }
+
+    private String getApplicationPathFromAnnotations(final String applPathFromDD) {
+        List<RestApplication> restApplications = getRestApplications();
+        if (applPathFromDD == null) {
+            return getApplicationPathFromDialog(restApplications);
         } else {
-            ServletMapping sm = getRestServletMapping(webApp);
-            if (sm == null) {
-                String applPath = getApplicationPathFromAnnotations();
-                return (applPath == null ? super.getApplicationPath() : applPath);
+            if (restApplications.size() == 0) {
+                return applPathFromDD;
             } else {
-                String urlPattern = super.getApplicationPath();
-                if (sm instanceof ServletMapping25) {
-                    String[] urlPatterns = ((ServletMapping25)sm).getUrlPatterns();
-                    if (urlPatterns.length > 0) {
-                        urlPattern = urlPatterns[0];
+                boolean found = false;
+                for (RestApplication appl: restApplications) {
+                    if (applPathFromDD.equals(appl.getApplicationPath())) {
+                        found = true;
+                        break;
                     }
-                } else {
-                    urlPattern = sm.getUrlPattern();
                 }
-                if (urlPattern.endsWith("*")) {
-                    urlPattern = urlPattern.substring(0, urlPattern.length()-1);
+                if (!found) {
+                    restApplications.add(new RestApplication() {
+                        public String getApplicationPath() {
+                            return applPathFromDD;
+                        }
+
+                        public String getApplicationClass() {
+                            return "web.xml"; //NOI18N
+                        }
+                    });
                 }
-                if (urlPattern.endsWith("/")) {
-                    urlPattern = urlPattern.substring(0, urlPattern.length()-1);
-                }
-                return urlPattern;
+                return getApplicationPathFromDialog(restApplications);
             }
         }
     }
 
-    private String getApplicationPathFromAnnotations() {
-        List<RestApplication> restApplications = getRestApplications();
+    private String getApplicationPathFromDialog(List<RestApplication> restApplications) {
         if (restApplications.size() == 1) {
             return restApplications.get(0).getApplicationPath();
-        } else if (restApplications.size() > 1) {
+        } else {
             RestApplicationsPanel panel = new RestApplicationsPanel(restApplications);
-            DialogDescriptor desc = new DialogDescriptor(panel, 
+            DialogDescriptor desc = new DialogDescriptor(panel,
                     NbBundle.getMessage(WebProjectRestSupport.class,"TTL_RestResourcesPath"));
             DialogDisplayer.getDefault().notify(desc);
             if (NotifyDescriptor.OK_OPTION.equals(desc.getValue())) {

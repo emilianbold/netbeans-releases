@@ -13,29 +13,42 @@
 
 <h2>Importing an Eclipse or JBuilder Project</h2>
 <p> <small><a href="#seealso">See Also</a>&nbsp; </small>
-<p>The NetBeans Update Center includes modules that you can use to import a project 
-  from the Eclipse<small><sup>TM</sup></small> or JBuilder<small><sup>TM</sup></small> 
-  IDEs. The IDE creates a standard Java SE project for each of the imported projects.</p>
-<p>For Eclipse projects, you can import a set of dependent projects from an Eclipse 
-  Workspace or import a single project ignoring dependencies. For JBuilder projects, 
-  you can import a standard Java SE project with dependencies. </p>
-<p><b>To install the project importer module:</b></p>
+<p>You can import projects created in other IDEs, such as Eclipse<small><sup>TM</sup></small> or JBuilder<small><sup>TM</sup></small>, into the NetBeans IDE.</p>
+<p>The functionality to import Eclipse projects is included into the standard NetBeans IDE distribution. For Eclipse projects, you can import a set of dependent projects from an Eclipse 
+Workspace or import a single project ignoring dependencies. </p>
+<p>For JBuilder projects, you would need to install the JBuilder Project Importer plugin from the NetBeans Update Center. For JBuilder projects, 
+you can import a standard Java SE project with dependencies. </p>
+<p><strong>To import an Eclipse project into the NetBeans IDE:</strong></p>
+<ol>
+  <li>Make sure that you have copy of the project that you want to import on your system.<br>
+  Typically, this project would already be in an Eclipse workspace on your system.</li>
+  <li>Choose File &gt; Import Project &gt; Eclipse Project.<br>
+  </li>
+</ol>
+<p>For details on how to import Eclipse projects, see: 
+<p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="content" value="http://www.netbeans.org/kb/docs/java/import-eclipse.html">
+    <param name="text" value="<html><u>Importing Eclipse Projects into NetBeans IDE</u></html>">
+    <param name="textFontSize" value="medium">
+    <param name="textColor" value="blue">
+  </object> </p>
+<p><b>To install the  JBuilder Project Importer plugin:</b></p>
 <ol>
   <li>Choose Tools &gt; Plugins from the main menu.</li>
   <li>Click the Available Plugins tab and select JBuilder Project 
-    Importer or Eclipse Project Importer.</li>
+    Importer.</li>
   <li>Click Install.</li>
 </ol>
-<p><b>To import a project:</b></p>
+<p><b>To import a JBuilder project:</b></p>
 <ul>
-  <li>Choose the project type from the File &gt; Import Project menu.</li>
+  <li>Choose the JBuilder project type from the File &gt; Import Project menu.</li>
 </ul>
 <dl>
     <dt><a name="seealso">See Also</a></dt>
     <dd><a href="proj_creating.html">Creating a Java Project</a></dd>
     <dd><a href="../compile/comp_dependencies.html">Creating Dependencies Between 
       Projects</a></dd>
-  </dl>
+</dl>
       
 <hr><small><a href="../credits.html">Legal Notices</a></small>
 

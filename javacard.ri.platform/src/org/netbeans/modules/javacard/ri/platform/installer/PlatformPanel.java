@@ -138,6 +138,11 @@ public class PlatformPanel extends javax.swing.JPanel implements FocusListener, 
         String key = null;
         String name = displayNameField.getText().trim();
         if (validator.failed()) {
+            String msg = validator.failMessage();
+            if (msg != null) {
+                setProblem(msg);
+                return;
+            }
             key = "MSG_BAD_PLATFORM"; //NOI18N
         } else if (validator.isRunning()) {
             key = "MSG_LOADING"; //NOI18N
@@ -361,6 +366,7 @@ public class PlatformPanel extends javax.swing.JPanel implements FocusListener, 
             assert EventQueue.isDispatchThread();
             infoField.setText(getStandardOutput() + "\n" + getErrorOutput()); //NOI18N
             setProblem(e.getMessage());
+            failMessage = e.getLocalizedMessage();
             e.printStackTrace();
         }
 
