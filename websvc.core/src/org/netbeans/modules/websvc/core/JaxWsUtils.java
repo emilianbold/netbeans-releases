@@ -103,8 +103,6 @@ import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
 import org.netbeans.modules.websvc.wsstack.jaxws.JaxWsStackProvider;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
-import org.netbeans.spi.project.ui.templates.support.Templates;
-import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
@@ -123,8 +121,8 @@ import javax.swing.SwingUtilities;
 import javax.xml.namespace.QName;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
-import org.netbeans.modules.websvc.core.dev.wizard.WizardProperties;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.wsdl.model.Binding;
@@ -720,8 +718,8 @@ public class JaxWsUtils {
     public static boolean isEjbJavaEE5orHigher(ProjectInfo projectInfo) {
         int projType = projectInfo.getProjectType();
         if (projType == ProjectInfo.EJB_PROJECT_TYPE) {
-            FileObject ddFolder = JAXWSSupport.getJAXWSSupport(projectInfo.getProject().getProjectDirectory()).getDeploymentDescriptorFolder();
-            if (ddFolder == null || ddFolder.getFileObject("ejb-jar.xml") == null) { //NOI18N
+            EjbJar ejbModule = EjbJar.getEjbJar(projectInfo.getProject().getProjectDirectory());
+            if (ejbModule != null && ejbModule.getDeploymentDescriptor() == null) {
                 return true;
             }
         }

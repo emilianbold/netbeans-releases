@@ -44,6 +44,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -53,14 +54,20 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.javacard.common.CommonSystemFilesystemPaths;
 import org.netbeans.modules.javacard.common.JCConstants;
 import org.netbeans.modules.javacard.common.Utils;
+import org.netbeans.modules.javacard.ri.platform.MergeProperties;
+import org.netbeans.modules.javacard.ri.platform.RIPlatform;
 import org.netbeans.modules.javacard.spi.JavacardDeviceKeyNames;
 import org.netbeans.modules.javacard.spi.JavacardPlatformKeyNames;
+import org.netbeans.modules.propdos.AntStyleResolvingProperties;
+import org.netbeans.modules.propdos.ObservableProperties;
+import org.netbeans.modules.propdos.PropertiesAdapter;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
@@ -114,9 +121,9 @@ final class RIPlatformFactory implements Mutex.ExceptionAction<FileObject> {
      * @param displayName The display name for this platform.  May not be null.
      */
     RIPlatformFactory(EditableProperties platformProps, EditableProperties deviceSettings, FileObject baseDir, ProgressHandle h, String displayName) {
-        Parameters.notNull("platformProps", platformProps);
-        Parameters.notNull("baseDir", baseDir);
-        Parameters.notNull("displayName", displayName);
+        Parameters.notNull("platformProps", platformProps); //NOI18N
+        Parameters.notNull("baseDir", baseDir); //NOI18N
+        Parameters.notNull("displayName", displayName); //NOI18N
         this.platformProps = platformProps;
         this.baseDir = baseDir;
         this.h = h;
@@ -148,7 +155,8 @@ final class RIPlatformFactory implements Mutex.ExceptionAction<FileObject> {
                 ProjectManager.mutex().writeAccess(this);
                 return platformFile;
             } catch (MutexException ex) {
-                IOException ioe = new IOException("Exception creating platform in " + baseDir.getPath());
+                IOException ioe = new IOException("Exception creating " + //NOI18N
+                        "platform in " + baseDir.getPath()); //NOI18N
                 ioe.initCause(ex);
                 throw ioe;
             } finally {
@@ -194,8 +202,13 @@ final class RIPlatformFactory implements Mutex.ExceptionAction<FileObject> {
         //Create the folder for eprom files and write its path into the platform props
         createAndStoreEepromFolder(filename);
         progress();
+
+        //If this platform wrappers the RI, create a properties that merges
+        //values from that.  append.* and prepend.* will be resolved before
+        //save;  ${}-delimited properties will be preserved
+        ObservableProperties workingProps = maybeLoadDefaultPlatformProps();
         //We're done, store the platform properties to disk
-        save(platformProps, fo);
+        save(workingProps, fo);
         progress();
         //Try to keep a usable value for the default RI.  Some platform
         //implementations will be wrappers for it and need a valid path to it
@@ -221,16 +234,20 @@ final class RIPlatformFactory implements Mutex.ExceptionAction<FileObject> {
         FileObject deviceFile = cardsFolder.createData(deviceFileName, ext);
         save (deviceProps, deviceFile);
         progress();
+        File f = FileUtil.toFile (fo);
+        String path = f == null /* unit test */ ? "NONE" : f.getAbsolutePath();
         //Set a property for this platform in $USERDIR/build.properties
         globalProps.setProperty(JCConstants.GLOBAL_PROPERTIES_JCPLATFORM_DEFINITION_PREFIX
-                + filename, FileUtil.toFile(fo).getAbsolutePath()); //NOI18N
+                + filename, path); //NOI18N
         //e.g. jcplatform.platform_default.devicepath
         //Set a global device path for this platform too
         String globalPlatformPointerProperty = JCConstants.GLOBAL_PROPERTIES_JCPLATFORM_DEFINITION_PREFIX
                 + filename + JCConstants.GLOBAL_PROPERTIES_DEVICE_FOLDER_PATH_KEY_SUFFIX;
+
+        f = FileUtil.toFile (cardsFolder);
+        path = f == null /* unit test */ ? "NONE" : f.getAbsolutePath();
         //And save that to the global properties
-        globalProps.setProperty(globalPlatformPointerProperty,
-                FileUtil.toFile(cardsFolder).getPath());
+        globalProps.setProperty(globalPlatformPointerProperty, path);
         //Store the global properties to disk and we're done
         PropertyUtils.putGlobalProperties(globalProps);
         progress();
@@ -278,6 +295,18 @@ final class RIPlatformFactory implements Mutex.ExceptionAction<FileObject> {
         }
     }
 
+    static void save(ObservableProperties p, final FileObject to) throws IOException {
+        FileLock lock = to.lock();
+        OutputStream out = to.getOutputStream(lock);
+        try {
+            p.store(out, null); //NOI18N
+        } finally {
+            lock.releaseLock();
+            out.close();
+        }
+    }
+
+
     private void storeGlobalJavacardRIPath(FileObject fo) {
         String val = globalProps.getProperty(JCConstants.GLOBAL_BUILD_PROPERTIES_RI_PROPERTIES_PATH_KEY);
         if (val != null) {
@@ -307,18 +336,29 @@ final class RIPlatformFactory implements Mutex.ExceptionAction<FileObject> {
 
     private void translatePaths(File dir, EditableProperties props) {
         Set<String> translatablePaths = JavacardPlatformKeyNames.getPathPropertyNames(props);
+        Set<String> copy = new HashSet<String>(translatablePaths);
+        for (String s : copy) {
+            translatablePaths.add(MergeProperties.APPEND_PREFIX + s);
+            translatablePaths.add(MergeProperties.PREPEND_PREFIX + s);
+        }
         for (String key : new ArrayList<String>(props.keySet())) {
             String val = props.getProperty(key);
             if (translatablePaths.contains(key)) {
                 String xlated = translatePath(dir, val);
-                System.err.println("TRANSLATE " + key + " val=" + val + " to " + xlated);
                 props.put(key, xlated);
             }
         }
     }
 
     static String translatePath(File dir, String val) {
-        System.err.println("translate path " + val + " in " + dir.getPath());
+        if (val.startsWith("${")) { //NOI18N
+            //If it starts with an inline property, assume this is
+            //something that resolves to a parent dir, don't assume
+            //we need to add one
+            val = val.replace(':', File.pathSeparatorChar);
+            val = val.replace('/', File.separatorChar);
+            return val;
+        }
         if ("".equals(val) || val == null) { //NOI18N
             return ""; //NOI18N
         }
@@ -343,10 +383,9 @@ final class RIPlatformFactory implements Mutex.ExceptionAction<FileObject> {
             }
             return sb.toString();
         }
-        System.err.println("val converted to " + val);
         File nue = new File(dir, val);
-        System.err.println("Path: " + nue.getAbsolutePath());
-        return nue.getAbsolutePath();
+        String result = nue.getAbsolutePath();
+        return result;
     }
 
     private EditableProperties loadDeviceProperties(String deviceFileName) throws IOException {
@@ -386,8 +425,11 @@ final class RIPlatformFactory implements Mutex.ExceptionAction<FileObject> {
 
     private void createAndStoreEepromFolder(String filename) {
         FileObject eepromFolder = Utils.sfsFolderForDeviceEepromsForPlatformNamed(filename, true);
-        platformProps.setProperty(JavacardPlatformKeyNames.PLATFORM_EEPROM_FOLDER,
+        File f = FileUtil.toFile(eepromFolder);
+        if (f != null) { //unit test
+            platformProps.setProperty(JavacardPlatformKeyNames.PLATFORM_EEPROM_FOLDER,
                 FileUtil.toFile(eepromFolder).getAbsolutePath());
+        }
     }
 
     private static void read (EditableProperties to, FileObject from) throws IOException {
@@ -409,5 +451,21 @@ final class RIPlatformFactory implements Mutex.ExceptionAction<FileObject> {
         }
         read (result, platformDefinition);
         return result;
+    }
+
+    private ObservableProperties maybeLoadDefaultPlatformProps() throws IOException {
+        AntStyleResolvingProperties p = new AntStyleResolvingProperties(true);
+        p.putAll(this.platformProps);
+        String riWrapperProp = platformProps.getProperty(JavacardPlatformKeyNames.PLATFORM_IS_RI_WRAPPER);
+        if (riWrapperProp != null && "true".equals(riWrapperProp) || "yes".equals(riWrapperProp)) { //NOI18N
+            DataObject defPlatform = RIPlatform.findDefaultPlatform();
+            if (defPlatform == null) {
+                throw new IOException("No copy of the Java Card RI installed"); //NOI18N
+            }
+            PropertiesAdapter adap = defPlatform.getLookup().lookup(PropertiesAdapter.class);
+            assert adap != null : "No properties adapter from default javacard platform"; //NOI18N
+            p = new MergeProperties(adap.asProperties(), p);
+        }
+        return p;
     }
 }
