@@ -429,7 +429,7 @@ public final class CndFileUtils {
             // update info about old file as well
             if (parent != null) {
                 final String ext = fe.getExt();
-                final String oldName = (ext.length() == 0) ? fe.getName() : (fe.getName() + "." + ext);
+                final String oldName = (ext.length() == 0) ? fe.getName() : (fe.getName() + "." + ext); // NOI18N
                 clearCachesAboutFile(new File(parent, oldName), false);
             }
         }
