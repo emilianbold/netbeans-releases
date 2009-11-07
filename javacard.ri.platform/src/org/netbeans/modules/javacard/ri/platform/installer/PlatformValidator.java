@@ -224,56 +224,15 @@ abstract class PlatformValidator implements Runnable {
             InputStream err = proc.getErrorStream();
             RequestProcessor.getDefault().post(new Copier(out, stdOut));
             RequestProcessor.getDefault().post(new Copier(err, stdErr));
-//            if (proc.waitFor() > 0) {
-//                String s = stdOut.toString("UTF-8") + "\n" + //NOI18N
-//                        stdErr.toString("UTF-8"); //NOI18N
-//                throw new IOException(NbBundle.getMessage(PlatformValidator.class,
-//                        "MSG_EXECUTION_FAILED", s)); //NOI18N
-//            }
+            if (proc.waitFor() > 0) {
+                String s = stdOut.toString("UTF-8") + "\n" + //NOI18N
+                        stdErr.toString("UTF-8"); //NOI18N
+                throw new IOException(NbBundle.getMessage(PlatformValidator.class,
+                        "MSG_EXECUTION_FAILED", s)); //NOI18N
+            }
         }
     }
 
-//    private EditableProperties translatePaths (File dir, EditableProperties props) {
-//        EditableProperties nue = new EditableProperties (true);
-//        Set <String> translatablePaths = JavacardPlatformKeyNames.getPathPropertyNames();
-//        for (String key : NbCollections.checkedSetByFilter(props.keySet(), String.class, false)) {
-//            String val = props.getProperty(key);
-//            if (translatablePaths.contains(key)) {
-//                String xlated = translatePath(dir, val);
-//                nue.put (key, xlated);
-//            } else {
-//                nue.put (key, val);
-//            }
-//        }
-//        return nue;
-//    }
-//
-//    private String translatePath (File dir, String val) {
-//        if ("".equals(val) || val == null) { //NOI18N
-//            return ""; //NOI18N
-//        }
-//        if (val.startsWith("./")) {
-//            val = val.substring(2);
-//        }
-//        if (File.separatorChar != '/' && val.indexOf ("/") >= 0) { //NOI18N
-//            val = val.replace ('/', File.separatorChar); //NOI18N
-//        }
-//        if (val.indexOf(':') >= 0) { //NOI18N
-//            String[] paths = val.split(":"); //NOI18N
-//            StringBuilder sb = new StringBuilder();
-//            for (int i = 0; i < paths.length; i++) {
-//                String path = paths[i];
-//                if (sb.length() > 0) {
-//                    sb.append (File.pathSeparatorChar);
-//                }
-//                sb.append (translatePath (dir, path));
-//            }
-//            return sb.toString();
-//        }
-//        File nue = new File (dir, val);
-//        return nue.getAbsolutePath();
-//    }
-//
     private static class Copier implements Runnable {
         InputStream in;
         OutputStream out;
