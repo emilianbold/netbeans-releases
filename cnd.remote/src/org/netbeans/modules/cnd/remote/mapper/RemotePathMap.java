@@ -306,7 +306,7 @@ public abstract class RemotePathMap extends PathMap {
     // TODO: lowercase should be only windows issue -- possible flaw
     private static String unifySeparators(String path) {
         String result = path.replace('\\', '/');
-        if (CndFileUtils.isSystemCaseSensitive()) {
+        if (!CndFileUtils.isSystemCaseSensitive()) {
             result = result.toLowerCase();
         }
         return result;
