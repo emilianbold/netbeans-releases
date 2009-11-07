@@ -91,6 +91,7 @@ public final class JavacardPlatformKeyNames {
     public static final String PLATFORM_TASKS_CLASSPATH = "javacard.nbtasksClassPath"; //NOI18N
     public static final String PLATFORM_TOOLS_CLASSPATH = "javacard.toolClassPath"; //NOI18N
     public static final String PLATFORM_IS_RI_WRAPPER = "javacard.wrap.ri"; //NOI18N
+    public static final String PLATFORM_DEVICE_FILE_NOT_REQUIRED = "javacard.build.no.device.file"; //NOI18N
 
     /**
      * Get the list of property names that need to be absolutized
@@ -145,7 +146,8 @@ public final class JavacardPlatformKeyNames {
             PLATFORM_EMULATOR_PATH,
             PLATFORM_TASKS_CLASSPATH,
             PLATFORM_TOOLS_CLASSPATH,
-            PLATFORM_HOME
+            PLATFORM_HOME,
+            RI_HOME
         ));
     }
 

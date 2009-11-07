@@ -129,9 +129,7 @@ public class AntStyleResolvingProperties extends ObservableProperties {
         while (m.find()) {
             String resolveKey = m.group(1);
             if (!resolveKey.equals(key)) {
-                System.err.println("key is " + key + " resolve key is " + resolveKey);
                 String replacement = getProperty(resolveKey);
-                System.err.println(" replacement is " + replacement);
                 if (replacement != null) {
                     int start = m.start();
                     int end = m.end();
