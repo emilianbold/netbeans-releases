@@ -90,11 +90,11 @@ import org.openide.util.lookup.Lookups;
  * 
  * @author Tim Boudreau
  */
-public abstract class AddDeviceHandler {
+public abstract class AddCardHandler {
 
     private final String name;
 
-    protected AddDeviceHandler(String name) {
+    protected AddCardHandler(String name) {
         this.name = name;
     }
 
@@ -156,9 +156,9 @@ public abstract class AddDeviceHandler {
         return name;
     }
 
-    public static final Lookup.Result<? extends AddDeviceHandler> handlersFor(JavacardPlatform platform) {
+    public static final Lookup.Result<? extends AddCardHandler> handlersFor(JavacardPlatform platform) {
         String path = CommonSystemFilesystemPaths.SFS_ADD_HANDLER_REGISTRATION_ROOT + platform.getPlatformKind();
-        return Lookups.forPath(path).lookupResult(AddDeviceHandler.class);
+        return Lookups.forPath(path).lookupResult(AddCardHandler.class);
     }
 
     /**
@@ -170,7 +170,7 @@ public abstract class AddDeviceHandler {
      * platform kind.
      */
     public static Action createAddDeviceAction(DataObject pdo, JavacardPlatform platform, CardCreatedCallback callback) {
-        Collection <? extends Lookup.Item<? extends AddDeviceHandler>> c = handlersFor(platform).allItems();
+        Collection <? extends Lookup.Item<? extends AddCardHandler>> c = handlersFor(platform).allItems();
         int ct = c.size();
         if (ct == 0) {
             return null;
@@ -200,7 +200,7 @@ public abstract class AddDeviceHandler {
 
         public JMenuItem getPopupPresenter() {
             JMenu menu = new JMenu(this);
-            for (AddDeviceHandler handler : handlersFor(platform).allInstances()) {
+            for (AddCardHandler handler : handlersFor(platform).allInstances()) {
                 menu.add(new SingleHandlerAction(platform, pdo, handler, callback));
             }
             return menu;
@@ -210,10 +210,10 @@ public abstract class AddDeviceHandler {
     private static class SingleHandlerAction extends AbstractAction {
         private final JavacardPlatform platform;
         private final DataObject pdo;
-        private final AddDeviceHandler handler;
+        private final AddCardHandler handler;
         private final CardCreatedCallback callback;
 
-        public SingleHandlerAction(JavacardPlatform platform, DataObject pdo, AddDeviceHandler handler, CardCreatedCallback callback) {
+        public SingleHandlerAction(JavacardPlatform platform, DataObject pdo, AddCardHandler handler, CardCreatedCallback callback) {
             this.platform = platform;
             this.callback = callback;
             this.pdo = pdo;
