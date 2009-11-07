@@ -356,16 +356,14 @@ final class CardProperties implements ICardCapability, CapabilitiesProvider {
                 String.class, String.class, true));
         if (addEpromPath) {
             String dataObjectName = platformProps.getProperty(JavacardPlatformKeyNames.PLATFORM_ID);
-            if (dataObjectName == null) {
-                throw new IllegalStateException (JavacardPlatformKeyNames.PLATFORM_ID +
-                        " not set in platform properties"); //NOI18N
+            if (dataObjectName != null) {
+                FileObject eepromFolder = Utils.sfsFolderForDeviceEepromsForPlatformNamed(
+                        dataObjectName, true);
+                assert eepromFolder != null;
+                File f = FileUtil.toFile(eepromFolder);
+                String path = f == null ? eepromFolder.getPath() : f.getAbsolutePath(); //null in unit tests
+                m.put(JavacardDeviceKeyNames.DEVICE_EPROM_FOLDER, path);
             }
-            FileObject eepromFolder = Utils.sfsFolderForDeviceEepromsForPlatformNamed(
-                    dataObjectName, true);
-            assert eepromFolder != null;
-            File f = FileUtil.toFile(eepromFolder);
-            String path = f == null ? eepromFolder.getPath() : f.getAbsolutePath(); //null in unit tests
-            m.put(JavacardDeviceKeyNames.DEVICE_EPROM_FOLDER, path);
         }
         m.put("file.separator", File.separator); //NOI18N
         m.put("java.io.tmpdir", System.getProperty("java.io.tmpdir")); //NOI18N

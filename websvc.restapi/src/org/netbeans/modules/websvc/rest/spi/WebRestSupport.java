@@ -111,6 +111,38 @@ public abstract class WebRestSupport extends RestSupport {
         return null;
     }
 
+    public String getApplicationPathFromDD() throws IOException {
+        WebApp webApp = findWebApp();
+        if (webApp != null) {
+            ServletMapping sm = getRestServletMapping(webApp);
+            if (sm != null) {
+                String urlPattern = null;
+                if (sm instanceof ServletMapping25) {
+                    String[] urlPatterns = ((ServletMapping25)sm).getUrlPatterns();
+                    if (urlPatterns.length > 0) {
+                        urlPattern = urlPatterns[0];
+                    }
+                } else {
+                    urlPattern = sm.getUrlPattern();
+                }
+                if (urlPattern != null) {
+                    if (urlPattern.endsWith("*")) { //NOI18N
+                        urlPattern = urlPattern.substring(0, urlPattern.length()-1);
+                    }
+                    if (urlPattern.endsWith("/")) { //NOI18N
+                        urlPattern = urlPattern.substring(0, urlPattern.length()-1);
+                    }
+                    if (urlPattern.startsWith("/")) { //NOI18N
+                        urlPattern = urlPattern.substring(1);
+                    }
+                    return urlPattern;
+                }
+
+            }
+        }
+        return null;
+    }
+
     protected FileObject getDeploymentDescriptor() {
         WebModuleProvider wmp = project.getLookup().lookup(WebModuleProvider.class);
         if (wmp != null) {
