@@ -336,6 +336,7 @@ public class RICard extends BaseCard<CardProperties> { //non-final only for unit
                         "Problem starting " + getSystemId(), e); //NOI18N
                 killProcesses();
                 setState(NOT_RUNNING);
+                c.signalAll();
             }
         }
     }

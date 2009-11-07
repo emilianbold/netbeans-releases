@@ -55,6 +55,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -111,13 +112,14 @@ public class RICardTest {
     }
 
     static String scriptPath;
+    static File script;
     @BeforeClass
     public static void setUpClass() throws Exception {
         System.err.println("setUpClass");
         MockServices.setServices(FakeLoader.class, FakeResolver.class);
         Logger.getLogger(RICard.class.getName()).setLevel(Level.FINEST);
         Logger.getLogger(AbstractCard.class.getName()).setLevel(Level.FINEST);
-        File script = File.createTempFile("ritest", Utilities.isWindows() ? ".bat" : ".sh", new File(System.getProperty("java.io.tmpdir")));
+        script = File.createTempFile("ritest", Utilities.isWindows() ? ".bat" : ".sh", new File(System.getProperty("java.io.tmpdir")));
         FileOutputStream out = new FileOutputStream (script);
         PrintWriter pw = new PrintWriter(out);
         try {
@@ -126,17 +128,31 @@ public class RICardTest {
                 pw.println("cmd /c echo %1 %2 %3 %4 %5 %6 %7 %8 %9 %10 %11 %12 & ping 1.0.0.0 -n 1 -w 5000 >NUL");
             } else {
                 pw.println ("#!/bin/sh");
-                pw.println ("echo $1\n");
+                pw.println ("echo $1 $2 $3 $4 $5 $6 $7 $8 $9 $10 $11 $12\n");
             }
         } finally {
             pw.flush();
             out.close();
         }
+        if (Utilities.isUnix()) {
+            String[] cmd = new String[] { "chmod", "ugoa+x", script.getAbsolutePath() };
+            Runtime.getRuntime().exec(cmd).waitFor();
+        }
+        if (!Utilities.isUnix() && !Utilities.isWindows()) {
+            throw new Error("No idea how to create a fake executable for this OS");
+        }
         scriptPath = script.getAbsolutePath();
+        //sanity check
+        Process p = Runtime.getRuntime().exec(scriptPath);
+        int exitCode = p.waitFor();
+        if (exitCode != 0) {
+            throw new Error ("Could not execute " + scriptPath);
+        }
     }
 
     @AfterClass
     public static void tearDownClass() throws Exception {
+        assertTrue(script.delete());
     }
 
     private static class RICardSub extends RICard {
@@ -242,7 +258,8 @@ public class RICardTest {
 
         StartCapability start = card.getLookup().lookup(StartCapability.class);
         Condition c = start.start(RunMode.RUN, null);
-        c.await();
+        boolean finished = c.await(7000, TimeUnit.MILLISECONDS);
+//        assertTrue ("Timout waiting for start to complete", finished);
         int ct = 0;
         while (ct++ < 10 && card.getState() != CardState.RUNNING) {
             StopCapability st = card.getLookup().lookup(StopCapability.class);
