@@ -84,15 +84,15 @@ public class X11ForwardingChecker {
     }
 
     private boolean checkSshdConfig() {
-        final String x11key = "X11Forwarding";
-        RemoteCommandSupport rcs = new RemoteCommandSupport(execEnv, "grep -i " + x11key + " /etc/ssh/sshd_config");
+        final String x11key = "X11Forwarding"; // NOI18N
+        RemoteCommandSupport rcs = new RemoteCommandSupport(execEnv, "grep -i " + x11key + " /etc/ssh/sshd_config"); // NOI18N
         int rc = rcs.run();
         if (rc == 0) {
             String[] lines = rcs.getOutput().split("\n"); //NOI18N
             for (String line : lines) {
                 if (line.startsWith(x11key)) {
                     String rest = line.substring(x11key.length()).trim();
-                    if ("no".equalsIgnoreCase(rest)) {
+                    if ("no".equalsIgnoreCase(rest)) { // NOI18N
                         return false;
                     }
                 }
