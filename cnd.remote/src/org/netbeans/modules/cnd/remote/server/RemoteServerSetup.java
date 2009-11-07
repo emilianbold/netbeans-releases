@@ -294,23 +294,6 @@ public class RemoteServerSetup {
         return new String(result);
     }
 
-
-    private static String toHexString2(byte[] data) {
-        StringBuffer buf = new StringBuffer();
-        for (int i = 0; i < data.length; i++) {
-            int halfbyte = (data[i] >>> 4) & 0x0F;
-            int two_halfs = 0;
-            do {
-                if ((0 <= halfbyte) && (halfbyte <= 9))
-                    buf.append((char) ('0' + halfbyte));
-                else
-                    buf.append((char) ('a' + (halfbyte - 10)));
-                halfbyte = data[i] & 0x0F;
-            } while(two_halfs++ < 1);
-        }
-        return buf.toString();
-    }
-
     /**
      * Map the reason to a more human readable form. The original reason is currently
      * always in English. This method would need changing were that to change.

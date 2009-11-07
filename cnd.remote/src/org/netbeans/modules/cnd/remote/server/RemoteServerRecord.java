@@ -40,7 +40,9 @@
 package org.netbeans.modules.cnd.remote.server;
 
 import java.beans.PropertyChangeSupport;
+import java.io.IOException;
 import java.util.Collection;
+import java.util.concurrent.CancellationException;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -148,7 +150,9 @@ public class RemoteServerRecord implements ServerRecord {
         if (rss.needsSetupOrUpdate()) {
             rss.setup();
         }
-
+        if (ostate == State.UNINITIALIZED) {
+            checkX11Forwarding();
+        }
         synchronized (stateLock) {
             if (rss.isCancelled()) {
                 state = State.CANCELLED;
@@ -162,6 +166,17 @@ public class RemoteServerRecord implements ServerRecord {
         }
         if (pcs != null) {
             pcs.firePropertyChange(RemoteServerRecord.PROP_STATE_CHANGED, ostate, state);
+        }
+    }
+
+    private void checkX11Forwarding() {
+        X11ForwardingChecker x11checker = new X11ForwardingChecker(executionEnvironment);
+        try {
+            x11forwardingPossible = x11checker.check();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        } catch (CancellationException ex) {
+            ex.printStackTrace();
         }
     }
     
