@@ -221,7 +221,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         // TODO: separate the code that uses informatiom from lexer
         // and avoid running the index/ast analysis under read lock
         // in order to improve responsiveness
-        doc.readLock();        //TODO: use token hierarchy from snapshot and not use read lock in CC #171702
+        //doc.readLock();        //TODO: use token hierarchy from snapshot and not use read lock in CC #171702
 
 
         try {
@@ -354,7 +354,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     break;
             }
         } finally {
-            doc.readUnlock();
+            //doc.readUnlock();
         }
 
         if (LOGGER.isLoggable(Level.FINE)){
@@ -502,8 +502,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     }
     private void autoCompleteInClassContext(ParserResult info, int caretOffset, List<CompletionProposal> proposals,
             PHPCompletionItem.CompletionRequest request) {
-        Document document = info.getSnapshot().getSource().getDocument(false);
-        TokenHierarchy<?> th = TokenHierarchy.get(document);
+        TokenHierarchy<?> th = info.getSnapshot().getTokenHierarchy();
         TokenSequence<PHPTokenId> tokenSequence = th.tokenSequence(PHPTokenId.language());
         assert tokenSequence != null;
 
@@ -588,16 +587,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
     private void autoCompleteClassMembers(List<CompletionProposal> proposals,
             PHPCompletionItem.CompletionRequest request, boolean staticContext) {
-        VariableKind varKind = VariableKind.STANDARD;
-        Document document = request.info.getSnapshot().getSource().getDocument(false);
-        if (document == null) {
-            return;
-        }
-
         // TODO: remove duplicate/redundant code from here
 
-        //TokenHierarchy th = TokenHierarchy.get(document);
-        TokenSequence<PHPTokenId> tokenSequence = LexUtilities.getPHPTokenSequence(document, request.anchor);
+        TokenHierarchy<?> th = request.info.getSnapshot().getTokenHierarchy();
+        TokenSequence<PHPTokenId> tokenSequence = LexUtilities.getPHPTokenSequence(th, request.anchor);
 
         if (tokenSequence == null){
             return;
@@ -619,14 +612,12 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             List<String> invalidProposalsForClsMembers = INVALID_PROPOSALS_FOR_CLS_MEMBERS;
             Model model = request.result.getModel();
             if (varName.equals("self")) { //NOI18N
-                varKind = VariableKind.SELF;
                 types = ModelUtils.resolveTypeAfterReferenceToken(model, tokenSequence, request.anchor);
                 if (!types.isEmpty()) {
                     staticContext = true;
                     attrMask |= (Modifier.PROTECTED | Modifier.PRIVATE);
                 }
             } else if (varName.equals("parent")) { //NOI18N
-                varKind = VariableKind.PARENT;
                 invalidProposalsForClsMembers = Collections.emptyList();
                 types = ModelUtils.resolveTypeAfterReferenceToken(model, tokenSequence, request.anchor);
                 if (!types.isEmpty()) {
@@ -637,7 +628,6 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     }
                 }
             } else if (varName.equals("$this")) { //NOI18N
-                varKind = VariableKind.THIS;
                 if (staticContext) {
                     return;
                 }
@@ -1049,112 +1039,104 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             if (doc == null) {
                 return null;
             }
+            int lineBegin = Utilities.getRowStart(doc, caretOffset);
+            if (lineBegin != -1) {
+                int lineEnd = Utilities.getRowEnd(doc, caretOffset);
+                String line = doc.getText(lineBegin, lineEnd - lineBegin);
+                int lineOffset = caretOffset - lineBegin;
+                int start = lineOffset;
+                if (lineOffset > 0) {
+                    for (int i = lineOffset - 1; i >= 0; i--) {
+                        char c = line.charAt(i);
+                        if (!isPHPIdentifierPart(c) && c != '\\') {
+                            break;
+                        } else {
+                            start = i;
+                        }
+                    }
+                }
 
-           // TokenHierarchy<Document> th = TokenHierarchy.get((Document) doc);
-            doc.readLock(); // Read-lock due to token hierarchy use
-
-            try {
-                int lineBegin = Utilities.getRowStart(doc, caretOffset);
-                if (lineBegin != -1) {
-                    int lineEnd = Utilities.getRowEnd(doc, caretOffset);
-                    String line = doc.getText(lineBegin, lineEnd - lineBegin);
-                    int lineOffset = caretOffset - lineBegin;
-                    int start = lineOffset;
-                    if (lineOffset > 0) {
-                        for (int i = lineOffset - 1; i >= 0; i--) {
-                            char c = line.charAt(i);
-                            if (!isPHPIdentifierPart(c) && c != '\\') {
+                // Find identifier end
+                String prefix;
+                if (upToOffset) {
+                    prefix = line.substring(start, lineOffset);
+                    int lastIndexOfDollar = prefix.lastIndexOf('$');//NOI18N
+                    if (lastIndexOfDollar > 0) {
+                        prefix = prefix.substring(lastIndexOfDollar);
+                    }
+                } else {
+                    if (lineOffset == line.length()) {
+                        prefix = line.substring(start);
+                    } else {
+                        int n = line.length();
+                        int end = lineOffset;
+                        for (int j = lineOffset; j < n; j++) {
+                            char d = line.charAt(j);
+                            // Try to accept Foo::Bar as well
+                            if (!isPHPIdentifierPart(d)) {
                                 break;
                             } else {
-                                start = i;
+                                end = j + 1;
                             }
                         }
+                        prefix = line.substring(start, end);
+                    }
+                }
+
+                if (prefix.length() > 0) {
+                    if (prefix.endsWith("::")) {
+                        return "";
                     }
 
-                    // Find identifier end
-                    String prefix;
-                    if (upToOffset) {
-                        prefix = line.substring(start, lineOffset);
-                        int lastIndexOfDollar = prefix.lastIndexOf('$');//NOI18N
-                        if (lastIndexOfDollar > 0) {
-                            prefix = prefix.substring(lastIndexOfDollar);
-                        }
-                    } else {
-                        if (lineOffset == line.length()) {
-                            prefix = line.substring(start);
-                        } else {
-                            int n = line.length();
-                            int end = lineOffset;
-                            for (int j = lineOffset; j < n; j++) {
-                                char d = line.charAt(j);
-                                // Try to accept Foo::Bar as well
-                                if (!isPHPIdentifierPart(d)) {
-                                    break;
-                                } else {
-                                    end = j + 1;
-                                }
-                            }
-                            prefix = line.substring(start, end);
-                        }
+                    if (prefix.endsWith(":") && prefix.length() > 1) {
+                        return null;
                     }
 
-                    if (prefix.length() > 0) {
-                        if (prefix.endsWith("::")) {
-                            return "";
-                        }
+                    // Strip out LHS if it's a qualified method, e.g.  Benchmark::measure -> measure
+                    int q = prefix.lastIndexOf("::");
 
-                        if (prefix.endsWith(":") && prefix.length() > 1) {
+                    if (q != -1) {
+                        prefix = prefix.substring(q + 2);
+                    }
+
+                    // The identifier chars identified by JsLanguage are a bit too permissive;
+                    // they include things like "=", "!" and even "&" such that double-clicks will
+                    // pick up the whole "token" the user is after. But "=" is only allowed at the
+                    // end of identifiers for example.
+                    if (prefix.length() == 1) {
+                        char c = prefix.charAt(0);
+                        if (isPrefixBreaker(c)) {
                             return null;
                         }
+                    } else {
+                        for (int i = prefix.length() - 2; i >= 0; i--) { // -2: the last position (-1) can legally be =, ! or ?
 
-                        // Strip out LHS if it's a qualified method, e.g.  Benchmark::measure -> measure
-                        int q = prefix.lastIndexOf("::");
-
-                        if (q != -1) {
-                            prefix = prefix.substring(q + 2);
-                        }
-
-                        // The identifier chars identified by JsLanguage are a bit too permissive;
-                        // they include things like "=", "!" and even "&" such that double-clicks will
-                        // pick up the whole "token" the user is after. But "=" is only allowed at the
-                        // end of identifiers for example.
-                        if (prefix.length() == 1) {
-                            char c = prefix.charAt(0);
-                            if (isPrefixBreaker(c)) {
-                                return null;
-                            }
-                        } else {
-                            for (int i = prefix.length() - 2; i >= 0; i--) { // -2: the last position (-1) can legally be =, ! or ?
-
-                                char c = prefix.charAt(i);
-                                if (i == 0 && c == ':') {
-                                    // : is okay at the begining of prefixes
+                            char c = prefix.charAt(i);
+                            if (i == 0 && c == ':') {
+                                // : is okay at the begining of prefixes
                                 } else if (isPrefixBreaker(c)) {
-                                    prefix = prefix.substring(i + 1);
-                                    break;
-                                }
+                                prefix = prefix.substring(i + 1);
+                                break;
                             }
                         }
                     }
-
-                    if (prefix != null && prefix.startsWith("@")) {//NOI18N
-                        final TokenHierarchy<?> tokenHierarchy = info.getSnapshot().getTokenHierarchy();
-                        TokenSequence<PHPTokenId> tokenSequence = tokenHierarchy != null ? LexUtilities.getPHPTokenSequence( tokenHierarchy, caretOffset) : null;
-                        if (tokenSequence != null) {
-                            tokenSequence.move(caretOffset);
-                            if (tokenSequence.moveNext() && tokenSequence.movePrevious()) {
-                                Token<PHPTokenId> token = tokenSequence.token();
-                                PHPTokenId id = token.id();
-                                if (id.equals(PHPTokenId.PHP_STRING) || id.equals(PHPTokenId.PHP_TOKEN)) {
-                                    prefix = prefix.substring(1);
-                                }
-                            }
-                        }
-                    }
-                    return prefix;
                 }
-            } finally {
-                doc.readUnlock();
+
+                if (prefix != null && prefix.startsWith("@")) {//NOI18N
+                    final TokenHierarchy<?> tokenHierarchy = info.getSnapshot().getTokenHierarchy();
+                    TokenSequence<PHPTokenId> tokenSequence = tokenHierarchy != null ? LexUtilities.getPHPTokenSequence(tokenHierarchy, caretOffset) : null;
+                    if (tokenSequence != null) {
+                        tokenSequence.move(caretOffset);
+                        if (tokenSequence.moveNext() && tokenSequence.movePrevious()) {
+                            Token<PHPTokenId> token = tokenSequence.token();
+                            PHPTokenId id = token.id();
+                            if (id.equals(PHPTokenId.PHP_STRING) || id.equals(PHPTokenId.PHP_TOKEN)) {
+                                prefix = prefix.substring(1);
+                            }
+                        }
+                    }
+                }
+                return prefix;
             }
         // Else: normal identifier: just return null and let the machinery do the rest
         } catch (BadLocationException ble) {
