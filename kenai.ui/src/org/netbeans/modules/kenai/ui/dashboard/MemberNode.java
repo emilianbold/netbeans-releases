@@ -89,7 +89,7 @@ public class MemberNode extends LeafNode {
             };
             lbl.setIcon(new KenaiUserUI(user.getName()).getIcon());
             panel.add( lbl, BorderLayout.CENTER);
-            btn = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/collab/resources/newmessage.png", true), getDefaultAction());
+            btn = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/collab/resources/newmessage.png", true), getDefaultAction()); // NOI18N
             panel.add(btn, BorderLayout.EAST);
             panel.validate();
        }

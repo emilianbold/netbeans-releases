@@ -48,6 +48,7 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -78,6 +79,7 @@ import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.IgnorePathSupport;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.phpunit.PhpUnit;
+import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleIgnoredFilesExtender;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -127,7 +129,6 @@ import org.w3c.dom.Text;
 )
 public class PhpProject implements Project {
 
-    public static final String USG_LOGGER_NAME = "org.netbeans.ui.metrics.php"; //NOI18N
     private static final Icon PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/php/project/ui/resources/phpProject.png", false); // NOI18N
 
     static final Logger LOGGER = Logger.getLogger(PhpProject.class.getName());
@@ -259,12 +260,38 @@ public class PhpProject implements Project {
 
     private FileObject resolveSourcesDirectory() {
         String srcDirProperty = eval.getProperty(PhpProjectProperties.SRC_DIR);
-        // # 168390 - more logging
+        // #168390, #165494
         if (srcDirProperty == null) {
-            Logger.getLogger(PhpProject.class.getName()).info("[evaluator] Properties: " + eval.getProperties());
-            Logger.getLogger(PhpProject.class.getName()).info("[helper] Properties: " + helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH));
+            FileObject projectProps = helper.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+            boolean found = projectProps != null;
+
+            StringBuilder buffer = new StringBuilder(2000);
+            buffer.append("Property 'src.dir' was not found in 'nbproject/project.properties' (NB metadata corrupted?)\n");
+            buffer.append("diagnostics:\n");
+            buffer.append("project.properties exists: ");
+            buffer.append(found);
+            if (found) {
+                boolean canRead = projectProps.canRead();
+                buffer.append("\nproject.properties valid: ");
+                buffer.append(projectProps.isValid());
+                buffer.append("\nproject.properties can read: ");
+                buffer.append(canRead);
+                if (canRead) {
+                    buffer.append("\nproject.properties content: [");
+                    try {
+                        buffer.append(projectProps.asText());
+                    } catch (IOException exc) {
+                        buffer.append(exc.getMessage());
+                    }
+                    buffer.append("]");
+                }
+            }
+            buffer.append("\nproperties (helper): ");
+            buffer.append(helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH));
+            buffer.append("\nproperties (evaluator): ");
+            buffer.append(eval.getProperties());
+            throw new IllegalStateException(buffer.toString());
         }
-        assert srcDirProperty != null : "Property for Sources must be defined";
         FileObject srcDir = helper.resolveFileObject(srcDirProperty);
         if (srcDir != null) {
             return srcDir;
@@ -653,7 +680,7 @@ public class PhpProject implements Project {
             PhpFrameworks.addFrameworksListener(frameworksListener);
             // do it in a background thread
             getIgnoredFiles();
-            getFrameworks();
+            List<PhpFrameworkProvider> frameworkProviders = getFrameworks();
             getName();
 
             ClassPathProviderImpl cpProvider = lookup.lookup(ClassPathProviderImpl.class);
@@ -674,6 +701,16 @@ public class PhpProject implements Project {
 
             // #164073 - for the first time, let's do it not in AWT thread
             PhpUnit.validateVersion(CommandUtils.getPhpUnit(false));
+
+            // log usage
+            StringBuilder buffer = new StringBuilder(200);
+            for (PhpFrameworkProvider provider : frameworkProviders) {
+                if (buffer.length() > 0) {
+                    buffer.append("|"); // NOI18N
+                }
+                buffer.append(provider.getName());
+            }
+            PhpProjectUtils.logUsage(PhpProject.class, "USG_PROJECT_OPEN_PHP", Arrays.asList(buffer.toString())); // NOI18N
         }
 
         protected void projectClosed() {

@@ -103,6 +103,8 @@ public class ContactList extends javax.swing.JPanel {
         
     }
     public void updateContacts() {
+        if (roster==null)
+            return;
         if (filterCombo.getSelectedIndex()!=0) {
             oldFilter = (FilterItem) filterCombo.getSelectedItem();
             if (filterModel.getSize()>0)
@@ -268,6 +270,10 @@ public class ContactList extends javax.swing.JPanel {
     private void contactJListKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_contactJListKeyPressed
         if (evt.getKeyCode()==KeyEvent.VK_ENTER) {
             ((ContactListItem) contactJList.getSelectedValue()).openChat();
+        } else if (evt.getKeyCode()==KeyEvent.VK_ESCAPE) {
+            contactJList.requestFocus();
+            searchPanel.setVisible(false);
+            searchField.setText("");
         } else if (!evt.isActionKey() && ("" + evt.getKeyChar()).trim().length()!=0 && evt.getKeyChar()!='\uffff') {
             searchPanel.setVisible(true);
             searchField.requestFocus();

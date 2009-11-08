@@ -42,7 +42,7 @@ made subject to such option by the copyright holder.
 -->
 
 <toolchaindefinition xmlns="http://www.netbeans.org/ns/cnd-toolchain-definition/1">
-    <toolchain name="SunStudio" display="Sun Studio Compiler Collection" family="SunStudio" qmakespec="${os}-cc"/>
+    <toolchain name="SunStudio" display="Sun Studio Compiler Collection" family="SunStudio" qmakespec="${os}-cc"  abstract="true"/>
     <platforms stringvalue="sun_intel,sun_sparc,linux"/>
     <makefile_writer class="org.netbeans.modules.cnd.makeproject.api.configurations.DefaultMakefileWriter"/>
     <c>
@@ -59,8 +59,8 @@ made subject to such option by the copyright holder.
            <performance_debug flags="-g -xO2"/>
            <test_coverage flags="-xprofile=tcov -xinline="/>
            <diagnosable_release flags="-g -O"/>
-           <release flags="-fast -xipo"/>
-           <performance_release flags="-fast -xipo"/>
+           <release flags="-fast -g"/>
+           <performance_release flags="-fast -xipo -g"/>
         </development_mode>
         <warning_level>
             <no_warnings flags="-w"/>
@@ -108,8 +108,8 @@ made subject to such option by the copyright holder.
            <performance_debug flags="-g0 -xO2"/>
            <test_coverage flags="-xprofile=tcov +d -xinline="/>
            <diagnosable_release flags="-g0 -O"/>
-           <release flags="-fast -xipo"/>
-           <performance_release flags="-fast -xipo"/>
+           <release flags="-fast -g0"/>
+           <performance_release flags="-fast -xipo -g0"/>
         </development_mode>
         <warning_level>
             <no_warnings flags="-w"/>
@@ -160,8 +160,8 @@ made subject to such option by the copyright holder.
            <performance_debug flags="-g -O2"/>
            <test_coverage flags="-g"/>
            <diagnosable_release flags="-g -O"/>
-           <release flags="-fast"/>
-           <performance_release flags="-fast"/>
+           <release flags="-fast -g"/>
+           <performance_release flags="-fast -g"/>
         </development_mode>
         <warning_level>
             <no_warnings flags="-w"/>
@@ -249,7 +249,7 @@ made subject to such option by the copyright holder.
             <path toolchain_name="*"/>
             <path directory="$PATH"/>
         </alternative_path>
-        <version flags="-V" />
+        <version flags="-v" />
     </debugger>
     <qmake>
         <tool name="qmake"/>

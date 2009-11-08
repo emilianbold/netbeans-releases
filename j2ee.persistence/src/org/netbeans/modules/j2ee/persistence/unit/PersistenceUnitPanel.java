@@ -988,7 +988,7 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
     private void removeClassButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeClassButtonActionPerformed
         Object[] values = entityList.getSelectedValues();
         for (Object value : values) {
-            dObj.removeClass(persistenceUnit, (String)value);
+            dObj.removeClass(persistenceUnit, (String)value, true);
             ((DefaultListModel)entityList.getModel()).removeElement(value);
         }
     }//GEN-LAST:event_removeClassButtonActionPerformed
@@ -1002,7 +1002,7 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
         Set<String> ignoreClassNames = new HashSet<String>(Arrays.asList(existingClassNames));
         List<String> addedClassNames = AddEntityDialog.open(entityClassScope, ignoreClassNames);
         for (String entityClass : addedClassNames) {
-            if (dObj.addClass(persistenceUnit, entityClass)){
+            if (dObj.addClass(persistenceUnit, entityClass, true)){
                 ((DefaultListModel)entityList.getModel()).addElement(entityClass);
             }
         }

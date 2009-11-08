@@ -49,8 +49,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
@@ -71,6 +73,7 @@ import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grails.api.GrailsPlatform;
@@ -99,8 +102,55 @@ public class GrailsPluginSupport {
 
     private final GrailsProject project;
 
-    public GrailsPluginSupport(GrailsProject project) {
+    private GrailsPluginSupport(GrailsProject project) {
         this.project = project;
+    }
+
+    public static GrailsPluginSupport forProject(Project project) {
+        GrailsProject grailsProject = project.getLookup().lookup(GrailsProject.class);
+        if (grailsProject != null) {
+            return new GrailsPluginSupport(grailsProject);
+        }
+        return null;
+    }
+
+    public boolean usesPlugin(String name) {
+        assert name != null : "Name is null";
+
+        for (GrailsPlugin plugin : loadInstalledPlugins()) {
+            if (name.equals(plugin.getName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public FolderFilter getProjectPluginFilter() {
+        GrailsProjectConfig projectConfig = project.getLookup().lookup(GrailsProjectConfig.class);
+        if (projectConfig != null) {
+            if (GrailsPlatform.Version.VERSION_1_1.compareTo(projectConfig.getGrailsPlatform().getVersion()) <= 0) {
+                List<GrailsPlugin> plugins = loadInstalledPlugins11();
+
+                final Set<String> pluginDirs = new HashSet<String>();
+                for (GrailsPlugin plugin : plugins) {
+                    pluginDirs.add(plugin.getDirName());
+                }
+
+                return new FolderFilter() {
+
+                    public boolean accept(String folderName) {
+                        return pluginDirs.contains(folderName);
+                    }
+                };
+            }
+        }
+
+        return new FolderFilter() {
+
+            public boolean accept(String folderName) {
+                return true;
+            }
+        };
     }
 
     public List<GrailsPlugin> refreshAvailablePlugins() throws InterruptedException {
@@ -312,7 +362,7 @@ public class GrailsPluginSupport {
                     args.add(plugin.getName());
                     args.add(plugin.getVersion());
                 } else {
-                    args.add(plugin.getPath());
+                    args.add(plugin.getPath().getAbsolutePath());
                 }
 
                 Callable<Process> callable = ExecutionSupport.getInstance().createSimpleCommand(
@@ -376,15 +426,18 @@ public class GrailsPluginSupport {
     public GrailsPlugin getPluginFromZipFile(String path) {
         GrailsPlugin plugin = null;
         try {
-            final ZipFile file = new ZipFile(new File(path));
-            try {
-                final ZipEntry entry = file.getEntry("plugin.xml"); // NOI18N
-                if (entry != null) {
-                    InputStream stream = file.getInputStream(entry);
-                    plugin = getPluginFromInputStream(stream, path);
+            File pluginFile = new File(path);
+            if (pluginFile.exists() && pluginFile.isFile()) {
+                final ZipFile file = new ZipFile(pluginFile);
+                try {
+                    final ZipEntry entry = file.getEntry("plugin.xml"); // NOI18N
+                    if (entry != null) {
+                        InputStream stream = file.getInputStream(entry);
+                        plugin = getPluginFromInputStream(stream, pluginFile);
+                    }
+                } finally {
+                    file.close();
                 }
-            } finally {
-                file.close();
             }
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
@@ -392,7 +445,7 @@ public class GrailsPluginSupport {
         return plugin;
     }
 
-    private GrailsPlugin getPluginFromInputStream(InputStream inputStream, String path) throws Exception {
+    private GrailsPlugin getPluginFromInputStream(InputStream inputStream, File path) throws Exception {
         final Document doc = XMLUtil.parse(new InputSource(inputStream), false, false, null, null);
         final Node root = doc.getFirstChild();
         final String name = root.getAttributes().getNamedItem("name").getTextContent(); //NOI18N
@@ -407,6 +460,11 @@ public class GrailsPluginSupport {
                     .item(0).getTextContent(); //NOI18N
         }
         return new GrailsPlugin(name, version, description, path);
+    }
+
+    public interface FolderFilter {
+
+        boolean accept(String folderName);
     }
 
     private static class PluginProcessor implements LineProcessor {

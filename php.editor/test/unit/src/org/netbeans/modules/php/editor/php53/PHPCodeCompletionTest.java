@@ -61,6 +61,12 @@ public class PHPCodeCompletionTest extends PHPTestBase {
         super(testName);
     }
 
+    public void testConstants53fqn() throws Exception {
+        checkCompletion("testfiles/php53/completion/constants53/constants_fqn.php", "echo \\test\\ns\\constants\\ctx\\CONSTANT_XY^", false);
+    }
+    public void testConstants52fqn() throws Exception {
+        checkCompletion("testfiles/php53/completion/constants53/constants_fqn.php", "echo \\test\\ns\\constants\\ctx\\CONSTANT_AB^", false);
+    }
     public void testConstants53() throws Exception {
         checkCompletion("testfiles/php53/completion/constants53/constants.php", "echo CONSTANT_XY^", false);
     }

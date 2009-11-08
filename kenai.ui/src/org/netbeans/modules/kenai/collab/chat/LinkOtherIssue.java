@@ -64,7 +64,7 @@ public class LinkOtherIssue extends AbstractAction {
         try {
             out.requestFocus();
             int caretPosition = out.getCaretPosition();
-            out.getDocument().insertString( caretPosition, " " + outText + " ", null);
+            out.getDocument().insertString( caretPosition, " " + outText + " ", null); // NOI18N
             out.setSelectionStart(caretPosition+7);
             out.setSelectionEnd(caretPosition+outText.length()+1);
         } catch (BadLocationException ex) {

@@ -69,12 +69,12 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import junit.framework.Test;
 import junit.framework.TestSuite;
-import org.foo.impl.Runnable1;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -111,6 +111,7 @@ import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.FilteringPathResourceImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.netbeans.spi.java.classpath.support.PathResourceBase;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -943,22 +944,22 @@ public class RepositoryUpdaterTest extends NbTestCase {
         File root1 = new File(getWorkDir(), "root1");
         {
         RepositoryUpdater.FileListWork flw = new RepositoryUpdater.FileListWork(Collections.<URL, List<URL>>emptyMap(), root1.toURL(), false, false, false, true);
-        RepositoryUpdater.RefreshWork rw = new RepositoryUpdater.RefreshWork(Collections.<URL, List<URL>>emptyMap(), Collections.<URL>emptySet(), Collections.<URL>emptySet(), false, false, null, new RepositoryUpdater.FSRefreshInterceptor());
+        RepositoryUpdater.RefreshWork rw = new RepositoryUpdater.RefreshWork(Collections.<URL, List<URL>>emptyMap(), Collections.<URL,List<URL>>emptyMap(), Collections.<URL>emptySet(), false, false, null, new RepositoryUpdater.FSRefreshInterceptor());
         assertTrue("RefreshWork didn't absorb FileListWork", rw.absorb(flw));
         }
         {
         RepositoryUpdater.FileListWork flw = new RepositoryUpdater.FileListWork(Collections.<URL, List<URL>>emptyMap(), root1.toURL(), false, false, true, true);
-        RepositoryUpdater.RefreshWork rw = new RepositoryUpdater.RefreshWork(Collections.<URL, List<URL>>emptyMap(), Collections.<URL>emptySet(), Collections.<URL>emptySet(), true, false, null, new RepositoryUpdater.FSRefreshInterceptor());
+        RepositoryUpdater.RefreshWork rw = new RepositoryUpdater.RefreshWork(Collections.<URL, List<URL>>emptyMap(), Collections.<URL,List<URL>>emptyMap(), Collections.<URL>emptySet(), true, false, null, new RepositoryUpdater.FSRefreshInterceptor());
         assertTrue("RefreshWork didn't absorb FileListWork", rw.absorb(flw));
         }
         {
         RepositoryUpdater.FileListWork flw = new RepositoryUpdater.FileListWork(Collections.<URL, List<URL>>emptyMap(), root1.toURL(), false, false, false, true);
-        RepositoryUpdater.RefreshWork rw = new RepositoryUpdater.RefreshWork(Collections.<URL, List<URL>>emptyMap(), Collections.<URL>emptySet(), Collections.<URL>emptySet(), true, false, null, new RepositoryUpdater.FSRefreshInterceptor());
+        RepositoryUpdater.RefreshWork rw = new RepositoryUpdater.RefreshWork(Collections.<URL, List<URL>>emptyMap(), Collections.<URL,List<URL>>emptyMap(), Collections.<URL>emptySet(), true, false, null, new RepositoryUpdater.FSRefreshInterceptor());
         assertTrue("RefreshWork didn't absorb FileListWork", rw.absorb(flw));
         }
         {
         RepositoryUpdater.FileListWork flw = new RepositoryUpdater.FileListWork(Collections.<URL, List<URL>>emptyMap(), root1.toURL(), false, false, true, true);
-        RepositoryUpdater.RefreshWork rw = new RepositoryUpdater.RefreshWork(Collections.<URL, List<URL>>emptyMap(), Collections.<URL>emptySet(), Collections.<URL>emptySet(), false, false, null, new RepositoryUpdater.FSRefreshInterceptor());
+        RepositoryUpdater.RefreshWork rw = new RepositoryUpdater.RefreshWork(Collections.<URL, List<URL>>emptyMap(), Collections.<URL,List<URL>>emptyMap(), Collections.<URL>emptySet(), false, false, null, new RepositoryUpdater.FSRefreshInterceptor());
         assertTrue("RefreshWork didn't absorb FileListWork", rw.absorb(flw));
         }
     }
@@ -967,8 +968,8 @@ public class RepositoryUpdaterTest extends NbTestCase {
         File root1 = new File(getWorkDir(), "root1");
         File root2 = new File(getWorkDir(), "root2");
         {
-        RepositoryUpdater.RefreshWork rw1 = new RepositoryUpdater.RefreshWork(Collections.<URL, List<URL>>emptyMap(), Collections.<URL>emptySet(), Collections.<URL>emptySet(), false, false, Collections.singleton(root1), new RepositoryUpdater.FSRefreshInterceptor());
-        RepositoryUpdater.RefreshWork rw2 = new RepositoryUpdater.RefreshWork(Collections.<URL, List<URL>>emptyMap(), Collections.<URL>emptySet(), Collections.<URL>emptySet(), false, false, Collections.singleton(root2), new RepositoryUpdater.FSRefreshInterceptor());
+        RepositoryUpdater.RefreshWork rw1 = new RepositoryUpdater.RefreshWork(Collections.<URL, List<URL>>emptyMap(), Collections.<URL,List<URL>>emptyMap(), Collections.<URL>emptySet(), false, false, Collections.singleton(root1), new RepositoryUpdater.FSRefreshInterceptor());
+        RepositoryUpdater.RefreshWork rw2 = new RepositoryUpdater.RefreshWork(Collections.<URL, List<URL>>emptyMap(), Collections.<URL,List<URL>>emptyMap(), Collections.<URL>emptySet(), false, false, Collections.singleton(root2), new RepositoryUpdater.FSRefreshInterceptor());
         assertFalse("RefreshWork should not be cancelled by other RefreshWork", rw1.isCancelledBy(rw2));
         assertTrue("RefreshWork should absorb other RefreshWork", rw1.absorb(rw2));
         }
@@ -1159,6 +1160,12 @@ public class RepositoryUpdaterTest extends NbTestCase {
             this.support.firePropertyChange(PROP_RESOURCES,null,null);
         }
 
+        public void addFilteredResource (FileObject root, String... excludes) throws IOException {
+            synchronized (res) {
+                res.add(new SimpleFilteringResourceImpl(root.getURL(), excludes));
+            }
+        }
+
         public void removeResource (FileObject... fos) throws IOException {
             boolean fire = false;
 
@@ -1194,6 +1201,73 @@ public class RepositoryUpdaterTest extends NbTestCase {
             }
         }
 
+    }
+
+    private static final class SimpleFilteringResourceImpl extends PathResourceBase implements FilteringPathResourceImplementation {
+
+        private final URL[] url;
+        private final Pattern[] excludes;
+
+        public SimpleFilteringResourceImpl(URL root, String... excludes) {
+            this.url = new URL[] {root};
+            this.excludes = new Pattern[excludes.length];
+            for(int i = 0; i < excludes.length; i++) {
+                this.excludes[i] = Pattern.compile(excludes[i]);
+            }
+        }
+
+        public URL[] getRoots() {
+            return this.url;
+        }
+
+        public ClassPathImplementation getContent() {
+            return null;
+        }
+
+        public boolean includes(URL root, String resource) {
+            for(Pattern e : excludes) {
+                if (e.matcher(resource).matches()) {
+                    System.out.println("'" + resource + "' matches exclude pattern " + e.pattern());
+                    return false;
+                }
+            }
+            System.out.println("'" + resource + "' matches no exclude pattern");
+            return true;
+        }
+
+        @Override
+        public String toString () {
+            return "FilteringResourceImpl{" + this.getRoots()[0] + "}";   //NOI18N
+        }
+
+        @Override
+        public int hashCode () {
+            int hash = this.url[0].hashCode();
+            for(Pattern e : excludes) {
+                hash += 7 * e.pattern().hashCode();
+            }
+            return hash;
+        }
+
+        @Override
+        public boolean equals (Object other) {
+            if (other instanceof SimpleFilteringResourceImpl) {
+                SimpleFilteringResourceImpl opr = (SimpleFilteringResourceImpl) other;
+                if (this.url[0].equals(opr.url[0])) {
+                    if (excludes.length == opr.excludes.length) {
+                        for(int i = 0; i < excludes.length; i++) {
+                            if (!excludes[i].pattern().equals(opr.excludes[i].pattern())) {
+                                return false;
+                            }
+                        }
+
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
     }
 
     public static class SFBQImpl implements SourceForBinaryQueryImplementation {

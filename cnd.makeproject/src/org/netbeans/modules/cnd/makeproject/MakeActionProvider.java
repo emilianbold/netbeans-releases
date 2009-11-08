@@ -90,6 +90,7 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
+import org.netbeans.modules.cnd.api.utils.SunStudioUserCounter;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
@@ -509,9 +510,9 @@ public class MakeActionProvider implements ActionProvider {
                 }
             }
         } else if (targetName.equals(RUN_STEP) || targetName.equals(DEBUG_STEP) || targetName.equals(DEBUG_STEPINTO_STEP) || targetName.equals(DEBUG_LOAD_ONLY_STEP)) {
-            if (!validateBuildSystem(pd, conf, validated.get(), cancelled)) {
-                return false;
-            }
+//            if (!validateBuildSystem(pd, conf, validated.get(), cancelled)) {
+//                return false;
+//            }
             validated.set(true);
             if (conf.isMakefileConfiguration()) {
                 String path;
@@ -1081,10 +1082,6 @@ public class MakeActionProvider implements ActionProvider {
 
     private boolean validateBuildSystem(MakeConfigurationDescriptor pd, MakeConfiguration conf,
             boolean validated, AtomicBoolean cancelled) {
-        RunProfile runProfile = (RunProfile)conf.getAuxObject(RunProfile.PROFILE_ID);
-        if (runProfile != null && !runProfile.getBuildFirst()) {
-            return true;
-        }
         CompilerSet2Configuration csconf = conf.getCompilerSet();
         ExecutionEnvironment env = ExecutionEnvironmentFactory.fromUniqueID(conf.getDevelopmentHost().getHostKey());
         ArrayList<String> errs = new ArrayList<String>();
@@ -1222,6 +1219,11 @@ public class MakeActionProvider implements ActionProvider {
         if (cancelled.get()) {
             return false;
         }
+
+        // user counting mode
+        if (cs.getCompilerFlavor().isSunStudioCompiler()) {
+            SunStudioUserCounter.countIDE(cs.getDirectory(), execEnv);
+        }
         if (runBTA) {
             if (CndUtils.isUnitTestMode()) {
                 // do not show any dialogs in unit test mode, just silently fail validation
@@ -1299,7 +1301,7 @@ public class MakeActionProvider implements ActionProvider {
 
         return lastValidation;
     }
-
+    
     private boolean validatePackaging(MakeConfiguration conf) {
         String errormsg = null;
 

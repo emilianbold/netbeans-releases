@@ -46,7 +46,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.*;
-import antlr.collections.AST;
+import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.DataInput;
 import java.util.ArrayList;
 import java.util.Collections;

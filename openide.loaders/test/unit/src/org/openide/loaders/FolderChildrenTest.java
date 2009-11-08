@@ -76,6 +76,7 @@ import org.openide.util.ChangeSupport;
 import org.openide.util.Enumerations;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.test.MockLookup;
 
 public class FolderChildrenTest extends NbTestCase {
     private Logger LOG;
@@ -777,6 +778,25 @@ public class FolderChildrenTest extends NbTestCase {
         }
         assertEquals("No events delivered", 0, listener.cnt);
         assertEquals("Size is half cut", FILES / 2, fn.getChildren().getNodesCount(true));
+    }
+
+    /** Tests node keys are not invalidated if only position attribute changes (see #155673). */
+    public void testRefreshPreservesNodeKeys() throws Exception {
+        MockLookup.setInstances(new Repository(FileUtil.createMemoryFileSystem()));
+        FileObject rootFolder = FileUtil.getConfigRoot().createFolder("TestNodeKeys");
+        DataFolder rf = DataFolder.findFolder(rootFolder);
+        FileObject fo1 = rootFolder.createData("file1.java");
+        assertNotNull(fo1);
+        Node testNode = rf.getNodeDelegate ();
+        testNode.getChildren().getNodes(true);
+        Node childNode = testNode.getChildren().getNodeAt(0);
+        assertNotNull(childNode);
+        Node parent = childNode.getParentNode ();
+        assertNotNull("Node " + childNode + " has a parent.", parent);
+        // change position and refresh
+        fo1.setAttribute("position", 100);
+        testNode.getChildren().getNodes(true);
+        assertNotNull("Node " + childNode + " has a parent.", childNode.getParentNode());
     }
 
     public static final class VisQ implements VisibilityQueryImplementation, DataFilter.FileBased {

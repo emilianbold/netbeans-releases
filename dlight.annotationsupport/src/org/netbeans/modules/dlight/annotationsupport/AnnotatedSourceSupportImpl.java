@@ -207,10 +207,10 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
                 final String filePath = textFile.getAbsolutePath();
                 final FileAnnotationInfo fileAnnotationInfo = activeAnnotations.get(filePath);
                 if (fileAnnotationInfo != null) {
-                    if (!fileAnnotationInfo.isAnnotated()) {
+//                    if (!fileAnnotationInfo.isAnnotated()) {
                         fileAnnotationInfo.setEditorPane((JEditorPane) jEditorPane);
                         fileAnnotationInfo.setAnnotated(true);
-                    }
+//                    }
                     SwingUtilities.invokeLater(new Annotate(jEditorPane, fileAnnotationInfo));
                }
             }

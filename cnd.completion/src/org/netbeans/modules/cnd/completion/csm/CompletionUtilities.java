@@ -160,26 +160,7 @@ public class CompletionUtilities {
                                 out = getAssociatedObjects(resultx.getItems(), false, currentFile);
                             }
                         }
-                    }
-                    if (!out.isEmpty()) {
-                        Collection<CsmObject> remove = new ArrayList<CsmObject>();
-                        for (CsmObject csmItem : out) {
-                            if (csmItem instanceof CsmMacro) {
-                                CsmMacro macro = (CsmMacro) csmItem;
-                                List<CharSequence> macroParameters = macro.getParameters();
-                                if (macroParameters != null && !macroParameters.isEmpty()) {
-                                    int paramsNumber = CompletionUtilities.getMethodParamsNumber(doc, dotPos);
-                                    if (paramsNumber != macroParameters.size()) {
-                                        remove.add(csmItem);
-                                    }
-                                }
-                            }   
-                        }
-                        out.removeAll(remove);
-                        if(out.isEmpty()) {
-                            continue;
-                        }
-                    }
+                    }                    
                     break;
                 }
             }
@@ -251,54 +232,5 @@ public class CompletionUtilities {
             }
         }
         return -1;
-    }
-
-    public static int getMethodParamsNumber(Document doc, int startPos) {
-        int paramsNumber = 0;
-        int level = 0;
-        boolean inFirstParameter = false;
-        boolean whitespaceAfterName = false;
-        CharSequence text = DocumentUtilities.getText(doc);
-        for (int i = startPos; i < doc.getLength(); i++) {
-            char ch = text.charAt(i);
-            if (ch == ';') {
-                return paramsNumber;
-            }
-            if(whitespaceAfterName && !Character.isWhitespace(ch) && ch != '(') {
-                return paramsNumber;
-            }
-            if (ch == '(') {
-                level++;
-                if (paramsNumber == 0) {
-                    inFirstParameter = true;
-                }
-                whitespaceAfterName = false;
-            }
-            if (ch == ')') {
-                level--;
-                if (level == 0) {
-                    return paramsNumber;
-                }
-            }
-            if (ch == ',') {
-                if (level == 1) {
-                    paramsNumber++;
-                }
-            }
-            if (!Character.isWhitespace(ch) && ch != ')' && ch != '(') {
-                if (inFirstParameter) {
-                    paramsNumber++;
-                }
-                inFirstParameter = false;
-            }
-            if (!Character.isJavaIdentifierPart(ch) && level == 0) {
-                if(Character.isWhitespace(ch)) {
-                    whitespaceAfterName = true;
-                } else {
-                    break;
-                }
-            }
-        }
-        return paramsNumber;
     }
 }

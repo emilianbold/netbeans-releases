@@ -70,6 +70,7 @@ import org.openide.util.Exceptions;
  */
 public class ChangeParamsTransformer extends RefactoringVisitor {
 
+    private static final Set<Modifier> ALL_ACCESS_MODIFIERS = EnumSet.of(Modifier.PRIVATE, Modifier.PROTECTED, Modifier.PUBLIC);
     private Set<ElementHandle<ExecutableElement>> allMethods;
     /** refactored element is a synthetic default constructor */
     private boolean synthConstructor;
@@ -230,12 +231,13 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
                 }
                 newParameters.add(vt);
             }
-            Set<Modifier> modifiers = new HashSet(refactoring.getModifiers());
-            if (!el.getModifiers().contains(Modifier.ABSTRACT)) {
-                modifiers.remove(Modifier.ABSTRACT);
+
+            // apply new access modifiers if necessary
+            Set<Modifier> modifiers = new HashSet<Modifier>(el.getModifiers());
+            if (!el.getEnclosingElement().getKind().isInterface()) {
+                modifiers.removeAll(ALL_ACCESS_MODIFIERS);
+                modifiers.addAll(refactoring.getModifiers());
             }
-            ClassTree enclosingClass = (ClassTree) workingCopy.getTrees().getTree(el.getEnclosingElement());                                
-            if(workingCopy.getTreeUtilities().isInterface(enclosingClass)) modifiers.remove(Modifier.ABSTRACT);
 
             //Compute new imports
             for (VariableTree vt : newParameters) {

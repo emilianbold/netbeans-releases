@@ -187,7 +187,7 @@ class NewCndFileChooserPanelGUI extends CndPanelGUI implements ActionListener{
             if (documentName == null) {
                 final String baseName = NEW_FILE_PREFIX + template.getName ();
                 documentName = baseName;
-                FileObject currentFolder = preselectedFolder != null ? preselectedFolder : ((SourceGroup)locationComboBox.getSelectedItem()).getRootFolder();
+                FileObject currentFolder = preselectedFolder != null ? preselectedFolder : getTargetGroup().getRootFolder();
                 if (currentFolder != null) {
                     int index = 0;
                     while (true) {
@@ -205,11 +205,19 @@ class NewCndFileChooserPanelGUI extends CndPanelGUI implements ActionListener{
         }
 
     }
-    
+
     public SourceGroup getTargetGroup() {
-        return (SourceGroup)locationComboBox.getSelectedItem();
+        Object selectedItem = locationComboBox.getSelectedItem();
+        if (selectedItem == null) {
+            // workaround for MacOS, see IZ 175457
+            selectedItem = locationComboBox.getItemAt(locationComboBox.getSelectedIndex());
+            if (selectedItem == null) {
+                selectedItem = locationComboBox.getItemAt(0);
+            }
+        }
+        return (SourceGroup) selectedItem;
     }
-        
+
     public String getTargetFolder() {
         
         String folderName = folderTextField.getText().trim();
@@ -253,9 +261,9 @@ class NewCndFileChooserPanelGUI extends CndPanelGUI implements ActionListener{
         } else {
             cbSetAsDefault.setEnabled(true);
         }
-        
-        FileObject root = ((SourceGroup)locationComboBox.getSelectedItem()).getRootFolder();
-            
+
+        FileObject root = getTargetGroup().getRootFolder();
+
         String folderName = folderTextField.getText().trim();
         String documentName = documentNameTextField.getText().trim();
         String docExt = FileUtil.getExtension( documentName );
@@ -511,9 +519,9 @@ class NewCndFileChooserPanelGUI extends CndPanelGUI implements ActionListener{
         if ( browseButton == e.getSource() ) {
             FileObject fo=null;
             // Show the browse dialog             
-            
-            SourceGroup group = (SourceGroup)locationComboBox.getSelectedItem();
-            
+
+            SourceGroup group = getTargetGroup();
+
             fo = BrowseFolders.showDialog( new SourceGroup[] { group }, 
                                            project, 
                                            folderTextField.getText().replace( File.separatorChar, '/' ) ); // NOI18N

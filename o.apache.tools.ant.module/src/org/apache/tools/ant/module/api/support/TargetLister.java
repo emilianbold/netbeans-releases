@@ -76,12 +76,11 @@ import org.w3c.dom.NodeList;
  * to use {@link Target#getScript} to check which script a target came from.
  * </p>
  * <p>
- * <strong>Warning:</strong> the current implementation does not attempt to handle
- * import statements which use Ant properties in the imported file name, since
+ * <strong>Warning:</strong> the implementation attempts to handle
+ * import statements which use Ant properties in the imported file name, but
  * it is not possible to determine what the value of the file path will actually
- * be at runtime, at least not with complete accuracy. A future implementation
- * may be enhanced to handle most such cases, based on property definitions found
- * in the Ant script. Currently such imports are quietly ignored.
+ * be at runtime with complete accuracy. If the import location cannot be resolved,
+ * an {@link IOException} may be thrown or that import may simply be skipped.
  * </p>
  * <p>
  * The imported file path is considered relative to the project

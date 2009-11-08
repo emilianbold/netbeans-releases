@@ -166,7 +166,7 @@ Searchable Keys:
   method : initialize(address)|PRIVATE|
   method : inspect;;String;
   method : new(address)|PRIVATE|STATIC|
-  method : to_name;;Name;
+  method : to_name;;DNS::Name;
   method : to_s;;String;
   require : resolv
 
@@ -505,7 +505,7 @@ Searchable Keys:
   field : config|PRIVATE;;Config;
   field : initialized|PRIVATE;;NilClass|TrueClass;
   field : mutex|PRIVATE;;Mutex;
-  field : requester|PRIVATE;;UnconnectedUDP|ConnectedUDP|NilClass;
+  field : requester|PRIVATE;;Requester::UnconnectedUDP|Requester::ConnectedUDP|NilClass;
   fqn : Resolv::DNS
   method : close
   method : each_address(name)
@@ -565,7 +565,7 @@ Searchable Keys:
   constant : DefaultFileName;
   constant : DefaultFileName;String
   field : addr2name|PRIVATE;;Hash;
-  field : filename|PRIVATE
+  field : filename|PRIVATE;;String;
   field : initialized|PRIVATE;;NilClass|TrueClass;
   field : mutex|PRIVATE;;Mutex;
   field : name2addr|PRIVATE;;Hash;
@@ -624,7 +624,7 @@ Searchable Keys:
   field : limit|PRIVATE
   fqn : Resolv::DNS::Message::MessageDecoder
   method : get_bytes(len)
-  method : get_label;;Str;
+  method : get_label;;Label::Str;
   method : get_labels(limit);;Array;
   method : get_length16
   method : get_name;;Name;

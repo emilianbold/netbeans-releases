@@ -15,8 +15,9 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.javacard.project</friend>
                 <friend>org.netbeans.modules.javacard.kit</friend>
+                <friend>org.netbeans.modules.javacard.project</friend>
+                <friend>org.netbeans.modules.javacard.spi</friend>
                 <package>org.netbeans.swing.layouts</package>
             </friend-packages>
         </data>

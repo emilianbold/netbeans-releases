@@ -46,6 +46,7 @@ import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.Insets;
+import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.DateFormat;
@@ -72,8 +73,11 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
@@ -112,7 +116,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Jan Stola
  */
-public class IssuePanel extends javax.swing.JPanel {
+public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private static final Color HIGHLIGHT_COLOR = new Color(217, 255, 217);
     private BugzillaIssue issue;
     private CommentsPanel commentsPanel;
@@ -398,6 +402,7 @@ public class IssuePanel extends javax.swing.JPanel {
                 JLabel label = ku.createUserWidget();
                 label.setText(null);
                 ((GroupLayout)getLayout()).replace(assignedToStatusLabel, label);
+                label.setVisible(assignedToStatusLabel.isVisible());
                 assignedToStatusLabel = label;
             }
             if (force) {
@@ -550,24 +555,51 @@ public class IssuePanel extends javax.swing.JPanel {
         priorityCombo.setRenderer(new PriorityRenderer());
         severityCombo.setModel(toComboModel(bc.getSeverities()));
 
-        Collection<RepositoryUser> users =  repository.getUsers();
-        DefaultComboBoxModel assignedModel = new DefaultComboBoxModel();
-        for (RepositoryUser user: users) {
-            assignedModel.addElement(user);
-        }
-        assignedCombo.setModel(assignedModel);
-        assignedCombo.setRenderer(new RepositoryUserRenderer());
-        GroupLayout layout = (GroupLayout)getLayout();
-        if ((assignedCombo.getParent()==null) != users.isEmpty()) {
-            layout.replace(users.isEmpty() ? assignedCombo : assignedField, users.isEmpty() ? assignedField : assignedCombo);
-            assignedLabel.setLabelFor(users.isEmpty() ? assignedField : assignedCombo);
-        }
+        initAssignedCombo();
 
         if (BugzillaUtil.isNbRepository(repository)) {
             issueTypeCombo.setModel(toComboModel(bc.getIssueTypes()));
         }
 
         // stausCombo and resolution fields are filled in reloadForm
+    }
+
+    private void initAssignedCombo() {
+        assignedCombo.setRenderer(new RepositoryUserRenderer());
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                BugzillaRepository repository = issue.getBugzillaRepository();
+                final Collection<RepositoryUser> users = repository.getUsers();
+                final DefaultComboBoxModel assignedModel = new DefaultComboBoxModel();
+                for (RepositoryUser user: users) {
+                    assignedModel.addElement(user);
+                }
+                EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        reloading = true;
+                        try {
+                            Object assignee = (assignedField.getParent() == null) ? assignedCombo.getSelectedItem() : assignedField.getText();
+                            if (assignee == null) {
+                                assignee = ""; //NOI18N
+                            }
+                            assignedCombo.setModel(assignedModel);
+                            GroupLayout layout = (GroupLayout)getLayout();
+                            if ((assignedCombo.getParent()==null) != users.isEmpty()) {
+                                layout.replace(users.isEmpty() ? assignedCombo : assignedField, users.isEmpty() ? assignedField : assignedCombo);
+                                assignedLabel.setLabelFor(users.isEmpty() ? assignedField : assignedCombo);
+                            }
+                            if (assignedField.getParent() == null) {
+                                assignedCombo.setSelectedItem(assignee);
+                            } else {
+                                assignedField.setText(assignee.toString());
+                            }
+                        } finally {
+                            reloading = false;
+                        }
+                    }
+                });
+            }
+        });
     }
 
     private void initStatusCombo(String status) {
@@ -1979,7 +2011,6 @@ public class IssuePanel extends javax.swing.JPanel {
                             Object priority = priorityCombo.getSelectedItem();
                             Object severity = severityCombo.getSelectedItem();
                             Object resolution = resolutionCombo.getSelectedItem();
-                            Object assignee = assignedCombo.getSelectedItem();
                             Object issueType = issueTypeCombo.getSelectedItem();
                             initCombos();
                             selectInCombo(productCombo, product, false);
@@ -1989,7 +2020,6 @@ public class IssuePanel extends javax.swing.JPanel {
                             selectInCombo(severityCombo, severity, false);
                             initStatusCombo(statusCombo.getSelectedItem().toString());
                             selectInCombo(resolutionCombo, resolution, false);
-                            assignedCombo.setSelectedItem(assignee);
                             if (BugzillaUtil.isNbRepository(issue.getRepository())) {
                                 issueTypeCombo.setSelectedItem(issueType);
                             }
@@ -2142,6 +2172,62 @@ public class IssuePanel extends javax.swing.JPanel {
     private javax.swing.JLabel versionLabel;
     private javax.swing.JLabel versionWarning;
     // End of variables declaration//GEN-END:variables
+
+    @Override
+    public Dimension getPreferredSize() {
+        return getMinimumSize(); // Issue 176085
+    }
+
+    public Dimension getPreferredScrollableViewportSize() {
+        return getPreferredSize();
+    }
+
+    public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
+        return getUnitIncrement();
+    }
+
+    public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
+        return (orientation==SwingConstants.VERTICAL) ? visibleRect.height : visibleRect.width;
+    }
+
+    public boolean getScrollableTracksViewportWidth() {
+        JScrollPane scrollPane = (JScrollPane)SwingUtilities.getAncestorOfClass(JScrollPane.class, this);
+        if (scrollPane!=null) {
+             // Issue 176085
+            int minWidth = getMinimumSize().width;
+            int width = scrollPane.getSize().width;
+            Insets insets = scrollPane.getInsets();
+            width -= insets.left+insets.right;
+            Border border = scrollPane.getViewportBorder();
+            if (border != null) {
+                insets = border.getBorderInsets(scrollPane);
+                width -= insets.left+insets.right;
+            }
+            JComponent vsb = scrollPane.getVerticalScrollBar();
+            if (vsb!=null && vsb.isVisible()) {
+                width -= vsb.getSize().width;
+            }
+            if (minWidth>width) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public boolean getScrollableTracksViewportHeight() {
+        return false;
+    }
+
+    private int unitIncrement;
+    private int getUnitIncrement() {
+        if (unitIncrement == 0) {
+            Font font = UIManager.getFont("Label.font"); // NOI18N
+            if (font != null) {
+                unitIncrement = (int)(font.getSize()*1.5);
+            }
+        }
+        return unitIncrement;
+    }
 
     class CancelHighlightDocumentListener implements DocumentListener {
         private JLabel label;

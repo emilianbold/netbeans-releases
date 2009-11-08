@@ -4,7 +4,7 @@
 
 <helpset version="2.0">
 
-   <title>JavaCard 3.0 Guide</title>
+   <title>JavaCard 3 Connected Edition</title>
 
    <maps>
      <homeID>javacard</homeID>

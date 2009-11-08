@@ -86,6 +86,10 @@ public final class CodeStyle {
         return preferences.getInt(continuationIndentSize, getDefaultAsInt(continuationIndentSize));
     }
 
+    public int getInitialIndent(){
+        return preferences.getInt(initialIndent, getDefaultAsInt(initialIndent));
+    }
+
     public boolean reformatComments() {
         return preferences.getBoolean(reformatComments, getDefaultAsBoolean(reformatComments));
     }

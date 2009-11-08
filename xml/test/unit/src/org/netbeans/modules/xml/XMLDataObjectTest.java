@@ -42,6 +42,7 @@ package org.netbeans.modules.xml;
 
 import java.io.IOException;
 import org.netbeans.junit.NbTestCase;
+import org.openide.cookies.EditCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -76,5 +77,11 @@ public class XMLDataObjectTest extends NbTestCase {
 
         XMLDataObject dataObject = (XMLDataObject) object;
         assertNotNull(dataObject.getLookup().lookup(FileObject.class));
+
+        EditCookie ec = dataObject.getCookie(EditCookie.class);
+        assertNotNull("Editor cookie found", ec);
+
+        EditCookie lkp = dataObject.getLookup().lookup(EditCookie.class);
+        assertEquals("Cookies are the same", ec, lkp);
     }
 }

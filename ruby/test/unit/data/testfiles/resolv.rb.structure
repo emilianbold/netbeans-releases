@@ -38,7 +38,7 @@ Resolv:CLASS:[]:ESCAPED{Resolv}:
       MessageDecoder:CLASS:[]:ESCAPED{MessageDecoder}:
         data:FIELD:[PRIVATE]:ESCAPED{data}:
         get_bytes:METHOD:[PUBLIC]:ESCAPED{get_bytes}(PARAMETERS{ESCAPED{len}}):
-        get_label:METHOD:[PUBLIC]:ESCAPED{get_label}<font color='#777777'> : ESCAPED{Str}</font>:
+        get_label:METHOD:[PUBLIC]:ESCAPED{get_label}<font color='#777777'> : ESCAPED{Label::Str}</font>:
         get_labels:METHOD:[PUBLIC]:ESCAPED{get_labels}(PARAMETERS{ESCAPED{limit}})<font color='#777777'> : ESCAPED{Array}</font>:
         get_length16:METHOD:[PUBLIC]:ESCAPED{get_length16}:
         get_name:METHOD:[PUBLIC]:ESCAPED{get_name}<font color='#777777'> : ESCAPED{Name}</font>:
@@ -300,7 +300,7 @@ Resolv:CLASS:[]:ESCAPED{Resolv}:
     lazy_initialize:METHOD:[PUBLIC]:ESCAPED{lazy_initialize}<font color='#777777'> : ESCAPED{DNS}</font>:
     mutex:FIELD:[PRIVATE]:ESCAPED{mutex}<font color='#777777'> : ESCAPED{Mutex}</font>:
     open:METHOD:[PUBLIC, STATIC]:ESCAPED{open}(PARAMETERS{ESCAPED{*args}})<font color='#777777'> : ESCAPED{DNS, Unknown}</font>:
-    requester:FIELD:[PRIVATE]:ESCAPED{requester}<font color='#777777'> : ESCAPED{UnconnectedUDP, ConnectedUDP, NilClass}</font>:
+    requester:FIELD:[PRIVATE]:ESCAPED{requester}<font color='#777777'> : ESCAPED{Requester::UnconnectedUDP, Requester::ConnectedUDP, NilClass}</font>:
   DefaultResolver:CONSTANT:[]:ESCAPED{DefaultResolver}<font color='#777777'> : ESCAPED{Resolv}</font>:
   Hosts:CLASS:[]:ESCAPED{Hosts}:
     DefaultFileName:CONSTANT:[]:ESCAPED{DefaultFileName}:
@@ -308,7 +308,7 @@ Resolv:CLASS:[]:ESCAPED{Resolv}:
     addr2name:FIELD:[PRIVATE]:ESCAPED{addr2name}<font color='#777777'> : ESCAPED{Hash}</font>:
     each_address:METHOD:[PUBLIC]:ESCAPED{each_address}(PARAMETERS{ESCAPED{name}, ESCAPED{&proc}})<font color='#777777'> : ESCAPED{Hash}</font>:
     each_name:METHOD:[PUBLIC]:ESCAPED{each_name}(PARAMETERS{ESCAPED{address}, ESCAPED{&proc}})<font color='#777777'> : ESCAPED{Hash}</font>:
-    filename:FIELD:[PRIVATE]:ESCAPED{filename}:
+    filename:FIELD:[PRIVATE]:ESCAPED{filename}<font color='#777777'> : ESCAPED{String}</font>:
     getaddress:METHOD:[PUBLIC]:ESCAPED{getaddress}(PARAMETERS{ESCAPED{name}}):
     getaddresses:METHOD:[PUBLIC]:ESCAPED{getaddresses}(PARAMETERS{ESCAPED{name}})<font color='#777777'> : ESCAPED{Array}</font>:
     getname:METHOD:[PUBLIC]:ESCAPED{getname}(PARAMETERS{ESCAPED{address}}):
@@ -342,21 +342,21 @@ Resolv:CLASS:[]:ESCAPED{Resolv}:
     hash:METHOD:[PUBLIC]:ESCAPED{hash}:
     initialize:CONSTRUCTOR:[PRIVATE]:ESCAPED{initialize}(PARAMETERS{ESCAPED{address}}):
     inspect:METHOD:[PUBLIC]:ESCAPED{inspect}<font color='#777777'> : ESCAPED{String}</font>:
-    to_name:METHOD:[PUBLIC]:ESCAPED{to_name}<font color='#777777'> : ESCAPED{Name}</font>:
+    to_name:METHOD:[PUBLIC]:ESCAPED{to_name}<font color='#777777'> : ESCAPED{DNS::Name}</font>:
     to_s:METHOD:[PUBLIC]:ESCAPED{to_s}<font color='#777777'> : ESCAPED{String}</font>:
   ResolvError:CLASS:[]:ESCAPED{ResolvError}:
   ResolvTimeout:CLASS:[]:ESCAPED{ResolvTimeout}:
-  each_address:METHOD:[PUBLIC, STATIC]:ESCAPED{each_address}(PARAMETERS{ESCAPED{name}, ESCAPED{&block}}):
+  each_address:METHOD:[PUBLIC, STATIC]:ESCAPED{each_address}(PARAMETERS{ESCAPED{name}, ESCAPED{&block}})<font color='#777777'> : ESCAPED{Array, Unknown}</font>:
   each_address:METHOD:[PUBLIC]:ESCAPED{each_address}(PARAMETERS{ESCAPED{name}})<font color='#777777'> : ESCAPED{Array, Unknown}</font>:
-  each_name:METHOD:[PUBLIC, STATIC]:ESCAPED{each_name}(PARAMETERS{ESCAPED{address}, ESCAPED{&proc}}):
+  each_name:METHOD:[PUBLIC, STATIC]:ESCAPED{each_name}(PARAMETERS{ESCAPED{address}, ESCAPED{&proc}})<font color='#777777'> : ESCAPED{Array, Unknown}</font>:
   each_name:METHOD:[PUBLIC]:ESCAPED{each_name}(PARAMETERS{ESCAPED{address}})<font color='#777777'> : ESCAPED{Array, Unknown}</font>:
   getaddress:METHOD:[PUBLIC, STATIC]:ESCAPED{getaddress}(PARAMETERS{ESCAPED{name}}):
   getaddress:METHOD:[PUBLIC]:ESCAPED{getaddress}(PARAMETERS{ESCAPED{name}}):
-  getaddresses:METHOD:[PUBLIC, STATIC]:ESCAPED{getaddresses}(PARAMETERS{ESCAPED{name}}):
+  getaddresses:METHOD:[PUBLIC, STATIC]:ESCAPED{getaddresses}(PARAMETERS{ESCAPED{name}})<font color='#777777'> : ESCAPED{Array, Unknown}</font>:
   getaddresses:METHOD:[PUBLIC]:ESCAPED{getaddresses}(PARAMETERS{ESCAPED{name}})<font color='#777777'> : ESCAPED{Array}</font>:
   getname:METHOD:[PUBLIC, STATIC]:ESCAPED{getname}(PARAMETERS{ESCAPED{address}}):
   getname:METHOD:[PUBLIC]:ESCAPED{getname}(PARAMETERS{ESCAPED{address}}):
-  getnames:METHOD:[PUBLIC, STATIC]:ESCAPED{getnames}(PARAMETERS{ESCAPED{address}}):
+  getnames:METHOD:[PUBLIC, STATIC]:ESCAPED{getnames}(PARAMETERS{ESCAPED{address}})<font color='#777777'> : ESCAPED{Array, Unknown}</font>:
   getnames:METHOD:[PUBLIC]:ESCAPED{getnames}(PARAMETERS{ESCAPED{address}})<font color='#777777'> : ESCAPED{Array}</font>:
   initialize:CONSTRUCTOR:[PRIVATE]:ESCAPED{initialize}(PARAMETERS{ESCAPED{resolvers}})<font color='#777777'> : ESCAPED{Array}</font>:
   resolvers:FIELD:[PRIVATE]:ESCAPED{resolvers}<font color='#777777'> : ESCAPED{Array}</font>:

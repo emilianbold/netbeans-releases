@@ -93,6 +93,7 @@ import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.InputOutput;
 
 /**
@@ -298,8 +299,28 @@ public class SunStudioDataCollector
             cmd = command;
             sproHome = sprohome;
             validatedTarget = target;
-
+            countSSDataCollectorUsage(sprohome, execEnv);
             return validationStatus;
+        }
+    }
+
+    private static final boolean SUNW_NO_UPDATE_NOTIFY;
+    private static final RequestProcessor SS_USER_COUNT = new RequestProcessor("SunStudio check_update"); // NOI18N
+    static {
+        SUNW_NO_UPDATE_NOTIFY = true;//(System.getProperty("SUNW_NO_UPDATE_NOTIFY") != null);  // NOI18N
+    }
+    private static void countSSDataCollectorUsage(final String sproHome, final ExecutionEnvironment execEnv) {
+        if (!SUNW_NO_UPDATE_NOTIFY && ConnectionManager.getInstance().isConnectedTo(execEnv)) {
+            SS_USER_COUNT.post(new Runnable() {
+
+                public void run() {
+                    NativeProcessBuilder nb = NativeProcessBuilder.newProcessBuilder(execEnv).setExecutable(sproHome + "/../prod/bin/check_update").setArguments("dlightss"); // NOI18N
+                    try {
+                        nb.call();
+                    } catch (IOException ex) {
+                    }
+                }
+            });
         }
     }
 
@@ -340,42 +361,57 @@ public class SunStudioDataCollector
             Set<CollectedInfo> ci = EnumSet.<CollectedInfo>copyOf(collectedInfo);
             Set<DataTableMetadata> dtm = new HashSet<DataTableMetadata>();
             boolean bAttachable = true;
-
+            boolean isChanged = false;
             if (ci.contains(CollectedInfo.DEADLOCKS) || ci.contains(CollectedInfo.DATARACES)) {
-                ci.retainAll(EnumSet.of(CollectedInfo.DEADLOCKS, CollectedInfo.DATARACES));
+                isChanged = ci.retainAll(EnumSet.of(CollectedInfo.DEADLOCKS, CollectedInfo.DATARACES));
             }
+            if (!isChanged){//is we do not have THA
+                for (CollectedInfo info : collectedInfo) {
+                    ci.add(info);
 
-            for (CollectedInfo info : collectedInfo) {
-                ci.add(info);
+                    switch (info) {
+                        case FUNCTIONS_LIST:
+                            dtm.add(cpuInfoTable);
+                            break;
+                        case MEMORY:
+                            dtm.add(memInfoTable);
+                            bAttachable = false;
+                            break;
+                        case MEMSUMMARY:
+                            dtm.add(memSummaryInfoTable);
+                            bAttachable = false;
+                            break;
+                        case SYNCHRONIZATION:
+                            dtm.add(syncInfoTable);
+                            bAttachable = false;
+                            break;
+                        case SYNCSUMMARY:
+                            dtm.add(summaryInfoTable);
+                            bAttachable = false;
+                            break;
+                        case DEADLOCKS:
+                            dtm.add(deadlocksSummaryInfoTable);
+                            bAttachable = false;
+                            break;
+                        case DATARACES:
+                            dtm.add(dataracesSummaryInfoTable);
+                            bAttachable = false;
+                            break;
+                    }
+                }
+            }else{
+                for (CollectedInfo info : ci) {
+                    switch (info) {
 
-                switch (info) {
-                    case FUNCTIONS_LIST:
-                        dtm.add(cpuInfoTable);
-                        break;
-                    case MEMORY:
-                        dtm.add(memInfoTable);
-                        bAttachable = false;
-                        break;
-                    case MEMSUMMARY:
-                        dtm.add(memSummaryInfoTable);
-                        bAttachable = false;
-                        break;
-                    case SYNCHRONIZATION:
-                        dtm.add(syncInfoTable);
-                        bAttachable = false;
-                        break;
-                    case SYNCSUMMARY:
-                        dtm.add(summaryInfoTable);
-                        bAttachable = false;
-                        break;
-                    case DEADLOCKS:
-                        dtm.add(deadlocksSummaryInfoTable);
-                        bAttachable = false;
-                        break;
-                    case DATARACES:
-                        dtm.add(dataracesSummaryInfoTable);
-                        bAttachable = false;
-                        break;
+                        case DEADLOCKS:
+                            dtm.add(deadlocksSummaryInfoTable);
+                            bAttachable = false;
+                            break;
+                        case DATARACES:
+                            dtm.add(dataracesSummaryInfoTable);
+                            bAttachable = false;
+                            break;
+                    }
                 }
             }
 

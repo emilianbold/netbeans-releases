@@ -188,7 +188,7 @@ public class SymfonyScript extends PhpProgram {
         assert command != null;
 
         FrameworkCommandSupport commandSupport = SymfonyPhpFrameworkProvider.getInstance().getFrameworkCommandSupport(phpModule);
-        ExternalProcessBuilder processBuilder = commandSupport.createSilentCommand("help", command.getCommand());
+        ExternalProcessBuilder processBuilder = commandSupport.createSilentCommand("help", command.getCommand()); // NOI18N
         assert processBuilder != null;
 
         final HelpLineProcessor lineProcessor = new HelpLineProcessor();

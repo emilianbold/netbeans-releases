@@ -60,6 +60,10 @@ public final class PackagingCustomizer extends javax.swing.JPanel implements Cha
             aIDPanel1.setAID(aid);
         }
         aIDPanel1.addChangeListener(this);
+
+        proxyCheckBox.setSelected(uiProps.isUseMyProxies());
+        proxyCheckBox.addChangeListener(this);
+
         stateChanged(null);
         HelpCtx.setHelpIDString(this, "org.netbeans.modules.javacard.ClassicAppletEditAppletAID"); //NOI18N
     }
@@ -73,10 +77,18 @@ public final class PackagingCustomizer extends javax.swing.JPanel implements Cha
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        aIDPanel1 = new org.netbeans.modules.javacard.project.ui.AIDPanel();
+        aIDPanel1 = new org.netbeans.modules.javacard.common.AIDPanel();
+        jLabel1 = new javax.swing.JLabel();
+        proxyCheckBox = new javax.swing.JCheckBox();
 
         aIDPanel1.setToolTipText(org.openide.util.NbBundle.getMessage(PackagingCustomizer.class, "PackagingCustomizer.aIDPanel1.toolTipText")); // NOI18N
         aIDPanel1.setTitle(org.openide.util.NbBundle.getMessage(PackagingCustomizer.class, "PackagingCustomizer.aIDPanel1.title")); // NOI18N
+
+        jLabel1.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
+        jLabel1.setText(org.openide.util.NbBundle.getMessage(PackagingCustomizer.class, "PackagingCustomizer.jLabel1.text")); // NOI18N
+
+        proxyCheckBox.setText(org.openide.util.NbBundle.getMessage(PackagingCustomizer.class, "PackagingCustomizer.proxyCheckBox.text")); // NOI18N
+        proxyCheckBox.setToolTipText(org.openide.util.NbBundle.getMessage(PackagingCustomizer.class, "PackagingCustomizer.proxyCheckBox.toolTipText")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -84,7 +96,10 @@ public final class PackagingCustomizer extends javax.swing.JPanel implements Cha
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(aIDPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(proxyCheckBox)
+                    .add(aIDPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(jLabel1))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -92,13 +107,19 @@ public final class PackagingCustomizer extends javax.swing.JPanel implements Cha
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(aIDPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(18, 18, 18)
+                .add(jLabel1)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(proxyCheckBox)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private org.netbeans.modules.javacard.project.ui.AIDPanel aIDPanel1;
+    private org.netbeans.modules.javacard.common.AIDPanel aIDPanel1;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JCheckBox proxyCheckBox;
     // End of variables declaration//GEN-END:variables
 
     public void stateChanged(ChangeEvent e) {
@@ -109,6 +130,7 @@ public final class PackagingCustomizer extends javax.swing.JPanel implements Cha
         if (problem == null) {
             uiProps.setPackageAID(aIDPanel1.getAID());
         }
+        uiProps.setUseMyProxies(proxyCheckBox.isSelected());
     }
 
 }

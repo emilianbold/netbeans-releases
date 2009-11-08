@@ -80,7 +80,7 @@ You can alternatively set this property in ${.nbbuild.properties} to affect all 
 If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=true</fail>
     </target>
 
-    <target name="build-init" depends="basic-init,jdk-5-check">
+    <target name="build-init" depends="basic-init,jdk-5-check,set-buildnumber">
         <taskdef name="downloadbinaries" classname="org.netbeans.nbbuild.extlibs.DownloadBinaries" classpath="${nb_all}/nbbuild/nbantext.jar"/>
         <downloadbinaries cache="${binaries.cache}" server="${binaries.server}">
             <manifest dir=".">

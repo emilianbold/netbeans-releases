@@ -180,8 +180,10 @@ public class Utils {
                 methodModel[0] = MethodModelSupport.createMethodModel(workingCopy, method);
             }
         });
-        EjbMethodController ejbMethodController = EjbMethodController.createFromClass(ejbClassFO, ejbClassName[0]);
-        ejbMethodController.createAndAddInterface(methodModel[0], true);
+        if (methodModel[0] != null) {
+            EjbMethodController ejbMethodController = EjbMethodController.createFromClass(ejbClassFO, ejbClassName[0]);
+            ejbMethodController.createAndAddInterface(methodModel[0], true);
+        }
     }
     
     public static boolean canExposeInRemote(FileObject ejbClassFO, final ElementHandle<ExecutableElement> methodHandle) throws IOException {
@@ -221,8 +223,10 @@ public class Utils {
                 methodModel[0] = MethodModelSupport.createMethodModel(workingCopy, method);
             }
         });
-        EjbMethodController ejbMethodController = EjbMethodController.createFromClass(ejbClassFO, ejbClassName[0]);
-        ejbMethodController.createAndAddInterface(methodModel[0], false);
+        if (methodModel[0] != null) {
+            EjbMethodController ejbMethodController = EjbMethodController.createFromClass(ejbClassFO, ejbClassName[0]);
+            ejbMethodController.createAndAddInterface(methodModel[0], false);
+        }
     }
 
     /** Returns list of all EJB projects that can be called from the caller project.

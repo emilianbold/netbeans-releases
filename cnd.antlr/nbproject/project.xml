@@ -6,19 +6,19 @@
             <code-name-base>org.netbeans.modules.cnd.antlr</code-name-base>
             <module-dependencies/>
             <friend-packages>
-                <friend>org.netbeans.modules.cnd.asm</friend>
                 <friend>org.netbeans.modules.cnd.apt</friend>
+                <friend>org.netbeans.modules.cnd.asm</friend>
                 <friend>org.netbeans.modules.cnd.folding</friend>
                 <friend>org.netbeans.modules.cnd.fortran</friend>
                 <friend>org.netbeans.modules.cnd.make2netbeans</friend>
                 <friend>org.netbeans.modules.cnd.modelimpl</friend>
                 <friend>org.netbeans.modules.cnd.modelui</friend>
-                <package>antlr</package>
-                <package>antlr.ASdebug</package>
-                <package>antlr.collections</package>
-                <package>antlr.collections.impl</package>
-                <package>antlr.debug</package>
-                <package>antlr.debug.misc</package>
+                <package>org.netbeans.modules.cnd.antlr</package>
+                <package>org.netbeans.modules.cnd.antlr.ASdebug</package>
+                <package>org.netbeans.modules.cnd.antlr.collections</package>
+                <package>org.netbeans.modules.cnd.antlr.collections.impl</package>
+                <package>org.netbeans.modules.cnd.antlr.debug</package>
+                <package>org.netbeans.modules.cnd.antlr.debug.misc</package>
             </friend-packages>
         </data>
     </configuration>

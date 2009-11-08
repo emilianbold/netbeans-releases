@@ -46,6 +46,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.dd.api.application.Application;
 import org.netbeans.modules.j2ee.dd.api.application.ApplicationMetadata;
@@ -85,7 +87,7 @@ public class ApplicationMetadataModelImpl implements MetadataModelImplementation
             try {
                 ddRoot = DDProvider.getDefault().getDDRoot(ddFO);
             } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
+                Logger.getLogger("global").log(Level.INFO, null, ioe);
             }
         }
         if (ddRoot != null) {

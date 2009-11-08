@@ -95,7 +95,7 @@ public class PresenceIndicator {
                 label.setToolTipText(NbBundle.getMessage(PresenceIndicator.class, "LBL_LoggedInButNotOnChat_Tooltip")); // NOI18N
                 break;
             case ONLINE:
-                label.setToolTipText(NbBundle.getMessage(PresenceIndicator.class, "LBL_LoggedIn_Tooltip")); // NOI18N
+                label.setToolTipText(NbBundle.getMessage(PresenceIndicator.class, "LBL_LoggedIn_Tooltip", KenaiUser.getOnlineUserCount()>0?KenaiUser.getOnlineUserCount()-1:"")); // NOI18N
                 break;
         }
             label.setVisible(status!=Kenai.Status.OFFLINE);
@@ -120,12 +120,18 @@ public class PresenceIndicator {
 //        label.setToolTipText(NbBundle.getMessage(PresenceIndicator.class, "LBL_Offline")); // NOI18N
         helper = new MouseL();
         label.addMouseListener(helper);
-        Kenai.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
+    }
 
+    private boolean inited = false;
+    public synchronized void init() {
+        if (inited)
+            return;
+        Kenai.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 setStatus(Kenai.getDefault().getStatus());
             }
         });
+        inited = true;
     }
 
     private class MouseL extends MouseAdapter {
@@ -196,7 +202,8 @@ public class PresenceIndicator {
          * @param packet
          */
         public void processPacket(Packet packet) {
-            PresenceIndicator.getDefault().label.setText(String.valueOf(KenaiUser.getOnlineUserCount()));
+            PresenceIndicator.getDefault().label.setText(KenaiUser.getOnlineUserCount()>0?KenaiUser.getOnlineUserCount()-1+"":""); // NOI18N
+            PresenceIndicator.getDefault().label.setToolTipText(NbBundle.getMessage(PresenceIndicator.class, "LBL_LoggedIn_Tooltip", KenaiUser.getOnlineUserCount()>0?KenaiUser.getOnlineUserCount()-1:""));
             for (MultiUserChat muc : KenaiConnection.getDefault().getChats()) {
                 String chatName = StringUtils.parseName(muc.getRoom());
                 assert chatName != null : "muc.getRoom() = " + muc.getRoom(); // NOI18N

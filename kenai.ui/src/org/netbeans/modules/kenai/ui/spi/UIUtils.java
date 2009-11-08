@@ -67,6 +67,7 @@ import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiUser;
 import org.netbeans.modules.kenai.collab.chat.KenaiConnection;
+import org.netbeans.modules.kenai.collab.chat.PresenceIndicator;
 import org.netbeans.modules.kenai.ui.KenaiLoginTask;
 import org.netbeans.modules.kenai.ui.LoginPanel;
 import org.netbeans.modules.kenai.ui.Utilities;
@@ -169,7 +170,6 @@ public final class UIUtils {
      */
     @Deprecated
     public static synchronized boolean tryLogin(boolean force) {
-        Utilities.isChatSupported();
         if (Kenai.getDefault().getPasswordAuthentication()!=null) {
             return true;
         }
@@ -187,6 +187,7 @@ public final class UIUtils {
             return false;
         }
         String password=preferences.get(getPrefName(KENAI_PASSWORD_PREF), null); // NOI18N
+        PresenceIndicator.getDefault().init();
         try {
             KenaiConnection.getDefault();
             Kenai.getDefault().login(uname, Scrambler.getInstance().descramble(password).toCharArray(), force?true:Boolean.parseBoolean(preferences.get(getPrefName(ONLINE_STATUS_PREF), String.valueOf(Utilities.isChatSupported()))));
@@ -201,7 +202,8 @@ public final class UIUtils {
      * @return true, if user was succesfully logged in
      */
     public static boolean showLogin() {
-        final LoginPanel loginPanel = new LoginPanel(Utilities.isChatSupported());
+        PresenceIndicator.getDefault().init();
+        final LoginPanel loginPanel = new LoginPanel();
         final Preferences preferences = NbPreferences.forModule(LoginPanel.class);
         final String ctlLogin = NbBundle.getMessage(Utilities.class, "CTL_Login");
         final String ctlCancel = NbBundle.getMessage(Utilities.class, "CTL_Cancel");
@@ -284,7 +286,7 @@ public final class UIUtils {
     static JLabel createUserWidget(final KenaiUserUI u) {
         final JLabel result = new JLabel(u.getUserName());
         result.setIcon(u.getIcon());
-        final String name = u.getKenaiUser().getFirstName() + " " + u.getKenaiUser().getLastName();
+        final String name = u.getKenaiUser().getFirstName() + " " + u.getKenaiUser().getLastName(); // NOI18N
         result.setToolTipText(NbBundle.getMessage(UserNode.class, u.getKenaiUser().isOnline()?"LBL_ONLINE_MEMBER_TOOLTIP": "LBL_OFFLINE_MEMBER_TOOLTIP", u.getUserName(), name));
         u.user.addPropertyChangeListener(new PropertyChangeListener() {
 

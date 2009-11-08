@@ -76,6 +76,8 @@ public final class ToolchainManager {
 
         String getModuleID();
 
+        boolean isAbstract();
+
         String getDriveLetterPrefix();
 
         List<BaseFolder> getBaseFolders();

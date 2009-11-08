@@ -52,7 +52,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.websvc.api.support.ClientCreator;
 import org.netbeans.modules.websvc.core.CreatorProvider;
 import org.netbeans.modules.websvc.core.JaxWsUtils;
-import org.netbeans.modules.websvc.core.ProjectInfo;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 

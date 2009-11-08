@@ -46,14 +46,17 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.InterruptedIOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
-import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
+import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.remote.sync.FileData.FileInfo;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -134,51 +137,87 @@ import org.openide.util.NbBundle;
         return tmpFile.exists() ? tmpFile : null;
     }
 
-    private void synchronizeImpl(String remoteDir) throws InterruptedException, ExecutionException, IOException {
+    private StringBuilder getLocalDirsString() {
+        StringBuilder sb = new StringBuilder();
+        for (File f : localDirs) {
+            if (sb.length() > 0) {
+                sb.append(',');
+            }
+            sb.append(f.getAbsolutePath());
+        }
+        return sb;
+    }
+
+    private void synchronizeImpl(String remoteRoot) throws InterruptedException, ExecutionException, IOException {
 
         totalCount = uploadCount = 0;
         totalSize = uploadSize = 0;
         long time = 0;
         
         if (RemoteUtil.LOGGER.isLoggable(Level.FINE)) {
-            System.out.printf("Uploading %s to %s ...\n", topLocalDir.getAbsolutePath(), executionEnvironment); // NOI18N
+            System.out.printf("Uploading %s to %s ...\n", getLocalDirsString(), executionEnvironment); // NOI18N
             time = System.currentTimeMillis();
         }
         filter = new TimestampAndSharabilityFilter(privProjectStorageDir, executionEnvironment);
-        if (!HostInfoProvider.fileExists(executionEnvironment, remoteDir)) {
-            filter.clear();
+
+        StringBuilder script = new StringBuilder("sh -c \""); // NOI18N
+        for (int i = 0; i < localDirs.length; i++) {
+            String remoteDir = RemotePathMap.getPathMap(executionEnvironment).getRemotePath(localDirs[i].getAbsolutePath(), true);
+            script.append(String.format("test -d %s  || echo %s; ", remoteDir, remoteDir)); // echo all inexistent directories // NOI18N
         }
+        script.append("\""); // NOI18N
+        
+        RemoteCommandSupport rcs = new RemoteCommandSupport(executionEnvironment, script.toString());
+        if (rcs.run() != 0) {
+            throw new IOException("Can not check remote directories"); //NOI18N
+        }
+
+        Collection<Future<Integer>> mkDirs = new ArrayList<Future<Integer>>();
+        final String scriptOutput = rcs.getOutput().trim();
+        if (scriptOutput.length() > 0) {
+            String[] inexistentDirs = scriptOutput.split("\n"); // NOI18N
+            filter.clear();
+            // we optimize check (via script) since it is preformed each build,
+            // but does not optimize createion since it's done once
+            for (int i = 0; i < inexistentDirs.length; i++) {
+                mkDirs.add(CommonTasksSupport.mkDir(executionEnvironment, inexistentDirs[i], err));
+            }
+        }
+
         // success flag is for tracing only. TODO: should we drop it?
         boolean success = false;
         File zipFile = null;
         upload: // the label allows us exiting this block on condition
         try  {
-            // nb: here we only launch the task! we'll wait for the completion after local zip is created
-            Future<Integer> mkDir = CommonTasksSupport.mkDir(executionEnvironment, remoteDir, err);
 
-            String localDirName = topLocalDir.getName();
+            String localDirName = localDirs[0].getName();
             if (localDirName.length() < 3) {
                 localDirName = localDirName + ((localDirName.length() == 1) ? "_" : "__"); //NOI18N
             }
             zipFile = File.createTempFile(localDirName, ".zip", getTemp()); // NOI18N
             Zipper zipper = new Zipper(zipFile);
             {
-                if (RemoteUtil.LOGGER.isLoggable(Level.FINE)) {System.out.printf("\tZipping %s to %s...\n", topLocalDir.getAbsolutePath(), zipFile); } // NOI18N
+                if (RemoteUtil.LOGGER.isLoggable(Level.FINE)) {System.out.printf("\tZipping %s to %s...\n", getLocalDirsString(), zipFile); } // NOI18N
                 long zipStart = System.currentTimeMillis();
-                int topDirLen = topLocalDir.getAbsolutePath().length();
+                PathMap pm = RemotePathMap.getPathMap(executionEnvironment);
                 for (File dir : localDirs) {
+                    String remoteDir = pm.getRemotePath(dir.getAbsolutePath(), false);
+                    if (remoteDir == null) { // this never happens since mapper is fixed
+                        throw new IOException("Can not find remote path for " + dir.getAbsolutePath()); //NOI18N
+                    }
                     String base;
-                    if (dir.equals(topLocalDir)) {
-                        base = null;
+                    if (remoteDir.startsWith(remoteRoot)) {
+                        base = remoteDir.substring(remoteRoot.length() + 1);
                     } else {
-                        base = dir.getAbsolutePath().substring(topDirLen+1);
+                        // this is never the case! - but...
+                        throw new IOException(remoteDir + " should start with " + remoteRoot); //NOI18N
                     }
                     zipper.add(dir, filter, base);
                 }
                 zipper.close();
                 float zipTime = ((float) (System.currentTimeMillis() - zipStart))/1000f;
                 if (RemoteUtil.LOGGER.isLoggable(Level.FINE)) {System.out.printf("\t%d files zipped; file size is %d\n", zipper.getFileCount(), zipFile.length()); } // NOI18N
-                if (RemoteUtil.LOGGER.isLoggable(Level.FINE)) {System.out.printf("\tZipping %s to %s took %f s\n", topLocalDir.getAbsolutePath(), zipFile, zipTime); } // NOI18N
+                if (RemoteUtil.LOGGER.isLoggable(Level.FINE)) {System.out.printf("\tZipping %s to %s took %f s\n", getLocalDirsString(), zipFile, zipTime); } // NOI18N
             }
 
             if (zipper.getFileCount() == 0) {
@@ -187,11 +226,13 @@ import org.openide.util.NbBundle;
             }
 
             // wait/check whether the remote dir was created sucessfully
-            if (mkDir.get() != 0) {
-                throw new IOException("Can not create directory " + remoteDir); //NOI18N
+            for (Future<Integer> mkDir : mkDirs) {
+                if (mkDir.get() != 0) {
+                    throw new IOException("Can not create directory " + remoteRoot); //NOI18N
+                }
             }
 
-            String remoteFile = remoteDir + '/' + zipFile.getName(); //NOI18N
+            String remoteFile = remoteRoot + '/' + zipFile.getName(); //NOI18N
             {
                 long uploaStart = System.currentTimeMillis();
                 if (RemoteUtil.LOGGER.isLoggable(Level.FINEST)) { System.out.printf("\tZSCP: uploading %s to %s:%s ...\n", zipFile, executionEnvironment, remoteFile); } // NOI18N
@@ -213,7 +254,8 @@ import org.openide.util.NbBundle;
                 pb.setCommandLine("unzip -o " + remoteFile + " > /dev/null"); // NOI18N
                 //pb.setExecutable("unzip");
                 //pb.setArguments("-o", remoteFile);
-                pb.setWorkingDirectory(remoteDir);
+                pb.setWorkingDirectory(remoteRoot);
+                pb.redirectError();
                 Process proc = pb.call();
 
                 BufferedReader in;
@@ -221,12 +263,9 @@ import org.openide.util.NbBundle;
 
                 in = new BufferedReader(new InputStreamReader(proc.getInputStream()));
                 while ((line = in.readLine()) != null) {
-                    //if (logger.isLoggable(Level.FINE)) { System.err.printf("\t%s\n", line); } //NOI18N
+                    if (RemoteUtil.LOGGER.isLoggable(Level.FINEST)) { System.err.printf("\t%s\n", line); } //NOI18N
                 }
-                in = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
-                while ((line = in.readLine()) != null) {
-                    if (RemoteUtil.LOGGER.isLoggable(Level.FINE)) { System.err.printf("\t%s\n", line); } //NOI18N
-                }
+                // we now redirect instead of reading stderr // in = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
 
                 int rc = proc.waitFor();
                 //String cmd = "sh -c \"unzip -o -q " + remoteFile + " > /dev/null";
@@ -243,8 +282,10 @@ import org.openide.util.NbBundle;
             // NB: we aren't waining for completion,
             // since the name of the file made my File.createTempFile is new each time
             filter.flush();
+        } catch (Exception ex) {
+            ex.printStackTrace();
         } finally {
-            if (zipFile != null & zipFile.exists()) {
+            if (zipFile != null && zipFile.exists()) {
                 if (!zipFile.delete()) {
                     RemoteUtil.LOGGER.info("Can not delete temporary file " + zipFile.getAbsolutePath()); //NOI18N
                 }
@@ -259,7 +300,7 @@ import org.openide.util.NbBundle;
             String strTotalSize = (totalSize < 1024 ? (totalSize + " bytes") : ((totalSize/1024) + " K")); // NOI18N
             String strUploadSize = (uploadSize < 1024 ? (uploadSize + " bytes") : ((uploadSize/1024) + " K")); // NOI18N
             System.out.printf("Total: %s in %d files. Copied to %s:%s: %s in %d files. Time: %d ms. %s. Avg. speed: %s\n", // NOI18N
-                    strTotalSize, totalCount, executionEnvironment, remoteDir,
+                    strTotalSize, totalCount, executionEnvironment, remoteRoot,
                     strUploadSize, uploadCount, time, success ? "OK" : "FAILURE", speed); // NOI18N
         }
     }
@@ -267,41 +308,22 @@ import org.openide.util.NbBundle;
 
     public boolean startup(Map<String, String> env2add) {
         // Later we'll allow user to specify where to copy project files to
-        String remoteParent = RemotePathMap.getRemoteSyncRoot(executionEnvironment);
-        if (remoteParent == null) {
+        String remoteRoot = RemotePathMap.getRemoteSyncRoot(executionEnvironment);
+        if (remoteRoot == null) {
             if (err != null) {
                 err.printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Cant_find_sync_root", ServerList.get(executionEnvironment).toString()));
             }
             return false; // TODO: error processing
         }
-        if (topLocalDir == null) {
-            if (err != null) {
-                err.printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Cant_find_top_dir"));
-            }
-            return false;
-        }
-        String remoteDir = remoteParent + '/' + topLocalDir.getName(); //NOI18N
 
         boolean success = false;
         try {
-            boolean same;
-            try {
-                same = RemotePathMap.isTheSame(executionEnvironment, remoteDir, topLocalDir);
-            } catch (InterruptedException e) {
-                return false;
+            if (out != null) {
+                out.printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Copying",
+                        remoteRoot, ServerList.get(executionEnvironment).toString()));
             }
-            if (RemoteUtil.LOGGER.isLoggable(Level.FINEST)) {
-                RemoteUtil.LOGGER.finest(executionEnvironment.getHost() + ":" + remoteDir + " and " + topLocalDir.getAbsolutePath() + //NOI18N
-                        (same ? " are same - skipping" : " arent same - copying")); //NOI18N
-            }
-            if (!same) {
-                if (out != null) {
-                    out.printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Copying",
-                            remoteDir, ServerList.get(executionEnvironment).toString()));
-                }
-                RemotePathMap mapper = RemotePathMap.getPathMap(executionEnvironment);
-                synchronizeImpl(remoteDir);
-            }
+            RemotePathMap mapper = RemotePathMap.getPathMap(executionEnvironment);
+            synchronizeImpl(remoteRoot);
             success = true;
         } catch (InterruptedException ex) {
             // reporting does not make sense, just return false
@@ -313,13 +335,13 @@ import org.openide.util.NbBundle;
             RemoteUtil.LOGGER.log(Level.FINE, null, ex);
             if (err != null) {
                 err.printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Error_Copying",
-                        remoteDir, ServerList.get(executionEnvironment).toString(), ex.getLocalizedMessage()));
+                        remoteRoot, ServerList.get(executionEnvironment).toString(), ex.getLocalizedMessage()));
             }
         } catch (IOException ex) {
             RemoteUtil.LOGGER.log(Level.FINE, null, ex);
             if (err != null) {
                 err.printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Error_Copying",
-                        remoteDir, ServerList.get(executionEnvironment).toString(), ex.getLocalizedMessage()));
+                        remoteRoot, ServerList.get(executionEnvironment).toString(), ex.getLocalizedMessage()));
             }
         }
         return success;

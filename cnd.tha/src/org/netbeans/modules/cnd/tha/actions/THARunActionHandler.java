@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
+import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.gizmo.support.GizmoServiceInfo;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
@@ -123,7 +124,7 @@ public class THARunActionHandler implements ProjectActionHandler, DLightTargetLi
             PathMap mapper = HostInfoProvider.getMapper(execEnv);
             runDirectory = mapper.getRemotePath(runDirectory, true);
 
-            if (!envVars.containsKey("DISPLAY")) { // NOI18N
+            if (ServerList.get(execEnv).getX11Forwarding() && !envVars.containsKey("DISPLAY")) { // NOI18N
                 targetConf.setX11Forwarding(true);
             }
         }

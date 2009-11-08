@@ -244,8 +244,7 @@ public class DiscoveryExtension implements IteratorExtension {
     }
     
     /*package-local*/ static DiscoveryProvider findProvider(String providerID){
-        Lookup.Result<DiscoveryProvider> providers = Lookup.getDefault().lookup(new Lookup.Template<DiscoveryProvider>(DiscoveryProvider.class));
-        for(DiscoveryProvider provider : providers.allInstances()){
+        for(DiscoveryProvider provider : Lookup.getDefault().lookupAll(DiscoveryProvider.class)){
             if (providerID.equals(provider.getID())) {
                 provider.clean();
                 return provider;

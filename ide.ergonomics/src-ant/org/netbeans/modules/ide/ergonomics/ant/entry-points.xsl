@@ -123,7 +123,16 @@
                             </xsl:element>
                             <xsl:element name="attr">
                                 <xsl:attribute name="name">position</xsl:attribute>
-                                <xsl:attribute name="intvalue">999999</xsl:attribute>
+                                <xsl:attribute name="intvalue">
+                                    <xsl:choose>
+                                        <xsl:when test="file/attr[@name='position' and @intvalue]">
+                                            <xsl:value-of select="1000000 + number(file/attr[@name='position']/@intvalue)"/>
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            <xsl:text>999999</xsl:text>
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                </xsl:attribute>
                             </xsl:element>
                         </xsl:element>
                     </xsl:element>

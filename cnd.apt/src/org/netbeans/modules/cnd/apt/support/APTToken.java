@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.cnd.apt.support;
 
-import antlr.Token;
+import org.netbeans.modules.cnd.antlr.Token;
 import java.io.Serializable;
 
 /**

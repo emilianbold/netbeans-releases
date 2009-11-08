@@ -57,6 +57,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Rectangle;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyListener;
@@ -72,6 +73,7 @@ import java.util.logging.Level;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
@@ -110,7 +112,10 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
     private Filter[] filters;
     private Set<Issue> issues = new HashSet<Issue>();
 
-    private Task storeColumnWidthsTask;
+    private QueryTableHeaderRenderer queryTableHeaderRenderer;
+
+    private Task storeColumnsWidthTask;
+    private final StoreColumnWidthsHandler storeColumnsWidthHandler;
 
     /**
      * Returns the issue table filters
@@ -172,14 +177,33 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
         table.addMouseListener(this);
         table.addKeyListener(this);
         table.setDefaultRenderer(Node.Property.class, new QueryTableCellRenderer(query));
-        table.getTableHeader().setDefaultRenderer(new QueryTableHeaderRenderer(table.getTableHeader().getDefaultRenderer(), this, query));
+        queryTableHeaderRenderer = new QueryTableHeaderRenderer(table.getTableHeader().getDefaultRenderer(), this, query);
+        table.getTableHeader().setDefaultRenderer(queryTableHeaderRenderer);
         table.addAncestorListener(this);
         table.getAccessibleContext().setAccessibleName(NbBundle.getMessage(IssueTable.class, "ACSN_IssueTable")); // NOI18N
         table.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(IssueTable.class, "ACSD_IssueTable")); // NOI18N
+
         initColumns();
+        table.getTableHeader().addMouseListener(new MouseListener() {
+            public void mouseClicked(MouseEvent e) {}
+            public void mousePressed(MouseEvent e) {
+                table.getColumnModel().addColumnModelListener(tcml);
+            }
+            public void mouseReleased(MouseEvent e) {
+                table.getColumnModel().removeColumnModelListener(tcml);
+            }
+            public void mouseEntered(MouseEvent e) {}
+            public void mouseExited(MouseEvent e) {}
+        });
+
         table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT ).put(
                 KeyStroke.getKeyStroke(KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK ), "org.openide.actions.PopupAction"); // NOI18N
         BugtrackingUtil.fixFocusTraversalKeys(table);
+
+        storeColumnsWidthHandler = new StoreColumnWidthsHandler();
+        storeColumnsWidthTask = BugtrackingManager.getInstance()
+                                                .getRequestProcessor()
+                                                .create(storeColumnsWidthHandler);
     }
 
     int getSeenColumnIdx() {
@@ -239,10 +263,10 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
         @Override
         public String toString() {
             StringBuffer sb = new StringBuffer();
-            sb.append("[");
-            sb.append("bounds=");
+            sb.append("[");             // NOI18N
+            sb.append("bounds=");       // NOI18N
             sb.append(bounds);
-            sb.append("]");
+            sb.append("]");             // NOI18N
             return sb.toString();
         }
         public void actionPerformed(ActionEvent e) {
@@ -280,12 +304,12 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
         @Override
         public String toString() {
             StringBuffer sb = new StringBuffer();
-            sb.append("[");
-            sb.append("row=");
+            sb.append("[");         // NOI18N
+            sb.append("row=");      // NOI18N
             sb.append(row);
-            sb.append(",column=");
+            sb.append(",column=");  // NOI18N
             sb.append(column);
-            sb.append("]");
+            sb.append("]");         // NOI18N
             return sb.toString();
         }
     }
@@ -314,12 +338,11 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
             public void run() {
                 int[] widths = BugtrackingConfig.getInstance().getColumnWidths(getColumnWidthsKey());
                 if(widths != null && widths.length > 0) {
-                    for (int i = 0; i < widths.length; i++) {
+                    int columnCount = table.getColumnModel().getColumnCount();
+                    for (int i = 0; i < widths.length && i < columnCount; i++) {
                         int w = widths[i];
-                        table.getColumnModel().getColumn(i).setMinWidth(10);
-                        table.getColumnModel().getColumn(i).setMaxWidth(10000);
-                        if(w > -1) {
-                            table.getColumnModel().getColumn(i).setPreferredWidth(w);
+                        if(w > 0) {
+                            setColumnWidth(i, w);
                         }
                     }
                 } else {
@@ -327,15 +350,14 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
                         ColumnDescriptor desc = descriptors[i];
                         int w = desc.getWidth();
                         if(w > 0) {
-                            table.getColumnModel().getColumn(i).setMinWidth(10);
-                            table.getColumnModel().getColumn(i).setMaxWidth(10000);
-                            table.getColumnModel().getColumn(i).setPreferredWidth(w);
+                            setColumnWidth(i, w);
+                        } else if(w == 0) {
+                            setWidthForFit(i);
                         }
                     }
                     if(query.isSaved()) {
-                        table.getColumnModel().getColumn(recentChangesColumnIdx).setMaxWidth(10000);
-                        table.getColumnModel().getColumn(recentChangesColumnIdx).setMinWidth(10);
-                        table.getColumnModel().getColumn(recentChangesColumnIdx).setPreferredWidth(BugtrackingUtil.getColumnWidthInPixels(25, table));
+                        int w = BugtrackingUtil.getColumnWidthInPixels(25, table);
+                        setColumnWidth(recentChangesColumnIdx, w);
                     }
                 }
 
@@ -343,22 +365,23 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
                     table.getColumnModel().getColumn(seenColumnIdx).setMaxWidth(28);
                     table.getColumnModel().getColumn(seenColumnIdx).setPreferredWidth(28);
                 }
+            }
 
-                // start listening after the columns are set
-                if(storeColumnWidthsTask == null) {
+            private void setColumnWidth(int i, int w) {
+                table.getColumnModel().getColumn(i).setMinWidth(10);
+                table.getColumnModel().getColumn(i).setMaxWidth(10000);
+                table.getColumnModel().getColumn(i).setPreferredWidth(w);
+            }
 
-                    storeColumnWidthsTask =
-                        BugtrackingManager.getInstance().getRequestProcessor().create(new StoreColumnWidths());
-
-                    table.getColumnModel().addColumnModelListener(new TableColumnModelListener() {
-                        public void columnAdded(TableColumnModelEvent e) {}
-                        public void columnRemoved(TableColumnModelEvent e) {}
-                        public void columnMoved(TableColumnModelEvent e) {}
-                        public void columnSelectionChanged(ListSelectionEvent e) {}
-                        public void columnMarginChanged(ChangeEvent e) {
-                            storeColumnWidthsTask.schedule(1000);
-                        }
-                    });
+            private void setWidthForFit(int i) {
+                TableColumn c = table.getColumnModel().getColumn(i);
+                Component comp = queryTableHeaderRenderer.getTableCellRendererComponent(table, c.getHeaderValue(), false, false, 0, i);
+                if(comp instanceof JLabel) {
+                    JLabel label = (JLabel) comp;
+                    int w = label.getPreferredSize().width;
+                    if(w > -1) {
+                        setColumnWidth(i, w);
+                    }
                 }
             }
         });
@@ -442,7 +465,6 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
     public void mouseClicked(MouseEvent e) {
         int row = table.rowAtPoint(e.getPoint());
         int column = table.columnAtPoint(e.getPoint());
-        Rectangle rect;
         if (SwingUtilities.isLeftMouseButton(e)) {
             if (row == -1) return;
             row = sorter.modelIndex(row);
@@ -480,7 +502,7 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
     }
 
     public void keyTyped(KeyEvent e) {
-        if (e.getKeyChar() == '\n') {
+        if (e.getKeyChar() == '\n') {                                     // NOI18N
             int row = table.getSelectedRow();
             if (row != -1) {
                 Action action = tableModel.getNodes()[row].getPreferredAction();
@@ -492,7 +514,7 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
     }
 
     public void keyPressed(KeyEvent e) {
-        if (e.getKeyChar() == '\n') {
+        if (e.getKeyChar() == '\n') {                                     // NOI18N
             int row = table.getSelectedRow();
             if (row != -1) {
                 // Hack for bug 4486444
@@ -535,39 +557,38 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
         }
     }
 
-    private class StoreColumnWidths implements Runnable {
-        public void run() {
-            TableColumnModel cm = table.getColumnModel();
-            int count = cm.getColumnCount();
-            int[] widths = new int[count - 1];
-            for (int i = 0; i < widths.length; i++) {
-                if(i != seenColumnIdx) {
-                    widths[i] = cm.getColumn(i).getWidth();
-                }
-            }
+    private String getColumnWidthsKey() {
+        String name = query.getDisplayName();
+        if(name == null) {
+            name = "#find#issues#hitlist#table#";               // NOI18N
+        }
+        return query.getRepository().getID() + ":" + name;      // NOI18N
+    }
 
-            int[] storedWidths = BugtrackingConfig.getInstance().getColumnWidths(getColumnWidthsKey());
-            if(storedWidths == null || storedWidths.length == 0) {
-                // haven't been stored yet - lets see if we should
-                boolean changed = false;
-                for (int i = 0; i < descriptors.length; i++) {
-                    ColumnDescriptor desc = descriptors[i];
-                    int w = desc.getWidth();
-                    if(w > -1 && w != widths[i]) {
-                        changed = true;
-                        break;
-                    }
-                }
-                if(!changed) {
-                    return;
-                }
-            }
-            BugtrackingConfig.getInstance().storeColumnWidths(getColumnWidthsKey(), widths);
+    private class StoreColumnWidthsHandler implements Runnable {
+        int[] columnWidths = null;
+        public void run() {
+            BugtrackingConfig.getInstance().storeColumnWidths(getColumnWidthsKey(), columnWidths);
         }
     }
 
-    private String getColumnWidthsKey() {
-        return query.getRepository().getID() + ":" + query.getDisplayName();    // NOI18N
-    }
+    private TableColumnModelListener tcml = new TableColumnModelListener() {
+        public void columnAdded(TableColumnModelEvent e) {}
+        public void columnRemoved(TableColumnModelEvent e) {}
+        public void columnMoved(TableColumnModelEvent e) {}
+        public void columnSelectionChanged(ListSelectionEvent e) {}
+        public void columnMarginChanged(ChangeEvent e) {
+            TableColumnModel cm = table.getColumnModel();
+            int count = cm.getColumnCount();
+            storeColumnsWidthHandler.columnWidths = new int[count - 1];
+            for (int i = 0; i < storeColumnsWidthHandler.columnWidths.length; i++) {
+                if(i != seenColumnIdx) {
+                    storeColumnsWidthHandler.columnWidths[i] = cm.getColumn(i).getWidth();
+                }
+            }
+            storeColumnsWidthTask.schedule(1000);
+        }
+    };
+
 }
 

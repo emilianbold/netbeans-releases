@@ -63,7 +63,7 @@ public class KenaiRootNode extends AbstractNode {
     public static final String KENAI_NODE_NAME = "kenai"; // NOI18N
     private static final String ICON_BASE = "org/netbeans/modules/kenai/ui/resources/kenai-small.png"; // NOI18N
     
-    @ServicesTabNodeRegistration(name=KENAI_NODE_NAME, displayName="#LBL_KenaiNode", iconResource=ICON_BASE, position=489)
+    @ServicesTabNodeRegistration(name=KENAI_NODE_NAME, displayName="#LBL_KenaiNode", iconResource=ICON_BASE, position=489) // NOI18N
     public static KenaiRootNode getDefault() {
         return new KenaiRootNode();
     }

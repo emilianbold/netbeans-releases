@@ -47,6 +47,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -79,8 +80,11 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListModel;
+import javax.swing.Scrollable;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
@@ -132,7 +136,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Jan Stola
  */
-public class IssuePanel extends javax.swing.JPanel {
+public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private static final Color ORIGINAL_ESTIMATE_COLOR = new Color(137, 175, 215);
     private static final Color REMAINING_ESTIMATE_COLOR = new Color(236, 142, 0);
     private static final Color TIME_SPENT_COLOR = new Color(81, 168, 37);
@@ -278,19 +282,40 @@ public class IssuePanel extends javax.swing.JPanel {
     }
 
     private void initAssigneeCombo() {
-        Collection<RepositoryUser> users = issue.getRepository().getUsers();
-        DefaultComboBoxModel assignedModel = new DefaultComboBoxModel();
-        for (RepositoryUser user: users) {
-            assignedModel.addElement(user);
-        }
-        assigneeCombo.setModel(assignedModel);
         assigneeCombo.setRenderer(new RepositoryUserRenderer());
-        GroupLayout layout = (GroupLayout)getLayout();
-        if ((assigneeCombo.getParent()==null) != users.isEmpty()) {
-            layout.replace(users.isEmpty() ? assigneeCombo : assigneeField, users.isEmpty() ? assigneeField : assigneeCombo);
-            assigneeLabel.setLabelFor(users.isEmpty() ? assigneeField : assigneeCombo);
-        }
-        assigneeCombo.setSelectedItem(""); // NOI18N
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                final Collection<RepositoryUser> users = issue.getRepository().getUsers();
+                final DefaultComboBoxModel assignedModel = new DefaultComboBoxModel();
+                for (RepositoryUser user: users) {
+                    assignedModel.addElement(user);
+                }
+                EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        reloading = true;
+                        try {
+                            Object assignee = (assigneeField.getParent() == null) ? assigneeCombo.getSelectedItem() : assigneeField.getText();
+                            if (assignee == null) {
+                                assignee = ""; //NOI18N
+                            }
+                            assigneeCombo.setModel(assignedModel);
+                            GroupLayout layout = (GroupLayout)getLayout();
+                            if ((assigneeCombo.getParent()==null) != users.isEmpty()) {
+                                layout.replace(users.isEmpty() ? assigneeCombo : assigneeField, users.isEmpty() ? assigneeField : assigneeCombo);
+                                assigneeLabel.setLabelFor(users.isEmpty() ? assigneeField : assigneeCombo);
+                            }
+                            if (assigneeField.getParent() == null) {
+                                assigneeCombo.setSelectedItem(assignee);
+                            } else {
+                                assigneeField.setText(assignee.toString());
+                            }
+                        } finally {
+                            reloading = false;
+                        }
+                    }
+                });
+            }
+        });
     }
 
     private void initHeaderLabel() {
@@ -676,11 +701,7 @@ public class IssuePanel extends javax.swing.JPanel {
                                 int row = subTaskTable.rowAtPoint(p);
                                 TableModel model = subTaskTable.getModel();
                                 final String issueKey = (String)model.getValueAt(row,0);
-                                RequestProcessor.getDefault().post(new Runnable() {
-                                   public void run() {
-                                       issue.getRepository().getIssue(issueKey).open();
-                                   }
-                                });
+                                Issue.open(issue.getRepository(), issueKey);
                             }
                         }
                     });
@@ -2222,6 +2243,62 @@ public class IssuePanel extends javax.swing.JPanel {
     private javax.swing.JTextField updatedField;
     private javax.swing.JLabel updatedLabel;
     // End of variables declaration//GEN-END:variables
+
+    @Override
+    public Dimension getPreferredSize() {
+        return getMinimumSize(); // Issue 176085
+    }
+
+    public Dimension getPreferredScrollableViewportSize() {
+        return getPreferredSize();
+    }
+
+    public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
+        return getUnitIncrement();
+    }
+
+    public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
+        return (orientation==SwingConstants.VERTICAL) ? visibleRect.height : visibleRect.width;
+    }
+
+    public boolean getScrollableTracksViewportWidth() {
+        JScrollPane scrollPane = (JScrollPane)SwingUtilities.getAncestorOfClass(JScrollPane.class, this);
+        if (scrollPane!=null) {
+             // Issue 176085
+            int minWidth = getMinimumSize().width;
+            int width = scrollPane.getSize().width;
+            Insets insets = scrollPane.getInsets();
+            width -= insets.left+insets.right;
+            Border border = scrollPane.getViewportBorder();
+            if (border != null) {
+                insets = border.getBorderInsets(scrollPane);
+                width -= insets.left+insets.right;
+            }
+            JComponent vsb = scrollPane.getVerticalScrollBar();
+            if (vsb!=null && vsb.isVisible()) {
+                width -= vsb.getSize().width;
+            }
+            if (minWidth>width) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public boolean getScrollableTracksViewportHeight() {
+        return false;
+    }
+
+    private int unitIncrement;
+    private int getUnitIncrement() {
+        if (unitIncrement == 0) {
+            Font font = UIManager.getFont("Label.font"); // NOI18N
+            if (font != null) {
+                unitIncrement = (int)(font.getSize()*1.5);
+            }
+        }
+        return unitIncrement;
+    }
 
     class CancelHighlightListener implements DocumentListener, ActionListener, ListSelectionListener {
         private JLabel label;

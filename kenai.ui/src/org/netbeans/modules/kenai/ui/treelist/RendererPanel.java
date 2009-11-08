@@ -40,6 +40,7 @@
 package org.netbeans.modules.kenai.ui.treelist;
 
 import java.awt.event.MouseEvent;
+import java.util.logging.Logger;
 import org.netbeans.modules.kenai.ui.dashboard.LinkButton;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -49,6 +50,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.event.ActionEvent;
+import java.util.logging.Level;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
@@ -148,7 +150,12 @@ final class RendererPanel extends JPanel {
                 BorderFactory.createEmptyBorder(TreeList.INSETS_TOP, TreeList.INSETS_LEFT+nestingDepth*rowHeight/2,
                 TreeList.INSETS_BOTTOM, TreeList.INSETS_RIGHT));
 
-        setBorder(border);
+        try {
+            setBorder(border);
+        } catch (NullPointerException npe) {
+            //workaround for 175940
+            Logger.getLogger(RendererPanel.class.getName()).log(Level.INFO, "Bug #175940", npe);
+        }
     }
 
     @Override

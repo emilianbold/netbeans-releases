@@ -276,6 +276,7 @@ public class CompilerSet {
     private CompilerProvider compilerProvider;
     private String driveLetterPrefix = "/"; // NOI18N
     private Map<Integer,String> pathSearch;
+    private boolean isSunStudioDefault;
     
     /** Creates a new instance of CompilerSet */
     protected CompilerSet(CompilerFlavor flavor, String directory, String name) {
@@ -340,6 +341,9 @@ public class CompilerSet {
     public static List<CompilerFlavor> getCompilerSetFlavor(String directory, int platform) {
         List<CompilerFlavor> list = new ArrayList<CompilerFlavor>();
         for(ToolchainDescriptor d : ToolchainManager.getImpl().getToolchains(platform)) {
+            if (d.isAbstract()) {
+                continue;
+            }
             if (ToolchainManager.getImpl().isMyFolder(directory, d, platform, false)){
                 CompilerFlavor f = CompilerFlavor.toFlavor(d.getName(), platform);
                 if (f != null) {
@@ -643,6 +647,14 @@ public class CompilerSet {
         return pathSearch.get(tool);
     }
 
+    void setSunStudioDefault(boolean isSunStudioDefault){
+        this.isSunStudioDefault = isSunStudioDefault;
+    }
+
+    boolean isSunStudioDefault(){
+        return isSunStudioDefault;
+    }
+
     @Override
     public String toString() {
         return name;
@@ -684,6 +696,10 @@ public class CompilerSet {
 
         public String getModuleID() {
             return null;
+        }
+
+        public boolean isAbstract() {
+            return true;
         }
 
         public String getDriveLetterPrefix() {

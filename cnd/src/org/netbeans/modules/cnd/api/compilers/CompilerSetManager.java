@@ -47,6 +47,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -87,12 +88,7 @@ import org.openide.util.TaskListener;
  * are found in the user's $PATH variable.
  */
 public class CompilerSetManager {
-
-    @Deprecated
-    public static final int SUN_COMPILER_SET = 0; // Legacy defines for CND 5.5 compiler set definitions used in DBX, so don't remove please!
-    @Deprecated
-    public static final int GNU_COMPILER_SET = 1; // Legacy defines for CND 5.5 compiler set definitions used in DBX, so don't remove please!
-
+    
     private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
 
     private static final HashMap<ExecutionEnvironment, CompilerSetManager> managers = new HashMap<ExecutionEnvironment, CompilerSetManager>();
@@ -104,7 +100,7 @@ public class CompilerSetManager {
     private final ExecutionEnvironment executionEnvironment;
     private volatile State state;
     private int platform = -1;
-    private Task remoteInitialization;
+    private Task initializationTask;
 
     /**
      * Find or create a default CompilerSetManager for the given key. A default
@@ -216,7 +212,6 @@ public class CompilerSetManager {
         if (executionEnvironment.isLocal()) {
             platform = CompilerSetUtils.computeLocalPlatform();
             initCompilerSets(Path.getPath());
-            state = State.STATE_COMPLETE;
         } else {
             final AtomicReference<Thread> threadRef = new AtomicReference<Thread>();
             final String progressMessage = NbBundle.getMessage(getClass(), "PROGRESS_TEXT", env.getDisplayName());
@@ -290,9 +285,9 @@ public class CompilerSetManager {
             log.fine("CSM.getDefault: Doing remote setup from EDT?" + SwingUtilities.isEventDispatchThread());
             this.sets.clear();
             initRemoteCompilerSets(true, runCompilerSetDataLoader);
-            if (remoteInitialization != null) {
-                remoteInitialization.waitFinished();
-                remoteInitialization = null;
+            if (initializationTask != null) {
+                initializationTask.waitFinished();
+                initializationTask = null;
             }
         }
         if (save) {
@@ -345,46 +340,117 @@ public class CompilerSetManager {
         return suggestedName;
     }
 
+    private Collection<FolderDescriptor> getPaths(ToolchainDescriptor d, CompilerFlavor flavor, ArrayList<String> dirlist) {
+        LinkedHashSet<FolderDescriptor> dirs = new LinkedHashSet<FolderDescriptor>();
+        // path from regestry
+        String base = ToolchainManager.getImpl().getBaseFolder(d, getPlatform());
+        if (base != null) {
+            dirs.add(new FolderDescriptor(base, true));
+        }
+        // path from env
+        for (String p : dirlist) {
+            dirs.add(new FolderDescriptor(p, false));
+        }
+        // path from default location
+        Map<String, List<String>> map = d.getDefaultLocations();
+        if (map != null) {
+            List<String> list = map.get(CompilerSetUtils.getPlatformName(getPlatform()));
+            if (list != null) {
+                for (String p : list) {
+                    dirs.add(new FolderDescriptor(p, true));
+                }
+            }
+        }
+        // path from plugins
+        String path = ToolChainPathProvider.getDefault().getPath(flavor);
+        if (path != null) {
+            dirs.add(new FolderDescriptor(path, true));
+        }
+        return dirs;
+    }
+
     /** Search $PATH for all desired compiler sets and initialize cbCompilerSet and spCompilerSets */
-    private void initCompilerSets(ArrayList<String> dirlist) {
+    private synchronized void initCompilerSets(final ArrayList<String> dirlist) {
+        // NB: function itself is synchronized!
+        if (state == State.STATE_COMPLETE) {
+            return;
+        }
+        if (initializationTask != null) {
+            return;
+        }
+        String progressMessage = NbBundle.getMessage(getClass(), "PROGRESS_TEXT", executionEnvironment.getDisplayName()); // NOI18N
+        ProgressHandle progressHandle = ProgressHandleFactory.createHandle(progressMessage);
+        progressHandle.start();
+        initializationTask = RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                initCompilerSetsImpl(dirlist);
+            }
+        });
+        initializationTask.waitFinished();
+        initializationTask = null;
+        progressHandle.finish();
+    }
+
+    /** Search $PATH for all desired compiler sets and initialize cbCompilerSet and spCompilerSets */
+    private void initCompilerSetsImpl(ArrayList<String> dirlist) {
         Set<CompilerFlavor> flavors = new HashSet<CompilerFlavor>();
-        initKnownCompilers(getPlatform(), flavors);
-        dirlist = appendDefaultLocations(getPlatform(), dirlist);
-        for (String path : dirlist) {
-            if (path.equals("/usr/ucb")) { // NOI18N
-                // Don't look here.
-                continue;
-            }
-            if (!IpeUtils.isPathAbsolute(path)) {
-                path = CndFileUtils.normalizeAbsolutePath(new File(path).getAbsolutePath());
-            }
-            File dir = new File(path);
-            if (dir.isDirectory()) {
-                for (CompilerFlavor flavor : CompilerSet.getCompilerSetFlavor(dir.getAbsolutePath(), getPlatform())) {
-                    if (!flavors.contains(flavor)) {
-                        if (flavor.getToolchainDescriptor().getModuleID() == null) {
-                            flavors.add(flavor);
-                            CompilerSet cs = CompilerSet.getCustomCompilerSet(dir.getAbsolutePath(), flavor, flavor.toString());
-                            cs.setAutoGenerated(true);
-                            if (initCompilerSet(path, cs, false)){
-                                addUnsafe(cs);
-                            }
-                        }
+        String SunStudioPath = System.getProperty("spro.bin");        // NB: function itself is synchronized!
+
+        if (SunStudioPath != null) {
+            File folder = new File(SunStudioPath);
+            if (folder.isDirectory()) {
+                for(ToolchainDescriptor d : ToolchainManager.getImpl().getToolchains(getPlatform())) {
+                    if (d.isAbstract()) {
+                        continue;
+                    }
+                    CompilerFlavor flavor = CompilerFlavor.toFlavor(d.getName(), getPlatform());
+                    if (flavor == null) {
+                        continue;
+                    }
+                    if (flavors.contains(flavor)) {
+                        continue;
+                    }
+                    CompilerSet cs = CompilerSet.getCustomCompilerSet(folder.getAbsolutePath(), flavor, flavor.toString());
+                    cs.setAutoGenerated(true);
+                    if (initCompilerSet(SunStudioPath, cs, true)){
+                        flavors.add(flavor);
+                        addUnsafe(cs);
+                        cs.setSunStudioDefault(true);
                     }
                 }
             }
         }
-        for(ToolchainDescriptor d : ToolchainManager.getImpl().getToolchains(getPlatform())) {
-            CompilerFlavor flavor = CompilerFlavor.toFlavor(d.getName(), platform);
-            if (flavor != null) {
-                if (!flavors.contains(flavor)) {
-                    String path = ToolChainPathProvider.getDefault().getPath(flavor);
-                    if (path != null) {
-                        flavors.add(flavor);
-                        CompilerSet cs = CompilerSet.getCustomCompilerSet(path, flavor, flavor.toString());
-                        cs.setAutoGenerated(true);
-                        if (initCompilerSet(path, cs, false)){
-                            addUnsafe(cs);
+        Loop:for(ToolchainDescriptor d : ToolchainManager.getImpl().getToolchains(getPlatform())) {
+            if (d.isAbstract()) {
+                continue;
+            }
+            CompilerFlavor flavor = CompilerFlavor.toFlavor(d.getName(), getPlatform());
+            if (flavor == null) {
+                continue;
+            }
+            if (flavors.contains(flavor)) {
+                continue;
+            }
+            for (FolderDescriptor folderDescriptor : getPaths(d, flavor, dirlist)) {
+                String path = folderDescriptor.path;
+                if (path.equals("/usr/ucb")) { // NOI18N
+                    // Don't look here.
+                    continue;
+                }
+                if (!IpeUtils.isPathAbsolute(path)) {
+                    path = CndFileUtils.normalizeAbsolutePath(new File(path).getAbsolutePath());
+                }
+                File dir = new File(path);
+                if (dir.isDirectory()) {
+                    if (ToolchainManager.getImpl().isMyFolder(dir.getAbsolutePath(), d, getPlatform(), false)){
+                        if (d.getModuleID() == null && !d.isAbstract()) {
+                            CompilerSet cs = CompilerSet.getCustomCompilerSet(dir.getAbsolutePath(), flavor, flavor.toString());
+                            cs.setAutoGenerated(true);
+                            if (initCompilerSet(path, cs, folderDescriptor.knownFolder)){
+                                flavors.add(flavor);
+                                addUnsafe(cs);
+                                continue Loop;
+                            }
                         }
                     }
                 }
@@ -392,6 +458,7 @@ public class CompilerSetManager {
         }
         addFakeCompilerSets();
         completeCompilerSets();
+        state = State.STATE_COMPLETE;
     }
 
     /**
@@ -404,6 +471,9 @@ public class CompilerSetManager {
      */
     static ArrayList<String> appendDefaultLocations(int platform, ArrayList<String> dirlist) {
         for (ToolchainDescriptor d : ToolchainManager.getImpl().getToolchains(platform)) {
+            if (d.isAbstract()) {
+                continue;
+            }
             Map<String, List<String>> map = d.getDefaultLocations();
             if (map != null) {
                 String pname = CompilerSetUtils.getPlatformName(platform);
@@ -444,28 +514,6 @@ public class CompilerSetManager {
         }
         if (!sets.isEmpty()) {
             setDefault(sets.get(0));
-        }
-    }
-
-    private void initKnownCompilers(int platform, Set<CompilerFlavor> flavors) {
-        for (ToolchainDescriptor d : ToolchainManager.getImpl().getToolchains(platform)) {
-            String base = ToolchainManager.getImpl().getBaseFolder(d, platform);
-            if (base != null) {
-                File folder = new File(base);
-                if (folder.exists() && folder.isDirectory()) {
-                    CompilerFlavor flavor = CompilerFlavor.toFlavor(d.getName(), platform);
-                    if (flavor != null) { // #158084 NPE
-                        flavors.add(flavor);
-                        CompilerSet cs = CompilerSet.getCustomCompilerSet(folder.getAbsolutePath(), flavor, flavor.toString());
-                        cs.setAutoGenerated(true);
-                        if (initCompilerSet(base, cs, true)){
-                            addUnsafe(cs);
-                        }
-                    } else {
-                        log.warning("NULL compiler flavor for " + d.getName() + " on platform " + platform);
-                    }
-                }
-            }
         }
     }
 
@@ -576,7 +624,7 @@ public class CompilerSetManager {
         if (state == State.STATE_COMPLETE) {
             return;
         }
-        if (remoteInitialization != null) {
+        if (initializationTask != null) {
             return;
         }
         ServerRecord record = ServerList.get(executionEnvironment);
@@ -593,7 +641,7 @@ public class CompilerSetManager {
                 CompilerSetReporter.report("CSM_Done"); //NOI18N
             }
             // NB: function itself is synchronized!
-            remoteInitialization = RequestProcessor.getDefault().post(new Runnable() {
+            initializationTask = RequestProcessor.getDefault().post(new Runnable() {
 
                 @SuppressWarnings("unchecked")
                 public void run() {
@@ -797,12 +845,35 @@ public class CompilerSetManager {
                 return o1.getCompilerFlavor().getToolchainDescriptor().getName().compareTo(o2.getCompilerFlavor().getToolchainDescriptor().getName());
             }
         });
+        completeCompilerSetsSettings(false);
+    }
+
+    private void completeCompilerSetsSettings(boolean reset) {
+        for (CompilerSet cs : sets) {
+            for (Tool tool : cs.getTools()) {
+                if (!tool.isReady()) {
+                    tool.waitReady(reset);
+                }
+            }
+        }
     }
 
     private void completeSunStudioCompilerSet(int platform) {
-        // find 'best' Sun set and copy it
         CompilerSet bestCandidate = null;
-        bestCandidate = getCompilerSet("SunStudio_12.2"); // NOI18N
+        for(CompilerSet cs : sets) {
+            if (cs.isSunStudioDefault()){
+                bestCandidate = cs;
+                break;
+            }
+        }
+        // find 'best' Sun set and copy it
+        CompilerSet sun = getCompilerSet("SunStudio"); // NOI18N
+        if (sun != null) {
+            return;
+        }
+        if (bestCandidate == null) {
+            bestCandidate = getCompilerSet("SunStudio_12.2"); // NOI18N
+        }
         if (bestCandidate == null) {
             bestCandidate = getCompilerSet("SunStudioExpress"); // NOI18N
             if (bestCandidate != null && bestCandidate.getCompilerFlavor().getToolchainDescriptor().getDisplayName().indexOf("Aten") < 0) { // NOI18N
@@ -838,10 +909,6 @@ public class CompilerSetManager {
         }
         if (bestCandidate.isUrlPointer()) {
             return;
-        }
-        CompilerSet sun = getCompilerSet("SunStudio"); // NOI18N
-        if (sun != null && !sun.getCompilerFlavor().equals(bestCandidate.getCompilerFlavor())) {
-            remove(sun);
         }
         CompilerSet bestCandidateCopy = bestCandidate.createCopy();
         bestCandidateCopy.setName("SunStudio"); // NOI18N
@@ -1105,7 +1172,7 @@ public class CompilerSetManager {
     }
 
     public List<CompilerSet> getCompilerSets() {
-        return sets;
+        return new ArrayList<CompilerSet>(sets);
     }
 
     public List<String> getCompilerSetDisplayNames() {
@@ -1198,5 +1265,27 @@ public class CompilerSetManager {
         STATE_PENDING,
         STATE_COMPLETE,
         STATE_UNINITIALIZED
+    }
+
+    private static final class FolderDescriptor {
+        private final String path;
+        private final boolean knownFolder;
+        private FolderDescriptor(String path, boolean knownFolder){
+            this.path = path;
+            this.knownFolder = knownFolder;
+        }
+
+        @Override
+        public int hashCode() {
+            return path.hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof FolderDescriptor) {
+                return path.equals(((FolderDescriptor)obj).path);
+            }
+            return false;
+        }
     }
 }

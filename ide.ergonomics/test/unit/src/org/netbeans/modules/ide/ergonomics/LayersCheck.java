@@ -39,9 +39,15 @@
 package org.netbeans.modules.ide.ergonomics;
 
 import java.net.URL;
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.logging.Level;
+import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.ide.ergonomics.fod.FeatureInfo;
 import org.netbeans.modules.ide.ergonomics.fod.FeatureManager;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -76,6 +82,31 @@ public class LayersCheck extends NbTestCase {
         }
         if (cnt == 0) {
             fail("There are no layers! That is strange.");
+        }
+    }
+
+    public void testNoWarningsAboutOrderingForLoaders() {
+        FileObject root = FileUtil.getConfigFile("Loaders");
+        assertNotNull("Loader's root found", root);
+        CharSequence log = Log.enable("org.openide.filesystems", Level.WARNING);
+
+        Enumeration<? extends FileObject> en = root.getChildren(true);
+        int cnt = 0;
+        while (en.hasMoreElements()) {
+            FileObject fo = en.nextElement();
+            if (!fo.isFolder()) {
+                continue;
+            }
+            FileUtil.getOrder(Arrays.asList(fo.getChildren()), true);
+            cnt++;
+        }
+        if (cnt < 10) {
+            fail("There shall be at least 10 files in loaders. Was: " + cnt);
+        }
+
+        String msg = log.toString();
+        if (msg.contains(("Found same position"))) {
+            fail("There shall be no same position loaders!\n" + msg);
         }
     }
 }
