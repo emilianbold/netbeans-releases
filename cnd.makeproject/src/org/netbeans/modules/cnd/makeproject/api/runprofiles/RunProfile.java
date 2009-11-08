@@ -49,6 +49,7 @@ import java.beans.PropertyEditorSupport;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -69,8 +70,10 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.modules.ModuleInfo;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -739,8 +742,16 @@ public class RunProfile implements ConfigurationAuxObject {
             // because IntNodeProb has "setValue(String)" and "Integer getValue()"...
             updateTerminalTypeState(terminalTypeNP, consoleTypeNames[(Integer) consoleTypeNP.getValue()]);
         }
-        set.put(new IntNodeProp(getRemoveInstrumentation(), true, null,
-                getString("RemoveInstrumentation_LBL"), getString("RemoveInstrumentation_HINT"))); // NOI18N
+
+        // TODO: this is a quick and durty "hack".
+        // don't show "remove instrumentation" property in the panel
+        // until we have cnd.tha module
+
+        if (thaSupportEnabled()) {
+            set.put(new IntNodeProp(getRemoveInstrumentation(), true, null,
+                    getString("RemoveInstrumentation_LBL"), getString("RemoveInstrumentation_HINT"))); // NOI18N
+        }
+
         sheet.put(set);
 
         return sheet;
@@ -754,7 +765,24 @@ public class RunProfile implements ConfigurationAuxObject {
     private static String getString(String s) {
         return NbBundle.getMessage(RunProfile.class, s);
     }
-    
+
+    private static Boolean hasTHAModule = null;
+
+    private static synchronized boolean thaSupportEnabled() {
+        if (hasTHAModule == null) {
+            hasTHAModule = Boolean.FALSE;
+            Collection<? extends ModuleInfo> modules = Lookup.getDefault().lookupAll(ModuleInfo.class);
+            for (ModuleInfo moduleInfo : modules) {
+                if (moduleInfo.isEnabled() && "org.netbeans.modules.cnd.tha".equals(moduleInfo.getCodeNameBase())) { // NOI18N
+                    hasTHAModule = Boolean.TRUE;
+                    break;
+                }
+            }
+        }
+
+        return hasTHAModule.booleanValue();
+    }
+
     private class ArgumentsNodeProp extends PropertySupport<String> {
         public ArgumentsNodeProp() {
             super("Arguments", String.class, getString("ArgumentsName"), getString("ArgumentsHint"), true, true); // NOI18N
