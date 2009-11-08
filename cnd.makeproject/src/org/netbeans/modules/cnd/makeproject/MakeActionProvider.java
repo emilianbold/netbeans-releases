@@ -239,7 +239,7 @@ public class MakeActionProvider implements ActionProvider {
         return supportedActions;
     }
 
-    public void invokeAction(final String command, final Lookup context) throws IllegalArgumentException {
+    public void invokeAction(String command, final Lookup context) throws IllegalArgumentException {
         if (COMMAND_DELETE.equals(command)) {
             DefaultProjectOperations.performDefaultDeleteOperation(project);
             return;
@@ -272,38 +272,43 @@ public class MakeActionProvider implements ActionProvider {
         ProjectInformation info = project.getLookup().lookup(ProjectInformation.class);
         final String projectName = info.getDisplayName();
         final MakeConfigurationDescriptor pd = getProjectDescriptor();
-        final MakeConfiguration conf = pd.getActiveConfiguration();
-        if (conf == null) {
+        MakeConfiguration activeConf = pd.getActiveConfiguration();
+        if (activeConf == null) {
             return;
         }
+
+        final List<MakeConfiguration> confs = new ArrayList<MakeConfiguration>();
+        if (command.equals(COMMAND_BATCH_BUILD)) {
+            BatchConfigurationSelector batchConfigurationSelector = new BatchConfigurationSelector(project, pd.getConfs().getConfs());
+            String batchCommand = batchConfigurationSelector.getCommand();
+            Configuration[] confsArray = batchConfigurationSelector.getSelectedConfs();
+            if (batchCommand == null || confsArray == null || confsArray.length == 0) {
+                return;
+            }
+            command = batchCommand;
+            for (Configuration conf : confsArray) {
+                confs.add((MakeConfiguration) conf);
+            }
+        } else {
+            confs.add(activeConf);
+        }
+        final String finalCommand = command;
+
 
         CancellableTask actionWorker = new CancellableTask() {
             @Override
             protected void runImpl() {
                 ArrayList<ProjectActionEvent> actionEvents = new ArrayList<ProjectActionEvent>();
-                if (command.equals(COMMAND_BATCH_BUILD)) {
-                    BatchConfigurationSelector batchConfigurationSelector = new BatchConfigurationSelector(project, pd.getConfs().getConfs());
-                    String batchCommand = batchConfigurationSelector.getCommand();
-                    Configuration[] confs = batchConfigurationSelector.getSelectedConfs();
-                    if (batchCommand != null && confs != null) {
-                        for (int i = 0; i < confs.length; i++) {
-                            addAction(actionEvents, projectName, pd, (MakeConfiguration) confs[i], batchCommand, context, cancelled);
-                        }
-                    } else {
-                        // Close button
-                        return;
-                    }
-                } else {
-                    addAction(actionEvents, projectName, pd, conf, command, context, cancelled);
+                for (MakeConfiguration conf : confs) {
+                    addAction(actionEvents, projectName, pd, conf, finalCommand, context, cancelled);
                 }
-
                 // Execute actions
                 if (actionEvents.size() > 0 && ! cancelled.get()) {
                     ProjectActionSupport.getInstance().fireActionPerformed(actionEvents.toArray(new ProjectActionEvent[actionEvents.size()]));
                 }
             }
         };
-        runActionWorker(conf.getDevelopmentHost().getExecutionEnvironment(), actionWorker);
+        runActionWorker(activeConf.getDevelopmentHost().getExecutionEnvironment(), actionWorker);
     }
 
     private static void runActionWorker(ExecutionEnvironment exeEnv, CancellableTask actionWorker) {
