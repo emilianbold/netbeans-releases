@@ -46,8 +46,10 @@ import junit.framework.AssertionFailedError;
 import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.util.Exceptions;
 
+@RandomlyFails // NB-Core-Build #3539
 public class NbModuleLogHandlerTest extends NbTestCase {
 
     public NbModuleLogHandlerTest(String n) {
