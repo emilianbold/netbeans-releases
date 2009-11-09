@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.spi;
 
 import java.util.Map;
@@ -46,92 +45,92 @@ import java.util.Map;
  */
 public interface SourceFileInfoProvider {
 
-  SourceFileInfo fileName(String functionName, int lineNumber, long offset, Map<String, String> serviceInfo);
+    SourceFileInfo getSourceFileInfo(String functionName, int lineNumber, long offset, Map<String, String> serviceInfo);
 
-  public final class SourceFileInfo {
+    public final class SourceFileInfo {
 
-    private final CharSequence fileName;
-    private final int lineNumber;
-    private final long offset;
-    private final int column;
+        private final static String UNKNOWN_NAME = "(unknown)"; // NOI18N
+        private final CharSequence fileName;
+        private final int lineNumber;
+        private final long offset;
+        private final int column;
 
-    /** Creates a new instance of SourceFileInfo
-     * @param fileName
-     * @param lineNumber
-     * @param column
-     */
-    public SourceFileInfo(CharSequence fileName, int lineNumber, int column) {
-        this(fileName, lineNumber,  column, -1);
-    }
-
-    /**
-     *
-     * @param fileName
-     * @param lineNumber
-     * @param offset
-     */
-    private SourceFileInfo(CharSequence fileName, int lineNumber, int column, long offset) {
-        this.fileName = fileName;
-        this.lineNumber = lineNumber;
-        this.offset = offset;
-        this.column = column;
-    }
-
-    /**
-     *
-     * @param fileName
-     * @param offset
-     */
-    public SourceFileInfo(String fileName, long offset) {
-        this(fileName, -1, -1, offset);
-    }
-
-
-    public boolean isSourceKnown() {
-        return (fileName != null && !fileName.toString().equals("(unknown)")); // NOI18N
-    }
-
-    public boolean hasOffset() {
-        return offset != -1;
-    }
-
-    public String getFileName() {
-        return fileName.toString();
-    }
-
-    public int getLine() {
-        return lineNumber;
-    }
-
-    public int getColumn(){
-        return column;
-    }
-
-    public long getOffset() {
-        return offset;
-    }
-
-    @Override
-    public String toString() {
-        return fileName.toString() + ':' + lineNumber + ':' + column;
-    }
-
-    static SourceFileInfo valueOf(String toParse) {
-        if (toParse == null) {
-            return null;
+        /** Creates a new instance of SourceFileInfo
+         * @param fileName
+         * @param lineNumber
+         * @param column
+         */
+        public SourceFileInfo(CharSequence fileName, int lineNumber, int column) {
+            this(fileName, lineNumber, column, -1);
         }
-        int index = toParse.lastIndexOf(":"); // NOI18N
-        if (index == -1) {
-            return null;
+
+        /**
+         *
+         * @param fileName
+         * @param lineNumber
+         * @param offset
+         */
+        private SourceFileInfo(CharSequence fileName, int lineNumber, int column, long offset) {
+            this.fileName = fileName == null ? UNKNOWN_NAME : fileName;
+            this.lineNumber = lineNumber;
+            this.offset = offset;
+            this.column = column;
         }
-        String fileName = toParse.substring(0, index);
-        int lineNumber = -1;
-        try {
-            lineNumber = Integer.parseInt(toParse.substring(index + 1, toParse.length()));
-        } catch (NumberFormatException e) {
+
+        /**
+         *
+         * @param fileName
+         * @param offset
+         */
+        public SourceFileInfo(String fileName, long offset) {
+            this(fileName, -1, -1, offset);
         }
-        SourceFileInfo result = new SourceFileInfo(fileName, lineNumber, 1);
-        return result;
-    }
+
+        public boolean isSourceKnown() {
+            return (fileName != null && !fileName.toString().equals(UNKNOWN_NAME));
+        }
+
+        public boolean hasOffset() {
+            return offset != -1;
+        }
+
+        public String getFileName() {
+            return fileName.toString();
+        }
+
+        public int getLine() {
+            return lineNumber;
+        }
+
+        public int getColumn() {
+            return column;
+        }
+
+        public long getOffset() {
+            return offset;
+        }
+
+        @Override
+        public String toString() {
+            return fileName.toString() + ':' + lineNumber + ':' + column;
+        }
+
+        static SourceFileInfo valueOf(String toParse) {
+            if (toParse == null) {
+                return null;
+            }
+            int index = toParse.lastIndexOf(":"); // NOI18N
+            if (index == -1) {
+                return null;
+            }
+            String fileName = toParse.substring(0, index);
+            int lineNumber = -1;
+            try {
+                lineNumber = Integer.parseInt(toParse.substring(index + 1, toParse.length()));
+            } catch (NumberFormatException e) {
+            }
+            SourceFileInfo result = new SourceFileInfo(fileName, lineNumber, 1);
+            return result;
+        }
     }
 }
