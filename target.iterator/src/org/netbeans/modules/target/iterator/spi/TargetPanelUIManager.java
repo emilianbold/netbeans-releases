@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,56 +38,35 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.wizards;
+package org.netbeans.modules.target.iterator.spi;
 
-public class FileType {
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.event.DocumentEvent;
 
-    private String name,  suffix;
+import org.netbeans.modules.target.iterator.api.TargetChooserPanel;
+import org.netbeans.modules.target.iterator.api.TargetChooserPanelGUI;
 
-    private FileType(String name, String suffix) {
-        this.name = name;
-        this.suffix = suffix;
-    }
 
-    @Override
-    public String toString() {
-        return name;
-    }
+/**
+ * @author ads
+ *
+ */
+public interface TargetPanelUIManager<T> {
 
-    public String getSuffix() {
-        return suffix;
-    }
-    public static final FileType SERVLET =
-            new FileType("servlet", "java");
-    public static final FileType FILTER =
-            new FileType("filter", "java");
-    public static final FileType LISTENER =
-            new FileType("listener", "java");
-    public static final FileType JSP =
-            new FileType("jsp", "jsp");
-    public static final FileType JSF =
-            new FileType("jsf", "jsp");
-    public static final FileType JSPDOC =
-            new FileType("jspdoc", "jspx");
-    public static final FileType JSPF =
-            new FileType("jspf", "jspf");
-    public static final FileType TAG =
-            new FileType("tag_file", "tag");
-    public static final FileType TAGLIBRARY =
-            new FileType("tag_library", "tld");
-    public static final FileType TAG_HANDLER =
-            new FileType("tag_handler", "java");
-    public static final FileType HTML =
-            new FileType("html", "html");
-    public static final FileType XHTML =
-            new FileType("xhtml", "xhtml");
-    public static final FileType CSS =
-            new FileType("css", "css");
-    public static final FileType JS =
-            new FileType("javascript","js");
+    JPanel getOptionPanel();
     
-    public static String IS_XML = "isXml";          // NOI18N
-    public static String IS_SEGMENT = "isSegment";  // NOI18N
-    public static String IS_FACELETS= "isFacelerts";// NOI18N
-} 
+    void initComponents( JPanel mainPanel , TargetChooserPanel<T> panel,
+            TargetChooserPanelGUI<T> uiPanel );
 
+    void initFolderValue( TargetChooserPanel<T> panel, String target , 
+            JTextField field );
+
+    String getAccessibleDescription();
+
+    void changeUpdate( DocumentEvent e , TargetChooserPanel<T> panel);
+
+    String getErrorMessage( TargetChooserPanel<T> panel );
+
+    boolean isPanelValid();
+}
