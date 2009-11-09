@@ -68,7 +68,7 @@ public class InsertLinkAction extends AbstractAction {
     private String outText;
     private JTextPane out;
 
-    public InsertLinkAction(JTextComponent component, JTextPane out, boolean insertLineNumber) {
+    public InsertLinkAction(JTextComponent component, JTextPane out, boolean insertLineNumber, boolean insertAccelerator) {
         super();
         assert component != null;
         Document document = component.getDocument();
@@ -77,6 +77,7 @@ public class InsertLinkAction extends AbstractAction {
         ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
         if (insertLineNumber) {
             putValue(NAME, fo.getNameExt() + ":" + line); // NOI18N
+            if (insertAccelerator)
             putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_L, KeyEvent.CTRL_DOWN_MASK));
         } else {
             putValue(NAME, fo.getNameExt());
@@ -97,8 +98,11 @@ public class InsertLinkAction extends AbstractAction {
         outText =  "FILE:" + outText; // NOI18N
     }
 
-    public InsertLinkAction(IssueHandle issueHandle, JTextPane outbox) {
+    public InsertLinkAction(IssueHandle issueHandle, JTextPane outbox, boolean insertAccelerator) {
         putValue(NAME, issueHandle.getShortDisplayName());
+        if (insertAccelerator)
+            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_L, KeyEvent.CTRL_DOWN_MASK));
+
         this.out=outbox;
         outText = "ISSUE:" + issueHandle.getID(); // NOI18N
     }
