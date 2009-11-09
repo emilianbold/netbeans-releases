@@ -37,16 +37,12 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.api.utils;
+package org.netbeans.modules.dlight.util.usagetracking;
 
 import java.io.IOException;
-import java.util.Collection;
-import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
-import org.openide.modules.ModuleInfo;
-import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -59,14 +55,15 @@ public final class SunStudioUserCounter {
     private static final RequestProcessor SS_USER_COUNT = new RequestProcessor("SunStudio check_update"); // NOI18N
 
     static {
-        SUNW_NO_UPDATE_NOTIFY = true;//(System.getProperty("SUNW_NO_UPDATE_NOTIFY") != null);  // NOI18N
+        SUNW_NO_UPDATE_NOTIFY = (System.getProperty("SUNW_NO_UPDATE_NOTIFY") != null);  // NOI18N
     }
-
-    private enum IDEType {
+ 
+    public enum IDEType {
 
         CND("cnd"), // NOI18N
         SUN_STUDIO_IDE("ide"), // NOI18N
-        DBX_TOOL("dbxtool"); // NOI18N
+        DBX_TOOL("dbxtool"), // NOI18N
+        DLIGHTTOOL("dlighttool"); // NOI18N
         private final String tag;
 
         private IDEType(String tag) {
@@ -82,64 +79,68 @@ public final class SunStudioUserCounter {
     private SunStudioUserCounter() {
     }
 
-    private static IDEType getIDEType() {
+    public static IDEType getIDEType() {
         if (appType == null) {
             // default is CND
-            appType = IDEType.CND;
-            if (CndUtils.isUnitTestMode()) {
-                return IDEType.CND;
-            }
-            // check for SS IDE
-            Collection<? extends ModuleInfo> modules = Lookup.getDefault().lookupAll(ModuleInfo.class);
-            for (ModuleInfo moduleInfo : modules) {
-                if (moduleInfo.isEnabled()) {
-                    String codeNameBase = moduleInfo.getCodeNameBase();
-                    if ("com.sun.tools.debugger.dbxfacade.ide".equals(codeNameBase)) { // NOI18N
-                        appType = IDEType.SUN_STUDIO_IDE;
-                        break;
-                    } else if ("com.sun.tools.debugger.dbxfacade.tool".equals(codeNameBase)) { // NOI18N
-                        appType = IDEType.DBX_TOOL;
-                        break;
-                    }
-                }
+            String ide = System.getProperty("spro.ide.name"); // NOI18N
+            if ("sside".equals(ide)) { // NOI18N
+                appType = IDEType.SUN_STUDIO_IDE;
+            } else if ("dlighttool".equals(ide)) { // NOI18N
+                appType = IDEType.DLIGHTTOOL;
+            } else if ("dlighttool".equals(ide)) { // NOI18N
+                appType = IDEType.DLIGHTTOOL;
+            } else if ("dbxtool".equals(ide)) {// NOI18N
+                appType = IDEType.DBX_TOOL;
+            } else {
+                appType = IDEType.CND;
             }
         }
         return appType;
     }
 
-    public static void countIDE(final String basePath, final ExecutionEnvironment execEnv) {
-        if (SUNW_NO_UPDATE_NOTIFY) {
-            return;
+    public static String getSunStudioBinDir() {
+        String ssBin = System.getProperty("spro.home");// NOI18N
+        if (ssBin != null) {
+            if (!ssBin.endsWith("/") && !ssBin.endsWith("\\")) {
+                ssBin += "/";
+            }
+            ssBin += "bin/";
         }
-        final String tag;
-        IDEType type = getIDEType();
-        switch (type) {
-            case CND:
-            case SUN_STUDIO_IDE:
-                // register CND and SS_IDE
-                tag = type.getTag();
-                break;
-            default:
-                // other IDEs are not tracked yet
-                return;
-        }
-        countTool(basePath, execEnv, tag);
+        return ssBin;
+    }
+    /**
+     * count active user of the IDE
+     * @param ssBaseDir path to SunStudio "bin" directory
+     * @param execEnv execution environment
+     */
+    public static void countIDE(final String ssBaseDir, final ExecutionEnvironment execEnv) {
+        countTool(ssBaseDir, execEnv, getIDEType().getTag());
     }
 
-    public static void countTool(final String basePath, final ExecutionEnvironment execEnv, final String toolTag) {
-        if (SUNW_NO_UPDATE_NOTIFY) {
+    /**
+     * count active user of the tool
+     * @param ssBaseDir path to SunStudio "bin" directory
+     * @param execEnv execution environment
+     */
+    public static void countTool(String ssBaseDir, final ExecutionEnvironment execEnv, final String toolTag) {
+        if (false && SUNW_NO_UPDATE_NOTIFY) {
             return;
         }
+        if (ssBaseDir == null || execEnv == null || toolTag == null) {
+            return;
+        }
+        if (!ssBaseDir.endsWith("/") && !ssBaseDir.endsWith("\\")) {
+            ssBaseDir += "/";
+        }
+        final String checkUpdatePath = ssBaseDir + "../prod/bin/check_update"; // NOI18N
         if (ConnectionManager.getInstance().isConnectedTo(execEnv)) {
             SS_USER_COUNT.post(new Runnable() {
                 public void run() {
-                    NativeProcessBuilder nb = NativeProcessBuilder.newProcessBuilder(execEnv).setExecutable(basePath + "/../prod/bin/check_update").setArguments(toolTag); // NOI18N
+                    NativeProcessBuilder nb = NativeProcessBuilder.newProcessBuilder(execEnv).setExecutable(checkUpdatePath).setArguments(toolTag);
                     try {
                         nb.call();
                     } catch (IOException ex) {
-                        if (CndUtils.isDebugMode()) {
-                            ex.printStackTrace(System.err);
-                        }
+                        // skip
                     }
                 }
             });
