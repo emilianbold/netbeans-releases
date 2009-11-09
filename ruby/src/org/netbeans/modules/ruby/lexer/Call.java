@@ -214,7 +214,7 @@ public class Call {
      */
     @SuppressWarnings("unchecked")
     @NonNull
-    public static Call getCallType(BaseDocument doc, TokenHierarchy<Document> th, int offset) {
+    public static Call getCallType(BaseDocument doc, TokenHierarchy<?> th, int offset) {
         TokenSequence<?extends RubyTokenId> ts = LexUtilities.getRubyTokenSequence(th, offset);
 
         if (ts == null) {
