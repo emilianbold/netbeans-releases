@@ -300,6 +300,7 @@ public class Reformatter implements ReformatTask {
             }
             start = controller.getSnapshot().getOriginalOffset(start);
             end = controller.getSnapshot().getOriginalOffset(end);
+            if (start == (-1) || end == (-1)) continue;
             start += shift;
             end += shift;
             doc.remove(start, end - start);

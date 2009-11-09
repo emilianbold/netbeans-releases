@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.refactoring.java.plugins;
 
-import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
+import com.sun.source.util.Trees;
 import com.sun.source.tree.*;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
@@ -61,6 +61,7 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring;
 import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring.ParameterInfo;
+import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import org.openide.util.Exceptions;
 
 /**
@@ -104,8 +105,10 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
     
     @Override
     public Tree visitNewClass(NewClassTree tree, Element p) {
-        if (!workingCopy.getTreeUtilities().isSynthetic(getCurrentPath())) {
-            Element el = workingCopy.getTrees().getElement(getCurrentPath());
+        if (constructorRefactoring && !workingCopy.getTreeUtilities().isSynthetic(getCurrentPath())) {
+            final Trees trees = workingCopy.getTrees();
+            Element el = trees.getElement(getCurrentPath());
+            el = resolveAnonymousClassConstructor(el, tree, trees);
             if (el!=null) {
                 if (isMethodMatch(el)) {
                     List<ExpressionTree> arguments = getNewArguments(tree.getArguments());
@@ -119,6 +122,26 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
             }
         }
         return super.visitNewClass(tree, p);
+    }
+
+    /**
+     * special treatment for anonymous classes to resolve the proper constructor
+     * of extended class instead of the synthetic one.
+     * @see <a href="https://netbeans.org/bugzilla/show_bug.cgi?id=168775">#168775</a>
+     */
+    private Element resolveAnonymousClassConstructor(Element el, NewClassTree tree, final Trees trees) {
+        if (el != null && tree.getClassBody() != null) {
+            Tree t = trees.getTree(el);
+            if (t != null && t.getKind() == Tree.Kind.METHOD) {
+                MethodTree constructorTree = (MethodTree) t;
+                Tree superCall = constructorTree.getBody().getStatements().get(0);
+                TreePath superCallPath = trees.getPath(
+                        getCurrentPath().getCompilationUnit(),
+                        ((ExpressionStatementTree) superCall).getExpression());
+                el = trees.getElement(superCallPath);
+            }
+        }
+        return el;
     }
     
     private List<ExpressionTree> getNewArguments(List<? extends ExpressionTree> currentArguments) {
@@ -205,6 +228,9 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
     
     @Override
     public Tree visitMethod(MethodTree tree, Element p) {
+        if (constructorRefactoring && isSyntheticConstructorOfAnnonymousClass(workingCopy.getTrees().getElement(getCurrentPath()))) {
+            return tree;
+        }
         renameDeclIfMatch(getCurrentPath(), tree, p);
         return super.visitMethod(tree, p);
     }
@@ -313,6 +339,16 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
                     return true;
                 }
             }
+        }
+        return false;
+    }
+
+    private boolean isSyntheticConstructorOfAnnonymousClass(Element el) {
+        if (el != null && el.getKind() == ElementKind.CONSTRUCTOR
+                && workingCopy.getElementUtilities().isSynthetic(el)) {
+            Element enclosingElement = el.getEnclosingElement();
+            return enclosingElement != null && enclosingElement.getKind().isClass()
+                    && ((TypeElement) enclosingElement).getNestingKind() == NestingKind.ANONYMOUS;
         }
         return false;
     }
