@@ -223,27 +223,17 @@ class CompletionContextFinder {
 
         @NonNull
     static CompletionContext findCompletionContext(ParserResult info, int caretOffset){
-        //TODO: use token hierarchy from snapshot and not use read lock in CC #171702
-        /*TokenHierarchy<?> th = info.getSnapshot().getTokenHierarchy();
+        TokenHierarchy<?> th = info.getSnapshot().getTokenHierarchy();
         if (th == null) {
             return CompletionContext.NONE;
         }
         TokenSequence<PHPTokenId> tokenSequence = LexUtilities.getPHPTokenSequence(th, caretOffset);
-         */
-
-       Document document = info.getSnapshot().getSource().getDocument(false);
-
-        if (document == null) {
-            return CompletionContext.NONE;
-        }
-
-        TokenSequence<PHPTokenId> tokenSequence = LexUtilities.getPHPTokenSequence(document, caretOffset);
         if (tokenSequence == null) {
             return CompletionContext.NONE;
         }
-        TokenHierarchy th = TokenHierarchy.get(document);
         tokenSequence.move(caretOffset);
-        if (!tokenSequence.moveNext() && !tokenSequence.movePrevious()){
+        final boolean moveNextSucces = tokenSequence.moveNext();
+        if (!moveNextSucces && !tokenSequence.movePrevious()){
             return CompletionContext.NONE;
         }
         Token<PHPTokenId> token = tokenSequence.token();
@@ -254,31 +244,31 @@ class CompletionContextFinder {
         if (clsIfaceDeclContext != null) {
             return clsIfaceDeclContext;
         }
-       if (acceptTokenChains(tokenSequence, USE_KEYWORD_TOKENS)){
+       if (acceptTokenChains(tokenSequence, USE_KEYWORD_TOKENS, moveNextSucces)){
             return CompletionContext.USE_KEYWORD;
-        } else if (acceptTokenChains(tokenSequence, NAMESPACE_KEYWORD_TOKENS)){
+        } else if (acceptTokenChains(tokenSequence, NAMESPACE_KEYWORD_TOKENS, moveNextSucces)){
             return CompletionContext.NAMESPACE_KEYWORD;
-        } else if (acceptTokenChains(tokenSequence, CLASS_NAME_TOKENCHAINS)){
+        } else if (acceptTokenChains(tokenSequence, CLASS_NAME_TOKENCHAINS, moveNextSucces)){
             return CompletionContext.NEW_CLASS;
-        } else if (acceptTokenChains(tokenSequence, CLASS_MEMBER_TOKENCHAINS)){
+        } else if (acceptTokenChains(tokenSequence, CLASS_MEMBER_TOKENCHAINS, moveNextSucces)){
             return CompletionContext.CLASS_MEMBER;
-        } else if (acceptTokenChains(tokenSequence, STATIC_CLASS_MEMBER_TOKENCHAINS)){
+        } else if (acceptTokenChains(tokenSequence, STATIC_CLASS_MEMBER_TOKENCHAINS, moveNextSucces)){
             return CompletionContext.STATIC_CLASS_MEMBER;
         } else if (tokenId == PHPTokenId.PHP_COMMENT) {
             return getCompletionContextInComment(tokenSequence, caretOffset, info);
         } else if (isOneOfTokens(tokenSequence, COMMENT_TOKENS)){
             return CompletionContext.NONE;
-        } else if (acceptTokenChains(tokenSequence, PHPDOC_TOKENCHAINS)){
+        } else if (acceptTokenChains(tokenSequence, PHPDOC_TOKENCHAINS, moveNextSucces)){
             return CompletionContext.PHPDOC;
-        } else if (acceptTokenChains(tokenSequence, CATCH_TOKENCHAINS)){
+        } else if (acceptTokenChains(tokenSequence, CATCH_TOKENCHAINS, moveNextSucces)){
             return CompletionContext.TYPE_NAME;
-       } else if (acceptTokenChains(tokenSequence, INSTANCEOF_TOKENCHAINS)){
+       } else if (acceptTokenChains(tokenSequence, INSTANCEOF_TOKENCHAINS, moveNextSucces)){
            return CompletionContext.TYPE_NAME;
         } else if (isInsideClassIfaceDeclarationBlock(info, caretOffset, tokenSequence)) {
-            if (acceptTokenChains(tokenSequence, CLASS_CONTEXT_KEYWORDS_TOKENCHAINS)) {
+            if (acceptTokenChains(tokenSequence, CLASS_CONTEXT_KEYWORDS_TOKENCHAINS, moveNextSucces)) {
                 return CompletionContext.CLASS_CONTEXT_KEYWORDS;
             } else {
-                if (acceptTokenChains(tokenSequence, FUNCTION_TOKENCHAINS)) {
+                if (acceptTokenChains(tokenSequence, FUNCTION_TOKENCHAINS, moveNextSucces)) {
                     return CompletionContext.METHOD_NAME;
                 }
                 CompletionContext paramContext = getParamaterContext(token, caretOffset, tokenSequence);
@@ -287,7 +277,7 @@ class CompletionContextFinder {
                 }
             }
             return CompletionContext.NONE;
-        } else if (acceptTokenChains(tokenSequence, FUNCTION_NAME_TOKENCHAINS)) {
+        } else if (acceptTokenChains(tokenSequence, FUNCTION_NAME_TOKENCHAINS, moveNextSucces)) {
             return CompletionContext.NONE;
         }
 
@@ -297,13 +287,13 @@ class CompletionContextFinder {
             case PHP_CONSTANT_ENCAPSED_STRING:
                 char encChar = tokenSequence.token().text().charAt(0);
                 if (encChar == '"') {//NOI18N
-                    if (acceptTokenChains(tokenSequence, SERVER_ARRAY_TOKENCHAINS)
+                    if (acceptTokenChains(tokenSequence, SERVER_ARRAY_TOKENCHAINS, moveNextSucces)
                             && acceptTokenChainTexts(tokenSequence, SERVER_ARRAY_TOKENTEXTS)) {
                         return CompletionContext.SERVER_ENTRY_CONSTANTS;
                     }
                     return CompletionContext.STRING;
                 } else if (encChar == '\'') {//NOI18N
-                    if (acceptTokenChains(tokenSequence, SERVER_ARRAY_TOKENCHAINS)
+                    if (acceptTokenChains(tokenSequence, SERVER_ARRAY_TOKENCHAINS, moveNextSucces)
                             && acceptTokenChainTexts(tokenSequence, SERVER_ARRAY_TOKENTEXTS)) {
                         return CompletionContext.SERVER_ENTRY_CONSTANTS;
                     }
@@ -388,9 +378,9 @@ class CompletionContextFinder {
         return accept;
     }
 
-    private static boolean acceptTokenChains(TokenSequence tokenSequence, List<Object[]> tokenIdChains) {
+    private static boolean acceptTokenChains(TokenSequence tokenSequence, List<Object[]> tokenIdChains, boolean movePrevious) {
         for (Object[] tokenIDChain : tokenIdChains){
-            if (acceptTokenChain(tokenSequence, tokenIDChain)){
+            if (acceptTokenChain(tokenSequence, tokenIDChain, movePrevious)){
                 return true;
             }
         }
@@ -398,10 +388,10 @@ class CompletionContextFinder {
         return false;
     }
 
-    private static boolean acceptTokenChain(TokenSequence tokenSequence, Object[] tokenIdChain) {
+    private static boolean acceptTokenChain(TokenSequence tokenSequence, Object[] tokenIdChain, boolean movePrevious) {
         int orgTokenSequencePos = tokenSequence.offset();
         boolean accept = true;
-        boolean moreTokens = tokenSequence.movePrevious();
+        boolean moreTokens = movePrevious ? tokenSequence.movePrevious() : true;
 
         for (int i = tokenIdChain.length - 1; i >= 0; i --){
             Object tokenID = tokenIdChain[i];

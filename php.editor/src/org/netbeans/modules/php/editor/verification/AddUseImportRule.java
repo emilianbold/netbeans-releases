@@ -312,7 +312,7 @@ public class AddUseImportRule extends AbstractRule {
                 if (offsetElement == null) {
                     offsetElement = scope;
                 }
-                return Utilities.getRowEnd(doc, offsetElement.getOffset());
+                return Utilities.getRowStart(doc, offsetElement.getOffset());
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);
             }

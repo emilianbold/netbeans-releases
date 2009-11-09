@@ -72,10 +72,11 @@ public class PHPNewLineIndenter {
         this.context = context;
         indentSize = CodeStyle.get(context.document()).getIndentSize();
         continuationSize = CodeStyle.get(context.document()).getContinuationIndentSize();
+        int initialIndentSize = CodeStyle.get(context.document()).getInitialIndent();
 
         scopeDelimiters = Arrays.asList(
             new ScopeDelimiter(PHPTokenId.PHP_SEMICOLON, 0),
-            new ScopeDelimiter(PHPTokenId.PHP_OPENTAG, 0),
+            new ScopeDelimiter(PHPTokenId.PHP_OPENTAG, initialIndentSize),
             new ScopeDelimiter(PHPTokenId.PHP_CURLY_CLOSE, 0),
             new ScopeDelimiter(PHPTokenId.PHP_CURLY_OPEN, indentSize),
             new ScopeDelimiter(PHPTokenId.PHP_CASE, indentSize),
@@ -230,6 +231,13 @@ public class PHPNewLineIndenter {
                                             newIndent = Utilities.getRowIndent(doc, startExpression) + continuationSize * 2;
                                         }
                                     }
+                                    break;
+                                }
+                            }
+                            else if (ts.token().id() == PHPTokenId.PHP_OBJECT_OPERATOR) {
+                                int startExpression = findStartTokenOfExpression(ts);
+                                if (startExpression != -1) {
+                                    newIndent = Utilities.getRowIndent(doc, startExpression) + continuationSize * 2;
                                     break;
                                 }
                             }
