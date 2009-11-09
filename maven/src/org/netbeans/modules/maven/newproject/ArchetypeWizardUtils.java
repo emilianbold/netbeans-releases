@@ -56,6 +56,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import org.apache.maven.archetype.metadata.ArchetypeDescriptor;
@@ -281,6 +282,9 @@ public class ArchetypeWizardUtils {
         vi.version = (String)wiz.getProperty("version"); //NOI18N
         vi.packageName = (String)wiz.getProperty("package"); //NOI18N
 
+        Archetype arch = (Archetype) wiz.getProperty("archetype"); //NOI18N
+        logUsage(arch.getGroupId(), arch.getArtifactId(), arch.getVersion());
+        
         @SuppressWarnings("unchecked")
         Map<String, String> additional = (Map<String, String>)wiz.getProperty("additionalProps"); //NOI18N
 
@@ -323,6 +327,17 @@ public class ArchetypeWizardUtils {
         }
     }
 
+    private static final String loggerName = "org.netbeans.ui.metrics.maven"; // NOI18N
+    private static final String loggerKey = "USG_PROJECT_CREATE_MAVEN"; // NOI18N
+
+    // http://wiki.netbeans.org/UsageLoggingSpecification
+    private static void logUsage(String groupId, String artifactId, String version) {
+        LogRecord logRecord = new LogRecord(Level.INFO, loggerKey);
+        logRecord.setLoggerName(loggerName);
+        logRecord.setParameters(new Object[] {groupId + ":" + artifactId + ":" + version}); // NOI18N
+        Logger.getLogger(loggerName).log(logRecord);
+    }
+    
     private static File createFromArchetype (ProgressHandle handle, File projDir, ProjectInfo vi,
         Archetype arch, Map<String, String> additional, int progressCounter) throws IOException {
         handle.progress(++progressCounter);
