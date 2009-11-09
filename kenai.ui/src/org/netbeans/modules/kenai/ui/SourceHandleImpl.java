@@ -64,7 +64,6 @@ import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 import org.netbeans.modules.kenai.ui.spi.SourceHandle;
 import org.netbeans.modules.mercurial.api.Mercurial;
 import org.netbeans.modules.subversion.api.Subversion;
-import org.netbeans.modules.versioning.system.cvss.api.CVS;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -97,16 +96,7 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
         } else if (KenaiService.Names.SUBVERSION.equals(feature.getService())) {
             prefs= NbPreferences.forModule(Subversion.class);
         } else if (KenaiService.Names.EXTERNAL_REPOSITORY.equals(feature.getService())) {
-            if (Subversion.isRepository(feature.getLocation())) {
-                externalScmType=KenaiService.Names.SUBVERSION;
-                return;
-            } else if (CVS.isRepository(feature.getLocation())) {
-                externalScmType=SCM_TYPE_CVS;
-                return;
-            } else if (Mercurial.isRepository(feature.getLocation())) {
-                externalScmType=KenaiService.Names.MERCURIAL;
-                return;
-            }
+            externalScmType = feature.getExtendedType();
         }
         this.projectHandle = projectHandle;
         OpenProjects.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(this , OpenProjects.getDefault()));
