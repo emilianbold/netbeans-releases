@@ -46,7 +46,7 @@ import org.netbeans.modules.javacard.common.JCConstants;
 import org.netbeans.modules.javacard.common.KeysAndValues;
 import org.netbeans.modules.javacard.ri.platform.installer.KeysAndValuesEditablePropsAdapter;
 import org.netbeans.modules.javacard.ri.platform.installer.NewDevicePanel;
-import org.netbeans.modules.javacard.spi.AddDeviceHandler;
+import org.netbeans.modules.javacard.spi.AddCardHandler;
 import org.netbeans.modules.javacard.spi.Card;
 import org.netbeans.modules.javacard.spi.JavacardPlatform;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -63,7 +63,7 @@ import org.openide.util.NbBundle;
  * to platforms with platform kind "RI"
  * @author Tim Boudreau
  */
-public class AddHandler extends AddDeviceHandler {
+public class AddHandler extends AddCardHandler {
     public AddHandler() {
         super(""); //NOI18N
     }
