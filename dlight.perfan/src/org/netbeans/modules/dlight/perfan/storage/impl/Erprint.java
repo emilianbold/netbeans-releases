@@ -43,6 +43,7 @@ import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -52,6 +53,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.dlight.core.stack.api.Function;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
+import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.modules.dlight.perfan.spi.datafilter.CollectedObjectsFilter;
 import org.netbeans.modules.dlight.perfan.stack.impl.FunctionCallImpl;
 import org.netbeans.modules.dlight.perfan.stack.impl.FunctionImpl;
@@ -326,24 +328,26 @@ final class Erprint {
     }
 
     FunctionStatistic getFunctionStatistic(FunctionCall functionCall) throws IOException {
+        FunctionStatistic result = new FunctionStatistic(new String[0]);
+
         synchronized (this) {
             if (stopped) {
-                return new FunctionStatistic(new String[0]);
+                return result;
             }
 
             final Function f = functionCall.getFunction();
             String functionName = f.getName();
             String[] stat = exec(ErprintCommand.fsingle(functionName));
+            String choice = "1"; // NOI18N
 
             if (stat != null && stat.length > 0 && choiceMarker.equals(stat[0])) { // NOI18N
                 String cfname;
                 String address;
-                String choice = "1"; // NOI18N
 
                 FunctionCallImpl fci = (functionCall instanceof FunctionCallImpl)
                         ? (FunctionCallImpl) functionCall : null;
 
-                final String fname = (fci == null) ? null : fci.getFileName();
+                final String fname = (fci == null) ? null : fci.getSourceFile();
                 long funcRef = -1;
 
                 if (f instanceof FunctionImpl) {
@@ -375,7 +379,13 @@ final class Erprint {
                 stat = outProcessor.getOutput();
             }
 
-            return new FunctionStatistic(stat == null ? new String[0] : stat);
+            result = new FunctionStatistic(stat == null ? new String[0] : stat);
+
+            if (stat != null) {
+                refineSourceInfo(result, functionCall, Integer.parseInt(choice));
+            }
+
+            return result;
         }
     }
 
@@ -406,6 +416,49 @@ final class Erprint {
             }
 
             return output;
+        }
+    }
+
+    private void refineSourceInfo(FunctionStatistic fstat, FunctionCall functionCall, int choice) throws IOException {
+        Function f = functionCall.getFunction();
+
+        if (!(f instanceof FunctionImpl)) {
+            return;
+        }
+
+        FunctionImpl func = (FunctionImpl) f;
+        String funcName = func.getName();
+        long funcRef = func.getRef();
+
+        synchronized (this) {
+            Metrics prev_metrics = null;
+            try {
+                prev_metrics = setMetrics(Metrics.constructFrom(Arrays.asList(SunStudioDCConfiguration.c_address), null));
+                String[] stat = exec(ErprintCommand.source(funcName, choice));
+                Pattern refPattern = Pattern.compile(".*:0x([0-9a-f]+) +([0-9]+).*"); // NOI18N
+                for (String s : stat) {
+                    if (s.startsWith("Source file:")) { // NOI18N
+                        fstat.setSrcFile(s.substring(13).trim());
+                        continue;
+                    }
+
+                    Matcher m = refPattern.matcher(s);
+                    if (m.matches()) {
+                        try {
+                            long ref = Long.parseLong(m.group(1), 16);
+                            if (ref == funcRef) {
+                                fstat.setSrcFileLine(Integer.parseInt(m.group(2)));
+                                break;
+                            }
+                        } catch (NumberFormatException ex) {
+                        }
+                    }
+                }
+            } finally {
+                if (prev_metrics != null) {
+                    setMetrics(prev_metrics);
+                }
+            }
         }
     }
 

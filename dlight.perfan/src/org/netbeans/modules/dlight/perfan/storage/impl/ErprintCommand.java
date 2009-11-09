@@ -86,6 +86,10 @@ public class ErprintCommand {
         return new ErprintCommand("fsingle", fname, Integer.toString(choice)); // NOI18N
     }
 
+    public static ErprintCommand source(String fname, int choice) {
+        return new ErprintCommand("source", fname, Integer.toString(choice)); // NOI18N
+    }
+
     public static ErprintCommand filter(String filter_spec) {
         return new ErprintCommand("filter", filter_spec); // NOI18N
     }
