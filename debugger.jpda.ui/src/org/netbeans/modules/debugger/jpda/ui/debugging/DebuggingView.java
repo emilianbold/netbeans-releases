@@ -113,7 +113,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
-import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -164,8 +163,6 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     private IconsPanel rightPanel;
     
     private ThreadsListener threadsListener = null;
-    private transient Reference<TopComponent> lastSelectedTCRef;
-    private transient Reference<TopComponent> componentToActivateAfterClose;
     
     /**
      * instance/singleton of this class
@@ -473,45 +470,6 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         ExplorerUtils.activateActions(manager, false);
     }
 
-    @Override
-    protected void componentOpened() {
-        // Remember which component was active so that we can re-activate it
-        // after Debugging is closed.
-        super.componentOpened();
-        Mode debuggingMode = WindowManager.getDefault().findMode(this);
-        lastSelectedTCRef = new WeakReference(debuggingMode.getSelectedTopComponent());
-        String side = null;
-        try {
-            side = (String) debuggingMode.getClass().getMethod("getSide").invoke(debuggingMode);
-        } catch (Exception ex) {}
-        if (side == null) {
-            requestVisible();
-        }
-    }
-
-    @Override
-    public boolean canClose() {
-        // Check whether we're active, if so, we'll re-activate the previously
-        // active component.
-        Mode debuggingMode = WindowManager.getDefault().findMode(this);
-        if (debuggingMode.getSelectedTopComponent() == this) {
-            componentToActivateAfterClose = lastSelectedTCRef;
-        } else {
-            componentToActivateAfterClose = null;
-        }
-        return super.canClose();
-    }
-
-    @Override
-    protected void componentClosed() {
-        // Re-activate the previously active component, if any.
-        TopComponent lastSelectedTC = (componentToActivateAfterClose != null) ? componentToActivateAfterClose.get() : null;
-        if (lastSelectedTC != null) {
-            lastSelectedTC.requestActive();
-        }
-        super.componentClosed();
-    }
-    
     @Override
     public org.openide.util.HelpCtx getHelpCtx() {
         return new org.openide.util.HelpCtx("DebuggingView"); // NOI18N

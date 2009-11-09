@@ -54,6 +54,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
@@ -69,6 +70,7 @@ import org.openide.awt.Toolbar;
 import org.openide.awt.ToolbarPool;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.TopComponentGroup;
 import org.openide.windows.WindowManager;
@@ -90,6 +92,7 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
     private final Map<DebuggerEngine, List<? extends Component>> closedToolbarButtons = new HashMap<DebuggerEngine, List<? extends Component>>();
     private final Map<DebuggerEngine, List<? extends Component>> usedToolbarButtons = new HashMap<DebuggerEngine, List<? extends Component>>();
     private final Map<Component, Dimension> toolbarButtonsPrefferedSize = new HashMap<Component, Dimension>();
+    private final Map<Mode, Reference<TopComponent>> lastSelectedTopComponents = new WeakHashMap<Mode, Reference<TopComponent>>();
 
     private static final List<Component> OPENED_COMPONENTS = new LinkedList<Component>();
 
@@ -121,6 +124,7 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                     public void run () {
                         List<Component> cs = new ArrayList<Component>(componentProxies.size());
                         try {
+                            final List<TopComponent> topComponentsToOpen = new ArrayList<TopComponent>(componentProxies.size());
                             for (final BeanContextChildComponentProxy cp : componentProxies) {
                                 final Component[] c = new Component[] { null };
                                 final boolean[] doOpen = new boolean[] { false };
@@ -147,11 +151,7 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                                     boolean wasOpened = !Properties.getDefault().getProperties(DebuggerManagerListener.class.getName()).
                                             getProperties(PROPERTY_CLOSED_TC).getBoolean(tc.getName(), true);
                                     if (doOpen[0] && !wasClosed || !doOpen[0] && wasOpened) {
-                                        SwingUtilities.invokeLater(new Runnable() {
-                                            public void run() {
-                                                tc.open();
-                                            }
-                                        });
+                                        topComponentsToOpen.add(tc);
                                     }
                                 } else {
                                     if (doOpen[0]) {
@@ -162,6 +162,13 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                                         });
                                     }
                                 }
+                            }
+                            if (topComponentsToOpen.size() > 0) {
+                                SwingUtilities.invokeLater(new Runnable() {
+                                    public void run() {
+                                        openTopComponents(topComponentsToOpen);
+                                    }
+                                });
                             }
                         } finally {
                             synchronized (openedComponents) {
@@ -201,6 +208,50 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
             for (TopComponent tc : registry.getOpened()) {
                 componentsInitiallyOpened.add(new WeakReference<Component>(tc));
             }
+        }
+    }
+
+    private void openTopComponents(List<TopComponent> components) {
+        assert SwingUtilities.isEventDispatchThread();
+        Set<Mode> modesWithVisibleTC = new HashSet<Mode>();
+        for (TopComponent tc : components) {
+            tc.open();
+            Mode mode = WindowManager.getDefault().findMode(tc);
+            if (modesWithVisibleTC.add(mode)) {
+                TopComponent tcSel = mode.getSelectedTopComponent();
+                if (tcSel != null && tcSel != tc) {
+                    WeakReference<TopComponent> lastSelectedTCRef = new WeakReference(tcSel);
+                    lastSelectedTopComponents.put(mode, lastSelectedTCRef);
+                }
+                String side = null;
+                try {
+                    side = (String) mode.getClass().getMethod("getSide").invoke(mode);
+                } catch (Exception ex) {}
+                if (side == null) {
+                    tc.requestVisible();
+                }
+            }
+        }
+    }
+
+    private void closeTopComponentsList(List<TopComponent> components) {
+        assert SwingUtilities.isEventDispatchThread();
+        List<TopComponent> componentToActivateAfterClose = new ArrayList<TopComponent>();
+        for (TopComponent tc : components) {
+            Mode mode = WindowManager.getDefault().findMode(tc);
+            if (mode.getSelectedTopComponent() == tc) {
+                Reference<TopComponent> tcActRef = lastSelectedTopComponents.remove(mode);
+                if (tcActRef != null) {
+                    TopComponent tcAct = tcActRef.get();
+                    if (tcAct != null && tcAct.isOpened()) {
+                        componentToActivateAfterClose.add(tcAct);
+                    }
+                }
+            }
+            tc.close();
+        }
+        for (TopComponent tc : componentToActivateAfterClose) {
+            tc.requestVisible();
         }
     }
 
@@ -305,6 +356,7 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                 if (!windowsToClose.isEmpty()) {
                     SwingUtilities.invokeLater (new Runnable () {
                         public void run () {
+                            final List<TopComponent> topComponentsToClose = new ArrayList<TopComponent>(windowsToClose.size());
                             for (Component c : windowsToClose) {
                                 if (c instanceof TopComponent) {
                                     TopComponent tc = (TopComponent) c;
@@ -312,12 +364,13 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                                     Properties.getDefault().getProperties(DebuggerManagerListener.class.getName()).
                                             getProperties(PROPERTY_CLOSED_TC).setBoolean(tc.getName(), !isOpened);
                                     if (isOpened) {
-                                        tc.close();
+                                        topComponentsToClose.add(tc);
                                     }
                                 } else {
                                     c.setVisible(false);
                                 }
                             }
+                            closeTopComponentsList(topComponentsToClose);
                         }
                     });
                 }

@@ -60,6 +60,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.javacard.common.JCConstants;
 import org.netbeans.modules.javacard.common.Utils;
 import org.netbeans.modules.javacard.ri.platform.installer.PlatformInfo;
+import org.netbeans.modules.javacard.ri.spi.CardsFactory;
 import org.netbeans.modules.javacard.spi.BrokenJavacardPlatform;
 import org.netbeans.modules.javacard.spi.JavacardDeviceKeyNames;
 import org.netbeans.modules.javacard.spi.JavacardPlatform;
@@ -123,6 +124,14 @@ public class RIPlatform extends JavacardPlatform {
 
     @Override
     public Cards getCards() {
+        CardsFactory f = CardsFactory.find(getPlatformKind());
+        if (f != null) {
+            Cards result = f.getCards(Utils.findPlatformDataObjectNamed(
+                    getSystemName()).getPrimaryFile());
+            if (result != null) {
+                return result;
+            }
+        }
         return cards;
     }
 
@@ -146,6 +155,28 @@ public class RIPlatform extends JavacardPlatform {
         return JavacardPlatformKeyNames.PLATFORM_KIND_RI.equals(props.getProperty(
                 JavacardPlatformKeyNames.PLATFORM_KIND));
     }
+
+
+    public static DataObject findDefaultPlatform() throws DataObjectNotFoundException {
+        //Pending - always use whatever is the default, or somehow make
+        //it explicit what platform is delegated to
+        FileObject res = null;
+        for (FileObject fo : Utils.findAllRegisteredJavacardPlatformFiles()) {
+            if (JCConstants.DEFAULT_JAVACARD_PLATFORM_FILE_NAME.equals(fo.getName())) {
+                res = fo;
+                break;
+            } else {
+                DataObject ob = DataObject.find(fo);
+                JavacardPlatform p = ob.getNodeDelegate().getLookup().lookup(JavacardPlatform.class);
+                if (p != null && JavacardPlatformKeyNames.PLATFORM_KIND_RI.equals(p.getPlatformKind())) {
+                    res = fo;
+                }
+            }
+        }
+        return res == null ? null : DataObject.find(res);
+
+    }
+
 
     /**
      * Finds the default instance of JavacardPlatform.  This is defined as

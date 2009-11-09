@@ -16,8 +16,14 @@ then
   if [ -f netbeans.conf ]
   then
     echo netbeans.conf found: `pwd`/netbeans.conf
-    cp netbeans.conf netbeans.conf_orig_gfv3
-    cat netbeans.conf_orig_gfv3  | sed -e 's|netbeans_default_options=\"|netbeans_default_options=\"-J-Dorg.glassfish.v3ee6.installRoot='$gf_dir' |' > netbeans.conf
+    if  grep -q "netbeans_default_options=\"-J-Dorg.glassfish.v3ee6.installRoot=$gf_dir" netbeans.conf
+    then
+       echo Glassfish "$gf_dir" has been already added
+    else
+       echo Adding "$gf_dir"...
+       cp netbeans.conf netbeans.conf_orig_gf
+       cat netbeans.conf_orig_gf  | sed -e 's|netbeans_default_options=\"|netbeans_default_options=\"-J-Dorg.glassfish.v3ee6.installRoot='$gf_dir' |' > netbeans.conf
+    fi
   else
     echo No netbeans.conf in: `pwd`
   fi

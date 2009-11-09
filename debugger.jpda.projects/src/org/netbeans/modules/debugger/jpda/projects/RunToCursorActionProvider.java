@@ -64,6 +64,7 @@ import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
@@ -174,8 +175,12 @@ public class RunToCursorActionProvider extends ActionsProviderSupport {
             return false;
         }
         ActionProvider ap = p.getLookup().lookup(ActionProvider.class);
-        ap.invokeAction(ActionProvider.COMMAND_DEBUG_SINGLE, Utilities.actionsGlobalContext());
-        return true;
+        if (ap.isActionEnabled(ActionProvider.COMMAND_DEBUG_SINGLE, Utilities.actionsGlobalContext())) {
+            ap.invokeAction(ActionProvider.COMMAND_DEBUG_SINGLE, Utilities.actionsGlobalContext());
+            return true;
+        } else {
+            return false;
+        }
     }
     
     private boolean shouldBeEnabled () {
