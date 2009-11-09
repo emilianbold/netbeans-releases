@@ -123,7 +123,7 @@ public final class SunStudioUserCounter {
      * @param execEnv execution environment
      */
     public static void countTool(String ssBaseDir, final ExecutionEnvironment execEnv, final String toolTag) {
-        if (false && SUNW_NO_UPDATE_NOTIFY) {
+        if (SUNW_NO_UPDATE_NOTIFY) {
             return;
         }
         if (ssBaseDir == null || execEnv == null || toolTag == null) {
