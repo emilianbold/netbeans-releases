@@ -208,17 +208,6 @@ public final class ServersPanel extends javax.swing.JPanel implements ExplorerMa
             }
 
             try {
-                //XXX debug
-                FileObject fo = FileUtil.getConfigFile("org-netbeans-modules-javacard/templates/");
-                if (fo == null) {
-                    throw new IllegalStateException("org-netbeans-modules-javacard/templates/ not in SFS");
-                }
-                System.err.println("TEMPLATES FOLDER CHILDREN");
-                for (FileObject k : fo.getChildren()) {
-                    System.err.println(k.getPath());
-                }
-                //XXX end debug
-
                 FileObject template = FileUtil.getConfigFile(
                         CommonSystemFilesystemPaths.SFS_DEVICE_TEMPLATE_PATH);
                 if (template == null) {
