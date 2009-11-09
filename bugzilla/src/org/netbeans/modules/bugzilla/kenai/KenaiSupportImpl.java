@@ -196,14 +196,13 @@ public class KenaiSupportImpl extends KenaiSupport implements PropertyChangeList
     }
 
     @Override
-    public Query getMyIssuesQuery(Repository repository) {
-        assert repository instanceof KenaiRepository;
-        return ((KenaiRepository)repository).getMyIssuesQuery();
+    public BugtrackingType getType() {
+        return BugtrackingType.BUGZILLA;
     }
 
     @Override
-    public BugtrackingType getType() {
-        return BugtrackingType.BUGZILLA;
+    public boolean needsLogin(Query query) {
+        return query == ((KenaiRepository) query.getRepository()).getMyIssuesQuery();
     }
 
 }
