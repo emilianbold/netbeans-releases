@@ -90,6 +90,38 @@ public class CookieSetTest extends NbTestCase {
     }
     static interface Cook extends Node.Cookie {
     }
+    public void testInconsistencyWhenDoubleCookie175750() {
+        CookieSet cs = CookieSet.createGeneric(null);
+
+
+        class Factory implements CookieSet.Factory {
+            public <T extends Cookie> T createCookie(Class<T> klass) {
+                if (klass == Cook.class || klass == Hook.class) {
+                    return klass.cast(new Hook() { });
+                }
+                return null;
+            }
+        }
+        final Factory f = new Factory();
+        cs.add(new Class[] { Cook.class, Hook.class }, f);
+
+        Cook one = cs.getCookie(Hook.class);
+        Cook two = cs.getCookie(Cook.class);
+        Cook three = cs.getLookup().lookup(Hook.class);
+        Cook four = cs.getLookup().lookup(Cook.class);
+
+        assertSame("One and three", one, three);
+        assertSame("Two and 4", two, four);
+
+        cs.remove(new Class[] { Hook.class, Cook.class }, f);
+
+        assertNull("No cookie now ", cs.getCookie(Cook.class));
+        assertNull("No lkp now ", cs.getLookup().lookup(Cook.class));
+        assertNull("No h cookie now ", cs.getCookie(Hook.class));
+        assertNull("No h lkp now ", cs.getLookup().lookup(Hook.class));
+    }
+    static interface Hook extends Cook {
+    }
 
     
     public void testAddRemove () throws Exception {
