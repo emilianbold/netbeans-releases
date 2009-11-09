@@ -662,10 +662,6 @@ public class PHPNewLineIndenterTest extends PHPTestBase {
         testIndentInFile("testfiles/indent/objectOperatorContinue_07.php");
     }
 
-    public void testObjectOperatorContinue08() throws Exception {
-        testIndentInFile("testfiles/indent/objectOperatorContinue_08.php");
-    }
-
     public void testObjectOperatorContinue09() throws Exception {
         testIndentInFile("testfiles/indent/objectOperatorContinue_09.php");
     }
