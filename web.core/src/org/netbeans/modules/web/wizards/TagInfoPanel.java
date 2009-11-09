@@ -103,10 +103,10 @@ public class TagInfoPanel implements WizardDescriptor.Panel {
         if (writeToTLD() && getTLDFile()==null) {
             wizard.putProperty (WizardDescriptor.PROP_ERROR_MESSAGE, org.openide.util.NbBundle.getMessage(TagInfoPanel.class, "MSG_noTldSelected")); // NOI18N
             return false;
-        } else if (TargetChooserPanelGUI.isTagNameEmpty(getTagName())) {
+        } else if (isTagNameEmpty(getTagName())) {
             wizard.putProperty (WizardDescriptor.PROP_ERROR_MESSAGE, org.openide.util.NbBundle.getMessage(TagInfoPanel.class, "TXT_missingTagName")); // NOI18N
             return false;        
-        } else if (!TargetChooserPanelGUI.isValidTagName(getTagName())) {
+        } else if (!isValidTagName(getTagName())) {
             wizard.putProperty (WizardDescriptor.PROP_ERROR_MESSAGE, org.openide.util.NbBundle.getMessage(TagInfoPanel.class, "TXT_wrongTagName",getTagName())); // NOI18N
             return false;        
         } else if (tagNameExists(getTagName())) {
@@ -208,6 +208,18 @@ public class TagInfoPanel implements WizardDescriptor.Panel {
     }
     public Object[][] getAttributes() {
         return component.getAttributes();
+    }
+    
+    static boolean isTagNameEmpty(String name) {
+        if (name == null) {
+            return true;
+        }
+        return "".equals(name); // NOI18N
+    }
+    
+    static boolean isValidTagName(String name) {
+        if (name==null) return false;
+        return org.apache.xerces.util.XMLChar.isValidNCName(name);
     }
     
     private boolean tagNameExists(String name) {

@@ -475,6 +475,7 @@ class J2SEActionProvider implements ActionProvider {
                         try {
                             prepareSystemProperties(execProperties, true);
                             execProperties.put(JavaRunner.PROP_EXECUTE_FILE, files[0]);
+                            execProperties.put("tmp.dir", updateHelper.getAntProjectHelper().resolvePath(evaluator.getProperty(J2SEProjectProperties.BUILD_DIR)));   //NOI18N
                             JavaRunner.execute(COMMAND_TEST_SINGLE.equals(command) ? JavaRunner.QUICK_TEST : JavaRunner.QUICK_TEST_DEBUG, execProperties);
                         } catch (IOException ex) {
                             Exceptions.printStackTrace(ex);
@@ -486,6 +487,7 @@ class J2SEActionProvider implements ActionProvider {
                         try {
                             execProperties.put("methodname", methodSpec.getMethodName());//NOI18N
                             execProperties.put(JavaRunner.PROP_EXECUTE_FILE, methodSpec.getFile());
+                            execProperties.put("tmp.dir",updateHelper.getAntProjectHelper().resolvePath(evaluator.getProperty(J2SEProjectProperties.BUILD_DIR)));   //NOI18N
                             JavaRunner.execute(command.equals(SingleMethod.COMMAND_RUN_SINGLE_METHOD) ? JavaRunner.QUICK_TEST : JavaRunner.QUICK_TEST_DEBUG,
                                                   execProperties);
                         } catch (IOException ex) {

@@ -46,6 +46,10 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.javacard.spi.capabilities.ApduSupport;
+import org.netbeans.modules.javacard.spi.CardState;
+import org.netbeans.modules.javacard.spi.capabilities.PortProvider;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -54,13 +58,16 @@ import java.util.logging.Logger;
 final class ListCommand implements Command {
 
     public String execute(ShellPanel shellPanel, String[] args) throws ShellException {
+        ApduSupport apdu = shellPanel.getCard().getCapability(ApduSupport.class);
         StringBuilder sb = new StringBuilder();
         String listPath = "/list"; //NOI18N
         try {
             if(args.length > 1 && "xml".equalsIgnoreCase(args[1])) { //NOI18N
                 listPath = "/xlist"; //NOI18N
             }
-            URL site = new URL(shellPanel.getServer().getCardManagerURL() + listPath); 
+            PortProvider prov = shellPanel.getCard().getCapability(PortProvider.class);
+            assert prov != null;
+            URL site = new URL(apdu + listPath);
             BufferedReader in = new BufferedReader(new InputStreamReader(site.openStream()));
             String inputLine = null;
 

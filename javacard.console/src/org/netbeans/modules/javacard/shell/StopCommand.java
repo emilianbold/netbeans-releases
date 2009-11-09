@@ -40,6 +40,10 @@
  */
 package org.netbeans.modules.javacard.shell;
 
+import org.netbeans.modules.javacard.spi.CardState;
+import org.netbeans.modules.javacard.spi.capabilities.StopCapability;
+import org.openide.util.NbBundle;
+
 /**
  *
  * @author Anki R Nelaturu
@@ -47,7 +51,17 @@ package org.netbeans.modules.javacard.shell;
 final class StopCommand implements Command {
 
     public String execute(ShellPanel shellPanel, String[] args) throws ShellException {
-        shellPanel.getServer().stopServer();
+        CardState state = shellPanel.getCard().getState();
+        if (state.isTransitionalState()) {
+            return NbBundle.getMessage(ResumeCommand.class,
+                    "ERR_TRANSITIONAL_STATE", shellPanel.getCard().getState()); //NOI18N
+        }
+        StopCapability stop = shellPanel.getCard().getCapability(StopCapability.class);
+        if (stop != null) {
+            stop.stop().awaitUninterruptibly();
+        } else {
+            return APDUSender.getString("ERR_STOP_NOT_SUPPORTED"); //NOI18N
+        }
         return APDUSender.getString("DONE"); //NOI18N
     }
 

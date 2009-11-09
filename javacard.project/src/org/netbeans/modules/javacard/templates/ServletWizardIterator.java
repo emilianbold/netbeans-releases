@@ -42,10 +42,8 @@ package org.netbeans.modules.javacard.templates;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.project.*;
-import org.netbeans.modules.javacard.api.ProjectKind;
 import org.netbeans.modules.javacard.constants.FileWizardConstants;
-import org.netbeans.modules.javacard.constants.JCConstants;
+import org.netbeans.modules.javacard.common.JCConstants;
 import org.netbeans.modules.javacard.project.JCProject;
 import org.netbeans.modules.javacard.project.refactoring.WebXMLRefactoringSupport;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -68,6 +66,12 @@ import java.io.OutputStream;
 import java.util.Collections;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
+import org.netbeans.modules.javacard.spi.ProjectKind;
 
 public final class ServletWizardIterator implements WizardDescriptor.InstantiatingIterator {
 

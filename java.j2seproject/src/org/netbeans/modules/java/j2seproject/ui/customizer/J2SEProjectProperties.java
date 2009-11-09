@@ -52,6 +52,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -617,19 +618,21 @@ public class J2SEProjectProperties {
         Vector data = tableModel.getDataVector();
         URL[] rootURLs = new URL[data.size()];
         String []rootLabels = new String[data.size()];
-        Set<URL> oldRootURLs = new HashSet<URL> (Arrays.asList (roots.getRootURLs ()));
+        final LinkedList<URL> oldRootURLs = new LinkedList<URL>(Arrays.asList (roots.getRootURLs ()));
+        final LinkedList<String> oldRootLabels = new LinkedList<String>(Arrays.asList(roots.getRootNames()));
+        final LinkedList<String> oldRootProps = new LinkedList<String>(Arrays.asList (roots.getRootProperties()));
         boolean rootsAreSame = true;
         for (int i=0; i<data.size();i++) {
             File f = (File) ((Vector)data.elementAt(i)).elementAt(0);
             rootURLs[i] = J2SEProjectUtil.getRootURL(f,null);
-            rootsAreSame &= oldRootURLs.remove (rootURLs[i]);
             rootLabels[i] = (String) ((Vector)data.elementAt(i)).elementAt(1);
+            rootsAreSame &= !oldRootURLs.isEmpty() &&
+                            oldRootURLs.removeFirst().equals(rootURLs[i]) &&
+                            roots.getRootDisplayName(oldRootLabels.removeFirst(), oldRootProps.removeFirst()).equals(rootLabels[i]);
         }
-        if (
-            !rootsAreSame ||
-            !oldRootURLs.isEmpty ()
-        )
+        if (!rootsAreSame || !oldRootURLs.isEmpty ()) {
             roots.putRoots(rootURLs,rootLabels);
+        }
     }
     
     /* This is used by CustomizerWSServiceHost */

@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.cnd.asm.base.syntax;
 
-import antlr.CommonToken;
+import org.netbeans.modules.cnd.antlr.CommonToken;
 
 import org.netbeans.modules.cnd.asm.model.lang.AsmOffsetable;
 import org.netbeans.modules.cnd.asm.model.lang.instruction.Instruction;

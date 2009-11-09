@@ -84,6 +84,7 @@ import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
@@ -281,19 +282,40 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }
 
     private void initAssigneeCombo() {
-        Collection<RepositoryUser> users = issue.getRepository().getUsers();
-        DefaultComboBoxModel assignedModel = new DefaultComboBoxModel();
-        for (RepositoryUser user: users) {
-            assignedModel.addElement(user);
-        }
-        assigneeCombo.setModel(assignedModel);
         assigneeCombo.setRenderer(new RepositoryUserRenderer());
-        GroupLayout layout = (GroupLayout)getLayout();
-        if ((assigneeCombo.getParent()==null) != users.isEmpty()) {
-            layout.replace(users.isEmpty() ? assigneeCombo : assigneeField, users.isEmpty() ? assigneeField : assigneeCombo);
-            assigneeLabel.setLabelFor(users.isEmpty() ? assigneeField : assigneeCombo);
-        }
-        assigneeCombo.setSelectedItem(""); // NOI18N
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                final Collection<RepositoryUser> users = issue.getRepository().getUsers();
+                final DefaultComboBoxModel assignedModel = new DefaultComboBoxModel();
+                for (RepositoryUser user: users) {
+                    assignedModel.addElement(user);
+                }
+                EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        reloading = true;
+                        try {
+                            Object assignee = (assigneeField.getParent() == null) ? assigneeCombo.getSelectedItem() : assigneeField.getText();
+                            if (assignee == null) {
+                                assignee = ""; //NOI18N
+                            }
+                            assigneeCombo.setModel(assignedModel);
+                            GroupLayout layout = (GroupLayout)getLayout();
+                            if ((assigneeCombo.getParent()==null) != users.isEmpty()) {
+                                layout.replace(users.isEmpty() ? assigneeCombo : assigneeField, users.isEmpty() ? assigneeField : assigneeCombo);
+                                assigneeLabel.setLabelFor(users.isEmpty() ? assigneeField : assigneeCombo);
+                            }
+                            if (assigneeField.getParent() == null) {
+                                assigneeCombo.setSelectedItem(assignee);
+                            } else {
+                                assigneeField.setText(assignee.toString());
+                            }
+                        } finally {
+                            reloading = false;
+                        }
+                    }
+                });
+            }
+        });
     }
 
     private void initHeaderLabel() {
@@ -679,11 +701,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                                 int row = subTaskTable.rowAtPoint(p);
                                 TableModel model = subTaskTable.getModel();
                                 final String issueKey = (String)model.getValueAt(row,0);
-                                RequestProcessor.getDefault().post(new Runnable() {
-                                   public void run() {
-                                       issue.getRepository().getIssue(issueKey).open();
-                                   }
-                                });
+                                Issue.open(issue.getRepository(), issueKey);
                             }
                         }
                     });
@@ -2226,6 +2244,11 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private javax.swing.JLabel updatedLabel;
     // End of variables declaration//GEN-END:variables
 
+    @Override
+    public Dimension getPreferredSize() {
+        return getMinimumSize(); // Issue 176085
+    }
+
     public Dimension getPreferredScrollableViewportSize() {
         return getPreferredSize();
     }
@@ -2239,6 +2262,26 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }
 
     public boolean getScrollableTracksViewportWidth() {
+        JScrollPane scrollPane = (JScrollPane)SwingUtilities.getAncestorOfClass(JScrollPane.class, this);
+        if (scrollPane!=null) {
+             // Issue 176085
+            int minWidth = getMinimumSize().width;
+            int width = scrollPane.getSize().width;
+            Insets insets = scrollPane.getInsets();
+            width -= insets.left+insets.right;
+            Border border = scrollPane.getViewportBorder();
+            if (border != null) {
+                insets = border.getBorderInsets(scrollPane);
+                width -= insets.left+insets.right;
+            }
+            JComponent vsb = scrollPane.getVerticalScrollBar();
+            if (vsb!=null && vsb.isVisible()) {
+                width -= vsb.getSize().width;
+            }
+            if (minWidth>width) {
+                return false;
+            }
+        }
         return true;
     }
 

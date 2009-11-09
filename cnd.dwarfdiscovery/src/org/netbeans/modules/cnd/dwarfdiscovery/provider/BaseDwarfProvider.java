@@ -50,6 +50,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
@@ -89,13 +90,13 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         isStoped.set(true);
     }
 
-    protected List<SourceFileProperties> getSourceFileProperties(String[] objFileName, Progress progress){
+    protected List<SourceFileProperties> getSourceFileProperties(String[] objFileName, Progress progress, PathMap pathMapper){
         CountDownLatch countDownLatch = new CountDownLatch(objFileName.length);
         RequestProcessor rp = new RequestProcessor("Parallel analyzing", CndUtils.getNumberCndWorkerThreads()); // NOI18N
         try{
             Map<String,SourceFileProperties> map = new ConcurrentHashMap<String,SourceFileProperties>();
             for (String file : objFileName) {
-                MyRunnable r = new MyRunnable(countDownLatch, file, map, progress);
+                MyRunnable r = new MyRunnable(countDownLatch, file, map, progress, pathMapper);
                 rp.post(r);
             }
             try {
@@ -114,7 +115,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         }
     }
 
-    private boolean processObjectFile(String file, Map<String, SourceFileProperties> map, Progress progress) {
+    private boolean processObjectFile(String file, Map<String, SourceFileProperties> map, Progress progress, PathMap pathMapper) {
         if (isStoped.get()) {
             return true;
         }
@@ -134,7 +135,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                 restrictCompileRoot = CndFileUtils.normalizeFile(new File(s)).getAbsolutePath();
             }
         }
-        for (SourceFileProperties f : getSourceFileProperties(file, map)) {
+        for (SourceFileProperties f : getSourceFileProperties(file, map, pathMapper)) {
             if (isStoped.get()) {
                 break;
             }
@@ -216,7 +217,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         return res;
     }
     
-    protected List<SourceFileProperties> getSourceFileProperties(String objFileName, Map<String,SourceFileProperties> map){
+    protected List<SourceFileProperties> getSourceFileProperties(String objFileName, Map<String,SourceFileProperties> map, PathMap pathMapper){
         List<SourceFileProperties> list = new ArrayList<SourceFileProperties>();
         Dwarf dump = null;
         try{
@@ -388,18 +389,20 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         private Map<String, SourceFileProperties> map;
         private Progress progress;
         private CountDownLatch countDownLatch;
+        private PathMap parhMapper;
 
-        private MyRunnable(CountDownLatch countDownLatch, String file, Map<String, SourceFileProperties> map, Progress progress){
+        private MyRunnable(CountDownLatch countDownLatch, String file, Map<String, SourceFileProperties> map, Progress progress, PathMap parhMapper){
             this.file = file;
             this.map = map;
             this.progress = progress;
             this.countDownLatch = countDownLatch;
+            this.parhMapper = parhMapper;
         }
         public void run() {
             try {
                 if (!isStoped.get()) {
                     Thread.currentThread().setName("Parallel analyzing "+file); // NOI18N
-                    processObjectFile(file, map, progress);
+                    processObjectFile(file, map, progress, parhMapper);
                 }
             } finally {
                 countDownLatch.countDown();

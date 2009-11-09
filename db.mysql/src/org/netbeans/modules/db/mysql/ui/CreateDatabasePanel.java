@@ -91,9 +91,9 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
     private JButton okButton;
     private JButton cancelButton;
     
-    private void validatePanel(String databaseName) {
+    private boolean validatePanel(String databaseName) {
         if (descriptor == null) {
-            return;
+            return false;
         }
 
         String error = null;
@@ -118,6 +118,8 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
             messageLabel.setText(" "); // NOI18N
             okButton.setEnabled(true);
         }
+
+        return error == null;
     }
 
     private void startProgress() {
@@ -133,7 +135,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
 
             public void run() {
                 comboDatabaseName.setEnabled(!start);
-                okButton.setEnabled(!start);
+                okButton.setEnabled(okButton.isEnabled() && !start);
                 if (! start) {
                     cancelButton.setEnabled(true);
                 }
@@ -148,7 +150,6 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
 
     public DatabaseConnection showCreateDatabaseDialog() throws DatabaseException {
         assert SwingUtilities.isEventDispatchThread();
-        
 
         okButton = new JButton(NbBundle.getMessage(CreateDatabasePanel.class, "CreateDatabasePanel.CTL_OKButton")); // NOI18N
         okButton.getAccessibleContext().setAccessibleDescription(okButton.getAccessibleContext().getAccessibleName());
@@ -211,6 +212,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         // isn't available until the dialog is created.
         stopProgress();
 
+        descriptor.setValid(validatePanel(getDatabaseName()));
         dialog.setVisible(true);
 
         return dbconn;
@@ -641,7 +643,10 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         }
 
         public void setSelectedItem(Object item) {
-            assert item instanceof DatabaseUser;
+            if (item == null || item.toString().trim().length() == 0) {
+                return;
+            }
+            assert item instanceof DatabaseUser : item + "[" + item.getClass() + "] must be instanceof DatabaseUser";
             if (item instanceof DatabaseUser) {
                 selected = (DatabaseUser)item;
             }

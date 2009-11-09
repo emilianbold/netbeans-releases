@@ -45,7 +45,7 @@
     </DimensionLayout>
   </Layout>
   <SubComponents>
-    <Component class="org.netbeans.modules.javacard.project.ui.AIDPanel" name="aIDPanel1">
+    <Component class="org.netbeans.modules.javacard.common.AIDPanel" name="aIDPanel1">
       <Properties>
         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/javacard/project/customizer/Bundle.properties" key="PackagingCustomizer.aIDPanel1.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>

@@ -107,7 +107,7 @@ final class ClassicAppletDeploymentVisualPanel extends JPanel implements ChangeL
         createScriptCheckBox = new javax.swing.JCheckBox();
         createInstanceCheckBox = new javax.swing.JCheckBox();
         addInfoCheckBox = new javax.swing.JCheckBox();
-        aIDPanel1 = new org.netbeans.modules.javacard.project.ui.AIDPanel();
+        aIDPanel1 = new org.netbeans.modules.javacard.common.AIDPanel();
         jSeparator1 = new javax.swing.JSeparator();
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(ClassicAppletDeploymentVisualPanel.class, "LBL_servlet_name")); // NOI18N
@@ -170,7 +170,7 @@ final class ClassicAppletDeploymentVisualPanel extends JPanel implements ChangeL
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private org.netbeans.modules.javacard.project.ui.AIDPanel aIDPanel1;
+    private org.netbeans.modules.javacard.common.AIDPanel aIDPanel1;
     private javax.swing.JCheckBox addInfoCheckBox;
     private javax.swing.JTextField classNameTextField;
     private javax.swing.JCheckBox createInstanceCheckBox;

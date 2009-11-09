@@ -1471,17 +1471,35 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
 
         public void stateChanged(ChangeEvent e) {
+            Runnable todo = null;
             if (e.getSource() instanceof Item) {
                 // update single item (it may be broken)
                 Item[] items = getFolder().getItemsAsArray();
-                for (int i = 0; i < items.length; i++) {
-                    if (e.getSource() == items[i]) {
-                        refreshItem(items[i]);
+                for (final Item item : items) {
+                    if (e.getSource() == item) {
+                        // refreshItem() acquires Children.MUTEX; make sure
+                        // it's not under ProjectManager.mutex() (IZ#175996)
+                        todo = new Runnable() {
+                            public void run() {
+                                refreshItem(item);
+                            }
+                        };
+                        break;
                     }
                 }
             } else {
                 // update folder. Items may have been added or deleted
-                setKeys(getKeys());
+                final Collection<Object> keys = getKeys();
+                // setKeys() acquires Children.MUTEX; make sure
+                // it's not under ProjectManager.mutex() (IZ#175996)
+                todo = new Runnable() {
+                    public void run() {
+                        setKeys(keys);
+                    }
+                };
+            }
+            if (todo != null) {
+                EventQueue.invokeLater(todo);
             }
         }
 
