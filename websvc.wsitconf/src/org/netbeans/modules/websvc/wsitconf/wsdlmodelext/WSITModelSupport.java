@@ -667,9 +667,14 @@ public class WSITModelSupport {
     }
     
     public synchronized static void save(WSDLModel model) {
+        if (model == null) {
+            logger.log(Level.INFO, "Model cannot be null.");
+            return;
+        }
         try {
-            if (model != null) {
-                Collection<Import> imports = model.getDefinitions().getImports();
+            Definitions defs = model.getDefinitions();
+            if (defs != null) {
+                Collection<Import> imports = defs.getImports();
                 for (Import i : imports) {
                     WSDLModel importedModel = i.getImportedWSDLModel();
                     save(importedModel);
