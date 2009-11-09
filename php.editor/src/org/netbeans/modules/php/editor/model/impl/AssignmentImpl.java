@@ -122,7 +122,11 @@ class  AssignmentImpl<Container extends ModelElementImpl>  extends ScopeImpl {
     }
 
     public Collection<? extends String> getTypeNames() {
-        return Collections.singleton(typeNameFromUnion());
+        final String tName = typeNameFromUnion();
+        if (tName != null) {
+            return Collections.singleton(tName);
+        }
+        return Collections.emptyList();
     }
     
     public Collection<? extends TypeScope> getTypes() {
@@ -140,6 +144,9 @@ class  AssignmentImpl<Container extends ModelElementImpl>  extends ScopeImpl {
             }
         }
         if (types != null) {
+            if (types.isEmpty() && tName != null && !tName.contains("@")) {//NOI18N
+                return empty;
+            }
             typeName = Union2.<String, Collection<? extends TypeScope>>createSecond(types);
             return types;
         } else {

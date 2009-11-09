@@ -100,8 +100,10 @@ public class HtmlFactory implements FrobnitzFactory {
  * <pre>
 &#64;ServiceProvider(service=Processor.class)
 &#64;SupportedSourceVersion(SourceVersion.RELEASE_6)
-&#64;SupportedAnnotationTypes("org.netbeans.spi.frobnitz.FrobnitzFactory.Registration")
 public class FrobnitzFactoryProcessor extends LayerGeneratingProcessor {
+    public &#64;Override Set&lt;String> getSupportedAnnotationTypes() {
+        return Collections.singleton(Registration.class.getCanonicalName());
+    }
     protected boolean handleProcess(Set&lt;? extends TypeElement> annotations,
                                     RoundEnvironment roundEnv)
                       throws LayerGenerationException {

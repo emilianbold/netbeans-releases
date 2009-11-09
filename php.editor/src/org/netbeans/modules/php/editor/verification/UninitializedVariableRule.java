@@ -126,7 +126,7 @@ public class UninitializedVariableRule  extends PHPRule implements VarStackReadi
                 Collection<IndexedVariable> topLevelVars = context.getIndex().getTopLevelVariables((PHPParseResult) context.parserResult,
                         "$" + varName, QuerySupport.Kind.EXACT); //NOI18N
                 
-                for (IndexedConstant topLevelVar : topLevelVars) {
+                for (IndexedVariable topLevelVar : topLevelVars) {
                     if (topLevelVar.isResolved()){
                         return;
                     }

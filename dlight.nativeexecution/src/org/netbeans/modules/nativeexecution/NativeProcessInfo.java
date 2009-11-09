@@ -210,6 +210,10 @@ public final class NativeProcessInfo {
 
         if (isWindows) {
             exec = WindowsSupport.getInstance().convertToShellPath(exec);
+
+            if (exec == null) {
+                return null;
+            }
         }
 
         sb.append(quoteSpecialChars(exec)).append(' ');

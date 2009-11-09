@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.cnd.discovery.projectimport;
 
+import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.cnd.builds.ImportUtils;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -55,6 +56,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.WeakHashMap;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -65,6 +67,7 @@ import org.netbeans.modules.cnd.actions.CMakeAction;
 import org.netbeans.modules.cnd.actions.MakeAction;
 import org.netbeans.modules.cnd.actions.QMakeAction;
 import org.netbeans.modules.cnd.actions.ShellRunAction;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmListeners;
@@ -75,6 +78,7 @@ import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.api.utils.AllSourceFileFilter;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
@@ -101,6 +105,9 @@ import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -214,7 +221,7 @@ public class ImportProject implements PropertyChangeListener {
         runConfigure = "true".equals(wizard.getProperty("runConfigure")); // NOI18N
         consolidationStrategy = (String) wizard.getProperty("consolidationLevel"); // NOI18N
         @SuppressWarnings("unchecked")
-        Iterator<SourceFolderInfo> it = (Iterator) wizard.getProperty("sourceFolders"); // NOI18N
+        Iterator<SourceFolderInfo> it = (Iterator<SourceFolderInfo>) wizard.getProperty("sourceFolders"); // NOI18N
         sources = it;
         sourceFoldersFilter = (String) wizard.getProperty("sourceFoldersFilter"); // NOI18N
         runConfigure = "true".equals(wizard.getProperty("runConfigure")); // NOI18N
@@ -490,11 +497,34 @@ public class ImportProject implements PropertyChangeListener {
         }
     }
 
+    private void downloadRemoteFile(File file){
+        if (file != null && !file.exists()) {
+            ExecutionEnvironment developmentHost = CompilerSetManager.getDefaultExecutionEnvironment();
+            if (developmentHost.isRemote()) {
+                String remoteFile = HostInfoProvider.getMapper(developmentHost).getRemotePath(file.getAbsolutePath());
+                try {
+                    if (HostInfoUtils.fileExists(developmentHost, remoteFile)){
+                        Future<Integer> task = CommonTasksSupport.downloadFile(remoteFile, developmentHost, file.getAbsolutePath(), null);
+                        /*int rc =*/ task.get();
+                    }
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (ExecutionException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+    }
+
     private void makeProject(boolean doClean) {
         if (!isProjectOpened()) {
             isFinished = true;
             return;
         }
+        downloadRemoteFile(makefileFile);
+        downloadRemoteFile(new File(projectFolder, "config.h")); // NOI18N
         if (makefileFile != null && makefileFile.exists()) {
             FileObject makeFileObject = FileUtil.toFileObject(makefileFile);
             DataObject dObj;
@@ -736,7 +766,7 @@ public class ImportProject implements PropertyChangeListener {
                             logger.log(Level.INFO, "#start fix macros by log file " + makeLog.getAbsolutePath()); // NOI18N
                         }
                         @SuppressWarnings("unchecked")
-                        List<ProjectConfiguration> confs = (List) map.get(DiscoveryWizardDescriptor.CONFIGURATIONS);
+                        List<ProjectConfiguration> confs = (List<ProjectConfiguration>) map.get(DiscoveryWizardDescriptor.CONFIGURATIONS);
                         fixMacros(confs);
                         importResult.put(Step.FixMacros, State.Successful);
                     } else {

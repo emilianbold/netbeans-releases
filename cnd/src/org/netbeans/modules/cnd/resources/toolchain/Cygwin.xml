@@ -69,5 +69,7 @@ made subject to such option by the copyright holder.
     <linker>
         <library_prefix stringvalue="cyg"/>
         <dynamic_library_basic flags="-mno-cygwin -shared "/>
+        <PIC flags=""/>
+        <dynamic_library_search flags=""/>
     </linker>
 </toolchaindefinition>

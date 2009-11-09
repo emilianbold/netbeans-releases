@@ -75,6 +75,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.StringConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
@@ -92,6 +93,8 @@ import org.w3c.dom.Element;
  * @author Alexander Simon
  */
 public class ProjectCreator {
+    private static final String Sun = "SunStudio"; // NOI18N
+    private static final String GNU = "GNU"; // NOI18N
     //default makefile name
     private static final String MAKEFILE_NAME = "Makefile"; // NOI18N
     //project type
@@ -190,7 +193,7 @@ public class ProjectCreator {
         String target = "Default"; // NOI18N
 
         // TODO: create localhost based project
-        MakeConfiguration extConf = new MakeConfiguration(dirF.getPath(), target, MakeConfiguration.TYPE_MAKEFILE, CompilerSetManager.LOCALHOST);
+        MakeConfiguration extConf = new MakeConfiguration(dirF.getPath(), target, MakeConfiguration.TYPE_MAKEFILE, HostInfoUtils.LOCALHOST);
         String workingDirRel = IpeUtils.toRelativePath(dirF.getPath(), FilePathAdaptor.naturalize(workingDir));
         workingDirRel = FilePathAdaptor.normalize(workingDirRel);
         extConf.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(workingDirRel);
@@ -220,9 +223,9 @@ public class ProjectCreator {
         }
         
         if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
-            extConf.getCompilerSet().setCompilerSetName(new StringConfiguration(null, CompilerSetManager.Sun));
+            extConf.getCompilerSet().setCompilerSetName(new StringConfiguration(null, ProjectCreator.Sun));
         } else {
-            extConf.getCompilerSet().setCompilerSetName(new StringConfiguration(null, CompilerSetManager.GNU));
+            extConf.getCompilerSet().setCompilerSetName(new StringConfiguration(null, ProjectCreator.GNU));
         }
         
         extConf.getCCCompilerConfiguration().getIncludeDirectories().setValue(getProjectLevelInludes());

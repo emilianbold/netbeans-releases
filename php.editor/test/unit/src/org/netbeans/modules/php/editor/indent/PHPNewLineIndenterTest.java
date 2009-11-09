@@ -63,8 +63,32 @@ public class PHPNewLineIndenterTest extends PHPTestBase {
         testIndentInFile("testfiles/indent/smart_enter.php");
     }
 
+    public void testSmartEnter02() throws Exception{
+        testIndentInFile("testfiles/indent/smart_enter_02.php");
+    }
+
+    public void testSmartEnter03() throws Exception{
+        testIndentInFile("testfiles/indent/smart_enter_03.php");
+    }
+
     public void testHtmlIndentInPHP() throws Exception{
         testIndentInFile("testfiles/indent/html_indent_in_php.php");
+    }
+
+    public void testFirstLine01() throws Exception{
+        testIndentInFile("testfiles/indent/firstline_01.php");
+    }
+
+    public void testFirstLine02() throws Exception{
+        testIndentInFile("testfiles/indent/firstline_02.php");
+    }
+
+    public void testFirstLine03() throws Exception{
+        testIndentInFile("testfiles/indent/firstline_03.php");
+    }
+
+    public void testFirstLine04() throws Exception{
+        testIndentInFile("testfiles/indent/firstline_04.php");
     }
 
     public void testTrivialRepeatedIndent() throws Exception{
@@ -91,6 +115,137 @@ public class PHPNewLineIndenterTest extends PHPTestBase {
         testIndentInFile("testfiles/indent/multiline_function_call.php");
     }
 
+    public void testMultilineFunctionCall01() throws Exception{
+        testIndentInFile("testfiles/indent/multiline_function_call_01.php");
+    }
+
+    public void testMultilineFunctionCall02() throws Exception{
+        testIndentInFile("testfiles/indent/multiline_function_call_02.php");
+    }
+
+    public void testMultilineFunctionCall03() throws Exception{
+        testIndentInFile("testfiles/indent/multiline_function_call_03.php");
+    }
+
+    public void testMultilineFunctionCall04() throws Exception{
+        testIndentInFile("testfiles/indent/multiline_function_call_04.php");
+    }
+
+    public void testMultilineFunctionCall05() throws Exception{
+        testIndentInFile("testfiles/indent/multiline_function_call_05.php");
+    }
+
+    public void testMultilineFunctionCall06() throws Exception{
+        testIndentInFile("testfiles/indent/multiline_function_call_06.php");
+    }
+
+    public void testMultilineFunctionCall07() throws Exception{
+        testIndentInFile("testfiles/indent/multiline_function_call_07.php");
+    }
+
+    public void testMultilineFunctionCall08() throws Exception{
+        testIndentInFile("testfiles/indent/multiline_function_call_08.php");
+    }
+
+    public void testMultilineFunctionCall09() throws Exception{
+        testIndentInFile("testfiles/indent/multiline_function_call_09.php");
+    }
+
+    public void testMultilineFunctionCall10() throws Exception{
+        testIndentInFile("testfiles/indent/multiline_function_call_10.php");
+    }
+
+    public void testMultilineFunctionCall11() throws Exception{
+        testIndentInFile("testfiles/indent/multiline_function_call_11.php");
+    }
+
+    public void testMultilineFunctionCall12() throws Exception{
+        testIndentInFile("testfiles/indent/multiline_function_call_12.php");
+    }
+
+    public void testMultilineFunctionCall13() throws Exception{
+        testIndentInFile("testfiles/indent/multiline_function_call_13.php");
+    }
+
+    public void testMultilineFunctionCall14() throws Exception{
+        testIndentInFile("testfiles/indent/multiline_function_call_14.php");
+    }
+
+    public void testMultilineFunctionCall15() throws Exception{
+        testIndentInFile("testfiles/indent/multiline_function_call_15.php");
+    }
+
+    public void testMultilineFunctionCall16() throws Exception{
+        testIndentInFile("testfiles/indent/multiline_function_call_16.php");
+    }
+
+    public void testMultilineFunctionCall17() throws Exception{
+        testIndentInFile("testfiles/indent/multiline_function_call_17.php");
+    }
+
+    public void testMultilineFunctionCall18() throws Exception{
+        testIndentInFile("testfiles/indent/multiline_function_call_18.php");
+    }
+
+    public void testMultilineFunctionCall19() throws Exception{
+        testIndentInFile("testfiles/indent/multiline_function_call_19.php");
+    }
+
+    public void testMultilineFunctionCall20() throws Exception{
+        testIndentInFile("testfiles/indent/multiline_function_call_20.php");
+    }
+
+    public void testMultilineFunctionCall21() throws Exception{
+        testIndentInFile("testfiles/indent/multiline_function_call_21.php");
+    }
+
+    public void testMultilineFunctionCall22() throws Exception{
+        testIndentInFile("testfiles/indent/multiline_function_call_22.php");
+    }
+
+    public void testMultilineFunctionCall23() throws Exception{
+        testIndentInFile("testfiles/indent/multiline_function_call_23.php");
+    }
+
+    public void testMultilineFunctionCall24() throws Exception{
+        testIndentInFile("testfiles/indent/multiline_function_call_24.php");
+    }
+
+    public void testMultilineFunctionCall25() throws Exception{
+        testIndentInFile("testfiles/indent/multiline_function_call_25.php");
+    }
+
+    public void testMultilineFunctionCall26() throws Exception{
+        testIndentInFile("testfiles/indent/multiline_function_call_26.php");
+    }
+
+    public void testMultilineFunctionCall27() throws Exception{
+        testIndentInFile("testfiles/indent/multiline_function_call_27.php");
+    }
+
+    public void testMultilineFunctionCall28() throws Exception{
+        testIndentInFile("testfiles/indent/multiline_function_call_28.php");
+    }
+
+    public void testMultilineFunctionCall29() throws Exception{
+        testIndentInFile("testfiles/indent/multiline_function_call_29.php");
+    }
+
+    public void testMultilineFunctionCall30() throws Exception{
+        testIndentInFile("testfiles/indent/multiline_function_call_30.php");
+    }
+
+    public void testMultilineFunctionCall31() throws Exception{
+        testIndentInFile("testfiles/indent/multiline_function_call_31.php");
+    }
+
+    public void testMultilineFunctionCall32() throws Exception{
+        testIndentInFile("testfiles/indent/multiline_function_call_32.php");
+    }
+
+    public void testMultilineFunctionCall33() throws Exception{
+        testIndentInFile("testfiles/indent/multiline_function_call_33.php");
+    }
 
     public void testIndentAfterClosingBracket() throws Exception{
         testIndentInFile("testfiles/indent/indent_after_closing_bracket.php");
@@ -139,6 +294,110 @@ public class PHPNewLineIndenterTest extends PHPTestBase {
     public void testArrays3() throws Exception{
         testIndentInFile("testfiles/indent/arrays3.php");
     }
+
+    public void testArrays4() throws Exception{
+        testIndentInFile("testfiles/indent/arrays4.php");
+    }
+    
+    public void testArrays5() throws Exception{
+        testIndentInFile("testfiles/indent/arrays5.php");
+    }
+
+    public void testArrays6() throws Exception{
+        testIndentInFile("testfiles/indent/arrays6.php");
+    }
+
+    public void testArrays7() throws Exception{
+        testIndentInFile("testfiles/indent/arrays7.php");
+    }
+
+    public void testArrays8() throws Exception{
+        testIndentInFile("testfiles/indent/arrays8.php");
+    }
+
+    public void testArrays9() throws Exception{
+        testIndentInFile("testfiles/indent/arrays9.php");
+    }
+
+    public void testArrays10() throws Exception{
+        testIndentInFile("testfiles/indent/arrays10.php");
+    }
+
+    public void testArrays11() throws Exception{
+        testIndentInFile("testfiles/indent/arrays11.php");
+    }
+
+    public void testArrays12() throws Exception{
+        testIndentInFile("testfiles/indent/arrays12.php");
+    }
+
+    public void testArrays13() throws Exception{
+        testIndentInFile("testfiles/indent/arrays13.php");
+    }
+
+    public void testArrays14() throws Exception{
+        testIndentInFile("testfiles/indent/arrays14.php");
+    }
+
+    public void testArrays15() throws Exception{
+        testIndentInFile("testfiles/indent/arrays15.php");
+    }
+
+    public void testArrays16() throws Exception{
+        testIndentInFile("testfiles/indent/arrays16.php");
+    }
+
+    public void testArrays17() throws Exception{
+        testIndentInFile("testfiles/indent/arrays17.php");
+    }
+
+    public void testArrays18() throws Exception{
+        testIndentInFile("testfiles/indent/arrays18.php");
+    }
+
+    public void testArrays19() throws Exception{
+        testIndentInFile("testfiles/indent/arrays19.php");
+    }
+
+    public void testArrays20() throws Exception{
+        testIndentInFile("testfiles/indent/arrays20.php");
+    }
+
+    public void testArrays21() throws Exception{
+        testIndentInFile("testfiles/indent/arrays21.php");
+    }
+
+    public void testArrays22() throws Exception{
+        testIndentInFile("testfiles/indent/arrays22.php");
+    }
+
+    public void testArrays23() throws Exception{
+        testIndentInFile("testfiles/indent/arrays23.php");
+    }
+
+    public void testArrays24() throws Exception{
+        testIndentInFile("testfiles/indent/arrays24.php");
+    }
+
+    public void testArrays25() throws Exception{
+        testIndentInFile("testfiles/indent/arrays25.php");
+    }
+
+    public void testArrays26() throws Exception{
+        testIndentInFile("testfiles/indent/arrays26.php");
+    }
+
+    public void testArrays27() throws Exception{
+        testIndentInFile("testfiles/indent/arrays27.php");
+    }
+
+    public void testArrays28() throws Exception{
+        testIndentInFile("testfiles/indent/arrays28.php");
+    }
+
+    public void testArrays29() throws Exception{
+        testIndentInFile("testfiles/indent/arrays29.php");
+    }
     
     public void test157137() throws Exception{
         testIndentInFile("testfiles/indent/issue157137.php");
@@ -146,6 +405,10 @@ public class PHPNewLineIndenterTest extends PHPTestBase {
 
     public void test162586() throws Exception{
         testIndentInFile("testfiles/indent/issue162586.php");
+    }
+
+    public void test176061() throws Exception{
+        testIndentInFile("testfiles/indent/issue176061.php");
     }
 
     public void test166552() throws Exception{
@@ -156,55 +419,202 @@ public class PHPNewLineIndenterTest extends PHPTestBase {
         testIndentInFile("testfiles/indent/issue168908.php");
     }
 
-    /**
-     * issue 146247 there are 4 cases to be tested 
-     * @throws Exception
-     */
-    public void test146247_1() throws Exception{
-        testIndentInFile("testfiles/indent/qa/issues/146247_1.php");
-    }
-    public void test146247_2() throws Exception{
-        testIndentInFile("testfiles/indent/qa/issues/146247_2.php");
-    }
-    public void test146247_3() throws Exception{
-        testIndentInFile("testfiles/indent/qa/issues/146247_3.php");
-    }
-    public void test146247_4() throws Exception{
-        testIndentInFile("testfiles/indent/qa/issues/146247_4.php");
+   public void test173979_1_stableFixed() throws Exception {
+        testIndentInFile("testfiles/indent/issue173979_1.php");
     }
 
-    /**
-     * 173966 issue - a regression from 146247
-     * @throws Exception
-     */
-    public void test173966() throws Exception{
-        testIndentInFile("testfiles/indent/qa/issues/173966.php");
+    public void test173979_2() throws Exception {
+        testIndentInFile("testfiles/indent/issue173979_2.php");
     }
 
-    /**
-     * 167087 issue
-     * @throws Exceptioneviem
-     */
-    public void test167087() throws Exception {
-        testIndentInFile("testfiles/indent/qa/issues/167087.php");
+    public void test175118_01() throws Exception {
+        testIndentInFile("testfiles/indent/issue175118_01.php");
     }
 
-    /**
-     * 13900 issue
-     * @throws Exceptionace
-     */
-//    public void test173900() throws Exception{
-//        testIndentInFile("testfiles/indent/qa/issues/173900.php");
+    public void test175118_02() throws Exception {
+        testIndentInFile("testfiles/indent/issue175118_02.php");
+    }
+
+    public void test175118_03() throws Exception {
+        testIndentInFile("testfiles/indent/issue175118_03.php");
+    }
+
+    public void test175118_04() throws Exception {
+        testIndentInFile("testfiles/indent/issue175118_04.php");
+    }
+
+    public void test175118_05() throws Exception {
+        testIndentInFile("testfiles/indent/issue175118_05.php");
+    }
+
+    public void test175118_06() throws Exception {
+        testIndentInFile("testfiles/indent/issue175118_06.php");
+    }
+
+    public void test175118_07() throws Exception {
+        testIndentInFile("testfiles/indent/issue175118_07.php");
+    }
+
+    public void test175118_08() throws Exception {
+        testIndentInFile("testfiles/indent/issue175118_08.php");
+    }
+    
+    public void test175118_09() throws Exception {
+        testIndentInFile("testfiles/indent/issue175118_09.php");
+    }
+
+    public void test175118_10() throws Exception {
+        testIndentInFile("testfiles/indent/issue175118_10.php");
+    }
+
+    public void test175118_11() throws Exception {
+        testIndentInFile("testfiles/indent/issue175118_11.php");
+    }
+
+    public void test175118_12() throws Exception {
+        testIndentInFile("testfiles/indent/issue175118_12.php");
+    }
+
+    public void test175118_13() throws Exception {
+        testIndentInFile("testfiles/indent/issue175118_13.php");
+    }
+
+    public void test175118_14() throws Exception {
+        testIndentInFile("testfiles/indent/issue175118_14.php");
+    }
+
+    public void test175118_15() throws Exception {
+        testIndentInFile("testfiles/indent/issue175118_15.php");
+    }
+
+    public void test175118_16() throws Exception {
+        testIndentInFile("testfiles/indent/issue175118_16.php");
+    }
+
+    public void test175118_17() throws Exception {
+        testIndentInFile("testfiles/indent/issue175118_17.php");
+    }
+
+    public void test175437_1() throws Exception {
+        testIndentInFile("testfiles/indent/issue175437_1.php");
+    }
+
+    public void test175437_2() throws Exception {
+        testIndentInFile("testfiles/indent/issue175437_2.php");
+    }
+
+    public void test175437_3() throws Exception {
+        testIndentInFile("testfiles/indent/issue175437_3.php");
+    }
+
+    public void test175437_4() throws Exception {
+        testIndentInFile("testfiles/indent/issue175437_4.php");
+    }
+
+    public void test175437_5() throws Exception {
+        testIndentInFile("testfiles/indent/issue175437_5.php");
+    }
+
+    public void test175437_6() throws Exception {
+        testIndentInFile("testfiles/indent/issue175437_6.php");
+    }
+
+    public void test175437_7() throws Exception {
+        testIndentInFile("testfiles/indent/issue175437_7.php");
+    }
+
+    public void test175437_8() throws Exception {
+        testIndentInFile("testfiles/indent/issue175437_8.php");
+    }
+
+    public void test173937_01() throws Exception {
+        testIndentInFile("testfiles/indent/issue173937_01.php");
+    }
+
+//  need to be fiexed the multi line expressions
+//    public void test175437_9() throws Exception {
+//        testIndentInFile("testfiles/indent/issue175437_9.php");
+//    }
+//
+//    public void test175437_10() throws Exception {
+//        testIndentInFile("testfiles/indent/issue175437_10.php");
 //    }
 
-    /**
-     * 173937 issue
-     * @throws
-     */
-    public void test173937_1() throws Exception {
-        testIndentInFile("testfiles/indent/qa/issues/173937_1.php");
+    public void test175437_11() throws Exception {
+        testIndentInFile("testfiles/indent/issue175437_11.php");
     }
 
+    public void test175437_12() throws Exception {
+        testIndentInFile("testfiles/indent/issue175437_12.php");
+    }
+
+    public void test175437_13() throws Exception {
+        testIndentInFile("testfiles/indent/issue175437_13.php");
+    }
+
+    public void testLineComment_1() throws Exception {
+        testIndentInFile("testfiles/indent/linecomment_1.php");
+    }
+
+    public void testLineComment_2() throws Exception {
+        testIndentInFile("testfiles/indent/linecomment_2.php");
+    }
+
+    public void testLineComment_3() throws Exception {
+        testIndentInFile("testfiles/indent/linecomment_3.php");
+    }
+
+    public void testLineComment_4() throws Exception {
+        testIndentInFile("testfiles/indent/linecomment_4.php");
+    }
+
+    public void testLineComment_175685_1() throws Exception {
+        testIndentInFile("testfiles/indent/linecomment_175685_1.php");
+    }
+
+    public void testLineComment_175685_2() throws Exception {
+        testIndentInFile("testfiles/indent/linecomment_175685_2.php");
+    }
+
+    public void testLineComment_175685_3() throws Exception {
+        testIndentInFile("testfiles/indent/linecomment_175685_3.php");
+    }
+
+    public void testLineComment_175685_4() throws Exception {
+        testIndentInFile("testfiles/indent/linecomment_175685_4.php");
+    }
+
+    public void testLineComment_175685_5() throws Exception {
+        testIndentInFile("testfiles/indent/linecomment_175685_5.php");
+    }
+
+    public void testLineComment_175685_6() throws Exception {
+        testIndentInFile("testfiles/indent/linecomment_175685_6.php");
+    }
+
+    public void testLineComment_175685_7() throws Exception {
+        testIndentInFile("testfiles/indent/linecomment_175685_7.php");
+    }
+
+    public void testLineComment_175685_8() throws Exception {
+        testIndentInFile("testfiles/indent/linecomment_175685_8.php");
+   }
+
+    public void testLineComment_175685_9() throws Exception {
+        testIndentInFile("testfiles/indent/linecomment_175685_9.php");
+    }
+
+    public void testLineComment_175685_10() throws Exception {
+        testIndentInFile("testfiles/indent/linecomment_175685_10.php");
+    }
+
+    public void testLineComment_175685_11() throws Exception {
+        testIndentInFile("testfiles/indent/linecomment_175685_11.php");
+    }
+
+    public void testPhpInHtml_01() throws Exception {
+        testIndentInFile("testfiles/indent/phpInHtml_01.php");
+    }
 
     @Override
     protected boolean runInEQ() {

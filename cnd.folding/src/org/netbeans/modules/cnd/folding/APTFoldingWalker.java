@@ -40,7 +40,7 @@
  */
 package org.netbeans.modules.cnd.folding;
 
-import antlr.TokenStream;
+import org.netbeans.modules.cnd.antlr.TokenStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;

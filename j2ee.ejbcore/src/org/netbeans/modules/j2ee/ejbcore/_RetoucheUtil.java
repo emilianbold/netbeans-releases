@@ -389,7 +389,10 @@ public final class _RetoucheUtil {
                     TypeElement typeElement = controller.getElements().getTypeElement(className);
                     if (typeElement != null) {
                         for (ExecutableElement executableElement : ElementFilter.methodsIn(typeElement.getEnclosedElements())) {
-                            result.add(MethodModelSupport.createMethodModel(controller, executableElement));
+                            MethodModel mm = MethodModelSupport.createMethodModel(controller, executableElement);
+                            if (mm != null){
+                                result.add(mm);
+                            }
                         }
                     }
                 }

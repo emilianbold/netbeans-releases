@@ -162,7 +162,8 @@ public class J2eeLookupProvider implements LookupProvider {
                 content.add(resolver);
                 content.add(supplier);
                 //j2ee 6 stuff..
-                if (prov.getWebModuleImplementation().getJ2eeProfile() == Profile.JAVA_EE_6_WEB) {
+                Profile prf = prov.getWebModuleImplementation().getJ2eeProfile();
+                if (Profile.JAVA_EE_6_WEB.equals(prf) || Profile.JAVA_EE_6_FULL.equals(prf)) {
                     WebEjbJarImpl webEjbJarImpl = new WebEjbJarImpl(prov.getWebModuleImplementation(), project);
                     EjbJar apiEjbJar = EjbJarFactory.createEjbJar(webEjbJarImpl);
                     webEjbJarProvider = EjbJarSupport.createEjbJarProvider(project, apiEjbJar);

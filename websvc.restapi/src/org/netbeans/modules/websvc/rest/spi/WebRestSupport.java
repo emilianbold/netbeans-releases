@@ -41,6 +41,8 @@ package org.netbeans.modules.websvc.rest.spi;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.Collections;
+import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
@@ -48,9 +50,13 @@ import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping25;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
+import org.netbeans.modules.websvc.rest.model.api.RestApplication;
+import org.netbeans.modules.websvc.rest.model.api.RestApplicationModel;
+import org.netbeans.modules.websvc.rest.model.api.RestApplications;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -59,7 +65,15 @@ import org.openide.util.Exceptions;
  * @author mkuchtiak
  */
 public abstract class WebRestSupport extends RestSupport {
-    
+
+    public static final String PROP_REST_RESOURCES_PATH = "rest.resources.path";//NOI18N
+    public static final String PROP_REST_ROOT_RESOURCES = "rest.root.resources";//NOI18N
+    public static final String PROP_REST_CONFIG_TYPE = "rest.config.type"; //NOI18N
+    public static final String CONFIG_TYPE_IDE = "ide"; //NOI18N
+    public static final String CONFIG_TYPE_USER= "user"; //NOI18N
+    public static final String CONFIG_TYPE_DD= "dd"; //NOI18N
+    public static final String REST_CONFIG_TARGET="generate-rest-config"; //NOI18N
+
     /** Creates a new instance of WebProjectRestSupport */
     public WebRestSupport(Project project) {
         super(project);
@@ -97,6 +111,38 @@ public abstract class WebRestSupport extends RestSupport {
         return null;
     }
 
+    public String getApplicationPathFromDD() throws IOException {
+        WebApp webApp = findWebApp();
+        if (webApp != null) {
+            ServletMapping sm = getRestServletMapping(webApp);
+            if (sm != null) {
+                String urlPattern = null;
+                if (sm instanceof ServletMapping25) {
+                    String[] urlPatterns = ((ServletMapping25)sm).getUrlPatterns();
+                    if (urlPatterns.length > 0) {
+                        urlPattern = urlPatterns[0];
+                    }
+                } else {
+                    urlPattern = sm.getUrlPattern();
+                }
+                if (urlPattern != null) {
+                    if (urlPattern.endsWith("*")) { //NOI18N
+                        urlPattern = urlPattern.substring(0, urlPattern.length()-1);
+                    }
+                    if (urlPattern.endsWith("/")) { //NOI18N
+                        urlPattern = urlPattern.substring(0, urlPattern.length()-1);
+                    }
+                    if (urlPattern.startsWith("/")) { //NOI18N
+                        urlPattern = urlPattern.substring(1);
+                    }
+                    return urlPattern;
+                }
+
+            }
+        }
+        return null;
+    }
+
     protected FileObject getDeploymentDescriptor() {
         WebModuleProvider wmp = project.getLookup().lookup(WebModuleProvider.class);
         if (wmp != null) {
@@ -127,9 +173,19 @@ public abstract class WebRestSupport extends RestSupport {
     }
 
     public ServletMapping getRestServletMapping(WebApp webApp) {
-        for (ServletMapping sm : webApp.getServletMapping()) {
-            if (REST_SERVLET_ADAPTOR.equals(sm.getServletName())) {
-                return sm;
+        String servletName = null;
+        for (Servlet s : webApp.getServlet()) {
+            String servletClass = s.getServletClass();
+            if (REST_SERVLET_ADAPTOR_CLASS.equals(servletClass) || REST_SPRING_SERVLET_ADAPTOR_CLASS.equals(servletClass)) {
+                servletName = s.getServletName();
+                break;
+            }
+        }
+        if (servletName != null) {
+            for (ServletMapping sm : webApp.getServletMapping()) {
+                if (servletName.equals(sm.getServletName())) {
+                    return sm;
+                }
             }
         }
         return null;
@@ -147,7 +203,21 @@ public abstract class WebRestSupport extends RestSupport {
     protected Servlet getRestServletAdaptor(WebApp webApp) {
         if (webApp != null) {
             for (Servlet s : webApp.getServlet()) {
-                if (REST_SERVLET_ADAPTOR.equals(s.getServletName())) {
+                String servletClass = s.getServletClass();
+                if ( REST_SERVLET_ADAPTOR_CLASS.equals(servletClass) ||
+                    REST_SPRING_SERVLET_ADAPTOR_CLASS.equals(servletClass) ||
+                    REST_SERVLET_ADAPTOR_CLASS_OLD.equals(servletClass)) {
+                    return s;
+                }
+            }
+        }
+        return null;
+    }
+
+    protected Servlet getRestServletAdaptorByName(WebApp webApp, String servletName) {
+        if (webApp != null) {
+            for (Servlet s : webApp.getServlet()) {
+                if (servletName.equals(s.getServletName())) {
                     return s;
                 }
             }
@@ -155,7 +225,7 @@ public abstract class WebRestSupport extends RestSupport {
         return null;
     }
     
-    protected void addResourceConfigToWebApp() throws IOException {
+    public void addResourceConfigToWebApp(String resourcePath) throws IOException {
         FileObject ddFO = getWebXml();
         WebApp webApp = getWebApp();
         if (webApp == null) {
@@ -165,7 +235,7 @@ public abstract class WebRestSupport extends RestSupport {
         try {
             Servlet adaptorServlet = getRestServletAdaptor(webApp);
             if (adaptorServlet == null) {
-                adaptorServlet = (Servlet) webApp.createBean("Servlet");
+                adaptorServlet = (Servlet) webApp.createBean("Servlet"); //NOI18N
                 adaptorServlet.setServletName(REST_SERVLET_ADAPTOR);
                 adaptorServlet.setServletClass(getServletAdapterClass());
                 adaptorServlet.setLoadOnStartup(BigInteger.valueOf(1));
@@ -173,17 +243,54 @@ public abstract class WebRestSupport extends RestSupport {
                 needsSave = true;
             }
 
+            String resourcesUrl = resourcePath;
+            if (!resourcePath.startsWith("/")) { //NOI18N
+                resourcesUrl = "/"+resourcePath; //NOI18N
+            }
+            if (resourcesUrl.endsWith("/")) { //NOI18N
+                resourcesUrl = resourcesUrl+"*"; //NOI18N
+            } else if (!resourcesUrl.endsWith("*")) { //NOI18N
+                resourcesUrl = resourcesUrl+"/*"; //NOI18N
+            }
+
             ServletMapping sm = getRestServletMapping(webApp);
             if (sm == null) {
-                sm = (ServletMapping) webApp.createBean("ServletMapping");
+                sm = (ServletMapping) webApp.createBean("ServletMapping"); //NOI18N
                 sm.setServletName(adaptorServlet.getServletName());
                 if (sm instanceof ServletMapping25) {
-                    ((ServletMapping25)sm).addUrlPattern(REST_SERVLET_ADAPTOR_MAPPING);
+                    ((ServletMapping25)sm).addUrlPattern(resourcesUrl);
                 } else {
-                    sm.setUrlPattern(REST_SERVLET_ADAPTOR_MAPPING);
+                    sm.setUrlPattern(resourcesUrl);
                 }
                 webApp.addServletMapping(sm);
                 needsSave = true;
+            } else {
+                // check old url pattern
+                boolean urlPatternChanged = false;
+                if (sm instanceof ServletMapping25) {
+                    String[] urlPatterns = ((ServletMapping25)sm).getUrlPatterns();
+                    if (urlPatterns.length == 0 || !resourcesUrl.equals(urlPatterns[0])) {
+                        urlPatternChanged = true;
+                    }
+                } else {
+                    if (!resourcesUrl.equals(sm.getUrlPattern())) {
+                        urlPatternChanged = true;
+                    }
+                }
+
+                if (urlPatternChanged) {
+                    if (sm instanceof ServletMapping25) {
+                        String[] urlPatterns = ((ServletMapping25)sm).getUrlPatterns();
+                        if (urlPatterns.length>0) {
+                            ((ServletMapping25)sm).setUrlPattern(0, resourcesUrl);
+                        } else {
+                            ((ServletMapping25)sm).addUrlPattern(resourcesUrl);
+                        }
+                    } else {
+                        sm.setUrlPattern(resourcesUrl);
+                    }
+                    needsSave = true;
+                }
             }
             if (needsSave) {
                 webApp.write(ddFO);
@@ -203,48 +310,47 @@ public abstract class WebRestSupport extends RestSupport {
             return;
         }
         boolean needsSave = false;
-        Servlet restServlet = getRestServletAdaptor(webApp);
+        Servlet restServlet = getRestServletAdaptorByName(webApp, REST_SERVLET_ADAPTOR);
         if (restServlet != null) {
             webApp.removeServlet(restServlet);
             needsSave = true;
         }
-        ServletMapping sm = getRestServletMapping(webApp);
-        if (sm != null) {
-            webApp.removeServletMapping(sm);
-            needsSave = true;
+
+        for (ServletMapping sm : webApp.getServletMapping()) {
+            if (REST_SERVLET_ADAPTOR.equals(sm.getServletName())) {
+                webApp.removeServletMapping(sm);
+                needsSave = true;
+                break;
+            }
         }
+
         if (needsSave) {
             webApp.write(ddFO);
         }
     }
-
-    @Override
-    public String getApplicationPath() throws IOException {
-        WebApp webApp = findWebApp();
-        if (webApp == null) {
-            return super.getApplicationPath();
-        } else {
-            ServletMapping sm = getRestServletMapping(webApp);
-            if (sm == null) {
-                // TODO needs to take applicationPath from @ApplicationPath
-                return super.getApplicationPath();
-            } else {
-                String urlPattern = sm.getUrlPattern();
-                if (urlPattern.endsWith("*")) {
-                    urlPattern = urlPattern.substring(0, urlPattern.length()-1);
-                }
-                if (urlPattern.endsWith("/")) {
-                    urlPattern = urlPattern.substring(0, urlPattern.length()-1);
-                }
-                return urlPattern;
-            }
-        }
-    }
+    
     /** log rest resource detection
      *
      * @param prj project instance
      */
     protected void logResourceCreation(Project prj) {
+    }
+
+    public List<RestApplication> getRestApplications() {
+        RestApplicationModel applicationModel = getRestApplicationsModel();
+        if (applicationModel != null) {
+            try {
+                return applicationModel.runReadAction(new MetadataModelAction<RestApplications, List<RestApplication>>() {
+
+                    public List<RestApplication> run(RestApplications metadata) throws IOException {
+                        return metadata.getRestApplications();
+                    }
+                    });
+            } catch (IOException ex) {
+                return Collections.emptyList();
+            }
+        }
+        return Collections.emptyList();
     }
 
 }

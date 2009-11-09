@@ -46,6 +46,7 @@
 package org.netbeans.modules.cnd.discovery.projectimport;
 
 import javax.swing.text.html.HTMLEditorKit;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -54,14 +55,15 @@ import javax.swing.text.html.HTMLEditorKit;
 public class ReconfigurePanel extends javax.swing.JPanel {
 
     /** Creates new form ReconfigurePanel */
-    public ReconfigurePanel(String cFlags, String cxxFlags, String linkerFlags, String otherOptions, String legend) {
+    public ReconfigurePanel(String cFlags, String cxxFlags, String linkerFlags, String configureOptions,
+            String legend, String toolChainName) {
         initComponents();
-        jTextPane1.setEditorKit(new HTMLEditorKit());
+        description.setEditorKit(new HTMLEditorKit());
+        description.setText(NbBundle.getMessage(ReconfigurePanel.class, "ReconfigureDescription", toolChainName, legend));
         this.cFlags.setText(cFlags);
         this.cppFlags.setText(cxxFlags);
         this.linkerFlags.setText(linkerFlags);
-        this.otherOptions.setText(otherOptions);
-        this.jTextPane1.setText(legend);
+        this.configureOptions.setText(configureOptions);
     }
 
     /** This method is called from within the constructor to
@@ -78,15 +80,15 @@ public class ReconfigurePanel extends javax.swing.JPanel {
         cFlags = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
         cppFlags = new javax.swing.JTextField();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        jTextPane1 = new javax.swing.JTextPane();
         jLabel3 = new javax.swing.JLabel();
-        otherOptions = new javax.swing.JTextField();
+        configureOptions = new javax.swing.JTextField();
         jLabel4 = new javax.swing.JLabel();
         linkerFlags = new javax.swing.JTextField();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        description = new javax.swing.JTextPane();
 
         setMinimumSize(new java.awt.Dimension(300, 200));
-        setPreferredSize(new java.awt.Dimension(300, 250));
+        setPreferredSize(new java.awt.Dimension(400, 370));
         setLayout(new java.awt.GridBagLayout());
 
         jLabel1.setLabelFor(cFlags);
@@ -126,26 +128,7 @@ public class ReconfigurePanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 5);
         add(cppFlags, gridBagConstraints);
 
-        jScrollPane1.setBorder(null);
-
-        jTextPane1.setBackground(getBackground());
-        jTextPane1.setEditable(false);
-        jTextPane1.setForeground(getForeground());
-        jTextPane1.setFocusCycleRoot(false);
-        jTextPane1.setFocusable(false);
-        jScrollPane1.setViewportView(jTextPane1);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 8;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 5);
-        add(jScrollPane1, gridBagConstraints);
-
-        jLabel3.setLabelFor(otherOptions);
+        jLabel3.setLabelFor(configureOptions);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(ReconfigurePanel.class, "ReconfigurePanel.OtherOptions.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -154,14 +137,14 @@ public class ReconfigurePanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 5);
         add(jLabel3, gridBagConstraints);
 
-        otherOptions.setText(org.openide.util.NbBundle.getMessage(ReconfigurePanel.class, "ReconfigurePanel.otherOptions.text")); // NOI18N
+        configureOptions.setText(org.openide.util.NbBundle.getMessage(ReconfigurePanel.class, "ReconfigurePanel.configureOptions.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 6;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 5);
-        add(otherOptions, gridBagConstraints);
+        add(configureOptions, gridBagConstraints);
 
         jLabel4.setLabelFor(linkerFlags);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(ReconfigurePanel.class, "LDFLAGS_LABEL")); // NOI18N
@@ -180,6 +163,25 @@ public class ReconfigurePanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 5);
         add(linkerFlags, gridBagConstraints);
+
+        jScrollPane2.setBorder(null);
+        jScrollPane2.setFocusable(false);
+
+        description.setBackground(getBackground());
+        description.setBorder(null);
+        description.setEditable(false);
+        description.setFocusable(false);
+        jScrollPane2.setViewportView(description);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 2.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 5);
+        add(jScrollPane2, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
 
@@ -196,20 +198,20 @@ public class ReconfigurePanel extends javax.swing.JPanel {
     }
 
     public String getOtherOptions(){
-        return otherOptions.getText().trim();
+        return configureOptions.getText().trim();
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField cFlags;
+    private javax.swing.JTextField configureOptions;
     private javax.swing.JTextField cppFlags;
+    private javax.swing.JTextPane description;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTextPane jTextPane1;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTextField linkerFlags;
-    private javax.swing.JTextField otherOptions;
     // End of variables declaration//GEN-END:variables
 
 }

@@ -41,9 +41,9 @@
 
 package org.netbeans.modules.cnd.folding;
 
-import antlr.Token;
-import antlr.TokenStream;
-import antlr.TokenStreamException;
+import org.netbeans.modules.cnd.antlr.Token;
+import org.netbeans.modules.cnd.antlr.TokenStream;
+import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.cnd.editor.parser.CppFoldRecord;

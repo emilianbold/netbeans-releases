@@ -76,6 +76,7 @@ import org.jrubyparser.ast.StrNode;
 import org.jrubyparser.ast.SymbolNode;
 import org.jrubyparser.ast.INameNode;
 import org.jrubyparser.SourcePosition;
+import org.jrubyparser.ast.MultipleAsgnNode;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -286,6 +287,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
                     // Make sure I don't already have an entry for this field as an
                     // attr_accessor or writer
                     String fieldName = field.getName();
+                    co.setType(knowledge.getType(fieldName));
 
                     if (fieldName.startsWith("@@")) {
                         fieldName = fieldName.substring(2);
@@ -298,6 +300,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
                     for (AstElement member : clz.getChildren()) {
                         if ((member.getKind() == ElementKind.ATTRIBUTE) &&
                                 member.getName().equals(fieldName)) {
+                            member.setType(co.getType());
                             found = true;
                             break;
                         }
@@ -669,6 +672,38 @@ public class RubyStructureAnalyzer implements StructureScanner {
             
             break;
         }
+        case MULTIPLEASGNNODE: {
+            Map<Node, RubyType> vars = new HashMap<Node, RubyType>();
+            RubyTypeAnalyzer.collectMultipleAsgnVars((MultipleAsgnNode) node, typeInferencer, vars);
+            for (Node each : vars.keySet()) {
+                switch (each.getNodeType()) {
+                    case LOCALASGNNODE: {
+                        if (parent == null && AstUtilities.findMethod(path) == null) {
+                            String name = AstUtilities.getName(each);
+                            if (findExistingVariable(name) == null) {
+                                AstElement co = new AstNameElement(result, each, name, ElementKind.VARIABLE);
+                                co.setType(vars.get(each));
+                                co.setIn(in);
+                                structure.add(co);
+                            }
+                        }
+                        break;
+                    }
+                    case INSTASGNNODE: {
+                        if (parent instanceof AstClassElement) {
+                            Set<InstAsgnNode> assignments = fields.get((AstClassElement) parent);
+                            if (assignments == null) {
+                                assignments = new HashSet<InstAsgnNode>();
+                                fields.put((AstClassElement) parent, assignments);
+                            }
+                            assignments.add((InstAsgnNode) each);
+                        }
+                        break;
+                    }
+                }
+            }
+            break;
+        }
         case LOCALASGNNODE: {
             // Only include variables at the top level
             if (parent == null && AstUtilities.findMethod(path) == null) {
@@ -676,13 +711,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
                 // TODO - avoid duplicates?
 
                 String name = AstUtilities.getName(node);
-                boolean found = false;
-                for (AstElement child : structure) {
-                    if (child.getKind() == ElementKind.VARIABLE && name.equals(child.getName())) {
-                        found = true;
-                        break;
-                    }
-                }
+                boolean found = findExistingVariable(name) != null;
                 if (!found) {
                     AstElement co = new AstNameElement(result, node, name,
                             ElementKind.VARIABLE);
@@ -719,11 +748,32 @@ public class RubyStructureAnalyzer implements StructureScanner {
                         }
                     }
                 }
+            } else if ("alias_method".equals(name)) {
+                List<Node> values = AstUtilities.getChildValues(node);
+                if (values.size() == 2) {
+                    Node newMethod = values.get(0);
+                    String newMethodName = AstUtilities.getNameOrValue(values.get(1));
+                    if (newMethodName != null) {
+                        AstMethodElement aliased = findExistingMethod(newMethodName);
+                        if (aliased != null) {
+                            AstDynamicMethodElement co = new AstDynamicMethodElement(result, newMethod);
+                            co.setModifiers(aliased.getModifiers());
+                            co.setParameters(aliased.getParameters());
+                            co.setIn(in);
+                            co.setType(aliased.getType());
+                            co.setHidden(true);
+                            if (parent != null) {
+                                parent.addChild(co);
+                            } else {
+                                structure.add(co);
+                            }
+                        }
+                    }
+                }
             } else if (AstUtilities.isNamedScope(node)) {
                 SymbolNode[] symbols = AstUtilities.getSymbols(node);
                 if (symbols.length > 0) {
                     SymbolNode method = symbols[0];
-                    method.getName();
                     AstDynamicMethodElement co = new AstDynamicMethodElement(result, method);
                     co.setIn(in);
                     co.setModifiers(EnumSet.of(Modifier.PUBLIC, Modifier.STATIC));
@@ -930,6 +980,26 @@ public class RubyStructureAnalyzer implements StructureScanner {
             scan(child, path, in, includes, parent);
             path.ascend();
         }
+    }
+
+
+    private AstElement findExistingVariable(String name) {
+        for (AstElement child : structure) {
+            if (child.getKind() == ElementKind.VARIABLE && name.equals(child.getName())) {
+                return child;
+            }
+        }
+        return null;
+    }
+
+    private AstMethodElement findExistingMethod(String name) {
+        for (AstMethodElement each : methods) {
+            if (each.getClass().equals(AstMethodElement.class) // don't include AstDynamicMethodElement
+                    && each.getName().equals(name)) {
+                return each;
+            }  
+        }
+        return null;
     }
 
     /** Analyze the given method and see if it looks like the following

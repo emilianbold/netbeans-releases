@@ -43,7 +43,7 @@ package org.netbeans.modules.javacard.templates;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.javacard.constants.FileWizardConstants;
-import org.netbeans.modules.javacard.constants.JCConstants;
+import org.netbeans.modules.javacard.common.JCConstants;
 import org.netbeans.modules.javacard.project.JCProject;
 import org.netbeans.modules.javacard.project.refactoring.WebXMLRefactoringSupport;
 import org.netbeans.spi.project.ui.templates.support.Templates;

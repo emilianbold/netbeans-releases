@@ -39,8 +39,6 @@
 package org.netbeans.modules.php.editor;
 
 import java.util.Collections;
-import java.util.concurrent.Future;
-import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
@@ -64,7 +62,7 @@ import org.openide.util.RequestProcessor.Task;
  */
 public class PHPCodeTemplateFilter extends UserTask implements CodeTemplateFilter {
 
-    private boolean accept = false;
+    private volatile boolean accept = false;
     private int caretOffset;
     private CompletionContext context;
     private static final RequestProcessor requestProcessor = new RequestProcessor("PHPCodeTemplateFilter");//NOI18N
@@ -72,26 +70,22 @@ public class PHPCodeTemplateFilter extends UserTask implements CodeTemplateFilte
 
     public PHPCodeTemplateFilter(final JTextComponent component, final int offset) {
         this.caretOffset = offset;
-        if (SwingUtilities.isEventDispatchThread()) {
-            postedTask = requestProcessor.post(new Runnable() {
-                public void run() {
-                    parseDocument(component);
-                }
-            });
-
-        } else {
-            postedTask = null;
-            parseDocument(component);
-        }
+        postedTask = requestProcessor.post(new Runnable() {
+            public void run() {
+                parseDocument(component);
+            }
+        });
     }
 
     public boolean accept(CodeTemplate template) {
         try {
-            if ((postedTask == null || postedTask.waitFinished(300)) && template.getContexts().contains("php-code")) {
+            if (postedTask.waitFinished(300)) {
                 if (context == CompletionContext.CLASS_CONTEXT_KEYWORDS) {
                     return template.getAbbreviation().equals("fnc"); //NOI18N
                     }
                 return accept;
+            } else {
+                postedTask.cancel();
             }
         } catch (InterruptedException ex) {
         }
@@ -113,7 +107,7 @@ public class PHPCodeTemplateFilter extends UserTask implements CodeTemplateFilte
         }
         if (mimeType.equals(FileUtils.PHP_MIME_TYPE)) {
             parameter = (ParserResult) resultIterator.getParserResult();
-            BaseDocument document = (BaseDocument) parameter.getSnapshot().getSource().getDocument(false);
+            BaseDocument document = parameter != null ? (BaseDocument) parameter.getSnapshot().getSource().getDocument(false) : null;
             if (document != null) {
                 document.readLock();
 
@@ -143,10 +137,7 @@ public class PHPCodeTemplateFilter extends UserTask implements CodeTemplateFilte
 
     private void parseDocument(final JTextComponent component) {
         try {
-            Future<Void> f = ParserManager.parseWhenScanFinished(Collections.singleton(Source.create(component.getDocument())), this);
-            if (!f.isDone()) {
-                f.cancel(true);
-            }
+            ParserManager.parseWhenScanFinished(Collections.singleton(Source.create(component.getDocument())), this);
         } catch (ParseException ex) {
             Exceptions.printStackTrace(ex);
         }

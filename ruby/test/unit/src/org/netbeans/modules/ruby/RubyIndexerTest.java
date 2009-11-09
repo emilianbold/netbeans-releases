@@ -91,7 +91,9 @@ public class RubyIndexerTest extends RubyTestBase {
         } else if (RubyIndexer.FIELD_FIELD_NAME.equals(key)) {
             // Decode the attributes
             int attributeIndex = value.indexOf(';');
-            if (attributeIndex != -1) {
+            if (attributeIndex != -1 &&
+                    (attributeIndex + 1) < value.length() &&
+                    value.charAt(attributeIndex + 1) != ';') {
                 int flags = IndexedElement.stringToFlag(value, attributeIndex + 1);
                 if (flags != 0) {
                     String desc = IndexedField.decodeFlags(flags);
@@ -255,6 +257,10 @@ public class RubyIndexerTest extends RubyTestBase {
 
     public void testNamedScopes() throws Exception {
         checkIndexer("testfiles/named_scopes.rb");
+    }
+
+    public void testTypeInferenceInstVars() throws Exception {
+        checkIndexer("testfiles/inst_var_type_inference.rb");
     }
 
     // TODO - test :nodoc: on methods and classes!!!

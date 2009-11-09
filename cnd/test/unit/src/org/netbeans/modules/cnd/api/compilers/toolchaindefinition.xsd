@@ -143,6 +143,12 @@
         </xs:complexType>
     </xs:element>
 
+    <xs:element name="making_all_in_directory">
+        <xs:complexType>
+            <xs:attribute name="pattern" type="xs:string" use="optional" />
+        </xs:complexType>
+    </xs:element>
+
     <xs:element name="classic">
         <xs:complexType>
             <xs:attribute name="flags" type="xs:string" use="optional" />
@@ -282,6 +288,7 @@
             <xs:attribute name="uc_url" type="xs:string" />
             <xs:attribute name="module_id" type="xs:string" />
             <xs:attribute name="uc_display" type="xs:string" />
+            <xs:attribute name="upgrade_url" type="xs:string" />
         </xs:complexType>
     </xs:element>
 
@@ -345,6 +352,7 @@
                 <xs:element ref="tns:warning_level"  minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="tns:architecture"  minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="tns:strip"  minOccurs="0" maxOccurs="1"/>
+                <xs:element ref="tns:multithreading"  minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="tns:output_object_file"  minOccurs="0" maxOccurs="1"/>
             </xs:sequence>
         </xs:complexType>
@@ -592,6 +600,7 @@
                 <xs:element ref="tns:enter_directory" minOccurs="0" maxOccurs="1" />
                 <xs:element ref="tns:leave_directory" minOccurs="0" maxOccurs="1" />
                 <xs:element ref="tns:change_directory" minOccurs="0" maxOccurs="1" />
+                <xs:element ref="tns:making_all_in_directory" minOccurs="0" maxOccurs="1" />
                 <xs:element ref="tns:stack_header" minOccurs="0" maxOccurs="1" />
                 <xs:element ref="tns:stack_next" minOccurs="0" maxOccurs="1" />
                 <xs:element ref="tns:filter_out" minOccurs="0" maxOccurs="unbounded" />
@@ -673,6 +682,7 @@
             <xs:attribute name="family" type="xs:string" use="optional" />
             <xs:attribute name="display" type="xs:string" use="optional" />
             <xs:attribute name="qmakespec" type="xs:string" use="optional" />
+            <xs:attribute name="abstract" type="xs:string" use="optional" />
         </xs:complexType>
     </xs:element>
 

@@ -107,7 +107,7 @@
         <Property name="text" type="java.lang.String" value="Add information to Applet descriptor (applet.xml)"/>
       </Properties>
     </Component>
-    <Component class="org.netbeans.modules.javacard.project.ui.AIDPanel" name="aIDPanel1">
+    <Component class="org.netbeans.modules.javacard.common.AIDPanel" name="aIDPanel1">
     </Component>
     <Component class="javax.swing.JSeparator" name="jSeparator1">
     </Component>

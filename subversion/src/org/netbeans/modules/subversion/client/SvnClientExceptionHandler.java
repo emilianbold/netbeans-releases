@@ -104,6 +104,7 @@ public class SvnClientExceptionHandler {
     
     private static final String NEWLINE = System.getProperty("line.separator"); // NOI18N
     private static final String CHARSET_NAME = "ASCII7";                        // NOI18N
+    private final boolean commandLine;
     
     private class CertificateFailure {
         int mask;
@@ -151,13 +152,14 @@ public class SvnClientExceptionHandler {
             
     static final String ACTION_CANCELED_BY_USER = org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_ActionCanceledByUser");
     
-    public SvnClientExceptionHandler(SVNClientException exception, ISVNClientAdapter adapter, SvnClient client, SvnClientDescriptor desc, int handledExceptions) {
+    public SvnClientExceptionHandler(SVNClientException exception, ISVNClientAdapter adapter, SvnClient client, SvnClientDescriptor desc, int handledExceptions, boolean commandLine) {
         this.exception = exception;                
         this.adapter = adapter;
         this.client = client;
         this.desc = desc;
         this.handledExceptions = handledExceptions;
         exceptionMask = getMask(exception.getMessage());
+        this.commandLine = commandLine;
     }      
 
     public boolean handleException() throws Exception {
@@ -185,7 +187,9 @@ public class SvnClientExceptionHandler {
         char[] password = pa.getPassword();
         
         adapter.setUsername(user != null ? user : "");
-        adapter.setPassword(password != null ? new String(password) : "");
+        if (commandLine) {
+            adapter.setPassword(password != null ? new String(password) : "");
+        }
 
         return true;
     }
@@ -215,7 +219,9 @@ public class SvnClientExceptionHandler {
                 String password = rc.getPassword();
 
                 adapter.setUsername(username);
-                adapter.setPassword(password);
+                if (commandLine) {
+                    adapter.setPassword(password);
+                }
                 SvnModuleConfig.getDefault().insertRecentUrl(rc);
             }
             return ret;

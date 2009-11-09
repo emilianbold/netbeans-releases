@@ -415,7 +415,7 @@ public class DLightSessionsViewPanel extends JPanel
         }
     }
 
-    class NodeActionsProviderImpl implements NodeActionsProvider {
+    private static class NodeActionsProviderImpl implements NodeActionsProvider {
 
         public void performDefaultAction(Object node) throws UnknownTypeException {
             if (!(node instanceof Event)) {

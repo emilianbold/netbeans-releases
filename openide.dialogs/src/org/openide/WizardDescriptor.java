@@ -529,6 +529,20 @@ public class WizardDescriptor extends DialogDescriptor {
                 }
             }
         });
+
+        // update buttons when setValid(...) called
+        addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (PROP_VALID.equals(evt.getPropertyName())) {
+                    if (!isValid()) {
+                        nextButton.setEnabled(false);
+                        finishButton.setEnabled(false);
+                    } else {
+                        updateState();
+                    }
+                }
+            }
+        });
     }
 
     /** Set a different list of panels.

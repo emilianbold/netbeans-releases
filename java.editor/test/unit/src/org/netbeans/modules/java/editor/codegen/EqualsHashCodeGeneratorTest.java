@@ -386,6 +386,84 @@ public class EqualsHashCodeGeneratorTest extends NbTestCase {
         assertEquals(golden, result);
     }
     
+    public void testObjectEditing1() throws Exception {
+        FileObject java = FileUtil.createData(fo, "X.java");
+        final String what1 = "package java.lang; public class Object {\n" +
+                             "  public int hashCode() {return 0;}" +
+                             "  public static int hashCode(Object o) {return 0;}" +
+                             "  public boolean equals(Object o) {return false;}" +
+                             "  public boolean equals(Object o1, Object o2) {return false;}" +
+                             "  \n";
+
+        String what2 =
+            "}\n";
+        String what = what1 + what2;
+        GeneratorUtilsTest.writeIntoFile(java, what);
+
+        JavaSource js = JavaSource.forFileObject(java);
+        assertNotNull("Created", js);
+
+        class TaskImpl implements Task<WorkingCopy> {
+            public void run(WorkingCopy copy) throws Exception {
+                copy.toPhase(JavaSource.Phase.RESOLVED);
+                ClassTree clazzTree = (ClassTree) copy.getCompilationUnit().getTypeDecls().get(0);
+                TreePath clazz = new TreePath(new TreePath(copy.getCompilationUnit()), clazzTree);
+                List<VariableElement> vars = new LinkedList<VariableElement>();
+
+                for (Tree m : clazzTree.getMembers()) {
+                    if (m.getKind() == Kind.VARIABLE) {
+                        vars.add((VariableElement) copy.getTrees().getElement(new TreePath(clazz, m)));
+                    }
+                }
+
+                EqualsHashCodeGenerator.overridesHashCodeAndEquals(copy, copy.getTrees().getElement(clazz), new boolean[1]);
+            }
+        }
+
+        TaskImpl t = new TaskImpl();
+
+        js.runModificationTask(t);
+    }
+
+    public void testObjectEditing2() throws Exception {
+        FileObject java = FileUtil.createData(fo, "X.java");
+        final String what1 = "package java.lang; public class Object {\n" +
+                             "  public int hashCode() {return 0;}" +
+                             "  public int hashCode() {return 0;}" +
+                             "  public boolean equals(Object o) {return false;}" +
+                             "  public boolean equals(Object o) {return false;}" +
+                             "  \n";
+
+        String what2 =
+            "}\n";
+        String what = what1 + what2;
+        GeneratorUtilsTest.writeIntoFile(java, what);
+
+        JavaSource js = JavaSource.forFileObject(java);
+        assertNotNull("Created", js);
+
+        class TaskImpl implements Task<WorkingCopy> {
+            public void run(WorkingCopy copy) throws Exception {
+                copy.toPhase(JavaSource.Phase.RESOLVED);
+                ClassTree clazzTree = (ClassTree) copy.getCompilationUnit().getTypeDecls().get(0);
+                TreePath clazz = new TreePath(new TreePath(copy.getCompilationUnit()), clazzTree);
+                List<VariableElement> vars = new LinkedList<VariableElement>();
+
+                for (Tree m : clazzTree.getMembers()) {
+                    if (m.getKind() == Kind.VARIABLE) {
+                        vars.add((VariableElement) copy.getTrees().getElement(new TreePath(clazz, m)));
+                    }
+                }
+
+                EqualsHashCodeGenerator.overridesHashCodeAndEquals(copy, copy.getTrees().getElement(clazz), new boolean[1]);
+            }
+        }
+
+        TaskImpl t = new TaskImpl();
+
+        js.runModificationTask(t);
+    }
+
     private static final class DD extends DialogDisplayer {
 
         public Object notify(NotifyDescriptor descriptor) {

@@ -96,7 +96,7 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
         return watch;
     }
     
-    public void remove() {
+    protected void selfDestroy() {
         getDebugger().removePropertyChangeListener(this);
     }
     

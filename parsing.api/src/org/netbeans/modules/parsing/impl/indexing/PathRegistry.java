@@ -367,7 +367,8 @@ public final class PathRegistry implements Runnable {
 
     public boolean isKnownRoot(URL root) {
         synchronized(this) {
-            return rootPathIds.containsKey(root) || unknownSourcePath.contains(root);
+            return (rootPathIds != null && rootPathIds.containsKey(root)) ||
+                    (unknownSourcePath != null && unknownSourcePath.contains(root));
         }
     }
 

@@ -66,7 +66,6 @@ import org.netbeans.modules.dlight.api.execution.DLightToolkitManagement.DLightS
 import org.netbeans.modules.dlight.api.support.NativeExecutableTarget;
 import org.netbeans.modules.dlight.api.support.NativeExecutableTargetConfiguration;
 import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
-import org.netbeans.modules.dlight.api.tool.DLightConfigurationManager;
 import org.netbeans.modules.dlight.api.tool.DLightConfigurationOptions;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
@@ -74,8 +73,12 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminalProvider;
 import org.netbeans.modules.cnd.api.remote.RemoteBinaryService;
+import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.utils.SunStudioUserCounter;
 import org.netbeans.modules.cnd.gizmo.CppSymbolDemanglerFactoryImpl;
-import org.netbeans.modules.nativeexecution.api.util.EnvUtils;
+import org.netbeans.modules.cnd.gizmo.api.GizmoOptionsProvider;
+import org.netbeans.modules.cnd.gizmo.spi.GizmoOptions;
+import org.netbeans.modules.dlight.management.api.DLightManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -106,6 +109,9 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
     public void execute(InputOutput io) {
         MakeConfiguration conf = pae.getConfiguration();
         ExecutionEnvironment execEnv = conf.getDevelopmentHost().getExecutionEnvironment();
+        GizmoOptions opts = GizmoOptionsProvider.getOptions(conf);
+        opts.init(conf);
+        DLightConfiguration configuration = opts.getDLightConfiguration();
 
         Map<String, String> envVars = pae.getProfile().getEnvironment().getenvAsMap();
         NativeExecutableTargetConfiguration targetConf = new NativeExecutableTargetConfiguration(
@@ -115,15 +121,27 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
 
         String executable = pae.getExecutable();
         String runDirectory = pae.getProfile().getRunDirectory();
+
+        final boolean isSunStudio = configuration.getCollectorProviders().contains("SunStudio"); // NOI18N
         if (execEnv.isRemote()) {
             PathMap mapper = HostInfoProvider.getMapper(execEnv);
-            executable = RemoteBinaryService.getRemoteBinary(execEnv, executable);
             runDirectory = mapper.getRemotePath(runDirectory, true);
+
+            if (isSunStudio) {
+                // No need to upload executable as dwarf provider is not used in
+                // this case
+                targetConf.putInfo(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE, executable);
+            } else {
+                RemoteBinaryService.RemoteBinaryID executableID = RemoteBinaryService.getRemoteBinary(execEnv, executable);
+                targetConf.putInfo(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE, executableID.toIDString());
+            }
+        } else {
+            targetConf.putInfo(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE, executable);
         }
 
         targetConf.setExecutionEnvironment(execEnv);
 
-        if (execEnv.isRemote() && !envVars.containsKey("DISPLAY")) { // NOI18N
+        if (execEnv.isRemote() && ServerList.get(execEnv).getX11Forwarding() && !envVars.containsKey("DISPLAY")) { // NOI18N
             targetConf.setX11Forwarding(true);
         }
 
@@ -131,9 +149,6 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         targetConf.putInfo(GizmoServiceInfoAccessor.getDefault().getGIZMO_RUN(), "gizmo.run"); // NOI18N
         targetConf.putInfo(GizmoServiceInfo.PLATFORM, pae.getConfiguration().getDevelopmentHost().getBuildPlatformDisplayName());
         targetConf.putInfo(GizmoServiceInfo.GIZMO_PROJECT_FOLDER, FileUtil.toFile(pae.getProject().getProjectDirectory()).getAbsolutePath());//NOI18N
-        if (executable != null){
-            targetConf.putInfo(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE, executable);
-        }
 
         targetConf.putInfo("sunstudio.datafilter.collectedobjects", System.getProperty("sunstudio.datafilter.collectedobjects", "")); // NOI18N
         targetConf.putInfo("sunstudio.hotspotfunctionsfilter", System.getProperty("sunstudio.hotspotfunctionsfilter", "")); //, "with-source-code-only")); // NOI18N
@@ -148,6 +163,9 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         targetConf.putInfo(GizmoServiceInfo.GIZMO_DEMANGLE_UTILITY, dem_util_path);
         targetConf.putInfo(GizmoServiceInfo.CPP_COMPILER, compilerSet.isGnuCompiler() ? CppSymbolDemanglerFactoryImpl.CPPCompiler.GNU.toString() : CppSymbolDemanglerFactoryImpl.CPPCompiler.SS.toString());
         targetConf.putInfo(GizmoServiceInfo.CPP_COMPILER_BIN_PATH, binDir);
+        if (compilerSet.isSunCompiler()) {
+            SunStudioUserCounter.countTool(binDir, execEnv, "gizmo"); // NOI18N
+        }
         targetConf.setWorkingDirectory(runDirectory);
         int consoleType = pae.getProfile().getConsoleType().getValue();
         if (consoleType == RunProfile.CONSOLE_TYPE_DEFAULT) {
@@ -168,7 +186,6 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         // Setup simple output convertor factory...
         targetConf.setOutConvertorFactory(new SimpleOutputConvertorFactory());
 
-        DLightConfiguration configuration = DLightConfigurationManager.getInstance().getConfigurationByName("GizmoDTraceExtended");//NOI18N
         DLightConfigurationOptions options = configuration.getConfigurationOptions(false);
         if (options instanceof GizmoConfigurationOptions) {
             ((GizmoConfigurationOptions) options).configure(pae.getProject());

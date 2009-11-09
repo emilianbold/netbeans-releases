@@ -42,11 +42,11 @@ package org.netbeans.modules.cnd.folding;
 
 import java.io.*;
 import java.util.*;
-import antlr.TokenStreamException;
-import antlr.Token;
-import antlr.TokenStream;
-import antlr.RecognitionException;
-import antlr.NoViableAltException;
+import org.netbeans.modules.cnd.antlr.TokenStreamException;
+import org.netbeans.modules.cnd.antlr.Token;
+import org.netbeans.modules.cnd.antlr.TokenStream;
+import org.netbeans.modules.cnd.antlr.RecognitionException;
+import org.netbeans.modules.cnd.antlr.NoViableAltException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import org.netbeans.modules.cnd.editor.parser.CppFoldRecord;
@@ -62,7 +62,7 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
  * Code Folding parser based on matching balanced { and }
  *@author Vladimir Voskresensky
  */
-/*package*/ class APTFoldingParser extends antlr.LLkParserNoEx implements APTTokenTypes {
+/*package*/ class APTFoldingParser extends org.netbeans.modules.cnd.antlr.LLkParserNoEx implements APTTokenTypes {
 
     private static final int CLASS_FOLD = CppFoldRecord.CLASS_FOLD;
     private static final int NAMESPACE_FOLD = CppFoldRecord.NAMESPACE_FOLD;

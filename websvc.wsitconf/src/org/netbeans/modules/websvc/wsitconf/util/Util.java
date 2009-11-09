@@ -362,7 +362,7 @@ public class Util {
         WSDLComponentFactory wcf = model.getFactory();
         Definitions d = (Definitions) binding.getParent();
 
-        BindingOperation bindingOperation;
+        BindingOperation bindingOperation = null;
         
         boolean isTransaction = model.isIntransaction();
         if (!isTransaction) {
@@ -406,6 +406,8 @@ public class Util {
                 org.netbeans.modules.xml.wsdl.model.BindingFault bindingFault = wcf.createBindingFault();
                 bindingOperation.addBindingFault(bindingFault);
             }
+        } catch (NullPointerException npe) {
+            logger.log(Level.INFO, "Cannot create operation: " + operationName + ", " + portType + npe.getLocalizedMessage());
         } finally {
             if (!isTransaction) {
                 model.endTransaction();

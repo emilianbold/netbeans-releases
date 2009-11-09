@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.cnd.asm.base.syntax;
 
-import antlr.TokenStream;
+import org.netbeans.modules.cnd.antlr.TokenStream;
 
 public interface AntlrScanner extends TokenStream {
     public enum PartState { 

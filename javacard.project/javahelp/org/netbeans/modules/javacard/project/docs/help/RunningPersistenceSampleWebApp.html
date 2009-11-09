@@ -1,0 +1,55 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html lang="en-US">
+
+<head>
+<!-- GenHTML revision 22989-->
+
+  <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+  <title>Running Persistence Sample Web Application - Java Card 3 Development
+  </title>
+
+</head>
+
+<body class="body">
+
+
+
+<a name="RunningPersistenceSampleWebApp"></a><h2>Running <tt>Persistence</tt> Sample Web Application</h2><p class="p">The <tt>Persistence</tt> sample demonstrates the persistence of user entered information when a session
+on a card is resumed. The sample stores user-entered information as history and, when
+the card resumes functioning, the previous entries are made available.</p><p class="p">Running the <tt>Persistence</tt> sample consists of using the IDE to open the <tt>Persistence</tt>
+project, starting the application, clicking the hyperlink on the Persistence web page to open
+the database form, using the form to add and delete items in the
+database list, and stopping and restarting the server. When the server is stopped
+and restarted the items in the list should not change.</p><h2>Before You Begin</h2><p class="p">Before performing the following procedure, the Java Card 3 Development Kit, Connected Editon
+must be downloaded and installed on your development system. </p><p class="p">The <tt>Persistence</tt> project is located under the <b>JC_CONNECTED_HOME</b><tt>\samples\web</tt> folder.</p>
+<hr><p class="p"><b>Note - </b>Refer to the <i>Java Card 3 Platform Development Kit User&#8217;s Guide</i> for additional details including screen captures.</p>
+<hr>
+<ol class="ol">
+<li class="li"><b>Click File &#62; Open Project in the main window.</b></li>
+<li class="li"><b>Go to the <b>JC_CONNECTED_HOME</b><tt>\samples\web </tt>folder and open the <tt>Persistence</tt> project.</b></li>
+<li class="li"><b>Click the run button in the main window. </b><p class="p">The IDE compiles, builds, and runs the sample. When the sample runs the
+IDE launches the default browser and displays the Persistence page.</p></li>
+<li class="li"><b>Click the Database hyperlink.</b></li>
+<li class="li"><b>Enter text in the Item field and click the Add button.</b><p class="p">The browser displays the added text in the Items in Database list.</p></li>
+<li class="li"><b>Delete an item from the list.</b><ol style="list-style-type: lower-alpha">
+<li class="li"><b>Type the name of an item in the Item text field.</b></li>
+<li class="li"><b>Click the Delete button.</b></li></ol></li>
+<li class="li"><b>Stop and resume the server.</b><ol style="list-style-type: lower-alpha">
+<li class="li"><b>Go to the Default Device in the Services window and right click on
+it to display the Default Device menu.</b></li>
+<li class="li"><b>Click the Stop menu item to stop the server.</b><p class="p">The browser is no longer connected to the device.</p></li>
+<li class="li"><a name="z400000e1426862"></a><b>Right click on the Default Device to display the menu.</b></li>
+<li class="li"><b>Click the Resume menu item to start the server.</b>
+<hr><p class="p"><b>Note - </b>Clicking the Restart menu item terminates this server instance and starts a new
+server instance. The data is not persistent from one server instance to another.</p>
+<hr>
+<p class="p">Verify that the content in the database list is unchanged.</p></li></ol></li>
+<li class="li"><a name="z40000081422448"></a><b>Add a new item to the list to verify that the database is
+still functional.</b></li>
+<li class="li"><b>Close the browser to stop the application.</b></li></ol>
+
+
+</body>
+</html>

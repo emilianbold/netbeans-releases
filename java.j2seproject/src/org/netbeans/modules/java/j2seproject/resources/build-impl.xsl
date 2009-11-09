@@ -512,6 +512,7 @@ is divided into following sections:
                             <xsl:attribute name="dir">${work.dir}</xsl:attribute> <!-- #47474: match <java> --> 
                             <xsl:attribute name="failureproperty">tests.failed</xsl:attribute>
                             <xsl:attribute name="errorproperty">tests.failed</xsl:attribute>
+                            <xsl:attribute name="tempdir">${build.dir}</xsl:attribute>
                             <xsl:if test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">
                                 <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
                             </xsl:if>
@@ -1064,13 +1065,13 @@ is divided into following sections:
                 <property name="javac.includes.binary" value=""/> <!-- #116230 hack -->
             </target>
             <target name="run-single">
-                <xsl:attribute name="depends">init,-do-not-recompile,compile-single</xsl:attribute>
+                <xsl:attribute name="depends">init,compile-single</xsl:attribute>
                 <fail unless="run.class">Must select one file in the IDE or set run.class</fail>
                 <j2seproject1:java classname="${{run.class}}"/>
             </target>
 
             <target name="run-test-with-main">
-                <xsl:attribute name="depends">init,-do-not-recompile,compile-test-single</xsl:attribute>
+                <xsl:attribute name="depends">init,compile-test-single</xsl:attribute>
                 <fail unless="run.class">Must select one file in the IDE or set run.class</fail>
                 <j2seproject1:java classname="${{run.class}}" classpath="${{run.test.classpath}}"/>
             </target>
@@ -1128,7 +1129,7 @@ is divided into following sections:
             
             <target name="debug-single">
                 <xsl:attribute name="if">netbeans.home</xsl:attribute>
-                <xsl:attribute name="depends">init,-do-not-recompile,compile-single,-debug-start-debugger,-debug-start-debuggee-single</xsl:attribute>
+                <xsl:attribute name="depends">init,compile-single,-debug-start-debugger,-debug-start-debuggee-single</xsl:attribute>
             </target>
 
             <target name="-debug-start-debuggee-main-test">
@@ -1140,7 +1141,7 @@ is divided into following sections:
 
             <target name="debug-test-with-main">
                 <xsl:attribute name="if">netbeans.home</xsl:attribute>
-                <xsl:attribute name="depends">init,-do-not-recompile,compile-test-single,-debug-start-debugger-main-test,-debug-start-debuggee-main-test</xsl:attribute>
+                <xsl:attribute name="depends">init,compile-test-single,-debug-start-debugger-main-test,-debug-start-debuggee-main-test</xsl:attribute>
             </target>
             
             <target name="-pre-debug-fix">
@@ -1404,7 +1405,7 @@ is divided into following sections:
             </target>
             
             <target name="test-single">
-                <xsl:attribute name="depends">init,-do-not-recompile,compile-test-single,-pre-test-run-single,-do-test-run-single,-post-test-run-single</xsl:attribute>
+                <xsl:attribute name="depends">init,compile-test-single,-pre-test-run-single,-do-test-run-single,-post-test-run-single</xsl:attribute>
                 <xsl:attribute name="description">Run single unit test.</xsl:attribute>
             </target>
             
@@ -1443,7 +1444,7 @@ is divided into following sections:
             </target>
             
             <target name="debug-test">
-                <xsl:attribute name="depends">init,-do-not-recompile,compile-test-single,-debug-start-debugger-test,-debug-start-debuggee-test</xsl:attribute>
+                <xsl:attribute name="depends">init,compile-test-single,-debug-start-debugger-test,-debug-start-debuggee-test</xsl:attribute>
             </target>
             
             <target name="-do-debug-fix-test">
@@ -1560,6 +1561,9 @@ is divided into following sections:
             <property name="built-{$kind}.properties" location="${{build.dir}}/built-{$kind}.properties"/>
             <delete file="${{built-{$kind}.properties}}" quiet="true"/>
         </target>
+        <target name="-warn-already-built-{$kind}" if="already.built.{$kind}.${{basedir}}">
+            <echo level="warn" message="Cycle detected: {/p:project/p:configuration/j2seproject3:data/j2seproject3:name} was already built"/>
+        </target>
         <target name="deps-{$kind}" depends="init,-deps-{$kind}-init">
             <xsl:attribute name="unless">no.deps</xsl:attribute>
 
@@ -1567,11 +1571,7 @@ is divided into following sections:
             <touch file="${{built-{$kind}.properties}}" verbose="false"/>
             <property file="${{built-{$kind}.properties}}" prefix="already.built.{$kind}."/>
             <!--<echo message="from deps-{$kind} of {/p:project/p:configuration/j2seproject3:data/j2seproject3:name}:"/><echoproperties prefix="already.built.{$kind}."/>-->
-            <fail message="Cycle detected: {/p:project/p:configuration/j2seproject3:data/j2seproject3:name} was already built">
-                <condition>
-                    <isset property="already.built.{$kind}.${{basedir}}"/>
-                </condition>
-            </fail>
+            <antcall target="-warn-already-built-{$kind}"/>
             <propertyfile file="${{built-{$kind}.properties}}">
                 <entry key="${{basedir}}" value=""/>
             </propertyfile>

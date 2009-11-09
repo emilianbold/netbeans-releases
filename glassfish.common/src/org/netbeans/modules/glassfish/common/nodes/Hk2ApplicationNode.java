@@ -44,6 +44,7 @@ import org.netbeans.modules.glassfish.common.nodes.actions.OpenURLActionCookie;
 import org.netbeans.modules.glassfish.spi.AppDesc;
 import org.netbeans.modules.glassfish.spi.Decorator;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
+import org.netbeans.modules.glassfish.spi.Utils;
 import org.openide.nodes.Children;
 import org.openide.util.Lookup;
 
@@ -68,7 +69,8 @@ public class Hk2ApplicationNode extends Hk2ItemNode {
                         Map<String, String> ip = commonModule.getInstanceProperties();
                         String host = ip.get(GlassfishModule.HOSTNAME_ATTR);
                         String httpPort = ip.get(GlassfishModule.HTTPPORT_ATTR);
-                        result = HTTP_HEADER + host + ":" + httpPort + "/" + app.getContextRoot();
+                        result = Utils.getHttpListenerProtocol(host, httpPort) +
+                                "://" + host + ":" + httpPort + "/" + app.getContextRoot();
                         if(result.endsWith("//")) {
                             result = result.substring(0, result.length()-1);
                         }

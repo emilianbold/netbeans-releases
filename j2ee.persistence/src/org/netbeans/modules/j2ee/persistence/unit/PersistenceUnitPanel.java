@@ -87,7 +87,7 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
 
     //jpa2.0 specific
     private final java.lang.String[] validationModes = {"AUTO", "CALLBACK", "NONE"};//NOI18N
-    private final java.lang.String[] cachingTypes = {"ALL", "NONE", "ENABLE_SELECTIVE", "DISABLE_SELECTIVE"};//NOI18N
+    private final java.lang.String[] cachingTypes = {"ALL", "NONE", "ENABLE_SELECTIVE", "DISABLE_SELECTIVE", "UNSPECIFIED"};//NOI18N
     
     public PersistenceUnitPanel(SectionView view, final PUDataObject dObj,  final PersistenceUnit persistenceUnit) {
         super(view);
@@ -195,7 +195,7 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
     }
     private void initCache(){
         org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit pu2=(org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit) persistenceUnit;
-        String caching=pu2.getCaching();
+        String caching=pu2.getSharedCacheMode();
         if(cachingTypes[0].equals(caching))
         {
             ddAll.setSelected(true);
@@ -214,6 +214,7 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
         }
         else
         {
+            //null or UNSPECIFIED
             ddDefault.setSelected(true);
         }
 
@@ -422,27 +423,27 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
             if(source==ddAll)
             {
                 org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit pu2=(org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit) persistenceUnit;
-                pu2.setCaching(cachingTypes[0]);
+                pu2.setSharedCacheMode(cachingTypes[0]);
             }
             else if(source==ddNone)
             {
                 org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit pu2=(org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit) persistenceUnit;
-                pu2.setCaching(cachingTypes[1]);
+                pu2.setSharedCacheMode(cachingTypes[1]);
             }
             else if(source==ddEnableSelective)
             {
                 org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit pu2=(org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit) persistenceUnit;
-                pu2.setCaching(cachingTypes[2]);
+                pu2.setSharedCacheMode(cachingTypes[2]);
             }
             else if(source==ddDisableSelective)
             {
                 org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit pu2=(org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit) persistenceUnit;
-                pu2.setCaching(cachingTypes[3]);
+                pu2.setSharedCacheMode(cachingTypes[3]);
             }
             else if(source==ddDefault)
             {
                 org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit pu2=(org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit) persistenceUnit;
-                pu2.setCaching(null);
+                pu2.setSharedCacheMode(null);//can be set to cachingTypes[4] instead
             }
             else if(source==ddAuto)
             {
@@ -987,7 +988,7 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
     private void removeClassButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeClassButtonActionPerformed
         Object[] values = entityList.getSelectedValues();
         for (Object value : values) {
-            dObj.removeClass(persistenceUnit, (String)value);
+            dObj.removeClass(persistenceUnit, (String)value, true);
             ((DefaultListModel)entityList.getModel()).removeElement(value);
         }
     }//GEN-LAST:event_removeClassButtonActionPerformed
@@ -1001,7 +1002,7 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
         Set<String> ignoreClassNames = new HashSet<String>(Arrays.asList(existingClassNames));
         List<String> addedClassNames = AddEntityDialog.open(entityClassScope, ignoreClassNames);
         for (String entityClass : addedClassNames) {
-            if (dObj.addClass(persistenceUnit, entityClass)){
+            if (dObj.addClass(persistenceUnit, entityClass, true)){
                 ((DefaultListModel)entityList.getModel()).addElement(entityClass);
             }
         }

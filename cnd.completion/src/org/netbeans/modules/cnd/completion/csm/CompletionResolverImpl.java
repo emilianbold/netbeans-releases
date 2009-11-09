@@ -521,11 +521,11 @@ public class CompletionResolverImpl implements CompletionResolver {
                     resImpl.fileProjectMacros = new ArrayList<CsmMacro>(1);
                     resImpl.fileProjectMacros.add(macro);
                 }
+                if (isEnough(strPrefix, match, resImpl.fileProjectMacros)) {
+                    return true;
+                }
             } else {
                 resImpl.fileProjectMacros = contResolver.getFileIncludedProjectMacros(context, strPrefix, match);
-            }
-            if (isEnough(strPrefix, match, resImpl.fileProjectMacros)) {
-                return true;
             }
         }
         if (needFileIncludedLibMacros(context, offset)) {
@@ -944,7 +944,9 @@ public class CompletionResolverImpl implements CompletionResolver {
         }
         CsmDeclaration.Kind kinds[] = {
             CsmDeclaration.Kind.FUNCTION,
-            CsmDeclaration.Kind.FUNCTION_DEFINITION
+            CsmDeclaration.Kind.FUNCTION_DEFINITION,
+            CsmDeclaration.Kind.FUNCTION_FRIEND,
+            CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION
         };
         Collection usedDecls = getUsedDeclarations(this.file, offset, strPrefix, match, kinds);
         out.addAll(usedDecls);

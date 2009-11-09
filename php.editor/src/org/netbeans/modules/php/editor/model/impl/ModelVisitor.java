@@ -91,6 +91,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.LambdaFunctionDeclaration
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeTag;
@@ -369,6 +370,13 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             modelBuilder.reset();
         }
     }
+
+    @Override
+    public void visit(NamespaceName namespaceName) {
+        super.visit(namespaceName);
+        occurencesBuilder.prepare(Kind.CONSTANT, namespaceName, fileScope);
+    }
+
 
     @Override
     public void visit(UseStatementPart statementPart) {

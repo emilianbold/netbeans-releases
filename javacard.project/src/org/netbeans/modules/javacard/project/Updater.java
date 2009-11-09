@@ -43,7 +43,7 @@ package org.netbeans.modules.javacard.project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.api.common.ant.UpdateImplementation;
-import org.netbeans.modules.javacard.constants.JCConstants;
+import org.netbeans.modules.javacard.common.JCConstants;
 import org.netbeans.modules.javacard.constants.ProjectPropertyNames;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -51,25 +51,26 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
 import org.openide.util.Utilities;
-import org.w3c.dom.*;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
-import org.netbeans.modules.javacard.api.ProjectKind;
 import org.netbeans.modules.javacard.project.deps.ArtifactKind;
-import org.netbeans.modules.javacard.project.deps.Dependencies;
 import org.netbeans.modules.javacard.project.deps.Dependency;
 import org.netbeans.modules.javacard.project.deps.DependencyKind;
 import org.netbeans.modules.javacard.project.deps.DeploymentStrategy;
 import org.netbeans.modules.javacard.project.deps.ResolvedDependencies;
-import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.netbeans.spi.project.support.ant.PropertyProvider;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.netbeans.modules.javacard.spi.ProjectKind;
 import org.openide.filesystems.FileObject;
-import org.xml.sax.InputSource;
+
+import org.w3c.dom.Comment;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
 
 /**
  *
@@ -146,6 +147,10 @@ public class Updater implements UpdateImplementation {
                 }
                 privateProps.put(ProjectPropertyNames.PROJECT_PROP_USER_PROPERTIES_FILE,
                         userBuildPropertiesPath);
+                privateProps.put(ProjectPropertyNames.PROJECT_PROP_KEYSTORE_ALIAS_PASSWORD,
+                        "password"); //NOI18N
+                privateProps.put(ProjectPropertyNames.PROJECT_PROP_KEYSTORE_PASSWORD,
+                        "password"); //NOI18N
             }
             this.helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProps);
             this.helper.putPrimaryConfigurationData(getUpdatedSharedConfigurationData(), true);

@@ -70,7 +70,7 @@ public final class IndicatorRepairActionProvider implements ValidationListener {
     private ValidationStatus currentStatus;
     private final List<IndicatorDataProvider<?>> toReValidate;
     private final List<ChangeListener> changeListeners = new ArrayList<ChangeListener>();
-    private final Object listenersLock = new String("IndicatorRepairActionProvider.Listeners"); // NOI18N
+    private final Lock listenersLock = new Lock();
     private Future<Boolean> repairTask;
 
     static {
@@ -90,18 +90,24 @@ public final class IndicatorRepairActionProvider implements ValidationListener {
         //otherwise print select another data provider
         //if we have no indicator data provider - please provide some message : when it will work
         List<IndicatorDataProvider<?>> providers = configuration.getConfigurationOptions(false).getIndicatorDataProviders(currentTool);
-        this.currentStatus = providers == null || providers.isEmpty() ?  tool.validateIndicatorDataProviders(targetToRepairFor) : ValidationStatus.invalidStatus(getMessage("NoIndicatorDataProviderFound"));//NOI18N
-        if (providers == null || providers.isEmpty()){
-            if (!currentStatus.isKnown() || currentStatus.isValid()){
-                currentStatus = ValidationStatus.invalidStatus(getMessage("IndicatorDataProviderNotFound"));
+        if (providers == null || providers.isEmpty()) {
+            currentStatus = tool.validateIndicatorDataProviders(configuration, targetToRepairFor);
+            if (!currentStatus.isKnown() || currentStatus.isValid()) {
+                currentStatus = ValidationStatus.invalidStatus(getMessage("IndicatorDataProviderNotFound")); // NOI18N
             }
+        } else {
+            currentStatus = ValidationStatus.invalidStatus(getMessage("NoIndicatorDataProviderFound")); // NOI18N
         }
+
         toReValidate = new ArrayList<IndicatorDataProvider<?>>();
-        for (IndicatorDataProvider idp : providers) {
-            if (!idp.getValidationStatus().isKnown() || (idp.getValidationStatus().isKnown() && idp.getValidationStatus().isInvalid())) {
-                idp.addValidationListener(this);
-                toReValidate.add(idp);
-                currentStatus = idp.getValidationStatus();
+
+        if (providers != null) {
+            for (IndicatorDataProvider idp : providers) {
+                if (!idp.getValidationStatus().isKnown() || (idp.getValidationStatus().isKnown() && idp.getValidationStatus().isInvalid())) {
+                    idp.addValidationListener(this);
+                    toReValidate.add(idp);
+                    currentStatus = idp.getValidationStatus();
+                }
             }
         }
     }
@@ -176,7 +182,7 @@ public final class IndicatorRepairActionProvider implements ValidationListener {
 
                                         public void run() {
                                             currentStatus = status;
-                                        //   updateUI(c);
+                                            //   updateUI(c);
                                         }
                                     });
                                     return status.isKnown();
@@ -219,5 +225,8 @@ public final class IndicatorRepairActionProvider implements ValidationListener {
 
     private static String getMessage(String name) {
         return NbBundle.getMessage(IndicatorRepairActionProvider.class, name);
+    }
+
+    private final static class Lock {
     }
 }

@@ -1496,8 +1496,8 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
     } // end of Ser
 
     final void setCustomClassLoader(ClassLoader cl) {
-        if (ser instanceof Ser)
-            ((Ser) ser).setCustomClassLoader(cl);
+        if (ser != null)
+            ser.setCustomClassLoader(cl);
     }
 
     /** Support for creating instances allowing identify the origin of file events

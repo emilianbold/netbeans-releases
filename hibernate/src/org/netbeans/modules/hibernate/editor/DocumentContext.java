@@ -48,6 +48,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Stack;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
@@ -72,7 +74,8 @@ public class DocumentContext {
     //public static final String PREFIX = "ns"; //NOI18N
     //public static final String XSI_SCHEMALOCATION = "schemaLocation"; //NOI18N
     //public static final String XSI_NONS_SCHEMALOCATION = "noNamespaceSchemaLocation"; //NOI18N
-    
+
+    private static final Logger LOGGER = Logger.getLogger(DocumentContext.class.getName());
     private Document document;
     private XMLSyntaxSupport syntaxSupport;
     private int caretOffset = -1;
@@ -88,7 +91,12 @@ public class DocumentContext {
 
     DocumentContext(Document document) {
         this.document = document;
-        this.syntaxSupport = (XMLSyntaxSupport) ((BaseDocument) document).getSyntaxSupport();
+        try {
+            this.syntaxSupport = (XMLSyntaxSupport) ((BaseDocument)document).getSyntaxSupport();
+        } catch (ClassCastException cce) {
+            LOGGER.log(Level.FINE, cce.getMessage());
+            this.syntaxSupport = new XMLSyntaxSupport(((BaseDocument)document));
+        }
     }
 
     public void reset(int caretOffset) {

@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.api.execution;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.text.MessageFormat;
@@ -74,6 +75,7 @@ import org.openide.windows.OutputWriter;
  *
  * @deprecated  Use {@link @org-netbeans-modules-nativexecution@} instead
  */
+@Deprecated
 public class NativeExecutor implements Runnable {
     private final ArrayList<ExecutionListener> listeners = new ArrayList<ExecutionListener>();
     
@@ -87,12 +89,14 @@ public class NativeExecutor implements Runnable {
     private final boolean showInput;
     private final ExecutionEnvironment execEnv;
     private final boolean unbuffer;
+    private boolean x11forwarding = false;
+    private final File runDirFile;
     
     private String rcfile;
-    private NativeExecution nativeExecution;
+    private volatile NativeExecution nativeExecution;
     
     private static final boolean showHeader = Boolean.getBoolean("cnd.execution.showheader");
-    
+
     /** I/O class for writing output to a build tab */
     private InputOutput io;
     private PrintWriter out;
@@ -127,6 +131,8 @@ public class NativeExecutor implements Runnable {
         this.parseOutputForErrors = parseOutputForErrors;
         this.showInput = showInput;
         this.unbuffer = unbuffer;
+        
+        runDirFile = new File(runDir);
     }
 
     /**
@@ -159,6 +165,10 @@ public class NativeExecutor implements Runnable {
             boolean showInput) {
         this(ExecutionEnvironmentFactory.getLocal(), runDir, executable,
                 arguments, envp, tabName, actionName, parseOutputForErrors, showInput, false);
+    }
+
+    public void setX11Forwarding(boolean x11forwarding) {
+        this.x11forwarding = x11forwarding;
     }
     
     /** targets may be null to indicate default target */
@@ -251,6 +261,16 @@ public class NativeExecutor implements Runnable {
      *  Call execute(), not this method directly!
      */
     synchronized public void run() {
+
+        nativeExecution = NativeExecution.getDefault(
+                execEnv,
+                runDirFile,
+                executable,
+                arguments,
+                prepareEnvironment(),
+                unbuffer,
+                x11forwarding);
+
         // IZ162493: no need to switch each time into Ouput window
 //        io.setFocusTaken(true);
         io.setErrVisible(false);
@@ -258,8 +278,7 @@ public class NativeExecutor implements Runnable {
         if (showInput) {
             io.setInputVisible(true);
         }
-        
-        File runDirFile = new File(runDir);
+                
         OutputWriter originalWriter = io.getOut();
         if (outputListener != null) {
             originalWriter = new OutputWriterProxy(originalWriter, outputListener);
@@ -278,31 +297,27 @@ public class NativeExecutor implements Runnable {
         
         try {
             // Execute the selected command
-            nativeExecution = NativeExecution.getDefault(execEnv);
-            rc = nativeExecution.executeCommand(
-                    runDirFile,
-                    executable,
-                    arguments,
-                    prepareEnvironment(),
-                    out,
-		    showInput ? io.getIn() : null,
-                    unbuffer);
+            rc = nativeExecution.execute(out, showInput ? io.getIn() : null);
         } catch (ThreadDeath td) {
             StatusDisplayer.getDefault().setStatusText(getString("MSG_FailedStatus"));
-            executionFinished(-1, System.currentTimeMillis() - startTime);
+            executionFinished(-2, System.currentTimeMillis() - startTime);
             throw td;
+        } catch (InterruptedIOException ex) {
+            // interrupted, normal exit
+            StatusDisplayer.getDefault().setStatusText(getString("MSG_FailedStatus"));
+            rc = -3;
         } catch (IOException ex) {
             // command not found, normal exit
             StatusDisplayer.getDefault().setStatusText(getString("MSG_FailedStatus"));
-            rc = -1;
+            rc = -4;
         } catch (InterruptedException ex) {
             // interrupted, normal exit
             StatusDisplayer.getDefault().setStatusText(getString("MSG_FailedStatus"));
-            rc = -1;
+            rc = -5;
         } catch (Throwable t) {
             StatusDisplayer.getDefault().setStatusText(getString("MSG_FailedStatus"));
             ErrorManager.getDefault().notify(t);
-            rc = -1;
+            rc = -6;
         } finally {
             if (showInput) {
                 io.setInputVisible(false);
@@ -351,9 +366,12 @@ public class NativeExecutor implements Runnable {
     }
     
     public void stop() {
-        nativeExecution.stop();
+        NativeExecution ne = nativeExecution;
+        if (ne != null) {
+            nativeExecution.stop();
+        }
     }
-    
+
     private void executionStarted() {
         if(showHeader) {
             String runDirToShow = execEnv.isLocal() ?

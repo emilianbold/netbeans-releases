@@ -144,7 +144,7 @@ class NewCndClassPanelGUI extends CndPanelGUI implements ActionListener{
             if (documentName == null) {
                 final String baseName = getMessage("NewClassSuggestedName");
                 documentName = baseName;
-                FileObject currentFolder = preselectedFolder != null ? preselectedFolder : ((SourceGroup)locationComboBox.getSelectedItem()).getRootFolder();
+                FileObject currentFolder = preselectedFolder != null ? preselectedFolder : getTargetGroup().getRootFolder();
                 if (currentFolder != null) {
                     documentName += generateUniqueSuffix(
                             currentFolder, getFileName(documentName),
@@ -159,7 +159,15 @@ class NewCndClassPanelGUI extends CndPanelGUI implements ActionListener{
     }
     
     public SourceGroup getTargetGroup() {
-        return (SourceGroup)locationComboBox.getSelectedItem();
+        Object selectedItem = locationComboBox.getSelectedItem();
+        if (selectedItem == null) {
+            // workaround for MacOS, see IZ 175457
+            selectedItem = locationComboBox.getItemAt(locationComboBox.getSelectedIndex());
+            if (selectedItem == null) {
+                selectedItem = locationComboBox.getItemAt(0);
+            }
+        }
+        return (SourceGroup) selectedItem;
     }
         
     public String getTargetFolder() {
@@ -185,7 +193,7 @@ class NewCndClassPanelGUI extends CndPanelGUI implements ActionListener{
     }
 
     private String createdFileName(JTextField field){
-        FileObject root = ((SourceGroup)locationComboBox.getSelectedItem()).getRootFolder();
+        FileObject root = getTargetGroup().getRootFolder();
         String folderName = field.getText().trim();
         String createdFileName = FileUtil.getFileDisplayName( root ) +
             ( folderName.startsWith("/") || folderName.startsWith( File.separator ) ? "" : "/" ) + // NOI18N
@@ -577,7 +585,7 @@ class NewCndClassPanelGUI extends CndPanelGUI implements ActionListener{
     public void actionPerformed(java.awt.event.ActionEvent e) {
         if ( browseButton == e.getSource() ) {
             // Show the browse dialog             
-            SourceGroup group = (SourceGroup)locationComboBox.getSelectedItem();
+            SourceGroup group = getTargetGroup();
             FileObject fo = BrowseFolders.showDialog( new SourceGroup[] { group },
                                            project, 
                                            folderTextField.getText().replace( File.separatorChar, '/' ) ); // NOI18N
@@ -587,7 +595,7 @@ class NewCndClassPanelGUI extends CndPanelGUI implements ActionListener{
                 folderTextField.setText( relPath.replace( '/', File.separatorChar ) ); // NOI18N
             }                        
         } else if ( headerBrowseButton == e.getSource() ) {
-            SourceGroup group = (SourceGroup)locationComboBox.getSelectedItem();
+            SourceGroup group = getTargetGroup();
             FileObject fo = BrowseFolders.showDialog( new SourceGroup[] { group },
                                            project,
                                            headerFolderTextField.getText().replace( File.separatorChar, '/' ) ); // NOI18N

@@ -76,6 +76,7 @@ public class HgVersioningTopComponent extends TopComponent {
 
     public HgVersioningTopComponent() {
         putClientProperty("SlidingName", NbBundle.getMessage(HgVersioningTopComponent.class, "CTL_Versioning_TopComponent_Title")); //NOI18N
+        putClientProperty("KeepNonPersistentTCInModelWhenClosed", Boolean.TRUE); //NOI18N
 
         setName(NbBundle.getMessage(HgVersioningTopComponent.class, "CTL_Versioning_TopComponent_Title")); // NOI18N
         setIcon(ImageUtilities.loadImage("org/netbeans/modules/mercurial/resources/icons/versioning-view.png"));  // NOI18N

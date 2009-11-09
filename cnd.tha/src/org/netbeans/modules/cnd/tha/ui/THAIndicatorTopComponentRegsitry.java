@@ -53,12 +53,11 @@ import org.openide.windows.TopComponent;
  */
 final class THAIndicatorTopComponentRegsitry implements PropertyChangeListener {
 
-    private final Object lock = new String("THAIndicatorTopComponentRegsitry.lock");//NOI18N
+    private final Lock lock = new Lock();
     static String PROP_DLIGHT_TC_ACTIVATED = "gizmoIndTcActivated"; //NOI18N
     static String PROP_DLIGHT_TC_OPENED = "gizmoIndTcOpened";//NOI18N
     static String PROP_DLIGHT_TC_CLOSED = "gizmoIndTcClosed";//NOI18N
     private static THAIndicatorTopComponentRegsitry instance = null;
-
     //private List<PropertyChangeListener> propertyChangeListeners = new ArrayList<PropertyChangeListener>();
     private PropertyChangeSupport pcs;
     private Reference<THAIndicatorsTopComponent> active = new WeakReference<THAIndicatorsTopComponent>(null);
@@ -70,7 +69,7 @@ final class THAIndicatorTopComponentRegsitry implements PropertyChangeListener {
         opened = new HashSet<THAIndicatorsTopComponent>();
     }
 
-    static THAIndicatorTopComponentRegsitry getRegistry() {
+    static synchronized THAIndicatorTopComponentRegsitry getRegistry() {
         if (instance == null) {
             instance = new THAIndicatorTopComponentRegsitry();
         }
@@ -97,7 +96,7 @@ final class THAIndicatorTopComponentRegsitry implements PropertyChangeListener {
     }
 
     Set<THAIndicatorsTopComponent> getOpened() {
-        synchronized(lock){
+        synchronized (lock) {
             return new HashSet<THAIndicatorsTopComponent>(opened);
         }
     }
@@ -117,13 +116,13 @@ final class THAIndicatorTopComponentRegsitry implements PropertyChangeListener {
                 setActive((THAIndicatorsTopComponent) tc);
                 firePropertyChangeEvent(new PropertyChangeEvent(evt.getSource(), PROP_DLIGHT_TC_ACTIVATED, evt.getOldValue(), evt.getNewValue()));
             }
-            if (tc != null && !(tc instanceof THAIndicatorsTopComponent)){
+            if (tc != null && !(tc instanceof THAIndicatorsTopComponent)) {
                 setActiveNonIndicators(tc);
             }
         } else if (TopComponent.Registry.PROP_TC_CLOSED.equals(evt.getPropertyName())) {
             if (evt.getNewValue() instanceof THAIndicatorsTopComponent) {
                 THAIndicatorsTopComponent tc = (THAIndicatorsTopComponent) evt.getNewValue();
-                synchronized(lock){
+                synchronized (lock) {
                     opened.remove(tc);
                 }
                 if (getActive() == tc) {
@@ -131,40 +130,40 @@ final class THAIndicatorTopComponentRegsitry implements PropertyChangeListener {
                 }
                 //check if closed component was active
                 firePropertyChangeEvent(new PropertyChangeEvent(evt.getSource(), PROP_DLIGHT_TC_CLOSED, evt.getOldValue(), evt.getNewValue()));
-            }else {
+            } else {
                 setActiveNonIndicators(null);
             }
         } else if (TopComponent.Registry.PROP_TC_OPENED.equals(evt.getPropertyName())) {
             TopComponent tc = (TopComponent) evt.getNewValue();
 
             if (tc instanceof THAIndicatorsTopComponent) {
-                synchronized(lock){
+                synchronized (lock) {
                     opened.add((THAIndicatorsTopComponent) tc);
                 }
                 setActive((THAIndicatorsTopComponent) tc);
                 firePropertyChangeEvent(new PropertyChangeEvent(evt.getSource(), PROP_DLIGHT_TC_ACTIVATED, evt.getOldValue(), evt.getNewValue()));
-            //firePropertyChangeEvent(new PropertyChangeEvent(evt.getSource(), PROP_DLIGHT_TC_OPENED, evt.getOldValue(), evt.getNewValue()));
-            }else{
+                //firePropertyChangeEvent(new PropertyChangeEvent(evt.getSource(), PROP_DLIGHT_TC_OPENED, evt.getOldValue(), evt.getNewValue()));
+            } else {
                 setActiveNonIndicators(tc);
             }
         } else if (TopComponent.Registry.PROP_ACTIVATED_NODES.equals(evt.getPropertyName())) {
         }
-    //throw new UnsupportedOperationException("Not supported yet.");
+        //throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    private synchronized  void setActiveNonIndicators(TopComponent tc){
-            lastNonIndicatorActive = new WeakReference<TopComponent>(tc);
+    private synchronized void setActiveNonIndicators(TopComponent tc) {
+        lastNonIndicatorActive = new WeakReference<TopComponent>(tc);
     }
 
-    TopComponent getActivatedNonIndicators(){
+    synchronized TopComponent getActivatedNonIndicators() {
         return lastNonIndicatorActive.get();
     }
 
-    private synchronized void setActive(THAIndicatorsTopComponent tc) {
-        
-        synchronized(lock){
+    private void setActive(THAIndicatorsTopComponent tc) {
+
+        synchronized (lock) {
             active = new WeakReference<THAIndicatorsTopComponent>(tc);
-            if (tc != null && !opened.contains(tc)){
+            if (tc != null && !opened.contains(tc)) {
                 opened.add(tc);
             }
         }
@@ -182,8 +181,11 @@ final class THAIndicatorTopComponentRegsitry implements PropertyChangeListener {
     }
 
     private THAIndicatorsTopComponent getActive() {
-        synchronized(lock){
+        synchronized (lock) {
             return active.get();
         }
+    }
+
+    private final static class Lock {
     }
 }

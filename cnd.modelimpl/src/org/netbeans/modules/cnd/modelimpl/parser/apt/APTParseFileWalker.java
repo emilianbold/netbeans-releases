@@ -40,9 +40,9 @@
  */
 package org.netbeans.modules.cnd.modelimpl.parser.apt;
 
-import antlr.Token;
-import antlr.TokenStream;
-import antlr.TokenStreamException;
+import org.netbeans.modules.cnd.antlr.Token;
+import org.netbeans.modules.cnd.antlr.TokenStream;
+import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;

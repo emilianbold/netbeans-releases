@@ -74,7 +74,7 @@ import org.openide.util.RequestProcessor;
  */
 public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
 
-    private static JavaEEServerModuleFactory singleton = new JavaEEServerModuleFactory();
+    private static final JavaEEServerModuleFactory singleton = new JavaEEServerModuleFactory();
     
     private JavaEEServerModuleFactory() {
     }
@@ -334,9 +334,8 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
         return addLibrary(name, CLASS_LIBRARY_TYPE, libraryList, docList);
     }
 
-    private static boolean addLibrary(String name, String libType, List<URL> libraryList, List<URL> docList) {
+    private synchronized static boolean addLibrary(String name, String libType, List<URL> libraryList, List<URL> docList) {
         LibraryManager lmgr = LibraryManager.getDefault();
-        synchronized (lmgr) {
 
         int size = 0;
 
@@ -415,7 +414,6 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
             }
         }
         return lib != null;
-        }
     }
 
     static class InitializeLibrary implements PropertyChangeListener {
@@ -433,7 +431,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
         }
 
         public void propertyChange(PropertyChangeEvent evt) {
-            synchronized (lmgr) {
+            synchronized (singleton) {
             if (null != name) {
                 Library l = lmgr.getLibrary(name);
                 final PropertyChangeListener pcl = this;
@@ -466,7 +464,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
             RequestProcessor.getDefault().post(new Runnable() {
 
                 public void run() {
-                    synchronized (lmgr) {
+                    synchronized (singleton) {
                     if (null != lmgr) {
                         lmgr.removePropertyChangeListener(pcl);
                         content = null;

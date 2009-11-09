@@ -149,7 +149,6 @@ public final class PHPIndexer extends EmbeddingIndexer {
         FIELD_CONSTRUCTOR,
         FIELD_INCLUDE,
         FIELD_IDENTIFIER,
-        FIELD_IDENTIFIER_DECLARATION,
         FIELD_VAR,
         FIELD_TOP_LEVEL,
         FIELD_NAMESPACE
@@ -196,10 +195,9 @@ public final class PHPIndexer extends EmbeddingIndexer {
                 documents.add(classDocument);
                 classDocument.addPair(FIELD_CLASS, classScope.getIndexSignature(), true, true);
                 classDocument.addPair(FIELD_TOP_LEVEL, classScope.getName().toLowerCase(), true, true);
+
                 for (MethodScope methodScope : classScope.getDeclaredMethods()) {
-                    classDocument.addPair(FIELD_METHOD, methodScope.getIndexSignature(), false, true);
-                    reverseIdxDocument.addPair(FIELD_IDENTIFIER_DECLARATION,
-                            IdentifierSignature.create(methodScope).getSignature(), true, true);
+                    classDocument.addPair(FIELD_METHOD, methodScope.getIndexSignature(), true, true);
                     if (methodScope.isConstructor()) {
                         classDocument.addPair(FIELD_CONSTRUCTOR,methodScope.getConstructorIndexSignature(), false, true);
                     }
@@ -209,15 +207,10 @@ public final class PHPIndexer extends EmbeddingIndexer {
                     classDocument.addPair(FIELD_CONSTRUCTOR,classScope.getDefaultConstructorIndexSignature(), false, true);
                 }
                 for (FieldElement fieldElement : classScope.getDeclaredFields()) {
-                    classDocument.addPair(FIELD_FIELD, fieldElement.getIndexSignature(), false, true);
-                    reverseIdxDocument.addPair(FIELD_IDENTIFIER_DECLARATION,
-                            IdentifierSignature.create(fieldElement).getSignature(), true, true);
-
+                    classDocument.addPair(FIELD_FIELD, fieldElement.getIndexSignature(), true, true);
                 }
                 for (ClassConstantElement constantElement : classScope.getDeclaredConstants()) {
-                    classDocument.addPair(FIELD_CLASS_CONST, constantElement.getIndexSignature(), false, true);
-                    reverseIdxDocument.addPair(FIELD_IDENTIFIER_DECLARATION,
-                            IdentifierSignature.create(constantElement).getSignature(), true, true);
+                    classDocument.addPair(FIELD_CLASS_CONST, constantElement.getIndexSignature(), true, true);
                 }
             }
             for (InterfaceScope ifaceSCope : ModelUtils.getDeclaredInterfaces(fileScope)) {
@@ -226,14 +219,10 @@ public final class PHPIndexer extends EmbeddingIndexer {
                 classDocument.addPair(FIELD_IFACE, ifaceSCope.getIndexSignature(), true, true);
                 classDocument.addPair(FIELD_TOP_LEVEL, ifaceSCope.getName().toLowerCase(), true, true);
                 for (MethodScope methodScope : ifaceSCope.getDeclaredMethods()) {
-                    classDocument.addPair(FIELD_METHOD, methodScope.getIndexSignature(), false, true);
-                    reverseIdxDocument.addPair(FIELD_IDENTIFIER_DECLARATION,
-                            IdentifierSignature.create(methodScope).getSignature(), true, true);
+                    classDocument.addPair(FIELD_METHOD, methodScope.getIndexSignature(), true, true);
                 }
                 for (ClassConstantElement constantElement : ifaceSCope.getDeclaredConstants()) {
-                    classDocument.addPair(FIELD_CLASS_CONST, constantElement.getIndexSignature(), false, true);
-                    reverseIdxDocument.addPair(FIELD_IDENTIFIER_DECLARATION,
-                            IdentifierSignature.create(constantElement).getSignature(), true, true);
+                    classDocument.addPair(FIELD_CLASS_CONST, constantElement.getIndexSignature(), true, true);
                 }
             }
 
@@ -307,7 +296,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
      public static final class Factory extends EmbeddingIndexerFactory {
 
         public static final String NAME = "php"; // NOI18N
-        public static final int VERSION = 8;
+        public static final int VERSION = 10;
 
         @Override
         public EmbeddingIndexer createIndexer(final Indexable indexable, final Snapshot snapshot) {

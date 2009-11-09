@@ -195,7 +195,9 @@ public abstract class J2eeModuleProvider {
      * 
      * @throws ConfigurationException reports problems in retrieving data source
      *         definitions.
-     * @since 1.15 
+     * @since 1.15
+     * @deprecated use {@link ConfigSupport#getDatasources()}
+     *             on {@link #getConfigSupport()} result
      */
     public Set<Datasource> getModuleDatasources() throws ConfigurationException {
         Set<Datasource> projectDS = getConfigSupport().getDatasources();
@@ -260,7 +262,8 @@ public abstract class J2eeModuleProvider {
      * @exception DatasourceAlreadyExistsException if module data source(s) are conflicting
      * with data source(s) already deployed on the server
      *
-     * @since 1.15 
+     * @since 1.15
+     * @deprecated Nobody should use this method. Being an API is a mistake.
      */
     public void deployDatasources() throws ConfigurationException, DatasourceAlreadyExistsException {
         ServerInstance si = ServerRegistry.getInstance ().getServerInstance (getServerInstanceID ());

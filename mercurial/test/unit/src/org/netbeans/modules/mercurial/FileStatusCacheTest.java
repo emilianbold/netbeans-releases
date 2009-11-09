@@ -76,7 +76,7 @@ public class FileStatusCacheTest extends AbstractHgTest {
         File f2 = createFile(folder1, "file2");
         commit(workdir);
 
-        getCache().refreshAllRoots(Collections.singletonMap(workdir, workdir));
+        getCache().refreshAllRoots(Collections.singletonMap(workdir, Collections.singleton(workdir)));
         File[] files = getCache().listFiles(new File[] {workdir}, FileInformation.STATUS_LOCAL_CHANGE);
         assertModified(files, 0);
 
@@ -88,30 +88,30 @@ public class FileStatusCacheTest extends AbstractHgTest {
         File f3 = createFile(repo2, "file3");
         File f4 = createFile(folder2, "file4");
         commitIntoRepository(repo2, repo2);
-        getCache().refreshAllRoots(Collections.singletonMap(repo2, repo2));
+        getCache().refreshAllRoots(Collections.singletonMap(repo2, Collections.singleton(repo2)));
         files = getCache().listFiles(new File[] {repo2}, FileInformation.STATUS_LOCAL_CHANGE);
         assertModified(files, 0);
 
         write(f1, "hello");
         write(f2, "hello");
-        getCache().refreshAllRoots(Collections.singletonMap(workdir, workdir));
+        getCache().refreshAllRoots(Collections.singletonMap(workdir, Collections.singleton(workdir)));
         files = getCache().listFiles(new File[] {workdir}, FileInformation.STATUS_LOCAL_CHANGE);
         assertModified(files, 2);
 
         write(f3, "hello");
         write(f4, "hello");
-        getCache().refreshAllRoots(Collections.singletonMap(repo2, repo2));
+        getCache().refreshAllRoots(Collections.singletonMap(repo2, Collections.singleton(repo2)));
         files = getCache().listFiles(new File[] {repo2}, FileInformation.STATUS_LOCAL_CHANGE);
         assertModified(files, 2);
 
-        getCache().refreshAllRoots(Collections.singletonMap(workdir, workdir));
+        getCache().refreshAllRoots(Collections.singletonMap(workdir, Collections.singleton(workdir)));
         files = getCache().listFiles(new File[] {workdir}, FileInformation.STATUS_LOCAL_CHANGE);
         assertModified(files, 4);
 
         files = getCache().listFiles(new File[] {repo2}, FileInformation.STATUS_LOCAL_CHANGE);
         assertModified(files, 2);
 
-        getCache().refreshAllRoots(Collections.singletonMap(repo2, repo2));
+        getCache().refreshAllRoots(Collections.singletonMap(repo2, Collections.singleton(repo2)));
         files = getCache().listFiles(new File[] {repo2}, FileInformation.STATUS_LOCAL_CHANGE);
         assertModified(files, 2);
 

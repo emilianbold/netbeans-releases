@@ -40,6 +40,8 @@
 package org.netbeans.modules.projectimport.eclipse.core;
 
 import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.util.Exceptions;
@@ -77,7 +79,7 @@ public class ProjectOpenHookImpl extends ProjectOpenedHook{
             } catch (InterruptedException ex) {
                 Exceptions.printStackTrace(ex);
             } catch (ExecutionException ex) {
-                Exceptions.printStackTrace(ex);
+                Logger.getLogger(ProjectOpenHookImpl.class.getName()).log(Level.INFO, null, ex);
             }
             
             new UpdateAllProjects().update(true);

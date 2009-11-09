@@ -46,7 +46,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
@@ -247,7 +246,7 @@ public class WebProjectFactory implements ProjectTypeUpdater {
             }
             WebContentData data = new WebContentData();
             Element moduleEl = Util.findElement(modulesEl, "wb-module", null); //NOI18N
-            assert modulesEl != null;
+            if (moduleEl != null) { // #175364
             for (Element el : Util.findSubElements(moduleEl)) {
                 if ("wb-resource".equals(el.getNodeName())) { //NOI18N
                     if ("/".equals(el.getAttribute("deploy-path"))) { //NOI18N
@@ -259,6 +258,7 @@ public class WebProjectFactory implements ProjectTypeUpdater {
                         data.contextRoot = el.getAttribute("value"); //NOI18N
                     }
                 }
+            }
             }
             return data;
         }

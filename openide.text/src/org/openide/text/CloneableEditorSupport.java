@@ -456,7 +456,6 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         
         if (getListener().loadExc instanceof UserQuestionException) {
             getListener().loadExc = null;
-            prepareTask = null;
             documentStatus = DOCUMENT_NO;
         }
         
@@ -476,7 +475,6 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
                     public Void call() throws IOException {
                         getListener().loadExc = null;
-                        prepareTask = null;
                         documentStatus = DOCUMENT_NO;
                         //Assign reference to local variable to avoid gc before return
                         StyledDocument doc = openDocument();
@@ -562,7 +560,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             return redirect.prepareDocument();
         }
         synchronized (getLock()) {
-            StyledDocument doc = getDoc();
+            final StyledDocument doc = getDoc();
             if ((doc == null) && (documentStatus != DOCUMENT_NO)) {
                 //Sync document status
                 closeDocument();
@@ -572,6 +570,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                 documentStatus = DOCUMENT_LOADING;
                 counterPrepareDocument++;
                 Task t = prepareDocument(false);
+                prepareTask = t;
                 
                 t.addTaskListener(new TaskListener() {
                     public void taskFinished(Task task) {
@@ -585,9 +584,14 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                 });
                 
                 return t;
-                
-            default:
 
+            case DOCUMENT_READY:
+                assert doc != null;
+                Task tt = new Task(new Runnable() { private final StyledDocument d = doc; public void run() {}});
+                tt.run();
+                return tt;
+
+            default:
                 if (prepareTask == null) { // should never happen
                     throw new IllegalStateException();
                 }
@@ -639,6 +643,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             prepareTask = RP.create(new Runnable() {
                                                    private boolean runningInAtomicLock;
                                                    private boolean fireEvent;
+                                                   private StyledDocument d;
 
                                                    public void run() {
                                                        doRun();
@@ -653,7 +658,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                                            runningInAtomicLock = true;
                                                            NbDocument.runAtomic(docToLoad[0], this);
                                                            if (fireEvent) {
-                                                               fireDocumentChange(getDoc(), false);
+                                                               fireDocumentChange(d, false);
                                                            }
                                                            return;
                                                        }
@@ -661,10 +666,12 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                                        synchronized (getLock()) {
                                                            if (documentStatus ==
                                                                DOCUMENT_NO) {
+                                                               prepareTask = null;
                                                                return;
                                                            }
                                                            // Check whether the document to be loaded was not closed
                                                            if (getDoc() != docToLoad[0]) {
+                                                               prepareTask = null;
                                                                return;
                                                            }
                                                            prepareDocumentRuntimeException = null;
@@ -683,32 +690,31 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                                                // definitively sooner than leaving lock section
                                                                // and notifying al waiters, see #47022
                                                                getDoc().addUndoableEditListener(getUndoRedo());
+                                                               d = getDoc();
                                                            } catch (DelegateIOExc t) {
                                                                prepareDocumentRuntimeException = t;
-                                                               prepareTask = null;
                                                            } catch (RuntimeException t) {
                                                                prepareDocumentRuntimeException = t;
-                                                               prepareTask = null;
                                                                Exceptions.printStackTrace(t);
                                                                throw t;
                                                            } catch (Error t) {
                                                                prepareDocumentRuntimeException = t;
-                                                               prepareTask = null;
                                                                Exceptions.printStackTrace(t);
                                                                throw t;
                                                            } finally {
                                                                synchronized (getLock()) {
                                                                    documentStatus = targetStatus;
                                                                    getLock().notifyAll();
+                                                                   prepareTask = null;
                                                                }
                                                            }
                                                        }
                                                    }
                                                });
             prepareTaskReturn = prepareTask;
-            ((RequestProcessor.Task)prepareTask).schedule(0);
+            ((RequestProcessor.Task)prepareTaskReturn).schedule(0);
             if (RP.isRequestProcessorThread()) {
-                prepareTask.waitFinished();
+                prepareTaskReturn.waitFinished();
             }
 	    failed = false;
         } catch (RuntimeException ex) {
@@ -1124,7 +1130,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     JEditorPane getRecentPane () {
         // expected in AWT only
         assert SwingUtilities.isEventDispatchThread()
-                : "CloneableEditorSupport.getOpenedPaneForTC must be called from AWT thread only"; // NOI18N
+                : "CloneableEditorSupport.getRecentPane must be called from AWT thread only"; // NOI18N
         CloneableEditorSupport redirect = CloneableEditorSupportRedirector.findRedirect(this);
         if (redirect != null) {
             return redirect.getRecentPane();
@@ -1154,7 +1160,9 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                         p = ed.getEditorPane();
                     }
                 }
-                return p;
+                if (p != null) {
+                    return p;
+                }
             } else {
                 throw new IllegalStateException("No reference to Pane. Please file a bug against openide/text");
             }
@@ -1676,11 +1684,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                                  ERR.fine("clearDocument");
                                                  clearDocument();
                                                  // uses the listener's run method to initialize whole document
-                                                 prepareTask = new Task(getListener());
-                                                 ERR.fine("new prepare task: " +
-                                                          prepareTask);
-                                                 prepareTask.run();
-                                                 ERR.fine("prepareTask finished");
+                                                 getListener().run();
                                                  documentStatus = DOCUMENT_READY;
                                                  reloadDocumentFireDocumentChangeOpen = true;
                                                  //fireDocumentChange(getDoc(), false);
@@ -1700,12 +1704,10 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                                  return;
                                              }
                                              prepareDocumentRuntimeException = t;
-                                             prepareTask = null;
                                              throw t;
                                          }
                                          catch (Error t) {
                                              prepareDocumentRuntimeException = t;
-                                             prepareTask = null;
                                              throw t;
                                          }
                                          finally {
@@ -1771,8 +1773,6 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                          }
                                      }
                                  });
-
-            return prepareTask;
         }
 
         return prepareDocument();
@@ -2202,7 +2202,6 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
      */
     private boolean doCloseDocument() {
         boolean fireEvent = false;
-        prepareTask = null;
 
         // notifies the support that 
         cesEnv().removePropertyChangeListener(getListener());
@@ -2617,7 +2616,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         setStrong(alreadyModified, false);
     }
 
-    private StyledDocument getDoc() {
+    /* test */ StyledDocument getDoc() {
         synchronized (LOCK_STRONG_REF) {
             StrongRef _doc = doc;
             return _doc != null ? _doc.get() : null;

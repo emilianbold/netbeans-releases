@@ -71,6 +71,6 @@ public class RenameAction extends RefactoringGlobalAction {
     }
 
     protected boolean enable(Lookup context) {
-        return ActionsImplementationFactory.canRename(context);
+        return true;
     }
 }

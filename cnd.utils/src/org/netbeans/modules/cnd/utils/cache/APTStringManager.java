@@ -164,9 +164,9 @@ public abstract class APTStringManager  {
                     if (o != null) {
                         Integer i = classes.get(o.getClass());
                         if (i != null) {
-                            i = new Integer(i.intValue() + 1);
+                            i = Integer.valueOf(i.intValue() + 1);
                         } else {
-                            i = new Integer(1);
+                            i = Integer.valueOf(1);
                         }
                         classes.put(o.getClass(), i);
                     }

@@ -504,7 +504,7 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         assertNotNull("Project does not have LogicalViewProvider", lvp);
         Node n = lvp.createLogicalView();
         // expected subnodes: #1) src folder and #2) build.xml
-        assertEquals("There must be two subnodes in logical view", 2, n.getChildren().getNodesCount());
+        assertEquals("There must be two subnodes in logical view", 2, n.getChildren().getNodesCount(true));
         
         List sfs = JavaProjectGenerator.getSourceViews(helper, null);
         assertEquals("There must be one source view", 1, sfs.size());

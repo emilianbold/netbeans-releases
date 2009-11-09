@@ -39,6 +39,10 @@
 package org.netbeans.modules.dlight.indicators;
 
 import java.awt.Color;
+import java.util.ArrayList;
+import java.util.Collection;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.indicators.impl.TimeSeriesDescriptorAccessor;
 
 /**
  * Describes a time series representation.
@@ -47,9 +51,14 @@ import java.awt.Color;
  */
 public final class TimeSeriesDescriptor {
 
+    static{
+        TimeSeriesDescriptorAccessor.setDefault(new TimeSeriesDescriptorAccessorImpl());
+    }
+
     private final Color color;
     private final String displayName;
     private final Kind kind;
+    private Collection<Column> columns;
 
     public TimeSeriesDescriptor(Color color, String displayName, Kind kind) {
         this.color = color;
@@ -57,15 +66,21 @@ public final class TimeSeriesDescriptor {
         this.kind = kind;
     }
 
-    public Color getColor() {
+    public final void setSourceColumns(Collection<Column> columns){
+        this.columns = columns;
+    }
+
+    private Color getColor() {
         return color;
     }
 
-    public String getDisplayName() {
+    private String getDisplayName() {
         return displayName;
     }
 
-    public Kind getKind() {
+    
+
+    private Kind getKind() {
         return kind;
     }
 
@@ -73,5 +88,29 @@ public final class TimeSeriesDescriptor {
         LINE,
         ABS_SURFACE,
         REL_SURFACE
+    }
+
+    private static class TimeSeriesDescriptorAccessorImpl extends TimeSeriesDescriptorAccessor{
+
+        @Override
+        public Color getColor(TimeSeriesDescriptor descriptor) {
+            return descriptor.getColor();
+        }
+
+        @Override
+        public String getDisplayName(TimeSeriesDescriptor descriptor) {
+            return descriptor.getDisplayName();
+        }
+
+        @Override
+        public Kind getKind(TimeSeriesDescriptor descriptor) {
+            return descriptor.getKind();
+        }
+
+        @Override
+        public Collection<Column> getSourceColumns(TimeSeriesDescriptor descriptor) {
+            return descriptor.columns;
+        }
+
     }
 }

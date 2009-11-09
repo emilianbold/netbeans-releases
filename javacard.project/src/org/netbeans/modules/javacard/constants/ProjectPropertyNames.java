@@ -79,11 +79,12 @@ public class ProjectPropertyNames {
     public static final String PROJECT_PROP_DISPLAY_NAME = "displayname"; //NOI18N
     public static final String PROJECT_PROP_SIGN_JAR = "sign.bundle"; //NOI18N
     public static final String PROJECT_PROP_KEYSTORE_PATH = "sign.keystore"; //NOI18N
-    public static final String PROJECT_PROP_KEYSTORE_PASSWORD = "sign.storepass";
-    public static final String PROJECT_PROP_KEYSTORE_ALIAS = "sign.alias";
-    public static final String PROJECT_PROP_KEYSTORE_ALIAS_PASSWORD = "sign.passkey";
+    public static final String PROJECT_PROP_KEYSTORE_PASSWORD = "sign.storepass"; //NOI18N
+    public static final String PROJECT_PROP_KEYSTORE_ALIAS = "sign.alias"; //NOI18N
+    public static final String PROJECT_PROP_KEYSTORE_ALIAS_PASSWORD = "sign.passkey"; //NOI18N
     public static final String PROJECT_PROP_PAGE_URL = "run.page.url"; //NOI18N
     public static final String PROJECT_PROP_USER_PROPERTIES_FILE = "user.properties.file"; //NOI18N
+    public static final String PROJECT_PROP_CLASSIC_USE_MY_PROXIES = "use.my.proxies"; //NOI18N
 
     private ProjectPropertyNames(){}
 }

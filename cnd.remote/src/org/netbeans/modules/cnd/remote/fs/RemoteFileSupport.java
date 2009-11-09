@@ -63,6 +63,7 @@ import java.util.concurrent.TimeUnit;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.remote.fs.ui.RemoteFileSystemNotifier;
+import org.netbeans.modules.cnd.remote.server.RemoteServerListUI;
 import org.netbeans.modules.cnd.remote.support.RemoteCodeModelUtils;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -120,13 +121,42 @@ public class RemoteFileSupport implements RemoteFileSystemNotifier.Callback {
         }
     }
 
+    private static final String CC_STR = "cc"; // NOI18N
+    /*package*/static final String POSTFIX = ".cnd.rfs.small"; // NOI18N
 
+    /*package*/static String fixCaseSensitivePathIfNeeded(String in) {
+        StringBuilder out = new StringBuilder(in);
+        // now we support only cc replacement into cc.cnd
+        int left = out.indexOf(CC_STR); // NOI18N
+        if (left >= 0 && out.length() >= CC_STR.length()) {
+             // check what we have before "cc"
+            if (left > 0 && out.charAt(left-1) != '/') { // NOI18N
+                return out.toString();
+            }
+            int right = left + CC_STR.length();
+            // check what we have after "cc"
+            if (out.length() > right && out.charAt(right) != '/') { // NOI18N
+                return out.toString();
+            }
+            if (right == out.length()) {
+                out.append(POSTFIX);
+            } else {
+                out.insert(right, POSTFIX);
+            }
+        }
+        return out.toString();
+    }
+
+    /*package*/static String fromFixedCaseSensitivePathIfNeeded(String in) {
+        return in.replaceAll(POSTFIX, "");
+    }
+    
     public void ensureFileSync(File file, String remotePath) throws IOException, InterruptedException, ExecutionException {
         if (!file.exists() || file.length() == 0) {
             synchronized (getLock(file)) {
                 // dbl check is ok here since it's file-based
                 if (!file.exists() || file.length() == 0) {
-                    syncFile(file, remotePath);
+                    syncFile(file, fromFixedCaseSensitivePathIfNeeded(remotePath));
                     removeLock(file);
                 }
             }
@@ -163,13 +193,13 @@ public class RemoteFileSupport implements RemoteFileSystemNotifier.Callback {
     /**
      * Ensured that the directory is synchronized
      */
-    public void ensureDirSync(File dir, String remoteDir) throws IOException, CancellationException {        
+    public final void ensureDirSync(File dir, String remoteDir) throws IOException, CancellationException {
         // TODO: synchronization
         if( ! dir.exists() || ! new File(dir, FLAG_FILE_NAME).exists()) {
             synchronized (getLock(dir)) {
                 // dbl check is ok here since it's file-based
                 if( ! dir.exists() || ! new File(dir, FLAG_FILE_NAME).exists()) {
-                    syncDirStruct(dir, remoteDir);
+                    syncDirStruct(dir, fromFixedCaseSensitivePathIfNeeded(remoteDir));
                     removeLock(dir);
                 }
             }
@@ -188,7 +218,7 @@ public class RemoteFileSupport implements RemoteFileSystemNotifier.Callback {
         NativeProcessBuilder processBuilder = NativeProcessBuilder.newProcessBuilder(execEnv);
         // TODO: error processing
         processBuilder.setWorkingDirectory(remoteDir);
-        processBuilder.setCommandLine("ls -1F"); // NOI18N
+        processBuilder.setCommandLine("sh -c 'for D in *; do if [ -d $D ]; then echo D $D; else echo F $D; fi; done'"); // NOI18N
         processBuilder.redirectError();
         NativeProcess process = processBuilder.call();
         final InputStream is = process.getInputStream();
@@ -196,18 +226,27 @@ public class RemoteFileSupport implements RemoteFileSystemNotifier.Callback {
         String fileName;
         RemoteUtil.LOGGER.finest("Synchronizing dir " + dir.getAbsolutePath() + " with " + execEnv + ':' + remoteDir);
         while ((fileName = rdr.readLine()) != null) {
-            boolean directory = fileName.endsWith("/"); // NOI18N
+            CndUtils.assertTrueInConsole(fileName.length() > 2, "unexpected file information " + fileName); // NOI18N
+            boolean directory = fileName.charAt(0) == 'D';
+            fileName = fileName.substring(2);
+            if (directory) {
+                fileName = fixCaseSensitivePathIfNeeded(fileName);
+            }
             File file = new File(dir, fileName);
             try {
-                boolean result = directory ? file.mkdirs() : file.createNewFile();
+                RemoteUtil.LOGGER.finest("\tcreating " + fileName);
+                if (directory) {
+                    if (!file.mkdirs() && !file.exists()) {
+                        throw new IOException("can't create directory " + file.getAbsolutePath()); // NOI18N
+                    }
+                } else {
+                    file.createNewFile();
+                }
             } catch (IOException ex) {
                 RemoteUtil.LOGGER.warning("Error creating " + (directory ? "directory" : "file") +
                         ' ' + file.getAbsolutePath() + ": " + ex.getMessage());
                 throw ex;
             }
-            // TODO: error processing
-            RemoteUtil.LOGGER.finest("\tcreating " + fileName);
-            file.createNewFile(); // TODO: error processing
         }
         rdr.close();
         is.close();
@@ -256,6 +295,7 @@ public class RemoteFileSupport implements RemoteFileSystemNotifier.Callback {
         ProgressHandle handle = ProgressHandleFactory.createHandle(
                 NbBundle.getMessage(getClass(), "Progress_Title", RemoteFileSystemNotifier.getDisplayName(execEnv)));
         handle.start();
+        RemoteServerListUI.revalidate(execEnv);
         handle.switchToDeterminate(pendingFilesQueue.size());
         int cnt = 0;
         try {

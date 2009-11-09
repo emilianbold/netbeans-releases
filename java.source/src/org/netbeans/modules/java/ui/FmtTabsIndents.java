@@ -186,6 +186,13 @@ public class FmtTabsIndents extends javax.swing.JPanel {
                 .add(addLeadingStarInCommentCheckBox)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        continuationIndentSizeField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "FmtTabsIndents.continuationIndentSizeField.AccessibleContext.accessibleDescription")); // NOI18N
+        labelIndentField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "FmtTabsIndents.labelIndentField.AccessibleContext.accessibleDescription")); // NOI18N
+        absoluteLabelIndentCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "FmtTabsIndents.absoluteLabelIndentCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+        indentTopLevelClassMembersCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "FmtTabsIndents.indentTopLevelClassMembersCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+        indentCasesFromSwitchCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "FmtTabsIndents.indentCasesFromSwitchCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+        addLeadingStarInCommentCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "FmtTabsIndents.addLeadingStarInCommentCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     

@@ -108,6 +108,9 @@ made subject to such option by the copyright holder.
     <taskdef name="convertimport"
          classname="org.netbeans.nbbuild.ConvertImport"
          classpath="${nb_all}/nbbuild/nbantext.jar"/>
+    <taskdef name="hgid"
+         classname="org.netbeans.nbbuild.HgId"
+         classpath="${nb_all}/nbbuild/nbantext.jar"/>
     <typedef name="pathfileset" classname="org.netbeans.nbbuild.PathFileSet"
          classpath="${nb_all}/nbbuild/nbantext.jar"/>
     <taskdef name="subant-junit" classname="org.netbeans.nbbuild.SubAntJUnitReport" classpath="${nb_all}/nbbuild/nbantext.jar"/>
@@ -150,7 +153,7 @@ made subject to such option by the copyright holder.
     <property name="cluster.path.final" refid="cluster.path.id"/>
   </target>
   
-  <target name="-do-set-buildnumber" unless="buildnumber">
+  <target name="-do-set-buildnumber" depends="init-tasks" unless="buildnumber">
     <tstamp>
     	<format property="buildstamp" pattern="yyMMdd"/>
     </tstamp>
@@ -165,8 +168,9 @@ made subject to such option by the copyright holder.
         <isset property="hudson.BUILD_NUMBER"/>
       </and>
     </condition>
-    <property name="buildnumber" value="${buildstamp}"/>
-    <echo message="${buildnumber}"/>
+    <hgid property="hg.id" file="."/>
+    <property name="buildnumber" value="${buildstamp}-${hg.id}"/>
+    <echo message="${buildnumber}" level="verbose"/>
   </target>
   <target name="set-buildnumber" depends="-do-set-buildnumber">
     <!-- Overridable. Note: need not necessarily be a number at all): -->

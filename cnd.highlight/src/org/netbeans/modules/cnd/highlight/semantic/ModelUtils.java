@@ -217,7 +217,7 @@ public class ModelUtils {
         private Set<CsmUID> getFunctionDefinitionParameters(CsmFile file) {
             if (parameters == null) {
                 parameters = new HashSet<CsmUID>();
-                CsmFilter filter = CsmSelect.getFilterBuilder().createKindFilter(CsmDeclaration.Kind.FUNCTION_DEFINITION);
+                CsmFilter filter = CsmSelect.getFilterBuilder().createKindFilter(CsmDeclaration.Kind.FUNCTION_DEFINITION, CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION);
                 Iterator<CsmOffsetableDeclaration> i = CsmSelect.getDeclarations(file, filter);
                 while (i.hasNext()) {
                     CsmFunctionDefinition fundef = (CsmFunctionDefinition)i.next();

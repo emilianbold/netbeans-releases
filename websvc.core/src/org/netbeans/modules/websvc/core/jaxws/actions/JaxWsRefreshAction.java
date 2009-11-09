@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.websvc.core.jaxws.actions;
 
-import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.jaxws.api.JaxWsRefreshCookie;
 import org.openide.util.actions.CookieAction;
 import org.openide.util.HelpCtx;
@@ -49,7 +48,7 @@ import org.openide.nodes.Node;
 
 public class JaxWsRefreshAction extends CookieAction {
     public String getName() {
-        return NbBundle.getMessage(JaxWsRefreshAction.class, "LBL_RefreshServiceAction");
+        return NbBundle.getMessage(JaxWsRefreshAction.class, "LBL_RefreshAction");
     }
     
     public HelpCtx getHelpCtx() {

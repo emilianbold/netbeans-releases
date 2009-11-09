@@ -451,38 +451,28 @@ class DragOperation {
             if(targetComponent.getParent() instanceof JMenuBar) {
                 
                 if(DropTargetLayer.isMenuLeftEdge(pt2, targetComponent) && isMenuPayload(creator)) {
-                    RADVisualComponent newRad = creator.getPrecreatedMetaComponent();
-                    menuEditLayer.addRadComponentToBefore(newRad, targetComponent);
+                    menuEditLayer.addRadComponentToBefore(targetComponent, creator);
                 } else if(DropTargetLayer.isMenuRightEdge(pt2, targetComponent) && isMenuPayload(creator)) {
-                    RADVisualComponent newRad = creator.getPrecreatedMetaComponent();
-                    menuEditLayer.addRadComponentToAfter(newRad, targetComponent);
+                    menuEditLayer.addRadComponentToAfter(targetComponent, creator);
                 } else {
                     menuEditLayer.addRadComponentToEnd(targetComponent, creator);
                 }
             } else {
                 if(DropTargetLayer.isSubMenuRightEdge(pt2, targetComponent)) {
                     menuEditLayer.addRadComponentToEnd(targetComponent, creator);
+                } else if(DropTargetLayer.isBelowItem(pt2, targetComponent)) {
+                    menuEditLayer.addRadComponentToAfter(targetComponent, creator);
                 } else {
-                    RADVisualComponent newRad = creator.getPrecreatedMetaComponent();
-                    if(DropTargetLayer.isBelowItem(pt2, targetComponent)) {
-                        menuEditLayer.addRadComponentToAfter(newRad, targetComponent);
-                    } else {
-                        menuEditLayer.addRadComponentToBefore(newRad, targetComponent);
-                    }
+                    menuEditLayer.addRadComponentToBefore(targetComponent, creator);
                 }
             }
         } else {
             if(targetComponent instanceof JMenuBar) {
                 menuEditLayer.addRadComponentToEnd(targetComponent, creator);
+            } else if(DropTargetLayer.isBelowItem(pt2, targetComponent)) {
+                menuEditLayer.addRadComponentToAfter(targetComponent, creator);
             } else {
-                // add the new component to the target's containing menu
-                RADVisualComponent newRad = creator.getPrecreatedMetaComponent();
-                //menuEditLayer.addRadComponentToBefore(newRad, targetComponent);
-                if(DropTargetLayer.isBelowItem(pt2, targetComponent)) {
-                    menuEditLayer.addRadComponentToAfter(newRad, targetComponent);
-                } else {
-                    menuEditLayer.addRadComponentToBefore(newRad, targetComponent);
-                }
+                menuEditLayer.addRadComponentToBefore(targetComponent, creator);
             }
         }
         

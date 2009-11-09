@@ -92,6 +92,7 @@ import org.openide.util.NbBundle;
 public class BugzillaIssue extends Issue {
 
     public static final String RESOLVE_FIXED = "FIXED";                         // NOI18N
+    public static final String RESOLVE_DUPLICATE = "DUPLICATE";         //NOI18N
     private static final SimpleDateFormat CC_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");            // NOI18N
     private static final SimpleDateFormat MODIFIED_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");   // NOI18N
     private static final SimpleDateFormat CREATED_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");       // NOI18N
@@ -267,49 +268,39 @@ public class BugzillaIssue extends Issue {
         JTable t = new JTable();
         return new ColumnDescriptor[] {
             new ColumnDescriptor<String>(LABEL_NAME_ID, String.class,
-                                              loc.getString("CTL_Issue_ID_Title"),              // NOI18N
-                                              loc.getString("CTL_Issue_ID_Desc"),               // NOI18N
+                                              loc.getString("CTL_Issue_ID_Title"),                // NOI18N
+                                              loc.getString("CTL_Issue_ID_Desc"),                 // NOI18N
                                               BugtrackingUtil.getColumnWidthInPixels(7, t)),
             new ColumnDescriptor<String>(LABEL_NAME_SUMMARY, String.class,
-                                              loc.getString("CTL_Issue_Summary_Title"),         // NOI18N
-                                              loc.getString("CTL_Issue_Summary_Desc")),         // NOI18N
+                                              loc.getString("CTL_Issue_Summary_Title"),           // NOI18N
+                                              loc.getString("CTL_Issue_Summary_Desc")),           // NOI18N
             BugzillaUtil.isNbRepository(repository)
                                         ?
                                               new ColumnDescriptor<String>(LABEL_NAME_ISSUE_TYPE, String.class,
                                               loc.getString("CTL_Issue_Issue_Type_Title"),        // NOI18N
                                               loc.getString("CTL_Issue_Issue_Type_Desc"),         // NOI18N
-                                              BugtrackingUtil.getLongestWordWidth(
-                                                loc.getString("CTL_Issue_Issue_Type_Title"),      // NOI18N
-                                                bc.getIssueTypes(), t))
+                                              0)
                                         :
                                               new ColumnDescriptor<String>(LABEL_NAME_SEVERITY, String.class,
-                                              loc.getString("CTL_Issue_Severity_Title"),        // NOI18N
-                                              loc.getString("CTL_Issue_Severity_Desc"),         // NOI18N
-                                              BugtrackingUtil.getLongestWordWidth(
-                                                loc.getString("CTL_Issue_Severity_Title"),      // NOI18N
-                                                bc.getSeverities(), t)),
+                                              loc.getString("CTL_Issue_Severity_Title"),          // NOI18N
+                                              loc.getString("CTL_Issue_Severity_Desc"),           // NOI18N
+                                              0),
             new ColumnDescriptor<String>(LABEL_NAME_PRIORITY, String.class,
-                                              loc.getString("CTL_Issue_Priority_Title"),        // NOI18N
-                                              loc.getString("CTL_Issue_Priority_Desc"),         // NOI18N
-                                              BugtrackingUtil.getLongestWordWidth(
-                                                loc.getString("CTL_Issue_Priority_Title"),
-                                                bc.getPriorities(), t, true)),
+                                              loc.getString("CTL_Issue_Priority_Title"),          // NOI18N
+                                              loc.getString("CTL_Issue_Priority_Desc"),           // NOI18N
+                                              0),
             new ColumnDescriptor<String>(LABEL_NAME_STATUS, String.class,
-                                              loc.getString("CTL_Issue_Status_Title"),          // NOI18N
-                                              loc.getString("CTL_Issue_Status_Desc"),           // NOI18N
-                                              BugtrackingUtil.getLongestWordWidth(
-                                                loc.getString("CTL_Issue_Status_Title"),        // NOI18N
-                                                bc.getStatusValues(), t)),
+                                              loc.getString("CTL_Issue_Status_Title"),            // NOI18N
+                                              loc.getString("CTL_Issue_Status_Desc"),             // NOI18N
+                                              0),
             new ColumnDescriptor<String>(LABEL_NAME_RESOLUTION, String.class,
-                                              loc.getString("CTL_Issue_Resolution_Title"),      // NOI18N
-                                              loc.getString("CTL_Issue_Resolution_Desc"),       // NOI18N
-                                              BugtrackingUtil.getLongestWordWidth(
-                                                loc.getString("CTL_Issue_Resolution_Title"),    // NOI18N
-                                                bc.getResolutions(), t)),
+                                              loc.getString("CTL_Issue_Resolution_Title"),        // NOI18N
+                                              loc.getString("CTL_Issue_Resolution_Desc"),         // NOI18N
+                                              0),
             new ColumnDescriptor<String>(LABEL_NAME_ASSIGNED_TO, String.class,
-                                              loc.getString("CTL_Issue_Assigned_Title"),        // NOI18N
-                                              loc.getString("CTL_Issue_Assigned_Desc"),         // NOI18N
-                                              BugtrackingUtil.getColumnWidthInPixels(20, t))
+                                              loc.getString("CTL_Issue_Assigned_Title"),          // NOI18N
+                                              loc.getString("CTL_Issue_Assigned_Desc"),           // NOI18N
+                                              0)
         };
     }
 
@@ -631,7 +622,7 @@ public class BugzillaIssue extends Issue {
         }
         a.setValues(ccs);
     }
-    
+
     List<String> getFieldValues(IssueField f) {
         if(f.isSingleAttribute()) {
             TaskAttribute a = data.getRoot().getMappedAttribute(f.key);

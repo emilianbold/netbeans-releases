@@ -57,6 +57,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.ui.ElementHeaders;
 import org.netbeans.lib.editor.codetemplates.spi.*;
+import org.netbeans.modules.java.preprocessorbridge.api.JavaSourceUtil;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -738,9 +739,10 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                 try {
                     Future<Void> initTask = js.runWhenScanFinished(new Task<CompilationController>() {
 
-                        public void run(final CompilationController controller) throws IOException {
+                        public void run(final CompilationController c) throws IOException {
                             if (cInfo != null)
                                 return;
+                            CompilationController controller = (CompilationController) JavaSourceUtil.createControllerHandle(c.getSnapshot().getSource().getFileObject(), null).getCompilationController();
                             controller.toPhase(JavaSource.Phase.RESOLVED);
                             cInfo = controller;
                             final TreeUtilities tu = cInfo.getTreeUtilities();
@@ -786,7 +788,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                             };
                             locals = cInfo.getElementUtilities().getLocalMembersAndVars(scope, acceptor);
                         }
-                    },false);
+                    },true);
                     if (!initTask.isDone())
                         StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(JavaCodeTemplateFilter.class, "JCT-scanning-in-progress")); //NOI18N
                 } catch(IOException ioe) {

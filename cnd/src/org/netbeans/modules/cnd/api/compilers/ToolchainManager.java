@@ -72,7 +72,11 @@ public final class ToolchainManager {
 
         String getUpdateCenterDisplayName();
 
+        String getUpgradeUrl();
+
         String getModuleID();
+
+        boolean isAbstract();
 
         String getDriveLetterPrefix();
 
@@ -244,6 +248,8 @@ public final class ToolchainManager {
         String getEnterDirectoryPattern();
 
         String getLeaveDirectoryPattern();
+
+        String getMakeAllInDirectoryPattern();
 
         String getStackHeaderPattern();
 

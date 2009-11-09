@@ -204,7 +204,7 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
                 FileSystem fs = webInf.getFileSystem();
                 fs.runAtomicAction(createSpringConfig);
             } catch (IOException e) {
-                ErrorManager.getDefault().notify(e);
+                Logger.getLogger("global").log(Level.INFO, null, e);
                 return null;
             }
         }

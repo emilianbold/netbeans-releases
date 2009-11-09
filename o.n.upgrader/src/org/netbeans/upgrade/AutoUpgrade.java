@@ -92,8 +92,6 @@ public final class AutoUpgrade {
                 //equal or greater than 6.5
                 
                 copyToUserdir(sourceFolder);
-                //#75324 NBplatform settings are not imported
-                upgradeBuildProperties(sourceFolder, version);
                 //migrates SystemOptions, converts them as a Preferences
                 Importer.doImport();
             }
@@ -253,19 +251,7 @@ public final class AutoUpgrade {
         File netBeansDir = InstalledFileLocator.getDefault().locate("modules", null, false).getParentFile().getParentFile();  //NOI18N
         File importFile = new File(netBeansDir, "etc/netbeans.import");  //NOI18N
         LOGGER.fine("Import file: " + importFile);
-        IncludeExclude includeExclude;
-        try {
-            InputStream is = new FileInputStream(importFile);
-            Reader r = new InputStreamReader(is, "utf-8"); // NOI18N
-            includeExclude = IncludeExclude.create(r);
-            r.close();
-        } catch (IOException ex) {
-            // show error message and continue
-            JDialog dialog = Util.createJOptionDialog(new JOptionPane(ex, JOptionPane.ERROR_MESSAGE), ex.getMessage());
-            dialog.setVisible(true);
-            return;
-        }
         LOGGER.info("Importing from " + source + " to " + userdir); // NOI18N
-        CopyFiles.copyDeep(source, userdir, includeExclude);
+        CopyFiles.copyDeep(source, userdir, importFile);
     }
 }

@@ -894,6 +894,16 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("iz174581.cc", 22, 17, "iz174581.cc", 2, 5);
     }
 
+    public void testIZ157786() throws Exception {
+        // IZ#157786 : No member in class
+        performTest("iz157786.cc", 13, 9, "iz157786.cc", 3, 5);
+    }
+
+    public void testIZ175231() throws Exception {
+        // IZ#175231 : template method is unresolved from template-based operator
+        performTest("iz175231.cc", 11, 19, "iz175231.cc", 14, 5);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

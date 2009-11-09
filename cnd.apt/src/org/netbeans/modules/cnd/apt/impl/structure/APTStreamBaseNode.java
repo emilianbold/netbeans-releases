@@ -41,8 +41,8 @@
 
 package org.netbeans.modules.cnd.apt.impl.structure;
 
-import antlr.TokenStream;
-import antlr.TokenStreamException;
+import org.netbeans.modules.cnd.antlr.TokenStream;
+import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;

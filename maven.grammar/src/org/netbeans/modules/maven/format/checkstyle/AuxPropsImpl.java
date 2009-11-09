@@ -40,11 +40,14 @@
 
 package org.netbeans.modules.maven.format.checkstyle;
 
+import hidden.org.codehaus.plexus.util.IOUtil;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -98,17 +101,27 @@ public class AuxPropsImpl implements AuxiliaryProperties, PropertyChangeListener
     }
 
     private FileObject copyToCacheDir(FileObject fo) throws IOException {
+        assert Thread.holdsLock(this);
         CacheDirectoryProvider prov = project.getLookup().lookup(CacheDirectoryProvider.class);
         return FileUtil.copyFile(fo, prov.getCacheDirectory(), "checkstyle-checker", "xml");
     }
 
     private FileObject copyToCacheDir(InputStream in) throws IOException {
+        assert Thread.holdsLock(this);
         CacheDirectoryProvider prov = project.getLookup().lookup(CacheDirectoryProvider.class);
         FileObject file = prov.getCacheDirectory().getFileObject("checkstyle-checker", "xml");
         if (file == null) {
             file = prov.getCacheDirectory().createData("checkstyle-checker", "xml");
         }
-        FileUtil.copy(in, file.getOutputStream());
+        InputStream inst = in;
+        OutputStream outst = null;
+        try {
+            outst = file.getOutputStream();
+            FileUtil.copy(in, outst);
+        } finally {
+            IOUtil.close(inst);
+            IOUtil.close(outst);
+        }
         return file;
     }
 
@@ -163,13 +176,20 @@ public class AuxPropsImpl implements AuxiliaryProperties, PropertyChangeListener
                                     final URL url = new URL(loc);
                                     RP.post(new Runnable() {
                                         public void run() {
+                                            InputStream urlis = null;
                                             try {
-                                                copyToCacheDir(url.openStream());
+                                                urlis = url.openStream();
+                                                byte[] arr = IOUtil.toByteArray(urlis);
                                                 synchronized (AuxPropsImpl.this) {
+                                                    //#174401
+                                                    ByteArrayInputStream bais = new ByteArrayInputStream(arr);
+                                                    copyToCacheDir(bais);
                                                     recheck = true;
                                                 }
                                             } catch (IOException ex) {
                                                 ex.printStackTrace();
+                                            } finally {
+                                                IOUtil.close(urlis);
                                             }
                                         }
                                     });

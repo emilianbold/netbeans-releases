@@ -114,6 +114,11 @@ public class MacroExpansionExpandTestCase extends MacroExpansionDocProviderImplB
         performExpandCodeTest("file1.cc", 10, 13, "CONSTANT + 1"); // NOI18N
     }
 
+    public void testIZ175801() throws Exception {
+        // IZ#175801 : Preprocessor #define not handled properly
+        performExpandFileTest("iz175801.cc");
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     // general staff
 

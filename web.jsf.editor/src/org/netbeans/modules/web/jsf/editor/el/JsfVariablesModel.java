@@ -45,10 +45,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import javax.swing.text.BadLocationException;
 import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.AstNodeUtils;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.web.jsf.editor.JsfSupport;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -117,15 +119,48 @@ public class JsfVariablesModel {
                 }, false);
 
                 for (AstNode node : matches) {
-                    JsfVariableContext context = new JsfVariableContext(
-                            node.logicalStartOffset(),
-                            node.logicalEndOffset(),
-                            node.getAttribute(VARIABLE_NAME).unquotedValue(),
-                            node.getAttribute(VALUE_NAME).unquotedValue());
 
-                    contextsList.add(context);
+                    //I need to get the original document context for the value attribute
+                    //Since the virtual html source already contains the substituted text (@@@)
+                    //instead of the expression language, the code needs to be taken from
+                    //the original document
+                    AstNode.Attribute valueAttr = node.getAttribute(VALUE_NAME);
+                    int doc_from = result.getSnapshot().getOriginalOffset(valueAttr.valueOffset());
+                    int doc_to = result.getSnapshot().getOriginalOffset(valueAttr.valueOffset() + valueAttr.value().length());
+
+                    if(doc_from == -1 || doc_to == -1) {
+                        continue; //the offsets cannot be mapped to the document
+                    }
+
+                    try {
+                        String documentValueContent = result.getSnapshot().getSource().getDocument(false).getText(doc_from, doc_to - doc_from);
+                        
+                        JsfVariableContext context = new JsfVariableContext(
+                                node.logicalStartOffset(),
+                                node.logicalEndOffset(),
+                                node.getAttribute(VARIABLE_NAME).unquotedValue(),
+                                unquotedValue(documentValueContent));
+
+                        contextsList.add(context);
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+
                 }
             }
+        }
+    }
+
+    private String unquotedValue(String value) {
+        return isValueQuoted(value) ? value.substring(1, value.length() - 1) : value;
+    }
+
+    private boolean isValueQuoted(String value) {
+        if (value.length() < 2) {
+            return false;
+        } else {
+            return ((value.charAt(0) == '\'' || value.charAt(0) == '"') &&
+                    (value.charAt(value.length() - 1) == '\'' || value.charAt(value.length() - 1) == '"'));
         }
     }
 

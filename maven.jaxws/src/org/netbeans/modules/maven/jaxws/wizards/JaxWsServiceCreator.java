@@ -357,7 +357,7 @@ public class JaxWsServiceCreator implements ServiceCreator {
         DataFolder df = DataFolder.findFolder(pkg);
         FileObject template = Templates.getTemplate(wiz);
 
-        if (isEjbTemplate) { //EJB Web Service
+        if ((Boolean)wiz.getProperty(WizardProperties.IS_STATELESS_BEAN)) {
             FileObject templateParent = template.getParent();
             template = templateParent.getFileObject("EjbWebService", "java"); //NOI18N
         }
@@ -525,7 +525,7 @@ public class JaxWsServiceCreator implements ServiceCreator {
 
                 DataFolder df = DataFolder.findFolder(pkg);
                 FileObject template = Templates.getTemplate(wiz);
-                if (WSUtils.isEJB(project)) { //EJB Web Service
+                if ((Boolean)wiz.getProperty(WizardProperties.IS_STATELESS_BEAN)) {
                     FileObject templateParent = template.getParent();
                     template = templateParent.getFileObject("EjbWebService", "java"); //NOI18N
                 }
@@ -569,7 +569,9 @@ public class JaxWsServiceCreator implements ServiceCreator {
                     if (interfaceClass[0] == null) {
                         interfaceClass[0] = ref.getRemote();
                     }
-
+                    if (interfaceClass[0] == null) {
+                        interfaceClass[0] = ref.getEjbClass();
+                    }
                     ejbRefInjection = generateEjbInjection(workingCopy, make, interfaceClass[0], onClassPath);
 
                     if (ejbRefInjection != null) {

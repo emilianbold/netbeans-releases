@@ -123,6 +123,7 @@ public final class StopManager {
                     }
                     StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(StopManager.class, "MSG_StoppingMySQL"));
 
+                    stopRequested.set(true);
                     server.stop();
 
                     disconnectAndWaitForStop();
@@ -158,6 +159,7 @@ public final class StopManager {
                     }
                 } finally {
                     handle.finish();
+                    stopRequested.set(true);
                 }
             }
         });

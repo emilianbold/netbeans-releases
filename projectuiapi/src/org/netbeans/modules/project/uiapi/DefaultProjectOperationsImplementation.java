@@ -50,7 +50,6 @@ import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -82,6 +81,7 @@ import org.openide.LifecycleManager;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -232,14 +232,23 @@ public final class DefaultProjectOperationsImplementation {
         
         showConfirmationDialog(panel, project, NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_Copy_Project_Caption"), "Copy_Button", null, false, new Executor() { // NOI18N
             public void execute() throws Exception {
-                String nueName = panel.getNewName();
+                final String nueName = panel.getNewName();
                 File newTarget = FileUtil.normalizeFile(panel.getNewDirectory());
                 
                 FileObject newTargetFO = FileUtil.toFileObject(newTarget);
                 if (newTargetFO == null) {
                     newTargetFO = createFolder(newTarget.getParentFile(), newTarget.getName());
                 }
-                doCopyProject(handle, project, nueName, newTargetFO);
+                final FileObject newTgtFO = newTargetFO;
+                project.getProjectDirectory().getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+                    public void run() throws IOException {
+                        try {
+                            doCopyProject(handle, project, nueName, newTgtFO);
+                        } catch (Exception ex) {
+                            throw new IOException(ex.getLocalizedMessage());
+                        }
+                    }
+                });
             }
         });
     }
@@ -314,17 +323,24 @@ public final class DefaultProjectOperationsImplementation {
         
         showConfirmationDialog(panel, project, NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_Move_Project_Caption"), "Move_Button", null, false, new Executor() { // NOI18N
             public void execute() throws Exception {
-                String nueFolderName = panel.getProjectFolderName();
-                String nueProjectName = panel.getNewName();
+                final String nueFolderName = panel.getProjectFolderName();
+                final String nueProjectName = panel.getNewName();
                 File newTarget = FileUtil.normalizeFile(panel.getNewDirectory());
                 
                 FileObject newTargetFO = FileUtil.toFileObject(newTarget);
                 if (newTargetFO == null) {
                     newTargetFO = createFolder(newTarget.getParentFile(), newTarget.getName());
                 }
-                
-
-                doMoveProject(handle, project, nueFolderName, nueProjectName, newTargetFO, "ERR_Cannot_Move");
+                final FileObject newTgtFO = newTargetFO;
+                project.getProjectDirectory().getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+                    public void run() throws IOException {
+                        try {
+                            doMoveProject(handle, project, nueFolderName, nueProjectName, newTgtFO, "ERR_Cannot_Move");
+                        } catch (Exception ex) {
+                            throw new IOException(ex.getLocalizedMessage());
+                        }
+                    }
+                });
             }
         });
     }
@@ -342,82 +358,81 @@ public final class DefaultProjectOperationsImplementation {
         
         showConfirmationDialog(panel, project, NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_Rename_Project_Caption"), "Rename_Button", null, false, new Executor() { // NOI18N
             public void execute() throws Exception {
-                String nueName = panel.getNewName();
+                final String nueName = panel.getNewName();
                 
                 if (panel.getRenameProjectFolder()) {
-
-                    doMoveProject(handle, project, nueName, nueName, project.getProjectDirectory().getParent(), "ERR_Cannot_Rename");
+                    project.getProjectDirectory().getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+                        public void run() throws IOException {
+                            try {
+                                doMoveProject(handle, project, nueName, nueName, project.getProjectDirectory().getParent(), "ERR_Cannot_Rename");
+                            } catch (Exception ex) {
+                                throw new IOException(ex.getLocalizedMessage());
+                            }
+                        }
+                    });
                 } else {
-                    boolean originalOK = true;
-                    Project main    = OpenProjects.getDefault().getMainProject();
-                    boolean wasMain = main != null && project.getProjectDirectory().equals(main.getProjectDirectory());
-                    Project nue = null;
-                    
-                    try {
-                        handle.switchToIndeterminate();
-                        handle.switchToDeterminate(5);
-                        
-                        int currentWorkDone = 0;
-                        
-                        FileObject projectDirectory = project.getProjectDirectory();
-                        File       projectDirectoryFile = FileUtil.toFile(project.getProjectDirectory());
-                        Collection<? extends MoveOperationImplementation> operations = project.getLookup().lookupAll(MoveOperationImplementation.class);
-                        
-                        close(project);
-                        
-                        handle.progress(++currentWorkDone);
-                        
-                        for (MoveOperationImplementation o : operations) {
-                            o.notifyMoving();
+                    project.getProjectDirectory().getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+                        public void run() throws IOException {
+                            try {
+                                doRenameProject(handle, project, nueName);
+                            } catch (Exception ex) {
+                                throw new IOException(ex.getLocalizedMessage());
+                            }
                         }
-                        
-                        handle.progress(++currentWorkDone);
-                        
-                        for (MoveOperationImplementation o : operations) {
-                            o.notifyMoved(null, projectDirectoryFile, nueName);
-                        }
-                        
-                        handle.progress(++currentWorkDone);
-                        
-                        //#64264: the non-project cache can be filled with incorrect data (gathered during the project copy phase), clear it:
-                        ProjectManager.getDefault().clearNonProjectCache();
-                        
-                        nue = ProjectManager.getDefault().findProject(projectDirectory);
-                        
-                        assert nue != null;
-                        
-                        originalOK = false;
-                        
-                        handle.progress(++currentWorkDone);
-                        
-                        operations = nue.getLookup().lookupAll(MoveOperationImplementation.class);
-                        
-                        for (MoveOperationImplementation o : operations) {
-                            o.notifyMoved(project, projectDirectoryFile, nueName);
-                        }
-                        
-                        ProjectManager.getDefault().saveProject(nue);
-                        
-                        open(nue, wasMain);
-                        
-                        handle.progress(++currentWorkDone);
-                        
-                        handle.finish();
-                    } catch (Exception e) {
-                        if (originalOK) {
-                            open(project, wasMain);
-                        } else {
-                            assert nue != null;
-                            open(nue, wasMain);
-                        }
-                        ErrorManager.getDefault().annotate(e, NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "ERR_Cannot_Rename", e.getLocalizedMessage()));
-                        throw e;
-                    }
+                    });
 		}
             }
         });
     }
-    
+
+    private static void doRenameProject(ProgressHandle handle, Project project, String nueName) throws Exception {
+        boolean originalOK = true;
+        Project main = OpenProjects.getDefault().getMainProject();
+        boolean wasMain = main != null && project.getProjectDirectory().equals(main.getProjectDirectory());
+        Project nue = null;
+        try {
+            handle.switchToIndeterminate();
+            handle.switchToDeterminate(5);
+            int currentWorkDone = 0;
+            FileObject projectDirectory = project.getProjectDirectory();
+            File projectDirectoryFile = FileUtil.toFile(project.getProjectDirectory());
+            Collection<? extends MoveOperationImplementation> operations = project.getLookup().lookupAll(MoveOperationImplementation.class);
+            close(project);
+            handle.progress(++currentWorkDone);
+            for (MoveOperationImplementation o : operations) {
+                o.notifyMoving();
+            }
+            handle.progress(++currentWorkDone);
+            for (MoveOperationImplementation o : operations) {
+                o.notifyMoved(null, projectDirectoryFile, nueName);
+            }
+            handle.progress(++currentWorkDone);
+            //#64264: the non-project cache can be filled with incorrect data (gathered during the project copy phase), clear it:
+            ProjectManager.getDefault().clearNonProjectCache();
+            nue = ProjectManager.getDefault().findProject(projectDirectory);
+            assert nue != null;
+            originalOK = false;
+            handle.progress(++currentWorkDone);
+            operations = nue.getLookup().lookupAll(MoveOperationImplementation.class);
+            for (MoveOperationImplementation o : operations) {
+                o.notifyMoved(project, projectDirectoryFile, nueName);
+            }
+            ProjectManager.getDefault().saveProject(nue);
+            open(nue, wasMain);
+            handle.progress(++currentWorkDone);
+            handle.finish();
+        } catch (Exception e) {
+            if (originalOK) {
+                open(project, wasMain);
+            } else {
+                assert nue != null;
+                open(nue, wasMain);
+            }
+            ErrorManager.getDefault().annotate(e, NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "ERR_Cannot_Rename", e.getLocalizedMessage()));
+            throw e;
+        }
+    }
+
     /*package private for tests*/ static void doMoveProject(ProgressHandle handle, Project project, String nueFolderName, String nueProjectName, FileObject newTarget, String errorKey) throws Exception {
         boolean originalOK = true;
         Project main    = OpenProjects.getDefault().getMainProject();
@@ -755,14 +770,18 @@ public final class DefaultProjectOperationsImplementation {
     }
     
     private static void open(final Project prj, final boolean setAsMain) {
-        Mutex.EVENT.readAccess(new Runnable() {
-            public void run() {
+        //#176017 -used to be Mutex.EVENT.readAccess but that goes against the
+        // regular means of opening projects (via open project dialog) that
+        //opens projects in non-awt thread. OpenProjectHooks shall not IMO
+        //be called in AWT.
+//        RequestProcessor.getDefault().post(new Runnable() {
+//            public void run() {
                 OpenProjects.getDefault().open(new Project[] {prj}, false);
                 if (setAsMain) {
                     OpenProjects.getDefault().setMainProject(prj);
                 }
-            }
-        });
+//            }
+//        });
     }
     
     static interface Executor {

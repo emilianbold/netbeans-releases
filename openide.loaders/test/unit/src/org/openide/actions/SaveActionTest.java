@@ -100,7 +100,7 @@ public class SaveActionTest extends NbTestCase {
             assertNotNull(fo);
             final DataObject obj = DataObject.find(fo);
 
-            SaveAction sa = (SaveAction) SaveAction.get(SaveAction.class);
+            SaveAction sa = SaveAction.get(SaveAction.class);
             
             class MyNode extends FilterNode 
             implements SaveCookie {

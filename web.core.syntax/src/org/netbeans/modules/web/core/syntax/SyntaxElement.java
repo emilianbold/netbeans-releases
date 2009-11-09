@@ -45,8 +45,6 @@ import java.util.*;
 
 import javax.swing.text.*;
 
-import org.netbeans.editor.ext.*;
-
 /**
  *
  * @author  Petr Jiricka, Petr Nejedly
@@ -98,6 +96,7 @@ public abstract class SyntaxElement extends Object {
         return support.getDocument().getText(offset, length);
     }
 
+    @Override
     public String toString() {
         String content = "???";
         try {
@@ -117,6 +116,7 @@ public abstract class SyntaxElement extends Object {
             return JspSyntaxSupport.COMMENT_COMPLETION_CONTEXT;
         }
         
+        @Override
         public String toString() {
             return "JSP Comment " + super.toString();   // NOI18N
         }
@@ -131,6 +131,7 @@ public abstract class SyntaxElement extends Object {
             return JspSyntaxSupport.EL_COMPLETION_CONTEXT;
         }
         
+        @Override
         public String toString() {
             return "Expression Language " + super.toString();   // NOI18N
         }
@@ -145,6 +146,7 @@ public abstract class SyntaxElement extends Object {
             return JspSyntaxSupport.TEXT_COMPLETION_CONTEXT;
         }
         
+        @Override
         public String toString() {
             return "JSP Text " + super.toString();   // NOI18N
         }
@@ -159,6 +161,7 @@ public abstract class SyntaxElement extends Object {
             return JspSyntaxSupport.CONTENTL_COMPLETION_CONTEXT;
         }
         
+        @Override
         public String toString() {
             return "JSP Content Language " + super.toString();   // NOI18N
         }
@@ -173,6 +176,7 @@ public abstract class SyntaxElement extends Object {
             return JspSyntaxSupport.SCRIPTINGL_COMPLETION_CONTEXT;
         }
         
+        @Override
         public String toString() {
             return "JSP Scripting Language " + super.toString();   // NOI18N
         }
@@ -187,6 +191,7 @@ public abstract class SyntaxElement extends Object {
             return JspSyntaxSupport.ERROR_COMPLETION_CONTEXT;
         }
         
+        @Override
         public String toString() {
             return "JSP Error " + super.toString();   // NOI18N
         }
@@ -204,6 +209,7 @@ public abstract class SyntaxElement extends Object {
             return name;
         }
         
+        @Override
         public String toString() {
             return super.toString() + " - '" + name + "'";   // NOI18N
         }
@@ -218,6 +224,7 @@ public abstract class SyntaxElement extends Object {
             return JspSyntaxSupport.ENDTAG_COMPLETION_CONTEXT;
         }
         
+        @Override
         public String toString() {
             return "JSP EndTag " + super.toString();   // NOI18N
         }
@@ -236,6 +243,7 @@ public abstract class SyntaxElement extends Object {
             return attribs;
         }
 
+        @Override
         public String toString() {
             StringBuffer ret = new StringBuffer(super.toString() + " - {" );   // NOI18N
 
@@ -273,6 +281,7 @@ public abstract class SyntaxElement extends Object {
             return isClosed;
         }
         
+        @Override
         public String toString() {
             return "JSP Tag " + super.toString();   // NOI18N
         }
@@ -288,6 +297,7 @@ public abstract class SyntaxElement extends Object {
             return JspSyntaxSupport.DIRECTIVE_COMPLETION_CONTEXT;
         }
         
+        @Override
         public String toString() {
             return "JSP Directive " + super.toString();   // NOI18N
         }

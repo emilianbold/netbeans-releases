@@ -76,7 +76,7 @@ public class CodeCompletionPanel extends javax.swing.JPanel implements DocumentL
     public static final String JAVA_COMPLETION_EXCLUDER_METHODS = "javaCompletionExcluderMethods"; //NOI18N
     public static final boolean JAVA_COMPLETION_EXCLUDER_METHODS_DEFAULT = false;
 
-    private static final String JAVA_FQN_REGEX = "[$\\w._]*";
+    private static final String JAVA_FQN_REGEX = "[$\\p{L}\\p{Digit}._]*"; //NOI18N
 
     private final Preferences preferences;
 

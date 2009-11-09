@@ -46,11 +46,15 @@ import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.netbeans.modules.php.editor.NamespaceIndexFilter;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.model.impl.VariousUtils;
+import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticDispatch;
 import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
 import org.openide.filesystems.FileObject;
 
@@ -134,6 +138,18 @@ public class ModelUtils {
         return retval;
     }
 
+    public static Collection<? extends TypeScope> resolveType(Model model, StaticDispatch dispatch) {
+        QualifiedName qName = ASTNodeInfo.toQualifiedName(dispatch, true);
+        if (qName != null) {
+            VariableScope variableScope = model.getVariableScope(dispatch.getStartOffset());
+            NamespaceIndexFilter filter = new NamespaceIndexFilter(qName.toString());
+            Collection<? extends TypeScope> staticTypeName = VariousUtils.getStaticTypeName(
+                    variableScope != null ? variableScope : model.getFileScope(), filter.getName());
+            return filter.filterModelElements(staticTypeName, true);
+        }
+        return Collections.emptyList();
+
+    }
     @NonNull
     public static Collection<? extends TypeScope> resolveType(Model model, VariableBase varBase) {
         Collection<? extends TypeScope> retval = Collections.emptyList();
@@ -289,6 +305,21 @@ public class ModelUtils {
         while (retval == null && element != null) {
             element = element.getInScope();
             retval = (NamespaceScope) ((element instanceof NamespaceScope) ? element : null);
+        }
+        return retval;
+    }
+
+    @CheckForNull
+    public static NamespaceScope getNamespaceScope(FileScope fileScope, int offset) {
+        NamespaceScope retval = fileScope.getDefaultDeclaredNamespace();
+        Collection<? extends NamespaceScope> declaredNamespaces = fileScope.getDeclaredNamespaces();
+        for (NamespaceScope namespaceScope : declaredNamespaces) {
+            OffsetRange blockRange = namespaceScope.getBlockRange();
+            if (blockRange != null && blockRange.containsInclusive(offset)) {
+                if (retval == null || !namespaceScope.isDefaultNamespace()) {
+                    retval = namespaceScope;
+                }
+            }
         }
         return retval;
     }

@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.editor.lib2.actions;
 
-import org.netbeans.spi.editor.AbstractEditorAction;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
@@ -49,7 +48,7 @@ import java.beans.PropertyChangeListener;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.Map;
-import java.util.WeakHashMap;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
@@ -65,6 +64,7 @@ import javax.swing.text.TextAction;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.EditorUtilities;
 import org.openide.awt.Actions;
+import org.openide.util.WeakSet;
 import org.openide.util.actions.Presenter;
 
 /**
@@ -75,7 +75,7 @@ import org.openide.util.actions.Presenter;
  * of the mime-type for which the actions get created.
  */
 public final class PresenterEditorAction extends TextAction
-        implements Presenter.Menu, Presenter.Popup, Presenter.Toolbar, PropertyChangeListener, ChangeListener
+        implements Presenter.Menu, Presenter.Popup, Presenter.Toolbar, PropertyChangeListener
 {
 
     /**
@@ -83,68 +83,107 @@ public final class PresenterEditorAction extends TextAction
      */
     private static final String SELECTED_KEY = "SwingSelectedKey"; // [TODO] Replace with "Action.SELECTED_KEY" on 1.6
 
-
     // -J-Dorg.netbeans.modules.editor.lib2.actions.PresenterEditorAction.level=FINEST
     private static final Logger LOG = Logger.getLogger(PresenterEditorAction.class.getName());
-
-    private static final Map<PresenterEditorAction,String> presenterAction2Name
-            = new WeakHashMap<PresenterEditorAction,String>();
 
     /**
      * Currently active editor component's editor kit reference.
      */
-    private static Reference<SearchableEditorKit> activeEditorKitRef;
+    private static Reference<SearchableEditorKit> activeKitRef;
 
-    private static ChangeListener kitChangeListener = new ChangeListener() {
-        public void stateChanged(ChangeEvent evt) {
-            updateActions(null);
-        }
-    };
+    private static boolean activeKitLastFocused;
 
-    private static SearchableEditorKit activeKit() {
-        synchronized (PresenterEditorAction.class) {
-            return (activeEditorKitRef != null) ? activeEditorKitRef.get() : null;
-        }
-    }
+    private static final Set<PresenterEditorAction> presenterActions = new WeakSet<PresenterEditorAction>();
 
-    private static void updateActions(SearchableEditorKit kit) {
-        boolean changed = (activeEditorKitRef == null || kit != activeEditorKitRef.get());
-        if (changed) {
-            activeEditorKitRef = new WeakReference<SearchableEditorKit>(kit);
-            for (Map.Entry<PresenterEditorAction, String> actionAndName : presenterAction2Name.entrySet()) {
-                PresenterEditorAction presenterAction = actionAndName.getKey();
-                String actionName = actionAndName.getValue();
-                // Clear ref to old action
-                presenterAction.clearDelegateActionRef();
-                // Update to current delegate action (by using the given kit)
-                presenterAction.delegateAction(kit, actionName);
+    private static final ChangeListener actionsChangeListener = new ChangeListener() {
+        public void stateChanged(ChangeEvent e) {
+            synchronized (PresenterEditorAction.class) {
+                refreshActiveKitActions(activeKit(), true);
             }
         }
-    }
-
-    private static final Action NULL_ACTION = new TextAction("null") {
-        public void actionPerformed(ActionEvent evt) {
-        }
     };
 
-    private static final Reference<Action> NULL_ACTION_REF = new WeakReference<Action>(NULL_ACTION);
+    public static SearchableEditorKit activeKit() {
+        synchronized (PresenterEditorAction.class) {
+            return (activeKitRef != null) ? activeKitRef.get() : null;
+        }
+    }
 
     static {
         EditorRegistry.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (EditorRegistry.FOCUS_GAINED_PROPERTY.equals(evt.getPropertyName())) {
                     JTextComponent focusedTextComponent = (JTextComponent) evt.getNewValue();
-                    TextUI ui = (focusedTextComponent != null) ? focusedTextComponent.getUI() : null;
-                    EditorKit kit = (ui != null)
-                            ? ui.getEditorKit(focusedTextComponent)
-                            : EditorActionUtilities.getGlobalActionsKit();
-                    if (kit != null) {
-                        SearchableEditorKit searchableKit = EditorActionUtilities.getSearchableKit(kit);
-                        updateActions(searchableKit);
+                    SearchableEditorKit oldActiveKit = activeKit();
+                    EditorKit kit = null;
+                    if (focusedTextComponent != null) {
+                        TextUI ui = focusedTextComponent.getUI();
+                        if (ui != null) {
+                            kit = ui.getEditorKit(focusedTextComponent);
+                        }
+                    }
+
+                    synchronized (PresenterEditorAction.class) {
+                        SearchableEditorKit newActiveKit = (kit != null)
+                                ? EditorActionUtilities.getSearchableKit(kit)
+                                : null;
+                        boolean kitChanged;
+                        if (newActiveKit != oldActiveKit) {
+                            if (oldActiveKit != null) {
+                                oldActiveKit.removeActionsChangeListener(actionsChangeListener);
+                            }
+                            activeKitRef = (newActiveKit != null)
+                                    ? new WeakReference<SearchableEditorKit>(newActiveKit)
+                                    : null;
+                            if (newActiveKit != null) {
+                                newActiveKit.addActionsChangeListener(actionsChangeListener);
+                            }
+                            kitChanged = true;
+                        } else {
+                            kitChanged = false;
+                        }
+                        boolean focusChanged = (activeKitLastFocused == false);
+                        activeKitLastFocused = true;
+                        if (focusChanged || kitChanged) {
+                            refreshActiveKitActions(newActiveKit, kitChanged);
+                        }
+                    }
+
+                } else if (EditorRegistry.FOCUS_LOST_PROPERTY.equals(evt.getPropertyName())) {
+                    synchronized (PresenterEditorAction.class) {
+                        boolean newActiveKitLastFocused = (EditorRegistry.lastFocusedComponent() != null);
+                        if (newActiveKitLastFocused != activeKitLastFocused) {
+                            activeKitLastFocused = newActiveKitLastFocused;
+                            for (PresenterEditorAction a : presenterActions) {
+                                a.refreshActiveKitAction(null, false);
+                            }
+                        }
                     }
                 }
             }
         });
+        EditorActionUtilities.getGlobalActionsKit().addActionsChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                SearchableEditorKit globalKit = EditorActionUtilities.getGlobalActionsKit();
+                synchronized (PresenterEditorAction.class) {
+                    for (PresenterEditorAction a : presenterActions) {
+                        a.refreshGlobalAction(globalKit);
+                    }
+                }
+            }
+        });
+    }
+
+    static void registerAction(PresenterEditorAction action) {
+        synchronized (PresenterEditorAction.class) {
+            presenterActions.add(action);
+        }
+    }
+
+    private static void refreshActiveKitActions(SearchableEditorKit activeKit, boolean kitChanged) {
+        for (PresenterEditorAction a : presenterActions) {
+            a.refreshActiveKitAction(activeKit, kitChanged);
+        }
     }
 
     public static Action create(Map<String,?> attrs) {
@@ -152,13 +191,10 @@ public final class PresenterEditorAction extends TextAction
         if (actionName == null) {
             throw new IllegalArgumentException("Null Action.NAME attribute for attrs: " + attrs); // NOI18N
         }
-        return new PresenterEditorAction(actionName, attrs);
+        return new PresenterEditorAction(actionName);
     }
 
-    /**
-     * Corresponding action's reference.
-     */
-    private Reference<Action> delegateActionRef;
+    private final String actionName;
 
     private JMenuItem menuPresenter;
 
@@ -166,12 +202,25 @@ public final class PresenterEditorAction extends TextAction
 
     private Component toolBarPresenter;
 
-    private Map<String,?> attrs;
+    private Action globalKitAction;
 
-    public PresenterEditorAction(String actionName, Map<String,?> attrs) {
+    private Action activeKitAction;
+
+    private PresenterEditorAction(String actionName) {
         super(actionName);
-        this.attrs = attrs;
-        presenterAction2Name.put(this, actionName);
+        this.actionName = actionName;
+        refreshGlobalAction(EditorActionUtilities.getGlobalActionsKit());
+        refreshActiveKitAction(activeKit(), true);
+        registerAction(this);
+    }
+
+    @Override
+    public void putValue(String key, Object newValue) {
+        if (actionName != null && Action.NAME.equals(key)) {
+            throw new IllegalArgumentException("PresenterEditorAction(\"" + actionName + // NOI18N
+                    "\"): putValue(Action.NAME,newName) prohibited."); // NOI18N
+        }
+        super.putValue(key, newValue);
     }
 
     public void actionPerformed(ActionEvent evt) {
@@ -182,7 +231,6 @@ public final class PresenterEditorAction extends TextAction
             if (ui != null) {
                 EditorKit kit = ui.getEditorKit(component);
                 if (kit != null) {
-                    String actionName = actionName();
                     Action action = EditorUtilities.getAction(kit, actionName);
                     if (action != null) {
                         action.actionPerformed(evt);
@@ -201,7 +249,7 @@ public final class PresenterEditorAction extends TextAction
             menuPresenter = createMenuItem(false);
         }
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("getMenuPresenter() for action=" + actionName() + " returns " + menuPresenter); // NOI18N
+            LOG.fine("getMenuPresenter() for action=" + actionName + " returns " + menuPresenter); // NOI18N
         }
         return menuPresenter;
     }
@@ -211,7 +259,7 @@ public final class PresenterEditorAction extends TextAction
             popupPresenter = createMenuItem(true);
         }
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("getPopupPresenter() for action=" + actionName() + " returns " + popupPresenter); // NOI18N
+            LOG.fine("getPopupPresenter() for action=" + actionName + " returns " + popupPresenter); // NOI18N
         }
         return popupPresenter;
     }
@@ -221,7 +269,7 @@ public final class PresenterEditorAction extends TextAction
             toolBarPresenter = new JButton(this);
         }
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("getToolbarPresenter() for action=" + actionName() + " returns " + toolBarPresenter); // NOI18N
+            LOG.fine("getToolbarPresenter() for action=" + actionName + " returns " + toolBarPresenter); // NOI18N
         }
         return toolBarPresenter;
     }
@@ -231,11 +279,14 @@ public final class PresenterEditorAction extends TextAction
         Object value = super.getValue(key);
         if (value == null) {
             if (!"instanceCreate".equals(key)) { // Return null for this key
-                value = attrs.get(key);
+                Action action = activeKitAction;
+                if (action != null) {
+                    value = action.getValue(key);
+                }
                 if (value == null) {
-                    Action delegateAction = delegateAction();
-                    if (delegateAction != null) {
-                        value = delegateAction.getValue(key);
+                    action = globalKitAction;
+                    if (action != null) {
+                        value = action.getValue(key);
                     }
                 }
             }
@@ -243,17 +294,68 @@ public final class PresenterEditorAction extends TextAction
         return value;
     }
 
+    @Override
+    public boolean isEnabled() {
+        return (activeKitAction != null) ? activeKitAction.isEnabled() && activeKitLastFocused : false;
+    }
+
     public void propertyChange(PropertyChangeEvent evt) {
         String propertyName = evt.getPropertyName();
         if (SELECTED_KEY.equals(propertyName)) {
             if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("propertyChange() of SELECTED_KEY for action " + actionName());
+                LOG.fine("propertyChange() of SELECTED_KEY for action " + actionName);
             }
-            updateSelected();
+            updateSelectedInPresenters();
+        }
+        // Re-fire the property change
+        firePropertyChange(propertyName, null, null);
+    }
+    
+    void refreshGlobalAction(SearchableEditorKit kit) {
+        Action newAction = (kit != null) ? kit.getAction(actionName) : null;
+        if (newAction != globalKitAction) {
+            if (globalKitAction != null) {
+                globalKitAction.removePropertyChangeListener(this);
+            }
+            ActionPropertyRefresh propertyRefresh = new ActionPropertyRefresh();
+            propertyRefresh.before();
+            globalKitAction = newAction;
+            propertyRefresh.after();
+            if (globalKitAction != null) {
+                globalKitAction.addPropertyChangeListener(this);
+            }
         }
     }
 
-    private void updateSelected() {
+    void refreshActiveKitAction(SearchableEditorKit kit, boolean kitChanged) {
+        if (kitChanged) {
+            Action newAction = (kit != null) ? kit.getAction(actionName) : null;
+            if (newAction != activeKitAction) {
+                if (activeKitAction != null) {
+                    activeKitAction.removePropertyChangeListener(this);
+                }
+                ActionPropertyRefresh propertyRefresh = new ActionPropertyRefresh();
+                propertyRefresh.before();
+                activeKitAction = newAction;
+                propertyRefresh.after();
+                if (activeKitAction != null) {
+                    activeKitAction.addPropertyChangeListener(this);
+                }
+            }
+        }
+        // Always fire "enabled" change. If problematic add a local copy of "activeKitFocused" flag.
+        boolean newEnabled = isEnabled();
+        firePropertyChange("enabled", !newEnabled, newEnabled);
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("\"" + actionName + "\".refreshActiveKitAction(): activeKitFocused=" + // NOI18N
+                    activeKitLastFocused + ", newEnabled=" + newEnabled + ", kitChanged=" + kitChanged + '\n'); // NOI18N
+            if (LOG.isLoggable(Level.FINEST)) {
+                LOG.log(Level.INFO, "", new Exception());
+            }
+        }
+    }
+
+    private void updateSelectedInPresenters() {
         if (isCheckBox()) {
             boolean selected = isSelected();
             if (menuPresenter instanceof JCheckBoxMenuItem) {
@@ -265,14 +367,8 @@ public final class PresenterEditorAction extends TextAction
         }
     }
 
-    public void stateChanged(ChangeEvent evt) {
-        clearDelegateActionRef();
-    }
-
     private boolean isSelected() {
-        Action action = delegateAction();
-        boolean selected = (action != null) && Boolean.TRUE.equals(action.getValue(SELECTED_KEY));
-        return selected;
+        return Boolean.TRUE.equals(getValue(SELECTED_KEY));
     }
 
     private JMenuItem createMenuItem(boolean isPopup) {
@@ -280,7 +376,7 @@ public final class PresenterEditorAction extends TextAction
         if (isCheckBox()) {
             menuItem = new JCheckBoxMenuItem();
             if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("Create checkbox menu item for action " + actionName() + ", selected=" + isSelected());
+                LOG.fine("Create checkbox menu item for action " + actionName + ", selected=" + isSelected());
             }
             menuItem.setSelected(isSelected());
             menuItem.addItemListener(new ItemListener() {
@@ -288,14 +384,18 @@ public final class PresenterEditorAction extends TextAction
                     boolean checkboxSelected = ((JCheckBoxMenuItem)evt.getSource()).isSelected();
                     boolean actionSelected = isSelected();
                     if (checkboxSelected != actionSelected) {
-                        Action delegateAction = delegateAction();
-                        if (delegateAction != null) {
-                            delegateAction.putValue(SELECTED_KEY, checkboxSelected);
+                        Action action = activeKitAction;
+                        if (action != null) {
+                            action.putValue(SELECTED_KEY, checkboxSelected);
+                        } else {
+                            action = globalKitAction;
+                            if (action != null) {
+                                action.putValue(SELECTED_KEY, checkboxSelected);
+                            }
                         }
                     }
                 }
             });
-
         } else { // Regular menu item
             menuItem = new JMenuItem();
         }
@@ -308,58 +408,29 @@ public final class PresenterEditorAction extends TextAction
         return "CheckBox".equals(presenterType);
     }
 
-    String actionName() {
-        return (String) getValue(Action.NAME); // should be non-null (check by constructor)
-    }
+    private final class ActionPropertyRefresh {
 
-    Action delegateAction() {
-        return delegateAction(null, null);
-    }
+        private boolean checkBox;
 
-    Action delegateAction(SearchableEditorKit searchableKit, String actionName) {
-        synchronized (this) {
-            if (delegateActionRef == null) {
-                if (actionName == null) {
-                    actionName = actionName();
-                }
-                if (searchableKit == null) {
-                    EditorKit globalKit = EditorActionUtilities.getGlobalActionsKit();
-                    searchableKit = (globalKit != null) ? EditorActionUtilities.getSearchableKit(globalKit) : null;
-                    if (searchableKit == null) {
-                        return null;
-                    }
-                }
-                Action delegateAction = searchableKit.getAction(actionName);
-                if (delegateAction != null) {
-                    delegateActionRef = new WeakReference<Action>(delegateAction);
-                    delegateAction.addPropertyChangeListener(this);
-                    setEnabled(delegateAction.isEnabled());
-                } else {
-                    delegateActionRef = NULL_ACTION_REF;
-                    setEnabled(false);
-                    if (LOG.isLoggable(Level.FINE)) {
-                        LOG.fine("Action '" + actionName + "' not found in global editor kit " + searchableKit + '\n'); // NOI18N
-                    }
-                }
-                updateSelected();
-            }
-            return (delegateActionRef != NULL_ACTION_REF)
-                    ? delegateActionRef.get()
-                    : null;
+        ActionPropertyRefresh() {
+            this.checkBox = isCheckBox();
         }
-    }
 
-    private void clearDelegateActionRef() {
-        synchronized (this) {
-            if (delegateActionRef != null && delegateActionRef != NULL_ACTION_REF) {
-                Action oldDelegateAction = delegateActionRef.get();
-                if (oldDelegateAction != null) {
-                    oldDelegateAction.removePropertyChangeListener(this);
+        private boolean selected;
+
+        void before() {
+            if (checkBox) {
+                selected = isSelected();
+            }
+        }
+
+        void after() {
+            if (checkBox) {
+                if (selected != isSelected()) {
+                    firePropertyChange(SELECTED_KEY, selected, !selected);
                 }
             }
-            delegateActionRef = null;
         }
-        
-    }
 
+    }
 }

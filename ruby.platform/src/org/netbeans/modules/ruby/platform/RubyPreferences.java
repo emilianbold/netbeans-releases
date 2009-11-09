@@ -40,6 +40,8 @@
  */
 package org.netbeans.modules.ruby.platform;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.prefs.Preferences;
 import org.openide.util.NbPreferences;
 
@@ -51,7 +53,16 @@ public final class RubyPreferences {
     private static final String GEM_VERBOSE_OUTPUT = "gem-manager-verbose-output"; // NOI18N
     private static final String INDEX_VENDOR_GEMS_ONLY = "rails-index-vendor-gems-only"; // NOI18N
 
+    public static final String VENDOR_GEMS_PROPERTY = "vendor-gems"; //NOI18N
+
+    private static final RubyPreferences INSTANCE = new RubyPreferences();
+    private static final PropertyChangeSupport changeSupport = new PropertyChangeSupport(INSTANCE);
+
     private RubyPreferences() {
+    }
+
+    public static RubyPreferences getInstance() {
+        return INSTANCE;
     }
 
     /** Returns {@link NbPreferences preferences} for this module. */
@@ -132,6 +143,18 @@ public final class RubyPreferences {
      * Sets whether only gems in vendor/gems should be indexed (for rails apps).
      */
     public static void setIndexVendorGemsOnly(boolean vendorGemsOnly) {
-        RubyPreferences.getPreferences().putBoolean(INDEX_VENDOR_GEMS_ONLY, vendorGemsOnly);
+        boolean oldValue = isIndexVendorGemsOnly();
+        getPreferences().putBoolean(INDEX_VENDOR_GEMS_ONLY, vendorGemsOnly);
+        if (oldValue != vendorGemsOnly) {
+            changeSupport.firePropertyChange(VENDOR_GEMS_PROPERTY, oldValue, vendorGemsOnly);
+        }
+    }
+
+    public static void addPropertyChangeListener(PropertyChangeListener listener) {
+        changeSupport.addPropertyChangeListener(listener);
+    }
+
+    public static void removePropertyChangeListener(PropertyChangeListener listener) {
+        changeSupport.removePropertyChangeListener(listener);
     }
 }

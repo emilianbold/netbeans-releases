@@ -80,17 +80,13 @@ public class GsfCodeTemplateFilter extends UserTask implements CodeTemplateFilte
         this.endOffset = component.getSelectionStart() == offset ? component.getSelectionEnd() : -1;            
         Source js = Source.create (component.getDocument());
         if (js != null) {
-            if (isDisabled(js)) {
-                templates = Collections.emptySet();
-            } else {
-                try {
-                    Future<Void> f = ParserManager.parseWhenScanFinished(Collections.singleton(js), this);
-                    if (!f.isDone()) {
-                        f.cancel(true);
-                    }
-                } catch (ParseException ex) {
-                    Exceptions.printStackTrace(ex);
+            try {
+                Future<Void> f = ParserManager.parseWhenScanFinished(Collections.singleton(js), this);
+                if (!f.isDone()) {
+                    f.cancel(true);
                 }
+            } catch (ParseException ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
     }
@@ -139,17 +135,4 @@ public class GsfCodeTemplateFilter extends UserTask implements CodeTemplateFilte
         }
     }
 
-    // THIS IS TEMPORARY HACK DISABLING TEMPLATE FILTER FOR GROOVY
-    // see http://www.netbeans.org/issues/show_bug.cgi?id=161114 and
-    // see http://www.netbeans.org/issues/show_bug.cgi?id=160727
-
-    private static final Set<String> DISABLED_TYPES = new HashSet<String>();
-    
-    static {
-        Collections.addAll(DISABLED_TYPES, "text/x-groovy", "text/x-gsp"); // NOI18N
-    }
-
-    private static boolean isDisabled(Source source) {
-        return DISABLED_TYPES.contains(source.getMimeType());
-    }
 }

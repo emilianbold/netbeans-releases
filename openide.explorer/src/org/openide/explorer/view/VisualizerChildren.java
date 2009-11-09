@@ -336,6 +336,23 @@ final class VisualizerChildren extends Object {
 
     @Override
     public String toString() {
-        return "Parent: " + parent + "  children: " + visNodes.toString();
+        String str = "";
+        if (parent != null) {
+            str = "Parent: " + parent + " ";
+        }
+        str += "[";
+        for (VisualizerNode vn : visNodes) {
+            str += vn;
+            if (vn != null) {
+                VisualizerChildren vch = vn.getChildren(false);
+                if (vch != VisualizerChildren.EMPTY) {
+                    str += vch;
+                }
+            }
+            str += " ";
+        }
+        str += " {" + snapshot + "}";
+        str += "]";
+        return str;
     }
 }
