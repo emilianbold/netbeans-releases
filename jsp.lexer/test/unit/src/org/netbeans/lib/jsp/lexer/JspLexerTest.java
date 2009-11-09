@@ -188,6 +188,31 @@ public class JspLexerTest extends NbTestCase {
 
     }
 
+    public void testScriptletExpressionInTagAttribute_Issue176211() {
+        TokenHierarchy th = TokenHierarchy.create("<jsp:xxx attr=\"<%=expr%>\"> <% %>text", JspTokenId.language());
+        TokenSequence ts = th.tokenSequence();
+        ts.moveStart();
+
+        assertToken(ts, "<", JspTokenId.SYMBOL);
+        assertToken(ts, "jsp:xxx", JspTokenId.TAG);
+        assertToken(ts, " ", JspTokenId.WHITESPACE);
+        assertToken(ts, "attr", JspTokenId.ATTRIBUTE);
+        assertToken(ts, "=", JspTokenId.SYMBOL);
+        assertToken(ts, "\"", JspTokenId.ATTR_VALUE);
+        assertToken(ts, "<%=", JspTokenId.SYMBOL2);
+        assertToken(ts, "expr", JspTokenId.SCRIPTLET);
+        assertToken(ts, "%>", JspTokenId.SYMBOL2);
+        assertToken(ts, "\"", JspTokenId.ATTR_VALUE);
+        assertToken(ts, ">", JspTokenId.SYMBOL);
+        assertToken(ts, " ", JspTokenId.TEXT);
+        assertToken(ts, "<%", JspTokenId.SYMBOL2);
+        assertToken(ts, " ", JspTokenId.SCRIPTLET);
+        assertToken(ts, "%>", JspTokenId.SYMBOL2);
+        assertToken(ts, "text", JspTokenId.TEXT);
+
+        assertFalse(ts.moveNext());
+
+    }
     
     private void assertToken(TokenSequence ts, String tokenText, JspTokenId tokenId) {
         assertTrue(ts.moveNext());
