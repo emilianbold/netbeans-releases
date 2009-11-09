@@ -120,10 +120,10 @@ public class RemoteServerList implements ServerListImplementation {
                 if (env.isRemote()) {
                     RemoteServerRecord record = addServer(env, displayName, syncFactory, false, RemoteServerRecord.State.OFFLINE);
                     if (arr.length > 3) {
-                        record.setX11Forwarding(Boolean.parseBoolean(arr[4]));
+                        record.setX11Forwarding(Boolean.parseBoolean(arr[3]));
                     }
 //                    if (arr.length > 4) {
-//                        record.setX11forwardingPossible(Boolean.parseBoolean(arr[3]));
+//                        record.setX11forwardingPossible(Boolean.parseBoolean(arr[4]));
 //                    }
                 }
             }

@@ -77,8 +77,8 @@ import org.openide.util.RequestProcessor;
     private RfsLocalController localController;
     private String remoteDir;
 
-    public RfsSyncWorker(ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, File privProjectStorageDir, File... localDirs) {
-        super(executionEnvironment, out, err, privProjectStorageDir, localDirs);
+    public RfsSyncWorker(ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, File privProjectStorageDir, File... files) {
+        super(executionEnvironment, out, err, privProjectStorageDir, files);
     }
 
     @Override
@@ -163,7 +163,7 @@ import org.openide.util.RequestProcessor;
         final InputStream rcInputStream = remoteControllerProcess.getInputStream();
         final OutputStream rcOutputStream = remoteControllerProcess.getOutputStream();
         localController = new RfsLocalController(
-                executionEnvironment, localDirs,  remoteDir, rcInputStream,
+                executionEnvironment, files,  remoteDir, rcInputStream,
                 rcOutputStream, err, new FileData(privProjectStorageDir, executionEnvironment));
 
         localController.feedFiles(rcOutputStream, new SharabilityFilter());
