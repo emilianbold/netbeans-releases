@@ -510,7 +510,11 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                     File root = FileUtilities.resolveFilePath(base, add);
                     if (root != null) {
                         try {
-                            roots.add(root.toURI().toURL());
+                            URL url = root.toURI().toURL();
+                            if (FileUtil.isArchiveFile(url)) {
+                                url = FileUtil.getArchiveRoot(url);
+                            }
+                            roots.add(url);
                         } catch (MalformedURLException ex) {
                             Logger.getLogger(CosChecker.class.getName()).info("Cannot convert '" + add + "' to URL");
                         }
