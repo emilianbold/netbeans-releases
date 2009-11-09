@@ -216,7 +216,6 @@ public abstract class Issue {
                                 });
                                 IssueCacheUtils.setSeen(issue[0], true);
                             }
-                            BugtrackingManager.getInstance().addRecentIssue(repository, issue[0]);
                         } finally {
                             if(handle != null) handle.finish();
                         }
@@ -249,7 +248,6 @@ public abstract class Issue {
                         ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(Issue.class, "LBL_REFRESING_ISSUE", new Object[]{getID()}));
                         try {
                             handle.start();
-                            BugtrackingManager.getInstance().addRecentIssue(repository, Issue.this);
                             if (refresh && !Issue.this.refresh()) {
                                 return;
                             }
