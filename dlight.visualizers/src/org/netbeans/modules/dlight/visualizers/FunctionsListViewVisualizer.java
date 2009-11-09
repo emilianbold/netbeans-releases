@@ -174,30 +174,27 @@ public class FunctionsListViewVisualizer extends JPanel implements
 
             @Override
             public void mouseClicked(MouseEvent e) {
-                int selRow = outline.rowAtPoint(e.getPoint());
-                if ((selRow != -1) && SwingUtilities.isLeftMouseButton(e) && MouseUtils.isDoubleClick(e)) {
-                    // Default action.
-                    if (outline.getSelectedColumn() == 0) {
-                        FunctionCallNode node = findNodeByName("" + outline.getValueAt(selRow, 0));//NOI18N
-                        if (node != null) {
-                            Action a = node.getGoToSourceAction();
-                            if (a != null) {
-                                if (a.isEnabled()) {
-                                    a.actionPerformed(new ActionEvent(node, ActionEvent.ACTION_PERFORMED, "")); // NOI18N
-                                } else {
-                                    Logger.getLogger(OutlineView.class.getName()).info("Action " + a + " on node " + node + " is disabled");//NOI18N
-                                }
-
-                                e.consume();
-                                return;
+                if (SwingUtilities.isLeftMouseButton(e) && MouseUtils.isDoubleClick(e)) {
+                    Node[] nodes = explorerManager.getSelectedNodes();
+                    if (nodes != null && nodes.length > 0 && nodes[0] instanceof FunctionCallNode) {
+                        FunctionCallNode node = (FunctionCallNode) nodes[0];
+                        Action a = node.getGoToSourceAction();
+                        if (a != null) {
+                            if (a.isEnabled()) {
+                                a.actionPerformed(new ActionEvent(node, ActionEvent.ACTION_PERFORMED, "")); // NOI18N
+                            } else {
+                                Logger.getLogger(OutlineView.class.getName()).info("Action " + a + " on node " + node + " is disabled"); // NOI18N
                             }
+                            e.consume();
+                            return;
                         }
-
                     }
                 }
+
                 super.mouseClicked(e);
             }
         });
+
         List<Property<?>> result = new ArrayList<Property<?>>();
         for (Column c : metrics) {
             String displayedName = columnsUIMapping == null || columnsUIMapping.getDisplayedName(c.getColumnName()) == null ? c.getColumnUName() : columnsUIMapping.getDisplayedName(c.getColumnName());
@@ -260,7 +257,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
 //            });
         }
         outline.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        outlineView.setProperties(result.toArray(new Property[0]));
+        outlineView.setProperties(result.toArray(new Property<?>[0]));
         VisualizerTopComponentTopComponent.findInstance().addComponentListener(this);
 
         KeyStroke returnKey = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, true);
@@ -274,19 +271,18 @@ public class FunctionsListViewVisualizer extends JPanel implements
 
         KeyStroke enterKey = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, true);
         outlineView.getOutline().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(enterKey, "enter"); // NOI18N
-        outlineView.getOutline().getActionMap().put("enter", new AbstractAction() {// NOI18N
+        outlineView.getOutline().getActionMap().put("enter", new AbstractAction() { // NOI18N
 
             public void actionPerformed(ActionEvent e) {
-                int selectedRow = outline.getSelectedRow();
-                if (selectedRow < 0) {
-                    return;//nothing to do with this
+                Node[] nodes = explorerManager.getSelectedNodes();
+
+                if (nodes != null && nodes.length > 0 && nodes[0] instanceof FunctionCallNode) {
+                    FunctionCallNode callNode = (FunctionCallNode) nodes[0];
+                    Action goToSourceAction = callNode.getGoToSourceAction();
+                    if (goToSourceAction != null) {
+                        goToSourceAction.actionPerformed(null);
+                    }
                 }
-                //find
-                FunctionCallNode callNode = findNodeByName("" + outline.getValueAt(selectedRow, 0));
-                if (callNode == null) {
-                    return;
-                }
-                callNode.getGoToSourceAction().actionPerformed(null);
             }
         });
 
@@ -614,19 +610,19 @@ public class FunctionsListViewVisualizer extends JPanel implements
         return explorerManager;
     }
 
-    private final FunctionCallNode findNodeByName(String name) {
-        if (currentChildren == null) {
-            return null;
-        }
-        for (Node node : currentChildren.getNodes()) {
-            FunctionCallNode currentNode = (FunctionCallNode) node;
-            String displayName = currentNode.getDisplayName();
-            if (displayName != null && displayName.equals(name)) {
-                return currentNode;
-            }
-        }
-        return null;
-    }
+//    private final FunctionCallNode findNodeByName(String name) {
+//        if (currentChildren == null) {
+//            return null;
+//        }
+//        for (Node node : currentChildren.getNodes()) {
+//            FunctionCallNode currentNode = (FunctionCallNode) node;
+//            String displayName = currentNode.getDisplayName();
+//            if (displayName != null && displayName.equals(name)) {
+//                return currentNode;
+//            }
+//        }
+//        return null;
+//    }
 
     public void updateVisualizerConfiguration(FunctionsListViewVisualizerConfiguration configuration) {
     }
@@ -674,9 +670,8 @@ public class FunctionsListViewVisualizer extends JPanel implements
 
                             @Override
                             public Object getValue() throws IllegalAccessException, InvocationTargetException {
-                                return !functionCall.hasMetric(metric.getColumnName()) ?
-                                    getMessage("NotDefined")
-                                    :functionCall.getMetricValue(metric.getColumnName());
+                                return !functionCall.hasMetric(metric.getColumnName()) ? getMessage("NotDefined")
+                                        : functionCall.getMetricValue(metric.getColumnName());
                             }
 
                             @Override
@@ -808,22 +803,24 @@ public class FunctionsListViewVisualizer extends JPanel implements
 
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            if (column != 0) {//we have
+            if (column != 0 || value == null) {
                 return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             }
-            //get function call
-            PropertyEditor editor = PropertyEditorManager.findEditor(metadata.getColumnByName(functionDatatableDescription.getNameColumn()).getColumnClass());
-            FunctionCallNode node = null;
-            synchronized (FunctionsListViewVisualizer.this.uiLock) {
-                node = findNodeByName(value + "");//NOI18N
-            }
 
-            //get node object
-            if (editor != null && value != null && !(value + "").trim().equals("")) {//NOI18N
-                editor.setValue(value);
-                DefaultTableCellRenderer c = (DefaultTableCellRenderer) super.getTableCellRendererComponent(table, editor.getAsText(), isSelected, hasFocus, row, column);
-                c.setEnabled(node != null && node.getGoToSourceAction().isEnabled());
-                return c;
+            Column nameColumn = metadata.getColumnByName(functionDatatableDescription.getNameColumn());
+            PropertyEditor editor = PropertyEditorManager.findEditor(nameColumn.getColumnClass());
+
+            Node node = currentChildren.getNodeAt(row);
+
+            if (editor != null && node != null && node instanceof FunctionCallNode) {
+                String sval = value.toString().trim();
+                if (sval.length() > 0) {
+                    editor.setValue(value);
+                    DefaultTableCellRenderer c = (DefaultTableCellRenderer) super.getTableCellRendererComponent(table, editor.getAsText(), isSelected, hasFocus, row, column);
+                    Action goToSourceAction = ((FunctionCallNode) node).getGoToSourceAction();
+                    c.setEnabled(node != null && goToSourceAction != null && goToSourceAction.isEnabled());
+                    return c;
+                }
             }
 
             return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);

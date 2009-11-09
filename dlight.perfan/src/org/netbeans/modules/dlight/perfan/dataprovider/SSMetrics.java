@@ -49,12 +49,17 @@ public final class SSMetrics {
 
     private final static HashMap<String, FunctionMetric> hash = new HashMap<String, FunctionMetric>();
 
+    private SSMetrics() {
+    }
+
     public final static FunctionMetric getMetric(Column dataColumn) {
         return hash.get(dataColumn.getColumnName());
     }
 
     public final static class MemoryMetric {
 
+        private MemoryMetric() {
+        }
         private static String GID = "MemoryMetric"; // NOI18N
         public static final FunctionMetric LeakBytesMetric = fm(GID, "e.bleak", Integer.class); // NOI18N
         public static final FunctionMetric LeaksCountMetric = fm(GID, "e.leak", Integer.class); // NOI18N
@@ -62,6 +67,8 @@ public final class SSMetrics {
 
     public final static class THAMetric {
 
+        private THAMetric() {
+        }
         private static String GID = "THAMetric"; // NOI18N
         public static final FunctionMetric DeadlockMetric = fm(GID, "e.deadlocks", Integer.class); // NOI18N
         public static final FunctionMetric RaceMetric = fm(GID, "e.raccess", Integer.class); // NOI18N
@@ -69,6 +76,8 @@ public final class SSMetrics {
 
     public final static class TimeMetric {
 
+        private TimeMetric() {
+        }
         private static String GID = "TimeMetric"; // NOI18N
         static public final FunctionMetric UserFuncTimeInclusive = fm(GID, "i.user", Double.class); // NOI18N
         static public final FunctionMetric UserFuncTimeExclusive = fm(GID, "e.user", Double.class); // NOI18N
@@ -80,7 +89,7 @@ public final class SSMetrics {
         static public final FunctionMetric OMPWorkTimeInclusive = fm(GID, "i.ompwork", Double.class); // NOI18N
     }
 
-    static private FunctionMetric fm(String groupID, String id, Class clazz) {
+    static private FunctionMetric fm(String groupID, String id, Class<?> clazz) {
         FunctionMetric m = FunctionMetricsFactory.getInstance().getFunctionMetric(
                 new FunctionMetricConfiguration(id,
                 NbBundle.getMessage(SSMetrics.class,

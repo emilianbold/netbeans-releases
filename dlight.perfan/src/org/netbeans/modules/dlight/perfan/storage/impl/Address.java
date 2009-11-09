@@ -87,6 +87,14 @@ public final class Address {
         return hash;
     }
 
+    public long getAddress() {
+        return address;
+    }
+
+    public int getSegmentNumber() {
+        return segmentNumber;
+    }
+
     @Override
     public String toString() {
         return String.format("%d:0x%x", segmentNumber, address); // NOI18N
