@@ -596,7 +596,7 @@ public class FileStatusCache {
      * Refreshes all files under given roots in the cache.
      * @param rootFiles root files sorted under their's repository roots
      */
-    void refreshAllRoots (Map<File, Set<File>> rootFiles) {
+    public void refreshAllRoots (Map<File, Set<File>> rootFiles) {
         for (Map.Entry<File, Set<File>> refreshEntry : rootFiles.entrySet()) {
             File repository = refreshEntry.getKey();
             for (File root : refreshEntry.getValue()) {
