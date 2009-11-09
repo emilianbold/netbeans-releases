@@ -39,82 +39,16 @@
 package org.netbeans.modules.php.editor;
 
 import java.util.List;
-import javax.swing.text.BadLocationException;
-import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.CodeCompletionContext;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.spi.DefaultCompletionResult;
-import org.netbeans.modules.php.editor.index.IndexedElement;
-import org.netbeans.modules.php.editor.lexer.PHPTokenId;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 
 /**
  *
  * @author Tomasz.Slota@Sun.COM
  */
 public class PHPCompletionResult extends DefaultCompletionResult {
-
-    private CodeCompletionContext completionContext;
-
     public PHPCompletionResult(CodeCompletionContext completionContext, List<CompletionProposal> list) {
         super(list, false);
-        this.completionContext = completionContext;
-    }
-
-    @Override
-    public void afterInsert(CompletionProposal item) {
-        if (item instanceof PHPCompletionItem) {
-            PHPCompletionItem phpItem = (PHPCompletionItem) item;
-
-            if (phpItem.getElement() instanceof IndexedElement) {
-                final IndexedElement elem = (IndexedElement) phpItem.getElement();
-
-                if (!elem.isResolved()) {
-                    final BaseDocument doc = (BaseDocument) completionContext.getParserResult().getSnapshot().getSource().getDocument(false);
-                    if (doc == null) {
-                        return;
-                    }
-
-                    FileObject currentFolder = completionContext.getParserResult().getSnapshot().getSource().getFileObject().getParent();
-                    
-                    FileObject fileObject = elem.getFileObject();
-                    
-                    if (fileObject != null) {
-                        String includePath = FileUtil.getRelativePath(currentFolder, fileObject);
-
-                        final StringBuilder builder = new StringBuilder();
-                        builder.append("\nrequire \""); //NOI18N
-                        builder.append(includePath);
-                        builder.append("\";\n"); //NOI18N
-
-                        TokenHierarchy<?> th = TokenHierarchy.get(doc);
-                        TokenSequence<PHPTokenId> tokenSequence = th.tokenSequence(PHPTokenId.language());
-                        assert tokenSequence != null;
-                        tokenSequence.moveStart();
-
-                        while (tokenSequence.moveNext()) {
-                            if (tokenSequence.token().id() == PHPTokenId.PHP_OPENTAG) {
-                                int position = tokenSequence.offset() + tokenSequence.token().length();
-                                try {
-                                    int prevLineNumber = Utilities.getLineOffset(doc, position);
-                                    int prevLineEnd = Utilities.getRowStartFromLineOffset(doc, prevLineNumber);
-                                    doc.insertString(position, builder.toString(), null);
-                                    Utilities.reformatLine(doc, Utilities.getRowStart(doc, prevLineEnd + builder.length()));
-                                } catch (BadLocationException ex) {
-                                    Exceptions.printStackTrace(ex);
-                                }
-
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-        }
     }
 }

@@ -52,6 +52,7 @@ import java.util.TreeMap;
 import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.ElementHandle;
@@ -104,8 +105,9 @@ public class PHPDOCCodeCompletion {
     }
     
     static boolean isTypeCtx(PHPCompletionItem.CompletionRequest request){
-        Document document = request.info.getSnapshot().getSource().getDocument(false);
-        TokenSequence<PHPTokenId> phpTS = LexUtilities.getPHPTokenSequence(document, request.anchor);
+        //TODO: get rid of the document
+        TokenHierarchy<?> th = request.info.getSnapshot().getTokenHierarchy();
+        TokenSequence<PHPTokenId> phpTS = (th != null) ? LexUtilities.getPHPTokenSequence(th, request.anchor) : null;
         if (phpTS != null) {
             phpTS.move(request.anchor);
             phpTS.moveNext();
@@ -118,14 +120,14 @@ public class PHPDOCCodeCompletion {
 
                 if (TYPE_TOKENS.contains(tokenSequence.token().id())) {
                     int offset = tokenSequence.offset() + tokenSequence.token().length();
-                    try {
-                        // text between PHPDoc directive and begining of the prefix, should only contain white spaces
-                        String txt = document.getText(offset, request.anchor - offset);
-                        if (txt.charAt(txt.length()-1) == '|') {
+                    if (tokenSequence.moveNext()) {
+                        CharSequence text = tokenSequence.token().text();
+                        String txt = text.subSequence(0, request.anchor - offset).toString();
+                        if (txt.charAt(txt.length() - 1) == '|') {
                             // expect that user wants to complete mixed type
                             txt = txt.trim();
                             for (int i = 0; i < txt.length(); i++) {
-                            if (Character.isWhitespace(txt.charAt(i))) {
+                                if (Character.isWhitespace(txt.charAt(i))) {
                                     return false;
                                 }
                             }
@@ -136,11 +138,9 @@ public class PHPDOCCodeCompletion {
                                 return false;
                             }
                         }
-
-                        return true;
-                    } catch (BadLocationException ex) {
-                        Exceptions.printStackTrace(ex);
                     }
+                    // text between PHPDoc directive and begining of the prefix, should only contain white spaces
+                    return true;
                 }
             }
         }
