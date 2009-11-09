@@ -34,7 +34,7 @@ public class ANTLR {
             return;
         }
         // run ANTLR on its own .g files
-        tool.antlr(root+"/org/netbeans/modules/cnd/antlr/org.netbeans.modules.cnd.antlr.g");
+        tool.antlr(root+"/org/netbeans/modules/cnd/antlr/antlr.g");
         tool.antlr(root+"/org/netbeans/modules/cnd/antlr/tokdef.g");
         tool.antlr(root+"/org/netbeans/modules/cnd/antlr/preprocessor/preproc.g");
         tool.antlr(root+"/org/netbeans/modules/cnd/antlr/actions/java/action.g");
