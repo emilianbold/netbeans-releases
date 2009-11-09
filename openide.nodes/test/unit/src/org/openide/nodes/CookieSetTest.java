@@ -107,12 +107,11 @@ public class CookieSetTest extends NbTestCase {
 
         Cook one = cs.getCookie(Hook.class);
         Cook two = cs.getCookie(Cook.class);
-        Cook three = cs.getLookup().lookup(Cook.class);
-        Cook four = cs.getLookup().lookup(Hook.class);
+        Cook three = cs.getLookup().lookup(Hook.class);
+        Cook four = cs.getLookup().lookup(Cook.class);
 
-        assertSame("One and two", one, two);
-        assertSame("3 and two", three, two);
-        assertSame("One and 4", one, four);
+        assertSame("One and three", one, three);
+        assertSame("Two and 4", two, four);
 
         cs.remove(new Class[] { Hook.class, Cook.class }, f);
 
