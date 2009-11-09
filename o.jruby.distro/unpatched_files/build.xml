@@ -77,6 +77,8 @@
        -->
     </condition>
     <condition property="run.jvm.model" value="-d32">
+      <equals arg1="32" arg2="${sun.arch.data.model}"/>
+      <!--
       <or>
         <os arch="i386"/>
         <os arch="x86"/>
@@ -84,6 +86,7 @@
         <os arch="ppc"/>
         <os arch="sparc"/>
       </or>
+       -->
     </condition>
     <condition property="run.jvm.model" value="">
         <not><isset property="run.jvm.model"/></not>
