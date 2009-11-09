@@ -101,10 +101,10 @@ public final class SunStudioUserCounter {
     public static String getSunStudioBinDir() {
         String ssBin = System.getProperty("spro.home");// NOI18N
         if (ssBin != null) {
-            if (!ssBin.endsWith("/") && !ssBin.endsWith("\\")) {
-                ssBin += "/";
+            if (!ssBin.endsWith("/") && !ssBin.endsWith("\\")) { // NOI18N
+                ssBin += "/"; // NOI18N
             }
-            ssBin += "bin/";
+            ssBin += "bin/"; // NOI18N
         }
         return ssBin;
     }
@@ -129,8 +129,8 @@ public final class SunStudioUserCounter {
         if (ssBaseDir == null || execEnv == null || toolTag == null) {
             return;
         }
-        if (!ssBaseDir.endsWith("/") && !ssBaseDir.endsWith("\\")) {
-            ssBaseDir += "/";
+        if (!ssBaseDir.endsWith("/") && !ssBaseDir.endsWith("\\")) { // NOI18N
+            ssBaseDir += "/"; // NOI18N
         }
         final String checkUpdatePath = ssBaseDir + "../prod/bin/check_update"; // NOI18N
         if (ConnectionManager.getInstance().isConnectedTo(execEnv)) {
