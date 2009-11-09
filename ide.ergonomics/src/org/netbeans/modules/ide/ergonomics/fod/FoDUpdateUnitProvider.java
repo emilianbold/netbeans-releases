@@ -192,8 +192,9 @@ public class FoDUpdateUnitProvider implements UpdateProvider {
         File f;
         try {
             if (m == null) {
-                m = mi.getClass().getMethod("getJarFile"); // NOI18N
-                m.setAccessible(true);
+                Method tmp = mi.getClass().getMethod("getJarFile"); // NOI18N
+                tmp.setAccessible(true);
+                m = tmp;
             }
             f = (File)m.invoke(mi);
         } catch (Exception ex) {
