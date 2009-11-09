@@ -1497,6 +1497,7 @@ public final class WebProject implements Project, AntProjectListener {
             }
             if (resources != null) {
                 FileUtil.removeFileChangeListener(this, resources);
+                resources = null;
             }
 
             WebProject.this.evaluator().removePropertyChangeListener(this);
