@@ -4,7 +4,7 @@
     <folder name="DLight">
         <folder name="Configurations">
             <folder name="GizmoDTraceExtended">
-                <attr name="displayedName" stringvalue="C/C++ DTrace Extended"/>
+                <attr name="displayedName" bundlevalue="org.netbeans.modules.cnd.gizmo.ui.Bundle#GizmoDtraceExtended"/>
                 <attr name="system" boolvalue="true"/>
                 <attr name="category" stringvalue="Gizmo"/>
                 <attr name="platforms" stringvalue="Solaris"/>
@@ -37,7 +37,7 @@
             </folder>
 
             <folder name="GizmoSunStudioStandard">
-                <attr name="displayedName" stringvalue="C/C++ Sun Studio Standard"/>
+                <attr name="displayedName" bundlevalue="org.netbeans.modules.cnd.gizmo.ui.Bundle#GizmoSunStudioStandard"/>
                 <attr name="category" stringvalue="Gizmo"/>
                 <attr name="system" boolvalue="true"/>
                 <attr name="platforms" stringvalue="Solaris,Linux"/>
@@ -62,7 +62,7 @@
             </folder>
 
             <folder name="GizmoDTraceStandard">
-                <attr name="displayedName" stringvalue="C/C++ DTrace Standard"/>
+                <attr name="displayedName" bundlevalue="org.netbeans.modules.cnd.gizmo.ui.Bundle#GizmoDTraceStandard"/>
                 <attr name="category" stringvalue="Gizmo"/>
                 <attr name="system" boolvalue="true"/>
                 <attr name="platforms" stringvalue="Solaris"/>
@@ -87,7 +87,7 @@
             </folder>
 
             <folder name="GizmoSimple">
-                <attr name="displayedName" stringvalue="C/C++ Simple (indicators only)"/>
+                <attr name="displayedName" bundlevalue="org.netbeans.modules.cnd.gizmo.ui.Bundle#GizmoSimple"/>
                 <attr name="category" stringvalue="Gizmo"/>
                 <attr name="system" boolvalue="true"/>
                 <attr name="default" boolvalue="true"/>
@@ -113,7 +113,7 @@
             </folder>
 
             <folder name="GizmoSimpleSolaris">
-                <attr name="displayedName" stringvalue="C/C++ Simple Solaris (indicators only)"/>
+                <attr name="displayedName" bundlevalue="org.netbeans.modules.cnd.gizmo.ui.Bundle#GizmoSimpleSolaris"/>
                 <attr name="category" stringvalue="Gizmo"/>
                 <attr name="system" boolvalue="true"/>
                 <attr name="default" boolvalue="true"/>
