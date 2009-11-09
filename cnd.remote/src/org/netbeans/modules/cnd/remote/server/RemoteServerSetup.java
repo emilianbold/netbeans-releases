@@ -223,7 +223,8 @@ public class RemoteServerSetup {
         support.run();
         RemoteUtil.LOGGER.fine("RSS.getBinaryUpdatesByChecksum: RC " + support.getExitStatus());
         if (support.isFailed() || support.getExitStatus() != 0) {
-            throw new NoSuchAlgorithmException("Running " + cmd + " failed on remote host: " + support.getFailureReason()); //NOI18N
+            RemoteUtil.LOGGER.fine("Running " + cmd + " failed on remote host: " + support.getFailureReason()); //NOI18N
+            return new ArrayList<String>(paths2check);
         }
 
         if (support.isCancelled()) {
