@@ -97,6 +97,11 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
             prefs= NbPreferences.forModule(Subversion.class);
         } else if (KenaiService.Names.EXTERNAL_REPOSITORY.equals(feature.getService())) {
             externalScmType = feature.getExtendedType();
+            if (KenaiService.Names.MERCURIAL.equals(externalScmType)) {
+                prefs= NbPreferences.forModule(Mercurial.class);
+            } else if (KenaiService.Names.SUBVERSION.equals(externalScmType)) {
+                prefs= NbPreferences.forModule(Subversion.class);
+            }
         }
         this.projectHandle = projectHandle;
         OpenProjects.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(this , OpenProjects.getDefault()));
@@ -245,11 +250,21 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
 
     private boolean isUnder(FileObject projectDirectory) {
         String remoteLocation = (String) projectDirectory.getAttribute("ProvidedExtensions.RemoteLocation"); // NOI18N
-        if (remoteLocation==null || remoteLocation.length()==0) {
+        String location = feature.getLocation();
+        if (!location.endsWith("/")) {//NOI18N
+            location+="/";//NOI18N
+        }
+        if (location.equals(remoteLocation))
+            return true;
+        try {
+            URI uri1 = new URI(location);
+            URI uri2 = new URI(remoteLocation);
+            if (location.substring(uri1.getScheme().length()).equals(remoteLocation.substring(uri2.getScheme().length())))
+                return true;
+        } catch (Exception e) {
+            //ignore
             return false;
         }
-        if (feature.getLocation().equals(remoteLocation))
-            return true;
         return false;
     }
 
