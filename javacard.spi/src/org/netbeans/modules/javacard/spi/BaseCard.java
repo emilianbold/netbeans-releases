@@ -51,6 +51,7 @@ import org.netbeans.modules.javacard.spi.capabilities.AntTargetInterceptor;
 import org.netbeans.modules.javacard.spi.capabilities.ApduSupport;
 import org.netbeans.modules.javacard.spi.capabilities.CapabilitiesProvider;
 import org.netbeans.modules.javacard.spi.capabilities.CardContentsProvider;
+import org.netbeans.modules.javacard.spi.capabilities.CardCustomizerProvider;
 import org.netbeans.modules.javacard.spi.capabilities.CardInfo;
 import org.netbeans.modules.javacard.spi.capabilities.ClearEpromCapability;
 import org.netbeans.modules.javacard.spi.capabilities.DebugCapability;
@@ -146,6 +147,10 @@ public abstract class BaseCard<T extends CapabilitiesProvider> extends AbstractC
         return null;
     }
 
+    protected CardCustomizerProvider createCardCustomizerProvidert(T t) {
+        return null;
+    }
+
     protected void log(String toLog) {
         log(Level.FINE, toLog);
     }
@@ -208,6 +213,9 @@ public abstract class BaseCard<T extends CapabilitiesProvider> extends AbstractC
         }
         if (declaredCapabilities.contains(ProfileCapability.class)) {
             maybeAddCapability(createProfileCapability(props));
+        }
+        if (state.isNotRunning() && declaredCapabilities.contains(CardCustomizerProvider.class)) {
+            maybeAddCapability(createCardCustomizerProvidert(props));
         }
         maybeAddEpromCapabilities();
         log("calling subclass initLookup()"); //NOI18N
@@ -283,6 +291,7 @@ public abstract class BaseCard<T extends CapabilitiesProvider> extends AbstractC
         CardInfo info = getCapability(CardInfo.class);
         String name = info == null || info.getDisplayName() == null ? getSystemId() : info.getDisplayName();
         StatusDisplayer.getDefault().setStatusText(nue.statusMessage(name));
+        T t = getCapability(type());
         switch (nue) {
             case BEFORE_RESUMING:
             case BEFORE_STARTING:
@@ -291,14 +300,16 @@ public abstract class BaseCard<T extends CapabilitiesProvider> extends AbstractC
                 removeCapability(ClearEpromCapability.class);
                 removeCapability(StartCapability.class);
                 removeCapability(ResumeCapability.class);
+                removeCapability(CardCustomizerProvider.class);
                 break;
             case RUNNING:
             case RUNNING_IN_DEBUG_MODE: {
                 CapabilitiesProvider props = getCapability(CapabilitiesProvider.class);
                 Set<Class<? extends ICardCapability>> declaredCapabilities = props.getSupportedCapabilityTypes();
                 if (declaredCapabilities.contains(StopCapability.class)) {
-                    maybeAddCapability(createStopCapability(getCapability(type())));
+                    maybeAddCapability(createStopCapability(t));
                 }
+                removeCapability(CardCustomizerProvider.class);
                 break;
             }
             case NOT_RUNNING:
@@ -307,7 +318,10 @@ public abstract class BaseCard<T extends CapabilitiesProvider> extends AbstractC
                 clearProcessReferences();
                 maybeAddEpromCapabilities();
                 if (declaredCapabilities.contains(StartCapability.class)) {
-                    maybeAddCapability(createStartCapability(getCapability(type())));
+                    maybeAddCapability(createStartCapability(t));
+                }
+                if (declaredCapabilities.contains(CardCustomizerProvider.class)) {
+                    maybeAddCapability(createCardCustomizerProvidert(t));
                 }
             case STOPPING:
                 //Do this here as well as in BEFORE_STOPPING, to handle

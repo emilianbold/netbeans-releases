@@ -157,6 +157,10 @@ final class CardProperties implements ICardCapability, CapabilitiesProvider {
         this.props = props;
     }
 
+    Properties toProperties() {
+        return props.asProperties();
+    }
+
     public String getContactedPort() {
         return "" + getAsInt(JavacardDeviceKeyNames.DEVICE_CONTACTEDPORT, DEFAULT_CONTACTED_PORT); //NOI18N
     }

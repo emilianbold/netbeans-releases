@@ -24,9 +24,6 @@
       </Border>
     </Property>
   </Properties>
-  <SyntheticProperties>
-    <SyntheticProperty name="designerSize" type="java.awt.Dimension" value="-84,-19,0,5,115,114,0,18,106,97,118,97,46,97,119,116,46,68,105,109,101,110,115,105,111,110,65,-114,-39,-41,-84,95,68,20,2,0,2,73,0,6,104,101,105,103,104,116,73,0,5,119,105,100,116,104,120,112,0,0,1,96,0,0,1,-46"/>
-  </SyntheticProperties>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
@@ -54,8 +51,8 @@
                               </Group>
                               <EmptySpace min="-2" pref="11" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="e2pSpinner" pref="115" max="32767" attributes="2"/>
-                                  <Component id="ramSpinner" pref="115" max="32767" attributes="2"/>
+                                  <Component id="e2pSpinner" pref="122" max="32767" attributes="2"/>
+                                  <Component id="ramSpinner" pref="122" max="32767" attributes="2"/>
                               </Group>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
@@ -65,8 +62,8 @@
                               </Group>
                               <EmptySpace min="-2" pref="14" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="corSpinner" pref="114" max="32767" attributes="2"/>
-                                  <Component id="loggerLevelComboBox" alignment="0" pref="114" max="32767" attributes="2"/>
+                                  <Component id="corSpinner" pref="119" max="32767" attributes="2"/>
+                                  <Component id="loggerLevelComboBox" alignment="0" pref="119" max="32767" attributes="2"/>
                               </Group>
                           </Group>
                       </Group>
@@ -82,22 +79,22 @@
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="contactedProtocolComboBox" pref="136" max="32767" attributes="1"/>
-                                  <Component id="httpPortTextField" alignment="0" pref="136" max="32767" attributes="1"/>
-                                  <Component id="contactedPortTextField" alignment="0" pref="136" max="32767" attributes="1"/>
+                                  <Component id="contactedProtocolComboBox" pref="140" max="32767" attributes="1"/>
+                                  <Component id="httpPortTextField" alignment="0" pref="140" max="32767" attributes="1"/>
+                                  <Component id="contactedPortTextField" alignment="0" pref="140" max="32767" attributes="1"/>
                               </Group>
                           </Group>
                           <Group type="102" attributes="0">
                               <Component id="jLabel12" min="-2" pref="99" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="contactlessPortTextField" pref="136" max="32767" attributes="1"/>
+                              <Component id="contactlessPortTextField" pref="140" max="32767" attributes="1"/>
                           </Group>
                       </Group>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jSeparator4" pref="345" max="32767" attributes="0"/>
+                      <Component id="jSeparator4" pref="350" max="32767" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
@@ -106,12 +103,12 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="serverUrlField" alignment="0" pref="350" max="32767" attributes="0"/>
-                          <Component id="cardManagerUrlField" alignment="0" pref="350" max="32767" attributes="0"/>
+                          <Component id="serverUrlField" alignment="0" pref="367" max="32767" attributes="0"/>
+                          <Component id="cardManagerUrlField" alignment="0" pref="367" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="jLabel9" pref="80" max="32767" attributes="0"/>
+                      <Component id="jLabel9" pref="119" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jSeparator3" min="-2" pref="360" max="-2" attributes="0"/>
                   </Group>
@@ -130,7 +127,7 @@
                       <Component id="suspendCheckBox" min="-2" max="-2" attributes="0"/>
                       <EmptySpace pref="283" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="remoteCheckbox" alignment="0" pref="444" max="32767" attributes="0"/>
+                  <Component id="remoteCheckbox" alignment="0" pref="491" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>

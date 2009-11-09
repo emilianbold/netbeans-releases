@@ -208,7 +208,9 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
     String displayName = ""; //NOI18N
     public DevicePropertiesPanel(final Properties props) {
         initializeComponent();
+        System.err.println("INITIALIZE WITH " + props.getClass());
         read (new KeysAndValues.PropertiesAdapter(props));
+        Thread.dumpStack();
     }
 
     private void initializeComponent() {
@@ -299,6 +301,7 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
     }
 
     public void write(KeysAndValues<?> s) {
+        System.err.println("Device properties panel " + System.identityHashCode(this) + " write " + s);
         s.put(DEVICE_RAMSIZE, getRAMSize());
         s.put(DEVICE_E2PSIZE, getE2PSize());
         s.put(DEVICE_CORSIZE, getCORSize());
@@ -316,9 +319,11 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
         s.put(DEVICE_CARDMANAGERURL, getCardManagerUrl());
         s.put(DEVICE_IS_REMOTE, remoteCheckbox.isSelected() + ""); //NOI18N
         s.put(DEVICE_DONT_SUSPEND_THREADS_ON_STARTUP, !suspendCheckBox.isSelected() + ""); //NOI18N
+        System.err.println("Device properties panel write complete - http port " + getHTTPPort());
     }
 
     public void read(KeysAndValues<?> s) {
+        System.err.println("Device properties panel " + System.identityHashCode(this) + " read " + s);
         updating = true;
         displayName = s.get(DEVICE_DISPLAY_NAME);
         try {
