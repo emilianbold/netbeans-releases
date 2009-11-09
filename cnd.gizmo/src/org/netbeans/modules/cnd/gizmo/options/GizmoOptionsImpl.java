@@ -69,8 +69,7 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
     public static final String CONFIGURATION_PROP = "configuration"; // NOI18N
     private static final String GIZMO_CATEGORY = "Gizmo"; // NOI18N
     private static final String GIZMO_SIMPLE_CONFIGURATION = "GizmoSimple"; // NOI18N
-    private static final String GIZMO_SUNSTUDIO_STANDARD_CONFIGURATION = "GizmoSunStudioStandard"; // NOI18N
-    private static final String GIZMO_DTRACE_STANDARD_CONFIGURATION = "GizmoDTraceStandard"; // NOI18N
+
     private final PropertyChangeSupport pcs;
     private boolean needSave = false;
     private String baseDir;
@@ -193,7 +192,6 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
             preferredConfigurationName = null;
         }
 
-        DLightConfiguration defConf = null;
         ExecutionEnvironment execEnv = getMakeConfiguration().getDevelopmentHost().getExecutionEnvironment();
 
         //if we have sun studio compiler along compiler collections presentedCompiler
@@ -206,15 +204,21 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
                 break;
             }
         }
-        String platform = makeConfiguration.getDevelopmentHost().getBuildPlatformDisplayName();
-        if (platform.indexOf("Solaris") >= 0 || platform.indexOf("Linux") >= 0) { // NOI18N
-            if (hasSunStudio || platform.indexOf("Linux") >= 0) { // NOI18N
-                defConf = getConfigurationByName(list, GIZMO_SUNSTUDIO_STANDARD_CONFIGURATION);
-            } else {
-                defConf = getConfigurationByName(list, GIZMO_DTRACE_STANDARD_CONFIGURATION);
+
+        DLightConfiguration defConf = null;
+
+        // Take first valid configuration marked as default (configuration positions in layer.xml matter!)
+        for (DLightConfiguration dlightConf : list) {
+            // configuration that requires SunStudio becomes default only if we have SunStudio
+            if (dlightConf.isDefault() &&
+                    (!dlightConf.getCollectorProviders().contains("SunStudio") || hasSunStudio)) { // NOI18N
+                defConf = dlightConf;
+                break;
             }
-        } else {
-            defConf = getConfigurationByName(list, GIZMO_SIMPLE_CONFIGURATION); // NOI18N
+        }
+        // Fall back to first available configuration if no default is found
+        if (defConf == null) {
+            defConf = list.get(0);
         }
 
         if (preferredConf == null) {

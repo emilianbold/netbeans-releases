@@ -155,7 +155,7 @@ public final class DLightConfiguration {
         return isSystem;
     }
 
-    boolean isDefault(){
+    public boolean isDefault(){
         return isDefault;
     }
 
@@ -388,7 +388,7 @@ public final class DLightConfiguration {
         public boolean isHidden(DLightConfiguration configuration) {
             return configuration.isHidden;
         }
-        
+
     }
    
 }
