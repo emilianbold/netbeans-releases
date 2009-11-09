@@ -52,7 +52,6 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -89,10 +88,6 @@ public final class TargetChooserPanelGUI<T> extends JPanel
                 "TITLE_name_location"));                // NOI18N
         
     }
-
-    public WebModule getWebModule() {
-        return myWebModule;
-    }
     
     public String getDocumentName(){
         return documentNameTextField.getText().trim();
@@ -119,10 +114,11 @@ public final class TargetChooserPanelGUI<T> extends JPanel
     }
     
     public String getSelectedFolder(){
-        return ((LocationItem)locationCB.getSelectedItem()).getFileObject().getName();
+        return getLocationRoot().getName();
     }
     
     public void initValues(  ) {
+        getPanel().getProvider().getUIManager().initValues( getPanel() , this );
         projectTextField.setText(ProjectUtils.getInformation(getPanel().getProject()).
                 getDisplayName());
         // set the location field and find web module
@@ -131,8 +127,6 @@ public final class TargetChooserPanelGUI<T> extends JPanel
         {
             locationCB.setModel(new javax.swing.DefaultComboBoxModel(
                     getLocations(getPanel().getSourceGroups())));
-            myWebModule = WebModule.getWebModule(getPanel().getSourceGroups()[0].
-                    getRootFolder());
         } else {
             locationCB.setModel(new javax.swing.DefaultComboBoxModel(
                 new Object[]{new LocationItem(getPanel().getProject().
@@ -192,17 +186,12 @@ public final class TargetChooserPanelGUI<T> extends JPanel
     }
     
     private String getRelativeSourcesFolder() {
-        String sourceDir="";
-        if (myWebModule!=null) {
-            FileObject docBase = myWebModule.getDocumentBase();
-            FileObject sourcesBase = ((LocationItem)locationCB.getModel().
-                    getSelectedItem()).getFileObject();
-            sourceDir = FileUtil.getRelativePath( docBase, sourcesBase );
-            
-            //just for source roots
-            if (sourceDir == null) {
-                sourceDir = "";
-            }
+        FileObject sourcesBase = ((LocationItem)locationCB.getModel().
+                getSelectedItem()).getFileObject();
+        String sourceDir = getPanel().getProvider().getRelativeSourcesFolder( 
+                getPanel() , sourcesBase );
+        if ( sourceDir == null ){
+            sourceDir = "";
         }
         return sourceDir.length()==0?"":sourceDir+'/';        
     }
@@ -245,22 +234,10 @@ public final class TargetChooserPanelGUI<T> extends JPanel
     public File getTargetFile() {
         String text = getRelativeTargetFolder();
         
-        if ( text.length() == 0 ) {
-            if (myWebModule==null)
-                return FileUtil.toFile(getLocationRoot());
-            else
-                return FileUtil.toFile( myWebModule.getDocumentBase());
-        }
-        else {
-            // XXX have to account for FU.tF returning null
-            if (myWebModule==null) {
-                return new File( FileUtil.toFile(getLocationRoot()), text );
-            } else {
-                return new File( FileUtil.toFile( myWebModule.getDocumentBase() ), 
-                        text );
-            }
-        }
+        return getPanel().getProvider().getTargetFile( getPanel() , 
+                getLocationRoot(), text );
     }
+    
     public String getTargetName() {
         
         String text = documentNameTextField.getText().trim();
@@ -345,10 +322,6 @@ public final class TargetChooserPanelGUI<T> extends JPanel
         return getPanel().getProvider().getUIManager().isPanelValid();
     }
     
-    FileObject getLocationRoot() {
-        return ((LocationItem)locationCB.getModel().getSelectedItem()).getFileObject();
-    }
-    
     public static class LocationItem {
         public LocationItem(FileObject fo) {
             myFileObject=fo;
@@ -367,6 +340,10 @@ public final class TargetChooserPanelGUI<T> extends JPanel
         
         FileObject myFileObject;
         SourceGroup myGroup;
+    }
+    
+    FileObject getLocationRoot() {
+        return ((LocationItem)locationCB.getModel().getSelectedItem()).getFileObject();
     }
     
     String getCreatedFilePath() {
@@ -561,6 +538,5 @@ public final class TargetChooserPanelGUI<T> extends JPanel
     // End of variables declaration//GEN-END:variables
     
     private TargetChooserPanel<T> myWizardPanel;
-    private WebModule myWebModule;
 
 }

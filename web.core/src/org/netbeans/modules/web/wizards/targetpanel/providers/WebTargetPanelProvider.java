@@ -42,6 +42,7 @@ package org.netbeans.modules.web.wizards.targetpanel.providers;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -51,7 +52,10 @@ import org.netbeans.modules.target.iterator.api.TargetChooserPanel;
 import org.netbeans.modules.target.iterator.api.TargetChooserPanelGUI;
 import org.netbeans.modules.target.iterator.spi.TargetPanelProvider;
 import org.netbeans.modules.target.iterator.spi.TargetPanelUIManager;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.spi.project.ui.templates.support.Templates;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 
@@ -70,6 +74,48 @@ abstract class WebTargetPanelProvider<T> implements TargetPanelProvider<T> {
     
     WebTargetPanelProvider(String titleA11Desc,String labelName){
         myUiManager = new DefaultTargetPanelUIManager<T>(titleA11Desc, labelName);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.target.iterator.spi.TargetPanelProvider#getRelativeSourcesFolder(org.netbeans.modules.target.iterator.api.TargetChooserPanel, org.openide.filesystems.FileObject)
+     */
+    public String getRelativeSourcesFolder( TargetChooserPanel<T> panel,
+            FileObject sourceBase )
+    {
+        String sourceDir ="";
+        if (getWebModule()!=null) {
+            FileObject docBase = getWebModule().getDocumentBase();
+            sourceDir = FileUtil.getRelativePath( docBase, sourceBase );
+            
+            //just for source roots
+            if (sourceDir == null) {
+                sourceDir = "";
+            }
+        }
+        return sourceDir;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.target.iterator.spi.TargetPanelProvider#getTargetFile(org.netbeans.modules.target.iterator.api.TargetChooserPanel, org.openide.filesystems.FileObject, java.lang.String)
+     */
+    public File getTargetFile( TargetChooserPanel<T> panel,
+            FileObject locationRoot, String relativeTargetFolder )
+    {
+        if ( relativeTargetFolder.length() == 0 ) {
+            if (getWebModule()==null)
+                return FileUtil.toFile(locationRoot);
+            else
+                return FileUtil.toFile( getWebModule().getDocumentBase());
+        }
+        else {
+            // XXX have to account for FU.tF returning null
+            if (getWebModule()==null) {
+                return new File( FileUtil.toFile(locationRoot), relativeTargetFolder );
+            } else {
+                return new File( FileUtil.toFile( getWebModule().getDocumentBase() ), 
+                        relativeTargetFolder );
+            }
+        }
     }
     
     /* (non-Javadoc)
@@ -125,7 +171,11 @@ abstract class WebTargetPanelProvider<T> implements TargetPanelProvider<T> {
         return myUiManager;
     }
     
-    private TargetPanelUIManager<T> myUiManager;
+    protected WebModule getWebModule(){
+        return myUiManager.getWebModule();
+    }
+    
+    private DefaultTargetPanelUIManager<T> myUiManager;
 }
 
 class DefaultTargetPanelUIManager<T> implements TargetPanelUIManager<T> {
@@ -133,6 +183,20 @@ class DefaultTargetPanelUIManager<T> implements TargetPanelUIManager<T> {
     DefaultTargetPanelUIManager( String titleA11Desc, String labelName ) {
         myA11TitleDesc = titleA11Desc;
         myLabelName = labelName;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.target.iterator.spi.TargetPanelUIManager#initValues(org.netbeans.modules.target.iterator.api.TargetChooserPanel, org.netbeans.modules.target.iterator.api.TargetChooserPanelGUI)
+     */
+    public void initValues( TargetChooserPanel<T> panel,
+            TargetChooserPanelGUI<T> uiPanel )
+    {
+        if (panel.getSourceGroups()!=null && 
+                panel.getSourceGroups().length>0) 
+        {
+            myWebModule = WebModule.getWebModule(panel.getSourceGroups()[0].
+                    getRootFolder());
+        }
     }
 
     /* (non-Javadoc)
@@ -195,6 +259,12 @@ class DefaultTargetPanelUIManager<T> implements TargetPanelUIManager<T> {
         return true;
     }
     
+    protected WebModule getWebModule(){
+        return myWebModule;
+    }
+    
     private String myA11TitleDesc;
     private String myLabelName;
+    
+    private WebModule myWebModule;
 }

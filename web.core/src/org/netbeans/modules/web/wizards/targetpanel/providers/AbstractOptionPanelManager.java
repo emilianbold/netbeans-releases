@@ -56,6 +56,7 @@ import javax.swing.event.DocumentEvent;
 import org.netbeans.modules.target.iterator.api.TargetChooserPanel;
 import org.netbeans.modules.target.iterator.api.TargetChooserPanelGUI;
 import org.netbeans.modules.target.iterator.spi.TargetPanelUIManager;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.wizards.FileType;
 import org.openide.util.NbBundle;
 
@@ -65,6 +66,20 @@ import org.openide.util.NbBundle;
  *
  */
 abstract class AbstractOptionPanelManager implements TargetPanelUIManager<FileType> {
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.target.iterator.spi.TargetPanelUIManager#initValues(org.netbeans.modules.target.iterator.api.TargetChooserPanel, org.netbeans.modules.target.iterator.api.TargetChooserPanelGUI)
+     */
+    public void initValues( TargetChooserPanel<FileType> panel,
+            TargetChooserPanelGUI<FileType> uiPanel )
+    {
+        if (panel.getSourceGroups()!=null && 
+                panel.getSourceGroups().length>0) 
+        {
+            myWebModule = WebModule.getWebModule(panel.getSourceGroups()[0].
+                    getRootFolder());
+        }
+    }
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.target.iterator.spi.TargetPanelUIManager#changeUpdate(javax.swing.event.DocumentEvent, org.netbeans.modules.target.iterator.api.TargetChooserPanel)
@@ -217,6 +232,10 @@ abstract class AbstractOptionPanelManager implements TargetPanelUIManager<FileTy
         return myDescriptionArea;
     }
     
+    protected WebModule getWebModule(){
+        return myWebModule;
+    }
+    
     protected abstract int initAdditionalSyntaxButton( int grid, 
             TargetChooserPanel<FileType> panel, TargetChooserPanelGUI<FileType> uiPanel );
 
@@ -233,4 +252,6 @@ abstract class AbstractOptionPanelManager implements TargetPanelUIManager<FileTy
     private JRadioButton myJspSyntaxButton;
     private JCheckBox mySegmentBox;
     private JLabel myDescriptionLabel, myOptionLabel;
+    
+    private WebModule myWebModule;
 }

@@ -58,6 +58,8 @@ public interface TargetPanelUIManager<T> {
     
     void initComponents( JPanel mainPanel , TargetChooserPanel<T> panel,
             TargetChooserPanelGUI<T> uiPanel );
+    
+    void initValues( TargetChooserPanel<T> panel, TargetChooserPanelGUI<T> uiPanel);
 
     void initFolderValue( TargetChooserPanel<T> panel, String target , 
             JTextField field );

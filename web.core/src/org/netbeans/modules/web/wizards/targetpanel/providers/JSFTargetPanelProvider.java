@@ -51,6 +51,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.target.iterator.api.TargetChooserPanel;
 import org.netbeans.modules.target.iterator.api.TargetChooserPanelGUI;
 import org.netbeans.modules.target.iterator.spi.TargetPanelProvider;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.wizards.FileType;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.util.NbBundle;
@@ -146,19 +147,23 @@ public class JSFTargetPanelProvider extends WebTargetPanelProvider<FileType>{
         panel.getTemplateWizard().putProperty(FileType.IS_SEGMENT, getUIManager().isSegment());
         panel.getTemplateWizard().putProperty(FileType.IS_FACELETS, getUIManager().isFacelets());
     }
-
-    private boolean isFacelets() {
-        return getUIManager().isFacelets();
-    }
     
-    private JSFUIManager myUIManager;
-
     /* (non-Javadoc)
      * @see org.netbeans.modules.target.iterator.spi.TargetPanelProvider#isApplicable(java.lang.Object)
      */
     public boolean isApplicable( FileType id ) {
         return id == FileType.JSF;
     }
+    
+    protected WebModule getWebModule(){
+        return myUIManager.getWebModule();
+    }
+
+    private boolean isFacelets() {
+        return getUIManager().isFacelets();
+    }
+    
+    private JSFUIManager myUIManager;
 
 }
 

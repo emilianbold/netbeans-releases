@@ -94,9 +94,9 @@ public final class TargetChooserPanel<T> implements WizardDescriptor.Panel {
         return myId;
     }
     
-    public TargetChooserPanelGUI getComponent() {
+    public TargetChooserPanelGUI<T> getComponent() {
         if (myGui == null) {
-            myGui = new TargetChooserPanelGUI(this);
+            myGui = new TargetChooserPanelGUI<T>(this);
         }
         return myGui;
     }
@@ -326,7 +326,7 @@ public final class TargetChooserPanel<T> implements WizardDescriptor.Panel {
     }
     
     private ChangeSupport myChangeSupport;
-    private TargetChooserPanelGUI myGui;
+    private TargetChooserPanelGUI<T> myGui;
     
     private T myId;
 

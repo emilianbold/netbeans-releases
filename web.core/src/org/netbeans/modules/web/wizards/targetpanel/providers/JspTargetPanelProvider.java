@@ -47,6 +47,7 @@ import javax.swing.JPanel;
 import org.netbeans.modules.target.iterator.api.TargetChooserPanel;
 import org.netbeans.modules.target.iterator.api.TargetChooserPanelGUI;
 import org.netbeans.modules.target.iterator.spi.TargetPanelProvider;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.wizards.FileType;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
@@ -122,6 +123,10 @@ public class JspTargetPanelProvider extends WebTargetPanelProvider<FileType> {
      */
     public JspUIManager getUIManager() {
         return myUIManager;
+    }
+    
+    protected WebModule getWebModule(){
+        return myUIManager.getWebModule();
     }
 
     private JspUIManager myUIManager;

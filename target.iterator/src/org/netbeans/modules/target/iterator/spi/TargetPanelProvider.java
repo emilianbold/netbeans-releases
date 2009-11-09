@@ -40,7 +40,10 @@
  */
 package org.netbeans.modules.target.iterator.spi;
 
+import java.io.File;
+
 import org.netbeans.modules.target.iterator.api.TargetChooserPanel;
+import org.openide.filesystems.FileObject;
 
 
 /**
@@ -68,4 +71,10 @@ public interface TargetPanelProvider<T> {
     TargetPanelUIManager<T> getUIManager();
 
     String getNewFileName();
+    
+    String getRelativeSourcesFolder(  TargetChooserPanel<T> panel, 
+            FileObject sourceBase );
+    
+    File getTargetFile( TargetChooserPanel<T> panel,  FileObject locationRoot,
+            String relativeTargetFolder);
 }

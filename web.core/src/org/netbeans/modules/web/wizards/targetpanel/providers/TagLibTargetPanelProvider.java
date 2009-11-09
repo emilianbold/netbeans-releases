@@ -52,6 +52,7 @@ import org.netbeans.modules.target.iterator.api.TargetChooserPanel;
 import org.netbeans.modules.target.iterator.api.TargetChooserPanelGUI;
 import org.netbeans.modules.target.iterator.spi.TargetPanelProvider;
 import org.netbeans.modules.target.iterator.spi.TargetPanelUIManager;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.wizards.FileType;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
@@ -137,6 +138,11 @@ public class TagLibTargetPanelProvider extends WebTargetPanelProvider<FileType> 
         panel.getTemplateWizard().putProperty(PREFIX, getUIManager().getPrefix());
     }
     
+    
+    protected WebModule getWebModule(){
+        return myUIManager.getWebModule();
+    }
+    
     private TagLibUIManager myUIManager;
 }
 
@@ -144,6 +150,20 @@ class TagLibUIManager implements TargetPanelUIManager<FileType> {
     
     private static final String TLD_IN_JAVALIB_FOLDER="META-INF"; //NOI18N
     private static final String TLD_FOLDER="tlds"; //NOI18N
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.target.iterator.spi.TargetPanelUIManager#initValues(org.netbeans.modules.target.iterator.api.TargetChooserPanel, org.netbeans.modules.target.iterator.api.TargetChooserPanelGUI)
+     */
+    public void initValues( TargetChooserPanel<FileType> panel,
+            TargetChooserPanelGUI<FileType> uiPanel )
+    {
+        if (panel.getSourceGroups()!=null && 
+                panel.getSourceGroups().length>0) 
+        {
+            myWebModule = WebModule.getWebModule(panel.getSourceGroups()[0].
+                    getRootFolder());
+        }
+    }
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.target.iterator.spi.TargetPanelUIManager#changeUpdate(javax.swing.event.DocumentEvent, org.netbeans.modules.target.iterator.api.TargetChooserPanel)
@@ -152,7 +172,7 @@ class TagLibUIManager implements TargetPanelUIManager<FileType> {
         if (!myUriWasTyped) {
             String norm=panel.getComponent().getNormalizedFolder( );
             //Default value for uri
-            if (panel.getComponent().getWebModule()==null) {
+            if (getWebModule()==null) {
                 String pack = getPackageNameInMetaInf( panel );
                 myUriTextField.setText((pack.length()>0?pack+".":"")+
                         panel.getComponent().getDocumentName());    // NOI18N
@@ -185,7 +205,7 @@ class TagLibUIManager implements TargetPanelUIManager<FileType> {
      * @see org.netbeans.modules.target.iterator.spi.TargetPanelUIManager#getErrorMessage(org.netbeans.modules.target.iterator.api.TargetChooserPanel)
      */
     public String getErrorMessage( TargetChooserPanel<FileType> panel ) {
-        if (panel.getComponent().getWebModule()==null) {
+        if (getWebModule()==null) {
             if (!panel.getComponent().getNormalizedFolder().
                     startsWith(TLD_IN_JAVALIB_FOLDER))
             {
@@ -336,7 +356,7 @@ class TagLibUIManager implements TargetPanelUIManager<FileType> {
             target=null;
         }     
         
-        if (panel.getComponent().getWebModule()==null) {
+        if (getWebModule()==null) {
             field.setText(TLD_IN_JAVALIB_FOLDER+"/"); // NOI18N
         }
         else {
@@ -346,6 +366,11 @@ class TagLibUIManager implements TargetPanelUIManager<FileType> {
 
     public boolean isPanelValid() {
         return (getUri().length()!=0 && getPrefix().length()!=0);
+    }
+    
+    
+    protected WebModule getWebModule(){
+        return myWebModule;
     }
     
     String getUri() {
@@ -390,5 +415,7 @@ class TagLibUIManager implements TargetPanelUIManager<FileType> {
     private JLabel myPrefixLabel;
     private boolean myUriWasTyped;
     private boolean myPrefixWasTyped;
+    
+    private WebModule myWebModule;
     
 }

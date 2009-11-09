@@ -208,6 +208,11 @@ public class TagTargetPanelProvider extends WebTargetPanelProvider<FileType> {
         panel.getTemplateWizard().putProperty(TAG_NAME, 
                 getUIManager().getTagName());
     }
+    
+    
+    protected WebModule getWebModule(){
+        return myUIManager.getWebModule();
+    }
 
     private Profile myJ2eeVersion;
     private TagUIManager myUIManager;
@@ -422,7 +427,7 @@ class TagUIManager extends XmlOptionPanelManager {
      */
     public String getErrorMessage(TargetChooserPanel<FileType> panel) {
         isTagFileValid=true;
-        if (panel.getComponent().getWebModule()!=null) {
+        if (getWebModule()!=null) {
             boolean isWebInfLocation = panel.getComponent().getSelectedFolder().
                 equals("WEB-INF");  // NOI18N
             if (!panel.getComponent().getNormalizedFolder().startsWith(
@@ -455,7 +460,7 @@ class TagUIManager extends XmlOptionPanelManager {
             target=null;
         }    
         
-        if (panel.getComponent().getWebModule()!=null) {
+        if (getWebModule()!=null) {
             if (target==null || !target.startsWith(TAG_FILE_FOLDER))
                 field.setText(TAG_FILE_FOLDER+"/"); // NOI18N
             else
