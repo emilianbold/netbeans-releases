@@ -40,20 +40,25 @@
  */
 package org.netbeans.modules.xml;
 
-import java.io.IOException;
+import java.util.Set;
 import org.netbeans.junit.NbTestCase;
 import org.openide.cookies.EditCookie;
+import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.test.MockLookup;
+import org.openide.windows.WindowManager;
 
 /**
  *
  * @author Petr Hejl
  */
 public class XMLDataObjectTest extends NbTestCase {
+    static {
+        System.setProperty ("org.openide.util.Lookup", "org.openide.text.DataEditorSupportTest$Lkp");
+        System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
+    }
 
     public XMLDataObjectTest(String name) {
         super(name);
@@ -64,7 +69,7 @@ public class XMLDataObjectTest extends NbTestCase {
         MockLookup.init();
     }
 
-    public void testLookup() throws DataObjectNotFoundException, IOException {
+    public void testLookup() throws Exception {
         MockLookup.setInstances(XMLDataLoader.getLoader(XMLDataLoader.class));
 
         FileObject document = FileUtil.toFileObject(
@@ -83,5 +88,23 @@ public class XMLDataObjectTest extends NbTestCase {
 
         EditCookie lkp = dataObject.getLookup().lookup(EditCookie.class);
         assertEquals("Cookies are the same", ec, lkp);
+
+        OpenCookie lkp2 = dataObject.getLookup().lookup(OpenCookie.class);
+
+        lkp.edit();
+        lkp2.open();
+
+        Set<?> all = null;
+        for (int i = 0; i < 10; i++) {
+            Thread.sleep(1000);
+            all = WindowManager.getDefault().getRegistry().getOpened();
+            if (all.size() > 0) {
+                break;
+            }
+        }
+
+        assertEquals("There is just one TC: " + all, 1, all.size());
+
+        assertEquals("Cookies are the same", lkp, lkp2);
     }
 }

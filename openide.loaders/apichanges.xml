@@ -106,6 +106,22 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+     <change id="XMLDataObject.subclass">
+        <api name="loaders"/>
+        <summary>New constructor of XMLDataObject</summary>
+        <version major="7" minor="10"/>
+        <date day="9" month="11" year="2009"/>
+        <author login="jtulach"/>
+        <compatibility binary="compatible" source="compatible" addition="yes"
+            deletion="no" deprecation="no" modification="no" semantic="compatible"/>
+        <description>
+            <p>
+                New constructor for subclasses of <code>XMLDataObject</code>.
+            </p>
+        </description>
+        <class package="org.openide.loaders" name="XMLDataObject"/>
+        <issue number="175750"/>
+    </change>
      <change id="DataEditorSupport.annotateName">
         <api name="editor"/>
         <summary>Added <code>annotateName</code> and <code>toolTip</code> to <code>DataEditorSupport</code></summary>
