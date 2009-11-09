@@ -43,6 +43,7 @@ import java.awt.AWTKeyStroke;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.FontMetrics;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.FocusAdapter;
@@ -679,9 +680,18 @@ public class BugtrackingUtil {
         try {
             ClassLoader cl = Lookup.getDefault ().lookup (ClassLoader.class);
             Class<CallableSystemAction> clz = (Class<CallableSystemAction>) cl.loadClass("org.netbeans.modules.autoupdate.ui.actions.PluginManagerAction");
-            CallableSystemAction a = CallableSystemAction.findObject(clz, true);
+            final CallableSystemAction a = CallableSystemAction.findObject(clz, true);
             a.putValue("InitialTab", "available"); // NOI18N
-            a.performAction ();
+            Runnable inAWT = new Runnable() {
+                public void run() {
+                    a.performAction ();
+                }
+            };
+            if (EventQueue.isDispatchThread()) {
+                inAWT.run();
+            } else {
+                EventQueue.invokeLater(inAWT);
+            }
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }

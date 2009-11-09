@@ -80,6 +80,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -641,7 +642,7 @@ public class HgUtils {
     private static void addIgnorePatterns(Set<Pattern> patterns, File file) {
         Set<String> shPatterns;
         try {
-            shPatterns = readIgnoreEntries(file);
+            shPatterns = readIgnoreEntries(file, true);
         } catch (IOException e) {
             // ignore invalid entries
             return;
@@ -714,10 +715,15 @@ public class HgUtils {
         return val;
     }
 
-    private static Set<String> readIgnoreEntries(File directory) throws IOException {
+    /**
+     * @param transformEntries if set to false, this method returns the exact .hgignore file's content as a set of lines. 
+     * If set to true, the method will parse the output, remove all comments, process globa and regexp syntax, etc. So if you just want to 
+     * add or remove a certain line in the file, set the parameter to false.
+     */
+    private static Set<String> readIgnoreEntries(File directory, boolean transformEntries) throws IOException {
         File hgIgnore = new File(directory, FILENAME_HGIGNORE);
 
-        Set<String> entries = new HashSet<String>(5);
+        Set<String> entries = new LinkedHashSet<String>(5);
         if (!hgIgnore.canRead()) return entries;
 
         String s;
@@ -726,18 +732,21 @@ public class HgUtils {
         try {
             r = new BufferedReader(new FileReader(hgIgnore));
             while ((s = r.readLine()) != null) {
-                String line = s.trim();
-                line = removeCommentsInIgnore(line);
-                if (line.length() == 0) continue;
-                String [] array = line.split(" ");
-                if (array[0].equals(IGNORE_SYNTAX_PREFIX)) {
-                    String syntax = line.substring(IGNORE_SYNTAX_PREFIX.length()).trim();
-                    if (IGNORE_SYNTAX_GLOB.equals(syntax)) {
-                        glob = true;
-                    } else if (IGNORE_SYNTAX_REGEXP.equals(syntax)) {
-                        glob = false;
+                String line = s;
+                if (transformEntries) {
+                    line = line.trim();
+                    line = removeCommentsInIgnore(line);
+                    if (line.length() == 0) continue;
+                    String [] array = line.split(" ");                  //NOI18N
+                    if (array[0].equals(IGNORE_SYNTAX_PREFIX)) {
+                        String syntax = line.substring(IGNORE_SYNTAX_PREFIX.length()).trim();
+                        if (IGNORE_SYNTAX_GLOB.equals(syntax)) {
+                            glob = true;
+                        } else if (IGNORE_SYNTAX_REGEXP.equals(syntax)) {
+                            glob = false;
+                        }
+                        continue;
                     }
-                    continue;
                 }
                 entries.add(glob ? transformFromGlobPattern(line) : line);
             }
@@ -801,7 +810,7 @@ public class HgUtils {
             warningDialog(HgUtils.class, "MSG_UNABLE_TO_IGNORE_TITLE", "MSG_UNABLE_TO_IGNORE");
             return;
         }
-        Set<String> entries = readIgnoreEntries(directory);
+        Set<String> entries = readIgnoreEntries(directory, false);
         for (File file: files) {
             String patterntoIgnore = computePatternToIgnore(directory, file);
             entries.add(patterntoIgnore);
@@ -821,7 +830,7 @@ public class HgUtils {
             warningDialog(HgUtils.class, "MSG_UNABLE_TO_UNIGNORE_TITLE", "MSG_UNABLE_TO_UNIGNORE");
             return;
         }
-        Set entries = readIgnoreEntries(directory);
+        Set entries = readIgnoreEntries(directory, false);
         for (File file: files) {
             String patterntoIgnore = computePatternToIgnore(directory, file);
             entries.remove(patterntoIgnore);
