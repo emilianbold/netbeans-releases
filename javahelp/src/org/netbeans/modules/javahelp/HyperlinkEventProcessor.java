@@ -97,6 +97,7 @@ public class HyperlinkEventProcessor extends MouseAdapter
      * @param pane an instance of the <code>JEditorPane</code>.
      */
     public static void addTo(JEditorPane pane) {
+        assert pane != null;
         HyperlinkEventProcessor proc = new HyperlinkEventProcessor(pane);
         pane.addHyperlinkListener(proc);
         pane.addMouseListener(proc);
@@ -107,7 +108,7 @@ public class HyperlinkEventProcessor extends MouseAdapter
         HyperlinkEvent.EventType type = hyperlinkEvent.getEventType();
         if (type == HyperlinkEvent.EventType.ENTERED) {
           isInsideHyperlink = true;
-          pane.setToolTipText(url.toExternalForm());
+          pane.setToolTipText(getURLExternalForm()); // #176141
         }
         else if (type == HyperlinkEvent.EventType.ACTIVATED) {
           isInsideHyperlink = false;
@@ -135,7 +136,7 @@ public class HyperlinkEventProcessor extends MouseAdapter
     }
 
     public String getURLExternalForm() {
-        return url.toExternalForm();
+        return url == null ? null : url.toExternalForm(); // #176141
     }
 
     public Clipboard getClipboard() {
