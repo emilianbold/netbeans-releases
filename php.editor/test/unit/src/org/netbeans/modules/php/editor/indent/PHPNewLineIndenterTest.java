@@ -634,6 +634,50 @@ public class PHPNewLineIndenterTest extends PHPTestBase {
         testIndentInFile("testfiles/indent/initialIndentation_04.php", new IndentPrefs(4, 4), 4);
     }
 
+    public void testObjectOperatorContinue01() throws Exception {
+        testIndentInFile("testfiles/indent/objectOperatorContinue_01.php");
+    }
+
+    public void testObjectOperatorContinue02() throws Exception {
+        testIndentInFile("testfiles/indent/objectOperatorContinue_02.php");
+    }
+
+    public void testObjectOperatorContinue03() throws Exception {
+        testIndentInFile("testfiles/indent/objectOperatorContinue_03.php");
+    }
+
+    public void testObjectOperatorContinue04() throws Exception {
+        testIndentInFile("testfiles/indent/objectOperatorContinue_04.php");
+    }
+
+    public void testObjectOperatorContinue05() throws Exception {
+        testIndentInFile("testfiles/indent/objectOperatorContinue_05.php");
+    }
+
+    public void testObjectOperatorContinue06() throws Exception {
+        testIndentInFile("testfiles/indent/objectOperatorContinue_06.php");
+    }
+
+    public void testObjectOperatorContinue07() throws Exception {
+        testIndentInFile("testfiles/indent/objectOperatorContinue_07.php");
+    }
+
+    public void testObjectOperatorContinue08() throws Exception {
+        testIndentInFile("testfiles/indent/objectOperatorContinue_08.php");
+    }
+
+    public void testObjectOperatorContinue09() throws Exception {
+        testIndentInFile("testfiles/indent/objectOperatorContinue_09.php");
+    }
+
+    public void testObjectOperatorContinue10() throws Exception {
+        testIndentInFile("testfiles/indent/objectOperatorContinue_10.php");
+    }
+
+    public void testObjectOperatorContinue11() throws Exception {
+        testIndentInFile("testfiles/indent/objectOperatorContinue_11.php");
+    }
+
     @Override
     protected boolean runInEQ() {
         return true;

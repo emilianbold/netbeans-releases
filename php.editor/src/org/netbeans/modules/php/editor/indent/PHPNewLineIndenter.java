@@ -234,6 +234,13 @@ public class PHPNewLineIndenter {
                                     break;
                                 }
                             }
+                            else if (ts.token().id() == PHPTokenId.PHP_OBJECT_OPERATOR) {
+                                int startExpression = findStartTokenOfExpression(ts);
+                                if (startExpression != -1) {
+                                    newIndent = Utilities.getRowIndent(doc, startExpression) + continuationSize * 2;
+                                    break;
+                                }
+                            }
                         }
                     }
 
