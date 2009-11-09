@@ -40,9 +40,13 @@
  */
 package org.netbeans.modules.bugtracking;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,10 +57,14 @@ import org.netbeans.modules.bugtracking.kenai.KenaiRepositories;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.TopComponent;
+import org.openide.windows.TopComponent.Registry;
+import org.openide.windows.WindowManager;
 
 /**
  * Top level class that manages issues from all repositories.  
@@ -107,6 +115,7 @@ public final class BugtrackingManager implements LookupListener {
 
     private BugtrackingManager() {
         connectorsLookup = Lookup.getDefault().lookup(new Lookup.Template<BugtrackingConnector>(BugtrackingConnector.class));
+        WindowManager.getDefault().getRegistry().addPropertyChangeListener(new ActivatedTCListener());
     }
 
     /**
@@ -204,6 +213,20 @@ public final class BugtrackingManager implements LookupListener {
             l.remove(4);
         }
         l.add(0, new RecentIssue(issue, System.currentTimeMillis()));
+//        if(LOG.isLoggable(Level.FINE)) {
+            SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            for (RecentIssue ri : l) {
+                System.out.println(
+                        "recent issue: [" +
+                        ri.getIssue().getRepository().getDisplayName() +
+                        ", " +
+                        ri.getIssue().getID() +
+                        ", " +
+                        f.format(new Date(ri.getTimestamp())) +
+                        "]");
+//                LOG.fine("recent issue: " + new Date(ri.getTimestamp()) + " " + ri.issue);
+            }
+//        }
     }
 
     public Map<String, List<RecentIssue>> getAllRecentIssues() {
@@ -227,6 +250,26 @@ public final class BugtrackingManager implements LookupListener {
         synchronized (connectors) {
             connectors.clear();
             connectors.addAll(conns);
+        }
+    }
+
+    private class ActivatedTCListener implements PropertyChangeListener {
+        public void propertyChange(PropertyChangeEvent evt) {
+            Registry registry = WindowManager.getDefault().getRegistry();
+            if (registry.PROP_ACTIVATED.equals(evt.getPropertyName())) {
+                TopComponent tc = registry.getActivated();
+                LOG.finer("activated TC : " + tc); // NOI18N
+                if(!(tc instanceof IssueTopComponent)) {
+                    return;
+                }
+                IssueTopComponent itc = (IssueTopComponent) tc;
+                Issue issue = itc.getIssue();
+                LOG.fine("activated issue : " + issue); // NOI18N
+                if(issue == null || issue.isNew()) {
+                    return;
+                }
+                addRecentIssue(issue.getRepository(), issue);
+            } 
         }
     }
 }
