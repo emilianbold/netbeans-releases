@@ -85,13 +85,13 @@ public class HostPropertiesDialog extends JPanel {
                 record.setSyncFactory(syncFactory);
                 changed = true;
             }
-            if (record.isX11forwardingPossible()) {
+//            if (record.isX11forwardingPossible()) {
                 boolean x11forwarding = pane.cbX11.isSelected();
                 if (x11forwarding != record.getX11Forwarding()) {
                     record.setX11Forwarding(x11forwarding);
                     changed = true;
                 }
-            }
+//            }
             if (changed) {
                 RemoteServerList.storePreferences(record);
                 return true;
@@ -115,9 +115,9 @@ public class HostPropertiesDialog extends JPanel {
         SyncUtils.arrangeComboBox(cbSync, serverRecord.getExecutionEnvironment());
         cbSync.setSelectedItem(serverRecord.getSyncFactory());
         cbX11.setSelected(serverRecord.getX11Forwarding());
-        // if x11forwarding is set, but we consider it is unavailable,
-        // we should at least allow switching it off => || serverRecord.getX11Forwarding()
-        cbX11.setEnabled(serverRecord.isX11forwardingPossible() || serverRecord.getX11Forwarding());
+//        // if x11forwarding is set, but we consider it is unavailable,
+//        // we should at least allow switching it off => || serverRecord.getX11Forwarding()
+//        cbX11.setEnabled(serverRecord.isX11forwardingPossible() || serverRecord.getX11Forwarding());
         addAncestorListener(new AncestorListener() {
             public void ancestorAdded(AncestorEvent event) {
                 tfName.requestFocus();
