@@ -341,19 +341,14 @@ public class MakeActionProvider implements ActionProvider {
             wrapper = actionWorker;
         } else {
             String message;
-            int res = JOptionPane.NO_OPTION;
             if (record.isDeleted()) {
                 message = MessageFormat.format(getString("ERR_RequestingDeletedConnection"), record.getDisplayName());
-                res = JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(), message, getString("DLG_TITLE_DeletedConnection"), JOptionPane.YES_NO_OPTION);
+                int res = JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(), message, getString("DLG_TITLE_DeletedConnection"), JOptionPane.YES_NO_OPTION);
                 if (res == JOptionPane.YES_OPTION) {
                     ServerList.addServer(record.getExecutionEnvironment(), record.getDisplayName(), record.getSyncFactory(), false, true);
+                } else {
+                    return;
                 }
-            } else if (!record.isOnline()) {
-                message = MessageFormat.format(getString("ERR_NeedToConnectToRemoteHost"), record.getDisplayName());
-                res = JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(), message, getString("DLG_TITLE_Connect"), JOptionPane.YES_NO_OPTION);
-            }
-            if (res != JOptionPane.YES_OPTION) {
-                return;
             }
             // start validation phase
             wrapper = new CancellableTask() {
