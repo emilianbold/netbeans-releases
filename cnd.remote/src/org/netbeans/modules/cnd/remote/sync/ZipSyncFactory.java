@@ -59,8 +59,8 @@ class ZipSyncFactory extends BaseSyncFactory {
     
     @Override
     public RemoteSyncWorker createNew( ExecutionEnvironment executionEnvironment,
-            PrintWriter out, PrintWriter err, File privProjectStorageDir, File... localDirs) {
-        return new ZipSyncWorker(executionEnvironment, out, err, privProjectStorageDir, localDirs);
+            PrintWriter out, PrintWriter err, File privProjectStorageDir, File... files) {
+        return new ZipSyncWorker(executionEnvironment, out, err, privProjectStorageDir, files);
     }
 
     @Override

@@ -623,7 +623,6 @@ public class FunctionsListViewVisualizer extends JPanel implements
 //        }
 //        return null;
 //    }
-
     public void updateVisualizerConfiguration(FunctionsListViewVisualizerConfiguration configuration) {
     }
 
@@ -739,6 +738,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
 
         public GoToSourceAction(FunctionCallNode funcCallNode) {
             super(NbBundle.getMessage(FunctionsListViewVisualizer.class, "GoToSourceActionName"));//NOI18N
+            setEnabled(false);
             this.functionCallNode = funcCallNode;
             synchronized (sourcePrefetchExecutorLock) {
                 if (sourcePrefetchExecutor == null) {
@@ -790,12 +790,11 @@ public class FunctionsListViewVisualizer extends JPanel implements
                         sourceInfo = result;
                     }
                 }
-                return result;
-            } else {
-                setEnabled(false);
+                setEnabled(true);
                 functionCallNode.fire();
-                return null;
             }
+
+            return result;
         }
     }
 

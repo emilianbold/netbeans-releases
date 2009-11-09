@@ -53,18 +53,18 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
  */
 /*package-local*/ class SharedSyncWorker implements RemoteSyncWorker {
 
-    private final File[] localDirs;
+    private final File[] files;
     private final ExecutionEnvironment executionEnvironment;
 
-    public SharedSyncWorker(ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, File... localDirs) {
-        this.localDirs = localDirs;
+    public SharedSyncWorker(ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, File... files) {
+        this.files = files;
         this.executionEnvironment = executionEnvironment;
     }
     
     public boolean startup(Map<String, String> env2add) {
         PathMap mapper = HostInfoProvider.getMapper(executionEnvironment);
-        if (localDirs != null && localDirs.length > 0) {
-            return mapper.checkRemotePath(localDirs[0].getAbsolutePath(), true);
+        if (files != null && files.length > 0) {
+            return mapper.checkRemotePath(files[0].getAbsolutePath(), true);
         }
         return true;
     }
