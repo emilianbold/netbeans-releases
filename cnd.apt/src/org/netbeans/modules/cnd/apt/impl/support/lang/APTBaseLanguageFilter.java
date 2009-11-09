@@ -41,9 +41,9 @@
 
 package org.netbeans.modules.cnd.apt.impl.support.lang;
 
-import antlr.Token;
-import antlr.TokenStream;
-import antlr.TokenStreamException;
+import org.netbeans.modules.cnd.antlr.Token;
+import org.netbeans.modules.cnd.antlr.TokenStream;
+import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;

@@ -68,7 +68,7 @@ public class CanYouCreateFolderLookupFromHandleFindTest extends NbTestCase {
     }
     
     public void testCreateAndImmediatelyQueryTheLookup() throws Exception {
-        MyLoader m = (MyLoader)MyLoader.getLoader(MyLoader.class);
+        MyLoader m = MyLoader.getLoader(MyLoader.class);
         m.button = FileUtil.createFolder(FileUtil.getConfigRoot(), "FolderLookup");
         DataObject instance = InstanceDataObject.create(DataFolder.findFolder(m.button), "SomeName", JButton.class);
         m.instanceFile = instance.getPrimaryFile();

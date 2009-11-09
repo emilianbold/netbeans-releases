@@ -42,23 +42,15 @@
 package org.netbeans.modules.editor.completion;
 
 import java.awt.Dimension;
-import java.lang.ref.Reference;
-import java.lang.ref.SoftReference;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.prefs.PreferenceChangeEvent;
-import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
-import org.openide.util.WeakListeners;
 
 /**
  * Maintenance of the editor settings related to the code completion.
@@ -67,34 +59,26 @@ import org.openide.util.WeakListeners;
  * @version 1.00
  */
 
-public final class CompletionSettings implements PreferenceChangeListener {
+public final class CompletionSettings {
     
     // -----------------------------------------------------------------------
     // public implementation
     // -----------------------------------------------------------------------
     
-    public static synchronized CompletionSettings getInstance() {
-        CompletionSettings instance = ref == null ? null : ref.get();
-        if (instance == null) {
-            instance = new CompletionSettings();
-            ref = new SoftReference<CompletionSettings>(instance);
-        }
-        return instance;
+    public static synchronized CompletionSettings getInstance(JTextComponent component) {
+        return new CompletionSettings(component != null ? DocumentUtilities.getMimeType(component) : null);
     }
 
     public boolean completionAutoPopup() {
-        initialize();
-        return completionAutoPopup;
+        return preferences.getBoolean(SimpleValueNames.COMPLETION_AUTO_POPUP, true);
     }
     
     public int completionAutoPopupDelay() {
-        initialize();
-        return completionAutoPopupDelay;
+        return preferences.getInt(SimpleValueNames.COMPLETION_AUTO_POPUP_DELAY, 250);
     }
     
     public boolean documentationAutoPopup() {
-        initialize();
-        return docsAutoPopup;
+        return preferences.getBoolean(SimpleValueNames.JAVADOC_AUTO_POPUP, true);
     }
 
     /**
@@ -102,62 +86,23 @@ public final class CompletionSettings implements PreferenceChangeListener {
      * @return true if yes
      */
     boolean documentationPopupNextToCC() {
-        initialize();
-        return docsNextCC;
+        return preferences.getBoolean(SimpleValueNames.JAVADOC_POPUP_NEXT_TO_CC, false);
     }
     
     public int documentationAutoPopupDelay() {
-        initialize();
-        return docsAutoPopupDelay;
+        return preferences.getInt(SimpleValueNames.JAVADOC_AUTO_POPUP_DELAY, 200);
     }
     
     public Dimension completionPaneMaximumSize() {
-        initialize();
-        return completionPaneMaxSize;
+        return parseDimension(preferences.get(SimpleValueNames.COMPLETION_PANE_MAX_SIZE, null), new Dimension(400, 300));
     }
     
     public Dimension documentationPopupPreferredSize() {
-        initialize();
-        return docsPreferredSize;
+        return parseDimension(preferences.get(SimpleValueNames.JAVADOC_PREFERRED_SIZE, null), new Dimension(500, 300));
     }
     
     public boolean completionInstantSubstitution() {
-        initialize();
-        return completionInstantSubstitution;
-    }
-    
-    public synchronized void notifyEditorComponentChange(JTextComponent newEditorComponent) {
-        if (preferences != null) {
-            assert weakListener != null;
-            preferences.removePreferenceChangeListener(weakListener);
-            preferences = null;
-            weakListener = null;
-        }
-        
-        if (newEditorComponent != null) {
-            String mimeType = DocumentUtilities.getMimeType(newEditorComponent);
-            Preferences prefs = MimeLookup.getLookup(mimeType).lookup(Preferences.class);
-            read(prefs);
-
-            preferences = prefs;
-            weakListener = WeakListeners.create(PreferenceChangeListener.class, this, preferences);
-            preferences.addPreferenceChangeListener(weakListener);
-        }
-    }
-    
-    // -----------------------------------------------------------------------
-    // PreferenceChangeListener implementation
-    // -----------------------------------------------------------------------
-    
-    public void preferenceChange(PreferenceChangeEvent evt) {
-        String settingName = evt != null ? evt.getKey() : null;
-        if (settingName == null || MANAGED_SETTINGS.contains(settingName)) {
-            synchronized (this) {
-                if (preferences != null) {
-                    read(preferences);
-                }
-            }
-        }
+        return preferences.getBoolean(SimpleValueNames.COMPLETION_INSTANT_SUBSTITUTION, true);
     }
     
     // -----------------------------------------------------------------------
@@ -165,57 +110,12 @@ public final class CompletionSettings implements PreferenceChangeListener {
     // -----------------------------------------------------------------------
 
     private static final Logger LOG = Logger.getLogger(CompletionSettings.class.getName());
-    
-    private static final Set<String> MANAGED_SETTINGS = new HashSet<String>(Arrays.asList(new String [] {
-        SimpleValueNames.COMPLETION_AUTO_POPUP,
-        SimpleValueNames.COMPLETION_AUTO_POPUP_DELAY,
-        SimpleValueNames.COMPLETION_PANE_MAX_SIZE,
-        SimpleValueNames.COMPLETION_INSTANT_SUBSTITUTION,
-        SimpleValueNames.JAVADOC_AUTO_POPUP,
-        SimpleValueNames.JAVADOC_POPUP_NEXT_TO_CC,
-        SimpleValueNames.JAVADOC_AUTO_POPUP_DELAY,
-        SimpleValueNames.JAVADOC_PREFERRED_SIZE,
-    }));
-
-    private static Reference<CompletionSettings> ref = null;
-    
     private Preferences preferences = null;
-    private PreferenceChangeListener weakListener = null;
-    
-    private boolean completionAutoPopup;
-    private int completionAutoPopupDelay;
-    private Dimension completionPaneMaxSize;
-    private boolean completionInstantSubstitution;
-    private boolean docsAutoPopup;
-    private boolean docsNextCC;
-    private int docsAutoPopupDelay;
-    private Dimension docsPreferredSize;
-    
-    private CompletionSettings() {
+
+    private CompletionSettings(String mimeType) {
+        this.preferences = (mimeType != null ? MimeLookup.getLookup(mimeType) : MimeLookup.getLookup(MimePath.EMPTY)).lookup(Preferences.class);
     }
 
-    private synchronized void initialize() {
-        if (preferences == null) {
-            Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
-            read(prefs);
-            
-            preferences = prefs;
-            weakListener = WeakListeners.create(PreferenceChangeListener.class, this, preferences);
-            preferences.addPreferenceChangeListener(weakListener);
-        }
-    }
-    
-    private void read(Preferences prefs) {
-        completionAutoPopup = prefs.getBoolean(SimpleValueNames.COMPLETION_AUTO_POPUP, true);
-        completionAutoPopupDelay = prefs.getInt(SimpleValueNames.COMPLETION_AUTO_POPUP_DELAY, 250);
-        completionPaneMaxSize = parseDimension(prefs.get(SimpleValueNames.COMPLETION_PANE_MAX_SIZE, null), new Dimension(400, 300));
-        completionInstantSubstitution = prefs.getBoolean(SimpleValueNames.COMPLETION_INSTANT_SUBSTITUTION, true);
-        docsAutoPopup = prefs.getBoolean(SimpleValueNames.JAVADOC_AUTO_POPUP, true);
-        docsNextCC = prefs.getBoolean(SimpleValueNames.JAVADOC_POPUP_NEXT_TO_CC, false);
-        docsAutoPopupDelay = prefs.getInt(SimpleValueNames.JAVADOC_AUTO_POPUP_DELAY, 200);
-        docsPreferredSize = parseDimension(prefs.get(SimpleValueNames.JAVADOC_PREFERRED_SIZE, null), new Dimension(500, 300));
-    }
-    
     private static Dimension parseDimension(String s, Dimension d) {
         int arr[] = new int[2];
         int i = 0;

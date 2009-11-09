@@ -97,6 +97,9 @@ public class UpdateContextRoot implements ProgressListener {
                                 } else {
                                     returnProgress.operationStateChanged(OperationState.COMPLETED, "no moduleid update necessary");
                                 }
+                            } else {
+                                // there are no context-root values to be had... the query failed... but the update has been successful
+                                returnProgress.operationStateChanged(OperationState.COMPLETED, "no moduleid update necessary");
                             }
                         } catch (InterruptedException ex) {
                             returnProgress.operationStateChanged(OperationState.FAILED, "failed updating the moduleid..");

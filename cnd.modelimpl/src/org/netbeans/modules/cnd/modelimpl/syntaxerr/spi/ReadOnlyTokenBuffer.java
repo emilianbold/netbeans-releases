@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.cnd.modelimpl.syntaxerr.spi;
 
-import antlr.Token;
+import org.netbeans.modules.cnd.antlr.Token;
 
 /**
  * Represents a buffer of tokens.

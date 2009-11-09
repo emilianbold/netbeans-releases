@@ -174,9 +174,38 @@ static void serve_connection(void* data) {
     trace("Connection to %s:%d (%s) closed sd=%d\n", inet_ntoa(conn_data->pin.sin_addr), ntohs(conn_data->pin.sin_port), requestor_id, conn_data->sd);
 }
 
+static int _mkdir(const char *dir, int mask) {
+    char tmp[1024];
+    char *p = 0;
+    size_t len;
+
+    snprintf(tmp, sizeof (tmp), "%s", dir);
+    len = strlen(tmp);
+    if (tmp[len - 1] == '/') {
+        tmp[len - 1] = 0;
+    }
+    for (p = tmp + 1; *p; p++) {
+        if (*p == '/') {
+            *p = 0;
+            int rc = mkdir(tmp, mask);
+            if (rc != 0) {
+                // TODO: report errors
+                trace("\t\terror creating dir %s: rc=%d\n", tmp, rc);
+            }
+            *p = '/';
+        }
+    }
+    int rc = mkdir(tmp, mask);
+    if (rc != 0) {
+        // TODO: report errors
+        trace("\t\terror creating dir %s: rc=%d\n", tmp, rc);
+    }
+    return rc;
+}
+
 static int create_dir(const char* path) {
     trace("\tcreating dir %s\n", path);
-    int rc = mkdir(path, 0700); // TODO: error processing
+    int rc = _mkdir(path, 0700); // TODO: error processing
     if (rc != 0) {
         // TODO: report errors
         trace("\t\terror creating dir %s: rc=%d\n", path, rc);

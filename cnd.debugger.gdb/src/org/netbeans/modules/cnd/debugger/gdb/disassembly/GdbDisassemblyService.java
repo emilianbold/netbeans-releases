@@ -40,7 +40,10 @@
 package org.netbeans.modules.cnd.debugger.gdb.disassembly;
 
 import org.netbeans.modules.cnd.debugger.common.EditorContextBridge;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.AddressBreakpoint;
 import org.netbeans.modules.cnd.debugger.common.disassembly.DisassemblyService;
+import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
+import org.netbeans.modules.cnd.debugger.gdb.breakpoints.BreakpointImpl;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -52,23 +55,41 @@ import org.openide.text.Annotation;
  */
 public class GdbDisassemblyService implements DisassemblyService {
     public int getAddressLine(String address) {
-        return Disassembly.getCurrent().getAddressLine(address);
+        Disassembly dis = Disassembly.getCurrent();
+        if (dis == null) {
+            return -1;
+        }
+        return dis.getAddressLine(address);
+    }
+
+    public int getBreakpointLine(AddressBreakpoint b) {
+        int res = getAddressLine(b.getAddress());
+        if (res < 1) {
+            BreakpointImpl<?> bptImpl = GdbDebugger.getBreakpointImpl(b);
+            if (bptImpl != null) {
+                return Disassembly.getCurrent().getAddressLine(bptImpl.getAddress());
+            }
+        }
+        return res;
     }
 
     public String getLineAddress(int lineNo) {
-        return Disassembly.getCurrent().getLineAddress(lineNo);
+        Disassembly dis = Disassembly.getCurrent();
+        if (dis == null) {
+            return null;
+        }
+        return dis.getLineAddress(lineNo);
     }
 
     public boolean isDis(String url) {
         return Disassembly.isDisasm(url);
     }
 
-    public boolean showAddress(String address) {
-        Disassembly dis = Disassembly.getCurrent();
-        if (dis == null) {
-            return false;
-        }
-        int line = dis.getAddressLine(address);
+    public boolean showBreakpoint(AddressBreakpoint b) {
+        return showLine(getBreakpointLine(b));
+    }
+
+    private boolean showLine(int line) {
         if (line != -1) {
             FileObject fo = Disassembly.getFileObject();
             if (fo != null) {
@@ -82,6 +103,10 @@ public class GdbDisassemblyService implements DisassemblyService {
             Disassembly.open();
         }
         return false;
+    }
+
+    public boolean showAddress(String address) {
+        return showLine(getAddressLine(address));
     }
 
     public Annotation annotateAddress(String address, String annotationType) {

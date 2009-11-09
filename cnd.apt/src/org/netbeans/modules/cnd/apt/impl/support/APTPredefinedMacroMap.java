@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.cnd.apt.impl.support;
 
-import antlr.TokenStream;
+import org.netbeans.modules.cnd.antlr.TokenStream;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.logging.Level;
@@ -149,7 +149,7 @@ public class APTPredefinedMacroMap implements APTMacroMap {
         }
 
         public boolean isFunctionLike() {
-            if ("_Pragma".contentEquals(macro.getTextID()) ||
+            if ("_Pragma".contentEquals(macro.getTextID()) || // NOI18N
                     "__pragma".contentEquals(macro.getTextID())) { // NOI18N
                 return true;
             }
@@ -174,8 +174,8 @@ public class APTPredefinedMacroMap implements APTMacroMap {
             if ("__LINE__".contentEquals(macro.getTextID())) { // NOI18N
                 tok.setType(APTTokenTypes.DECIMALINT);
                 tok.setText("" + macro.getLine()); // NOI18N
-            } else if("_Pragma".contentEquals(macro.getTextID()) ||
-                    "__pragma".contentEquals(macro.getTextID())) {
+            } else if("_Pragma".contentEquals(macro.getTextID()) || // NOI18N
+                    "__pragma".contentEquals(macro.getTextID())) { // NOI18N
                 tok.setType(APTTokenTypes.COMMENT);
                 tok.setText(""); // NOI18N
             } else {

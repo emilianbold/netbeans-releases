@@ -617,14 +617,15 @@ public class SvnClientFactory {
         }
 
         protected void setupAdapter(ISVNClientAdapter adapter, String username, String password, ISVNPromptUserPassword callback) {
+            adapter.setUsername(username);
             if(callback != null) {
                 adapter.addPasswordCallback(callback);
+            } else {
+                adapter.setPassword(password);
             }
             try {
                 File configDir = FileUtil.normalizeFile(new File(SvnConfigFiles.getNBConfigPath()));
                 adapter.setConfigDirectory(configDir);
-                adapter.setUsername(username);
-                adapter.setPassword(password);
             } catch (SVNClientException ex) {
                 SvnClientExceptionHandler.notifyException(ex, false, false);
             }

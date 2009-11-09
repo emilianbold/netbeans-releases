@@ -49,15 +49,15 @@ made subject to such option by the copyright holder.
     <localizing-bundle>org.netbeans.modules.form.resources.Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst://org.jdesktop.layout/modules/ext/swing-layout-1.0.3.jar!/</resource>
+        <resource>jar:nbinst://org.jdesktop.layout/modules/ext/swing-layout-1.0.4.jar!/</resource>
     </volume>
     <volume>
         <type>javadoc</type>
-        <resource>jar:nbinst://org.jdesktop.layout/docs/swing-layout-1.0.3-doc.zip!/</resource>
+        <resource>jar:nbinst://org.jdesktop.layout/docs/swing-layout-1.0.4-doc.zip!/</resource>
     </volume>
     <volume>
         <type>src</type>
-        <resource>jar:nbinst://org.jdesktop.layout/docs/swing-layout-1.0.3-src.zip!/</resource>
+        <resource>jar:nbinst://org.jdesktop.layout/docs/swing-layout-1.0.4-src.zip!/</resource>
     </volume>
     <volume>
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->

@@ -46,9 +46,7 @@ import com.sun.source.tree.Tree;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.modules.javacard.Utils;
-import org.netbeans.modules.javacard.api.ProjectKind;
-import org.netbeans.modules.javacard.constants.JCConstants;
+import org.netbeans.modules.javacard.common.JCConstants;
 import org.netbeans.modules.javacard.project.JCProject;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
@@ -74,6 +72,7 @@ import javax.xml.transform.stream.StreamResult;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.javacard.spi.ProjectKind;
 
 public class ImportantFilesRenameRefactoring implements RefactoringPlugin {
 

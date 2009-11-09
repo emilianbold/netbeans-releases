@@ -1,0 +1,48 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html lang="en-US">
+
+<head>
+<!-- GenHTML revision 22989-->
+
+  <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+  <title>Running DynamicSecureWebHosting Sample Web Application - Java Card 3 Development
+  </title>
+
+</head>
+
+<body class="body">
+
+
+
+<a name="RunningDynamicSecureWebHostingSampleWebApp"></a><h2>Running <tt>DynamicSecureWebHosting</tt> Sample Web Application</h2><p class="p">The <tt>DynamicSecureWebHosting</tt> sample demonstrates secure hosting with user access on a dynamic port. The
+sample contains one web application that accesses a secure website hosted on a
+dynamic port determined by the Java Card 3 platform. Each time the application
+is run, the Java Card 3 platform determines the port used to access
+the website.</p><p class="p">Running the <tt>DynamicSecureWebHosting</tt> sample consists of using the IDE to open the <tt>DynamicSecureWebHosting</tt>
+project, starting the application, checking the website&#8217;s security certificate, displaying a web page, and
+entering information on that page.</p><h2>Before You Begin</h2><p class="p">Before performing the following procedure, the Java Card 3 Development Kit, Connected Edition
+must be downloaded and installed on your development system. </p><p class="p">The <tt>DynamicSecureWebHosting</tt> project is located under the <b>JC_CONNECTED_HOME</b><tt>\samples\web</tt> folder.</p>
+<hr><p class="p"><b>Note - </b>Refer to the <i>Java Card 3 Platform Development Kit User&#8217;s Guide</i> for additional details including screen captures.</p>
+<hr>
+<ol class="ol">
+<li class="li"><b>Click File &#62; Open Project in the main window.</b></li>
+<li class="li"><b>Go to the <b>JC_CONNECTED_HOME</b><tt>\samples\web </tt>folder and open the <tt>DynamicSecureWebHosting</tt> project.</b></li>
+<li class="li"><b>Click the run button in the main window. </b><p class="p">The IDE compiles, builds, and runs the sample. When the sample runs, the
+IDE launches the default browser and displays the Secure hosting dynamic port entry
+page.</p>
+<hr><p class="p"><b>Note - </b>If the browser displays a warning that the security certificate is not issued
+by a trusted certificate authority, disregard it and continue to the web site.
+The security certificate for this sample is used for demonstration purposes only and
+cannot be used for developing deployable samples.If you are unable to continue to the
+web page, perform <a href="AcceptingUntrustedCertificates.html">Accepting Untrusted Certificates</a>.</p>
+<hr>
+</li>
+<li class="li"><b>Enter text in the name field and click the Say Hello button.</b><p class="p">The browser displays a greeting page that uses the text entered in the
+name field.</p></li>
+<li class="li"><b>Close the browser to stop the application.</b></li></ol>
+
+
+</body>
+</html>

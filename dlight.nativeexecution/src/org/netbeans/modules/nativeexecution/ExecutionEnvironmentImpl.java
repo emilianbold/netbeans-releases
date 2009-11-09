@@ -135,7 +135,7 @@ final public class ExecutionEnvironmentImpl implements ExecutionEnvironment {
      */
     public String getDisplayName() {
         if (isLocal()) {
-            return "localhost"; // NOI18N
+            return HostInfoUtils.LOCALHOST;
         } else {
             String result = this.user + "@" + this.host; // NOI18N;
             if (this.sshPort != 22) {
@@ -221,8 +221,7 @@ final public class ExecutionEnvironmentImpl implements ExecutionEnvironment {
             return false;
         }
 
-        boolean bothLocalhost = HostInfoUtils.isLocalhost(ee.host) &&
-                HostInfoUtils.isLocalhost(host);
+        boolean bothLocalhost = ee.isLocal() && isLocal();
 
         boolean result = (bothLocalhost || ee.host.equals(host)) &&
                 ee.user.equals(user) && ee.sshPort == sshPort;

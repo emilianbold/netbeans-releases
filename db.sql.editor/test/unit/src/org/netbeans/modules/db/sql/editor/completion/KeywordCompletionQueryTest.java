@@ -68,6 +68,8 @@ public class KeywordCompletionQueryTest extends CompletionQueryTestCase {
         assertItems(doQuery(sql));
         sql = "SELECT * FROM t |";
         assertItems(doQuery(sql), "WHERE");
+        sql = "SELECT * FROM (t)|";
+        assertItems(doQuery(sql), "WHERE");
         sql = "SELECT * FROM t WHERE|";
         assertItems(doQuery(sql));
         sql = "SELECT * FROM t WHERE c1 > 1 |";
@@ -116,6 +118,8 @@ public class KeywordCompletionQueryTest extends CompletionQueryTestCase {
         String sql = "INSERT |";
         assertItems(doQuery(sql), "INTO");
         sql = "INSERT INTO t |";
+        assertItems(doQuery(sql), "VALUES");
+        sql = "INSERT INTO tab_customer (col_customer_id) |";
         assertItems(doQuery(sql), "VALUES");
     }
 

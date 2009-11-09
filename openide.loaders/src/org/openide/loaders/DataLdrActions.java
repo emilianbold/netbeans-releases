@@ -81,7 +81,7 @@ final class DataLdrActions extends FolderInstance {
                 Map<Object, DataObject> nowToObj = new HashMap<Object, DataObject> ();
                 LinkedList<DataObject> sepObjs = new LinkedList<DataObject> ();
                 for (int i = 0; i < now.length; i++) {
-                    org.openide.cookies.InstanceCookie ic = (org.openide.cookies.InstanceCookie) now[i].getCookie(org.openide.cookies.InstanceCookie.class);
+                    org.openide.cookies.InstanceCookie ic = now[i].getCookie(org.openide.cookies.InstanceCookie.class);
 
                     if (ic != null) {
                         try {
@@ -105,7 +105,7 @@ final class DataLdrActions extends FolderInstance {
                 ArrayList<DataObject> order = new ArrayList<DataObject> ();
                 
                 for (int i = 0; i < arr.length; i++) {
-                    DataObject obj = (DataObject)nowToObj.remove (arr[i]);
+                    DataObject obj = nowToObj.remove(arr[i]);
                     if (obj == null) {
                         if (arr[i] != null) {
                             obj = InstanceDataObject.create (folder, null, arr[i].getClass ());

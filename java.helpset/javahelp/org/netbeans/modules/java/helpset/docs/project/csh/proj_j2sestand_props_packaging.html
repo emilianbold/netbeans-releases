@@ -29,16 +29,24 @@ You open the Standard Java SE Project Properties dialog box by right-clicking
    	<param name="textColor" value="blue">
    	</object>
 	&nbsp;and choosing Properties. 
-
+<p>The Packaging panel includes the following options: 
+<ul>
+  <li><strong>Jar File</strong>. 
+    
+    This text field shows the location of JAR files for this project (relative to your project location). The default value is <tt>&lt;your_project_location&gt;/dist</tt>. To change the JAR name and location, open the project.properties file and edit the <tt>dist.jar </tt>property.
+  </li>
+  <li><strong>Exclude from JAR File</strong>.  Specify the files that should be excluded from the JAR file during the packaging process. By default, this field contains the values <tt>**/*.java</tt>, <tt>**/*.form</tt>. For example, to exclude the .properties file from the JAR file, add <tt>**/*.properties</tt> at the end of the existing value. </li>
+  <li><strong>Compress JAR File</strong>. If selected, the resulting JAR file will be compressed. </li>
+  <li><strong>Build JAR after Compiling. 
+  </strong> If selected, the IDE builds a JAR file from your project sources each time during compilation and places it to the specified location (see the Jar File field). If you clear this checkbox, the Java compiler will produce only <tt>.class</tt> files, without building JAR files for the application. </li>
+</ul>
 <p><b>Notes:</b>
 <ul>
   <li>To specify a manifest file in your JAR file, open your project's <tt>project.properties</tt> 
     file and enter the name of the manifest file in the <tt>manifest.file</tt> 
     property. The file name must be specified relative to the project's <tt>build.xml 
     </tt>file.</li>
-  <li>To change the JAR name and location, open the project.properties file and 
-    edit the <tt>dist.jar </tt>property.</li>
-  <li>To disable building of JAR files for a project, open <tt>build.xml, </tt>override 
+  <li>To disable building of JAR files for a project, open <tt>build.xml</tt>, override 
     the <tt>jar</tt> target and remove all the dependencies from the target, like 
     so:<br>
     <pre>&lt;target name=&quot;jar&quot; /&gt;</pre>
@@ -52,12 +60,12 @@ You open the Standard Java SE Project Properties dialog box by right-clicking
     <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="proj_j2sestand_props_sources.html">Sources</a></dd>
     <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="proj_j2sestand_props_libraries.html">Libraries</a></dd>
     <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="proj_j2sestand_props_compiling.html">Compiling</a></dd>
-    <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="proj_j2sestand_props_documenting.html">Documenting</a></dd>
+    <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="proj_j2sestand_props_compiling.html"></a><a href="proj_j2sestand_props_documenting.html">Documenting</a></dd>
     <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="proj_j2sestand_props_run.html">Run</a></dd>
-    <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="proj_j2sestand_props_common-app.html">Application</a></dd>        
-    <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="proj_j2sestand_props_desktop-app.html">Desktop App</a></dd>    
+    <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="proj_j2sestand_props_common-app.html">Application</a></dd>
     <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="proj_j2sestand_props_webstart.html">Web Start</a></dd>
-    </dl>
+    <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="proj_j2sestand_props_formatting.html">Formatting</a></dd>
+</dl>
 
 <hr><small><a href="../../credits.html">Legal Notices</a></small>
 

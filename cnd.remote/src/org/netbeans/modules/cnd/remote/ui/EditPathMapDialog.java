@@ -260,30 +260,26 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
     private synchronized void initTableModel(final ServerRecord host) {
         DefaultTableModel tableModel = cache.get(host);
         if (tableModel == null) {
-            if (RemotePathMap.isReady(host.getExecutionEnvironment())) {
-                tableModel = prepareTableModel(host.getExecutionEnvironment());
-            } else {
-                handleProgress(true);
-                tableModel = new DefaultTableModel(0, 2);
-                RequestProcessor.getDefault().post(new Runnable() {
-                    public void run() {
-                        final DefaultTableModel tm = prepareTableModel(host.getExecutionEnvironment());
-                        cache.put(host, tm);
-                        SwingUtilities.invokeLater(new Runnable() {
+            handleProgress(true);
+            tableModel = new DefaultTableModel(0, 2);
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    final DefaultTableModel tm = prepareTableModel(host.getExecutionEnvironment());
+                    cache.put(host, tm);
+                    SwingUtilities.invokeLater(new Runnable() {
 
-                            public void run() {
-                                if (tblPathMappings != null) {
-                                    handleProgress(false);
-                                    updatePathMappingsTable(tm);
-                                    enableControls(true, "");
-                                }
+                        public void run() {
+                            if (tblPathMappings != null) {
+                                handleProgress(false);
+                                updatePathMappingsTable(tm);
+                                enableControls(true, "");
                             }
-                        });
-                    }
-                });
-                enableControls(false, NbBundle.getMessage(EditPathMapDialog.class, "EPMD_Loading"));
+                        }
+                    });
+                }
+            });
+            enableControls(false, NbBundle.getMessage(EditPathMapDialog.class, "EPMD_Loading"));
 
-            }
             cache.put(host, tableModel);
         }
 

@@ -41,6 +41,7 @@ package org.netbeans.modules.parsing.impl;
 
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
+import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
@@ -93,8 +94,12 @@ public class CursorSensitiveScheduler extends CurrentEditorTaskScheduler {
 
     @Override
     protected SchedulerEvent createSchedulerEvent (SourceModificationEvent event) {
-        if (event.getModifiedSource () == source)
-            return new CursorMovedSchedulerEvent (this, currentEditor.getCaret ().getDot (), currentEditor.getCaret ().getMark ()) {};
+        final JTextComponent ce = currentEditor;
+        final Caret caret = ce != null ? ce.getCaret() : null;
+        final Source s = source;
+        if (event.getModifiedSource() == s && caret != null) {
+            return new CursorMovedSchedulerEvent(this, caret.getDot(), caret.getMark()) { };
+        }
         return null;
     }
 

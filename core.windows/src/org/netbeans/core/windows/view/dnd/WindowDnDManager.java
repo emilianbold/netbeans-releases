@@ -1290,19 +1290,16 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
         }
         
         public boolean canDrop(TopComponent transfer, Point location) {
-            ModeImpl mode = (ModeImpl)WindowManagerImpl.getInstance().findMode(transfer);
-            if (mode == null) {
-                return false;
-            }
             if (Constants.SWITCH_MODE_ADD_NO_RESTRICT ||
                 WindowManagerImpl.getInstance().isTopComponentAllowedToMoveAnywhere(transfer)) {
                 return true;
             }
+            ModeImpl mode = (ModeImpl)WindowManagerImpl.getInstance().findMode(transfer);
 
             // don't accept drop from separated mode with single component in it,
             // it makes no sense (because such DnD into free area equals to
             // simple window move)
-            if (mode.getState() == Constants.MODE_STATE_SEPARATED &&
+            if (null != mode && mode.getState() == Constants.MODE_STATE_SEPARATED &&
                 mode.getOpenedTopComponents().size() == 1) {
                 return false;
             }

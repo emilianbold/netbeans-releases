@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.form.layoutdesign.support;
 
+import java.awt.Component;
 import java.awt.Dimension;
 import java.io.IOException;
 import java.io.Writer;
@@ -232,10 +233,11 @@ public class SwingLayoutCodeGenerator {
                 ComponentInfo info = componentIDMap.get(layoutComp.getId());
                 if (min == LayoutConstants.NOT_EXPLICITLY_DEFINED) {
                     int dimension = (layoutComp.getLayoutInterval(LayoutConstants.HORIZONTAL) == interval) ? LayoutConstants.HORIZONTAL : LayoutConstants.VERTICAL;
-                    if ((dimension == LayoutConstants.HORIZONTAL) && info.clazz.getName().equals("javax.swing.JComboBox")) { // Issue 68612 // NOI18N
+                    if ((dimension == LayoutConstants.HORIZONTAL) && info.component.getClass().getName().equals("javax.swing.JComboBox")) { // Issue 68612 // NOI18N
                         min = 0;
                     } else if (pref >= 0) {
-                        int compMin = (dimension == LayoutConstants.HORIZONTAL) ? info.minSize.width : info.minSize.height;
+                        Dimension minSize = info.component.getMinimumSize();
+                        int compMin = (dimension == LayoutConstants.HORIZONTAL) ? minSize.width : minSize.height;
                         if (compMin > pref) {
                             min = LayoutConstants.USE_PREFERRED_SIZE;
                         }
@@ -252,7 +254,7 @@ public class SwingLayoutCodeGenerator {
                     else // in JDK the component comes first
                         layout.append(info.variableName).append(", ").append(alignmentStr); // NOI18N
                 }
-                int status = SwingLayoutUtils.getResizableStatus(info.clazz);
+                int status = SwingLayoutUtils.getResizableStatus(info.component);
                 
                 if (!((pref == LayoutConstants.NOT_EXPLICITLY_DEFINED) &&
                     ((min == LayoutConstants.NOT_EXPLICITLY_DEFINED)
@@ -441,9 +443,7 @@ public class SwingLayoutCodeGenerator {
         /** Variable name of the component. */
         public String variableName;
         /** The component's class. */
-        public Class clazz;
-        /** The component's minimum size. */
-        public Dimension minSize;
+        public Component component;
         /**
          * Determines whether size properties (e.g. minimumSize, preferredSize
          * or maximumSize properties of the component has been changed).

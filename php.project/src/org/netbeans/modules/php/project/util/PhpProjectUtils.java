@@ -41,12 +41,12 @@ package org.netbeans.modules.php.project.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -54,12 +54,9 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.editor.indent.api.Reformat;
-import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpSources;
 import org.netbeans.modules.php.project.PhpVisibilityQuery;
-import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.netbeans.modules.php.project.api.PhpLanguageOptions.PhpVersion;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
@@ -72,8 +69,7 @@ import org.openide.nodes.Node;
 import org.openide.text.Line;
 import org.openide.text.Line.Set;
 import org.openide.util.Mutex;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
+import org.openide.util.NbBundle;
 
 /**
  * Utility methods.
@@ -81,6 +77,7 @@ import org.xml.sax.XMLReader;
  */
 public final class PhpProjectUtils {
     private static final Logger LOGGER = Logger.getLogger(PhpProjectUtils.class.getName());
+    private static final Logger USG_LOGGER = Logger.getLogger("org.netbeans.ui.metrics.php"); //NOI18N
 
     private PhpProjectUtils() {
     }
@@ -105,18 +102,6 @@ public final class PhpProjectUtils {
             return null;
         }
         return project.getLookup().lookup(PhpProject.class);
-    }
-
-    public static XMLReader createXmlReader() throws SAXException {
-        SAXParserFactory factory = SAXParserFactory.newInstance();
-        factory.setValidating(false);
-        factory.setNamespaceAware(false);
-
-        try {
-            return factory.newSAXParser().getXMLReader();
-        } catch (ParserConfigurationException ex) {
-            throw new SAXException("Cannot create SAX parser", ex);
-        }
     }
 
     /**
@@ -237,19 +222,24 @@ public final class PhpProjectUtils {
         return true;
     }
 
+    // http://wiki.netbeans.org/UsageLoggingSpecification
     /**
-     * Get the fully quilified name of a PHP class depending on project's PHP version.
-     * @param phpProject PHP project the PHP class comes from
-     * @param phpClass PHP class
-     * @return the fully quilified name of a PHP class depending on project's PHP version
+     * Logs usage data.
+     *
+     * @param srcClass source class
+     * @param message message key
+     * @param params message parameters, may be <code>null</code>
      */
-    public static String getFullyQualifiedName(PhpProject phpProject, PhpClass phpClass) {
-        assert phpProject != null;
-        assert phpClass != null;
+    public static void logUsage(Class<?> srcClass, String message, List<? extends Object> params) {
+        assert message != null;
 
-        if (PhpVersion.PHP_5.equals(ProjectPropertiesSupport.getPhpVersion(phpProject))) {
-            return phpClass.getName();
+        LogRecord logRecord = new LogRecord(Level.INFO, message);
+        logRecord.setLoggerName(USG_LOGGER.getName());
+        logRecord.setResourceBundle(NbBundle.getBundle(srcClass));
+        logRecord.setResourceBundleName(srcClass.getPackage().getName() + ".Bundle"); // NOI18N
+        if (params != null) {
+            logRecord.setParameters(params.toArray(new Object[params.size()]));
         }
-        return phpClass.getFullyQualifiedName();
+        USG_LOGGER.log(logRecord);
     }
 }

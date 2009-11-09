@@ -479,18 +479,21 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
 
         setFocusTraversalPolicy(new java.awt.FocusTraversalPolicy() {
             public java.awt.Component getDefaultComponent(java.awt.Container focusCycleRoot){
-                return configList;
+                return testConnectionButton;
             }//end getDefaultComponent
 
             public java.awt.Component getFirstComponent(java.awt.Container focusCycleRoot){
-                return configList;
+                return testConnectionButton;
             }//end getFirstComponent
 
             public java.awt.Component getLastComponent(java.awt.Container focusCycleRoot){
-                return testConnectionButton;
+                return nameTextField;
             }//end getLastComponent
 
             public java.awt.Component getComponentAfter(java.awt.Container focusCycleRoot, java.awt.Component aComponent){
+                if(aComponent ==  testConnectionButton){
+                    return nameTextField;
+                }
                 if(aComponent ==  configList){
                     return addButton;
                 }
@@ -500,9 +503,12 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
                 if(aComponent ==  removeButton){
                     return testConnectionButton;
                 }
-                return configList;//end getComponentAfter
+                return testConnectionButton;//end getComponentAfter
             }
             public java.awt.Component getComponentBefore(java.awt.Container focusCycleRoot, java.awt.Component aComponent){
+                if(aComponent ==  nameTextField){
+                    return testConnectionButton;
+                }
                 if(aComponent ==  addButton){
                     return configList;
                 }
@@ -512,7 +518,7 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
                 if(aComponent ==  testConnectionButton){
                     return removeButton;
                 }
-                return testConnectionButton;//end getComponentBefore
+                return nameTextField;//end getComponentBefore
 
             }}
         );
@@ -646,18 +652,22 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
         }
 
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            assert value instanceof ConfigManager.Configuration;
             setName("ComboBox.listRenderer"); // NOI18N
             Color errorColor = UIManager.getColor("nb.errorForeground"); // NOI18N
-            ConfigManager.Configuration cfg = (ConfigManager.Configuration) value;
-            setText(cfg.getDisplayName());
+            boolean cfgValid = true;
+            if (value != null) {
+                assert value instanceof ConfigManager.Configuration;
+                ConfigManager.Configuration cfg = (ConfigManager.Configuration) value;
+                setText(cfg.getDisplayName());
+                cfgValid = cfg.isValid();
+            }
             setIcon(null);
             if (isSelected) {
                 setBackground(list.getSelectionBackground());
-                setForeground(cfg.isValid() ? list.getSelectionForeground() : errorColor);
+                setForeground(cfgValid ? list.getSelectionForeground() : errorColor);
             } else {
                 setBackground(list.getBackground());
-                setForeground(cfg.isValid() ? list.getForeground() : errorColor);
+                setForeground(cfgValid ? list.getForeground() : errorColor);
             }
             return this;
         }

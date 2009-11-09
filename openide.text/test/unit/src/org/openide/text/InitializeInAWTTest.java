@@ -39,14 +39,16 @@
  * made subject to such option by the copyright holder.
  */
 
-
 package org.openide.text;
-
 
 import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.lang.reflect.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -55,26 +57,20 @@ import javax.swing.ActionMap;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
-import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
-import javax.swing.text.StyledDocument;
 
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 
-import org.openide.awt.UndoRedo;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
-import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.actions.CallbackSystemAction;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
-
 
 /** Checks that the default impl of Documents UndoRedo really locks
  * the document first on all of its methods.
@@ -97,8 +93,6 @@ public class InitializeInAWTTest extends NbTestCase implements CloneableEditorSu
     private java.beans.VetoableChangeListener vetoL;
     private FindActionCheck find;
     
-    
-    /** Creates new UndoRedoTest */
     public InitializeInAWTTest(String m) {
         super(m);
     }
@@ -118,7 +112,10 @@ public class InitializeInAWTTest extends NbTestCase implements CloneableEditorSu
     protected void tearDown() throws Exception {
         find.assertAction();
     }
-    
+
+    protected @Override int timeOut() {
+        return 500000;
+    }
 
     public void testInitializeOnBackground() throws Exception {
         assertFalse("Running out of AWT", SwingUtilities.isEventDispatchThread());
@@ -252,12 +249,12 @@ public class InitializeInAWTTest extends NbTestCase implements CloneableEditorSu
         return date;
     }
     
-    public java.io.InputStream inputStream() throws java.io.IOException {
-        return new java.io.ByteArrayInputStream (content.getBytes ());
+    public InputStream inputStream() throws IOException {
+        return new ByteArrayInputStream (content.getBytes ());
     }
-    public java.io.OutputStream outputStream() throws java.io.IOException {
-        class ContentStream extends java.io.ByteArrayOutputStream {
-            public void close () throws java.io.IOException {
+    public OutputStream outputStream() throws IOException {
+        class ContentStream extends ByteArrayOutputStream {
+            public @Override void close() throws IOException {
                 super.close ();
                 content = new String (toByteArray ());
             }

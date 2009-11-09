@@ -72,10 +72,10 @@ public abstract class RemoteFileObjectBase extends FileObject {
         CndUtils.assertTrue(cache.exists());
         this.fileSystem = fileSystem;
         this.execEnv = execEnv;
-        this.remotePath = remotePath;
+        this.remotePath = RemoteFileSupport.fromFixedCaseSensitivePathIfNeeded(remotePath);
         this.cache = cache;        
-        int slashPos = remotePath.lastIndexOf('/');
-        nameExt = (slashPos < 0) ? "" : remotePath.substring(slashPos + 1);
+        int slashPos = this.remotePath.lastIndexOf('/');
+        nameExt = (slashPos < 0) ? "" : this.remotePath.substring(slashPos + 1);
     }
 
     public ExecutionEnvironment getExecutionEnvironment() {

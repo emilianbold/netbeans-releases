@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.cnd.apt.support;
 
-import antlr.TokenStream;
+import org.netbeans.modules.cnd.antlr.TokenStream;
 import java.io.Reader;
 import java.io.StringReader;
 import org.netbeans.modules.cnd.apt.impl.support.generated.APTLexer;

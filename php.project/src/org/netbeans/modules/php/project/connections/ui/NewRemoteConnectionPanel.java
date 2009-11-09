@@ -39,6 +39,9 @@
 
 package org.netbeans.modules.php.project.connections.ui;
 
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.FocusTraversalPolicy;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Vector;
@@ -172,11 +175,39 @@ public class NewRemoteConnectionPanel extends JPanel {
         connectionTypeLabel = new JLabel();
         connectionTypeComboBox = new JComboBox();
 
-        connectionNameLabel.setLabelFor(connectionNameTextField);
+        setFocusTraversalPolicy(new FocusTraversalPolicy() {
 
+
+
+            public Component getDefaultComponent(Container focusCycleRoot){
+                return connectionTypeComboBox;
+            }//end getDefaultComponent
+            public Component getFirstComponent(Container focusCycleRoot){
+                return connectionTypeComboBox;
+            }//end getFirstComponent
+            public Component getLastComponent(Container focusCycleRoot){
+                return connectionTypeComboBox;
+            }//end getLastComponent
+            public Component getComponentAfter(Container focusCycleRoot, Component aComponent){
+                if(aComponent ==  connectionNameTextField){
+                    return connectionTypeComboBox;
+                }
+                return connectionTypeComboBox;//end getComponentAfter
+            }
+            public Component getComponentBefore(Container focusCycleRoot, Component aComponent){
+                if(aComponent ==  connectionTypeComboBox){
+                    return connectionNameTextField;
+                }
+                return connectionTypeComboBox;//end getComponentBefore
+
+            }}
+        );
+
+        connectionNameLabel.setLabelFor(connectionNameTextField);
 
         Mnemonics.setLocalizedText(connectionNameLabel,NbBundle.getMessage(NewRemoteConnectionPanel.class, "NewRemoteConnectionPanel.connectionNameLabel.text")); // NOI18N
         connectionNameTextField.setText(NbBundle.getMessage(NewRemoteConnectionPanel.class, "NewRemoteConnectionPanel.connectionNameTextField.text")); // NOI18N
+
         connectionTypeLabel.setLabelFor(connectionTypeComboBox);
 
         Mnemonics.setLocalizedText(connectionTypeLabel, NbBundle.getMessage(NewRemoteConnectionPanel.class, "NewRemoteConnectionPanel.connectionTypeLabel.text"));

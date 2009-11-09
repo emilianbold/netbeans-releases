@@ -61,7 +61,7 @@ import org.openide.util.HelpCtx;
     }
 
     public HelpCtx getHelp() {
-        return HelpCtx.DEFAULT_HELP;
+        return new HelpCtx("NewRemoteDevelopmentHostWizardP1");
     }
 
     public boolean isValid() {

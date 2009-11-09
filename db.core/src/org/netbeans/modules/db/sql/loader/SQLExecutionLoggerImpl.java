@@ -94,12 +94,14 @@ public class SQLExecutionLoggerImpl implements SQLExecutionLogger {
                 String.valueOf(millisecondsToSeconds(executionTime)),
                 String.valueOf(errorCount)));
         writer.println(""); // NOI18N
+        writer.close();
     }
 
     public void cancel() {
         OutputWriter writer = inputOutput.getErr();
         writer.println(NbBundle.getMessage(SQLEditorSupport.class, "LBL_ExecutionCancelled"));
         writer.println(""); // NOI18N
+        writer.close();
     }
 
     public void close() {
@@ -126,6 +128,7 @@ public class SQLExecutionLoggerImpl implements SQLExecutionLogger {
         
         printLineColumn(writer, result.getStatementInfo(), true);
         writer.println(""); // NOI18N
+        writer.close();
     }
 
     private void writeSQLException(SQLException e, OutputWriter writer) {
@@ -155,6 +158,7 @@ public class SQLExecutionLoggerImpl implements SQLExecutionLogger {
         writer.println(successLine);
         printLineColumn(writer, result.getStatementInfo(), false);
         writer.println(""); // NOI18N
+        writer.close();
     }
 
     private void printLineColumn(OutputWriter writer, StatementInfo statementInfo, boolean hyperlink) {

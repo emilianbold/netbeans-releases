@@ -50,6 +50,7 @@ import org.netbeans.modules.dlight.spi.impl.IndicatorActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.AbstractAction;
@@ -69,6 +70,7 @@ import org.netbeans.modules.dlight.api.impl.IndicatorConfigurationAccessor;
 import org.netbeans.modules.dlight.spi.impl.IndicatorAccessor;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
+import org.openide.util.Lookup;
 
 /**
  * Indicator is a small, graphical, real-time monitor
@@ -91,31 +93,51 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
     private final IndicatorMetadata metadata;
     private final int position;
     private String toolID;
+    private String toolDecsription;
+    private String actionTooltip;
     private String actionDisplayName;
     private final List<IndicatorActionListener> listeners;
     private final TickerListener tickerListener;
     private IndicatorRepairActionProvider indicatorRepairActionProvider = null;
     private DLightTarget target;
     private boolean visible;
+    private final Action defaultAction;
+    private final Collection<Column> columnsProvided = new ArrayList<Column>();
 
     static {
         IndicatorAccessor.setDefault(new IndicatorAccessorImpl());
     }
     private List<VisualizerConfiguration> visualizerConfigurations;
 
-    protected final void notifyListeners(String  vcID){
-        for (VisualizerConfiguration vc : visualizerConfigurations){
-            if (vc.getID().equals(vcID)){
+    protected final void notifyListeners(String vcID) {
+        for (VisualizerConfiguration vc : visualizerConfigurations) {
+            if (vc.getID().equals(vcID)) {
                 notifyListeners(vc);
             }
         }
     }
 
-    private void notifyListeners(VisualizerConfiguration vc){
+    protected final String getDescription() {
+        return toolDecsription;
+    }
+
+    protected final String getActionTooltip() {
+        if (actionTooltip == null){
+            return null;
+        }
+        StringBuilder st = new StringBuilder();
+        st.append("<html><body>");//NOI18N
+        st.append(actionTooltip.replaceAll("\n", "<br>"));//NOI18N
+        st.append("</body></html>");//NOI18N
+        return st.toString();
+    }
+
+    private void notifyListeners(VisualizerConfiguration vc) {
         for (IndicatorActionListener l : listeners) {
             l.openVisualizerForIndicator(this, vc);
         }
     }
+
     protected final void notifyListeners() {
         for (IndicatorActionListener l : listeners) {
             l.mouseClickedOnIndicator(this);
@@ -128,6 +150,7 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
         this.visualizerConfigurations = IndicatorConfigurationAccessor.getDefault().getVisualizerConfigurations(configuration);
         this.position = IndicatorConfigurationAccessor.getDefault().getIndicatorPosition(configuration);
         this.actionDisplayName = IndicatorConfigurationAccessor.getDefault().getActionDisplayName(configuration);
+        this.actionTooltip = IndicatorConfigurationAccessor.getDefault().getActionTooltip(configuration);
         tickerListener = new TickerListener() {
 
             public void tick() {
@@ -136,17 +159,29 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
         };
 
         this.visible = configuration.isVisible();
-    }
-
-    //public abstract Action[]  getActions();
-    public final Action getDefaultAction() {
-        AbstractAction action = new AbstractAction(actionDisplayName) {
+        setIndicatorActionsProviderContext(Lookup.EMPTY);
+        defaultAction = new AbstractAction(actionDisplayName) {
 
             public void actionPerformed(ActionEvent e) {
                 notifyListeners();
             }
         };
-        return action;
+        defaultAction.putValue(Action.NAME, actionDisplayName);
+        if (actionTooltip != null){
+            defaultAction.putValue(Action.SHORT_DESCRIPTION, getActionTooltip());
+        }
+    }
+
+
+    /**
+     * This method will be
+     * @param context
+     */
+    public abstract void setIndicatorActionsProviderContext(Lookup context);
+
+    //public abstract Action[]  getActions();
+    public final Action getDefaultAction() {
+        return defaultAction;
     }
 
     protected abstract void repairNeeded(boolean needed);
@@ -200,11 +235,21 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
         synchronized (lock) {
             this.target = target;
             IndicatorTickerService.getInstance().subsribe(tickerListener);
+            targetStarted();
         }
+    }
+
+    protected void targetStarted(){
+
+    }
+
+    protected final Collection<Column> getColumnsProvided(){
+        return columnsProvided;
     }
 
     private void targetFinished(DLightTarget target) {
         synchronized (lock) {
+            columnsProvided.clear();
             IndicatorTickerService.getInstance().unsubscribe(tickerListener);
         }
     }
@@ -252,7 +297,6 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
 //                }
 //                component.setBorder(BorderFactory.createEmptyBorder(PADDING, PADDING, PADDING, PADDING));
 //            }
-
             @Override
             public void mouseClicked(MouseEvent e) {
                 component.requestFocus();
@@ -261,7 +305,8 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
             }
         });
         final Color c = component.getBackground();
-        final Color selectionColor = c == null ? (UIManager.getColor("Panel.background") == null ? c : UIManager.getColor("Panel.background").darker()) : c.darker();//UIManager.getColor("TextField.selectionBackground");
+        final Color selectionColor = c == null ? UIManager.getColor("Panel.background") : c.darker(); // NOI18N
+
         component.addFocusListener(new FocusListener() {
 
             public void focusGained(FocusEvent e) {
@@ -278,12 +323,17 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
                 iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "enter");//NOI18N
 
                 ActionMap aMap = rootPane.getActionMap();
-                aMap.put("enter", new AbstractAction() {//NOI18N
+                if (component.getActionMap().get("enter") != null){//NOI18N
+                    aMap.put("enter", component.getActionMap().get("enter"));//NOI18N
+                }else{
+                    //let to re-define in child
+                    aMap.put("enter", new AbstractAction() {//NOI18N
 
-                    public void actionPerformed(ActionEvent e) {
-                        notifyListeners();
-                    }
-                });
+                        public void actionPerformed(ActionEvent e) {
+                            notifyListeners();
+                        }
+                    });
+                }
             }
 
             public void focusLost(FocusEvent e) {
@@ -300,6 +350,22 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
 
     void setToolID(String toolID) {
         this.toolID = toolID;
+    }
+
+    private final void setToolDescription(String toolDescription) {
+        this.toolDecsription = toolDescription;
+        if (toolDescription == null){
+            return;
+        }
+        final JComponent component = getComponent();
+        if (component == null) {
+            return;
+        }
+        StringBuilder st = new StringBuilder();
+        st.append("<html><body>");//NOI18N
+        st.append(getDescription().replaceAll("\n", "<br>"));//NOI18N
+        st.append("</body></html><");//NOI18N
+        component.setToolTipText(st.toString());
     }
 
     final List<VisualizerConfiguration> getVisualizerConfigurations() {
@@ -332,6 +398,10 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
         return metadata.getColumns();
     }
 
+    final void columnProvided(Column c){
+        columnsProvided.add(c);
+    }
+
     /**
      * Return column name for the column with index <code>idx</code>
      * @param idx index of column to get name of
@@ -344,7 +414,7 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
         Column col = metadata.getColumns().get(idx);
         return col.getColumnName();
     }
-
+    
     /**
      * Returns component this indicator will paint data at
      * @return component this indicator will paint own data at
@@ -399,6 +469,12 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
         @Override
         public void setRepairActionProviderFor(Indicator<?> indicator, IndicatorRepairActionProvider repairActionProvider) {
             indicator.setRepairActionProviderFor(repairActionProvider);
+        }
+
+        @Override
+        public void setToolDescription(Indicator<?> ind, String toolDescription) {
+            ind.setToolDescription(toolDescription);
+
         }
     }
 }

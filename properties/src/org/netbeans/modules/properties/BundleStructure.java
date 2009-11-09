@@ -336,7 +336,7 @@ public class BundleStructure {
      *
      * @param localizationFile name of file entry without extension
      *        corresponding to the desired specific localization
-     * @param key Java string (unescaped). See clarifications
+     * @param key the key of the item in the model. See clarifications
      * {@link PropertiesStructure#getItem(java.lang.String) here}.
      * @return a property item if is it possible, otherwise {@code null}.
      */

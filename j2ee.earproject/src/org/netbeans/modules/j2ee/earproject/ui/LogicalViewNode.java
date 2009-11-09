@@ -70,7 +70,7 @@ import org.openide.util.lookup.Lookups;
 public final class LogicalViewNode extends AbstractNode {
     
     static final String J2EE_MODULES_NAME = "j2ee.modules"; // NOI18N    
-    private static Image J2EE_MODULES_BADGE = ImageUtilities.loadImage( "org/netbeans/modules/j2ee/earproject/ui/resources/application_16.gif", true ); // NOI18N
+    private Image J2EE_MODULES_BADGE = ImageUtilities.loadImage( "org/netbeans/modules/j2ee/earproject/ui/resources/application_16.gif", true ); // NOI18N
     private static Icon folderIconCache;
     private static Icon openedFolderIconCache;	
     private final AntProjectHelper model;

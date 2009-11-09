@@ -44,6 +44,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -102,8 +103,8 @@ public class ProjectRunnerImplTest {
     @Test
     public void testComputeProperties1() throws MalformedURLException {
         ClassPath cp = ClassPathSupport.createClassPath(new URL("file:///E/"));
-        checkProperties(Arrays.asList("classname", "A", "platform.java", "J", "execute.classpath", cp, "work.dir", "W"),
-                        Arrays.asList("classname", "A", "platform.java", "J", "classpath", "/E", "work.dir", "W", "application.args", "", "run.jvmargs", ""));
+        checkProperties(Arrays.asList("classname", "A", "platform.java", "J", "execute.classpath", cp, "work.dir", "W","boot.classpath",cp,"runtime.encoding",Charset.defaultCharset()),
+                        Arrays.asList("classname", "A", "platform.java", "J", "classpath", "/E", "work.dir", "W", "application.args", "", "run.jvmargs", "", "platform.bootcp", "/E","encoding",Charset.defaultCharset().name()));
     }
 
     @Test

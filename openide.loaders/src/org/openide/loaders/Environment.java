@@ -99,7 +99,7 @@ public final class Environment extends Object {
             Environment.Provider ep = (Environment.Provider) it.next();
             Lookup lookup = ep.getEnvironment(obj);
             if (lookup != null) {
-                Context ctx = (Context) lookup.lookup(Context.class);
+                Context ctx = lookup.lookup(Context.class);
                 if (ctx != null) return ctx;
             }
         }

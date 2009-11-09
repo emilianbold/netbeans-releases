@@ -73,6 +73,7 @@ import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.ProgressPanel;
@@ -107,7 +108,7 @@ import org.openide.util.NbBundle;
  * 
  * @author Martin Adamek, Erno Mononen
  */ 
-    public final class EjbFacadeWizardIterator implements WizardDescriptor.InstantiatingIterator {
+    public final class EjbFacadeWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
     
     private static final String WIZARD_PANEL_CONTENT_DATA = WizardDescriptor.PROP_CONTENT_DATA; // NOI18N
 
@@ -137,6 +138,19 @@ import org.openide.util.NbBundle;
     }
     
     public Set instantiate() throws IOException {
+        assert true : "should never be called, instantiate(ProgressHandle) should be called instead";
+            return null;
+    }
+
+    public Set instantiate(ProgressHandle handle) throws IOException {
+        try {
+            return instantiateWProgress(handle);
+        } finally {
+            handle.finish();
+        }
+    }
+
+    private Set instantiateWProgress(ProgressHandle handle) throws IOException {
         this.project = Templates.getProject(wizard);
         initEntityNames();
         @SuppressWarnings("unchecked")
@@ -148,8 +162,13 @@ import org.openide.util.NbBundle;
         String pkg = panel.getPackage();
         
         PersistenceUnit persistenceUnit = (PersistenceUnit) wizard.getProperty(WizardProperties.PERSISTENCE_UNIT);
+        int stepsCount = entities.size() + (persistenceUnit!=null ? 1 : 0);
+        int step = 0;
+        handle.start(stepsCount);
+
         if (persistenceUnit != null) {
             try {
+                handle.progress(NbBundle.getMessage(EjbFacadeWizardIterator.class, "MSG_AddPU"), step++);
                 ProviderUtil.addPersistenceUnit(persistenceUnit, project);
             } catch (InvalidPersistenceXmlException ipx) {
                 // just log for debugging purposes, at this point the user has
@@ -159,6 +178,7 @@ import org.openide.util.NbBundle;
         }
         
         for (String entity : entities) {
+            handle.progress(NbBundle.getMessage(EjbFacadeWizardIterator.class, "MSG_GenSessionBean", entity), step++);
             createdFiles.addAll(generate(targetFolder, entity, pkg, panel.isRemote(), panel.isLocal(), false));
         }
 
@@ -470,6 +490,8 @@ import org.openide.util.NbBundle;
                     jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i));
                     // Sets steps names for a panel
                     jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
+                    //set accessible description
+                    jc.getAccessibleContext().setAccessibleDescription( (i+stepsStartPos)<steps.length ? steps[i+stepsStartPos] : jc.getName() );
                     // Turn on subtitle creation on each step
                     jc.putClientProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE);
                     // Show steps on the left side with the image on the background

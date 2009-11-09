@@ -331,18 +331,18 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         
         item = menu.add(new OpenInEditorAction());
         Mnemonics.setLocalizedText(item, item.getText());
-        menu.add(new JSeparator());
+        menu.addSeparator();
         item = menu.add(new DiffAction(loc.getString("CTL_PopupMenuItem_Diff"), context)); // NOI18N
         Mnemonics.setLocalizedText(item, item.getText());
         item = menu.add(new CommitAction(loc.getString("CTL_PopupMenuItem_Commit"), context)); // NOI18N
         Mnemonics.setLocalizedText(item, item.getText());
         
-        menu.add(new JSeparator());        
+        menu.addSeparator();
 
         item = menu.add(new ConflictResolvedAction(loc.getString("CTL_PopupMenuItem_MarkResolved"), context)); // NOI18N
         Mnemonics.setLocalizedText(item, item.getText());
                 
-        menu.add(new JSeparator());
+        menu.addSeparator();
 
         AnnotateAction tempA = new AnnotateAction(loc.getString("CTL_PopupMenuItem_ShowAnnotations"), context); // NOI18N
         if (tempA.visible(null)) {
@@ -350,7 +350,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         }
         item = menu.add(tempA);
         Mnemonics.setLocalizedText(item, item.getText());
-        menu.add(new JSeparator());
+        menu.addSeparator();
 
         boolean allLocallyDeleted = true;
         FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();

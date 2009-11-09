@@ -371,12 +371,6 @@ public class PullAction extends ContextAction {
             if (!bNoChanges) {
                 PushAction.notifyUpdatedFiles(root, list);
                 HgUtils.forceStatusRefreshProject(ctx);
-                // refresh filesystem to take account of deleted files.
-                FileObject rootObj = FileUtil.toFileObject(root);
-                try {
-                    rootObj.getFileSystem().refresh(true);
-                } catch (java.lang.Exception ex) {
-                }
             }
             
         } catch (HgException ex) {

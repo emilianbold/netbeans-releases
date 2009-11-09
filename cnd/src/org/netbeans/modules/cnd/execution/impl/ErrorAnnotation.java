@@ -73,7 +73,7 @@ public final class ErrorAnnotation extends Annotation implements PropertyChangeL
     /** Returns the tooltip text for this annotation.
      * @return  tooltip for this annotation */
     public String getShortDescription() {
-        return NbBundle.getMessage(OutputWindowWriter.class, "HINT_CompilerError"); // NOI18N
+        return NbBundle.getMessage(ErrorAnnotation.class, "HINT_CompilerError"); // NOI18N
     }
 
     public void attach(Line line) {

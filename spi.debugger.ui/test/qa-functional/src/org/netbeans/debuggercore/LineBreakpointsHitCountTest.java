@@ -41,6 +41,7 @@ package org.netbeans.debuggercore;
 
 import java.awt.Component;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import javax.swing.JTable;
 import junit.framework.Test;
 import junit.textui.TestRunner;
@@ -106,124 +107,119 @@ public class LineBreakpointsHitCountTest extends DebuggerTestCase{
         System.out.println("########  " + getName() + "  ####### ");
     }
 
-     public void testLineBreakpointsHitCount() throws Throwable {
-        try {
-            Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
-            new OpenAction().performAPI(beanNode);
-            EditorOperator eo = new EditorOperator("MemoryView.java");
-            new EventTool().waitNoEvent(500);
-            //toggle breakpoints
-            Utilities.toggleBreakpoint(eo, 64);
-            Utilities.toggleBreakpoint(eo, 65);
-            Utilities.toggleBreakpoint(eo, 66);
-            //set hit conditions
-            Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
-            JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.breakpointsViewTitle));
-            new JPopupMenuOperator(jTableOperator.callPopupOnCell(0, 0)).pushMenuNoBlock("Properties");
-            NbDialogOperator dialog = new NbDialogOperator(Utilities.customizeBreakpointTitle);
-            new JCheckBoxOperator(dialog, 1).changeSelection(true);
-            new JComboBoxOperator(dialog, 0).selectItem(Bundle.getString("org.netbeans.modules.debugger.jpda.ui.breakpoints.Bundle", "ConditionsPanel.cbWhenHitCount.equals"));
-            new JTextFieldOperator(dialog, 2).setText("45");
-            dialog.ok();
+     public void testLineBreakpointsHitCount() throws IllegalAccessException, InvocationTargetException {
+        Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
+        new OpenAction().performAPI(beanNode);
+        EditorOperator eo = new EditorOperator("MemoryView.java");
+        new EventTool().waitNoEvent(500);
+        //toggle breakpoints
+        Utilities.toggleBreakpoint(eo, 64);
+        Utilities.toggleBreakpoint(eo, 65);
+        Utilities.toggleBreakpoint(eo, 66);
+        //set hit conditions
+        Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
+        JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.breakpointsViewTitle));
+        new JPopupMenuOperator(jTableOperator.callPopupOnCell(0, 0)).pushMenuNoBlock("Properties");
+        NbDialogOperator dialog = new NbDialogOperator(Utilities.customizeBreakpointTitle);
+        new JCheckBoxOperator(dialog, 1).changeSelection(true);
+        new JComboBoxOperator(dialog, 0).selectItem(Bundle.getString("org.netbeans.modules.debugger.jpda.ui.breakpoints.Bundle", "ConditionsPanel.cbWhenHitCount.equals"));
+        new JTextFieldOperator(dialog, 2).setText("45");
+        dialog.ok();
 
-            new JPopupMenuOperator(jTableOperator.callPopupOnCell(1, 0)).pushMenuNoBlock("Properties");
-            dialog = new NbDialogOperator(Utilities.customizeBreakpointTitle);
-            new JCheckBoxOperator(dialog, 1).changeSelection(true);
-            new JComboBoxOperator(dialog, 0).selectItem(Bundle.getString("org.netbeans.modules.debugger.jpda.ui.breakpoints.Bundle", "ConditionsPanel.cbWhenHitCount.greater"));
-            new JTextFieldOperator(dialog, 2).setText("48");
-            dialog.ok();
+        new JPopupMenuOperator(jTableOperator.callPopupOnCell(1, 0)).pushMenuNoBlock("Properties");
+        dialog = new NbDialogOperator(Utilities.customizeBreakpointTitle);
+        new JCheckBoxOperator(dialog, 1).changeSelection(true);
+        new JComboBoxOperator(dialog, 0).selectItem(Bundle.getString("org.netbeans.modules.debugger.jpda.ui.breakpoints.Bundle", "ConditionsPanel.cbWhenHitCount.greater"));
+        new JTextFieldOperator(dialog, 2).setText("48");
+        dialog.ok();
 
-            new JPopupMenuOperator(jTableOperator.callPopupOnCell(2, 0)).pushMenuNoBlock("Properties");
-            dialog = new NbDialogOperator(Utilities.customizeBreakpointTitle);
-            new JCheckBoxOperator(dialog, 1).changeSelection(true);
-            new JComboBoxOperator(dialog, 0).selectItem(Bundle.getString("org.netbeans.modules.debugger.jpda.ui.breakpoints.Bundle", "ConditionsPanel.cbWhenHitCount.multiple"));
-            new JTextFieldOperator(dialog, 2).setText("47");
-            dialog.ok();
+        new JPopupMenuOperator(jTableOperator.callPopupOnCell(2, 0)).pushMenuNoBlock("Properties");
+        dialog = new NbDialogOperator(Utilities.customizeBreakpointTitle);
+        new JCheckBoxOperator(dialog, 1).changeSelection(true);
+        new JComboBoxOperator(dialog, 0).selectItem(Bundle.getString("org.netbeans.modules.debugger.jpda.ui.breakpoints.Bundle", "ConditionsPanel.cbWhenHitCount.multiple"));
+        new JTextFieldOperator(dialog, 2).setText("47");
+        dialog.ok();
 
-            //start debugging
-            Utilities.startDebugger();
-            //check values
-            StringComparator comp = new StringComparator() {
+        //start debugging
+        Utilities.startDebugger();
+        //check values
+        StringComparator comp = new StringComparator() {
 
-                public boolean equals(String arg0, String arg1) {
-                    return arg0.equals(arg1);
+            public boolean equals(String arg0, String arg1) {
+                return arg0.equals(arg1);
+            }
+        };
+        Utilities.waitStatusText("Thread main stopped at MemoryView.java:64");
+        Utilities.showDebuggerView(Utilities.variablesViewTitle);
+        jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.variablesViewTitle));
+        TreeTableOperator treeTableOperator = new TreeTableOperator((javax.swing.JTable) jTableOperator.getSource());
+        final int row = treeTableOperator.findCellRow("i", comp);
+
+        // wait for the values to evaluate
+        treeTableOperator.waitState(new ComponentChooser() {
+            public boolean checkComponent(Component comp) {
+
+                Property prop = (Property)((JTable)comp).getValueAt(row, 2);
+                boolean result = false;
+
+                try
+                {
+                    result = ! (prop.getValue().toString().toLowerCase().contains("evaluating"));
                 }
-            };
-            Utilities.waitStatusText("Thread main stopped at MemoryView.java:64");
-            Utilities.showDebuggerView(Utilities.variablesViewTitle);
-            jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.variablesViewTitle));
-            TreeTableOperator treeTableOperator = new TreeTableOperator((javax.swing.JTable) jTableOperator.getSource());
-            final int row = treeTableOperator.findCellRow("i", comp);
-
-            // wait for the values to evaluate
-            treeTableOperator.waitState(new ComponentChooser() {
-                public boolean checkComponent(Component comp) {
-
-                    Property prop = (Property)((JTable)comp).getValueAt(row, 2);
-                    boolean result = false;
-
-                    try
-                    {
-                        result = ! (prop.getValue().toString().toLowerCase().contains("evaluating"));
-                    }
-                    catch (Exception e)
-                    {
-                        result = false;
-                    }
-
-                    return result;
+                catch (Exception e)
+                {
+                    result = false;
                 }
-                public String getDescription() {
-                    return "TreeTable contains any rows.";
-                }
-            });
 
-            org.openide.nodes.Node.Property property = (org.openide.nodes.Node.Property) treeTableOperator.getValueAt(row, 2);
-            assertEquals("44", property.getValue());
+                return result;
+            }
+            public String getDescription() {
+                return "TreeTable contains any rows.";
+            }
+        });
+
+        org.openide.nodes.Node.Property property = (org.openide.nodes.Node.Property) treeTableOperator.getValueAt(row, 2);
+        assertEquals("44", property.getValue());
 /* THIS PART IS ABOUT TO BE REVIEWED */
 //TODO: Review this
-            /*
-            new ContinueAction().perform();
+        /*
+        new ContinueAction().perform();
 
 
 
 
-            try {
-                   System.out.println("Debugger Console Status: " + Utilities.getDebuggerConsoleStatus());
-                    System.out.println("Last Line is: " + Utilities.getConsoleLastLineText());
+        try {
+               System.out.println("Debugger Console Status: " + Utilities.getDebuggerConsoleStatus());
+                System.out.println("Last Line is: " + Utilities.getConsoleLastLineText());
 
-                Utilities.waitStatusText("Thread main stopped at MemoryView.java:66");
-            } catch (Throwable e) {
-                if (!Utilities.checkConsoleLastLineForText(Utilities.runningStatusBarText)) {
-                    System.err.println(e.getMessage());
-                    //System.out.println("Debugger Console Status: " + Utilities.getDebuggerConsoleStatus());
-                    //System.out.println("Last Line is: " + Utilities.getConsoleLastLineText());
-                    throw e;
-                }
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:66");
+        } catch (Throwable e) {
+            if (!Utilities.checkConsoleLastLineForText(Utilities.runningStatusBarText)) {
+                System.err.println(e.getMessage());
+                //System.out.println("Debugger Console Status: " + Utilities.getDebuggerConsoleStatus());
+                //System.out.println("Last Line is: " + Utilities.getConsoleLastLineText());
+                throw e;
             }
-
-            //Utilities.waitStatusText("Thread main stopped at MemoryView.java:66", 10000);
-            Utilities.showDebuggerView(Utilities.localVarsViewTitle);
-            jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.localVarsViewTitle));
-            treeTableOperator = new TreeTableOperator((javax.swing.JTable) jTableOperator.getSource());
-            row = treeTableOperator.findCellRow("i", comp);
-            property = (org.openide.nodes.Node.Property) treeTableOperator.getValueAt(row, 2);
-            assertEquals("46", property.getValue());
-            new ContinueAction().perform();
-
-            Utilities.waitStatusText("Thread main stopped at MemoryView.java:65");
-            Utilities.showDebuggerView(Utilities.localVarsViewTitle);
-            jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.localVarsViewTitle));
-            treeTableOperator = new TreeTableOperator((javax.swing.JTable) jTableOperator.getSource());
-            row = treeTableOperator.findCellRow("i", comp);
-            property = (org.openide.nodes.Node.Property) treeTableOperator.getValueAt(row, 2);
-            assertEquals("47", property.getValue());
-            */
-            
-        } catch (Throwable th) {
-            Utilities.captureScreen(this);
-            throw th;
         }
+
+        //Utilities.waitStatusText("Thread main stopped at MemoryView.java:66", 10000);
+        Utilities.showDebuggerView(Utilities.localVarsViewTitle);
+        jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.localVarsViewTitle));
+        treeTableOperator = new TreeTableOperator((javax.swing.JTable) jTableOperator.getSource());
+        row = treeTableOperator.findCellRow("i", comp);
+        property = (org.openide.nodes.Node.Property) treeTableOperator.getValueAt(row, 2);
+        assertEquals("46", property.getValue());
+        new ContinueAction().perform();
+
+        Utilities.waitStatusText("Thread main stopped at MemoryView.java:65");
+        Utilities.showDebuggerView(Utilities.localVarsViewTitle);
+        jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.localVarsViewTitle));
+        treeTableOperator = new TreeTableOperator((javax.swing.JTable) jTableOperator.getSource());
+        row = treeTableOperator.findCellRow("i", comp);
+        property = (org.openide.nodes.Node.Property) treeTableOperator.getValueAt(row, 2);
+        assertEquals("47", property.getValue());
+        */
+
     }
       protected void setBreakpointType(NbDialogOperator dialog, String type) {
         new JComboBoxOperator(dialog, 0).selectItem("Java");

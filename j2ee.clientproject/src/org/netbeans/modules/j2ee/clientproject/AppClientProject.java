@@ -156,7 +156,7 @@ import org.w3c.dom.Text;
 )
 public final class AppClientProject implements Project, AntProjectListener, FileChangeListener {
     
-    private static final Icon CAR_PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/j2ee/clientproject/ui/resources/appclient.gif", false); // NOI18N
+    private final Icon CAR_PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/j2ee/clientproject/ui/resources/appclient.gif", false); // NOI18N
     
     private final AuxiliaryConfiguration aux;
     private final AntProjectHelper helper;
@@ -796,8 +796,8 @@ public final class AppClientProject implements Project, AntProjectListener, File
             File buildProperties = new File(System.getProperty("netbeans.user"), "build.properties"); // NOI18N
             ep.setProperty("user.properties.file", buildProperties.getAbsolutePath()); //NOI18N
 
-            // set jaxws.endorsed.dir property (for endorsed mechanism to be used with wsimport, wsgen)
-            WSUtils.setJaxWsEndorsedDirProperty(ep);
+            //remove jaxws.endorsed.dir property
+            ep.remove("jaxws.endorsed.dir");
 
             // #134642 - use Ant task from copylibs library
             SharabilityUtility.makeSureProjectHasCopyLibsLibrary(helper, refHelper);

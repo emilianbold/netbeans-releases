@@ -46,6 +46,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.dlight.api.datafilter.DataFilterManager;
 import org.netbeans.modules.dlight.management.api.DLightManager;
 import org.netbeans.modules.dlight.management.api.DLightSession;
 import org.netbeans.modules.dlight.management.api.DLightSessionListener;
@@ -287,6 +288,7 @@ public final class VisualizerTopComponentTopComponent extends TopComponent imple
         if (viewComponent != view.getComponent()){//nothing to do
             return;
         }
+        toolbarArea.update((DataFilterManager) null);
         performanceMonitorViewsArea.remove( view.getComponent());
         setName(NbBundle.getMessage(VisualizerTopComponentTopComponent.class, "RunMonitorDetailes"));
         repaint();

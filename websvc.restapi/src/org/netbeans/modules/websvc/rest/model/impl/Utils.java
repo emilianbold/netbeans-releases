@@ -75,6 +75,10 @@ public class Utils {
         return getAnnotationValue(element, RestConstants.PRODUCE_MIME, VALUE);
     }
 
+    public static String getApplicationPath(Element element) {
+        return getAnnotationValue(element, RestConstants.APPLICATION_PATH , VALUE);
+    }
+
     public static String getHttpMethod(Element element) {
         if (hasAnnotationType(element, RestConstants.GET)) {
             return RestConstants.GET_ANNOTATION;
@@ -175,6 +179,16 @@ public class Utils {
                         break;
                     }
                 }
+            }
+        }
+        return isRest;
+    }
+    
+    static boolean isRestApplication(TypeElement type, AnnotationModelHelper helper) {
+        boolean isRest = false;
+        if (type.getKind() != ElementKind.INTERFACE) { // don't consider interfaces
+            if (helper.hasAnnotation(type.getAnnotationMirrors(), RestConstants.PATH_ANNOTATION)) { // NOI18N
+                isRest = true;
             }
         }
         return isRest;

@@ -151,7 +151,7 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="commonfiles/Info.plist" filtering="true" tofile="${module.builddir}/Info.plist">
             <filterset>
                 <filter token="INSTALLDIR" value="${app.name}/Contents/Resources/NetBeans"/>
-                <filter token="BUNDLE" value="netbeans.ide.${module.name}"/>
+                <filter token="BUNDLE" value="org.netbeans.ide.${module.name}"/>
             </filterset>
         </copy>
         

@@ -40,7 +40,9 @@
 package org.netbeans.modules.cnd.debugger.common.breakpoints.types;
 
 import javax.swing.JComponent;
+import org.netbeans.modules.cnd.debugger.common.EditorContextBridge;
 import org.netbeans.modules.cnd.debugger.common.breakpoints.customizers.AddressBreakpointPanel;
+import org.netbeans.modules.cnd.debugger.common.disassembly.DisassemblyService;
 import org.netbeans.spi.debugger.ui.BreakpointType;
 import org.openide.util.NbBundle;
 
@@ -73,7 +75,12 @@ public class AddressBreakpointType extends BreakpointType {
      *  C, C++, or Fortran file)
      */
     public boolean isDefault() {	
-	return false;	// do false for now because FunctionBreakpointType currently
-			// overrides this anyway.
+        // check if we're in disassembly
+        DisassemblyService disProvider = EditorContextBridge.getCurrentDisassemblyService();
+        String url = EditorContextBridge.getCurrentURL();
+        if (url == null || url.length() == 0) {
+            url = EditorContextBridge.getMostRecentURL();
+        }
+	return disProvider != null && disProvider.isDis(url);
     }
 }

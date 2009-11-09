@@ -119,10 +119,13 @@ public class NotifierPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(cbRememberPwd, org.openide.util.NbBundle.getMessage(NotifierPanel.class, "NotifierPanel.cbRememberPwd.text")); // NOI18N
 
+        jLabel1.setLabelFor(tfHost);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(NotifierPanel.class, "NotifierPanel.jLabel1.text")); // NOI18N
 
+        jLabel2.setLabelFor(tfPassword);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(NotifierPanel.class, "NotifierPanel.jLabel2.text")); // NOI18N
 
+        jLabel0.setLabelFor(tfUser);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel0, org.openide.util.NbBundle.getMessage(NotifierPanel.class, "NotifierPanel.jLabel0.text")); // NOI18N
 
         tfUser.setBackground(javax.swing.UIManager.getDefaults().getColor("Panel.background") /*NOI18N*/);

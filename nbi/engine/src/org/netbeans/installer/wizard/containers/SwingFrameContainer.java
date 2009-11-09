@@ -260,7 +260,7 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
                     return;
                 }
                 final NbiButton button = currentUi.getDefaultEscapeButton();
-                if (button != null) {
+                if (button != null && button.isEnabled()) {
                     if (button.equals(getHelpButton())) {
                         currentUi.evaluateHelpButtonClick();
                     }

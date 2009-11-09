@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.javacard.project;
 
-import org.netbeans.modules.javacard.api.ProjectKind;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -54,6 +53,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import org.netbeans.modules.javacard.project.customizer.AppletProjectProperties;
+import org.netbeans.modules.javacard.project.customizer.ClassicAppletProjectProperties;
+import org.netbeans.modules.javacard.project.customizer.WebProjectProperties;
+import org.netbeans.modules.javacard.spi.ProjectKind;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import org.openide.util.HelpCtx;
@@ -85,7 +88,7 @@ public class JCCustomizerProvider implements CustomizerProvider {
             assert realProject != null;
             ProjectKind kind = realProject.kind();
             assert kind != null;
-            uiProperties = kind.createProjectProperties(
+            uiProperties = createProjectProperties(kind,
                     realProject,
                     evaluator, antHelper);
             Lookup context = Lookups.fixed(project, uiProperties);
@@ -135,6 +138,24 @@ public class JCCustomizerProvider implements CustomizerProvider {
                 dlg.setVisible(false);
                 dlg.dispose();
             }
+        }
+    }
+
+    public static JCProjectProperties createProjectProperties(ProjectKind kind, 
+            JCProject project, PropertyEvaluator evaluator,
+            AntProjectHelper antHelper) {
+        switch (kind) {
+            case WEB:
+                return new WebProjectProperties(project, evaluator, antHelper);
+            case EXTENDED_APPLET:
+                return new AppletProjectProperties(project);
+            case CLASSIC_APPLET:
+            case CLASSIC_LIBRARY:
+                return new ClassicAppletProjectProperties(project);
+            case EXTENSION_LIBRARY:
+                return new JCProjectProperties(project);
+            default:
+                throw new AssertionError();
         }
     }
 }

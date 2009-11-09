@@ -46,7 +46,6 @@ import com.sun.javacard.apduio.CadT0Client;
 import com.sun.javacard.apduio.CadT1Client;
 import com.sun.javacard.apduio.CadTransportException;
 import java.io.IOException;
-import org.netbeans.modules.javacard.card.ReferenceImplementation;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -55,6 +54,10 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.WeakHashMap;
+import org.netbeans.modules.javacard.spi.capabilities.ApduSupport;
+import org.netbeans.modules.javacard.spi.Card;
+import org.netbeans.modules.javacard.spi.capabilities.PortKind;
+import org.netbeans.modules.javacard.spi.capabilities.PortProvider;
 import org.openide.util.NbBundle;
 
 /**
@@ -74,7 +77,7 @@ public class APDUSender {
     private boolean extended; // off by default
     private boolean contactless; // contacted by default
 
-    private ReferenceImplementation server;
+    private Card card;
     
     static APDUSender getSender(ShellPanel shellPanel) {
         APDUSender sender = senders.get(shellPanel);
@@ -90,7 +93,7 @@ public class APDUSender {
     }
 
     private APDUSender(ShellPanel shellPanel) {
-        server = (ReferenceImplementation) shellPanel.getServer();
+        card = shellPanel.getCard();
     }
 
     public String setExtended(boolean yesNo) {
@@ -122,12 +125,25 @@ public class APDUSender {
     }
 
     public String powerupContacted() throws IOException, CadTransportException {
-        contactedSocket = new Socket("localhost", Integer.parseInt(server.getContactedPort()));
+        PortProvider prov = card.getCapability(PortProvider.class);
+        ApduSupport apdu = card.getCapability(ApduSupport.class);
+        int contactedPort = prov.getPort(PortKind.CONTACTED);
+        contactedSocket = new Socket(prov.getHost(), contactedPort);
         contactedSocket.setTcpNoDelay(true);
-        if("T=0".equals(server.getContactedProtocol())) {
-            contactedInterface = new CadT0Client(new BufferedInputStream(contactedSocket.getInputStream()), new BufferedOutputStream(contactedSocket.getOutputStream()));
-        } else {
-            contactedInterface = new CadT1Client(new BufferedInputStream(contactedSocket.getInputStream()), new BufferedOutputStream(contactedSocket.getOutputStream()));
+        switch (apdu.getContactedProtocol()) {
+            //XXX Are these streams ever closed?  This is probably a leak
+            case T0 :
+                contactedInterface = new CadT0Client(new BufferedInputStream(
+                        contactedSocket.getInputStream()), new
+                        BufferedOutputStream(contactedSocket.getOutputStream()));
+                break;
+            case T1 :
+                contactedInterface = new CadT1Client(
+                        new BufferedInputStream(contactedSocket.getInputStream()),
+                        new BufferedOutputStream(contactedSocket.getOutputStream()));
+                break;
+            default :
+                throw new IOException ("No contacted protocol specified"); //NOI18N
         }
         contactedInterface.powerUp();
         return "";
@@ -146,9 +162,13 @@ public class APDUSender {
     }
 
     public String powerupContactless() throws IOException, CadTransportException {
-        contactlessSocket = new Socket("localhost", Integer.parseInt(server.getContactlessPort()));
+        PortProvider prov = card.getLookup().lookup(PortProvider.class);
+        int contactlessport = prov.getPort(PortKind.CONTACTLESS);
+        contactlessSocket = new Socket(prov.getHost(), contactlessport); //NOI18N
         contactlessSocket.setTcpNoDelay(true);
-        contactlessInterface = new CadT1Client(new BufferedInputStream(contactlessSocket.getInputStream()), new BufferedOutputStream(contactlessSocket.getOutputStream()));
+        contactlessInterface = new CadT1Client(new BufferedInputStream(
+                contactlessSocket.getInputStream()), new BufferedOutputStream(
+                contactlessSocket.getOutputStream()));
         contactlessInterface.powerUp();
         return "";
     }

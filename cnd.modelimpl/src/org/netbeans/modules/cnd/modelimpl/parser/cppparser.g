@@ -85,9 +85,9 @@ package org.netbeans.modules.cnd.modelimpl.parser.generated;
 import java.io.*;
 import java.util.*;
 
-import antlr.*;
-import antlr.collections.*;
-import antlr.debug.misc.*;
+import org.netbeans.modules.cnd.antlr.*;
+import org.netbeans.modules.cnd.antlr.collections.*;
+import org.netbeans.modules.cnd.antlr.debug.misc.*;
 import org.netbeans.modules.cnd.modelimpl.parser.*;
 import org.netbeans.modules.cnd.modelimpl.parser.Enum;
 import org.netbeans.modules.cnd.modelimpl.debug.*;
@@ -163,7 +163,7 @@ tokens {
 	CSM_STRANGE_2<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_FIELD<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 
-	CSM_VISIBILITY_REDEF<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+	CSM_VISIBILITY_REDEF<AST=org.netbeans.modules.cnd.modelimpl.parser.NamedFakeAST>;
 	
 	CSM_TEMPLATE_PARMLIST<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_PARMLIST<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
@@ -425,6 +425,7 @@ tokens {
     protected static final int declOther = 0;
     protected static final int declStatement = 1;
     protected static final int declGeneric = 2;
+    protected static final int declNotFirst = 3;
 
 	public int getErrorCount() {
 	    int cnt = errorCount;
@@ -1405,18 +1406,12 @@ member_declaration
         {if( definition )   #member_declaration = #(#[CSM_USER_TYPE_CAST_DEFINITION, "CSM_USER_TYPE_CAST_DEFINITION"], #member_declaration);
          else               #member_declaration = #(#[CSM_USER_TYPE_CAST_DECLARATION, "CSM_USER_TYPE_CAST_DECLARATION"], #member_declaration);}
     |
-		// Hack to handle decls like "superclass::member",
-		// to redefine access to private base class public members
-		(qualified_id (EOF|SEMICOLON))=>
-		{if (statementTrace>=1) 
-			printf("member_declaration_9[%d]: Qualified ID\n",
-				LT(1).getLine());
-		}
-		q = qualified_id 
-        ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
-        | SEMICOLON) //{end_of_stmt();}
-		{ #member_declaration = #(#[CSM_VISIBILITY_REDEF, "CSM_VISIBILITY_REDEF"], #member_declaration); }
-	|  
+        // Hack to handle decls like "superclass::member",
+        // to redefine access to private base class public members
+        (qualified_id (EOF|SEMICOLON))=>
+        {if (statementTrace>=1) printf("member_declaration_9[%d]: Qualified ID\n", LT(1).getLine());}
+        visibility_redef_declaration
+    |
 		// Member with a type or just a type def
 		// A::T a(), ::T a, ::B a, void a, E a (where E is the enclosing class)
 		((LITERAL___extension__)? declaration_specifiers[true, false])=>
@@ -1833,7 +1828,7 @@ typeID
 	;
 
 init_declarator_list[int kind]
-	:	init_declarator[kind] (COMMA init_declarator[kind])*
+	:	init_declarator[kind] (COMMA init_declarator[declNotFirst])*
 	;
 
 init_declarator[int kind]
@@ -1963,8 +1958,9 @@ member_declarator
 conversion_function_decl_or_def returns [boolean definition = false]
 	{CPPParser.TypeQualifier tq; }
 	:	// DW 01/08/03 Use type_specifier here? see syntax
-		LITERAL_OPERATOR declaration_specifiers[true, false] (STAR | AMPERSAND)*
-		(LESSTHAN template_parameter_list GREATERTHAN)?
+		LITERAL_OPERATOR declaration_specifiers[true, false]
+                (ptr_operator)*
+                (LESSTHAN template_parameter_list GREATERTHAN)?
 		LPAREN (parameter_list)? RPAREN	
 		(tq = cv_qualifier)?
 		(exception_specification)?
@@ -2026,23 +2022,21 @@ restrict_declarator[int kind]
     ;
 
 direct_declarator[int kind]
-	{String id;
-	 TypeQualifier tq;}  
-	:
-		// Must be function declaration
+{String id; TypeQualifier tq;}
+    :
+        // Must be function declaration
         (function_like_var_declarator) =>
         function_like_var_declarator
-        {if(kind == declStatement) {#direct_declarator = #(#[CSM_VARIABLE_LIKE_FUNCTION_DECLARATION, "CSM_VARIABLE_LIKE_FUNCTION_DECLARATION"], #direct_declarator);}}
-    |	(qualified_id LPAREN)=>	// Must be class instantiation
-		id = qualified_id
-		{
-		    declaratorID(id, qiVar);
-		}
-		LPAREN
-		(expression_list)?
-		RPAREN
-		{#direct_declarator = #(#[CSM_VARIABLE_DECLARATION, "CSM_VARIABLE_DECLARATION"], #direct_declarator);}
-	|
+        {if(kind == declStatement || kind == declNotFirst || LA(1) == COMMA) {#direct_declarator = #(#[CSM_VARIABLE_LIKE_FUNCTION_DECLARATION, "CSM_VARIABLE_LIKE_FUNCTION_DECLARATION"], #direct_declarator);}}
+    |   
+        (qualified_id LPAREN) => // Must be class instantiation
+        id = qualified_id
+        {declaratorID(id, qiVar);}
+        LPAREN
+        (expression_list)?
+        RPAREN
+        {#direct_declarator = #(#[CSM_VARIABLE_DECLARATION, "CSM_VARIABLE_DECLARATION"], #direct_declarator);}
+    |
                 (options {greedy=true;} :variable_attribute_specification)?
                 (
                     (qualified_id LSQUARE)=>	// Must be array declaration
@@ -2948,10 +2942,14 @@ function_try_block
 
 protected 
 condition
-	:
-	((condition_declaration)=> condition_declaration | condition_expression)
-	{#condition=#(#[CSM_CONDITION, "CSM_CONDITION"], #condition);}
-	;
+    :
+        (
+            (condition_declaration) => condition_declaration
+        |
+            condition_expression
+        )
+        {#condition=#(#[CSM_CONDITION, "CSM_CONDITION"], #condition);}
+    ;
 
 protected 
 condition_expression
@@ -2961,10 +2959,13 @@ condition_expression
 
 protected 
 condition_declaration {int ts = tsInvalid;}
-	:
+    :
         cv_qualifier_seq (LITERAL_typename)?
-	ts=type_specifier[dsInvalid, false] declarator[declStatement] ASSIGNEQUAL assignment_expression
-	;
+        ts=type_specifier[dsInvalid, false]
+        (postfix_cv_qualifier)? 
+        declarator[declStatement]
+        ASSIGNEQUAL assignment_expression
+    ;
 
 //	(declaration)=> declaration|	expression
 
@@ -3113,6 +3114,15 @@ using_declaration
 		)
 		SEMICOLON! //{end_of_stmt();}
 	;
+
+visibility_redef_declaration
+{String qid="";}
+    :
+        qid = qualified_id
+        ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
+        | SEMICOLON!) //{end_of_stmt();}
+        {#visibility_redef_declaration = #(#[CSM_VISIBILITY_REDEF, qid], #visibility_redef_declaration);}
+    ;
 
 asm_block 	
     :
@@ -3540,6 +3550,7 @@ constant
 	:	OCTALINT
 	|	DECIMALINT
 	|	HEXADECIMALINT
+	|	BINARYINT
 	|	CHAR_LITERAL
 	|	(options {warnWhenFollowAmbig = false;}: STRING_LITERAL)+
 	|	FLOATONE

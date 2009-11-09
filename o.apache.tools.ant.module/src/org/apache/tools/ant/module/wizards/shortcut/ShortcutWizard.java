@@ -46,6 +46,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -55,7 +58,6 @@ import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -277,24 +279,19 @@ public final class ShortcutWizard extends WizardDescriptor {
                 // First create Actions/Build/*.xml, so it appears in action pool:
                 String fname = FileUtil.findFreeFileName(actionsBuild, getTargetBaseName(), "xml") + ".xml"; // NOI18N
                 FileObject shortcut = actionsBuild.createData(fname); // NOI18N
-                FileLock lock = shortcut.lock();
+                OutputStream os = shortcut.getOutputStream();
                 try {
-                    OutputStream os = shortcut.getOutputStream(lock);
-                    try {
-                        os.write(getContents().getBytes("UTF-8")); // NOI18N
-                    } finally {
-                        os.close();
-                    }
+                    os.write(getContents().getBytes("UTF-8")); // NOI18N
                 } finally {
-                    lock.releaseLock();
+                    os.close();
                 }
                 // Now create *.shadow links to it from appropriate places in GUI:
                 DataObject shortcutFO = DataObject.find(shortcut);
                 if (it.showing(PROP_SHOW_MENU)) {
-                    DataShadow.create((DataFolder) getProperty(PROP_FOLDER_MENU), shortcutFO);
+                    makeShadow((DataFolder) getProperty(PROP_FOLDER_MENU), shortcutFO);
                 }
                 if (it.showing(PROP_SHOW_TOOL)) {
-                    DataShadow.create((DataFolder) getProperty(PROP_FOLDER_TOOL), shortcutFO);
+                    makeShadow((DataFolder) getProperty(PROP_FOLDER_TOOL), shortcutFO);
                 }
                 if (it.showing(PROP_SHOW_KEYB)) {
                     FileObject currentKeymapDir = FileUtil.getConfigFile("Shortcuts"); // NOI18N
@@ -303,6 +300,17 @@ public final class ShortcutWizard extends WizardDescriptor {
                 }
             }
         });
+    }
+    private void makeShadow(DataFolder folder, DataObject shortcutFO) throws IOException {
+        DataShadow shadow = DataShadow.create(folder, shortcutFO);
+        assert shadow.getFolder() == folder;
+        List<DataObject> children = new ArrayList<DataObject>(Arrays.asList(folder.getChildren()));
+        if (children.remove(shadow)) {
+            children.add(shadow);
+            folder.setOrder(children.toArray(new DataObject[children.size()]));
+        } else {
+            LOG.warning("#175981: could not find " + shadow + " among " + children);
+        }
     }
     
     String getTargetBaseName() {

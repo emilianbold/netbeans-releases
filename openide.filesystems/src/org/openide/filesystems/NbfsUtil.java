@@ -80,7 +80,7 @@ final class NbfsUtil {
                 new PrivilegedExceptionAction<URL>() {
                     public URL run() throws Exception {
                         // #30397: the fsPart name cannot be null
-                        return new URL(FileURL.PROTOCOL, host, -1, file, FileURL.HANDLER); // NOI18N
+                        return new URL(FileURL.PROTOCOL, host, -1, file, new FileURL.Handler());
                     }
                 }
             );

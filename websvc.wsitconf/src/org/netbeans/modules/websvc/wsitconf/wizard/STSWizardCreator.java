@@ -228,12 +228,14 @@ public class STSWizardCreator {
                     // add implementation clause
                     TypeElement provider = workingCopy.getElements().getTypeElement("javax.xml.ws.Provider"); //NOI18N
                     TypeElement source = workingCopy.getElements().getTypeElement("javax.xml.transform.Source"); //NOI18N
-                    TypeElement baseStsImpl = workingCopy.getElements().getTypeElement("com.sun.xml.ws.security.trust.sts.BaseSTSImpl"); //NOI18N
                     TypeElement msgContext = workingCopy.getElements().getTypeElement("javax.xml.ws.handler.MessageContext"); //NOI18N
                     TypeElement resource = workingCopy.getElements().getTypeElement("javax.annotation.Resource"); //NOI18N
                     TypeElement wsContext = workingCopy.getElements().getTypeElement("javax.xml.ws.WebServiceContext"); //NOI18N
-                    TypeElement WSAn = workingCopy.getElements().getTypeElement("javax.xml.ws.WebServiceProvider"); //NOI18N
-                    
+                    TypeElement wsProvider = workingCopy.getElements().getTypeElement("javax.xml.ws.WebServiceProvider"); //NOI18N
+
+                    // not found on classpath, because the runtime jar is not on classpath by default
+                    String baseStsImpl = "com.sun.xml.ws.security.trust.sts.BaseSTSImpl"; //NOI18N
+
                     // create parameters
                     List<AnnotationTree> annotations = new ArrayList<AnnotationTree>();
                     AnnotationTree resourceAnnotation = make.Annotation(
@@ -259,7 +261,7 @@ public class STSWizardCreator {
                     ParameterizedTypeTree t = make.ParameterizedType(make.QualIdent(provider), 
                             Collections.singletonList(make.QualIdent(source)) );
                     modifiedClass = make.addClassImplementsClause(modifiedClass, t);
-                    modifiedClass = make.setExtends(modifiedClass, make.QualIdent(baseStsImpl));
+                    modifiedClass = make.setExtends(modifiedClass, make.Identifier(baseStsImpl));
                     
                     //add @WebServiceProvider annotation
                     List<ExpressionTree> attrs = new ArrayList<ExpressionTree>();
@@ -272,7 +274,7 @@ public class STSWizardCreator {
                     attrs.add(
                         make.Assignment(make.Identifier("wsdlLocation"), make.Literal(wsdlLocation))); //NOI18N
                     AnnotationTree WSAnnotation = make.Annotation(
-                        make.QualIdent(WSAn), 
+                        make.QualIdent(wsProvider),
                         attrs
                     );
                     modifiedClass = genUtils.addAnnotation(modifiedClass, WSAnnotation);

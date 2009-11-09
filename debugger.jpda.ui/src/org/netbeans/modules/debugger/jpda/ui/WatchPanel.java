@@ -259,6 +259,7 @@ public class WatchPanel {
                     textLimitLineField.setAccessible(true);
                     textLimitLineField.set(eui, false);
                 } catch (Exception ex) {}
+                editorPane.repaint();
             }
         };
         if (SwingUtilities.isEventDispatchThread()) {

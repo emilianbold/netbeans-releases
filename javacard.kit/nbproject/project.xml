@@ -7,7 +7,13 @@
             <module-dependencies>
                 <dependency>
                     <code-name-base>org.netbeans.modules.javacard.apdu.io</code-name-base>
-                    <build-prerequisite/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.javacard.common</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.0</specification-version>
@@ -15,8 +21,13 @@
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.javacard.filemodels</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.javacard.platform.ui</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.0</specification-version>
@@ -24,17 +35,40 @@
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.javacard.project</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>2</release-version>
+                        <specification-version>1.2</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.javacard.apdufile</code-name-base>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.javacard.ri.platform</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.javacard.spi</code-name-base>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.properties.based.dataobjects</code-name-base>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.swing.customizerlayout</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.0</specification-version>
@@ -42,18 +76,9 @@
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.swing.validation</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.java.kit</code-name-base>
-                    <build-prerequisite/>
-                    <run-dependency>
-                        <specification-version>1.4</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>

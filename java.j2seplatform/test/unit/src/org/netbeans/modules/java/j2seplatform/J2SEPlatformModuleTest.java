@@ -79,7 +79,7 @@ public class J2SEPlatformModuleTest extends NbTestCase {
     }
     
     public void testRestored() throws Exception {
-        J2SEPlatformModule.updateBuildProperties();
+        UpdateTask.getDefault().run();
         EditableProperties ep = PropertyUtils.getGlobalProperties();
         JavaPlatform platform = JavaPlatformManager.getDefault().getDefaultPlatform();
         String ver = platform.getSpecification().getVersion().toString();

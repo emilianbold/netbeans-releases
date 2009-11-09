@@ -52,6 +52,7 @@ import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.util.List;
 import org.netbeans.modules.dlight.extras.api.AxisMark;
+import org.netbeans.modules.dlight.indicators.impl.TimeSeriesDescriptorAccessor;
 import org.netbeans.modules.dlight.util.DLightMath;
 import org.netbeans.modules.dlight.util.ui.DLightUIPrefs;
 
@@ -103,7 +104,7 @@ class GraphPainter {
         for (int i = 0; i < data.length; ++i) {
             float value = data[i];
             TimeSeriesDescriptor descriptor = descriptors.get(i);
-            switch (descriptor.getKind()) {
+            switch (TimeSeriesDescriptorAccessor.getDefault().getKind(descriptor)) {
                 case ABS_SURFACE:
                 case LINE:
                     absLimit = Math.max(absLimit, value);
@@ -150,8 +151,8 @@ class GraphPainter {
     public void paint(Graphics g, int scale, List<AxisMark> yMarks, int viewportStart, int viewportEnd, List<AxisMark> xMarks, int filterStart, int filterEnd, int x, int y, int w, int h, boolean ticks) {
         paintGradient(g, x, y, w, h);
         if (0 < w && 0 < h) {
-            paintGrid(g, x, y, w, h, xMarks, yMarks, ticks);
             paintGraph(g, scale, viewportStart, viewportEnd, x, y, w, h);
+            paintGrid(g, x, y, w, h, xMarks, yMarks, ticks);
             dimInactiveRegions(g, viewportStart, viewportEnd, filterStart, filterEnd, x, y, w, h);
         }
     }
@@ -205,6 +206,7 @@ class GraphPainter {
      * Should be called under synchronized (dataLock)
      */
     private void paintGraph(Graphics g, int scale, int viewportStart, int viewportEnd, int x, int y, int w, int h) {
+        TimeSeriesDescriptorAccessor accessor = TimeSeriesDescriptorAccessor.getDefault();
         Graphics2D g2 = ((Graphics2D)g);
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
@@ -224,15 +226,15 @@ class GraphPainter {
                     float[] values = data.get(viewportStart + i);
                     float value = values[ser];
                     int bonus = 0;
-                    if (descriptors.get(ser).getKind() == TimeSeriesDescriptor.Kind.REL_SURFACE) {
+                    if (accessor.getKind(descriptors.get(ser)) == TimeSeriesDescriptor.Kind.REL_SURFACE) {
                         for (int j = ser + 1; j < seriesCount; ++j) {
-                            if (descriptors.get(j).getKind() == TimeSeriesDescriptor.Kind.REL_SURFACE) {
+                            if (accessor.getKind(descriptors.get(j)) == TimeSeriesDescriptor.Kind.REL_SURFACE) {
                                 value += values[j];
                             }
                         }
-                    } else if (descriptors.get(ser).getKind() == TimeSeriesDescriptor.Kind.ABS_SURFACE) {
+                    } else if (accessor.getKind(descriptors.get(ser)) == TimeSeriesDescriptor.Kind.ABS_SURFACE) {
                         for (int j = ser + 1; j < seriesCount; ++j) {
-                            if (descriptors.get(j).getKind() == TimeSeriesDescriptor.Kind.ABS_SURFACE) {
+                            if (accessor.getKind(descriptors.get(j)) == TimeSeriesDescriptor.Kind.ABS_SURFACE) {
                                 bonus += 2;
                             }
                         }
@@ -240,15 +242,15 @@ class GraphPainter {
                     xx[i] = lastx = DLightMath.map(viewportStart + i, viewportStart, viewportEnd, x, x + w);
                     yy[i] = lasty = (int)(y + h - 2 - value * effectiveHeight / scale) - bonus;
                 }
-                g2.setColor(descriptors.get(ser).getColor());
-                switch (descriptors.get(ser).getKind()) {
+                g2.setColor(accessor.getColor(descriptors.get(ser)));
+                switch (accessor.getKind(descriptors.get(ser))) {
                     case LINE:
                         g2.setStroke(LINE_STROKE);
                         g2.drawPolyline(xx, yy, sampleCount);
                         g2.setStroke(BALL_STROKE);
                         g2.setColor(Color.WHITE);
                         g2.fillOval(lastx - ballSize / 2, lasty - ballSize / 2, ballSize - 1, ballSize - 1);
-                        g2.setColor(descriptors.get(ser).getColor());
+                        g2.setColor(accessor.getColor(descriptors.get(ser)));
                         g2.drawOval(lastx - ballSize / 2, lasty - ballSize / 2, ballSize - 1, ballSize - 1);
                         break;
                     case ABS_SURFACE:
@@ -259,7 +261,7 @@ class GraphPainter {
                         g2.fillPolygon(xx, yy, sampleCount + 2);
                         break;
                     default:
-                        System.err.println("Uknown graph kind: " + descriptors.get(ser).getKind()); // NOI18N
+                        System.err.println("Uknown graph kind: " + accessor.getKind(descriptors.get(ser))); // NOI18N
                 }
             }
         }
@@ -333,14 +335,14 @@ class GraphPainter {
      * Returns a copy of passed color with adjusted alpha value.
      *
      * @param orig  original color
-     * @param alpha  new alpha value
+     * @param alpha  alpha scale value
      * @return copy of color with adjusted alpha
      */
     private static Color adjustAlpha(Color orig, int alpha) {
-        if (orig.getAlpha() == alpha) {
+        if (alpha == 255) {
             return orig;
         } else {
-            return new Color(orig.getRed(), orig.getGreen(), orig.getBlue(), alpha);
+            return new Color(orig.getRed(), orig.getGreen(), orig.getBlue(), orig.getAlpha() * alpha / 255);
         }
     }
 }

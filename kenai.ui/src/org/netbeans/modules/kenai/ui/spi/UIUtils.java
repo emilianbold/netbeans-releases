@@ -67,6 +67,7 @@ import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiUser;
 import org.netbeans.modules.kenai.collab.chat.KenaiConnection;
+import org.netbeans.modules.kenai.collab.chat.PresenceIndicator;
 import org.netbeans.modules.kenai.ui.KenaiLoginTask;
 import org.netbeans.modules.kenai.ui.LoginPanel;
 import org.netbeans.modules.kenai.ui.Utilities;
@@ -95,7 +96,7 @@ public final class UIUtils {
     private static Set<String> loggedParams; // to avoid logging same params more than once in a session
 
     public static String getPrefName(String name)  {
-        return Kenai.getDefault().getName() + name;
+        return Kenai.getDefault().getUrl().getHost() + name;
     }
 
     public static void waitStartupFinished() {
@@ -163,7 +164,9 @@ public final class UIUtils {
     /**
      * this method will be removed
      * will try to login using stored uname and password if not already logged in
+     * @param force
      * @return true if logged in, false otherwise
+     * @deprecated 
      */
     @Deprecated
     public static synchronized boolean tryLogin(boolean force) {
@@ -184,9 +187,10 @@ public final class UIUtils {
             return false;
         }
         String password=preferences.get(getPrefName(KENAI_PASSWORD_PREF), null); // NOI18N
+        PresenceIndicator.getDefault().init();
         try {
             KenaiConnection.getDefault();
-            Kenai.getDefault().login(uname, Scrambler.getInstance().descramble(password).toCharArray(), force?true:Boolean.parseBoolean(preferences.get(getPrefName(ONLINE_STATUS_PREF), "true")));
+            Kenai.getDefault().login(uname, Scrambler.getInstance().descramble(password).toCharArray(), force?true:Boolean.parseBoolean(preferences.get(getPrefName(ONLINE_STATUS_PREF), String.valueOf(Utilities.isChatSupported()))));
         } catch (KenaiException ex) {
             return false;
         }
@@ -198,6 +202,7 @@ public final class UIUtils {
      * @return true, if user was succesfully logged in
      */
     public static boolean showLogin() {
+        PresenceIndicator.getDefault().init();
         final LoginPanel loginPanel = new LoginPanel();
         final Preferences preferences = NbPreferences.forModule(LoginPanel.class);
         final String ctlLogin = NbBundle.getMessage(Utilities.class, "CTL_Login");
@@ -281,7 +286,7 @@ public final class UIUtils {
     static JLabel createUserWidget(final KenaiUserUI u) {
         final JLabel result = new JLabel(u.getUserName());
         result.setIcon(u.getIcon());
-        final String name = u.getKenaiUser().getFirstName() + " " + u.getKenaiUser().getLastName();
+        final String name = u.getKenaiUser().getFirstName() + " " + u.getKenaiUser().getLastName(); // NOI18N
         result.setToolTipText(NbBundle.getMessage(UserNode.class, u.getKenaiUser().isOnline()?"LBL_ONLINE_MEMBER_TOOLTIP": "LBL_OFFLINE_MEMBER_TOOLTIP", u.getUserName(), name));
         u.user.addPropertyChangeListener(new PropertyChangeListener() {
 

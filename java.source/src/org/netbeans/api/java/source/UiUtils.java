@@ -252,7 +252,6 @@ public final class  UiUtils {
         } catch (IOException e) {
             if (log.isLoggable(Level.SEVERE))
                 log.log(Level.SEVERE, e.getMessage(), e);
-//            ErrorManager.getDefault().notify(e);
             return null;
         }
     }
@@ -376,7 +375,6 @@ public final class  UiUtils {
         } catch (IOException e) {
             if (log.isLoggable(Level.INFO))
                 log.log(Level.INFO, e.getMessage(), e);
-//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         }
         
         return false;
@@ -420,7 +418,6 @@ public final class  UiUtils {
                 } catch (IOException ioe) {
                     if (log.isLoggable(Level.SEVERE))
                         log.log(Level.SEVERE, ioe.getMessage(), ioe);
-//                    ErrorManager.getDefault().notify(ioe);
                 }
                 Element el = handle.resolve(info);                
                 if (el == null)

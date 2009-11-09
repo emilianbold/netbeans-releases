@@ -27,3 +27,9 @@ script_dir=`dirname "$0"`
 if [ -d "/Library/Receipts/soa.pkg" ] ; then
     rm -rf "/Library/Receipts/soa.pkg"
 fi
+
+if [ -d "/private/var/db/receipts" ] ; then
+    rm -rf "/private/var/db/receipts/org.netbeans.ide.soa.plist"
+    rm -rf "/private/var/db/receipts/org.netbeans.ide.soa.bom"
+fi
+

@@ -43,6 +43,7 @@ package org.netbeans.modules.javacard.shell;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.modules.javacard.spi.CardState;
 import org.openide.util.NbBundle;
 
 /**
@@ -89,6 +90,11 @@ class CommandManager {
     }
 
     public String execute(ShellPanel shellPanel, String command) throws ShellException {
+        CardState state = shellPanel.getCard().getState();
+        if (state.isTransitionalState()) {
+            return NbBundle.getMessage(ResumeCommand.class,
+                    "ERR_TRANSITIONAL_STATE", shellPanel.getCard().getState()); //NOI18N
+        }
         String[] tokens = command.split(" "); //NOI18N
         Command c = commands.get(tokens[0]);
         if (c != null) {

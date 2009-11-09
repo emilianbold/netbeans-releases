@@ -45,7 +45,7 @@ package org.netbeans.modules.cnd.asm.base.syntax;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
-import antlr.TokenStreamException;
+import org.netbeans.modules.cnd.antlr.TokenStreamException;
 
 import org.netbeans.modules.cnd.asm.model.lang.syntax.AsmBaseTokenId;
 import org.netbeans.modules.cnd.asm.model.lang.syntax.AsmHighlightLexer;

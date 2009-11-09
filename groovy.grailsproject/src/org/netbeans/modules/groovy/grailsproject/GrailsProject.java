@@ -203,6 +203,9 @@ public final class GrailsProject implements Project {
 
     public Lookup getLookup() {
         if (lookup == null) {
+            GrailsProjectConfig config = new GrailsProjectConfig(this);
+            config.initListeners();
+
             lookup = Lookups.fixed(
                 this,  //project spec requires a project be in its own lookup
                 projectState, //allow outside code to mark the project as needing saving
@@ -222,7 +225,7 @@ public final class GrailsProject implements Project {
                 new DomainCompletionProvider(),
                 logicalView, //Logical view of project implementation
                 cpProvider,
-                new GrailsProjectConfig(this)
+                config
             );
         }
         return lookup;

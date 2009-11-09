@@ -42,9 +42,8 @@ package org.netbeans.modules.javacard.project.customizer;
 
 import com.sun.javacard.filemodels.ParseErrorHandler;
 import com.sun.javacard.filemodels.WebXmlModel;
-import org.netbeans.modules.javacard.constants.JCConstants;
+import org.netbeans.modules.javacard.common.JCConstants;
 import org.netbeans.modules.javacard.project.JCProject;
-import org.netbeans.modules.javacard.project.ui.AllClassesOfTypeExplorerPanel;
 import org.netbeans.modules.javacard.project.ui.CheckboxListView;
 import org.netbeans.modules.javacard.project.ui.FileModelFactory;
 import org.netbeans.modules.javacard.project.ui.NodeCheckObserver;

@@ -109,106 +109,92 @@ public class ThreadBreakpointsTest extends DebuggerTestCase {
     /**
      *
      */
-    public void testThreadBreakpointCreation() throws Throwable {
+    public void testThreadBreakpointCreation() {        
+        //open source
+        Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
+        new OpenAction().performAPI(beanNode);
+        EditorOperator eo = new EditorOperator("MemoryView.java");
         try {
-            //open source
-            Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
-            new OpenAction().performAPI(beanNode);
-            EditorOperator eo = new EditorOperator("MemoryView.java");
-            try {
-                eo.clickMouse(50,50,1);
-            } catch (Throwable t) {
-                System.err.println(t.getMessage());
-            }
-            new NewBreakpointAction().perform();
-            NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
-            setBreakpointType(dialog, "Thread");
-            dialog.ok();
-            Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
-            JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.breakpointsViewTitle));
-            assertEquals("Thread breakpoint was not created.", "Thread started", jTableOperator.getValueAt(0, 0).toString());
-        } catch (Throwable th) {
-            Utilities.captureScreen(this);
-            throw th;
+            eo.clickMouse(50,50,1);
+        } catch (Throwable t) {
+            System.err.println(t.getMessage());
         }
+        new NewBreakpointAction().perform();
+        NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
+        setBreakpointType(dialog, "Thread");
+        dialog.ok();
+        Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
+        JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.breakpointsViewTitle));
+        assertEquals("Thread breakpoint was not created.", "Thread started", jTableOperator.getValueAt(0, 0).toString());
     }
 
     /**
      *
      */
     public void testThreadBreakpointFunctionality() throws Throwable {
-        try {
-            new NewBreakpointAction().perform();
-            NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
-            setBreakpointType(dialog, "Thread");
-            dialog.ok();
 
-            Utilities.startDebugger();
-            try {
-                Utilities.waitStatusText("Thread main stopped.");
-            } catch (Throwable e) {
-                if (!Utilities.checkConsoleForText("Thread breakpoint hit by thread main (started).", 2)) {
-                    System.err.println(e.getMessage());
-                    throw e;
-                }
+        new NewBreakpointAction().perform();
+        NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
+        setBreakpointType(dialog, "Thread");
+        dialog.ok();
+
+        Utilities.startDebugger();
+        try {
+            Utilities.waitStatusText("Thread main stopped.");
+        } catch (Throwable e) {
+            if (!Utilities.checkConsoleForText("Thread breakpoint hit by thread main (started).", 2)) {
+                System.err.println(e.getMessage());
+                throw e;
             }
-            new ContinueAction().perform();
-            try {
-                Utilities.waitStatusText("Thread Thread-0 stopped ");
-            } catch (Throwable e) {
-                if (!Utilities.checkConsoleForText("Thread breakpoint hit by thread Thread-0 (started).", 5)) {
-                    System.err.println(e.getMessage());
-                    throw e;
-                }
+        }
+        new ContinueAction().perform();
+        try {
+            Utilities.waitStatusText("Thread Thread-0 stopped ");
+        } catch (Throwable e) {
+            if (!Utilities.checkConsoleForText("Thread breakpoint hit by thread Thread-0 (started).", 5)) {
+                System.err.println(e.getMessage());
+                throw e;
             }
-            new ContinueAction().perform();
-            try {
-                Utilities.waitStatusText(Utilities.runningStatusBarText);
-            } catch (Throwable e) {
-                if (!Utilities.checkConsoleLastLineForText(Utilities.runningStatusBarText)) {
-                    System.err.println(e.getMessage());
-                    throw e;
-                }
+        }
+        new ContinueAction().perform();
+        try {
+            Utilities.waitStatusText(Utilities.runningStatusBarText);
+        } catch (Throwable e) {
+            if (!Utilities.checkConsoleLastLineForText(Utilities.runningStatusBarText)) {
+                System.err.println(e.getMessage());
+                throw e;
             }
-        } catch (Throwable th) {
-            Utilities.captureScreen(this);
-            throw th;
         }
     }
 
     /**
      *
      */
-    public void testThreadBreakpointFunctionalityHitCount() throws Throwable {
-        try {
-            new NewBreakpointAction().perform();
-            NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
-            setBreakpointType(dialog, "Thread");
-            dialog.ok();
+    public void testThreadBreakpointFunctionalityHitCount() throws Throwable {        
+        new NewBreakpointAction().perform();
+        NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
+        setBreakpointType(dialog, "Thread");
+        dialog.ok();
 
-            Utilities.startDebugger();
-            try {
-                Utilities.waitStatusText("Thread main stopped.");
-            } catch (Throwable e) {
-                if (!Utilities.checkConsoleForText("Thread breakpoint hit by thread ", 2)) {
-                    System.err.println(e.getMessage());
-                    throw e;
-                }
+        Utilities.startDebugger();
+        try {
+            Utilities.waitStatusText("Thread main stopped.");
+        } catch (Throwable e) {
+            if (!Utilities.checkConsoleForText("Thread breakpoint hit by thread ", 2)) {
+                System.err.println(e.getMessage());
+                throw e;
             }
-            new ContinueAction().perform();
-            try {
-                Utilities.waitStatusText(Utilities.runningStatusBarText);
-            } catch (Throwable e) {
-                if (!Utilities.checkConsoleLastLineForText(Utilities.runningStatusBarText)) {
-                    System.err.println(e.getMessage());
-                    throw e;
-                }
-            }
-            assertEquals("There were more than one hit of the breakpoint", Utilities.checkConsoleForNumberOfOccurrences(Utilities.runningStatusBarText, 0), 2);
-        } catch (Throwable th) {
-            Utilities.captureScreen(this);
-            throw th;
         }
+        new ContinueAction().perform();
+        try {
+            Utilities.waitStatusText(Utilities.runningStatusBarText);
+        } catch (Throwable e) {
+            if (!Utilities.checkConsoleLastLineForText(Utilities.runningStatusBarText)) {
+                System.err.println(e.getMessage());
+                throw e;
+            }
+        }
+        assertEquals("There were more than one hit of the breakpoint", Utilities.checkConsoleForNumberOfOccurrences(Utilities.runningStatusBarText, 0), 2);
     }
 
     protected void setBreakpointType(NbDialogOperator dialog, String type) {

@@ -179,11 +179,19 @@ public class FriendTestCase extends TraceModelTestBase {
                 assertTrue("moo2(int) is not friend B", FriendResolverImpl.getDefault().isFriend(decl, clsB)); // NOI18N
             } else if ("f:moo(int)".equals(uName)) { // NOI18N
                 assertTrue("moo(int) is not friend B", FriendResolverImpl.getDefault().isFriend(decl, clsB)); // NOI18N
+            } else if ("D:moo2(int)".equals(uName)) {
+                assertTrue("moo2(int) is not friend B", FriendResolverImpl.getDefault().isFriend(decl, clsB)); // NOI18N
+            } else if ("d:moo(int)".equals(uName)) { // NOI18N
+                assertTrue("moo(int) is not friend B", FriendResolverImpl.getDefault().isFriend(decl, clsB)); // NOI18N
             } else if ("S:S2".equals(uName)) { // NOI18N
                 assertFalse("S2 is friend B", FriendResolverImpl.getDefault().isFriend(decl, clsB)); // NOI18N
             } else if ("F:S2::soo()".equals(uName)) { // NOI18N
                 assertTrue("S2::soo() is not friend B", FriendResolverImpl.getDefault().isFriend(decl, clsB)); // NOI18N
             } else if ("f:S2::soo2()".equals(uName)) { // NOI18N
+                assertTrue("S2::soo2() is not friend B", FriendResolverImpl.getDefault().isFriend(decl, clsB)); // NOI18N
+            } else if ("D:S2::soo()".equals(uName)) { // NOI18N
+                assertTrue("S2::soo() is not friend B", FriendResolverImpl.getDefault().isFriend(decl, clsB)); // NOI18N
+            } else if ("d:S2::soo2()".equals(uName)) { // NOI18N
                 assertTrue("S2::soo2() is not friend B", FriendResolverImpl.getDefault().isFriend(decl, clsB)); // NOI18N
             } else if ("F:S2::soo3()".equals(uName)) { // NOI18N
                 assertTrue("S2::soo3() is not friend B", FriendResolverImpl.getDefault().isFriend(decl, clsB)); // NOI18N
@@ -212,6 +220,16 @@ public class FriendTestCase extends TraceModelTestBase {
             } else if ("F:S2::soo2()".equals(uName)) { // NOI18N
                 assertTrue("S2::soo2() is not friend B", FriendResolverImpl.getDefault().isFriend(decl, clsB)); // NOI18N
             } else if ("f:ccStyle(int)".equals(uName)) { // NOI18N
+                assertFalse("ccStyle(int) is friend B", FriendResolverImpl.getDefault().isFriend(decl, clsB)); // NOI18N
+            } else if ("d:moo2(int)".equals(uName)) { // NOI18N
+                assertTrue("moo2(int) is not friend B", FriendResolverImpl.getDefault().isFriend(decl, clsB)); // NOI18N
+            } else if ("D:moo(int)".equals(uName)) { // NOI18N
+                assertTrue("moo(int) is friend B", FriendResolverImpl.getDefault().isFriend(decl, clsB)); // NOI18N
+            } else if ("d:S2::soo()".equals(uName)) { // NOI18N
+                assertTrue("S2::soo() is not friend B", FriendResolverImpl.getDefault().isFriend(decl, clsB)); // NOI18N
+            } else if ("D:S2::soo2()".equals(uName)) { // NOI18N
+                assertTrue("S2::soo2() is not friend B", FriendResolverImpl.getDefault().isFriend(decl, clsB)); // NOI18N
+            } else if ("d:ccStyle(int)".equals(uName)) { // NOI18N
                 assertFalse("ccStyle(int) is friend B", FriendResolverImpl.getDefault().isFriend(decl, clsB)); // NOI18N
             } else {
                 assertTrue("Inexpected declaration " + uName, false); // NOI18N

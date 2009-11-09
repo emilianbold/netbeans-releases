@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.php.editor.indent;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -314,6 +315,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
             return -1;
         }
 
+
         // XXX: this may not be neccessary, at least not for }
         // Special case: since I do hash completion, if you try to type
         //     y = Thread.start {
@@ -329,10 +331,33 @@ public class PHPBracketCompleter implements KeystrokeHandler {
         // brace on the line below the insert position, and indent properly.
         // Catch this scenario and handle it properly.
         if ((id == PHPTokenId.PHP_CURLY_CLOSE || LexUtilities.textEquals(token.text(), ']') || LexUtilities.textEquals(token.text(), ')')) // NOI18N
-                && (Utilities.getRowLastNonWhite(doc, offset) == offset)) {
+                /*&& (Utilities.getRowLastNonWhite(doc, offset) == offset)*/) {
             int indent = GsfUtilities.getLineIndent(doc, offset);
             StringBuilder sb = new StringBuilder();
-            sb.append("\n"); // NOI18N
+            // the new line will not be added, if we are in middle of array declaration
+            if (LexUtilities.textEquals(token.text(), ')') && ts.movePrevious()) {
+                Token<?extends PHPTokenId> helpToken = LexUtilities.findPrevious(ts, Arrays.asList(
+                        PHPTokenId.WHITESPACE,
+                        PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHPDOC_COMMENT_START,
+                        PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_COMMENT_START,
+                        PHPTokenId.PHP_LINE_COMMENT));
+                if (helpToken.id() == PHPTokenId.PHP_TOKEN
+                        && (helpToken.text().charAt(0) == ',' || helpToken.text().charAt(0) == '(') && ts.movePrevious()) {
+                    // only in array declaration we will add new line
+                    helpToken = LexUtilities.findPrevious(ts, Arrays.asList(
+                            PHPTokenId.WHITESPACE,
+                            PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHPDOC_COMMENT_START,
+                            PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_COMMENT_START,
+                            PHPTokenId.PHP_LINE_COMMENT));
+                    if (helpToken.id() == PHPTokenId.PHP_ARRAY) {
+                        sb.append("\n"); // NOI18N
+                    }
+                }
+            }
+            else {
+                sb.append("\n"); // NOI18N
+            }
+            
             sb.append(IndentUtils.createIndentString(doc, indent));
 
             int insertOffset = offset; // offset < length ? offset+1 : offset;
@@ -350,7 +375,9 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                 ts.move(begin);
                 if (ts.moveNext()) {
                     id = ts.token().id();
-                    if (id == PHPTokenId.PHP_LINE_COMMENT) {
+                    if (id == PHPTokenId.PHP_LINE_COMMENT
+                            || id == PHPTokenId.PHPDOC_COMMENT_START
+                            || id == PHPTokenId.PHP_COMMENT_START) {
                         offset = begin;
                     }
                 }
@@ -419,7 +446,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                 sb.append(IndentUtils.createIndentString(doc, indent));
                 sb.append("//"); // NOI18N
                 // Copy existing indentation
-                int afterHash = begin+1;
+                int afterHash = begin+2;
                 String line = doc.getText(afterHash, Utilities.getRowEnd(doc, afterHash)-afterHash);
                 for (int i = 0; i < line.length(); i++) {
                     char c = line.charAt(i);
@@ -444,7 +471,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
             }
         }
 
-        if (id == PHPTokenId.PHPDOC_COMMENT || id == PHPTokenId.PHPDOC_COMMENT_START || id == PHPTokenId.PHPDOC_COMMENT_END) {
+        if (id == PHPTokenId.PHPDOC_COMMENT || (id == PHPTokenId.PHPDOC_COMMENT_START && offset > ts.offset()) || id == PHPTokenId.PHPDOC_COMMENT_END) {
             final Object [] ret = beforeBreakInComments(doc, ts, offset, caret, 
                 PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END);
             boolean isEmptyComment = (Boolean) ret[1];
@@ -465,9 +492,20 @@ public class PHPBracketCompleter implements KeystrokeHandler {
         }
         
         if (id == PHPTokenId.PHP_COMMENT || id == PHPTokenId.PHP_COMMENT_START || id == PHPTokenId.PHP_COMMENT_END) {
-            Object [] ret = beforeBreakInComments(doc, ts, offset, caret, 
-                PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END);
-            return (Integer) ret[0];
+            if (id == PHPTokenId.PHP_COMMENT_START && offset == ts.offset()) {
+////                int indent = GsfUtilities.getLineIndent(doc, offset);
+////                String indentString = IndentUtils.createIndentString(doc, indent);
+////
+////                int insertOffset = offset; // offset < length ? offset+1 : offset;
+////                doc.insertString(insertOffset, indentString, null);
+////                caret.setDot(insertOffset);
+//                //return insertOffset;
+            }
+            else {
+                Object [] ret = beforeBreakInComments(doc, ts, offset, caret,
+                    PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END);
+                return (Integer) ret[0];
+            }
         }
         
         return -1;
@@ -661,6 +699,22 @@ public class PHPBracketCompleter implements KeystrokeHandler {
             // There is one more opening token on the line than a corresponding
             // closing token.  (If there's is more than one we don't try to help.)
             int indent = GsfUtilities.getLineIndent(doc, offset);
+            if (braceBalance == 1) {
+                TokenSequence<?extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, offset);
+
+                if (ts != null) {
+                    ts.move(offset);
+                    if (ts.moveNext() && ts.movePrevious()) {
+                        Token<?extends PHPTokenId> token = LexUtilities.findPrevious(ts, Arrays.asList(
+                                PHPTokenId.PHP_CURLY_OPEN, PHPTokenId.WHITESPACE,
+                                PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHPDOC_COMMENT_START,
+                                PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_COMMENT_START,
+                                PHPTokenId.PHP_LINE_COMMENT));
+                        int startExpression = PHPNewLineIndenter.findStartTokenOfExpression(ts);
+                        indent = GsfUtilities.getLineIndent(doc, startExpression);
+                    }
+                }
+            }
 
             // Look for the next nonempty line, and if its indent is > indent,
             // or if its line balance is -1 (e.g. it's an end) we're done

@@ -73,6 +73,7 @@ public class VectorConfiguration<E> {
     }
 
     public void setValue(List<E> l) {
+        assert l != null;
         this.value = l;
     }
 
@@ -104,22 +105,26 @@ public class VectorConfiguration<E> {
 
     @Override
     public boolean equals(Object obj) {
-        if (!(obj instanceof VectorConfiguration)) {
+        if (!(obj instanceof VectorConfiguration<?>)) {
             return false;
         }
-        VectorConfiguration conf = (VectorConfiguration)obj;
-        boolean eq = true;
-        if (getValue().size() != conf.getValue().size()) {
-            eq = false;
-        } else {
-            for (int i = 0; i < getValue().size(); i++) {
-                if (!getValue().get(i).equals(conf.getValue().get(i))) {
-                    eq = false;
-                    break;
+        VectorConfiguration<?> conf = (VectorConfiguration<?>)obj;
+        List<?> list1 = getValue();
+        List<?> list2 = conf.getValue();
+        if (list1 == null && list2 == null) {
+            return true;
+        } else if (list1 != null && list2 != null) {
+            if (list1.size() != list2.size()) {
+                return false;
+            }
+            for (int i = 0; i < list1.size(); i++) {
+                if (!list1.get(i).equals(list2.get(i))) {
+                    return false;
                 }
             }
+            return true;
         }
-        return eq;
+        return false;
     }
 
     @Override

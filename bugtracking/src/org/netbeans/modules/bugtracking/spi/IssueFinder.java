@@ -71,7 +71,7 @@ public abstract class IssueFinder {
      * @return  non-{@code null} array of boundaries of hyperlink references
      *          in the given text
      */
-    public abstract int[] getIssueSpans(String text);
+    public abstract int[] getIssueSpans(CharSequence text);
 
     /**
      * Transforms the given text to an issue identifier.

@@ -38,9 +38,9 @@ Create${entity.entityClassName}SaveLink=Save
 Create${entity.entityClassName}ShowAllLink=Show All ${entity.entityClassName} Items
 Create${entity.entityClassName}IndexLink=Index
     <#list entity.entityDescriptors as entityDescriptor>
-Create${entity.entityClassName}Label_${entityDescriptor.id}=${entityDescriptor.label}:
-<#if entityDescriptor.required>Create${entity.entityClassName}RequiredMessage_${entityDescriptor.id}=The ${entityDescriptor.label} field is required.
-</#if>Create${entity.entityClassName}Title_${entityDescriptor.id}=${entityDescriptor.label}
+Create${entity.entityClassName}Label_${entityDescriptor.id?replace(".","_")}=${entityDescriptor.label}:
+<#if entityDescriptor.required>Create${entity.entityClassName}RequiredMessage_${entityDescriptor.id?replace(".","_")}=The ${entityDescriptor.label} field is required.
+</#if>Create${entity.entityClassName}Title_${entityDescriptor.id?replace(".","_")}=${entityDescriptor.label}
     </#list>
 Edit${entity.entityClassName}Title=Edit ${entity.entityClassName}
 Edit${entity.entityClassName}SaveLink=Save
@@ -48,9 +48,9 @@ Edit${entity.entityClassName}ViewLink=View
 Edit${entity.entityClassName}ShowAllLink=Show All ${entity.entityClassName} Items
 Edit${entity.entityClassName}IndexLink=Index
     <#list entity.entityDescriptors as entityDescriptor>
-Edit${entity.entityClassName}Label_${entityDescriptor.id}=${entityDescriptor.label}:
-<#if entityDescriptor.required>Edit${entity.entityClassName}RequiredMessage_${entityDescriptor.id}=The ${entityDescriptor.label} field is required.
-</#if>Edit${entity.entityClassName}Title_${entityDescriptor.id}=${entityDescriptor.label}
+Edit${entity.entityClassName}Label_${entityDescriptor.id?replace(".","_")}=${entityDescriptor.label}:
+<#if entityDescriptor.required>Edit${entity.entityClassName}RequiredMessage_${entityDescriptor.id?replace(".","_")}=The ${entityDescriptor.label} field is required.
+</#if>Edit${entity.entityClassName}Title_${entityDescriptor.id?replace(".","_")}=${entityDescriptor.label}
     </#list>
 View${entity.entityClassName}Title=View
 View${entity.entityClassName}DestroyLink=Destroy
@@ -59,8 +59,8 @@ View${entity.entityClassName}CreateLink=Create New ${entity.entityClassName}
 View${entity.entityClassName}ShowAllLink=Show All ${entity.entityClassName} Items
 View${entity.entityClassName}IndexLink=Index
     <#list entity.entityDescriptors as entityDescriptor>
-View${entity.entityClassName}Label_${entityDescriptor.id}=${entityDescriptor.label}:
-View${entity.entityClassName}Title_${entityDescriptor.id}=${entityDescriptor.label}
+View${entity.entityClassName}Label_${entityDescriptor.id?replace(".","_")}=${entityDescriptor.label}:
+View${entity.entityClassName}Title_${entityDescriptor.id?replace(".","_")}=${entityDescriptor.label}
     </#list>
 List${entity.entityClassName}Title=List
 List${entity.entityClassName}Empty=(No ${entity.entityClassName} Items Found)
@@ -70,6 +70,6 @@ List${entity.entityClassName}ViewLink=View
 List${entity.entityClassName}CreateLink=Create New ${entity.entityClassName}
 List${entity.entityClassName}IndexLink=Index
     <#list entity.entityDescriptors as entityDescriptor>
-List${entity.entityClassName}Title_${entityDescriptor.id}=${entityDescriptor.label}
+List${entity.entityClassName}Title_${entityDescriptor.id?replace(".","_")}=${entityDescriptor.label}
     </#list>
 </#list>

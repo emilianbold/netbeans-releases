@@ -567,7 +567,7 @@ public class FileStatusCache {
             Map<File, FileInformation> files = (Map<File, FileInformation>) turbo.readEntry(root, FILE_STATUS_MAP);
             Map<File, FileInformation> interestingFiles;
             try {
-                interestingFiles = HgCommand.getInterestingStatus(repository, root);
+                interestingFiles = HgCommand.getInterestingStatus(repository, Collections.singletonList(root));
                 for (Map.Entry<File, FileInformation> entry : interestingFiles.entrySet()) {
                     File file = entry.getKey();
                     FileInformation fi = entry.getValue();
@@ -596,10 +596,10 @@ public class FileStatusCache {
      * Refreshes all files under given roots in the cache.
      * @param rootFiles root files sorted under their's repository roots
      */
-    void refreshAllRoots (Map<File, File> rootFiles) {
-        for (Map.Entry<File, File> refreshEntry : rootFiles.entrySet()) {
+    void refreshAllRoots (Map<File, Set<File>> rootFiles) {
+        for (Map.Entry<File, Set<File>> refreshEntry : rootFiles.entrySet()) {
             File repository = refreshEntry.getKey();
-            File root = refreshEntry.getValue();
+            for (File root : refreshEntry.getValue()) {
             if (Mercurial.LOG.isLoggable(Level.FINE)) {
                 Mercurial.LOG.log(Level.FINE, "refreshAllRoots() root: {0}, repositoryRoot: {1} ", new Object[] {root.getAbsolutePath(), repository.getAbsolutePath()}); // NOI18N
             }
@@ -607,7 +607,7 @@ public class FileStatusCache {
             Map<File, FileInformation> interestingFiles;
             try {
                 // find all files with not up-to-date or ignored status
-                interestingFiles = HgCommand.getInterestingStatus(repository, root);
+                interestingFiles = HgCommand.getInterestingStatus(repository, Collections.singletonList(root));
                 for (Map.Entry<File, FileInformation> interestingEntry : interestingFiles.entrySet()) {
                     // put the file's FI into the cache
                     File file = interestingEntry.getKey();
@@ -635,6 +635,7 @@ public class FileStatusCache {
                 }
             } catch (HgException ex) {
                 Mercurial.LOG.log(Level.FINE, "refreshAll() file: {0} {1} {2} ", new Object[] {repository.getAbsolutePath(), root.getAbsolutePath(), ex.toString()}); // NOI18N
+            }
             }
         }
     }
@@ -828,7 +829,7 @@ public class FileStatusCache {
                     startTime = System.currentTimeMillis();
                     Mercurial.STATUS_LOG.fine("scanFolder: start for " + dir.getAbsolutePath());
                 }
-                interestingFiles = HgCommand.getInterestingStatus(rootManagedFolder, dir);
+                interestingFiles = HgCommand.getInterestingStatus(rootManagedFolder, Collections.singletonList(dir));
                 if (Mercurial.STATUS_LOG.isLoggable(Level.FINE)) {
                     Mercurial.STATUS_LOG.fine("scanFolder: finishes for " + dir.getAbsolutePath() + " after " + (System.currentTimeMillis() - startTime));
                 }

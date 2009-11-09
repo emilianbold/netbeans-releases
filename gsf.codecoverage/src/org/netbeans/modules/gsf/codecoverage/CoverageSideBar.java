@@ -42,9 +42,12 @@ package org.netbeans.modules.gsf.codecoverage;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -58,6 +61,7 @@ import org.netbeans.modules.gsf.codecoverage.api.CoverageProvider;
 import org.netbeans.modules.gsf.codecoverage.api.FileCoverageDetails;
 import org.netbeans.modules.gsf.codecoverage.api.FileCoverageSummary;
 import org.netbeans.spi.project.ActionProvider;
+import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -78,12 +82,13 @@ import org.openide.util.NbBundle;
  */
 public class CoverageSideBar extends javax.swing.JPanel {
     private static final String COVERAGE_SIDEBAR_PROP = "coverageSideBar"; // NOI18N
-
+    private static final String COVERAGE_SIDEBAR_FOCUS = "coverageSideBarFocus"; // NOI18N
+    private static final String FOCUS_KEY_BINDING = "control shift F11";
     private Document document;
     private boolean enabled;
 
     /** Creates new form CoverageSideBar */
-    public CoverageSideBar(JTextComponent target) {
+    public CoverageSideBar(final JTextComponent target) {
         document = target.getDocument();
 
         String mimeType = (String) document.getProperty("mimeType"); // NOI18N
@@ -107,6 +112,14 @@ public class CoverageSideBar extends javax.swing.JPanel {
             updatePreferredSize();
         }
 
+        Action focus = new AbstractAction(COVERAGE_SIDEBAR_FOCUS) {
+
+            public void actionPerformed(ActionEvent e) {
+                CoverageSideBar.this.requestFocusInWindow();
+            }
+        };
+        target.getInputMap().put(KeyStroke.getKeyStroke(FOCUS_KEY_BINDING), COVERAGE_SIDEBAR_FOCUS);
+        target.getActionMap().put(COVERAGE_SIDEBAR_FOCUS, focus);
         document.putProperty(COVERAGE_SIDEBAR_PROP, this);
     }
 
@@ -193,7 +206,6 @@ public class CoverageSideBar extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-
         label = new JLabel();
         coverageBar = new CoverageBar();
         warningsLabel = new JLabel();
@@ -202,41 +214,38 @@ public class CoverageSideBar extends javax.swing.JPanel {
         clearButton = new JButton();
         reportButton = new JButton();
         jButton1 = new JButton();
+        Mnemonics.setLocalizedText(label,NbBundle.getMessage(CoverageSideBar.class, "CoverageSideBar.label.text")); // NOI18N
+        label.setToolTipText(NbBundle.getMessage(CoverageSideBar.class, "CoverageSideBar.label.toolTipText")); // NOI18N
+        label.setFocusable(false);
 
-        label.setText(NbBundle.getMessage(CoverageSideBar.class, "CoverageSideBar.label.text")); // NOI18N
         coverageBar.setMinimumSize(new Dimension(40, 10));
 
         warningsLabel.setForeground(UIManager.getDefaults().getColor("nb.errorForeground"));
-
-        testButton.setText(NbBundle.getMessage(CoverageSideBar.class, "CoverageSideBar.testButton.text")); // NOI18N
+        Mnemonics.setLocalizedText(testButton, NbBundle.getMessage(CoverageSideBar.class, "CoverageSideBar.testButton.text"));
         testButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 testOne(evt);
             }
         });
-
-        allTestsButton.setText(NbBundle.getMessage(CoverageSideBar.class, "CoverageSideBar.allTestsButton.text")); // NOI18N
+        Mnemonics.setLocalizedText(allTestsButton, NbBundle.getMessage(CoverageSideBar.class, "CoverageSideBar.allTestsButton.text"));
         allTestsButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 allTests(evt);
             }
         });
-
-        clearButton.setText(NbBundle.getMessage(CoverageSideBar.class, "CoverageSideBar.clearButton.text")); // NOI18N
+        Mnemonics.setLocalizedText(clearButton, NbBundle.getMessage(CoverageSideBar.class, "CoverageSideBar.clearButton.text"));
         clearButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 clearResults(evt);
             }
         });
-
-        reportButton.setText(NbBundle.getMessage(CoverageSideBar.class, "CoverageSideBar.reportButton.text")); // NOI18N
+        Mnemonics.setLocalizedText(reportButton, NbBundle.getMessage(CoverageSideBar.class, "CoverageSideBar.reportButton.text"));
         reportButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 report(evt);
             }
         });
-
-        jButton1.setText(NbBundle.getMessage(CoverageSideBar.class, "CoverageSideBar.jButton1.text")); // NOI18N
+        Mnemonics.setLocalizedText(jButton1, NbBundle.getMessage(CoverageSideBar.class, "CoverageSideBar.jButton1.text"));
         jButton1.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 done(evt);

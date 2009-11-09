@@ -43,6 +43,7 @@ package org.netbeans.modules.j2ee.ejbverification;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import org.netbeans.modules.j2ee.ejbverification.rules.BMnotPartOfRBIandLBI;
 import org.netbeans.modules.j2ee.ejbverification.rules.BeanHasDifferentLBIandRBI;
 import org.netbeans.modules.j2ee.ejbverification.rules.BeanImplementsBI;
@@ -89,7 +90,7 @@ public class EJBRulesRegistry {
                 problemsFound.addAll(newProblems);
             }
         }
-        
+        problemsFound.removeAll(Collections.singletonList(null));
         return problemsFound;
     }
 }

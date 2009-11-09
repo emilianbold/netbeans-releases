@@ -125,7 +125,7 @@ public final class CreateMethodGenerator extends AbstractMethodGenerator {
             if (!methodModel.getExceptions().contains("javax.ejb.CreateException")) {
                 exceptions.add("javax.ejb.CreateException");
             }
-            MethodModel methodModelCopy = MethodModel.create(
+            MethodModel localMethodModel = MethodModel.create(
                     methodModel.getName(),
                     local,
                     null,
@@ -135,7 +135,17 @@ public final class CreateMethodGenerator extends AbstractMethodGenerator {
                     );
             String iface = localHome != null ? localHome : local;
             FileObject fileObject = _RetoucheUtil.resolveFileObjectForClass(ejbClassFileObject, iface);
-            addMethod(methodModelCopy, fileObject, iface);
+            addMethod(localMethodModel, fileObject, iface);
+
+            MethodModel methodModelCopy = MethodModel.create(
+                    localMethodModel.getName(),
+                    localMethodModel.getReturnType(),
+                    null,
+                    localMethodModel.getParameters(),
+                    localMethodModel.getExceptions(),
+                    Collections.singleton(Modifier.PUBLIC)
+                    );
+            addMethod(methodModelCopy, ejbClassFileObject, ejbClass);
         }
         
         // remote interface
@@ -147,7 +157,7 @@ public final class CreateMethodGenerator extends AbstractMethodGenerator {
             if (!methodModel.getExceptions().contains("java.rmi.RemoteException")) {
                 exceptions.add("java.rmi.RemoteException");
             }
-            MethodModel methodModelCopy = MethodModel.create(
+            MethodModel remoteMethodModel = MethodModel.create(
                     methodModel.getName(),
                     remote,
                     null,
@@ -157,7 +167,17 @@ public final class CreateMethodGenerator extends AbstractMethodGenerator {
                     );
             String iface = remoteHome != null ? remoteHome : remote;
             FileObject fileObject = _RetoucheUtil.resolveFileObjectForClass(ejbClassFileObject, iface);
-            addMethod(methodModelCopy, fileObject, iface);
+            addMethod(remoteMethodModel, fileObject, iface);
+
+            MethodModel methodModelCopy = MethodModel.create(
+                    remoteMethodModel.getName(),
+                    remoteMethodModel.getReturnType(),
+                    null,
+                    remoteMethodModel.getParameters(),
+                    remoteMethodModel.getExceptions(),
+                    Collections.singleton(Modifier.PUBLIC)
+                    );
+            addMethod(methodModelCopy, ejbClassFileObject, ejbClass);
         }
         
         // ejb class

@@ -52,12 +52,15 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.core.UiUtils;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport.Kind;
 import org.netbeans.modules.php.editor.index.IndexedClass;
+import org.netbeans.modules.php.editor.index.IndexedConstant;
+import org.netbeans.modules.php.editor.index.IndexedFullyQualified;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.model.QualifiedName;
 import org.netbeans.modules.php.editor.model.UseElement;
+import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
@@ -66,6 +69,8 @@ import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionName;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
+import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
+import org.netbeans.modules.php.editor.parser.astnodes.Scalar.Type;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticConstantAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
@@ -163,7 +168,7 @@ public class AddUseImportRule extends AbstractRule {
                     if (!nodeName.getKind().isFullyQualified()) {
                         Collection<IndexedFunction> functions = context.getIndex().getFunctions(null, nodeName.toName().toString(), Kind.EXACT);
                         for (IndexedFunction indexedFunction : functions) {
-                            addImportHints(indexedFunction.getQualifiedName(), nodeName, currenNamespace, node);
+                            addImportHints(indexedFunction, nodeName, currenNamespace, node);
                         }
                     }
                     super.visit(node);
@@ -172,7 +177,16 @@ public class AddUseImportRule extends AbstractRule {
                     if (!nodeName.getKind().isFullyQualified()) {
                         Collection<IndexedClass> classes = context.getIndex().getClasses(null, nodeName.toName().toString(), Kind.EXACT);
                         for (IndexedClass indexedClass : classes) {
-                            addImportHints(indexedClass.getQualifiedName(), nodeName, currenNamespace, node);
+                            addImportHints(indexedClass, nodeName, currenNamespace, node);
+                        }
+                    }
+                    super.visit(node);
+                } else {
+                    final QualifiedName nodeName = QualifiedName.create(node);
+                    if (!nodeName.getKind().isFullyQualified()) {
+                        Collection<IndexedConstant> constants = context.getIndex().getConstants(null, nodeName.toName().toString(), Kind.EXACT);
+                        for (IndexedConstant cnst : constants) {
+                            addImportHints(cnst, nodeName, currenNamespace, node);
                         }
                     }
                     super.visit(node);
@@ -180,8 +194,35 @@ public class AddUseImportRule extends AbstractRule {
             }
         }
 
-        private void addImportHints(QualifiedName indexedName, final QualifiedName nodeName, NamespaceDeclaration currenNamespace, NamespaceName node) {
-            final QualifiedName importName = QualifiedName.getPrefix(indexedName, nodeName, true);
+        @Override
+        public void visit(Scalar node) {
+            if (isInside(node.getStartOffset(), lineBegin, lineEnd)) {
+                List<ASTNode> path = getPath();
+                NamespaceDeclaration currenNamespace = null;
+                for (ASTNode oneNode : path) {
+                    if (oneNode instanceof NamespaceDeclaration) {
+                        currenNamespace = (NamespaceDeclaration) oneNode;
+                    }
+                }
+                String stringValue = node.getStringValue();
+                if (stringValue != null && stringValue.trim().length() > 0 &&
+                        node.getScalarType() == Type.STRING && !NavUtils.isQuoted(stringValue)) {
+                    final QualifiedName nodeName = QualifiedName.create(stringValue);
+                    if (!nodeName.getKind().isFullyQualified()) {
+                        Collection<IndexedConstant> constants = context.getIndex().getConstants(null, nodeName.toName().toString(), Kind.EXACT);
+                        for (IndexedConstant cnst : constants) {
+                            addImportHints(cnst, nodeName, currenNamespace, node);
+                        }
+                    }
+                }
+            }
+            super.visit(node);
+        }
+
+        private void addImportHints(IndexedFullyQualified idxElement, final QualifiedName nodeName, NamespaceDeclaration currenNamespace, ASTNode node) {
+            final QualifiedName indexedName = idxElement.getQualifiedName();
+            QualifiedName importName = QualifiedName.getPrefix( indexedName, nodeName, true);
+
             if (importName != null) {
                 final String retvalStr = importName.toString();
                 NamespaceScope currentScope = ModelUtils.getNamespaceScope(currenNamespace, context.fileScope);
@@ -195,12 +236,14 @@ public class AddUseImportRule extends AbstractRule {
                         }
                     });
                     if (suitableUses.isEmpty()) {
-                        AddImportFix importFix = new AddImportFix(doc, currentScope, importName);
-                        hints.add(new Hint(AddUseImportRule.this,
-                                importFix.getDescription(),
-                                context.parserResult.getSnapshot().getSource().getFileObject(),
-                                new OffsetRange(node.getStartOffset(), node.getEndOffset()),
-                                Collections.<HintFix>singletonList(importFix), 500));
+                        if (idxElement instanceof IndexedClass || !nodeName.getKind().isUnqualified()) {
+                            AddImportFix importFix = new AddImportFix(doc, currentScope, importName);
+                            hints.add(new Hint(AddUseImportRule.this,
+                                    importFix.getDescription(),
+                                    context.parserResult.getSnapshot().getSource().getFileObject(),
+                                    new OffsetRange(node.getStartOffset(), node.getEndOffset()),
+                                    Collections.<HintFix>singletonList(importFix), 500));
+                        }
 
                         QualifiedName name = QualifiedName.getPreferredName(indexedName, currentScope);
                         if (name != null) {
@@ -326,14 +369,14 @@ public class AddUseImportRule extends AbstractRule {
             return node.getStartOffset();
         }
     }
-
-    private boolean isClassName(ASTNode parentNode) {
+    
+    private static boolean isClassName(ASTNode parentNode) {
         return parentNode instanceof ClassName || parentNode instanceof FormalParameter ||
                 parentNode instanceof StaticConstantAccess || parentNode instanceof StaticMethodInvocation ||
                 parentNode instanceof StaticFieldAccess || parentNode instanceof ClassDeclaration;
     }
 
-    private boolean isFunctionName(ASTNode parentNode) {
+    private static boolean isFunctionName(ASTNode parentNode) {
         return parentNode instanceof FunctionName;
     }
 }

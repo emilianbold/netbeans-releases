@@ -42,15 +42,19 @@ package org.netbeans.modules.websvc.rest.projects;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
+import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
+import org.netbeans.modules.j2ee.dd.api.web.ServletMapping25;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
@@ -60,14 +64,20 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.websvc.api.jaxws.project.LogUtils;
+import org.netbeans.modules.websvc.rest.model.api.RestApplication;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
+import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
 import org.netbeans.modules.websvc.wsstack.jaxrs.JaxRs;
 import org.netbeans.modules.websvc.wsstack.jaxrs.JaxRsStackProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -108,7 +118,7 @@ public class WebProjectRestSupport extends WebRestSupport {
                 return;
             }
 
-            Servlet adaptorServlet = getRestServletAdaptor(webApp);
+            Servlet adaptorServlet = getRestServletAdaptorByName(webApp,REST_SERVLET_ADAPTOR);
             if (adaptorServlet != null) {
                 // Starting with jersey 0.8, the adaptor class is under 
                 // com.sun.jersey package instead of com.sun.we.rest package.
@@ -129,16 +139,21 @@ public class WebProjectRestSupport extends WebRestSupport {
 
     public void ensureRestDevelopmentReady() throws IOException {
         boolean needsRefresh = false;
+        String resourceUrl = REST_SERVLET_ADAPTOR_MAPPING;
         if (!isRestSupportOn()) {
             needsRefresh = true;
             setProjectProperty(REST_SUPPORT_ON, "true");
+            resourceUrl = setApplicationConfigProperty(isAnnotationConfigAvailable());
         }
 
         extendBuildScripts();
 
         addSwdpLibrary();
 
-        addResourceConfigToWebApp();
+        String restConfigType = getProjectProperty(PROP_REST_CONFIG_TYPE);
+        if (restConfigType == null || CONFIG_TYPE_DD.equals(restConfigType)) {
+            addResourceConfigToWebApp(resourceUrl);
+        }
         ProjectManager.getDefault().saveProject(getProject());
         if (needsRefresh) {
             refreshRestServicesMetadataModel();
@@ -151,7 +166,7 @@ public class WebProjectRestSupport extends WebRestSupport {
                     ClassPath.COMPILE,
                     ClassPath.EXECUTE
                 });
-        setProjectProperty(REST_SUPPORT_ON, "false");
+        setProjectProperty(REST_SUPPORT_ON, "false"); //NOI18N
         ProjectManager.getDefault().saveProject(getProject());
     }
 
@@ -304,6 +319,95 @@ public class WebProjectRestSupport extends WebRestSupport {
         params[1] = project.getClass().getName();
         params[2] = "RESOURCE"; // NOI18N
         LogUtils.logWsDetect(params);
+    }
+
+    @Override
+    public String getApplicationPath() throws IOException {
+        String pathFromDD = getApplicationPathFromDD();
+        String applPath = getApplicationPathFromAnnotations(pathFromDD);
+        return (applPath == null ? super.getApplicationPath() : applPath);
+    }
+
+    private String getApplicationPathFromAnnotations(final String applPathFromDD) {
+        List<RestApplication> restApplications = getRestApplications();
+        if (applPathFromDD == null) {
+            return getApplicationPathFromDialog(restApplications);
+        } else {
+            if (restApplications.size() == 0) {
+                return applPathFromDD;
+            } else {
+                boolean found = false;
+                for (RestApplication appl: restApplications) {
+                    if (applPathFromDD.equals(appl.getApplicationPath())) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    restApplications.add(new RestApplication() {
+                        public String getApplicationPath() {
+                            return applPathFromDD;
+                        }
+
+                        public String getApplicationClass() {
+                            return "web.xml"; //NOI18N
+                        }
+                    });
+                }
+                return getApplicationPathFromDialog(restApplications);
+            }
+        }
+    }
+
+    private String getApplicationPathFromDialog(List<RestApplication> restApplications) {
+        if (restApplications.size() == 1) {
+            return restApplications.get(0).getApplicationPath();
+        } else {
+            RestApplicationsPanel panel = new RestApplicationsPanel(restApplications);
+            DialogDescriptor desc = new DialogDescriptor(panel,
+                    NbBundle.getMessage(WebProjectRestSupport.class,"TTL_RestResourcesPath"));
+            DialogDisplayer.getDefault().notify(desc);
+            if (NotifyDescriptor.OK_OPTION.equals(desc.getValue())) {
+                return panel.getApplicationPath();
+            }
+        }
+        return null;
+    }
+
+    private boolean isAnnotationConfigAvailable() throws IOException {
+        WebApp webApp = findWebApp();
+        if (webApp != null && getRestServletMapping(webApp) != null) {
+            return false;
+        }
+        SourceGroup[] sourceGroups = SourceGroupSupport.getJavaSourceGroups(project);
+        if (sourceGroups.length>0) {
+            ClassPath cp = ClassPath.getClassPath(sourceGroups[0].getRootFolder(), ClassPath.COMPILE);
+            if (cp.findResource("javax/ws/rs/ApplicationPath.class") != null && cp.findResource("javax/ws/rs/core/Application.class") != null) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private String setApplicationConfigProperty(boolean annotationConfigAvailable) {
+        ApplicationConfigPanel configPanel = new ApplicationConfigPanel(annotationConfigAvailable);
+        DialogDescriptor desc = new DialogDescriptor(configPanel,
+                NbBundle.getMessage(WebProjectRestSupport.class, "TTL_ApplicationConfigPanel"));
+        DialogDisplayer.getDefault().notify(desc);
+        if (NotifyDescriptor.OK_OPTION.equals(desc.getValue())) {
+            String configType = configPanel.getConfigType();
+            setProjectProperty(WebRestSupport.PROP_REST_CONFIG_TYPE, configType);
+            if (WebRestSupport.CONFIG_TYPE_IDE.equals(configType)) {
+                String applicationPath = configPanel.getApplicationPath();
+                if (applicationPath.startsWith("/")) {
+                    applicationPath = applicationPath.substring(1);
+                }
+                setProjectProperty(WebRestSupport.PROP_REST_RESOURCES_PATH, applicationPath);
+            } else if (WebRestSupport.CONFIG_TYPE_DD.equals(configType)) {
+                return configPanel.getApplicationPath();
+            }
+        }
+        return null;
     }
    
 }

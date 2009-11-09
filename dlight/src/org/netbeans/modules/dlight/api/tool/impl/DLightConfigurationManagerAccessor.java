@@ -87,6 +87,9 @@ public abstract class DLightConfigurationManagerAccessor {
 
     public abstract DLightConfiguration registerConfiguration(DLightConfigurationManager manager, String configurationName, String displayedName, String category, List<String> platforms, String collector, List<String> indicators);
 
+    public abstract DLightConfiguration registerConfigurationAsACopy(DLightConfigurationManager manager, DLightConfiguration configuration,
+                 String configurationName, String displayedName, String category, List<String> platforms, String collector, List<String> indicators);
+
     public abstract boolean removeConfiguration(String configurationName);
 
     public abstract boolean canRemoveConfiguration(String configurationName);
