@@ -828,7 +828,7 @@ public class ChatPanel extends javax.swing.JPanel {
             }
             return;
         }
-        if (evt.isControlDown() || evt.isAltDown() || evt.isShiftDown()) {
+        if (evt.isControlDown() || evt.isAltDown()) {
             if (evt.getKeyCode() == KeyEvent.VK_UP) {
                 if (history.isOnStart()) {
                     history.setEditedMessage(outbox.getText());
