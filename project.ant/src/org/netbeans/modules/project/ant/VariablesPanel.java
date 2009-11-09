@@ -85,6 +85,8 @@ public class VariablesPanel extends javax.swing.JPanel implements ExplorerManage
         JPanel inset = new JPanel(new BorderLayout());
         inset.setBorder(new EmptyBorder(12,12,0,12));
         inset.add(this);
+        inset.getAccessibleContext().setAccessibleName(NbBundle.getMessage(VariablesPanel.class, "AN_Manage_Variables"));
+        inset.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(VariablesPanel.class, "AD_Manage_Variables"));
         DialogDescriptor dd = new DialogDescriptor(inset, NbBundle.getMessage(VariablesPanel.class, "TITLE_Manage_Variables")); // NOI18N
         dd.setModal(true);
         final JButton ok = new JButton(NbBundle.getMessage(VariablesPanel.class, "BUTTON_OK")); // NOI18N
