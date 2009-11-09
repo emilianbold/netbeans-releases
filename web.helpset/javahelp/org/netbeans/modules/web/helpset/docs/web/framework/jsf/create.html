@@ -18,35 +18,73 @@
 
         <p><small><a href="#seealso">See Also</a></small></p>
 
-        <p><a href="about_framework.html">Sun's JavaServer Faces</a> (JSF) technology (JSR-127) is the
-            standard Java API for building user interface components in web applications. </p>
+        <p>You can create a new JavaServer Faces application using the New Web Application
+            wizard. JSF support is determined based on the Java EE version you specify in
+            the wizard.</p>
 
-    <p>The JSF tag libraries and supporting files are bundled with the IDE.</p>
+        <table border="1" cellpadding="5" cellspacing="0">
+            <tr valign="top">
+                <th scope="col" align="left">Java EE Version</th>
+                <th scope="col" align="left">JSF Version</th>
+            </tr>
+            <tr>
+                <td>6</td>
+                <td>2.0</td>
+            </tr>
+            <tr>
+                <td>5</td>
+                <td>1.2</td>
+            </tr>
+        </table>
 
-        <p><b>To create a new web application with JSF support:</b></p>
+        <p>When you create a new web application with JSF support, an empty project template
+            is generated that contains various JSF-specific artifacts. JSF 2.0 support is
+            defined by the following:</p>
+
+        <ul>
+            <li>Facelets files (<code>.xhtml</code>) are the default page language</li>
+            <li>JSF 2.0 libraries are added to the project's classpath</li>
+            <li>The Faces servlet and servlet mapping are added to the project's deployment descriptor</li>
+        </ul>
+
+        <p>For JSF 1.2, support constitutes the following:</p>
+
+        <ul>
+            <li>JSP files (<code>.jsp</code>) are the default page language</li>
+            <li>JSF 1.2 libraries are added to the project's classpath</li>
+            <li>The Faces servlet and servlet mapping are added to the project's deployment descriptor</li>
+            <li>A Faces configuration file (<code>faces-config.xml</code>) is included in the project</li>
+        </ul>
+
+        <h4>To create a new web application with JSF support:</h4>
 
         <ol>
-            <li>Choose File &gt; New Project (Ctrl-Shift-N). </li>
-            <li>From the Java Web category, select <a href="../../../csh/projwiz_standard/PanelConfigureProject.html">Web Application</a>.</li>
-            <li>Continue with the wizard until you reach the Frameworks panel. Select JavaServer Faces and click Finish. The new project opens in the IDE.</li>
-    </ol>
+            <li>Choose File &gt; New Project (Ctrl-Shift-N).</li>
+            <li>From the Java Web category, select
+                <a href="../../csh/projwiz_standard/PanelConfigureProject.html">Web Application</a>.</li>
+            <li>Continue with the wizard until you reach the Frameworks panel. Select JavaServer Faces.
 
-        <p>After you create a web application with JSF support, you can use the <a href="jsf/file_ManagedBeanPanel.html">New
-            JSF Managed Bean Wizard</a>.</p>
+                <br><br>
+                After selecting JavaServer Faces, various configuration options become available to you.
+                You can determine how your project has access to JSF libraries. Click the Configuration
+                tab to specify how the Faces servlet will be registered in the project's deployment
+                descriptor, or change the project's default page language.</li>
+
+            <li>Click Finish. The new project is generated and opens in the IDE.</li>
+        </ol>
+
+        <p>After you create a web application with JSF support, you can begin using <a href="#">JSF-specific
+                wizards</a> for your project.</p>
 
         <dl>
             <dt><a name="seealso">See Also</a></dt>
-            <dd><a href="jsf/about_jsf_support.html">About JavaServer Faces Framework Support</a></dd>            
-            <dd><a href="framework_jsf_add.html">Adding JSF Support to an Existing Application</a></dd>
-            <dd><a href="about_framework.html">About Web Application Frameworks</a></dd>
+            <dd><a href="about.html">About JavaServer Faces Framework Support</a></dd>
+            <dd><a href="add.html">Adding JavaServer Faces Framework Support to an Existing Application</a></dd>
+            <dd><a href="../about_framework.html">About Web Application Frameworks</a></dd>
         </dl>
 
         <hr><small><a href="../../../credits.html">Legal Notices</a></small>
-
-        <table cellpadding="50" border="0">
-            <tr><td>&nbsp;</td></tr>
-        </table>
-
+        <table cellpadding="20" border="0"><tr><td>&nbsp;</td></tr></table>
     </body>
 </html>
 
