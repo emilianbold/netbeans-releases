@@ -62,13 +62,19 @@
     <condition property="run.jvm.model" value="">
         <os family="windows"/>
     </condition>
-    <condition property="run.jvm.model" value="-d64">
+  <condition property="run.jvm.model" value="-d64">
+      <!-- Modified for NetBeans builds: use the -d64 switch only if sun.arch.data.model is 64-Bit
+       (otherwise the build fails on 64-bit machines w/o a 64-bit JVM; os.arch doesn't appear to return
+       the architecture of the JVM) -->
+      <equals arg1="64" arg2="${sun.arch.data.model}"/>
+      <!--
       <or>
         <os arch="amd64"/>
         <os arch="x86_64"/>
         <os arch="sparcv9"/>
         <os arch="s390x"/>
       </or>
+       -->
     </condition>
     <condition property="run.jvm.model" value="-d32">
       <or>
