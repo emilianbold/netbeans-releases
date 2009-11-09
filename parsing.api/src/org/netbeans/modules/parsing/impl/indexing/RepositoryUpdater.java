@@ -3205,11 +3205,11 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                         if (protectedMode == 0) {
                             enforceWork = true;
                         } else {
-//                            LOGGER.log(Level.FINE, "Won't enforce {0} when in protected mode", work); //NOI18N
-//                            wait = false;
-                            // nobody should actually call schedule(work, true) from
-                            // within a UserTask, SchedulerTask or Indexer
-                            throw new IllegalStateException("Won't enforce " + work + " when in protected mode"); //NOI18N
+                            // XXX: #176049, this may happen now when versioning uses
+                            // protected mode to turn off indexing during VCS operations
+                            LOGGER.log(Level.FINE, "Won't enforce {0} when in protected mode", work); //NOI18N
+                            wait = false;
+//                            throw new IllegalStateException("Won't enforce " + work + " when in protected mode"); //NOI18N
                         }
                     }
 
