@@ -575,7 +575,7 @@ public class BugtrackingUtil {
 
     public static int getColumnWidthInPixels(int widthInLeters, JComponent comp) {
         StringBuffer sb = new StringBuffer();
-        for (int i = 0; i < widthInLeters; i++, sb.append("u"));                // NOI18N
+        for (int i = 0; i < widthInLeters; i++, sb.append("w"));                // NOI18N
         return getColumnWidthInPixels(sb.toString(), comp);
     }
 
