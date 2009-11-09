@@ -159,6 +159,14 @@ public class LiveEngine implements ObjectMap, Visitor {
         
     
     public Map<Object,Path> trace(Collection<Object> objs, Set<Object> roots) {
+        try {
+            return traceImpl(objs, roots);
+        } catch (CancelException ex) {
+            return null;
+        }
+    }
+
+    private Map<Object,Path> traceImpl(Collection<Object> objs, Set<Object> roots) {
         if (progress != null) {
             long usedMemory = Utils.getUsedMemory();
             objExpected = (int)(usedMemory / 50);
@@ -175,6 +183,8 @@ public class LiveEngine implements ObjectMap, Visitor {
         try {
             InsaneEngine iEngine = new InsaneEngine(this, filter, this, true);
             iEngine.traverse(s.keySet());
+        } catch (CancelException ex) {
+            throw ex;
         } catch (ObjectFoundException ex) {
         } catch (Exception e){
             e.printStackTrace();
