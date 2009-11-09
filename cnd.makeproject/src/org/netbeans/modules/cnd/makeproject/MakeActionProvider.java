@@ -90,7 +90,7 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
-import org.netbeans.modules.cnd.api.utils.SunStudioUserCounter;
+import org.netbeans.modules.dlight.util.usagetracking.SunStudioUserCounter;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
@@ -1226,7 +1226,7 @@ public class MakeActionProvider implements ActionProvider {
         }
 
         // user counting mode
-        if (cs.getCompilerFlavor().isSunStudioCompiler()) {
+        if (cs.getCompilerFlavor().isSunStudioCompiler() && !CndUtils.isUnitTestMode()) {
             SunStudioUserCounter.countIDE(cs.getDirectory(), execEnv);
         }
         if (runBTA) {

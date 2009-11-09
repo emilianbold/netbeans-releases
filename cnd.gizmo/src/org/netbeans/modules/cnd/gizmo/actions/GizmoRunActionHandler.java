@@ -74,11 +74,9 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminalProvider;
 import org.netbeans.modules.cnd.api.remote.RemoteBinaryService;
 import org.netbeans.modules.cnd.api.remote.ServerList;
-import org.netbeans.modules.cnd.api.utils.SunStudioUserCounter;
 import org.netbeans.modules.cnd.gizmo.CppSymbolDemanglerFactoryImpl;
 import org.netbeans.modules.cnd.gizmo.api.GizmoOptionsProvider;
 import org.netbeans.modules.cnd.gizmo.spi.GizmoOptions;
-import org.netbeans.modules.dlight.management.api.DLightManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -163,9 +161,6 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         targetConf.putInfo(GizmoServiceInfo.GIZMO_DEMANGLE_UTILITY, dem_util_path);
         targetConf.putInfo(GizmoServiceInfo.CPP_COMPILER, compilerSet.isGnuCompiler() ? CppSymbolDemanglerFactoryImpl.CPPCompiler.GNU.toString() : CppSymbolDemanglerFactoryImpl.CPPCompiler.SS.toString());
         targetConf.putInfo(GizmoServiceInfo.CPP_COMPILER_BIN_PATH, binDir);
-        if (compilerSet.isSunCompiler()) {
-            SunStudioUserCounter.countTool(binDir, execEnv, "gizmo"); // NOI18N
-        }
         targetConf.setWorkingDirectory(runDirectory);
         int consoleType = pae.getProfile().getConsoleType().getValue();
         if (consoleType == RunProfile.CONSOLE_TYPE_DEFAULT) {
