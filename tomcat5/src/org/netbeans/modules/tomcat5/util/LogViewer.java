@@ -285,6 +285,15 @@ public class LogViewer extends Thread {
             }
             try {
                 while (!stop && !inOut.isClosed()) {
+                    Process process = tomcatManager.getTomcatProcess();
+                    try {
+                        process.exitValue();
+                        // finished
+                        break;
+                    } catch (IllegalThreadStateException ex) {
+                        //ok running
+                    }
+
                     // check whether a log file has rotated
                     timestamp = getTimestamp();
                     if (!timestamp.equals(oldTimestamp)) {
