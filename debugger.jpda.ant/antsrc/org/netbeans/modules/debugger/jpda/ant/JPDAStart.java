@@ -728,20 +728,22 @@ public class JPDAStart extends Task implements Runnable {
 
         public Path getPlainPath() {
             if (plainPath == null) {
-                Path pp;
-                if (path != null) {
-                    pp = new Path(getProject(), path);
-                } else {
-                    pp = new Path(getProject());
-                }
-                pp.setLocation(getLocation());
-                pp.setDescription(getDescription());
                 if (getRefid() != null) {
+                    Path pp;
+                    if (path != null) {
+                        pp = new Path(getProject(), path);
+                    } else {
+                        pp = new Path(getProject());
+                    }
+                    pp.setLocation(getLocation());
+                    pp.setDescription(getDescription());
                     pp.setRefid(getRefid());
+                    //pp.setChecked(isChecked());
+                    //pp.union = union == null ? union : (Union) union.clone();
+                    plainPath = pp;
+                } else {
+                    plainPath = this;
                 }
-                //pp.setChecked(isChecked());
-                //pp.union = union == null ? union : (Union) union.clone();
-                plainPath = pp;
             }
             return plainPath;
         }
