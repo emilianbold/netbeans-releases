@@ -28,7 +28,7 @@
                       <Component id="toolsList" min="-2" pref="288" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="scrollPane" pref="312" max="32767" attributes="0"/>
+                          <Component id="scrollPane" pref="327" max="32767" attributes="0"/>
                           <Component id="detailsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
