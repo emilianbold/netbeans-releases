@@ -52,6 +52,7 @@ import org.netbeans.modules.j2ee.deployment.config.J2eeModuleAccessor;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeApplication;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ResourceChangeReporter;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.execution.DeploymentTarget;
@@ -86,6 +87,10 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
     
     public ModuleChangeReporter getModuleChangeReporter() {
         return moduleProvider.getModuleChangeReporter ();
+    }
+
+    public ResourceChangeReporter getResourceChangeReporter() {
+        return moduleProvider.getResourceChangeReporter();
     }
     
     /**
@@ -251,6 +256,7 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
         for (int i=0; i< targetModules.length; i++) {
             String fname = getTargetModuleFileName();
             if (fname != null) {
+                targetModules[i].updateTimestamp();
                 targetModules[i].save(fname);
             }
         }

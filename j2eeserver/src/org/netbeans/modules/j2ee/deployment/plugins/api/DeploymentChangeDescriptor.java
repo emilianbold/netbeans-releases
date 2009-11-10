@@ -127,8 +127,32 @@ public final class DeploymentChangeDescriptor implements AppChangeDescriptor {
         return desc.classesChanged();
     }
 
+    /**
+     * Returns <code>true</code> if the resources intended to be delivered to
+     * server (such as connection pools) were changed.
+     *
+     * @return <code>true</code> if server side reources were changed
+     * @since 1.63
+     */
     public boolean serverResourcesChanged() {
         return serverResourcesChanged;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("classesChanged: ").append(classesChanged());
+        builder.append(", ");
+        builder.append("descriptorChanged: ").append(descriptorChanged());
+        builder.append(", ");
+        builder.append("ejbsChanged: ").append(ejbsChanged());
+        builder.append(", ");
+        builder.append("manifestChanged: ").append(manifestChanged());
+        builder.append(", ");
+        builder.append("serverDescriptorChanged: ").append(serverDescriptorChanged());
+        builder.append(", ");
+        builder.append("serverResourcesChanged: ").append(serverResourcesChanged());
+        return builder.toString();
     }
 
 }

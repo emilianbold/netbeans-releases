@@ -75,6 +75,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment.Mode;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeApplication;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ResourceChangeReporter;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener.Artifact;
 import org.netbeans.modules.j2ee.deployment.execution.ModuleConfigurationProvider;
 import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
@@ -224,12 +225,14 @@ public class TargetServer {
         return true;
     }
 
-    private AppChangeDescriptor distributeChanges(TargetModule targetModule, ProgressUI ui) throws IOException {
+    private DeploymentChangeDescriptor distributeChanges(TargetModule targetModule, ProgressUI ui) throws IOException {
         ServerFileDistributor sfd = new ServerFileDistributor(instance, dtarget);
         try {
             ui.setProgressObject(sfd);
             ModuleChangeReporter mcr = dtarget.getModuleChangeReporter();
-            AppChangeDescriptor acd = sfd.distribute(targetModule, mcr);
+            ResourceChangeReporter rcr = dtarget.getResourceChangeReporter();
+            DeploymentChangeDescriptor acd = sfd.distribute(targetModule, mcr, rcr);
+            LOGGER.log(Level.FINE, "Change descriptor is {0}", acd);
             return acd;
         } finally {
             ui.setProgressObject(null);
@@ -239,7 +242,9 @@ public class TargetServer {
     private DeploymentChangeDescriptor distributeChangesOnSave(TargetModule targetModule, Iterable<Artifact> artifacts) throws IOException {
         ServerFileDistributor sfd = new ServerFileDistributor(instance, dtarget);
         ModuleChangeReporter mcr = dtarget.getModuleChangeReporter();
-        DeploymentChangeDescriptor acd = sfd.distributeOnSave(targetModule, mcr, artifacts);
+        ResourceChangeReporter rcr = dtarget.getResourceChangeReporter();
+        DeploymentChangeDescriptor acd = sfd.distributeOnSave(targetModule, mcr, rcr, artifacts);
+        LOGGER.log(Level.FINE, "Change descriptor is {0}", acd);
         return acd;
     }
 
@@ -635,7 +640,7 @@ public class TargetServer {
             // defend against incomplete J2eeModule objects.
             IncrementalDeployment lincremental = IncrementalDeployment.getIncrementalDeploymentForModule(incremental, deployable);
             if (lincremental != null && hasDirectory && canFileDeploy(redeployTargetModules, deployable)) {
-                AppChangeDescriptor acd = distributeChanges(redeployTargetModules[0], ui);
+                DeploymentChangeDescriptor acd = distributeChanges(redeployTargetModules[0], ui);
                 if (anyChanged(acd)) {
                     ui.progress(NbBundle.getMessage(TargetServer.class, "MSG_IncrementalDeploying", redeployTargetModules[0]));
                     po = lincremental.incrementalDeploy(redeployTargetModules[0].delegate(), acd);
@@ -708,9 +713,9 @@ public class TargetServer {
         }
     }
 
-    public static boolean anyChanged(AppChangeDescriptor acd) {
+    public static boolean anyChanged(DeploymentChangeDescriptor acd) {
         return (acd.manifestChanged() || acd.descriptorChanged() || acd.classesChanged()
-        || acd.ejbsChanged() || acd.serverDescriptorChanged());
+        || acd.ejbsChanged() || acd.serverDescriptorChanged() || acd.serverResourcesChanged());
     }
 
     public boolean supportsDeployOnSave(TargetModule[] modules) throws IOException {
