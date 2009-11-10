@@ -40,7 +40,7 @@
  */
 package org.netbeans.modules.javacard.ri.platform.installer;
 
-import java.awt.event.ActionEvent;
+import java.awt.Component;
 import org.netbeans.modules.javacard.common.KeysAndValues;
 import org.netbeans.modules.javacard.common.GuiUtils;
 import static org.netbeans.modules.javacard.spi.JavacardDeviceKeyNames.*;
@@ -52,12 +52,10 @@ import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
-import javax.swing.*;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
-import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -68,6 +66,15 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.AbstractButton;
+import javax.swing.ButtonModel;
+import javax.swing.ComboBoxEditor;
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.ListCellRenderer;
 import javax.swing.text.Document;
 import org.netbeans.api.validation.adapters.WizardDescriptorAdapter;
 import org.netbeans.modules.javacard.common.JCConstants;
@@ -81,7 +88,6 @@ import org.netbeans.validation.api.Validator;
 import org.netbeans.validation.api.builtin.Validators;
 import org.netbeans.validation.api.conversion.Converter;
 import org.netbeans.validation.api.ui.ValidationGroup;
-import org.netbeans.validation.api.ui.ValidationListener;
 import org.netbeans.validation.api.ui.ValidationUI;
 import org.openide.awt.HtmlRenderer;
 import org.openide.filesystems.FileObject;
@@ -94,7 +100,7 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
     private final ChangeSupport supp = new ChangeSupport(this);
     private boolean updating;
     private ValidationGroup group = ValidationGroup.create(this);
-
+    private final ComboEditor ceditor = new ComboEditor();
     public void run() {
         initComponents();
         ProtocolRenderer r = new ProtocolRenderer();
@@ -177,27 +183,18 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
                 Validators.MAY_NOT_START_WITH_DIGIT.forString(false), Validators.URL_MUST_BE_VALID.forString(false),
                 remoteValidator);
         Validator<Document> v = Converter.find(String.class, Document.class).convert(new PortMismatchValidator());
-        RemoteCheckboxValidationListener val = new RemoteCheckboxValidationListener();
-        remoteCheckbox.addActionListener(val);
-        group.add (val);
+        group.add (new AbstractButton[] { remoteCheckbox }, new Validator<ButtonModel[]>() {
+            public boolean validate(Problems prblms, String string, ButtonModel[] t) {
+                return remoteValidator.validate(prblms, string, t[0].isSelected() + "");
+            }
+        });
         group.add (httpPortTextField, v);
         group.add (serverUrlField, v);
         group.add (httpPortTextField, v);
         group.add (hostComboBox, Validators.REQUIRE_NON_EMPTY_STRING,
                 Validators.HOST_NAME_OR_IP_ADDRESS.forString(true), remoteValidator);
-        Component hed = hostComboBox.getEditor().getEditorComponent();
-        if (hed instanceof JTextField) {
-            group.add ((JTextField) hed, Validators.HOST_NAME_OR_IP_ADDRESS);
-            ((JTextField) hed).getDocument().addDocumentListener(this);
-        }
-        hostComboBox.getEditor().addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent e) {
-                insertUpdate(null);
-                group.validateAll();
-            }
-
-        });
+        hostComboBox.setEditor(ceditor);
+        group.add (ceditor.field, Validators.REQUIRE_NON_EMPTY_STRING, Validators.HOST_NAME_OR_IP_ADDRESS);
         for (Component c : getComponents()) {
             localizeName (c);
         }
@@ -206,6 +203,63 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
         cardManagerUrlField.getDocument().addDocumentListener(this);
         serverUrlField.getDocument().addDocumentListener(this);
         HelpCtx.setHelpIDString(this, "org.netbeans.modules.javacard.CustomizeDevice"); //NOI18N
+    }
+
+    private class ComboEditor implements ComboBoxEditor, DocumentListener {
+        private final JTextField field = new JTextField();
+        ComboEditor() {
+            field.getDocument().addDocumentListener(this);
+        }
+
+        public Component getEditorComponent() {
+            return field;
+        }
+
+        private boolean inSetItem;
+        public void setItem(final Object value) {
+            if (inSetItem) return;
+            inSetItem = true;
+            try {
+                group.modifyComponents(new Runnable() {
+                    public void run() {
+                        try {
+                            field.setText (value == null ? "" : value.toString()); //NOI18N
+                        } catch (IllegalStateException e) {}
+                    }
+                });
+                
+            } finally {
+                inSetItem = false;
+            }
+        }
+
+        public Object getItem() {
+            return field.getText();
+        }
+
+        public void selectAll() {
+            field.selectAll();
+        }
+
+        public void addActionListener(ActionListener l) {
+            //do nothing
+        }
+
+        public void removeActionListener(ActionListener l) {
+            //do nothing
+        }
+
+        public void insertUpdate(DocumentEvent e) {
+            hostComboBox.setSelectedItem(field.getText());
+        }
+
+        public void removeUpdate(DocumentEvent e) {
+            insertUpdate(e);
+        }
+
+        public void changedUpdate(DocumentEvent e) {
+            insertUpdate(e);
+        }
     }
 
     void initHostModel() {
@@ -224,21 +278,6 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
         }
         if (!oneTwentySevenFound) {
             mdl.addElement("127.0.0.1"); //NOI18N
-        }
-    }
-
-    private class RemoteCheckboxValidationListener extends ValidationListener implements ActionListener {
-        public void actionPerformed(ActionEvent e) {
-            validate();
-        }
-
-        @Override
-        protected boolean validate(Problems prblms) {
-            if (!inUpdate) {
-                return new RemoteVsLocalhostMismatchValidator().validate(prblms, null, null);
-            } else {
-                return true;
-            }
         }
     }
 
