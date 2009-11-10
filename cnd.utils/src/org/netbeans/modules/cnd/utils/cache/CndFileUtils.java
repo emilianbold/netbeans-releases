@@ -53,7 +53,11 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.netbeans.modules.cnd.spi.utils.FileSystemsProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
 
@@ -63,6 +67,7 @@ import org.openide.util.Utilities;
  */
 public final class CndFileUtils {
     private static final boolean TRUE_CASE_SENSITIVE_SYSTEM;
+    private static final FileChangeListener FSL = new FSListener();
 
     private CndFileUtils() {
     }
@@ -75,6 +80,7 @@ public final class CndFileUtils {
             absPath = absPath.toUpperCase();
             caseSenstive = !new File(absPath).exists();
             tmpFile.delete();
+            FileUtil.addFileChangeListener(FSL);
         } catch (IOException ex) {
             caseSenstive = Utilities.isUnix() && !Utilities.isMac();
         }
@@ -399,4 +405,66 @@ public final class CndFileUtils {
         }
 
     }
+
+    private static final class FSListener implements FileChangeListener {
+
+        private FSListener() {
+        }
+
+        public void fileFolderCreated(FileEvent fe) {
+            clearCachesAboutFile(fe);
+        }
+
+        public void fileDataCreated(FileEvent fe) {
+            clearCachesAboutFile(fe);
+        }
+
+
+        public void fileDeleted(FileEvent fe) {
+            clearCachesAboutFile(fe);
+        }
+
+        public void fileRenamed(FileRenameEvent fe) {
+            final File parent = clearCachesAboutFile(fe);
+            // update info about old file as well
+            if (parent != null) {
+                final String ext = fe.getExt();
+                final String oldName = (ext.length() == 0) ? fe.getName() : (fe.getName() + "." + ext); // NOI18N
+                clearCachesAboutFile(new File(parent, oldName), false);
+            }
+        }
+
+        public void fileChanged(FileEvent fe) {
+            // no update
+        }
+        
+        public void fileAttributeChanged(FileAttributeEvent fe) {
+            // no update
+        }
+
+        private File clearCachesAboutFile(FileEvent fe) {
+            return clearCachesAboutFile(FileUtil.toFile(fe.getFile()), true);
+        }
+        
+        private File clearCachesAboutFile(File f, boolean withParent) {
+            cleanCachesImpl(f.getAbsolutePath());
+            if (withParent) {
+                File parent = f.getParentFile();
+                if (parent != null) {
+                    cleanCachesImpl(parent.getAbsolutePath());
+                }
+                return parent;
+            }
+            return null;
+        }
+
+        private void cleanCachesImpl(String file) {
+            if (TRACE_EXTERNAL_CHANGES) {
+                System.err.println("clean cache for " + file);
+            }
+            getNormalizedFilesMap().remove(file);
+            getFilesMap().remove(file);
+        }
+    }
+    private static final boolean TRACE_EXTERNAL_CHANGES = Boolean.getBoolean("cnd.modelimpl.trace.external.changes"); // NOI18N
 }

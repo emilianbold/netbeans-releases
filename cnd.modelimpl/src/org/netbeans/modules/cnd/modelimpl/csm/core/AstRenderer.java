@@ -42,7 +42,7 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.util.*;
 
-import antlr.collections.AST;
+import org.netbeans.modules.cnd.antlr.collections.AST;
 
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.*;

@@ -139,10 +139,16 @@ public class JPDAConnect extends Task {
     
     public void execute () throws BuildException {
         logger.fine("JPDAConnect.execute ()"); // NOI18N
+        Path plainSourcepath = null;
+        boolean isSourcePathExclusive = false;
+        if (sourcepath != null) {
+            isSourcePathExclusive = sourcepath.isExclusive();
+            plainSourcepath = sourcepath.getPlainPath();
+        }
 
         JPDAStart.verifyPaths(getProject(), classpath);
         //JPDAStart.verifyPaths(getProject(), bootclasspath); Do not check the paths on bootclasspath (see issue #70930).
-        JPDAStart.verifyPaths(getProject(), sourcepath);
+        JPDAStart.verifyPaths(getProject(), plainSourcepath);
         
         if (name == null)
             throw new BuildException (
@@ -163,7 +169,8 @@ public class JPDAConnect extends Task {
         ClassPath sourcePath = JPDAStart.createSourcePath (
             getProject (),
             classpath, 
-            sourcepath
+            plainSourcepath,
+            isSourcePathExclusive
         );
         ClassPath jdkSourcePath = JPDAStart.createJDKSourcePath (
             getProject (),
@@ -172,7 +179,7 @@ public class JPDAConnect extends Task {
         if (logger.isLoggable(Level.FINE)) {
             logger.fine("Create sourcepath:"); // NOI18N
             logger.fine("    classpath : " + classpath); // NOI18N
-            logger.fine("    sourcepath : " + sourcepath); // NOI18N
+            logger.fine("    sourcepath : " + plainSourcepath); // NOI18N
             logger.fine("    bootclasspath : " + bootclasspath); // NOI18N
             logger.fine("    >> sourcePath : " + sourcePath); // NOI18N
             logger.fine("    >> jdkSourcePath : " + jdkSourcePath); // NOI18N

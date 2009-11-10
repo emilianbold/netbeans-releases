@@ -44,7 +44,7 @@ package org.netbeans.modules.javacard.shell;
  *
  * @author Anki R Nelaturu
  */
-public class ClearCommand implements Command {
+final class ClearCommand implements Command {
 
     public String execute(ShellPanel shellPanel, String[] args) throws ShellException {
         // actual clear happens in ShellPanel.java

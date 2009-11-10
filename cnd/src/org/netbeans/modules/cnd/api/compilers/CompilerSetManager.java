@@ -100,7 +100,7 @@ public class CompilerSetManager {
     private final ExecutionEnvironment executionEnvironment;
     private volatile State state;
     private int platform = -1;
-    private Task remoteInitialization;
+    private Task initializationTask;
 
     /**
      * Find or create a default CompilerSetManager for the given key. A default
@@ -212,7 +212,6 @@ public class CompilerSetManager {
         if (executionEnvironment.isLocal()) {
             platform = CompilerSetUtils.computeLocalPlatform();
             initCompilerSets(Path.getPath());
-            state = State.STATE_COMPLETE;
         } else {
             final AtomicReference<Thread> threadRef = new AtomicReference<Thread>();
             final String progressMessage = NbBundle.getMessage(getClass(), "PROGRESS_TEXT", env.getDisplayName());
@@ -286,9 +285,9 @@ public class CompilerSetManager {
             log.fine("CSM.getDefault: Doing remote setup from EDT?" + SwingUtilities.isEventDispatchThread());
             this.sets.clear();
             initRemoteCompilerSets(true, runCompilerSetDataLoader);
-            if (remoteInitialization != null) {
-                remoteInitialization.waitFinished();
-                remoteInitialization = null;
+            if (initializationTask != null) {
+                initializationTask.waitFinished();
+                initializationTask = null;
             }
         }
         if (save) {
@@ -370,11 +369,33 @@ public class CompilerSetManager {
         return dirs;
     }
 
+    /** Search $PATH for all desired compiler sets and initialize cbCompilerSet and spCompilerSets */
+    private synchronized void initCompilerSets(final ArrayList<String> dirlist) {
+        // NB: function itself is synchronized!
+        if (state == State.STATE_COMPLETE) {
+            return;
+        }
+        if (initializationTask != null) {
+            return;
+        }
+        String progressMessage = NbBundle.getMessage(getClass(), "PROGRESS_TEXT", executionEnvironment.getDisplayName()); // NOI18N
+        ProgressHandle progressHandle = ProgressHandleFactory.createHandle(progressMessage);
+        progressHandle.start();
+        initializationTask = RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                initCompilerSetsImpl(dirlist);
+            }
+        });
+        initializationTask.waitFinished();
+        initializationTask = null;
+        progressHandle.finish();
+    }
 
     /** Search $PATH for all desired compiler sets and initialize cbCompilerSet and spCompilerSets */
-    private void initCompilerSets(ArrayList<String> dirlist) {
+    private void initCompilerSetsImpl(ArrayList<String> dirlist) {
         Set<CompilerFlavor> flavors = new HashSet<CompilerFlavor>();
-        String SunStudioPath = System.getProperty("spro.bin");
+        String SunStudioPath = System.getProperty("spro.bin");        // NB: function itself is synchronized!
+
         if (SunStudioPath != null) {
             File folder = new File(SunStudioPath);
             if (folder.isDirectory()) {
@@ -437,6 +458,7 @@ public class CompilerSetManager {
         }
         addFakeCompilerSets();
         completeCompilerSets();
+        state = State.STATE_COMPLETE;
     }
 
     /**
@@ -602,7 +624,7 @@ public class CompilerSetManager {
         if (state == State.STATE_COMPLETE) {
             return;
         }
-        if (remoteInitialization != null) {
+        if (initializationTask != null) {
             return;
         }
         ServerRecord record = ServerList.get(executionEnvironment);
@@ -619,7 +641,7 @@ public class CompilerSetManager {
                 CompilerSetReporter.report("CSM_Done"); //NOI18N
             }
             // NB: function itself is synchronized!
-            remoteInitialization = RequestProcessor.getDefault().post(new Runnable() {
+            initializationTask = RequestProcessor.getDefault().post(new Runnable() {
 
                 @SuppressWarnings("unchecked")
                 public void run() {
@@ -1150,7 +1172,7 @@ public class CompilerSetManager {
     }
 
     public List<CompilerSet> getCompilerSets() {
-        return sets;
+        return new ArrayList<CompilerSet>(sets);
     }
 
     public List<String> getCompilerSetDisplayNames() {

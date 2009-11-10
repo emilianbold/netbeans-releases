@@ -42,7 +42,6 @@ import com.sun.javacard.Portability;
 import java.awt.EventQueue;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.w3c.dom.Node;

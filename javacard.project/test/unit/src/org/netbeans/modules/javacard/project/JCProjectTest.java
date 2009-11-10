@@ -50,8 +50,7 @@ import org.junit.Test;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ant.AntArtifact;
-import org.netbeans.modules.javacard.api.ProjectKind;
-import org.netbeans.modules.javacard.constants.JCConstants;
+import org.netbeans.modules.javacard.common.JCConstants;
 import org.netbeans.modules.javacard.constants.ProjectPropertyNames;
 import org.netbeans.modules.javacard.project.deps.ArtifactKind;
 import org.netbeans.modules.javacard.project.deps.DependenciesProvider;
@@ -59,6 +58,7 @@ import org.netbeans.modules.javacard.project.deps.Dependency;
 import org.netbeans.modules.javacard.project.deps.DependencyKind;
 import org.netbeans.modules.javacard.project.deps.DeploymentStrategy;
 import org.netbeans.modules.javacard.project.deps.ResolvedDependencies;
+import org.netbeans.modules.javacard.spi.ProjectKind;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -66,6 +66,7 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.filesystems.FileObject;
 import static org.junit.Assert.*;
 import org.openide.filesystems.FileUtil;
@@ -95,7 +96,7 @@ public class JCProjectTest extends AbstractJCProjectTest {
         assertSame (ProjectKind.CLASSIC_APPLET, project.getLookup().lookup(ProjectKind.class));
         assertTrue (project.isBadPlatformOrCard());
 
-        JCLogicalViewProvider prov = project.getLookup().lookup (JCLogicalViewProvider.class);
+        LogicalViewProvider prov = project.getLookup().lookup (LogicalViewProvider.class);
         assertNotNull (prov);
         assertTrue (prov.createLogicalView().getHtmlDisplayName() != null);
 

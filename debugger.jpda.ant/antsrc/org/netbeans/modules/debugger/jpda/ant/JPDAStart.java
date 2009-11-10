@@ -129,6 +129,8 @@ public class JPDAStart extends Task implements Runnable {
     private String                  name;
     /** Explicit sourcepath of the debugged process. */
     private Sourcepath              sourcepath = null;
+    private Path                    plainSourcepath = null;
+    private boolean                 isSourcePathExclusive;
     /** Explicit classpath of the debugged process. */
     private Path                    classpath = null;
     /** Explicit bootclasspath of the debugged process. */
@@ -219,7 +221,11 @@ public class JPDAStart extends Task implements Runnable {
     public void execute () throws BuildException {
         verifyPaths(getProject(), classpath);
         //verifyPaths(getProject(), bootclasspath); Do not check the paths on bootclasspath (see issue #70930).
-        verifyPaths(getProject(), sourcepath.getPlainPath());
+        if (sourcepath != null) {
+            isSourcePathExclusive = sourcepath.isExclusive();
+            plainSourcepath = sourcepath.getPlainPath();
+        }
+        verifyPaths(getProject(), plainSourcepath);
         try {
             logger.fine("JPDAStart.execute()"); // NOI18N
             debug ("Execute started"); // NOI18N
@@ -358,7 +364,8 @@ public class JPDAStart extends Task implements Runnable {
                 ClassPath sourcePath = createSourcePath (
                     getProject (),
                     classpath, 
-                    sourcepath
+                    plainSourcepath,
+                    isSourcePathExclusive
                 );
                 ClassPath jdkSourcePath = createJDKSourcePath (
                     getProject (),
@@ -367,7 +374,7 @@ public class JPDAStart extends Task implements Runnable {
                 if (logger.isLoggable(Level.FINE)) {
                     logger.fine("Create sourcepath:"); // NOI18N
                     logger.fine("    classpath : " + classpath); // NOI18N
-                    logger.fine("    sourcepath : " + sourcepath.getPlainPath()); // NOI18N
+                    logger.fine("    sourcepath : " + plainSourcepath); // NOI18N
                     logger.fine("    bootclasspath : " + bootclasspath); // NOI18N
                     logger.fine("    >> sourcePath : " + sourcePath); // NOI18N
                     logger.fine("    >> jdkSourcePath : " + jdkSourcePath); // NOI18N
@@ -548,13 +555,14 @@ public class JPDAStart extends Task implements Runnable {
     static ClassPath createSourcePath (
         Project project, 
         Path classpath,
-        Sourcepath sourcepath
+        Path sourcepath,
+        boolean isSourcePathExclusive
     ) {
-        if (sourcepath != null && sourcepath.isExclusive()) {
-            return convertToClassPath (project, sourcepath.getPlainPath());
+        if (sourcepath != null && isSourcePathExclusive) {
+            return convertToClassPath (project, sourcepath);
         }
         ClassPath cp = convertToSourcePath (project, classpath);
-        ClassPath sp = convertToClassPath (project, sourcepath.getPlainPath());
+        ClassPath sp = convertToClassPath (project, sourcepath);
         
         ClassPath sourcePath = ClassPathSupport.createProxyClassPath (
             new ClassPath[] {cp, sp}

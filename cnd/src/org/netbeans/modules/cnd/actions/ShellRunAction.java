@@ -48,6 +48,7 @@ import java.util.Map;
 import java.util.concurrent.Future;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.api.extexecution.ExecutionDescriptor.LineConvertorFactory;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
@@ -185,7 +186,7 @@ public class ShellRunAction extends AbstractExecutorRunAction {
                 return null;
             }
         }
-        ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, inputOutput, "Run", syncWorker); // NOI18N
+        ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, outputListener, inputOutput, "Run", syncWorker); // NOI18N
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv)
         .setWorkingDirectory(buildDir.getPath())
         .setCommandLine(quoteExecutable(shellCommand)+" "+argsFlat.toString()) // NOI18N
@@ -194,6 +195,7 @@ public class ShellRunAction extends AbstractExecutorRunAction {
         npb.getEnvironment().putAll(envMap);
         npb.redirectError();
 
+        LineConvertorFactory factory = new ProcessLineConvertorFactory(outputListener, null);
         ExecutionDescriptor descr = new ExecutionDescriptor()
         .controllable(true)
         .frontWindow(true)
@@ -202,7 +204,9 @@ public class ShellRunAction extends AbstractExecutorRunAction {
         .outLineBased(true)
         .showProgress(true)
         .postExecution(processChangeListener)
-        .outConvertorFactory(new ProcessLineConvertorFactory(outputListener, null));
+        .errConvertorFactory(factory)
+        .outConvertorFactory(factory);
+
         // Execute the shellfile
         ExecutionService es = ExecutionService.newService(npb, descr, "Run"); // NOI18N
         return es.run();

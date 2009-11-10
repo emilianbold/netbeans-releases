@@ -310,8 +310,6 @@ public final class SVGFileModel {
             SceneManager.log(Level.INFO, "Using already opened document."); //NOI18N
             assert m_bDoc != null;
             m_bDoc.addDocumentListener(m_docListener);
-        } else {
-            assert m_bDoc == getOpenedDoc() : "Model mismatch"; //NOI18N
         }
     }
 

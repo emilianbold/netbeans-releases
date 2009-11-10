@@ -58,6 +58,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowFocusListener;
 import java.text.DateFormat;
 import java.util.List;
 import javax.swing.BorderFactory;
@@ -84,7 +86,7 @@ import org.netbeans.modules.versioning.util.VCSKenaiSupport.KenaiUser;
  * Window displaying the line annotation with links to bugtracking in the commit message.
  * @author Ondrej Vrabec
  */
-class TooltipWindow implements AWTEventListener, MouseMotionListener, MouseListener {
+class TooltipWindow implements AWTEventListener, MouseMotionListener, MouseListener, WindowFocusListener {
 
     private static final int SCREEN_BORDER = 20;
 
@@ -146,6 +148,8 @@ class TooltipWindow implements AWTEventListener, MouseMotionListener, MouseListe
         contentWindow.setVisible(true);
 
         Toolkit.getDefaultToolkit().addAWTEventListener(this, AWTEvent.MOUSE_EVENT_MASK | AWTEvent.KEY_EVENT_MASK);
+        w.addWindowFocusListener(this);
+        contentWindow.addWindowFocusListener(this);
     }
 
     public void eventDispatched(AWTEvent event) {
@@ -185,8 +189,11 @@ class TooltipWindow implements AWTEventListener, MouseMotionListener, MouseListe
     void shutdown() {
         Toolkit.getDefaultToolkit().removeAWTEventListener(this);
         if (contentWindow != null) {
+            contentWindow.getOwner().removeWindowFocusListener(this);
+            contentWindow.removeWindowFocusListener(this);
             contentWindow.dispose();
         }
+        contentWindow = null;
     }
 
     public void mouseDragged(MouseEvent e) {
@@ -225,6 +232,16 @@ class TooltipWindow implements AWTEventListener, MouseMotionListener, MouseListe
 
     public void mouseExited(MouseEvent e) {
         // not interested
+    }
+
+    public void windowGainedFocus(WindowEvent e) {
+        //
+    }
+
+    public void windowLostFocus(WindowEvent e) {
+        if (contentWindow != null && e.getOppositeWindow() != contentWindow && e.getOppositeWindow() != contentWindow.getOwner()) {
+            shutdown();
+        }
     }
 
     private class TooltipContentPanel extends JComponent {

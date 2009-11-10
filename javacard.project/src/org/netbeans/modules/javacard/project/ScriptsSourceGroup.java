@@ -41,8 +41,7 @@
 package org.netbeans.modules.javacard.project;
 
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.modules.javacard.api.ProjectKind;
-import org.netbeans.modules.javacard.constants.JCConstants;
+import org.netbeans.modules.javacard.common.JCConstants;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -50,6 +49,7 @@ import org.openide.util.NbBundle;
 
 import javax.swing.*;
 import java.beans.PropertyChangeListener;
+import org.netbeans.modules.javacard.spi.ProjectKind;
 
 /**
  * @author Tim Boudreau

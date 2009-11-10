@@ -42,7 +42,7 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 
 import java.io.DataInput;
 
-import antlr.collections.AST;
+import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;

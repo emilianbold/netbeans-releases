@@ -63,6 +63,7 @@ import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.execution.ExecutionEngine;
 import org.openide.execution.ExecutorTask;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -283,8 +284,14 @@ public class NativeExecutor implements Runnable {
         if (outputListener != null) {
             originalWriter = new OutputWriterProxy(originalWriter, outputListener);
         }
+        FileObject runDirFileObject = null; // see IZ 168084 
+        File runDirFileNorm = FileUtil.normalizeFile(runDirFile);
+        if (runDirFileNorm != null) {
+            runDirFileObject = FileUtil.toFileObject(runDirFileNorm);
+        }
+
         if (parseOutputForErrors) {
-            out = new PrintWriter(new OutputWindowWriter(project,execEnv, originalWriter, FileUtil.toFileObject(runDirFile), parseOutputForErrors));
+            out = new PrintWriter(new OutputWindowWriter(project,execEnv, originalWriter, runDirFileObject, parseOutputForErrors));
         } else {
             out = originalWriter;
         }

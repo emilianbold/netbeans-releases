@@ -1605,7 +1605,7 @@ public final class ToolchainManagerImpl {
                 v.toolChainDisplay = getValue(attributes, "display"); // NOI18N
                 v.family = getValue(attributes, "family"); // NOI18N
                 v.qmakespec = getValue(attributes, "qmakespec"); // NOI18N
-                v.isAbstract = "true".equals(getValue(attributes, "abstract"));
+                v.isAbstract = "true".equals(getValue(attributes, "abstract"));// NOI18N
                 return;
             } else if (path.endsWith(".platforms")) { // NOI18N
                 v.platforms = getValue(attributes, "stringvalue"); // NOI18N
@@ -2396,7 +2396,7 @@ public final class ToolchainManagerImpl {
 
         @Override
         public String toString() {
-            return "Path="+getPathPattern()+" Folder="+getExistFolder()+" Version="+getVersionPattern();
+            return "Path="+getPathPattern()+" Folder="+getExistFolder()+" Version="+getVersionPattern();// NOI18N
         }
     }
     

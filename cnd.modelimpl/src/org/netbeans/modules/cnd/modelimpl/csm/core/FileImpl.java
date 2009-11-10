@@ -42,11 +42,11 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.cnd.modelimpl.syntaxerr.spi.ReadOnlyTokenBuffer;
-import antlr.Parser;
-import antlr.RecognitionException;
-import antlr.Token;
-import antlr.TokenStream;
-import antlr.collections.AST;
+import org.netbeans.modules.cnd.antlr.Parser;
+import org.netbeans.modules.cnd.antlr.RecognitionException;
+import org.netbeans.modules.cnd.antlr.Token;
+import org.netbeans.modules.cnd.antlr.TokenStream;
+import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.cnd.api.model.*;

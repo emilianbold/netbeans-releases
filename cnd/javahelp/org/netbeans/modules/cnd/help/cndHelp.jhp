@@ -247,7 +247,6 @@
 				<file title="who_is_included.png"/>
 			</directory>
 			<directory title="ProfilingCandC++Projects">
-				<file title="DetectingDataRacesDeadLocksC++.html"/>
 				<file title="ManagingProfileConfigurations.html"/>
 				<file title="OverviewOfCandC++Profiling.html"/>
 				<file title="ProfilingCandC++Projects.html"/>

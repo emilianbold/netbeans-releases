@@ -41,8 +41,8 @@
 
 package org.netbeans.modules.cnd.apt.utils;
 
-import antlr.TokenStream;
-import antlr.TokenStreamException;
+import org.netbeans.modules.cnd.antlr.TokenStream;
+import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenStream;

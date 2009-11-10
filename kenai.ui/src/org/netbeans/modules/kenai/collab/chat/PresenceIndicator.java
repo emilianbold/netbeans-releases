@@ -120,12 +120,18 @@ public class PresenceIndicator {
 //        label.setToolTipText(NbBundle.getMessage(PresenceIndicator.class, "LBL_Offline")); // NOI18N
         helper = new MouseL();
         label.addMouseListener(helper);
-        Kenai.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
+    }
 
+    private boolean inited = false;
+    public synchronized void init() {
+        if (inited)
+            return;
+        Kenai.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 setStatus(Kenai.getDefault().getStatus());
             }
         });
+        inited = true;
     }
 
     private class MouseL extends MouseAdapter {

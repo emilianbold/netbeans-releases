@@ -42,14 +42,21 @@ package org.netbeans.modules.java.source.indexing;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.java.source.parsing.CachingArchiveProvider;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.usages.BinaryAnalyser;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
+import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
 import org.netbeans.modules.parsing.spi.indexing.BinaryIndexer;
 import org.netbeans.modules.parsing.spi.indexing.BinaryIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.Context;
@@ -87,7 +94,16 @@ public class JavaBinaryIndexer extends BinaryIndexer {
                                     finished = ba.resume();
                                 }
                             } finally {
-                                ba.finish();
+                                final BinaryAnalyser.Changes changes = ba.finish();
+                                final Map<URL, List<URL>> binDeps = IndexingController.getDefault().getBinaryRootDependencies();
+                                final Map<URL, List<URL>> srcDeps = IndexingController.getDefault().getRootDependencies();
+                                final List<ElementHandle<TypeElement>> changed = new ArrayList<ElementHandle<TypeElement>>(changes.changed.size()+changes.removed.size());
+                                changed.addAll(changes.changed);
+                                changed.addAll(changes.removed);
+                                final Map<URL,Set<URL>> toRebuild = JavaCustomIndexer.findDependent(context.getRootURI(), srcDeps, binDeps, changed, !changes.added.isEmpty());
+                                for (Map.Entry<URL, Set<URL>> entry : toRebuild.entrySet()) {
+                                    context.addSupplementaryFiles(entry.getKey(), entry.getValue());
+                                }
                             }
                         }
                     }

@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.perfan.storage.impl;
 
 /**
@@ -44,23 +43,35 @@ package org.netbeans.modules.dlight.perfan.storage.impl;
  * @author mt154047
  */
 public final class FunctionStatistic {
+
     private static final String SOURCE_FILE_INFO = "Source File:";//NOI18N
-    private final String sourceFile;
+    private String srcFile;
+    private int srcFileLine = -1;
 
     public FunctionStatistic(String[] toParse) {
-        for (String str : toParse){
-            if (str!= null && str.trim().startsWith(SOURCE_FILE_INFO)){
+        for (String str : toParse) {
+            if (str != null && str.trim().startsWith(SOURCE_FILE_INFO)) {
                 str = str.trim();
-                sourceFile = str.substring(SOURCE_FILE_INFO.length(), str.length()).trim();
+                srcFile = str.substring(SOURCE_FILE_INFO.length(), str.length()).trim();
                 return;
             }
         }
-        sourceFile = null;
+        srcFile = null;
     }
 
-    public String getSourceFile(){
-        return sourceFile;
+    public String getSourceFile() {
+        return srcFile;
     }
 
+    public int getSrcFileLine() {
+        return srcFileLine;
+    }
 
+    /*package*/ void setSrcFile(String srcFile) {
+        this.srcFile = srcFile;
+    }
+
+    /*package*/ void setSrcFileLine(int srcFileLine) {
+        this.srcFileLine = srcFileLine;
+    }
 }

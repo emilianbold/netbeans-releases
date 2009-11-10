@@ -126,7 +126,7 @@ final class StackDataProviderImpl implements StackDataProvider {
                 Lookup.getDefault().lookupAll(SourceFileInfoProvider.class);
 
         for (SourceFileInfoProvider provider : sourceInfoProviders) {
-            final SourceFileInfo sourceInfo = provider.fileName(functionCall.getFunction().getQuilifiedName(), -1, functionCall.getOffset(), serviceInfoDataStorage.getInfo());
+            final SourceFileInfo sourceInfo = provider.getSourceFileInfo(functionCall.getFunction().getQuilifiedName(), -1, functionCall.getOffset(), serviceInfoDataStorage.getInfo());
             if (sourceInfo != null && sourceInfo.isSourceKnown()) {
                 return sourceInfo;
             }

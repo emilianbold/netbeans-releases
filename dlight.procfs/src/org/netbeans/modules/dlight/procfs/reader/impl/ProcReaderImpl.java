@@ -118,7 +118,7 @@ public abstract class ProcReaderImpl implements ProcReader,
         DataReader reader = null;
 
         try {
-            reader = newReader(is);
+            reader = newReader(is, LWPUsage.FILESIZE);
 
             reader.seek(0);
             final int lwpid = reader._int();
@@ -181,14 +181,20 @@ public abstract class ProcReaderImpl implements ProcReader,
     }
 
     private DataReader newReader(InputStream is) throws IOException {
+        return newReader(is, MAXFILELENGTH);
+    }
+
+    private DataReader newReader(InputStream is, int limit) throws IOException {
+        limit = Math.min(limit, MAXFILELENGTH);
+        
         int offset = 0;
         try {
             offset = buffer.getAndLockOffset();
             int read_total = 0;
             int read = 0;
 
-            while (read >= 0 && read_total < MAXFILELENGTH) {
-                read = is.read(buffer.buffer, offset + read_total, MAXFILELENGTH - read_total);
+            while (read >= 0 && read_total < limit) {
+                read = is.read(buffer.buffer, offset + read_total, limit - read_total);
                 read_total += read;
             }
         } finally {

@@ -43,7 +43,6 @@ package org.netbeans.modules.javacard.project;
 import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.apache.tools.ant.module.api.AntTargetExecutor;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.javacard.api.ProjectKind;
 import org.netbeans.modules.javacard.constants.ProjectPropertyNames;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -67,6 +66,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import org.netbeans.modules.javacard.spi.ProjectKind;
 
 final class ProjectRenamer extends WindowAdapter implements AntProjectCookie, Mutex.ExceptionAction<Void> {
 

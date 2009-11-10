@@ -47,7 +47,7 @@ package org.netbeans.modules.javacard.project.deps.ui;
 
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
-import org.netbeans.modules.javacard.GuiUtils;
+import org.netbeans.modules.javacard.common.GuiUtils;
 import org.netbeans.modules.javacard.project.deps.ArtifactKind;
 import org.netbeans.modules.javacard.project.deps.DeploymentStrategy;
 import org.netbeans.modules.javacard.project.deps.ResolvedDependency;

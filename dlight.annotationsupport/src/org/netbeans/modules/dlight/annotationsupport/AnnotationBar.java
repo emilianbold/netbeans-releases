@@ -294,6 +294,10 @@ public class AnnotationBar extends JComponent implements Accessible,
     public void unAnnotate() {
         annotated = false;
 
+        if (getFileAnnotationInfo() == null || getFileAnnotationInfo().getLineAnnotationInfo() == null) { // IZ 175761 
+            return;
+        }
+
         for (LineAnnotationInfo lineAnnotationInfo : getFileAnnotationInfo().getLineAnnotationInfo()) {
             setHighlight((StyledDocument) doc, lineAnnotationInfo.getLine(), lineAnnotationInfo.getLine(), new Color(255, 255, 255), null);
         }

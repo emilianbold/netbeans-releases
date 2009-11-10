@@ -41,7 +41,6 @@
 package org.netbeans.modules.javacard.project;
 
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
-import org.netbeans.modules.javacard.api.JavacardPlatform;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlRenderer;
@@ -57,6 +56,7 @@ import java.util.List;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.modules.javacard.spi.JavacardPlatform;
 
 /**
  * Copied with modifications from java.api.common

@@ -84,6 +84,7 @@ import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.util.DLightLogger;
+import org.netbeans.modules.dlight.util.usagetracking.SunStudioUserCounter;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -298,7 +299,15 @@ public class SunStudioDataCollector
             cmd = command;
             sproHome = sprohome;
             validatedTarget = target;
-
+            if (sprohome != null) {
+                String ssBin;
+                if (!sprohome.endsWith("/") && !sprohome.endsWith("\\")) { // NOI18N
+                    ssBin = sprohome + "/bin/";// NOI18N
+                } else {
+                    ssBin = sprohome + "bin/";// NOI18N
+                }
+                SunStudioUserCounter.countTool(ssBin, execEnv, "gizmo"); // NOI18N
+            }
             return validationStatus;
         }
     }

@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.cnd.apt.impl.support;
 
-import antlr.TokenStream;
+import org.netbeans.modules.cnd.antlr.TokenStream;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.logging.Level;

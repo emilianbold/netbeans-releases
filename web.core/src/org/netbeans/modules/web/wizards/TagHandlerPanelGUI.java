@@ -53,6 +53,7 @@ import org.openide.util.NbBundle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.target.iterator.api.BrowseFolders;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.loaders.TemplateWizard;
 import org.netbeans.modules.web.taglib.TLDDataObject;

@@ -208,14 +208,14 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
                         if (set != null && set.length() > 0) {
                             String[] add = (String[])getProperty(LIBRARIES_KEY).getValue();
                             if (add == null || add.length==0) {
-                                myFileProperties = getSourceFileProperties(new String[]{set},null);
+                                myFileProperties = getSourceFileProperties(new String[]{set},null, null);
                             } else {
                                 String[] all = new String[add.length+1];
                                 all[0] = set;
                                 for(int i = 0; i < add.length; i++){
                                     all[i+1]=add[i];
                                 }
-                                myFileProperties = getSourceFileProperties(all,null);
+                                myFileProperties = getSourceFileProperties(all,null, null);
                             }
                         }
                     }

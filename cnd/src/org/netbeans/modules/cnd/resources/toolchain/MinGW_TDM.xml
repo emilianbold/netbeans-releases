@@ -70,6 +70,8 @@ made subject to such option by the copyright holder.
     </assembler>
     <linker>
         <library_prefix stringvalue=""/>
+        <dynamic_library_search flags=""/>
+        <PIC flags=""/>
     </linker>
     <make>
         <tool name="gmake,make" skip="true"/>

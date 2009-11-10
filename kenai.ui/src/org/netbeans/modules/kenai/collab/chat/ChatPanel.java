@@ -365,6 +365,13 @@ public class ChatPanel extends javax.swing.JPanel {
         this.muc=muc;
         setName(StringUtils.parseName(muc.getRoom()));
         init();
+        if (!Kenai.getDefault().getXMPPConnection().isConnected()) {
+            try {
+                KenaiConnection.getDefault().reconnect(muc);
+            } catch (XMPPException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
         this.muc.addParticipantListener(new PacketListener() {
             public void processPacket(Packet presence) {
                 insertPresence((Presence) presence);
@@ -957,6 +964,9 @@ public class ChatPanel extends javax.swing.JPanel {
     private String getMessageBody(Message m) {
         final NotificationExtension ne = (NotificationExtension) m.getExtension("notification", NotificationExtensionProvider.NAMESPACE); // NOI18N
         String b = m.getBody();
+        if (b==null) {
+            b="";
+        }
         if (ne==null) {
             return b;
         }

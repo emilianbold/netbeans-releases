@@ -81,7 +81,7 @@ public class NbMavenProjectFactory implements ProjectFactory2 {
 
     public ProjectManager.Result isProject2(FileObject projectDirectory) {
         if (isProject(projectDirectory)) {
-            return new ProjectManager.Result(ImageUtilities.loadImageIcon("org/netbeans/modules/maven/Maven2Icon.gif", true)); //NOI18N
+            return new ProjectManager.Result(ImageUtilities.loadImageIcon("org/netbeans/modules/maven/resources/Maven2Icon.gif", true)); //NOI18N
         }
         return null;
     }

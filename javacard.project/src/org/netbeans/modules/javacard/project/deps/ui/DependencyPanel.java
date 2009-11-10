@@ -13,7 +13,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.UIManager;
-import org.netbeans.modules.javacard.GuiUtils;
+import org.netbeans.modules.javacard.common.GuiUtils;
 import org.netbeans.modules.javacard.project.deps.DeploymentStrategy;
 import org.netbeans.modules.javacard.project.deps.ResolvedDependency;
 import org.openide.util.HelpCtx;

@@ -371,7 +371,7 @@ public final class FileObjectFactory {
         BaseFileObj retVal = null;
         File f = fInfo.getFile();
 
-        boolean issue45485 = fInfo.isWindows() && f.getName().endsWith(".");//NOI18N        
+        boolean issue45485 = fInfo.isWindows() && f.getName().endsWith(".") && !f.getName().matches("[.]{1,2}");//NOI18N
         if (issue45485) {
             File f2 = FileUtil.normalizeFile(f);
             issue45485 = !f2.getName().endsWith(".");
