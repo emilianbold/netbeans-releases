@@ -45,14 +45,12 @@ import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
 import org.netbeans.modules.websvc.rest.model.api.RestServices;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesModel;
-import org.netbeans.modules.websvc.rest.projects.ApplicationConfigPanel;
-import org.netbeans.modules.websvc.rest.projects.WebProjectRestSupport;
+import org.netbeans.modules.websvc.rest.spi.ApplicationConfigPanel;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
 import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
@@ -110,9 +108,13 @@ public class RestConfigurationAction extends NodeAction  {
                 oldApplicationPath="/"+oldApplicationPath;
             }
             try {
-                ApplicationConfigPanel configPanel = new ApplicationConfigPanel(oldConfigType, oldApplicationPath, isAnnotationConfigAvailable(project));
+                ApplicationConfigPanel configPanel = new ApplicationConfigPanel(
+                        oldConfigType,
+                        oldApplicationPath,
+                        restSupport.getAntProjectHelper() != null && isAnnotationConfigAvailable(project));
+
                 DialogDescriptor desc = new DialogDescriptor(configPanel,
-                    NbBundle.getMessage(WebProjectRestSupport.class, "TTL_ApplicationConfigPanel"));
+                    NbBundle.getMessage(RestConfigurationAction.class, "TTL_ApplicationConfigPanel"));
                 DialogDisplayer.getDefault().notify(desc);
                 if (NotifyDescriptor.OK_OPTION.equals(desc.getValue())) {
                     String newConfigType = configPanel.getConfigType();
@@ -212,6 +214,6 @@ public class RestConfigurationAction extends NodeAction  {
         }
         return false;
     }
-
+    
 }
 
