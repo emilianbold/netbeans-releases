@@ -78,6 +78,8 @@ public class AppClientSources implements Sources, PropertyChangeListener, Change
     private final SourceRoots sourceRoots;
     private final SourceRoots testRoots;
     private boolean dirty;
+    private volatile SourceGroup[] cachedGroups;
+    private long eventId;
     private Sources delegate;
     private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
 
@@ -102,9 +104,14 @@ public class AppClientSources implements Sources, PropertyChangeListener, Change
      * {@link AppClientSources#fireChange} method.
      */
     public SourceGroup[] getSourceGroups(final String type) {
+        final SourceGroup[] _cachedGroups = this.cachedGroups;
+        if (_cachedGroups != null) {
+            return _cachedGroups;
+        }
         return ProjectManager.mutex().readAccess(new Mutex.Action<SourceGroup[]>() {
             public SourceGroup[] run() {
                 Sources _delegate;
+                long myEventId;
                 synchronized (AppClientSources.this) {
                     if (dirty) {
                         delegate.removeChangeListener(AppClientSources.this);
@@ -113,8 +120,15 @@ public class AppClientSources implements Sources, PropertyChangeListener, Change
                         dirty = false;
                     }
                     _delegate = delegate;
+                    myEventId = ++eventId;
                 }
-                return _delegate.getSourceGroups(type);
+                SourceGroup[] groups = _delegate.getSourceGroups(type);
+                synchronized (AppClientSources.this) {
+                    if (myEventId == eventId) {
+                        AppClientSources.this.cachedGroups = groups;
+                    }
+                }
+                return groups;
             }
         });
     }
@@ -172,6 +186,7 @@ public class AppClientSources implements Sources, PropertyChangeListener, Change
     private void fireChange() {
         ChangeListener[] _listeners;
         synchronized (this) {
+            cachedGroups=null;
             dirty = true;
         }
         synchronized (listeners) {

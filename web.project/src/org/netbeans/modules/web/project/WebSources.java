@@ -81,6 +81,8 @@ public class WebSources implements Sources, PropertyChangeListener, ChangeListen
     private Sources delegate;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private boolean dirty;
+    private volatile SourceGroup[] cachedGroups;
+    private long eventId;
 
     WebSources(Project project, AntProjectHelper helper, PropertyEvaluator evaluator, SourceRoots sourceRoots, SourceRoots testRoots) {
         this.project = project;
@@ -102,9 +104,14 @@ public class WebSources implements Sources, PropertyChangeListener, ChangeListen
      * {@link WebSources#fireChange} method.
      */
     public SourceGroup[] getSourceGroups(final String type) {
+        final SourceGroup[] _cachedGroups = this.cachedGroups;
+        if (_cachedGroups != null) {
+            return _cachedGroups;
+        }
         return ProjectManager.mutex().readAccess(new Mutex.Action<SourceGroup[]>() {
             public SourceGroup[] run() {
                 Sources _delegate;
+                long myEventId;
                 synchronized (WebSources.this) {
                     if (dirty) {
                         delegate.removeChangeListener(WebSources.this);
@@ -113,8 +120,16 @@ public class WebSources implements Sources, PropertyChangeListener, ChangeListen
                         dirty = false;
                     }
                     _delegate = delegate;
+                    myEventId = ++eventId;
                 }
-                return _delegate.getSourceGroups(type);
+                SourceGroup[] groups = _delegate.getSourceGroups(type);
+                synchronized (WebSources.this) {
+                    if (myEventId == eventId) {
+                        WebSources.this.cachedGroups = groups;
+                    }
+                }
+    
+                return groups;
             }
         });
     }
@@ -177,6 +192,7 @@ public class WebSources implements Sources, PropertyChangeListener, ChangeListen
 
     private void fireChange() {
         synchronized (this) {
+            cachedGroups=null;
             dirty = true;
         }
         changeSupport.fireChange();
