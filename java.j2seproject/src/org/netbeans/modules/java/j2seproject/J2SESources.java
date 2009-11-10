@@ -44,6 +44,7 @@ package org.netbeans.modules.java.j2seproject;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.io.File;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
@@ -83,6 +84,7 @@ public class J2SESources implements Sources, PropertyChangeListener, ChangeListe
     private Sources delegate;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private SourceGroupModifierImplementation sgmi;
+    private final FireAction fireTask = new FireAction();
 
     J2SESources(Project project, AntProjectHelper helper, PropertyEvaluator evaluator,
                 SourceRoots sourceRoots, SourceRoots testRoots) {
@@ -195,10 +197,10 @@ public class J2SESources implements Sources, PropertyChangeListener, ChangeListe
     private void fireChange() {
         synchronized (this) {
             dirty = true;
-        }
-        changeSupport.fireChange();
+        }        
+        ProjectManager.mutex().postReadRequest(fireTask.activate());
     }
-
+       
     public void propertyChange(PropertyChangeEvent evt) {
         String propName = evt.getPropertyName();
         // was listening to PROP_ROOT_PROPERTIES, changed to PROP_ROOTS in #143633 as changes
@@ -214,4 +216,19 @@ public class J2SESources implements Sources, PropertyChangeListener, ChangeListe
         this.fireChange();
     }
 
+    private class FireAction implements Runnable {
+
+        private AtomicBoolean fire = new AtomicBoolean();
+
+        public void run() {
+            if (fire.getAndSet(false)) {
+                changeSupport.fireChange();
+            }
         }
+
+        FireAction activate() {
+            this.fire.set(true);
+            return this;
+        }
+    };
+}
