@@ -87,8 +87,6 @@ public final class SunStudioUserCounter {
                 appType = IDEType.SUN_STUDIO_IDE;
             } else if ("dlighttool".equals(ide)) { // NOI18N
                 appType = IDEType.DLIGHTTOOL;
-            } else if ("dlighttool".equals(ide)) { // NOI18N
-                appType = IDEType.DLIGHTTOOL;
             } else if ("dbxtool".equals(ide)) {// NOI18N
                 appType = IDEType.DBX_TOOL;
             } else {
