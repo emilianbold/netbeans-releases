@@ -49,6 +49,8 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.Icon;
 import org.apache.maven.model.Resource;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.MavenSourcesImpl;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.VisibilityQueryDataFilter;
@@ -137,7 +139,19 @@ class OthersRootChildren extends Children.Keys<SourceGroup> {
         if (grp instanceof MavenSourcesImpl.OtherGroup) {
             MavenSourcesImpl.OtherGroup resgrp = (MavenSourcesImpl.OtherGroup)grp;
             if (resgrp.getResource() != null && OthersRootNode.showAsPackages()) {
-                toReturn[0] = new OGFilterNode(PackageView.createPackageView(grp), resgrp);
+                //#159560 PackageView.cPV operates with owners of files. If file not
+                // owned by the project, then it's skipped. Resulting in empty view.
+                // marking the resources as owned by the current project could result
+                // in clashes when resources are pointed to from various projects..
+                // -> we just silently replace the PackageView approach with a simple flder view
+                // that's a ui inconsistency but less severe than having an empty view..
+                Project owner = FileOwnerQuery.getOwner(resgrp.getRootFolder());
+                if (owner == null || owner.getProjectDirectory().equals(project.getProjectDirectory())) {
+                    toReturn[0] = new OGFilterNode(PackageView.createPackageView(grp), resgrp);
+                } else {
+                    Children childs = dobj.createNodeChildren(VisibilityQueryDataFilter.VISIBILITY_QUERY_FILTER);
+                    toReturn[0] = new OGFilterNode(dobj.getNodeDelegate().cloneNode(), childs, resgrp);
+                }
             } else {
                 Children childs = dobj.createNodeChildren(VisibilityQueryDataFilter.VISIBILITY_QUERY_FILTER);
                 toReturn[0] = new OGFilterNode(dobj.getNodeDelegate().cloneNode(), childs, resgrp);
