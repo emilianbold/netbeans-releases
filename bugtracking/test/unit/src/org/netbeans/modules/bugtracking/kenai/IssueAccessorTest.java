@@ -53,6 +53,8 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.eclipse.core.runtime.CoreException;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.bugtracking.BugtrackingManager;
+import org.netbeans.modules.bugtracking.LogHandler;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
@@ -146,6 +148,34 @@ public class IssueAccessorTest extends NbTestCase {
     public void testDisplayNames() throws MalformedURLException, CoreException, IOException, InterruptedException {
         KenaiIssueAccessor accessor = getIssueAccessor();
 
+        TestIssue kolibaIssue1 = new TestIssue(TestConnector.kolibaRepository, "This issue has a very long name so that that get shortened display name will return something shorter.");
+        BugtrackingManager.getInstance().addRecentIssue(TestConnector.kolibaRepository, kolibaIssue1);
+
+        IssueHandle[] issues = accessor.getRecentIssues();
+        assertNotNull(issues);
+        assertEquals(kolibaIssue1.getDisplayName(), issues[0].getDisplayName());
+        assertEquals(kolibaIssue1.getShortenedDisplayName(), issues[0].getShortDisplayName());
+        assertNotSame(issues[0].getDisplayName(), issues[0].getShortDisplayName());
+    }
+
+    public void testIsOpened() throws MalformedURLException, CoreException, IOException, InterruptedException {
+        KenaiIssueAccessor accessor = getIssueAccessor();
+
+        TestIssue kolibaIssue1 = new TestIssue(TestConnector.kolibaRepository, "This issue has a very long name so that that get shortened display name will return something shorter.");
+        BugtrackingManager.getInstance().addRecentIssue(TestConnector.kolibaRepository, kolibaIssue1);
+
+        IssueHandle[] issues = accessor.getRecentIssues();
+        assertNotNull(issues);
+        assertFalse(issues[0].isOpened());
+        assertFalse(issues[0].isShowing());
+
+        kolibaIssue1.open();
+        LogHandler ln = new LogHandler("IssueTopComponent Opened " + kolibaIssue1.getID(), LogHandler.Compare.ENDS_WITH);
+        ln.waitUntilDone();
+
+        assertTrue(issues[0].isOpened());
+    }
+    
     private void assertIssueHandles(IssueHandle[] issues, String[] ids) {
         assertEquals(ids.length, issues.length);
         for (int i = 0; i < ids.length; i++) {
