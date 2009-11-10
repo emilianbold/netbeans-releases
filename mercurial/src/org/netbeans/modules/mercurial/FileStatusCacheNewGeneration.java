@@ -355,7 +355,7 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
      * @param rootFiles root files to scan sorted under their repository roots
      */
     @Override
-    void refreshAllRoots (Map<File, Set<File>> rootFiles) {
+    public void refreshAllRoots (Map<File, Set<File>> rootFiles) {
         for (Map.Entry<File, Set<File>> refreshEntry : rootFiles.entrySet()) {
             File repository = refreshEntry.getKey();
             if (LOG.isLoggable(Level.FINE)) {

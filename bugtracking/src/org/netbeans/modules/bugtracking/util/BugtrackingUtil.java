@@ -43,6 +43,7 @@ import java.awt.AWTKeyStroke;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.FontMetrics;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.FocusAdapter;
@@ -195,9 +196,13 @@ public class BugtrackingUtil {
         }
         criteria = criteria.toLowerCase();
         List<Issue> ret = new ArrayList<Issue>();
-        for (Issue issue : issues) {  
-            if(criteria.equals(issue.getID().toLowerCase()) ||
-               issue.getSummary().toLowerCase().indexOf(criteria) > -1)
+        for (Issue issue : issues) {
+            if(issue.isNew()) continue;
+            String id = issue.getID();
+            if(id == null) continue;
+            String summary = issue.getSummary();
+            if(id.toLowerCase().startsWith(criteria) ||
+               (summary != null && summary.toLowerCase().indexOf(criteria) > -1))
             {
                 ret.add(issue);
             }  
@@ -575,7 +580,7 @@ public class BugtrackingUtil {
 
     public static int getColumnWidthInPixels(int widthInLeters, JComponent comp) {
         StringBuffer sb = new StringBuffer();
-        for (int i = 0; i < widthInLeters; i++, sb.append("u"));                // NOI18N
+        for (int i = 0; i < widthInLeters; i++, sb.append("w"));                // NOI18N
         return getColumnWidthInPixels(sb.toString(), comp);
     }
 
@@ -679,9 +684,18 @@ public class BugtrackingUtil {
         try {
             ClassLoader cl = Lookup.getDefault ().lookup (ClassLoader.class);
             Class<CallableSystemAction> clz = (Class<CallableSystemAction>) cl.loadClass("org.netbeans.modules.autoupdate.ui.actions.PluginManagerAction");
-            CallableSystemAction a = CallableSystemAction.findObject(clz, true);
+            final CallableSystemAction a = CallableSystemAction.findObject(clz, true);
             a.putValue("InitialTab", "available"); // NOI18N
-            a.performAction ();
+            Runnable inAWT = new Runnable() {
+                public void run() {
+                    a.performAction ();
+                }
+            };
+            if (EventQueue.isDispatchThread()) {
+                inAWT.run();
+            } else {
+                EventQueue.invokeLater(inAWT);
+            }
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }

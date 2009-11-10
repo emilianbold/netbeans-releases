@@ -368,7 +368,7 @@ class IssueStorage {
 
     void storeArchivedQueryIssues(String nameSpace, String queryName, String[] ids) throws IOException {
         assert !SwingUtilities.isEventDispatchThread() : "should not access the issue storage in awt"; // NOI18N
-        BugtrackingManager.LOG.log(Level.FINE, "start storing archevid query issues {0} - {1}", new Object[] {nameSpace, queryName}); // NOI18N
+        BugtrackingManager.LOG.log(Level.FINE, "start storing archived query issues {0} - {1}", new Object[] {nameSpace, queryName}); // NOI18N
         long now = System.currentTimeMillis();
         Map<String, Long> archived = readArchivedQueryIssues(nameSpace, queryName);
         try {

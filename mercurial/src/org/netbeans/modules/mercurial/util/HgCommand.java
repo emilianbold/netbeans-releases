@@ -1193,10 +1193,9 @@ public class HgCommand {
             command.add(revStr);
         }
 
-        // Make sure revsions listed from "tip" down to "tip - limit"
-        if(limit >= 0 && dateStr == null && revStr == null){
-            command.add(HG_FLAG_REV_CMD);
-            command.add(HG_LOG_REV_TIP_RANGE);
+        if (revStr == null) {
+            // from is probably higher than head revision, it's useless to run the command
+            return Collections.emptyList();
         }
 
         File tempFolder = Utils.getTempFolder(false);
@@ -1464,6 +1463,13 @@ public class HgCommand {
         return (toInt > -1) ? to : HG_STATUS_FLAG_TIP_CMD;
     }
 
+    /**
+     *
+     * @param from
+     * @param to
+     * @param headRev
+     * @return revision string or null if from is outside of valid limits - e.g. from is higher than headRev
+     */
     private static String handleRevNumbers(String from, String to, String headRev){
         int fromInt = -1;
         int toInt = -1;
@@ -1497,8 +1503,7 @@ public class HgCommand {
             toInt = headRevInt;
         }
         if (headRevInt > -1 && fromInt > headRevInt) {
-            from = headRev;
-            fromInt = headRevInt;
+            return null;
         }
 
         // Handle revision ranges

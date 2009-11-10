@@ -505,6 +505,7 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
         if (e.getKeyChar() == '\n') {                                     // NOI18N
             int row = table.getSelectedRow();
             if (row != -1) {
+                row = sorter.modelIndex(row);
                 Action action = tableModel.getNodes()[row].getPreferredAction();
                 if (action.isEnabled()) {
                     action.actionPerformed(new ActionEvent(this, 0, "")); // NOI18N
