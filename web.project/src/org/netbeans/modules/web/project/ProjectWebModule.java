@@ -57,6 +57,7 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
+import org.netbeans.modules.j2ee.dd.api.webservices.WebservicesMetadata;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleFactory;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
@@ -76,11 +77,12 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
-import org.netbeans.modules.j2ee.dd.api.webservices.*;
 import org.netbeans.modules.j2ee.dd.spi.MetadataUnit;
 import org.netbeans.modules.j2ee.dd.spi.web.WebAppMetadataModelFactory;
 import org.netbeans.modules.j2ee.dd.spi.webservices.WebservicesMetadataModelFactory;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation2;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.ResourceChangeReporterFactory;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.ResourceChangeReporterImplementation;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation2;
@@ -104,6 +106,8 @@ public final class ProjectWebModule extends J2eeModuleProvider
     
     public static final String LOOKUP_ITEM    = "lookup.item";//NOI18N
 
+    private final ResourceChangeReporter rcr = ResourceChangeReporterFactory.createResourceChangeReporter(new WebResourceChangeReporter());
+    
     private WebProject project;
     private UpdateHelper helper;
     private ClassPathProviderImpl cpProvider;
@@ -374,6 +378,11 @@ public final class ProjectWebModule extends J2eeModuleProvider
     
     public org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter getModuleChangeReporter () {
         return this;
+    }
+
+    @Override
+    public ResourceChangeReporter getResourceChangeReporter() {
+        return rcr;
     }
 
     @Override
@@ -706,7 +715,22 @@ public final class ProjectWebModule extends J2eeModuleProvider
         }
         return propertyChangeSupport;
     }
-    
+
+    private class WebResourceChangeReporter implements ResourceChangeReporterImplementation {
+
+        public boolean isServerResourceChanged(long lastDeploy) {
+            File resDir = getResourceDirectory();
+            if (resDir != null) {
+                for (File file : resDir.listFiles()) {
+                    if (file.lastModified() > lastDeploy) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+    }
+
     private static class IT implements Iterator<J2eeModule.RootedEntry> {
         ArrayList<FileObject> ch;
         FileObject root;
