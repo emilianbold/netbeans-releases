@@ -51,6 +51,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -761,7 +762,7 @@ final class BasicSearchCriteria {
     }
 
     private ArrayList<TextDetail> getTextDetails(BufferedCharSequence bcs,
-                                                 DataObject data,
+                                                 DataObject dataObject,
                                                  SearchPattern sp)
                                 throws BufferedCharSequence.SourceIOException  {
 
@@ -777,14 +778,21 @@ final class BasicSearchCriteria {
                 while (bcs.position() < matcherStart) {
                     char curChar = bcs.nextChar();
                     switch (curChar) {
-                        case '\n':
+                        case BufferedCharSequence.UnicodeLineTerminator.LF:
+                        case BufferedCharSequence.UnicodeLineTerminator.PS:
+                        case BufferedCharSequence.UnicodeLineTerminator.LS:
+                        case BufferedCharSequence.UnicodeLineTerminator.FF:
+                        case BufferedCharSequence.UnicodeLineTerminator.NEL:
                             lineNumber++;
                             lineStartOffset = bcs.position();
                             prevCR = 0;
                             break;
-                        case '\r':
+                        case BufferedCharSequence.UnicodeLineTerminator.CR:
                             prevCR++;
-                            if (bcs.charAt(bcs.position()) != '\n') {
+                            char nextChar = bcs.charAt(bcs.position());
+                            if (nextChar !=
+                                BufferedCharSequence.UnicodeLineTerminator.LF) {
+
                                 lineNumber++;
                                 lineStartOffset = bcs.position();
                                 prevCR = 0;
@@ -801,26 +809,36 @@ final class BasicSearchCriteria {
             int column = matcherStart - lineStartOffset + 1 - prevCR;
             String lineText = bcs.getLineText(lineStartOffset);
 
-            // #174056
-            assert lineText.length() > (column - 1) :
-                "Please, re-open the Issue 174056 with the following info:" +
-                "\nTrying to set illegal state of the TextDetail object:" +
-                "\nmatcher: " + matcher +
-                "\ntextPattern: [" + textPattern + "]" +
-                "\nmatcherStart: " + matcherStart +
-                "\nlineStartOffset: " + lineStartOffset +
-                "\nprevCR: " + prevCR +
-                "\nlineText: [" + lineText + "]" +
-                "\nlineText.length(): " + lineText.length() +
-                "\ncolumn: " + column +
-                "\n=> lineText.length() < (column - 1)"; // NOI18N
+           try { // #174056, #175896
+                assert lineText.length() >= (column - 1) :
+                   "If the file associated with the following dataObject is " +
+                   "textual (i.e. non-binary file) then, \nplease, " +
+                   "re-open the issue 174056 with the following info:" +
+                   "\n" +
+                   "\nTrying to set illegal state of the TextDetail object:" +
+                   "\ndataObject: " + dataObject +
+                   "\nmatcher: " + matcher +
+                   "\ntextPattern: [" + textPattern + "]" +
+                   "\nmatcherStart: " + matcherStart +
+                   "\nlineStartOffset: " + lineStartOffset +
+                   "\nprevCR: " + prevCR +
+                   "\nlineText: [" + translate(lineText) + "]" +
+                   "\nlineText.length(): " + lineText.length() +
+                   "\ncolumn: " + column +
+                   "\n=> lineText.length() < (column - 1)" +
+                   "\n" +
+                   "\nOtherwise, please exclude the binary file from " +
+                   "the search\\replace operation."; // NOI18N
 
-            TextDetail det = newTextDetail(data, sp, matcher);
-            det.setColumn(column);
-            det.setLine(lineNumber);
-            det.setLineText(lineText);
-            
-            txtDetails.add(det);
+                TextDetail det = newTextDetail(dataObject, sp, matcher);
+                det.setColumn(column);
+                det.setLine(lineNumber);
+                det.setLineText(lineText);
+
+                txtDetails.add(det);
+            } catch (AssertionError e) {
+                LOG.log(Level.WARNING, "Error in " + this, e);
+            }
         } // while (matcher.find())
         txtDetails.trimToSize();
         return txtDetails;
@@ -928,6 +946,31 @@ final class BasicSearchCriteria {
                                     wholeWords, 
                                     caseSensitive, 
                                     regexp);
+    }
+
+    /**
+     * For debug only! Visualization of the new line symbols like '\n', '\r'.
+     * @param s the initial string
+     * @return A string like the initial string, but all new line symbols are
+     * replaced with their readable equivalences.
+     */
+    private static String translate(String s) {
+        StringBuilder sb = new StringBuilder();
+        for(int i=0; i<s.length(); i++) {
+            char c = s.charAt(i);
+            switch(c) {
+                case '\n':
+                    sb.append("'\n'");
+                    break;
+                case '\r':
+                    sb.append("'\r'");
+                    break;
+                default:
+                    sb.append(c);
+                    break;
+            }
+        }
+        return sb.toString();
     }
 
 }
