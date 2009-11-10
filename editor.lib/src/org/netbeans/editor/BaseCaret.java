@@ -687,9 +687,12 @@ AtomicLockListener, FoldHierarchyListener {
                         {
                             doScroll = true; // Perform explicit scrolling
                             int oldRelX = oldCaretBounds.x - visibleBounds.x;
-                            scrollBounds.x = Math.max(caretBounds.x - oldRelX, 0);
+                            // Do not retain the horizontal caret bounds by scrolling
+                            // since many modifications do not explicitly say that they are typing modifications
+                            // and this would cause problems like #176268
+//                            scrollBounds.x = Math.max(caretBounds.x - oldRelX, 0);
                             scrollBounds.y = Math.max(caretBounds.y - oldRelY, 0);
-                            scrollBounds.width = visibleBounds.width;
+//                            scrollBounds.width = visibleBounds.width;
                             scrollBounds.height = visibleBounds.height;
                         }
                     }
