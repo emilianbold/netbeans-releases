@@ -201,6 +201,12 @@ public final class ToolsPanel extends JPanel implements ActionListener,
     }
 
     private void addCompilerSet() {
+        if (csm == null) {
+            // Compiler set manager is not initialized yet
+            // (initializeLong still running). Stop here to avoid NPEs.
+            return;
+        }
+
         AddCompilerSetPanel panel = new AddCompilerSetPanel(csm);
         String title = isRemoteHostSelected() ? getString("NEW_TOOL_SET_TITLE_REMOTE", ExecutionEnvironmentFactory.toUniqueID(csm.getExecutionEnvironment())) : getString("NEW_TOOL_SET_TITLE");
         DialogDescriptor dialogDescriptor = new DialogDescriptor(panel, title);

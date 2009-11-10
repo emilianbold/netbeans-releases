@@ -86,15 +86,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
 //        }
         folder = null;
     }
-
-    /**
-     * Rename item.
-     * @param newname new name without suffic or path
-     */
-    public void rename(String newname) {
-        rename(newname, true);
-    }
-
+    
     private void rename(String newname, boolean nameWithoutExtension) {
         if (newname == null || newname.length() == 0 || getFolder() == null) {
             return;
@@ -135,14 +127,11 @@ public class Item implements NativeFileItem, PropertyChangeListener {
             newPath += path.substring(indexDot);
         }
         // Remove old item and insert new with new name
-        moveTo(newPath);
+        renameTo(newPath);
     }
 
-    public void moveTo(String newPath) {
+    private void renameTo(String newPath) {
         Folder f = getFolder();
-        if (f.isDiskFolder()) {
-            return;
-        }
         String oldPath = getAbsPath();
         Item item = new Item(newPath);
         f.addItem(item);
@@ -237,7 +226,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
                 newPath = IpeUtils.toRelativePath(getFolder().getConfigurationDescriptor().getBaseDir(), newPath);
             }
             newPath = FilePathAdaptor.normalize(newPath);
-            moveTo(newPath);
+            renameTo(newPath);
         }
     }
 
@@ -483,9 +472,9 @@ public class Item implements NativeFileItem, PropertyChangeListener {
             }
             vec2.addAll(cccCompilerConfiguration.getIncludeDirectories().getValue());
             // Convert all paths to absolute paths
-            Iterator iter = vec2.iterator();
+            Iterator<String> iter = vec2.iterator();
             while (iter.hasNext()) {
-                vec.add(IpeUtils.toAbsolutePath(getFolder().getConfigurationDescriptor().getBaseDir(), (String) iter.next()));
+                vec.add(IpeUtils.toAbsolutePath(getFolder().getConfigurationDescriptor().getBaseDir(), iter.next()));
             }
             if (cccCompilerConfiguration instanceof AllOptionsProvider) {
                 vec = SPI_ACCESSOR.getItemUserIncludePaths(vec, (AllOptionsProvider) cccCompilerConfiguration, compiler, makeConfiguration);
