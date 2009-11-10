@@ -231,7 +231,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         for (String keyword : kws) {
             keywords.add(keyword.toUpperCase());
         }
-        boolean showQAContact = !(issue.getBugzillaRepository() instanceof KenaiRepository);
+        boolean isNbRepository = BugzillaUtil.isNbRepository(issue.getRepository());
+        boolean showQAContact = isNbRepository || !(issue.getBugzillaRepository() instanceof KenaiRepository);
         if (qaContactLabel.isVisible() != showQAContact) {
             GroupLayout layout = (GroupLayout)getLayout();
             JLabel temp = new JLabel();
@@ -240,7 +241,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             qaContactLabel.setVisible(showQAContact);
             qaContactField.setVisible(showQAContact);
         }
-        boolean showStatusWhiteboard = !(issue.getBugzillaRepository() instanceof KenaiRepository);
+        boolean showStatusWhiteboard = isNbRepository || !(issue.getBugzillaRepository() instanceof KenaiRepository);
         statusWhiteboardLabel.setVisible(showStatusWhiteboard);
         statusWhiteboardField.setVisible(showStatusWhiteboard);
         statusWhiteboardWarning.setVisible(showStatusWhiteboard);
@@ -288,7 +289,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         }
         reloading = true;
         boolean isNew = issue.getTaskData().isNew();
-        boolean showProductCombo = isNew || !(issue.getRepository() instanceof KenaiRepository);
+        boolean showProductCombo = isNew || !(issue.getRepository() instanceof KenaiRepository) || BugzillaUtil.isNbRepository(issue.getRepository());
         GroupLayout layout = (GroupLayout)getLayout();
         if (showProductCombo) {
             if (productCombo.getParent() == null) {
