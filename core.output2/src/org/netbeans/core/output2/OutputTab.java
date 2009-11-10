@@ -101,9 +101,9 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
 
     OutputTab(NbIO io) {
         this.io = io;
-        outWriter = io.out();
         if (Controller.LOG) Controller.log ("Created an output component for " + io);
-        OutputDocument doc = new OutputDocument (((NbWriter) io.getOut()).out());
+        outWriter = ((NbWriter) io.getOut()).out();
+        OutputDocument doc = new OutputDocument(outWriter);
         setDocument(doc);
 
         installKBActions();
