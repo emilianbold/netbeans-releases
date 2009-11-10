@@ -81,6 +81,8 @@ public class J2SESources implements Sources, PropertyChangeListener, ChangeListe
     private final SourceRoots sourceRoots;
     private final SourceRoots testRoots;
     private boolean dirty;
+    private volatile SourceGroup[] cachedGroups;
+    private long eventId;
     private Sources delegate;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private SourceGroupModifierImplementation sgmi;
@@ -107,10 +109,15 @@ public class J2SESources implements Sources, PropertyChangeListener, ChangeListe
      * {@link J2SESources#fireChange} method.
      */
     public SourceGroup[] getSourceGroups(final String type) {
+        final SourceGroup[] _cachedGroups = this.cachedGroups;
+        if (_cachedGroups != null) {
+            return _cachedGroups;
+        }
         return ProjectManager.mutex().readAccess(new Mutex.Action<SourceGroup[]>() {
             public SourceGroup[] run() {
                 Sources _delegate;
-                synchronized (J2SESources.this) {
+                long myEventId;
+                synchronized (J2SESources.this) {                    
                     if (dirty) {
                         delegate.removeChangeListener(J2SESources.this);
                         delegate = initSources();
@@ -118,6 +125,7 @@ public class J2SESources implements Sources, PropertyChangeListener, ChangeListe
                         dirty = false;
                     }
                     _delegate = delegate;
+                    myEventId = ++eventId;
                 }
                 SourceGroup[] groups = _delegate.getSourceGroups(type);
                 if (type.equals(Sources.TYPE_GENERIC)) {
@@ -129,7 +137,12 @@ public class J2SESources implements Sources, PropertyChangeListener, ChangeListe
                                 "sharedlibraries", // NOI18N
                                 NbBundle.getMessage(J2SESources.class, "LibrarySourceGroup_DisplayName"), 
                                 null, null);
-                        return grps;
+                        groups = grps;
+                    }
+                }
+                synchronized (J2SESources.this) {
+                    if (myEventId == eventId) {
+                        J2SESources.this.cachedGroups = groups;
                     }
                 }
                 return groups;
@@ -196,6 +209,7 @@ public class J2SESources implements Sources, PropertyChangeListener, ChangeListe
 
     private void fireChange() {
         synchronized (this) {
+            cachedGroups=null;
             dirty = true;
         }        
         ProjectManager.mutex().postReadRequest(fireTask.activate());
