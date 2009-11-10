@@ -523,34 +523,29 @@ final class CloseButtonTabbedPane extends JTabbedPane implements ChangeListener,
         }
     }
 
-    int lastSel = -1;
     public void stateChanged(ChangeEvent e) {
         if (!JDK6_OR_LATER) {
             reset();
         }
-        if (isWindowsLaF()) {
+    }
+
+    @Override
+    public Color getBackgroundAt(int index) {
+        if( isWindowsLaF() && !isWindowsXPLaF() ) {
             // In Windows L&F selected and unselected tab may have same color
             // which make hard to distinguish which tab is selected (especially
             // in SCROLL_TAB_LAYOUT). In such case manage tab colors manually.
             Color selected = UIManager.getColor("controlHighlight");
             Color unselected = UIManager.getColor("control");
             if (selected.equals(unselected)) {
-                int sel = getSelectedIndex();
-                if (sel != lastSel) {
-                    selected = UIManager.getColor("controlLtHighlight");
-                    selected = new Color((selected.getRed() + unselected.getRed()) / 2,
-                            (selected.getGreen() + unselected.getGreen()) / 2,
-                            (selected.getBlue() + unselected.getBlue()) / 2);
-                }
-                if (lastSel >= 0 && lastSel < getTabCount()) {
-                    setBackgroundAt(lastSel, unselected);
-                }
-                if (sel >= 0) {
-                    setBackgroundAt(sel, selected);
-                }
-                lastSel = sel;
+                //make unselected tabs darker
+                unselected = new Color(Math.max(selected.getRed() - 12, 0),
+                        Math.max(selected.getGreen() - 12, 0),
+                        Math.max(selected.getBlue() - 12, 0));
             }
+            return index == getSelectedIndex() ? selected : unselected;
         }
+        return super.getBackgroundAt(index);
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
