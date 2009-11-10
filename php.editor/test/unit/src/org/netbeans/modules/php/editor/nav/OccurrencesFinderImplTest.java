@@ -52,6 +52,10 @@ public class OccurrencesFinderImplTest extends TestBase {
         super(testName);
     }            
            
+    public void testGotoLabel() throws Exception {
+        checkOccurrences(getTestPath(), "goto en^d;", true);
+    }
+
     public void testOccurrencesInstanceMethod() throws Exception {
         checkOccurrences(getTestPath(), "$this->na^me();", true);
     }

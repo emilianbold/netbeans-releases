@@ -48,6 +48,7 @@ public interface Occurence{
     ModelElement getDeclaration();
     /**mostly the same as getDeclaration. In case of __constructor are different*/
     ModelElement gotoDeclaratin();
+    boolean gotoDeclarationEnabled();
     Collection<? extends ModelElement> getAllDeclarations();
     Collection<Occurence> getAllOccurences();
     OffsetRange getOccurenceRange();

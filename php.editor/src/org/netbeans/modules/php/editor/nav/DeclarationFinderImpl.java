@@ -190,7 +190,7 @@ public class DeclarationFinderImpl implements DeclarationFinder {
 
     private static DeclarationLocation findDeclarationImpl(Occurence underCaret, ParserResult info) {
         DeclarationLocation retval = DeclarationLocation.NONE;
-        if (underCaret != null) {
+        if (underCaret != null && underCaret.gotoDeclarationEnabled()) {
             ModelElement declaration = underCaret.gotoDeclaratin();
             FileObject declarationFo = declaration.getFileObject();
             if (declarationFo == null) {
