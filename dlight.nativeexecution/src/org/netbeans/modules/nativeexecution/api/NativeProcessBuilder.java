@@ -38,26 +38,30 @@
  */
 package org.netbeans.modules.nativeexecution.api;
 
-import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
 import java.io.IOException;
-import org.netbeans.modules.nativeexecution.LocalNativeProcess;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.modules.nativeexecution.AbstractNativeProcess;
+import org.netbeans.modules.nativeexecution.LocalNativeProcess;
 import org.netbeans.modules.nativeexecution.NativeProcessInfo;
 import org.netbeans.modules.nativeexecution.RemoteNativeProcess;
 import org.netbeans.modules.nativeexecution.TerminalLocalNativeProcess;
+import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminalProvider;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.netbeans.modules.nativeexecution.api.util.Shell;
 import org.netbeans.modules.nativeexecution.api.util.ShellValidationSupport;
 import org.netbeans.modules.nativeexecution.api.util.ShellValidationSupport.ShellValidationStatus;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
+import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
 
 /**
  * Utility class for the {@link NativeProcess external native process} creation.
@@ -152,8 +156,38 @@ public final class NativeProcessBuilder implements Callable<Process> {
      * @throws IOException if the process could not be created
      */
     public NativeProcess call() throws IOException {
+        NativeProcess result = null;
+
+        if (SwingUtilities.isEventDispatchThread()) {
+            Future<NativeProcess> fresult = NativeTaskExecutorService.submit(
+                    new Callable<NativeProcess>() {
+
+                        public NativeProcess call() throws Exception {
+                            return createProcess();
+                        }
+                    }, "creation of process outside of the EventDispatchThread"); // NOI18N
+
+            try {
+                result = fresult.get();
+            } catch (InterruptedException ex) {
+            } catch (ExecutionException ex) {
+                final Throwable t = ex.getCause();
+                if (t != null && t instanceof IOException) {
+                    throw (IOException) t;
+                } else {
+                    throw new IOException(ex.getMessage());
+                }
+            }
+        } else {
+            result = createProcess();
+        }
+
+        return result;
+    }
+
+    private final NativeProcess createProcess() throws IOException {
         AbstractNativeProcess process = null;
-        
+
         if (info.getExecutionEnvironment().isRemote()) {
             process = new RemoteNativeProcess(info);
         } else {
