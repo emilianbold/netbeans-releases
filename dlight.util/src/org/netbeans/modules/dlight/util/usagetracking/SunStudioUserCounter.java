@@ -87,8 +87,6 @@ public final class SunStudioUserCounter {
                 appType = IDEType.SUN_STUDIO_IDE;
             } else if ("dlighttool".equals(ide)) { // NOI18N
                 appType = IDEType.DLIGHTTOOL;
-            } else if ("dlighttool".equals(ide)) { // NOI18N
-                appType = IDEType.DLIGHTTOOL;
             } else if ("dbxtool".equals(ide)) {// NOI18N
                 appType = IDEType.DBX_TOOL;
             } else {
@@ -99,12 +97,17 @@ public final class SunStudioUserCounter {
     }
 
     public static String getSunStudioBinDir() {
-        String ssBin = System.getProperty("spro.home");// NOI18N
-        if (ssBin != null) {
-            if (!ssBin.endsWith("/") && !ssBin.endsWith("\\")) { // NOI18N
-                ssBin += "/"; // NOI18N
+        String ssBin = System.getProperty("spro.bin");// NOI18N
+        if (ssBin == null) {
+            ssBin = System.getProperty("spro.home");// NOI18N
+            if (ssBin != null) {
+                if (!ssBin.endsWith("/") && !ssBin.endsWith("\\")) { // NOI18N
+                    ssBin += "/"; // NOI18N
+                }
+                ssBin += "bin/"; // NOI18N
             }
-            ssBin += "bin/"; // NOI18N
+        } else {
+            ssBin += "/"; // NOI18N
         }
         return ssBin;
     }
