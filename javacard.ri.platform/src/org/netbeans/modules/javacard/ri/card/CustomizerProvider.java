@@ -94,7 +94,7 @@ public class CustomizerProvider implements CardCustomizerProvider {
 
         public boolean isContentValid() {
             getComponent();
-            return pnl.getValidationGroup().validateAll() == Problem.NO_PROBLEM;
+            return !pnl.getValidationGroup().validateAll().isFatal();
         }
 
         public Component getComponent() {

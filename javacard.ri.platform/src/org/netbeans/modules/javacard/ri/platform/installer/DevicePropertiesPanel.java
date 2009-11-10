@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.javacard.ri.platform.installer;
 
+import java.awt.event.ActionEvent;
 import org.netbeans.modules.javacard.common.KeysAndValues;
 import org.netbeans.modules.javacard.common.GuiUtils;
 import static org.netbeans.modules.javacard.spi.JavacardDeviceKeyNames.*;
@@ -57,6 +58,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
+import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.net.MalformedURLException;
@@ -79,11 +81,13 @@ import org.netbeans.validation.api.Validator;
 import org.netbeans.validation.api.builtin.Validators;
 import org.netbeans.validation.api.conversion.Converter;
 import org.netbeans.validation.api.ui.ValidationGroup;
+import org.netbeans.validation.api.ui.ValidationListener;
 import org.netbeans.validation.api.ui.ValidationUI;
 import org.openide.awt.HtmlRenderer;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbPreferences;
 
 public class DevicePropertiesPanel extends JPanel implements DocumentListener, FocusListener, ValidationUI, Runnable, ValidationGroupProvider {
 
@@ -112,7 +116,7 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
         // set some default display name
         for (int i = 8019; i < 65536; i += 2) {
             if (!ports.contains(i)) {
-                httpPortTextField.setText(i + "");
+                httpPortTextField.setText(i + ""); //NOI18N
                 break;
             }
         }
@@ -129,14 +133,14 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
         // always try ideport = cjcreport + 1
         for (int i = idePort; i < 65536; i += 2) {
             if (!ports.contains(i)) {
-                proxy2idePortTextField.setText(i + "");
+                proxy2idePortTextField.setText(i + ""); //NOI18N
                 break;
             }
         }
         int cl = 8081;
         for (int i = 9025; i < 65536; i += 2) {
             if (!ports.contains(i)) {
-                contactedPortTextField.setText(i + "");
+                contactedPortTextField.setText(i + ""); //NOI18N
                 break;
             }
         }
@@ -147,6 +151,7 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
                 break;
             }
         }
+        initHostModel();
         Validator<Document> portvalidator = Converter.find(String.class, 
                 Document.class).convert(
                 Validators.REQUIRE_NON_EMPTY_STRING.trim(),
@@ -164,17 +169,35 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
         group.add (contactedPortTextField, portvalidator);
         group.add (proxy2cjcrePortTextField, portvalidator);
         group.add (proxy2idePortTextField, portvalidator);
+        final RemoteVsLocalhostMismatchValidator remoteValidator = new RemoteVsLocalhostMismatchValidator();
         group.add (cardManagerUrlField, Validators.REQUIRE_NON_EMPTY_STRING.forString(false),
                 Validators.MAY_NOT_START_WITH_DIGIT.forString(false), Validators.URL_MUST_BE_VALID.forString(false),
-                new RemoteVsLocalhostMismatchValidator());
+                remoteValidator);
         group.add (serverUrlField, Validators.REQUIRE_NON_EMPTY_STRING.forString(false),
                 Validators.MAY_NOT_START_WITH_DIGIT.forString(false), Validators.URL_MUST_BE_VALID.forString(false),
-                new RemoteVsLocalhostMismatchValidator());
+                remoteValidator);
         Validator<Document> v = Converter.find(String.class, Document.class).convert(new PortMismatchValidator());
+        RemoteCheckboxValidationListener val = new RemoteCheckboxValidationListener();
+        remoteCheckbox.addActionListener(val);
+        group.add (val);
         group.add (httpPortTextField, v);
         group.add (serverUrlField, v);
         group.add (httpPortTextField, v);
+        group.add (hostComboBox, Validators.REQUIRE_NON_EMPTY_STRING,
+                Validators.HOST_NAME_OR_IP_ADDRESS.forString(true), remoteValidator);
+        Component hed = hostComboBox.getEditor().getEditorComponent();
+        if (hed instanceof JTextField) {
+            group.add ((JTextField) hed, Validators.HOST_NAME_OR_IP_ADDRESS);
+            ((JTextField) hed).getDocument().addDocumentListener(this);
+        }
+        hostComboBox.getEditor().addActionListener(new ActionListener() {
 
+            public void actionPerformed(ActionEvent e) {
+                insertUpdate(null);
+                group.validateAll();
+            }
+
+        });
         for (Component c : getComponents()) {
             localizeName (c);
         }
@@ -183,6 +206,40 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
         cardManagerUrlField.getDocument().addDocumentListener(this);
         serverUrlField.getDocument().addDocumentListener(this);
         HelpCtx.setHelpIDString(this, "org.netbeans.modules.javacard.CustomizeDevice"); //NOI18N
+    }
+
+    void initHostModel() {
+        DefaultComboBoxModel mdl = new DefaultComboBoxModel();
+        String hosts = NbPreferences.forModule(DevicePropertiesPanel.class).get("knownHosts", "localhost,127.0.0.1"); //NOI18N
+        String[] h = hosts.split(",");
+        boolean localhostFound = false;
+        boolean oneTwentySevenFound = false;
+        for (int i = 0; i < h.length; i++) {
+            localhostFound |= "localhost".compareToIgnoreCase(h[i]) == 0; //NOI18N
+            oneTwentySevenFound |="127.0.0.1".equals(h[i]); //NOI18N
+            mdl.addElement(h[i]);
+        }
+        if (!localhostFound) {
+            mdl.addElement("localhost"); //NOI18N
+        }
+        if (!oneTwentySevenFound) {
+            mdl.addElement("127.0.0.1"); //NOI18N
+        }
+    }
+
+    private class RemoteCheckboxValidationListener extends ValidationListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            validate();
+        }
+
+        @Override
+        protected boolean validate(Problems prblms) {
+            if (!inUpdate) {
+                return new RemoteVsLocalhostMismatchValidator().validate(prblms, null, null);
+            } else {
+                return true;
+            }
+        }
     }
 
     private static final void localizeName (Component c) {
@@ -303,7 +360,8 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
         s.put(DEVICE_RAMSIZE, getRAMSize());
         s.put(DEVICE_E2PSIZE, getE2PSize());
         s.put(DEVICE_CORSIZE, getCORSize());
-        s.put(DEVICE_HTTPPORT, getHTTPPort());
+        String port = getHTTPPort();
+        s.put(DEVICE_HTTPPORT, port);
         s.put(DEVICE_PROXY2CJCREPORT, getProxy2cjcrePort());
         s.put(DEVICE_PROXY2IDEPORT, getProxy2idePort());
         s.put(DEVICE_CONTACTEDPORT, getContactedPort());
@@ -313,10 +371,98 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
         s.put(DEVICE_CONTACTLESSPORT, getContactlessPort());
         s.put(DEVICE_LOGGERLEVEL, getLoggerLevel());
         s.put(DEVICE_SECUREMODE, getSecureMode());
-        s.put(DEVICE_SERVERURL, getServerUrl());
-        s.put(DEVICE_CARDMANAGERURL, getCardManagerUrl());
         s.put(DEVICE_IS_REMOTE, remoteCheckbox.isSelected() + ""); //NOI18N
         s.put(DEVICE_DONT_SUSPEND_THREADS_ON_STARTUP, !suspendCheckBox.isSelected() + ""); //NOI18N
+        String host = hostComboBox.getSelectedItem().toString();
+        s.put(DEVICE_HOST, host);
+        NbPreferences.forModule(DevicePropertiesPanel.class).put("knownHosts",  //NOI18N
+                getKnownHosts());
+        String serverUrl = getServerUrl();
+        String cardManagerUrl = getCardManagerUrl();
+        try {
+            //Try to substitute Ant-style properties for those things
+            //that are listed elsewhere in the file
+            URL url = new URL(serverUrl);
+            URL curl = new URL(cardManagerUrl);
+            StringBuilder usb = new StringBuilder(url.getProtocol());
+            StringBuilder csb = new StringBuilder(curl.getProtocol());
+            usb.append("://"); //NOi18N
+            csb.append("://"); //NOI18N
+            if (url.getHost().equalsIgnoreCase(host)) {
+                usb.append ("${"); //NOI18N
+                usb.append (DEVICE_HOST);
+                usb.append ("}"); //NOI18N
+            } else {
+                usb.append(url.getHost());
+            }
+            if (curl.getHost().equalsIgnoreCase(host)) {
+                csb.append("${"); //NOI18N
+                csb.append(DEVICE_HOST);
+                csb.append("}"); //NOI18N
+            } else {
+                csb.append(curl.getHost());
+            }
+            if (port.equals("" + url.getPort())) { //NOI18N
+                usb.append(":${"); //NOI18N
+                usb.append(DEVICE_HTTPPORT);
+                usb.append('}'); //NOI18N
+            } else {
+                usb.append(':'); //NOI18N
+                usb.append (url.getPort());
+            }
+            if (port.equals("" + curl.getPort())) { //NOI18N
+                csb.append(":${"); //NOI18N
+                csb.append(DEVICE_HTTPPORT);
+                csb.append('}'); //NOI18N
+            } else {
+                csb.append(':'); //NOI18N
+                csb.append(curl.getPort());
+            }
+            if (url.getPath() != null) {
+                usb.append(url.getPath());
+            }
+            if (curl.getPath() != null) {
+                csb.append(curl.getPath());
+            }
+            if (!usb.toString().endsWith("/")) { //NOI18N
+                usb.append("/");
+            }
+            if (!csb.toString().endsWith("/")) { //NOI18N
+                csb.append("/"); //NOI18N
+            }
+            serverUrl = usb.toString();
+            cardManagerUrl = csb.toString();
+        } catch (MalformedURLException ex) {
+            s.put(DEVICE_SERVERURL, getServerUrl());
+            s.put(DEVICE_CARDMANAGERURL, getCardManagerUrl());
+            return;
+        }
+        s.put(DEVICE_SERVERURL, serverUrl);
+        s.put(DEVICE_CARDMANAGERURL, cardManagerUrl);
+    }
+
+    private String getKnownHosts() {
+        ComboBoxModel mdl = hostComboBox.getModel();
+        StringBuilder sb = new StringBuilder();
+        Set<String> s = new HashSet<String>();
+        for (int i = 0; i < mdl.getSize(); i++) {
+            String host = (String) mdl.getElementAt(mdl.getSize() - (i + 1));
+            if ("localhost".compareToIgnoreCase(host) == 0 || "127.0.0.1".equals(host)) { //NOI18N
+                continue;
+            }
+            if (sb.length() > 0) {
+                sb.append(','); //NOI18N
+            }
+            sb.append(host);
+            s.add(host);
+        }
+        if (!s.contains(mdl.getSelectedItem().toString())) {
+            if (sb.length() > 0) {
+                sb.append(','); //NOI18N
+            }
+            sb.append(mdl.getSelectedItem().toString().trim());
+        }
+        return sb.toString();
     }
 
     public void read(KeysAndValues<?> s) {
@@ -334,6 +480,14 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
             val = s.get(DEVICE_CORSIZE);
             if (val != null) {
                 corSpinner.setValue(val);
+            }
+            val = s.get(DEVICE_HOST);
+            if (val != null) {
+                hostComboBox.setSelectedItem(val);
+                DefaultComboBoxModel mdl = (DefaultComboBoxModel) hostComboBox.getModel();
+                if (mdl.getIndexOf(val) < 0) {
+                    mdl.addElement(val);
+                }
             }
             val = s.get(DEVICE_HTTPPORT);
             if (val != null) {
@@ -383,6 +537,7 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
             if (val != null) {
                 remoteCheckbox.setSelected(Boolean.valueOf(val));
             }
+
         } finally {
             updating = false;
             serverUrlModified = false;
@@ -462,39 +617,40 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
 
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
 
         secureModeCheckBox = new javax.swing.JCheckBox();
         loggerLevelComboBox = new javax.swing.JComboBox();
         corSpinner = new javax.swing.JSpinner();
         e2pSpinner = new javax.swing.JSpinner();
         ramSpinner = new javax.swing.JSpinner();
-        jLabel3 = new javax.swing.JLabel();
-        jLabel4 = new javax.swing.JLabel();
-        jLabel5 = new javax.swing.JLabel();
-        jLabel6 = new javax.swing.JLabel();
+        ramSizeLabel = new javax.swing.JLabel();
+        eepromSizeLabel = new javax.swing.JLabel();
+        corSizeLabel = new javax.swing.JLabel();
+        loggerLevelLabel = new javax.swing.JLabel();
         httpPortTextField = new javax.swing.JTextField();
-        jLabel7 = new javax.swing.JLabel();
-        jSeparator1 = new javax.swing.JSeparator();
-        jSeparator3 = new javax.swing.JSeparator();
-        jLabel10 = new javax.swing.JLabel();
+        httpPortLabel = new javax.swing.JLabel();
+        debugEmulatorLabel = new javax.swing.JLabel();
         proxy2cjcrePortTextField = new javax.swing.JTextField();
         suspendCheckBox = new javax.swing.JCheckBox();
         contactedPortTextField = new javax.swing.JTextField();
         contactlessPortTextField = new javax.swing.JTextField();
-        jLabel9 = new javax.swing.JLabel();
-        jLabel11 = new javax.swing.JLabel();
+        debugInfoLabel = new javax.swing.JLabel();
+        ideDebugLabel = new javax.swing.JLabel();
         proxy2idePortTextField = new javax.swing.JTextField();
-        jLabel1 = new javax.swing.JLabel();
-        jSeparator4 = new javax.swing.JSeparator();
+        commInfoLabel = new javax.swing.JLabel();
         serverUrlLabel = new javax.swing.JLabel();
         serverUrlField = new javax.swing.JTextField();
         cardManagerUrlLabel = new javax.swing.JLabel();
         cardManagerUrlField = new javax.swing.JTextField();
-        jLabel2 = new javax.swing.JLabel();
+        contactedProtocolLabel = new javax.swing.JLabel();
         contactedProtocolComboBox = new javax.swing.JComboBox();
-        jLabel8 = new javax.swing.JLabel();
-        jLabel12 = new javax.swing.JLabel();
+        contactedPortLabel = new javax.swing.JLabel();
+        contactlessPortLabel = new javax.swing.JLabel();
         remoteCheckbox = new javax.swing.JCheckBox();
+        hostLabel = new javax.swing.JLabel();
+        hostComboBox = new javax.swing.JComboBox();
+        cardSettingsLabel = new javax.swing.JLabel();
 
         secureModeCheckBox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(secureModeCheckBox, org.openide.util.NbBundle.getBundle(DevicePropertiesPanel.class).getString("Run_In_Secure_Mode")); // NOI18N
@@ -506,249 +662,379 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
         });
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 12));
+        setLayout(new java.awt.GridBagLayout());
 
         loggerLevelComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "none", "fatal", "error", "warn", "info", "verbose", "debug", "all" }));
-        loggerLevelComboBox.setToolTipText(org.openide.util.NbBundle.getBundle(DevicePropertiesPanel.class).getString("debuglevel")); // NOI18N
+        loggerLevelComboBox.setToolTipText(org.openide.util.NbBundle.getBundle(DevicePropertiesPanel.class).getString("debuglevel_1")); // NOI18N
         loggerLevelComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 loggerLevelComboBoxActionPerformed(evt);
             }
         });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.ipadx = 40;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 0.5;
+        gridBagConstraints.insets = new java.awt.Insets(8, 3, 0, 0);
+        add(loggerLevelComboBox, gridBagConstraints);
 
         corSpinner.setModel(new javax.swing.SpinnerListModel(new String[] {"512", "1K", "2K", "4K"}));
         corSpinner.setToolTipText(org.openide.util.NbBundle.getBundle(DevicePropertiesPanel.class).getString("tip_sizeofclear")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.ipadx = 110;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 0.5;
+        gridBagConstraints.insets = new java.awt.Insets(8, 3, 0, 0);
+        add(corSpinner, gridBagConstraints);
 
         e2pSpinner.setModel(new javax.swing.SpinnerListModel(new String[] {"128K", "512K", "1M", "2M", "4M", "8M", "16M", "32M"}));
-        e2pSpinner.setToolTipText(org.openide.util.NbBundle.getBundle(DevicePropertiesPanel.class).getString("tip_persistent_memory")); // NOI18N
+        e2pSpinner.setToolTipText(org.openide.util.NbBundle.getBundle(DevicePropertiesPanel.class).getString("tip_persistent_memory_1")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.ipadx = 102;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 0.5;
+        gridBagConstraints.insets = new java.awt.Insets(8, 3, 0, 0);
+        add(e2pSpinner, gridBagConstraints);
 
         ramSpinner.setModel(new javax.swing.SpinnerListModel(new String[] {"24K", "32K", "48K", "64K", "96K", "128K", "512K", "1M", "2M", "4M", "8M", "16M", "32M"}));
-        ramSpinner.setToolTipText(org.openide.util.NbBundle.getBundle(DevicePropertiesPanel.class).getString("tip_ramsize")); // NOI18N
+        ramSpinner.setToolTipText(org.openide.util.NbBundle.getBundle(DevicePropertiesPanel.class).getString("tip_ramsize_1")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.ipadx = 110;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 0.5;
+        gridBagConstraints.insets = new java.awt.Insets(20, 3, 0, 0);
+        add(ramSpinner, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, "RAM Size:");
-        jLabel3.setToolTipText("RAM size for this Instance.");
+        org.openide.awt.Mnemonics.setLocalizedText(ramSizeLabel, "RAM Size:");
+        ramSizeLabel.setToolTipText("RAM size for this Instance.");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(20, 20, 0, 0);
+        add(ramSizeLabel, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, "EEPROM Size:");
-        jLabel4.setToolTipText(org.openide.util.NbBundle.getBundle(DevicePropertiesPanel.class).getString("tip_persistent_memory_size")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(eepromSizeLabel, "EEPROM Size:");
+        eepromSizeLabel.setToolTipText(org.openide.util.NbBundle.getBundle(DevicePropertiesPanel.class).getString("tip_persistent_memory_size")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(8, 20, 0, 0);
+        add(eepromSizeLabel, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, "COR Size:");
-        jLabel5.setToolTipText(org.openide.util.NbBundle.getBundle(DevicePropertiesPanel.class).getString("tip_clear_on_reset")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(corSizeLabel, "COR Size:");
+        corSizeLabel.setToolTipText(org.openide.util.NbBundle.getBundle(DevicePropertiesPanel.class).getString("tip_clear_on_reset")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(8, 20, 0, 0);
+        add(corSizeLabel, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel6, "Logger Level:");
-        jLabel6.setToolTipText(org.openide.util.NbBundle.getBundle(DevicePropertiesPanel.class).getString("tip_debug_level")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(loggerLevelLabel, "Logger Level:");
+        loggerLevelLabel.setToolTipText(org.openide.util.NbBundle.getBundle(DevicePropertiesPanel.class).getString("tip_debug_level")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(8, 20, 0, 0);
+        add(loggerLevelLabel, gridBagConstraints);
 
         httpPortTextField.setText("8019");
-        httpPortTextField.setToolTipText(org.openide.util.NbBundle.getBundle(DevicePropertiesPanel.class).getString("tip_http_port")); // NOI18N
+        httpPortTextField.setToolTipText(org.openide.util.NbBundle.getBundle(DevicePropertiesPanel.class).getString("tip_http_port_1")); // NOI18N
         httpPortTextField.setName("HTTP Port"); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.ipadx = 60;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 0.5;
+        gridBagConstraints.insets = new java.awt.Insets(20, 10, 0, 20);
+        add(httpPortTextField, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel7, "HTTP Port:");
-        jLabel7.setToolTipText(org.openide.util.NbBundle.getBundle(DevicePropertiesPanel.class).getString("tip_http_port_2")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(httpPortLabel, "HTTP Port:");
+        httpPortLabel.setToolTipText(org.openide.util.NbBundle.getBundle(DevicePropertiesPanel.class).getString("tip_http_port_2")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(20, 12, 0, 0);
+        add(httpPortLabel, gridBagConstraints);
 
-        jSeparator1.setOrientation(javax.swing.SwingConstants.VERTICAL);
-
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel10, "Debug Proxy <-> CJCRE Port: ");
-        jLabel10.setToolTipText(org.openide.util.NbBundle.getBundle(DevicePropertiesPanel.class).getString("tip_debug_port")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(debugEmulatorLabel, "Debug Proxy <-> Emulator Port: ");
+        debugEmulatorLabel.setToolTipText(org.openide.util.NbBundle.getBundle(DevicePropertiesPanel.class).getString("tip_debug_port")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 16;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(16, 20, 0, 0);
+        add(debugEmulatorLabel, gridBagConstraints);
 
         proxy2cjcrePortTextField.setText("7019");
-        proxy2cjcrePortTextField.setToolTipText(org.openide.util.NbBundle.getBundle(DevicePropertiesPanel.class).getString("tip_ide_port")); // NOI18N
+        proxy2cjcrePortTextField.setToolTipText(org.openide.util.NbBundle.getBundle(DevicePropertiesPanel.class).getString("tip_ide_port_1")); // NOI18N
         proxy2cjcrePortTextField.setName("Debug CJCRE Port"); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 16;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 0.5;
+        gridBagConstraints.insets = new java.awt.Insets(16, 10, 0, 0);
+        add(proxy2cjcrePortTextField, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(suspendCheckBox, "Suspend Threads on startup");
+        suspendCheckBox.setToolTipText("<html>Check this checkbox if you want to start<br>stepping through code in the debugger<br>as soon as the card is started");
+        suspendCheckBox.setHorizontalTextPosition(10);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 18;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.ipadx = 5;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
+        gridBagConstraints.weightx = 0.5;
+        gridBagConstraints.insets = new java.awt.Insets(4, 20, 0, 0);
+        add(suspendCheckBox, gridBagConstraints);
 
         contactedPortTextField.setText("9025");
         contactedPortTextField.setToolTipText(org.openide.util.NbBundle.getBundle(DevicePropertiesPanel.class).getString("tip_apdu_port")); // NOI18N
         contactedPortTextField.setName("Contacted Port"); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.ipadx = 60;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 0.5;
+        gridBagConstraints.insets = new java.awt.Insets(8, 10, 0, 20);
+        add(contactedPortTextField, gridBagConstraints);
 
         contactlessPortTextField.setText("9026");
         contactlessPortTextField.setToolTipText(org.openide.util.NbBundle.getBundle(DevicePropertiesPanel.class).getString("tip_APDU_Contactless_port")); // NOI18N
         contactlessPortTextField.setName("Contactless Port"); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 0.5;
+        gridBagConstraints.insets = new java.awt.Insets(8, 10, 0, 20);
+        add(contactlessPortTextField, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel9, "Debugger Info");
+        debugInfoLabel.setFont(debugInfoLabel.getFont().deriveFont(debugInfoLabel.getFont().getStyle() | java.awt.Font.BOLD));
+        org.openide.awt.Mnemonics.setLocalizedText(debugInfoLabel, "Debugger Info");
+        debugInfoLabel.setBorder(javax.swing.BorderFactory.createMatteBorder(0, 0, 1, 0, javax.swing.UIManager.getDefaults().getColor("controlShadow")));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 14;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(20, 20, 0, 20);
+        add(debugInfoLabel, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel11, "IDE <-> Debug Proxy Port: ");
-        jLabel11.setToolTipText(org.openide.util.NbBundle.getBundle(DevicePropertiesPanel.class).getString("tip_ide_debug_proxy_port")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(ideDebugLabel, "IDE <-> Debug Proxy Port: ");
+        ideDebugLabel.setToolTipText(org.openide.util.NbBundle.getBundle(DevicePropertiesPanel.class).getString("tip_ide_debug_proxy_port")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 17;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(8, 20, 0, 0);
+        add(ideDebugLabel, gridBagConstraints);
 
         proxy2idePortTextField.setText("7020");
-        proxy2idePortTextField.setToolTipText(org.openide.util.NbBundle.getBundle(DevicePropertiesPanel.class).getString("tip_ide_debug_port")); // NOI18N
+        proxy2idePortTextField.setToolTipText(org.openide.util.NbBundle.getBundle(DevicePropertiesPanel.class).getString("tip_ide_debug_port_1")); // NOI18N
         proxy2idePortTextField.setName("IDE Debug Port"); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 17;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 0.5;
+        gridBagConstraints.insets = new java.awt.Insets(8, 10, 0, 0);
+        add(proxy2idePortTextField, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, "Communication Info");
+        commInfoLabel.setFont(commInfoLabel.getFont().deriveFont(commInfoLabel.getFont().getStyle() | java.awt.Font.BOLD));
+        org.openide.awt.Mnemonics.setLocalizedText(commInfoLabel, "Communication Info");
+        commInfoLabel.setBorder(javax.swing.BorderFactory.createMatteBorder(0, 0, 1, 0, javax.swing.UIManager.getDefaults().getColor("controlShadow")));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 19;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(20, 20, 0, 20);
+        add(commInfoLabel, gridBagConstraints);
 
         serverUrlLabel.setLabelFor(serverUrlField);
         org.openide.awt.Mnemonics.setLocalizedText(serverUrlLabel, "Server URL");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 21;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(14, 20, 0, 0);
+        add(serverUrlLabel, gridBagConstraints);
 
         serverUrlField.setText("http://localhost:8019"); // NOI18N
+        serverUrlField.setToolTipText("The general URL for interacting with this card");
         serverUrlField.setName("Server URL"); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 21;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 0.5;
+        gridBagConstraints.insets = new java.awt.Insets(8, 10, 0, 20);
+        add(serverUrlField, gridBagConstraints);
 
         cardManagerUrlLabel.setLabelFor(cardManagerUrlField);
         org.openide.awt.Mnemonics.setLocalizedText(cardManagerUrlLabel, "Card Manager URL");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 23;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(14, 20, 0, 0);
+        add(cardManagerUrlLabel, gridBagConstraints);
 
         cardManagerUrlField.setText("http://localhost:8019/cardmanager"); // NOI18N
+        cardManagerUrlField.setToolTipText("The URL used for deploying projects to this card");
         cardManagerUrlField.setName("Card Manager URL"); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 23;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 0.5;
+        gridBagConstraints.insets = new java.awt.Insets(8, 10, 0, 20);
+        add(cardManagerUrlField, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, "Contacted Protocol:");
+        contactedProtocolLabel.setLabelFor(contactedProtocolComboBox);
+        org.openide.awt.Mnemonics.setLocalizedText(contactedProtocolLabel, "Contacted Protocol:");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(13, 12, 0, 0);
+        add(contactedProtocolLabel, gridBagConstraints);
 
         contactedProtocolComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "T=0", "T=1" }));
         contactedProtocolComboBox.setToolTipText("Select the protocol to use on contacted port.");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 0.5;
+        gridBagConstraints.insets = new java.awt.Insets(8, 10, 0, 20);
+        add(contactedProtocolComboBox, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel8, "Contacted Port:");
+        contactedPortLabel.setLabelFor(contactedPortTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(contactedPortLabel, "Contacted Port:");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(8, 12, 0, 0);
+        add(contactedPortLabel, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel12, "Contactless Port:");
+        contactlessPortLabel.setLabelFor(contactlessPortTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(contactlessPortLabel, "Contactless Port:");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 0);
+        add(contactlessPortLabel, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(remoteCheckbox, "Card Manager is on a remote computer");
+        remoteCheckbox.setToolTipText("<html>If true, this card is not running on the same computer<br>as the IDE is");
+        remoteCheckbox.setHorizontalTextPosition(10);
         remoteCheckbox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 onRemoteCheckboxChanged(evt);
             }
         });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 25;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.ipadx = 5;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
+        gridBagConstraints.weightx = 0.5;
+        gridBagConstraints.insets = new java.awt.Insets(8, 0, 20, 20);
+        add(remoteCheckbox, gridBagConstraints);
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(layout.createSequentialGroup()
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(jLabel3)
-                                    .add(jLabel4))
-                                .add(11, 11, 11)
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(e2pSpinner, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 115, Short.MAX_VALUE)
-                                    .add(ramSpinner, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 115, Short.MAX_VALUE)))
-                            .add(layout.createSequentialGroup()
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(jLabel5)
-                                    .add(jLabel6))
-                                .add(14, 14, 14)
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(corSpinner, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 114, Short.MAX_VALUE)
-                                    .add(loggerLevelComboBox, 0, 114, Short.MAX_VALUE))))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(layout.createSequentialGroup()
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(jLabel8, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 99, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                    .add(jLabel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 99, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                    .add(jLabel7))
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(contactedProtocolComboBox, 0, 136, Short.MAX_VALUE)
-                                    .add(httpPortTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 136, Short.MAX_VALUE)
-                                    .add(contactedPortTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 136, Short.MAX_VALUE)))
-                            .add(layout.createSequentialGroup()
-                                .add(jLabel12, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 99, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(contactlessPortTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 136, Short.MAX_VALUE))))
-                    .add(layout.createSequentialGroup()
-                        .add(jLabel1)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jSeparator4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 345, Short.MAX_VALUE))
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(cardManagerUrlLabel)
-                            .add(serverUrlLabel))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(serverUrlField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 350, Short.MAX_VALUE)
-                            .add(cardManagerUrlField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 350, Short.MAX_VALUE)))
-                    .add(layout.createSequentialGroup()
-                        .add(jLabel9, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 80, Short.MAX_VALUE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jSeparator3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 360, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jLabel11)
-                            .add(jLabel10))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(proxy2cjcrePortTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 56, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(proxy2idePortTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 56, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                    .add(layout.createSequentialGroup()
-                        .add(suspendCheckBox)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 283, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(remoteCheckbox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 444, Short.MAX_VALUE))
-                .addContainerGap())
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(layout.createSequentialGroup()
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                                    .add(jLabel3)
-                                    .add(ramSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                                    .add(jLabel4)
-                                    .add(e2pSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                                    .add(jLabel5)
-                                    .add(corSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                                    .add(jLabel6)
-                                    .add(loggerLevelComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                            .add(layout.createSequentialGroup()
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                                        .add(httpPortTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                        .add(jLabel7))
-                                    .add(layout.createSequentialGroup()
-                                        .add(32, 32, 32)
-                                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                                            .add(jLabel8)
-                                            .add(contactedPortTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                                    .add(jLabel2)
-                                    .add(contactedProtocolComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                                    .add(contactlessPortTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                    .add(jLabel12))))
-                        .add(15, 15, 15)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(jSeparator3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 11, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(jLabel9, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 19, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(jLabel10)
-                            .add(proxy2cjcrePortTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(jLabel11)
-                            .add(proxy2idePortTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(suspendCheckBox)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(layout.createSequentialGroup()
-                                .add(13, 13, 13)
-                                .add(jLabel1))
-                            .add(layout.createSequentialGroup()
-                                .add(19, 19, 19)
-                                .add(jSeparator4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 6, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(serverUrlLabel)
-                            .add(serverUrlField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(cardManagerUrlLabel)
-                            .add(cardManagerUrlField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 125, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(remoteCheckbox)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
+        hostLabel.setLabelFor(hostComboBox);
+        org.openide.awt.Mnemonics.setLocalizedText(hostLabel, "Host");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 20;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(20, 20, 0, 0);
+        add(hostLabel, gridBagConstraints);
+
+        hostComboBox.setEditable(true);
+        hostComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "localhost", "127.0.0.1" }));
+        hostComboBox.setToolTipText("<html>The computer the IDE should communicate with<br>to talk to this Card");
+        hostComboBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                hostComboChanged(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 20;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 0.5;
+        gridBagConstraints.insets = new java.awt.Insets(20, 10, 0, 20);
+        add(hostComboBox, gridBagConstraints);
+
+        cardSettingsLabel.setFont(cardSettingsLabel.getFont().deriveFont(cardSettingsLabel.getFont().getStyle() | java.awt.Font.BOLD));
+        org.openide.awt.Mnemonics.setLocalizedText(cardSettingsLabel, "Card Settings");
+        cardSettingsLabel.setBorder(javax.swing.BorderFactory.createMatteBorder(0, 0, 1, 0, javax.swing.UIManager.getDefaults().getColor("controlShadow")));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.FIRST_LINE_START;
+        gridBagConstraints.insets = new java.awt.Insets(20, 20, 0, 20);
+        add(cardSettingsLabel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void secureModeCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_secureModeCheckBoxActionPerformed
@@ -759,37 +1045,47 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
         fireChange();
 }//GEN-LAST:event_loggerLevelComboBoxActionPerformed
 
+    boolean remoteBoxManuallyChanged = false;
+    boolean inUpdate;
     private void onRemoteCheckboxChanged(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onRemoteCheckboxChanged
+        if (inUpdate) {
+            return;
+        }
+        remoteBoxManuallyChanged = true;
         group.validateAll();
     }//GEN-LAST:event_onRemoteCheckboxChanged
+
+    private void hostComboChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_hostComboChanged
+        insertUpdate(null);
+    }//GEN-LAST:event_hostComboChanged
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField cardManagerUrlField;
     private javax.swing.JLabel cardManagerUrlLabel;
+    private javax.swing.JLabel cardSettingsLabel;
+    private javax.swing.JLabel commInfoLabel;
+    private javax.swing.JLabel contactedPortLabel;
     private javax.swing.JTextField contactedPortTextField;
     private javax.swing.JComboBox contactedProtocolComboBox;
+    private javax.swing.JLabel contactedProtocolLabel;
+    private javax.swing.JLabel contactlessPortLabel;
     private javax.swing.JTextField contactlessPortTextField;
+    private javax.swing.JLabel corSizeLabel;
     private javax.swing.JSpinner corSpinner;
+    private javax.swing.JLabel debugEmulatorLabel;
+    private javax.swing.JLabel debugInfoLabel;
     private javax.swing.JSpinner e2pSpinner;
+    private javax.swing.JLabel eepromSizeLabel;
+    private javax.swing.JComboBox hostComboBox;
+    private javax.swing.JLabel hostLabel;
+    private javax.swing.JLabel httpPortLabel;
     private javax.swing.JTextField httpPortTextField;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel10;
-    private javax.swing.JLabel jLabel11;
-    private javax.swing.JLabel jLabel12;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel6;
-    private javax.swing.JLabel jLabel7;
-    private javax.swing.JLabel jLabel8;
-    private javax.swing.JLabel jLabel9;
-    private javax.swing.JSeparator jSeparator1;
-    private javax.swing.JSeparator jSeparator3;
-    private javax.swing.JSeparator jSeparator4;
+    private javax.swing.JLabel ideDebugLabel;
     private javax.swing.JComboBox loggerLevelComboBox;
+    private javax.swing.JLabel loggerLevelLabel;
     private javax.swing.JTextField proxy2cjcrePortTextField;
     private javax.swing.JTextField proxy2idePortTextField;
+    private javax.swing.JLabel ramSizeLabel;
     private javax.swing.JSpinner ramSpinner;
     private javax.swing.JCheckBox remoteCheckbox;
     private javax.swing.JCheckBox secureModeCheckBox;
@@ -807,23 +1103,38 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
         return suspendCheckBox.isSelected();
     }
 
+    private boolean affectsServerURL(Object o) {
+        Document hostEditorDocument = hostComboBox.getEditor().getEditorComponent() instanceof JTextField ?
+            ((JTextField) hostComboBox.getEditor().getEditorComponent()).getDocument() : null;
+        return o == null || o == httpPortTextField.getDocument() || o == hostComboBox ||
+                (o != null && o == hostEditorDocument);
+    }
+
     private boolean serverUrlModified;
     public void insertUpdate(DocumentEvent e) {
-        serverUrlModified |= (e.getDocument() == serverUrlField.getDocument() ||
-                e.getDocument() == cardManagerUrlField.getDocument());
-        if (!serverUrlModified && e.getDocument() == httpPortTextField.getDocument()) {
+        serverUrlModified |= e != null && ((e.getDocument() == serverUrlField.getDocument() ||
+                e.getDocument() == cardManagerUrlField.getDocument()));
+        if (!serverUrlModified && affectsServerURL(e == null ? null : e.getDocument())) {
+            Document hostEditorDocument = hostComboBox.getEditor().getEditorComponent() instanceof JTextField ?
+                ((JTextField) hostComboBox.getEditor().getEditorComponent()).getDocument() : null;
             //XXX - update card manager url fields
+            inUpdate = true;
             try {
                 int port = Integer.parseInt (httpPortTextField.getText());
+                String host = hostComboBox.getSelectedItem().toString().trim();
                 URL sUrl = new URL (serverUrlField.getText());
                 URL cUrl = new URL (cardManagerUrlField.getText());
-                final URL newSurl = new URL (sUrl.getProtocol(), sUrl.getHost(), port, sUrl.getFile());
-                final URL newCurl = new URL (cUrl.getProtocol(), cUrl.getHost(), port, cUrl.getFile());
+                final URL newSurl = new URL (sUrl.getProtocol(), host, port, sUrl.getFile());
+                final URL newCurl = new URL (cUrl.getProtocol(), host, port, cUrl.getFile());
+                final boolean local = "localhost".compareToIgnoreCase(host) == 0 || "127.0.0.1".equals(host); //NOI18N
                 group.modifyComponents(new Runnable() {
                     public void run() {
                         serverUrlField.setText (newSurl.toString());
                         cardManagerUrlField.setText(newCurl.toString());
                         serverUrlModified = false;
+                        if (!remoteBoxManuallyChanged) {
+                            remoteCheckbox.setSelected(!local);
+                        }
                     }
                 });
                 group.validateAll();
@@ -831,6 +1142,8 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
                 //do nothing
             } catch (MalformedURLException ex) {
                 //do nothing
+            } finally {
+                inUpdate = false;
             }
         }
     }
