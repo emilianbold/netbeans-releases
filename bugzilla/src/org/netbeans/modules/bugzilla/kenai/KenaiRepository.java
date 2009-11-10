@@ -181,6 +181,13 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
     }
 
     @Override
+    public synchronized void refreshConfiguration() {
+        KenaiConfiguration conf = (KenaiConfiguration) getConfiguration();
+        conf.reset();
+        super.refreshConfiguration();
+    }
+
+    @Override
     protected BugzillaConfiguration createConfiguration(boolean forceRefresh) {
         KenaiConfiguration kc = new KenaiConfiguration(this, product);
         kc.initialize(this, forceRefresh);

@@ -97,11 +97,12 @@ public class KenaiConfiguration extends BugzillaConfiguration {
         }
     }
 
+    void reset() {
+        rc = null;
+    }
+
     @Override
     protected RepositoryConfiguration getRepositoryConfiguration(BugzillaRepository repository, boolean forceRefresh) {
-        if(forceRefresh) {
-            rc = null;
-        }
         if(rc == null) {
             rc = super.getRepositoryConfiguration(repository, forceRefresh);
         }
