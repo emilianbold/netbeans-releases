@@ -882,12 +882,28 @@ public class QueryController extends BugtrackingController implements DocumentLi
             }
         }
 
+        List<ParameterValue> componentPV = null;
+        List<ParameterValue> versionPV = null;
         for (Map.Entry<String, List<ParameterValue>> e : normalizedParams.entrySet()) {
             QueryParameter pv = parameters.get(e.getKey());
             if(pv != null) {
-                List<ParameterValue> pvs = e.getValue();
-                pv.setValues(pvs.toArray(new ParameterValue[pvs.size()]));
+                if(pv == componentParameter) {
+                    componentPV = e.getValue();
+                } else if(pv == versionParameter) {
+                    versionPV = e.getValue();
+                } else {
+                    List<ParameterValue> pvs = e.getValue();
+                    pv.setValues(pvs.toArray(new ParameterValue[pvs.size()]));
+                }
             }
+        }
+        setDependentParameter(componentParameter, componentPV);
+        setDependentParameter(versionParameter, versionPV);
+    }
+
+    private void setDependentParameter(QueryParameter p, List<ParameterValue> values) {
+        if(values != null) {
+            p.setValues(values.toArray(new ParameterValue[values.size()]));
         }
     }
 
