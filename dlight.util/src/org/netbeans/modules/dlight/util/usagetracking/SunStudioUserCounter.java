@@ -97,12 +97,17 @@ public final class SunStudioUserCounter {
     }
 
     public static String getSunStudioBinDir() {
-        String ssBin = System.getProperty("spro.home");// NOI18N
-        if (ssBin != null) {
-            if (!ssBin.endsWith("/") && !ssBin.endsWith("\\")) { // NOI18N
-                ssBin += "/"; // NOI18N
+        String ssBin = System.getProperty("spro.bin");// NOI18N
+        if (ssBin == null) {
+            ssBin = System.getProperty("spro.home");// NOI18N
+            if (ssBin != null) {
+                if (!ssBin.endsWith("/") && !ssBin.endsWith("\\")) { // NOI18N
+                    ssBin += "/"; // NOI18N
+                }
+                ssBin += "bin/"; // NOI18N
             }
-            ssBin += "bin/"; // NOI18N
+        } else {
+            ssBin += "/"; // NOI18N
         }
         return ssBin;
     }
