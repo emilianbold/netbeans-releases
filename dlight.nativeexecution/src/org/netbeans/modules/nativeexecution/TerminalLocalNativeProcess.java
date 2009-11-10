@@ -58,6 +58,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.Signal;
 import org.netbeans.modules.nativeexecution.support.EnvWriter;
@@ -125,22 +126,22 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             final String commandLine = info.getCommandLineForShell();
             final String wDir = info.getWorkingDirectory(true);
 
-            final File workingDirectory = (wDir == null)? new File(".") : new File(wDir); // NOI18N
+            final File workingDirectory = (wDir == null) ? new File(".") : new File(wDir); // NOI18N
 
-            pidFileFile = File.createTempFile("dlight", "termexec", hostInfo.getTempDirFile()); // NOI18N
-            envFileFile = new File(pidFileFile.getAbsoluteFile() + ".env"); // NOI18N
-            shFileFile = new File(pidFileFile.getAbsoluteFile() + ".sh"); // NOI18N
-            resultFile = new File(shFileFile.getAbsolutePath() + ".res"); // NOI18N
+            pidFileFile = File.createTempFile("dlight", "termexec", hostInfo.getTempDirFile()).getAbsoluteFile(); // NOI18N
+            envFileFile = new File(pidFileFile.getPath() + ".env"); // NOI18N
+            shFileFile = new File(pidFileFile.getPath() + ".sh"); // NOI18N
+            resultFile = new File(shFileFile.getPath() + ".res"); // NOI18N
 
             resultFile.deleteOnExit();
 
-            String pidFile = (isWindows) ? WindowsSupport.getInstance().convertToShellPath(pidFileFile.getAbsolutePath()) : pidFileFile.getAbsolutePath();
+            String pidFile = (isWindows) ? WindowsSupport.getInstance().convertToShellPath(pidFileFile.getPath()) : pidFileFile.getPath();
             String envFile = pidFile + ".env"; // NOI18N
             String shFile = pidFile + ".sh"; // NOI18N
 
             FileWriter shWriter = new FileWriter(shFileFile);
             shWriter.write("echo $$ > \"" + pidFile + "\" || exit $?\n"); // NOI18N
-            shWriter.write(". \"" + envFile + "\" || exit $?\n"); // NOI18N
+            shWriter.write(". \"" + envFile + "\" 2>/dev/null\n"); // NOI18N
             shWriter.write("exec " + commandLine + "\n"); // NOI18N
             shWriter.flush();
             shWriter.close();
@@ -166,7 +167,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
             ProcessBuilder pb = new ProcessBuilder(command);
             pb.directory(workingDirectory);
-            
+
             LOG.log(Level.FINEST, "Command: " + command); // NOI18N
 
             final MacroMap env = info.getEnvironment().clone();
@@ -204,6 +205,30 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                 EnvWriter ew = new EnvWriter(fos);
                 ew.write(env);
                 fos.close();
+
+                /**
+                 * IZ#176361: Sometimes when external terminal is used,
+                 * execution fails because env file is not found
+                 *
+                 * TODO: ???
+                 * What is it? FS caches? How to deal with this?
+                 */
+                int attempts = 10;
+                boolean exists = false;
+
+                while (attempts > 0) {
+                    exists = HostInfoUtils.fileExists(ExecutionEnvironmentFactory.getLocal(), shFile) &
+                            HostInfoUtils.fileExists(ExecutionEnvironmentFactory.getLocal(), envFile);
+
+                    if (exists) {
+                        break;
+                    }
+
+                    LOG.warning("env or sh file is not available yet... waiting [" + attempts + "]"); // NOI18N
+                    Thread.sleep(50);
+                    attempts--;
+                }
+
 
                 if (LOG.isLoggable(Level.FINEST)) {
                     env.dump(System.err);
