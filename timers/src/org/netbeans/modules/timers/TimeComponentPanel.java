@@ -62,6 +62,7 @@ import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.table.DefaultTableModel;
+import org.netbeans.insane.live.CancelException;
 import org.netbeans.insane.live.LiveReferences;
 import org.openide.DialogDescriptor;
 import org.openide.filesystems.FileObject;
@@ -292,6 +293,7 @@ public class TimeComponentPanel extends javax.swing.JPanel implements PropertyCh
         private final JProgressBar bar;
         private String report;
         private final JLabel msg;
+        private boolean cancel;
 
         public DumpRoots(Collection objs) {
             assert EventQueue.isDispatchThread();
@@ -305,16 +307,33 @@ public class TimeComponentPanel extends javax.swing.JPanel implements PropertyCh
             msg.setBorder(BorderFactory.createEmptyBorder(8, 0, 8, 0));
             inner.add(msg, BorderLayout.NORTH);
             inner.add(bar, BorderLayout.CENTER);
-            d = DialogDisplayer.getDefault().createDialog(new DialogDescriptor(
-                    inner, NbBundle.getBundle(TimeComponentPanel.class).getString("Please_wait")));
+            DialogDescriptor dd = new DialogDescriptor(
+                inner, NbBundle.getBundle(TimeComponentPanel.class).getString("Please_wait")
+            );
+            dd.setOptions(new Object[] { DialogDescriptor.CANCEL_OPTION });
+            d = DialogDisplayer.getDefault().createDialog(dd);
             d.pack();
             d.setModal(true);
+            class CancelBoundedRangeModel extends DefaultBoundedRangeModel {
+                @Override
+                public void setValue(int n) {
+                    super.setValue(n);
+                    if (cancel) {
+                        throw new CancelException();
+                    }
+                }
+            }
+            CancelBoundedRangeModel m = new CancelBoundedRangeModel();
+            bar.setModel(m);
 
             Task task = RP.post(this);
             d.setVisible(true);
-            task.waitFinished();
-            
-            finish();
+            if (dd.getValue() == DialogDescriptor.CANCEL_OPTION) {
+                cancel = true;
+            } else {
+                task.waitFinished();
+                finish();
+            }
         }
 
         public void run() {
@@ -324,6 +343,9 @@ public class TimeComponentPanel extends javax.swing.JPanel implements PropertyCh
             while (!d.isVisible()) {
                 // just wait in case constructor's setVisible has not yet
                 // been performed
+                if (cancel) {
+                    break;
+                }
             }
             d.setVisible(false);
         }
@@ -440,6 +462,9 @@ public class TimeComponentPanel extends javax.swing.JPanel implements PropertyCh
             }
         });
         Map/*<Object,Path>*/ traces = LiveReferences.fromRoots(objects, null, bar.getModel());
+        if (traces == null) {
+            return "";
+        }
         StringBuffer sb = new StringBuffer();
         
         for (Object inst : traces.keySet()) {

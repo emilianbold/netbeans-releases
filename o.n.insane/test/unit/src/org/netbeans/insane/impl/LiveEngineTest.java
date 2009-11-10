@@ -39,47 +39,58 @@
  * made subject to such option by the copyright holder.
  */
 
-package demo;
+package org.netbeans.insane.impl;
 
-import java.io.File;
-import java.util.Collection;
-import java.util.*;
-import org.netbeans.insane.scanner.*;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.concurrent.CancellationException;
+import javax.swing.DefaultBoundedRangeModel;
+import junit.framework.TestCase;
 
-/*
- * Creates a demo heap dump of the virtual machine it is started from.
+/**
  *
- * @author Nenik
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class DemoScanner {
-
-    public static void main(String[] args) throws Exception {
-        // use the real path to the file
-        String fName = "ins.xml";
-
-        // Create a visitor that will count discovered objects ...
-        CountingVisitor counter = new CountingVisitor();
-
-        // ... and another one that will dump them to a file ...
-        SimpleXmlVisitor dump = new SimpleXmlVisitor(new File(fName));
-        
-        // and join them into one Visitor instance
-        Visitor visitor = ScannerUtils.compoundVisitor(new Visitor[] {
-                counter, dump });
-        
-        // Pick some representative root instance. Custom class loader
-        // or main window are good candidates.
-        Collection roots = Collections.singleton(ClassLoader.getSystemClassLoader());
-        
-        // perform the scan, it may use ScannerUtils.scanExclusivelyInAWT()
-        ScannerUtils.scan(null, visitor, roots, true);
-        
-        // flush/close the xml file
-        dump.close();
-        
-        // print little stats
-        System.out.println("Found " + counter.getTotalCount() +
-                " objects using " + counter.getTotalSize() + " bytes.");
-    }
+public class LiveEngineTest extends TestCase {
     
+    public LiveEngineTest(String testName) {
+        super(testName);
+    }
+
+    static LinkedList<Object> list = new LinkedList<Object>();
+    static Object last;
+
+    @Override
+    protected void setUp() {
+        for (int i = 0; i < 100000; i++) {
+            Object o = new Object();
+            if (i % 2 == 50000) {
+                last = o;
+            }
+            list.add(o);
+        }
+    }
+
+    public void testIsKnown() {
+        class M extends DefaultBoundedRangeModel {
+
+            @Override
+            public void setValue(int n) {
+                super.setValue(n);
+                if (n > 10) {
+                    super.setValue(10);
+                    throw new CancelException();
+                }
+            }
+
+        }
+        M model = new M();
+        LiveEngine instance = new LiveEngine(model);
+
+        Map<?,?> path = instance.trace(Collections.singleton(last), Collections.<Object>singleton(list));
+
+        assertEquals("Model stops at 10", 10, model.getValue());
+        assertEquals("No path found", null, path);
+    }
 }
