@@ -161,7 +161,9 @@ public class VCSKenaiSupportImpl extends VCSKenaiSupport implements PropertyChan
             // register on all handlers
             for (ProjectHandle projectHandle : phs) {
                 KenaiProject kp = KenaiUtil.getKenaiProject(projectHandle);
-                kp.addPropertyChangeListener(new KenaiProjectListener(kp));
+                KenaiProjectListener l = new KenaiProjectListener(kp);
+                registeredKenaiListenres.add(l);
+                kp.addPropertyChangeListener(l);
             }
         }
     }
@@ -208,7 +210,7 @@ public class VCSKenaiSupportImpl extends VCSKenaiSupport implements PropertyChan
         }
     }
 
-    private class KenaiUserImpl extends KenaiUser {
+    private static class KenaiUserImpl extends KenaiUser {
         org.netbeans.modules.kenai.ui.spi.KenaiUserUI delegate;
 
         public KenaiUserImpl(org.netbeans.modules.kenai.ui.spi.KenaiUserUI delegate) {

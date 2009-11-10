@@ -46,14 +46,13 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.logging.Level;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.eclipse.core.runtime.CoreException;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.LogHandler;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
@@ -116,126 +115,36 @@ public class IssueAccessorTest extends NbTestCase {
         assertEquals(0, issues.length);
     }
 
-    public void testGetRecentIssues() throws MalformedURLException, CoreException, IOException {
+    public void testRecentIssuesOnOpen() throws MalformedURLException, CoreException, IOException {
         TestIssue issue1 = new TestIssue(TestConnector.kolibaRepository, "1");
         TestIssue issue2 = new TestIssue(TestConnector.kolibaRepository, "2");
+        TestIssue issue3 = new TestIssue(TestConnector.kolibaRepository, "3");
 
         KenaiIssueAccessor accessor = getIssueAccessor();
 
-        // add issue1, issue2
-        BugtrackingManager.getInstance().addRecentIssue(TestConnector.kolibaRepository, issue1);
-        BugtrackingManager.getInstance().addRecentIssue(TestConnector.kolibaRepository, issue2);
+        // open issue1, issue2, issue3
+        issue1.open();
+        issue2.open();
+        issue3.open();
+        issue2.open();
+        issue1.open();
+//        BugtrackingManager.getInstance().addRecentIssue(TestConnector.kolibaRepository, issue1);
+//        BugtrackingManager.getInstance().addRecentIssue(TestConnector.kolibaRepository, issue2);
+//        BugtrackingManager.getInstance().addRecentIssue(TestConnector.kolibaRepository, issue3);
+//        // add issue2 one more time
+//        BugtrackingManager.getInstance().addRecentIssue(TestConnector.kolibaRepository, issue2);
+//        // add issue1 one more time
+//        BugtrackingManager.getInstance().addRecentIssue(TestConnector.kolibaRepository, issue1);
+//        // the expected order should be 1,2,3
 
-        // test for golden-project -> nothing is returned
-        IssueHandle[] issues = accessor.getRecentIssues(getKenaiProject("golden-project-1"));
-        assertNotNull(issues);
-        assertEquals(0, issues.length);
-
-        // getIssues for koliba -> issues 1..2 are returned
-        issues = accessor.getRecentIssues(getKenaiProject("koliba"));
-        assertNotNull(issues);
-        assertIssueHandles(issues, new String[] {issue2.getID(), issue1.getID()});
-
-        // getAll -> issues 1..2 are returned
-        issues = accessor.getRecentIssues();
-        assertNotNull(issues);
-        assertIssueHandles(issues, new String[] {issue2.getID(), issue1.getID()});
-    }
-
-    public void testGetRecentIssuesTwoReposMoreThan5Each() throws MalformedURLException, CoreException, IOException, InterruptedException {
-        KenaiIssueAccessor accessor = getIssueAccessor();
-
-        TestIssue kolibaIssue1 = new TestIssue(TestConnector.kolibaRepository, "koliba1");
-        TestIssue kolibaIssue2 = new TestIssue(TestConnector.kolibaRepository, "koliba2");
-        TestIssue kolibaIssue3 = new TestIssue(TestConnector.kolibaRepository, "koliba3");
-        TestIssue kolibaIssue4 = new TestIssue(TestConnector.kolibaRepository, "koliba4");
-        TestIssue kolibaIssue5 = new TestIssue(TestConnector.kolibaRepository, "koliba5");
-        TestIssue kolibaIssue6 = new TestIssue(TestConnector.kolibaRepository, "koliba6");
-        TestIssue kolibaIssue7 = new TestIssue(TestConnector.kolibaRepository, "koliba7");
-        TestIssue goldenProjectIssue1 = new TestIssue(TestConnector.kolibaRepository, "koliba1");
-        TestIssue goldenProjectIssue2 = new TestIssue(TestConnector.goldenProjectRepository, "goldenProject2");
-        TestIssue goldenProjectIssue3 = new TestIssue(TestConnector.goldenProjectRepository, "goldenProject3");
-        TestIssue goldenProjectIssue4 = new TestIssue(TestConnector.goldenProjectRepository, "goldenProject4");
-        TestIssue goldenProjectIssue5 = new TestIssue(TestConnector.goldenProjectRepository, "goldenProject5");
-        TestIssue goldenProjectIssue6 = new TestIssue(TestConnector.goldenProjectRepository, "goldenProject6");
-        TestIssue goldenProjectIssue7 = new TestIssue(TestConnector.goldenProjectRepository, "goldenProject7");
-
-        // add koliba and golden-project issues 1, 2, 3, 4, 5, 6, 7,
-        BugtrackingManager.getInstance().addRecentIssue(TestConnector.kolibaRepository, kolibaIssue1);
-        waitAbit();
-        BugtrackingManager.getInstance().addRecentIssue(TestConnector.goldenProjectRepository, goldenProjectIssue1);
-        waitAbit();
-        BugtrackingManager.getInstance().addRecentIssue(TestConnector.kolibaRepository, kolibaIssue2);
-        waitAbit();
-        BugtrackingManager.getInstance().addRecentIssue(TestConnector.goldenProjectRepository, goldenProjectIssue2);
-        waitAbit();
-        BugtrackingManager.getInstance().addRecentIssue(TestConnector.kolibaRepository, kolibaIssue3);
-        waitAbit();
-        BugtrackingManager.getInstance().addRecentIssue(TestConnector.goldenProjectRepository, goldenProjectIssue3);
-        waitAbit();
-        BugtrackingManager.getInstance().addRecentIssue(TestConnector.kolibaRepository, kolibaIssue4);
-        waitAbit();
-        BugtrackingManager.getInstance().addRecentIssue(TestConnector.goldenProjectRepository, goldenProjectIssue4);
-        waitAbit();
-        BugtrackingManager.getInstance().addRecentIssue(TestConnector.kolibaRepository, kolibaIssue5);
-        waitAbit();
-        BugtrackingManager.getInstance().addRecentIssue(TestConnector.goldenProjectRepository, goldenProjectIssue5);
-        waitAbit();
-        BugtrackingManager.getInstance().addRecentIssue(TestConnector.kolibaRepository, kolibaIssue6);
-        waitAbit();
-        BugtrackingManager.getInstance().addRecentIssue(TestConnector.goldenProjectRepository, goldenProjectIssue6);
-        waitAbit();
-        BugtrackingManager.getInstance().addRecentIssue(TestConnector.kolibaRepository, kolibaIssue7);
-        waitAbit();
-        BugtrackingManager.getInstance().addRecentIssue(TestConnector.goldenProjectRepository, goldenProjectIssue7);
-
-
-        // getIssues for koliba -> repo1 issues 3..7 are returned
+        // getIssues for koliba -> issues 1, 2, 3 are returned
         IssueHandle[] issues = accessor.getRecentIssues(getKenaiProject("koliba"));
         assertNotNull(issues);
-        assertIssueHandles(issues, new String[] {kolibaIssue7.getID(), kolibaIssue6.getID(), kolibaIssue5.getID(), kolibaIssue4.getID(), kolibaIssue3.getID()});
-
-        // getIssues for goldenProject -> repo1 issues 3..7 are returned
-        issues = accessor.getRecentIssues(getKenaiProject("golden-project-1"));
-        assertNotNull(issues);
-        assertIssueHandles(issues, new String[] {goldenProjectIssue7.getID(), goldenProjectIssue6.getID(), goldenProjectIssue5.getID(), goldenProjectIssue4.getID(), goldenProjectIssue3.getID()});
-
-        // getAll -> repo1 issues 3..7 are returned and repo2 issues 3..7 are returned
-        issues = accessor.getRecentIssues();
-        assertNotNull(issues);
-        assertIssueHandles(issues, new String[] {goldenProjectIssue7.getID(), kolibaIssue7.getID(), goldenProjectIssue6.getID(), kolibaIssue6.getID(), goldenProjectIssue5.getID()});
+        assertIssueHandles(issues, new String[] {issue1.getID(), issue2.getID(), issue3.getID()});
     }
 
     public void testDisplayNames() throws MalformedURLException, CoreException, IOException, InterruptedException {
         KenaiIssueAccessor accessor = getIssueAccessor();
-
-        TestIssue kolibaIssue1 = new TestIssue(TestConnector.kolibaRepository, "This issue has a very long name so that that get shortened display name will return something shorter.");
-        BugtrackingManager.getInstance().addRecentIssue(TestConnector.kolibaRepository, kolibaIssue1);
-
-        IssueHandle[] issues = accessor.getRecentIssues();
-        assertNotNull(issues);
-        assertEquals(kolibaIssue1.getDisplayName(), issues[0].getDisplayName());
-        assertEquals(kolibaIssue1.getShortenedDisplayName(), issues[0].getShortDisplayName());
-        assertNotSame(issues[0].getDisplayName(), issues[0].getShortDisplayName());
-    }
-
-    public void testIsOpened() throws MalformedURLException, CoreException, IOException, InterruptedException {
-        KenaiIssueAccessor accessor = getIssueAccessor();
-
-        TestIssue kolibaIssue1 = new TestIssue(TestConnector.kolibaRepository, "This issue has a very long name so that that get shortened display name will return something shorter.");
-        BugtrackingManager.getInstance().addRecentIssue(TestConnector.kolibaRepository, kolibaIssue1);
-
-        IssueHandle[] issues = accessor.getRecentIssues();
-        assertNotNull(issues);
-        assertFalse(issues[0].isOpened());
-        assertFalse(issues[0].isShowing());
-
-        kolibaIssue1.open();
-        LogHandler ln = new LogHandler("IssueTopComponent Opened " + kolibaIssue1.getID(), LogHandler.Compare.ENDS_WITH);
-        ln.waitUntilDone();
-
-        assertTrue(issues[0].isOpened());
-    }
 
     private void assertIssueHandles(IssueHandle[] issues, String[] ids) {
         assertEquals(ids.length, issues.length);
@@ -322,11 +231,11 @@ public class IssueAccessorTest extends NbTestCase {
         public BugtrackingController getController() {
             return controller;
         }
-        public boolean refresh() {throw new UnsupportedOperationException("Not supported yet.");}
+        public boolean refresh() {return true;}
+        public Map<String, String> getAttributes() {return Collections.EMPTY_MAP;}
         public void addComment(String comment, boolean closeAsFixed) {throw new UnsupportedOperationException("Not supported yet.");}
         public void attachPatch(File file, String description) {throw new UnsupportedOperationException("Not supported yet.");}
         public IssueNode getNode() {throw new UnsupportedOperationException("Not supported yet.");}
-        public Map<String, String> getAttributes() {throw new UnsupportedOperationException("Not supported yet.");}
     }
 
     private static class TestIssueController extends BugtrackingController {

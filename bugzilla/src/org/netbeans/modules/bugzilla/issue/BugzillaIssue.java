@@ -270,7 +270,7 @@ public class BugzillaIssue extends Issue {
             new ColumnDescriptor<String>(LABEL_NAME_ID, String.class,
                                               loc.getString("CTL_Issue_ID_Title"),                // NOI18N
                                               loc.getString("CTL_Issue_ID_Desc"),                 // NOI18N
-                                              BugtrackingUtil.getColumnWidthInPixels(7, t)),
+                                              BugtrackingUtil.getColumnWidthInPixels(6, t)),
             new ColumnDescriptor<String>(LABEL_NAME_SUMMARY, String.class,
                                               loc.getString("CTL_Issue_Summary_Title"),           // NOI18N
                                               loc.getString("CTL_Issue_Summary_Desc")),           // NOI18N

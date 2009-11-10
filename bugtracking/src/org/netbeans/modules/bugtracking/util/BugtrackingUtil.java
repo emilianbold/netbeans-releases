@@ -195,9 +195,13 @@ public class BugtrackingUtil {
         }
         criteria = criteria.toLowerCase();
         List<Issue> ret = new ArrayList<Issue>();
-        for (Issue issue : issues) {  
-            if(criteria.equals(issue.getID().toLowerCase()) ||
-               issue.getSummary().toLowerCase().indexOf(criteria) > -1)
+        for (Issue issue : issues) {
+            if(issue.isNew()) continue;
+            String id = issue.getID();
+            if(id == null) continue;
+            String summary = issue.getSummary();
+            if(id.toLowerCase().startsWith(criteria) ||
+               (summary != null && summary.toLowerCase().indexOf(criteria) > -1))
             {
                 ret.add(issue);
             }  
@@ -575,7 +579,7 @@ public class BugtrackingUtil {
 
     public static int getColumnWidthInPixels(int widthInLeters, JComponent comp) {
         StringBuffer sb = new StringBuffer();
-        for (int i = 0; i < widthInLeters; i++, sb.append("u"));                // NOI18N
+        for (int i = 0; i < widthInLeters; i++, sb.append("w"));                // NOI18N
         return getColumnWidthInPixels(sb.toString(), comp);
     }
 
