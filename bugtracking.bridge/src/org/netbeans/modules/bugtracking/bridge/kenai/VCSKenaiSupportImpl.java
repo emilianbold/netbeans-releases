@@ -54,12 +54,12 @@ import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.Icon;
 import javax.swing.JLabel;
-import javax.swing.text.Document;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.util.KenaiUtil;
+import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiNotification;
@@ -72,7 +72,6 @@ import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.netbeans.modules.versioning.util.VCSKenaiSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -132,8 +131,8 @@ public class VCSKenaiSupportImpl extends VCSKenaiSupport implements PropertyChan
     public void addVCSNoficationListener(PropertyChangeListener l) {
         PropertyChangeListener[] ls = support.getPropertyChangeListeners(PROP_KENAI_VCS_NOTIFICATION);
         if(ls == null || ls.length == 0) {
-            Dashboard.getDefault().addPropertyChangeListener(this);
-            registerVCSNotificationListener(Dashboard.getDefault().getOpenProjects());
+            Kenai.getDefault().addPropertyChangeListener(Kenai.PROP_LOGIN, this);
+            attachToDashboard(false);
         }
         support.addPropertyChangeListener(PROP_KENAI_VCS_NOTIFICATION, l);
     }
@@ -142,26 +141,61 @@ public class VCSKenaiSupportImpl extends VCSKenaiSupport implements PropertyChan
         support.removePropertyChangeListener(PROP_KENAI_VCS_NOTIFICATION, l);
         PropertyChangeListener[] ls = support.getPropertyChangeListeners(PROP_KENAI_VCS_NOTIFICATION);
         if(ls == null || ls.length == 0) {
-            Dashboard.getDefault().removePropertyChangeListener(this);
+            Kenai.getDefault().removePropertyChangeListener(Kenai.PROP_LOGIN, this);
+            detachFromDashboard(false);
         }
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
         if(evt.getPropertyName().equals(Dashboard.PROP_OPENED_PROJECTS)) {
             registerVCSNotificationListener(Dashboard.getDefault().getOpenProjects());
-        } 
+        } else if (evt.getPropertyName().equals(Kenai.PROP_LOGIN)) {
+            if (KenaiUtil.isLoggedIn()) {
+                attachToDashboard(true);
+            } else {
+                detachFromDashboard(true);
+            }
+        }
+    }
+
+    /**
+     * Attaches a listener to the kenai dashboard if immediate is set to true or user is logged into kenai
+     * @param immediate
+     */
+    private void attachToDashboard (boolean immediate) {
+        if (immediate || KenaiUtil.isLoggedIn()) {
+            Dashboard.getDefault().addPropertyChangeListener(this);
+            registerVCSNotificationListener(Dashboard.getDefault().getOpenProjects());
+        }
+    }
+
+    /**
+     * Dettaches a listener from the kenai dashboard if immediate is set to true or user is logged into kenai
+     * @param immediate
+     */
+    private void detachFromDashboard (boolean immediate) {
+        if (immediate || KenaiUtil.isLoggedIn()) {
+            Dashboard.getDefault().removePropertyChangeListener(this);
+            unregisterVCSNotificationListener(Dashboard.getDefault().getOpenProjects());
+        }
     }
 
     private void registerVCSNotificationListener(ProjectHandle[] phs) {
         synchronized(registeredKenaiListenres) {
             // unregister registered
-            for (KenaiProjectListener l : registeredKenaiListenres) {
-                l.kp.removePropertyChangeListener(l);
-            }
+            unregisterVCSNotificationListener(phs);
             // register on all handlers
             for (ProjectHandle projectHandle : phs) {
                 KenaiProject kp = KenaiUtil.getKenaiProject(projectHandle);
                 kp.addPropertyChangeListener(new KenaiProjectListener(kp));
+            }
+        }
+    }
+
+    private void unregisterVCSNotificationListener(ProjectHandle[] phs) {
+        synchronized(registeredKenaiListenres) {
+            for (KenaiProjectListener l : registeredKenaiListenres) {
+                l.kp.removePropertyChangeListener(l);
             }
         }
     }
