@@ -252,10 +252,13 @@ public class RemoteBinaryServiceImpl extends RemoteBinaryService {
 
         private String getTimestamp() {
             try {
-                RemoteCommandSupport rcs = new RemoteCommandSupport(execEnv, getFullTimeLsCommand() + " " + remotePath); // NOI18N
+                String command = getFullTimeLsCommand() + " \"" + remotePath + "\""; // NOI18N
+                RemoteCommandSupport rcs = new RemoteCommandSupport(execEnv, command);
 
                 if (rcs.run() == 0) {
                     return rcs.getOutput();
+                } else {
+                    throw new IOException("Cannot run #"+command); // NOI18N
                 }
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);

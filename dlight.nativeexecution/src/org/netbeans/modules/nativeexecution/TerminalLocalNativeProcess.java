@@ -217,8 +217,8 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                 boolean exists = false;
 
                 while (attempts > 0) {
-                    exists = HostInfoUtils.fileExists(ExecutionEnvironmentFactory.getLocal(), shFile) &
-                            HostInfoUtils.fileExists(ExecutionEnvironmentFactory.getLocal(), envFile);
+                    exists = HostInfoUtils.fileExists(ExecutionEnvironmentFactory.getLocal(), shFileFile.getPath()) &
+                            HostInfoUtils.fileExists(ExecutionEnvironmentFactory.getLocal(), envFileFile.getPath());
 
                     if (exists) {
                         break;

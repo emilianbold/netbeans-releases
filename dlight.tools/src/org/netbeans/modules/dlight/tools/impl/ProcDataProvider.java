@@ -84,7 +84,6 @@ public class ProcDataProvider extends IndicatorDataProvider<ProcDataProviderConf
             ProcDataProviderConfiguration.USR_TIME,
             ProcDataProviderConfiguration.THREADS),
             null);
-
     private List<ValidationListener> validationListeners;
     private ValidationStatus validationStatus;
     private Future<Integer> procReaderTask;
@@ -225,11 +224,10 @@ public class ProcDataProvider extends IndicatorDataProvider<ProcDataProviderConf
             return;
         }
 
-        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
-        npb.setExecutable(hostInfo.getShell());
-
         int pid = ((AttachableTarget) target).getPID();
+
         Engine engine;
+
         switch (hostInfo.getOSFamily()) {
             case LINUX:
                 engine = new ProcDataProviderLinux(this, getServiceInfoDataStorage());
@@ -241,7 +239,9 @@ public class ProcDataProvider extends IndicatorDataProvider<ProcDataProviderConf
                 DLightLogger.instance.severe("Called ProcDataProvider.targetStarted() on unsupported OS"); // NOI18N
                 return;
         }
-        npb = npb.setArguments("-c", engine.getCommand(pid)); // NOI18N
+
+        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
+        npb = npb.setExecutable("sh").setArguments("-c", engine.getCommand(pid)); // NOI18N
 
         procReaderTask = NativeProcessExecutionService.newService(npb, engine, null, "procreader").start(); // NOI18N
     }
