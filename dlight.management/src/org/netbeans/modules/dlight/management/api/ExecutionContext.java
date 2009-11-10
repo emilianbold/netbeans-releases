@@ -147,7 +147,7 @@ final class ExecutionContext {
             for (DLightTool tool : toolsToValidate) {
                 List<DataCollector<?>> toolCollectors = getDLightConfiguration().getConfigurationOptions(false).getCollectors(tool);
                 //TODO: no algorithm here:) should be better
-                for (DataCollector c : toolCollectors) {
+                for (DataCollector<?> c : toolCollectors) {
 //                    if (c.getValidationStatus().isValid()) {//for valid collectors only
                     if (!collectors.contains(c)) {
                         collectors.add(c);
