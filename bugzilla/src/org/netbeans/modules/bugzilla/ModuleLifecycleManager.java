@@ -52,11 +52,14 @@ import org.openide.modules.ModuleInstall;
  *
  * @author Tomas Stupka
  */
-public final class ModuleLifecycleManager extends ModuleInstall{
+public final class ModuleLifecycleManager extends ModuleInstall {
+    static boolean instantiated = false;
     @Override
     public void close() {
+        if(!instantiated) {
+            return;
+        }
         Bugzilla.getInstance().shutdown();
     }
-
 
 }
