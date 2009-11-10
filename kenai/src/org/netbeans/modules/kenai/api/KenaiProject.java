@@ -300,7 +300,7 @@ public final class KenaiProject {
             return Kenai.getDefault().getProject(m.group(repositoryPatternProjectGroup));
         }
         //hard coded support for external netbeans repositories
-        if (Kenai.getDefault().getUrl().getHost().equals("netbeans.org") && uri.startsWith("https://hg.netbeans.org") || uri.startsWith("http://hg.netbeans.org")) {//NOI18N
+        if (Kenai.getDefault().getUrl().getHost().equals("netbeans.org") && (uri.startsWith("https://hg.netbeans.org") || uri.startsWith("http://hg.netbeans.org"))) {//NOI18N
             return Kenai.getDefault().getProject("ide");//NOI18N
         }
         return null;
@@ -321,7 +321,7 @@ public final class KenaiProject {
             return m.group(repositoryPatternProjectGroup);
         }
         //hard coded support for external netbeans repositories
-        if (Kenai.getDefault().getUrl().getHost().equals("netbeans.org") && uri.startsWith("https://hg.netbeans.org") || uri.startsWith("http://hg.netbeans.org")) {//NOI18N
+        if (Kenai.getDefault().getUrl().getHost().equals("netbeans.org") && (uri.startsWith("https://hg.netbeans.org") || uri.startsWith("http://hg.netbeans.org"))) {//NOI18N
             return "ide";//NOI18N
         }
         return null;
