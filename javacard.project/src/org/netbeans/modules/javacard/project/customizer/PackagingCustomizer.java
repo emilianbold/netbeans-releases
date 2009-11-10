@@ -77,14 +77,14 @@ public final class PackagingCustomizer extends javax.swing.JPanel implements Cha
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        aIDPanel1 = new org.netbeans.modules.javacard.project.ui.AIDPanel();
+        aIDPanel1 = new org.netbeans.modules.javacard.common.AIDPanel();
         jLabel1 = new javax.swing.JLabel();
         proxyCheckBox = new javax.swing.JCheckBox();
 
         aIDPanel1.setToolTipText(org.openide.util.NbBundle.getMessage(PackagingCustomizer.class, "PackagingCustomizer.aIDPanel1.toolTipText")); // NOI18N
         aIDPanel1.setTitle(org.openide.util.NbBundle.getMessage(PackagingCustomizer.class, "PackagingCustomizer.aIDPanel1.title")); // NOI18N
 
-        jLabel1.setFont(new java.awt.Font("Tahoma", 1, 11));
+        jLabel1.setFont(jLabel1.getFont().deriveFont(jLabel1.getFont().getStyle() | java.awt.Font.BOLD));
         jLabel1.setText(org.openide.util.NbBundle.getMessage(PackagingCustomizer.class, "PackagingCustomizer.jLabel1.text")); // NOI18N
 
         proxyCheckBox.setText(org.openide.util.NbBundle.getMessage(PackagingCustomizer.class, "PackagingCustomizer.proxyCheckBox.text")); // NOI18N
@@ -117,7 +117,7 @@ public final class PackagingCustomizer extends javax.swing.JPanel implements Cha
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private org.netbeans.modules.javacard.project.ui.AIDPanel aIDPanel1;
+    private org.netbeans.modules.javacard.common.AIDPanel aIDPanel1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JCheckBox proxyCheckBox;
     // End of variables declaration//GEN-END:variables

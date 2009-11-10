@@ -51,8 +51,8 @@
  */
 package org.netbeans.modules.cnd.modelui.impl.services;
 
-import antlr.TokenStream;
-import antlr.TokenStreamException;
+import org.netbeans.modules.cnd.antlr.TokenStream;
+import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;

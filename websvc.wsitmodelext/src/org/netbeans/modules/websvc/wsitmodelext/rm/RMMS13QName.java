@@ -65,10 +65,8 @@ public enum RMMS13QName {
     static final String RM_12_NS_PREFIX = "netrmp";                                            //NOI18N
 
     static final String RM_12_NS_URI = "http://schemas.microsoft.com/ws-rx/wsrmp/200702";    //NOI18N
-
-    // TODO - find the schemas
-    static final String RM_12_NS_URI_EXT = null;    //NOI18N
-    static final String RM_12_NS_URI_LOCAL = null;    //NOI18N
+    static final String RM_12_NS_URI_EXT = "http://fisheye5.atlassian.com/browse/~raw,r=1.1/wsit/wsit/etc/schemas/rx/netrm-200702-policy.xsd";    //NOI18N
+    static final String RM_12_NS_URI_LOCAL = "nbres:/org/netbeans/modules/websvc/wsitmodelext/catalog/resources/netrm-200702-policy.xsd";    //NOI18N
     
     static QName createRMQName(String localName){
         return new QName(RM_NS_URI, localName, RM_NS_PREFIX);

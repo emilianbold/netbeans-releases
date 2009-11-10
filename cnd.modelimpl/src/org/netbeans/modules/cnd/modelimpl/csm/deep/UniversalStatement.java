@@ -47,7 +47,7 @@ import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.*;
 
 
-import antlr.collections.AST;
+import org.netbeans.modules.cnd.antlr.collections.AST;
 
 /**
  * For different kinds of statements, which doesn't return specific information - continue, break, etc

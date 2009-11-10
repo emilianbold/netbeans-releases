@@ -48,7 +48,6 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.Set;
-import java.util.Set;
 import javax.lang.model.element.*;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeMirror;
@@ -56,7 +55,7 @@ import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.table.*;
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.plugins.LocalVarScanner;
@@ -128,8 +127,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
                         info.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
                         ExecutableElement e = (ExecutableElement) refactoredObj.resolveElement(info);
                         returnType = e.getReturnType().toString();
-                        Element def = info.getElementUtilities().enclosingTypeElement(e);
-                        if (def.getKind().isInterface()) {
+                        if (inheritedFromInterface(e, info.getElementUtilities())) {
                             modifiersCombo.setEnabled(false);
                         }
                         initTableData(info);
@@ -149,6 +147,16 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
+    }
+
+    private static boolean inheritedFromInterface(ExecutableElement e, ElementUtilities utils) {
+        while (e != null) {
+            if (utils.implementsMethod(e)) {
+                return true;
+            }
+            e = utils.getOverriddenMethod(e);
+        }
+        return false;
     }
     
     protected DefaultTableModel getTableModel() {
@@ -552,17 +560,20 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         }
     }
 
-    private Set<Modifier> modifiers = new HashSet();
+    private Set<Modifier> modifiers = new HashSet<Modifier>();
     private void setModifier(Set<Modifier> mods) {
         this.modifiers.clear();
-        this.modifiers.addAll(mods);
-        if (mods.contains(Modifier.PRIVATE))
+        // #170543: set only access modifiers
+        if (mods.contains(Modifier.PRIVATE)) {
+            this.modifiers.add(Modifier.PRIVATE);
             modifiersCombo.setSelectedIndex(MOD_PRIVATE_INDEX);
-        else if (mods.contains(Modifier.PROTECTED))
+        } else if (mods.contains(Modifier.PROTECTED)) {
+            this.modifiers.add(Modifier.PROTECTED);
             modifiersCombo.setSelectedIndex(MOD_PROTECTED_INDEX);
-        else if (mods.contains(Modifier.PUBLIC))
+        } else if (mods.contains(Modifier.PUBLIC)) {
+            this.modifiers.add(Modifier.PUBLIC);
             modifiersCombo.setSelectedIndex(MOD_PUBLIC_INDEX);
-        else
+        } else
             modifiersCombo.setSelectedIndex(MOD_DEFAULT_INDEX);
     }
 

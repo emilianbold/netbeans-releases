@@ -49,8 +49,10 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
@@ -89,6 +91,7 @@ public final class ConnectionManager {
     // Actual sessions pool
     private final JSch jsch;
     private volatile boolean connecting;
+    List<ConnectionListener> connectionListeners = new CopyOnWriteArrayList<ConnectionListener>();
 
     static {
         ConnectionManagerAccessor.setDefault(new ConnectionManagerAccessorImpl());
@@ -355,6 +358,7 @@ public final class ConnectionManager {
                         } catch (IOException ex) {
                         } catch (CancellationException ex) {
                         }
+                        fireConnected(env);
                     }
                 }, "Fetch hosts info " + env.toString()); // NOI18N
 
@@ -409,6 +413,20 @@ public final class ConnectionManager {
 
     private static String loc(String key, String... params) {
         return NbBundle.getMessage(ConnectionManager.class, key, params);
+    }
+
+    public void addConnectionListener(ConnectionListener listener) {
+        connectionListeners.add(listener);
+    }
+
+    public void removeConnectionListener(ConnectionListener listener) {
+        connectionListeners.remove(listener);
+    }
+
+    private void fireConnected(ExecutionEnvironment execEnv) {
+        for (ConnectionListener connectionListener : connectionListeners) {
+            connectionListener.connected(execEnv);
+        }
     }
 
     /**

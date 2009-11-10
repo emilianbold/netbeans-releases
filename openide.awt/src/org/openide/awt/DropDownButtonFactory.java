@@ -48,7 +48,8 @@ import javax.swing.JToggleButton;
 
 /**
  * Factory creating buttons with a small arrow icon that shows a popup menu when clicked. 
- * The default button behavior hasn't changed.
+ * The default button behavior hasn't changed except that the button doesn't
+ * display any text, just the icon.
  * 
  * @author S. Aubrecht
  * @since 6.11

@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.javacard.project.ui;
 
+import org.netbeans.modules.javacard.common.ProblemHandler;
 import javax.swing.*;
 import java.awt.*;
 import org.netbeans.validation.api.Severity;

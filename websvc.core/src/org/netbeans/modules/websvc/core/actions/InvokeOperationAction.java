@@ -42,23 +42,20 @@ package org.netbeans.modules.websvc.core.actions;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import javax.swing.text.JTextComponent;
+import org.netbeans.editor.Utilities;
 import org.netbeans.modules.websvc.api.support.InvokeOperationCookie;
 import org.netbeans.modules.websvc.api.support.LogUtils;
 import org.netbeans.modules.websvc.core.WebServiceActionProvider;
-import org.netbeans.modules.websvc.core.webservices.ui.panels.ClientExplorerPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
-
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-
-
 import org.openide.util.actions.NodeAction;
-
 
 /**
  *
@@ -93,7 +90,8 @@ public class InvokeOperationAction extends NodeAction {
                 // !PW I wrote this code before I knew about NodeOperation.  Anyway, this
                 // behaves a bit nicer in that the root node is hidden and the tree opens
                 // up expanded.  Both improve usability for this use case I think.
-                InvokeOperationCookie.ClientSelectionPanel serviceExplorer = new ClientExplorerPanel(currentFO);
+                InvokeOperationCookie invokeOp = WebServiceActionProvider.getInvokeOperationAction(currentFO);
+                InvokeOperationCookie.ClientSelectionPanel serviceExplorer = invokeOp.getDialogDescriptorPanel();
                 final DialogDescriptor descriptor = new DialogDescriptor(serviceExplorer,
                         NbBundle.getMessage(InvokeOperationAction.class, "TTL_SelectOperation"));
 
@@ -116,9 +114,15 @@ public class InvokeOperationAction extends NodeAction {
                     // !PW FIXME refactor this as a method implemented in a cookie
                     // on the method node.
                     InvokeOperationCookie invokeCookie = WebServiceActionProvider.getInvokeOperationAction(currentFO);
-                    if (invokeCookie!=null)
-                        invokeCookie.invokeOperation(serviceExplorer.getSelectedClient(), null);
+                    //JTextComponent textComp = activatedNodes[0].getLookup().lookup(JTextComponent.class);
 
+                    if (invokeCookie!=null) {
+                        JTextComponent target = Utilities.getFocusedComponent();
+                        if (target != null) {
+                            invokeCookie.invokeOperation(serviceExplorer.getSelectedClient(), target);
+                        }
+
+                    }
                     // logging usage of action
                     Object[] params = new Object[2];
                     String cookieClassName = invokeCookie.getClass().getName();

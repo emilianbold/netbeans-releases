@@ -44,7 +44,7 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.*;
-import antlr.collections.AST;
+import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.DataInput;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;

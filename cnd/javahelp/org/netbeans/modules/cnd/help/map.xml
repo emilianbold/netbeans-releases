@@ -296,11 +296,8 @@
 	<mapID target="who_is_included" url="images/who_is_included.png"/>
 	<mapID target="Configuring1" url="WorkingWithCandC++Projects/Configuring.html"/>
 	<mapID target="RunningCorC++Project1" url="WorkingWithCandC++Projects/RunningCorC++Project.html"/>
-	<mapID target="DetectingDataRacesDeadLocksC++" url="ProfilingCandC++Projects/DetectingDataRacesDeadLocksC++.html"/>
 	<mapID target="ManagingProfileConfigurations" url="ProfilingCandC++Projects/ManagingProfileConfigurations.html"/>
 	<mapID target="OverviewOfCandC++Profiling" url="ProfilingCandC++Projects/OverviewOfCandC++Profiling.html"/>
 	<mapID target="ProfilingThreadedCandC++Apps" url="ProfilingCandC++Projects/ProfilingThreadedCandC++Apps.html"/>
-	<mapID target="DetectingDataRacesDeadlocksinC/C++Projects" url="ProfilingCandC++Projects/DetectingDataRacesDeadLocksC++.html"/>
 	<mapID target="ProjectPropsQt" url="WorkingWithCandC++Projects/ProjectPropsQt.html"/>
-	<mapID target="dataraceicon" url="images/dataraceicon.png"/>
 </map>

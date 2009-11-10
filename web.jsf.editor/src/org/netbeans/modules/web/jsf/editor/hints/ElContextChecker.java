@@ -64,6 +64,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /**
+ * @todo fix Issue #176270 for this currently unused class
+ *
  * @author ads
  *
  */

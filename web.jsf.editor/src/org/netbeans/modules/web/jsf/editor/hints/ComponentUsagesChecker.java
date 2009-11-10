@@ -48,10 +48,11 @@ import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.AstNodeUtils;
 import org.netbeans.editor.ext.html.parser.AstNodeVisitor;
 import org.netbeans.modules.csl.api.Hint;
-import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.jsf.editor.JsfSupport;
+import org.netbeans.modules.web.jsf.editor.JsfUtils;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
 import org.netbeans.modules.web.jsf.editor.tld.TldLibrary;
 import org.openide.util.NbBundle;
@@ -77,6 +78,7 @@ public class ComponentUsagesChecker extends HintsProvider {
     // - if all used attributes are allowed
     private void checkCCCalls(final List<Hint> hints, final RuleContext context) {
         HtmlParserResult result = (HtmlParserResult) context.parserResult;
+        final Snapshot snapshot = result.getSnapshot();
 
         //find all usages of composite components tags for this page
         Collection<String> declaredNamespaces = result.getNamespaces().keySet();
@@ -116,7 +118,7 @@ public class ComponentUsagesChecker extends HintsProvider {
                             Hint hint = new Hint(DEFAULT_ERROR_RULE,
                                     NbBundle.getMessage(HintsProvider.class, "MSG_UNKNOWN_CC_COMPONENT", lib.getDisplayName()),
                                     context.parserResult.getSnapshot().getSource().getFileObject(),
-                                    new OffsetRange(node.startOffset(), node.endOffset()),
+                                    JsfUtils.createOffsetRange(snapshot, node.startOffset(), node.endOffset()),
                                     Collections.EMPTY_LIST, DEFAULT_ERROR_HINT_PRIORITY);
                             hints.add(hint);
                         } else {
@@ -132,7 +134,7 @@ public class ComponentUsagesChecker extends HintsProvider {
                                             Hint hint = new Hint(DEFAULT_ERROR_RULE,
                                                     NbBundle.getMessage(HintsProvider.class, "MSG_MISSING_REQUIRED_ATTRIBUTE", attr.getName()),
                                                     context.parserResult.getSnapshot().getSource().getFileObject(),
-                                                    new OffsetRange(node.startOffset(), node.endOffset()),
+                                                    JsfUtils.createOffsetRange(snapshot, node.startOffset(), node.endOffset()),
                                                     Collections.EMPTY_LIST, DEFAULT_ERROR_HINT_PRIORITY);
                                             hints.add(hint);
                                         }
@@ -147,7 +149,7 @@ public class ComponentUsagesChecker extends HintsProvider {
                                         Hint hint = new Hint(DEFAULT_ERROR_RULE,
                                                     NbBundle.getMessage(HintsProvider.class, "MSG_UNKNOWN_ATTRIBUTE", nodeAttr.name()),
                                                     context.parserResult.getSnapshot().getSource().getFileObject(),
-                                                    new OffsetRange(nodeAttr.nameOffset(), nodeAttr.valueOffset() + nodeAttr.value().length()),
+                                                    JsfUtils.createOffsetRange(snapshot, nodeAttr.nameOffset(), nodeAttr.valueOffset() + nodeAttr.value().length()),
                                                     Collections.EMPTY_LIST, DEFAULT_ERROR_HINT_PRIORITY);
                                             hints.add(hint);
                                     }

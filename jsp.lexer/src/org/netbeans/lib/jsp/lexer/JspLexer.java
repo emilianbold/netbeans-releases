@@ -888,6 +888,7 @@ public class JspLexer implements Lexer<JspTokenId> {
                             if(input.readLength() == 2) {
                                 //just the '%>' symbol read
                                 lexerState = lexerStateBeforeScriptlet;
+                                lexerStateBeforeScriptlet = INIT;
                                 lexerStateJspScriptlet = INIT;
                                 return token(JspTokenId.SYMBOL2);
                             } else {

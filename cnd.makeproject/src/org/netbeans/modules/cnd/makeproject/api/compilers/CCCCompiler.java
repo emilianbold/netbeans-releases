@@ -145,7 +145,6 @@ public abstract class CCCCompiler extends BasicCompiler {
 
     @Override
     public void waitReady(boolean reset) {
-        CndUtils.assertNonUiThread();
         if (reset) {
             resetSystemIncludesAndDefines();
         } else {
@@ -155,12 +154,9 @@ public abstract class CCCCompiler extends BasicCompiler {
 
     private synchronized void getSystemIncludesAndDefines() {
         if (compilerDefinitions == null) {
-            if (getExecutionEnvironment().isRemote()) {
-                // TODO: it's better not to call it even in local mode
-                CndUtils.assertNonUiThread();
-            }
             restoreSystemIncludesAndDefines();
             if (compilerDefinitions == null) {
+                CndUtils.assertNonUiThread();
                 compilerDefinitions = getFreshSystemIncludesAndDefines();
                 saveSystemIncludesAndDefines();
             }
@@ -168,10 +164,7 @@ public abstract class CCCCompiler extends BasicCompiler {
     }
 
     public void resetSystemIncludesAndDefines() {
-        if (getExecutionEnvironment().isRemote()) {
-            // TODO: it's better not to call it even in local mode
-            CndUtils.assertNonUiThread();
-        }
+        CndUtils.assertNonUiThread();
         compilerDefinitions = getFreshSystemIncludesAndDefines();
         saveSystemIncludesAndDefines();
     }

@@ -41,7 +41,7 @@
 package org.netbeans.modules.javacard.project.customizer;
 
 import com.sun.javacard.AID;
-import org.netbeans.modules.javacard.constants.JCConstants;
+import org.netbeans.modules.javacard.common.JCConstants;
 import org.netbeans.modules.javacard.constants.ProjectPropertyNames;
 import org.netbeans.modules.javacard.project.JCProject;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -92,12 +92,12 @@ public final class ClassicAppletProjectProperties extends AppletProjectPropertie
         Manifest manifest = null;
         if (manifestFo == null) {
             Logger.getLogger(ClassicAppletProjectProperties.class.getName()).log(
-                    Level.INFO, "Manifest missing for project " +
-                    project.getProjectDirectory().getPath() + ".  Recreating.");
+                    Level.INFO, "Manifest missing for project " + //NOI18N
+                    project.getProjectDirectory().getPath() + ".  Recreating."); //NOI18N
             manifestFo = project.getProjectDirectory().createData(JCConstants.MANIFEST_PATH); //NOI18N
             manifest = new Manifest();
             Attributes a = manifest.getMainAttributes();
-            a.putValue (JCConstants.MANIFEST_ENTRY_CLASSIC_RUNTIME_DESCRIPTOR_VERSION, "3.0");
+            a.putValue (JCConstants.MANIFEST_ENTRY_CLASSIC_RUNTIME_DESCRIPTOR_VERSION, "3.0"); //NOI18N
             a.putValue (JCConstants.MANIFEST_APPLICATION_TYPE, project.kind().getManifestApplicationType());
         } else {
             InputStream in = manifestFo.getInputStream();
@@ -139,7 +139,7 @@ public final class ClassicAppletProjectProperties extends AppletProjectPropertie
                 originalPackageAID = packageAID;
             } catch (IllegalArgumentException e) {
                 Logger.getLogger(ClassicAppletProjectProperties.class.getName()).log(Level.INFO,
-                        "Bad classic package aid in " +
+                        "Bad classic package aid in " + //NOI18N
                         project.getProjectDirectory().getPath() + ": " + aidString, e);
             }
         }

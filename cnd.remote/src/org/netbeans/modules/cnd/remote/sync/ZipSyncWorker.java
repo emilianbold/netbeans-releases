@@ -127,8 +127,8 @@ import org.openide.util.NbBundle;
         }
     }
 
-    public ZipSyncWorker(ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, File privProjectStorageDir, File... localDirs) {
-        super(executionEnvironment, out, err, privProjectStorageDir, localDirs);
+    public ZipSyncWorker(ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, File privProjectStorageDir, File... files) {
+        super(executionEnvironment, out, err, privProjectStorageDir, files);
     }
 
     private static File getTemp() {
@@ -137,9 +137,10 @@ import org.openide.util.NbBundle;
         return tmpFile.exists() ? tmpFile : null;
     }
 
-    private StringBuilder getLocalDirsString() {
+    /** for trace/debug purposes */
+    private StringBuilder getLocalFilesString() {
         StringBuilder sb = new StringBuilder();
-        for (File f : localDirs) {
+        for (File f : files) {
             if (sb.length() > 0) {
                 sb.append(',');
             }
@@ -155,15 +156,17 @@ import org.openide.util.NbBundle;
         long time = 0;
         
         if (RemoteUtil.LOGGER.isLoggable(Level.FINE)) {
-            System.out.printf("Uploading %s to %s ...\n", getLocalDirsString(), executionEnvironment); // NOI18N
+            System.out.printf("Uploading %s to %s ...\n", getLocalFilesString(), executionEnvironment); // NOI18N
             time = System.currentTimeMillis();
         }
         filter = new TimestampAndSharabilityFilter(privProjectStorageDir, executionEnvironment);
 
         StringBuilder script = new StringBuilder("sh -c \""); // NOI18N
-        for (int i = 0; i < localDirs.length; i++) {
-            String remoteDir = RemotePathMap.getPathMap(executionEnvironment).getRemotePath(localDirs[i].getAbsolutePath(), true);
-            script.append(String.format("test -d %s  || echo %s; ", remoteDir, remoteDir)); // echo all inexistent directories // NOI18N
+        for (int i = 0; i < files.length; i++) {
+            String remoteFile = RemotePathMap.getPathMap(executionEnvironment).getRemotePath(files[i].getAbsolutePath(), true);
+            if (files[i].isDirectory()) {
+                script.append(String.format("test -d %s  || echo D %s; ", remoteFile, remoteFile)); // echo all inexistent directories // NOI18N
+            }
         }
         script.append("\""); // NOI18N
         
@@ -190,20 +193,20 @@ import org.openide.util.NbBundle;
         upload: // the label allows us exiting this block on condition
         try  {
 
-            String localDirName = localDirs[0].getName();
-            if (localDirName.length() < 3) {
-                localDirName = localDirName + ((localDirName.length() == 1) ? "_" : "__"); //NOI18N
+            String localFileName = files[0].getName();
+            if (localFileName.length() < 3) {
+                localFileName = localFileName + ((localFileName.length() == 1) ? "_" : "__"); //NOI18N
             }
-            zipFile = File.createTempFile(localDirName, ".zip", getTemp()); // NOI18N
+            zipFile = File.createTempFile(localFileName, ".zip", getTemp()); // NOI18N
             Zipper zipper = new Zipper(zipFile);
             {
-                if (RemoteUtil.LOGGER.isLoggable(Level.FINE)) {System.out.printf("\tZipping %s to %s...\n", getLocalDirsString(), zipFile); } // NOI18N
+                if (RemoteUtil.LOGGER.isLoggable(Level.FINE)) {System.out.printf("\tZipping %s to %s...\n", getLocalFilesString(), zipFile); } // NOI18N
                 long zipStart = System.currentTimeMillis();
                 PathMap pm = RemotePathMap.getPathMap(executionEnvironment);
-                for (File dir : localDirs) {
-                    String remoteDir = pm.getRemotePath(dir.getAbsolutePath(), false);
+                for (File file : files) {
+                    String remoteDir = pm.getRemotePath(file.getAbsolutePath(), false);
                     if (remoteDir == null) { // this never happens since mapper is fixed
-                        throw new IOException("Can not find remote path for " + dir.getAbsolutePath()); //NOI18N
+                        throw new IOException("Can not find remote path for " + file.getAbsolutePath()); //NOI18N
                     }
                     String base;
                     if (remoteDir.startsWith(remoteRoot)) {
@@ -212,12 +215,12 @@ import org.openide.util.NbBundle;
                         // this is never the case! - but...
                         throw new IOException(remoteDir + " should start with " + remoteRoot); //NOI18N
                     }
-                    zipper.add(dir, filter, base);
+                    zipper.add(file, filter, base);
                 }
                 zipper.close();
                 float zipTime = ((float) (System.currentTimeMillis() - zipStart))/1000f;
                 if (RemoteUtil.LOGGER.isLoggable(Level.FINE)) {System.out.printf("\t%d files zipped; file size is %d\n", zipper.getFileCount(), zipFile.length()); } // NOI18N
-                if (RemoteUtil.LOGGER.isLoggable(Level.FINE)) {System.out.printf("\tZipping %s to %s took %f s\n", getLocalDirsString(), zipFile, zipTime); } // NOI18N
+                if (RemoteUtil.LOGGER.isLoggable(Level.FINE)) {System.out.printf("\tZipping %s to %s took %f s\n", getLocalFilesString(), zipFile, zipTime); } // NOI18N
             }
 
             if (zipper.getFileCount() == 0) {

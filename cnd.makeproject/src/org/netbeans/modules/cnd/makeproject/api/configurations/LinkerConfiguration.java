@@ -303,8 +303,10 @@ public class LinkerConfiguration implements AllOptionsProvider {
         String options = ""; // NOI18N
         OptionToString staticSearchVisitor = new OptionToString(cs, linker.getLibrarySearchFlag());
         options += getAdditionalLibs().toString(staticSearchVisitor) + " "; // NOI18N
-        OptionToString dynamicSearchVisitor = new OptionToString(cs, linker.getDynamicLibrarySearchFlag());
-        options += getDynamicSearch().toString(dynamicSearchVisitor) + " "; // NOI18N
+        if (linker.getDynamicLibrarySearchFlag().length() > 0) {
+            OptionToString dynamicSearchVisitor = new OptionToString(cs, linker.getDynamicLibrarySearchFlag());
+            options += getDynamicSearch().toString(dynamicSearchVisitor) + " "; // NOI18N
+        }
         LibraryToString libVisitor = new LibraryToString(getMakeConfiguration());
         options += getLibrariesConfiguration().toString(libVisitor) + " "; // NOI18N
         return CppUtils.reformatWhitespaces(options);
@@ -321,9 +323,11 @@ public class LinkerConfiguration implements AllOptionsProvider {
     public Sheet getGeneralSheet(Project project, MakeConfigurationDescriptor configurationDescriptor, MakeConfiguration conf, boolean isQtMode) {
         Sheet sheet = new Sheet();
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
+        LinkerDescriptor linker = null;
         String linkDriver = null;
         String[] texts = null;
         if (compilerSet != null) {
+            linker = compilerSet == null ? null : compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker();
             if (conf.hasCPPFiles(configurationDescriptor)) {
                 BasicCompiler ccCompiler = (BasicCompiler) compilerSet.getTool(Tool.CCCompiler);
                 linkDriver = ccCompiler.getName();
@@ -341,7 +345,9 @@ public class LinkerConfiguration implements AllOptionsProvider {
             set1.put(new OutputNodeProp(getOutput(), getOutputDefault(), "Output", getString("OutputTxt"), getString("OutputHint"))); // NOI18N
             set1.put(new VectorNodeProp(getAdditionalLibs(), null, getMakeConfiguration().getBaseDir(), new String[]{"AdditionalLibraryDirectories", getString("AdditionalLibraryDirectoriesTxt"), getString("AdditionalLibraryDirectoriesHint")}, true, new HelpCtx("AddtlLibraryDirectories"))); // NOI18N
         }
-        set1.put(new VectorNodeProp(getDynamicSearch(), null, getMakeConfiguration().getBaseDir(), new String[]{"RuntimeSearchDirectories", getString("RuntimeSearchDirectoriesTxt"), getString("RuntimeSearchDirectoriesHint")}, false, new HelpCtx("RuntimeSearchDirectories"))); // NOI18N
+        if (linker != null && linker.getDynamicLibrarySearchFlag().length() > 0) {
+            set1.put(new VectorNodeProp(getDynamicSearch(), null, getMakeConfiguration().getBaseDir(), new String[]{"RuntimeSearchDirectories", getString("RuntimeSearchDirectoriesTxt"), getString("RuntimeSearchDirectoriesHint")}, false, new HelpCtx("RuntimeSearchDirectories"))); // NOI18N
+        }
         sheet.put(set1);
         if (!isQtMode) {
             Sheet.Set set2 = new Sheet.Set();

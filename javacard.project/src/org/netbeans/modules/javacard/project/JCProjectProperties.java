@@ -44,10 +44,7 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.project.ui.customizer.SourceRootsUi;
-import org.netbeans.modules.javacard.Utils;
-import org.netbeans.modules.javacard.api.JavacardPlatform;
-import org.netbeans.modules.javacard.constants.JCConstants;
-import org.netbeans.modules.javacard.constants.PlatformTemplateWizardKeys;
+import org.netbeans.modules.javacard.common.JCConstants;
 import org.netbeans.modules.javacard.constants.ProjectPropertyNames;
 import org.netbeans.modules.javacard.project.deps.DependenciesProvider.Receiver;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -73,17 +70,20 @@ import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
+import org.netbeans.modules.javacard.JCUtil;
 import org.netbeans.modules.javacard.project.deps.ArtifactKind;
 import org.netbeans.modules.javacard.project.deps.DependenciesProvider;
 import org.netbeans.modules.javacard.project.deps.ResolvedDependencies;
 import org.netbeans.modules.javacard.project.deps.ResolvedDependency;
+import org.netbeans.modules.javacard.spi.JavacardPlatform;
+import org.netbeans.modules.javacard.spi.PlatformAndDeviceProvider;
 import org.openide.util.Cancellable;
 
 /**
  *
  * @author Tim Boudreau
  */
-public class JCProjectProperties {
+public class JCProjectProperties implements PlatformAndDeviceProvider {
 
     protected final JCProject project;
     protected String platformName = "";
@@ -145,7 +145,8 @@ public class JCProjectProperties {
             platformName = JCConstants.DEFAULT_JAVACARD_PLATFORM_FILE_NAME;
         }
         if (activeDevice == null) {
-            activeDevice = PlatformTemplateWizardKeys.PROJECT_TEMPLATE_DEVICE_NAME_KEY;
+//            activeDevice = PlatformTemplateWizardKeys.PROJECT_TEMPLATE_DEVICE_NAME_KEY;
+            activeDevice = "Default Device";
         }
         if (javacSourceLevel == null) {
             javacSourceLevel = "1.6"; //NOI18N
@@ -361,7 +362,7 @@ public class JCProjectProperties {
     }
 
     public final JavacardPlatform getPlatform() {
-        return platformName == null ? null : Utils.findPlatformNamed(platformName);
+        return platformName == null ? null : JCUtil.findPlatformNamed(platformName);
     }
 
     public void setPlatformName(String platformName) {

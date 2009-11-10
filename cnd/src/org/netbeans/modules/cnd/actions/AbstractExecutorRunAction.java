@@ -529,14 +529,16 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
 
     protected static final class ProcessChangeListener implements ChangeListener, Runnable {
         private final ExecutionListener listener;
+        private final Writer outputListener;
         private final InputOutput tab;
         private final String resourceKey;
         private final RemoteSyncWorker syncWorker;
         private long startTimeMillis;
         private Runnable postRunnable;
 
-        public ProcessChangeListener(ExecutionListener listener, InputOutput tab, String resourceKey, RemoteSyncWorker syncWorker) {
+        public ProcessChangeListener(ExecutionListener listener, Writer outputListener, InputOutput tab, String resourceKey, RemoteSyncWorker syncWorker) {
             this.listener = listener;
+            this.outputListener = outputListener;
             this.tab = tab;
             this.resourceKey = resourceKey;
             this.syncWorker = syncWorker;
@@ -561,6 +563,14 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
                     break;
                 case CANCELLED:
                 {
+                    if (outputListener != null) {
+                        try {
+                            outputListener.flush();
+                            outputListener.close();
+                        } catch (IOException ex) {
+                            ex.printStackTrace();
+                        }
+                    }
                     if (listener != null) {
                         listener.executionFinished(process.exitValue());
                     }
@@ -579,6 +589,14 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
                 }
                 case ERROR:
                 {
+                    if (outputListener != null) {
+                        try {
+                            outputListener.flush();
+                            outputListener.close();
+                        } catch (IOException ex) {
+                            ex.printStackTrace();
+                        }
+                    }
                     if (listener != null) {
                         listener.executionFinished(-1);
                     }
@@ -597,6 +615,14 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
                 }
                 case FINISHED:
                 {
+                    if (outputListener != null) {
+                        try {
+                            outputListener.flush();
+                            outputListener.close();
+                        } catch (IOException ex) {
+                            ex.printStackTrace();
+                        }
+                    }
                     if (listener != null) {
                         listener.executionFinished(process.exitValue());
                     }

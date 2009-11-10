@@ -89,6 +89,16 @@ final class MergeAction extends NbAction implements PropertyChangeListener {
         this (actions, false);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        return o != null && MergeAction.class == o.getClass() && Arrays.equals(((MergeAction)o).actions, actions);
+    }
+
+    @Override
+    public int hashCode() {
+        return Arrays.hashCode(actions);
+    }
+
     Action updateDelegateAction() {
         synchronized (this) {
             return setDelegateAction(findEnabledAction());

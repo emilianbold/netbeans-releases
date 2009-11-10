@@ -241,7 +241,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                     if (classPathProvider != null) {
                         for(FileObject entity : entities){
                             String entityFQN = classPathProvider.findClassPath(entity, ClassPath.SOURCE).getResourceName(entity, '.', false);
-                            pudo.addClass(persistenceUnit, entityFQN);
+                            pudo.addClass(persistenceUnit, entityFQN, false);
                         }
                     }
                 }

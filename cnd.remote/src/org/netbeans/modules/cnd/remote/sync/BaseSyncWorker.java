@@ -50,15 +50,15 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
  */
 /*package-local*/ abstract class BaseSyncWorker implements RemoteSyncWorker {
 
-    protected final File[] localDirs;
+    protected final File[] files;
     protected final File privProjectStorageDir;
     protected final ExecutionEnvironment executionEnvironment;
     protected final PrintWriter out;
     protected final PrintWriter err;
 
-    public BaseSyncWorker(ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, File privProjectStorageDir, File... localDirs) {
-        this.localDirs = new File[localDirs.length];
-        System.arraycopy(localDirs, 0, this.localDirs, 0, localDirs.length);
+    public BaseSyncWorker(ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, File privProjectStorageDir, File... files) {
+        this.files = new File[files.length];
+        System.arraycopy(files, 0, this.files, 0, files.length);
         this.privProjectStorageDir = privProjectStorageDir;
         this.executionEnvironment = executionEnvironment;
         this.out = out;

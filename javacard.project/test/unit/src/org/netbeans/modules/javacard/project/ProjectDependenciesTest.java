@@ -52,7 +52,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceForBinaryQuery.Result;
-import org.netbeans.modules.javacard.api.ProjectKind;
+import org.netbeans.modules.javacard.spi.ProjectKind;
 import org.netbeans.modules.javacard.project.deps.ArtifactKind;
 import org.netbeans.modules.javacard.project.deps.DependenciesProvider;
 import org.netbeans.modules.javacard.project.deps.Dependency;

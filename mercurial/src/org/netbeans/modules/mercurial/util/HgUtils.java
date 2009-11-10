@@ -1121,10 +1121,10 @@ itor tabs #66700).
             if (repository == null) {
                 return;
             }
-        
+            // XXX Why in the hell is this still here? cache.refreshCached(file) should be enough
             if (file.isDirectory()) {
                 Map<File, FileInformation> interestingFiles;
-                interestingFiles = HgCommand.getInterestingStatus(repository, file);
+                interestingFiles = HgCommand.getInterestingStatus(repository, Collections.singletonList(file));
                 if (!interestingFiles.isEmpty()){
                     Collection<File> files = interestingFiles.keySet();
                     for (File aFile : files) {

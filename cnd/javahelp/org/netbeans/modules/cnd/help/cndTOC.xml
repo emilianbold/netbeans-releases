@@ -86,7 +86,6 @@
 			<tocitem text="Overview of Profiling Tools" target="OverviewOfCandC++Profiling" />
 			<tocitem text="Managing Profiling Configurations" target="ManagingProfileConfigurations" />
 			<tocitem text="Profiling Threaded C and C++ Applications" target="ProfilingThreadedCandC++Apps" />
-			<tocitem text="Detecting Data Races and Deadlocks in C and C++ Applications" target="DetectingDataRacesDeadLocksC++" />
 		</tocitem>
 		<tocitem text="Debugging C and C++ Applications With gdb">
 			<tocitem text="About Debugging C and C++ Applications" target="DebuggingCorC++Project" />

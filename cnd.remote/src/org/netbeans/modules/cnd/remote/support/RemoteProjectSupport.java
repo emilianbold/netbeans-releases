@@ -45,6 +45,7 @@ import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -93,6 +94,7 @@ public class RemoteProjectSupport {
             File file = new File(path); // or canonical?
             extraSourceRoots.add(file);
         }
+        addExtraFiles(mcs, extraSourceRoots, baseDir);
         // Make sure 1st level subprojects are visible remotely
         // First, remembr all subproject locations
         for (String subprojectDir : conf.getSubProjectLocations()) {
@@ -108,10 +110,30 @@ public class RemoteProjectSupport {
                 File file = new File(soorceRoot).getAbsoluteFile(); // or canonical?
                 extraSourceRoots.add(file);
             }
+            addExtraFiles(subMcs, extraSourceRoots, subProjectDir);
         }
         Set<File> allFiles = new HashSet<File>(extraSourceRoots.size() + 1);
         allFiles.add(baseDir);
         allFiles.addAll(extraSourceRoots);
         return allFiles.toArray(new File[allFiles.size()]);
+    }
+
+    private static void addExtraFiles(MakeConfigurationDescriptor subMcs, Set<File> filesToSync, File projectDir) {
+        for (Item item : subMcs.getProjectItems()) {
+            String alreadyAddedPath = projectDir.getAbsolutePath() + '/'; //NOI18N
+            String itemAbsPath = item.getNormalizedFile().getAbsolutePath();
+            if (itemAbsPath.startsWith(alreadyAddedPath)) {
+                continue;
+            }
+            for (File file : filesToSync) {
+                if (file.isDirectory()) {
+                    alreadyAddedPath = file.getAbsolutePath() + '/'; //NOI18N
+                    if (itemAbsPath.startsWith(alreadyAddedPath)) {
+                        continue;
+                    }
+                }
+            }
+            filesToSync.add(item.getNormalizedFile().getAbsoluteFile());
+        }
     }
 }

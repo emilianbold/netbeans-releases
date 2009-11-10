@@ -146,7 +146,7 @@ public class QMakeAction extends AbstractExecutorRunAction {
                 return null;
             }
         }
-        ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, inputOutput, "QMake", syncWorker); // NOI18N
+        ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, outputListener, inputOutput, "QMake", syncWorker); // NOI18N
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv)
         .setCommandLine(quoteExecutable(executable)+" "+argsFlat) // NOI18N
         .setWorkingDirectory(buildDir.getPath())

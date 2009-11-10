@@ -113,7 +113,7 @@ public class RefreshWorkTest  extends NbTestCase {
     public void testOuterFolders() {
         RepositoryUpdater.RefreshWork rw = new RepositoryUpdater.RefreshWork(
             scannedRoots2Dependencies,
-            Collections.<URL>emptySet(), // scannedBinaries
+            Collections.<URL,List<URL>>emptyMap(), // scannedBinaries
             Collections.<URL>emptySet(), // sourceForBinaryRoots
             false, // fullRescan
             false, // logStatistics
@@ -136,7 +136,7 @@ public class RefreshWorkTest  extends NbTestCase {
 
         RepositoryUpdater.RefreshWork rw = new RepositoryUpdater.RefreshWork(
             scannedRoots2Dependencies,
-            Collections.<URL>emptySet(), // scannedBinaries
+            Collections.<URL,List<URL>>emptyMap(), // scannedBinaries
             Collections.<URL>emptySet(), // sourceForBinaryRoots
             false, // fullRescan
             false, // logStatistics
@@ -155,7 +155,7 @@ public class RefreshWorkTest  extends NbTestCase {
 
         RepositoryUpdater.RefreshWork rw = new RepositoryUpdater.RefreshWork(
             scannedRoots2Dependencies,
-            Collections.<URL>emptySet(), // scannedBinaries
+            Collections.<URL,List<URL>>emptyMap(), // scannedBinaries
             Collections.<URL>emptySet(), // sourceForBinaryRoots
             false, // fullRescan
             false, // logStatistics
@@ -183,7 +183,7 @@ public class RefreshWorkTest  extends NbTestCase {
 
         RepositoryUpdater.RefreshWork rw = new RepositoryUpdater.RefreshWork(
             scannedRoots2Dependencies,
-            Collections.<URL>emptySet(), // scannedBinaries
+            Collections.<URL,List<URL>>emptyMap(), // scannedBinaries
             Collections.<URL>emptySet(), // sourceForBinaryRoots
             false, // fullRescan
             false, // logStatistics

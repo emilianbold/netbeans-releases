@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.deep;
 
-import antlr.collections.AST;
+import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.deep.CsmGotoStatement;

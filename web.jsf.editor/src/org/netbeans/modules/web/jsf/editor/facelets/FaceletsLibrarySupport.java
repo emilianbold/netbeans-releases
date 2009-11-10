@@ -64,6 +64,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.ServletContext;
 import org.netbeans.modules.web.jsf.editor.JsfSupport;
 import org.openide.filesystems.FileChangeAdapter;
@@ -90,6 +92,8 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
      * there is a tag library descriptor for the composite library
      */
     private Map<String, FaceletsLibrary> faceletsLibraries;
+
+    private Logger LOGGER = Logger.getLogger(FaceletsLibrarySupport.class.getSimpleName());
 
     private FileChangeListener DDLISTENER = new FileChangeAdapter() {
 
@@ -202,8 +206,10 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
     }
 
     private Map<String, FaceletsLibrary> findLibraries() {
-        //create a new classloader loading the classpath roots
-        ClassLoader originalLoader = Thread.currentThread().getContextClassLoader();
+        //use this module classloader
+        ClassLoader originalLoader = this.getClass().getClassLoader();
+        LOGGER.log(Level.INFO, "Scanning facelets libraries, current classloader class=" + originalLoader.getClass().getName() + ", the used URLClassLoader will also contain following roots:");
+
         Collection<URL> urlsToLoad = new ArrayList<URL>();
         for (FileObject cpRoot : getJsfSupport().getClassPath().getRoots()) {
             try {
@@ -212,6 +218,9 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
                 String fsName = cpRoot.getFileSystem().getDisplayName(); //any better way?
                 if(!(fsName.endsWith("jsf-impl.jar") || fsName.endsWith("jsf-api.jar"))) { //NOI18N
                     urlsToLoad.add(URLMapper.findURL(cpRoot, URLMapper.INTERNAL));
+                    LOGGER.log(Level.INFO, "+++" + cpRoot); //NOI18N
+                } else {
+                    LOGGER.log(Level.INFO, "---" + cpRoot); //NOI18N
                 }
 
             } catch (FileStateInvalidException ex) {

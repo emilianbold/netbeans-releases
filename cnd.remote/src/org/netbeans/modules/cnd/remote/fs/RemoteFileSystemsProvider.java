@@ -114,7 +114,7 @@ public class RemoteFileSystemsProvider extends FileSystemsProvider {
     private ExecutionEnvironment getExecutionEnvironment(String hostName) {
         ExecutionEnvironment result = null;
         for(ExecutionEnvironment env : ServerList.getEnvironments()) {
-            if (env.getHost().equals(hostName)) {
+            if (corresponds(hostName, env)) {
                 result = env;
                 if (ConnectionManager.getInstance().isConnectedTo(env)) {
                     break;
@@ -122,6 +122,20 @@ public class RemoteFileSystemsProvider extends FileSystemsProvider {
             }
         }
         return result;
+    }
+
+    private boolean corresponds(String hostName, ExecutionEnvironment env) {
+        String envHost = env.getHost();
+        if (hostName.startsWith(envHost)) {
+            if (hostName.equals(envHost)) {
+                return true;
+            }
+            envHost += ("-" + env.getSSHPort()); //NOI18N
+            if (hostName.equals(envHost)) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

@@ -40,6 +40,11 @@
  */
 package org.netbeans.modules.javacard.shell;
 
+import org.netbeans.modules.javacard.api.RunMode;
+import org.netbeans.modules.javacard.spi.CardState;
+import org.netbeans.modules.javacard.spi.capabilities.StartCapability;
+import org.openide.util.NbBundle;
+
 /**
  *
  * @author Anki R Nelaturu
@@ -47,7 +52,17 @@ package org.netbeans.modules.javacard.shell;
 final class StartCommand implements Command {
 
     public String execute(ShellPanel shellPanel, String[] args) throws ShellException {
-        shellPanel.getServer().startServer(false);
+        CardState state = shellPanel.getCard().getState();
+        if (state.isTransitionalState()) {
+            return NbBundle.getMessage(ResumeCommand.class,
+                    "ERR_TRANSITIONAL_STATE", shellPanel.getCard().getState()); //NOI18N
+        }
+        StartCapability start = shellPanel.getCard().getCapability(StartCapability.class);
+        if (start != null) {
+            start.start(RunMode.RUN, null).awaitUninterruptibly();
+        } else {
+            return APDUSender.getString("ERR_START_NOT_SUPPORTED"); //NOI18N
+        }
         return APDUSender.getString("DONE"); //NOI18N
     }
 

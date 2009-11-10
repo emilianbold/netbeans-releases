@@ -53,6 +53,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
+import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager;
@@ -77,17 +78,29 @@ public class LogReader {
     private final String root;
     private final String fileName;
     private List<SourceFileProperties> result;
+    private final PathMap pathMapper;
     
-    public LogReader(String fileName, String root){
+    public LogReader(String fileName, String root, PathMap pathMapper){
         if (root.length()>0) {
             this.root = CndFileUtils.normalizeFile(new File(root)).getAbsolutePath();
         } else {
             this.root = root;
         }
         this.fileName = fileName;
+        this.pathMapper = pathMapper;
        
         // XXX
         setWorkingDir(root);
+    }
+
+    private String convertPath(String path){
+        if(pathMapper != null) {
+            String local = pathMapper.getLocalPath(path);
+            if (local != null) {
+                return local;
+            }
+        }
+        return path;
     }
     
     private void run(Progress progress, AtomicBoolean isStoped) {
@@ -169,22 +182,22 @@ public class LogReader {
         String workDir = null, message = null;
 
         if (line.startsWith(CURRENT_DIRECTORY)) {
-            workDir = line.substring(CURRENT_DIRECTORY.length() + 1).trim();
+            workDir = convertPath(line.substring(CURRENT_DIRECTORY.length() + 1).trim());
             if (TRACE) {message = "**>> by [" + CURRENT_DIRECTORY + "] ";} //NOI18N
         } else if (line.indexOf(ENTERING_DIRECTORY) >= 0) {
             String dirMessage = line.substring(line.indexOf(ENTERING_DIRECTORY) + ENTERING_DIRECTORY.length() + 1).trim();
-            workDir = dirMessage.replaceAll("`|'|\"", ""); //NOI18N
+            workDir = convertPath(dirMessage.replaceAll("`|'|\"", "")); //NOI18N
             if (TRACE) {message = "**>> by [" + ENTERING_DIRECTORY + "] ";} //NOI18N
             baseWorkingDir = workDir;
         } else if (line.startsWith(LABEL_CD)) {
             int end = line.indexOf(MAKE_DELIMITER);
-            workDir = (end == -1 ? line : line.substring(0, end)).substring(LABEL_CD.length()).trim();
+            workDir = convertPath((end == -1 ? line : line.substring(0, end)).substring(LABEL_CD.length()).trim());
             if (TRACE) {message = "**>> by [ " + LABEL_CD + "] ";} //NOI18N
             if (workDir.startsWith("/")){ // NOI18N
                 baseWorkingDir = workDir;
             }
         } else if (line.startsWith("/") && line.indexOf(" ") < 0) {  //NOI18N
-            workDir = line.trim();
+            workDir = convertPath(line.trim());
             if (TRACE) {message = "**>> by [just path string] ";} //NOI18N
         }
 
@@ -596,7 +609,7 @@ public class LogReader {
         String objFileName = args[0];
         String root = args[1];
         LogReader.TRACE = true;
-        LogReader clrf = new LogReader(objFileName, root);
+        LogReader clrf = new LogReader(objFileName, root, null);
         List<SourceFileProperties> list = clrf.getResults(null, new AtomicBoolean(false));
         System.err.print("\n*** Results: ");
         for (SourceFileProperties sourceFileProperties : list) {

@@ -43,9 +43,8 @@ package org.netbeans.modules.javacard.templates;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.javacard.api.ProjectKind;
 import org.netbeans.modules.javacard.constants.FileWizardConstants;
-import org.netbeans.modules.javacard.constants.JCConstants;
+import org.netbeans.modules.javacard.common.JCConstants;
 import org.netbeans.modules.javacard.project.JCProject;
 import org.netbeans.modules.javacard.project.refactoring.AppletXMLRefactoringSupport;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -60,6 +59,7 @@ import org.openide.util.NbBundle;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.util.Collection;
+import org.netbeans.modules.javacard.spi.ProjectKind;
 
 public class ClassicAppletDeploymentWizardPanel implements WizardDescriptor.Panel {
 

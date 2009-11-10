@@ -528,6 +528,8 @@ public final class ToolsPanel extends JPanel implements ActionListener,
 
                 validate();
                 repaint();
+            } else {
+                lblErrors.setText("");
             }
 
             boolean baseDirValid = getToolCollectionPanel().isBaseDirValid();

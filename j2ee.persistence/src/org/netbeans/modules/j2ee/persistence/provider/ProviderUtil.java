@@ -554,8 +554,8 @@ public class ProviderUtil {
     public static void renameManagedClass(PersistenceUnit persistenceUnit, String newName,
             String oldName, PUDataObject dataObject){
         
-        dataObject.removeClass(persistenceUnit, oldName);
-        dataObject.addClass(persistenceUnit, newName);
+        dataObject.removeClass(persistenceUnit, oldName, false);
+        dataObject.addClass(persistenceUnit, newName, false);
         
     }
     
@@ -569,7 +569,7 @@ public class ProviderUtil {
     public static void removeManagedClass(PersistenceUnit persistenceUnit, String clazz,
             PUDataObject dataObject){
         
-        dataObject.removeClass(persistenceUnit, clazz);
+        dataObject.removeClass(persistenceUnit, clazz, false);
     }
     
     /**
@@ -582,7 +582,7 @@ public class ProviderUtil {
     public static void addManagedClass(PersistenceUnit persistenceUnit, String clazz,
             PUDataObject dataObject){
         
-        dataObject.addClass(persistenceUnit, clazz);
+        dataObject.addClass(persistenceUnit, clazz, false);
     }
     
     

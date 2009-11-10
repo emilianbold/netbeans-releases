@@ -83,7 +83,7 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
         cache = new WeakHashMap<String, Map<String, AbstractFunctionToLine>>();
     }
 
-    public SourceFileInfo fileName(String functionQName, int lineNumber, long offset, Map<String, String> serviceInfo) {
+    public SourceFileInfo getSourceFileInfo(String functionQName, int lineNumber, long offset, Map<String, String> serviceInfo) {
         SourceFileInfo info = _fileName(functionQName, lineNumber, offset, serviceInfo);
         if (info != null) {
             PathMapperProvider provider = Lookup.getDefault().lookup(PathMapperProvider.class);

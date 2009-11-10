@@ -41,11 +41,10 @@
 package org.netbeans.modules.javacard.project.customizer;
 
 import org.netbeans.modules.javacard.project.*;
-import org.netbeans.modules.javacard.api.ProjectKind;
 import com.sun.javacard.AID;
 import com.sun.javacard.filemodels.AppletXmlModel;
 import com.sun.javacard.filemodels.DeploymentXmlModel;
-import org.netbeans.modules.javacard.constants.JCConstants;
+import org.netbeans.modules.javacard.common.JCConstants;
 import org.netbeans.modules.javacard.constants.ProjectPropertyNames;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -60,6 +59,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.Vector;
+import org.netbeans.modules.javacard.spi.ProjectKind;
 import org.openide.filesystems.FileObject;
 
 /**

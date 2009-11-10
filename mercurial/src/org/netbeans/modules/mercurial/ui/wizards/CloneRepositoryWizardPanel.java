@@ -42,6 +42,7 @@ package org.netbeans.modules.mercurial.ui.wizards;
 
 import java.awt.Component;
 import java.awt.BorderLayout;
+import java.awt.EventQueue;
 import java.security.KeyManagementException;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
@@ -251,6 +252,7 @@ public class CloneRepositoryWizardPanel implements WizardDescriptor.Asynchronous
 
     // comes on next or finish
     public final void validate () throws WizardValidationException {
+        try {
         validateBeforeNext();
         if (isValid() == false || errorMessage != null) {
             throw new WizardValidationException (
@@ -258,6 +260,14 @@ public class CloneRepositoryWizardPanel implements WizardDescriptor.Asynchronous
                 errorMessage,
                 errorMessage
             );
+        }
+        } catch (WizardValidationException ex) {
+            EventQueue.invokeLater(new Runnable () {
+                public void run() {
+                    repository.setEditable(true);
+                }
+            });
+            throw ex;
         }
     }
 
