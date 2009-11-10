@@ -59,26 +59,25 @@
     <condition property="ruby.home" value="${env.RUBY_HOME}">
       <not><isset property="ruby.home"/></not>
     </condition>
+    <property name="run.jvm.model" value=""/>
+    <!--
     <condition property="run.jvm.model" value="">
         <os family="windows"/>
     </condition>
   <condition property="run.jvm.model" value="-d64">
-      <!-- Modified for NetBeans builds: use the -d64 switch only if sun.arch.data.model is 64-Bit
+       Modified for NetBeans builds: use the -d64 switch only if sun.arch.data.model is 64-Bit
        (otherwise the build fails on 64-bit machines w/o a 64-bit JVM; os.arch doesn't appear to return
-       the architecture of the JVM) -->
+       the architecture of the JVM)
       <equals arg1="64" arg2="${sun.arch.data.model}"/>
-      <!--
       <or>
         <os arch="amd64"/>
         <os arch="x86_64"/>
         <os arch="sparcv9"/>
         <os arch="s390x"/>
       </or>
-       -->
     </condition>
     <condition property="run.jvm.model" value="-d32">
       <equals arg1="32" arg2="${sun.arch.data.model}"/>
-      <!--
       <or>
         <os arch="i386"/>
         <os arch="x86"/>
@@ -86,11 +85,11 @@
         <os arch="ppc"/>
         <os arch="sparc"/>
       </or>
-       -->
     </condition>
     <condition property="run.jvm.model" value="">
         <not><isset property="run.jvm.model"/></not>
     </condition>
+       -->
     <property name="rdoc.archive" value="docs/rdocs.tar.gz"/>
     <uptodate property="docsNotNeeded" srcfile="${rdoc.archive}" targetfile="${basedir}/share/ri/1.8/system/created.rid"/>
   </target>
