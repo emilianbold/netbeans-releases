@@ -82,6 +82,7 @@ import org.netbeans.modules.dlight.impl.SQLDataStorage;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorNotificationsListener;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.Util;
+import org.netbeans.modules.dlight.util.usagetracking.SunStudioUserCounter;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -486,7 +487,17 @@ public final class DtraceDataCollector
     }
 
     public ValidationStatus validate(final DLightTarget target) {
-        return validate(target, this, true);
+        ValidationStatus status = validate(target, this, true);
+        if (status.isValid()) {
+            String tool;
+            if (SunStudioUserCounter.getIDEType() == SunStudioUserCounter.IDEType.DLIGHTTOOL) {
+                tool = "dlight"; // NOI18N
+            } else {
+                tool = "dlightss"; // NOI18N
+            }
+            SunStudioUserCounter.countTool(SunStudioUserCounter.getSunStudioBinDir(), target.getExecEnv(), tool);
+        }
+        return status;
     }
 
     ValidationStatus validate(final DLightTarget target, Validateable<DLightTarget> validatebleSource, boolean notify) {

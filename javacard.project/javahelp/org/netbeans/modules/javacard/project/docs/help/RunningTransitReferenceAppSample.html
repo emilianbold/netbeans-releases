@@ -1,0 +1,72 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html lang="en-US">
+
+<head>
+<!-- GenHTML revision 22989-->
+
+  <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+  <title>Running the Transit Reference Application Sample - Java Card 3 Development
+  </title>
+
+</head>
+
+<body class="body">
+
+
+
+<a name="RunningTransitReferenceAppSample"></a><h2>Running the <tt>Transit</tt> Reference Application Sample</h2><p class="p">The <tt>Tansit</tt> sample illustrates the use of the Java Card API, scenarios of
+package masking, and post-manufacture installation. The <tt>Tansit</tt> sample demonstrates how a card holder can
+use a web enabled point-of-sale applet on a Java Card 3 platform enabled
+smart card to manage their transaction account, a user can securely manage their
+transaction account from an untrusted web browser, a user can make secure transactions using
+their Java Card 3 platform enabled smart card (in this sample the transactions
+are turnstile activities), and administration functions can be performed as the user conducts
+trqansactions. This sample contains nine library and web applications that demonstrate the wallet, turnstile,
+transaction, and administration event mechanisms.</p><p class="p">Running the <tt>Transit</tt> sample consists of using the IDE to open and run
+the individual projects in the following sequence:</p>
+<ul class="ul"><li class="li"><p class="p">WalletClassicLib</p></li>
+<li class="li"><p class="p">TransitExtLib</p></li>
+<li class="li"><p class="p">ClassicWalletApplet</p></li>
+<li class="li"><p class="p">WalletAssistApplet</p></li>
+<li class="li"><p class="p">POSWeb</p></li>
+<li class="li"><p class="p">AdminWeb</p></li>
+<li class="li"><p class="p">TurnstileApplet</p></li>
+<li class="li"><p class="p">TurnstileClient</p></li>
+<li class="li"><p class="p">TurnstileWeb</p></li></ul>
+
+<hr><p class="p"><b>Note - </b>The POSWeb application has been internationalized and can be localized for the French
+language.</p>
+<hr>
+<h2>Before You Begin</h2><p class="p">Before performing the following procedure, the Java Card 3 Development Kit, Connected Editon
+must be downloaded and installed on your development system. </p><p class="p">The <tt>AdminWeb</tt>,ClassicWalletApplet, <tt>POSWeb</tt>, <tt>TransitExtLib</tt>, <tt>TurnstileApplet</tt>, <tt>TurnstileClient</tt>, <tt>TurnstileWeb</tt>, <tt>WalletAssistApplet</tt>, and <tt>WalletClassicLib</tt> projects are located
+under the <b>JC_CONNECTED_HOME</b><tt>\samples\web\Transit</tt> folder.</p>
+<hr><p class="p"><b>Note - </b>Refer to the <i>Java Card 3 Platform Development Kit User&#8217;s Guide</i> for additional details including screen captures.</p>
+<hr>
+<ol class="ol">
+<li class="li"><b> Build the <tt>WalletClassicLib</tt> project.</b><p class="p">See <a href="BuildWalletClassicLibRefApp.html">Build <tt>WalletClassicLib</tt></a>.</p></li>
+<li class="li"><b>Build the <tt>TransitExtLib</tt> project.</b><p class="p">See <a href="BuildTransitExtLibRefApp.html">Build <tt>TransitExtLib</tt></a>.</p></li>
+<li class="li"><b>Run the ClassicWalletApplet sample application.</b><p class="p">Verify that the applet was successfully created. The SELECT APDU command returns success
+status word 90 00. Additional APDU commands are used to credit the Wallet
+additional $100 (0x64). Verify that these commands return success status words 90 00.
+See <a href="RunClassicWalletAppletRefApp.html">Run <tt>ClassicWalletApplet</tt></a>.&#8221;</p></li>
+<li class="li"><b>Run the WalletAssistApplet sample application.</b><p class="p">Verify that the applet was successfully created. The SELECT APDU command returns Status
+word 69 99. See <a href="RunWalletAssistAppletRefApp.html">Run <tt>WalletAssistApplet</tt></a>.&#8221;</p></li>
+<li class="li"><b>Run the POSWeb sample application.</b><p class="p">See <a href="RunPOSWebRefApp.html">Run <tt>POSWeb</tt></a>.</p></li>
+<li class="li"><b>Run the AdminWeb sample application.</b><p class="p">See <a href="RunAdminWebRefApp.html">Run <tt>AdminWeb</tt></a>.</p></li>
+<li class="li"><b>Run the TurnstileApplet sample application.</b><p class="p">The log window displays a 90 00 in select response.See <a href="RunTurnstileAppletRefApp.html">Run <tt>TurnstileApplet</tt></a>.</p></li>
+<li class="li"><a name="z400000e1427671"></a><b>In the AdminWeb page, click the UNBLOCK button.</b></li>
+<li class="li"><b>Run the TurnstileClient project.</b><p class="p">See <a href="RunTurnstileClientRefApp.html">Run <tt>TurnstileClient</tt></a>.</p></li>
+<li class="li"><b>Run the TurnstileApplet sample application.</b><p class="p">The Output window displays 90 00 completes and SUCCESSFULL.</p></li>
+<li class="li"><b>In the Transit Point of Sale Main Page, click the REFRESH BALANCE button.</b><p class="p">The balance displays 2 less - 98.</p></li>
+<li class="li"><b>Run the TurnstileWeb sample application.</b><p class="p">The browser displays the Entry page. See <a href="RunTurnstileWebRefApp.html">Run <tt>TurnstileWeb</tt></a></p></li>
+<li class="li"><a name="z400000e1428081"></a><b>On the Transit Administration Main Page click the UNBLOCK button.</b></li>
+<li class="li"><a name="z400000e1428109"></a><b>Select Zone 1 and click the ENTER button.</b><p class="p">The browser displays the Transit Turnstile Exit page.</p></li>
+<li class="li"><a name="z400000e1428132"></a><b>Click the Exit button.</b></li>
+<li class="li"><a name="z400000e1428141"></a><b>Click the HISTORY button on the Transit Point of Sale Main Page.</b></li>
+<li class="li"><b>Close the browser to stop the application.</b></li></ol>
+
+
+</body>
+</html>

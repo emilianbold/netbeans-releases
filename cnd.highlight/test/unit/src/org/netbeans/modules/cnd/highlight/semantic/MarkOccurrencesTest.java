@@ -121,6 +121,11 @@ public class MarkOccurrencesTest extends SemanticHighlightingTestBase {
     public void testConstAndNonConstMethods() throws Exception {
         performTest(SOURCE, 57, 15);
     }
+
+    public void testIZ175700() throws Exception {
+        // IZ#175700 : [code model] Parser does not recognized inline initialization in constructor
+        performTest(SOURCE, 80, 5);
+    }
     
     protected Collection<? extends CsmOffsetable> getBlocks(FileImpl testFile, int offset) {
         BaseDocument doc;

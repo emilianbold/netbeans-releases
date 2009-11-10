@@ -46,7 +46,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.concurrent.Future;
 import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.Task;
@@ -75,9 +74,7 @@ public class JavaCodeTemplateFilter implements CodeTemplateFilter, Task<Compilat
         JavaSource js = JavaSource.forDocument(component.getDocument());
         if (js != null) {
             try {
-                Future<Void> f = js.runWhenScanFinished(this, true);
-                if (!f.isDone())
-                    f.cancel(true);
+                js.runUserActionTask(this, true);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }

@@ -43,11 +43,26 @@ package org.netbeans.spi.project.ui.support;
 
 import javax.swing.Action;
 import javax.swing.Icon;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.project.uiapi.Utilities;
+import org.openide.loaders.DataObject;
 
 /**
  * Factory for creating actions sensitive to the project selected
  * as the main project in the UI.
+ * <p>The precise definition of "selection" will depend on the UI implementation,
+ * but will give preference to a main project compared to {@link ProjectSensitiveActions}.
+ * For example:
+ * <ol>
+ * <li>The {@linkplain OpenProjects#getMainProject main project}, if one is set.
+ * <li>The project mentioned in the {@linkplain org.openide.util.Utilities#actionsGlobalContext global selection}
+ * (as {@link Project} or {@linkplain FileOwnerQuery#getOwner(FileObject) owner} of a {@link DataObject})
+ * if there is exactly one such.
+ * (Currently adjusted to allow for loss of window focus.)
+ * <li>The {@linkplain OpenProjects#getOpenProjects open project}, if there is just one.
+ * </ol>
  * @author Petr Hrebejk
  */
 public class MainProjectSensitiveActions {
@@ -79,7 +94,7 @@ public class MainProjectSensitiveActions {
      * will be called. The {@link ProjectActionPerformer#enable} method will
      * be consulted when the main project changes to determine whether the 
      * action should or should not be enabled. If no main project is selected the 
-     * project parameter in the callback will be null.
+     * project parameter in the callback may be null.
      * @param performer callback class for enabling and performing the action    
      * @param namePattern a pattern which should be used for determining the action's
      *        name (label). It takes two parameters a la {@link java.text.MessageFormat}:

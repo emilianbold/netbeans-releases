@@ -479,7 +479,11 @@ public class Annotations implements DocumentListener {
      * @return {@link AnnotationDesc} of given type on provided line
      */
     public AnnotationDesc getAnnotation(int line, String type) {
-        return getLineAnnotations(line).getType(type);
+        LineAnnotations lineAnnotations = getLineAnnotations(line);
+        if (lineAnnotations != null)
+            return lineAnnotations.getType(type);
+        else
+            return null;
     }
     
     /** Return list of pasive annotations which should be drawn on the backgorund */
@@ -792,14 +796,14 @@ public class Annotations implements DocumentListener {
         // add checkbox for enabling/disabling of line numbers
         Action action = kit.getActionByName(BaseKit.toggleLineNumbersAction);
         JMenuItem popupItem = getPopupMenuItem(action);
-        assert (popupItem != null);
-        pm.add(popupItem);
+        if (popupItem != null)
+            pm.add(popupItem);
         
         action = kit.getActionByName(ExtKit.toggleToolbarAction);
-        if (action != null){
+        if (action != null) {
             popupItem = getPopupMenuItem(action);
-            assert (popupItem != null);
-            pm.add(popupItem);
+            if (popupItem != null)
+                pm.add(popupItem);
         }
         menuInitialized = true;
     }

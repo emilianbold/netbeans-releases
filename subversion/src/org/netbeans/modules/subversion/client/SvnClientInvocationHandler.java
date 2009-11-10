@@ -40,17 +40,23 @@
  */
 package org.netbeans.modules.subversion.client;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.security.InvalidKeyException;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.net.ssl.SSLKeyException;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.config.SvnConfigFiles;
 import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.versioning.util.IndexingBridge;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.Cancellable;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
@@ -63,13 +69,15 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  * @author Tomas Stupka 
  */
 public class SvnClientInvocationHandler implements InvocationHandler {    
-        
+
+    private static final Logger LOG = Logger.getLogger(SvnClientInvocationHandler.class.getName());
+    
     protected static final String GET_SINGLE_STATUS = "getSingleStatus"; // NOI18N
     protected static final String GET_STATUS = "getStatus"; // NOI18N
     protected static final String GET_INFO_FROM_WORKING_COPY = "getInfoFromWorkingCopy"; // NOI18N
     protected static final String CANCEL_OPERATION = "cancel"; //NOI18N
     
-    private static Object semaphor = new Object();        
+    private static final Object semaphor = new Object();
 
     private final ISVNClientAdapter adapter;
     private final SvnClientDescriptor desc;
@@ -113,21 +121,62 @@ public class SvnClientInvocationHandler implements InvocationHandler {
         };
     }
 
+    private static String print(Object[] args) {
+        if (args == null || args.length == 0) {
+            return "no parameters"; //NOI18N
+        } else {
+            StringBuilder sb = new StringBuilder();
+            for(Object a : args) {
+                sb.append("\n  "); //NOI18N
+                if (a == null) {
+                    sb.append("null"); //NOI18N
+                } else {
+                    sb.append(a.toString());
+                    sb.append(" : "); //NOI18N
+                    sb.append(a.getClass().getName());
+                }
+                sb.append("\n"); //NOI18N
+            }
+            return sb.toString();
+        }
+    }
+
     /**
      * @see InvocationHandler#invoke(Object proxy, Method method, Object[] args)
      */
-    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {                               
+    public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
+                
+        boolean fsReadOnlyAction = isFSWrittingCommand(method);
 
-        try {      
-            Object ret = null;        
-            if(parallelizable(method, args)) {
-                ret = invokeMethod(method, args);    
-            } else {
-                synchronized (semaphor) {
-                    ret = invokeMethod(method, args);    
+        try {
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("~~~ SVN: invoking '" + method.getName() + "' with " + print(args)); //NOI18N
+                //new Throwable("~~~ SVN: invoking '" + method.getName() + "'").printStackTrace();
+            }
+
+            Callable<Object> c = new Callable<Object>() {
+                public Object call() throws Exception {
+                    if(parallelizable(method, args)) {
+                        return invokeMethod(method, args);
+                    } else {
+                        synchronized (semaphor) {
+                            return invokeMethod(method, args);
+                        }
+                    }
                 }
-            }            
-            return ret;
+            };
+            if (fsReadOnlyAction) {
+                return c.call();
+            } else {
+                List<File> files = getFileParameters(args);
+                if(files.size() > 0) {
+                    return IndexingBridge.getInstance().runWithoutIndexing(c, files.toArray(new File[files.size()]));
+                } else {
+                    // no file arguments - seems there is no need to stop indexing
+                    //                     or refresh the FS
+                    return c.call();
+                }
+            }
         } catch (Exception e) {
             try {
                 if(handleException((SvnClient) proxy, e) ) {
@@ -183,8 +232,42 @@ public class SvnClientInvocationHandler implements InvocationHandler {
         } finally {
             // whatever command was invoked, whatever the result is - 
             // call refresh for all files notified by the client adapter
-            Subversion.getInstance().getRefreshHandler().refresh();
+            if (fsReadOnlyAction) {
+                Subversion.getInstance().getRefreshHandler().refresh();
+            }
         }
+    }
+
+    private List<File> getFileParameters(final Object[] args) {
+        List<File> files = new LinkedList<File>();
+        if (args != null && args.length > 0) {
+            for (Object arg : args) {
+                if (arg instanceof File) {
+                    files.add((File) arg);
+                } else if (arg instanceof File[]) {
+                    File[] fs = (File[]) arg;
+                    for (File file : fs) {
+                        files.add(file);
+                    }
+                }
+            }
+        }
+        return files;
+    }
+
+    private boolean isFSWrittingCommand(final Method method) {
+        // list here all operations that can potentially modify files on the disk
+        return !method.getName().equals("update") &&           // NOI18N
+               !method.getName().equals("revert") &&           // NOI18N
+               !method.getName().equals("switchToUrl") &&      // NOI18N
+               !method.getName().equals("commit") &&           // NOI18N
+               !method.getName().equals("commitAcrossWC") &&   // NOI18N
+               !method.getName().equals("remove") &&           // NOI18N
+               !method.getName().equals("mkdir") &&            // NOI18N
+               !method.getName().equals("checkout") &&         // NOI18N
+               !method.getName().equals("copy") &&             // NOI18N
+               !method.getName().equals("move") &&             // NOI18N
+               !method.getName().equals("merge");              // NOI18N
     }
 
     private void logClientInvoked() {
@@ -299,8 +382,12 @@ public class SvnClientInvocationHandler implements InvocationHandler {
             throw t;
         }
 
-        SvnClientExceptionHandler eh = new SvnClientExceptionHandler((SVNClientException) t, adapter, client, desc, handledExceptions);        
+        SvnClientExceptionHandler eh = new SvnClientExceptionHandler((SVNClientException) t, adapter, client, desc, handledExceptions, isCommandLine());
         return eh.handleException();        
+    }
+
+    protected boolean isCommandLine () {
+        return false;
     }
     
 }

@@ -58,7 +58,7 @@ public class CacheDirProvider implements CacheDirectoryProvider {
     }
 
     public FileObject getCacheDirectory() throws IOException {
-        int code = project.getProjectDirectory().getPath().hashCode();
+        int code = Math.abs(project.getProjectDirectory().getPath().hashCode());
         File cacheDir = new File(getCacheRoot(), "" + code);
         if (!cacheDir.exists()) {
             cacheDir.mkdir();

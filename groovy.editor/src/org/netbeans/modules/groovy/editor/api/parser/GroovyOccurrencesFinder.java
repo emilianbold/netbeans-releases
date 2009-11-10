@@ -50,6 +50,7 @@ import org.netbeans.modules.groovy.editor.api.AstUtilities;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
 import java.util.logging.Logger;
 import java.util.logging.Level;
+import org.codehaus.groovy.ast.ClassNode;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.OccurrencesFinder;
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -199,6 +200,22 @@ public class GroovyOccurrencesFinder extends OccurrencesFinder<GroovyParserResul
                     range = AstUtilities.getNextIdentifierByName(document, text, start);
                 } else {
                     range = OffsetRange.NONE;
+                }
+            // 155573 - check cursor in class but not on class name
+            } else if (astNode instanceof ClassNode && path.leaf() instanceof ClassNode) {
+                ClassNode found = (ClassNode) astNode;
+                ClassNode leaf = (ClassNode) path.leaf();
+                if (found == leaf) {
+                   OffsetRange rangeClassName = AstUtilities.getRange(astNode, document);
+                   if (rangeClassName.containsInclusive(cursorOffset)) {
+                       range = rangeClassName;
+                   } else {
+                       // we are completely wrong
+                       highlights.clear();
+                       break;
+                   }
+                } else {
+                    range = AstUtilities.getRange(astNode, document);
                 }
             } else {
                 range = AstUtilities.getRange(astNode, document);

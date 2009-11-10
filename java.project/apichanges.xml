@@ -106,6 +106,23 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="JavaRunner-runtime-encoding">
+            <api name="general"/>
+            <summary>Added JavaRunner.PROP_RUNTIME_ENCODING property for COS Runner</summary>
+            <version major="1" minor="28"/>
+            <date day="19" month="10" year="2009"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added <code>JavaRunner.PROP_RUNTIME_ENCODING</code> property to allow project types
+                    to pass the runtime encoding to jvm.
+                </p>
+            </description>
+            <class package="org.netbeans.api.java.project.runner" name="JavaRunner"/>
+            <issue number="173406"/>
+        </change>
+
         <change id="source-group-modifier-constants">
             <api name="general"/>
             <summary>Constants for SourceGroupModifier</summary>

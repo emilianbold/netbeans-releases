@@ -84,6 +84,7 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.editor.JumpList;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
@@ -311,31 +312,31 @@ public class CsmUtilities {
 
     public static CsmFile getCsmFile(Document bDoc, boolean waitParsing) {
         CsmFile csmFile = null;
-        try {
-            if(bDoc != null) {
+        if (bDoc != null) {
+            try {
                 csmFile = (CsmFile) bDoc.getProperty(CsmFile.class);
-            }
-            if (csmFile == null) {
-                csmFile = getCsmFile(NbEditorUtilities.getDataObject(bDoc), waitParsing);
-            }
-            if (csmFile == null) {
-                String mimeType = (String) bDoc.getProperty(NbEditorDocument.MIME_TYPE_PROP); 
-                if ("text/x-dialog-binding".equals(mimeType)) { // NOI18N
-                    // this is context from dialog
-                    InputAttributes inputAttributes = (InputAttributes) bDoc.getProperty(InputAttributes.class);
-                    if (inputAttributes != null) {
-                        LanguagePath path = LanguagePath.get(MimeLookup.getLookup(mimeType).lookup(Language.class));
-                        FileObject fileObject = (FileObject) inputAttributes.getValue(path, "dialogBinding.fileObject"); //NOI18N
-                        csmFile = CsmUtilities.getCsmFile(fileObject, waitParsing);
-                        if (csmFile == null) {
-                            Document d = (Document) inputAttributes.getValue(path, "dialogBinding.document"); //NOI18N
-                            csmFile = d == null ? null : CsmUtilities.getCsmFile(d, waitParsing);
+                if (csmFile == null) {
+                    csmFile = getCsmFile(NbEditorUtilities.getDataObject(bDoc), waitParsing);
+                }
+                if (csmFile == null) {
+                    String mimeType = (String) bDoc.getProperty(NbEditorDocument.MIME_TYPE_PROP);
+                    if ("text/x-dialog-binding".equals(mimeType)) { // NOI18N
+                        // this is context from dialog
+                        InputAttributes inputAttributes = (InputAttributes) bDoc.getProperty(InputAttributes.class);
+                        if (inputAttributes != null) {
+                            LanguagePath path = LanguagePath.get(MimeLookup.getLookup(mimeType).lookup(Language.class));
+                            FileObject fileObject = (FileObject) inputAttributes.getValue(path, "dialogBinding.fileObject"); //NOI18N
+                            csmFile = CsmUtilities.getCsmFile(fileObject, waitParsing);
+                            if (csmFile == null) {
+                                Document d = (Document) inputAttributes.getValue(path, "dialogBinding.document"); //NOI18N
+                                csmFile = d == null ? null : CsmUtilities.getCsmFile(d, waitParsing);
+                            }
                         }
                     }
                 }
+            } catch (NullPointerException exc) {
+                exc.printStackTrace();
             }
-        } catch (NullPointerException exc) {
-            exc.printStackTrace();
         }
         return csmFile;
     }
@@ -657,6 +658,25 @@ public class CsmUtilities {
         }
     }
 
+    public static boolean openSource(PositionBounds position) {
+        CloneableEditorSupport editorSupport = position.getBegin().getCloneableEditorSupport();
+        editorSupport.edit();
+        JEditorPane[] panes = editorSupport.getOpenedPanes();
+        if (panes != null) {
+            JumpList.checkAddEntry();
+            JEditorPane pane = panes[0];
+            pane.setCaretPosition(position.getBegin().getOffset());
+            Container container = pane;
+            while (container != null && !(container instanceof TopComponent)) {
+                container = container.getParent();
+            }
+            if (container != null) {
+                ((TopComponent) container).requestActive();
+            }
+        }
+        return false;
+    }
+
     private static boolean openAtElement(final CsmOffsetable element) {
         return openAtElement(getDataObject(element.getContainingFile()), new PointOrOffsetable(element));
     }
@@ -668,7 +688,7 @@ public class CsmUtilities {
                 SwingUtilities.invokeLater(new Runnable() {
 
                     public void run() {
-                        NbEditorUtilities.addJumpListEntry(dob);
+                        JumpList.checkAddEntry();
                         JEditorPane pane = findRecentEditorPaneInEQ(ec);
                         boolean opened;
                         if (pane != null) {
@@ -743,7 +763,7 @@ public class CsmUtilities {
             });
             // try to activate outer TopComponent
             Container temp = pane;
-            while (!(temp instanceof TopComponent)) {
+            while (temp != null && !(temp instanceof TopComponent)) {
                 temp = temp.getParent();
             }
             if (temp instanceof TopComponent) {
@@ -974,8 +994,4 @@ public class CsmUtilities {
 
     private CsmUtilities() {
     }
-    /* package */ static boolean isUnitTestsMode() {
-        return Boolean.getBoolean("cnd.mode.unittest");
-    }
 }
-

@@ -321,7 +321,7 @@ public class JiraRepository extends Repository {
         return ret.toArray(new Query[ret.size()]);
     }
 
-    private void getRemoteFilters() {
+    protected void getRemoteFilters() {
         List<Query> ret = new ArrayList<Query>();
         NamedFiltersCommand cmd = new NamedFiltersCommand(taskRepository);
         getExecutor().execute(cmd);

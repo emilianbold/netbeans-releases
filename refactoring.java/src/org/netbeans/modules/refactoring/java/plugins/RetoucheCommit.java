@@ -44,12 +44,19 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.modules.refactoring.spi.BackupFacility;
 import org.netbeans.modules.refactoring.spi.Transaction;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 
 /**
@@ -58,7 +65,8 @@ import org.openide.util.Exceptions;
  */
 
 public class RetoucheCommit implements Transaction {
-    ArrayList<BackupFacility.Handle> ids = new ArrayList();
+    private static final Logger LOG = Logger.getLogger(RetoucheCommit.class.getName());
+    List<BackupFacility.Handle> ids = new ArrayList<BackupFacility.Handle>();
     private boolean commited = false;
     Collection<ModificationResult> results;
     private Set<File> newFiles;
@@ -81,9 +89,14 @@ public class RetoucheCommit implements Transaction {
                 commited = true;
                 for (ModificationResult result:results) {
                     ids.add(BackupFacility.getDefault().backup(result.getModifiedFileObjects()));
-                    newFiles = result.getNewFiles();
+                    if (newFiles == null) {
+                        newFiles = new HashSet<File>();
+                    }
+                    newFiles.addAll(result.getNewFiles());
                     result.commit();
                 }
+
+                openNewFiles(newFiles);
             }
             
         } catch (IOException ex) {
@@ -115,6 +128,27 @@ public class RetoucheCommit implements Transaction {
                 }
             }
             newFilesStored |= localStored;
+        }
+    }
+
+    private static void openNewFiles(Set<File> newFiles) {
+        if (newFiles == null) {
+            return;
+        }
+        for (File file : newFiles) {
+            FileObject fo = FileUtil.toFileObject(file);
+            if (fo != null) {
+                try {
+                    DataObject dobj = DataObject.find(fo);
+                    EditorCookie editor = dobj.getLookup().lookup(EditorCookie.class);
+                    if (editor != null) {
+                        editor.open();
+                    }
+                } catch (DataObjectNotFoundException ex) {
+                    // not harmful
+                    LOG.log(Level.INFO, ex.getMessage(), ex);
+                }
+            }
         }
     }
 }

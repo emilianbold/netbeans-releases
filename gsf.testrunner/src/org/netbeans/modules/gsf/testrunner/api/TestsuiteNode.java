@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.MissingResourceException;
 import javax.swing.Action;
+import javax.swing.UIManager;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.ImageUtilities;
@@ -72,10 +73,20 @@ public class TestsuiteNode extends AbstractNode {
     static final boolean DISPLAY_TOOLTIPS = Boolean.valueOf(System.getProperty("testrunner.display.tooltips", "true"));//NOI18N
     /**
      * The max line length to display in the messages.
+     * 
+     * By default, the max line length for the messages in the Test Results
+     * window will be set to 320 for the GTK look and feel, and won't be limited
+     * for other look and feels. For any look and feel a user can change the
+     * default setting via the system property
+     * {@code testrunner.max.msg.line.length=MAX_LINE_LENGTH},
+     * where  {@code MAX_LINE_LENGTH} is a desired value.
+     *
      * See Issue #172772
+     * See Issue #175430
      */
-    static final int MAX_MSG_LINE_LENGTH =
-          Integer.getInteger("testrunner.max.msg.line.length", 80); //NOI18N
+    static final int MAX_MSG_LINE_LENGTH = 
+          Integer.getInteger("testrunner.max.msg.line.length", //NOI18N
+                             isGTK() ? 320 : Integer.MAX_VALUE);
 
     protected String suiteName;
     protected TestSuite suite;
@@ -364,25 +375,42 @@ public class TestsuiteNode extends AbstractNode {
      * @return If length of the {@code line} is more than the {@code maxLength}
      * then concatenation of the string that is limited up to {@code maxLength}
      * chars and a comment string that describes how many chars are omitted,
-     * otherwise the {@code line} without any changes.
+     * otherwise the {@code line} without any changes. The {@code line} without
+     * any changes will be also returned if a comment string that describes how
+     * many chars are omitted is longer than an message tail that is intended to
+     * be omitted.
      * @throws MissingResourceException if resources for the comment string
      * can't be loaded.
      *
      * @see Issue #172772
+     * @see Issue #175430
      */
     public static String cutLine(String line, int maxLength, boolean isHTML)
                                                throws MissingResourceException {
         int length = line.length();
         if (length > maxLength) {
-            line = line.substring(0, maxLength);
-            String startMsg = isHTML ? "<i> " : "";
-            String endMsg = isHTML ? "</i>" : "";
-            line = line.concat(startMsg +
-                               NbBundle.getMessage(TestsuiteNode.class,
-                                       "MSG_CharsOmitted", length - maxLength) +
-                               endMsg);
+            int tailLength = length - maxLength;
+            String cutMsg = NbBundle.getMessage(TestsuiteNode.class,
+                                       "MSG_CharsOmitted", tailLength);
+            if(tailLength > cutMsg.length()) {
+                line = line.substring(0, maxLength);
+                String startMsg = isHTML ? "<i> " : "";
+                String endMsg = isHTML ? "</i>" : "";
+                line = line.concat(startMsg + cutMsg + endMsg);
+            }
         }
         return line;
+    }
+
+
+    /**
+     * Checks whether a currently used look and feel is GTK.
+     *
+     * @return {@code true} if a currently used look and feel has got the
+     * identifier "GTK", otherwise {@code true}.
+     */
+    private static boolean isGTK() {
+        return "GTK".equals(UIManager.getLookAndFeel().getID());
     }
 
 }

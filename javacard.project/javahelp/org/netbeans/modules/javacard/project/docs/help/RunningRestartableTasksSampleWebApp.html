@@ -1,0 +1,50 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html lang="en-US">
+
+<head>
+<!-- GenHTML revision 22989-->
+
+  <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+  <title>Running RestartableTasks Sample Web Application - Java Card 3 Development
+  </title>
+
+</head>
+
+<body class="body">
+
+
+
+<a name="RunningRestartableTasksSampleWebApp"></a><h2>Running <tt>RestartableTasks</tt> Sample Web Application</h2><p class="p">The <tt>RestartableTasks</tt> sample demonstrates how a registered task can be automatically available after the
+card is reset. The sample registers a task that serves data via an
+HTTP connection to the client.This sample contains two web applications, <tt>InfoClient</tt> and <tt>InfoServer</tt>, that
+demonstrate a registered task that is available after the card is reset.</p><p class="p">Running the <tt>RestartableTasks</tt> sample consists of using the IDE to open the <tt>InfoClient</tt>
+and the <tt>InfoServer</tt> projects, starting the <tt>InfoClient</tt> and <tt>InfoServer</tt> applications, and clicking the Register
+Ping Service hyperlink to display the JCPingServer page. The server is stopped and
+restarted and the JCPingServer page is displayed.</p><h2>Before You Begin</h2><p class="p">Before performing the following procedure, the Java Card 3 Development Kit, Connected Editon
+must be downloaded and installed on your development system. </p><p class="p">The <tt>InfoClient</tt> and the <tt>InfoServer</tt><tt></tt> projects are located under the <b>JC_CONNECTED_HOME</b><tt>\samples\web\RestartableTasks</tt> folder.</p>
+<hr><p class="p"><b>Note - </b>Refer to the <i>Java Card 3 Platform Development Kit User&#8217;s Guide</i> for additional details including screen captures.</p>
+<hr>
+<ol class="ol">
+<li class="li"><b>Click File &#62; Open Project in the main window.</b></li>
+<li class="li"><b>Go to the <b>JC_CONNECTED_HOME</b><tt>\samples\web\RestartableTasks</tt>folder and open the <tt>InfoClient</tt> and the <tt>InfoServer</tt> projects.</b></li>
+<li class="li"><b>Select the <tt>InfoServer</tt> project and click the run button in the main window.
+</b><p class="p">The IDE compiles, builds, and runs the InfoServer application. When the application runs,
+the IDE launches the default browser and displays the Restartable Tasks page.</p></li>
+<li class="li"><b>Click the Register Info Service link in the web page to start the
+JCInfoServer and display the server page.</b></li>
+<li class="li"><b>Select the <tt>InfoClient</tt> project and click the run button in the main window.</b><p class="p">The IDE compiles, builds, and runs the <tt>InfoClient</tt> application. When the <tt>InfoClient</tt> application
+runs, the hit number is incremented in the output and a different text
+message is displayed.</p></li>
+<li class="li"><a name="z40000081422910"></a><b>Stop and resume the server.</b><ol style="list-style-type: lower-alpha">
+<li class="li"><b>In the <tt>cjcre.exe</tt> window, kill the server by using ctrl + C.</b></li>
+<li class="li"><b>Open a new Command Prompt window and navigate to the <b>JC_CONNECTED_HOME</b><tt>\bin</tt> directory.</b></li>
+<li class="li"><b>Restart the server from the new window by using, <tt>cjcre.exe -resume</tt>.</b></li></ol></li>
+<li class="li"><a name="z40000081423008"></a><b>Run the InfoClient application.</b><p class="p">The hit number in the output text continues to increment from the previous
+value.</p></li>
+<li class="li"><b>Close the browser to stop the application.</b></li></ol>
+
+
+</body>
+</html>

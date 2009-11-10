@@ -84,7 +84,7 @@ public final class XMLDataObjectMimeTypeTest extends LoggingTestCaseHid {
         
         registerIntoLookup(new DD());
 
-        DD x = (DD)Lookup.getDefault().lookup(DD.class);
+        DD x = Lookup.getDefault().lookup(DD.class);
         assertNotNull("DD is there", x);
 
         String fsstruct [] = new String [] {
@@ -122,7 +122,7 @@ public final class XMLDataObjectMimeTypeTest extends LoggingTestCaseHid {
         super.tearDown();
         if (obj != null) {
             CloseCookie cc;
-            cc = (CloseCookie)obj.getCookie(CloseCookie.class);
+            cc = obj.getCookie(CloseCookie.class);
             if (cc != null) {
                 DD.toReturn = NotifyDescriptor.NO_OPTION;
                 cc.close();

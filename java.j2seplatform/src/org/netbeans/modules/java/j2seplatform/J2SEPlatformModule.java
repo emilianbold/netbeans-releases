@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.java.j2seplatform;
 
-import java.io.IOException;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -49,14 +48,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.modules.ModuleInstall;
 import org.openide.util.Exceptions;
-import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.netbeans.modules.java.j2seplatform.platformdefinition.PlatformConvertor;
-import org.netbeans.modules.java.j2seplatform.platformdefinition.J2SEPlatformImpl;
 import org.openide.filesystems.FileUtil;
 
 
@@ -66,65 +58,19 @@ public class J2SEPlatformModule extends ModuleInstall {
 
     public void restored() {
         super.restored();
-        // update source level and J2SE platforms in build.properties file
-        updateBuildProperties();
-    }
-
-    // implemented as separate method for simpler unit testing
-    public static void updateBuildProperties() {
         ProjectManager.mutex().postWriteRequest(
             new Runnable () {
                 public void run () {
-                    try {
-                        recoverDefaultPlatform ();
-                        EditableProperties ep = PropertyUtils.getGlobalProperties();
-                        boolean save = updateSourceLevel(ep);
-                        save |= updateBuildProperties (ep);
-                        if (save) {
-                            PropertyUtils.putGlobalProperties (ep);
-                        }
-                    } catch (IOException ioe) {
-                        Exceptions.printStackTrace(ioe);
-                    }
-                }
-            });
-    }
-    
-    private static boolean updateSourceLevel(EditableProperties ep) {
-        JavaPlatform platform = JavaPlatformManager.getDefault().getDefaultPlatform();
-        String ver = platform.getSpecification().getVersion().toString();
-        if (!ver.equals(ep.getProperty("default.javac.source"))) { //NOI18N
-            ep.setProperty("default.javac.source", ver); //NOI18N
-            ep.setProperty("default.javac.target", ver); //NOI18N
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-
-    private static boolean updateBuildProperties (EditableProperties ep) {
-        boolean changed = false;
-        JavaPlatform[] installedPlatforms = JavaPlatformManager.getDefault().getPlatforms(null, new Specification ("j2se",null));   //NOI18N
-        for (int i=0; i<installedPlatforms.length; i++) {
-            //Handle only platforms created by this module
-            if (!installedPlatforms[i].equals (JavaPlatformManager.getDefault().getDefaultPlatform()) && installedPlatforms[i] instanceof J2SEPlatformImpl) {
-                String systemName = ((J2SEPlatformImpl)installedPlatforms[i]).getAntName();
-                String key = PlatformConvertor.createName(systemName,"home");   //NOI18N
-                if (!ep.containsKey (key)) {
-                    try {
-                        PlatformConvertor.generatePlatformProperties(installedPlatforms[i], systemName, ep);
-                        changed = true;
-                    } catch (PlatformConvertor.BrokenPlatformException b) {
-                        Logger.getLogger(J2SEPlatformModule.class.getName()).info("Platform: " + installedPlatforms[i].getDisplayName() +" is missing: " + b.getMissingTool());
-                    } catch (IOException ioe) {
-                        Exceptions.printStackTrace(ioe);
-                  }
+                    recoverDefaultPlatform ();
                 }
             }
-        }
-        return changed;
+        );
+
     }
+
+    
+    
+    
 
     private static void recoverDefaultPlatform () {
         final FileObject defaultPlatform = FileUtil.getConfigFile(DEFAULT_PLATFORM);

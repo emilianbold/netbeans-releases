@@ -51,8 +51,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.web.core.syntax.JspParserErrorAnnotation;
 import org.openide.cookies.EditorCookie;
@@ -62,6 +65,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Annotation;
 import org.openide.text.Line;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -165,14 +169,27 @@ public class ErrorAnnotation {
     /** Transforms ErrosInfo to Annotation
      */
     private Collection getAnnotations(ErrorInfo[] errors, StyledDocument document) {
+        BaseDocument doc = (BaseDocument) document;
         HashMap map = new HashMap(errors.length);
         for (int i = 0; i < errors.length; i ++) {
             ErrorInfo err = errors[i];
             int line = err.getLine();
-
-            if (line<0) 
-                continue; // When error is outside the file, don't annotate it
             int column = err.getColumn();
+
+            if (line<0){
+                // place error annotation on the 1st non-empty line
+                try {
+                    int firstNonWS = Utilities.getFirstNonWhiteFwd(doc, 0);
+                    line = Utilities.getLineOffset(doc, firstNonWS) + 1;
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            
+            if (column < 0){
+                column = 0;
+            }
+            
             String message = err.getDescription();
             LineSetAnnotation ann;
             switch (err.getType()){

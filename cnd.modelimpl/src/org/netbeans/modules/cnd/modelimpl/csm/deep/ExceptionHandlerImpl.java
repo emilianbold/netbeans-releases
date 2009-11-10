@@ -49,7 +49,7 @@ import org.netbeans.modules.cnd.api.model.deep.*;
 import org.netbeans.modules.cnd.modelimpl.csm.*;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 
-import antlr.collections.AST;
+import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
 /**

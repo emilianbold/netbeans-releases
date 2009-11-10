@@ -138,9 +138,17 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
         }
     }
 
-    public CompilerSetManager getCompilerSetManager(ExecutionEnvironment execEnv) {
+    private CompilerSetManager getCompilerSetManager(ExecutionEnvironment execEnv) {
         ToolsCacheManager manager = ToolsPanel.getToolsCacheManager();
-        return manager.getCompilerSetManagerCopy(execEnv, true);
+        CompilerSetManager copy = manager.getCompilerSetManagerCopy(execEnv, true);
+        while (copy.isPending()) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException ex) {
+                // skip
+            }
+        }
+        return copy;
     }
     
     private void updateCompilerCollections(final CompilerSet csToSelect) {
@@ -191,7 +199,7 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
                     // localhost only mode (either cnd.remote is not installed or no devhosts were specified
                     for (CompilerSet cs : getCompilerSetManager(ExecutionEnvironmentFactory.getLocal()).getCompilerSets()) {
                         for (Tool tool : cs.getTools()) {
-                            tool.waitReady();
+                            tool.waitReady(false);
                         }
                         CompilerSetPresenter csp = new CompilerSetPresenter(cs, cs.getName());
                         if (csToSelect == cs) {
@@ -213,6 +221,9 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
             return;
         }
         CompilerSet compilerCollection = csp.cs;
+        if (compilerCollection.isUrlPointer()) {
+            return;
+        }
         // Show only the selected C and C++ compiler from the compiler collection
         ArrayList<Tool> toolSet = new ArrayList<Tool>();
         Tool cCompiler = compilerCollection.getTool(Tool.CCompiler);

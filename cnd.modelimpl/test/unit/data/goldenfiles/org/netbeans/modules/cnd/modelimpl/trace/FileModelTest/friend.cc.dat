@@ -76,7 +76,7 @@ CLASS B (B ) [9:1/151-16:28/347] lcurly=158 SCOPE: $Global$
             REFERENCED CLASS: C:A2
         FUNCTION DEFINITION moo2  [13:5/221-13:39/255] FriendFunctionDDImpl SCOPE: $Global$ 
             SIGNATURE moo2(int)
-            UNIQUE NAME f:moo2(int)
+            UNIQUE NAME d:moo2(int)
             DECLARATION: moo2  [1:1/0-1:15/14]
             PARAMETERS:
                  [13:21/237-13:24/240]  TYPE: int TEXT=int  [13:21/237-13:24/240]  INIT: null  SCOPE: moo2 
@@ -86,14 +86,14 @@ CLASS B (B ) [9:1/151-16:28/347] lcurly=158 SCOPE: $Global$
         FUNCTION moo [14:5/261-14:25/281] FriendFunctionImpl SCOPE: $Global$ 
             DEFINITION: moo  [2:1/15-2:24/38]
             SIGNATURE moo(int)
-            UNIQUE NAME F:moo(int)
+            UNIQUE NAME D:moo(int)
             REFERENCED FRIEND FUNCTION: moo  [2:1/15-2:24/38]
             PARAMETERS:
                  [14:20/276-14:23/279]  TYPE: int TEXT=int  [14:20/276-14:23/279]  INIT: null  SCOPE: moo 
             RETURNS int TEXT=int  [14:12/268-14:15/271]
         FUNCTION DEFINITION soo  [15:5/286-15:38/319] FriendFunctionDefinitionImpl SCOPE: friend.cc
             SIGNATURE soo()
-            UNIQUE NAME f:S2::soo()
+            UNIQUE NAME d:S2::soo()
             DECLARATION: soo  [4:5/56-4:15/66]
             PARAMETERS:
             RETURNS int TEXT=int  [15:12/293-15:15/296]
@@ -102,7 +102,7 @@ CLASS B (B ) [9:1/151-16:28/347] lcurly=158 SCOPE: $Global$
         FUNCTION soo2 [16:5/324-16:27/346] FriendFunctionImplEx SCOPE: $Global$ 
             DEFINITION: soo2  [5:5/71-5:26/92]
             SIGNATURE soo2()
-            UNIQUE NAME F:S2::soo2()
+            UNIQUE NAME D:S2::soo2()
             REFERENCED FRIEND FUNCTION: soo2  [5:5/71-5:26/92]
             PARAMETERS:
             RETURNS int TEXT=int  [16:12/331-16:15/334]
@@ -165,7 +165,7 @@ CLASS B (B ) [9:1/151-16:28/347] lcurly=158 SCOPE: $Global$
             REFERENCED CLASS: C:A2
         FUNCTION DEFINITION moo2  [13:5/221-13:39/255] FriendFunctionDDImpl SCOPE: $Global$ 
             SIGNATURE moo2(int)
-            UNIQUE NAME f:moo2(int)
+            UNIQUE NAME d:moo2(int)
             DECLARATION: moo2  [1:1/0-1:15/14]
             PARAMETERS:
                  [13:21/237-13:24/240]  TYPE: int TEXT=int  [13:21/237-13:24/240]  INIT: null  SCOPE: moo2 
@@ -175,14 +175,14 @@ CLASS B (B ) [9:1/151-16:28/347] lcurly=158 SCOPE: $Global$
         FUNCTION moo [14:5/261-14:25/281] FriendFunctionImpl SCOPE: $Global$ 
             DEFINITION: moo  [2:1/15-2:24/38]
             SIGNATURE moo(int)
-            UNIQUE NAME F:moo(int)
+            UNIQUE NAME D:moo(int)
             REFERENCED FRIEND FUNCTION: moo  [2:1/15-2:24/38]
             PARAMETERS:
                  [14:20/276-14:23/279]  TYPE: int TEXT=int  [14:20/276-14:23/279]  INIT: null  SCOPE: moo 
             RETURNS int TEXT=int  [14:12/268-14:15/271]
         FUNCTION DEFINITION soo  [15:5/286-15:38/319] FriendFunctionDefinitionImpl SCOPE: friend.cc
             SIGNATURE soo()
-            UNIQUE NAME f:S2::soo()
+            UNIQUE NAME d:S2::soo()
             DECLARATION: soo  [4:5/56-4:15/66]
             PARAMETERS:
             RETURNS int TEXT=int  [15:12/293-15:15/296]
@@ -191,14 +191,14 @@ CLASS B (B ) [9:1/151-16:28/347] lcurly=158 SCOPE: $Global$
         FUNCTION soo2 [16:5/324-16:27/346] FriendFunctionImplEx SCOPE: $Global$ 
             DEFINITION: soo2  [5:5/71-5:26/92]
             SIGNATURE soo2()
-            UNIQUE NAME F:S2::soo2()
+            UNIQUE NAME D:S2::soo2()
             REFERENCED FRIEND FUNCTION: soo2  [5:5/71-5:26/92]
             PARAMETERS:
             RETURNS int TEXT=int  [16:12/331-16:15/334]
 CLASS_FORWARD_DECLARATION A2 [11:5/185-11:21/201]
 FUNCTION DEFINITION moo2  [13:5/221-13:39/255] FriendFunctionDDImpl SCOPE: $Global$ 
     SIGNATURE moo2(int)
-    UNIQUE NAME f:moo2(int)
+    UNIQUE NAME d:moo2(int)
     DECLARATION: moo2  [1:1/0-1:15/14]
     PARAMETERS:
          [13:21/237-13:24/240]  TYPE: int TEXT=int  [13:21/237-13:24/240]  INIT: null  SCOPE: moo2 
@@ -208,7 +208,7 @@ FUNCTION DEFINITION moo2  [13:5/221-13:39/255] FriendFunctionDDImpl SCOPE: $Glob
 FUNCTION moo [14:5/261-14:25/281] FriendFunctionImpl SCOPE: $Global$ 
     DEFINITION: moo  [2:1/15-2:24/38]
     SIGNATURE moo(int)
-    UNIQUE NAME F:moo(int)
+    UNIQUE NAME D:moo(int)
     REFERENCED FRIEND FUNCTION: moo  [2:1/15-2:24/38]
     PARAMETERS:
          [14:20/276-14:23/279]  TYPE: int TEXT=int  [14:20/276-14:23/279]  INIT: null  SCOPE: moo 

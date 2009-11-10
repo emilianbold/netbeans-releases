@@ -50,6 +50,7 @@ import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.util.KenaiUtil;
+import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.query.QueryParameter;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
@@ -75,7 +76,7 @@ public class KenaiRepository extends BugzillaRepository {
     private final Object kenaiProject;
 
     KenaiRepository(KenaiProject kenaiProject, String repoName, String url, String host, String userName, String password, String urlParam, String product) {
-        super(repoName, repoName, url, userName, password, null, null); // use name as id - can't be changed anyway
+        super(getRepositoryId(repoName, url), repoName, url, userName, password, null, null); // use name as id - can't be changed anyway
         this.urlParam = urlParam;
         icon = ImageUtilities.loadImage(ICON_PATH, true);
         this.product = product;
@@ -116,33 +117,12 @@ public class KenaiRepository extends BugzillaRepository {
 
     private Query[] getDefinedQueries() {
         List<Query> queries = new ArrayList<Query>();
-
-        // my issues - only if username provided
-        if(KenaiUtil.isLoggedIn()) {
-            if(myIssues == null) {
-                StringBuffer url = new StringBuffer();
-                url.append(urlParam);
-
-                // XXX escape @?
-                // XXX what if user already mail address?
-                String user = getKenaiUser();
-                if(user == null) {
-                    user = "";                                                  // NOI18N
-                }
-                String userMail = user + "@"+ host;                             // NOI18N
-                url.append(MessageFormat.format(BugzillaConstants.MY_ISSUES_PARAMETERS_FORMAT, product, userMail));
-
-                myIssues =
-                    new KenaiQuery(
-                        NbBundle.getMessage(KenaiRepository.class, "LBL_MyIssues"), // NOI18N
-                        this,
-                        url.toString(),
-                        product,
-                        true,
-                        true);
-            }
-            queries.add(myIssues);
+        
+        Query mi = getMyIssuesQuery();
+        if(mi != null) {
+            queries.add(mi);
         }
+
         Query ai = getAllIssuesQuery();
         if(ai != null) {
             queries.add(ai);
@@ -151,7 +131,7 @@ public class KenaiRepository extends BugzillaRepository {
         return queries.toArray(new Query[queries.size()]);
     }
 
-    Query getAllIssuesQuery() throws MissingResourceException {
+    synchronized Query getAllIssuesQuery() throws MissingResourceException {
         if (allIssues == null) {
             StringBuffer url = new StringBuffer();
             url = new StringBuffer();
@@ -160,6 +140,32 @@ public class KenaiRepository extends BugzillaRepository {
             allIssues = new KenaiQuery(NbBundle.getMessage(KenaiRepository.class, "LBL_AllIssues"), this, url.toString(), product, true, true);
         }
         return allIssues;
+    }
+
+    synchronized Query getMyIssuesQuery() throws MissingResourceException {
+        if (myIssues == null) {
+            StringBuffer url = new StringBuffer();
+            url.append(urlParam);
+
+            // XXX escape @?
+            // XXX what if user already mail address?
+            String user = getKenaiUser();
+            if(user == null) {
+                user = "";                                                  // NOI18N
+            }
+            String userMail = user + "@"+ host;                             // NOI18N
+            url.append(MessageFormat.format(BugzillaConstants.MY_ISSUES_PARAMETERS_FORMAT, product, userMail));
+
+            myIssues =
+                new KenaiQuery(
+                    NbBundle.getMessage(KenaiRepository.class, "LBL_MyIssues"), // NOI18N
+                    this,
+                    url.toString(),
+                    product,
+                    true,
+                    true);
+        }
+        return myIssues;
     }
 
     @Override
@@ -239,4 +245,7 @@ public class KenaiRepository extends BugzillaRepository {
         return host;
     }
 
+    private static String getRepositoryId(String name, String url) {
+        return TextUtils.encodeURL(url) + ":" + name;                           // NOI18N
+    }
 }

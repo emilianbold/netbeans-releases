@@ -227,7 +227,7 @@ final class CoverageReportTopComponent extends TopComponent {
         );
         totalCoverageLayout.setVerticalGroup(
             totalCoverageLayout.createParallelGroup(GroupLayout.LEADING)
-            .add(0, 19, Short.MAX_VALUE)
+            .add(0, 18, Short.MAX_VALUE)
         );
         Mnemonics.setLocalizedText(allTestsButton, NbBundle.getMessage(CoverageReportTopComponent.class, "CoverageReportTopComponent.allTestsButton.text"));
         allTestsButton.addActionListener(new ActionListener() {
@@ -249,12 +249,12 @@ final class CoverageReportTopComponent extends TopComponent {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(jScrollPane1, GroupLayout.DEFAULT_SIZE, 522, Short.MAX_VALUE)
+                    .add(jScrollPane1, GroupLayout.DEFAULT_SIZE, 546, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(clearResultsButton)
                         .addPreferredGap(LayoutStyle.RELATED)
                         .add(allTestsButton)
-                        .addPreferredGap(LayoutStyle.RELATED, 186, Short.MAX_VALUE)
+                        .addPreferredGap(LayoutStyle.RELATED, 216, Short.MAX_VALUE)
                         .add(doneButton))
                     .add(layout.createSequentialGroup()
                         .add(jLabel1)

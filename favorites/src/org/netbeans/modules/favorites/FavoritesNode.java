@@ -42,12 +42,15 @@
 package org.netbeans.modules.favorites;
 
 import java.awt.Image;
+import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
+import java.awt.dnd.DnDConstants;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
@@ -65,6 +68,7 @@ import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataShadow;
+import org.openide.loaders.LoaderTransfer;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Index;
 import org.openide.nodes.Node;
@@ -91,8 +95,18 @@ public final class FavoritesNode extends FilterNode implements Index {
 
     @Override
     public PasteType getDropType(Transferable t, int action, int index) {
-        //Disable drop till it is not specified what we should do.
-        return null;
+        // #139713: drop into empty area creates new link, otherwise disabled
+        if (index != -1)
+            return null;
+        // any kind of drop just creates link in Favorites
+        DataObject[] dos = LoaderTransfer.getDataObjects(t, LoaderTransfer.DND_COPY_OR_MOVE | LoaderTransfer.CLIPBOARD_CUT);
+        if (dos == null)
+            return null;
+        for (DataObject dataObject : dos) {
+            if (! Actions.Add.isAllowed(dataObject))
+                return null;
+        }
+        return new FavoritesPasteType(dos);
     }
     
     @Override
@@ -583,5 +597,20 @@ public final class FavoritesNode extends FilterNode implements Index {
             return newArr.toArray (new Action[newArr.size()]);
         }
         
+    }
+
+    private static class FavoritesPasteType extends PasteType {
+        private final DataObject[] dos;
+
+        private FavoritesPasteType(DataObject[] dos) {
+            this.dos = dos;
+        }
+
+        @Override
+        public Transferable paste() throws IOException {
+            Actions.Add.addToFavorites(Arrays.asList(dos));
+            return null;
+        }
+
     }
 }

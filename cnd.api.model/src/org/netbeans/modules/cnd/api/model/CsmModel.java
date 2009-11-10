@@ -74,7 +74,13 @@ public interface CsmModel {
      * @param name name that would be added to the thread name
      */
     Cancellable enqueue(Runnable task, CharSequence name);
-    
+
+    /**
+     * Schedules complete projects reparse.
+     * Does not wait until it is completed.
+     */
+    void scheduleReparse(Collection<CsmProject> projects);
+
     /**
      * Find project that contains file.
      * Returns CsmFile if project is found.

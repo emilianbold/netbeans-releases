@@ -300,6 +300,7 @@ public class Reformatter implements ReformatTask {
             }
             start = controller.getSnapshot().getOriginalOffset(start);
             end = controller.getSnapshot().getOriginalOffset(end);
+            if (start == (-1) || end == (-1)) continue;
             start += shift;
             end += shift;
             doc.remove(start, end - start);
@@ -374,7 +375,6 @@ public class Reformatter implements ReformatTask {
         private int indent;
         private int col;
         private int endPos;
-        private int wrapDepth;
         private int lastBlankLines;
         private int lastBlankLinesTokenIndex;
         private Diff lastBlankLinesDiff;
@@ -403,7 +403,6 @@ public class Reformatter implements ReformatTask {
             this.indentSize = cs.getIndentSize();
             this.continuationIndentSize = cs.getContinuationIndentSize();
             this.expandTabToSpaces =  cs.expandTabToSpaces();
-            this.wrapDepth = 0;
             this.lastBlankLines = -1;
             this.lastBlankLinesTokenIndex = -1;
             this.lastBlankLinesDiff = null;
@@ -1318,7 +1317,7 @@ public class Reformatter implements ReformatTask {
                     int c = col;
                     Diff d = diffs.isEmpty() ? null : diffs.getFirst();
                     accept(IDENTIFIER, THIS, SUPER);
-                    if (wrapStyle != CodeStyle.WrapStyle.WRAP_NEVER && col > rightMargin && c > indent && (wrapDepth == 0 || c <= rightMargin)) {
+                    if (wrapStyle != CodeStyle.WrapStyle.WRAP_NEVER && col > rightMargin && c > indent) {
                         rollback(index, c, d);
                         newline();
                         accept(IDENTIFIER, THIS, SUPER);
@@ -2775,10 +2774,8 @@ public class Reformatter implements ReformatTask {
                     spaces(spacesCnt, true);
                     indent = old;
                     ret = col;
-                    wrapDepth++;
                     scan(tree, null);
-                    wrapDepth--;
-                    if (col > rightMargin && (wrapDepth == 0 || c <= rightMargin)) {
+                    if (col > rightMargin) {
                         rollback(index, c, d);
                         old = indent;
                         if (alignIndent >= 0)
@@ -2831,7 +2828,6 @@ public class Reformatter implements ReformatTask {
                     spaces(spacesCnt, true);
                     indent = old;
                     ret = col;
-                    wrapDepth++;
                     if (OPERATOR.equals(tokens.token().id().primaryCategory())) {
                         col += tokens.token().length();
                         lastBlankLines = -1;
@@ -2840,8 +2836,7 @@ public class Reformatter implements ReformatTask {
                     }
                     spaces(spacesCnt);
                     scan(tree, null);
-                    wrapDepth--;
-                    if (col > rightMargin && (wrapDepth == 0 || c <= rightMargin)) {
+                    if (col > rightMargin) {
                         rollback(index, c, d);
                         old = indent;
                         if (alignIndent >= 0)
@@ -2959,7 +2954,7 @@ public class Reformatter implements ReformatTask {
                     if (align)
                         alignIndent = col;
                     scan(impl, null);
-                    if (wrapStyle != CodeStyle.WrapStyle.WRAP_NEVER && col > rightMargin && c > indent && (wrapDepth == 0 || c <= rightMargin)) {
+                    if (wrapStyle != CodeStyle.WrapStyle.WRAP_NEVER && col > rightMargin && c > indent) {
                         rollback(index, c, d);
                         newline();
                         scan(impl, null);

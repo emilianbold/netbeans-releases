@@ -39,6 +39,7 @@
 package org.netbeans.modules.dlight.perfan.dataprovider;
 
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDumpProvider;
@@ -51,7 +52,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -62,22 +62,21 @@ import org.netbeans.module.dlight.threads.dataprovider.ThreadAnalyzerDataProvide
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.core.stack.dataprovider.FunctionCallTreeTableNode;
 import org.netbeans.modules.dlight.core.stack.dataprovider.StackDataProvider;
-import org.netbeans.modules.dlight.core.stack.api.Function;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
+import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilter;
 import org.netbeans.modules.dlight.management.remote.spi.PathMapper;
 import org.netbeans.modules.dlight.management.remote.spi.PathMapperProvider;
-import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilter;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.modules.dlight.perfan.dataprovider.SSMetrics.MemoryMetric;
 import org.netbeans.modules.dlight.perfan.dataprovider.SSMetrics.TimeMetric;
+import org.netbeans.modules.dlight.perfan.lineinfo.impl.SSSourceFileInfoSupport;
 import org.netbeans.modules.dlight.perfan.spi.datafilter.HotSpotFunctionsFilter;
 import org.netbeans.modules.dlight.perfan.stack.impl.FunctionCallImpl;
 import org.netbeans.modules.dlight.perfan.stack.impl.FunctionImpl;
 import org.netbeans.modules.dlight.perfan.storage.impl.Address;
 import org.netbeans.modules.dlight.perfan.storage.impl.ErprintCommand;
-import org.netbeans.modules.dlight.perfan.storage.impl.FunctionStatistic;
 import org.netbeans.modules.dlight.perfan.storage.impl.Metrics;
 import org.netbeans.modules.dlight.perfan.storage.impl.PerfanDataStorage;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider;
@@ -86,6 +85,7 @@ import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.Range;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.util.Lookup;
 
@@ -112,13 +112,11 @@ import org.openide.util.Lookup;
  */
 class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvider {
 
-    private static final Logger log = DLightLogger.getLogger(SSStackDataProvider.class);
-    private static Pattern fullInfoPattern = Pattern.compile("^(.*), line ([0-9]+) in \"(.*)\""); // NOI18N
-    private static Pattern noLineInfoPattern = Pattern.compile("^<Function: (.*), instructions from source file (.*)>"); // NOI18N
-    private static Pattern noDebugInfoPattern = Pattern.compile("^<Function: (.*), instructions without line numbers>"); // NOI18N
-    private final Computable<HotSpotFunctionsFetcherParams, List<FunctionCallWithMetric>> hotSpotFunctionsFetcher =
-            new TasksCachedProcessor<HotSpotFunctionsFetcherParams, List<FunctionCallWithMetric>>(new HotSpotFunctionsFetcher(), true);
-    private final List<FunctionMetric> metricsList = Arrays.asList(
+    private final static Logger log = DLightLogger.getLogger(SSStackDataProvider.class);
+    private final static Pattern fullInfoPattern = Pattern.compile("^(.*), line ([0-9]+) in \"(.*)\""); // NOI18N
+    private final static Pattern noLineInfoPattern = Pattern.compile("^<Function: (.*), instructions from source file (.*)>"); // NOI18N
+    private final static Pattern noDebugInfoPattern = Pattern.compile("^<Function: (.*), instructions without line numbers>"); // NOI18N
+    private final static List<FunctionMetric> metricsList = Arrays.asList(
             TimeMetric.UserFuncTimeExclusive,
             TimeMetric.UserFuncTimeInclusive,
             TimeMetric.SyncWaitCallInclusive,
@@ -127,14 +125,31 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
             TimeMetric.SyncWaitTimeExclusive,
             MemoryMetric.LeakBytesMetric,
             MemoryMetric.LeaksCountMetric);
+    private static boolean ompSupport = Boolean.valueOf(System.getProperty("dlight.sunstudio.omp")); // NOI18N
+    private final Computable<HotSpotFunctionsFetcherParams, List<FunctionCallWithMetric>> hotSpotFunctionsFetcher =
+            new TasksCachedProcessor<HotSpotFunctionsFetcherParams, List<FunctionCallWithMetric>>(new HotSpotFunctionsFetcher(), true);
+    private final HashMap<Long, SourceFileInfo> nonSSSourceInfoCache = new HashMap<Long, SourceFileInfo>();
     private PerfanDataStorage storage;
-    private ServiceInfoDataStorage serviceInfoStorage;
-    private final ConcurrentHashMap<FunctionCall, SourceFileInfo> sourceFileInfoCache = new ConcurrentHashMap<FunctionCall, SourceFileInfo>();
+    private SSSourceFileInfoSupport sourceFileInfoSupport = null;
+    private PathMapper pathMapper = null;
+    private Map<String, String> serviceInfo = null;
     private volatile HotSpotFunctionsFilter filter;
     private volatile TimeIntervalDataFilter timeIntervalDataFilter;
 
-    public void attachTo(ServiceInfoDataStorage serviceInfoStorage) {
-        this.serviceInfoStorage = serviceInfoStorage;
+    public void attachTo(final ServiceInfoDataStorage serviceInfoStorage) {
+        if (serviceInfoStorage == null) {
+            throw new NullPointerException();
+        }
+
+        String envID = serviceInfoStorage.getValue(ServiceInfoDataStorage.EXECUTION_ENV_KEY);
+        ExecutionEnvironment execEnv = envID == null
+                ? ExecutionEnvironmentFactory.getLocal()
+                : ExecutionEnvironmentFactory.fromUniqueID(envID);
+
+        PathMapperProvider pathMapperProvider = Lookup.getDefault().lookup(PathMapperProvider.class);
+        pathMapper = pathMapperProvider == null ? null : pathMapperProvider.getPathMapper(execEnv);
+        serviceInfo = Collections.unmodifiableMap(serviceInfoStorage.getInfo());
+        nonSSSourceInfoCache.clear();
     }
 
     public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
@@ -285,6 +300,8 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
     public void attachTo(DataStorage storage) {
         if (storage instanceof PerfanDataStorage) {
             this.storage = (PerfanDataStorage) storage;
+            this.sourceFileInfoSupport = SSSourceFileInfoSupport.getSourceFileInfoSupportFor(this.storage);
+            nonSSSourceInfoCache.clear();
         } else {
             String msg = "Attempt to attach SSStackDataProvider to storage " + // NOI18N
                     "'" + storage + "'"; // NOI18N
@@ -293,47 +310,52 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
         }
     }
 
-    public SourceFileInfo getSourceFileInfo(FunctionCall functionCall) {
-        //temporary decision
-        //we should get here SourceFileInfoProvider
-        if (functionCall instanceof FunctionCallImpl) {
-            if (sourceFileInfoCache.get(functionCall) != null){
-                return sourceFileInfoCache.get(functionCall);
+    public SourceFileInfo getSourceFileInfo(final FunctionCall functionCall) {
+        if (sourceFileInfoSupport == null) {
+            return null;
+        }
+
+        if (!(functionCall instanceof FunctionCallImpl)) {
+            return null;
+        }
+
+        FunctionCallImpl fci = (FunctionCallImpl) functionCall;
+
+        SourceFileInfo result = sourceFileInfoSupport.getSourceFileInfo(fci);
+
+        if (result != null && result.isSourceKnown()) {
+            if (pathMapper != null) {
+                result = new SourceFileInfo(pathMapper.getLocalPath(result.getFileName()),
+                        result.getLine(), result.getColumn());
+                return result;
             }
-            FunctionCallImpl functionCallImpl = (FunctionCallImpl) functionCall;
-            if (functionCallImpl.hasOffset()) {
-                if (!functionCallImpl.hasSourceFileDefined()) {
-                    FunctionStatistic fStatistic = storage.getFunctionStatistic(functionCall);
-                    if (fStatistic != null) {
-                        functionCallImpl.setSourceFile(fStatistic.getSourceFile());
-                    }
-                }
-                if (functionCallImpl.hasSourceFileDefined()) {
-                    PathMapperProvider provider = Lookup.getDefault().lookup(PathMapperProvider.class);
-                    if (provider != null) {
-                        PathMapper pathMapper = provider.getPathMapper(ExecutionEnvironmentFactory.fromUniqueID(serviceInfoStorage.getValue(ServiceInfoDataStorage.EXECUTION_ENV_KEY)));
-                        if (pathMapper != null) {
-                            return new SourceFileInfo(pathMapper.getLocalPath(functionCallImpl.getSourceFile()), (int) functionCallImpl.getOffset(), 0);
-                        }
-                    }
-                    SourceFileInfo result = new SourceFileInfo(functionCallImpl.getSourceFile(), (int) functionCallImpl.getOffset(), 0);
-                    sourceFileInfoCache.put(functionCall, result);
+        }
+
+        final Long refID = fci.getFunctionRefID();
+
+        synchronized (nonSSSourceInfoCache) {
+            if (nonSSSourceInfoCache.containsKey(refID)) {
+                return nonSSSourceInfoCache.get(refID);
+            }
+
+            Collection<? extends SourceFileInfoProvider> sourceInfoProviders =
+                    Lookup.getDefault().lookupAll(SourceFileInfoProvider.class);
+
+            for (SourceFileInfoProvider provider : sourceInfoProviders) {
+                result = provider.getSourceFileInfo(
+                        functionCall.getFunction().getQuilifiedName(),
+                        (int) functionCall.getOffset(), -1, serviceInfo);
+                if (result != null && result.isSourceKnown()) {
+                    log.finest("SourceLineInfo data from " + // NOI18N
+                            provider.getClass().getSimpleName() + ": " + // NOI18N
+                            result.toString());
+                    nonSSSourceInfoCache.put(refID, result);
                     return result;
                 }
             }
         }
-        Collection<? extends SourceFileInfoProvider> sourceInfoProviders =
-                Lookup.getDefault().lookupAll(SourceFileInfoProvider.class);
 
-        for (SourceFileInfoProvider provider : sourceInfoProviders) {
-            final SourceFileInfo sourceInfo = provider.fileName(functionCall.getFunction().getQuilifiedName(), (int) functionCall.getOffset(), -1, this.serviceInfoStorage.getInfo());
-            if (sourceInfo != null && sourceInfo.isSourceKnown()) {
-                sourceFileInfoCache.put(functionCall, sourceInfo);
-                return sourceInfo;
-            }
-        }
         return null;
-
     }
 
     private static class HotSpotFunctionsFetcherParams {
@@ -451,7 +473,9 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
         private final DecimalFormat df = new DecimalFormat();
 
         public HotSpotFunctionsFetcher() {
-            df.getDecimalFormatSymbols().setDecimalSeparator(',');
+            DecimalFormatSymbols symbols = df.getDecimalFormatSymbols();
+            symbols.setDecimalSeparator('.');
+            df.setDecimalFormatSymbols(symbols);
         }
 
         public List<FunctionCallWithMetric> compute(HotSpotFunctionsFetcherParams taskArguments) throws InterruptedException {
@@ -464,23 +488,13 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
             String[] er_result = null;
 
             try {
-                if (SSStackDataProvider.this.timeIntervalDataFilter != null) {
-                }
                 er_result = storage.getTopFunctions(taskArguments.command, metrics, taskArguments.limit);
             } catch (InterruptedException ex) {
                 log.finest("Fetching Interrupted! Hot Spot Functions @ " + Thread.currentThread()); // NOI18N
                 return null;
             }
 
-            if (er_result == null) {
-                return null;
-            }
-
-            if (er_result.length == 0) {
-                return Collections.emptyList();
-            }
-
-            int limit = Math.min(er_result.length, taskArguments.limit);
+            int limit = er_result == null || er_result.length == 0 ? 0 : Math.min(er_result.length, taskArguments.limit);
             ArrayList<FunctionCallWithMetric> result = new ArrayList<FunctionCallWithMetric>(limit);
 
             Column primarySortColumn = taskArguments.orderBy.get(0);
@@ -527,7 +541,7 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
                 }
 
                 Address address = Address.parse(info[taskArguments.addressIdx] + info[taskArguments.addressIdx + 1]);
-                Function f = new FunctionImpl(name, address == null ? name.hashCode() : address.hashCode());
+                FunctionImpl f = new FunctionImpl(name, address == null ? name.hashCode() : address.getAddress());
 
                 Map<FunctionMetric, Object> metricsValues =
                         new HashMap<FunctionMetric, Object>();
@@ -586,12 +600,161 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
                 if (!skipFunction) {
                     FunctionCallImpl fc = new FunctionCallImpl(f, lineNumber, metricsValues);
                     if (fileName != null) {
-                        fc.setFileName(fileName);
+                        fc.setSourceFile(fileName);
                     }
                     result.add(fc);
                 }
             }
 
+
+
+            Column ompPrimarySortColumn = null;
+            List<Column> ompColumns = null;
+            int omp_limit = Integer.MAX_VALUE;
+            if (ompSupport && storage.hasOMPCollected()) {
+                //add additional results
+                if (metrics.getMspec().indexOf(SunStudioDCConfiguration.c_eSync.getColumnName()) != -1 && metrics.getMsort().indexOf(SunStudioDCConfiguration.c_eSync.getColumnName()) != -1) {
+                    //add i.ompwait
+                    ompPrimarySortColumn = SunStudioDCConfiguration.c_iOMPWait;
+                    ompColumns = Arrays.asList(SunStudioDCConfiguration.c_iOMPWait, SunStudioDCConfiguration.c_name);
+                }
+                if (metrics.getMspec().indexOf(SunStudioDCConfiguration.c_eUser.getColumnName()) != -1 && metrics.getMsort().indexOf(SunStudioDCConfiguration.c_eUser.getColumnName()) != -1) {
+                    //add i.ompwait
+                    ompPrimarySortColumn = SunStudioDCConfiguration.c_iOMPWork;
+                    ompColumns = Arrays.asList(SunStudioDCConfiguration.c_iOMPWork, SunStudioDCConfiguration.c_name);
+                }
+
+                String[] omp_er_result = null;
+                HotSpotFunctionsFetcherParams ompTaskArguments = null;
+                try {
+                    if (ompColumns != null) {
+                        ompTaskArguments =
+                                new HotSpotFunctionsFetcherParams(taskArguments.command, ompColumns, Arrays.asList(ompPrimarySortColumn), omp_limit, filter);
+                        //add additional results
+                        omp_er_result =
+                                storage.getTopFunctions(ompTaskArguments.command,
+                                ompTaskArguments.metrics,
+                                omp_limit);
+
+                    }
+
+                } catch (InterruptedException ex) {
+                    log.finest("Fetching Interrupted! Hot Spot Functions @ " + Thread.currentThread()); // NOI18N
+                }
+
+                omp_limit = omp_er_result == null || omp_er_result.length == 0 ? 0 : omp_er_result.length;
+                for (int i = 0; i < omp_limit; i++) {
+                    int lineNumber = -1;
+                    String fileName = null;
+
+                    // name is ALWAYS the last column (see HotSpotFunctionsFetcherParams)
+                    // Splitting output string on nameIdx pieces
+
+                    String[] info = omp_er_result[i].split("[ \t]+", ompTaskArguments.nameIdx + 1); // NOI18N
+                    String name = info[ompTaskArguments.nameIdx];
+
+                    if (!taskArguments.isDefaultCommand()) {
+                        //parse
+                        if (ErprintCommand.lines().equals(ompTaskArguments.command)) { // NOI18N
+                            //if name.startsWith< will skip
+                            Matcher match;
+
+                            match = fullInfoPattern.matcher(name);
+                            if (match.matches()) {
+                                name = match.group(1);
+                                lineNumber = Integer.valueOf(match.group(2));
+                                fileName = match.group(3);
+                            } else {
+                                if (filter != null && filter.getType() == HotSpotFunctionsFilter.CollectedDataType.WITHSOURCECODEONLY) {
+                                    continue;
+                                }
+                                match = noLineInfoPattern.matcher(name);
+                                if (match.matches()) {
+                                    name = match.group(1);
+                                    fileName = match.group(2);
+                                } else {
+                                    match = noDebugInfoPattern.matcher(name);
+                                    if (match.matches()) {
+                                        name = match.group(1);
+                                    } else {
+                                        continue;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    Address address = Address.parse(info[ompTaskArguments.addressIdx] + info[ompTaskArguments.addressIdx + 1]);
+                    FunctionImpl f = new FunctionImpl(name, address == null ? name.hashCode() : address.getAddress());
+
+                    Map<FunctionMetric, Object> metricsValues =
+                            new HashMap<FunctionMetric, Object>();
+
+                    // Will skip function if value of primary sorting metric == 0
+                    boolean skipFunction = false;
+
+                    // Returned result is not, actually what was requested..
+                    // need to return what was requested.
+
+                    for (int midx = 0; midx < ompTaskArguments.requestColumns.size(); midx++) {
+                        Column col = ompTaskArguments.requestColumns.get(midx);
+                        if (col.equals(SunStudioDCConfiguration.c_name)) {
+                            continue;
+                        }
+
+                        String colName = col.getColumnName();
+                        Class<?> colClass = col.getColumnClass();
+                        FunctionMetric metric = getMetricInstance(colName);
+                        if (SunStudioDCConfiguration.c_iOMPWait.getColumnName().equals(colName)) {
+                            metric = getMetricInstance(SunStudioDCConfiguration.c_eSync.getColumnName());
+                        } else if (SunStudioDCConfiguration.c_iOMPWork.getColumnName().equals(colName)) {
+                            metric = getMetricInstance(SunStudioDCConfiguration.c_eUser.getColumnName());
+                        }
+
+                        boolean isPrimaryColumn = col.equals(ompPrimarySortColumn);
+
+                        String val = info[ompTaskArguments.columnsIdxRef[midx]];
+                        Object metricValue = val;
+
+                        try {
+                            Number nvalue = df.parse(val);
+                            if (Integer.class == colClass) {
+                                if (isPrimaryColumn && nvalue.intValue() == 0) {
+                                    skipFunction = true;
+                                }
+                                metricValue = Integer.valueOf(nvalue.intValue());
+                            } else if (Double.class == colClass) {
+                                if (isPrimaryColumn && nvalue.doubleValue() == 0) {
+                                    skipFunction = true;
+                                }
+                                metricValue = Double.valueOf(nvalue.doubleValue());
+                            } else if (Float.class == colClass) {
+                                if (isPrimaryColumn && nvalue.floatValue() == 0) {
+                                    skipFunction = true;
+                                }
+                                metricValue = Float.valueOf(nvalue.floatValue());
+                            } else if (Long.class == colClass) {
+                                if (isPrimaryColumn && nvalue.longValue() == 0) {
+                                    skipFunction = true;
+                                }
+                                metricValue = Long.valueOf(nvalue.longValue());
+                            }
+
+                        } catch (ParseException ex) {
+                            // use plain info[midx]
+                        }
+                        metricsValues.put(metric, metricValue);
+                    }
+
+                    if (!skipFunction) {
+                        FunctionCallImpl fc = new FunctionCallImpl(f, lineNumber, metricsValues);
+                        if (fileName != null) {
+                            fc.setSourceFile(fileName);
+                        }
+                        result.add(fc);
+                    }
+                }
+            }
             log.fine("Done with Hot Spot Functions fetching"); // NOI18N
 
             return result;

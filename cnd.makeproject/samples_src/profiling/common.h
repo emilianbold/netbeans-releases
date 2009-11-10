@@ -35,6 +35,7 @@ extern "C" {
 #endif
 
 #include <stdio.h>
+#include <sys/time.h>
 
 // Tracing
 typedef enum {
@@ -49,7 +50,7 @@ extern int msg_levels;
 #define REF(fmt, ...) if (msg_levels & msg_ref) { printf(fmt, ##__VA_ARGS__); }
 #define TRACE(fmt, ...) if (msg_levels & msg_trace) { printf(fmt, ##__VA_ARGS__); }
 #define EXPLAIN(fmt, ...) if (msg_levels & msg_explain) { printf(fmt, ##__VA_ARGS__); }
-#define PAUSE(fmt, ...) if (msg_levels & msg_explain) { printf(fmt, ##__VA_ARGS__); getchar(); }
+#define PAUSE(fmt, ...) if (msg_levels & msg_explain) { print_run_time(); printf(fmt, ##__VA_ARGS__); getchar(); }
 #define ERROR(fmt, ...) fprintf(stderr, fmt, ##__VA_ARGS__);
 
 // CPU usage types
@@ -87,6 +88,8 @@ int syscpu_usage(int threads, work_t* works);
 int cpucount();
 void mem2str(char* buf, long bytes);
 
+extern struct timeval start_time;
+void print_run_time();
 
 // Check available pthread features
 #include <pthread.h>

@@ -314,29 +314,24 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
     }
 
-    /**
-     * HACK: set the folder node visible in the project explorer
-     * See IZ7551
-     */
-    public static void setVisible(Project project, Item item) {
-        setVisible(project, new Item[]{item});
-    }
+    public static void setVisible(final Project project, final Item[] items) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                Node rootNode = ProjectTabBridge.getInstance().getExplorerManager().getRootContext();
+                List<Node> nodes = new ArrayList<Node>();
+                for (int i = 0; i < items.length; i++) {
+                    Node root = findProjectNode(rootNode, project);
 
-    public static void setVisible(Project project, Item[] items) {
-        Node rootNode = ProjectTabBridge.getInstance().getExplorerManager().getRootContext();
-        List<Node> nodes = new ArrayList<Node>();
-        for (int i = 0; i < items.length; i++) {
-            Node root = findProjectNode(rootNode, project);
-
-            if (root != null) {
-                nodes.add(findItemNode(root, items[i]));
-            }
-        }
-        try {
-            ProjectTabBridge.getInstance().getExplorerManager().setSelectedNodes(nodes.toArray(new Node[0]));
-        } catch (Exception e) {
-            // skip
-        }
+                    if (root != null) {
+                        nodes.add(findItemNode(root, items[i]));
+                    }
+                }
+                try {
+                    ProjectTabBridge.getInstance().getExplorerManager().setSelectedNodes(nodes.toArray(new Node[0]));
+                } catch (Exception e) {
+                    // skip
+                }
+            }});
     }
 
     public static void checkForChangedName(final Project project) {
@@ -1476,17 +1471,35 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
 
         public void stateChanged(ChangeEvent e) {
+            Runnable todo = null;
             if (e.getSource() instanceof Item) {
                 // update single item (it may be broken)
                 Item[] items = getFolder().getItemsAsArray();
-                for (int i = 0; i < items.length; i++) {
-                    if (e.getSource() == items[i]) {
-                        refreshItem(items[i]);
+                for (final Item item : items) {
+                    if (e.getSource() == item) {
+                        // refreshItem() acquires Children.MUTEX; make sure
+                        // it's not under ProjectManager.mutex() (IZ#175996)
+                        todo = new Runnable() {
+                            public void run() {
+                                refreshItem(item);
+                            }
+                        };
+                        break;
                     }
                 }
             } else {
                 // update folder. Items may have been added or deleted
-                setKeys(getKeys());
+                final Collection<Object> keys = getKeys();
+                // setKeys() acquires Children.MUTEX; make sure
+                // it's not under ProjectManager.mutex() (IZ#175996)
+                todo = new Runnable() {
+                    public void run() {
+                        setKeys(keys);
+                    }
+                };
+            }
+            if (todo != null) {
+                EventQueue.invokeLater(todo);
             }
         }
 

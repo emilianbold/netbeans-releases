@@ -161,10 +161,10 @@ public class MyProjectNode extends LeafNode {
                 MessagingHandle messaging = maccessor.getMessaging(project);
                 int count = messaging.getMessageCount();
 
-                leftPar = new TreeLabel("(");
-                rightPar = new TreeLabel(")");
+                leftPar = new TreeLabel("("); // NOI18N
+                rightPar = new TreeLabel(")"); // NOI18N
                 component.add(leftPar, new GridBagConstraints(1, 0, 1, 1, 0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-                btnMessages = new LinkButton(count + "", ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/collab/resources/newmessage.png", true), maccessor.getOpenMessagesAction(project));
+                btnMessages = new LinkButton(count + "", ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/collab/resources/newmessage.png", true), maccessor.getOpenMessagesAction(project)); // NOI18N
                 btnMessages.setHorizontalTextPosition(JLabel.LEFT);
                 component.add(btnMessages, new GridBagConstraints(2, 0, 1, 1, 0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
                 component.add(rightPar, new GridBagConstraints(4, 0, 1, 1, 0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
@@ -200,7 +200,7 @@ public class MyProjectNode extends LeafNode {
                 btnOpen.setText(null);
                 btnOpen.setToolTipText(NbBundle.getMessage(MyProjectNode.class, "LBL_Open"));
                 btnOpen.setRolloverEnabled(true);
-                btnOpen.setRolloverIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/open_over.png", true));
+                btnOpen.setRolloverIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/open_over.png", true)); // NOI18N
                 component.add( btnOpen, new GridBagConstraints(7,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
             }
             lbl.setForeground(foreground);
@@ -217,7 +217,7 @@ public class MyProjectNode extends LeafNode {
         Runnable run = new Runnable() {
 
             public void run() {
-                if (btnBugs == null || "0".equals(btnBugs.getText())) {
+                if (btnBugs == null || "0".equals(btnBugs.getText())) { // NOI18N
                     if (leftPar != null) {
                         leftPar.setVisible(b);
                     }
@@ -288,13 +288,14 @@ public class MyProjectNode extends LeafNode {
                     component.remove(btnBugs);
                 }
                 boolean hasMsgs = btnMessages != null && btnMessages.isVisible();
-                btnBugs = new LinkButton(bug.getText(), ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/bug.png", true), qaccessor.getOpenQueryResultAction(bug));
+                btnBugs = new LinkButton(bug.getText(), ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/bug.png", true), qaccessor.getOpenQueryResultAction(bug)); // NOI18N
                 btnBugs.setHorizontalTextPosition(JLabel.LEFT);
+                btnBugs.setToolTipText(bug.getToolTipText());
                 component.add( btnBugs, new GridBagConstraints(3,0,1,1,0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
-                boolean visible = hasMsgs || !"0".equals(bug.getText());
+                boolean visible = hasMsgs || !"0".equals(bug.getText()); // NOI18N
                 leftPar.setVisible(visible);
                 rightPar.setVisible(visible);
-                btnBugs.setVisible(!"0".equals(bug.getText()));
+                btnBugs.setVisible(!"0".equals(bug.getText())); // NOI18N
                 component.validate();
                 DashboardImpl instance = DashboardImpl.getInstance();
                 instance.myProjectsProgressFinished();

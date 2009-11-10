@@ -58,7 +58,6 @@ import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.modules.tomcat5.TomcatManager;
 import org.netbeans.modules.tomcat5.util.LogSupport.LineInfo;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
@@ -168,7 +167,8 @@ public class LogViewer extends Thread {
             notify();
         }        
     }
-    
+
+    @Override
     public boolean equals(Object obj) {
         if (this == obj) {
             return true;
@@ -251,7 +251,8 @@ public class LogViewer extends Thread {
             writer.println(line);
         }
     }
-    
+
+    @Override
     public void run() {
         if (displayName == null) {
             // cut off trailing dot
@@ -284,6 +285,15 @@ public class LogViewer extends Thread {
             }
             try {
                 while (!stop && !inOut.isClosed()) {
+                    Process process = tomcatManager.getTomcatProcess();
+                    try {
+                        process.exitValue();
+                        // finished
+                        break;
+                    } catch (IllegalThreadStateException ex) {
+                        //ok running
+                    }
+
                     // check whether a log file has rotated
                     timestamp = getTimestamp();
                     if (!timestamp.equals(oldTimestamp)) {
@@ -331,6 +341,7 @@ public class LogViewer extends Thread {
             Exceptions.printStackTrace(ex);
         } finally {
             writer.close();
+            errorWriter.close();
         }
         fireLogViewerStopListener();
         logSupport.detachAnnotation();

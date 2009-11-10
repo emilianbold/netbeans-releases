@@ -145,13 +145,19 @@ public class MessageAuthentication extends ProfileBaseForm {
 
         WSDLComponent secConvT = SecurityTokensModelHelper.getTokenElement(endToken, SecureConversationToken.class);
 
+        ConfigVersion configVersion = PolicyModelHelper.getConfigVersion(comp);
+        SecurityPolicyModelHelper spmh = SecurityPolicyModelHelper.getInstance(configVersion);
+
         if (source.equals(secConvChBox)) {
             ((SecureConversationFeature)secProfile).enableSecureConversation(comp, secConvChBox.isSelected());
+            if (secConvChBox.isSelected()) {
+                endToken = SecurityTokensModelHelper.getSupportingToken(comp, SecurityTokensModelHelper.ENDORSING);
+                secConvT = SecurityTokensModelHelper.getTokenElement(endToken, SecureConversationToken.class);
+                spmh.enableRequireDerivedKeys(secConvT, true);
+            }
             sync();
         }
         
-        ConfigVersion configVersion = PolicyModelHelper.getConfigVersion(comp);
-        SecurityPolicyModelHelper spmh = SecurityPolicyModelHelper.getInstance(configVersion);
         SecurityTokensModelHelper stmh = SecurityTokensModelHelper.getInstance(configVersion);
         AlgoSuiteModelHelper apmh = AlgoSuiteModelHelper.getInstance(configVersion);
 

@@ -41,10 +41,11 @@
 
 package org.netbeans.modules.settings.convertors;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
-import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
@@ -68,12 +69,14 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=Processor.class)
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
-@SupportedAnnotationTypes({
-    "org.netbeans.api.settings.ConvertAsProperties", //NOI18N
-    "org.netbeans.api.settings.ConvertAsJavaBean" //NOI18N
-})
 public class ConvertorProcessor extends LayerGeneratingProcessor {
 
+    public @Override Set<String> getSupportedAnnotationTypes() {
+        return new HashSet<String>(Arrays.asList(
+            ConvertAsProperties.class.getCanonicalName(),
+            ConvertAsJavaBean.class.getCanonicalName()
+        ));
+    }
 
     @Override
     protected boolean handleProcess(

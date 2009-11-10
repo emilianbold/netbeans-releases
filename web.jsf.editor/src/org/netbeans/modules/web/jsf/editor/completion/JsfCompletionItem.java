@@ -82,7 +82,7 @@ public class JsfCompletionItem {
 
         @Override
         protected String getRightHtmlText() {
-            return "<font color=#" + (autoimport ? hexColorCode(Color.RED.darker().darker()) : hexColorCode(Color.GRAY)) + ">" + component.getLibrary().getDisplayName() + "</font>"; //NOI18N
+            return component.getLibrary().getDisplayName();
         }
 
         @Override

@@ -629,9 +629,12 @@ public final class Utils {
 
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
                 boolean cellHasFocus) {
-            assert value instanceof Charset;
             setName("ComboBox.listRenderer"); // NOI18N
-            setText(((Charset) value).displayName());
+            // #175238
+            if (value != null) {
+                assert value instanceof Charset;
+                setText(((Charset) value).displayName());
+            }
             setIcon(null);
             if (isSelected) {
                 setBackground(list.getSelectionBackground());

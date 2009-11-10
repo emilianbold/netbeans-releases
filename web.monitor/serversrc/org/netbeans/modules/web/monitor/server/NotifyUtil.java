@@ -47,16 +47,12 @@ import java.io.InputStreamReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-import java.net.InetAddress;
 import java.net.MalformedURLException;
-import java.net.Socket; // Only needed for discovery
-import java.net.UnknownHostException;
 import java.net.URL;
 import java.net.URLConnection;
 
 import java.util.Enumeration;
 import java.util.ResourceBundle;
-import java.util.StringTokenizer;
 import java.util.Vector;
 
 import org.netbeans.modules.web.monitor.data.*;
@@ -75,7 +71,8 @@ import org.netbeans.modules.web.monitor.data.*;
 class NotifyUtil  {
 
     private String ideServer = null; 
-    private Vector otherIDEs = null; 
+    private Vector otherIDEs = null;
+    boolean errorPrinted = false;
     private final static String putServlet =
 	    "/servlet/org.netbeans.modules.web.monitor.client.PutTransaction?"; //NOI18N  
 
@@ -266,8 +263,11 @@ class NotifyUtil  {
                 try {
                     out = new PrintWriter(conn.getOutputStream());
                 } catch (IOException e) {
-                    String msg = ResourceBundle.getBundle("org.netbeans.modules.web.monitor.server.Bundle").getString("MON_Warning_httpserver_problem"); // NOI18N
-                    System.out.println(msg);
+                    if (!NotifyUtil.this.errorPrinted) {
+                        String msg = ResourceBundle.getBundle("org.netbeans.modules.web.monitor.server.Bundle").getString("MON_Warning_httpserver_problem"); // NOI18N
+                        System.out.println(msg);
+                        NotifyUtil.this.errorPrinted = true;
+                    }
                     return;
                 }
 		if(debug) log("\tGot output stream");  //NOI18N
@@ -283,8 +283,11 @@ class NotifyUtil  {
                 try {
                     in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
                 } catch (IOException e) {
-                    String msg = ResourceBundle.getBundle("org.netbeans.modules.web.monitor.server.Bundle").getString("MON_Warning_disabled_monitor"); // NOI18N
-                    System.out.println(msg);
+                    if (!NotifyUtil.this.errorPrinted) {
+                        String msg = ResourceBundle.getBundle("org.netbeans.modules.web.monitor.server.Bundle").getString("MON_Warning_disabled_monitor"); // NOI18N
+                        System.out.println(msg);
+                        NotifyUtil.this.errorPrinted = true;
+                    }
                     return;
                 }
 

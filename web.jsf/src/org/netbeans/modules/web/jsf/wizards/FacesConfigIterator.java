@@ -52,6 +52,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
@@ -103,35 +104,35 @@ public class FacesConfigIterator implements TemplateWizard.Iterator {
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
         if (wm != null) {
             FileObject dir = wm.getDocumentBase();
-            if (addJSFFrameworkIfNecessary && !JSFConfigUtilities.hasJsfFramework(dir)) {
-                JSFConfigUtilities.extendJsfFramework(dir, false);
-            }
-            FileObject dd = wm.getDeploymentDescriptor();
-            assert dd != null;
-            WebApp ddRoot = DDProvider.getDefault().getDDRoot(dd);
 
             ClassPath classpath = ClassPath.getClassPath(wm.getDocumentBase(), ClassPath.COMPILE);
             boolean isJSF20 = classpath.findResource(JSFUtils.JSF_2_0__API_SPECIFIC_CLASS.replace('.', '/') + ".class") != null; //NOI18N
             String template_file = "faces-config_2_0.xml"; //NOI18N
-            if (ddRoot != null) {
-                Profile profile = wm.getJ2eeProfile();
-                if (profile.equals(Profile.JAVA_EE_5) || profile.equals(Profile.JAVA_EE_6_FULL) || profile.equals(Profile.JAVA_EE_6_WEB)) {
-                    if (isJSF20) {
-                        template_file = "faces-config_2_0.xml"; //NOI18N
-                    } else {
-                        template_file = "faces-config_1_2.xml"; //NOI18N
-                    }
+            Profile profile = wm.getJ2eeProfile();
+            if (profile.equals(Profile.JAVA_EE_5) || profile.equals(Profile.JAVA_EE_6_FULL) || profile.equals(Profile.JAVA_EE_6_WEB)) {
+                if (isJSF20) {
+                    template_file = "faces-config_2_0.xml"; //NOI18N
                 } else {
-                    template_file = "faces-config.xml"; //NOI18N
+                    template_file = "faces-config_1_2.xml"; //NOI18N
                 }
+            } else {
+                template_file = "faces-config.xml"; //NOI18N
             }
+
             String content = JSFFrameworkProvider.readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + template_file), "UTF-8"); //NOI18N
             result = FileUtil.createData(targetDir, targetName + ".xml"); //NOI18N
             JSFFrameworkProvider.createFile(result, content, "UTF-8"); //NOI18N
 
+            if (addJSFFrameworkIfNecessary && !JSFConfigUtilities.hasJsfFramework(dir)) {
+                JSFConfigUtilities.extendJsfFramework(dir, false);
+            }
+            FileObject dd = wm.getDeploymentDescriptor();
+//            assert dd != null;
             FileObject webInf = wm.getWebInf();
+            WebApp ddRoot = (dd == null) ? null : DDProvider.getDefault().getDDRoot(dd);
+
             boolean isDefaultLocation = defaultName.equals(targetName) && targetDir == webInf;
-            if (!isDefaultLocation) {
+            if (!isDefaultLocation && ddRoot != null) {
                 try {
                     //Need to specify config file in javax.faces.FACES_CONFIG property
                     //First search existing param
@@ -208,6 +209,13 @@ public class FacesConfigIterator implements TemplateWizard.Iterator {
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
         if (wm != null) {
             FileObject webInf = wm.getWebInf();
+            if (webInf == null) {
+                try {
+                    webInf = FileUtil.createFolder(wm.getDocumentBase(), "WEB-INF"); //NOI18N
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
             FileObject targetFolder = Templates.getTargetFolder(wizard);
             String relativePath = (targetFolder == null) ? null : FileUtil.getRelativePath(webInf, targetFolder);
             if (relativePath == null) {

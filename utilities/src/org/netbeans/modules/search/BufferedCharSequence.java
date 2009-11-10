@@ -110,7 +110,7 @@ public class BufferedCharSequence implements CharSequence {
     /**
      * Definitions of the Unicode Line Terminators.
      */
-    private interface UnicodeLineTerminator {
+    interface UnicodeLineTerminator {
         /** Unicode line feed (0x000A) */
         char LF = '\n'; //NOI18N
         /** Unicode carriage return (0x000D) */

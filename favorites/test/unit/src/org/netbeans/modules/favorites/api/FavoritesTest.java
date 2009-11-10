@@ -230,8 +230,8 @@ public class FavoritesTest extends NbTestCase {
                 ExplorerManager man = ((ExplorerManager.Provider) RootsTest.getBareFavoritesTabInstance()).getExplorerManager();
                 assertNotNull(man);
                 Node[] nodes = man.getSelectedNodes();
-                assertTrue(nodes.length == 1);
-                assertEquals(nodes[0].getName(), TEST_TXT);
+                assertEquals(Arrays.toString(nodes), 1, nodes.length);
+                assertEquals(TEST_TXT, nodes[0].getName());
             }
 
         });

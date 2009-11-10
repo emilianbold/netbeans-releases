@@ -40,10 +40,12 @@ package org.netbeans.modules.css.gsf;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.Position;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
@@ -55,11 +57,9 @@ import org.netbeans.modules.css.gsf.api.CssParserResult;
 import org.netbeans.modules.css.parser.SimpleNode;
 import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.css.editor.LexerUtils;
-import org.netbeans.modules.css.formatting.api.LexUtilities;
 import org.netbeans.modules.css.lexer.api.CssTokenId;
 import org.netbeans.modules.css.parser.SimpleNodeUtil;
 import org.netbeans.modules.parsing.api.Snapshot;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -189,27 +189,19 @@ public class CssBracketCompleter implements KeystrokeHandler {
         if ('}' != ch) {
             return false;
         }
-        final int lineStart = Utilities.getRowFirstNonWhite((BaseDocument)doc, caretOffset);
+        final int lineStart = Utilities.getRowFirstNonWhite((BaseDocument) doc, caretOffset);
         if (lineStart != caretOffset) {
             return false;
         }
-        final Indent indent = Indent.get(doc);
-        ((BaseDocument)doc).runAtomic(new Runnable() {
-            public void run() {
-                try {
-                    indent.reindent(lineStart, caretOffset);
-                } catch (BadLocationException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-        });
+
+        reindentLater((BaseDocument) doc, caretOffset);
 
         return false;
     }
 
     @Override
     public boolean charBackspaced(Document doc, int dot, JTextComponent target, char ch) throws BadLocationException {
-        if(justAddedPairOffset - 1 == dot) {
+        if (justAddedPairOffset - 1 == dot) {
             //removed the paired char, remove the pair as well
             doc.remove(dot, 1);
         }
@@ -221,7 +213,6 @@ public class CssBracketCompleter implements KeystrokeHandler {
 
     }
 
-    //this method is called within Indent.get(doc).lock() and unlock() section, no need for additional locking
     @Override
     public int beforeBreak(final Document doc, final int dot, final JTextComponent jtc) throws BadLocationException {
         if (dot == 0 || dot == doc.getLength()) { //check corners
@@ -230,25 +221,14 @@ public class CssBracketCompleter implements KeystrokeHandler {
         String context = doc.getText(dot - 1, 2); //get char before and after
 
         if ("{}".equals(context)) { //NOI18N
-            final Indent indent = Indent.get(doc);
             BaseDocument bdoc = (BaseDocument) doc;
 
-            bdoc.runAtomic(new Runnable() {
-
-                public void run() {
-                    try {
-                        //smart indent
-                        doc.insertString(dot, "\n", null); //NOI18N
-                        //move caret
-                        jtc.getCaret().setDot(dot);
-                        //and indent the line
-                        indent.reindent(dot - 1, dot + 2);
-                    } catch (BadLocationException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-            });
-
+            //smart indent
+            doc.insertString(dot, "\n", null); //NOI18N
+            //move caret
+            jtc.getCaret().setDot(dot);
+            //and indent the line
+            reindentLater(bdoc, dot);
 
         }
 
@@ -278,7 +258,7 @@ public class CssBracketCompleter implements KeystrokeHandler {
                     int from = snapshot.getOriginalOffset(node.startOffset());
                     int to = snapshot.getOriginalOffset(node.endOffset());
 
-                    if(from == -1 || to == -1) {
+                    if (from == -1 || to == -1) {
                         continue;
                     }
 
@@ -291,12 +271,6 @@ public class CssBracketCompleter implements KeystrokeHandler {
             }
         }
 
-//        //the bottom most element represents the whole parse tree, replace it by the document
-//        //range since they doesn't need to be the same
-//        if (!ranges.isEmpty()) {
-//            ranges.set(ranges.size() - 1, new OffsetRange(0,
-//                    info.getSnapshot().getSource().getDocument(true).getLength()));
-//        }
 
         return ranges;
     }
@@ -304,5 +278,35 @@ public class CssBracketCompleter implements KeystrokeHandler {
     @Override
     public int getNextWordOffset(Document doc, int caretOffset, boolean reverse) {
         return -1;
+    }
+
+    //since the code runs under document atomic lock, we cannot lock the
+    //indentation infrastructure directly. Instead of that create a new
+    //AWT task and post it for later execution.
+    private void reindentLater(final BaseDocument doc, int dotPos) throws BadLocationException {
+        final Position from = doc.createPosition(Utilities.getRowStart(doc, dotPos));
+        final Position to = doc.createPosition(Utilities.getRowEnd(doc, dotPos));
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                final Indent indent = Indent.get(doc);
+                indent.lock();
+                try {
+                    doc.runAtomic(new Runnable() {
+
+                        public void run() {
+                            try {
+                                indent.reindent(from.getOffset(), to.getOffset());
+                                System.out.println("formatted");
+                            } catch (BadLocationException ex) {
+                                //ignore
+                            }
+                        }
+                    });
+                } finally {
+                    indent.unlock();
+                }
+            }
+        });
     }
 }

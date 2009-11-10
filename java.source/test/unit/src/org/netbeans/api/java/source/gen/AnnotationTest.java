@@ -57,7 +57,7 @@ import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.junit.NbTestSuite;
 
-/**
+/** Also run SuppressWarningsFixerTest in java.hints
  *
  * @author Pavel Flaska
  */
@@ -78,6 +78,7 @@ public class AnnotationTest extends GeneratorTest {
 //        suite.addTest(new ConstructorRenameTest("testRemoveDefaultValue"));
 //        suite.addTest(new AnnotationTest("testAddArrayInitializer1"));
 //        suite.addTest(new AnnotationTest("testAddArrayInitializer2"));
+//        suite.addTest(new AnnotationTest("testRenameAttributeFromDefault174552b"));
         return suite;
     }
     
@@ -498,6 +499,144 @@ public class AnnotationTest extends GeneratorTest {
                                                 make.Literal(""));
                 workingCopy.rewrite(ct, make.addClassMember(ct, method));
             }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void testRenameAttributeFromDefault174552a() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "@A(\"test\")\n" +
+            "public class Test {\n" +
+            "}\n" +
+            "@interface A {\n" +
+            "    public String value();\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "@A(test = \"test\")\n" +
+            "public class Test {\n" +
+            "}\n" +
+            "@interface A {\n" +
+            "    public String value();\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree ct = (ClassTree) cut.getTypeDecls().get(0);
+
+                ExpressionTree attr = workingCopy.getTreeUtilities().parseExpression("test=\"test\"", new SourcePositions[1]);
+
+                AnnotationTree at = ct.getModifiers().getAnnotations().get(0);
+                AnnotationTree nue = make.addAnnotationAttrValue(make.removeAnnotationAttrValue(at, 0), attr);
+
+                workingCopy.rewrite(at, nue);
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void testRenameAttributeFromDefault174552b() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "@AA(\"test\")\n" +
+            "public class Test {\n" +
+            "}\n" +
+            "@interface AA {\n" +
+            "    public String[] value();\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "@AA({\"test\", \"test2\"})\n" +
+            "public class Test {\n" +
+            "}\n" +
+            "@interface AA {\n" +
+            "    public String[] value();\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree ct = (ClassTree) cut.getTypeDecls().get(0);
+
+                AnnotationTree at = ct.getModifiers().getAnnotations().get(0);
+                AssignmentTree val = (AssignmentTree) at.getArguments().get(0);
+                LiteralTree lit = (LiteralTree) val.getExpression();
+                ExpressionTree nueValue = make.NewArray(null, Collections.<ExpressionTree>emptyList(), Arrays.asList(lit, make.Literal("test2")));
+
+                workingCopy.rewrite(val.getExpression(), nueValue);
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void XtestRenameAttributeFromDefault174552c() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "@A(\"test\")\n" +
+            "public class Test {\n" +
+            "}\n" +
+            "@interface AA {\n" +
+            "    public String[] value();\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "@A({\"test\", \"test2\"})\n" + //adds extra space here.
+            "public class Test {\n" +
+            "}\n" +
+            "@interface AA {\n" +
+            "    public String[] value();\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree ct = (ClassTree) cut.getTypeDecls().get(0);
+
+                AnnotationTree at = ct.getModifiers().getAnnotations().get(0);
+                AssignmentTree val = (AssignmentTree) at.getArguments().get(0);
+                LiteralTree lit = (LiteralTree) val.getExpression();
+                ExpressionTree nueValue = make.NewArray(null, Collections.<ExpressionTree>emptyList(), Arrays.asList(lit, make.Literal("test2")));
+
+                workingCopy.rewrite(val.getExpression(), nueValue);
+            }
+
         };
         src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);

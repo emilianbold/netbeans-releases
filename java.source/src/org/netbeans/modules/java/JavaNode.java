@@ -59,7 +59,6 @@ import org.netbeans.api.queries.FileBuiltQuery;
 import org.netbeans.api.queries.FileBuiltQuery.Status;
 import org.netbeans.modules.java.source.usages.ExecutableFilesIndex;
 import org.netbeans.spi.java.loaders.RenameHandler;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
@@ -73,7 +72,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
 import static org.openide.util.ImageUtilities.assignToolTipToImage;
@@ -96,6 +94,8 @@ public final class JavaNode extends DataNode implements ChangeListener {
 
     private static final Image NEEDS_COMPILE;
     private static final Image IS_EXECUTABLE_CLASS;
+
+    private static final Logger LOG = Logger.getLogger(JavaNode.class.getName());
     
     static {
         URL needsCompileIconURL = JavaNode.class.getClassLoader().getResource(NEEDS_COMPILE_BADGE_URL);
@@ -166,7 +166,7 @@ public final class JavaNode extends DataNode implements ChangeListener {
         if (handlers.size()==0)
             return null;
         if (handlers.size()>1)
-            ErrorManager.getDefault().log(ErrorManager.WARNING, "Multiple instances of RenameHandler found in Lookup; only using first one: " + handlers); //NOI18N
+            LOG.warning("Multiple instances of RenameHandler found in Lookup; only using first one: " + handlers); //NOI18N
         return handlers.iterator().next();
     }
     

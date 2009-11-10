@@ -40,6 +40,13 @@
  */
 package org.netbeans.modules.javacard.shell;
 
+import java.util.concurrent.locks.Condition;
+import org.netbeans.modules.javacard.api.RunMode;
+import org.netbeans.modules.javacard.spi.CardState;
+import org.netbeans.modules.javacard.spi.capabilities.StartCapability;
+import org.netbeans.modules.javacard.spi.capabilities.StopCapability;
+import org.openide.util.NbBundle;
+
 /**
  *
  * @author Anki R Nelaturu
@@ -47,8 +54,27 @@ package org.netbeans.modules.javacard.shell;
 final class RestartCommand implements Command {
 
     public String execute(ShellPanel shellPanel, String[] args) throws ShellException {
-        shellPanel.getServer().stopServer();
-        shellPanel.getServer().startServer(false);
+        CardState state = shellPanel.getCard().getState();
+        if (state.isTransitionalState()) {
+            return NbBundle.getMessage(ResumeCommand.class, 
+                    "ERR_TRANSITIONAL_STATE", shellPanel.getCard().getState()); //NOI18N
+        }
+        //XXX is this called in the AWT thread?  If so, replan it and
+        //show msgs somehow
+        StopCapability stop = shellPanel.getCard().getLookup().lookup(StopCapability.class);
+        if (stop != null) {
+            Condition c = stop.stop();
+            c.awaitUninterruptibly();
+        } else {
+            return APDUSender.getString("ERR_STOP_NOT_SUPPORTED"); //NOI18N
+        }
+        StartCapability start = shellPanel.getCard().getLookup().lookup(StartCapability.class);
+        if (start != null) {
+            Condition c = start.start(RunMode.RUN, null);
+            c.awaitUninterruptibly();
+        } else {
+            return APDUSender.getString("ERR_START_NOT_SUPPORTED"); //NOI18N
+        }
         return APDUSender.getString("DONE"); //NOI18N
     }
 

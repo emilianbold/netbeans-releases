@@ -234,9 +234,9 @@ public final class IndexingSupport {
 //            return IndexingSupport.getDirtySupports();
 //        }
 
-        public void store(IndexingSupport support) throws IOException {
+        public void store(IndexingSupport support, boolean optimize) throws IOException {
             assert support != null;
-            support.spiIndex.store();
+            support.spiIndex.store(optimize);
         }
     }
    

@@ -91,8 +91,10 @@ final class AsynchChildren <T> extends Children.Keys <Object> implements
             initialized = false;
             setKeys (Collections.<Object>emptyList());
         } finally {
-            if (notified) {
-                factory.removeNotify();
+            synchronized (notifyLock) { //#170794 ensure setting of flag and call to add/removeNotify() are atomic
+                if (notified) {
+                    factory.removeNotify();
+                }
             }
         }
     }
@@ -149,17 +151,24 @@ final class AsynchChildren <T> extends Children.Keys <Object> implements
 
     volatile boolean cancelled = false;
     volatile boolean notified;
+    private final Object notifyLock = new Object();
     public void run() {
-        if (Thread.interrupted()) {
+        if (cancelled || Thread.interrupted()) {
             setKeys (Collections.<T>emptyList());
             return;
         }
         List <T> keys = new LinkedList <T> ();
         boolean done;
         do {
-            if (!notified) {
-                notified = true;
-                factory.addNotify();
+            synchronized (notifyLock) {
+                if (!notified) {
+                    notified = true;
+                    factory.addNotify();
+                }
+            }
+            if (cancelled || Thread.interrupted()) {
+                setKeys (Collections.<T>emptyList());
+                return;
             }
             done = factory.createKeys (keys);
             if (cancelled || Thread.interrupted()) {
@@ -167,7 +176,7 @@ final class AsynchChildren <T> extends Children.Keys <Object> implements
                 return;
             }
             setKeys (new LinkedList <T> (keys));
-        } while (!done && !Thread.interrupted());
+        } while (!done && !Thread.interrupted() && !cancelled);
         initialized = done;
     }
 }

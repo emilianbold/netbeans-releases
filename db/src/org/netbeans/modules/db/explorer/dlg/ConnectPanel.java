@@ -268,6 +268,9 @@ public class ConnectPanel extends ConnectionDialog.FocusablePanel implements Doc
     private void stopProgress(final boolean connected) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
+                if (progressHandle == null) {
+                    return ;
+                }
                 progressHandle.finish();
                 progressContainerPanel.remove(progressComponent);
                 // without this, the removed progress component remains painted on its parent... why?

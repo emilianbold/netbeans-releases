@@ -73,8 +73,9 @@ public class LocalVariablesTest extends DebuggerTestCase {
     };
 
     public final String version;
-    
-    String projectPropertiesTitle;
+
+    private Node projectNode;
+    private Node beanNode;
     
     /**
      *
@@ -122,7 +123,12 @@ public class LocalVariablesTest extends DebuggerTestCase {
      */
     public void setUp() throws IOException {
         super.setUp();
-        System.out.println("########  " + getName() + "  #######");        
+        System.out.println("########  " + getName() + "  #######");
+        if (projectNode == null) {
+            projectNode = ProjectsTabOperator.invoke().getProjectRootNode(Utilities.testProjectName);
+            beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
+            new OpenAction().performAPI(beanNode);
+        }
     }
         
     /**
@@ -145,324 +151,268 @@ public class LocalVariablesTest extends DebuggerTestCase {
     /**
      *
      */
-    public void testLocalVariablesThisNode() throws Throwable {
+    public void testLocalVariablesThisNode() throws Throwable {        
+
+        EditorOperator eo = new EditorOperator("MemoryView.java"); //NOI18N
+        new EventTool().waitNoEvent(500);
         try {
-            Node projectNode = ProjectsTabOperator.invoke().getProjectRootNode(Utilities.testProjectName);
-            Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
-            new OpenAction().performAPI(beanNode);
-            EditorOperator eo = new EditorOperator("MemoryView.java"); //NOI18N
-            new EventTool().waitNoEvent(500);
-            try {
-                eo.clickMouse(50,50,1);
-            } catch (Throwable t) {
-                System.err.println(t.getMessage());
-            }
-            Utilities.toggleBreakpoint(eo, 52);
-            new EventTool().waitNoEvent(500);
-            try {
-                Utilities.startDebugger();
-            } catch (Throwable th) {
-                new DebugProjectAction().perform(projectNode);
-            }
-            try {
-                Utilities.waitStatusText("Thread main stopped at MemoryView.java:52.");
-            } catch (TimeoutExpiredException e) {
-                if (!Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:52.")) {
-                    System.err.println(e.getMessage());
-                    throw e;
-                }
-            }
-            expandNodes();
-            OutlineOperator outlineOp = new OutlineOperator(new TopComponentOperator(Utilities.variablesViewTitle));
-            checkOutlineTableLine(outlineOp, 3, "Vpublic", "String", "\"Public Variable\"");
-            checkOutlineTableLine(outlineOp, 4, "Vprotected", "String", "\"Protected Variable\"");
-            checkOutlineTableLine(outlineOp, 5, "Vprivate", "String", "\"Private Variable\"");
-            checkOutlineTableLine(outlineOp, 6, "VpackagePrivate", "String", "\"Package-private Variable\"");
-        } catch (Throwable th) {
-            Utilities.captureScreen(this);
-            throw th;
+            eo.clickMouse(50,50,1);
+        } catch (Throwable t) {
+            System.err.println(t.getMessage());
         }
+        Utilities.toggleBreakpoint(eo, 52);
+        new EventTool().waitNoEvent(500);
+        try {
+            Utilities.startDebugger();
+        } catch (Throwable th) {
+            new DebugProjectAction().perform(projectNode);
+        }
+        try {
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:52.");
+        } catch (TimeoutExpiredException e) {
+            if (!Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:52.")) {
+                System.err.println(e.getMessage());
+                throw e;
+            }
+        }
+        expandNodes();
+        OutlineOperator outlineOp = new OutlineOperator(new TopComponentOperator(Utilities.variablesViewTitle));
+        checkOutlineTableLine(outlineOp, 3, "Vpublic", "String", "\"Public Variable\"");
+        checkOutlineTableLine(outlineOp, 4, "Vprotected", "String", "\"Protected Variable\"");
+        checkOutlineTableLine(outlineOp, 5, "Vprivate", "String", "\"Private Variable\"");
+        checkOutlineTableLine(outlineOp, 6, "VpackagePrivate", "String", "\"Package-private Variable\"");
     }
     
     /**
      *
      */
     public void testLocalVariablesStaticNode() throws Throwable {
+        EditorOperator eo = new EditorOperator("MemoryView.java"); //NOI18N
+        new EventTool().waitNoEvent(500);
+        Utilities.toggleBreakpoint(eo, 52);
+        new EventTool().waitNoEvent(500);
+        Utilities.startDebugger();
         try {
-            Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
-            new OpenAction().performAPI(beanNode);
-            EditorOperator eo = new EditorOperator("MemoryView.java"); //NOI18N
-            new EventTool().waitNoEvent(500);
-            Utilities.toggleBreakpoint(eo, 52);
-            new EventTool().waitNoEvent(500);
-            Utilities.startDebugger();
-            try {
-                Utilities.waitStatusText("Thread main stopped at MemoryView.java:52.");
-            } catch (TimeoutExpiredException e) {
-                if (!Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:52.")) {
-                    System.err.println(e.getMessage());
-                    throw e;
-                }
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:52.");
+        } catch (TimeoutExpiredException e) {
+            if (!Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:52.")) {
+                System.err.println(e.getMessage());
+                throw e;
             }
-            expandNodes();
-            OutlineOperator outlineOp = new OutlineOperator(new TopComponentOperator(Utilities.variablesViewTitle));
-            checkOutlineTableLine(outlineOp, 11, "Spublic", "String", "\"Public Variable\"");
-            checkOutlineTableLine(outlineOp, 12, "Sprotected", "String", "\"Protected Variable\"");
-            checkOutlineTableLine(outlineOp, 13, "Sprivate", "String", "\"Private Variable\"");
-            checkOutlineTableLine(outlineOp, 14, "SpackagePrivate", "String", "\"Package-private Variable\"");
-        } catch (Throwable th) {
-            Utilities.captureScreen(this);
-            throw th;
         }
+        expandNodes();
+        OutlineOperator outlineOp = new OutlineOperator(new TopComponentOperator(Utilities.variablesViewTitle));
+        checkOutlineTableLine(outlineOp, 11, "Spublic", "String", "\"Public Variable\"");
+        checkOutlineTableLine(outlineOp, 12, "Sprotected", "String", "\"Protected Variable\"");
+        checkOutlineTableLine(outlineOp, 13, "Sprivate", "String", "\"Private Variable\"");
+        checkOutlineTableLine(outlineOp, 14, "SpackagePrivate", "String", "\"Package-private Variable\"");
     }
     
     /**
      *
      */
     public void testLocalVariablesStaticInherited() throws Throwable {
+        EditorOperator eo = new EditorOperator("MemoryView.java"); //NOI18N
+        new EventTool().waitNoEvent(1500);
+        Utilities.toggleBreakpoint(eo, 52);
+        new EventTool().waitNoEvent(1500);
+        Utilities.startDebugger();
         try {
-            Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
-            new OpenAction().performAPI(beanNode);
-            EditorOperator eo = new EditorOperator("MemoryView.java"); //NOI18N
-            new EventTool().waitNoEvent(1500);
-            Utilities.toggleBreakpoint(eo, 52);
-            new EventTool().waitNoEvent(1500);
-            Utilities.startDebugger();
-            try {
-                Utilities.waitStatusText("Thread main stopped at MemoryView.java:52.");
-            } catch (TimeoutExpiredException e) {
-                if (!Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:52.")) {
-                    System.err.println(e.getMessage());
-                    throw e;
-                }
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:52.");
+        } catch (TimeoutExpiredException e) {
+            if (!Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:52.")) {
+                System.err.println(e.getMessage());
+                throw e;
             }
-            expandNodes();
-            OutlineOperator outlineOp = new OutlineOperator(new TopComponentOperator(Utilities.variablesViewTitle));
-            checkOutlineTableLine(outlineOp, 15, "inheritedSpublic", "String", "\"Inherited Public Variable\"");
-            checkOutlineTableLine(outlineOp, 16, "inheritedSprotected", "String", "\"Inherited Protected Variable\"");
-            checkOutlineTableLine(outlineOp, 17, "inheritedSprivate", "String", "\"Inherited Private Variable\"");
-            checkOutlineTableLine(outlineOp, 18, "inheritedSpackagePrivate", "String", "\"Inherited Package-private Variable\"");
-        } catch (Throwable th) {
-            Utilities.captureScreen(this);
-            throw th;
         }
+        expandNodes();
+        OutlineOperator outlineOp = new OutlineOperator(new TopComponentOperator(Utilities.variablesViewTitle));
+        checkOutlineTableLine(outlineOp, 15, "inheritedSpublic", "String", "\"Inherited Public Variable\"");
+        checkOutlineTableLine(outlineOp, 16, "inheritedSprotected", "String", "\"Inherited Protected Variable\"");
+        checkOutlineTableLine(outlineOp, 17, "inheritedSprivate", "String", "\"Inherited Private Variable\"");
+        checkOutlineTableLine(outlineOp, 18, "inheritedSpackagePrivate", "String", "\"Inherited Package-private Variable\"");
     }
     
     /**
      *
      */
     public void testLocalVariablesInheritedNode() throws Throwable {
-        try {Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
-            new OpenAction().performAPI(beanNode);
-            EditorOperator eo = new EditorOperator("MemoryView.java"); //NOI18N
-            new EventTool().waitNoEvent(500);
-            Utilities.toggleBreakpoint(eo, 52);
-            new EventTool().waitNoEvent(500);
-            Utilities.startDebugger();
-            try {
-                Utilities.waitStatusText("Thread main stopped at MemoryView.java:52.");
-            } catch (TimeoutExpiredException e) {
-                if (!Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:52.")) {
-                    System.err.println(e.getMessage());
-                    throw e;
-                }
+        EditorOperator eo = new EditorOperator("MemoryView.java"); //NOI18N
+        new EventTool().waitNoEvent(500);
+        Utilities.toggleBreakpoint(eo, 52);
+        new EventTool().waitNoEvent(500);
+        Utilities.startDebugger();
+        try {
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:52.");
+        } catch (TimeoutExpiredException e) {
+            if (!Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:52.")) {
+                System.err.println(e.getMessage());
+                throw e;
             }
-            expandNodes();
-            OutlineOperator outlineOp = new OutlineOperator(new TopComponentOperator(Utilities.variablesViewTitle));
-            checkOutlineTableLine(outlineOp, 20, "inheritedVpublic", "String", "\"Inherited Public Variable\"");
-            checkOutlineTableLine(outlineOp, 21, "inheritedVprotected", "String", "\"Inherited Protected Variable\"");
-            checkOutlineTableLine(outlineOp, 22, "inheritedVprivate", "String", "\"Inherited Private Variable\"");
-            checkOutlineTableLine(outlineOp, 23, "inheritedVpackagePrivate", "String", "\"Inherited Package-private Variable\"");
-        } catch (Throwable th) {
-            Utilities.captureScreen(this);
-            throw th;
         }
+        expandNodes();
+        OutlineOperator outlineOp = new OutlineOperator(new TopComponentOperator(Utilities.variablesViewTitle));
+        checkOutlineTableLine(outlineOp, 20, "inheritedVpublic", "String", "\"Inherited Public Variable\"");
+        checkOutlineTableLine(outlineOp, 21, "inheritedVprotected", "String", "\"Inherited Protected Variable\"");
+        checkOutlineTableLine(outlineOp, 22, "inheritedVprivate", "String", "\"Inherited Private Variable\"");
+        checkOutlineTableLine(outlineOp, 23, "inheritedVpackagePrivate", "String", "\"Inherited Package-private Variable\"");
     }
     
     /**
      *
      */
-    public void testLocalVariablesExtended() throws Throwable {
+    public void testLocalVariablesExtended() throws Throwable {        
+        EditorOperator eo = new EditorOperator("MemoryView.java"); //NOI18N
+        new EventTool().waitNoEvent(500);
+        Utilities.toggleBreakpoint(eo, 76);
+        new EventTool().waitNoEvent(500);
+        Utilities.startDebugger();
         try {
-            Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
-            new OpenAction().performAPI(beanNode);
-            EditorOperator eo = new EditorOperator("MemoryView.java"); //NOI18N
-            new EventTool().waitNoEvent(500);
-            Utilities.toggleBreakpoint(eo, 76);
-            new EventTool().waitNoEvent(500);
-            Utilities.startDebugger();
-            try {
-                Utilities.waitStatusText("Thread main stopped at MemoryView.java:76.");
-            } catch (TimeoutExpiredException e) {
-                if (!Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:76.")) {
-                    System.err.println(e.getMessage());
-                    throw e;
-                }
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:76.");
+        } catch (TimeoutExpiredException e) {
+            if (!Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:76.")) {
+                System.err.println(e.getMessage());
+                throw e;
             }
-            expandNodes();
-            Utilities.showDebuggerView(Utilities.variablesViewTitle);
-            OutlineOperator outlineOp = new OutlineOperator(new TopComponentOperator(Utilities.variablesViewTitle));
-            
-            int count = 1;
-            checkOutlineTableLine(outlineOp, count++, "this", "MemoryView", null);
-            checkOutlineTableLine(outlineOp, count++, "timer", null, "null");
-            checkOutlineTableLine(outlineOp, count++, "Vpublic", "String", "\"Public Variable\"");
-            checkOutlineTableLine(outlineOp, count++, "Vprotected", "String", "\"Protected Variable\"");
-            checkOutlineTableLine(outlineOp, count++, "Vprivate", "String", "\"Private Variable\"");
-            checkOutlineTableLine(outlineOp, count++, "VpackagePrivate", "String", "\"Package-private Variable\"");
-            checkOutlineTableLine(outlineOp, count++, "Static", null, null);
-            checkOutlineTableLine(outlineOp, count++, "bundle", "PropertyResourceBundle", null);
-            assertTrue("Node bundle has no child nodes", hasChildNodes("this|Static|bundle", outlineOp));
-            checkOutlineTableLine(outlineOp, count++, "msgMemory", "MessageFormat", null);
-            assertTrue("Node msgMemory has no child nodes", hasChildNodes("this|Static|msgMemory", outlineOp));
-            checkOutlineTableLine(outlineOp, count++, "UPDATE_TIME", "int", "1000");
-            checkOutlineTableLine(outlineOp, count++, "Spublic", "String", "\"Public Variable\"");
-            checkOutlineTableLine(outlineOp, count++, "Sprotected", "String", "\"Protected Variable\"");
-            checkOutlineTableLine(outlineOp, count++, "Sprivate", "String", "\"Private Variable\"");
-            checkOutlineTableLine(outlineOp, count++, "SpackagePrivate", "String", "\"Package-private Variable\"");
-            //checkOutlineTableLine(outlineOp, count++, "class$java$lang$Runtime", "Class", "class java.lang.Runtime");
-            //assertTrue("Node class$java$lang$Runtime has no child nodes", hasChildNodes("this|Static|class$java$lang$Runtime", outlineOp));
-            checkOutlineTableLine(outlineOp, count++, "inheritedSpublic", "String", "\"Inherited Public Variable\"");
-            checkOutlineTableLine(outlineOp, count++, "inheritedSprotected", "String", "\"Inherited Protected Variable\"");
-            checkOutlineTableLine(outlineOp, count++, "inheritedSprivate", "String", "\"Inherited Private Variable\"");
-            checkOutlineTableLine(outlineOp, count++, "inheritedSpackagePrivate", "String", "\"Inherited Package-private Variable\"");
-            checkOutlineTableLine(outlineOp, count++, "Inherited", null, null);
-            checkOutlineTableLine(outlineOp, count++, "inheritedVpublic", "String", "\"Inherited Public Variable\"");
-            checkOutlineTableLine(outlineOp, count++, "inheritedVprotected", "String", "\"Inherited Protected Variable\"");
-            checkOutlineTableLine(outlineOp, count++, "inheritedVprivate", "String", "\"Inherited Private Variable\"");
-            checkOutlineTableLine(outlineOp, count++, "inheritedVpackagePrivate", "String", "\"Inherited Package-private Variable\"");
-            checkOutlineTableLine(outlineOp, count++, "clazz", "Class", "class java.lang.Runtime");
-            assertTrue("Node clazz has no child nodes", hasChildNodes("clazz", outlineOp));
-            checkOutlineTableLine(outlineOp, count++, "string", "String", "\"Hi!\"");
-            checkOutlineTableLine(outlineOp, count++, "n", "int", "50");
-            checkOutlineTableLine(outlineOp, count++, "llist", "LinkedList", null);
-            assertTrue("Node llist has no child nodes", hasChildNodes("llist", outlineOp));
-            checkOutlineTableLine(outlineOp, count++, "alist", "ArrayList", null);
-            assertTrue("Node alist has no child nodes", hasChildNodes("alist", outlineOp));
-            checkOutlineTableLine(outlineOp, count++, "vec", "Vector", null);
-            assertTrue("Node vec has no child nodes", hasChildNodes("vec", outlineOp));
-            checkOutlineTableLine(outlineOp, count++, "hmap", "HashMap", null);
-            assertTrue("Node hmap has no child nodes", hasChildNodes("hmap", outlineOp));
-            checkOutlineTableLine(outlineOp, count++, "htab", "Hashtable", null);
-            assertTrue("Node htab has no child nodes", hasChildNodes("htab", outlineOp));
-            checkOutlineTableLine(outlineOp, count++, "tmap", "TreeMap", null);
-            assertTrue("Node tmap has no child nodes", hasChildNodes("tmap", outlineOp));
-            checkOutlineTableLine(outlineOp, count++, "hset", "HashSet", null);
-            assertTrue("Node hset has no child nodes", hasChildNodes("hset", outlineOp));
-            checkOutlineTableLine(outlineOp, count++, "tset", "TreeSet", null);
-            assertTrue("Node tset has no child nodes", hasChildNodes("tset", outlineOp));
-            checkOutlineTableLine(outlineOp, count++, "policko", "int[]", null);
-            assertTrue("Node policko has no child nodes", hasChildNodes("policko", outlineOp));
-            checkOutlineTableLine(outlineOp, count++, "pole", "int[]", null);
-            assertTrue("Node pole has no child nodes", hasChildNodes("pole", outlineOp));
-            checkOutlineTableLine(outlineOp, count++, "d2", "int[][]", null);
-            assertTrue("Node d2 has no child nodes", hasChildNodes("d2", outlineOp));
-        } catch (Throwable th) {
-            Utilities.captureScreen(this);
-            throw th;
         }
-    }
-    
-    /**
-     *
-     */
-    public void testLocalVariablesValues() throws Throwable {
-        try {
-            Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
-            new OpenAction().performAPI(beanNode);
-            EditorOperator eo = new EditorOperator("MemoryView.java"); //NOI18N
-            new EventTool().waitNoEvent(500);
-            Utilities.toggleBreakpoint(eo, 104);
-            new EventTool().waitNoEvent(500);
-            Utilities.startDebugger();
-            try {
-                Utilities.waitStatusText("Thread main stopped at MemoryView.java:104.");
-            } catch (TimeoutExpiredException e) {
-                if (!Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:104.")) {
-                    System.err.println(e.getMessage());
-                    throw e;
-                }
-            }
-            expandNodes();
-            Utilities.showDebuggerView(Utilities.variablesViewTitle);
-            JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.variablesViewTitle));
-            try {
-                org.openide.nodes.Node.Property property;
-                property = (org.openide.nodes.Node.Property)jTableOperator.getValueAt(25, 2);
-                long free = Long.parseLong(property.getValue().toString());
-                property = (org.openide.nodes.Node.Property)jTableOperator.getValueAt(26, 2);
-                long total = Long.parseLong(property.getValue().toString());
-                property = (org.openide.nodes.Node.Property)jTableOperator.getValueAt(27, 2);
-                long taken = Long.parseLong(property.getValue().toString());
-                assertTrue("Local varaibles values does not seem to be correct (total != free + taken) - "+total+" != "+free+" + "+taken, (total == free + taken));
-                
-            } catch (java.lang.IllegalAccessException e1) {
-                assertTrue(e1.getMessage(), false);
-            } catch (java.lang.reflect.InvocationTargetException e2) {
-                assertTrue(e2.getMessage(), false);
-            }
-        } catch (Throwable th) {
-            Utilities.captureScreen(this);
-            throw th;
-        }
-    }
-    
-    /**
-     *
-     */
-    public void testLocalVariablesSubExpressions() throws Throwable {
-        try {
-            Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
-            new OpenAction().performAPI(beanNode);
-            EditorOperator eo = new EditorOperator("MemoryView.java"); //NOI18N
-            new EventTool().waitNoEvent(500);
-            Utilities.toggleBreakpoint(eo, 104);
-            new EventTool().waitNoEvent(500);
-            Utilities.startDebugger();
-            try {
-                Utilities.waitStatusText("Thread main stopped at MemoryView.java:104.");
-            } catch (TimeoutExpiredException e) {
-                if (!Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:104.")) {
-                    System.err.println(e.getMessage());
-                    throw e;
-                }
-            }
-            expandNodes();
-            new EventTool().waitNoEvent(700);
-            Utilities.getStepOverExpressionAction().perform();
-            new EventTool().waitNoEvent(700);
-            Utilities.getStepOverExpressionAction().perform();
-            new EventTool().waitNoEvent(700);
-            Utilities.getStepOverExpressionAction().perform();
-            new EventTool().waitNoEvent(700);
-            Utilities.getStepOverExpressionAction().perform();
-            new EventTool().waitNoEvent(700);
-            Utilities.getStepOverExpressionAction().perform();
-            new EventTool().waitNoEvent(700);
-            
-            // TODO: Enable after fix of issue 132886 
-            //new Action(Utilities.runMenu+"|"+Utilities.stepOverExpresItem, null).perform();
-            
-            Utilities.showDebuggerView(Utilities.variablesViewTitle);
-            OutlineOperator outlineOp = new OutlineOperator(new TopComponentOperator(Utilities.variablesViewTitle));
-            int count = 1; //line 0 is the New Watch Expression line by default
-            checkOutlineTableLine(outlineOp, count++, "Before call to 'println()'", null, null);
-            checkOutlineTableLine(outlineOp, count++, "Arguments", null, null);
+        expandNodes();
+        Utilities.showDebuggerView(Utilities.variablesViewTitle);
+        OutlineOperator outlineOp = new OutlineOperator(new TopComponentOperator(Utilities.variablesViewTitle));
 
-            
-                checkOutlineTableLine(outlineOp, count++, "Return values history", null, null);
-                checkOutlineTableLine(outlineOp, count++, "return <init>()", null, null);
-                checkOutlineTableLine(outlineOp, count++, "return <init>()", null, null);
-                checkOutlineTableLine(outlineOp, count++, "return <init>()", null, null);
-            if (version.equals("jdk16")) {
-                checkOutlineTableLine(outlineOp, count++, "return format()", "String", null); 
-                //checkOutlineTableLine(outlineOp, count++, "return println()", "String", null);
+        int count = 1;
+        checkOutlineTableLine(outlineOp, count++, "this", "MemoryView", null);
+        checkOutlineTableLine(outlineOp, count++, "timer", null, "null");
+        checkOutlineTableLine(outlineOp, count++, "Vpublic", "String", "\"Public Variable\"");
+        checkOutlineTableLine(outlineOp, count++, "Vprotected", "String", "\"Protected Variable\"");
+        checkOutlineTableLine(outlineOp, count++, "Vprivate", "String", "\"Private Variable\"");
+        checkOutlineTableLine(outlineOp, count++, "VpackagePrivate", "String", "\"Package-private Variable\"");
+        checkOutlineTableLine(outlineOp, count++, "Static", null, null);
+        checkOutlineTableLine(outlineOp, count++, "bundle", "PropertyResourceBundle", null);
+        assertTrue("Node bundle has no child nodes", hasChildNodes("this|Static|bundle", outlineOp));
+        checkOutlineTableLine(outlineOp, count++, "msgMemory", "MessageFormat", null);
+        assertTrue("Node msgMemory has no child nodes", hasChildNodes("this|Static|msgMemory", outlineOp));
+        checkOutlineTableLine(outlineOp, count++, "UPDATE_TIME", "int", "1000");
+        checkOutlineTableLine(outlineOp, count++, "Spublic", "String", "\"Public Variable\"");
+        checkOutlineTableLine(outlineOp, count++, "Sprotected", "String", "\"Protected Variable\"");
+        checkOutlineTableLine(outlineOp, count++, "Sprivate", "String", "\"Private Variable\"");
+        checkOutlineTableLine(outlineOp, count++, "SpackagePrivate", "String", "\"Package-private Variable\"");
+        //checkOutlineTableLine(outlineOp, count++, "class$java$lang$Runtime", "Class", "class java.lang.Runtime");
+        //assertTrue("Node class$java$lang$Runtime has no child nodes", hasChildNodes("this|Static|class$java$lang$Runtime", outlineOp));
+        checkOutlineTableLine(outlineOp, count++, "inheritedSpublic", "String", "\"Inherited Public Variable\"");
+        checkOutlineTableLine(outlineOp, count++, "inheritedSprotected", "String", "\"Inherited Protected Variable\"");
+        checkOutlineTableLine(outlineOp, count++, "inheritedSprivate", "String", "\"Inherited Private Variable\"");
+        checkOutlineTableLine(outlineOp, count++, "inheritedSpackagePrivate", "String", "\"Inherited Package-private Variable\"");
+        checkOutlineTableLine(outlineOp, count++, "Inherited", null, null);
+        checkOutlineTableLine(outlineOp, count++, "inheritedVpublic", "String", "\"Inherited Public Variable\"");
+        checkOutlineTableLine(outlineOp, count++, "inheritedVprotected", "String", "\"Inherited Protected Variable\"");
+        checkOutlineTableLine(outlineOp, count++, "inheritedVprivate", "String", "\"Inherited Private Variable\"");
+        checkOutlineTableLine(outlineOp, count++, "inheritedVpackagePrivate", "String", "\"Inherited Package-private Variable\"");
+        checkOutlineTableLine(outlineOp, count++, "clazz", "Class", "class java.lang.Runtime");
+        assertTrue("Node clazz has no child nodes", hasChildNodes("clazz", outlineOp));
+        checkOutlineTableLine(outlineOp, count++, "string", "String", "\"Hi!\"");
+        checkOutlineTableLine(outlineOp, count++, "n", "int", "50");
+        checkOutlineTableLine(outlineOp, count++, "llist", "LinkedList", null);
+        assertTrue("Node llist has no child nodes", hasChildNodes("llist", outlineOp));
+        checkOutlineTableLine(outlineOp, count++, "alist", "ArrayList", null);
+        assertTrue("Node alist has no child nodes", hasChildNodes("alist", outlineOp));
+        checkOutlineTableLine(outlineOp, count++, "vec", "Vector", null);
+        assertTrue("Node vec has no child nodes", hasChildNodes("vec", outlineOp));
+        checkOutlineTableLine(outlineOp, count++, "hmap", "HashMap", null);
+        assertTrue("Node hmap has no child nodes", hasChildNodes("hmap", outlineOp));
+        checkOutlineTableLine(outlineOp, count++, "htab", "Hashtable", null);
+        assertTrue("Node htab has no child nodes", hasChildNodes("htab", outlineOp));
+        checkOutlineTableLine(outlineOp, count++, "tmap", "TreeMap", null);
+        assertTrue("Node tmap has no child nodes", hasChildNodes("tmap", outlineOp));
+        checkOutlineTableLine(outlineOp, count++, "hset", "HashSet", null);
+        assertTrue("Node hset has no child nodes", hasChildNodes("hset", outlineOp));
+        checkOutlineTableLine(outlineOp, count++, "tset", "TreeSet", null);
+        assertTrue("Node tset has no child nodes", hasChildNodes("tset", outlineOp));
+        checkOutlineTableLine(outlineOp, count++, "policko", "int[]", null);
+        assertTrue("Node policko has no child nodes", hasChildNodes("policko", outlineOp));
+        checkOutlineTableLine(outlineOp, count++, "pole", "int[]", null);
+        assertTrue("Node pole has no child nodes", hasChildNodes("pole", outlineOp));
+        checkOutlineTableLine(outlineOp, count++, "d2", "int[][]", null);
+        assertTrue("Node d2 has no child nodes", hasChildNodes("d2", outlineOp));
+    }
+    
+    /**
+     *
+     */
+    public void testLocalVariablesValues() throws Throwable {        
+        EditorOperator eo = new EditorOperator("MemoryView.java"); //NOI18N
+        new EventTool().waitNoEvent(500);
+        Utilities.toggleBreakpoint(eo, 104);
+        new EventTool().waitNoEvent(500);
+        Utilities.startDebugger();
+        try {
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:104.");
+        } catch (TimeoutExpiredException e) {
+            if (!Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:104.")) {
+                System.err.println(e.getMessage());
+                throw e;
             }
-            
-            
-        } catch (Throwable th) {
-            Utilities.captureScreen(this);
-            throw th;
+        }
+        expandNodes();
+        Utilities.showDebuggerView(Utilities.variablesViewTitle);
+        JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.variablesViewTitle));
+        try {
+            org.openide.nodes.Node.Property property;
+            property = (org.openide.nodes.Node.Property)jTableOperator.getValueAt(25, 2);
+            long free = Long.parseLong(property.getValue().toString());
+            property = (org.openide.nodes.Node.Property)jTableOperator.getValueAt(26, 2);
+            long total = Long.parseLong(property.getValue().toString());
+            property = (org.openide.nodes.Node.Property)jTableOperator.getValueAt(27, 2);
+            long taken = Long.parseLong(property.getValue().toString());
+            assertTrue("Local varaibles values does not seem to be correct (total != free + taken) - "+total+" != "+free+" + "+taken, (total == free + taken));
+
+        } catch (java.lang.IllegalAccessException e1) {
+            assertTrue(e1.getMessage(), false);
+        } catch (java.lang.reflect.InvocationTargetException e2) {
+            assertTrue(e2.getMessage(), false);
+        }
+    }
+    
+    /**
+     *
+     */
+    public void testLocalVariablesSubExpressions() throws Throwable {       
+        EditorOperator eo = new EditorOperator("MemoryView.java"); //NOI18N
+        new EventTool().waitNoEvent(500);
+        Utilities.toggleBreakpoint(eo, 104);
+        new EventTool().waitNoEvent(500);
+        Utilities.startDebugger();
+        try {
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:104.");
+        } catch (TimeoutExpiredException e) {
+            if (!Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:104.")) {
+                System.err.println(e.getMessage());
+                throw e;
+            }
+        }
+        expandNodes();
+        new EventTool().waitNoEvent(700);
+        Utilities.getStepOverExpressionAction().perform();
+        new EventTool().waitNoEvent(700);
+        Utilities.getStepOverExpressionAction().perform();
+        new EventTool().waitNoEvent(700);
+        Utilities.getStepOverExpressionAction().perform();
+        new EventTool().waitNoEvent(700);
+        Utilities.getStepOverExpressionAction().perform();
+        new EventTool().waitNoEvent(700);
+        Utilities.getStepOverExpressionAction().perform();
+        new EventTool().waitNoEvent(700);        
+
+        Utilities.showDebuggerView(Utilities.variablesViewTitle);
+        OutlineOperator outlineOp = new OutlineOperator(new TopComponentOperator(Utilities.variablesViewTitle));
+        int count = 1; //line 0 is the New Watch Expression line by default
+        checkOutlineTableLine(outlineOp, count++, "Before call to 'println()'", null, null);
+        if (version.equals("jdk16")) {
+            checkOutlineTableLine(outlineOp, count++, "Arguments", null, null);
+            checkOutlineTableLine(outlineOp, count++, "Return values history", null, null);
+            checkOutlineTableLine(outlineOp, count++, "return <init>()", null, null);
+            checkOutlineTableLine(outlineOp, count++, "return <init>()", null, null);
+            checkOutlineTableLine(outlineOp, count++, "return <init>()", null, null);   
+            checkOutlineTableLine(outlineOp, count++, "return format()", "String", null);            
         }
     }
     

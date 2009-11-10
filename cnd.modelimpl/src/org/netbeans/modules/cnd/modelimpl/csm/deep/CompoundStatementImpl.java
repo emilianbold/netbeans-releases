@@ -46,7 +46,7 @@ import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.*;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 
-import antlr.collections.AST;
+import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;

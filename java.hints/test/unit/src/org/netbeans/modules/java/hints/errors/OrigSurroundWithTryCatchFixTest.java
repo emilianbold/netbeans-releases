@@ -346,7 +346,9 @@ public class OrigSurroundWithTryCatchFixTest extends ErrorHintsTestBase {
                        "public abstract class Test {\n" +
                        "    public Test() {\n" +
                        "        //nabytek\n" +
-                       "        FileInputStream fis = |new FileInputStream(new File(\"\"));\n" +
+                       "        FileInputStream fis = |new FileInputStream(new File(\"\"));//NOI18N\n" +
+                       "        //foo\n" +
+                       "        \n" +
                        "        fis.read();\n" +
                        "    }\n" +
                        "}\n",
@@ -360,10 +362,11 @@ public class OrigSurroundWithTryCatchFixTest extends ErrorHintsTestBase {
                        "        //nabytek\n" +
                        "        FileInputStream fis;\n" +
                        "        try {\n" +
-                       "            fis = new FileInputStream(new File(\"\"));\n" +
+                       "            fis = new FileInputStream(new File(\"\")); //NOI18N\n" +
+                       "            //foo\n" +
                        "        } catch (FileNotFoundException ex) {\n" +
                        "            ex.printStackTrace();\n" +
-                       "        }" +
+                       "        }\n" +
                        "        fis.read();\n" +
                        "    }\n" +
                        "}\n").replaceAll("[ \t\n]+", " "));

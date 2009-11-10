@@ -639,7 +639,7 @@ final class ModuleList implements Stamps.Updater {
     private static final byte[] MODULE_XML_DIV2 = "   <param name=\"".getBytes(); // NOI18N
     private static final byte[] MODULE_XML_DIV3 = "/param>\n".getBytes(); // NOI18N
     private static final byte[] MODULE_XML_END = "/module>\n".getBytes(); // NOI18N
-    /** Just like {@link #readStatus(InputSource,XMLReader} but avoids using an XML parser.
+    /** Just like {@link #readStatus(InputSource,XMLReader)} but avoids using an XML parser.
      * If it does not manage to parse it this way, it returns null, in which case
      * you have to use a real parser.
      * @see "#26786"
@@ -1471,7 +1471,8 @@ final class ModuleList implements Stamps.Updater {
                         try {
                             dirtyprops.put(cnb, readStatus(src, null));
                         } catch (SAXException saxe) {
-                            throw (IOException) new IOException(saxe.toString()).initCause(saxe);
+                            throw (IOException) new IOException("Parse error:\n---%<--- " + xmlfile.getPath() + "\n" +
+                                    xmlfile.asText("UTF-8") + "\n---%<---\ngot: " + saxe).initCause(saxe);
                         }
                     } finally {
                         is.close();

@@ -104,7 +104,7 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
     // {0} - hg or svn
     // {1} - project name
     // {2} - repository name
-    static final String REPO_NAME_PREVIEW_MSG = "https://kenai.com/{0}/{1}~{2}"; // NOI18N
+    static final String REPO_NAME_PREVIEW_MSG = "{0}/{1}/{2}~{3}"; // NOI18N
 
     // names used in repository name preview
     private static final String HG_REPO_NAME =  "hg"; // NOI18N
@@ -115,14 +115,23 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
     private static final String DEFAULT_REPO_FOLDER = "{0}~{1}"; // NOI18N
 
     // XXX maybe move to bundle
-    private static final String SVN_REPO_ITEM = NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.SubversionOnKenai"); // NOI18N
-    private static final String HG_REPO_ITEM = NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.MercurialOnKenai"); // NOI18N
+    private static final String getSvnRepoItem() {
+        return NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.SubversionOnKenai", Kenai.getDefault().getName());
+    }
+
+    private static final String getHgRepoItem() {
+        return NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.MercurialOnKenai", Kenai.getDefault().getName());
+    }
     private static final String EXT_REPO_ITEM = NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.External"); // NOI18N
     private static final String NO_REPO_ITEM = NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.None");; // NOI18N
 
     // XXX maybe move to bundle
-    private static final String BGZ_ISSUES_ITEM = NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.BugzillaOnKenai"); // NOI18N
-    private static final String JIRA_ISSUES_ITEM = NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.JIRAOnKenai"); // NOI18N
+    private static final String getBgzIssuesItem() {
+        return NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.BugzillaOnKenai", Kenai.getDefault().getName());
+    }
+    private static final String getJiraIssuesItem() {
+        return NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.JIRAOnKenai", Kenai.getDefault().getName());
+    }
     private static final String EXT_ISSUES_ITEM = NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.External"); // NOI18N
     private static final String NO_ISSUES_ITEM = NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.None"); // NOI18N
 
@@ -192,7 +201,7 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         showIssuesOnKenaiGUI();
         itSeparator.setVisible(false);
         createChatRoom.setVisible(false);
-        if (!Kenai.getDefault().getName().equals(("testkenai.com"))) { // NOI18N
+        if (!Kenai.getDefault().getUrl().getHost().equals(("testkenai.com"))) { // NOI18N
             createChatRoom.setSelected(false);
         }
         setPreferredSize(new Dimension(Math.max(700, getPreferredSize().width), 450));
@@ -253,9 +262,9 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
                         KenaiService service = iter.next();
                         String serviceName = service.getName();
                         if (KenaiService.Names.SUBVERSION.equals(serviceName)) {
-                            repoModel.addElement(new KenaiServiceItem(service, SVN_REPO_ITEM));
+                            repoModel.addElement(new KenaiServiceItem(service, getSvnRepoItem()));
                         } else if (KenaiService.Names.MERCURIAL.equals(serviceName)) {
-                            repoModel.addElement(new KenaiServiceItem(service, HG_REPO_ITEM));
+                            repoModel.addElement(new KenaiServiceItem(service, getHgRepoItem()));
                         } else if (KenaiService.Names.EXTERNAL_REPOSITORY.equals(serviceName)) {
                             repoModel.addElement(new KenaiServiceItem(service, EXT_REPO_ITEM));
                         }
@@ -271,9 +280,9 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
                         KenaiService service = iter.next();
                         String serviceName = service.getName();
                         if (KenaiService.Names.BUGZILLA.equals(serviceName)) {
-                            issuesModel.addElement(new KenaiServiceItem(service, BGZ_ISSUES_ITEM));
+                            issuesModel.addElement(new KenaiServiceItem(service, getBgzIssuesItem()));
                         } else if (KenaiService.Names.JIRA.equals(serviceName)) {
-                            issuesModel.addElement(new KenaiServiceItem(service, JIRA_ISSUES_ITEM));
+                            issuesModel.addElement(new KenaiServiceItem(service, getJiraIssuesItem()));
                         } else if (KenaiService.Names.EXTERNAL_ISSUES.equals(serviceName)) {
                             issuesModel.addElement(new KenaiServiceItem(service, EXT_ISSUES_ITEM));
                         }
@@ -325,7 +334,7 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         } else {
             return;
         }
-        String message = MessageFormat.format(REPO_NAME_PREVIEW_MSG, repoTypeName, prjName, repoNameTextField.getText());
+        String message = MessageFormat.format(REPO_NAME_PREVIEW_MSG, Kenai.getDefault().getUrl().toString(), repoTypeName, prjName, repoNameTextField.getText());
         repoNamePreviewLabel.setText(message);
     }
 
@@ -992,9 +1001,9 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         String issuesUrl = (String) this.settings.getProperty(NewKenaiProjectWizardIterator.PROP_ISSUES_URL);
         if (issuesUrl == null || "".equals(issuesUrl.trim())) { // NOI18N
             // external issues tracking url will be empty by default
-            setRepoUrl(""); // NOI18N
+            setIssuesUrl(""); // NOI18N
         } else {
-            setRepoUrl(issuesUrl);
+            setIssuesUrl(issuesUrl);
         }
 
         Boolean createChat = (Boolean) this.settings.getProperty(NewKenaiProjectWizardIterator.PROP_CREATE_CHAT);

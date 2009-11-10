@@ -50,8 +50,10 @@ package org.netbeans.modules.editor.lib2.highlighting;
 
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Random;
 import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
 import javax.swing.text.Position;
@@ -63,6 +65,7 @@ import org.netbeans.spi.editor.highlighting.HighlightsChangeEvent;
 import org.netbeans.spi.editor.highlighting.HighlightsChangeListener;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.spi.editor.highlighting.support.AbstractHighlightsContainer;
 
 /**
  *
@@ -157,7 +160,7 @@ public class CompoundHighlightsContainerTest extends NbTestCase {
         HighlightsContainer [] layers = new HighlightsContainer [layerNames.length];
         for(int i = 0; i < layers.length; i++) {
             layers[i] = createRandomBag(doc, layerNames[i]);
-        };
+        }
         
         CompoundHighlightsContainer proxyLayer = new CompoundHighlightsContainer(doc, layers);
         
@@ -279,7 +282,32 @@ public class CompoundHighlightsContainerTest extends NbTestCase {
         assertEquals("Wrong change start offset", 0, listener.lastEventStartOffset);
         assertEquals("Wrong change end offset", Integer.MAX_VALUE, listener.lastEventEndOffset);
     }
-    
+
+    public void testZeroPosition() throws BadLocationException {
+        PlainDocument doc = new PlainDocument();
+        TestHighlighsContainer thc = new TestHighlighsContainer();
+        CompoundHighlightsContainer chc = new CompoundHighlightsContainer();
+
+        chc.setLayers(doc, new HighlightsContainer[] { thc });
+        doc.insertString(0, "0123456789", null);
+
+        chc.getHighlights(0, Integer.MAX_VALUE);
+        assertEquals("Should have been queried", 2, thc.queries.size());
+        assertEquals("Wrong query startOffset", 0, (int) thc.queries.get(0));
+
+        thc.queries.clear();
+        doc.insertString(0, "abcd", null);
+        assertEquals("Should not have been queried", 0, thc.queries.size());
+
+        chc.getHighlights(0, Integer.MAX_VALUE);
+        assertEquals("Should have been queried again", 2, thc.queries.size());
+        assertEquals("Wrong query startOffset", 0, (int) thc.queries.get(0));
+
+        thc.queries.clear();
+        chc.getHighlights(0, Integer.MAX_VALUE);
+        assertEquals("Should not have been queried again", 0, thc.queries.size());
+    }
+
     private Highlight [] findPair(int offset, HighlightsSequence highlights) {
         Highlight left = null;
         Highlight right = null;
@@ -442,6 +470,17 @@ public class CompoundHighlightsContainerTest extends NbTestCase {
             return offset;
         }
     } // End of SimplePosition class
+
+    private static final class TestHighlighsContainer extends AbstractHighlightsContainer {
+        public final List<Integer> queries = new ArrayList<Integer>();
+
+        @Override
+        public HighlightsSequence getHighlights(int startOffset, int endOffset) {
+            queries.add(startOffset);
+            queries.add(endOffset);
+            return HighlightsSequence.EMPTY;
+        }
+    } // End of TestHighlighsContainer class
 
     private void dumpHighlights(HighlightsSequence seq) {
         System.out.println("Dumping highlights from: " + seq + "{");

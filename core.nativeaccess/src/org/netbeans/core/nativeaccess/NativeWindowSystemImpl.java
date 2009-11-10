@@ -39,8 +39,15 @@
 
 package org.netbeans.core.nativeaccess;
 
+import com.sun.jna.Native;
+import com.sun.jna.Platform;
 import java.awt.Shape;
 import java.awt.Window;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
@@ -57,6 +64,10 @@ import org.netbeans.core.nativeaccess.transparency.WindowUtils;
 public class NativeWindowSystemImpl extends NativeWindowSystem {
 
     private static final Logger LOG = Logger.getLogger(NativeWindowSystemImpl.class.getName());
+
+    public NativeWindowSystemImpl() {
+        extractNativeLibrary();
+    }
 
     public boolean isWindowAlphaSupported() {
         if( !is32Bit() )
@@ -78,7 +89,7 @@ public class NativeWindowSystemImpl extends NativeWindowSystem {
 
     private static boolean is32Bit() {
         String osarch = System.getProperty("os.arch"); //NOI18N
-        for (String x : new String[]{"i386", "i486", "i586", "i686"}) { //NOI18N
+        for (String x : new String[]{"x86", "i386", "i486", "i586", "i686"}) { //NOI18N
             if (x.equals(osarch)) {
                 return true;
             }
@@ -114,5 +125,124 @@ public class NativeWindowSystemImpl extends NativeWindowSystem {
         } catch( Throwable e ) {
             LOG.log(Level.INFO, null, e);
         }
+    }
+
+    /**
+     * Extract the native library from jna.jar to &lt;userdir&gt;/var/cache/jna
+     * so that it's reusable on next startup.
+     */
+    private void extractNativeLibrary() {
+        String userDir = System.getProperty("netbeans.user"); //NOI18N
+        if( null == userDir ) {
+            return;
+        }
+        File jnaDir = new File(new File(new File(userDir, "var"), "cache"), "jna"); //NOI18N
+        if( !jnaDir.exists() && !jnaDir.mkdirs() ) {
+            return;
+        }
+        if( !jnaDir.canWrite() ) {
+            return;
+        }
+
+        //copied and adapted from com.sun.jna.Native
+        String libname = System.mapLibraryName("jnidispatch"); //NOI18N
+        String arch = System.getProperty("os.arch"); //NOI18N
+        String name = System.getProperty("os.name"); //NOI18N
+
+        File jnaLib = new File(jnaDir, libname);
+        if( jnaLib.exists() && jnaLib.canRead() ) {
+            System.setProperty("jna.boot.library.path", jnaDir.getAbsolutePath());
+            return;
+        }
+
+        String resourceName = getNativeLibraryResourcePath(arch, name) + "/" + libname;
+        URL url = Native.class.getResource(resourceName);
+
+        // Add an ugly hack for OpenJDK (soylatte) - JNI libs use the usual .dylib extension
+        if( url == null && Platform.isMac() && resourceName.endsWith(".dylib") ) { //NOI18N
+            resourceName = resourceName.substring(0, resourceName.lastIndexOf(".dylib")) + ".jnilib"; //NOI18N
+            url = Native.class.getResource(resourceName);
+        }
+        if( url == null ) {
+            return;
+        }
+
+        if( !url.getProtocol().toLowerCase().equals("file") ) { //NOI18N
+            InputStream is = Native.class.getResourceAsStream(resourceName);
+            if( is == null ) {
+                return;
+            }
+
+            FileOutputStream fos = null;
+            try {
+                fos = new FileOutputStream(jnaLib);
+                int count;
+                byte[] buf = new byte[1024];
+                while( (count = is.read(buf, 0, buf.length)) > 0 ) {
+                    fos.write(buf, 0, count);
+                }
+            } catch( IOException e ) {
+                //ignore
+            } finally {
+                try {
+                    is.close();
+                } catch( IOException e ) {
+                }
+                if( fos != null ) {
+                    try {
+                        fos.close();
+                    } catch( IOException e ) {
+                    }
+                }
+            }
+        }
+        if( jnaLib.exists() && jnaLib.canRead() ) {
+            System.setProperty("jna.boot.library.path", jnaDir.getAbsolutePath()); //NOI18N
+        }
+    }
+
+    /**
+     * copied and adapted from com.sun.jna.Native
+     * @param arch
+     * @param name
+     * @return
+     */
+    static String getNativeLibraryResourcePath(String arch, String name) {
+        String osPrefix;
+        arch = arch.toLowerCase();
+        if( Platform.isWindows() ) {
+            if( "i386".equals(arch) ) { //NOI18N
+                arch = "x86"; //NOI18N
+            }
+            osPrefix = "win32-" + arch; //NOI18N
+        } else if( Platform.isMac() ) {
+            osPrefix = "darwin"; //NOI18N
+        } else if( Platform.isLinux() ) {
+            if( "x86".equals(arch) ) { //NOI18N
+                arch = "i386"; //NOI18N
+            } else if( "x86_64".equals(arch) ) { //NOI18N
+                arch = "amd64"; //NOI18N
+            }
+            osPrefix = "linux-" + arch; //NOI18N
+        } else if( Platform.isSolaris() ) {
+            osPrefix = "sunos-" + arch; //NOI18N
+        } else {
+            osPrefix = name.toLowerCase();
+            if( "x86".equals(arch) ) { //NOI18N
+                arch = "i386"; //NOI18N
+            }
+            if( "x86_64".equals(arch) ) { //NOI18N
+                arch = "amd64"; //NOI18N
+            }
+            if( "powerpc".equals(arch) ) { //NOI18N
+                arch = "ppc"; //NOI18N
+            }
+            int space = osPrefix.indexOf(" "); //NOI18N
+            if( space != -1 ) {
+                osPrefix = osPrefix.substring(0, space);
+            }
+            osPrefix += "-" + arch; //NOI18N
+        }
+        return "/com/sun/jna/" + osPrefix; //NOI18N
     }
 }

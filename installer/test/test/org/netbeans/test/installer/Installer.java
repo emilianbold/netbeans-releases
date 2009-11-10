@@ -16,7 +16,7 @@ public class Installer {
 
         // Pages
           // Apache
-        Utils.stepChooseComponet("Apache Tomcat");
+        Utils.stepChooseComponet( "Apache Tomcat", data );
         // Welcome
         Utils.stepWelcome();
         // Agreement
@@ -33,6 +33,14 @@ public class Installer {
             "Install GlassFish",
             data.GetApplicationServerInstallPath( )
           );
+        if( data.m_bPreludePresents )
+        {
+          Utils.stepSetDir(
+              data,
+              "Install GlassFish prelude",
+              data.GetApplicationServerPreludeInstallPath( )
+            );
+        }
         // Apache
         Utils.stepSetDir(
             data,

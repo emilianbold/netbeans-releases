@@ -45,7 +45,7 @@ import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.enterprise.setup.EnterpriseSetup;
 import org.netbeans.performance.enterprise.EPUtilities;
 
-import org.netbeans.jellytools.NewFileNameLocationStepOperator;
+import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.ComponentOperator;
@@ -59,7 +59,7 @@ import org.netbeans.junit.NbModuleSuite;
  */
 public class AddNewBpelProcessTest extends PerformanceTestCase {
     
-    private NewFileNameLocationStepOperator location;
+    private NewJavaFileNameLocationStepOperator location;
     
     /**
      * Creates a new instance of AddNewBpelProcess
@@ -107,7 +107,7 @@ public class AddNewBpelProcessTest extends PerformanceTestCase {
         wizard.selectCategory("SOA"); //NOI18N
         wizard.selectFileType("BPEL Process"); //NOI18N
         wizard.next();
-        location = new NewFileNameLocationStepOperator();
+        location = new NewJavaFileNameLocationStepOperator();
         location.txtObjectName().setText("BPELProcess_"+System.currentTimeMillis());
     }
 

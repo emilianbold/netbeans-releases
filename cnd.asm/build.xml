@@ -32,19 +32,19 @@
         <copy file="${asm.base.dir}/AntlrTokenTypes.txt" 
               tofile="${asm.output.dir}/AntlrTokenTypes.txt"
               overwrite="true"/>
-        <java classname="antlr.Tool" fork="true">
+        <java classname="org.netbeans.modules.cnd.antlr.Tool" fork="true">
             <arg value="-o"/>
             <arg value="${asm.output.dir}"/>
             <arg value="${asm.grammar.dir.att}/ATTScanner.g"/>
             <classpath path="${antlr.jar}"/>
         </java> 
-        <java classname="antlr.Tool" fork="true">
+        <java classname="org.netbeans.modules.cnd.antlr.Tool" fork="true">
             <arg value="-o"/>
             <arg value="${asm.output.dir}"/>
             <arg value="${asm.grammar.dir.dis}/DisScanner.g"/>
             <classpath path="${antlr.jar}"/>
         </java> 
-        <java classname="antlr.Tool" fork="true">
+        <java classname="org.netbeans.modules.cnd.antlr.Tool" fork="true">
             <arg value="-o"/>
             <arg value="${asm.output.dir}"/>
             <arg value="${asm.grammar.dir.ident}/IdentScanner.g"/>

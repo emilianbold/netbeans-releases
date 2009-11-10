@@ -201,8 +201,10 @@ public final class ActionToGoalUtils {
             names.add(map.getActionName());
         }
         for (NetbeansActionMapping map : configs.getDefaultConfig().getCustomMappings()) {
-            toRet.add(map);
-            names.add(map.getActionName());
+            if (!names.contains(map.getActionName())) {
+                toRet.add(map);
+                names.add(map.getActionName());
+            }
         }
         for (MavenActionsProvider prov : Lookup.getDefault().lookupAll(MavenActionsProvider.class)) {
             if (prov instanceof NbGlobalActionGoalProvider) {

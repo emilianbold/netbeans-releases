@@ -83,8 +83,6 @@ import org.openide.windows.WindowManager;
  */
 public class Hk2ItemNode extends AbstractNode {
     
-    protected static final String HTTP_HEADER = "http://"; // NOI18N
-
     protected final Decorator decorator;
     
     protected Hk2ItemNode(Children children, final Lookup lookup, final String name, final Decorator decorator) {
@@ -121,7 +119,7 @@ public class Hk2ItemNode extends AbstractNode {
                     
                     GlassfishModule commonModule = lookup.lookup(GlassfishModule.class);
                     if(commonModule != null) {
-                        CommandRunner mgr = new CommandRunner(commonModule.getInstanceProperties());
+                        CommandRunner mgr = new CommandRunner(commonModule.getCommandFactory(), commonModule.getInstanceProperties());
                         mgr.deploy(dir);
                     }
                 }
@@ -137,7 +135,7 @@ public class Hk2ItemNode extends AbstractNode {
                     Future<OperationState> result = null;
                     GlassfishModule commonModule = lookup.lookup(GlassfishModule.class);
                     if(commonModule != null) {
-                        CommandRunner mgr = new CommandRunner(commonModule.getInstanceProperties());
+                        CommandRunner mgr = new CommandRunner(commonModule.getCommandFactory(), commonModule.getInstanceProperties());
                         result = mgr.undeploy(name);
                         status = new WeakReference<Future<OperationState>>(result);
                     }

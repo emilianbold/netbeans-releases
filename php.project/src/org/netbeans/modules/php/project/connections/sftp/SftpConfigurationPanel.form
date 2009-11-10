@@ -14,9 +14,6 @@
       <ResourceString bundle="org/netbeans/modules/php/project/connections/sftp/Bundle.properties" key="SftpConfigurationPanel.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
     </Property>
   </AccessibilityProperties>
-  <SyntheticProperties>
-    <SyntheticProperty name="designerSize" type="java.awt.Dimension" value="-84,-19,0,5,115,114,0,18,106,97,118,97,46,97,119,116,46,68,105,109,101,110,115,105,111,110,65,-114,-39,-41,-84,95,68,20,2,0,2,73,0,6,104,101,105,103,104,116,73,0,5,119,105,100,116,104,120,112,0,0,0,-42,0,0,2,34"/>
-  </SyntheticProperties>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
@@ -53,13 +50,13 @@
                   </Group>
                   <Group type="102" alignment="1" attributes="0">
                       <Group type="103" groupAlignment="1" attributes="0">
-                          <Component id="knownHostsFileTextField" alignment="1" pref="320" max="32767" attributes="0"/>
-                          <Component id="identityFileTextField" alignment="0" pref="320" max="32767" attributes="0"/>
-                          <Component id="userTextField" alignment="0" pref="320" max="32767" attributes="2"/>
-                          <Component id="hostTextField" alignment="0" pref="320" max="32767" attributes="2"/>
-                          <Component id="timeoutTextField" alignment="0" pref="320" max="32767" attributes="0"/>
-                          <Component id="passwordTextField" alignment="1" pref="320" max="32767" attributes="0"/>
-                          <Component id="initialDirectoryTextField" alignment="1" pref="320" max="32767" attributes="2"/>
+                          <Component id="knownHostsFileTextField" alignment="1" pref="170" max="32767" attributes="0"/>
+                          <Component id="identityFileTextField" alignment="0" pref="170" max="32767" attributes="0"/>
+                          <Component id="userTextField" alignment="0" pref="170" max="32767" attributes="2"/>
+                          <Component id="hostTextField" alignment="0" pref="170" max="32767" attributes="2"/>
+                          <Component id="timeoutTextField" alignment="0" pref="170" max="32767" attributes="0"/>
+                          <Component id="passwordTextField" alignment="1" pref="170" max="32767" attributes="0"/>
+                          <Component id="initialDirectoryTextField" alignment="1" pref="170" max="32767" attributes="2"/>
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
@@ -171,6 +168,9 @@
         </Property>
       </Properties>
       <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/connections/sftp/Bundle.properties" key="SftpConfigurationPanel.hostTextField.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
         <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/php/project/connections/sftp/Bundle.properties" key="SftpConfigurationPanel.hostTextField.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
@@ -196,6 +196,9 @@
     </Component>
     <Component class="javax.swing.JTextField" name="portTextField">
       <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/connections/sftp/Bundle.properties" key="SftpConfigurationPanel.portTextField.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
         <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/php/project/connections/sftp/Bundle.properties" key="SftpConfigurationPanel.portTextField.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
@@ -221,6 +224,9 @@
     </Component>
     <Component class="javax.swing.JTextField" name="userTextField">
       <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/connections/sftp/Bundle.properties" key="SftpConfigurationPanel.userTextField.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
         <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/php/project/connections/sftp/Bundle.properties" key="SftpConfigurationPanel.userTextField.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
@@ -246,6 +252,9 @@
     </Component>
     <Component class="javax.swing.JPasswordField" name="passwordTextField">
       <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/connections/sftp/Bundle.properties" key="SftpConfigurationPanel.passwordTextField.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
         <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/php/project/connections/sftp/Bundle.properties" key="SftpConfigurationPanel.passwordTextField.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
@@ -396,6 +405,9 @@
         </Property>
       </Properties>
       <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/connections/sftp/Bundle.properties" key="SftpConfigurationPanel.timeoutTextField.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
         <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/php/project/connections/sftp/Bundle.properties" key="SftpConfigurationPanel.timeoutTextField.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>

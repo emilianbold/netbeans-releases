@@ -46,6 +46,7 @@ import java.util.Stack;
 import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.ParameterInfo;
@@ -69,12 +70,10 @@ import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
  */
 public class ParameterInfoSupport {
     private ModelVisitor modelVisitor;
-    private Document document;
     private int offset;
 
-    ParameterInfoSupport(ModelVisitor modelVisitor, Document document, int offset) {
+    ParameterInfoSupport(ModelVisitor modelVisitor, int offset) {
         this.modelVisitor = modelVisitor;
-        this.document = document;
         this.offset = offset;
     }
     private static final Collection<PHPTokenId> CTX_DELIMITERS = Arrays.asList(
@@ -106,7 +105,8 @@ public class ParameterInfoSupport {
         if (modelScope == null || nearestVariableScope == null) {
             return ParameterInfo.NONE;
         }
-        TokenSequence<PHPTokenId> tokenSequence = LexUtilities.getPHPTokenSequence(document, offset);
+        TokenHierarchy<?> tokenHierarchy = modelVisitor.getCompilationInfo().getSnapshot().getTokenHierarchy();
+        TokenSequence<PHPTokenId> tokenSequence = LexUtilities.getPHPTokenSequence(tokenHierarchy, offset);
 
         if (moveToOffset(tokenSequence, offset)) {
             return ParameterInfo.NONE;
@@ -419,7 +419,7 @@ public class ParameterInfoSupport {
         sb.append(parameter.getName());
         String defaultValue = parameter.getDefaultValue();
         if (defaultValue != null) {
-            sb.append("=").append(defaultValue).append(" "); //NOI18N
+            sb.append(" = ").append(defaultValue); //NOI18N
         }
         final String paramString = sb.toString();
         return paramString;

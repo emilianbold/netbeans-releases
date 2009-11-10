@@ -174,19 +174,19 @@ class Reporter < Spec::Runner::Reporter
   end
 
   def location(example)
-    location = ''
+    location = nil
     backtrace = backtrace(example)
-    if (backtrace != nil)
-      location = backtrace[0] unless backtrace.length == 0
+    if (backtrace != nil and backtrace.length > 0)
+      location = backtrace[0]
     end
-    location
+    location || ''
   end
 
   def backtrace(example)
     # 'implementation_backtrace' is deprecated in > 1.1.11, replaced with 'backtrace' which in turn
     # is deprecated in 1.2 and replaced with 'location'
     if (example.respond_to?(:location))
-      return example.location
+      return [example.location] # location is a string
     elsif (example.respond_to?(:backtrace))
       return example.backtrace
     elsif (example.respond_to?(:implementation_backtrace))

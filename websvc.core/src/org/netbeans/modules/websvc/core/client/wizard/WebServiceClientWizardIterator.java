@@ -52,7 +52,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.websvc.api.support.ClientCreator;
 import org.netbeans.modules.websvc.core.CreatorProvider;
 import org.netbeans.modules.websvc.core.JaxWsUtils;
-import org.netbeans.modules.websvc.core.ProjectInfo;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
@@ -136,7 +135,7 @@ public class WebServiceClientWizardIterator implements TemplateWizard.Iterator {
         params[0] = isJaxWs ? LogUtils.WS_STACK_JAXWS : LogUtils.WS_STACK_JAXRPC ;
         params[1] = project.getClass().getName();
         J2eeModule j2eeModule = JaxWsUtils.getJ2eeModule(project);
-        params[2] = j2eeModule == null ? null : j2eeModule.getModuleVersion(); //NOI18N
+        params[2] = j2eeModule == null ? "J2SE" : j2eeModule.getModuleVersion()+"("+JaxWsUtils.getModuleType(project)+")"; //NOI18N
         params[3] = (Boolean) wiz.getProperty(ClientWizardProperties.USEDISPATCH) ? "DISPATCH": "WS CLIENTL"; //NOI18N
         int wsdlSource = (Integer)wiz.getProperty(ClientWizardProperties.WSDL_SOURCE);
         switch (wsdlSource) {

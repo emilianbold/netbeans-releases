@@ -221,4 +221,9 @@ public class RecognizeInstanceFilesTest extends NamedServicesLookupTest{
 
     public static final class Shared extends SharedClassObject {}
 
+    public void testDoNotCreateFoldersJustBecauseILookedThemUp() throws Exception {
+        assertEquals(0, Lookups.forPath("nonexistent").lookupAll(Object.class).size());
+        assertNull(FileUtil.getConfigFile("nonexistent"));
+    }
+
 }

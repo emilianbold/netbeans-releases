@@ -1114,16 +1114,32 @@ made subject to such option by the copyright holder.
          &lt;attr name="displayName"
           bundlevalue="org.netbeans.modules.mymodule.options.Bundle#Category_Display_Name"/&gt;
          &lt;!-- item --&gt;
-         &lt;file name="MyItem"&gt;
-             &lt;attr name="displayName" stringvalue="org.netbeans.modules.mymodule.options.Bundle#Item_Display_Name"/&gt;
+         &lt;file name="MyItem1"&gt;
+             &lt;attr name="displayName" bundlevalue="org.netbeans.modules.mymodule.options.Bundle#Item1_Display_Name"/&gt;
              &lt;!-- include regex pattern rooted to userdir --&gt;
              &lt;attr name="include" stringvalue="config/Preferences/org/netbeans/modules/mymodule/.*|config/mymodule/.*"/&gt;
              &lt;!-- exclude regex pattern rooted to userdir --&gt;
              &lt;attr name="exclude" stringvalue="config/mymodule/obsolete/.*"/&gt;
          &lt;/file&gt;
+         &lt;!-- item --&gt;
+         &lt;file name="MyItem2"&gt;
+             &lt;attr name="displayName" bundlevalue="org.netbeans.modules.mymodule.options.Bundle#Item2_Display_Name"/&gt;
+             &lt;!-- include pattern with properties constrain --&gt;
+             &lt;attr name="include" stringvalue="config/mymodule[.]properties#key[1-9].*|keyA.*#|config/mymodule[.]xml"/&gt;
+             &lt;!-- exclude pattern with properties constrain  --&gt;
+             &lt;attr name="exclude" stringvalue="config/obsolete[.]properties#key5"/&gt;
+         &lt;/file&gt;
      &lt;/folder&gt;
  &lt;/folder&gt;
  </pre>
+        Include/exclude patterns may contain either a regular expression defining
+        files relatively to userdir (see MyItem1) or a compound pattern defining
+        files and property keys (see MyItem2). A compound pattern consists of
+        file regex pattern followed by hash delimiter (#) then property key
+        regex pattern followed by another hash delimiter. Hash delimiter can be
+        ommited at the end of compound pattern. For example, a compound pattern
+        can have the following structure
+        <code>filePattern1#keyPattern1#|filePattern2|filePattern3#keyPattern3</code>.
    </api>
   </p>
  </answer>

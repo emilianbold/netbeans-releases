@@ -104,7 +104,7 @@ public class KenaiSearchPanel extends JPanel {
 
     private final JLabel noSearchResultsLabel = new JLabel(NbBundle.getMessage(KenaiSearchPanel.class, "NoSearchResults.label.text"));
     private final JLabel noMatchingResultsLabel = new JLabel(NbBundle.getMessage(KenaiSearchPanel.class, "NoResultsMatching.label.text"));
-    private final JLabel badRequest = new JLabel(NbBundle.getMessage(KenaiSearchPanel.class, "BadRequest.label.text"));
+    private final JLabel badRequest = new JLabel();
 
     private JPanel noSearchLabelPanel;
     private JPanel noMatchingLabelPanel;
@@ -515,23 +515,25 @@ public class KenaiSearchPanel extends JPanel {
                 String searchPattern = "&filter=" + type; //NOI18N
                 try {
                     projectsIterator = Kenai.getDefault().searchProjects(searchPattern).iterator();
-                } catch (KenaiException em) {
+                } catch (final KenaiException em) {
                     // SHOULD NOT HAPPEN - THIS IS WELL KNOWN REQUEST CALLED FROM IDE (featured, recent, ...)
                     // REQUEST IS WELL FORMED
-                    if ("400 Bad Request".equals(em.getStatus())) { //NOI18N
                         EventQueue.invokeLater(new Runnable() {
                             public void run() {
                                 ph.finish();
                                 wherePanel.remove(progressPanel);
+                                if ("400 Bad Request".equals(em.getStatus())) { //NOI18N
+                                    badRequest.setText(NbBundle.getMessage(KenaiSearchPanel.class, "BadRequest.label.text"));
+                                } else {
+                                    badRequest.setText(NbBundle.getMessage(KenaiSearchPanel.class, "ServerError.label.text"));
+                                }
                                 wherePanel.add(badRequestPanel, BorderLayout.CENTER);
                                 revalidate();
                                 repaint();
                             }
                         });
+                        Logger.getLogger(KenaiSearchPanel.class.getName()).log(Level.INFO, em.getMessage(), em);
                         return;
-                    } else {
-                        Exceptions.printStackTrace(em);
-                    }
                 }
                 if (projectsIterator != null && projectsIterator.hasNext()) {
                     // XXX createModel
@@ -624,24 +626,27 @@ public class KenaiSearchPanel extends JPanel {
                 }
                 try {
                     projectsIterator = Kenai.getDefault().searchProjects(searchPattern).iterator();
-                } catch (KenaiException em) {
-                    if ("400 Bad Request".equals(em.getStatus())) { //NOI18N
-                        EventQueue.invokeLater(new Runnable() {
-                            public void run() {
-                                finishProgress();
-                                searchResultsPanel.remove(progressPanel);
-                                searchButton.setEnabled(true);
-                                searchTextField.setEnabled(true);
-                                searchResultsPanel.add(badRequestPanel, BorderLayout.CENTER);
-                                revalidate();
-                                repaint();
-                                searchTextField.requestFocus();
+                } catch (final KenaiException em) {
+                    EventQueue.invokeLater(new Runnable() {
+
+                        public void run() {
+                            finishProgress();
+                            searchResultsPanel.remove(progressPanel);
+                            searchButton.setEnabled(true);
+                            searchTextField.setEnabled(true);
+                            if ("400 Bad Request".equals(em.getStatus())) { //NOI18N
+                                badRequest.setText(NbBundle.getMessage(KenaiSearchPanel.class, "BadRequest.label.text"));
+                            } else {
+                                badRequest.setText(NbBundle.getMessage(KenaiSearchPanel.class, "ServerError.label.text"));
                             }
-                        });
-                        return;
-                    } else {
-                        Exceptions.printStackTrace(em);
-                    }
+                            searchResultsPanel.add(badRequestPanel, BorderLayout.CENTER);
+                            revalidate();
+                            repaint();
+                            searchTextField.requestFocus();
+                        }
+                    });
+                    Logger.getLogger(KenaiSearchPanel.class.getName()).log(Level.INFO, em.getMessage(), em);
+                    return;
                 }
                 if (projectsIterator != null && projectsIterator.hasNext()) {
                     // XXX createModel

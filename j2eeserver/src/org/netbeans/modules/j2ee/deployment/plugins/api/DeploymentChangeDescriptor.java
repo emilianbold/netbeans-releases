@@ -40,6 +40,7 @@
 package org.netbeans.modules.j2ee.deployment.plugins.api;
 
 import java.io.File;
+import org.netbeans.modules.j2ee.deployment.impl.ChangeDescriptorAccessor;
 import org.netbeans.modules.j2ee.deployment.impl.ServerFileDistributor;
 
 /**
@@ -51,19 +52,28 @@ import org.netbeans.modules.j2ee.deployment.impl.ServerFileDistributor;
  */
 public final class DeploymentChangeDescriptor implements AppChangeDescriptor {
 
-    private final AppChangeDescriptor desc;
+    private final ServerFileDistributor.AppChanges desc;
 
+    private final boolean serverResourcesChanged;
+    
     static {
-        ServerFileDistributor.Accessor.setDefault(new ServerFileDistributor.Accessor() {
+        ChangeDescriptorAccessor.setDefault(new ChangeDescriptorAccessor() {
             @Override
             public DeploymentChangeDescriptor newDescriptor(ServerFileDistributor.AppChanges desc) {
-                return new DeploymentChangeDescriptor(desc);
+                return new DeploymentChangeDescriptor(desc, false);
+            }
+
+            @Override
+            public DeploymentChangeDescriptor withChangedServerResources(DeploymentChangeDescriptor desc) {
+                return new DeploymentChangeDescriptor(desc.desc, true);
             }
         });
     }
 
-    private DeploymentChangeDescriptor(ServerFileDistributor.AppChanges desc) {
+    private DeploymentChangeDescriptor(ServerFileDistributor.AppChanges desc,
+            boolean serverResourcesChanged) {
         this.desc = desc;
+        this.serverResourcesChanged = serverResourcesChanged;
     }
 
     /**
@@ -115,6 +125,10 @@ public final class DeploymentChangeDescriptor implements AppChangeDescriptor {
      */
     public boolean classesChanged() {
         return desc.classesChanged();
+    }
+
+    public boolean serverResourcesChanged() {
+        return serverResourcesChanged;
     }
 
 }

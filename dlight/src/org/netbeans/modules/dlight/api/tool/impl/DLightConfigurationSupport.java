@@ -67,10 +67,6 @@ public final class DLightConfigurationSupport {
         //create XML layer
     }
 
-    public boolean registerTool(String configurationName, DLightTool dlightTool) {
-        DLightConfiguration configuration = DLightConfigurationManagerAccessor.getDefault().getDefaultConfiguration(DLightConfigurationManager.getInstance());
-        return DLightConfigurationManagerAccessor.getDefault().registerTool(DLightConfigurationManager.getInstance(), configurationName, dlightTool);
-    }
 
     public boolean registerTool(String configurationName, String toolID, boolean isOnByDefault) {
         return DLightConfigurationManagerAccessor.getDefault().registerTool(configurationName, toolID, isOnByDefault);
@@ -78,9 +74,14 @@ public final class DLightConfigurationSupport {
 
 
     public boolean deleteTool(String configurationName, DLightTool dlightTool) {
-        DLightConfiguration configuration = DLightConfigurationManagerAccessor.getDefault().getDefaultConfiguration(DLightConfigurationManager.getInstance());
         return DLightConfigurationManagerAccessor.getDefault().deleteTool(DLightConfigurationManager.getInstance(), configurationName, dlightTool);
 
+    }
+
+   public DLightConfiguration registerConfigurationAsACopy(DLightConfiguration configuration,
+           String configurationName, String displayedName, String category, List<String> platforms, String collector, List<String> indicators){
+        return DLightConfigurationManagerAccessor.getDefault().registerConfigurationAsACopy(DLightConfigurationManager.getInstance(),
+                configuration, configurationName, displayedName, category, platforms, collector, indicators);
     }
 
     public DLightConfiguration registerConfiguration(String configurationName, String displayedName, String category, List<String> platforms, String collector, List<String> indicators){

@@ -141,7 +141,7 @@ public final class DLightUIPrefs {
         prefs.put(INDICATOR_GRAPH_FILTER_COLOR, new Color(0xB4, 0xB4, 0xB4, 0x80));
         prefs.put(INDICATOR_LINE_THICKNESS, 2.0f);
         prefs.put(INDICATOR_BALL_SIZE, 5);
-        prefs.put(INDICATOR_GRID_COLOR, new Color(0xD7, 0xE0, 0xE3));
+        prefs.put(INDICATOR_GRID_COLOR, new Color(0xD7, 0xE0, 0xE3, 0x80));
 
         prefs.put(INDICATOR_LEGEND_WIDTH, graphWidth);
         prefs.put(INDICATOR_LEGEND_HEIGHT, graphHeight);

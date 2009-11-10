@@ -40,8 +40,11 @@
  */
 package org.netbeans.modules.javacard.console;
 
-import org.netbeans.modules.javacard.api.Card;
 import org.netbeans.modules.javacard.shell.ShellTopComponent;
+import org.netbeans.modules.javacard.spi.capabilities.ApduSupport;
+import org.netbeans.modules.javacard.spi.Card;
+import org.netbeans.modules.javacard.spi.capabilities.PortKind;
+import org.netbeans.modules.javacard.spi.capabilities.PortProvider;
 import org.netbeans.spi.actions.Single;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -59,7 +62,22 @@ public class ShowAPDUConsoleAction extends Single<Card> {
 
     @Override
     protected boolean isEnabled(Card target) {
-        return target.isRunning();
+        boolean result = target.getState().isRunning();
+        if (result) {
+            ApduSupport p = target.getCapability(ApduSupport.class);
+            result = p != null;
+            if (result) {
+                result = p.getContactedProtocol() != null;
+                if (result) {
+                    PortProvider ports = target.getCapability(PortProvider.class);
+                    result = ports != null;
+                    if (result) {
+                        result = ports.getPort(PortKind.CONTACTLESS) != -1;
+                    }
+                }
+            }
+        }
+        return result;
     }
 
     @Override

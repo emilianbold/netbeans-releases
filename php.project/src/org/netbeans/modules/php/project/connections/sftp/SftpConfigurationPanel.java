@@ -239,25 +239,25 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
         setFocusTraversalPolicy(null);
 
         hostLabel.setLabelFor(hostTextField);
-
         Mnemonics.setLocalizedText(hostLabel, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.hostLabel.text")); // NOI18N
+
         knownHostsFileLabel.setLabelFor(knownHostsFileTextField);
 
         Mnemonics.setLocalizedText(knownHostsFileLabel, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.knownHostsFileLabel.text"));
         hostTextField.setMinimumSize(new Dimension(150, 19));
 
         portLabel.setLabelFor(portTextField);
-
         Mnemonics.setLocalizedText(portLabel, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.portLabel.text")); // NOI18N
+
         userLabel.setLabelFor(userTextField);
-
         Mnemonics.setLocalizedText(userLabel, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.userLabel.text")); // NOI18N
+
         passwordLabel.setLabelFor(passwordTextField);
-
         Mnemonics.setLocalizedText(passwordLabel, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.passwordLabel.text")); // NOI18N
-        passwordLabelInfo.setLabelFor(this);
 
+        passwordLabelInfo.setLabelFor(this);
         Mnemonics.setLocalizedText(passwordLabelInfo, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.passwordLabelInfo.text")); // NOI18N
+
         identityFileLabel.setLabelFor(identityFileTextField);
 
         Mnemonics.setLocalizedText(identityFileLabel, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.identityFileLabel.text"));
@@ -275,8 +275,8 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
         });
 
         initialDirectoryLabel.setLabelFor(initialDirectoryTextField);
-
         Mnemonics.setLocalizedText(initialDirectoryLabel, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.initialDirectoryLabel.text")); // NOI18N
+
         timeoutLabel.setLabelFor(timeoutTextField);
 
         Mnemonics.setLocalizedText(timeoutLabel, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.timeoutLabel.text"));
@@ -301,17 +301,17 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(passwordLabelInfo)
+                        .add(passwordLabelInfo, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                         .addContainerGap())
                     .add(GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(layout.createParallelGroup(GroupLayout.TRAILING)
-                            .add(knownHostsFileTextField, GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE)
-                            .add(GroupLayout.LEADING, identityFileTextField, GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE)
-                            .add(GroupLayout.LEADING, userTextField, GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE)
-                            .add(GroupLayout.LEADING, hostTextField, GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE)
-                            .add(GroupLayout.LEADING, timeoutTextField, GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE)
-                            .add(passwordTextField, GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE)
-                            .add(initialDirectoryTextField, GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE))
+                            .add(knownHostsFileTextField, GroupLayout.DEFAULT_SIZE, 170, Short.MAX_VALUE)
+                            .add(GroupLayout.LEADING, identityFileTextField, GroupLayout.DEFAULT_SIZE, 170, Short.MAX_VALUE)
+                            .add(GroupLayout.LEADING, userTextField, GroupLayout.DEFAULT_SIZE, 170, Short.MAX_VALUE)
+                            .add(GroupLayout.LEADING, hostTextField, GroupLayout.DEFAULT_SIZE, 170, Short.MAX_VALUE)
+                            .add(GroupLayout.LEADING, timeoutTextField, GroupLayout.DEFAULT_SIZE, 170, Short.MAX_VALUE)
+                            .add(passwordTextField, GroupLayout.DEFAULT_SIZE, 170, Short.MAX_VALUE)
+                            .add(initialDirectoryTextField, GroupLayout.DEFAULT_SIZE, 170, Short.MAX_VALUE))
                         .addPreferredGap(LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(GroupLayout.LEADING)
                             .add(GroupLayout.TRAILING, layout.createParallelGroup(GroupLayout.LEADING, false)
@@ -343,7 +343,7 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
                     .add(passwordLabel)
                     .add(passwordTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(LayoutStyle.RELATED)
-                .add(passwordLabelInfo)
+                .add(passwordLabelInfo, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(GroupLayout.BASELINE)
                     .add(identityFileTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
@@ -369,15 +369,19 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
         hostLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.hostLabel.AccessibleContext.accessibleDescription")); // NOI18N
         knownHostsFileLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.knownHostsFileLabel.AccessibleContext.accessibleName")); // NOI18N
         knownHostsFileLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.knownHostsFileLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        hostTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.hostTextField.AccessibleContext.accessibleName")); // NOI18N
         hostTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.hostTextField.AccessibleContext.accessibleDescription")); // NOI18N
         portLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.portLabel.AccessibleContext.accessibleName")); // NOI18N
         portLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.portLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        portTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.portTextField.AccessibleContext.accessibleName")); // NOI18N
         portTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.portTextField.AccessibleContext.accessibleDescription")); // NOI18N
         userLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.userLabel.AccessibleContext.accessibleName")); // NOI18N
         userLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.userLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        userTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.userTextField.AccessibleContext.accessibleName")); // NOI18N
         userTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.userTextField.AccessibleContext.accessibleDescription")); // NOI18N
         passwordLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.passwordLabel.AccessibleContext.accessibleName")); // NOI18N
         passwordLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.passwordLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        passwordTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.passwordTextField.AccessibleContext.accessibleName")); // NOI18N
         passwordTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.passwordTextField.AccessibleContext.accessibleDescription")); // NOI18N
         passwordLabelInfo.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.passwordLabelInfo.AccessibleContext.accessibleName")); // NOI18N
         passwordLabelInfo.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.passwordLabelInfo.AccessibleContext.accessibleDescription")); // NOI18N
@@ -397,6 +401,7 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
         initialDirectoryTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.initialDirectoryTextField.AccessibleContext.accessibleDescription")); // NOI18N
         timeoutLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.timeoutLabel.AccessibleContext.accessibleName")); // NOI18N
         timeoutLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.timeoutLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        timeoutTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.timeoutTextField.AccessibleContext.accessibleName")); // NOI18N
         timeoutTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.timeoutTextField.AccessibleContext.accessibleDescription")); // NOI18N
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.AccessibleContext.accessibleName")); // NOI18N
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.AccessibleContext.accessibleDescription")); // NOI18N

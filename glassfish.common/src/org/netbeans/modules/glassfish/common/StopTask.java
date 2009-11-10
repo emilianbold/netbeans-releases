@@ -98,7 +98,7 @@ public class StopTask extends BasicTask<OperationState> {
         // !PW Can we have a single manager instance per instance, available on
         // demand through lookup?
         // !PW FIXME this uses doubly nested runnables.  Can we fix?
-        CommandRunner mgr = new CommandRunner(ip, new OperationStateListener() {
+        CommandRunner mgr = new CommandRunner(support.getCommandFactory(), ip, new OperationStateListener() {
             // if the http command is successful, we are not done yet...
             // The server still has to stop. If we signal success to the 'stateListener'
             // for the task, it may be premature.
@@ -121,6 +121,9 @@ public class StopTask extends BasicTask<OperationState> {
                     Thread.sleep(1000); // flush the process
                 } catch (InterruptedException e) {
                 }
+                LogViewMgr logger = LogViewMgr.getInstance(ip.get(GlassfishModule.URL_ATTR));
+                logger.stopReaders();
+
                 return fireOperationStateChanged(OperationState.COMPLETED, 
                         "MSG_SERVER_STOPPED", instanceName); // NOI18N
             }

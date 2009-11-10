@@ -241,6 +241,7 @@ public class HtmlBrowser extends JPanel {
     * for all HtmlBrowers.
     * @deprecated Use Lookup instead to register factories
     */
+    @Deprecated
     public static void setFactory(Factory brFactory) {
         browserFactory = brFactory;
     }
@@ -906,7 +907,7 @@ public class HtmlBrowser extends JPanel {
          * @return the default instance from lookup
          */
         public static URLDisplayer getDefault() {
-            URLDisplayer dflt = (URLDisplayer) Lookup.getDefault().lookup(URLDisplayer.class);
+            URLDisplayer dflt = Lookup.getDefault().lookup(URLDisplayer.class);
 
             if (dflt == null) {
                 // Fallback.

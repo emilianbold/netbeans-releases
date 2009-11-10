@@ -69,8 +69,10 @@ public class GNUCCompiler extends GNUCCCCompiler {
     public GNUCCompiler createCopy() {
         GNUCCompiler copy = new GNUCCompiler(getExecutionEnvironment(), getFlavor(), getKind(), "", getDisplayName(), getPath());
         copy.setName(getName());
-        copy.setSystemIncludeDirectories(getSystemIncludeDirectories());
-        copy.setSystemPreprocessorSymbols(getSystemPreprocessorSymbols());
+        if (isReady()) {
+            copy.setSystemIncludeDirectories(getSystemIncludeDirectories());
+            copy.setSystemPreprocessorSymbols(getSystemPreprocessorSymbols());
+        }
         return copy;
     }
     

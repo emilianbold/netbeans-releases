@@ -548,7 +548,7 @@ public final class HtmlRenderer {
         }
 
         //Thread safety - avoid allocating memory for the common case
-        Stack<Color> colorStack = SwingUtilities.isEventDispatchThread() ? HtmlRenderer.colorStack : new Stack<Color>();
+        Stack<Color> _colorStack = SwingUtilities.isEventDispatchThread() ? HtmlRenderer.colorStack : new Stack<Color>();
 
         g.setColor(defaultColor);
         g.setFont(f);
@@ -599,7 +599,7 @@ public final class HtmlRenderer {
             (paint ..., give up or skip to the next line)
          */
         //Clear any junk left behind from a previous rendering loop
-        colorStack.clear();
+        _colorStack.clear();
 
         //Enter the painting loop
         while (!done) {
@@ -747,10 +747,10 @@ public final class HtmlRenderer {
                     case 'F': //NOI18N
                     case 'f': //NOI18N
 
-                        if (colorStack.isEmpty()) {
+                        if (_colorStack.isEmpty()) {
                             g.setColor(defaultColor);
                         } else {
-                            g.setColor(colorStack.pop());
+                            g.setColor(_colorStack.pop());
                         }
 
                         break;
@@ -843,7 +843,7 @@ public final class HtmlRenderer {
                     case 'F': //NOI18N
 
                         Color c = findColor(chars, pos, tagEnd);
-                        colorStack.push(g.getColor());
+                        _colorStack.push(g.getColor());
 
                         if (background != null) {
                             c = HtmlLabelUI.ensureContrastingColor(c, background);
@@ -871,6 +871,9 @@ public final class HtmlRenderer {
                     case 'h': //Just an opening HTML tag
 
                         if (pos == 1) {
+                            break;
+                        } else { // fallthrough warning
+                            throwBadHTML("Malformed or unsupported HTML", pos, chars); //NOI18N
                             break;
                         }
 

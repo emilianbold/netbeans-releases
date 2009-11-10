@@ -68,6 +68,8 @@ made subject to such option by the copyright holder.
     </assembler>
     <linker>
         <library_prefix stringvalue="cyg"/>
+        <dynamic_library_search flags=""/>
+        <PIC flags=""/>
         <dynamic_library_basic flags="-mno-cygwin -shared "/>
     </linker>
 </toolchaindefinition>

@@ -56,6 +56,8 @@ import org.netbeans.modules.cnd.apt.support.APTFileCacheManager;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelutil.NamedEntity;
+import org.netbeans.modules.cnd.modelutil.NamedEntityOptions;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.util.RequestProcessor;
 
@@ -389,8 +391,20 @@ public final class ProjectImpl extends ProjectBase {
         }, true);
         task.setPriority(Thread.MIN_PRIORITY);
         int delay = TraceFlags.REPARSE_DELAY;
-        if (file.getLastParseTime() / (delay+1) > 2) {
-            delay = Math.max(delay, file.getLastParseTime()+2000);
+        boolean doReparse = NamedEntityOptions.instance().isEnabled(new NamedEntity() {
+            public String getName() {
+                return "reparse-on-document-changed"; //NOI18N
+            }
+            public boolean isEnabledByDefault() {
+                return true;
+            }
+        });
+        if (doReparse) {
+            if (file.getLastParseTime() / (delay+1) > 2) {
+                delay = Math.max(delay, file.getLastParseTime()+2000);
+            }
+        } else {
+            delay = Integer.MAX_VALUE;
         }
         task.schedule(delay);
     }

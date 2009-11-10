@@ -113,7 +113,6 @@ public class FileUtilTest extends NbTestCase {
     /** Tests FileChangeListener on File.
      * @see FileUtil#addFileChangeListener(org.openide.filesystems.FileChangeListener, java.io.File)
      */
-    @RandomlyFails // NB-Core-Build #3392
     public void testAddFileChangeListener() throws IOException, InterruptedException {
         clearWorkDir();
         File rootF = getWorkDir();
@@ -212,7 +211,9 @@ public class FileUtilTest extends NbTestCase {
         TestFileUtils.touch(fileF, null);
         FileUtil.refreshAll();
         assertEquals("Event not fired when file was modified.", 1, fcl.check(EventType.CHANGED));
-        assertEquals("Attribute change event not fired (see #129178).", 2, fcl.check(EventType.ATTRIBUTE_CHANGED));
+        // 1 if FileObject for dirF is already collected, 2 otherwise
+        int eventCount = fcl.check(EventType.ATTRIBUTE_CHANGED);
+        assertTrue("Attribute change event not fired (see #129178).", eventCount > 0 && eventCount < 3);
         fileF.delete();
         dirF.delete();
         FileUtil.refreshAll();
@@ -451,6 +452,7 @@ public class FileUtilTest extends NbTestCase {
      * {@link FileObject#addRecursiveListener(org.openide.filesystems.FileChangeListener) }.
      * It is expected that all events from sub folders are delivered just once.
      */
+    @RandomlyFails // NB-Core-Build #3405
     public void testAddRecursiveListenerToFileObjectFolder() throws Exception {
         checkFolderRecursiveListener(false);
     }
@@ -732,7 +734,9 @@ public class FileUtilTest extends NbTestCase {
         TestFileUtils.touch(fileF, null);
         FileUtil.refreshAll();
         assertEquals("Wrong number of events when file was modified.", 1, fcl.check(EventType.CHANGED));
-        assertEquals("Attribute change event not fired (see #129178).", 2, fcl.check(EventType.ATTRIBUTE_CHANGED));
+        // 1 if FileObject for dirF is already collected, 2 otherwise
+        int eventCount = fcl.check(EventType.ATTRIBUTE_CHANGED);
+        assertTrue("Attribute change event not fired (see #129178).", eventCount > 0 && eventCount < 3);
         fileF.delete();
         dirF.delete();
         FileUtil.refreshAll();

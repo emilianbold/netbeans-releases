@@ -40,7 +40,6 @@
  */
 package org.openide.awt;
 
-import java.awt.*;
 
 import javax.swing.*;
 
@@ -51,8 +50,9 @@ import javax.swing.*;
  * the content from getPopupMenu().
  * @deprecated doesn't do anything special anymore - since org.openide.awt 6.5
  */
+@Deprecated
 public class JMenuPlus extends JMenu {
-    static final long serialVersionUID = -7700146216422707913L;
+    private static final long serialVersionUID = -7700146216422707913L;
 //    private static final boolean NO_POPUP_PLACEMENT_HACK = Boolean.getBoolean("netbeans.popup.no_hack"); // NOI18N
 
     public JMenuPlus() {

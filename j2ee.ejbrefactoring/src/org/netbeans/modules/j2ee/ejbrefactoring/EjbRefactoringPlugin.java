@@ -27,9 +27,20 @@
  */
 package org.netbeans.modules.j2ee.ejbrefactoring;
 
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.Modifier;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
+import org.openide.filesystems.FileObject;
 
 /**
  * A plugin for EJB refactorings, only displays a warning message.
@@ -42,8 +53,10 @@ public class EjbRefactoringPlugin implements RefactoringPlugin{
      * The localized message to be displayed.
      */ 
     private final String message;
+    private AbstractRefactoring refactoring;
 
-    public EjbRefactoringPlugin(String message) {
+    public EjbRefactoringPlugin(AbstractRefactoring refactoring, String message) {
+        this.refactoring = refactoring;
         this.message = message;
     }
     
@@ -52,7 +65,32 @@ public class EjbRefactoringPlugin implements RefactoringPlugin{
     }
     
     public Problem checkParameters() {
-        return new Problem(false, message);
+        final Problem[] result = new Problem[]{new Problem(false, message)};
+        final TreePathHandle tph = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
+        if (tph != null){
+            FileObject fo = tph.getFileObject();
+            if (fo != null){
+                try {
+                    JavaSource js = JavaSource.forFileObject(fo);
+                    js.runUserActionTask(new CancellableTask<CompilationController>() {
+                        public void run(CompilationController info) throws Exception {
+                            info.toPhase(JavaSource.Phase.RESOLVED);
+                            Element el = tph.resolveElement(info);
+                            if (el.getModifiers().contains(Modifier.PRIVATE)){
+                                result[0] = null;
+                            }
+                        }
+
+                        public void cancel() {
+                            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+                        }
+                    }, true);
+                } catch (IOException ex) {
+                    Logger.global.log(Level.INFO, null, ex);
+                }
+            }
+        }
+        return result[0];
     }
     
     public Problem fastCheckParameters() {

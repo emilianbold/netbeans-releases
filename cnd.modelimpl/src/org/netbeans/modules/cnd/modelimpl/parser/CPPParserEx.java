@@ -68,8 +68,8 @@
  */
 package org.netbeans.modules.cnd.modelimpl.parser;
 
-import antlr.*;
-import antlr.collections.AST;
+import org.netbeans.modules.cnd.antlr.*;
+import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.util.Hashtable;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPParser;
@@ -87,7 +87,7 @@ public class CPPParserEx extends CPPParser {
 
     private boolean lazyCompound = TraceFlags.EXCLUDE_COMPOUND;
 
-    private static class AstFactoryEx extends antlr.ASTFactory {
+    private static class AstFactoryEx extends org.netbeans.modules.cnd.antlr.ASTFactory {
 
         public AstFactoryEx(Hashtable tokenTypeToClassMap) {
             super(tokenTypeToClassMap);

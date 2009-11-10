@@ -352,20 +352,19 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
 
     /**
      * Refreshes all files under given roots in the cache.
-     * @param rootFiles root files sorted under their's repository roots
+     * @param rootFiles root files to scan sorted under their repository roots
      */
     @Override
-    void refreshAllRoots (Map<File, File> rootFiles) {
-        for (Map.Entry<File, File> refreshEntry : rootFiles.entrySet()) {
+    void refreshAllRoots (Map<File, Set<File>> rootFiles) {
+        for (Map.Entry<File, Set<File>> refreshEntry : rootFiles.entrySet()) {
             File repository = refreshEntry.getKey();
-            File root = refreshEntry.getValue();
             if (LOG.isLoggable(Level.FINE)) {
-                LOG.log(Level.FINE, "refreshAllRoots() root: {0}, repositoryRoot: {1} ", new Object[] {root.getAbsolutePath(), repository.getAbsolutePath()}); // NOI18N
+                LOG.log(Level.FINE, "refreshAllRoots() roots: {0}, repositoryRoot: {1} ", new Object[] {refreshEntry.getValue(), repository.getAbsolutePath()}); // NOI18N
             }
             Map<File, FileInformation> interestingFiles;
             try {
                 // find all files with not up-to-date or ignored status
-                interestingFiles = HgCommand.getInterestingStatus(repository, root);
+                interestingFiles = HgCommand.getInterestingStatus(repository, new LinkedList<File>(refreshEntry.getValue()));
                 for (Map.Entry<File, FileInformation> interestingEntry : interestingFiles.entrySet()) {
                     // put the file's FI into the cache
                     File file = interestingEntry.getKey();
@@ -373,6 +372,7 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
                     LOG.log(Level.FINE, "refreshAllRoots() file: {0} {1} ", new Object[] {file.getAbsolutePath(), fi}); // NOI18N
                     refreshFileStatus(file, fi, interestingFiles);
                 }
+                for (File root : refreshEntry.getValue()) {
                 // clean all files originally in the cache but now being up-to-date or obsolete (as ignored && deleted)
                 for (Map.Entry<File, FileInformation> entry : getModifiedFiles(root, ~FileInformation.STATUS_VERSIONED_UPTODATE).entrySet()) {
                     File file = entry.getKey();
@@ -398,8 +398,9 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
                         }
                     }
                 }
+                }
             } catch (HgException ex) {
-                LOG.log(Level.INFO, "refreshAll() file: {0} {1} {2} ", new Object[] {repository.getAbsolutePath(), root.getAbsolutePath(), ex.toString()}); //NOI18N
+                LOG.log(Level.INFO, "refreshAll() file: {0} {1} {2} ", new Object[] {repository.getAbsolutePath(), refreshEntry.getValue(), ex.toString()}); //NOI18N
             }
         }
     }
@@ -422,7 +423,7 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
             }
         } else {
             // start the recursive refresh
-            refreshAllRoots(Collections.singletonMap(repositoryRoot, file));
+            refreshAllRoots(Collections.singletonMap(repositoryRoot, Collections.singleton(file)));
             // and return scanned value
             fi = getCachedStatus(file);
         }
@@ -694,7 +695,7 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
      */
     @Override
     public void refreshCached(File root) {
-        refreshAllRoots(Collections.singletonMap(hg.getRepositoryRoot(root), root));
+        refreshAllRoots(Collections.singletonMap(hg.getRepositoryRoot(root), Collections.singleton(root)));
     }
 
     /**

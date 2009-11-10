@@ -45,6 +45,7 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.util.logging.Logger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Lookup;
 
 /**
@@ -54,16 +55,29 @@ import org.openide.util.Lookup;
  * @author gordonp
  * @deprecated  Use {@link @org-netbeans-modules-nativexecution@} instead
  */
+@Deprecated
 public abstract class NativeExecution {
 
     protected static final Logger log = Logger.getLogger("cnd.execution.logger"); // NOI18N
 
-    /** Gets a NativeExecution instance for the given host */
-    public static NativeExecution getDefault(ExecutionEnvironment execEnv) {
+    /** 
+     * Gets a NativeExecution instance for the given host
+     * @param runDir absolute path to directory from where the command should be executed
+     * @param executable absolute or relative path to executable, makefile, or script
+     * @param arguments space separated list of arguments
+     * @param envp environment variables (name-value pairs of the form ABC=123)
+     * @param out Output
+     * @param io Input
+     * @param unbuffer - true if stdout unbuffering is needed
+     */
+    public static NativeExecution getDefault(ExecutionEnvironment execEnv, File runDirFile, String executable,
+            String arguments, String[] envp, boolean unbuffer, boolean x11forwarding) {
         if (execEnv != null) {
             for(NativeExecutionProvider provider : Lookup.getDefault().lookupAll(NativeExecutionProvider.class)) {
                 if (provider.isApplicable(execEnv)) {
-                    final NativeExecution nativeExecution = provider.getNativeExecution(execEnv);
+                    final NativeExecution nativeExecution = provider.getNativeExecution(
+                            execEnv, runDirFile, executable,
+                            arguments, envp, unbuffer, x11forwarding);
                     assert nativeExecution != null;
                     return nativeExecution;
                 }
@@ -75,23 +89,9 @@ public abstract class NativeExecution {
 
     /**
      * Execute an executable, a makefile, or a script
-     * @param runDir absolute path to directory from where the command should be executed
-     * @param executable absolute or relative path to executable, makefile, or script
-     * @param arguments space separated list of arguments
-     * @param envp environment variables (name-value pairs of the form ABC=123)
-     * @param out Output
-     * @param io Input
-     * @param unbuffer - true if stdout unbuffering is needed
      * @return completion code
      */
-    public abstract int executeCommand(
-            File runDirFile,
-            String executable,
-            String arguments,
-            String[] envp,
-            PrintWriter out,
-            Reader in,
-            boolean unbuffer) throws IOException, InterruptedException;
+    public abstract int execute(PrintWriter out, Reader in) throws IOException, InterruptedException;
 
     public abstract void stop();
 }

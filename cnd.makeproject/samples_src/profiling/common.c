@@ -228,3 +228,12 @@ int cpucount() {
 void mem2str(char* buf, long bytes) {
     sprintf(buf, "%ld bytes", bytes);
 }
+
+struct timeval start_time;
+
+void print_run_time() {
+    struct timeval current_time;
+    gettimeofday(&current_time, 0);
+    long seconds = current_time.tv_sec - start_time.tv_sec;
+    printf("%ld:%02ld - ", seconds / 60, seconds % 60);
+}

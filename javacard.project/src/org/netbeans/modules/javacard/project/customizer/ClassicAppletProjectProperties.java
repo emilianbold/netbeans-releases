@@ -41,7 +41,7 @@
 package org.netbeans.modules.javacard.project.customizer;
 
 import com.sun.javacard.AID;
-import org.netbeans.modules.javacard.constants.JCConstants;
+import org.netbeans.modules.javacard.common.JCConstants;
 import org.netbeans.modules.javacard.constants.ProjectPropertyNames;
 import org.netbeans.modules.javacard.project.JCProject;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -65,6 +65,7 @@ public final class ClassicAppletProjectProperties extends AppletProjectPropertie
 
     private AID originalPackageAID;
     private AID packageAID;
+    boolean useMyProxies;
 
     public ClassicAppletProjectProperties(JCProject project) {
         super(project);
@@ -78,17 +79,25 @@ public final class ClassicAppletProjectProperties extends AppletProjectPropertie
         packageAID = aid;
     }
 
+    public boolean isUseMyProxies() {
+        return useMyProxies;
+    }
+
+    public void setUseMyProxies(boolean useMyProxies) {
+        this.useMyProxies = useMyProxies;
+    }
+
     private void rewriteManifest() throws IOException {
         FileObject manifestFo = project.getProjectDirectory().getFileObject(JCConstants.MANIFEST_PATH); //NOI18N
         Manifest manifest = null;
         if (manifestFo == null) {
             Logger.getLogger(ClassicAppletProjectProperties.class.getName()).log(
-                    Level.INFO, "Manifest missing for project " +
-                    project.getProjectDirectory().getPath() + ".  Recreating.");
+                    Level.INFO, "Manifest missing for project " + //NOI18N
+                    project.getProjectDirectory().getPath() + ".  Recreating."); //NOI18N
             manifestFo = project.getProjectDirectory().createData(JCConstants.MANIFEST_PATH); //NOI18N
             manifest = new Manifest();
             Attributes a = manifest.getMainAttributes();
-            a.putValue (JCConstants.MANIFEST_ENTRY_CLASSIC_RUNTIME_DESCRIPTOR_VERSION, "3.0");
+            a.putValue (JCConstants.MANIFEST_ENTRY_CLASSIC_RUNTIME_DESCRIPTOR_VERSION, "3.0"); //NOI18N
             a.putValue (JCConstants.MANIFEST_APPLICATION_TYPE, project.kind().getManifestApplicationType());
         } else {
             InputStream in = manifestFo.getInputStream();
@@ -112,6 +121,7 @@ public final class ClassicAppletProjectProperties extends AppletProjectPropertie
 
     @Override
     protected boolean doStoreProperties(EditableProperties props) throws IOException {
+        props.setProperty(ProjectPropertyNames.PROJECT_PROP_CLASSIC_USE_MY_PROXIES, String.valueOf(useMyProxies));
         if (packageAID != null && !packageAID.equals(originalPackageAID)) {
             props.setProperty(ProjectPropertyNames.PROJECT_PROP_CLASSIC_PACKAGE_AID, packageAID.toString());
             rewriteManifest();
@@ -121,6 +131,7 @@ public final class ClassicAppletProjectProperties extends AppletProjectPropertie
 
     @Override
     protected void onInit(PropertyEvaluator eval) {
+        useMyProxies = Boolean.parseBoolean(project.evaluator().getProperty(ProjectPropertyNames.PROJECT_PROP_CLASSIC_USE_MY_PROXIES));
         String aidString = project.evaluator().getProperty(ProjectPropertyNames.PROJECT_PROP_CLASSIC_PACKAGE_AID);
         if (aidString != null) {
             try {
@@ -128,7 +139,7 @@ public final class ClassicAppletProjectProperties extends AppletProjectPropertie
                 originalPackageAID = packageAID;
             } catch (IllegalArgumentException e) {
                 Logger.getLogger(ClassicAppletProjectProperties.class.getName()).log(Level.INFO,
-                        "Bad classic package aid in " +
+                        "Bad classic package aid in " + //NOI18N
                         project.getProjectDirectory().getPath() + ": " + aidString, e);
             }
         }

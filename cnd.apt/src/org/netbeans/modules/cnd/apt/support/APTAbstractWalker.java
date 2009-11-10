@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.cnd.apt.support;
 
-import antlr.TokenStreamException;
+import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import java.io.File;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.debug.DebugUtils;

@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.cnd.apt.impl.support;
 
-import antlr.TokenImpl;
+import org.netbeans.modules.cnd.antlr.TokenImpl;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.utils.cache.TinyCharSequence;
 

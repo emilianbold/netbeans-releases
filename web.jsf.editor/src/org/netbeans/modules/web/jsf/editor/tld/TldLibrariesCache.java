@@ -80,6 +80,10 @@ public class TldLibrariesCache {
         
     }
 
+    //current TLD versions taken from Mojarra 2.0.1 jsf-ri/conf/share/*.tld
+    //not all of the TLDs appears in the runtime jar so they are copied here
+    //facelets_jsf_core.tld is taken from http://www.netbeans.org/issues/show_bug.cgi?id=174945
+    //since it contains a bugfix which doesn't seem to be even in the Mojarra 2.0.1
      public static synchronized Collection<TldLibrary> getDefaultLibraries() {
         if (DEFAULT_LIBRARIES == null) {
             DEFAULT_LIBRARIES = new ArrayList<TldLibrary>();
@@ -88,6 +92,16 @@ public class TldLibrariesCache {
                         TldLibrary.create(Thread.currentThread().getContextClassLoader().getResourceAsStream("org/netbeans/modules/web/jsf/editor/resources/composite.tld"))); //NOI18N
                 DEFAULT_LIBRARIES.add(
                         TldLibrary.create(Thread.currentThread().getContextClassLoader().getResourceAsStream("org/netbeans/modules/web/jsf/editor/resources/ui.tld"))); //NOI18N
+                DEFAULT_LIBRARIES.add(
+                        TldLibrary.create(Thread.currentThread().getContextClassLoader().getResourceAsStream("org/netbeans/modules/web/jsf/editor/resources/facelets_jsf_core.tld"))); //NOI18N
+//                DEFAULT_LIBRARIES.add(
+//                        TldLibrary.create(Thread.currentThread().getContextClassLoader().getResourceAsStream("org/netbeans/modules/web/jsf/editor/resources/jsf_core.tld"))); //NOI18N
+                DEFAULT_LIBRARIES.add(
+                        TldLibrary.create(Thread.currentThread().getContextClassLoader().getResourceAsStream("org/netbeans/modules/web/jsf/editor/resources/jstl-core.tld"))); //NOI18N
+                DEFAULT_LIBRARIES.add(
+                        TldLibrary.create(Thread.currentThread().getContextClassLoader().getResourceAsStream("org/netbeans/modules/web/jsf/editor/resources/jstl-fn.tld"))); //NOI18N
+                DEFAULT_LIBRARIES.add(
+                        TldLibrary.create(Thread.currentThread().getContextClassLoader().getResourceAsStream("org/netbeans/modules/web/jsf/editor/resources/mojarra_ext.tld"))); //NOI18N
             } catch (TldLibraryException ex) {
                 //warn user, this should not happen
                 Logger.global.warning(ex.getMessage());

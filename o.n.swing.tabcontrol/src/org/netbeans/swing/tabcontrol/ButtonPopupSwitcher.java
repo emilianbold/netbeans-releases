@@ -280,7 +280,7 @@ final class ButtonPopupSwitcher
                 long time = System.currentTimeMillis();
                 // check if button was just slowly clicked
                 if (time - invocationTime > 500) {
-                    if (!onSwitcherTable((MouseEvent) event)) {
+                    if (!onSwitcherTable((MouseEvent) event) && event.getSource() != invokingComponent) {
                         // Don't take any chances
                         hideCurrentPopup();
                     }

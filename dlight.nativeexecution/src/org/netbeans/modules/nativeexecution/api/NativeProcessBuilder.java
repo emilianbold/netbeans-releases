@@ -50,7 +50,14 @@ import org.netbeans.modules.nativeexecution.RemoteNativeProcess;
 import org.netbeans.modules.nativeexecution.TerminalLocalNativeProcess;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminalProvider;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
-import org.netbeans.modules.nativeexecution.support.Logger;
+import org.netbeans.modules.nativeexecution.api.util.Shell;
+import org.netbeans.modules.nativeexecution.api.util.ShellValidationSupport;
+import org.netbeans.modules.nativeexecution.api.util.ShellValidationSupport.ShellValidationStatus;
+import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * Utility class for the {@link NativeProcess external native process} creation.
@@ -68,10 +75,8 @@ import org.netbeans.modules.nativeexecution.support.Logger;
 // @NotThreadSafe
 public final class NativeProcessBuilder implements Callable<Process> {
 
-    private final static java.util.logging.Logger log = Logger.getInstance();
-    private NativeProcessInfo info;
+    private final NativeProcessInfo info;
     private ExternalTerminal externalTerminal = null;
-    private AbstractNativeProcess process = null;
 
     private NativeProcessBuilder(final ExecutionEnvironment execEnv) {
         info = new NativeProcessInfo(execEnv);
@@ -147,19 +152,48 @@ public final class NativeProcessBuilder implements Callable<Process> {
      * @throws IOException if the process could not be created
      */
     public NativeProcess call() throws IOException {
-
+        AbstractNativeProcess process = null;
+        
         if (info.getExecutionEnvironment().isRemote()) {
             process = new RemoteNativeProcess(info);
         } else {
             if (externalTerminal != null) {
+                boolean canProceed = true;
                 boolean available = externalTerminal.isAvailable(info.getExecutionEnvironment());
-                if (available) {
-                    process = new TerminalLocalNativeProcess(info, externalTerminal);
+
+                if (!available) {
+                    DialogDisplayer.getDefault().notify(
+                            new NotifyDescriptor.Message(loc("NativeProcessBuilder.processCreation.NoTermianl.text"), // NOI18N
+                            NotifyDescriptor.WARNING_MESSAGE));
+                    canProceed = false;
                 } else {
-                    log.info("Unable to find external terminal. Will start in OutputWindow"); // NOI18N
-                    process = new LocalNativeProcess(info);
+                    if (Utilities.isWindows()) {
+                        Shell shell = WindowsSupport.getInstance().getActiveShell();
+                        if (shell == null) {
+                            DialogDisplayer.getDefault().notify(
+                                    new NotifyDescriptor.Message(loc("NativeProcessBuilder.processCreation.NoShell.text"), // NOI18N
+                                    NotifyDescriptor.WARNING_MESSAGE));
+                            canProceed = false;
+                        } else {
+                            ShellValidationStatus validationStatus = ShellValidationSupport.getValidationStatus(shell);
+
+                            if (!validationStatus.isValid()) {
+                                canProceed = ShellValidationSupport.confirm(
+                                        loc("NativeProcessBuilder.processCreation.BrokenShellConfirmationHeader.text"), // NOI18N
+                                        loc("NativeProcessBuilder.processCreation.BrokenShellConfirmationFooter.text"), // NOI18N
+                                        validationStatus);
+                            }
+                        }
+                    }
+
+                    if (canProceed) {
+                        process = new TerminalLocalNativeProcess(info, externalTerminal);
+                    }
                 }
-            } else {
+            }
+
+            if (process == null) {
+                // Either externalTerminal is null or there are some problems with it
                 process = new LocalNativeProcess(info);
             }
         }
@@ -253,5 +287,9 @@ public final class NativeProcessBuilder implements Callable<Process> {
     public NativeProcessBuilder setInitialSuspend(boolean suspend) {
         info.setInitialSuspend(suspend);
         return this;
+    }
+
+    private static String loc(String key, String... params) {
+        return NbBundle.getMessage(NativeProcessBuilder.class, key, params);
     }
 }
