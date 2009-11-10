@@ -51,7 +51,7 @@ import org.openide.filesystems.FileObject;
 final class CompletionRequest {
 
     final DefaultCompletionResult completionResult;
-    final TokenHierarchy<Document> th;
+    final TokenHierarchy<?> th;
     final ParserResult parserResult;
     final int lexOffset;
     final int astOffset;
@@ -70,7 +70,7 @@ final class CompletionRequest {
 
     CompletionRequest(
             final DefaultCompletionResult completionResult,
-            final TokenHierarchy<Document> th,
+            final TokenHierarchy<?> th,
             final ParserResult result,
             final int lexOffset,
             final int astOffset,
