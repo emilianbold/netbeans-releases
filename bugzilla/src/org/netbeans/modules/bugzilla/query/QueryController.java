@@ -321,6 +321,10 @@ public class QueryController extends BugtrackingController implements DocumentLi
         }
     }
 
+    protected BugzillaRepository getRepository() {
+        return repository;
+    }
+
     private void postPopulate(final String urlParameters, final boolean forceRefresh) {
         enableFields(false);
 
@@ -418,7 +422,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         }
     }
 
-    protected void disableProduct(String product) { // XXX whatever field
+    protected void disableProduct() { // XXX whatever field
         productParameter.setAlwaysDisabled(true);
     }
 

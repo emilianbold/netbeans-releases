@@ -45,6 +45,7 @@ import java.util.List;
 import org.eclipse.mylyn.internal.bugzilla.core.RepositoryConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
+import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 
 /**
  *
@@ -67,7 +68,11 @@ public class KenaiConfiguration extends BugzillaConfiguration {
     @Override
     public List<String> getProducts() {
         ensureProduct();
-        return products;
+        if(!BugzillaUtil.isNbRepository(repository)) {
+            return products;
+        } else {
+            return super.getProducts();
+        }
     }
 
     @Override
