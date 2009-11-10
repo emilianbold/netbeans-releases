@@ -294,6 +294,11 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
 
     private RubyType getTypeForCall(Node target) {
         if ("".equals(request.prefix)) {
+            // we often have broken AST here, try to handle one commmon case
+            Node realTarget = findClosestMatchingNode(target);
+            if (realTarget != null) {
+                target = realTarget;
+            }
             return RubyTypeInferencer.create(request.createContextKnowledge()).inferType(target);
         } else {
             if (target instanceof CallNode) {
@@ -309,6 +314,36 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
         return RubyType.createUnknown();
     }
 
+    private Node findClosestMatchingNode(Node target) {
+        // when we have e.g.
+        // a_method().anotherMethod.^ (<= invoke CC here)
+        // Foo.new
+        //
+        // the target is Foo and anotherMethod is its receiver (since the AST is broken)
+        // this method tries to find the real target based on the lhs.
+        String name = AstUtilities.getCallName(target);
+        String lhs = call.getLhs();
+        if (lhs.equals(name)) {
+            return target;
+        }
+        int lastDot = lhs.lastIndexOf(".");
+        if (lastDot != -1) {
+            lhs = lhs.substring(lastDot + 1, lhs.length());
+            int lastLeftParen = lhs.lastIndexOf("(");
+            if (lastLeftParen != -1) {
+                lhs = lhs.substring(lastLeftParen + 1, lhs.length());
+            }
+        }
+        if (name.equals(lhs)) {
+            return target;
+        }
+        for (Node child : target.childNodes()) {
+            if (AstUtilities.isCall(child) && lhs.equals(AstUtilities.getCallName(child))) {
+                return child;
+            }
+        }
+        return null;
+    }
     /**
      * Compute the current method call at the given offset. Returns false if
      * we're not in a method call. The argument index is returned in
