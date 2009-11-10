@@ -5,7 +5,7 @@
         <folder name="Tools">
             <file name="org-netbeans-modules-dlight-toolsui-ToolsCustomizerAction.instance">
                 <attr name="delegate" newvalue="org.netbeans.modules.dlight.toolsui.ToolsCustomizerAction"/>
-                <attr name="displayName" bundlevalue="org.netbeans.modules.dlight.toolsui.Bundle#CTL_ProfilerToolsAction1"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.dlight.toolsui.Bundle#CTL_ProfilerToolsAction"/>
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="noIconInMenu" boolvalue="true"/>
             </file>
