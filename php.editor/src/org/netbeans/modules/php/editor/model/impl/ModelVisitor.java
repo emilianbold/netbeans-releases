@@ -83,6 +83,8 @@ import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionName;
 import org.netbeans.modules.php.editor.parser.astnodes.GlobalStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.GotoLabel;
+import org.netbeans.modules.php.editor.parser.astnodes.GotoStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Include;
 import org.netbeans.modules.php.editor.parser.astnodes.InstanceOfExpression;
@@ -257,6 +259,18 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         }
         return null;
     }
+
+    @Override
+    public void visit(GotoLabel label) {
+        super.visit(label);
+        occurencesBuilder.prepare(label, modelBuilder.getCurrentScope());
+    }
+    @Override
+    public void visit(GotoStatement statement) {
+        super.visit(statement);
+        occurencesBuilder.prepare(statement, modelBuilder.getCurrentScope());
+    }
+
 
     public static String getName(String semiType, VariousUtils.Kind kind, boolean strict) {
         if (semiType != null) {

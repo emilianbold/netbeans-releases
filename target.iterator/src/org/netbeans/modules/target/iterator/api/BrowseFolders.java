@@ -44,11 +44,16 @@ package org.netbeans.modules.target.iterator.api;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.StringTokenizer;
+
 import javax.swing.JButton;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import org.netbeans.api.project.SourceGroup;
 import org.openide.util.NbBundle;
@@ -74,7 +79,7 @@ import org.openide.util.NbCollections;
  *
  * @author  phrebejk, mkuchtiak
  */
-public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager.Provider {
+public class BrowseFolders extends JPanel implements ExplorerManager.Provider {
     
     private ExplorerManager manager;
     private SourceGroup[] folders;
@@ -84,9 +89,13 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
     private static JScrollPane SAMPLE_SCROLL_PANE = new JScrollPane();
     
     /** Creates new form BrowseFolders */
-    public BrowseFolders( SourceGroup[] folders, Class target, String preselectedFileName  ) {
+    public BrowseFolders( SourceGroup[] folders, Class target, 
+            String preselectedFileName  ) 
+    {
         initComponents();
-        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(BrowseFolders.class, (target == DataFolder.class?"ACSD_BrowseFolders":"ACSD_BrowseFiles")));
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(
+                BrowseFolders.class, (target == DataFolder.class?
+                        "ACSD_BrowseFolders":"ACSD_BrowseFiles"))); // NOI18N
 
         this.folders = folders;
         this.target = target;
@@ -123,7 +132,10 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
              // Try to find the node
              for ( int i = 0; i < nodes.length; i++ ) {            
                 try { 
-                    sel = NodeOp.findPath( nodes[i], NbCollections.checkedEnumerationByFilter( new java.util.StringTokenizer( preselectedFileName, "/" ), String.class, false ) );
+                    sel = NodeOp.findPath( nodes[i], NbCollections.
+                            checkedEnumerationByFilter( new StringTokenizer( 
+                                    preselectedFileName, "/" ), 
+                                    String.class, false ) );        // NOI18N
                     break;
                 }
                 catch ( NodeNotFoundException e ) {
@@ -148,7 +160,7 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
             try {
                 manager.setSelectedNodes( new Node[] { sel } );
             }
-            catch ( java.beans.PropertyVetoException e ) {
+            catch ( PropertyVetoException e ) {
                 // No selection for some reason
             }
         }
@@ -195,13 +207,21 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
     private javax.swing.JLabel jLabel1;
     // End of variables declaration//GEN-END:variables
         
-    public static FileObject showDialog( SourceGroup[] folders, Class target, String preselectedFileName) {
+    public static FileObject showDialog( SourceGroup[] folders, Class target, 
+            String preselectedFileName) 
+    {
         BrowseFolders bf = new BrowseFolders( folders, target, preselectedFileName);
 
-        JButton selectButton = new JButton( NbBundle.getMessage(BrowseFolders.class,(target == DataFolder.class?"LBL_SelectFolder":"LBL_SelectFile"))); 
-        selectButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(BrowseFolders.class, (target == DataFolder.class?"ACSD_SelectFolder":"ACSD_SelectFile")));
-        JButton cancelButton = new JButton( NbBundle.getMessage(BrowseFolders.class,"LBL_Cancel") ); 
-        cancelButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(BrowseFolders.class, "ACSD_Cancel"));
+        JButton selectButton = new JButton( NbBundle.getMessage(
+                BrowseFolders.class,
+                (target == DataFolder.class?"LBL_SelectFolder":"LBL_SelectFile"))); //NOI18N
+        selectButton.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(BrowseFolders.class, 
+                        (target == DataFolder.class?"ACSD_SelectFolder":"ACSD_SelectFile")));//NOI18N
+        JButton cancelButton = new JButton( 
+                NbBundle.getMessage(BrowseFolders.class,"LBL_Cancel") ); //NOI18N
+        cancelButton.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(BrowseFolders.class, "ACSD_Cancel"));//NOI18N
         JButton options[] = new JButton[] { 
             //new JButton( NbBundle.getMessage( BrowseFolders.class, "LBL_BrowseFolders_Select_Option") ), // NOI18N
             //new JButton( NbBundle.getMessage( BrowseFolders.class, "LBL_BrowseFolders_Cancel_Option") ), // NOI18N
@@ -218,7 +238,8 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
         
         DialogDescriptor dialogDescriptor = new DialogDescriptor( 
             bf,                                     // innerPane
-            NbBundle.getMessage(BrowseFolders.class, (target == DataFolder.class? "LBL_BrowseFolders":"LBL_BrowseFiles")), // displayName
+            NbBundle.getMessage(BrowseFolders.class, 
+                    (target == DataFolder.class? "LBL_BrowseFolders":"LBL_BrowseFiles")), //NOI18N displayName
             true,                                   // modal
             options,                                // options
             options[ 0 ],                           // initial value
@@ -283,8 +304,10 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
 
             try {
                 DataObject dobj = DataObject.find( fObj );
-                FilterNode fn = (isFile?new FilterNode(dobj.getNodeDelegate(),Children.LEAF):
-                                        new FilterNode(dobj.getNodeDelegate(), new SourceGroupsChildren( fObj, group )));
+                FilterNode fn = (isFile?new FilterNode(dobj.getNodeDelegate(),
+                        Children.LEAF):
+                            new FilterNode(dobj.getNodeDelegate(), 
+                                    new SourceGroupsChildren( fObj, group )));
             
                 if ( key instanceof SourceGroup ) {
                     fn.setDisplayName( group.getDisplayName() );
@@ -308,7 +331,7 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
                 Arrays.sort(files,new BrowseFolders.FileObjectComparator());
                 ArrayList children = new ArrayList( files.length );
                 
-                if (BrowseFolders.this.target==org.openide.loaders.DataFolder.class)
+                if (BrowseFolders.this.target==DataFolder.class)
                     for( int i = 0; i < files.length; i++ ) {
                         if ( files[i].isFolder() && group.contains( files[i] ) ) {
                             children.add( new Key( files[i], group ) );
@@ -317,11 +340,15 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
                 else {
                     // add folders
                     for( int i = 0; i < files.length; i++ ) {
-                        if ( group.contains( files[i]) && files[i].isFolder() ) children.add( new Key( files[i], group ) );
+                        if ( group.contains( files[i]) && files[i].isFolder() ) {
+                            children.add( new Key( files[i], group ) );
+                        }
                     }
                     // add files
                     for( int i = 0; i < files.length; i++ ) {
-                        if ( group.contains( files[i]) && !files[i].isFolder() ) children.add( new Key( files[i], group ) );
+                        if ( group.contains( files[i]) && !files[i].isFolder() ) {
+                            children.add( new Key( files[i], group ) );
+                        }
                     }
                 }
                 
@@ -341,7 +368,7 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
         
     }
 
-    private static class FileObjectComparator implements java.util.Comparator<FileObject> {
+    private static class FileObjectComparator implements Comparator<FileObject> {
         public int compare(FileObject fo1, FileObject fo2) {
             return fo1.getName().compareTo(fo2.getName());
         }
@@ -369,7 +396,8 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
                 Node selection[] = browsePanel.getExplorerManager().getSelectedNodes();
                 
                 if ( selection != null && selection.length > 0 ) {
-                    DataObject dobj = (DataObject)selection[0].getLookup().lookup( DataObject.class );
+                    DataObject dobj = (DataObject)selection[0].getLookup().
+                        lookup( DataObject.class );
                     if (dobj!=null && dobj.getClass().isAssignableFrom(target)) {
                         result = dobj.getPrimaryFile();
                     }

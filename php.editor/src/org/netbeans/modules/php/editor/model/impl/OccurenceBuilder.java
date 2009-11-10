@@ -96,6 +96,8 @@ import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.GotoLabel;
+import org.netbeans.modules.php.editor.parser.astnodes.GotoStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.Include;
 import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
@@ -144,6 +146,8 @@ class OccurenceBuilder {
     private ElementInfo currentContextInfo;
     private ModelElement element;
     private Collection<ModelElement> declarations = new HashSet<ModelElement>();
+    private Map<ASTNodeInfo<GotoLabel>, Scope> gotoLabel;
+    private Map<ASTNodeInfo<GotoStatement>, Scope> gotoStatement;
 
     OccurenceBuilder(ModelElement element) {
         this(-1);
@@ -175,6 +179,24 @@ class OccurenceBuilder {
         this.variables = new HashMap<ASTNodeInfo<Variable>, Scope>();
         this.fldDeclarations = new HashMap<SingleFieldDeclarationInfo, FieldElementImpl>();
         this.docTags = new HashMap<PhpDocTypeTagInfo, Scope>();
+        this.gotoStatement =  new HashMap<ASTNodeInfo<GotoStatement>, Scope>();
+        this.gotoLabel = new HashMap<ASTNodeInfo<GotoLabel>, Scope>();
+    }
+
+    void prepare(GotoStatement statement, ScopeImpl scope) {
+        if (canBePrepared(statement, scope)) {
+            ASTNodeInfo<GotoStatement> node = ASTNodeInfo.create(statement);
+            gotoStatement.put(node, scope);
+            setOccurenceAsCurrent(new ElementInfo(node, scope));
+        }
+    }
+
+    void prepare(GotoLabel label, ScopeImpl scope) {
+        if (canBePrepared(label, scope)) {
+            ASTNodeInfo<GotoLabel> node = ASTNodeInfo.create(label);
+            gotoLabel.put(node, scope);
+            setOccurenceAsCurrent(new ElementInfo(node, scope));
+        }
     }
 
     void prepare(FieldAccess fieldAccess, Scope scope) {
@@ -873,6 +895,29 @@ class OccurenceBuilder {
             }
         }
     }
+    private void buildGotoStatements(ElementInfo nodeCtxInfo, FileScopeImpl fileScope) {
+        buildGoto(nodeCtxInfo, gotoStatement, fileScope);
+    }
+    private void buildGotoLabels(ElementInfo nodeCtxInfo, FileScopeImpl fileScope) {
+        buildGoto(nodeCtxInfo, gotoLabel, fileScope);
+    }
+    private static <T extends ASTNode> void buildGoto(ElementInfo nodeCtxInfo, Map<ASTNodeInfo<T>, Scope> entries, FileScopeImpl fileScope) {
+        String currentName = nodeCtxInfo.getName();
+        Scope currentScope = nodeCtxInfo.getScope();
+        for (Entry<ASTNodeInfo<T>, Scope> entry : entries.entrySet()) {
+            ASTNodeInfo<T> nodeInfo = entry.getKey();
+            String name = nodeInfo.getName();
+            Scope scope = entry.getValue();
+            if (currentName.equalsIgnoreCase(name) && currentScope == scope) {
+                fileScope.addOccurence(new OccurenceImpl(entry.getValue(), nodeInfo.getRange(), fileScope) {
+                    @Override
+                    public boolean gotoDeclarationEnabled() {
+                        return false;
+                    }
+                });
+            }
+        }
+    }
 
     private void buildVariables(ElementInfo nodeCtxInfo, FileScopeImpl fileScope) {
         String idName = nodeCtxInfo.getName();
@@ -904,6 +949,10 @@ class OccurenceBuilder {
         ASTNodeInfo.Kind kind = currentContextInfo != null ? currentContextInfo.getKind() : null;
         if (currentContextInfo != null && kind != null) {
             switch (kind) {
+                case GOTO:
+                    buildGotoLabels(currentContextInfo, fileScope);
+                    buildGotoStatements(currentContextInfo, fileScope);
+                    break;
                 case FUNCTION:
                     buildFunctionInvocations(currentContextInfo, fileScope);
                     buildFunctionDeclarations(currentContextInfo, fileScope);

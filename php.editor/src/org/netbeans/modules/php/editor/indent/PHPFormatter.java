@@ -169,7 +169,7 @@ public class PHPFormatter implements Formatter {
 // all indentation done by HTML formatter:
                     id == PHPTokenId.T_INLINE_HTML ||
 
-                    id == PHPTokenId.PHP_HEREDOC_TAG
+                    id == PHPTokenId.PHP_HEREDOC_TAG || id == PHPTokenId.PHP_NOWDOC_TAG
                 ) {
                     // No indentation for literal strings in Ruby, since they can
                     // contain newlines. Leave it as is.
@@ -177,6 +177,15 @@ public class PHPFormatter implements Formatter {
                 }
 
                 if (id == PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING){
+
+                    if (ts.movePrevious()){
+                        if (ts.token().id() == PHPTokenId.PHP_HEREDOC_TAG
+                                || ts.token().id() == PHPTokenId.PHP_NOWDOC_TAG){
+                            return true;
+                        }
+                        ts.moveNext();
+                    }
+
                     int startLine = Utilities.getLineOffset(doc, ts.offset());
                     int currentLine = Utilities.getLineOffset(doc, pos);
 
@@ -185,21 +194,6 @@ public class PHPFormatter implements Formatter {
                         return true;
                     }
                 }
-// XXX: resurrect support for heredoc
-//                if (id == PHPTokenId.STRING_END || id == PHPTokenId.QUOTED_STRING_END) {
-//                    // Possibly a heredoc
-//                    TokenSequence<? extends PHPTokenId> ts = LexUtilities.getRubyTokenSequence(doc, pos);
-//                    ts.move(pos);
-//                    OffsetRange range = LexUtilities.findHeredocBegin(ts, token);
-//                    if (range != OffsetRange.NONE) {
-//                        String text = doc.getText(range.getStart(), range.getLength());
-//                        if (text.startsWith("<<-")) { // NOI18N
-//                            return false;
-//                        } else {
-//                            return true;
-//                        }
-//                    }
-//                }
             } else {
                 // No PHP token -- leave the formatting alone!
                 return true;
@@ -216,7 +210,7 @@ public class PHPFormatter implements Formatter {
                     id == PHPTokenId.PHPDOC_COMMENT || id == PHPTokenId.PHPDOC_COMMENT_START || id == PHPTokenId.PHPDOC_COMMENT_END ||
                     id == PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING ||
                     id == PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE ||
-                    id == PHPTokenId.PHP_HEREDOC_TAG
+                    id == PHPTokenId.PHP_HEREDOC_TAG || id == PHPTokenId.PHP_NOWDOC_TAG
                 ) {
                     // No indentation for literal strings in Ruby, since they can
                     // contain newlines. Leave it as is.
@@ -355,7 +349,6 @@ public class PHPFormatter implements Formatter {
                                         && (templateEdit && i >= firstLine
                                         || !templateEdit && i >= firstLine - 1)){
 
-                                    int initialIndent = isSectionBorderLine(doc, lineStart) ? 0 : initIndentSize;
                                     indentBias = currentIndent - GsfUtilities.getLineIndent(doc, lineStart) - htmlSuggestion + initIndentSize;
                                     indentBiasCalculated = true;
                                 }
