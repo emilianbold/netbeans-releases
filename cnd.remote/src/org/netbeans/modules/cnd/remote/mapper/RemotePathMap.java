@@ -407,6 +407,7 @@ public abstract class RemotePathMap extends PathMap {
         }
     }
 
+    private static final String NO_MAPPING_PREFIX = "///"; // NOI18N
     private final static class FixedRemotePathMap extends RemotePathMap {
 
         private volatile String remoteBase;
@@ -436,6 +437,10 @@ public abstract class RemotePathMap extends PathMap {
                 return useDefault ? lpath : null;
             }
             String remotePath = lpath;
+            // for IZ#175198
+            if (remotePath.startsWith(NO_MAPPING_PREFIX)) {
+                return remotePath;
+            }
             if (!isSubPath(remoteBase, lpath)) {
                 if (Utilities.isWindows() && !"/".equals(lpath)) { // NOI18N
                     lpath = WindowsSupport.getInstance().convertToMSysPath(lpath);
@@ -448,6 +453,10 @@ public abstract class RemotePathMap extends PathMap {
         @Override
         public String getLocalPath(String rpath, boolean useDefault) {
             initRemoteBase(true);
+            // for IZ#175198
+            if (rpath.startsWith(NO_MAPPING_PREFIX)) {
+                return rpath;
+            }
             String res = super.getLocalPath(rpath, useDefault);
             if (Utilities.isWindows() && !"/".equals(res)) { // NOI18N
                 res = WindowsSupport.getInstance().convertFromMSysPath(res);
