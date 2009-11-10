@@ -42,13 +42,10 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
-import java.io.IOException;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -59,7 +56,6 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
-import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.webservices.WebservicesMetadata;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleFactory;
@@ -82,8 +78,10 @@ import org.netbeans.modules.j2ee.dd.spi.webservices.WebservicesMetadataModelFact
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ResourceChangeReporter;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation2;
-import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarImplementation2;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.ResourceChangeReporterFactory;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.ResourceChangeReporterImplementation;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
 
@@ -96,7 +94,9 @@ public final class EjbJarProvider extends J2eeModuleProvider
         implements J2eeModuleImplementation2, ModuleChangeReporter, EjbChangeDescriptor, PropertyChangeListener {
     
     public static final String FILE_DD = "ejb-jar.xml";//NOI18N
-    
+
+    private final ResourceChangeReporter rcr = ResourceChangeReporterFactory.createResourceChangeReporter(new EjbJarResourceChangeReporter());
+
     private final EjbJarProject project;
     private final AntProjectHelper helper;
     private MetadataModel<EjbJarMetadata> ejbJarMetadataModel;
@@ -217,6 +217,11 @@ public final class EjbJarProvider extends J2eeModuleProvider
     
     public org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter getModuleChangeReporter() {
         return this;
+    }
+
+    @Override
+    public ResourceChangeReporter getResourceChangeReporter() {
+        return rcr;
     }
 
     @Override
@@ -469,6 +474,21 @@ public final class EjbJarProvider extends J2eeModuleProvider
                 // }
             }
             return propertyChangeSupport;
+        }
+    }
+
+    private class EjbJarResourceChangeReporter implements ResourceChangeReporterImplementation {
+
+        public boolean isServerResourceChanged(long lastDeploy) {
+            File resDir = getResourceDirectory();
+            if (resDir != null) {
+                for (File file : resDir.listFiles()) {
+                    if (file.lastModified() > lastDeploy) {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
     }
 

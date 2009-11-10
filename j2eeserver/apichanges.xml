@@ -114,10 +114,33 @@ is the proper place.
 
     <changes>
 
+        <change id="resourceChangeReporter">
+	    <api name="devmodules"/>
+	    <summary>
+                Added API/SPI for signalling change in resources deployed to
+                server (via DeploymentChangeDescriptor).
+	    </summary>
+	    <version major="1" minor="63"/>
+	    <date day="10" month="11" year="2009"/>
+	    <author login="phejl"/>
+	    <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+	    <description>
+                <p>
+                Added API/SPI to check for changes in resources deployed to
+                server. Such changes are flagged in DeploymentChangeDescriptor
+                and delivered to server plugin.
+                </p>
+	    </description>
+            <class package="org.netbeans.modules.j2ee.deployment.devmodules.api" name="ResourceChangeReporter"/>
+	    <class package="org.netbeans.modules.j2ee.deployment.devmodules.spi" name="ResourceChangeReporterFactory"/>
+            <class package="org.netbeans.modules.j2ee.deployment.devmodules.spi" name="ResourceChangeReporterImplementation"/>
+            <issue number="175539"/>
+	 </change>
+
         <change id="filter">
 	    <api name="devmodules"/>
 	    <summary>
-                DeployOnSaveClassInterceptor added
+                DeployOnSaveClassInterceptor added.
 	    </summary>
 	    <version major="1" minor="56"/>
 	    <date day="15" month="5" year="2009"/>
