@@ -41,19 +41,22 @@
 package org.netbeans.modules.java.source.pretty;
 
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import static com.sun.source.tree.Tree.*;
 import com.sun.source.tree.VariableTree;
 
-import java.util.Map.Entry;
+import com.sun.source.util.SourcePositions;
+import com.sun.source.util.TreeScanner;
+import com.sun.tools.javac.api.JavacTaskImpl;
+import com.sun.tools.javac.api.JavacTrees;
 import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.api.java.source.CodeStyle.*;
 import org.netbeans.api.java.source.Comment;
 import org.netbeans.api.java.source.UiUtils;
 import org.netbeans.modules.java.source.builder.CommentHandlerService;
-import org.netbeans.modules.java.source.builder.CommentSetImpl;
 import org.netbeans.modules.java.source.query.CommentHandler;
 import org.netbeans.modules.java.source.query.CommentSet;
 
@@ -61,6 +64,7 @@ import com.sun.tools.javac.util.*;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.code.*;
 import com.sun.tools.javac.code.Symbol.*;
+import com.sun.tools.javac.main.JavaCompiler;
 import static com.sun.tools.javac.code.Flags.*;
 import static com.sun.tools.javac.code.TypeTags.*;
 import com.sun.tools.javac.tree.JCTree;
@@ -68,16 +72,23 @@ import com.sun.tools.javac.tree.JCTree.*;
 import com.sun.tools.javac.tree.TreeInfo;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.*;
 import javax.swing.text.Document;
-import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.Comment.Style;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 
+import org.netbeans.modules.java.source.parsing.FileObjects;
+import org.netbeans.modules.java.source.parsing.JavacParser;
+import org.netbeans.modules.java.source.save.Reformatter;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import static org.netbeans.modules.java.source.save.PositionEstimator.*;
+import org.openide.util.Exceptions;
 
 /** Prints out a tree as an indented Java source program.
  */
@@ -1375,14 +1386,16 @@ public final class VeryPretty extends JCTree.Visitor {
 
     @Override
     public void visitAnnotation(JCAnnotation tree) {
-	print("@");
-	printExpr(tree.annotationType);
-        if (tree.args.nonEmpty()) {
-            print(cs.spaceBeforeAnnotationParen() ? " (" : "(");
-            if (cs.spaceWithinAnnotationParens())
-                print(' ');
-            printExprs(tree.args);
-            print(cs.spaceWithinAnnotationParens() ? " )" : ")");
+        if (!printAnnotationsFormatted(List.of(tree))) {
+            print("@");
+            printExpr(tree.annotationType);
+            if (tree.args.nonEmpty()) {
+                print(cs.spaceBeforeAnnotationParen() ? " (" : "(");
+                if (cs.spaceWithinAnnotationParens())
+                    print(' ');
+                printExprs(tree.args);
+                print(cs.spaceWithinAnnotationParens() ? " )" : ")");
+            }
         }
     }
 
@@ -1494,7 +1507,104 @@ public final class VeryPretty extends JCTree.Visitor {
 	print(t.name);
     }
 
+    private final class Linearize extends TreeScanner<Boolean, java.util.List<Tree>> {
+        @Override
+        public Boolean scan(Tree node, java.util.List<Tree> p) {
+            p.add(node);
+            super.scan(node, p);
+            return tree2Tag.containsKey(node);
+        }
+        @Override
+        public Boolean reduce(Boolean r1, Boolean r2) {
+            return r1 == Boolean.TRUE || r2 == Boolean.TRUE;
+        }
+    }
+
+    private final class CopyTags extends TreeScanner<Void, java.util.List<Tree>> {
+        private final CompilationUnitTree fake;
+        private final SourcePositions sp;
+        public CopyTags(CompilationUnitTree fake, SourcePositions sp) {
+            this.fake = fake;
+            this.sp = sp;
+        }
+        @Override
+        public Void scan(Tree node, java.util.List<Tree> p) {
+            if (p.isEmpty()) {
+                return null;//the original tree(s) had less elements than the current trees???
+            }
+            Object tag = tree2Tag.get(p.remove(0));
+            if (tag != null) {
+                tag2Span.put(tag, new int[] {out.length() + initialOffset + (int) sp.getStartPosition(fake, node), out.length() + initialOffset + (int) sp.getEndPosition(fake, node)});
+            }
+            return super.scan(node, p);
+        }
+    }
+
+    private void adjustSpans(Iterable<? extends Tree> original, String code) {
+        java.util.List<Tree> linearized = new LinkedList<Tree>();
+        if (!new Linearize().scan(original, linearized) != Boolean.TRUE) {
+            return; //nothing to  copy
+        }
+        
+        try {
+            ClassPath empty = ClassPathSupport.createClassPath(new URL[0]);
+            ClasspathInfo cpInfo = ClasspathInfo.create(JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries(), empty, empty);
+            JavacTaskImpl javacTask = JavacParser.createJavacTask(cpInfo, null, null, null, null);
+            com.sun.tools.javac.util.Context ctx = javacTask.getContext();
+            JavaCompiler.instance(ctx).genEndPos = true;
+            CompilationUnitTree tree = javacTask.parse(FileObjects.memoryFileObject("", "", code)).iterator().next(); //NOI18N
+            SourcePositions sp = JavacTrees.instance(ctx).getSourcePositions();
+            ClassTree clazz = (ClassTree) tree.getTypeDecls().get(0);
+
+            new CopyTags(tree, sp).scan(clazz.getModifiers().getAnnotations(), linearized);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    private boolean reallyPrintAnnotations;
+
+    private static String whitespace(int num) {
+        StringBuilder res = new StringBuilder(num);
+
+        while (num-- > 0) {
+            res.append(' ');
+        }
+
+        return res.toString();
+    }
+
+    private boolean printAnnotationsFormatted(List<JCAnnotation> annotations) {
+        if (reallyPrintAnnotations) return false;
+        
+        VeryPretty del = new VeryPretty(cInfo, cs, new HashMap<Tree, Object>(), new HashMap<Object, int[]>(), origText, 0);
+        del.reallyPrintAnnotations = true;
+
+        del.printAnnotations(annotations);
+
+        String str = del.out.toString();
+
+        str = Reformatter.reformat(str + " class A{}", cs, cs.getRightMargin() - out.col);
+
+        str = str.trim().replaceAll("\n", "\n" + whitespace(out.col));
+
+        adjustSpans(annotations, str);
+
+        str = str.substring(0, str.lastIndexOf("class")).trim();
+
+        print(str);
+
+        return true;
+    }
+    
     private void printAnnotations(List<JCAnnotation> annotations) {
+        if (annotations.isEmpty()) return ;
+
+        if (printAnnotationsFormatted(annotations)) {
+            toColExactly(out.leftMargin);
+            return ;
+        }
+        
         while (annotations.nonEmpty()) {
 	    printNoParenExpr(annotations.head);
             if (annotations.tail != null && annotations.tail.nonEmpty()) {

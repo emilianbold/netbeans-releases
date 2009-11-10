@@ -48,7 +48,17 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.prefs.Preferences;
 import javax.lang.model.element.Modifier;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.java.source.CodeStyle;
+import org.netbeans.api.java.source.CodeStyle.WrapStyle;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -56,6 +66,10 @@ import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.java.source.save.Reformatter;
+import org.netbeans.modules.java.ui.FmtOptions;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /** Also run SuppressWarningsFixerTest in java.hints
  *
@@ -79,6 +93,8 @@ public class AnnotationTest extends GeneratorTest {
 //        suite.addTest(new AnnotationTest("testAddArrayInitializer1"));
 //        suite.addTest(new AnnotationTest("testAddArrayInitializer2"));
 //        suite.addTest(new AnnotationTest("testRenameAttributeFromDefault174552b"));
+//        suite.addTest(new AnnotationTest("testAnnotationWrapping1"));
+//        suite.addTest(new AnnotationTest("testAnnotationWrapping2"));
         return suite;
     }
     
@@ -642,6 +658,143 @@ public class AnnotationTest extends GeneratorTest {
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);
+    }
+
+    public void testAnnotationWrapping1() throws Throwable {
+        performAnnotationWrappingTest("@Entity " +
+                                      "@Table(name = \"category\") " +
+                                      "@NamedQueries({@NamedQuery(name = \"Category.findAll\", query = @Query(\"SELECT c FROM Category c\")), " +
+                                      "               @NamedQuery(name = \"Category.findById\", query = @Query(\"SELECT c FROM Category c WHERE c.id = :id\")), " +
+                                      "               @NamedQuery(name = \"Category.findByName\", query = @Query(\"SELECT c FROM Category c WHERE c.name = :name\")), " +
+                                      "               @NamedQuery(name = \"Category.findByDescription\", query = @Query(\"SELECT c FROM Category c WHERE c.description = :description\")), " +
+                                      "               @NamedQuery(name = \"Category.findByImageurl\", query = @Query(\"SELECT c FROM Category c WHERE c.imageurl = :imageurl\"))})");
+    }
+
+    public void testAnnotationWrapping2() throws Throwable {
+        performAnnotationWrappingTest("@Entity " +
+                                      "@Table(name = \"category\") " +
+                                      "@NamedQueries({@NamedQuery(name = \"Category.findAll\", query = \"SELECT c FROM Category c\"), " +
+                                      "               @NamedQuery(name = \"Category.findById\", query = \"SELECT c FROM Category c WHERE c.id = :id\"), " +
+                                      "               @NamedQuery(name = \"Category.findByName\", query = \"SELECT c FROM Category c WHERE c.name = :name\"), " +
+                                      "               @NamedQuery(name = \"Category.findByDescription\", query = \"SELECT c FROM Category c WHERE c.description = :description\"), " +
+                                      "               @NamedQuery(name = \"Category.findByImageurl\", query = \"SELECT c FROM Category c WHERE c.imageurl = :imageurl\")})");
+    }
+
+    private void performAnnotationWrappingTest(final String annotationSpecification) throws Throwable {
+        Map<String, List<String>> variables = new HashMap<String, List<String>>();
+
+        variables.put(FmtOptions.wrapAnnotations, Arrays.asList(WrapStyle.WRAP_ALWAYS.name(), WrapStyle.WRAP_IF_LONG.name(), WrapStyle.WRAP_NEVER.name()));
+        variables.put(FmtOptions.wrapAnnotationArgs, Arrays.asList(WrapStyle.WRAP_ALWAYS.name(), WrapStyle.WRAP_IF_LONG.name(), WrapStyle.WRAP_NEVER.name()));
+        variables.put(FmtOptions.alignMultilineAnnotationArgs, Arrays.asList("false", "true"));
+        variables.put(FmtOptions.indentSize, Arrays.asList("4", "5"));
+        variables.put(FmtOptions.continuationIndentSize, Arrays.asList("6", "7"));
+
+        List<Map<String, String>> variants = computeVariants(variables);
+
+        for (Map<String, String> settings : variants) {
+            try {
+                performAnnotationWrappingTest(annotationSpecification, settings);
+            } catch (Throwable t) {
+                Exceptions.attachMessage(t, settings.toString());
+                throw t;
+            }
+        }
+    }
+
+    private static List<Map<String, String>> computeVariants(Map<String, List<String>> variables) {
+        List<Map<String, String>> result = new LinkedList<Map<String, String>>();
+        Entry<String, List<String>> e = variables.entrySet().iterator().next();
+
+        variables.remove(e.getKey());
+
+        if (!variables.isEmpty()) {
+            for (Map<String, String> m : computeVariants(variables)) {
+                for (String v : e.getValue()) {
+                    Map<String, String> nue = new HashMap<String, String>(m);
+
+                    nue.put(e.getKey(), v);
+                    result.add(nue);
+                }
+            }
+        } else {
+            for (String v : e.getValue()) {
+                result.add(Collections.singletonMap(e.getKey(), v));
+            }
+        }
+
+        return result;
+    }
+
+    private void performAnnotationWrappingTest(final String annotationSpecification, Map<String, String> adjustPreferences) throws Exception {
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        Map<String, String> origValues = new HashMap<String, String>();
+        for (String key : adjustPreferences.keySet()) {
+            origValues.put(key, preferences.get(key, null));
+        }
+        setValues(preferences, adjustPreferences);
+        testFile = new File(getWorkDir(), "Test.java");
+        String code = "package hierbas.del.litoral;\n" +
+                      "\n" +
+                      "public class Test {\n\n" +
+                      "    public Test() {\n" +
+                      "    }\n\n" +
+                      "    public void test() {\n" +
+                      "    }\n" +
+                      "}\n";
+
+        code = Reformatter.reformat(code, CodeStyle.getDefault(FileUtil.toFileObject(testFile)));
+        TestUtilities.copyStringToFile(testFile, code);
+
+        JavaSource src = getJavaSource(testFile);
+        Task task = new Task<WorkingCopy>() {
+
+            public void run(final WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+
+                final TreeMaker make = workingCopy.getTreeMaker();
+
+                new TreeScanner<Void, Void>() {
+                    @Override
+                    public Void visitModifiers(ModifiersTree node, Void p) {
+                        String toParse = "new Object() {" + annotationSpecification + " void test() {} }";
+                        NewClassTree nct = (NewClassTree) workingCopy.getTreeUtilities().parseExpression(toParse, new SourcePositions[1]);
+                        MethodTree method = ((MethodTree) nct.getClassBody().getMembers().get(0));
+                        ModifiersTree mt = make.Modifiers(node.getFlags(), method.getModifiers().getAnnotations());
+                        workingCopy.rewrite(node, mt);
+
+                        return super.visitModifiers(node, p);
+                    }
+                    @Override
+                    public Void visitClass(ClassTree node, Void p) {
+                        String toParse = "new Object() {" + annotationSpecification + " void aa() {} }";
+                        NewClassTree nct = (NewClassTree) workingCopy.getTreeUtilities().parseExpression(toParse, new SourcePositions[1]);
+                        MethodTree method = ((MethodTree) nct.getClassBody().getMembers().get(0));
+                        workingCopy.rewrite(node, make.addClassMember(node, method));
+                        return super.visitClass(node, p);
+                    }
+                }.scan(workingCopy.getCompilationUnit(), null);
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        String formattedRes = Reformatter.reformat(res, CodeStyle.getDefault(FileUtil.toFileObject(testFile)));
+        System.err.println(res);
+        res = res.replaceAll("\n[ ]*\n", "\n");
+        System.err.println(formattedRes);
+        formattedRes = formattedRes.replaceAll("\n[ ]*\n", "\n"); //XXX: workaround for a bug in reformatter
+        assertEquals(formattedRes, res);
+        setValues(preferences, origValues);
+    }
+
+    private void setValues(Preferences p, Map<String, String> values) {
+        for (Entry<String, String> e : values.entrySet()) {
+            if (e.getValue() != null) {
+                p.put(e.getKey(), e.getValue());
+            } else {
+                p.remove(e.getKey());
+            }
+        }
     }
 
     String getGoldenPckg() {
