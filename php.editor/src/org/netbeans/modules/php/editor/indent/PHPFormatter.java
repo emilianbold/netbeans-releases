@@ -355,7 +355,6 @@ public class PHPFormatter implements Formatter {
                                         && (templateEdit && i >= firstLine
                                         || !templateEdit && i >= firstLine - 1)){
 
-                                    int initialIndent = isSectionBorderLine(doc, lineStart) ? 0 : initIndentSize;
                                     indentBias = currentIndent - GsfUtilities.getLineIndent(doc, lineStart) - htmlSuggestion + initIndentSize;
                                     indentBiasCalculated = true;
                                 }
