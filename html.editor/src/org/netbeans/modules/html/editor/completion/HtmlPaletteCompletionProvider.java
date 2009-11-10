@@ -52,6 +52,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
@@ -106,104 +107,116 @@ public class HtmlPaletteCompletionProvider implements CompletionProvider {
             this.creationCaretOffset = caretOffset;
         }
 
-        protected void query(CompletionResultSet resultSet, Document doc, int offset) {
+        protected void query(final CompletionResultSet resultSet, final Document doc, final int offset) {
             try {
                 synchronized (items) {
-                    items.clear();
+                    doc.render(new Runnable() {
 
-                    TokenSequence htmlTs = getTokenSequence(doc, offset);
+                        public void run() {
+                            items.clear();
 
-                    if (htmlTs == null) { //no html code
-                        return;
-                    }
+                            TokenSequence htmlTs = getTokenSequence(doc, offset);
 
-                    int diff = htmlTs.move(offset);
-                    if (!htmlTs.moveNext()) {
-                        return;
-                    }
+                            if (htmlTs == null) { //no html code
+                                return;
+                            }
 
-                    Token current = htmlTs.token();
-                    if(current.id() != HTMLTokenId.TEXT) { //works only in plain text
-                        return ;
-                    }
+                            int diff = htmlTs.move(offset);
+                            if (!htmlTs.moveNext()) {
+                                return;
+                            }
 
-                    //end tag autocompletion workaround - we do not want to see the palette items when user finished
-                    //an open tag and the end tag autocompletion pops up
-                    //or after the entity reference
-                    if(diff == 0 && htmlTs.movePrevious()) {
-                        TokenId id = htmlTs.token().id();
-                        if(id == HTMLTokenId.TAG_CLOSE_SYMBOL ||
-                           id == HTMLTokenId.TAG_OPEN_SYMBOL ||
-                           id == HTMLTokenId.CHARACTER) {
-                            return ;
-                        }
-                    }
+                            Token current = htmlTs.token();
+                            if (current.id() != HTMLTokenId.TEXT) { //works only in plain text
+                                return;
+                            }
 
-                    String prefix = current.text().subSequence(0, diff).toString();
-                    //preserve only non-ws part of the prefix at the end (text token can contain mix of ws and non-ws chars)
-                    int i;
-                    for (i = prefix.length() - 1; i >= 0; i--) {
-                        char ch = prefix.charAt(i);
-                        if (Character.isWhitespace(ch)) {
-                            i++;
-                            break;
-                        }
-                    }
-                    if(i > 0) {
-                        prefix = prefix.substring(i, prefix.length());
-                    }
-                    //remember the start of the completion source expression for later removal
-                    this.completionExpressionStartOffset = creationCaretOffset - prefix.length();
-
-                    TopComponent tc = NbEditorUtilities.getTopComponent(component);
-                    if(tc == null) {
-                        return ;
-                    }
-
-                    PaletteController pc = tc.getLookup().lookup(PaletteController.class);
-                    if (pc != null) {
-                        Node rootNode = pc.getRoot().lookup(Node.class);
-                        Children children = rootNode.getChildren();
-                        for (Node categoryNode : children.getNodes()) {
-                            for (Node itemNode : categoryNode.getChildren().getNodes()) {
-                                Action insertAction = itemNode.getPreferredAction();
-                                String itemName = itemNode.getDisplayName();
-                                if (startsWithIgnoreCase(itemName, prefix)) {
-                                    items.add(new PaletteCompletionItem(insertAction, completionExpressionStartOffset, categoryNode.getDisplayName(), itemName, itemNode.getIcon(BeanInfo.ICON_COLOR_16x16)));
+                            //end tag autocompletion workaround - we do not want to see the palette items when user finished
+                            //an open tag and the end tag autocompletion pops up
+                            //or after the entity reference
+                            if (diff == 0 && htmlTs.movePrevious()) {
+                                TokenId id = htmlTs.token().id();
+                                if (id == HTMLTokenId.TAG_CLOSE_SYMBOL ||
+                                        id == HTMLTokenId.TAG_OPEN_SYMBOL ||
+                                        id == HTMLTokenId.CHARACTER) {
+                                    return;
                                 }
                             }
+
+                            String prefix = current.text().subSequence(0, diff).toString();
+                            //preserve only non-ws part of the prefix at the end (text token can contain mix of ws and non-ws chars)
+                            int i;
+                            for (i = prefix.length() - 1; i >= 0; i--) {
+                                char ch = prefix.charAt(i);
+                                if (Character.isWhitespace(ch)) {
+                                    i++;
+                                    break;
+                                }
+                            }
+                            if (i > 0) {
+                                prefix = prefix.substring(i, prefix.length());
+                            }
+                            //remember the start of the completion source expression for later removal
+                            completionExpressionStartOffset = creationCaretOffset - prefix.length();
+
+                            TopComponent tc = NbEditorUtilities.getTopComponent(component);
+                            if (tc == null) {
+                                return;
+                            }
+
+                            PaletteController pc = tc.getLookup().lookup(PaletteController.class);
+                            if (pc != null) {
+                                Node rootNode = pc.getRoot().lookup(Node.class);
+                                Children children = rootNode.getChildren();
+                                for (Node categoryNode : children.getNodes()) {
+                                    for (Node itemNode : categoryNode.getChildren().getNodes()) {
+                                        Action insertAction = itemNode.getPreferredAction();
+                                        String itemName = itemNode.getDisplayName();
+                                        if (startsWithIgnoreCase(itemName, prefix)) {
+                                            items.add(new PaletteCompletionItem(insertAction, completionExpressionStartOffset, categoryNode.getDisplayName(), itemName, itemNode.getIcon(BeanInfo.ICON_COLOR_16x16)));
+                                        }
+                                    }
+                                }
+                            }
+                            resultSet.addAllItems(items);
                         }
-                    }
-                    resultSet.addAllItems(items);
+                    });
                 }
-                
+
+
             } finally {
                 resultSet.finish();
             }
         }
 
         @Override
-        protected boolean canFilter(JTextComponent component) {
-            try {
-                synchronized (items) {
-                    Document doc = component.getDocument();
-                    int offset = component.getCaretPosition();
-                    if(offset < completionExpressionStartOffset) {
-                        return false;
-                    }
+        protected boolean canFilter(final JTextComponent component) {
+            synchronized (items) {
+                final Document doc = component.getDocument();
+                final AtomicBoolean retval = new AtomicBoolean();
+                doc.render(new Runnable() {
 
-                    String prefix = doc.getText(completionExpressionStartOffset, offset - completionExpressionStartOffset);
-
-                    //check the items
-                    for(PaletteCompletionItem item : items) {
-                        if(startsWithIgnoreCase(item.getItemName(), prefix)) {
-                            return true; //at least one item will remain
+                    public void run() {
+                        try {
+                            int offset = component.getCaretPosition();
+                            if (offset < completionExpressionStartOffset) {
+                                retval.set(false);
+                                return;
+                            }
+                            String prefix = doc.getText(completionExpressionStartOffset, offset - completionExpressionStartOffset);
+                            //check the items
+                            for (PaletteCompletionItem item : items) {
+                                if (startsWithIgnoreCase(item.getItemName(), prefix)) {
+                                    retval.set(true); //at least one item will remain
+                                    return;
+                                }
+                            }
+                        } catch (BadLocationException ex) {
+                            Exceptions.printStackTrace(ex);
                         }
                     }
-                }
+                });
 
-            } catch (BadLocationException ex) {
-                Exceptions.printStackTrace(ex);
             }
 
             return false;
@@ -211,23 +224,28 @@ public class HtmlPaletteCompletionProvider implements CompletionProvider {
         }
 
         @Override
-        protected void filter(CompletionResultSet resultSet) {
+        protected void filter(final CompletionResultSet resultSet) {
             try {
                 synchronized (items) {
-                    Document doc = component.getDocument();
-                    int offset = component.getCaretPosition();
-                    String prefix = doc.getText(completionExpressionStartOffset, offset - completionExpressionStartOffset);
-
-                    //check the items
-                    for(PaletteCompletionItem item : items) {
-                        if(startsWithIgnoreCase(item.getItemName(), prefix)) {
-                            resultSet.addItem(item);
+                    final Document doc = component.getDocument();
+                    doc.render(new Runnable() {
+                        public void run() {
+                            try {
+                                int offset = component.getCaretPosition();
+                                String prefix = doc.getText(completionExpressionStartOffset, offset - completionExpressionStartOffset);
+                                //check the items
+                                for (PaletteCompletionItem item : items) {
+                                    if (startsWithIgnoreCase(item.getItemName(), prefix)) {
+                                        resultSet.addItem(item);
+                                    }
+                                }
+                            } catch (BadLocationException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
                         }
-                    }
+                    });
                 }
 
-            } catch (BadLocationException ex) {
-                Exceptions.printStackTrace(ex);
             } finally {
                 resultSet.finish();
             }
