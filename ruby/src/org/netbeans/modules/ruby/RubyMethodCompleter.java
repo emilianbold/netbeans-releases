@@ -44,11 +44,10 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import org.jrubyparser.ast.CallNode;
 import org.jrubyparser.ast.ClassNode;
 import org.jrubyparser.ast.FCallNode;
-import org.jrubyparser.ast.NewlineNode;
+import org.jrubyparser.ast.IScopingNode;
 import org.jrubyparser.ast.Node;
 import org.jrubyparser.ast.NodeType;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -183,20 +182,18 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
                 if (!type.isKnown() && call.isLHSConstant() && callType != null) {
                     type = callType;
                 }
-            } else { // try method chaining
-                if (AstUtilities.isCall(target)) {
-                    Node receiver = ((CallNode) target).getReceiverNode();
-                    type = RubyTypeInferencer.create(request.createContextKnowledge()).inferType(receiver);
-                } else if (AstUtilities.isAssignmentNode(target)){
-                    if (!target.childNodes().isEmpty()) {
-                        Node child = target.childNodes().get(0);
-                        if (AstUtilities.isCall(child)) {
-                            type = RubyTypeInferencer.create(request.createContextKnowledge()).inferType(child);
-                        }
+            } else if (AstUtilities.isAssignmentNode(target)) {
+                if (!target.childNodes().isEmpty()) {
+                    Node child = target.childNodes().get(0);
+                    if (AstUtilities.isCall(child)) {
+                        type = RubyTypeInferencer.create(request.createContextKnowledge()).inferType(child);
                     }
                 }
-
             }
+        }
+
+        if (!type.isKnown() && AstUtilities.isCall(target)) {
+            type = getTypeForCall(target);
         }
 
         // I'm not doing any data flow analysis at this point, so
@@ -293,6 +290,23 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
         }
 
         return done;
+    }
+
+    private RubyType getTypeForCall(Node target) {
+        if ("".equals(request.prefix)) {
+            return RubyTypeInferencer.create(request.createContextKnowledge()).inferType(target);
+        } else {
+            if (target instanceof CallNode) {
+                Node receiver = ((CallNode) target).getReceiverNode();
+                return RubyTypeInferencer.create(request.createContextKnowledge()).inferType(receiver);
+            } else { // receiver is self
+                IScopingNode clazz = AstUtilities.findClassOrModule(request.path);
+                if (clazz != null) {
+                    return RubyType.create(AstUtilities.getClassOrModuleName(clazz));
+                }
+            }
+        }
+        return RubyType.createUnknown();
     }
 
     /**
