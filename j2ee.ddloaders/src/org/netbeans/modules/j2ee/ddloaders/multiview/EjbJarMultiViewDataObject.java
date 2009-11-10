@@ -121,7 +121,7 @@ import org.xml.sax.SAXParseException;
 public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
         implements DDChangeListener, DDEditorNavigator, FileChangeListener, ChangeListener {
     private EjbJarProxy ejbJar;
-    private FileObject srcRoots[];
+    private final List<FileObject> srcRoots = new ArrayList<FileObject>();
     private PropertyChangeListener ejbJarChangeListener;
     private Map entityHelperMap = new HashMap();
     private Map sessionHelperMap = new HashMap();
@@ -163,8 +163,6 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
     
     
     private void refreshSourceFolders() {
-        ArrayList srcRootList = new ArrayList();
-        
         SourceGroup[] groups;
         Project project = getProject();
         if (project != null) {
@@ -174,22 +172,24 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
             groups = null;
         }
         if (groups != null) {
-            for (int i = 0; i < groups.length; i++) {
-                org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(groups[i].getRootFolder());
-                if ((ejbModule != null) && (ejbModule.getDeploymentDescriptor() != null)) {
-                    try {
-                        FileObject fo = groups[i].getRootFolder();
-                        srcRootList.add(groups[i].getRootFolder());
-                        FileSystem fs = fo.getFileSystem();
-                        fs.removeFileChangeListener(this); //avoid being added multiple times
-                        fs.addFileChangeListener(this);
-                    } catch (FileStateInvalidException ex) {
-                        Exceptions.printStackTrace(ex);
+            synchronized(srcRoots){
+                srcRoots.clear();
+                for (int i = 0; i < groups.length; i++) {
+                    org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(groups[i].getRootFolder());
+                    if ((ejbModule != null) && (ejbModule.getDeploymentDescriptor() != null)) {
+                        try {
+                            FileObject fo = groups[i].getRootFolder();
+                            srcRoots.add(fo);
+                            FileSystem fs = fo.getFileSystem();
+                            fs.removeFileChangeListener(this); //avoid being added multiple times
+                            fs.addFileChangeListener(this);
+                        } catch (FileStateInvalidException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
                     }
                 }
             }
         }
-        srcRoots = (FileObject[]) srcRootList.toArray(new FileObject[srcRootList.size()]);
     }
     
     
@@ -212,13 +212,15 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
     }
     
     private String getPackageName(FileObject clazz) {
-        for (int i = 0; i < srcRoots.length; i++) {
-            String rp = FileUtil.getRelativePath(srcRoots[i], clazz);
-            if (rp != null) {
-                if (clazz.getExt().length() > 0) {
-                    rp = rp.substring(0, rp.length() - clazz.getExt().length() - 1);
+        synchronized(srcRoots){
+            for (FileObject fo : srcRoots) {
+                String rp = FileUtil.getRelativePath(fo, clazz);
+                if (rp != null) {
+                    if (clazz.getExt().length() > 0) {
+                        rp = rp.substring(0, rp.length() - clazz.getExt().length() - 1);
+                    }
+                    return rp.replace('/', '.');
                 }
-                return rp.replace('/', '.');
             }
         }
         return null;

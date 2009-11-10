@@ -59,12 +59,14 @@ import org.netbeans.modules.php.editor.model.Occurence;
 import org.netbeans.modules.php.editor.model.OccurencesSupport;
 import org.netbeans.modules.php.editor.model.QualifiedName;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
+import org.netbeans.modules.php.editor.model.nodes.MagicMethodDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.PhpDocTypeTagInfo;
 import org.netbeans.modules.php.editor.parser.PHPDocCommentParser;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeTag;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -132,6 +134,19 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                                 return node.getRange().containsInclusive(caretOffset) ? node.getRange() : OffsetRange.NONE;
                             }
                         }
+                    } else {
+                        List<PHPDocTag> tags = docBlock.getTags();
+                        for (PHPDocTag pHPDocTag : tags) {
+                            MagicMethodDeclarationInfo methodInfo = MagicMethodDeclarationInfo.create(pHPDocTag);
+                            if (methodInfo != null) {
+                                if (methodInfo.getRange().containsInclusive(caretOffset)) {
+                                    return methodInfo.getRange();
+                                } else if (methodInfo.getTypeRange().containsInclusive(caretOffset)) {
+                                    return methodInfo.getTypeRange();
+                                }
+                            }
+                        }
+
                     }
                 }
             } else if (id.equals(PHPTokenId.PHP_COMMENT) && token.text() != null) {

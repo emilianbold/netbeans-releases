@@ -58,7 +58,6 @@ import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.index.IndexedInterface;
 import org.netbeans.modules.php.editor.index.IndexedType;
 import org.netbeans.modules.php.editor.index.PHPIndex;
-import org.netbeans.modules.php.editor.index.PHPIndexer;
 import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.ClassConstantElement;
 import org.netbeans.modules.php.editor.model.ConstantElement;
@@ -370,10 +369,14 @@ class OccurenceBuilder {
             setOccurenceAsCurrent(new ElementInfo(node, scope));
         }
     }
-    void prepare(MagicMethodDeclarationInfo node, MethodScope scope) {
+
+    void prepare(final MagicMethodDeclarationInfo node, MethodScope scope) {
         if (canBePrepared(node.getOriginalNode(), scope)) {
-            magicMethodDeclarations.put(node, scope);
-            setOccurenceAsCurrent(new ElementInfo(node, scope));
+            if (node.getKind().equals(Kind.METHOD)) {
+                magicMethodDeclarations.put(node, scope);
+                ElementInfo elementInfo = new ElementInfo(node, scope);
+                setOccurenceAsCurrent(elementInfo);
+            }
         }
     }
 
