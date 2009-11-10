@@ -146,7 +146,7 @@ class OthersRootChildren extends Children.Keys<SourceGroup> {
                 // -> we just silently replace the PackageView approach with a simple flder view
                 // that's a ui inconsistency but less severe than having an empty view..
                 Project owner = FileOwnerQuery.getOwner(resgrp.getRootFolder());
-                if (owner == null || owner.getProjectDirectory().equals(project.getProjectDirectory())) {
+                if (owner != null && owner.getProjectDirectory().equals(project.getProjectDirectory())) {
                     toReturn[0] = new OGFilterNode(PackageView.createPackageView(grp), resgrp);
                 } else {
                     Children childs = dobj.createNodeChildren(VisibilityQueryDataFilter.VISIBILITY_QUERY_FILTER);
