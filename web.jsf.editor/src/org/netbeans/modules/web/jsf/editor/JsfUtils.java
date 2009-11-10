@@ -47,13 +47,14 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.ext.html.parser.AstNode;
-import org.netbeans.editor.ext.html.parser.AstNodeUtils;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.html.editor.api.Utils;
 import org.netbeans.modules.html.editor.api.HtmlKit;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -206,5 +207,37 @@ public class JsfUtils {
         }
 
         return declaredPrefix[0];
+    }
+
+    /**
+     * Creates an OffsetRange of source document offsets for given embedded offsets.
+     */
+    public static OffsetRange createOffsetRange(Snapshot snapshot, int embeddedOffsetFrom, int embeddedOffsetTo) {
+        Document doc = snapshot.getSource().getDocument(false);
+        assert doc != null;
+
+        int originalFrom = 0;
+        int originalTo = 0;
+
+        //try to find nearest original offset if the embedded offsets cannot be directly recomputed
+        //from - try backward
+        for (int i = embeddedOffsetFrom; i >= 0; i--) {
+            int originalOffset = snapshot.getOriginalOffset(i);
+            if (originalOffset != -1) {
+                originalFrom = originalOffset;
+                break;
+            }
+        }
+
+        //to - try forward
+        for (int i = embeddedOffsetTo; i < snapshot.getText().length(); i++) {
+            int originalOffset = snapshot.getOriginalOffset(i);
+            if (originalOffset != -1) {
+                originalTo = originalOffset;
+                break;
+            }
+        }
+
+        return new OffsetRange(originalFrom, originalTo);
     }
 }
