@@ -315,7 +315,7 @@ public class WebProjectRestSupport extends WebRestSupport {
         Object[] params = new Object[3];
         params[0] = LogUtils.WS_STACK_JAXRS;
         params[1] = project.getClass().getName();
-        params[2] = "RESOURCE"; // NOI18N
+        params[2] = "REST RESOURCE"; // NOI18N
         LogUtils.logWsDetect(params);
     }
 
