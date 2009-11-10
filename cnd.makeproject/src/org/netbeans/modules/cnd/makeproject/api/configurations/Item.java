@@ -472,9 +472,9 @@ public class Item implements NativeFileItem, PropertyChangeListener {
             }
             vec2.addAll(cccCompilerConfiguration.getIncludeDirectories().getValue());
             // Convert all paths to absolute paths
-            Iterator iter = vec2.iterator();
+            Iterator<String> iter = vec2.iterator();
             while (iter.hasNext()) {
-                vec.add(IpeUtils.toAbsolutePath(getFolder().getConfigurationDescriptor().getBaseDir(), (String) iter.next()));
+                vec.add(IpeUtils.toAbsolutePath(getFolder().getConfigurationDescriptor().getBaseDir(), iter.next()));
             }
             if (cccCompilerConfiguration instanceof AllOptionsProvider) {
                 vec = SPI_ACCESSOR.getItemUserIncludePaths(vec, (AllOptionsProvider) cccCompilerConfiguration, compiler, makeConfiguration);
