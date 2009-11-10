@@ -1441,4 +1441,23 @@ public class JaxWsUtils {
         }
         return null;
     }
+
+    public static String getModuleType(Project prj) {
+        J2eeModuleProvider provider = (J2eeModuleProvider) prj.getLookup().lookup(J2eeModuleProvider.class);
+        if (provider != null) {
+            J2eeModule.Type moduleType = provider.getJ2eeModule().getType();
+            if (J2eeModule.Type.EJB.equals(moduleType)) {
+                return "EJB"; //NOI18N
+            } else if (J2eeModule.Type.WAR.equals(moduleType)) {
+                return "WAR"; //NOI18N
+            } else if (J2eeModule.Type.CAR.equals(moduleType)) {
+                return "CAR"; //NOI18N
+            } else {
+                return "UNKNOWN"; //NOI18N
+            }
+        } else {
+            return "J2SE"; //NOI18N
+        }
+
+    }
 }

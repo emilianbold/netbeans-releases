@@ -112,7 +112,7 @@ public class TestRestServicesAction extends NodeAction  {
                 // logging usage of action
                 Object[] params = new Object[2];
                 params[0] = LogUtils.WS_STACK_JAXRS;
-                params[1] = "TEST"; // NOI18N
+                params[1] = "TEST REST"; // NOI18N
                 LogUtils.logWsAction(params);
 
         }
