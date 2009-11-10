@@ -205,8 +205,14 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         String title = isRemoteHostSelected() ? getString("NEW_TOOL_SET_TITLE_REMOTE", ExecutionEnvironmentFactory.toUniqueID(csm.getExecutionEnvironment())) : getString("NEW_TOOL_SET_TITLE");
         DialogDescriptor dialogDescriptor = new DialogDescriptor(panel, title);
         panel.setDialogDescriptor(dialogDescriptor);
+        boolean oldHostValid = cacheManager.isDevHostValid(execEnv);
         DialogDisplayer.getDefault().notify(dialogDescriptor);
         if (dialogDescriptor.getValue() != DialogDescriptor.OK_OPTION) {
+            boolean newHostValid = cacheManager.isDevHostValid(execEnv);
+            if (oldHostValid != newHostValid) {
+                // we didn't add the collection, but host changed its valid state
+                dataValid();
+            }
             return;
         }
 
