@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.j2ee.deployment.devmodules.spi;
 
-import com.sun.istack.internal.NotNull;
 import org.netbeans.modules.j2ee.deployment.config.ResourceChangeReporterAccessor;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ResourceChangeReporter;
 
@@ -59,7 +58,7 @@ public class ResourceChangeReporterFactory {
      * @param impl SPI object
      * @return {@link ResourceChangeReporter} API instance
      */
-    @NotNull
+//    @NotNull
     public static ResourceChangeReporter createResourceChangeReporter(ResourceChangeReporterImplementation impl) {
         return ResourceChangeReporterAccessor.DEFAULT.createResourceChangeReporter(impl);
     }
