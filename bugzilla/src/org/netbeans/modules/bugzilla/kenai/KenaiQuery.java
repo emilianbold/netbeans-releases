@@ -72,6 +72,10 @@ public class KenaiQuery extends BugzillaQuery {
         return c;
     }
 
+    void setUrlParameters(String urlParameters) {
+        super.urlParameters = urlParameters;
+    }
+
     @Override
     protected void logQueryEvent(int count, boolean autoRefresh) {
         BugtrackingUtil.logQueryEvent(

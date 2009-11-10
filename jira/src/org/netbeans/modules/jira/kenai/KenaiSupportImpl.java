@@ -66,12 +66,11 @@ import org.openide.util.Exceptions;
  *
  * @author Tomas Stupka
  */
-public class KenaiSupportImpl extends KenaiSupport implements PropertyChangeListener {
+public class KenaiSupportImpl extends KenaiSupport {
 
     private final Set<KenaiRepository> repositories = new HashSet<KenaiRepository>();
 
     public KenaiSupportImpl() {
-        Kenai.getDefault().addPropertyChangeListener(this);
     }
 
     @Override
@@ -125,38 +124,6 @@ public class KenaiSupportImpl extends KenaiSupport implements PropertyChangeList
         return null;
     }
 
-    public void propertyChange(PropertyChangeEvent evt) {
-        if(evt.getPropertyName().equals(Kenai.PROP_LOGIN)) {
-            // XXX move to spi
-
-            // get all kenai repositories
-            KenaiRepository[] repos;
-            synchronized(repositories) {
-                if(repositories.size() == 0) {
-                    return;
-                }
-                repos = repositories.toArray(new KenaiRepository[repositories.size()]);
-            }
-
-            // get kenai credentials
-            String user;
-            String psswd;
-            PasswordAuthentication pa = KenaiUtil.getPasswordAuthentication(false);
-            if(pa != null) {
-                user = pa.getUserName();
-                psswd = new String(pa.getPassword());
-            } else {
-                user = "";                                                      // NOI18N
-                psswd = "";                                                     // NOI18N
-            }
-
-            for (KenaiRepository kr : repos) {
-                // refresh their taskdata with the relevant username/password
-                kr.setCredentials(user, psswd);
-            }
-        }
-    }
-
     @Override
     public void setFilter(Query query, Filter filter) {
         if(query instanceof JiraQuery) {
@@ -171,15 +138,13 @@ public class KenaiSupportImpl extends KenaiSupport implements PropertyChangeList
     }
 
     @Override
-    public Query getMyIssuesQuery(Repository repository) {
-        assert repository instanceof KenaiRepository;
-        return ((KenaiRepository)repository).getMyIssuesQuery();
-    }
-
-    @Override
     public BugtrackingType getType() {
         return BugtrackingType.JIRA;
     }
 
+    @Override
+    public boolean needsLogin(Query query) {
+        return query == ((KenaiRepository) query.getRepository()).getMyIssuesQuery();
+    }
 }
 

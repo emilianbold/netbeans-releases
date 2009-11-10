@@ -394,6 +394,7 @@ public class AttachmentsPanel extends JPanel {
                                 || "image/jpeg".equals(contentType)) { // NOI18N
                             HtmlBrowser.URLDisplayer.getDefault().showURL(file.toURI().toURL());
                         } else {
+                            file = FileUtil.normalizeFile(file);
                             FileObject fob = FileUtil.toFileObject(file);
                             DataObject dob = DataObject.find(fob);
                             OpenCookie open = dob.getCookie(OpenCookie.class);
