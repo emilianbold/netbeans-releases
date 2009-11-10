@@ -259,6 +259,9 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         }
 
         TokenHierarchy<?> th = info.getSnapshot().getTokenHierarchy();
+        if (th == null) { // for unit tests
+            th = TokenHierarchy.get((Document)doc);
+        }
         try {
             int requireStart = LexUtilities.getRequireStringOffset(lexOffset, th);
 
@@ -1107,7 +1110,10 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         lexOffset = AstUtilities.boundCaretOffset(ir, lexOffset);
 
         // Discover whether we're in a require statement, and if so, use special completion
-        final TokenHierarchy<?> th = ir.getSnapshot().getTokenHierarchy();
+        TokenHierarchy<?> th = ir.getSnapshot().getTokenHierarchy();
+        if (th == null) { // for unit tests
+            th = TokenHierarchy.get(document);
+        }
         final BaseDocument doc = (BaseDocument)document;
         final FileObject fileObject = RubyUtils.getFileObject(ir);
         
