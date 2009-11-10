@@ -42,7 +42,6 @@
 package org.netbeans.modules.debugger.jpda.ant;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -92,6 +91,7 @@ public class JPDAReload extends Task {
         filesets.add (fileset);
     }
     
+    @Override
     public void execute() throws BuildException {
         if (logger.isLoggable(Level.FINE)) {
             logger.fine("JPDAReload.execute(), filesets = "+filesets);
@@ -119,7 +119,7 @@ public class JPDAReload extends Task {
         
         System.out.println ("Classes to be reloaded:");
         
-        FileUtils fileUtils = FileUtils.newFileUtils ();
+        FileUtils fileUtils = FileUtils.getFileUtils();
         Map map = new HashMap ();
         EditorContext editorContext = DebuggerManager.getDebuggerManager().lookupFirst(null, EditorContext.class);
 
