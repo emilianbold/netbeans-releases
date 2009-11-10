@@ -96,13 +96,26 @@ public abstract class BaseCard<T extends CapabilitiesProvider> extends AbstractC
     protected BaseCard(JavacardPlatform platform, String systemId, Class<T> type) {
         super(platform, systemId);
         this.type = type;
-        rp = new RequestProcessor("Java Card Instance " + systemId);
+        rp = new RequestProcessor("Java Card Instance " + systemId); //NOI18N
     }
 
+    /**
+     * Get the type, passed to the constructor, of the CapabilitiesProvider
+     * for this card.  For example, the CapabilitiesProvider of RI Cards
+     * reads a set of enum constants from DeclarableCapabilities to populate
+     * the set of supported types.
+     * @return The type
+     */
     protected final Class<T> type() {
         return type;
     }
 
+    /**
+     * Create a CardInfo with display name, etc. for this card.  All subclasses
+     * are expected to support CardInfo.
+     * @param t the CapabilitiesProvider of this card
+     * @return A CardInfo
+     */
     protected abstract CardInfo createCardInfo(T t);
 
     protected AntTargetInterceptor createAntTargetInterceptor(T t) {
@@ -245,7 +258,7 @@ public abstract class BaseCard<T extends CapabilitiesProvider> extends AbstractC
     }
 
     @Override
-    protected final Lookup createPreloadLookup() {
+    final Lookup createPreloadLookup() {
         return Lookups.fixed(loadData());
     }
 
@@ -279,6 +292,11 @@ public abstract class BaseCard<T extends CapabilitiesProvider> extends AbstractC
         }
     }
 
+    /**
+     * XXX DELETEME
+     * @param create
+     * @return
+     */
     protected FileObject getEpromFile(boolean create) {
         FileObject fld = Utils.sfsFolderForDeviceEepromsForPlatformNamed(getSystemId(), create);
         FileObject result = null;
@@ -305,6 +323,20 @@ public abstract class BaseCard<T extends CapabilitiesProvider> extends AbstractC
         //do nothing
     }
 
+    /**
+     * Adds and removes capabilities based on the current state.  Any
+     * implementation should call super(), unless it wants to assume complete
+     * responsibility for ensuring that the set of capabilities is appropriate
+     * to the state.
+     * <p/>
+     * The default implementation handles common state transitions, based on
+     * the set of supported capabilities - i.e., if the state goes from a
+     * not-started state to a started state, this method will automatically
+     * remove any StartCapability from this card, and add a StopCapability if
+     * createStopCapability() returns non-null.
+     * @param old The previous state
+     * @param nue The new state
+     */
     @Override
     protected void onStateChanged(CardState old, CardState nue) {
         if (old == nue) return;

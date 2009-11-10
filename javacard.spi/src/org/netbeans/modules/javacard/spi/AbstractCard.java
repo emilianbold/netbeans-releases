@@ -59,7 +59,7 @@ import org.openide.util.lookup.ProxyLookup;
 
 /**
  * Convenience implementation of Card which provides standard handling for
- * listeners, etc.
+ * CardStateObservers, and capability addition/removal.
  *
  * @author Tim Boudreau
  */
@@ -76,19 +76,34 @@ public abstract class AbstractCard implements Card {
             Collections.synchronizedSet(new WeakSet<Process>());
     private final JavacardPlatform platform;
 
-    protected AbstractCard (JavacardPlatform platform, String systemId, Class<? extends ICardCapability>... types) {
+    protected AbstractCard (JavacardPlatform platform, String systemId) {
         this.platform = platform;
         this.systemId = systemId;
     }
 
+    /**
+     * The default implementation only checks if the platform returns
+     * isValid().
+     * @return
+     */
     public boolean isValid() {
         return platform != null && platform.isValid();
     }
 
+    /**
+     * Get the platform that owns this card
+     * @return A platform
+     */
     public final JavacardPlatform getPlatform() {
         return platform;
     }
 
+    /**
+     * Set the state of this card.  Fires changes to observers,
+     * replanned into the event thread if necessary.
+     *
+     * @param state The new state
+     */
     protected final void setState (final CardState state) {
         CardState old;
         synchronized (stateLock) {
@@ -118,10 +133,17 @@ public abstract class AbstractCard implements Card {
         //do nothing
     }
 
+    /**
+     * Get a capability of this card
+     * @param <T> The capability type
+     * @param type The capability type
+     * @return The capability, or null if not present
+     */
     public final <T extends ICardCapability> T getCapability(Class<T> type) {
         return getLookup().lookup(type);
     }
 
+    //XXX get rid of this since we have CapabilitiesProvider?
     public final Set<Class<? extends ICardCapability>> getSupportedCapabilities() {
         CapabilitiesProvider prov = getLookup().lookup(CapabilitiesProvider.class);
         if (prov == null) {
@@ -137,10 +159,19 @@ public abstract class AbstractCard implements Card {
         return result;
     }
 
+    /**
+     * Pass an initial set of capabilities.  Called when the card's lookup is
+     * being constructed.
+     * @param capabilities An array of capabilities
+     */
     protected final void initCapabilities (ICardCapability... capabilities) {
         content.set(Arrays.asList(capabilities), null);
     }
 
+    /**
+     * Get the currently available set of capability types
+     * @return
+     */
     public final Set<Class<? extends ICardCapability>> getEnabledCapabilities() {
         Set<Class<? extends ICardCapability>> result = new HashSet<Class<? extends ICardCapability>>();
         for (Lookup.Item<ICardCapability> it : lkp.lookupResult(ICardCapability.class).allItems()) {
@@ -149,6 +180,11 @@ public abstract class AbstractCard implements Card {
         return result;
     }
 
+    /**
+     * Determine if a particular capability type is enabled
+     * @param type
+     * @return
+     */
     public final boolean isCapabilityEnabled(Class<? extends ICardCapability> type) {
         return getEnabledCapabilities().contains(type);
     }
@@ -175,7 +211,7 @@ public abstract class AbstractCard implements Card {
         return systemId;
     }
 
-    protected Lookup createPreloadLookup() {
+    Lookup createPreloadLookup() {
         //XXX get this out of here
         return Lookup.EMPTY;
     }
@@ -188,9 +224,12 @@ public abstract class AbstractCard implements Card {
         }
         if (!initialized) {
             initializing = true;
-            onBeforeFirstLookup();
-            initialized = true;
-            initializing = false;
+            try {
+                onBeforeFirstLookup();
+                initialized = true;
+            } finally {
+                initializing = false;
+            }
         }
         return lkp;
     }
