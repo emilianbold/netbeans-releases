@@ -78,7 +78,7 @@ public final class CardActions {
 
     public static ContextAction<?> createCustomizeAction() {
         ContextAction<?> a = LookupProviderAction.createIndirectAction(Node.class,
-                LookupProviderAction.createIndirectAction(Card.class, new CustomizeCardAction()));
+                new CustomizeCardAction());
         return a;
     }
 }

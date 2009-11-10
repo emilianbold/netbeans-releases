@@ -58,7 +58,7 @@ public final class DialogBuilder {
 
     private String token;
     private String title;
-    private boolean modal;
+    private boolean modal = true;
     private Object[] options;
     private Object defaultOption;
     private DialogType dialogType = DialogType.PLAIN;
@@ -126,7 +126,8 @@ public final class DialogBuilder {
     public DialogBuilder setButtonSet(ButtonSet optionType) {
         this.optionType = optionType;
         if (options != null) {
-            throw new IllegalStateException("Use setButtons or setButtonSet, not both");
+            throw new IllegalStateException("Use setButtons or " + //NOI18N
+                    "setButtonSet, not both"); //NOI18N
         }
         return this;
     }
@@ -152,11 +153,14 @@ public final class DialogBuilder {
 
     public Object showDialog() {
         DialogDescriptor des = createDialogDescriptor();
+        System.err.println("MODAL? " + des.isModal());
         Object dlgResult = DialogDisplayer.getDefault().notify(des);
+        System.err.println("Exit dialog descriptor notify for " + des);
         if (DialogDescriptor.YES_OPTION.equals(dlgResult) ||
                 DialogDescriptor.OK_OPTION.equals(dlgResult) ||
                 (defaultOption != null && defaultOption.equals(dlgResult)) || NbBundle.getMessage(DialogBuilder.class,
                 "BTN_CLOSE").equals(dlgResult)) { //NOI18N
+            System.err.println("DLG RESULT " + dlgResult + " " + Thread.currentThread());
         }
         return dlgResult;
     }

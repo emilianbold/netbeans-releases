@@ -37,52 +37,72 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.javacard.spi.actions;
+package org.netbeans.modules.javacard.ri.card;
 
-import java.awt.Toolkit;
-import org.netbeans.api.validation.adapters.DialogBuilder;
+import java.awt.Component;
+import java.awt.EventQueue;
+import java.util.Properties;
+import org.netbeans.modules.javacard.common.KeysAndValues;
+import org.netbeans.modules.javacard.ri.platform.installer.DevicePropertiesPanel;
 import org.netbeans.modules.javacard.spi.Card;
 import org.netbeans.modules.javacard.spi.CardCustomizer;
 import org.netbeans.modules.javacard.spi.capabilities.CardCustomizerProvider;
-import org.netbeans.modules.javacard.spi.capabilities.CardInfo;
-import org.netbeans.spi.actions.Single;
-import org.openide.DialogDescriptor;
-import org.openide.util.NbBundle;
+import org.netbeans.validation.api.Problem;
+import org.netbeans.validation.api.ui.ValidationGroup;
 
 /**
+ * Implementation of CardCustomizerProvider for RI cards.  Registered in
+ * layer file against the RI platform kind.
  *
  * @author Tim Boudreau
  */
-final class CustomizeCardAction extends Single<Card> {
-    CustomizeCardAction() {
-        super (Card.class, NbBundle.getMessage(CustomizeCardAction.class,
-                "ACTION_CUSTOMIZE"), null); //NOI18N
-    }
-
-    @Override
-    protected void actionPerformed(Card target) {
-        CardCustomizerProvider ccp = target.getCapability(CardCustomizerProvider.class);
-        if (ccp != null) {
-            CardCustomizer cc = ccp.getCardCustomizer(target);
-            if (cc != null) {
-                String name = target.getCapability(CardInfo.class) == null ?
-                    target.getSystemId() : target.getCapability(CardInfo.class).getDisplayName();
-                DialogBuilder db = new DialogBuilder(CustomizeCardAction.class).setValidationGroup(cc.getValidationGroup()).setTitle(
-                        NbBundle.getMessage(CustomizeCardAction.class, "TTL_CUSTOMIZE_CARD", name)).  //NOI18N
-                        setContent(cc.getComponent()).setModal(true).setButtonSet(DialogBuilder.ButtonSet.OK_CANCEL);
-                if (db.showDialog(DialogDescriptor.OK_OPTION)) {
-                    cc.save();
+public class CustomizerProvider implements CardCustomizerProvider {
+    private CC cc;
+    public CardCustomizer getCardCustomizer(Card card) {
+        CardProperties props = card.getCapability(CardProperties.class);
+        if (props != null) {
+            Properties p = props.toProperties();
+            synchronized (this) {
+                if (cc == null) {
+                    cc = new CC(p);
                 }
-                return;
             }
+            return cc;
+        } else {
+            //XXX return a dummy instance?
+            return null;
         }
-        Toolkit.getDefaultToolkit().beep();
-        
     }
 
-    @Override
-    public boolean isEnabled(Card target) {
-        return target.getCapability(CardCustomizerProvider.class) != null  &&
-                target.getCapability(CardCustomizerProvider.class).getCardCustomizer(target) != null;
+    private static final class CC implements CardCustomizer {
+        private DevicePropertiesPanel pnl;
+        private final Properties props;
+        CC(Properties props) {
+            this.props = props;
+        }
+
+        public void save() {
+            assert isContentValid();
+            assert pnl != null;
+            pnl.write(new KeysAndValues.PropertiesAdapter(props));
+        }
+
+        public ValidationGroup getValidationGroup() {
+            getComponent();
+            return pnl.getValidationGroup();
+        }
+
+        public boolean isContentValid() {
+            getComponent();
+            return !pnl.getValidationGroup().validateAll().isFatal();
+        }
+
+        public Component getComponent() {
+            assert EventQueue.isDispatchThread();
+            if (pnl == null) {
+                pnl = new DevicePropertiesPanel(props);
+            }
+            return pnl;
+        }
     }
 }
