@@ -623,6 +623,7 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
             this.setDefaultActionAllowed(false);
             this.tree.setEditable (false);
             this.tree.setShowsRootHandles (false);
+            this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(LibrariesCustomizer.class, "AD_Libraries"));
         }
         
     }

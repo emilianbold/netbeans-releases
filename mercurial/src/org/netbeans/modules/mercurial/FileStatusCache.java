@@ -567,7 +567,7 @@ public class FileStatusCache {
             Map<File, FileInformation> files = (Map<File, FileInformation>) turbo.readEntry(root, FILE_STATUS_MAP);
             Map<File, FileInformation> interestingFiles;
             try {
-                interestingFiles = HgCommand.getInterestingStatus(repository, root);
+                interestingFiles = HgCommand.getInterestingStatus(repository, Collections.singletonList(root));
                 for (Map.Entry<File, FileInformation> entry : interestingFiles.entrySet()) {
                     File file = entry.getKey();
                     FileInformation fi = entry.getValue();
@@ -607,7 +607,7 @@ public class FileStatusCache {
             Map<File, FileInformation> interestingFiles;
             try {
                 // find all files with not up-to-date or ignored status
-                interestingFiles = HgCommand.getInterestingStatus(repository, root);
+                interestingFiles = HgCommand.getInterestingStatus(repository, Collections.singletonList(root));
                 for (Map.Entry<File, FileInformation> interestingEntry : interestingFiles.entrySet()) {
                     // put the file's FI into the cache
                     File file = interestingEntry.getKey();
@@ -829,7 +829,7 @@ public class FileStatusCache {
                     startTime = System.currentTimeMillis();
                     Mercurial.STATUS_LOG.fine("scanFolder: start for " + dir.getAbsolutePath());
                 }
-                interestingFiles = HgCommand.getInterestingStatus(rootManagedFolder, dir);
+                interestingFiles = HgCommand.getInterestingStatus(rootManagedFolder, Collections.singletonList(dir));
                 if (Mercurial.STATUS_LOG.isLoggable(Level.FINE)) {
                     Mercurial.STATUS_LOG.fine("scanFolder: finishes for " + dir.getAbsolutePath() + " after " + (System.currentTimeMillis() - startTime));
                 }

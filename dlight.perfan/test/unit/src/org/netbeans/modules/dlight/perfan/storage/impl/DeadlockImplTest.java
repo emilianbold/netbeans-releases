@@ -116,7 +116,7 @@ public class DeadlockImplTest {
         assertEquals(6, ds1.getHeldLockCallStack().size());
         assertEquals("clone", ds1.getHeldLockCallStack().get(0).getFunction().getName());
         assertEquals("get_fork", ds1.getHeldLockCallStack().get(5).getFunction().getName());
-        assertEquals("din_phil.c", ((FunctionCallImpl)ds1.getHeldLockCallStack().get(5)).getFileName());
+        assertEquals("din_phil.c", ((FunctionCallImpl)ds1.getHeldLockCallStack().get(5)).getSourceFile());
         assertEquals(104, ((FunctionCallImpl)ds1.getHeldLockCallStack().get(5)).getOffset());
         assertEquals(0x804a098, ds1.getRequestedLockAddress());
         assertEquals(6, ds1.getRequestedLockCallStack().size());

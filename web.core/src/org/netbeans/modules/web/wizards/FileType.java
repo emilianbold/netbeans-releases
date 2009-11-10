@@ -83,5 +83,11 @@ public class FileType {
             new FileType("xhtml", "xhtml");
     public static final FileType CSS =
             new FileType("css", "css");
+    public static final FileType JS =
+            new FileType("javascript","js");
+    
+    public static String IS_XML = "isXml";          // NOI18N
+    public static String IS_SEGMENT = "isSegment";  // NOI18N
+    public static String IS_FACELETS= "isFacelerts";// NOI18N
 } 
 

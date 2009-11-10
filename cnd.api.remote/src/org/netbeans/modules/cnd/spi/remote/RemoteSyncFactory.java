@@ -57,7 +57,7 @@ public abstract class RemoteSyncFactory {
     /**
      * Creates an instance of RemoteSyncWorker.
      *
-     * @param localDirs local directory that should be synchronized
+     * @param files local directories and files that should be synchronized
      *
      * @param executionEnvironment
      *
@@ -77,7 +77,7 @@ public abstract class RemoteSyncFactory {
      * @return new instance of the RemoteSyncWorker
      */
     public abstract RemoteSyncWorker createNew(ExecutionEnvironment executionEnvironment, 
-            PrintWriter out, PrintWriter err, File privProjectStorageDir, File... localDirs);
+            PrintWriter out, PrintWriter err, File privProjectStorageDir, File... files);
 
     /**
      * Creates an instance of RemoteSyncWorker.

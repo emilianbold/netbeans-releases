@@ -100,7 +100,7 @@ public class DataraceImplTest {
         assertEquals("clone", td1.getThreadStates().get(0).getStack().get(0).getFunction().getName());
         assertEquals("work", td1.getThreadStates().get(0).getStack().get(4).getFunction().getName());
         assertEquals(54, td1.getThreadStates().get(0).getStack().get(4).getOffset());
-        assertEquals("pi_pthreads.c", ((FunctionCallImpl)td1.getThreadStates().get(0).getStack().get(4)).getFileName());
+        assertEquals("pi_pthreads.c", ((FunctionCallImpl)td1.getThreadStates().get(0).getStack().get(4)).getSourceFile());
         assertEquals(5, td1.getThreadStates().get(1).getStack().size());
 
         ThreadDump td2 = r1.getThreadDumps().get(1);
@@ -155,7 +155,7 @@ public class DataraceImplTest {
         assertEquals("_start", td1.getThreadStates().get(0).getStack().get(0).getFunction().getName());
         assertEquals("main", td1.getThreadStates().get(0).getStack().get(2).getFunction().getName());
         assertEquals(57, td1.getThreadStates().get(0).getStack().get(2).getOffset());
-        assertEquals("pi_omp.c", ((FunctionCallImpl)td1.getThreadStates().get(0).getStack().get(2)).getFileName());
+        assertEquals("pi_omp.c", ((FunctionCallImpl)td1.getThreadStates().get(0).getStack().get(2)).getSourceFile());
         assertEquals(3, td1.getThreadStates().get(1).getStack().size());
 
         ThreadDump td2 = r1.getThreadDumps().get(1);
@@ -214,7 +214,7 @@ public class DataraceImplTest {
         assertEquals("_lwp_start", td1.getThreadStates().get(0).getStack().get(0).getFunction().getName());
         assertEquals("MAIN_ -- OMP parallel region from line 16 [_$p1A16.MAIN_]", td1.getThreadStates().get(0).getStack().get(3).getFunction().getName());
         assertEquals(17, td1.getThreadStates().get(0).getStack().get(3).getOffset());
-        assertEquals("test.f", ((FunctionCallImpl)td1.getThreadStates().get(0).getStack().get(3)).getFileName());
+        assertEquals("test.f", ((FunctionCallImpl)td1.getThreadStates().get(0).getStack().get(3)).getSourceFile());
         assertEquals(4, td1.getThreadStates().get(1).getStack().size());
 
         ThreadDump td2 = r1.getThreadDumps().get(1);

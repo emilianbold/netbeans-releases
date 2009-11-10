@@ -40,14 +40,14 @@
  */
 package org.netbeans.modules.javacard.options;
 
-import org.netbeans.modules.javacard.GuiUtils;
-import org.netbeans.modules.javacard.Utils;
+import org.netbeans.modules.javacard.common.Utils;
 import org.netbeans.validation.api.Problem;
 import org.openide.util.NbBundle;
 
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
+import org.netbeans.modules.javacard.common.GuiUtils;
 import org.netbeans.validation.api.Validator;
 import org.netbeans.validation.api.builtin.Validators;
 import org.netbeans.validation.api.conversion.Converter;

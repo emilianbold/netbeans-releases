@@ -85,9 +85,9 @@ package org.netbeans.modules.cnd.modelimpl.parser.generated;
 import java.io.*;
 import java.util.*;
 
-import antlr.*;
-import antlr.collections.*;
-import antlr.debug.misc.*;
+import org.netbeans.modules.cnd.antlr.*;
+import org.netbeans.modules.cnd.antlr.collections.*;
+import org.netbeans.modules.cnd.antlr.debug.misc.*;
 import org.netbeans.modules.cnd.modelimpl.parser.*;
 import org.netbeans.modules.cnd.modelimpl.parser.Enum;
 import org.netbeans.modules.cnd.modelimpl.debug.*;

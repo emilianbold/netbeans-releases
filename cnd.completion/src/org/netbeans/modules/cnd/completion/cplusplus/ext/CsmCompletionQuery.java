@@ -1421,29 +1421,29 @@ abstract public class CsmCompletionQuery {
                     lastType = resolveType(item.getParameter(0));
                     cont = false;
                     if (lastType != null) { // must be type
-                        if (item.getParameterCount() == 2) { // index in array follows
-                            int ptrDepth = lastType.getPointerDepth();
-                            int arrDepth = lastType.getArrayDepth();
-                            if (ptrDepth > 0) {
-                                ptrDepth--;
-                                lastType = CsmCompletion.getType(lastType.getClassifier(), ptrDepth, ptrDepth>0, arrDepth, lastType.isConst());
-                            } else if (arrDepth > 0) {
-                                arrDepth--;
-                                lastType = CsmCompletion.getType(lastType.getClassifier(), ptrDepth, ptrDepth>0, arrDepth, lastType.isConst());
-                            } else {
-                                CsmClassifier cls = getClassifier(lastType, contextFile);
-                                if (cls != null) {
+                        CsmClassifier cls = getClassifier(lastType, contextFile);
+                        if (cls != null) {
+                            if (item.getParameterCount() == 2) { // index in array follows
+                                int ptrDepth = lastType.getPointerDepth();
+                                int arrDepth = lastType.getArrayDepth();
+                                if (ptrDepth > 0) {
+                                    ptrDepth--;
+                                    lastType = CsmCompletion.getType(cls, ptrDepth, ptrDepth > 0, arrDepth, lastType.isConst());
+                                } else if (arrDepth > 0) {
+                                    arrDepth--;
+                                    lastType = CsmCompletion.getType(cls, ptrDepth, ptrDepth > 0, arrDepth, lastType.isConst());
+                                } else {
                                     CsmFunction opArray = CsmCompletionQuery.getOperator(cls, contextFile, CsmFunction.OperatorKind.ARRAY);
                                     if (opArray != null) {
                                         lastType = opArray.getReturnType();
                                     }
                                 }
+                                cont = true;
+                            } else { // no index, increase array depth
+                                lastType = CsmCompletion.getType(cls, lastType.getPointerDepth(), lastType.isPointer(),
+                                        lastType.getArrayDepth() + 1, lastType.isConst());
+                                cont = true;
                             }
-                            cont = true;
-                        } else { // no index, increase array depth
-                            lastType = CsmCompletion.getType(lastType.getClassifier(), lastType.getPointerDepth(), lastType.isPointer(),
-                                    lastType.getArrayDepth() + 1, lastType.isConst());
-                            cont = true;
                         }
                     }
                     break;

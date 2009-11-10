@@ -57,8 +57,12 @@ import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
 import org.netbeans.modules.websvc.rest.model.api.RestApplication;
 import org.netbeans.modules.websvc.rest.model.api.RestApplicationModel;
 import org.netbeans.modules.websvc.rest.model.api.RestApplications;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -106,6 +110,38 @@ public abstract class WebRestSupport extends RestSupport {
             FileObject ddFo = wm.getDeploymentDescriptor();
             if (ddFo != null) {
                 return DDProvider.getDefault().getDDRoot(ddFo);
+            }
+        }
+        return null;
+    }
+
+    public String getApplicationPathFromDD() throws IOException {
+        WebApp webApp = findWebApp();
+        if (webApp != null) {
+            ServletMapping sm = getRestServletMapping(webApp);
+            if (sm != null) {
+                String urlPattern = null;
+                if (sm instanceof ServletMapping25) {
+                    String[] urlPatterns = ((ServletMapping25)sm).getUrlPatterns();
+                    if (urlPatterns.length > 0) {
+                        urlPattern = urlPatterns[0];
+                    }
+                } else {
+                    urlPattern = sm.getUrlPattern();
+                }
+                if (urlPattern != null) {
+                    if (urlPattern.endsWith("*")) { //NOI18N
+                        urlPattern = urlPattern.substring(0, urlPattern.length()-1);
+                    }
+                    if (urlPattern.endsWith("/")) { //NOI18N
+                        urlPattern = urlPattern.substring(0, urlPattern.length()-1);
+                    }
+                    if (urlPattern.startsWith("/")) { //NOI18N
+                        urlPattern = urlPattern.substring(1);
+                    }
+                    return urlPattern;
+                }
+
             }
         }
         return null;
@@ -319,6 +355,27 @@ public abstract class WebRestSupport extends RestSupport {
             }
         }
         return Collections.emptyList();
+    }
+
+    protected String setApplicationConfigProperty(boolean annotationConfigAvailable) {
+        ApplicationConfigPanel configPanel = new ApplicationConfigPanel(annotationConfigAvailable);
+        DialogDescriptor desc = new DialogDescriptor(configPanel,
+                NbBundle.getMessage(WebRestSupport.class, "TTL_ApplicationConfigPanel"));
+        DialogDisplayer.getDefault().notify(desc);
+        if (NotifyDescriptor.OK_OPTION.equals(desc.getValue())) {
+            String configType = configPanel.getConfigType();
+            setProjectProperty(WebRestSupport.PROP_REST_CONFIG_TYPE, configType);
+            if (WebRestSupport.CONFIG_TYPE_IDE.equals(configType)) {
+                String applicationPath = configPanel.getApplicationPath();
+                if (applicationPath.startsWith("/")) {
+                    applicationPath = applicationPath.substring(1);
+                }
+                setProjectProperty(WebRestSupport.PROP_REST_RESOURCES_PATH, applicationPath);
+            } else if (WebRestSupport.CONFIG_TYPE_DD.equals(configType)) {
+                return configPanel.getApplicationPath();
+            }
+        }
+        return null;
     }
 
 }

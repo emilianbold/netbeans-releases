@@ -1,0 +1,28 @@
+javacard.device.name=${devicename}
+javacard.device.host=localhost
+javacard.device.secureMode=true
+javacard.device.e2pSize=4M
+javacard.device.corSize=4K
+javacard.device.proxy2idePort=7020
+javacard.device.contactedPort=9025
+javacard.device.contactedProtocol=T=1
+javacard.device.apdutool.contactedProtocol=-t0
+javacard.device.ramSize=1M
+javacard.device.httpPort=8019
+javacard.device.proxy2cjcrePort=7019
+javacard.device.loggerLevel=debug
+javacard.device.contactlessPort=9026
+javcard.device.host=localhost
+javacard.device.cardmanagerurl=http://${javacard.device.host}:${javacard.device.httpPort}/cardmanager
+javacard.device.serverurl=http://${javacard.device.host}:${javacard.device.httpPort}
+javacard.device.nosuspend=true
+javacard.device.eprom.file=${javacard.device.eeprom.folder}${file.separator}${javacard.device.name}.eprom
+windows.launch.prefix=cmd /c
+#XXX once emulator supports -debug true/false and -suspend true/false, simplify
+javacard.device.debugger.cmdline=${windows.launch.prefix} ${javacard.debug.proxy} --listen ${javacard.device.proxy2idePort} --remote ${javacard.device.host}:${javacard.device.proxy2cjcrePort} --classpath ${class.path}
+javacard.device.start.cmdline=${javacard.emulator} -ramsize ${javacard.device.ramSize} -e2psize ${javacard.device.e2pSize} -corsize ${javacard.device.corSize} -e2pfile ${javacard.device.eprom.file} -loggerlevel ${javacard.device.loggerLevel} -httpport ${javacard.device.httpPort} -contactedport ${javacard.device.contactedPort} -contactedprotocol ${javacard.device.apdutool.contactedProtocol} -contactlessport ${javacard.device.contactlessPort}
+javacard.device.start.cmdline.nosuspend=${javacard.emulator} -ramsize ${javacard.device.ramSize} -e2psize ${javacard.device.e2pSize} -corsize ${javacard.device.corSize} -e2pfile ${javacard.device.eprom.file} -loggerlevel ${javacard.device.loggerLevel} -httpport ${javacard.device.httpPort} -contactedport ${javacard.device.contactedPort} -contactedprotocol ${javacard.device.apdutool.contactedProtocol} -contactlessport ${javacard.device.contactlessPort} -nosuspend
+javacard.device.start.cmdline.debug=${javacard.emulator} -ramsize ${javacard.device.ramSize} -e2psize ${javacard.device.e2pSize} -corsize ${javacard.device.corSize} -debugger -debugport ${javacard.device.proxy2cjcrePort} -e2pfile ${javacard.device.eprom.file} -loggerlevel ${javacard.device.loggerLevel} -httpport ${javacard.device.httpPort} -contactedport ${javacard.device.contactedPort} -contactedprotocol ${javacard.device.apdutool.contactedProtocol} -contactlessport ${javacard.device.contactlessPort}
+javacard.device.start.cmdline.debug=${javacard.emulator} -ramsize ${javacard.device.ramSize} -e2psize ${javacard.device.e2pSize} -corsize ${javacard.device.corSize} -debugger -debugport ${javacard.device.proxy2cjcrePort} -e2pfile ${javacard.device.eprom.file} -loggerlevel ${javacard.device.eeprom.folder}/${javacard.device.name}.eprom -httpport ${javacard.device.httpPort} -contactedport ${javacard.device.contactedPort} -contactedprotocol ${javacard.device.apdutool.contactedProtocol} -contactlessport ${javacard.device.contactlessPort} -nosuspend
+javacard.device.resume.cmdline=${javacard.emulator} -resume -e2pfile ${javacard.device.eprom.file}
+javacard.device.capabilities=START,STOP,RESUME,DEBUG,EPROM_FILE,CLEAR_EPROM,CONTENTS,CUSTOMIZER,INTERCEPTOR,PORTS,APDU_SUPPORT

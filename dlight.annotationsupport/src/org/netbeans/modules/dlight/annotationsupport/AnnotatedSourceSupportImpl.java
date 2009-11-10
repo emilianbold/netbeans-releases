@@ -48,7 +48,6 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JEditorPane;
-import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
@@ -176,7 +175,8 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
             }
         }
         for (JEditorPane pane : previousAnnotatedPanes) {
-            SwingUtilities.invokeLater(new UnAnnotate(pane));
+//            SwingUtilities.invokeLater(new UnAnnotate(pane));
+            new UnAnnotate(pane).run();
         }
     }
 
@@ -211,7 +211,8 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
                         fileAnnotationInfo.setEditorPane((JEditorPane) jEditorPane);
                         fileAnnotationInfo.setAnnotated(true);
 //                    }
-                    SwingUtilities.invokeLater(new Annotate(jEditorPane, fileAnnotationInfo));
+//                    SwingUtilities.invokeLater(new Annotate(jEditorPane, fileAnnotationInfo));
+                    new Annotate(jEditorPane, fileAnnotationInfo).run();
                }
             }
         }
@@ -266,13 +267,15 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
                 if (annotate) {
                     for (FileAnnotationInfo fileAnnotationInfo : activeAnnotations.values()) {
                         if (fileAnnotationInfo.isAnnotated()) {
-                            SwingUtilities.invokeLater(new Annotate(fileAnnotationInfo.getEditorPane(), fileAnnotationInfo));
+//                            SwingUtilities.invokeLater(new Annotate(fileAnnotationInfo.getEditorPane(), fileAnnotationInfo));
+                            new Annotate(fileAnnotationInfo.getEditorPane(), fileAnnotationInfo).run();
                         }
                     }
                 } else {
                     for (FileAnnotationInfo fileAnnotationInfo : activeAnnotations.values()) {
                         if (fileAnnotationInfo.isAnnotated()) {
-                            SwingUtilities.invokeLater(new UnAnnotate(fileAnnotationInfo.getEditorPane()));
+//                            SwingUtilities.invokeLater(new UnAnnotate(fileAnnotationInfo.getEditorPane()));
+                            new UnAnnotate(fileAnnotationInfo.getEditorPane()).run();
                         }
                     }
                 }

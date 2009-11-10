@@ -42,7 +42,7 @@
 package org.netbeans.modules.cnd.modelimpl.trace;
 
 import java.io.*;
-import antlr.collections.*;
+import org.netbeans.modules.cnd.antlr.collections.*;
 
 import java.util.zip.*;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;

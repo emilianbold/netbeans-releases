@@ -43,32 +43,54 @@ import org.netbeans.modules.dlight.core.stack.utils.FunctionNameUtils;
 
 public class FunctionImpl implements Function {
 
-  private final String longName;
-  private final long objRef;
+    private final String longName;
+    private final long objRef;
 
-  public FunctionImpl(String name, long objRef) {
-    this.longName = name;
-    this.objRef = objRef;
-  }
+    public FunctionImpl(String name, long objRef) {
+        if (name == null) {
+            throw new NullPointerException("Attempt to create a FunctionImpl object with NULL name"); // NOI18N
+        }
 
-  public String getName() {
-    return longName;
-  }
+        this.longName = name;
+        this.objRef = objRef;
+    }
 
-  public String getSignature() {
-    return longName;
-  }
+    public String getName() {
+        return longName;
+    }
 
-  public long getRef() {
-    return objRef;
-  }
+    public String getSignature() {
+        return longName;
+    }
 
-  @Override
-  public String toString() {
-    return "Function: " + longName + " [" + objRef + "]"; // NOI18N
-  }
+    public long getRef() {
+        return objRef;
+    }
+
+    @Override
+    public String toString() {
+        return "Function: " + longName + " [" + objRef + "]"; // NOI18N
+    }
 
     public String getQuilifiedName() {
         return FunctionNameUtils.getFunctionQName(longName);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof FunctionImpl)) {
+            return false;
+        }
+
+        FunctionImpl that = (FunctionImpl) obj;
+        return (this.objRef == that.objRef && this.longName.equals(that.longName));
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 29 * hash + (this.longName != null ? this.longName.hashCode() : 0);
+        hash = 29 * hash + (int) (this.objRef ^ (this.objRef >>> 32));
+        return hash;
     }
 }

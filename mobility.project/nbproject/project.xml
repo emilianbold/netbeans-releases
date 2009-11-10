@@ -458,6 +458,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.vmd.io.javame</friend>
                 <friend>org.netbeans.modules.vmd.midp</friend>
                 <friend>org.netbeans.modules.vmd.midp.converter</friend>
+                <friend>net.sf.jmunit.netbeans.plugin</friend>
                 <package>org.netbeans.api.mobility.project</package>
                 <package>org.netbeans.api.mobility.project.ui.customizer</package>
                 <package>org.netbeans.modules.mobility.project</package>
@@ -469,7 +470,6 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.spi.mobility.project.support</package>
                 <package>org.netbeans.spi.mobility.project.ui.customizer</package>
                 <package>org.netbeans.spi.mobility.project.ui.customizer.support</package>
-                <package>net.sf.jmunit.netbeans.plugin</package>
             </friend-packages>
             <extra-compilation-unit>
                 <package-root>antsrc</package-root>

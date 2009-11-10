@@ -64,7 +64,6 @@ made subject to such option by the copyright holder.
             <xsl:comment>Load that, and it in turn will contain a pointer to the properties file representing the active platform, named jcproject.$PLATFORM_ACTIVE</xsl:comment>
             <property file="${{user.properties.file}}"/>
             <xsl:comment>Load *that* file and we've got keys and values for the bootclasspath and everything else we need to know about the javacard platform</xsl:comment>
-            <property name="platform.properties.file.key" value="jcplatform.${{platform.active}}"/>
 
             <xsl:comment>Resolve a nested property so we can read the card platform definition</xsl:comment>
             <macrodef name="resolveProperty">
@@ -97,28 +96,8 @@ made subject to such option by the copyright holder.
                     <property name="@{{property}}" value="${{@{{value}}}}"/>
                 </sequential>
             </macrodef>
-            <resolveProperty property="computed.file.path" value="${{platform.properties.file.key}}"/>
-            <echo>Using JavaCard Platform Definition at ${computed.file.path}</echo>
-            <property file="${{computed.file.path}}"/>
-            <echo>Java Card Home is ${javacard.home} (${javacard.name})</echo>
-
-            <property name="platform.device.folder.path" value="jcplatform.${{platform.active}}.devicespath"/>
-            <echo>Platform device property name is ${platform.device.folder.path}</echo>
-            <resolveProperty property="computed.device.folder.path" value="${{platform.device.folder.path}}"/>
-            <echo>Computed device folder path is ${computed.device.folder.path}</echo>
-
-            <property name="platform.device.file.path" value="${{computed.device.folder.path}}${{file.separator}}${{active.device}}.${{javacard.device.file.extension}}"/>
-            <echo>Platform device file path property name is ${platform.device.file.path}</echo>
-
-            <property file="${{platform.device.file.path}}"/>
-
-            <echo>Deploying to device ${javacard.device.name} http port ${javacard.device.httpPort}</echo>
 
             <property environment="env"/>
-            <available file="${{user.properties.file}}" property="user.properties.file.set"/>
-            <available file="${{computed.file.path}}" property="platform.properties.found"/>
-            <available file="${{platform.device.file.path}}" property="device.properties.found"/>
-            <available file="${{javacard.home}}" property="javacard.home.found"/>
             <xsl:variable name="kind">
                 <xsl:value-of select="/project:project/project:configuration/jcproj:data/jcproj:properties/jcproj:property">
                     <xsl:with-param name="name">javacard.project.subtype</xsl:with-param>
@@ -151,16 +130,89 @@ made subject to such option by the copyright holder.
                 </xsl:otherwise>
             </xsl:choose>
 
-            <property name="keystore.unresolved" value="${{sign.keystore}}"/>
-            <!-- We need to resolve javacard.home, which is referred to from
-            project.properties as a path to the default keystore;  however,
-            the default properties is loaded first, so javacard.home will
-            be unresolved in properties loaded from there.  This way we
-            solve the chicken-and-egg problem -->
-            <resolvePropertyWithoutBrackets property="keystore.resolved"
-                value="${{keystore.unresolved}}"/>
 
-            <echo>Keystore is ${keystore.resolved}</echo>
+            <target name="-init-environment" depends="init-platform-properties,init-ri-properties,init-device-properties,init-keystore">
+                <condition property="device.properties.found">
+                    <or>
+                        <available file="${{platform.device.file.path}}"/>
+                        <istrue value="${{javacard.build.no.device.file}}"/>
+                    </or>
+                </condition>
+                <available file="${{user.properties.file}}" property="user.properties.file.set"/>
+            </target>
+
+            <target name="init-platform-properties">
+                <property name="platform.properties.file.key" value="jcplatform.${{platform.active}}"/>
+                <resolveProperty property="computed.file.path" value="${{platform.properties.file.key}}"/>
+                <echo>Using JavaCard Platform Definition at ${computed.file.path}</echo>
+                <available file="${{computed.file.path}}" property="platform.properties.found"/>
+                <fail unless="platform.properties.found">
+<![CDATA[
+Java Card platform properties file not found.  Was expecting to find an
+entry named jcplatform.${platform.active} in ${user.properties.file} which
+would point to a properties file containing the path to the Java Card
+runtime and other information such as memory settings.
+
+To fix this problem, open this project in the NetBeans IDE.  In
+Tools | Java Platforms, click Add Platform.  Select Java Card Platform from
+the choices of platform kinds.  Locate your copy of a Java Card runtime on
+disk.  Then right click this project in the Project tab, and make sure
+the project is set up to use the Java Card Platform you have just defined.
+
+Data about the path to the emulator is not stored in version control by
+default, as it will differ between user machines.
+]]>
+                </fail>
+                <property file="${{computed.file.path}}"/>
+                <fail unless="javacard.home"><![CDATA[
+javacard.home not set.  This property should be set to a valid path on disk
+to a Java Card Runtime install.
+]]>
+                </fail>
+                <available file="${{javacard.home}}" property="javacard.home.found"/>
+                <fail unless="javacard.home.found"><![CDATA[
+javacard.home set to ${javacard.home} in ${computed.file.path},
+but ${javacard.home} does not exist on disk.]]>
+                </fail>
+
+                <echo>Java Card Home is ${javacard.home} (${javacard.name})</echo>
+            </target>
+
+            <target name="init-keystore" if="sign.bundle">
+                <property name="keystore.unresolved" value="${{sign.keystore}}"/>
+                <!-- We need to resolve javacard.home, which is referred to from
+                project.properties as a path to the default keystore;  however,
+                the default properties is loaded first, so javacard.home will
+                be unresolved in properties loaded from there.  This way we
+                solve the chicken-and-egg problem -->
+                <resolvePropertyWithoutBrackets property="keystore.resolved"
+                    value="${{keystore.unresolved}}"/>
+                <echo>Keystore is ${keystore.resolved}</echo>
+            </target>
+
+            <target name="init-ri-properties" if="javacard.wrap.ri">
+                <echo>Loading RI Properties from ${javacard.ri.properties.path}</echo>
+                <property file="${{javacard.ri.properties.path}}"/>
+                <available property="rifound" file="${{javacard.ri.home}}"/>
+                <fail unless="${{rifound}}">
+The Java Card SDK this project is using requires the Java Card Reference
+implementation along with the vendor SDK.  The javacard.ri.home property
+is not set, or is set to a non-existent directory.  Currently it is set to
+${javacard.ri.home}, most likely in definition file ${javacard.ri.properties.path}
+                </fail>
+            </target>
+
+            <target name="init-device-properties" unless="javacard.build.no.device.file">
+                <property name="platform.device.folder.path" value="jcplatform.${{platform.active}}.devicespath"/>
+                <echo>Platform device property name is ${platform.device.folder.path}</echo>
+                <resolveProperty property="computed.device.folder.path" value="${{platform.device.folder.path}}"/>
+                <echo>Computed device folder path is ${computed.device.folder.path}</echo>
+
+                <property name="platform.device.file.path" value="${{computed.device.folder.path}}${{file.separator}}${{active.device}}.${{javacard.device.file.extension}}"/>
+                <echo>Platform device file path property name is ${platform.device.file.path}</echo>
+                <property file="${{platform.device.file.path}}"/>
+                <echo>Deploying to device ${javacard.device.name} http port ${javacard.device.httpPort}</echo>
+            </target>
 
             <target name="__set_for_debug__">
                 <property name="_fordebug_" value="true"/>
@@ -169,7 +221,7 @@ made subject to such option by the copyright holder.
             <property name="emulator.executable" value="${{javacard.emulator}}"/>
             <available file="${{emulator.executable}}" property="emulator.found"/>
 
-            <target name="--init-jcdevkit-home-from-private-properties">
+            <target name="--init-jcdevkit-home-from-private-properties" depends="-init-environment">
                 <property file="nbproject/private/platform-private.properties"/>
                 <fail unless="user.properties.file.set">
 <![CDATA[
@@ -192,40 +244,25 @@ Data about the path to the emulator is not stored in version control by
 default, as it will differ between user machines.
 ]]>
                 </fail>
-                <fail unless="platform.properties.found">
-<![CDATA[
-Java Card platform properties file not found.  Was expecting to find an
-entry named jcplatform.${platform.active} in ${user.properties.file} which
-would point to a properties file containing the path to the Java Card
-runtime and other information such as memory settings.
 
-To fix this problem, open this project in the NetBeans IDE.  In
-Tools | Java Platforms, click Add Platform.  Select Java Card Platform from
-the choices of platform kinds.  Locate your copy of a Java Card runtime on
-disk.  Then right click this project in the Project tab, and make sure
-the project is set up to use the Java Card Platform you have just defined.
+<!--                <condition property="emulator.ok">
+                    <or>
+                       <not>
+                           <xsl:comment>platform may not have an emulator</xsl:comment>
+                           <isset property="javacard.emulator"/>
+                       </not>
+                       <available file="${{emulator.executable}}"/>
+                    </or>
+                </condition>
 
-Data about the path to the emulator is not stored in version control by
-default, as it will differ between user machines.
-]]>
-                </fail>
-
-                <fail unless="javacard.home"><![CDATA[
-javacard.home not set.  This property should be set to a valid path on disk
-to a Java Card Runtime install.
-]]>
-                </fail>
-                <fail unless="javacard.home.found"><![CDATA[
-javacard.home set to ${javacard.home} in ${computed.file.path},
-but ${javacard.home} does not exist on disk.]]>
-                </fail>
-                <fail unless="emulator.found"><![CDATA[
+                <fail unless="emulator.ok"><![CDATA[
 No emulator found at ${emulator.executable}]]>
                 </fail>
                 <fail unless="device.properties.found">
                     No device definition (properties-format) file found at
                     ${platform.device.file.path}
                 </fail>
+                -->
             </target>
 
             <target name="-init" depends="--init-jcdevkit-home-from-private-properties">

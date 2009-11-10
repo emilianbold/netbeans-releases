@@ -1,4 +1,4 @@
-/*
+ /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
@@ -40,7 +40,8 @@
  */
 package org.netbeans.modules.javacard.shell;
 
-import org.netbeans.modules.javacard.api.Card;
+import org.netbeans.modules.javacard.spi.Card;
+import org.netbeans.modules.javacard.spi.capabilities.CardInfo;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
@@ -49,16 +50,19 @@ import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
 public final class ShellTopComponent extends TopComponent {
-
-    final String ICON_PATH = "org/netbeans/modules/javacard/resources/ri.png";
+    final String ICON_PATH = "org/netbeans/modules/javacard/console/ri.png"; //NOI18N
     private final ShellPanel sp = new ShellPanel();
     public ShellTopComponent(Card card) {
         associateLookup(Lookups.singleton(card));
         initComponents();
         sp.setServer(card);
         add(sp);
+        CardInfo info = card.getLookup().lookup(CardInfo.class);
+        String nm = info == null ? card.getSystemId() :
+            info.getDisplayName() != null ? info.getDisplayName()
+            : card.getSystemId();
         setName(NbBundle.getMessage (ShellTopComponent.class,
-                "TTL_SHELL_WINDOW", card.getId())); //NOI18N
+                "TTL_SHELL_WINDOW", nm)); //NOI18N
         setDisplayName (getName());
         setIcon(ImageUtilities.loadImage(ICON_PATH, true));
     }

@@ -100,6 +100,7 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
     
     private static final Image ICON = ImageUtilities.loadImage("org/netbeans/modules/db/mysql/resources/catalog.gif");
     private static final Image ERROR_BADGE = ImageUtilities.loadImage("org/netbeans/modules/db/mysql/resources/error-badge.gif");
+    private static boolean first = true;
 
     private volatile String displayName;
     private volatile String shortDescription;
@@ -769,7 +770,7 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
                 }
                 
                 try {
-                    runProcess(getStartPath(), getStartArgs(), true, Utils.getMessage("LBL_MySQLOutputTab"));
+                    runProcess(getStartPath(), getStartArgs(), Utils.getMessage("LBL_MySQLOutputTab"));
                 } finally {
                     updateDisplayInformation();
                     notifyChange();
@@ -809,7 +810,7 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
             launchBrowser(adminCommand);
         } else if ( Utils.isValidExecutable(adminCommand, false)) {
             runProcess(adminCommand, getAdminArgs(),
-                    true, Utils.getMessage(
+                    Utils.getMessage(
                         "LBL_MySQLOutputTab"));
             closeOutput();
         } else {
@@ -820,8 +821,7 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
 
     }
 
-    private Process runProcess(String command, String args, boolean displayOutput,
-            String outputLabel) throws DatabaseException {
+    private Process runProcess(String command, String args, String outputLabel) throws DatabaseException {
 
         if ( Utilities.isMac() && command.endsWith(".app") ) {  // NOI18N
             // The command is actually the first argument, with /usr/bin/open
@@ -834,9 +834,7 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
             NbProcessDescriptor desc = new NbProcessDescriptor(command, args);
             Process proc = desc.exec();
 
-            if ( displayOutput ) {
-                new ExecSupport().displayProcessOutputs(proc, outputLabel);
-            }
+            new ExecSupport().displayProcessOutputs(proc, outputLabel);
             return proc;
         } catch ( Exception e ) {
             throw new DatabaseException(e);
@@ -917,6 +915,10 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
         InputOutput io = org.openide.windows.IOProvider.getDefault().getIO(
                 Utils.getMessage("LBL_MySQLOutputTab"), false); // NOI18N
         if (io != null && io.getOut() != null) {
+            if (first) {
+                first = false;
+                io.getOut().println(' ');
+            }
             io.getOut().close();
         }
     }
@@ -1020,13 +1022,13 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
             try {
                 handle.start();
                 handle.switchToIndeterminate();
-                proc = runProcess(getStopPath(), getStopArgs(), true, Utils.getMessage("LBL_MySQLOutputTab"));
+                proc = runProcess(getStopPath(), getStopArgs(), Utils.getMessage("LBL_MySQLOutputTab"));
                 // wait until server is shut down
                 proc.waitFor();
             } finally {
                 if (proc != null) {
                     proc.destroy();
-                closeOutput();
+                    closeOutput();
                 }
                 handle.finish();
             }

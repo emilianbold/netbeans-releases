@@ -89,8 +89,8 @@ public final class HostInfoUtils {
      *        in.
      * @param fname name of file to check for
      * @return <tt>true</tt> if file exists, <tt>false</tt> otherwise.
-     * @throws ConnectException if host, identified by this execution
-     * environment is not connected.
+     * @throws IOException if host, identified by this execution
+     * environment is not connected or operation was terminated.
      */
     public static boolean fileExists(final ExecutionEnvironment execEnv,
             final String fname)
@@ -177,6 +177,8 @@ public final class HostInfoUtils {
      * @return information about the host represented by execEnv. <tt>null</tt>
      * if interrupted of connection initiation is cancelled by user.
      * Also returns null if execEnv parameter is null.
+     * @throws IOException
+     * @throws CancellationException 
      * @see #isHostInfoAvailable(org.netbeans.modules.nativeexecution.api.ExecutionEnvironment)
      */
     public static HostInfo getHostInfo(final ExecutionEnvironment execEnv) throws IOException, CancellationException {

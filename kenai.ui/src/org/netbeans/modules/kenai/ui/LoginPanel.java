@@ -47,6 +47,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.modules.kenai.api.Kenai;
@@ -56,6 +57,7 @@ import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
 
 /**
  * @author Jan Becicka
@@ -82,10 +84,9 @@ public class LoginPanel extends javax.swing.JPanel {
     }
 
     /** Creates new form LoginPanel */
-    public LoginPanel(boolean isChatSupported) {
+    public LoginPanel() {
         initComponents();
         final Preferences preferences = NbPreferences.forModule(LoginPanel.class);
-        chkIsOnline.setSelected(Boolean.parseBoolean(preferences.get(UIUtils.getPrefName(UIUtils.ONLINE_ON_CHAT_PREF), "true"))); // NOI18N
         lblKenaiLogoCenter.setBorder(null);
         lblKenaiLogoLeft.setBorder(null);
         lblKenaiLogoRight.setBorder(null);
@@ -98,10 +99,23 @@ public class LoginPanel extends javax.swing.JPanel {
             lblKenaiLogoLeft.setBorder(new EmptyBorder(10, 12, 0, 10));
             lblKenaiLogoLeft.setIcon(null);
         }
-        if (!isChatSupported) {
-            chkIsOnline.setSelected(false);
-            chkIsOnline.setEnabled(false);
-        }
+        chkIsOnline.setSelected(false);
+        chkIsOnline.setEnabled(false);
+        RequestProcessor.getDefault().post(new Runnable() {
+
+            public void run() {
+                boolean is = Utilities.isChatSupported();
+                if (is) {
+                    SwingUtilities.invokeLater(new Runnable() {
+
+                        public void run() {
+                            chkIsOnline.setEnabled(true);
+                            chkIsOnline.setSelected(Boolean.parseBoolean(preferences.get(UIUtils.getPrefName(UIUtils.ONLINE_ON_CHAT_PREF), "true"))); // NOI18N
+                        }
+                    });
+                }
+            }
+        });
     }
 
     public boolean isStorePassword() {

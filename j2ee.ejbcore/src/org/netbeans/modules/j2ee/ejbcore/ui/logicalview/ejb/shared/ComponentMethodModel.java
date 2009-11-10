@@ -105,7 +105,9 @@ public abstract class ComponentMethodModel extends Children.Keys<MethodModel> {
                             if (className.equals(homeInterface)) {
                                 for (ExecutableElement executableElement : ElementFilter.methodsIn(intf.getEnclosedElements())) {
                                     MethodModel methodModel = MethodModelSupport.createMethodModel(controller, executableElement);
-                                    keys.add(methodModel);
+                                    if (methodModel != null){
+                                        keys.add(methodModel);
+                                    }
                                 }
                             } else if(intf.getKind() == ElementKind.CLASS) {
                                 Iterable<? extends Element> methods = elementUtilities.getMembers(intf.asType(), new ElementAcceptor() {
@@ -116,7 +118,9 @@ public abstract class ComponentMethodModel extends Children.Keys<MethodModel> {
                                 });
                                 for (Element method : methods) {
                                     MethodModel methodModel = MethodModelSupport.createMethodModel(controller, (ExecutableElement) method);
-                                    keys.add(methodModel);
+                                    if (methodModel != null){
+                                        keys.add(methodModel);
+                                    }
                                 }
                             } else {
                                 Iterable<? extends Element> methods = elementUtilities.getMembers(intf.asType(), new ElementAcceptor() {
@@ -129,7 +133,9 @@ public abstract class ComponentMethodModel extends Children.Keys<MethodModel> {
                                 });
                                 for (Element method : methods) {
                                     MethodModel methodModel = MethodModelSupport.createMethodModel(controller, (ExecutableElement) method);
-                                    keys.add(methodModel);
+                                    if (methodModel != null){
+                                        keys.add(methodModel);
+                                    }
                                 }
                             }
                         }

@@ -85,6 +85,13 @@ public class HostPropertiesDialog extends JPanel {
                 record.setSyncFactory(syncFactory);
                 changed = true;
             }
+//            if (record.isX11forwardingPossible()) {
+                boolean x11forwarding = pane.cbX11.isSelected();
+                if (x11forwarding != record.getX11Forwarding()) {
+                    record.setX11Forwarding(x11forwarding);
+                    changed = true;
+                }
+//            }
             if (changed) {
                 RemoteServerList.storePreferences(record);
                 return true;
@@ -95,7 +102,7 @@ public class HostPropertiesDialog extends JPanel {
 
 
     /** Creates new form HostPropertiesDialog */
-    private HostPropertiesDialog(ServerRecord serverRecord) {
+    private HostPropertiesDialog(RemoteServerRecord serverRecord) {
         this.serverRecord = serverRecord;
         initComponents();
         tfHost.setBackground(getBackground());
@@ -107,6 +114,10 @@ public class HostPropertiesDialog extends JPanel {
         tfPort.setText("" + serverRecord.getExecutionEnvironment().getSSHPort());
         SyncUtils.arrangeComboBox(cbSync, serverRecord.getExecutionEnvironment());
         cbSync.setSelectedItem(serverRecord.getSyncFactory());
+        cbX11.setSelected(serverRecord.getX11Forwarding());
+//        // if x11forwarding is set, but we consider it is unavailable,
+//        // we should at least allow switching it off => || serverRecord.getX11Forwarding()
+//        cbX11.setEnabled(serverRecord.isX11forwardingPossible() || serverRecord.getX11Forwarding());
         addAncestorListener(new AncestorListener() {
             public void ancestorAdded(AncestorEvent event) {
                 tfName.requestFocus();
@@ -135,6 +146,7 @@ public class HostPropertiesDialog extends JPanel {
         tfName = new javax.swing.JTextField();
         lblSync = new javax.swing.JLabel();
         cbSync = new javax.swing.JComboBox();
+        cbX11 = new javax.swing.JCheckBox();
 
         setFocusCycleRoot(true);
 
@@ -164,6 +176,8 @@ public class HostPropertiesDialog extends JPanel {
         lblSync.setLabelFor(cbSync);
         org.openide.awt.Mnemonics.setLocalizedText(lblSync, org.openide.util.NbBundle.getMessage(HostPropertiesDialog.class, "HostPropertiesDialog.lblSync.text")); // NOI18N
 
+        cbX11.setText(org.openide.util.NbBundle.getMessage(HostPropertiesDialog.class, "HostPropertiesDialog.cbX11.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -171,25 +185,22 @@ public class HostPropertiesDialog extends JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(lblSync)
+                    .add(lblName)
+                    .add(lblUser)
+                    .add(lblHost))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(cbX11, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 154, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(lblName)
-                            .add(lblUser)
-                            .add(lblHost))
-                        .add(18, 18, 18)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(layout.createSequentialGroup()
-                                .add(tfHost, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 236, Short.MAX_VALUE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                .add(lblPort)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(tfPort, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 54, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                            .add(tfUser, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 347, Short.MAX_VALUE)
-                            .add(tfName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 347, Short.MAX_VALUE)))
-                    .add(layout.createSequentialGroup()
-                        .add(lblSync)
-                        .add(18, 18, 18)
-                        .add(cbSync, 0, 289, Short.MAX_VALUE)))
+                        .add(tfHost, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 190, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(lblPort)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(tfPort, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 54, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(tfUser, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, tfName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, cbSync, 0, 297, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -213,13 +224,16 @@ public class HostPropertiesDialog extends JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(lblSync)
                     .add(cbSync, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 18, Short.MAX_VALUE)
+                .add(cbX11)
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox cbSync;
+    private javax.swing.JCheckBox cbX11;
     private javax.swing.JLabel lblHost;
     private javax.swing.JLabel lblName;
     private javax.swing.JLabel lblPort;

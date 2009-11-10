@@ -250,22 +250,8 @@ public final class ReferencesSupport {
         // macros have max priority in file
         List<CsmReference> macroUsages = CsmFileInfoQuery.getDefault().getMacroUsages(csmFile);
         csmItem = findMacro(macroUsages, offset);
-        if (csmItem instanceof CsmMacro) {
-            CsmMacro macro = (CsmMacro) csmItem;
-            List<CharSequence> macroParameters = macro.getParameters();
-            if (macroParameters == null || macroParameters.isEmpty() || CompletionUtilities.conatinsVaArgs(macroParameters)) {
-                return csmItem;
-            } else {
-                int paramsNumber = CompletionUtilities.getMethodParamsNumber(doc, offset);
-                if (paramsNumber != 0) {
-                    if (paramsNumber == macroParameters.size()) {
-                        return csmItem;
-                    } else {
-                        return null;
-                    }
-                }
-            }
-            csmItem = null;
+        if (csmItem != null) {
+            return csmItem;
         }
         CsmObject objUnderOffset = CsmOffsetResolver.findObject(csmFile, offset, fileReferencesContext);
         // TODO: it would be great to check position in named element, but we don't

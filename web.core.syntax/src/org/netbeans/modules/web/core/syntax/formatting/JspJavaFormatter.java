@@ -62,10 +62,12 @@ public class JspJavaFormatter extends JavaFormatter{
 	super(kitClass);
     }
 
+    @Override
     protected boolean acceptSyntax(Syntax syntax) {
         return (syntax instanceof Jsp11Syntax);
     }
     
+    @Override
     protected void initFormatLayers() {
 
 	addFormatLayer(new StripEndWhitespaceLayer());
@@ -74,6 +76,7 @@ public class JspJavaFormatter extends JavaFormatter{
 
     public class JspJavaLayer extends JavaFormatter.JavaLayer {	    
 
+        @Override
 	protected FormatSupport createFormatSupport(FormatWriter fw) {
 	    BaseDocument doc = (BaseDocument)fw.getDocument();
 	    JspSyntaxSupport sup = new JspSyntaxSupport(doc);

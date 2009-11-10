@@ -57,7 +57,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.swing.ImageIcon;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -80,7 +79,6 @@ import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  * Base class for external reference creators. Unlike a customizer, a
@@ -431,6 +429,13 @@ public abstract class ExternalReferenceCreator<T extends Component>
         ExternalReferenceDecorator decorator = getNodeDecorator();
         Node[] rootNodes = new Node[1 + (refProjects == null ? 0 : refProjects.size())];
         Project prj = FileOwnerQuery.getOwner(sourceFO);
+        if (prj == null) {
+            showMessage(NbBundle.getMessage(ExternalReferenceCreator.class,
+                "LBL_ProjectInaccessible"));
+            // set empty root.
+            Node rootNode = new AbstractNode(Children.LEAF);
+            return rootNode;
+        }
         LogicalViewProvider viewProvider = (LogicalViewProvider) prj.getLookup().
                 lookup(LogicalViewProvider.class);
         rootNodes[0] = decorator.createExternalReferenceNode(

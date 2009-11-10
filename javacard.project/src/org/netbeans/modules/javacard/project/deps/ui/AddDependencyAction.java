@@ -44,7 +44,7 @@ import java.awt.Toolkit;
 import java.io.IOException;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.javacard.GuiUtils;
+import org.netbeans.modules.javacard.common.GuiUtils;
 import org.netbeans.modules.javacard.project.JCProject;
 import org.netbeans.modules.javacard.project.deps.DependenciesProvider;
 import org.netbeans.modules.javacard.project.deps.ResolvedDependencies;

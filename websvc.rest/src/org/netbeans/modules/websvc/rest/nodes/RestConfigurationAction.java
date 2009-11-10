@@ -50,8 +50,7 @@ import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
 import org.netbeans.modules.websvc.rest.model.api.RestServices;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesModel;
-import org.netbeans.modules.websvc.rest.projects.ApplicationConfigPanel;
-import org.netbeans.modules.websvc.rest.projects.WebProjectRestSupport;
+import org.netbeans.modules.websvc.rest.spi.ApplicationConfigPanel;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
 import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
@@ -92,7 +91,10 @@ public class RestConfigurationAction extends NodeAction  {
             String oldApplicationPath = "/resources"; //NOI18N
             try {
                 if (oldConfigType.equals( WebRestSupport.CONFIG_TYPE_DD)) {
-                    oldApplicationPath = restSupport.getApplicationPath();
+                    String oldPathFromDD = restSupport.getApplicationPathFromDD();
+                    if (oldPathFromDD != null) {
+                        oldApplicationPath = oldPathFromDD;
+                    }
                 } else if (oldConfigType.equals( WebRestSupport.CONFIG_TYPE_IDE)) {
                     String resourcesPath = restSupport.getProjectProperty(WebRestSupport.PROP_REST_RESOURCES_PATH);
                     if (resourcesPath != null && resourcesPath.length()>0) {
@@ -106,9 +108,13 @@ public class RestConfigurationAction extends NodeAction  {
                 oldApplicationPath="/"+oldApplicationPath;
             }
             try {
-                ApplicationConfigPanel configPanel = new ApplicationConfigPanel(oldConfigType, oldApplicationPath, isAnnotationConfigAvailable(project));
+                ApplicationConfigPanel configPanel = new ApplicationConfigPanel(
+                        oldConfigType,
+                        oldApplicationPath,
+                        restSupport.getAntProjectHelper() != null && isAnnotationConfigAvailable(project));
+
                 DialogDescriptor desc = new DialogDescriptor(configPanel,
-                    NbBundle.getMessage(WebProjectRestSupport.class, "TTL_ApplicationConfigPanel"));
+                    NbBundle.getMessage(RestConfigurationAction.class, "TTL_ApplicationConfigPanel"));
                 DialogDisplayer.getDefault().notify(desc);
                 if (NotifyDescriptor.OK_OPTION.equals(desc.getValue())) {
                     String newConfigType = configPanel.getConfigType();
@@ -208,6 +214,6 @@ public class RestConfigurationAction extends NodeAction  {
         }
         return false;
     }
-
+    
 }
 

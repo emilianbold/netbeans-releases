@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.php.editor.indent;
 
+import java.util.prefs.Preferences;
 import javax.swing.JEditorPane;
 import javax.swing.text.Caret;
 import javax.swing.text.DefaultEditorKit;
@@ -46,6 +47,7 @@ import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.csl.api.Formatter;
+import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
 import org.netbeans.modules.php.editor.PHPTestBase;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.openide.filesystems.FileObject;
@@ -239,6 +241,14 @@ public class PHPNewLineIndenterTest extends PHPTestBase {
         testIndentInFile("testfiles/indent/multiline_function_call_31.php");
     }
 
+    public void testMultilineFunctionCall32() throws Exception{
+        testIndentInFile("testfiles/indent/multiline_function_call_32.php");
+    }
+
+    public void testMultilineFunctionCall33() throws Exception{
+        testIndentInFile("testfiles/indent/multiline_function_call_33.php");
+    }
+
     public void testIndentAfterClosingBracket() throws Exception{
         testIndentInFile("testfiles/indent/indent_after_closing_bracket.php");
     }
@@ -399,6 +409,10 @@ public class PHPNewLineIndenterTest extends PHPTestBase {
         testIndentInFile("testfiles/indent/issue162586.php");
     }
 
+    public void test176061() throws Exception{
+        testIndentInFile("testfiles/indent/issue176061.php");
+    }
+
     public void test166552() throws Exception{
         testIndentInFile("testfiles/indent/issue166552.php");
     }
@@ -514,7 +528,11 @@ public class PHPNewLineIndenterTest extends PHPTestBase {
     public void test175437_8() throws Exception {
         testIndentInFile("testfiles/indent/issue175437_8.php");
     }
-    
+
+    public void test173937_01() throws Exception {
+        testIndentInFile("testfiles/indent/issue173937_01.php");
+    }
+
 //  need to be fiexed the multi line expressions
 //    public void test175437_9() throws Exception {
 //        testIndentInFile("testfiles/indent/issue175437_9.php");
@@ -596,6 +614,66 @@ public class PHPNewLineIndenterTest extends PHPTestBase {
         testIndentInFile("testfiles/indent/linecomment_175685_11.php");
     }
 
+    public void testPhpInHtml_01() throws Exception {
+        testIndentInFile("testfiles/indent/phpInHtml_01.php");
+    }
+
+    public void testInitialIndentation_01() throws Exception {
+        testIndentInFile("testfiles/indent/initialIndentation_01.php", new IndentPrefs(4, 4), 0);
+    }
+
+    public void testInitialIndentation_02() throws Exception {
+        testIndentInFile("testfiles/indent/initialIndentation_02.php", new IndentPrefs(4, 4), 4);
+    }
+
+    public void testInitialIndentation_03() throws Exception {
+        testIndentInFile("testfiles/indent/initialIndentation_03.php", new IndentPrefs(4, 4), 0);
+    }
+
+    public void testInitialIndentation_04() throws Exception {
+        testIndentInFile("testfiles/indent/initialIndentation_04.php", new IndentPrefs(4, 4), 4);
+    }
+
+    public void testObjectOperatorContinue01() throws Exception {
+        testIndentInFile("testfiles/indent/objectOperatorContinue_01.php");
+    }
+
+    public void testObjectOperatorContinue02() throws Exception {
+        testIndentInFile("testfiles/indent/objectOperatorContinue_02.php");
+    }
+
+    public void testObjectOperatorContinue03() throws Exception {
+        testIndentInFile("testfiles/indent/objectOperatorContinue_03.php");
+    }
+
+    public void testObjectOperatorContinue04() throws Exception {
+        testIndentInFile("testfiles/indent/objectOperatorContinue_04.php");
+    }
+
+    public void testObjectOperatorContinue05() throws Exception {
+        testIndentInFile("testfiles/indent/objectOperatorContinue_05.php");
+    }
+
+    public void testObjectOperatorContinue06() throws Exception {
+        testIndentInFile("testfiles/indent/objectOperatorContinue_06.php");
+    }
+
+    public void testObjectOperatorContinue07() throws Exception {
+        testIndentInFile("testfiles/indent/objectOperatorContinue_07.php");
+    }
+
+    public void testObjectOperatorContinue09() throws Exception {
+        testIndentInFile("testfiles/indent/objectOperatorContinue_09.php");
+    }
+
+    public void testObjectOperatorContinue10() throws Exception {
+        testIndentInFile("testfiles/indent/objectOperatorContinue_10.php");
+    }
+
+    public void testObjectOperatorContinue11() throws Exception {
+        testIndentInFile("testfiles/indent/objectOperatorContinue_11.php");
+    }
+
     @Override
     protected boolean runInEQ() {
         return true;
@@ -619,10 +697,10 @@ public class PHPNewLineIndenterTest extends PHPTestBase {
     }
 
     protected void testIndentInFile(String file) throws Exception {
-        testIndentInFile(file, null);
+        testIndentInFile(file, null, 0);
     }
 
-    protected void testIndentInFile(String file, IndentPrefs preferences) throws Exception {
+    protected void testIndentInFile(String file, IndentPrefs preferences, int initialIndent) throws Exception {
         FileObject fo = getTestFile(file);
         assertNotNull(fo);
         String source = readFile(fo);
@@ -630,7 +708,7 @@ public class PHPNewLineIndenterTest extends PHPTestBase {
         int sourcePos = source.indexOf('^');     
         assertNotNull(sourcePos);
         String sourceWithoutMarker = source.substring(0, sourcePos) + source.substring(sourcePos+1);
-        Formatter formatter = getFormatter(null);
+        Formatter formatter = getFormatter(preferences);
         
         JEditorPane ta = getPane(sourceWithoutMarker);
         Caret caret = ta.getCaret();
@@ -641,6 +719,10 @@ public class PHPNewLineIndenterTest extends PHPTestBase {
         }
 
         setupDocumentIndentation(doc, preferences);
+
+
+        Preferences prefs = CodeStylePreferences.get(doc).getPreferences();
+        prefs.putInt(FmtOptions.initialIndent, initialIndent);
 
         runKitAction(ta, DefaultEditorKit.insertBreakAction, "\n");
 

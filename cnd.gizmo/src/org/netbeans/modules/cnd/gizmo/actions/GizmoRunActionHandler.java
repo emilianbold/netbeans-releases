@@ -120,8 +120,8 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         String executable = pae.getExecutable();
         String runDirectory = pae.getProfile().getRunDirectory();
 
+        final boolean isSunStudio = configuration.getCollectorProviders().contains("SunStudio"); // NOI18N
         if (execEnv.isRemote()) {
-            boolean isSunStudio = configuration.getCollectorProviders().contains("SunStudio"); // NOI18N
             PathMap mapper = HostInfoProvider.getMapper(execEnv);
             runDirectory = mapper.getRemotePath(runDirectory, true);
 

@@ -72,10 +72,11 @@ public class PHPNewLineIndenter {
         this.context = context;
         indentSize = CodeStyle.get(context.document()).getIndentSize();
         continuationSize = CodeStyle.get(context.document()).getContinuationIndentSize();
+        int initialIndentSize = CodeStyle.get(context.document()).getInitialIndent();
 
         scopeDelimiters = Arrays.asList(
             new ScopeDelimiter(PHPTokenId.PHP_SEMICOLON, 0),
-            new ScopeDelimiter(PHPTokenId.PHP_OPENTAG, 0),
+            new ScopeDelimiter(PHPTokenId.PHP_OPENTAG, initialIndentSize),
             new ScopeDelimiter(PHPTokenId.PHP_CURLY_CLOSE, 0),
             new ScopeDelimiter(PHPTokenId.PHP_CURLY_OPEN, indentSize),
             new ScopeDelimiter(PHPTokenId.PHP_CASE, indentSize),
@@ -187,8 +188,11 @@ public class PHPNewLineIndenter {
 
                                 if (codeB4BreakData.processedByControlStmt){
                                     newIndent = Utilities.getRowIndent(doc, anchor) - indentSize;
-                                    break;
                                 }
+                                else {
+                                    newIndent = Utilities.getRowIndent(doc, anchor) + delimiter.indentDelta + shiftAtAncor;
+                                }
+                                break;
                             }
                             else if (delimiter.tokenId == PHPTokenId.PHP_CURLY_OPEN && ts.movePrevious()) {
                                 int startExpression = findStartTokenOfExpression(ts);
@@ -230,6 +234,13 @@ public class PHPNewLineIndenter {
                                     break;
                                 }
                             }
+                            else if (ts.token().id() == PHPTokenId.PHP_OBJECT_OPERATOR) {
+                                int startExpression = findStartTokenOfExpression(ts);
+                                if (startExpression != -1) {
+                                    newIndent = Utilities.getRowIndent(doc, startExpression) + continuationSize * 2;
+                                    break;
+                                }
+                            }
                         }
                     }
 
@@ -250,8 +261,11 @@ public class PHPNewLineIndenter {
         int origOffset = ts.offset();
         Token token = ts.token();
 
-        if (indentComment && token.id() == PHPTokenId.PHP_SEMICOLON) {
-            ts.moveNext();
+        if (token.id() == PHPTokenId.PHP_SEMICOLON && ts.movePrevious()) {
+            retunValue.expressionStartOffset = findStartTokenOfExpression(ts);
+            retunValue.indentDelta = 0;
+            retunValue.processedByControlStmt = false;
+            return retunValue;
         }
         while (ts.movePrevious()) {
             token = ts.token();
@@ -265,7 +279,7 @@ public class PHPNewLineIndenter {
                 break;
             }
             else {
-                if (indentComment && token.id() == PHPTokenId.WHITESPACE 
+                if (indentComment && token.id() == PHPTokenId.WHITESPACE
                         && token.text().toString().indexOf('\n') != -1
                         && ts.moveNext()) {
                     retunValue.expressionStartOffset = ts.offset();
@@ -345,7 +359,8 @@ public class PHPNewLineIndenter {
                         break;
                 }
             }
-            else if (token.id() == PHPTokenId.PHP_SEMICOLON) {
+            else if ((token.id() == PHPTokenId.PHP_SEMICOLON || token.id() == PHPTokenId.PHP_OPENTAG)
+                    && ts.moveNext()) {
                 // we found previous end of expression => find begin of the current.
                 token = LexUtilities.findNext(ts, Arrays.asList(
                         PHPTokenId.WHITESPACE,
@@ -419,6 +434,21 @@ public class PHPNewLineIndenter {
             }
             else if (token.id() == PHPTokenId.PHP_CURLY_CLOSE) {
                 curlyBalance --;
+                if (curlyBalance == -1 && ts.moveNext()) {
+                    // we are after previous blog close
+                    token = LexUtilities.findNext(ts, Arrays.asList(
+                                PHPTokenId.WHITESPACE,
+                                PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHPDOC_COMMENT_START,
+                                PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_COMMENT_START,
+                                PHPTokenId.PHP_LINE_COMMENT));
+                    if (ts.offset() <= origOffset) {
+                        start = ts.offset();
+                    }
+                    else {
+                        start = origOffset;
+                    }
+                    break;
+                }
             }
             else if (token.id() == PHPTokenId.PHP_CURLY_OPEN) {
                 curlyBalance ++;
@@ -429,8 +459,11 @@ public class PHPNewLineIndenter {
                                 PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHPDOC_COMMENT_START,
                                 PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_COMMENT_START,
                                 PHPTokenId.PHP_LINE_COMMENT));
-                    if (ts.offset() < origOffset) {
+                    if (ts.offset() <= origOffset) {
                         start = ts.offset();
+                    }
+                    else {
+                        start = origOffset;
                     }
                     break;
                 }

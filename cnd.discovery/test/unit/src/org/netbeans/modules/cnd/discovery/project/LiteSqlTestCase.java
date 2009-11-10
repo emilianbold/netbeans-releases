@@ -62,6 +62,6 @@ public class LiteSqlTestCase extends MakeProjectBase {
             return;
         }
         performTestProject("http://www.mirrorservice.org/sites/download.sourceforge.net/pub/sourceforge/l/project/li/litesql/litesql/0.3.3/litesql-0.3.3.tar.gz", null, false);
-        //performTestProject("http://www.mirrorservice.org/sites/download.sourceforge.net/pub/sourceforge/l/project/li/litesql/litesql/0.3.4/litesql-0.3.4.tar.gz", null, false);
+//        performTestProject("http://www.mirrorservice.org/sites/download.sourceforge.net/pub/sourceforge/l/project/li/litesql/litesql/0.3.5-beta/litesql-0.3.5-src.tar.gz", null, false);
     }
 }
