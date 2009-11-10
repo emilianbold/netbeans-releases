@@ -126,12 +126,6 @@ abstract class BaseTestMethodNodeAction extends TestNodeAction {
         if (testFile == null) {
             return;
         }
-        RubyPlatform platform = RubyPlatform.platformFor(project);
-        if (platform == null || platform.isJRuby()) {
-            //XXX: does not work with JRuby, more info in issue #135680
-            LOGGER.info("Rerunning an rspec test case on JRuby is currently not working");
-            return;
-        }
         Project owner = FileOwnerQuery.getOwner(testFile);
         if (!project.equals(owner)) {
             LOGGER.fine("Resolving FileObject for " + getTestMethod() + "/" + testFile + " failed."
