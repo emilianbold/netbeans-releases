@@ -744,10 +744,11 @@ public class BugzillaIssue extends Issue {
         return attachments.toArray(new Attachment[attachments.size()]);
     }
 
-    void addAttachment(final File file, final String comment, final String desc, String contentType, final boolean patch) {
+    void addAttachment(File file, final String comment, final String desc, String contentType, final boolean patch) {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
         final FileTaskAttachmentSource attachmentSource = new FileTaskAttachmentSource(file);
         if (contentType == null) {
+            file = FileUtil.normalizeFile(file);
             String ct = FileUtil.getMIMEType(FileUtil.toFileObject(file));
             if ((ct != null) && (!"content/unknown".equals(ct))) { // NOI18N
                 contentType = ct;

@@ -293,11 +293,16 @@ public final class KenaiProject {
      * @throws KenaiException if the project cannot be loaded
      */
     public static KenaiProject forRepository(String uri) throws KenaiException {
+        if (uri==null)
+            return null;
         Matcher m = getRepositoryPattern().matcher(uri);
         if (m.matches()) {
             return Kenai.getDefault().getProject(m.group(repositoryPatternProjectGroup));
         }
-
+        //hard coded support for external netbeans repositories
+        if (Kenai.getDefault().getUrl().getHost().equals("netbeans.org") && uri.startsWith("https://hg.netbeans.org") || uri.startsWith("http://hg.netbeans.org")) {//NOI18N
+            return Kenai.getDefault().getProject("ide");//NOI18N
+        }
         return null;
     }
 
@@ -309,9 +314,15 @@ public final class KenaiProject {
      * @return name of kenai project or null, if given uri is not from kenai
      */
     public static String getNameForRepository(String uri) {
+        if (uri==null)
+            return null;
         Matcher m = getRepositoryPattern().matcher(uri);
         if (m.matches()) {
             return m.group(repositoryPatternProjectGroup);
+        }
+        //hard coded support for external netbeans repositories
+        if (Kenai.getDefault().getUrl().getHost().equals("netbeans.org") && (uri.startsWith("https://hg.netbeans.org") || uri.startsWith("http://hg.netbeans.org"))) {//NOI18N
+            return "ide";//NOI18N
         }
         return null;
     }
