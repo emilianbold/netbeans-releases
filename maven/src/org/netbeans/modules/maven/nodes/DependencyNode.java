@@ -231,7 +231,7 @@ public class DependencyNode extends AbstractNode {
             if (isTransitive()) {
                 setIconBaseWithExtension("org/netbeans/modules/maven/TransitiveMaven2Icon.gif"); //NOI18N
             } else {
-                setIconBaseWithExtension("org/netbeans/modules/maven/Maven2Icon.gif"); //NOI18N
+                setIconBaseWithExtension("org/netbeans/modules/maven/resources/Maven2Icon.gif"); //NOI18N
             }
         } else if (isTransitive()) {
             if (isAddedToCP()) {
