@@ -66,7 +66,6 @@ import org.netbeans.modules.php.editor.lexer.PHPDocCommentTokenId;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -87,6 +86,7 @@ public class PHPDOCCodeCompletion {
             PHPDocCommentTokenId.PHPDOC_VAR,
             PHPDocCommentTokenId.PHPDOC_PARAM,
             PHPDocCommentTokenId.PHPDOC_METHOD,
+            PHPDocCommentTokenId.PHPDOC_GLOBAL,
             PHPDocCommentTokenId.PHPDOC_PROPERTY,
             PHPDocCommentTokenId.PHPDOC_PROPERTY_READ,
             PHPDocCommentTokenId.PHPDOC_PROPERTY_WRITE);
