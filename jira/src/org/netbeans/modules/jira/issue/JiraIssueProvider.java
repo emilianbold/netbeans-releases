@@ -788,7 +788,7 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
                     LOG.log(Level.FINE, "KenaiJiraLazyIssue.lookupRepository: getting repository for: " + projectName);
                     repo = KenaiUtil.getKenaiBugtrackingRepository(projectName);
                 } catch (KenaiException ex) {
-                    LOG.log(Level.INFO, "KenaiJiraLazyIssue.lookupRepository: getting repository for " + projectName, ex);
+                    LOG.log(Level.FINE, "KenaiJiraLazyIssue.lookupRepository: getting repository for " + projectName, ex);
                 }
                 loginStatusChanged = false;
             }
