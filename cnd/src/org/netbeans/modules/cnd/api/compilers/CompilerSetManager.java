@@ -518,6 +518,12 @@ public class CompilerSetManager {
     }
 
     public List<CompilerSet> findRemoteCompilerSets(String path) {
+        ServerRecord record = ServerList.get(executionEnvironment);
+        assert record != null;
+	record.validate(true);
+	if (!record.isOnline()) {
+            return Collections.<CompilerSet>emptyList();
+        }
         final CompilerSetProvider provider = CompilerSetProviderFactory.createNew(executionEnvironment);
         String[] arData = provider.getCompilerSetData(path);
         List<CompilerSet> css = new ArrayList<CompilerSet>();
