@@ -68,6 +68,7 @@ public class PHPDocCommentParser {
     static {
         PHPDocVarTypeTags.add(PHPDocTag.Type.PARAM);
         PHPDocVarTypeTags.add(PHPDocTag.Type.PROPERTY);
+        PHPDocVarTypeTags.add(PHPDocTag.Type.GLOBAL);
         PHPDocVarTypeTags.add(PHPDocTag.Type.PROPERTY_READ);
         PHPDocVarTypeTags.add(PHPDocTag.Type.PROPERTY_WRITE);
     }
