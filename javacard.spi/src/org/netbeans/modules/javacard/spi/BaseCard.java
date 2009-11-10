@@ -40,6 +40,8 @@
 package org.netbeans.modules.javacard.spi;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -176,6 +178,25 @@ public abstract class BaseCard<T extends CapabilitiesProvider> extends AbstractC
             }
         }
         initCapabilities(l.toArray(new ICardCapability[0]));
+    }
+
+    @Override
+    void logAddition(ICardCapability c) {
+        boolean asserts = false;
+        assert asserts = true;
+        if (asserts) {
+            Set<Class<? extends ICardCapability>> s = 
+                    new HashSet<Class<? extends ICardCapability>>(
+                    getCapability(type()).getSupportedCapabilityTypes());
+            int sz = s.size();
+            s.removeAll(Arrays.asList(c.getClass().getInterfaces()));
+            if (s.size() == sz) {
+                Logger.getLogger(BaseCard.class.getName()).log(Level.WARNING,
+                    "Adding a capability not in the list of supported capabilities: " + //NOI18N
+                    c.getClass().getName() + "; supported types: " + //NOI18N
+                    getCapability(type()).getSupportedCapabilityTypes());
+            }
+        }
     }
 
     /**

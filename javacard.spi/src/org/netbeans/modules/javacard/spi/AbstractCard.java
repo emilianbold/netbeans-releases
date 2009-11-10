@@ -212,6 +212,7 @@ public abstract class AbstractCard implements Card {
         if (log.isLoggable(Level.FINER)) {
             log.log(Level.FINER, "Add Capability " + c + " to " + this); //NOI18N
         }
+        logAddition (c);
         if (!initializing) {
             Object old = getLookup().lookup(c.getClass());
             if (old != null) {
@@ -219,6 +220,9 @@ public abstract class AbstractCard implements Card {
             }
         }
         content.add(c);
+    }
+
+    void logAddition(ICardCapability c) {
     }
 
     /**
