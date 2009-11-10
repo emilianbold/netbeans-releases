@@ -53,8 +53,6 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
-import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
-import org.netbeans.modules.j2ee.dd.api.web.ServletMapping25;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
@@ -387,27 +385,6 @@ public class WebProjectRestSupport extends WebRestSupport {
             }
         }
         return false;
-    }
-
-    private String setApplicationConfigProperty(boolean annotationConfigAvailable) {
-        ApplicationConfigPanel configPanel = new ApplicationConfigPanel(annotationConfigAvailable);
-        DialogDescriptor desc = new DialogDescriptor(configPanel,
-                NbBundle.getMessage(WebProjectRestSupport.class, "TTL_ApplicationConfigPanel"));
-        DialogDisplayer.getDefault().notify(desc);
-        if (NotifyDescriptor.OK_OPTION.equals(desc.getValue())) {
-            String configType = configPanel.getConfigType();
-            setProjectProperty(WebRestSupport.PROP_REST_CONFIG_TYPE, configType);
-            if (WebRestSupport.CONFIG_TYPE_IDE.equals(configType)) {
-                String applicationPath = configPanel.getApplicationPath();
-                if (applicationPath.startsWith("/")) {
-                    applicationPath = applicationPath.substring(1);
-                }
-                setProjectProperty(WebRestSupport.PROP_REST_RESOURCES_PATH, applicationPath);
-            } else if (WebRestSupport.CONFIG_TYPE_DD.equals(configType)) {
-                return configPanel.getApplicationPath();
-            }
-        }
-        return null;
     }
    
 }
