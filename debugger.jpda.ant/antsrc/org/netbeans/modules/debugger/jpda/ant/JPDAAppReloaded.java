@@ -63,6 +63,7 @@ public class JPDAAppReloaded extends Task {
 
     private static final Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.ant"); // NOI18N
     
+    @Override
     public void execute() throws BuildException {
         if (logger.isLoggable(Level.FINE)) {
             logger.fine("JPDAAppReloaded.execute()");
