@@ -332,13 +332,17 @@ public class CppSymbolDemanglerImpl implements CppSymbolDemangler {
 
     private synchronized void checkDemanglerIfNeeded() {
         if (!demanglerChecked) {
-            if (HostInfoUtils.searchFile(env, searchPaths, demanglerTool, true) == null) {
+            String absPath = HostInfoUtils.searchFile(env, searchPaths, demanglerTool, true);
+            if (absPath == null) {
                 String fallbackDemangler = CPPFILT;
-                if (HostInfoUtils.searchFile(env, searchPaths, fallbackDemangler, true) == null) {
+                absPath = HostInfoUtils.searchFile(env, searchPaths, fallbackDemangler, true);
+                if (absPath == null) {
                     demanglerTool = null;
                 } else {
-                    demanglerTool = fallbackDemangler;
+                    demanglerTool = absPath;
                 }
+            } else {
+                demanglerTool = absPath;
             }
             demanglerChecked = true;
         }
