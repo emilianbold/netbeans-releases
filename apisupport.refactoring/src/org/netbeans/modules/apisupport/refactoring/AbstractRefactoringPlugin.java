@@ -368,8 +368,9 @@ public abstract class AbstractRefactoringPlugin implements RefactoringPlugin {
     
     protected final Problem checkMethodLayer(InfoHolder info, FileObject fo, RefactoringElementsBag refactoringElements) {
         Problem problem = null;
-        // do our check just on public static methods..
-        if (!info.isPublic || !info.isStatic) {
+        // do our check just on static methods
+        // #167439: o.n.core.startup.layers.BinaryFS explicitly allows for private methods
+        if (!info.isStatic) {
             return problem;
         }
         // with no parameters or with parameter of type FileObject
