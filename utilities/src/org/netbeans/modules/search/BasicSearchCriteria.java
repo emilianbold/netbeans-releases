@@ -804,7 +804,7 @@ final class BasicSearchCriteria {
                 }
             } catch (IndexOutOfBoundsException ioobe) {
                 // It is OK. It means that EOF is reached, i.e.
-                // cb.position() >= cb.length()
+                // bcs.position() >= bcs.length()
             }
             int column = matcherStart - lineStartOffset + 1 - prevCR;
             String lineText = bcs.getLineText(lineStartOffset);
