@@ -181,11 +181,15 @@ public class RemoteServerSetup {
         }
     }
 
-    private String getMd5command(List<String> paths2check) throws NoSuchAlgorithmException, IOException {
+    private String getMd5command(List<String> paths2check) 
+            throws NoSuchAlgorithmException, IOException, CheckSumException {
 
         StringBuilder sb;
 
         HostInfo hostIinfo = HostInfoUtils.getHostInfo(executionEnvironment);
+        if (hostIinfo == null) {
+            throw new CheckSumException("Can not get HostInfo for " + executionEnvironment); // NOI18N
+        }
         final OSFamily oSFamily = hostIinfo.getOSFamily();
         switch (oSFamily) {
             case LINUX:
