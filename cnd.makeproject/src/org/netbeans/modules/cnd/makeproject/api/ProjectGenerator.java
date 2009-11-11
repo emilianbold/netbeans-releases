@@ -42,12 +42,14 @@ package org.netbeans.modules.cnd.makeproject.api;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.Iterator;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.MakeProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.ui.wizards.MakeSampleProjectGenerator;
 
 public class ProjectGenerator {
 
@@ -83,5 +85,12 @@ public class ProjectGenerator {
         MakeProject createdProject = MakeProjectGenerator.createProject(dir, name, makefileName, confs, sourceFolders, sourceFoldersFilter, importantItems, null);
         ConfigurationDescriptorProvider.recordCreatedProjectMetrics(confs);
         return createdProject;
+    }
+
+    /*
+     * Used by Sun Studio
+     */
+    public static void createProjectFromTemplate(URL url, String projectName, String projectFolder) throws IOException {
+        MakeSampleProjectGenerator.createProjectFromTemplate(url, new File(projectFolder + "/" + projectName), projectName); // NOI18N
     }
 }
