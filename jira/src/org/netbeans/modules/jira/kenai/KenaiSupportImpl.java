@@ -133,6 +133,12 @@ public class KenaiSupportImpl extends KenaiSupport {
     }
 
     @Override
+    public Query getMyIssuesQuery(Repository repository) {
+        assert repository instanceof KenaiRepository;
+        return ((KenaiRepository)repository).getMyIssuesQuery();
+    }
+
+    @Override
     public BugtrackingType getType() {
         return BugtrackingType.JIRA;
     }

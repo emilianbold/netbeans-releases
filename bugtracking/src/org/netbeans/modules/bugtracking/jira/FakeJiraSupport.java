@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.bugtracking.jira;
 
+import org.netbeans.modules.bugtracking.kenai.QueryDescriptor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
@@ -46,8 +47,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.kenai.QueryAccessorImpl;
+import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.util.KenaiUtil;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiFeature;
@@ -193,7 +193,7 @@ public class FakeJiraSupport {
         return queryHandles;
     }
 
-    public static class FakeJiraQueryHandle extends QueryHandle implements ActionListener {
+    public static class FakeJiraQueryHandle extends QueryHandle implements QueryDescriptor, ActionListener {
         private final String displayName;
         private static List<QueryResultHandle> results;
         private final String projectUrl;
@@ -229,6 +229,14 @@ public class FakeJiraSupport {
 
         public QueryResultHandle getUnseenResult() {
             return new FakeJiraQueryResultHandle(notAvailableResult, ResultType.ALL_CHANGES_RESULT, projectUrl);
+        }
+
+        public boolean isPredefined() {
+            return true;
+        }
+
+        public Query getQuery() {
+            return null;
         }
     }
 
