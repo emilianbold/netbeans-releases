@@ -75,8 +75,18 @@ made subject to such option by the copyright holder.
     <folder name="Actions">
         <folder name="XML">
             
-            <file name="org-netbeans-modules-xml-tools-java-actions-GenerateDocumentHandlerAction.instance"/>
-            <file name="org-netbeans-modules-xml-tools-java-actions-GenerateDOMScannerAction.instance"/>
+            <file name="org-netbeans-modules-xml-tools-java-actions-GenerateDocumentHandlerAction.instance">
+                <attr name="instanceCreate"
+                      methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="delegate"
+                      methodvalue="org.netbeans.modules.xml.tools.java.actions.GenerateDocumentHandlerAction.getInstance"/>
+            </file>
+            <file name="org-netbeans-modules-xml-tools-java-actions-GenerateDOMScannerAction.instance">
+                <attr name="instanceCreate"
+                      methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="delegate"
+                      methodvalue="org.netbeans.modules.xml.tools.java.actions.GenerateDOMScannerAction.getInstance"/>
+            </file>
             
         </folder>
     </folder>
