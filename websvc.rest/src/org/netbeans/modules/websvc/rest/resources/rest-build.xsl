@@ -62,7 +62,6 @@
                 <condition property="do-generate-rest-config">
                     <and>
                         <equals arg1="${{rest.config.type}}" arg2="ide"/>
-                        <isset property="rest.root.resources"/>
                         <isset property="rest.resources.path"/>
                     </and>
                 </condition>
@@ -82,24 +81,7 @@ package org.netbeans.rest.application.config;
  */
 @javax.ws.rs.ApplicationPath("___APPLICATION_PATH___")
 public class ApplicationConfig extends javax.ws.rs.core.Application {
-
-    private static final Class<?>[] resourceClasses = {
-        ___RESOURCE_CLASSES___
-    };
-
-    @Override
-    public java.util.Set<Class<?>> getClasses() {
-        java.util.Set<Class<?>> classes = new java.util.HashSet<Class<?>>();
-        for (Class clazz : resourceClasses) {
-            classes.add(clazz);
-        }
-        return classes;
-    }
-
 }]]></echo>
-                <replace file="${{build.generated.sources.dir}}/rest/org/netbeans/rest/application/config/ApplicationConfig.java"
-                         token="___RESOURCE_CLASSES___"
-                         value="${{rest.root.resources}}"/>
                 <replace file="${{build.generated.sources.dir}}/rest/org/netbeans/rest/application/config/ApplicationConfig.java"
                          token="___APPLICATION_PATH___"
                          value="${{rest.resources.path}}"/>
