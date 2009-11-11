@@ -104,6 +104,7 @@ class DiffTooltipContentPanel extends JComponent {
         }
 
         if (maxWidth < 50) maxWidth = 50;   // too thin component causes repaint problems
+        else if (maxWidth < 150) maxWidth += 10;
         originalTextPane.setPreferredSize(new Dimension(maxWidth * 7 / 6, height));
 
         if (!originalTextPane.isEditable()) {
