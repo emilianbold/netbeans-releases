@@ -247,6 +247,7 @@ final class DatabasePropertiesIndexer {
                 IndexedMethod method =
                         IndexedMethod.create(index, signature, fqn, clz, fileUrl, require, attributes, flags, index.getContext());
                 method.setMethodType(IndexedMethod.MethodType.DBCOLUMN);
+                method.setType(RailsMigrationTypeMapper.getMappedType(type));
                 method.setSmart(true);
                 methods.add(method);
             }

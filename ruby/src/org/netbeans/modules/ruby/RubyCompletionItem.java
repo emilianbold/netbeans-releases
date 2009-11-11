@@ -428,8 +428,8 @@ class RubyCompletionItem extends DefaultCompletionProposal {
         private final String name;
         private final String type;
 
-        DbItem(String name, String type, int anchorOffset, CompletionRequest request) {
-            super(null, anchorOffset, request);
+        DbItem(Element element, String name, String type, int anchorOffset, CompletionRequest request) {
+            super(element, anchorOffset, request);
             this.name = name;
             this.type = type;
         }
