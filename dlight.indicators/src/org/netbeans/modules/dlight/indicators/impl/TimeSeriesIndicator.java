@@ -42,7 +42,6 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -269,17 +268,8 @@ public final class TimeSeriesIndicator
     @Override
     public void setIndicatorActionsProviderContext(Lookup context) {
         List<Action> actions = new ArrayList<Action>();
-        Lookup.Template<IndicatorActionsProvider> template = new Lookup.Template<IndicatorActionsProvider>(IndicatorActionsProvider.class);
-        Lookup.Result<IndicatorActionsProvider> result = Lookup.getDefault().lookup(template);
-        Iterator iterator = result.allInstances().iterator();
-        while (iterator.hasNext()) {
-            Object caop = iterator.next();
-            if (caop instanceof IndicatorActionsProvider) {
-                List<Action> list = ((IndicatorActionsProvider) caop).getIndicatorActions(context); // FIXUP: add DLightConfiguration, DLightTool, ... to lookup
-                for (Action action : list) {
-                    actions.add(action);
-                }
-            }
+        for (IndicatorActionsProvider actionsProvider : Lookup.getDefault().lookupAll(IndicatorActionsProvider.class)) {
+            actions.addAll(actionsProvider.getIndicatorActions(context)); // FIXUP: add DLightConfiguration, DLightTool, ... to lookup
         }
         if (panel != null) {
             panel.setPopupActions(actions);
