@@ -77,7 +77,7 @@ public class CssHelpResolver {
             "<div\\s+class\\s*=\\s*\"propdef\"" );              // NOI18N
     
     private static final String HELP_LOCATION = "docs/css21-spec.zip"; //NOTICES
-    private static String HELP_ZIP_URL;
+    private static URL HELP_ZIP_URL;
     private WeakHashMap<String, String> pages_cache = new WeakHashMap<String, String>();
 
     public static CssHelpResolver instance() {
@@ -183,7 +183,7 @@ public class CssHelpResolver {
     }
 
     public URL getPropertyHelpURL(String propertyName) {
-        String hzurl = CssHelpResolver.getHelpZIPURL();
+        String hzurl = CssHelpResolver.getHelpZIPURLasString();
         if(hzurl == null) {
             return null;
         }
@@ -296,14 +296,17 @@ public class CssHelpResolver {
 
     }
 
-    public static synchronized String getHelpZIPURL() {
+    public static synchronized String getHelpZIPURLasString() {
+        return getHelpZIPURL().toString();
+    }
+
+    public static synchronized URL getHelpZIPURL() {
         if (HELP_ZIP_URL == null) {
             File f = InstalledFileLocator.getDefault().locate(HELP_LOCATION, null, false); //NoI18N
             if (f != null) {
                 try {
                     URL urll = f.toURL();
-                    urll = FileUtil.getArchiveRoot(urll);
-                    HELP_ZIP_URL = urll.toString();
+                    HELP_ZIP_URL = FileUtil.getArchiveRoot(urll);
                 } catch (java.net.MalformedURLException e) {
                     ErrorManager.getDefault().notify(e);
                 }
