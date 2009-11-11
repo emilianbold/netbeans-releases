@@ -47,6 +47,8 @@ import junit.framework.TestCase;
  */
 public class InflectorTest extends TestCase {
 
+    private final Inflector inflector = Inflector.getDefault();
+
     public void testPluralizeAndSingularize() {
         assertBoth("posts", "post");
         assertBoth("axes", "axis");
@@ -77,7 +79,6 @@ public class InflectorTest extends TestCase {
     }
 
     public void testAlrearyConverted() {
-        Inflector inflector = Inflector.getDefault();
         assertEquals("words", inflector.pluralize("words"));
         assertEquals("buses", inflector.pluralize("buses"));
 
@@ -86,9 +87,22 @@ public class InflectorTest extends TestCase {
     }
     
     private void assertBoth(String plural, String singular) {
-        Inflector inflector = Inflector.getDefault();
         assertEquals(plural, inflector.pluralize(singular));
         assertEquals(singular, inflector.singularize(plural));
     }
 
+    public void testDemodulize() {
+        assertEquals("Baz", inflector.demodulize("Foo::Bar::Baz"));
+        assertEquals("Baz", inflector.demodulize("::Baz"));
+        assertEquals("Baz", inflector.demodulize("Baz"));
+        assertEquals("", inflector.demodulize("::"));
+        assertEquals("", inflector.demodulize(""));
+    }
+
+    public void testTableize() throws Exception {
+        assertEquals("posts", inflector.tableize("Post"));
+        assertEquals("raw_scaled_scorers", inflector.tableize("RawScaledScorer"));
+        assertEquals("egg_and_hams", inflector.tableize("egg_and_ham"));
+        assertEquals("fancy_categories", inflector.tableize("fancyCategory"));
+    }
 }
