@@ -470,19 +470,6 @@ public class JavaCustomIndexer extends CustomIndexer {
         return binaryNames;
     }
 
-    private static boolean checkDeps(final Context context) {
-        if (context.isSupplementaryFilesIndexing())
-            return false;
-        switch(TasklistSettings.getDependencyTracking()) {
-            case DISABLED:
-                return false;
-            case ENABLED_WITHIN_ROOT:
-                if (context.isAllFilesIndexing())
-                    return false;
-        }
-        return true;
-    }
-
     private static Map<URL, Set<URL>> findDependent(final URL root, final Collection<ElementHandle<TypeElement>> classes, boolean includeFilesInError) throws IOException {                
         //get dependencies
         Map<URL, List<URL>> deps = IndexingController.getDefault().getRootDependencies();
