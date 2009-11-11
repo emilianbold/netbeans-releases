@@ -166,6 +166,8 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
     private UndoRedo.Manager editorUndoRedo;
     private EditableDiffMarkProvider diffMarkprovider;
 
+    private boolean lineLocationAsked;
+
     public EditableDiffView(final StreamSource ss1, final StreamSource ss2) throws IOException {
         refreshDiffTask = RequestProcessor.getDefault().create(new RefreshDiffTask());
         initColors();
@@ -331,21 +333,19 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         }
     }
 
+    @Override
     public void setLocation(final DiffController.DiffPane pane, final DiffController.LocationType type, final int location) {
         manager.runWithSmartScrollingDisabled(new Runnable() {
             public void run() {
                 if (type == DiffController.LocationType.DifferenceIndex) {
                     setDifferenceImpl(location);
                 } else {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            if (pane == DiffController.DiffPane.Base) {
-                                setBaseLineNumberImpl(location);
-                            } else {
-                                setModifiedLineNumberImpl(location);
-                            }
-                        }
-                    });
+                    EditableDiffView.this.lineLocationAsked = true;
+                    if (pane == DiffController.DiffPane.Base) {
+                        setBaseLineNumberImpl(location);
+                    } else {
+                        setModifiedLineNumberImpl(location);
+                    }
                 }
             }
         });
@@ -386,12 +386,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
             jEditorPane1.getEditorPane().setCaretPosition(off1);
     
             JScrollBar leftScrollBar = jEditorPane1.getScrollPane().getVerticalScrollBar();
-            JScrollBar rightScrollBar = jEditorPane2.getScrollPane().getVerticalScrollBar();
-
             leftScrollBar.setValue(lineOffset);
-            rightScrollBar.setValue(lineOffset);
-
-            updateCurrentDifference();
         } catch (IndexOutOfBoundsException ex) {
             ErrorManager.getDefault().notify(ex);
         }
@@ -1063,7 +1058,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                         refreshDividerSize();
                         jSplitPane1.repaint();
                         diffMarkprovider.refresh();
-                        if (diffs.length > 0 && getCurrentDifference() == -1) {
+                        if (diffs.length > 0 && getCurrentDifference() == -1 && !EditableDiffView.this.lineLocationAsked) {
                             setCurrentDifference(0);
                         }
                     }

@@ -98,6 +98,7 @@ class DiffTooltipContentPanel extends JComponent {
             } catch (BadLocationException e) {
                 e.printStackTrace();
             }
+            text = replaceTabs(mimeType, text);
             int lineLength = parentPane.getFontMetrics(parentPane.getFont()).stringWidth(text);
             if (lineLength > maxWidth) maxWidth = lineLength;
         }
@@ -119,5 +120,24 @@ class DiffTooltipContentPanel extends JComponent {
     private Color getBackgroundColor (int key) {
         org.netbeans.modules.diff.DiffModuleConfig config = org.netbeans.modules.diff.DiffModuleConfig.getDefault();
         return key == Difference.DELETE ? config.getSidebarDeletedColor() : config.getSidebarChangedColor();
+    }
+
+    private Integer spacesPerTab;
+    private String replaceTabs(String mimeType, String text) {
+        if (text.contains("\t")) {                                      //NOI18N
+            if (spacesPerTab == null) {
+                spacesPerTab = org.netbeans.modules.diff.DiffModuleConfig.getDefault().getSpacesPerTabFor(mimeType);
+            }
+            text = text.replace("\t", strCharacters(' ', spacesPerTab)); //NOI18N
+        }
+        return text;
+    }
+    
+    private static String strCharacters(char c, int num) {
+        StringBuffer s = new StringBuffer();
+        while(num-- > 0) {
+            s.append(c);
+        }
+        return s.toString();
     }
 }
