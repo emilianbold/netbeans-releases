@@ -353,6 +353,12 @@ public class SourcePathProviderImpl extends SourcePathProvider {
                 "SPPI: init smartSteppingSourcePath " + smartSteppingSourcePath
             );
 
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("new SourcePathProviderImpl(): contextProvider = "+contextProvider+
+                        ", properties = "+properties+
+                        ", srcRootsToListenForArtifactsUpdates = "+srcRootsToListenForArtifactsUpdates);
+        }
+
         if (srcRootsToListenForArtifactsUpdates != null) {
             final Set<ArtifactsUpdatedImpl> artifactsListeners = new HashSet<ArtifactsUpdatedImpl>();
             for (FileObject src : srcRootsToListenForArtifactsUpdates) {
@@ -1262,6 +1268,9 @@ public class SourcePathProviderImpl extends SourcePathProvider {
 
             boolean canFixClasses = Properties.getDefault().getProperties("debugger.options.JPDA").
                     getBoolean("ApplyCodeChangesOnSave", CAN_FIX_CLASSES_AUTOMATICALLY);
+            if (logger.isLoggable(Level.FINE)) {
+                logger.fine("artifactsUpdated("+artifacts+") error = '"+error+"', canFixClasses = "+canFixClasses);
+            }
             if (error == null) {
                 if (!canFixClasses) {
                     for (File f : artifacts) {
