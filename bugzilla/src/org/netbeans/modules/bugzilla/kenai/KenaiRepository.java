@@ -58,6 +58,7 @@ import org.netbeans.modules.bugzilla.query.QueryParameter;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
+import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.openide.util.ImageUtilities;
@@ -136,6 +137,7 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
     }
 
     synchronized Query getAllIssuesQuery() throws MissingResourceException {
+        if(!providePredefinedQueries() || BugzillaUtil.isNbRepository(this)) return null;
         if (allIssues == null) {
             StringBuffer url = new StringBuffer();
             url = new StringBuffer();
@@ -147,6 +149,7 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
     }
 
     synchronized Query getMyIssuesQuery() throws MissingResourceException {
+        if(!providePredefinedQueries()) return null;
         if (myIssues == null) {
             
             String url = getQueryUrl();
@@ -175,6 +178,13 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
         String userMail = user + "@" + host; // NOI18N
         url.append(MessageFormat.format(BugzillaConstants.MY_ISSUES_PARAMETERS_FORMAT, product, userMail));
         return url.toString();
+    }
+
+    @Override
+    public synchronized void refreshConfiguration() {
+        KenaiConfiguration conf = (KenaiConfiguration) getConfiguration();
+        conf.reset();
+        super.refreshConfiguration();
     }
 
     @Override
@@ -287,6 +297,11 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
                 } 
             }
         }
+    }
+
+    private boolean providePredefinedQueries() {
+        String provide = System.getProperty("org.netbeans.modules.bugzilla.noPredefinedQueries");
+        return !"true".equals(provide);
     }
 
 }
