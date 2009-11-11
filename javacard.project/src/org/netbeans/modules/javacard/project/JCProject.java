@@ -90,7 +90,6 @@ import org.netbeans.modules.javacard.api.AntClasspathClosureProvider;
 import org.netbeans.modules.javacard.common.Utils;
 import static org.netbeans.modules.javacard.common.JCConstants.RUNTIME_DESCRIPTOR;
 import org.netbeans.modules.javacard.constants.ProjectPropertyNames;
-import org.netbeans.modules.javacard.spi.BrokenJavacardPlatform;
 import org.netbeans.modules.javacard.project.deps.ArtifactKind;
 import org.netbeans.modules.javacard.project.deps.Dependencies;
 import org.netbeans.modules.javacard.project.deps.DependenciesProvider;
@@ -314,7 +313,7 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
         String platform = eval.getProperty(ProjectPropertyNames.PROJECT_PROP_ACTIVE_PLATFORM);
         if (platform != null) {
             JavacardPlatform result = JCUtil.findPlatformNamed(platform);
-            return result == null ? new BrokenJavacardPlatform(platform) : result;
+            return result == null ? JavacardPlatform.createBrokenJavacardPlatform(platform) : result;
         }
         return null;
     }

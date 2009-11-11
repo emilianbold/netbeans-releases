@@ -51,7 +51,6 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObjectExistsException;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -63,16 +62,11 @@ import javax.swing.Action;
 import javax.swing.BorderFactory;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.javacard.common.JCConstants;
-import org.netbeans.modules.javacard.common.Utils;
-import org.netbeans.modules.javacard.ri.platform.MergeProperties;
 import org.netbeans.modules.javacard.ri.platform.RIPlatform;
-import org.netbeans.modules.javacard.spi.BrokenJavacardPlatform;
 import org.netbeans.modules.javacard.spi.JavacardPlatform;
 import org.netbeans.modules.javacard.spi.JavacardPlatformKeyNames;
 import org.netbeans.modules.javacard.spi.ProjectKind;
-import org.netbeans.modules.propdos.PropertiesAdapter;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.openide.loaders.DataObject;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.Exceptions;
@@ -130,31 +124,8 @@ public class JavacardPlatformDataObject extends PropertiesBasedDataObject<Javaca
             properties.setProperty(JavacardPlatformKeyNames.PLATFORM_ID, getName());
         }
         if (properties.isEmpty()) {
-            return new BrokenJavacardPlatform(getName());
+            return JavacardPlatform.createBrokenJavacardPlatform(getName());
         } else {
-            //If necessary, we wrap the Java Card RI's properties in our own,
-            //providing a merged platform that can specify its own CardsFactory
-            //for providing cards, and AddDeviceHandler for adding devices
-//            String wrapProp = properties.getProperty(JavacardPlatformKeyNames.PLATFORM_IS_RI_WRAPPER);
-//            boolean isWrapperPlatform = wrapProp != null && ("true".equals(wrapProp.trim()) || "yes".equals(wrapProp.trim())); //NOI18N
-//            if (isWrapperPlatform) {
-//                try {
-//                    DataObject dob = RIPlatform.findDefaultPlatform();
-//                    if (dob != null) {
-//                        //XXX need to somehow listen on the default platform,
-//                        //on the off chance it is deleted.  Currently the
-//                        //properties survive as an in-memory copy, but it
-//                        //might be non-obvious what is going on
-//                        PropertiesAdapter adap = dob.getLookup().lookup(PropertiesAdapter.class);
-//                        if (adap != null) {
-//                            ObservableProperties other = adap.asProperties();
-//                            properties = new MergeProperties(other, properties);
-//                        }
-//                    }
-//                } catch (DataObjectNotFoundException ex) {
-//                    Exceptions.printStackTrace(ex);
-//                }
-//            }
             JavacardPlatform result = new RIPlatform(properties);
             return result;
         }

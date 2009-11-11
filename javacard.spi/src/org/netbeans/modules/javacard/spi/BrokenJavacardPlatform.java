@@ -68,10 +68,10 @@ import org.openide.util.Lookup;
  *
  * @author Tim Boudreau
  */
-public final class BrokenJavacardPlatform extends JavacardPlatform {
+final class BrokenJavacardPlatform extends JavacardPlatform {
     private final String displayName;
     private final Collection<? extends String> cardNames;
-    public BrokenJavacardPlatform(String displayName) {
+    BrokenJavacardPlatform(String displayName) {
         this.displayName = displayName;
         this.cardNames = Collections.<String>emptyList();
     }
@@ -81,7 +81,7 @@ public final class BrokenJavacardPlatform extends JavacardPlatform {
      * @param displayName The ID/display name of the platform
      * @param cardNames The names of any cards that are expected to be present
      */
-    public BrokenJavacardPlatform(String displayName, Collection<? extends String> cardNames) {
+    BrokenJavacardPlatform(String displayName, Collection<? extends String> cardNames) {
         this.displayName = displayName;
         this.cardNames = cardNames;
     }
