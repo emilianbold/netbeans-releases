@@ -61,6 +61,7 @@ import java.util.StringTokenizer;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.TestUtil;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.project.libraries.ui.LibrariesCustomizer;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryProvider;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
@@ -70,9 +71,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.InstanceDataObject;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.util.Mutex.Action;
 import org.openide.util.test.MockLookup;
 import org.openide.xml.EntityCatalog;
 import org.xml.sax.InputSource;
@@ -93,12 +92,13 @@ public class LibrariesStorageTest extends NbTestCase {
         super(testName);
     }
 
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         MockLookup.setInstances(new TestEntityCatalog());
-        this.registerLibraryTypeProvider();
+        registerLibraryTypeProvider();
         this.storageFolder = TestUtil.makeScratchDir(this);
-        this.createLibraryDefinition(this.storageFolder,"Library1");
+        createLibraryDefinition(this.storageFolder,"Library1", null);
         this.storage = new LibrariesStorage (this.storageFolder);
     }
 
@@ -107,21 +107,33 @@ public class LibrariesStorageTest extends NbTestCase {
         LibraryImplementation[] libs = this.storage.getLibraries();
         assertEquals("Libraries count",1,libs.length);
         assertLibEquals(libs, new String[] {"Library1"});
-        createLibraryDefinition(this.storageFolder,"Library2");
+        createLibraryDefinition(this.storageFolder,"Library2", null);
         libs = this.storage.getLibraries();
         assertEquals("Libraries count",2,libs.length);
         assertLibEquals(libs, new String[] {"Library1", "Library2"});
         TestListener l = new TestListener ();
-        this.storage.addPropertyChangeListener(l);                
+        this.storage.addPropertyChangeListener(l);
         TestLibraryTypeProvider tlp = (TestLibraryTypeProvider) LibraryTypeRegistry.getDefault().getLibraryTypeProvider (TestLibraryTypeProvider.TYPE);
         tlp.reset();
-        createLibraryDefinition(this.storageFolder,"Library3");
+        createLibraryDefinition(this.storageFolder,"Library3", null);
         libs = this.storage.getLibraries();
         assertEquals("Libraries count",3,libs.length);
         assertLibEquals(libs, new String[] {"Library1", "Library2", "Library3"});
-        assertEquals("Event count",1,l.getEventNames().size());        
-        assertEquals("Event names",LibraryProvider.PROP_LIBRARIES,l.getEventNames().get(0));                
-        assertTrue("Library created called",tlp.wasCreatedCalled());        
+        assertEquals("Event count",1,l.getEventNames().size());
+        assertEquals("Event names",LibraryProvider.PROP_LIBRARIES,l.getEventNames().get(0));
+        assertTrue("Library created called",tlp.wasCreatedCalled());
+    }
+    public void testGetDisplayNameLibraries() throws Exception {
+        this.storage.getLibraries();
+        LibraryImplementation[] libs = this.storage.getLibraries();
+        assertEquals("Libraries count",1,libs.length);
+        assertLibEquals(libs, new String[] {"Library1"});
+        createLibraryDefinition(this.storageFolder,"Library2", "MyName");
+        libs = this.storage.getLibraries();
+        assertEquals("Libraries count",2,libs.length);
+        LibraryImplementation impl = libs[0].getName().equals("Library2") ? libs[0] : libs[1];
+
+        assertEquals("MyName", LibrariesCustomizer.getLocalizedName(impl));
     }
 
     public void testAddLibrary() throws Exception {
@@ -198,10 +210,13 @@ public class LibrariesStorageTest extends NbTestCase {
         }
     }
     
-    static void createLibraryDefinition (final FileObject storageFolder, final String libName) throws IOException {
+    static FileObject createLibraryDefinition (final FileObject storageFolder, final String libName, final String displayName) throws IOException {
+        final FileObject[] ret = new FileObject[1];
+
         storageFolder.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
             public void run () throws IOException {
                 FileObject defFile = storageFolder.createData(libName,"xml");
+                ret[0] = defFile;
                 FileLock lock = null;
                 PrintWriter out = null;
                 try {
@@ -218,6 +233,9 @@ public class LibrariesStorageTest extends NbTestCase {
                         out.println("\t</volume>");
                     }
                     out.println("</library>");
+                    if (displayName != null) {
+                        defFile.setAttribute("displayName", displayName);
+                    }
                 } finally {
                     if (out !=  null)
                         out.close();
@@ -226,6 +244,7 @@ public class LibrariesStorageTest extends NbTestCase {
                 }
             }
         });
+        return ret[0];
     }
     
     static class TestListener implements PropertyChangeListener {
