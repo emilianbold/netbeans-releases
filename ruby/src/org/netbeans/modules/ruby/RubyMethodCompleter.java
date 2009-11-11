@@ -192,7 +192,7 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
             }
         }
 
-        if (!type.isKnown() && AstUtilities.isCall(target)) {
+        if (!type.isKnown() && target != null && AstUtilities.isCall(target)) {
             type = getTypeForCall(target);
         }
 
@@ -278,7 +278,7 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
             }
 
             if (method.getMethodType() == IndexedMethod.MethodType.DBCOLUMN) {
-                DbItem item = new DbItem(method.getName(), method.getIn(), anchor, request);
+                DbItem item = new DbItem(method, method.getName(), method.getIn(), anchor, request);
                 propose(item);
                 continue;
             }
