@@ -912,6 +912,98 @@ public class OffsetsBagTest extends NbTestCase {
         assertNull("  3. highlight - wrong end", marks.get(3).getAttributes());
     }
     
+    public void test122663_AddLeftMatches() throws BadLocationException {
+        doc.insertString(0, "01234567890123456789", null);
+
+        SimpleAttributeSet attribsA = new SimpleAttributeSet();
+        SimpleAttributeSet attribsB = new SimpleAttributeSet();
+        attribsA.addAttribute("set-name", "attribsA");
+        attribsB.addAttribute("set-name", "attribsB");
+
+        OffsetsBag bag = new OffsetsBag(doc);
+        bag.addHighlight(5, 10, attribsA);
+        bag.addHighlight(5, 15, attribsB);
+
+        assertMarks("Wrong highlights", createOffsetsBag(5, 15, attribsB), bag);
+    }
+
+    public void test122663_AddMultipleLeftMatches() throws BadLocationException {
+        doc.insertString(0, "01234567890123456789", null);
+
+        SimpleAttributeSet attribsA = new SimpleAttributeSet();
+        SimpleAttributeSet attribsB = new SimpleAttributeSet();
+        attribsA.addAttribute("set-name", "attribsA");
+        attribsB.addAttribute("set-name", "attribsB");
+
+        OffsetsBag bag = new OffsetsBag(doc);
+        bag.addHighlight(5, 10, attribsA);
+        bag.addHighlight(15, 20, attribsA);
+        bag.addHighlight(25, 30, attribsA);
+        bag.addHighlight(5, 35, attribsB);
+
+        assertMarks("Wrong highlights", createOffsetsBag(5, 35, attribsB), bag);
+    }
+
+    public void test122663_AddRightMatches() throws BadLocationException {
+        doc.insertString(0, "01234567890123456789", null);
+
+        SimpleAttributeSet attribsA = new SimpleAttributeSet();
+        SimpleAttributeSet attribsB = new SimpleAttributeSet();
+        attribsA.addAttribute("set-name", "attribsA");
+        attribsB.addAttribute("set-name", "attribsB");
+
+        OffsetsBag bag = new OffsetsBag(doc);
+        bag.addHighlight(10, 15, attribsA);
+        bag.addHighlight(5, 15, attribsB);
+        assertMarks("Wrong highlights", createOffsetsBag(5, 15, attribsB), bag);
+    }
+
+    public void test122663_AddMultipleRightMatches() throws BadLocationException {
+        doc.insertString(0, "01234567890123456789", null);
+
+        SimpleAttributeSet attribsA = new SimpleAttributeSet();
+        SimpleAttributeSet attribsB = new SimpleAttributeSet();
+        attribsA.addAttribute("set-name", "attribsA");
+        attribsB.addAttribute("set-name", "attribsB");
+
+        OffsetsBag bag = new OffsetsBag(doc);
+        bag.addHighlight(30, 35, attribsA);
+        bag.addHighlight(20, 25, attribsA);
+        bag.addHighlight(10, 15, attribsA);
+        bag.addHighlight(5, 35, attribsB);
+        assertMarks("Wrong highlights", createOffsetsBag(5, 35, attribsB), bag);
+    }
+
+    public void test122663_AddBothMatch() throws BadLocationException {
+        doc.insertString(0, "01234567890123456789", null);
+
+        SimpleAttributeSet attribsA = new SimpleAttributeSet();
+        SimpleAttributeSet attribsB = new SimpleAttributeSet();
+        attribsA.addAttribute("set-name", "attribsA");
+        attribsB.addAttribute("set-name", "attribsB");
+
+        OffsetsBag bag = new OffsetsBag(doc);
+        bag.addHighlight(10, 15, attribsA);
+        bag.addHighlight(10, 15, attribsB);
+        assertMarks("Wrong highlights", createOffsetsBag(10, 15, attribsB), bag);
+    }
+
+    public void test122663_AddMultipleBothMatch() throws BadLocationException {
+        doc.insertString(0, "01234567890123456789", null);
+
+        SimpleAttributeSet attribsA = new SimpleAttributeSet();
+        SimpleAttributeSet attribsB = new SimpleAttributeSet();
+        attribsA.addAttribute("set-name", "attribsA");
+        attribsB.addAttribute("set-name", "attribsB");
+
+        OffsetsBag bag = new OffsetsBag(doc);
+        bag.addHighlight(10, 15, attribsA);
+        bag.addHighlight(20, 25, attribsA);
+        bag.addHighlight(30, 35, attribsA);
+        bag.addHighlight(10, 35, attribsB);
+        assertMarks("Wrong highlights", createOffsetsBag(10, 35, attribsB), bag);
+    }
+
     private void dumpHighlights(HighlightsSequence seq) {
         System.out.println("Dumping highlights from: " + seq + "{");
         while(seq.moveNext()) {

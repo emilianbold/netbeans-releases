@@ -30,42 +30,38 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
-              <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
+                  <Component id="hostLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="userLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="passwordLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="initialDirectoryLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="timeoutLabel" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" alignment="1" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="hostLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="userLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="passwordLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="initialDirectoryLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="timeoutLabel" min="-2" max="-2" attributes="0"/>
+                          <Component id="userTextField" alignment="0" pref="150" max="32767" attributes="2"/>
+                          <Component id="hostTextField" alignment="0" pref="150" max="32767" attributes="2"/>
+                          <Component id="passwordTextField" alignment="0" pref="150" max="32767" attributes="0"/>
+                          <Component id="initialDirectoryTextField" alignment="0" pref="150" max="32767" attributes="2"/>
+                          <Component id="timeoutTextField" alignment="0" pref="150" max="32767" attributes="0"/>
                       </Group>
-                      <EmptySpace min="-2" pref="25" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" alignment="1" attributes="0">
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="userTextField" alignment="0" pref="200" max="32767" attributes="2"/>
-                                  <Component id="hostTextField" alignment="0" pref="200" max="32767" attributes="2"/>
-                                  <Component id="passwordTextField" alignment="0" pref="200" max="32767" attributes="0"/>
-                                  <Component id="initialDirectoryTextField" alignment="0" pref="200" max="32767" attributes="2"/>
-                                  <Component id="timeoutTextField" alignment="0" pref="200" max="32767" attributes="0"/>
-                              </Group>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                          <Group type="102" alignment="0" attributes="1">
+                              <Component id="portLabel" min="-2" max="-2" attributes="0"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="1" attributes="0">
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <Component id="portLabel" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace min="-2" max="-2" attributes="0"/>
-                                      <Component id="portTextField" pref="128" max="32767" attributes="0"/>
-                                  </Group>
-                                  <Component id="anonymousCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                              </Group>
+                              <Component id="portTextField" max="32767" attributes="0"/>
                           </Group>
-                          <Component id="passwordLabelInfo" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="anonymousCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
+                      <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="passiveModeCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="passwordLabelInfo" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
           </Group>
+          <Component id="passiveModeCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
@@ -95,7 +91,7 @@
                   <Component id="initialDirectoryLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="initialDirectoryTextField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="timeoutTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="timeoutLabel" alignment="3" min="-2" max="-2" attributes="0"/>

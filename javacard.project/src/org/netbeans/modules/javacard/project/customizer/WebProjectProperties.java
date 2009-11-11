@@ -42,10 +42,9 @@ package org.netbeans.modules.javacard.project.customizer;
 
 import com.sun.javacard.filemodels.WebXmlModel;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.javacard.Utils;
+import org.netbeans.modules.javacard.common.Utils;
 import org.netbeans.modules.propdos.PropertiesAdapter;
-import org.netbeans.modules.javacard.constants.JCConstants;
-import org.netbeans.modules.javacard.constants.JavacardDeviceKeyNames;
+import org.netbeans.modules.javacard.spi.JavacardDeviceKeyNames;
 import org.netbeans.modules.javacard.constants.ProjectPropertyNames;
 import org.netbeans.modules.javacard.project.JCProject;
 import org.netbeans.modules.javacard.project.JCProjectProperties;
@@ -59,7 +58,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 
-import javax.swing.*;
 import javax.swing.JToggleButton.ToggleButtonModel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -74,7 +72,10 @@ import java.io.PrintWriter;
 import java.util.Enumeration;
 import java.util.Properties;
 import java.util.Vector;
-import org.netbeans.modules.javacard.constants.JCConstants;
+import javax.swing.ButtonModel;
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
+import org.netbeans.modules.javacard.common.JCConstants;
 
 public class WebProjectProperties extends JCProjectProperties {
 

@@ -48,7 +48,6 @@ import java.util.Map;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.javacard.GuiUtils;
 import org.openide.util.HelpCtx;
 
 public final class AppletProjectCustomizerRun extends javax.swing.JPanel implements ActionListener, ItemListener, ChangeListener {
@@ -59,14 +58,13 @@ public final class AppletProjectCustomizerRun extends javax.swing.JPanel impleme
 
     public AppletProjectCustomizerRun(AppletProjectProperties props) {
         initComponents();
-        platformAndDevicePanel21.setProperties(props);
+        platformAndDevicePanel21.setPlatformAndCard(props);
         servletComboBox.setModel(props.SCRIPTS);
         servletComboBox.setRenderer(new CRen());
         launchBrowserCheckBox.setModel(props.SEND_SCRIPT);
         selection2url = new HashMap<Object, String>();
         selecting = SELECTING_SERVLET;
         updateSelection();
-        GuiUtils.prepareContainer(this);
         HelpCtx.setHelpIDString(this, "org.netbeans.modules.javacard.RunPanel"); //NOI18N
     }
 
@@ -95,7 +93,7 @@ public final class AppletProjectCustomizerRun extends javax.swing.JPanel impleme
         jSeparator1 = new javax.swing.JSeparator();
         launchBrowserCheckBox = new javax.swing.JCheckBox();
         jLabel2 = new javax.swing.JLabel();
-        platformAndDevicePanel21 = new org.netbeans.modules.javacard.project.ui.PlatformAndDevicePanel();
+        platformAndDevicePanel21 = new org.netbeans.modules.javacard.api.PlatformAndDevicePanel();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(7, 0, 0, 0));
 
@@ -124,7 +122,7 @@ public final class AppletProjectCustomizerRun extends javax.swing.JPanel impleme
                                 .add(21, 21, 21)
                                 .add(jLabel2)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                .add(servletComboBox, 0, 234, Short.MAX_VALUE)))
+                                .add(servletComboBox, 0, 415, Short.MAX_VALUE)))
                         .add(14, 14, 14))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
@@ -213,7 +211,7 @@ public final class AppletProjectCustomizerRun extends javax.swing.JPanel impleme
     private javax.swing.JLabel jLabel2;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JCheckBox launchBrowserCheckBox;
-    private org.netbeans.modules.javacard.project.ui.PlatformAndDevicePanel platformAndDevicePanel21;
+    private org.netbeans.modules.javacard.api.PlatformAndDevicePanel platformAndDevicePanel21;
     private javax.swing.JComboBox servletComboBox;
     // End of variables declaration//GEN-END:variables
 

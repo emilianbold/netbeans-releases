@@ -335,6 +335,8 @@ public class ToolsManagerPanel extends PanelWithApply {
                     oldList.clear();
                     oldList.addAll(newList);
                     initDialog(newList, null);
+                    DLightConfigurationUIWrapper dlightConfigurationUIWrapper = (DLightConfigurationUIWrapper)profileConfigurationComboBox.getSelectedItem();
+                    initConfigurationPanel(dlightConfigurationUIWrapper);
                 } else {
                     profileConfigurationComboBox.setSelectedIndex(lastSelectedIndex);
                 }
@@ -399,6 +401,12 @@ public class ToolsManagerPanel extends PanelWithApply {
             }
             return null;
         }
+
+//        @Override
+//        public void removeAction(DLightConfigurationUIWrapper o) {
+//            super.removeAction(o);
+//            profileConfigurationComboBox.setSelectedIndex(profileConfigurationComboBox.getSelectedIndex());
+//        }
 
         @Override
         public DLightConfigurationUIWrapper copyAction(DLightConfigurationUIWrapper o) {

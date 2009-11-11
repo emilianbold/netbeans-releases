@@ -60,7 +60,7 @@ public class ToolsCustomizerAction extends SystemAction implements ActionListene
 
     @Override
     public String getName() {
-        return NbBundle.getMessage(ToolsCustomizerAction.class, "CTL_ProfilerToolsAction2");
+        return NbBundle.getMessage(ToolsCustomizerAction.class, "CTL_ProfilerToolsAction");
     }
 
     /**

@@ -76,7 +76,7 @@ tokens {
     }    
 
     protected Token createToken(int type) throws InstantiationException, IllegalAccessException {
-        return new antlr.CommonToken();
+        return new org.netbeans.modules.cnd.antlr.CommonToken();
     }
 }
 

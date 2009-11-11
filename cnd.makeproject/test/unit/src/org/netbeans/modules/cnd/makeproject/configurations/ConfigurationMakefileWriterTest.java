@@ -373,10 +373,10 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
         golden.append("${OBJECTDIR}/test.o: nbproject/Makefile-${CND_CONF}.mk test.cc \n");
         golden.append("\t${MKDIR} -p ${OBJECTDIR}\n");
         golden.append("\t${RM} $@.d\n");
-        golden.append("\t$(COMPILE.cc) -g -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/test.o test.cc\n");
+        golden.append("\t$(COMPILE.cc) -g  -MMD -MP -MF $@.d -o ${OBJECTDIR}/test.o test.cc\n");
         golden.append("dist/Default/MyCompilerSet-Windows/libXxx.dll: ${OBJECTFILES}\n");
         golden.append("\t${MKDIR} -p dist/Default/MyCompilerSet-Windows\n");
-        golden.append("\t${LINK.cc} -shared -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libXxx.dll -fPIC ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
+        golden.append("\t${LINK.cc} -shared -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libXxx.dll ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
         testDynamicLibrary("DynLib_MinGW_Windows", "MinGW", Platform.PLATFORM_WINDOWS, golden.toString());
     }
 
@@ -387,10 +387,10 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
         golden.append("${OBJECTDIR}/test.o: nbproject/Makefile-${CND_CONF}.mk test.cc \n");
         golden.append("\t${MKDIR} -p ${OBJECTDIR}\n");
         golden.append("\t${RM} $@.d\n");
-        golden.append("\t$(COMPILE.cc) -g -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/test.o test.cc\n");
+        golden.append("\t$(COMPILE.cc) -g  -MMD -MP -MF $@.d -o ${OBJECTDIR}/test.o test.cc\n");
         golden.append("dist/Default/MyCompilerSet-Windows/libXxx.dll: ${OBJECTFILES}\n");
         golden.append("\t${MKDIR} -p dist/Default/MyCompilerSet-Windows\n");
-        golden.append("\t${LINK.cc} -mno-cygwin -shared -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libXxx.dll -fPIC ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
+        golden.append("\t${LINK.cc} -mno-cygwin -shared -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libXxx.dll ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
         testDynamicLibrary("DynLib_Cygwin_Windows", "Cygwin", Platform.PLATFORM_WINDOWS, golden.toString());
     }
 }

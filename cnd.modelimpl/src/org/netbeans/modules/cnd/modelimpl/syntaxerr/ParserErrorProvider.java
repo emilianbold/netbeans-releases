@@ -39,7 +39,7 @@
 package org.netbeans.modules.cnd.modelimpl.syntaxerr;
 
 import org.netbeans.modules.cnd.modelimpl.syntaxerr.spi.ParserErrorFilter;
-import antlr.RecognitionException;
+import org.netbeans.modules.cnd.antlr.RecognitionException;
 import java.util.ArrayList;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import java.util.Collection;

@@ -1,0 +1,91 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<!--
+ *     	 Copyright © 2009 Sun Microsystems, Inc. All rights reserved.
+ *	 Use is subject to license terms.
+-->
+
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <title>Generating JSF Pages from Entity Classes</title>
+        <link href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css"
+            rel="stylesheet" type="text/css">
+    </head>
+
+    <body>
+        <h2>Generating JSF Pages from Entity Classes</h2>
+        
+        <p><small><a href="#seealso">See Also</a></small></p>
+
+        <p>If you have already
+            <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/general/persistence_fromdb.html">generated
+            entity classes from a database</a> in your project, you can use the JSF Pages
+            from Entity Classes wizard to generate a collection of files, classes and front-end
+            pages that enable you to interact with the database. The purpose of the wizard
+            is to provide template code that facilitates <a href="about-crud.html">CRUD
+            functionality</a> with a back-end data store.</p>
+
+        <h4>To generate JSF pages from an entity class:</h4>
+
+        <ol>
+            <li>Choose File > New (Ctrl-N) from the main menu.</li>
+
+            <li>From the JavaServer Faces category, select JSF Pages from Entity Class and
+                click Next. The wizard displays all of the entity classes in the project.</li>
+
+            <li>Specify the entity classes for which you want to generate JSF pages. To do so,
+                click Add (or Add All) to move entity classes to the Selected Entity Classes
+                list.</li>
+
+            <li>Click Next.</li>
+
+            <li>In Step 3: Generate JSF Pages and Classes, specify a name for the following
+                fields:
+
+                <ul>
+                    <li><strong>JPA Session Bean Package:</strong> (contains EJB session beans)</li>
+                    <li><strong>JSF Classes Package:</strong> (contains JSF session-scoped, managed beans)</li>
+                    <li><strong>JSF Pages Folder:</strong> (contains all Facelets pages generated for entity classes)</li>
+                    <li><strong>Localization Bundle Name:</strong> (the properties bundle that
+                        will contain all text used in Facelets pages as key-value pairs)</li>
+                </ul></li>
+
+            <li>Click Finish.</li>
+        </ol>
+
+        <p>The IDE generates all files based on the names and locations you specified in the wizard.
+            For each entity class, the wizard generates the following:</p>
+
+        <ul>
+            <li>a stateless session bean for creation, retrieval, modification and
+                removal of entity instances</li>
+
+            <li>a JSF session-scoped, managed bean</li>
+
+            <li>a directory containing four Facelets files for CRUD capabilities (<code>Create.xhtml</code>,
+                <code>Edit.xhtml</code>, <code>List.xhtml</code>, and <code>View.xhtml</code>)</li>
+
+            <li>utility classes used by the JSF managed beans (<code>JsfUtil</code>,
+                <code>PaginationHelper</code>)</li>
+
+            <li>a properties bundle for localized messages, and a corresponding entry in
+                the project's Faces configuration file (A <code>faces-config.xml</code> file is
+                created if one does not already exist.)</li>
+
+            <li>auxilary web files, including a default stylesheet for rendered components,
+                and a Facelets template file</li>
+        </ul>
+
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="about-crud.html">About CRUD Applications</a></dd>
+            <dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/general/persistence_about.html">About Java Persistence</a></dd>
+            <dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/general/persistence_fromdb.html">Generating Persistent Entity Classes from a Database</a></dd>
+            <dd><a href="about.html">About JavaServer Faces Framework Support</a></dd>
+        </dl>
+
+        <hr><small><a href="../../../credits.html">Legal Notices</a></small>
+        <table cellpadding="20" border="0"><tr><td>&nbsp;</td></tr></table>
+    </body>
+</html>

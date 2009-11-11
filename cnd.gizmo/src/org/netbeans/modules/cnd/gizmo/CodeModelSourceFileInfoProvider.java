@@ -73,7 +73,7 @@ public final class CodeModelSourceFileInfoProvider implements SourceFileInfoProv
     public CodeModelSourceFileInfoProvider(){
     }
 
-    public SourceFileInfo fileName(String functionQName, int lineNumber, long offset, Map<String, String> serviceInfo) {
+    public SourceFileInfo getSourceFileInfo(String functionQName, int lineNumber, long offset, Map<String, String> serviceInfo) {
         try {
             //get project current name
             String projectFolderName = serviceInfo.get(GizmoServiceInfo.GIZMO_PROJECT_FOLDER);

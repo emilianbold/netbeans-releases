@@ -106,7 +106,7 @@ import org.openide.util.NbBundle;
     }
 
     public HelpCtx getHelp() {
-        return HelpCtx.DEFAULT_HELP;
+        return new HelpCtx("NewRemoteDevelopmentHostWizardP2");
     }
 
     public boolean isValid() {

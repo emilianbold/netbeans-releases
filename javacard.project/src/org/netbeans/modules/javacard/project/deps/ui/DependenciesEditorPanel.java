@@ -48,7 +48,7 @@ import java.beans.PropertyVetoException;
 import javax.swing.ListSelectionModel;
 import javax.swing.Timer;
 import org.netbeans.api.validation.adapters.DialogBuilder;
-import org.netbeans.modules.javacard.GuiUtils;
+import org.netbeans.modules.javacard.common.GuiUtils;
 import org.netbeans.modules.javacard.project.JCProject;
 import org.netbeans.modules.javacard.project.deps.ArtifactKind;
 import org.netbeans.modules.javacard.project.deps.ResolvedDependencies;

@@ -305,6 +305,9 @@ public class TaskCache {
     private List<URL> getAllFilesWithRecord(URL root, boolean onlyErrors) throws IOException {
         try {
             List<URL> result = new LinkedList<URL>();
+            if (FileUtil.getArchiveFile(root) != null) {
+                return result;
+            }
             URI rootURI = root.toURI();
             File[] cacheRoot = computePersistentFile(root, root);
             URI cacheRootURI = cacheRoot[0].toURI();
@@ -419,7 +422,7 @@ public class TaskCache {
         return false;
     }
     
-    private File[] computePersistentFile(URL root, URL file) throws IOException {
+    private File[] computePersistentFile(URL root, URL file) throws IOException {        
         try {
             URI fileURI = file.toURI();
             URI u = root.toURI();

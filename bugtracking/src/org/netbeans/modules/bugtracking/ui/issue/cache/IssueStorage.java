@@ -89,6 +89,8 @@ class IssueStorage {
     private String QUERY_SUFIX = ".q";                                  // NOI18N
     private String ISSUE_SUFIX = ".i";                                  // NOI18N
 
+    private final Map<String, Object> referenceTimeLocks = new HashMap<String, Object>();
+    
     private IssueStorage() { }
 
     public static IssueStorage getInstance() {
@@ -116,47 +118,64 @@ class IssueStorage {
     long getReferenceTime(String nameSpace) throws IOException {
         File folder = getNameSpaceFolder(nameSpace);
         File data = new File(folder, "data");
-        long ret = -1;
-        if(data.exists()) {
-            DataInputStream is = null;
-            try {
-                is = getDataInputStream(data);
-                ret = is.readLong();
-                return ret;
-            } catch (EOFException ex) {
-                BugtrackingManager.LOG.log(Level.SEVERE, data.getAbsolutePath(), ex);
-                return -1;
-            } catch (InterruptedException ex) {
-                BugtrackingManager.LOG.log(Level.WARNING, null, ex);
-                IOException ioe = new IOException(ex.getMessage());
-                ioe.initCause(ex);
-                throw ioe;
-            } finally {
-                if(BugtrackingManager.LOG.isLoggable(Level.FINE)) {
-                    String dateString = ret > -1 ? new SimpleDateFormat().format(new Date(ret)) : "null";   // NOI18N                    
-                    BugtrackingManager.LOG.log(Level.FINE, "finished reading greference time {0} - {1}", new Object[] {nameSpace, dateString}); // NOI18N
-                }            
-                try { if(is != null) is.close(); } catch (IOException e) {}
+        
+        Object lock = null;
+        synchronized(referenceTimeLocks) {
+            lock = referenceTimeLocks.get(data.getAbsolutePath());
+            if(lock == null) {
+                lock = new Object();
             }
-        } else {
-            data.createNewFile();
-            ret = System.currentTimeMillis();
-            DataOutputStream os = null;
-            try {
-                os = getDataOutputStream(data, false);
-                os.writeLong(ret);
-                return ret;
-            } catch (InterruptedException ex) {
-                BugtrackingManager.LOG.log(Level.WARNING, null, ex);
-                IOException ioe = new IOException(ex.getMessage());
-                ioe.initCause(ex);
-                throw ioe;
-            } finally {
-                if(BugtrackingManager.LOG.isLoggable(Level.FINE)) {
-                    String dateString = ret > -1 ? new SimpleDateFormat().format(new Date(ret)) : "null";   // NOI18N
-                    BugtrackingManager.LOG.log(Level.FINE, "finished writing greference time {0} - {1}", new Object[] {nameSpace, dateString}); // NOI18N
+            referenceTimeLocks.put(data.getAbsolutePath(), lock);
+        }
+        try{
+            synchronized(lock) {
+                long ret = -1;
+                if(data.exists()) {
+                    DataInputStream is = null;
+                    try {
+                        is = getDataInputStream(data);
+                        ret = is.readLong();
+                        return ret;
+                    } catch (EOFException ex) {
+                        BugtrackingManager.LOG.log(Level.SEVERE, data.getAbsolutePath(), ex);
+                        return -1;
+                    } catch (InterruptedException ex) {
+                        BugtrackingManager.LOG.log(Level.WARNING, null, ex);
+                        IOException ioe = new IOException(ex.getMessage());
+                        ioe.initCause(ex);
+                        throw ioe;
+                    } finally {
+                        if(BugtrackingManager.LOG.isLoggable(Level.FINE)) {
+                            String dateString = ret > -1 ? new SimpleDateFormat().format(new Date(ret)) : "null";   // NOI18N
+                            BugtrackingManager.LOG.log(Level.FINE, "finished reading greference time {0} - {1}", new Object[] {nameSpace, dateString}); // NOI18N
+                        }
+                        try { if(is != null) is.close(); } catch (IOException e) {}
+                    }
+                } else {
+                    data.createNewFile();
+                    ret = System.currentTimeMillis();
+                    DataOutputStream os = null;
+                    try {
+                        os = getDataOutputStream(data, false);
+                        os.writeLong(ret);
+                        return ret;
+                    } catch (InterruptedException ex) {
+                        BugtrackingManager.LOG.log(Level.WARNING, null, ex);
+                        IOException ioe = new IOException(ex.getMessage());
+                        ioe.initCause(ex);
+                        throw ioe;
+                    } finally {
+                        if(BugtrackingManager.LOG.isLoggable(Level.FINE)) {
+                            String dateString = ret > -1 ? new SimpleDateFormat().format(new Date(ret)) : "null";   // NOI18N
+                            BugtrackingManager.LOG.log(Level.FINE, "finished writing greference time {0} - {1}", new Object[] {nameSpace, dateString}); // NOI18N
+                        }
+                        try { if(os != null) os.close(); } catch (IOException e) {}
+                    }
                 }
-                try { if(os != null) os.close(); } catch (IOException e) {}
+            }
+        } finally {
+            synchronized(referenceTimeLocks) {
+                referenceTimeLocks.remove(data.getAbsolutePath());
             }
         }
     }
@@ -368,7 +387,7 @@ class IssueStorage {
 
     void storeArchivedQueryIssues(String nameSpace, String queryName, String[] ids) throws IOException {
         assert !SwingUtilities.isEventDispatchThread() : "should not access the issue storage in awt"; // NOI18N
-        BugtrackingManager.LOG.log(Level.FINE, "start storing archevid query issues {0} - {1}", new Object[] {nameSpace, queryName}); // NOI18N
+        BugtrackingManager.LOG.log(Level.FINE, "start storing archived query issues {0} - {1}", new Object[] {nameSpace, queryName}); // NOI18N
         long now = System.currentTimeMillis();
         Map<String, Long> archived = readArchivedQueryIssues(nameSpace, queryName);
         try {

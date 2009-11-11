@@ -125,7 +125,7 @@ public class CssHtmlTranslator implements CssEmbeddingProvider.Translator {
                         // <<< eof xxx
 
                         state.remove(QUTE_CUT);
-                        embeddings.add(snapshot.create("\n}\n", CSS_MIME_TYPE));
+                        embeddings.add(snapshot.create(";\n}\n", CSS_MIME_TYPE));
 
 
                     }

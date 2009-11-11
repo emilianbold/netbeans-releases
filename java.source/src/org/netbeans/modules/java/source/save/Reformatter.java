@@ -136,6 +136,10 @@ public class Reformatter implements ReformatTask {
     }
     
     public static String reformat(String text, CodeStyle style) {
+        return reformat(text, style, style.getRightMargin());
+    }
+
+    public static String reformat(String text, CodeStyle style, int rightMargin) {
         StringBuilder sb = new StringBuilder(text);
         try {
             ClassPath empty = ClassPathSupport.createClassPath(new URL[0]);
@@ -146,7 +150,7 @@ public class Reformatter implements ReformatTask {
             CompilationUnitTree tree = javacTask.parse(FileObjects.memoryFileObject("","", text)).iterator().next(); //NOI18N
             SourcePositions sp = JavacTrees.instance(ctx).getSourcePositions();
             TokenSequence<JavaTokenId> tokens = TokenHierarchy.create(text, JavaTokenId.language()).tokenSequence(JavaTokenId.language());
-            for (Diff diff : Pretty.reformat(text, tokens, new TreePath(tree), sp, style)) {
+            for (Diff diff : Pretty.reformat(text, tokens, new TreePath(tree), sp, style, rightMargin)) {
                 int start = diff.getStartOffset();
                 int end = diff.getEndOffset();
                 sb.delete(start, end);
@@ -300,6 +304,7 @@ public class Reformatter implements ReformatTask {
             }
             start = controller.getSnapshot().getOriginalOffset(start);
             end = controller.getSnapshot().getOriginalOffset(end);
+            if (start == (-1) || end == (-1)) continue;
             start += shift;
             end += shift;
             doc.remove(start, end - start);
@@ -394,10 +399,14 @@ public class Reformatter implements ReformatTask {
         }
         
         private Pretty(String text, TokenSequence<JavaTokenId> tokens, TreePath path, SourcePositions sp, CodeStyle cs, int startOffset, int endOffset) {
+            this(text, tokens, path, sp, cs, startOffset, endOffset, cs.getRightMargin());
+        }
+
+        private Pretty(String text, TokenSequence<JavaTokenId> tokens, TreePath path, SourcePositions sp, CodeStyle cs, int startOffset, int endOffset, int rightMargin) {
             this.fText = text;
             this.sp = sp;
             this.cs = cs;
-            this.rightMargin = cs.getRightMargin();
+            this.rightMargin = rightMargin;
             this.tabSize = cs.getTabSize();
             this.indentSize = cs.getIndentSize();
             this.continuationIndentSize = cs.getContinuationIndentSize();
@@ -447,8 +456,8 @@ public class Reformatter implements ReformatTask {
             return pretty.diffs;
         }
 
-        public static LinkedList<Diff> reformat(String text, TokenSequence<JavaTokenId> tokens, TreePath path, SourcePositions sp, CodeStyle cs) {
-            Pretty pretty = new Pretty(text, tokens, path, sp, cs, 0, text.length());
+        public static LinkedList<Diff> reformat(String text, TokenSequence<JavaTokenId> tokens, TreePath path, SourcePositions sp, CodeStyle cs, int rightMargin) {
+            Pretty pretty = new Pretty(text, tokens, path, sp, cs, 0, text.length(), rightMargin);
             pretty.scan(path, null);
             tokens.moveEnd();
             tokens.movePrevious();

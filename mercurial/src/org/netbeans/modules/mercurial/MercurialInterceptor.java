@@ -78,7 +78,7 @@ public class MercurialInterceptor extends VCSInterceptor {
     private final RequestProcessor parallelRP = new RequestProcessor("Mercurial FS handler", 50);
     private final HashSet<FileObject> dirStates = new HashSet<FileObject>(5);
     private static final boolean AUTOMATIC_REFRESH_ENABLED = !"true".equals(System.getProperty("versioning.mercurial.autoRefreshDisabled", "false")); //NOI18N
-    private static final boolean FULL_REPO_SCAN_ENABLED = !"true".equals(System.getProperty("versioning.mercurial.fullRepoScanDisabled", "false")); //NOI18N
+    private static final boolean FULL_REPO_SCAN_ENABLED = "true".equals(System.getProperty("versioning.mercurial.fullRepoScanEnabled", "false")); //NOI18N
 
     public MercurialInterceptor() {
         cache = Mercurial.getInstance().getFileStatusCache();
@@ -277,7 +277,7 @@ public class MercurialInterceptor extends VCSInterceptor {
         if (file.isDirectory()) return;
         // There is no point in refreshing the cache for ignored files.
         if (!HgUtils.isIgnored(file, false)) {
-            reScheduleRefresh(800, file.getParentFile());
+            reScheduleRefresh(800, file);
         }
     }
     

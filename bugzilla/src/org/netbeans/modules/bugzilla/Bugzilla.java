@@ -81,6 +81,7 @@ public class Bugzilla {
     private KenaiSupport kenaiSupport;
 
     private Bugzilla() {
+        ModuleLifecycleManager.instantiated = true;
         bcp = new BugzillaCorePlugin();
         BugzillaCorePlugin.setConfigurationCacheFile(new File(BugtrackingRuntime.getInstance().getCacheStore(), "bugzillaconfiguration"));
         brc = new BugzillaRepositoryConnector();

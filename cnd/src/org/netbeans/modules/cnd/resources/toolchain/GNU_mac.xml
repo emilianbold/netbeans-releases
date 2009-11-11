@@ -59,6 +59,7 @@ made subject to such option by the copyright holder.
         </architecture>
     </assembler>
     <linker>
+        <dynamic_library_search flags=""/>
         <dynamic_library_basic flags="-dynamiclib -install_name "/>
     </linker>
 </toolchaindefinition>

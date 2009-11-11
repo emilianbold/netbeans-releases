@@ -9,7 +9,7 @@
 	<mapID target="about_debug" url="web/debug/about_debug.html"/>
 	<mapID target="about_deploy" url="web/deploy/about_deploy.html"/>
 	<mapID target="about_filter" url="web/create/filter/about_filter.html"/>
-	<mapID target="about_framework" url="web/create/tag/framework/about_framework.html"/>
+	<mapID target="about_framework" url="web/framework/about_framework.html"/>
 	<mapID target="about_jsp_edit" url="web/create/jsp/about_jsp_edit.html"/>
 	<mapID target="about_jsp_encoding" url="web/create/jsp/about_jsp_encoding.html"/>
 	<mapID target="about_jsp_syntax" url="web/create/jsp/about_jsp_syntax.html"/>
@@ -58,22 +58,26 @@
 	<mapID target="filter_addtodd" url="web/create/filter/filter_addtodd.html"/>
 	<mapID target="filter_create" url="web/create/filter/filter_create.html"/>
 	<mapID target="filter_run" url="web/create/filter/filter_run.html"/>
-	<mapID target="framework_jsf_about" url="web/create/tag/framework/jsf/about_jsf_support.html"/>
-	<mapID target="framework_jsf_add" url="web/create/tag/framework/framework_jsf_add.html"/>
-	<mapID target="framework_jsf_create" url="web/create/tag/framework/framework_jsf_create.html"/>
-	<mapID target="framework_jsf_datatable" url="web/create/tag/framework/framework_jsf_datatable.html"/>
-	<mapID target="framework_jsf_form" url="web/create/tag/framework/framework_jsf_form.html"/>
-	<mapID target="framework_jsf_crud" url="web/create/tag/framework/framework_jsf_aboutcrud.html"/>
-	<mapID target="framework_jsf_fromentity" url="web/create/tag/framework/framework_jsf_fromentity.html"/>
-	<mapID target="framework_struts_add" url="web/create/tag/framework/framework_struts_add.html"/>
-	<mapID target="framework_struts_create" url="web/create/tag/framework/framework_struts_create.html"/>
-        <mapID target="framework_spring_about" url="web/create/tag/framework/spring/about.html"/>
-	<mapID target="framework_spring_create" url="web/create/tag/framework/spring/create.html"/>
-	<mapID target="framework_spring_add" url="web/create/tag/framework/spring/add.html"/>
-        <mapID target="framework_grails_about" url="web/create/tag/framework/grails/about.html"/>
-        <mapID target="framework_grails_create" url="web/create/tag/framework/grails/create.html"/>
-        <mapID target="framework_grails_install" url="web/create/tag/framework/grails/install.html"/>
-        <mapID target="framework_hibernate_create" url="web/create/tag/framework/hibernate/hibernate-createweb.html"/>
+	<mapID target="framework_jsf_about" url="web/framework/jsf/about.html"/>
+	<mapID target="framework_jsf_add" url="web/framework/jsf/add.html"/>
+	<mapID target="framework_jsf_create" url="web/framework/jsf/create.html"/>
+	<mapID target="framework_jsf_create_page" url="web/framework/jsf/create-page.html"/>
+	<mapID target="framework_jsf_edit" url="web/framework/jsf/edit.html"/>
+	<mapID target="framework_jsf_palette" url="web/framework/jsf/palette.html"/>
+	<mapID target="framework_jsf_form_entity" url="web/framework/jsf/form-from-entity.html"/>
+	<mapID target="framework_jsf_datatable_entity" url="web/framework/jsf/datatable-from-entity.html"/>
+	<mapID target="framework_jsf_crud" url="web/framework/jsf/about-crud.html"/>
+	<mapID target="framework_jsf_generate_pages" url="web/framework/jsf/pages-from-entities.html"/>
+	<mapID target="framework_struts_about" url="web/framework/struts/about.html"/>
+	<mapID target="framework_struts_add" url="web/framework/struts/add.html"/>
+	<mapID target="framework_struts_create" url="web/framework/struts/create.html"/>
+        <mapID target="framework_spring_about" url="web/framework/spring/about.html"/>
+	<mapID target="framework_spring_create" url="web/framework/spring/create.html"/>
+	<mapID target="framework_spring_add" url="web/framework/spring/add.html"/>
+        <mapID target="framework_grails_about" url="web/framework/grails/about.html"/>
+        <mapID target="framework_grails_create" url="web/framework/grails/create.html"/>
+        <mapID target="framework_grails_install" url="web/framework/grails/install.html"/>
+        <mapID target="framework_hibernate_create" url="web/framework/hibernate/hibernate-createweb.html"/>
         <mapID target="framework_hibernate_addsupport" url="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/hibernate/hibernate_addsupport.html"/>
         <mapID target="html_create" url="web/create/html/html_create.html"/>
 	<mapID target="jsp_compile" url="web/create/jsp/jsp_compile.html"/>

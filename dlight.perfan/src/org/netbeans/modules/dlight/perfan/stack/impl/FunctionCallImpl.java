@@ -56,46 +56,47 @@ import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
  */
 public class FunctionCallImpl extends FunctionCallWithMetric {
 
-    private String fileName;
-    private String sourceFile;
-    private final Map<FunctionMetric, Object> metrics;
+    /**
+     * TODO: review & reimplement
+     * 
+     * Current implementation doesn't follow the original idea that
+     * Function is a refference to a function (definition) (with it's source
+     * file, line number in the file, function name) and FunctionCall is an
+     * annotated code within the Function - it has metrics and offset within
+     * the Function.
+     *
+     * Currently Function [FunctionImpl] is used as a FunctionCall and, actually,
+     * every annotated line has it's OWN Function object (with OWN RefID).
+     *
+     * So in current implementation RefID of Function identifies FunctionCall
+     * in an unique way [equals relies on this now!]
+     *
+     */
     private final StringBuilder displayedName = new StringBuilder();
+    private final Map<FunctionMetric, Object> metrics;
+    private final long ref;
+    private String srcFileName = null;
 
     public FunctionCallImpl(
-            final Function function,
-            final Map<FunctionMetric, Object> metrics) {
-        super(function);
-        this.metrics = metrics;
-    }
-
-    public FunctionCallImpl(
-            final Function function, long offset,
+            final FunctionImpl function, long offset,
             final Map<FunctionMetric, Object> metrics) {
         super(function, offset);
+        this.ref = function.getRef();
         this.metrics = metrics;
         updateDisplayedName();
     }
 
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
+    public void setSourceFile(String fileName) {
+        this.srcFileName = fileName;
         updateDisplayedName();
     }
 
-    public String getFileName() {
-        return fileName;
-    }
-
-    public void setSourceFile(String sourceFile) {
-        this.sourceFile = sourceFile;
-        updateDisplayedName();
-    }
-
-    public boolean hasSourceFileDefined() {
-        return sourceFile != null;
+    public long getFunctionRefID() {
+        return ref;
     }
 
     public String getSourceFile() {
-        return sourceFile;
+        return srcFileName;
     }
 
     @Override
@@ -125,36 +126,20 @@ public class FunctionCallImpl extends FunctionCallWithMetric {
     }
 
     @Override
-    public int hashCode() {
-        int hashCode = (this.getFunction().getQuilifiedName() + fileName).hashCode();
-        int h  = hashCode;
-        h += ~(h << 9);
-        h ^=  (h >>> 14);
-        h +=  (h << 4);
-        h ^=  (h >>> 10);
-        return h;
+    public boolean equals(Object obj) {
+        if (obj == null || !(obj instanceof FunctionCallImpl)) {
+            return false;
+        }
+
+        return this.ref == ((FunctionCallImpl) obj).ref;
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final FunctionCallImpl other = (FunctionCallImpl) obj;
-        if ((this.fileName == null) ? (other.fileName != null) : !this.fileName.equals(other.fileName)) {
-            return false;
-        }
-        if ((this.getFunction() == null) ? (other.getFunction() != null) : !this.getFunction().getQuilifiedName().equals(other.getFunction().getQuilifiedName())) {
-            return false;
-        }
-
-        return true;
+    public int hashCode() {
+        int hash = 7;
+        hash = 97 * hash + (int) (this.ref ^ (this.ref >>> 32));
+        return hash;
     }
-
-
 
     @Override
     public boolean hasMetric(String metric_id) {
@@ -188,8 +173,8 @@ public class FunctionCallImpl extends FunctionCallWithMetric {
                 displayedName.append("<unknown>"); // NOI18N
             }
 
-            if (fileName != null) {
-                displayedName.append(", " + fileName); // NOI18N
+            if (srcFileName != null) {
+                displayedName.append(", " + srcFileName); // NOI18N
                 if (hasOffset()) {
                     displayedName.append(":").append(getOffset()); // NOI18N
                 }
@@ -200,7 +185,6 @@ public class FunctionCallImpl extends FunctionCallWithMetric {
             }
         }
     }
-
     private static final Pattern FUNCTION_PATTERN = Pattern.compile("\\s+(.+?)(?:\\s+\\+\\s+0x([0-9a-fA-F]+))?(?:,\\s+line\\s+(\\d+)\\s+in\\s+\"(.+)\")?"); // NOI18N
 
     public static List<FunctionCall> parseStack(ListIterator<String> it) {
@@ -233,7 +217,7 @@ public class FunctionCallImpl extends FunctionCallWithMetric {
             }
             FunctionCallImpl call = new FunctionCallImpl(func, lineNumber, new HashMap<FunctionMetric, Object>());
             if (m.group(4) != null) {
-                call.setFileName(m.group(4));
+                call.setSourceFile(m.group(4));
             }
 
             return call;

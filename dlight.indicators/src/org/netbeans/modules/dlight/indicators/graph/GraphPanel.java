@@ -47,7 +47,6 @@ import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.util.Iterator;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -58,10 +57,8 @@ import javax.swing.JLayeredPane;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import org.netbeans.modules.dlight.spi.indicator.IndicatorActionsProvider;
 import org.netbeans.modules.dlight.util.ui.DLightUIPrefs;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.InstanceContent;
+import org.openide.awt.Actions;
 
 /**
  * Convenient base class for indicator components.
@@ -177,7 +174,9 @@ public class GraphPanel<G extends JComponent, L extends JComponent> extends JLay
         }
         JPopupMenu pm = new JPopupMenu();
         for (Action action : actions) {
-            pm.add(new JMenuItem(action));
+            JMenuItem menuItem = new JMenuItem();
+            Actions.connect(menuItem, action, true); // Actions.connect() takes care of mnemonics
+            pm.add(menuItem);
         }
         return pm;
 

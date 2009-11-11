@@ -401,8 +401,10 @@ public class JsfElExpression extends ELExpression {
 
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
-                    HtmlParserResult result = (HtmlParserResult)resultIterator.
-                        getParserResult(anchor);
+                    HtmlParserResult result = (HtmlParserResult)getEmbeddedParserResult(resultIterator, "text/html"); //NOI18N
+                    if(result == null) {
+                        return ;
+                    }
                     CompositeComponentModel.Factory ccmodelFactory = 
                         (CompositeComponentModel.Factory)JsfPageModelFactory.
                         getFactory(CompositeComponentModel.Factory.class);

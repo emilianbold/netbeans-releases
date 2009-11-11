@@ -50,6 +50,7 @@ import java.util.Iterator;
 import java.util.Set;
 import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.debugger.jpda.SmartSteppingFilter;
+import org.openide.util.WeakListeners;
 
 
 /**
@@ -69,15 +70,18 @@ public class SmartSteppingFilterImpl implements SmartSteppingFilter {
     private final Properties classFiltersProperties = Properties.getDefault().
             getProperties("debugger").getProperties("sources").
             getProperties("class_filters");
+    private final PropertyChangeListener exclusionPatternsListener;
 
     {
-        PropertyChangeListener propListener = new PropertyChangeListener() {
+        exclusionPatternsListener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 setExclusionPatterns ();
             }
         };
-        options.addPropertyChangeListener(propListener);
-        classFiltersProperties.addPropertyChangeListener(propListener);
+        options.addPropertyChangeListener(WeakListeners.propertyChange(
+                exclusionPatternsListener, options));
+        classFiltersProperties.addPropertyChangeListener(WeakListeners.propertyChange(
+                exclusionPatternsListener, classFiltersProperties));
         setExclusionPatterns ();
     }
 

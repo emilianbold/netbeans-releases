@@ -52,6 +52,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.ui.customizer.SingleModuleProperties;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
@@ -84,12 +87,24 @@ public class NbModuleProjectGenerator {
     
     /** Use static factory methods instead. */
     private NbModuleProjectGenerator() {/* empty constructor*/}
+
+    private static final String loggerName = "org.netbeans.ui.metrics.nbmodule"; // NOI18N
+    private static final String loggerKey = "USG_PROJECT_CREATE_NBMODULE"; // NOI18N
+
+    // http://wiki.netbeans.org/UsageLoggingSpecification
+    private static void logUsage(String type) {
+        LogRecord logRecord = new LogRecord(Level.INFO, loggerKey);
+        logRecord.setLoggerName(loggerName);
+        logRecord.setParameters(new Object[] {type});
+        Logger.getLogger(loggerName).log(logRecord);
+    }
     
     /** Generates standalone NetBeans Module. */
     public static void createStandAloneModule(final File projectDir, final String cnb,
             final String name, final String bundlePath,
             final String layerPath, final String platformID) throws IOException {
         try {
+            logUsage("StandAloneModule"); // NOI18N
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
                 public Void run() throws IOException {
                     final FileObject dirFO = FileUtil.createFolder(projectDir);
@@ -122,6 +137,7 @@ public class NbModuleProjectGenerator {
             final String name, final String bundlePath,
             final String layerPath, final File suiteDir) throws IOException {
         try {
+            logUsage("SuiteComponentModule"); // NOI18N
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
                 public Void run() throws IOException {
                     final FileObject dirFO = FileUtil.createFolder(projectDir);
@@ -155,6 +171,7 @@ public class NbModuleProjectGenerator {
             final String name, final String bundlePath, final File suiteDir,
             final File license, final File[] jars) throws IOException {
         try {
+            logUsage("SuiteLibraryModule"); // NOI18N
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
                 public Void run() throws IOException {
                     final FileObject dirFO = FileUtil.createFolder(projectDir);
@@ -220,6 +237,7 @@ public class NbModuleProjectGenerator {
     public static void createNetBeansOrgModule(final File projectDir, final String cnb,
             final String name, final String bundlePath, final String layerPath) throws IOException {
         try {
+            logUsage("NetBeansOrgModule"); // NOI18N
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
                 public Void run() throws IOException {
                     File nborg = ModuleList.findNetBeansOrg(projectDir);

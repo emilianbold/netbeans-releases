@@ -42,12 +42,10 @@ package org.netbeans.modules.javacard.wizard;
 
 import com.sun.javacard.AID;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.modules.javacard.Utils;
-import org.netbeans.modules.javacard.api.ProjectKind;
+import org.netbeans.modules.javacard.common.Utils;
 import org.netbeans.modules.javacard.constants.ProjectPropertyNames;
 import org.netbeans.modules.javacard.constants.ProjectTemplateWizardKeys;
 import org.netbeans.modules.javacard.constants.ProjectWizardKeys;
-import org.netbeans.modules.javacard.project.ui.ProjectDefinitionWizardPanel;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
@@ -63,7 +61,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import org.netbeans.modules.javacard.project.ui.ClassicPackageWizardPanel;
+import org.netbeans.modules.javacard.spi.ProjectKind;
 import org.netbeans.modules.projecttemplates.ProjectCreator;
 import org.openide.util.HelpCtx;
 

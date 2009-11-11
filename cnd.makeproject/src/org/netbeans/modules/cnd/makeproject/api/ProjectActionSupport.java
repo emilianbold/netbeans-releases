@@ -351,6 +351,7 @@ public class ProjectActionSupport {
                         ProjectActionHandler handler = currentHandler = factory.createHandler();
                         initHandler(handler, pae, paes);
                         handler.execute(ioTab);
+
                         foundFactory = true;
                         break;
                     }
@@ -469,7 +470,7 @@ public class ProjectActionSupport {
                 }
             }
             // Check existence of executable
-            if (!IpeUtils.isPathAbsolute(executable) && (executable.startsWith(".") || executable.indexOf(File.separatorChar) > 0)) { // NOI18N
+            if (!IpeUtils.isPathAbsolute(executable)) { // NOI18N
                 //executable is relative to run directory - convert to absolute and check. Should be safe (?).
                 String runDir = pae.getProfile().getRunDir();
                 if (runDir == null || runDir.length() == 0) {

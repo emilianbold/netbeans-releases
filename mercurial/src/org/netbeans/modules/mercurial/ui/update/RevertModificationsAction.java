@@ -175,13 +175,7 @@ public class RevertModificationsAction extends ContextAction {
             DialogDisplayer.getDefault().notifyLater(e);
         }
 
-        if (revStr == null) {
-            for (File file : revertFiles) {
-                HgUtils.forceStatusRefresh(file);
-            }
-        } else {
-            HgUtils.forceStatusRefresh(revertFiles.get(0));
-        }
+        Mercurial.getInstance().getFileStatusCache().refreshAllRoots(Collections.singletonMap(repository, (Set<File>)new HashSet<File>(revertFiles)));
 
         logger.outputInRed(
                 NbBundle.getMessage(RevertModificationsAction.class,

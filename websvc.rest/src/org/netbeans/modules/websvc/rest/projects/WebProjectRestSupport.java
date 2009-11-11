@@ -53,8 +53,6 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
-import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
-import org.netbeans.modules.j2ee.dd.api.web.ServletMapping25;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
@@ -317,49 +315,54 @@ public class WebProjectRestSupport extends WebRestSupport {
         Object[] params = new Object[3];
         params[0] = LogUtils.WS_STACK_JAXRS;
         params[1] = project.getClass().getName();
-        params[2] = "RESOURCE"; // NOI18N
+        params[2] = "REST RESOURCE"; // NOI18N
         LogUtils.logWsDetect(params);
     }
 
     @Override
     public String getApplicationPath() throws IOException {
-        WebApp webApp = findWebApp();
-        if (webApp == null) {
-            String applPath = getApplicationPathFromAnnotations();
-            return (applPath == null ? super.getApplicationPath() : applPath);
+        String pathFromDD = getApplicationPathFromDD();
+        String applPath = getApplicationPathFromAnnotations(pathFromDD);
+        return (applPath == null ? super.getApplicationPath() : applPath);
+    }
+
+    private String getApplicationPathFromAnnotations(final String applPathFromDD) {
+        List<RestApplication> restApplications = getRestApplications();
+        if (applPathFromDD == null) {
+            return getApplicationPathFromDialog(restApplications);
         } else {
-            ServletMapping sm = getRestServletMapping(webApp);
-            if (sm == null) {
-                String applPath = getApplicationPathFromAnnotations();
-                return (applPath == null ? super.getApplicationPath() : applPath);
+            if (restApplications.size() == 0) {
+                return applPathFromDD;
             } else {
-                String urlPattern = super.getApplicationPath();
-                if (sm instanceof ServletMapping25) {
-                    String[] urlPatterns = ((ServletMapping25)sm).getUrlPatterns();
-                    if (urlPatterns.length > 0) {
-                        urlPattern = urlPatterns[0];
+                boolean found = false;
+                for (RestApplication appl: restApplications) {
+                    if (applPathFromDD.equals(appl.getApplicationPath())) {
+                        found = true;
+                        break;
                     }
-                } else {
-                    urlPattern = sm.getUrlPattern();
                 }
-                if (urlPattern.endsWith("*")) {
-                    urlPattern = urlPattern.substring(0, urlPattern.length()-1);
+                if (!found) {
+                    restApplications.add(new RestApplication() {
+                        public String getApplicationPath() {
+                            return applPathFromDD;
+                        }
+
+                        public String getApplicationClass() {
+                            return "web.xml"; //NOI18N
+                        }
+                    });
                 }
-                if (urlPattern.endsWith("/")) {
-                    urlPattern = urlPattern.substring(0, urlPattern.length()-1);
-                }
-                return urlPattern;
+                return getApplicationPathFromDialog(restApplications);
             }
         }
     }
 
-    private String getApplicationPathFromAnnotations() {
-        List<RestApplication> restApplications = getRestApplications();
+    private String getApplicationPathFromDialog(List<RestApplication> restApplications) {
         if (restApplications.size() == 1) {
             return restApplications.get(0).getApplicationPath();
-        } else if (restApplications.size() > 1) {
+        } else {
             RestApplicationsPanel panel = new RestApplicationsPanel(restApplications);
-            DialogDescriptor desc = new DialogDescriptor(panel, 
+            DialogDescriptor desc = new DialogDescriptor(panel,
                     NbBundle.getMessage(WebProjectRestSupport.class,"TTL_RestResourcesPath"));
             DialogDisplayer.getDefault().notify(desc);
             if (NotifyDescriptor.OK_OPTION.equals(desc.getValue())) {
@@ -382,27 +385,6 @@ public class WebProjectRestSupport extends WebRestSupport {
             }
         }
         return false;
-    }
-
-    private String setApplicationConfigProperty(boolean annotationConfigAvailable) {
-        ApplicationConfigPanel configPanel = new ApplicationConfigPanel(annotationConfigAvailable);
-        DialogDescriptor desc = new DialogDescriptor(configPanel,
-                NbBundle.getMessage(WebProjectRestSupport.class, "TTL_ApplicationConfigPanel"));
-        DialogDisplayer.getDefault().notify(desc);
-        if (NotifyDescriptor.OK_OPTION.equals(desc.getValue())) {
-            String configType = configPanel.getConfigType();
-            setProjectProperty(WebRestSupport.PROP_REST_CONFIG_TYPE, configType);
-            if (WebRestSupport.CONFIG_TYPE_IDE.equals(configType)) {
-                String applicationPath = configPanel.getApplicationPath();
-                if (applicationPath.startsWith("/")) {
-                    applicationPath = applicationPath.substring(1);
-                }
-                setProjectProperty(WebRestSupport.PROP_REST_RESOURCES_PATH, applicationPath);
-            } else if (WebRestSupport.CONFIG_TYPE_DD.equals(configType)) {
-                return configPanel.getApplicationPath();
-            }
-        }
-        return null;
     }
    
 }

@@ -412,7 +412,7 @@ private void btnRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         String dn = arch.getName() == null ? arch.getArtifactId() : arch.getName();
         nd.setName(dn);
         nd.setDisplayName(NbBundle.getMessage(ChooseArchetypePanel.class, "TIT_Archetype_Node_Name", dn, arch.getVersion()));
-        nd.setIconBaseWithExtension("org/netbeans/modules/maven/Maven2Icon.gif"); //NOI18N
+        nd.setIconBaseWithExtension("org/netbeans/modules/maven/resources/Maven2Icon.gif"); //NOI18N
         nd.setValue(PROP_ARCHETYPE, arch);
         return new Node[] { nd };
     }

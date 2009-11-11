@@ -48,6 +48,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.util.prefs.Preferences;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
@@ -140,7 +141,14 @@ public class MavenProjectRestSupport extends WebRestSupport {
 
     @Override
     public void ensureRestDevelopmentReady() throws IOException {
-        addResourceConfigToWebApp(RestSupport.REST_SERVLET_ADAPTOR_MAPPING);
+        String configType = getProjectProperty(PROP_REST_CONFIG_TYPE);
+        if (configType == null && getApplicationPathFromDD() == null) {
+            String resourceUrl = setApplicationConfigProperty(false);
+            if (resourceUrl != null) {
+                addResourceConfigToWebApp(resourceUrl);
+            }
+        }
+
         addSwdpLibrary();
     }
 
@@ -185,97 +193,6 @@ public class MavenProjectRestSupport extends WebRestSupport {
             }            
         }
     }
-//
-//    private boolean hasRestServletAdaptor(WebApp webApp) {
-//        return getRestServletAdaptor(webApp) != null;
-//    }
-//
-//    private Servlet getRestServletAdaptor(WebApp webApp) {
-//        if (webApp != null) {
-//            for (Servlet s : webApp.getServlet()) {
-//                if (REST_SERVLET_ADAPTOR.equals(s.getServletName())) {
-//                    return s;
-//                }
-//            }
-//        }
-//        return null;
-//    }
-//
-//    private ServletMapping getRestServletMapping(WebApp webApp) {
-//        for (ServletMapping sm : webApp.getServletMapping()) {
-//            if (REST_SERVLET_ADAPTOR.equals(sm.getServletName())) {
-//                return sm;
-//            }
-//        }
-//        return null;
-//    }
-//
-//    private boolean hasRestServletAdaptor() {
-//        try {
-//            return hasRestServletAdaptor(getWebApp());
-//        } catch (IOException ioe) {
-//            Exceptions.printStackTrace(ioe);
-//            return false;
-//        }
-//    }
-//
-//    private void addResourceConfigToWebApp() throws IOException {
-//        FileObject ddFO = getWebXml();
-//        WebApp webApp = getWebApp();
-//        if (webApp == null) {
-//            return;
-//        }
-//        boolean needsSave = false;
-//        try {
-//            Servlet adaptorServlet = getRestServletAdaptor(webApp);
-//            if (adaptorServlet == null) {
-//                adaptorServlet = (Servlet) webApp.createBean("Servlet");
-//                adaptorServlet.setServletName(REST_SERVLET_ADAPTOR);
-//                adaptorServlet.setServletClass(getServletAdapterClass());
-//                adaptorServlet.setLoadOnStartup(BigInteger.valueOf(1));
-//                webApp.addServlet(adaptorServlet);
-//                needsSave = true;
-//            }
-//
-//            ServletMapping sm = getRestServletMapping(webApp);
-//            if (sm == null) {
-//                sm = (ServletMapping) webApp.createBean("ServletMapping");
-//                sm.setServletName(adaptorServlet.getServletName());
-//                sm.setUrlPattern(REST_SERVLET_ADAPTOR_MAPPING);
-//                webApp.addServletMapping(sm);
-//                needsSave = true;
-//            }
-//            if (needsSave) {
-//                webApp.write(ddFO);
-//            }
-//        } catch (IOException ioe) {
-//            throw ioe;
-//        } catch (ClassNotFoundException ex) {
-//            throw new IllegalArgumentException(ex);
-//        }
-//    }
-//
-//    private void removeResourceConfigFromWebApp() throws IOException {
-//        FileObject ddFO = getWebXml();
-//        WebApp webApp = getWebApp();
-//        if (webApp == null) {
-//            return;
-//        }
-//        boolean needsSave = false;
-//        Servlet restServlet = getRestServletAdaptor(webApp);
-//        if (restServlet != null) {
-//            webApp.removeServlet(restServlet);
-//            needsSave = true;
-//        }
-//        ServletMapping sm = getRestServletMapping(webApp);
-//        if (sm != null) {
-//            webApp.removeServletMapping(sm);
-//            needsSave = true;
-//        }
-//        if (needsSave) {
-//            webApp.write(ddFO);
-//        }
-//    }
 
     private FileObject getApplicationContextXml() {
         J2eeModuleProvider provider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
@@ -497,6 +414,33 @@ public class MavenProjectRestSupport extends WebRestSupport {
         params[1] = project.getClass().getName();
         params[2] = "RESOURCE"; // NOI18N
         LogUtils.logWsDetect(params);
+    }
+
+    @Override
+    public String getProjectProperty(String name) {
+        Preferences prefs = ProjectUtils.getPreferences(project, MavenProjectRestSupport.class, true);
+        if (prefs != null) {
+            return prefs.get(name, null);
+        }
+        return null;
+    }
+
+    @Override
+    public void setProjectProperty(String name, String value) {
+        Preferences prefs = ProjectUtils.getPreferences(project, MavenProjectRestSupport.class, true);
+        if (prefs != null) {
+            prefs.put(name, value);
+        }
+    }
+
+    @Override
+    public void removeProjectProperties(String[] propertyNames) {
+        Preferences prefs = ProjectUtils.getPreferences(project, MavenProjectRestSupport.class, true);
+        if (prefs != null) {
+            for (String p : propertyNames) {
+                prefs.remove(p);
+            }
+        }
     }
    
 }

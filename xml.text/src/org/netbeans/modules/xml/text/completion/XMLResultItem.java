@@ -165,24 +165,8 @@ class XMLResultItem implements CompletionItem {
                 if (len == replacementLength) {
                     component.setCaretPosition(offset + len);
                 } else {
-                    boolean isTextRemovingAllowable = true;
-
-                    //+++ fix for issue #166462
-                    //    (http://www.netbeans.org/issues/show_bug.cgi?id=166462)
-                    // check that the next XML document text is a correct different
-                    // XML tag - it must no be removed
-                    XMLSyntaxSupport support = (XMLSyntaxSupport)
-                        org.netbeans.editor.Utilities.getSyntaxSupport(component);
-                    TokenItem tokenItem = support.getTokenChain(offset, doc.getLength());
-                    isTextRemovingAllowable = (tokenItem == null);
-                    if (! isTextRemovingAllowable) {
-                        TokenID tokenID = tokenItem.getTokenID();
-                        isTextRemovingAllowable = (tokenID != null) &&
-                            (tokenID.getNumericID() != XMLDefaultTokenContext.TAG_ID);
-                    }
-                    //+++ end of fix for issue #166462
-
-                    if (isTextRemovingAllowable) {
+                    //+++ fix for issues #166462, #173122
+                    if (isTextRemovingAllowable(component, doc, replaceToText, offset)) {
                         doc.remove(offset, len);
                     }
                     doc.insertString(offset, replaceToText, null);
@@ -198,7 +182,7 @@ class XMLResultItem implements CompletionItem {
             }
             //reformat the line
             //((ExtFormatter)doc.getFormatter()).reformat(doc, Utilities.getRowStart(doc, offset), offset+text.length(), true);
-        } catch( BadLocationException exc ) {
+        } catch (BadLocationException exc) {
             return false;    //not sucessfull
             // } catch (IOException e) {
             //     return false;
@@ -207,7 +191,41 @@ class XMLResultItem implements CompletionItem {
         }
         return true;
     }
-    
+
+    //+++ fix for issues #166462, #173122
+    //    (http://www.netbeans.org/issues/show_bug.cgi?id=166462)
+    //    (http://www.netbeans.org/issues/show_bug.cgi?id=173122)
+    private boolean isTextRemovingAllowable(JTextComponent component,
+        BaseDocument doc, String replaceToText, int offset) throws BadLocationException {
+        XMLSyntaxSupport support = (XMLSyntaxSupport)
+            org.netbeans.editor.Utilities.getSyntaxSupport(component);
+        TokenItem tokenItem = support.getTokenChain(offset, doc.getLength());
+        boolean isTextRemovingAllowable = (tokenItem == null);
+        if (! isTextRemovingAllowable) {
+            String tokenItemImage = tokenItem.getImage();
+            if ((tokenItemImage != null) && (tokenItemImage.length() > 0)) {
+                int diffPos = getFirstDiffPosition(tokenItemImage, replaceToText);
+                diffPos = diffPos == 0 ? 1 : diffPos;
+                if ((diffPos > -1) && 
+                    (diffPos <= Math.min(tokenItemImage.length(), replaceToText.length()))) {
+                    String
+                        strImg = tokenItemImage.length() >= diffPos ?
+                            tokenItemImage.substring(0, diffPos) : tokenItemImage,
+                        strText = replaceToText.length() >= diffPos ?
+                            replaceToText.substring(0, diffPos) : replaceToText;
+
+                    TokenID tokenID = tokenItem.getTokenID();
+                    int id = (tokenID != null ? tokenID.getNumericID() : -1);
+
+                    isTextRemovingAllowable = (id == XMLDefaultTokenContext.TAG_ID ?
+                        ! strImg.startsWith(strText) /* <= for tags */ :
+                        strImg.startsWith(strText)   /* <= for attributes */);
+                }
+            }
+        }
+        return isTextRemovingAllowable;
+    }
+
     /**
      * Calculates the index of the first difference between two strings. 
      * If they are differenent starting the first character, then 0 is returned.

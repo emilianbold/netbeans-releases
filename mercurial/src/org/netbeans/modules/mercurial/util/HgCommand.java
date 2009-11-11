@@ -1193,10 +1193,9 @@ public class HgCommand {
             command.add(revStr);
         }
 
-        // Make sure revsions listed from "tip" down to "tip - limit"
-        if(limit >= 0 && dateStr == null && revStr == null){
-            command.add(HG_FLAG_REV_CMD);
-            command.add(HG_LOG_REV_TIP_RANGE);
+        if (revStr == null) {
+            // from is probably higher than head revision, it's useless to run the command
+            return Collections.emptyList();
         }
 
         File tempFolder = Utils.getTempFolder(false);
@@ -1464,6 +1463,13 @@ public class HgCommand {
         return (toInt > -1) ? to : HG_STATUS_FLAG_TIP_CMD;
     }
 
+    /**
+     *
+     * @param from
+     * @param to
+     * @param headRev
+     * @return revision string or null if from is outside of valid limits - e.g. from is higher than headRev
+     */
     private static String handleRevNumbers(String from, String to, String headRev){
         int fromInt = -1;
         int toInt = -1;
@@ -1497,8 +1503,7 @@ public class HgCommand {
             toInt = headRevInt;
         }
         if (headRevInt > -1 && fromInt > headRevInt) {
-            from = headRev;
-            fromInt = headRevInt;
+            return null;
         }
 
         // Handle revision ranges
@@ -1913,40 +1918,15 @@ public class HgCommand {
         if (repository == null) return;
         if (addFiles.size() == 0) return;
         List<String> basicCommand = new ArrayList<String>();
-        int basicCommandSize = 0, commandSize = 0; // limitation for windows max command line size - #168155
         basicCommand.add(getHgCommand());
         basicCommand.add(HG_ADD_CMD);
         basicCommand.add(HG_OPT_REPOSITORY);
         basicCommand.add(repository.getAbsolutePath());
-        for (String s : basicCommand) {
-            basicCommandSize += s.length() + 1;
-        }
-        // iterating through all files, cannot add all files immediately, too many files can cause troubles
-        // adding files to the command one by one and testing if the command's size doesn't exceed OS limits
-        ListIterator<File> iterator = addFiles.listIterator();
-        while (iterator.hasNext()) {
-            // each loop will call one add command
+
+        List<List<String>> attributeGroups = splitAttributes(basicCommand, addFiles, false);
+        for (List<String> attributes : attributeGroups) {
             List<String> command = new LinkedList<String>(basicCommand);
-            commandSize = basicCommandSize;
-            boolean fileAdded = false;
-            while (iterator.hasNext()) {
-                File f = iterator.next();
-                if (f.isDirectory()) {
-                    continue;
-                }
-                // test if limits aren't exceeded
-                commandSize += f.getAbsolutePath().length() + 1;
-                if (fileAdded // at least one file must be added
-                        && isTooLongCommand(commandSize)) {
-                    Mercurial.LOG.fine("doAdd: adding files in loop");  //NOI18N
-                    iterator.previous();
-                    break;
-                }
-                // We do not look for files to ignore as we should not here
-                // with a file to be ignored.
-                command.add(f.getAbsolutePath());
-                fileAdded = true;
-            }
+            command.addAll(attributes);
             List<String> list = exec(command);
             if (!list.isEmpty() && !isErrorAlreadyTracked(list.get(0))
                      && !isAddingLine(list.get(0))) {
@@ -2290,7 +2270,7 @@ public class HgCommand {
      * @throws org.netbeans.modules.mercurial.HgException
      */
     public static Map<File, FileInformation> getAllStatus(File repository, File dir)  throws HgException{
-        return getDirStatusWithFlags(repository, dir, HG_STATUS_FLAG_ALL_CMD, true);
+        return getDirStatusWithFlags(repository, Collections.singletonList(dir), HG_STATUS_FLAG_ALL_CMD, true);
     }
 
     /**
@@ -2298,12 +2278,12 @@ public class HgCommand {
      * that is modified, locally added, locally removed, locally deleted, locally new and ignored.
      *
      * @param File repository of the mercurial repository's root directory
-     * @param File dir of the directory of interest
+     * @param dirs directories of interest
      * @return Map of files and status for all files of interest in the directory of interest, map contains normalized files as keys
      * @throws org.netbeans.modules.mercurial.HgException
      */
-    public static Map<File, FileInformation> getInterestingStatus(File repository, File dir)  throws HgException{
-        return getDirStatusWithFlags(repository, dir, HG_STATUS_FLAG_INTERESTING_CMD, true);
+    public static Map<File, FileInformation> getInterestingStatus(File repository, List<File> dirs)  throws HgException{
+        return getDirStatusWithFlags(repository, dirs, HG_STATUS_FLAG_INTERESTING_CMD, true);
     }
 
     /**
@@ -2315,7 +2295,7 @@ public class HgCommand {
      * @throws org.netbeans.modules.mercurial.HgException
      */
     public static Map<File, FileInformation> getUnknownStatus(File repository, File dir)  throws HgException{
-        Map<File, FileInformation> files = getDirStatusWithFlags(repository, dir, HG_STATUS_FLAG_UNKNOWN_CMD, false);
+        Map<File, FileInformation> files = getDirStatusWithFlags(repository, Collections.singletonList(dir), HG_STATUS_FLAG_UNKNOWN_CMD, false);
         int share = SharabilityQuery.getSharability(dir == null ? repository : dir);
         for (Iterator i = files.keySet().iterator(); i.hasNext();) {
             File file = (File) i.next();
@@ -2339,46 +2319,16 @@ public class HgCommand {
         if (repository == null) return;
         if (removeFiles.size() == 0) return;
         List<String> basicCommand = new ArrayList<String>();
-        int basicCommandSize = 0, commandSize = 0; // limitation for windows max command line size - #168155
         basicCommand.add(getHgCommand());
         basicCommand.add(HG_REMOVE_CMD);
         basicCommand.add(HG_OPT_REPOSITORY);
         basicCommand.add(repository.getAbsolutePath());
         basicCommand.add(HG_REMOVE_FLAG_FORCE_CMD);
-        for (String s : basicCommand) {
-            basicCommandSize += s.length() + 1;
-        }
-        // iterating through all files, cannot remove all files at once, too many files can cause troubles
-        // removing files to the command one by one and testing if the command's size doesn't exceed OS limits
-        ListIterator<File> iterator = removeFiles.listIterator();
-        while (iterator.hasNext()) {
-            // each loop will call one remove command
+
+        List<List<String>> attributeGroups = splitAttributes(basicCommand, removeFiles, false);
+        for (List<String> attributes : attributeGroups) {
             List<String> command = new LinkedList<String>(basicCommand);
-            commandSize = basicCommandSize;
-            boolean fileAdded = false;
-            while (iterator.hasNext()) {
-                File f = iterator.next();
-                if (f.isDirectory()) {
-                    continue;
-                }
-                String filePath;
-                try {
-                    filePath = f.getCanonicalPath();
-                } catch (IOException ioe) {
-                    Mercurial.LOG.log(Level.INFO, null, ioe); // NOI18N
-                    filePath = f.getAbsolutePath(); // don't give up
-                }
-                // test if limits aren't exceeded
-                commandSize += filePath.length() + 1;
-                if (fileAdded // at least one file must be added
-                        && isTooLongCommand(commandSize)) {
-                    Mercurial.LOG.fine("doAdd: removing files in a loop"); //NOI18N
-                    iterator.previous();
-                    break;
-                }
-                command.add(filePath);
-                fileAdded = true;
-            }
+            command.addAll(attributes);
             List<String> list = exec(command);
             if (!list.isEmpty()) {
                 handleError(command, list, list.get(0), logger);
@@ -2546,15 +2496,15 @@ public class HgCommand {
         return list;
     }
 
-    private static Map<File, FileInformation> getDirStatusWithFlags(File repository, File dir, String statusFlags, boolean bIgnoreUnversioned)  throws HgException{
+    private static Map<File, FileInformation> getDirStatusWithFlags(File repository, List<File> dirs, String statusFlags, boolean bIgnoreUnversioned)  throws HgException{
         if (repository == null) return null;
         long startTime = 0;
         if (Mercurial.STATUS_LOG.isLoggable(Level.FINER)) {
-            Mercurial.STATUS_LOG.finer("getDirStatusWithFlags: starting for " + dir.getAbsolutePath()); //NOI18N
+            Mercurial.STATUS_LOG.finer("getDirStatusWithFlags: starting for " + dirs); //NOI18N
             startTime = System.currentTimeMillis();
         }
         FileInformation prev_info = null;
-        List<String> list = doRepositoryDirStatusCmd(repository, dir, statusFlags);
+        List<String> list = doRepositoryDirStatusCmd(repository, dirs, statusFlags);
 
         Map<File, FileInformation> repositoryFiles = new HashMap<File, FileInformation>(list.size());
 
@@ -2617,7 +2567,7 @@ public class HgCommand {
         }
 
         if (Mercurial.STATUS_LOG.isLoggable(Level.FINER)) {
-            Mercurial.STATUS_LOG.finer("getDirStatusWithFlags for " + dir.getAbsolutePath() + " lasted " + (System.currentTimeMillis() - startTime)); //NOI18N
+            Mercurial.STATUS_LOG.finer("getDirStatusWithFlags for " + dirs + " lasted " + (System.currentTimeMillis() - startTime)); //NOI18N
         }
         return repositoryFiles;
     }
@@ -2700,7 +2650,7 @@ public class HgCommand {
     /**
      * Gets hg status command output cmdOutput for the specified status flags for a given repository and directory
      */
-    private static List<String> doRepositoryDirStatusCmd(File repository, File dir, String statusFlags)  throws HgException{
+    private static List<String> doRepositoryDirStatusCmd(File repository, List<File> dirs, String statusFlags)  throws HgException{
         List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
@@ -2711,37 +2661,38 @@ public class HgCommand {
         command.add(repository.getAbsolutePath());
         command.add(HG_OPT_CWD_CMD);
         command.add(repository.getAbsolutePath());
-        if (dir != null) {
-            command.add(dir.getAbsolutePath());
-        } else {
-            command.add(repository.getAbsolutePath());
+        List<List<String>> attributeGroups = splitAttributes(command, dirs, true);
+        List<String> commandOutput = new LinkedList<String>();
+        for (List<String> attributes : attributeGroups) {
+            List<String> finalCommand = new LinkedList<String>(command);
+            finalCommand.addAll(attributes);
+            List<String> list = exec(finalCommand);
+            if (!list.isEmpty() && isErrorNoRepository(list.get(0))) {
+                OutputLogger logger = OutputLogger.getLogger(repository.getAbsolutePath());
+                try {
+                    handleError(finalCommand, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"), logger);
+                } finally {
+                    logger.closeLog();
+                }
+            } else if (HgUtils.hasResolveCommand(Mercurial.getInstance().getVersion())) {
+                try {
+                    List<String> unresolved = getUnresolvedFiles(repository, attributes);
+                    list.addAll(unresolved);
+                } catch (HgException ex) {
+                    //
+                }
+            }
+            commandOutput.addAll(list);
         }
 
-        List<String> list =  exec(command);
-        if (!list.isEmpty() && isErrorNoRepository(list.get(0))) {
-            OutputLogger logger = OutputLogger.getLogger(repository.getAbsolutePath());
-            try {
-                handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"), logger);
-            } finally {
-                logger.closeLog();
-            }
-        } else if (HgUtils.hasResolveCommand(Mercurial.getInstance().getVersion())) {
-            try {
-                List<String> unresolved = getUnresolvedFiles(repository, dir == null ? repository : dir);
-                list.addAll(unresolved);
-            } catch (HgException ex) {
-                //
-            }
-        }
-
-        return list;
+        return commandOutput;
     }
 
     /**
      * Gets unresolved files from a previous merge
      */
-    private static List<String> getUnresolvedFiles (File repository, File dir) throws HgException {
-        assert dir != null;
+    private static List<String> getUnresolvedFiles (File repository, List<String> attributes) throws HgException {
+        assert attributes != null;
         List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
@@ -2752,7 +2703,7 @@ public class HgCommand {
         command.add(repository.getAbsolutePath());
         command.add(HG_OPT_CWD_CMD);
         command.add(repository.getAbsolutePath());
-        command.add(dir.getAbsolutePath());
+        command.addAll(attributes);
         
         List<String> list =  exec(command);
         // filter out resolved files - they could be wrongly considered as removed - common R status
@@ -3682,5 +3633,49 @@ public class HgCommand {
         Utils.copyStreamsCloseAll(new FileOutputStream(styleFile), isStyle);
 
         return HG_ARGUMENT_STYLE + styleFile.getAbsolutePath();
+    }
+
+    /**
+     * Splits attributes into groups so the final length of the command does not outgrow the max length of commandline
+     * @param basicCommand basic command
+     * @param files files to add
+     * @param includeFolders if set to false, folders will not be added to attributes
+     * @return
+     */
+    private static List<List<String>> splitAttributes (List<String> basicCommand, List<File> files, boolean includeFolders) {
+        List<List<String>> attributes = new LinkedList<List<String>>();
+        int basicCommandSize = 0, commandSize;
+        for (String s : basicCommand) {
+            basicCommandSize += s.length() + 1;
+        }
+        // iterating through all files, cannot add all files immediately, too many files can cause troubles
+        // adding files to the command one by one and testing if the command's size doesn't exceed OS limits
+        ListIterator<File> iterator = files.listIterator();
+        while (iterator.hasNext()) {
+            // each loop will call one add command
+            List<String> commandAttributes = new LinkedList<String>();
+            commandSize = basicCommandSize;
+            boolean fileAdded = false;
+            while (iterator.hasNext()) {
+                File f = iterator.next();
+                if (!includeFolders && f.isDirectory()) {
+                    continue;
+                }
+                // test if limits aren't exceeded
+                commandSize += f.getAbsolutePath().length() + 1;
+                if (fileAdded // at least one file must be added
+                        && isTooLongCommand(commandSize)) {
+                    Mercurial.LOG.fine("splitAttributes: files in loop");  //NOI18N
+                    iterator.previous();
+                    break;
+                }
+                // We do not look for files to ignore as we should not here
+                // with a file to be ignored.
+                commandAttributes.add(f.getAbsolutePath());
+                fileAdded = true;
+            }
+            attributes.add(commandAttributes);
+        }
+        return attributes;
     }
 }

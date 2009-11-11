@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.cnd.highlight.error;
 
+import java.util.EnumSet;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
@@ -49,6 +50,7 @@ import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.api.model.xref.CsmTemplateBasedReferencedObject;
 import org.netbeans.modules.cnd.highlight.semantic.SemanticHighlighter;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -156,8 +158,14 @@ public class IdentifierErrorProvider extends CsmErrorProvider {
                     response.addError(new IdentifierErrorInfo(
                             ref.getStartOffset(), ref.getEndOffset(),
                             ref.getText().toString(), severity));
-                } else if (referencedObject instanceof CsmFunction) {
+                } else if (false && referencedObject instanceof CsmFunction) {
                     // Check for function usages befor it's declaration
+                    if (CsmReferenceResolver.getDefault().isKindOf(ref, EnumSet.of(CsmReferenceKind.DEFINITION,
+                            CsmReferenceKind.DECLARATION,
+                            CsmReferenceKind.IN_DEAD_BLOCK,
+                            CsmReferenceKind.IN_PREPROCESSOR_DIRECTIVE))) {
+                        return;
+                    }
                     CsmFunction fun = (CsmFunction) referencedObject;
                     if (fun.getContainingFile() != ref.getContainingFile()) {
                         return;

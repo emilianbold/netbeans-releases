@@ -483,6 +483,9 @@ public class CompletionResolverImpl implements CompletionResolver {
         }
         if (needFileLocalMacros(context, offset)) {
             resImpl.fileLocalMacros = contResolver.getFileLocalMacros(context, strPrefix, match);
+            if (isEnough(strPrefix, match, resImpl.fileLocalMacros)) {
+                return true;
+            }
         }
         if (needFileLocalFunctions(context, offset)) {
             if (resImpl.fileLocalFunctions == null) {
@@ -518,6 +521,9 @@ public class CompletionResolverImpl implements CompletionResolver {
                     resImpl.fileProjectMacros = new ArrayList<CsmMacro>(1);
                     resImpl.fileProjectMacros.add(macro);
                 }
+                if (isEnough(strPrefix, match, resImpl.fileProjectMacros)) {
+                    return true;
+                }
             } else {
                 resImpl.fileProjectMacros = contResolver.getFileIncludedProjectMacros(context, strPrefix, match);
             }
@@ -533,12 +539,21 @@ public class CompletionResolverImpl implements CompletionResolver {
             } else {
                 resImpl.fileLibMacros = contResolver.getFileIncludeLibMacros(context, strPrefix, match);
             }
+            if (isEnough(strPrefix, match, resImpl.fileLibMacros)) {
+                return true;
+            }
         }
         if (needGlobalMacros(context, offset)) {
             resImpl.globProjectMacros = contResolver.getProjectMacros(context, strPrefix, match);
+            if (isEnough(strPrefix, match, resImpl.globProjectMacros)) {
+                return true;
+            }
         }
         if (needGlobalLibMacros(context, offset)) {
             resImpl.globLibMacros = contResolver.getLibMacros(context, strPrefix, match);
+            if (isEnough(strPrefix, match, resImpl.globLibMacros)) {
+                return true;
+            }
         }
 
         if (needGlobalVariables(context, offset)) {

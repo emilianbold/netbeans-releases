@@ -61,7 +61,6 @@ public class ProcDataProviderSolaris implements ProcDataProvider.Engine {
     private static final List<String> COLNAMES = Collections.unmodifiableList(Arrays.asList(
             USR_TIME.getColumnName(), SYS_TIME.getColumnName(), THREADS.getColumnName()));
     private static final BigDecimal PERCENT = BigDecimal.valueOf(100);
-
     private final DataRowConsumer consumer;
     private final int cpuCount;
     //private final ServiceInfoDataStorage serviceInfoStorage;
@@ -86,20 +85,23 @@ public class ProcDataProviderSolaris implements ProcDataProvider.Engine {
                 currPrusage = SolarisProcfsSupport.parsePrusage(line, currPrusage);
             } else {
                 if (prevPrusage != null) {
-                    int threads = Integer.parseInt(firstToken);
-                    BigDecimal cpuTime = currPrusage.tstamp().toBigDecimal().subtract(prevPrusage.tstamp().toBigDecimal()).multiply(BigDecimal.valueOf(cpuCount));
-                    BigDecimal usrTime = currPrusage.utime().toBigDecimal().subtract(prevPrusage.utime().toBigDecimal());
-                    BigDecimal sysTime = currPrusage.stime().toBigDecimal().subtract(prevPrusage.stime().toBigDecimal());
-                    float[] times = DLightMath.ensureSumLessOrEqual(100f, percent(usrTime, cpuTime), percent(sysTime, cpuTime));
-                    DataRow row = new DataRow(COLNAMES, Arrays.asList(times[0], times[1], threads));
-                    consumer.consume(row);
+                    try {
+                        int threads = Integer.parseInt(firstToken);
+                        BigDecimal cpuTime = currPrusage.tstamp().toBigDecimal().subtract(prevPrusage.tstamp().toBigDecimal()).multiply(BigDecimal.valueOf(cpuCount));
+                        BigDecimal usrTime = currPrusage.utime().toBigDecimal().subtract(prevPrusage.utime().toBigDecimal());
+                        BigDecimal sysTime = currPrusage.stime().toBigDecimal().subtract(prevPrusage.stime().toBigDecimal());
+                        float[] times = DLightMath.ensureSumLessOrEqual(100f, percent(usrTime, cpuTime), percent(sysTime, cpuTime));
+                        DataRow row = new DataRow(COLNAMES, Arrays.asList(times[0], times[1], threads));
+                        consumer.consume(row);
+                    } catch (Exception ex) {
+                    }
                 }
                 prevPrusage = currPrusage;
                 currPrusage = null;
             }
         } catch (IllegalArgumentException ex) {
             // silently ignore malformed line
-            }
+        }
     }
 
     public void reset() {

@@ -53,6 +53,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ArchiverConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
@@ -142,9 +143,13 @@ public class ConfigurationMakefileWriter {
             for (MakeConfiguration c : wrongPlatform) {
                 list.append(getString("CONF", c.getName(), c.getDevelopmentHost().getBuildPlatformConfiguration().getName()) + "\n"); // NOI18N
             }
-            String msg = getString("TARGET_MISMATCH_TXT", platform.getDisplayName(), list.toString());
-            NotifyDescriptor.Message nd = new DialogDescriptor.Message(msg);
-            DialogDisplayer.getDefault().notify(nd);
+            final String msg = getString("TARGET_MISMATCH_TXT", platform.getDisplayName(), list.toString());
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    NotifyDescriptor.Message nd = new DialogDescriptor.Message(msg);
+                    DialogDisplayer.getDefault().notify(nd);
+                }
+            });
         }
         return result;
     }

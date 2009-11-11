@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.remote.ui.EditPathMapDialog;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
@@ -304,7 +305,11 @@ public abstract class RemotePathMap extends PathMap {
     // inside path mapper we use only / and lowercase 
     // TODO: lowercase should be only windows issue -- possible flaw
     private static String unifySeparators(String path) {
-        return path.replace('\\', '/').toLowerCase();
+        String result = path.replace('\\', '/');
+        if (!CndFileUtils.isSystemCaseSensitive()) {
+            result = result.toLowerCase();
+        }
+        return result;
     }
 
     public static boolean isSubPath(String path, String pathToValidate) {
@@ -402,6 +407,7 @@ public abstract class RemotePathMap extends PathMap {
         }
     }
 
+    private static final String NO_MAPPING_PREFIX = "///"; // NOI18N
     private final static class FixedRemotePathMap extends RemotePathMap {
 
         private volatile String remoteBase;
@@ -431,6 +437,10 @@ public abstract class RemotePathMap extends PathMap {
                 return useDefault ? lpath : null;
             }
             String remotePath = lpath;
+            // for IZ#175198
+            if (remotePath.startsWith(NO_MAPPING_PREFIX)) {
+                return remotePath;
+            }
             if (!isSubPath(remoteBase, lpath)) {
                 if (Utilities.isWindows() && !"/".equals(lpath)) { // NOI18N
                     lpath = WindowsSupport.getInstance().convertToMSysPath(lpath);
@@ -443,6 +453,10 @@ public abstract class RemotePathMap extends PathMap {
         @Override
         public String getLocalPath(String rpath, boolean useDefault) {
             initRemoteBase(true);
+            // for IZ#175198
+            if (rpath.startsWith(NO_MAPPING_PREFIX)) {
+                return rpath;
+            }
             String res = super.getLocalPath(rpath, useDefault);
             if (Utilities.isWindows() && !"/".equals(res)) { // NOI18N
                 res = WindowsSupport.getInstance().convertFromMSysPath(res);

@@ -947,5 +947,18 @@ public class WSUtils {
         }
         return result;
     }
+
+    static boolean isInSourceGroup(Project prj, String serviceClass) {
+
+        SourceGroup[] sourceGroups = ProjectUtils.getSources(prj).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        for (SourceGroup group : sourceGroups) {
+            String resource = serviceClass.replace('.', '/') + ".java"; //NOI18N
+            if (group.getRootFolder().getFileObject(resource) != null) {
+                return true;
+            }
+
+        }
+        return false;
+    }
     
 }

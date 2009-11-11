@@ -60,6 +60,9 @@ public class PHPNewLineIndenterQATest extends PHPTestBase {
     }
 
 
+    public void testClassAfterFunction_stable() throws Exception {
+        testIndentInFile("testfiles/indent/qa/issues/stable_fixedIssues/classAfterFunction.php");
+    }
     /**
      * issue 146247 there are 4 cases to be tested 
      * @throws Exception
