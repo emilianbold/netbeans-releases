@@ -40,22 +40,15 @@
  */
 package org.netbeans.modules.xml.tools.actions;
 
-import java.util.*;
-
-import org.openide.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.nodes.*;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.CookieAction;
-import org.openide.loaders.*;
-
-import org.netbeans.tax.*;
-import org.netbeans.modules.xml.*;
 import org.netbeans.modules.xml.actions.*;
-
 import org.netbeans.api.xml.cookies.*;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-
 
 /**
  * checks DTD file sending results to output window.
@@ -64,9 +57,20 @@ import org.openide.util.RequestProcessor;
  * @version 1.0
  */
 public class CheckDTDAction extends CookieAction implements CollectDTDAction.DTDAction {
-
     /** serialVersionUID */
     private static final long serialVersionUID = -8772119268950444992L;
+
+    public static synchronized CheckDTDAction getInstance() {
+        CheckDTDAction actionInstance = null;
+        String thisClassName = CheckDTDAction.class.getName();
+        try {
+            Class actionInstanceClass = Class.forName(thisClassName);
+            actionInstance = (CheckDTDAction) actionInstanceClass.newInstance();
+        } catch(Exception e) {
+            Logger.getLogger(thisClassName).log(Level.SEVERE, "", e);
+        }
+        return actionInstance;
+    }
 
     /** Be hooked on XMLDataObjectLook narking XML nodes. */
     protected Class[] cookieClasses () {
@@ -129,6 +133,6 @@ public class CheckDTDAction extends CookieAction implements CollectDTDAction.DTD
 
             console.message(NbBundle.getMessage(CheckDTDAction.class, "MSG_DTD_valid_end"));
             console.moveToFront(true);
-       }
+        }
     }
 }

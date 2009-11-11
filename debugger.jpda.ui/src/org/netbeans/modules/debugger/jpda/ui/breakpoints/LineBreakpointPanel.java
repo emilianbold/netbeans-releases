@@ -69,6 +69,7 @@ import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.NbDocument;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -331,7 +332,12 @@ public class LineBreakpointPanel extends JPanel implements ControllerProvider, o
             actionsPanel.ok ();
             String path = tfFileName.getText().trim();
             if (new File(path).exists()) {
-                path = "file:"+path;
+                try {
+                    path = new File(path).toURI().toURL().toString();
+                } catch (MalformedURLException ex) {
+                    Exceptions.printStackTrace(ex);
+                    path = "file://" + path;    // NOI18N
+                }
             }
             breakpoint.setURL(path);
             breakpoint.setLineNumber(Integer.parseInt(tfLineNumber.getText().trim()));
