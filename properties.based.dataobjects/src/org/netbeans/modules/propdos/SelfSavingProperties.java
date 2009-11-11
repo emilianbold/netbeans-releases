@@ -63,6 +63,7 @@ abstract class SelfSavingProperties extends AntStyleResolvingProperties {
     //A properties subclass that writes itself to disk on a timer after
     //it is modified.  Customizer UI does not have to explicitly save it.
     protected final DataObject dob;
+//    static { PropertiesBasedDataObject.LOGGER.setLevel(Level.ALL); }
 
     SelfSavingProperties(DataObject ob) {
         this.dob = ob;
@@ -72,7 +73,7 @@ abstract class SelfSavingProperties extends AntStyleResolvingProperties {
     
     @Override
     public String toString() {
-        return dob.getPrimaryFile().getPath() ;
+        return dob.getPrimaryFile().getPath() + "[" + super.toString() + "]" ; //NOI18N
     }
 
     @Override

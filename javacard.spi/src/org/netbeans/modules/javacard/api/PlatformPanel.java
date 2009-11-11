@@ -63,7 +63,7 @@ import org.openide.util.HelpCtx;
  *
  * @author Tim Boudreau
  */
-public final class PlatformPanel extends SharedLayoutPanel implements ActionListener {
+final class PlatformPanel extends SharedLayoutPanel implements ActionListener {
 
     private final ChoiceView choice = new ChoiceView();
     private final JLabel lbl = new JLabel(NbBundle.getMessage(PlatformPanel.class,
@@ -87,7 +87,7 @@ public final class PlatformPanel extends SharedLayoutPanel implements ActionList
         Mnemonics.setLocalizedText(lbl, lbl.getText());
         lbl.setLabelFor(choice);
         if (props != null) {
-            setProperties(props);
+            setPlatformFrom(props);
         }
         HelpCtx.setHelpIDString(this, "org.netbeans.modules.javacard.SettingUpJavaCardPlatform"); //NOI18N
     }
@@ -101,7 +101,7 @@ public final class PlatformPanel extends SharedLayoutPanel implements ActionList
         return props.getPlatformName();
     }
 
-    public void setProperties(PlatformAndDeviceProvider props) {
+    public void setPlatformFrom(PlatformAndDeviceProvider props) {
         this.props = props;
     }
 

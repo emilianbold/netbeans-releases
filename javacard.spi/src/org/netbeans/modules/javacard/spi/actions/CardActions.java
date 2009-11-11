@@ -45,6 +45,12 @@ import org.netbeans.spi.actions.LookupProviderAction;
 import org.openide.nodes.Node;
 
 /**
+ * Utility class for creating instances of various common card action classes.
+ * The actions returned by the factory methods here are suitable for using
+ * on the popup menu of a node or on a main menu or toolbar.  They will
+ * automatically attach to the selection context in question and look up
+ * the ICardCapability that controls them through the lookup of the Card
+ * instance in the selected node (if any).
  *
  * @author Tim Boudreau
  */
@@ -78,7 +84,7 @@ public final class CardActions {
 
     public static ContextAction<?> createCustomizeAction() {
         ContextAction<?> a = LookupProviderAction.createIndirectAction(Node.class,
-                LookupProviderAction.createIndirectAction(Card.class, new CustomizeCardAction()));
+                new CustomizeCardAction());
         return a;
     }
 }

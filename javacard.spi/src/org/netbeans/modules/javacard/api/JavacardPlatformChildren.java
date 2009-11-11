@@ -61,7 +61,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 
 /**
- * Children object which shows only registered JavacardPlatforms (the folder
+ * Node Children factory which shows only registered JavacardPlatforms (the folder
  * they are registered in contains other kinds of files).
  * @author Tim Boudreau
  */

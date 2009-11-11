@@ -69,6 +69,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.validation.adapters.DialogBuilder;
 import org.netbeans.modules.javacard.common.CommonSystemFilesystemPaths;
 import org.netbeans.modules.javacard.common.JCConstants;
+import org.netbeans.modules.javacard.spi.Card;
 import org.netbeans.modules.javacard.spi.CardCustomizer;
 import org.netbeans.modules.javacard.spi.capabilities.CardCustomizerProvider;
 import org.netbeans.modules.javacard.spi.ValidationGroupProvider;
@@ -207,17 +208,6 @@ public final class ServersPanel extends javax.swing.JPanel implements ExplorerMa
             }
 
             try {
-                //XXX debug
-                FileObject fo = FileUtil.getConfigFile("org-netbeans-modules-javacard/templates/");
-                if (fo == null) {
-                    throw new IllegalStateException("org-netbeans-modules-javacard/templates/ not in SFS");
-                }
-                System.err.println("TEMPLATES FOLDER CHILDREN");
-                for (FileObject k : fo.getChildren()) {
-                    System.err.println(k.getPath());
-                }
-                //XXX end debug
-
                 FileObject template = FileUtil.getConfigFile(
                         CommonSystemFilesystemPaths.SFS_DEVICE_TEMPLATE_PATH);
                 if (template == null) {
@@ -293,9 +283,11 @@ public final class ServersPanel extends javax.swing.JPanel implements ExplorerMa
                 jPanel1.removeAll();
                 CardCustomizer cust = toSave.get(n[0]);
                 if (cust == null) {
-                    CardCustomizerProvider prov = n[0].getLookup().lookup(CardCustomizerProvider.class);
+                    Card card = n[0].getLookup().lookup(Card.class);
+                    CardCustomizerProvider prov = card == null ? null :
+                        card.getLookup().lookup(CardCustomizerProvider.class);
                     if (prov != null) {
-                        cust = prov.getCardCustomizer();
+                        cust = prov.getCardCustomizer(card);
                         if (cust == null) {
                             throw new NullPointerException ("CardCustomizerProvider " + prov //NOI18N
                                     + " provides a null CardCustomizer"); //NOI18N

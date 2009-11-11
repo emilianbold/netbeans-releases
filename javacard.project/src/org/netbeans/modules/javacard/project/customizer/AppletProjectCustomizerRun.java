@@ -58,7 +58,7 @@ public final class AppletProjectCustomizerRun extends javax.swing.JPanel impleme
 
     public AppletProjectCustomizerRun(AppletProjectProperties props) {
         initComponents();
-        platformAndDevicePanel21.setProperties(props);
+        platformAndDevicePanel21.setPlatformAndCard(props);
         servletComboBox.setModel(props.SCRIPTS);
         servletComboBox.setRenderer(new CRen());
         launchBrowserCheckBox.setModel(props.SEND_SCRIPT);
