@@ -107,7 +107,6 @@ public class ToolCollectionPanel extends javax.swing.JPanel implements DocumentL
             requiredToolsPanel.setVisible(false); // Required Tools panel!
         }
 
-        btBaseDirectory.setEnabled(false);
         btCBrowse.setEnabled(false);
         btCppBrowse.setEnabled(false);
         btFortranBrowse.setEnabled(false);
@@ -156,7 +155,6 @@ public class ToolCollectionPanel extends javax.swing.JPanel implements DocumentL
     void removeCompilerSet() {
         lbFamilyValue.setText(""); // NOI18N
         tfBaseDirectory.setText(""); // NOI18N
-        btBaseDirectory.setEnabled(false);
         tfCPath.setText(""); // NOI18N
         tfCppPath.setText(""); // NOI18N
         tfFortranPath.setText(""); // NOI18N
@@ -232,7 +230,6 @@ public class ToolCollectionPanel extends javax.swing.JPanel implements DocumentL
         } else {
             isUrl = false;
             tfBaseDirectory.setText(cs.getDirectory());
-            btBaseDirectory.setEnabled(!manager.isRemoteHostSelected());
         }
         scrollPane.setVisible(isUrl);
         btInstall.setVisible(isUrl);
@@ -260,7 +257,6 @@ public class ToolCollectionPanel extends javax.swing.JPanel implements DocumentL
         tfQMakePath.setVisible(!isUrl);
 
         btAsBrowse.setVisible(!isUrl);
-        btBaseDirectory.setVisible(!isUrl);
         btCBrowse.setVisible(!isUrl);
         btCMakeBrowse.setVisible(!isUrl);
         btCppBrowse.setVisible(!isUrl);
@@ -473,7 +469,7 @@ public class ToolCollectionPanel extends javax.swing.JPanel implements DocumentL
         btCMakeBrowse.setEnabled(enableBrowse);
         updateTextField(tfMakePath, enableText, cleanText);
         updateTextField(tfDebuggerPath, enableText, cleanText);
-        updateTextField(tfBaseDirectory, enableText, cleanText);
+        updateTextField(tfBaseDirectory, false, cleanText);
         updateTextField(tfCPath, enableText, cleanText);
         updateTextField(tfCppPath, enableText, cleanText);
         updateTextField(tfFortranPath, enableText, cleanText);
@@ -760,7 +756,6 @@ public class ToolCollectionPanel extends javax.swing.JPanel implements DocumentL
         cbFortranRequired.addItemListener(this);
         lbBaseDirectory = new javax.swing.JLabel();
         tfBaseDirectory = new javax.swing.JTextField();
-        btBaseDirectory = new javax.swing.JButton();
         lbAsCommand = new javax.swing.JLabel();
         tfAsPath = new javax.swing.JTextField();
         tfAsPath.getDocument().putProperty(Document.TitleProperty, ASSEMBLER_NAME);
@@ -1037,20 +1032,6 @@ public class ToolCollectionPanel extends javax.swing.JPanel implements DocumentL
         gridBagConstraints.insets = new java.awt.Insets(4, 2, 0, 0);
         add(tfBaseDirectory, gridBagConstraints);
 
-        btBaseDirectory.setText(org.openide.util.NbBundle.getMessage(ToolCollectionPanel.class, "ToolCollectionPanel.btBaseDirectory.text")); // NOI18N
-        btBaseDirectory.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btBaseDirectoryActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 6, 0, 6);
-        add(btBaseDirectory, gridBagConstraints);
-
         lbAsCommand.setText(bundle.getString("ToolCollectionPanel.lbAsCommand.text")); // NOI18N
         lbAsCommand.setToolTipText(bundle.getString("ToolCollectionPanel.lbAsCommand.toolTipText")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1205,29 +1186,6 @@ public class ToolCollectionPanel extends javax.swing.JPanel implements DocumentL
         selectCompiler(tfFortranPath);
 }//GEN-LAST:event_btFortranBrowseActionPerformed
 
-    private void btBaseDirectoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btBaseDirectoryActionPerformed
-        String seed = null;
-        if (tfBaseDirectory.getText().length() > 0) {
-            seed = tfBaseDirectory.getText();
-        } else if (FileChooser.getCurrectChooserFile() != null) {
-            seed = FileChooser.getCurrectChooserFile().getPath();
-        } else {
-            seed = System.getProperty("user.home"); // NOI18N
-        }
-        FileChooser fileChooser = new FileChooser(ToolsPanel.getString("SELECT_BASE_DIRECTORY_TITLE"), null, JFileChooser.DIRECTORIES_ONLY, null, seed, true); // NOI18N
-        int ret = fileChooser.showOpenDialog(this);
-        if (ret == JFileChooser.CANCEL_OPTION) {
-            return;
-        }
-        String dirPath = fileChooser.getSelectedFile().getPath();
-        tfBaseDirectory.setText(dirPath);
-
-        CompilerSet cs = manager.getCurrentCompilerSet();
-        manager.getCompilerSetManager().reInitCompilerSet(cs, dirPath);
-        manager.setChanged(true);
-        manager.update(false, null);
-    }//GEN-LAST:event_btBaseDirectoryActionPerformed
-
     private void btAsBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btAsBrowseActionPerformed
         selectCompiler(tfAsPath);
 }//GEN-LAST:event_btAsBrowseActionPerformed
@@ -1248,7 +1206,6 @@ public class ToolCollectionPanel extends javax.swing.JPanel implements DocumentL
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btAsBrowse;
-    private javax.swing.JButton btBaseDirectory;
     private javax.swing.JButton btCBrowse;
     private javax.swing.JButton btCMakeBrowse;
     private javax.swing.JButton btCppBrowse;
