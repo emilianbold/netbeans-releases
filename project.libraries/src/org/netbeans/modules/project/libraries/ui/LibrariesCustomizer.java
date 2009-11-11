@@ -307,7 +307,7 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
         boolean editable = model.isLibraryEditable (impl);
         this.libraryName.setEnabled(editable);
         this.deleteButton.setEnabled(editable);
-        this.libraryName.setText (getLocalizedString(impl.getLocalizingBundle(),impl.getName()));
+        this.libraryName.setText (getLocalizedName(impl));
         LibraryTypeProvider provider = nodes[0].getLookup().lookup(LibraryTypeProvider.class);
         if (provider == null)
             return;
@@ -566,6 +566,10 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
         return true;
     }
 
+    public static String getLocalizedName(LibraryImplementation impl) {
+        return getLocalizedString(impl.getLocalizingBundle(), impl.getName());
+    }
+
     static String getLocalizedString (String bundleResourceName, String key) {
         if (key == null) {
             return null;
@@ -820,7 +824,7 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
         }
         
         public String getDisplayName () {
-            return getLocalizedString(this.lib.getLocalizingBundle(), this.lib.getName());
+            return getLocalizedName(this.lib);
         }
         
     }
