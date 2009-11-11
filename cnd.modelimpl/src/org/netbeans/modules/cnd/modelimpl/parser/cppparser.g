@@ -426,6 +426,7 @@ tokens {
     protected static final int declStatement = 1;
     protected static final int declGeneric = 2;
     protected static final int declNotFirst = 3;
+    protected static final int declFunctionParam = 4;
 
 	public int getErrorCount() {
 	    int cnt = errorCount;
@@ -1496,7 +1497,7 @@ function_K_R_parameter_list
 protected
 function_K_R_parameter
     :
-    declaration[declOther]
+    declaration[declFunctionParam]
     {#function_K_R_parameter=#(#[CSM_PARAMETER_DECLARATION, "CSM_PARAMETER_DECLARATION"], #function_K_R_parameter);}
     ;
 
@@ -2027,7 +2028,7 @@ direct_declarator[int kind]
         // Must be function declaration
         (function_like_var_declarator) =>
         function_like_var_declarator
-        {if(kind == declStatement || kind == declNotFirst || LA(1) == COMMA) {#direct_declarator = #(#[CSM_VARIABLE_LIKE_FUNCTION_DECLARATION, "CSM_VARIABLE_LIKE_FUNCTION_DECLARATION"], #direct_declarator);}}
+        {if(kind != declFunctionParam && (kind == declStatement || kind == declNotFirst || LA(1) == COMMA)) {#direct_declarator = #(#[CSM_VARIABLE_LIKE_FUNCTION_DECLARATION, "CSM_VARIABLE_LIKE_FUNCTION_DECLARATION"], #direct_declarator);}}
     |   
         (qualified_id LPAREN) => // Must be class instantiation
         id = qualified_id
@@ -2449,7 +2450,7 @@ parameter_declaration
 			    qualifiedItemIsOneOf(qiType|qiCtor) )}?
 			declaration_specifiers[true, false]	// DW 24/3/98 Mods for K & R
 			(  
-				(declarator[declOther])=> declarator[declOther]        // if arg name given
+				(declarator[declFunctionParam])=> declarator[declFunctionParam]        // if arg name given
 			| 
 				abstract_declarator  // if arg name not given  // can be empty
 			)

@@ -299,4 +299,9 @@ public class FileModel2Test extends TraceModelTestBase {
         // IZ#175653 : Support for binary constants
         performTest("iz175653.cc");
     }
+
+    public void testIZ176530() throws Exception {
+        // IZ#176530 : Unresolved function parameters in function parameters
+        performTest("iz176530.cc");
+    }
 }
