@@ -192,7 +192,7 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
             }
         }
 
-        if (!type.isKnown() && AstUtilities.isCall(target)) {
+        if (!type.isKnown() && target != null && AstUtilities.isCall(target)) {
             type = getTypeForCall(target);
         }
 
