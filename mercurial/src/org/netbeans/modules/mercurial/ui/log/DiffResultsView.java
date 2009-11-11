@@ -394,9 +394,13 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
                         if (currentTask == ShowDiffTask.this) {
                             currentDiff = view;
                             setBottomComponent(currentDiff.getJComponent());
-                            if (currentDiff.getDifferenceCount() > 0) {
-                                currentDifferenceIndex = showLastDifference ? currentDiff.getDifferenceCount() - 1 : 0;
-                                currentDiff.setLocation(DiffController.DiffPane.Base, DiffController.LocationType.DifferenceIndex, currentDifferenceIndex);
+                            if (!setLocation(view)) {
+                                view.addPropertyChangeListener(new PropertyChangeListener() {
+                                    public void propertyChange(PropertyChangeEvent evt) {
+                                        view.removePropertyChangeListener(this);
+                                        setLocation(view);
+                                    }
+                                });
                             }
                             parent.refreshComponents(false);
                         }
@@ -405,6 +409,16 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
                     }
                 }
             });
+        }
+
+        private boolean setLocation (DiffController view) {
+            boolean locationSet = false;
+            if (view == currentDiff && view.getDifferenceCount() > 0) {
+                locationSet = true;
+                currentDifferenceIndex = showLastDifference ? view.getDifferenceCount() - 1 : 0;
+                view.setLocation(DiffController.DiffPane.Base, DiffController.LocationType.DifferenceIndex, currentDifferenceIndex);
+            }
+            return locationSet;
         }
     }
     
