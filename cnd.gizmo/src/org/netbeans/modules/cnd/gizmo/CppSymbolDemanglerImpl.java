@@ -283,7 +283,7 @@ public class CppSymbolDemanglerImpl implements CppSymbolDemangler {
 
         final NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
 
-        if (GCPPFILT.equals(demanglerTool) || CPPFILT.equals(demanglerTool)) {
+        if (demanglerTool.indexOf(GCPPFILT) >= 0 || demanglerTool.indexOf(CPPFILT) >=0) {
             StringBuilder cmdline = new StringBuilder();
             cmdline.append(ECHO).append(" \""); // NOI18N
             for (String name : mangledNames) {
