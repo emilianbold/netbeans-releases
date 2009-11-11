@@ -77,7 +77,8 @@ import org.openide.util.lookup.Lookups;
  * <p/>
  * A Card is mostly a container for ICardCapability objects which start, stop,
  * resume, etc. the card.  This class handles the mechanics of, for example,
- * adding a StopCapability when the card is stopped and removing the StartCapability
+ * adding a StartCapability when the card is stopped and removing the StartCapability
+ * and replacing it with a StopCapability when the card is started.
  * (if the subclass returns non-null from createStopCapability() and
  * createStartCapability()).
  * <p/>
