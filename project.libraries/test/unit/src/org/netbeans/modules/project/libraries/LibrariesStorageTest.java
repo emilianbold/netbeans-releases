@@ -62,6 +62,8 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.TestUtil;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.project.libraries.ui.LibrariesCustomizer;
+import org.netbeans.modules.project.libraries.ui.LibrariesModel;
+import org.netbeans.modules.project.libraries.ui.ProxyLibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryProvider;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
@@ -134,6 +136,11 @@ public class LibrariesStorageTest extends NbTestCase {
         LibraryImplementation impl = libs[0].getName().equals("Library2") ? libs[0] : libs[1];
 
         assertEquals("MyName", LibrariesCustomizer.getLocalizedName(impl));
+
+        LibrariesModel model = new LibrariesModel();
+        ProxyLibraryImplementation proxy = ProxyLibraryImplementation.createProxy(impl, model);
+
+        assertEquals("MyName", LibrariesCustomizer.getLocalizedName(proxy));
     }
 
     public void testAddLibrary() throws Exception {

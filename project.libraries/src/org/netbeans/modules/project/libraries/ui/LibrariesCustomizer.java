@@ -583,6 +583,12 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
                 return (String)obj;
             }
         }
+        if (impl instanceof ProxyLibraryImplementation) {
+            String proxiedName = getLocalizedName(((ProxyLibraryImplementation)impl).getOriginal());
+            if (proxiedName != null) {
+                return proxiedName;
+            }
+        }
 
         return getLocalizedString(impl.getLocalizingBundle(), impl.getName());
     }
