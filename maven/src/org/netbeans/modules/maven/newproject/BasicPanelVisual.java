@@ -82,7 +82,6 @@ import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.modules.maven.MavenValidators;
 import org.netbeans.modules.maven.options.MavenOptionController;
 import org.netbeans.modules.maven.options.MavenSettings;
-import org.netbeans.modules.project.uiapi.Utilities;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.netbeans.validation.api.Problems;
 import org.netbeans.validation.api.Validator;
@@ -95,6 +94,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
 /**
  *
