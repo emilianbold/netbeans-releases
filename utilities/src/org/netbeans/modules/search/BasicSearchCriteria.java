@@ -144,6 +144,16 @@ final class BasicSearchCriteria {
      */
     private Map<DataObject, List<TextDetail>> detailsMap;
 
+    /**
+     * Holds a {@code DataObject} that will be used to create
+     * a {@code TextDetail}. It should be set to {@code null} immediately after
+     * all {@code TextDetail}s are created for given {@code DataObject}.
+     *
+     * @see #findDataObject(org.openide.filesystems.FileObject)
+     * @see #freeDataObject()
+     */
+    private DataObject dataObject;
+
     BasicSearchCriteria() {
         if (LOG.isLoggable(FINER)) {
             LOG.finer("#" + instanceId + ": <init>()");                 //NOI18N
@@ -718,14 +728,15 @@ final class BasicSearchCriteria {
         SearchPattern sp = createSearchPattern();
         BufferedCharSequence bcs = null;
         try {
-            DataObject dObj = DataObject.find(fo);
             FileInputStream fis = (FileInputStream)fo.getInputStream();
             bcs = new BufferedCharSequence(fis, lastCharset);
-            ArrayList<TextDetail> txtDetails = getTextDetails(bcs, dObj, sp);
+            ArrayList<TextDetail> txtDetails = getTextDetails(bcs, fo, sp);
             if (txtDetails.isEmpty()){
                 return false;
             }
-            getDetailsMap().put(dObj, txtDetails);
+            assert dataObject != null;
+            getDetailsMap().put(dataObject, txtDetails);
+            freeDataObject();
             return true;
         }
         catch(DataObjectNotFoundException e){
@@ -762,97 +773,41 @@ final class BasicSearchCriteria {
     }
 
     private ArrayList<TextDetail> getTextDetails(BufferedCharSequence bcs,
-                                                 DataObject dataObject,
+                                                 FileObject fo,
                                                  SearchPattern sp)
-                                throws BufferedCharSequence.SourceIOException  {
+                                throws BufferedCharSequence.SourceIOException,
+                                       DataObjectNotFoundException {
 
         ArrayList<TextDetail> txtDetails = new ArrayList<TextDetail>();
-        int lineNumber = 1;
-        int lineStartOffset = 0;
-        int prevCR = 0;
+        FindState fs = new FindState(bcs);
 
         Matcher matcher = textPattern.matcher(bcs);
         while (matcher.find()) {
             int matcherStart = matcher.start();
-            try {
-                while (bcs.position() < matcherStart) {
-                    char curChar = bcs.nextChar();
-                    switch (curChar) {
-                        case BufferedCharSequence.UnicodeLineTerminator.LF:
-                        case BufferedCharSequence.UnicodeLineTerminator.PS:
-                        case BufferedCharSequence.UnicodeLineTerminator.LS:
-                        case BufferedCharSequence.UnicodeLineTerminator.FF:
-                        case BufferedCharSequence.UnicodeLineTerminator.NEL:
-                            lineNumber++;
-                            lineStartOffset = bcs.position();
-                            prevCR = 0;
-                            break;
-                        case BufferedCharSequence.UnicodeLineTerminator.CR:
-                            prevCR++;
-                            char nextChar = bcs.charAt(bcs.position());
-                            if (nextChar !=
-                                BufferedCharSequence.UnicodeLineTerminator.LF) {
 
-                                lineNumber++;
-                                lineStartOffset = bcs.position();
-                                prevCR = 0;
-                            }
-                            break;
-                        default:
-                            prevCR = 0;
-                    }
-                }
-            } catch (IndexOutOfBoundsException ioobe) {
-                // It is OK. It means that EOF is reached, i.e.
-                // cb.position() >= cb.length()
-            }
-            int column = matcherStart - lineStartOffset + 1 - prevCR;
-            String lineText = bcs.getLineText(lineStartOffset);
+            int column = fs.calcColumn(matcherStart);
+            int lineNumber = fs.getLineNumber();
+            String lineText = fs.getLineText();
 
-           try { // #174056, #175896
-                assert lineText.length() >= (column - 1) :
-                   "If the file associated with the following dataObject is " +
-                   "textual (i.e. non-binary file) then, \nplease, " +
-                   "re-open the issue 174056 with the following info:" +
-                   "\n" +
-                   "\nTrying to set illegal state of the TextDetail object:" +
-                   "\ndataObject: " + dataObject +
-                   "\nmatcher: " + matcher +
-                   "\ntextPattern: [" + textPattern + "]" +
-                   "\nmatcherStart: " + matcherStart +
-                   "\nlineStartOffset: " + lineStartOffset +
-                   "\nprevCR: " + prevCR +
-                   "\nlineText: [" + translate(lineText) + "]" +
-                   "\nlineText.length(): " + lineText.length() +
-                   "\ncolumn: " + column +
-                   "\n=> lineText.length() < (column - 1)" +
-                   "\n" +
-                   "\nOtherwise, please exclude the binary file from " +
-                   "the search\\replace operation."; // NOI18N
+            findDataObject(fo);
+            TextDetail det = newTextDetail(sp, matcher);
+            det.associate(lineNumber, column, lineText);
 
-                TextDetail det = newTextDetail(dataObject, sp, matcher);
-                det.setColumn(column);
-                det.setLine(lineNumber);
-                det.setLineText(lineText);
-
-                txtDetails.add(det);
-            } catch (AssertionError e) {
-                LOG.log(Level.WARNING, "Error in " + this, e);
-            }
+            txtDetails.add(det);
         } // while (matcher.find())
         txtDetails.trimToSize();
         return txtDetails;
     }
 
-    private TextDetail newTextDetail(DataObject dObj,
-                                     SearchPattern searchPattern,
+    private TextDetail newTextDetail(SearchPattern searchPattern,
                                      Matcher matcher) {
         String group = matcher.group();
         int start = matcher.start();
         int end = matcher.end();
         int countCR = countCR(group);
         int markLength = end - start - countCR;
-        TextDetail det = new TextDetail(dObj, searchPattern);
+        assert dataObject != null;
+        TextDetail det = new TextDetail(dataObject, searchPattern);
         det.setMatchedText(group);
         det.setStartOffset(start);
         det.setEndOffset(end);
@@ -948,29 +903,75 @@ final class BasicSearchCriteria {
                                     regexp);
     }
 
-    /**
-     * For debug only! Visualization of the new line symbols like '\n', '\r'.
-     * @param s the initial string
-     * @return A string like the initial string, but all new line symbols are
-     * replaced with their readable equivalences.
-     */
-    private static String translate(String s) {
-        StringBuilder sb = new StringBuilder();
-        for(int i=0; i<s.length(); i++) {
-            char c = s.charAt(i);
-            switch(c) {
-                case '\n':
-                    sb.append("'\n'");
-                    break;
-                case '\r':
-                    sb.append("'\r'");
-                    break;
-                default:
-                    sb.append(c);
-                    break;
-            }
+    private void findDataObject(FileObject fo)
+                                            throws DataObjectNotFoundException {
+        if(dataObject == null) {
+            dataObject = DataObject.find(fo);
         }
-        return sb.toString();
     }
+
+    private void freeDataObject() {
+        dataObject = null;
+    }
+
+    /**
+     * Utility class providing optimal calculating of the column.
+     */
+    private class FindState {
+        int lineNumber = 1;
+        int lineStartOffset = 0;
+        int prevCR = 0;
+
+        BufferedCharSequence bcs;
+
+        FindState(BufferedCharSequence bcs) {
+           this.bcs = bcs;
+        }
+
+        int getLineNumber() {
+            return lineNumber;
+        }
+
+        String getLineText() {
+            return bcs.getLineText(lineStartOffset);
+        }
+
+        int calcColumn(int matcherStart) {
+            try {
+                while (bcs.position() < matcherStart) {
+                    char curChar = bcs.nextChar();
+                    switch (curChar) {
+                        case BufferedCharSequence.UnicodeLineTerminator.LF:
+                        case BufferedCharSequence.UnicodeLineTerminator.PS:
+                        case BufferedCharSequence.UnicodeLineTerminator.LS:
+                        case BufferedCharSequence.UnicodeLineTerminator.FF:
+                        case BufferedCharSequence.UnicodeLineTerminator.NEL:
+                            lineNumber++;
+                            lineStartOffset = bcs.position();
+                            prevCR = 0;
+                            break;
+                        case BufferedCharSequence.UnicodeLineTerminator.CR:
+                            prevCR++;
+                            char nextChar = bcs.charAt(bcs.position());
+                            if (nextChar !=
+                                BufferedCharSequence.UnicodeLineTerminator.LF) {
+
+                                lineNumber++;
+                                lineStartOffset = bcs.position();
+                                prevCR = 0;
+                            }
+                            break;
+                        default:
+                            prevCR = 0;
+                    }
+                }
+            } catch (IndexOutOfBoundsException ioobe) {
+                // It is OK. It means that EOF is reached, i.e.
+                // bcs.position() >= bcs.length()
+            }
+            int column = matcherStart - lineStartOffset + 1 - prevCR;
+            return column;
+        }
+    } // FindState
 
 }

@@ -45,7 +45,6 @@ import java.beans.FeatureDescriptor;
 import java.util.Enumeration;
 import org.netbeans.modules.xml.api.model.*;
 import org.w3c.dom.Node;
-import org.xml.sax.InputSource;
 
 /**
  * Provide DTD grammar. It must be registered at layer.
@@ -53,7 +52,6 @@ import org.xml.sax.InputSource;
  * @author  Petr Kuzel <petr.kuzel@sun.com>
  */
 public class DTDGrammarQueryProvider extends GrammarQueryManager {
-
     public Enumeration enabled(GrammarEnvironment ctx) {
         Enumeration en = ctx.getDocumentChildren();
         while (en.hasMoreElements()) {

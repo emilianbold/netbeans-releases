@@ -225,7 +225,9 @@ public class WatchPanel {
             //System.err.println("WatchPanel.setupContext("+file+", "+line+", "+offset+")");
             Runnable bindComponentToDocument = new Runnable() {
                 public void run() {
+                    String origText = editorPane.getText();
                     DialogBinding.bindComponentToDocument(doc, offset, 0, editorPane);
+                    editorPane.setText(origText);
                 }
             };
             if (EventQueue.isDispatchThread()) {
