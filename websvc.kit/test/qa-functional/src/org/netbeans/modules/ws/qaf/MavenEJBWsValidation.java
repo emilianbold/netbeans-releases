@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,57 +31,64 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.xml.actions;
+package org.netbeans.modules.ws.qaf;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.modules.xml.util.Util;
-import org.openide.util.HelpCtx;
+import java.io.IOException;
+import junit.framework.Test;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
  *
- * @author Libor Kramolis
- * @version 0.1
+ * @author lukas
  */
-public class CollectDTDAction extends CollectSystemAction {
-    private static final long serialVersionUID = -284734180387549284L;
+public class MavenEJBWsValidation extends EjbWsValidation {
 
-    public CollectDTDAction() {}
-
-    public static synchronized CollectDTDAction getInstance() {
-        CollectDTDAction actionInstance = null;
-        String thisClassName = CollectDTDAction.class.getName();
-        try {
-            Class actionInstanceClass = Class.forName(thisClassName);
-            actionInstance = (CollectDTDAction) actionInstanceClass.newInstance();
-        } catch(Exception e) {
-            Logger.getLogger(thisClassName).log(Level.SEVERE, "", e);
-        }
-        return actionInstance;
+    public MavenEJBWsValidation(String name) {
+        super(name);
     }
 
-    /**
-     * Getter for action class
-     */
-    protected Class getActionLookClass () {
-        return DTDAction.class;
+    @Override
+    public String getProjectName() {
+        return "Mvn" + super.getProjectName();
     }
 
-    /* Getter for name
-    */
-    public String getName () {
-        return Util.THIS.getString (CollectDTDAction.class, "NAME_CollectDTDAction");
+    @Override
+    protected ProjectType getProjectType() {
+        return ProjectType.MAVEN_EJB;
     }
 
-    /* Getter for help.
-    */
-    public HelpCtx getHelpCtx () {
-        return new HelpCtx (CollectDTDAction.class);
+    public static Test suite() {
+        return NbModuleSuite.create(addServerTests(Server.GLASSFISH,
+                NbModuleSuite.createConfiguration(MavenEJBWsValidation.class),
+                "testCreateNewWs",
+                "testAddOperation",
+                "testSetSOAP",
+// IZ# 175974                "testGenerateWSDL",
+                "testStartServer",
+                "testWsHandlers",
+                "testRunWsProject",
+                "testTestWS",
+                "testCreateWsClient",
+                "testRefreshClientAndReplaceWSDL",
+                "testCallWsOperationInSessionEJB",
+                "testCallWsOperationInJavaClass",
+                "testWsFromEJBinClientProject",
+                "testWsClientHandlers",
+                "testRunWsClientProject",
+                "testUndeployProjects",
+                "testStopServer").enableModules(".*").clusters(".*"));
     }
-    
-    /**
-     * Interface DTDAction
-     */
-    public static interface DTDAction {}
+
+    public void testRunWsProject() throws IOException {
+        runProject(getWsProjectName());
+    }
+
+    public void testRunWsClientProject() throws IOException {
+        runProject(getWsClientProjectName());
+    }
 }

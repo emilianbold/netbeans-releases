@@ -44,6 +44,8 @@ import java.awt.datatransfer.StringSelection;
 import java.io.*;
 
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.*;
 import org.openide.awt.StatusDisplayer;
 import org.openide.nodes.*;
@@ -69,13 +71,24 @@ import org.netbeans.modules.xml.tax.cookies.TreeEditorCookie;
  * @version 1.0
  */
 public final class DocletAction extends CookieAction implements CollectDTDAction.DTDAction {
-
     /** Stream serialVersionUID. */
     private static final long serialVersionUID = -4037098165368211623L;
     
     
     /** Creates new CSSStyleAction */
     public DocletAction() {
+    }
+
+    public static synchronized DocletAction getInstance() {
+        DocletAction actionInstance = null;
+        String thisClassName = DocletAction.class.getName();
+        try {
+            Class actionInstanceClass = Class.forName(thisClassName);
+            actionInstance = (DocletAction) actionInstanceClass.newInstance();
+        } catch(Exception e) {
+            Logger.getLogger(thisClassName).log(Level.SEVERE, "", e);
+        }
+        return actionInstance;
     }
 
     public Class[] cookieClasses() {

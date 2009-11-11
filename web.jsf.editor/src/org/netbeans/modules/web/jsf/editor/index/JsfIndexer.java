@@ -69,15 +69,11 @@ public class JsfIndexer extends EmbeddingIndexer {
 
     private static final Logger LOG = Logger.getLogger(JsfIndexer.class.getSimpleName());
 
-    static {
-        LOG.setLevel(Level.INFO); //todo: disable, for development time only
-    }
-
     @Override
     protected void index(Indexable indexable, Result parserResult, Context context) {
         try {
             FileObject fo = parserResult.getSnapshot().getSource().getFileObject();
-            LOG.info("indexing " + fo.getPath());
+            LOG.log(Level.FINE, "indexing " + fo.getPath());
             List<IndexDocument> documents = new LinkedList<IndexDocument>();
             IndexingSupport support = IndexingSupport.getInstance(context);
 

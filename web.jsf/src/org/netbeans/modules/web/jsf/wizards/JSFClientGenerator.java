@@ -320,13 +320,14 @@ public class JSFClientGenerator {
             FileObject target = FileUtil.createData(pagesRootFolder, JSFCRUD_STYLESHEET);
             JSFFrameworkProvider.createFile(target, content, projectEncoding);
         }
-        
-        final String rootRelativePathToWebFolder = wm.getContextPath() + "/faces/";
+
+        final String facesServletMapping = ConfigurationUtils.getFacesServletMapping(wm);;
+        final String busyIconPath = wm.getContextPath() + "/"+ConfigurationUtils.translateURI(facesServletMapping, JSFCRUD_AJAX_BUSY_IMAGE);
         
         if (pagesRootFolder.getFileObject(JSFCRUD_JAVASCRIPT) == null) {
             String content = JSFFrameworkProvider.readResource(JSFClientGenerator.class.getClassLoader().getResourceAsStream(RESOURCE_FOLDER + JSFCRUD_JAVASCRIPT), "UTF-8"); //NOI18N
             FileObject target = FileUtil.createData(pagesRootFolder, JSFCRUD_JAVASCRIPT);//NOI18N
-            content = content.replaceAll("__WEB_FOLDER_PATH__", rootRelativePathToWebFolder);
+            content = content.replaceAll("__WEB_BUSY_ICON_PATH__", busyIconPath);//NOI18N
             JSFFrameworkProvider.createFile(target, content, projectEncoding);  //NOI18N
         }
 
@@ -373,8 +374,8 @@ public class JSFClientGenerator {
         converterFileObject = generateConverter(converterFileObject, controllerFileObject, pkg, controllerClass, simpleControllerName, entityClass, 
                 simpleEntityName, idGetter.get(0), managedBean, jpaControllerClass, genSessionBean, isInjection);
         
-        final String styleAndScriptTags = "<link rel=\"stylesheet\" type=\"text/css\" href=\"" + rootRelativePathToWebFolder + JSFCRUD_STYLESHEET + "\" />" +
-            (ajaxify ? "<%@ include file=\"/" + JSPF_FOLDER + "/" + JSFCRUD_AJAX_JSPF + "\" %><script type=\"text/javascript\" src=\"" + rootRelativePathToWebFolder + JSFCRUD_JAVASCRIPT + "\"></script>" : "");
+        final String styleAndScriptTags = "<link rel=\"stylesheet\" type=\"text/css\" href=\"" + wm.getContextPath() + "/" + ConfigurationUtils.translateURI(facesServletMapping, JSFCRUD_STYLESHEET) + "\" />" +
+            (ajaxify ? "<%@ include file=\"/" + JSPF_FOLDER + "/" + JSFCRUD_AJAX_JSPF + "\" %><script type=\"text/javascript\" src=\"" + wm.getContextPath() + "/" + ConfigurationUtils.translateURI(facesServletMapping, JSFCRUD_JAVASCRIPT) + "\"></script>" : "");
             
         boolean welcomePageExists = addLinkToListJspIntoIndexJsp(wm, simpleEntityName, styleAndScriptTags, projectEncoding, "");
         final String linkToIndex = welcomePageExists ? "<br />\n<h:commandLink value=\"Index\" action=\"welcome\" immediate=\"true\" />\n" : "";  //NOI18N

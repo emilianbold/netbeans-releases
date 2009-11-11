@@ -167,13 +167,15 @@ public class TabbedController extends OptionsPanelController {
     }
 
     private void initTabbedPane() {
-        pane.removeChangeListener(tabbedPaneChangeListener);
-        pane.removeAll();
-        for (String tabTitle : tabTitle2Option.keySet()) {
-            pane.addTab(tabTitle, new JLabel(tabTitle));
+        if (pane != null) {
+            pane.removeChangeListener(tabbedPaneChangeListener);
+            pane.removeAll();
+            for (String tabTitle : tabTitle2Option.keySet()) {
+                pane.addTab(tabTitle, new JLabel(tabTitle));
+            }
+            pane.addChangeListener(tabbedPaneChangeListener);
+            handleTabSwitched();
         }
-        pane.addChangeListener(tabbedPaneChangeListener);
-        handleTabSwitched();
     }
 
 

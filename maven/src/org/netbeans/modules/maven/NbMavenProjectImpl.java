@@ -577,6 +577,8 @@ public final class NbMavenProjectImpl implements Project {
         put("war", "org/netbeans/modules/maven/resources/webicon.gif"); //NOI18N
         put("ejb", "org/netbeans/modules/maven/resources/ejbicon.gif"); //NOI18N
         put("ear", "org/netbeans/modules/maven/resources/earicon.gif"); //NOI18N
+        put("pom", "org/netbeans/modules/maven/resources/Maven2Icon.gif"); //NOI18N
+        put("nbm", "org/netbeans/modules/maven/resources/nbmicon.png"); //NOI18N
     }};
 
     public static Image getIcon (MavenProject mPrj) {
@@ -989,6 +991,10 @@ public final class NbMavenProjectImpl implements Project {
                 } else {
                     toReturn = NbBundle.getMessage(NbMavenProjectImpl.class, "TXT_Maven_project_at", NbMavenProjectImpl.this.getProjectDirectory().getPath());
                 }
+            }
+            String pckg = pr.getPackaging().toLowerCase();
+            if (pkg2Icon.get(pckg) == null) {
+                toReturn = toReturn + " (" + pckg + ")"; // NOI18N
             }
 
             return toReturn;

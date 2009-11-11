@@ -182,7 +182,7 @@ made subject to such option by the copyright holder.
                     <folder name="LifeCycle">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2ee.Bundle"/>
                         <folder name=".subtypes">
-                            <folder name="javax.servlet.Servlet" url="javax.servlet.Servlet">
+                            <folder name="javax.servlet.Servlet">
                                 <attr name="includes" stringvalue="init,destroy"/>
                             </folder>
                             <folder name="javax.servlet.http.HttpServlet">
