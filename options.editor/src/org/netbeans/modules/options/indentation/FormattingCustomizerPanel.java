@@ -509,7 +509,8 @@ private void editGlobalButtonActionPerformed(java.awt.event.ActionEvent evt) {//
 
     private static void removeAllKidsAndKeys(Preferences prefs) throws BackingStoreException {
         for(String kid : prefs.childrenNames()) {
-            prefs.node(kid).removeNode();
+            // remove just the keys otherwise node listeners won't survive
+            removeAllKidsAndKeys(prefs.node(kid));
         }
         for(String key : prefs.keys()) {
             prefs.remove(key);

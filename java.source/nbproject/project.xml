@@ -252,6 +252,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
+                        <release-version>1</release-version>
                         <implementation-version/>
                     </run-dependency>
                 </dependency>

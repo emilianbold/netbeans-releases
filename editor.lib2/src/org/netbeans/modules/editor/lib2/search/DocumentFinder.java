@@ -64,18 +64,6 @@ public class DocumentFinder
 {
     private static final Logger LOG = Logger.getLogger(EditorFindSupport.class.getName());
    
-    private static FalseBlocksFinder falseBlocksFinder;
-    private static FalseFinder falseFinder;
-    private static WholeWordsBlocksFinder wholeWordsBlocksFinder;
-    private static RegExpBlocksFinder regExpBlocksFinder;
-    private static StringBlocksFinder stringBlocksFinder;
-    private static WholeWordsBwdFinder wholeWordsBwdFinder;
-    private static WholeWordsFwdFinder wholeWordsFwdFinder;
-    private static RegExpBwdFinder regExpBwdFinder;
-    private static RegExpFwdFinder regExpFwdFinder;
-    private static StringBwdFinder stringBwdFinder;
-    private static StringFwdFinder stringFwdFinder;
-    
     /** Creates a new instance of DocumentFinder */
     private DocumentFinder()
     {
@@ -86,15 +74,9 @@ public class DocumentFinder
         String text = (String)searchProps.get(EditorFindSupport.FIND_WHAT);
         if (text == null || text.length() == 0) {
             if (blocksFinder) {
-                if (falseBlocksFinder == null){
-                    falseBlocksFinder = new FalseBlocksFinder();
-                }
-                return falseBlocksFinder;
+                return FalseBlocksFinder.INSTANCE;
             } else {
-                if (falseFinder == null){
-                    falseFinder = new FalseFinder();
-                }
-                return falseFinder;
+                return FalseFinder.INSTANCE;
             }
         }
 
@@ -144,25 +126,19 @@ public class DocumentFinder
         }else{
             PatternCache.clear();
         }
-        
+
         if (blocksFinder) {
             if (wholeWords && !regExpSearch) {
-                if (wholeWordsBlocksFinder == null){
-                    wholeWordsBlocksFinder = new WholeWordsBlocksFinder();
-                }
+                WholeWordsBlocksFinder wholeWordsBlocksFinder = new WholeWordsBlocksFinder();
                 wholeWordsBlocksFinder.setParams(doc, text, matchCase);
                 return wholeWordsBlocksFinder;
             } else {
                 if (regExpSearch){
-                    if (regExpBlocksFinder == null){
-                        regExpBlocksFinder = new RegExpBlocksFinder();
-                    }
+                    RegExpBlocksFinder regExpBlocksFinder = new RegExpBlocksFinder();
                     regExpBlocksFinder.setParams(pattern, matchCase);
                     return regExpBlocksFinder;
                 }else{
-                    if (stringBlocksFinder == null){
-                        stringBlocksFinder = new StringBlocksFinder();
-                    }
+                    StringBlocksFinder stringBlocksFinder = new StringBlocksFinder();
                     stringBlocksFinder.setParams(text, matchCase);
                     return stringBlocksFinder;
                 }
@@ -170,44 +146,32 @@ public class DocumentFinder
         } else {
             if (wholeWords && !regExpSearch) {
                 if (bwdSearch) {
-                    if (wholeWordsBwdFinder  == null){
-                        wholeWordsBwdFinder = new WholeWordsBwdFinder();
-                    }
+                    WholeWordsBwdFinder wholeWordsBwdFinder = new WholeWordsBwdFinder();
                     wholeWordsBwdFinder.setParams(doc, text, matchCase);
                     return wholeWordsBwdFinder;
                 } else {
-                    if (wholeWordsFwdFinder == null){
-                        wholeWordsFwdFinder = new WholeWordsFwdFinder();
-                    }
+                    WholeWordsFwdFinder wholeWordsFwdFinder = new WholeWordsFwdFinder();
                     wholeWordsFwdFinder.setParams(doc, text, matchCase);
                     return wholeWordsFwdFinder;
                 }
             } else {
                 if (regExpSearch){
                     if (bwdSearch) {
-                        if (regExpBwdFinder == null){
-                            regExpBwdFinder = new RegExpBwdFinder();
-                        }
+                        RegExpBwdFinder regExpBwdFinder = new RegExpBwdFinder();
                         regExpBwdFinder.setParams(pattern, matchCase);
                         return regExpBwdFinder;
                     } else {
-                        if (regExpFwdFinder == null){
-                            regExpFwdFinder = new RegExpFwdFinder();
-                        }
+                        RegExpFwdFinder regExpFwdFinder = new RegExpFwdFinder();
                         regExpFwdFinder.setParams(pattern, matchCase);
                         return regExpFwdFinder;
                     }
                 }else{
                     if (bwdSearch) {
-                        if (stringBwdFinder == null){
-                            stringBwdFinder = new StringBwdFinder();
-                        }
+                        StringBwdFinder stringBwdFinder = new StringBwdFinder();
                         stringBwdFinder.setParams(text, matchCase);
                         return stringBwdFinder;
                     } else {
-                        if (stringFwdFinder == null){
-                            stringFwdFinder = new StringFwdFinder();
-                        }
+                        StringFwdFinder stringFwdFinder = new StringFwdFinder();
                         stringFwdFinder.setParams(text, matchCase);
                         return stringFwdFinder;
                     }
@@ -389,19 +353,20 @@ public class DocumentFinder
         
         public void reset();
     }
-
     
     private static final class FalseBlocksFinder extends AbstractBlocksFinder {
+        public static final FalseBlocksFinder INSTANCE = new FalseBlocksFinder();
 
         public int find(int initOffset, CharSequence data) {
             return -1;
         }
-        
+
+        private FalseBlocksFinder() {}
     }
     
     /** Request non-existent position immediately */
-    private static class FalseFinder extends AbstractFinder
-        implements StringFinder {
+    private static class FalseFinder extends AbstractFinder implements StringFinder {
+        public static final FalseFinder INSTANCE = new FalseFinder();
 
         public int find(int initOffset, CharSequence data) {
             return -1;
@@ -411,9 +376,8 @@ public class DocumentFinder
             return 0;
         }
 
+        private FalseFinder() {}
     }
-    
-
     
     private static abstract class AbstractBlocksFinder extends AbstractFinder
         implements BlocksFinder {

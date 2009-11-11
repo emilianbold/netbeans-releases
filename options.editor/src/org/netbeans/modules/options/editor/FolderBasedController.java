@@ -96,19 +96,6 @@ public final class FolderBasedController extends OptionsPanelController implemen
         return new FolderBasedController("MarkOccurrences/", "netbeans.optionsDialog.editor.markOccurences");
     }
 
-    @OptionsPanelController.SubRegistration(
-        id="TaskList",
-        displayName="#CTL_Tasklist_DisplayName",
-        location="Editor",
-        keywords="#KW_TaskList",
-        keywordsCategory="Editor/TaskList",
-        position=600
-//        toolTip="#CTL_Tasklist_ToolTip"
-    )
-    public static OptionsPanelController taskList() {
-        return new FolderBasedController("TaskList/", "netbeans.optionsDialog.editor.tasklist");
-    }
-    
     public static OptionsPanelController create (Map args) {
         FolderBasedController folderBasedController = new FolderBasedController(
                 (String) args.get (OPTIONS_SUB_FOLDER),
