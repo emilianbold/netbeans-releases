@@ -9,6 +9,9 @@
          "http://java.sun.com/products/javahelp/toc_2_0.dtd">
 
 <toc version="2.0">
+<tocitem target="org.netbeans.modules.javacard.title" text="Java Card 3 Guide" expand="true">
+<tocitem target="org.netbeans.modules.javacard.docinfo" text="Copyright" expand="true">
+
  <tocitem target="org.netbeans.modules.javacard.AboutJavaCard3Development" text="About Java Card 3 Development" expand="true">
     <tocitem target="org.netbeans.modules.javacard.WhatYouShouldKnow" text="What You Should Know Before Working With the Java Card 3 Plugin" expand="false"></tocitem>
     <tocitem target="org.netbeans.modules.javacard.WhatIsIn" text="What Is In This Online Help" expand="false"></tocitem>
