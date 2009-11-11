@@ -1,4 +1,3 @@
 [usersubs]
 nb-fixes-change@sun.com=*
-commits@installer.netbeans.org=installer/*,reglib/*
-commits@installer.netbeans.org=nbi/*
+commits@installer.netbeans.org=installer/*,reglib/*,nbi/*
