@@ -69,7 +69,7 @@ public final class TypeInferenceSettings {
     }
 
     public boolean getMethodTypeInference() {
-        return getPreferences().getBoolean(METHODS, true);
+        return getPreferences().getBoolean(METHODS, false);
     }
 
     public void setRdocTypeInference(boolean enabled) {
