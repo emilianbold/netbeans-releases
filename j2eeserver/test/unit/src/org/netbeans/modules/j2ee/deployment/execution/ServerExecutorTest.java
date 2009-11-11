@@ -170,7 +170,7 @@ public class ServerExecutorTest extends NbTestCase {
         }
 
         public ResourceChangeReporter getResourceChangeReporter() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw null;
         }
         
     }
