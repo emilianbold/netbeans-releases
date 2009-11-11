@@ -144,6 +144,16 @@ final class BasicSearchCriteria {
      */
     private Map<DataObject, List<TextDetail>> detailsMap;
 
+    /**
+     * Holds a {@code DataObject} that will be used to create
+     * a {@code TextDetail}. It should be set to {@code null} immediately after
+     * all {@code TextDetail}s are created for given {@code DataObject}.
+     *
+     * @see #findDataObject(org.openide.filesystems.FileObject)
+     * @see #freeDataObject()
+     */
+    private DataObject dataObject;
+
     BasicSearchCriteria() {
         if (LOG.isLoggable(FINER)) {
             LOG.finer("#" + instanceId + ": <init>()");                 //NOI18N
@@ -718,14 +728,15 @@ final class BasicSearchCriteria {
         SearchPattern sp = createSearchPattern();
         BufferedCharSequence bcs = null;
         try {
-            DataObject dObj = DataObject.find(fo);
             FileInputStream fis = (FileInputStream)fo.getInputStream();
             bcs = new BufferedCharSequence(fis, lastCharset);
-            ArrayList<TextDetail> txtDetails = getTextDetails(bcs, dObj, sp);
+            ArrayList<TextDetail> txtDetails = getTextDetails(bcs, fo, sp);
             if (txtDetails.isEmpty()){
                 return false;
             }
-            getDetailsMap().put(dObj, txtDetails);
+            assert dataObject != null;
+            getDetailsMap().put(dataObject, txtDetails);
+            freeDataObject();
             return true;
         }
         catch(DataObjectNotFoundException e){
@@ -762,9 +773,10 @@ final class BasicSearchCriteria {
     }
 
     private ArrayList<TextDetail> getTextDetails(BufferedCharSequence bcs,
-                                                 DataObject dataObject,
+                                                 FileObject fo,
                                                  SearchPattern sp)
-                                throws BufferedCharSequence.SourceIOException  {
+                                throws BufferedCharSequence.SourceIOException,
+                                       DataObjectNotFoundException {
 
         ArrayList<TextDetail> txtDetails = new ArrayList<TextDetail>();
         FindState fs = new FindState(bcs);
@@ -777,7 +789,8 @@ final class BasicSearchCriteria {
             int lineNumber = fs.getLineNumber();
             String lineText = fs.getLineText();
 
-            TextDetail det = newTextDetail(dataObject, sp, matcher);
+            findDataObject(fo);
+            TextDetail det = newTextDetail(sp, matcher);
             det.associate(lineNumber, column, lineText);
 
             txtDetails.add(det);
@@ -786,15 +799,15 @@ final class BasicSearchCriteria {
         return txtDetails;
     }
 
-    private TextDetail newTextDetail(DataObject dObj,
-                                     SearchPattern searchPattern,
+    private TextDetail newTextDetail(SearchPattern searchPattern,
                                      Matcher matcher) {
         String group = matcher.group();
         int start = matcher.start();
         int end = matcher.end();
         int countCR = countCR(group);
         int markLength = end - start - countCR;
-        TextDetail det = new TextDetail(dObj, searchPattern);
+        assert dataObject != null;
+        TextDetail det = new TextDetail(dataObject, searchPattern);
         det.setMatchedText(group);
         det.setStartOffset(start);
         det.setEndOffset(end);
@@ -888,6 +901,17 @@ final class BasicSearchCriteria {
                                     wholeWords, 
                                     caseSensitive, 
                                     regexp);
+    }
+
+    private void findDataObject(FileObject fo)
+                                            throws DataObjectNotFoundException {
+        if(dataObject == null) {
+            dataObject = DataObject.find(fo);
+        }
+    }
+
+    private void freeDataObject() {
+        dataObject = null;
     }
 
     /**
