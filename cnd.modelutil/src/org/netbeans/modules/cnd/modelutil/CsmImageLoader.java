@@ -297,7 +297,8 @@ public class CsmImageLoader implements CsmImageName {
                     }
                 }
           }
-        } else if (kind == CsmDeclaration.Kind.FUNCTION || kind == CsmDeclaration.Kind.FUNCTION_DEFINITION) {
+        } else if (kind == CsmDeclaration.Kind.FUNCTION || kind == CsmDeclaration.Kind.FUNCTION_DEFINITION ||
+                kind == CsmDeclaration.Kind.FUNCTION_FRIEND || kind == CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION) {
             boolean isMethod = (modifiers & CsmUtilities.MEMBER) != 0;
             boolean isGlobal = !(isMethod);
             boolean isConstructor = (modifiers & CsmUtilities.CONSTRUCTOR) != 0;
@@ -310,7 +311,7 @@ public class CsmImageLoader implements CsmImageName {
                 if (isOperator) {
                     iconPath = OPERATOR_GLOBAL;
                 } else {
-                    if (kind == CsmDeclaration.Kind.FUNCTION) {
+                    if (kind == CsmDeclaration.Kind.FUNCTION || kind == CsmDeclaration.Kind.FUNCTION_FRIEND) {
                         iconPath = FUNCTION_DECLARATION_GLOBAL;
                     } else {
                         iconPath = FUNCTION_GLOBAL;

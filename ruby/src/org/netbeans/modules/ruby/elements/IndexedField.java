@@ -30,6 +30,7 @@ package org.netbeans.modules.ruby.elements;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.ruby.RubyIndex;
+import org.netbeans.modules.ruby.RubyType;
 import org.openide.filesystems.FileObject;
 
 /**

@@ -126,7 +126,7 @@ public class LayerIndex extends Task {
         SortedMap<String,String> files = new TreeMap<String,String>(); // layer path -> cnb
         SortedMap<String,SortedMap<String,String>> labels = new TreeMap<String,SortedMap<String,String>>(); // layer path -> cnb -> label
         final Map<String,Integer> positions = new TreeMap<String,Integer>(); // layer path -> position
-        SortedMap<String,Set<String>> serviceImpls = new TreeMap<String,Set<String>>(); // interface -> [impl]
+        SortedMap<String,SortedMap<String,Set<String>>> serviceImpls = new TreeMap<String,SortedMap<String,Set<String>>>(); // path -> interface -> [impl]
         Map<String,Integer> servicePositions = new HashMap<String,Integer>(); // impl -> position
         for (FileSet fs : filesets) {
             DirectoryScanner ds = fs.getDirectoryScanner(getProject());
@@ -308,14 +308,27 @@ public class LayerIndex extends Task {
         });
     }
 
-    private void parseServices(JarFile jf, SortedMap<String,Set<String>> serviceImpls, Map<String,Integer> servicePositions) throws IOException {
+    private void parseServices(JarFile jf, SortedMap<String,SortedMap<String,Set<String>>> serviceImplsByPath,
+            Map<String,Integer> servicePositions) throws IOException {
         Enumeration<JarEntry> entries = jf.entries();
         while (entries.hasMoreElements()) {
             JarEntry entry = entries.nextElement();
-            if (!entry.getName().startsWith("META-INF/services/")) {
+            if (entry.isDirectory()) {
                 continue;
             }
-            String xface = entry.getName().substring("META-INF/services/".length());
+            String name = entry.getName();
+            String path, xface;
+            if (name.startsWith("META-INF/services/")) {
+                path = "";
+                xface = name.substring("META-INF/services/".length());
+            } else if (name.startsWith("META-INF/namedservices/")) {
+                String rest = name.substring("META-INF/namedservices/".length());
+                int x = rest.lastIndexOf('/');
+                path = rest.substring(0, x);
+                xface = rest.substring(x + 1);
+            } else {
+                continue;
+            }
             InputStream is = jf.getInputStream(entry);
             try {
                 BufferedReader r = new BufferedReader(new InputStreamReader(is, "UTF-8"));
@@ -326,6 +339,11 @@ public class LayerIndex extends Task {
                         servicePositions.put(lastImpl, Integer.parseInt(line.substring("#position=".length())));
                     } else if (line.startsWith("#-") || (line.length() > 0 && !line.startsWith("#"))) {
                         lastImpl = line;
+                        SortedMap<String,Set<String>> serviceImpls = serviceImplsByPath.get(path);
+                        if (serviceImpls == null) {
+                            serviceImpls = new TreeMap<String,Set<String>>();
+                            serviceImplsByPath.put(path, serviceImpls);
+                        }
                         Set<String> impls = serviceImpls.get(xface);
                         if (impls == null) {
                             impls = new HashSet<String>();
@@ -524,26 +542,34 @@ public class LayerIndex extends Task {
         }
     }
 
-    private void writeServiceIndex(SortedMap<String,Set<String>> serviceImpls,
+    private void writeServiceIndex(SortedMap<String,SortedMap<String,Set<String>>> serviceImpls,
             final Map<String,Integer> servicePositions) throws IOException {
         PrintWriter pw = new PrintWriter(serviceOutput, "UTF-8");
-        for (Map.Entry<String,Set<String>> entry : serviceImpls.entrySet()) {
-            pw.println("SERVICE " + entry.getKey());
-            SortedSet<String> impls = new TreeSet<String>(new ServiceComparator(servicePositions));
-            impls.addAll(entry.getValue());
-            Set<String> masked = new HashSet<String>();
-            for (String impl : impls) {
-                if (impl.startsWith("#-")) {
-                    masked.add(impl);
-                    masked.add(impl.substring(2));
+        for (Map.Entry<String,SortedMap<String,Set<String>>> mainEntry : serviceImpls.entrySet()) {
+            String path = mainEntry.getKey();
+            for (Map.Entry<String,Set<String>> entry : mainEntry.getValue().entrySet()) {
+                pw.print("SERVICE " + entry.getKey());
+                if (path.length() > 0) {
+                    pw.println(" under " + path);
+                } else {
+                    pw.println();
                 }
-            }
-            impls.removeAll(masked);
-            for (String impl : impls) {
-                if (servicePositions.containsKey(impl)) {
-                    impl += " @" + servicePositions.get(impl);
+                SortedSet<String> impls = new TreeSet<String>(new ServiceComparator(servicePositions));
+                impls.addAll(entry.getValue());
+                Set<String> masked = new HashSet<String>();
+                for (String impl : impls) {
+                    if (impl.startsWith("#-")) {
+                        masked.add(impl);
+                        masked.add(impl.substring(2));
+                    }
                 }
-                pw.println("  PROVIDER " + impl);
+                impls.removeAll(masked);
+                for (String impl : impls) {
+                    if (servicePositions.containsKey(impl)) {
+                        impl += " @" + servicePositions.get(impl);
+                    }
+                    pw.println("  PROVIDER " + impl);
+                }
             }
         }
         pw.close();

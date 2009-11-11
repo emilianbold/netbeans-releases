@@ -85,12 +85,8 @@ import org.netbeans.api.java.source.ui.ElementJavadoc;
  */
 public final class JavaMembersModel extends DefaultTreeModel {
     static Element[] EMPTY_ELEMENTS_ARRAY = new Element[0];
-    static ElementHandle[] EMPTY_ELEMENTHANDLES_ARRAY = new ElementHandle[0];
-
-    private String pattern = ""; // NOI18N
-    private String patternLowerCase = ""; // NOI18N
     private FileObject fileObject;
-    private ElementHandle[] elementHandles;
+    private ElementHandle<?>[] elementHandles;
     
     private FilterModel filterModel;
 
@@ -100,24 +96,11 @@ public final class JavaMembersModel extends DefaultTreeModel {
      * @param elements 
      * @param compilationInfo 
      */
-    public JavaMembersModel(FileObject fileObject, Element[] elements, CompilationInfo compilationInfo) {
+    public JavaMembersModel(FileObject fileObject, ElementHandle<?>[] elements) {
         super(null);
-        this.fileObject = fileObject;
-
-        if ((elements == null) || (elements.length == 0)) {
-            elementHandles = EMPTY_ELEMENTHANDLES_ARRAY;
-        } else {
-            List<ElementHandle> elementHandlesList = new ArrayList<ElementHandle>(elements.length);
-
-            for (Element element : elements) {
-                elementHandlesList.add(ElementHandle.create(element));
-            }
-
-            elementHandles = elementHandlesList.toArray(EMPTY_ELEMENTHANDLES_ARRAY);
-        }
-
-        update(elements, compilationInfo);
-        
+        this.fileObject = fileObject;        
+        elementHandles = elements;
+        update(elements);        
         filterModel = new FilterModel(this);
     }
     

@@ -336,16 +336,18 @@ public final class CreateElementUtilities {
         
         if (at.getVariable() == error) {
             type = info.getTrees().getTypeMirror(new TreePath(parent, at.getExpression()));
-            
-            //anonymous class?
-            type = org.netbeans.modules.java.hints.errors.Utilities.convertIfAnonymous(type);
-            
-            if (type.getKind() == TypeKind.EXECUTABLE) {
-                //TODO: does not actualy work, attempt to solve situations like:
-                //t = Collections.emptyList()
-                //t = Collections.<String>emptyList();
-                //see also testCreateFieldMethod1 and testCreateFieldMethod2 tests:
-                type = ((ExecutableType) type).getReturnType();
+
+            if (type != null) {
+                //anonymous class?
+                type = org.netbeans.modules.java.hints.errors.Utilities.convertIfAnonymous(type);
+
+                if (type.getKind() == TypeKind.EXECUTABLE) {
+                    //TODO: does not actualy work, attempt to solve situations like:
+                    //t = Collections.emptyList()
+                    //t = Collections.<String>emptyList();
+                    //see also testCreateFieldMethod1 and testCreateFieldMethod2 tests:
+                    type = ((ExecutableType) type).getReturnType();
+                }
             }
         }
         

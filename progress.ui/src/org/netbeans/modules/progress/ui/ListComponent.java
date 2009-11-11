@@ -298,7 +298,10 @@ public class ListComponent extends JPanel {
         }
     }
     
-   private void showMenu(MouseEvent e) {
+    private void showMenu(MouseEvent e) {
+        if (!isShowing()) {
+            return;
+        }
         JPopupMenu popup = new JPopupMenu();
         //mark teh popup for the status line awt listener
         popup.setName("progresspopup");

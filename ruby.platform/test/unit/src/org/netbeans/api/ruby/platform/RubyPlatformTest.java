@@ -59,7 +59,7 @@ public class RubyPlatformTest extends RubyTestBase {
         assertNotNull("has label", jruby.getLabel());
         assertTrue("is valid", jruby.isValid());
         assertTrue("is default", jruby.isDefault());
-        assertEquals("right version", "1.8.6", jruby.getVersion());
+        assertEquals("right version", "1.8.7", jruby.getVersion());
         assertEquals("right ruby home", TestUtil.getXTestJRubyHome(), jruby.getHome());
         assertEquals("right ruby home", new File(jruby.getHome(), "lib").getAbsolutePath(), jruby.getLibDir());
         assertEquals("right ruby lib", new File(jruby.getHome(), "lib/ruby/1.8").getAbsolutePath(), jruby.getVersionLibDir());
@@ -112,7 +112,7 @@ public class RubyPlatformTest extends RubyTestBase {
 
     public void testLabel() throws Exception {
         RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
-        assertEquals("right label for build-in JRuby", "Built-in JRuby 1.3.1", jruby.getLabel());
+        assertEquals("right label for build-in JRuby", "Built-in JRuby 1.4.0", jruby.getLabel());
         assertEquals("right label for Ruby", "Ruby 0.1", setUpPlatform().getLabel());
     }
 

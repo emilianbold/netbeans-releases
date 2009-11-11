@@ -85,9 +85,13 @@ public class TreeList extends JList {
     /** Action key for invoking the custom editor */
     private static final String ACTION_DEFAULT = "invokeDefaultAction"; //NOI18N
 
+    /** Action ket for invoking popup menu */
+    private static final String ACTION_SHOW_POPUP = "showPopup"; //NOI18N
+
     private Action expandAction;
     private Action collapseAction;
     private Action defaultAction;
+    private Action showPopupAction;
 
     private final TreeListRenderer renderer = new TreeListRenderer();
 
@@ -145,10 +149,12 @@ public class TreeList extends JList {
         unregisterKeyboardAction(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0));
         unregisterKeyboardAction(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0));
         unregisterKeyboardAction(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
+        unregisterKeyboardAction(KeyStroke.getKeyStroke(KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK));
 
         expandAction = new ExpandAction();
         collapseAction = new CollapseAction();
         defaultAction = new DefaultAction();
+        showPopupAction = new ShowPopupAction();
 
         InputMap imp = getInputMap();
         InputMap impAncestor = getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
@@ -157,14 +163,17 @@ public class TreeList extends JList {
         imp.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0), ACTION_EXPAND);
         imp.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0), ACTION_COLLAPSE);
         imp.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), ACTION_DEFAULT);
+        imp.put(KeyStroke.getKeyStroke(KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK), ACTION_SHOW_POPUP);
 
         impAncestor.remove(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0));
         impAncestor.remove(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0));
         impAncestor.remove(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
+        impAncestor.remove(KeyStroke.getKeyStroke(KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK));
 
         am.put(ACTION_EXPAND, expandAction);
         am.put(ACTION_COLLAPSE, collapseAction);
         am.put(ACTION_DEFAULT, defaultAction);
+        am.put(ACTION_SHOW_POPUP, showPopupAction);
     }
 
     private TreeListNode getSelectedTreeListNode() {
@@ -291,6 +300,28 @@ public class TreeList extends JList {
             return null != node && node.isExpandable();
         }
     }
+
+    private class ShowPopupAction extends AbstractAction {
+        public ShowPopupAction() {
+            super(ACTION_SHOW_POPUP);
+        }
+
+        public void actionPerformed(ActionEvent ae) {
+            TreeListNode node = getSelectedTreeListNode();
+            TreeList tl = (TreeList) ae.getSource();
+            JPopupMenu menu = Utilities.actionsToPopup(node.getPopupActions(), tl);
+            Point p = tl.getUI().indexToLocation(tl, tl.getSelectedIndex());
+            menu.show(tl, p.x + 22, p.y);
+        }
+
+        @Override
+        public boolean isEnabled() {
+            TreeListNode node = getSelectedTreeListNode();
+            return null != node && null != node.getPopupActions();
+        }
+
+    }
+
 
     private class DefaultAction extends AbstractAction {
         public DefaultAction() {

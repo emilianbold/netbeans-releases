@@ -254,6 +254,16 @@ public abstract class JavaCompletionItem implements CompletionItem {
     public void processKeyEvent(KeyEvent evt) {
         if (evt.getID() == KeyEvent.KEY_TYPED) {
             if (Utilities.getJavaCompletionSelectors().indexOf(evt.getKeyChar()) >= 0) {
+                if (evt.getKeyChar() == '(' && !(this instanceof AnnotationItem)
+                        && !(this instanceof ConstructorItem)
+                        && !(this instanceof DefaultConstructorItem)
+                        && !(this instanceof MethodItem)
+                        && !(this instanceof GetterSetterMethodItem)
+                        && !(this instanceof InitializeAllConstructorItem)
+                        && !(this instanceof OverrideMethodItem)
+                        && !(this instanceof StaticMemberItem)) {
+                    return;
+                }
                 Completion.get().hideDocumentation();
                 if (Utilities.getJavaCompletionAutoPopupTriggers().indexOf(evt.getKeyChar()) < 0)
                     Completion.get().hideCompletion();

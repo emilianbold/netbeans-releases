@@ -134,7 +134,8 @@ public class CsmSelect {
             if (pos == -1) {
                 // qName resides in global namespace
                 CsmFilter filter = CsmSelect.getFilterBuilder().createCompoundFilter(
-                         CsmSelect.getFilterBuilder().createKindFilter(CsmDeclaration.Kind.FUNCTION, CsmDeclaration.Kind.FUNCTION_DEFINITION),
+                         CsmSelect.getFilterBuilder().createKindFilter(CsmDeclaration.Kind.FUNCTION, CsmDeclaration.Kind.FUNCTION_DEFINITION,
+                         CsmDeclaration.Kind.FUNCTION_FRIEND,CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION),
                          CsmSelect.getFilterBuilder().createNameFilter(qName, true, true, false));
                 getFunctions(CsmSelect.getDeclarations(project.getGlobalNamespace(), filter), result);
             } else {
@@ -143,7 +144,8 @@ public class CsmSelect {
                 CharSequence funcName = qName.subSequence(pos+2, qName.length());
                 CsmNamespace nsp = project.findNamespace(ownerQName);
                 CsmFilter filter = CsmSelect.getFilterBuilder().createCompoundFilter(
-                         CsmSelect.getFilterBuilder().createKindFilter(CsmDeclaration.Kind.FUNCTION, CsmDeclaration.Kind.FUNCTION_DEFINITION),
+                         CsmSelect.getFilterBuilder().createKindFilter(CsmDeclaration.Kind.FUNCTION, CsmDeclaration.Kind.FUNCTION_DEFINITION,
+                         CsmDeclaration.Kind.FUNCTION_FRIEND,CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION),
                          CsmSelect.getFilterBuilder().createNameFilter(funcName, true, true, false));
                 if (nsp != null) {
                     getFunctions(CsmSelect.getDeclarations(nsp, filter), result);

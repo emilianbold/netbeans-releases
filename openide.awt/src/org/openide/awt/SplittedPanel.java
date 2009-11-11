@@ -100,6 +100,7 @@ import javax.swing.border.*;
 * @deprecated This class does nothing interesting that cannot be done with a JSplitPane.
 *  Use a JSplitPane instead.
 */
+@Deprecated
 public class SplittedPanel extends JComponent implements Accessible {
     /** generated Serialized Version UID */
     static final long serialVersionUID = 5058424218525927233L;
@@ -763,7 +764,7 @@ public class SplittedPanel extends JComponent implements Accessible {
         Vector<SplitChangeListener> l;
 
         synchronized (this) {
-            l = (Vector<SplitChangeListener>) listeners.clone();
+            l = new Vector<SplitChangeListener>(listeners);
         }
 
         Enumeration en = l.elements();
@@ -778,10 +779,10 @@ public class SplittedPanel extends JComponent implements Accessible {
     /* Read accessible context
      * @return - accessible context
      */
-    public AccessibleContext getAccessibleContext() {
+    public @Override AccessibleContext getAccessibleContext() {
         if (accessibleContext == null) {
             accessibleContext = new AccessibleJComponent() {
-                        public AccessibleRole getAccessibleRole() {
+                        public @Override AccessibleRole getAccessibleRole() {
                             return AccessibleRole.SPLIT_PANE;
                         }
                     };
@@ -852,6 +853,7 @@ public class SplittedPanel extends JComponent implements Accessible {
       * @deprecated This class does nothing interesting that cannot be done with a JSplitPane.
       * Use a JSplitPane instead.
      */
+    @Deprecated
     public static class SplitChangeEvent extends java.util.EventObject {
         /** generated Serialized Version UID */
         static final long serialVersionUID = 6748966611210836878L;
@@ -883,6 +885,7 @@ public class SplittedPanel extends JComponent implements Accessible {
      * @deprecated This class does nothing interesting that cannot be done with a JSplitPane.
      * Use a JSplitPane instead.
     */
+    @Deprecated
     public static class EmptySplitter extends JComponent implements Accessible {
         /** generated Serialized Version UID */
         static final long serialVersionUID = 929648193440460693L;

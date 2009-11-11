@@ -115,6 +115,24 @@ public class WebModuleImpl implements WebModuleImplementation2, J2eeModuleImplem
     }
 
     public Profile getJ2eeProfile() {
+        Profile propProfile = getPropertyJ2eeProfile();
+        Profile descriptorProfile = getDescriptorJ2eeProfile();
+        if (descriptorProfile != null) {
+            if (descriptorProfile.equals(Profile.JAVA_EE_6_WEB) && propProfile != null && propProfile.equals(Profile.JAVA_EE_6_FULL)) {
+                //override the default in the descriptor value..
+                return propProfile;
+            }
+            return descriptorProfile;
+        } else {
+            if (propProfile != null) {
+                return propProfile;
+            }
+            //has DD but we didn't figure the version??
+            return Profile.JAVA_EE_5;
+        }
+    }
+
+    public Profile getPropertyJ2eeProfile() {
         //try to apply the hint if it exists.
         AuxiliaryProperties prop = project.getLookup().lookup(AuxiliaryProperties.class);
         if (prop != null) {
@@ -128,6 +146,12 @@ public class WebModuleImpl implements WebModuleImplementation2, J2eeModuleImplem
                 return Profile.fromPropertiesString(version);
             }
         }
+        return null;
+    }
+
+
+
+    public Profile getDescriptorJ2eeProfile() {
         DDProvider prov = DDProvider.getDefault();
         FileObject dd = getDeploymentDescriptor();
         if (dd != null) {
@@ -147,13 +171,12 @@ public class WebModuleImpl implements WebModuleImplementation2, J2eeModuleImplem
             } catch (IOException exc) {
                 ErrorManager.getDefault().notify(exc);
             }
-            //make 15 the default..
-            //TODO how to differentiate with 1.6??
-            return Profile.JAVA_EE_5;
+            return null;
         } else {
             return Profile.JAVA_EE_6_WEB;
         }
     }
+
     
     public FileObject getDocumentBase() {
         Sources srcs = ProjectUtils.getSources(project);
@@ -235,7 +258,7 @@ public class WebModuleImpl implements WebModuleImplementation2, J2eeModuleImplem
     
     public String getModuleVersion() {
         WebApp wapp = getWebApp ();
-        String version = WebApp.VERSION_2_5;
+        String version = WebApp.VERSION_3_0;
         if (wapp != null)
             version = wapp.getVersion();
         return version;

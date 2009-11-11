@@ -66,6 +66,7 @@ import org.openide.util.actions.Presenter;
  *
  * @author Jan Jancura
  */
+@Deprecated
 public class JInlineMenu extends JMenuItem implements DynamicMenuContent {
     /** generated Serialized Version UID */
     static final long serialVersionUID = -2310488127953523571L;

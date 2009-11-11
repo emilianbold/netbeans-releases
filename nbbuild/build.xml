@@ -288,18 +288,7 @@ made subject to such option by the copyright holder.
       <include name="${nb.cluster.platform.dir}/lib/nbexec" />      
     </fixcrlf>
     <mkdir dir="${netbeans.build.dir}"/>
-    <taskdef name="hgexec" classname="org.netbeans.nbbuild.HgExec" classpath="nbantext.jar"/>
-    <hgexec dir=".." outputproperty="hg.id" errorproperty="hg.id.err" failonerror="false" failifexecutionfails="false" resultproperty="hg.id.exit">
-      <arg value="log"/>
-      <arg value="-r"/>
-      <arg value="."/>
-      <arg value="--template"/>
-      <arg value="{node|short}\n"/>
-    </hgexec>
-    <condition property="hg.id.line" value="Hg ID:    ${hg.id}&#10;">
-      <equals arg1="${hg.id.exit}" arg2="0"/>
-    </condition>
-    <property name="hg.id.line" value=""/>
+    <hgid property="hg.id" file=".."/>
     <echo file="${netbeans.build.dir}/build_info">NetBeans dev build
 ------------------
 Number:   ${buildnumber}
@@ -307,7 +296,8 @@ Date:     ${buildday}
 Branding:
 Branch:   trunk
 Tag:
-${hg.id.line}</echo>
+Hg ID:    ${hg.id}
+</echo>
     <mkdir dir="${netbeans.dest.dir}/${nb.cluster.nb.dir}"/>
     <copy file="${netbeans.build.dir}/build_info" tofile="${netbeans.dest.dir}/${nb.cluster.nb.dir}/build_info" failonerror="true"/>
   </target>

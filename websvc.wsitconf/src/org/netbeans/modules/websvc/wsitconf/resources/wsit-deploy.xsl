@@ -65,7 +65,7 @@ introduced by support for multiple source roots. -jglick
         <project>
             <xsl:attribute name="default">-post-run-deploy</xsl:attribute>
             <xsl:attribute name="basedir">..</xsl:attribute>
-            
+
             <target name="-wsit-init">
                 <property file="nbproject/private/private.properties"/>
                 <condition property="user.properties.file" value="${{netbeans.user}}/build.properties">
@@ -74,12 +74,32 @@ introduced by support for multiple source roots. -jglick
                     </not>
                 </condition>
                 <property file="${{deploy.ant.properties.file}}"/>
+                <!-- GFv2 -->
+                <condition property="appserver.root" value="${{sjsas.root}}">
+                    <isset property="sjsas.root"/>
+                </condition>
+                <condition property="appserver.password" value="${{sjsas.password}}">
+                    <isset property="sjsas.password"/>
+                </condition>
+                <!-- GFv3 -->
+                <condition property="appserver.root" value="${{gfv3.root}}">
+                    <isset property="gfv3.root"/>
+                </condition>
+                <condition property="appserver.password" value="${{gfv3.password}}">
+                    <isset property="gfv3.password"/>
+                </condition>
+
+                <!-- fallback -->
+                <condition property="appserver.password" value="changeit">
+                    <not><isset property="appserver.password"/></not>
+                </condition>
                 <fail unless="user.properties.file">Must set user properties file</fail>
-                <fail unless="sjsas.root">Must set Sun app server root</fail>
+                <fail unless="appserver.root">Must set Sun app server root</fail>
+                <fail unless="appserver.password">Must set Sun app server password</fail>
             </target>
 
             <target name="-create-wsit-prop" unless="do.not.create.wsit.prop">  
-                <echo file="nbproject/wsit.properties">AS_ADMIN_USERPASSWORD=changeit</echo>
+                <echo file="nbproject/wsit.properties" message="AS_ADMIN_USERPASSWORD=${{appserver.password}}"/>
             </target>
 
             <target name="-delete-create-wsit-file" if="user.created">
@@ -87,19 +107,19 @@ introduced by support for multiple source roots. -jglick
             </target>
 
             <target name="create-user" unless="user.exists">  
-                <exec timeout="10000" outputproperty="creation.out" executable="${{sjsas.root}}/bin/asadmin" failonerror="false" failifexecutionfails="false" osfamily="unix">
+                <exec timeout="10000" outputproperty="creation.out" executable="${{appserver.root}}/bin/asadmin" failonerror="false" failifexecutionfails="false" osfamily="unix">
                     <arg value="create-file-user"/>
                     <arg value="--passwordfile"/>
                     <arg value="nbproject/wsit.properties"/>
                     <arg value="wsitUser"/>
                 </exec>
-                <exec timeout="10000" outputproperty="creation.out" executable="${{sjsas.root}}/bin/asadmin" failonerror="false" failifexecutionfails="false" osfamily="mac">
+                <exec timeout="10000" outputproperty="creation.out" executable="${{appserver.root}}/bin/asadmin" failonerror="false" failifexecutionfails="false" osfamily="mac">
                     <arg value="create-file-user"/>
                     <arg value="--passwordfile"/>
                     <arg value="nbproject/wsit.properties"/>
                     <arg value="wsitUser"/>
                 </exec>
-                <exec timeout="10000" outputproperty="creation.out" executable="${{sjsas.root}}/bin/asadmin.bat" failonerror="false" failifexecutionfails="false" osfamily="windows">
+                <exec timeout="10000" outputproperty="creation.out" executable="${{appserver.root}}/bin/asadmin.bat" failonerror="false" failifexecutionfails="false" osfamily="windows">
                     <arg value="create-file-user"/>
                     <arg value="--passwordfile"/>
                     <arg value="nbproject/wsit.properties"/>
@@ -118,13 +138,13 @@ introduced by support for multiple source roots. -jglick
                 <available property="do.not.create.wsit.prop" file="nbproject/wsit.properties"/>
                 <antcall target="-create-wsit-prop"/>
 
-                <exec timeout="10000" outputproperty="as.users" executable="${{sjsas.root}}/bin/asadmin" failonerror="false" failifexecutionfails="false" osfamily="unix">
+                <exec timeout="10000" outputproperty="as.users" executable="${{appserver.root}}/bin/asadmin" failonerror="false" failifexecutionfails="false" osfamily="unix">
                     <arg value="list-file-users"/>
                 </exec>
-                <exec timeout="10000" outputproperty="as.users" executable="${{sjsas.root}}/bin/asadmin" failonerror="false" failifexecutionfails="false" osfamily="mac">
+                <exec timeout="10000" outputproperty="as.users" executable="${{appserver.root}}/bin/asadmin" failonerror="false" failifexecutionfails="false" osfamily="mac">
                     <arg value="list-file-users"/>
                 </exec>
-                <exec timeout="10000" outputproperty="as.users" executable="${{sjsas.root}}/bin/asadmin.bat" failonerror="false" failifexecutionfails="false" osfamily="windows">
+                <exec timeout="10000" outputproperty="as.users" executable="${{appserver.root}}/bin/asadmin.bat" failonerror="false" failifexecutionfails="false" osfamily="windows">
                     <arg value="list-file-users"/>
                 </exec>
 

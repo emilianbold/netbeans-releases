@@ -255,6 +255,52 @@ public class TreePathHandleTest extends NbTestCase {
         }, true);
     }
 
+    public void testWithoutClassPath150650() throws Exception {
+        FileObject file = FileUtil.createData(sourceRoot.getParent(), "aux/test/test.java");
+
+        writeIntoFile(file, "package test; public class test { }");
+
+        JavaSource js = JavaSource.forFileObject(file);
+
+        js.runUserActionTask(new  Task<CompilationController>() {
+            public void run(CompilationController parameter) throws Exception {
+                parameter.toPhase(Phase.RESOLVED);
+
+                TypeElement test = parameter.getElements().getTypeElement("test.test");
+
+                assertNotNull(test);
+                
+                TreePathHandle h = TreePathHandle.create(test, parameter);
+
+                assertEquals(parameter.getFileObject(), h.getFileObject());
+            }
+        }, true);
+    }
+
+    public void testClassWithoutSource150650() throws Exception {
+        FileObject file = FileUtil.createData(sourceRoot, "test/test.java");
+
+        writeIntoFile(file, "package test; public class test { }");
+
+        JavaSource js = JavaSource.forFileObject(file);
+
+        js.runUserActionTask(new  Task<CompilationController>() {
+            public void run(CompilationController parameter) throws Exception {
+                parameter.toPhase(Phase.RESOLVED);
+
+                TypeElement jlObject = parameter.getElements().getTypeElement("java.lang.Object");
+
+                assertNotNull(jlObject);
+
+                TreePathHandle h = TreePathHandle.create(jlObject, parameter);
+                FileObject file = h.getFileObject();
+
+                assertNotNull(file);
+                assertEquals("Object.class", file.getNameExt());
+            }
+        }, true);
+    }
+
     private static final class SecMan extends SecurityManager {
 
         @Override

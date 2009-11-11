@@ -111,6 +111,15 @@ public final class Embedding {
                 )
                     currentToOriginal.add (new int[] {p [i] [0] + offset, p [i] [1]});
                 if (p [i] [1] >= 0) {
+                    if (!originalToCurrent.isEmpty () &&
+                        originalToCurrent.get (originalToCurrent.size () - 1) [1] >= 0
+                    )
+                        originalToCurrent.add (new int[] {
+                            originalToCurrent.get (originalToCurrent.size () - 1) [0] +
+                                p [i] [0] + offset -
+                                originalToCurrent.get (originalToCurrent.size () - 1) [1],
+                            -1
+                        });
                     originalToCurrent.add (new int[] {p [i] [1], p [i] [0] + offset});
                 } else 
                 if (!originalToCurrent.isEmpty () &&

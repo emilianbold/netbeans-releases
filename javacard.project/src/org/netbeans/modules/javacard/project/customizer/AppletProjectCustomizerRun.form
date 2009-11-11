@@ -36,7 +36,7 @@
                               <EmptySpace min="-2" pref="21" max="-2" attributes="0"/>
                               <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                              <Component id="servletComboBox" pref="234" max="32767" attributes="2"/>
+                              <Component id="servletComboBox" pref="415" max="32767" attributes="2"/>
                           </Group>
                       </Group>
                       <EmptySpace min="-2" pref="14" max="-2" attributes="0"/>
@@ -109,7 +109,7 @@
         </Property>
       </Properties>
     </Component>
-    <Component class="org.netbeans.modules.javacard.project.ui.PlatformAndDevicePanel" name="platformAndDevicePanel21">
+    <Component class="org.netbeans.modules.javacard.api.PlatformAndDevicePanel" name="platformAndDevicePanel21">
     </Component>
   </SubComponents>
 </Form>

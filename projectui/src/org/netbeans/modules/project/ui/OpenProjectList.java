@@ -368,14 +368,15 @@ public final class OpenProjectList {
         private void loadOnBackground() {
             lazilyOpenedProjects = new ArrayList<Project>();
             List<URL> URLs = OpenProjectListSettings.getInstance().getOpenProjectsURLs();
-            toOpenProjects.addAll(URLs2Projects(URLs));
             Project[] inital;
             synchronized (toOpenProjects) {
+                toOpenProjects.addAll(URLs2Projects(URLs));
                 log(Level.FINER, "loadOnBackground {0}", toOpenProjects); // NOI18N
                 inital = toOpenProjects.toArray(new Project[0]);
             }
             recentTemplates = new ArrayList<String>( OpenProjectListSettings.getInstance().getRecentTemplates() );
             URL mainProjectURL = OpenProjectListSettings.getInstance().getMainProjectURL();
+            int max;
             synchronized (toOpenProjects) {
                 for( Iterator it = toOpenProjects.iterator(); it.hasNext(); ) {
                     Project p = (Project)it.next();
@@ -390,18 +391,20 @@ public final class OpenProjectList {
                     catch( FileStateInvalidException e ) {
                         // Not a main project
                     }
-                }          
+                }
+                max = toOpenProjects.size();
             }
-            int max = toOpenProjects.size();
             progress.switchToDeterminate(max);
             for (;;) {
                 Project p;
+                int openPrjSize;
                 synchronized (toOpenProjects) {
                     if (toOpenProjects.isEmpty()) {
                         break;
                     }
                     p = toOpenProjects.remove();
                     log(Level.FINER, "after remove {0}", toOpenProjects); // NOI18N
+                    openPrjSize = toOpenProjects.size();
                 }
                 log(Level.FINE, "about to open a project {0}", p); // NOI18N
                 if (notifyOpened(p)) {
@@ -420,7 +423,7 @@ public final class OpenProjectList {
                         lazyMainProject = null;
                     }
                 }
-                progress.progress(max - toOpenProjects.size());
+                progress.progress(max - openPrjSize);
             }
 
             if (inital != null) {
@@ -1251,6 +1254,9 @@ public final class OpenProjectList {
     }
 
     private static String[] getRecommendedTypes (Project project) {
+        if (project == null) {
+            return null;
+        }
         RecommendedTemplates rt = project.getLookup().lookup(RecommendedTemplates.class);
         return rt == null ? null :rt.getRecommendedTypes();
     }

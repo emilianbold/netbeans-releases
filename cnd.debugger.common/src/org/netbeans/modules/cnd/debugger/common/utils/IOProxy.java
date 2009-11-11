@@ -47,10 +47,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetUtils;
 import org.netbeans.modules.cnd.api.remote.CommandProvider;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
@@ -234,11 +236,11 @@ public abstract class IOProxy {
                 String tool = "mkfifo"; // NOI18N
                 if (Utilities.isWindows()) {
                     tool += ".exe"; // NOI18N
-                    File toolFile = new File(CompilerSetManager.getCygwinBase() + "/bin", tool); // NOI18N
+                    File toolFile = new File(CompilerSetUtils.getCygwinBase() + "/bin", tool); // NOI18N
                     if (toolFile.exists()) {
                         tool = toolFile.getAbsolutePath();
                     } else {
-                        toolFile = new File(CompilerSetManager.getMSysBase() + "/bin", tool); // NOI18N
+                        toolFile = new File(CompilerSetUtils.getMSysBase() + "/bin", tool); // NOI18N
                         if (toolFile.exists()) {
                             tool = toolFile.getAbsolutePath();
                         }
@@ -324,9 +326,13 @@ public abstract class IOProxy {
         }
 
         private static String createNewFifo(ExecutionEnvironment execEnv) {
-            // TODO: /tmp may not be accessible on remote host
-            // need to have a general way of getting temp files folder on remote host
-            String name = "/tmp/" + FILENAME_PREFIX + "$$" + FILENAME_EXTENSION; // NOI18N
+            String tmpDir;
+            try {
+                tmpDir = HostInfoUtils.getHostInfo(execEnv).getTempDir();
+            } catch (Exception iOException) {
+                tmpDir = "/tmp"; // NOI18N
+            }
+            String name = tmpDir + '/' + FILENAME_PREFIX + "$$" + FILENAME_EXTENSION; // NOI18N
             CommandProvider cp = Lookup.getDefault().lookup(CommandProvider.class);
             if (cp.run(execEnv, "sh -c \"mkfifo " + name + ";echo " + name + "\"", null) == 0) { // NOI18N
                 return cp.getOutput().trim();
@@ -338,10 +344,8 @@ public abstract class IOProxy {
         public void stop() {
             super.stop();
             // delete files
-            CommandProvider cp = Lookup.getDefault().lookup(CommandProvider.class);
-            if (cp != null) {
-                cp.run(execEnv, "rm -f " + inFilename + " " + outFilename, null); // NOI18N
-            }
+            CommonTasksSupport.rmFile(execEnv, inFilename, null);
+            CommonTasksSupport.rmFile(execEnv, outFilename, null);
         }
     }
 }

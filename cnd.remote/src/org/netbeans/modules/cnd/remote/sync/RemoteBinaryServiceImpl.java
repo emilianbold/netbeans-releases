@@ -36,40 +36,44 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.remote.sync;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 import org.netbeans.modules.cnd.api.remote.RemoteBinaryService;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
  * RemoteBinaryService implementation
  * @author Vladimir Kvashin
  */
-@ServiceProvider(service=RemoteBinaryService.class)
+@ServiceProvider(service = RemoteBinaryService.class)
 public class RemoteBinaryServiceImpl extends RemoteBinaryService {
 
     private final Map<ExecutionEnvironment, Delegate> impls = new HashMap<ExecutionEnvironment, Delegate>();
     private static int downloadCount = 0;
 
     @Override
-    protected String getRemoteBinaryImpl(ExecutionEnvironment execEnv, String remotePath) {
+    protected RemoteBinaryResult getRemoteBinaryImpl(ExecutionEnvironment execEnv, String remotePath) {
         CndUtils.assertNonUiThread();
         Delegate delegate;
-        synchronized(this) {
+        synchronized (this) {
             delegate = impls.get(execEnv);
             if (delegate == null) {
                 delegate = new Delegate(execEnv);
@@ -98,7 +102,6 @@ public class RemoteBinaryServiceImpl extends RemoteBinaryService {
         downloadCount = 0;
     }
 
-
     /**
      * Corresoinds to the particular execution environment.
      * An instance of impl is created for each execution environment
@@ -112,14 +115,14 @@ public class RemoteBinaryServiceImpl extends RemoteBinaryService {
             this.execEnv = execEnv;
         }
 
-        public String getRemoteBinaryImpl(String remotePath) throws InterruptedException, IOException, ExecutionException {
+        public RemoteBinaryResult getRemoteBinaryImpl(String remotePath) throws InterruptedException, IOException, ExecutionException {
             Entry entry;
-            synchronized(this) {
+            synchronized (this) {
                 entry = cache.get(remotePath);
                 if (entry == null) {
                     entry = new Entry(execEnv, remotePath);
                     cache.put(remotePath, entry);
-                }                
+                }
             }
             return entry.ensureSync();
         }
@@ -129,10 +132,10 @@ public class RemoteBinaryServiceImpl extends RemoteBinaryService {
      * Corresponds to a particular file
      */
     private static class Entry {
-        
+
         private final String remotePath;
         private final ExecutionEnvironment execEnv;
-        private File localFile;
+        private RemoteBinaryResult lastResult;
         private String timeStamp;
 
         public Entry(ExecutionEnvironment execEnv, String remotePath) {
@@ -140,22 +143,35 @@ public class RemoteBinaryServiceImpl extends RemoteBinaryService {
             this.execEnv = execEnv;
         }
 
-        public String ensureSync() throws InterruptedException, IOException, ExecutionException {
+        public RemoteBinaryResult ensureSync() throws InterruptedException, IOException, ExecutionException {
             String localPath = RemotePathMap.getPathMap(execEnv).getLocalPath(remotePath, false);
-            if (localPath == null) {
-                return syncImpl();
+
+            RemoteBinaryResult result = null;
+
+            if (localPath != null &&
+                    RemotePathMap.isTheSame(execEnv,
+                    new File(remotePath).getParentFile().getAbsolutePath(),
+                    new File(localPath).getParentFile())) {
+                if (lastResult == null) {
+                    lastResult = new RemoteBinaryResult(localPath, new FutureTask<Boolean>(new Callable<Boolean>() {
+
+                        public Boolean call() throws Exception {
+                            return true;
+                        }
+                    }));
+                }
             } else {
-                if (!RemotePathMap.isTheSame(execEnv,
-                        new File(remotePath).getParentFile().getAbsolutePath(), 
-                        new File(localPath).getParentFile())) {
-                    return syncImpl();
+                result = syncImpl();
+                if (result != null) {
+                    lastResult = result;
                 }
             }
-            return localPath;
+
+            return result == null ? lastResult : result;
         }
 
         private String getFullTimeLsCommand() throws IOException {
-            HostInfo hostInfo = hostInfo = HostInfoUtils.getHostInfo(execEnv);
+            HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
             switch (hostInfo.getOSFamily()) {
                 case LINUX:
                     return "ls --full-time"; // NOI18N
@@ -171,27 +187,84 @@ public class RemoteBinaryServiceImpl extends RemoteBinaryService {
             }
         }
 
-        private synchronized String syncImpl() throws IOException, InterruptedException, ExecutionException {
-            if (localFile == null) {
-                localFile = File.createTempFile("cnd-remote-binary-", ".bin"); // NOI18N
-                localFile.deleteOnExit();
-            }
-            String newTimeStamp;
-            RemoteCommandSupport rcs = new RemoteCommandSupport(execEnv, getFullTimeLsCommand() + " " + remotePath); // NOI18N
-            if (rcs.run() != 0) {
-                // TODO: is there a better solution in the case ls finished with an error?
-                return null;
-            }
-            newTimeStamp = rcs.getOutput();
-            if (!newTimeStamp.equals(timeStamp) || !localFile.exists()) {
-                Future<Integer> task = CommonTasksSupport.downloadFile(remotePath, execEnv, localFile.getAbsolutePath(), null);
-                if (task.get() != 0) {
-                    return null;
+        /**
+         *
+         * @return
+         * @throws IOException
+         * @throws InterruptedException
+         * @throws ExecutionException
+         */
+        private synchronized RemoteBinaryResult syncImpl() throws IOException, InterruptedException, ExecutionException {
+            final String newTimestamp = getTimestamp();
+
+            if (timeStamp != null && timeStamp.equals(newTimestamp)) {
+                if (new File(lastResult.localFName).exists()) {
+                    return lastResult;
                 }
-                timeStamp = newTimeStamp;
-                downloadCount++;
             }
-            return localFile.getAbsolutePath();
+
+            final File localFile = File.createTempFile("cnd-remote-binary-", ".bin"); // NOI18N
+            localFile.deleteOnExit();
+
+            FutureTask<Boolean> task = new FutureTask<Boolean>(new Callable<Boolean>() {
+
+                public Boolean call() throws Exception {
+
+                    String remoteCopyPath = null;
+
+                    try {
+                        HostInfo hinfo = HostInfoUtils.getHostInfo(execEnv);
+                        String tmpDir = hinfo.getTempDir();
+                        // TODO: add utility method to do mktemp ...
+                        remoteCopyPath = tmpDir + "/binary." + newTimestamp.hashCode(); // NOI18N
+
+                        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
+                        npb.setExecutable("cp").setArguments(remotePath, remoteCopyPath); // NOI18N
+                        Process copyProcess = npb.call();
+                        int copyProcessResult = copyProcess.waitFor();
+
+                        if (copyProcessResult != 0) {
+                            return false;
+                        }
+
+                        Future<Integer> task = CommonTasksSupport.downloadFile(remoteCopyPath, execEnv, localFile.getAbsolutePath(), null);
+
+                        if (task.get() != 0) {
+                            return false;
+                        }
+
+                        timeStamp = newTimestamp;
+                        downloadCount++;
+                    } finally {
+                        if (remoteCopyPath != null) {
+                            CommonTasksSupport.rmFile(execEnv, remoteCopyPath, null);
+                        }
+                    }
+
+                    return true;
+                }
+            });
+
+            RequestProcessor.getDefault().post(task);
+
+            return new RemoteBinaryResult(localFile.getAbsolutePath(), task);
+        }
+
+        private String getTimestamp() {
+            try {
+                String command = getFullTimeLsCommand() + " \"" + remotePath + "\""; // NOI18N
+                RemoteCommandSupport rcs = new RemoteCommandSupport(execEnv, command);
+
+                if (rcs.run() == 0) {
+                    return rcs.getOutput();
+                } else {
+                    throw new IOException("Cannot run #"+command); // NOI18N
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+
+            return null;
         }
     }
 }

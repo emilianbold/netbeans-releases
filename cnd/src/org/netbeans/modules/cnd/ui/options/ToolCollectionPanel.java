@@ -168,6 +168,9 @@ public class ToolCollectionPanel extends javax.swing.JPanel implements DocumentL
     }
 
     void updateCompilerSet(CompilerSet cs, boolean force) {
+        if (cs.isUrlPointer()) {
+            return;
+        }
         if (force) {
             cs.getTool(Tool.CCompiler).setPath(tfCPath.getText());
             cs.getTool(Tool.CCCompiler).setPath(tfCppPath.getText());
@@ -270,14 +273,24 @@ public class ToolCollectionPanel extends javax.swing.JPanel implements DocumentL
     }
 
     void changeCompilerSet(CompilerSet cs) {
-        Tool cSelection = cs.getTool(Tool.CCompiler);
-        Tool cppSelection = cs.getTool(Tool.CCCompiler);
-        Tool fortranSelection = cs.getTool(Tool.FortranCompiler);
-        Tool asSelection = cs.getTool(Tool.Assembler);
-        Tool makeToolSelection = cs.getTool(Tool.MakeTool);
-        Tool debuggerToolSelection = cs.getTool(Tool.DebuggerTool);
-        Tool qmakeToolSelection = cs.getTool(Tool.QMakeTool);
-        Tool cmakeToolSelection = cs.getTool(Tool.CMakeTool);
+        Tool cSelection = null;
+        Tool cppSelection = null;
+        Tool fortranSelection = null;
+        Tool asSelection = null;
+        Tool makeToolSelection = null;
+        Tool debuggerToolSelection = null;
+        Tool qmakeToolSelection = null;
+        Tool cmakeToolSelection = null;
+        if (!cs.isUrlPointer()) {
+            cSelection = cs.getTool(Tool.CCompiler);
+            cppSelection = cs.getTool(Tool.CCCompiler);
+            fortranSelection = cs.getTool(Tool.FortranCompiler);
+            asSelection = cs.getTool(Tool.Assembler);
+            makeToolSelection = cs.getTool(Tool.MakeTool);
+            debuggerToolSelection = cs.getTool(Tool.DebuggerTool);
+            qmakeToolSelection = cs.getTool(Tool.QMakeTool);
+            cmakeToolSelection = cs.getTool(Tool.CMakeTool);
+        }
         if (cSelection != null) {
             setCPathField(cSelection.getPath());
         } else {
@@ -308,8 +321,16 @@ public class ToolCollectionPanel extends javax.swing.JPanel implements DocumentL
         } else {
             tfCMakePath.setText(""); // NOI18N
         }
-        setMakePathField(makeToolSelection.getPath());
-        setGdbPathField(debuggerToolSelection.getPath());
+        if (makeToolSelection != null) {
+            setMakePathField(makeToolSelection.getPath());
+        } else {
+            tfMakePath.setText(""); // NOI18N
+        }
+        if (debuggerToolSelection != null) {
+            setGdbPathField(debuggerToolSelection.getPath());
+        } else {
+            tfDebuggerPath.setText(""); // NOI18N
+        }
     }
 
     private void setMakePathField(String path) {
@@ -514,7 +535,7 @@ public class ToolCollectionPanel extends javax.swing.JPanel implements DocumentL
         }
     }
 
-    private boolean selectCompiler(JTextField tf, Tool tool) {
+    private boolean selectCompiler(JTextField tf) {
         String seed = tfBaseDirectory.getText();
         FileChooser fileChooser = new FileChooser(ToolsPanel.getString("SELECT_TOOL_TITLE"), null, JFileChooser.FILES_ONLY, null, seed, false); // NOI18N
         int ret = fileChooser.showOpenDialog(this);
@@ -532,10 +553,7 @@ public class ToolCollectionPanel extends javax.swing.JPanel implements DocumentL
                 aPath = aPath.substring(0, aPath.length() - 4);
             }
         }
-        tf.setText(aPath);
-        tool.setPath(tf.getText());
-        manager.fireCompilerSetChange();
-        manager.fireCompilerSetModified();
+        tf.setText(aPath); // compiler set is updated by textfield's listener
         return true;
     }
 
@@ -552,7 +570,7 @@ public class ToolCollectionPanel extends javax.swing.JPanel implements DocumentL
                 aPath = aPath.substring(0, aPath.length() - 4);
             }
         }
-        tf.setText(aPath);
+        tf.setText(aPath); // compiler set is updated by textfield's listener
         return true;
     }
 
@@ -561,27 +579,51 @@ public class ToolCollectionPanel extends javax.swing.JPanel implements DocumentL
     }
 
     public void insertUpdate(DocumentEvent ev) {
-        if (!manager.isUpdatindOrChangingCompilerSet()) {
+        boolean userChange = !manager.isUpdatindOrChangingCompilerSet();
+        if (userChange) {
             manager.setChanged(true);
         }
         Document doc = ev.getDocument();
         String title = (String) doc.getProperty(Document.TitleProperty);
+        int toolKind = -1;
+        String toolPath = null;
         if (title.equals(MAKE_NAME)) {
             validateMakePathField();
+            toolKind = Tool.MakeTool;
+            toolPath = tfMakePath.getText();
         } else if (title.equals(DEBUGGER_NAME)) {
             validateGdbPathField();
+            toolKind = Tool.DebuggerTool;
+            toolPath = tfDebuggerPath.getText();
         } else if (title.equals(C_NAME)) {
             validateCPathField();
+            toolKind = Tool.CCompiler;
+            toolPath = tfCPath.getText();
         } else if (title.equals(CPP_NAME)) {
             validateCppPathField();
+            toolKind = Tool.CCCompiler;
+            toolPath = tfCppPath.getText();
         } else if (title.equals(FORTRAN_NAME)) {
             validateFortranPathField();
+            toolKind = Tool.FortranCompiler;
+            toolPath = tfFortranPath.getText();
         } else if (title.equals(ASSEMBLER_NAME)) {
             validateAsPathField();
+            toolKind = Tool.Assembler;
+            toolPath = tfAsPath.getText();
         } else if (title.equals(QMAKE_NAME)) {
             validateQMakePathField();
+            toolKind = Tool.QMakeTool;
+            toolPath = tfQMakePath.getText();
         } else if (title.equals(CMAKE_NAME)) {
             validateCMakePathField();
+            toolKind = Tool.CMakeTool;
+            toolPath = tfCMakePath.getText();
+        }
+        if (userChange && 0 <= toolKind) {
+            manager.getCurrentCompilerSet().getTool(toolKind).setPath(toolPath);
+            manager.fireCompilerSetChange();
+            manager.fireCompilerSetModified();
         }
     }
 
@@ -656,6 +698,10 @@ public class ToolCollectionPanel extends javax.swing.JPanel implements DocumentL
         handle.progress(++i);
         versions.append(getToolVersion(cs.findTool(Tool.CMakeTool), tfCMakePath)).append('\n'); // NOI18N
         handle.finish();
+        String upgradeUrl = cs.getCompilerFlavor().getToolchainDescriptor().getUpgradeUrl();
+        if (upgradeUrl != null) {
+            versions.append('\n').append(ToolsPanel.getString("TOOL_UPGRADE", upgradeUrl)).append('\n'); // NOI18N
+        }
         return versions.toString();
     }
 
@@ -1148,15 +1194,15 @@ public class ToolCollectionPanel extends javax.swing.JPanel implements DocumentL
 }//GEN-LAST:event_btDebuggerBrowseActionPerformed
 
     private void btCBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btCBrowseActionPerformed
-        selectCompiler(tfCPath, manager.getCurrentCompilerSet().getTool(Tool.CCompiler));
+        selectCompiler(tfCPath);
 }//GEN-LAST:event_btCBrowseActionPerformed
 
     private void btCppBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btCppBrowseActionPerformed
-        selectCompiler(tfCppPath, manager.getCurrentCompilerSet().getTool(Tool.CCCompiler));
+        selectCompiler(tfCppPath);
 }//GEN-LAST:event_btCppBrowseActionPerformed
 
     private void btFortranBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btFortranBrowseActionPerformed
-        selectCompiler(tfFortranPath, manager.getCurrentCompilerSet().getTool(Tool.FortranCompiler));
+        selectCompiler(tfFortranPath);
 }//GEN-LAST:event_btFortranBrowseActionPerformed
 
     private void btBaseDirectoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btBaseDirectoryActionPerformed
@@ -1183,7 +1229,7 @@ public class ToolCollectionPanel extends javax.swing.JPanel implements DocumentL
     }//GEN-LAST:event_btBaseDirectoryActionPerformed
 
     private void btAsBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btAsBrowseActionPerformed
-        selectCompiler(tfAsPath, manager.getCurrentCompilerSet().getTool(Tool.Assembler));
+        selectCompiler(tfAsPath);
 }//GEN-LAST:event_btAsBrowseActionPerformed
 
     private void btQMakeBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btQMakeBrowseActionPerformed

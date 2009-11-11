@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.cnd.highlight.error;
 
+import java.util.EnumSet;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
 import org.netbeans.modules.cnd.api.model.services.CsmReferenceContext;
@@ -48,6 +50,7 @@ import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.api.model.xref.CsmTemplateBasedReferencedObject;
 import org.netbeans.modules.cnd.highlight.semantic.SemanticHighlighter;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -155,6 +158,39 @@ public class IdentifierErrorProvider extends CsmErrorProvider {
                     response.addError(new IdentifierErrorInfo(
                             ref.getStartOffset(), ref.getEndOffset(),
                             ref.getText().toString(), severity));
+                } else if (false && referencedObject instanceof CsmFunction) {
+                    // Check for function usages befor it's declaration
+                    if (CsmReferenceResolver.getDefault().isKindOf(ref, EnumSet.of(CsmReferenceKind.DEFINITION,
+                            CsmReferenceKind.DECLARATION,
+                            CsmReferenceKind.IN_DEAD_BLOCK,
+                            CsmReferenceKind.IN_PREPROCESSOR_DIRECTIVE))) {
+                        return;
+                    }
+                    CsmFunction fun = (CsmFunction) referencedObject;
+                    if (fun.getContainingFile() != ref.getContainingFile()) {
+                        return;
+                    }
+                    if (fun.getStartOffset() <= ref.getStartOffset()) {
+                        return;
+                    }
+                    if (!CsmKindUtilities.isGlobalFunction(fun)) {
+                        return;
+                    }
+                    CsmFunction funDecl = fun.getDeclaration();
+                    if(funDecl == null) {
+                        return;
+                    }
+                    if (funDecl.getContainingFile() != ref.getContainingFile()) {
+                        return;
+                    }
+                    if (funDecl.getStartOffset() <= ref.getStartOffset()) {
+                        return;
+                    }
+                    Severity severity = Severity.WARNING;
+                    foundError++;
+                    response.addError(new IdentifierDeclarationAfterUsageInfo(
+                            ref.getStartOffset(), ref.getEndOffset(),
+                            ref.getText().toString(), severity));
                 }
             }
         }
@@ -172,6 +208,39 @@ public class IdentifierErrorProvider extends CsmErrorProvider {
             this.endOffset = endOffset;
             this.message = NbBundle.getMessage(IdentifierErrorProvider.class,
                     "HighlightProvider_IdentifierMissed", name); //NOI18N
+            this.severity = severity;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public Severity getSeverity() {
+            return severity;
+        }
+
+        public int getStartOffset() {
+            return startOffset;
+        }
+
+        public int getEndOffset() {
+            return endOffset;
+        }
+
+    }
+
+    private static class IdentifierDeclarationAfterUsageInfo implements CsmErrorInfo {
+
+        private final int startOffset;
+        private final int endOffset;
+        private final String message;
+        private final Severity severity;
+
+        public IdentifierDeclarationAfterUsageInfo(int startOffset, int endOffset, String name, Severity severity) {
+            this.startOffset = startOffset;
+            this.endOffset = endOffset;
+            this.message = NbBundle.getMessage(IdentifierDeclarationAfterUsageInfo.class,
+                    "HighlightProvider_DeclarationAfterUsage", name); //NOI18N
             this.severity = severity;
         }
 

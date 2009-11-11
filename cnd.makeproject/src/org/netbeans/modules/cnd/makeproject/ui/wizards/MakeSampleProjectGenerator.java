@@ -56,12 +56,18 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
+import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -132,7 +138,9 @@ public class MakeSampleProjectGenerator {
             //changeXmlFileByTagName(doc, "executablePath", workingDir, "X-PROJECTDIR-X"); // NOI18N
             //changeXmlFileByTagName(doc, "folderPath", workingDir, "X-PROJECTDIR-X"); // NOI18N
             changeXmlFileByTagName(doc, "defaultConf", systemOs, "X-DEFAULTCONF-X"); // NOI18N
-            CompilerSetManager compilerSetManager = CompilerSetManager.getDefault(CompilerSetManager.getDefaultExecutionEnvironment());
+
+            ExecutionEnvironment env = CompilerSetManager.getDefaultExecutionEnvironment();
+            CompilerSetManager compilerSetManager = CompilerSetManager.getDefault(env);
             int platform = compilerSetManager.getPlatform();
             CompilerSet compilerSet = compilerSetManager.getDefaultCompilerSet();
             String variant = null;
@@ -167,7 +175,7 @@ public class MakeSampleProjectGenerator {
             }
             //saveXml(doc, prjLoc, "nbproject/projectDescriptor.xml"); // NOI18N
             saveXml(doc, prjLoc, PROJECT_CONFIGURATION_FILE);
-            
+            recordCreateSampleProject(env);
         } catch (Exception e) {
             IOException ex = new IOException();
             ex.initCause(e);
@@ -175,6 +183,54 @@ public class MakeSampleProjectGenerator {
         }
     }
     
+    // http://wiki.netbeans.org/UsageLoggingSpecification
+    private static void recordCreateSampleProject(ExecutionEnvironment env) {
+        final Logger logger = Logger.getLogger(ConfigurationDescriptorProvider.USG_LOGGER_NAME);
+        if (!logger.isLoggable(Level.INFO)) {
+            return;
+        }
+        CompilerSetManager compilerSetManager = CompilerSetManager.getDefault(env);
+        CompilerSet compilerSet = compilerSetManager.getDefaultCompilerSet();
+        LogRecord logRecord = new LogRecord(Level.INFO, ConfigurationDescriptorProvider.USG_PROJECT_CREATE_CND);
+        logRecord.setLoggerName(logger.getName());
+        String host;
+        if (compilerSetManager.getExecutionEnvironment().isLocal()) {
+            host = "LOCAL"; // NOI18N
+        } else {
+            host = "REMOTE"; // NOI18N
+        }
+        String platform;
+        if (compilerSet != null && Platforms.getPlatform(compilerSetManager.getPlatform()) != null) {
+            platform = Platforms.getPlatform(compilerSetManager.getPlatform()).getName();
+        } else {
+            platform = "UNKNOWN_PLATFORM"; // NOI18N
+        }
+        String flavor;
+        String[] families;
+        if (compilerSet != null) {
+            families = compilerSet.getCompilerFlavor().getToolchainDescriptor().getFamily();
+            flavor = compilerSet.getCompilerFlavor().toString();
+        } else {
+            families = new String[0];
+            flavor = "UKNOWN"; // NOI18N
+        }
+        String family;
+        if (families.length == 0) {
+            family = "UKNOWN"; // NOI18N
+        } else {
+            StringBuilder buffer = new StringBuilder();
+            for (int i = 0; i < families.length; i++) {
+                buffer.append(families[i]);
+                if (i < families.length - 1) {
+                    buffer.append(","); // NOI18N
+                }
+            }
+            family = buffer.toString();
+        }
+        logRecord.setParameters(new Object[]{"APPLICATION", flavor, family, host, platform, "SAMPLE_PROJECT"}); // NOI18N
+        logger.log(logRecord);
+    }
+
     public static Set<DataObject> createProjectFromTemplate(InputStream inputStream, File projectLocation, final String name) throws IOException {
         FileObject prjLoc;
         unzip(inputStream, projectLocation);

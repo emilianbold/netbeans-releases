@@ -74,6 +74,7 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelerFactory;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
+import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.websvc.wsitconf.util.ServerUtils;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
 
@@ -125,6 +126,9 @@ public class STSWizard implements TemplateWizard.Iterator {
         final String userDir = System.getProperty("netbeans.user") + File.separator + "config" +
                 File.separator + "WebServices" + File.separator;
         final File wsdlFile = new File(userDir + fileName + ".wsdl");
+        
+        logger.log(Level.FINE, "USERDIR: " + userDir);
+        logger.log(Level.FINE, "wsdl: " + wsdlFile);
 
         FileUtil.runAtomicAction(new Runnable() {
 
@@ -133,6 +137,7 @@ public class STSWizard implements TemplateWizard.Iterator {
                 try {
                     final InputStream schemaIS = this.getClass().getClassLoader().getResourceAsStream("org/netbeans/modules/websvc/wsitconf/resources/templates/sts_schema.template"); //NOI18N
                     File schema = new File(userDir + "sts_schema.xsd");     //NOI18N
+                    logger.log(Level.FINE, "schema: " + schema);
                     schema.createNewFile();
                     schemaos = new FileOutputStream(schema);
                     FileUtil.copy(schemaIS, schemaos);
@@ -314,7 +319,7 @@ public class STSWizard implements TemplateWizard.Iterator {
         project = Templates.getProject(wiz);
 
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory()); // only web module supported for now
-        boolean wizardEnabled = Util.isJavaEE5orHigher(project) && ServerUtils.isGlassfish(project) && (wm != null);
+        boolean wizardEnabled = Util.isJavaEE5orHigher(project) && ServerUtils.isGlassfish(project) && (wm != null) && (JAXWSSupport.getJAXWSSupport(project.getProjectDirectory()) != null);
 
         versionPanel = new STSVersionPanel(wiz);
         SourceGroup[] sourceGroups = Util.getJavaSourceGroups(project);

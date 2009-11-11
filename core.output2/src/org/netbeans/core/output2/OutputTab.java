@@ -97,11 +97,13 @@ import org.openide.xml.XMLUtil;
  */
 final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks {
     private final NbIO io;
+    private OutWriter outWriter;
 
     OutputTab(NbIO io) {
         this.io = io;
         if (Controller.LOG) Controller.log ("Created an output component for " + io);
-        OutputDocument doc = new OutputDocument (((NbWriter) io.getOut()).out());
+        outWriter = ((NbWriter) io.getOut()).out();
+        OutputDocument doc = new OutputDocument(outWriter);
         setDocument(doc);
 
         installKBActions();
@@ -145,7 +147,9 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
         if (origPane != null) {
             setFilter(null, false, false);
         }
-        setDocument(new OutputDocument(((NbWriter) io.getOut()).out()));
+        // get new OutWriter
+        outWriter = io.out();
+        setDocument(new OutputDocument(outWriter));
     }
 
     public OutputDocument getDocument() {
@@ -167,7 +171,7 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
         if (in != null) {
             if (Controller.LOG) Controller.log("Sending input to " + in);
             in.pushText(txt + "\n");
-            io.getOut().println(txt);
+            outWriter.println(txt);
         }
     }
 
@@ -196,9 +200,6 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
 
     public void lineClicked(int line, int pos) {
         OutWriter out = getOut();
-        if (out == null) {
-            return;
-        }
         int range[] = new int[2];
         OutputListener l = out.getLines().getListener(pos, range);
         if (l != null) {
@@ -220,7 +221,7 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
 
     public void documentChanged(OutputPane pane) {
         if (filtOut != null && pane == origPane) {
-            filtOut.readFrom(io.out());
+            filtOut.readFrom(outWriter);
         }
         boolean hadOutputListeners = hasOutputListeners;
         hasOutputListeners = getOut() != null && getOut().getLines().firstListenerLine() >= 0;
@@ -639,7 +640,7 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
             setOutputPane(filtOut.getPane());
             try {
                 waitCursor(true);
-                filtOut.readFrom(io.out());
+                filtOut.readFrom(outWriter);
                 installKBActions();
             } finally {
                 waitCursor(false);
@@ -658,7 +659,7 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
     }
 
     OutWriter getOut() {
-        return origPane != null ? filtOut.getWriter() : io.out();
+        return origPane != null ? filtOut.getWriter() : outWriter;
     }
 
     private void disableHtmlName() {

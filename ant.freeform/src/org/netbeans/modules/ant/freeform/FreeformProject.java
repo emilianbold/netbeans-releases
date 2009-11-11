@@ -134,7 +134,7 @@ public final class FreeformProject implements Project {
             UILookupMergerSupport.createPrivilegedTemplatesMerger(),
             UILookupMergerSupport.createRecommendedTemplatesMerger(),
             new FreeformProjectOperations(this),
-	    new FreeformSharabilityQuery(helper()), //SharabilityQueryImplementation
+	    new FreeformSharabilityQuery(this), //SharabilityQueryImplementation
             Accessor.DEFAULT.createProjectAccessor(this), //Access to AntProjectHelper and PropertyEvaluator
             FEQImpl, // FileEncodingQueryImplementation
             new FreeformTemplateAttributesProvider(helper(), eval, FEQImpl)

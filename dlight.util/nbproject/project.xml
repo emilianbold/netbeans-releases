@@ -51,6 +51,7 @@
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.cnd.gizmo</friend>
+                <friend>org.netbeans.modules.cnd.makeproject</friend>
                 <friend>org.netbeans.modules.cnd.paralleladviser</friend>
                 <friend>org.netbeans.modules.cnd.tha</friend>
                 <friend>org.netbeans.modules.dlight</friend>
@@ -80,6 +81,7 @@
                 <friend>org.netbeans.modules.dlight.webstack</friend>
                 <package>org.netbeans.modules.dlight.util</package>
                 <package>org.netbeans.modules.dlight.util.ui</package>
+                <package>org.netbeans.modules.dlight.util.usagetracking</package>
             </friend-packages>
         </data>
     </configuration>

@@ -61,7 +61,7 @@ absolutize_path () {
     cd "$1"
     abspath=`pwd`
     cd "${oldpwd}"
-    echo $abspath
+    echo "$abspath"
 }
 
 PRG=`resolve_symlink "$PRG"`
@@ -191,7 +191,7 @@ fi
 # if heap dump on OOME is supported enable it
 if "${jdkhome}/bin/java" -XX:+HeapDumpOnOutOfMemoryError > /dev/null 2>&1 ; then
    jargs="$jargs -XX:+HeapDumpOnOutOfMemoryError"
-   if ! echo $jargs | grep -- "-XX:HeapDumpPath=" > /dev/null ; then
+   if echo $jargs | grep -v -- "-XX:HeapDumpPath=" > /dev/null ; then
       jargs="$jargs -XX:HeapDumpPath=\"${userdir}/var/log/heapdump.hprof\""
    fi
 fi
@@ -509,9 +509,8 @@ while [ "$restart" ] ; do
     #
     delete_new_clusters_file
     rm -f "${restart_file}"
-
-     eval ${_NB_PROFILE_CMD} "\"${jdkhome}/bin/java\"" -Djdk.home="\"${jdkhome}\"" -classpath "\"$cp\"" \
-        $jargs org.netbeans.Main "$args" '&'
+    eval ${_NB_PROFILE_CMD} "\"${jdkhome}/bin/java\"" -Djdk.home="\"${jdkhome}\"" -classpath "\"$cp\"" \
+        "$jargs" org.netbeans.Main "$args" '&'
     PID=$!
     trap "kill $PID" EXIT
     wait $PID

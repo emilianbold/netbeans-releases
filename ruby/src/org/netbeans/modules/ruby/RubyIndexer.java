@@ -78,6 +78,7 @@ import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
 import org.netbeans.modules.ruby.RubyStructureAnalyzer.AnalysisResult;
+import org.netbeans.modules.ruby.elements.AstAttributeElement;
 import org.netbeans.modules.ruby.elements.AstElement;
 import org.netbeans.modules.ruby.elements.ClassElement;
 import org.netbeans.modules.ruby.elements.Element;
@@ -1444,20 +1445,27 @@ public class RubyIndexer extends EmbeddingIndexer {
         }
 
         private void indexAttribute(AstElement child, IndexDocument document, boolean nodoc) {
-            String attribute = child.getName();
+            
+            AstAttributeElement attributeElement = (AstAttributeElement) child;
+            String attribute = attributeElement.getName();
 
-            boolean isDocumented = isDocumented(child.getNode());
+            int flags = getModifiersFlag(child.getModifiers());
+            boolean isDocumented = isDocumented(attributeElement.getNode());
 
-            int flags = isDocumented ? IndexedMethod.DOCUMENTED : 0;
+            if(isDocumented) {
+                flags |= IndexedMethod.DOCUMENTED;
+            }
             if (nodoc) {
                 flags |= IndexedElement.NODOC;
             }
-
-            char first = IndexedElement.flagToFirstChar(flags);
-            char second = IndexedElement.flagToSecondChar(flags);
-            
-            if (isDocumented) {
+            if (flags != 0) {
+                char first = IndexedElement.flagToFirstChar(flags);
+                char second = IndexedElement.flagToSecondChar(flags);
                 attribute = attribute + (";" + first) + second;
+            }
+            RubyType type = child.getType();
+            if (type.isKnown()) {
+                attribute += ";;" + type.asIndexedString() + ";";
             }
             
             document.addPair(FIELD_ATTRIBUTE_NAME, attribute, true, true);
@@ -1479,22 +1487,23 @@ public class RubyIndexer extends EmbeddingIndexer {
         }
 
         private void indexField(AstElement child, IndexDocument document, boolean nodoc) {
-            String signature = child.getName();
+            StringBuilder signature = new StringBuilder(child.getName());
             int flags = getModifiersFlag(child.getModifiers());
             if (nodoc) {
                 flags |= IndexedElement.NODOC;
             }
-
             if (flags != 0) {
-                StringBuilder sb = new StringBuilder(signature);
-                sb.append(';');
-                sb.append(IndexedElement.flagToFirstChar(flags));
-                sb.append(IndexedElement.flagToSecondChar(flags));
-                signature = sb.toString();
+                signature.append(';');
+                signature.append(IndexedElement.flagToFirstChar(flags));
+                signature.append(IndexedElement.flagToSecondChar(flags));
+            }
+            RubyType type = child.getType();
+            if (type.isKnown()) {
+                signature.append(";;" + type.asIndexedString() + ";");
             }
 
             // TODO - gather documentation on fields? naeh
-            document.addPair(FIELD_FIELD_NAME, signature, true, true);
+            document.addPair(FIELD_FIELD_NAME, signature.toString(), true, true);
         }
 
         private void indexGlobal(AstElement child, IndexDocument document/*, boolean nodoc*/) {

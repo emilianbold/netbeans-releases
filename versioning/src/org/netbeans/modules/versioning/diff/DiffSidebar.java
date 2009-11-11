@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.versioning.diff;
 
+import java.beans.PropertyChangeEvent;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
@@ -77,6 +78,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.text.*;
 import java.awt.event.*;
 import java.awt.*;
+import java.beans.PropertyChangeListener;
 import java.util.*;
 import java.util.List;
 import java.util.logging.Level;
@@ -262,14 +264,27 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         return returnedDiff;
     }
 
-    void onDiff(Difference diff) {
+    void onDiff(final Difference diff) {
         try {
-            DiffController view = DiffController.create(new SidebarStreamSource(true), new SidebarStreamSource(false));
+            final DiffController view = DiffController.create(new SidebarStreamSource(true), new SidebarStreamSource(false));
             DiffTopComponent tc = new DiffTopComponent(view);
             tc.setName(NbBundle.getMessage(DiffSidebar.class, "CTL_DiffPanel_Title", new Object[] {fileObject.getNameExt()})); // NOI18N
             tc.open();
             tc.requestActive();
-            view.setLocation(DiffController.DiffPane.Modified, DiffController.LocationType.DifferenceIndex, getDiffIndex(diff));
+            // cannot set the difference index immediately, diff is computed asynchronously, we have to wait for an event
+            PropertyChangeListener list = new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (DiffController.PROP_DIFFERENCES.equals(evt.getPropertyName())) {
+                        // no need to listen any more, removing listener to enable GC
+                        view.removePropertyChangeListener(this);
+                        int diffIndex = getDiffIndex(diff);
+                        if (diffIndex != -1 && diffIndex < view.getDifferenceCount()) {
+                            view.setLocation(DiffController.DiffPane.Modified, DiffController.LocationType.DifferenceIndex, diffIndex);
+                        }
+                    }
+                }
+            };
+            view.addPropertyChangeListener(list);
         } catch (IOException e) {
             ErrorManager.getDefault().notify(e);
         }

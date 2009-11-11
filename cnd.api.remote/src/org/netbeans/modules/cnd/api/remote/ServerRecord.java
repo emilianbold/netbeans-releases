@@ -104,4 +104,6 @@ public interface ServerRecord {
     public void validate(boolean force);
 
     public RemoteSyncFactory getSyncFactory();
+
+    public boolean getX11Forwarding();
 }

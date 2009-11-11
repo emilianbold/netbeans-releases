@@ -50,6 +50,7 @@ import java.util.Properties;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Exceptions;
 
@@ -204,6 +205,10 @@ public final class FileData {
     }
 
     private String getFileKey(File file) {
-        return file.getAbsolutePath();
+        String key = file.getAbsolutePath();
+        if (!CndFileUtils.isSystemCaseSensitive()) {
+            key = key.toLowerCase();
+        }
+        return key;
     }
 }

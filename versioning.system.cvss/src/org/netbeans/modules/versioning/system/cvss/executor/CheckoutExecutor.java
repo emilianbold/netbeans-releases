@@ -110,11 +110,7 @@ public class CheckoutExecutor extends ExecutorSupport {
             cache.refreshCached(file, repositoryStatus);
             refreshedFiles.add(file);
         }
-
-        // refresh FS
-        if (workingFolder != null) {
-            FileUtil.refreshFor(workingFolder);
-        }
+        
         // refresh all command roots
         File [] files = xcmd.getFiles();
         for (int i = 0; i < files.length; i++) {
@@ -122,10 +118,6 @@ public class CheckoutExecutor extends ExecutorSupport {
             refreshRecursively(file);
             if (file.isFile()) {
                 cache.refreshCached(file.getParentFile(), FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-            }
-            FileObject fo = FileUtil.toFileObject(file);
-            if (fo != null) {
-                fo.refresh(true);
             }
         }
     }

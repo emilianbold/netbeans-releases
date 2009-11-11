@@ -49,6 +49,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JPopupMenu;
@@ -333,6 +335,17 @@ class DropDownToggleButton extends JToggleButton {
         //TODO use 'disabled' arrow icon
         Icon arrow = updateIcons( icon, ICON_DISABLED_SELECTED );
         super.setDisabledSelectedIcon( hasPopupMenu() ? arrow : icon );
+    }
+
+    @Override
+    public void setText( String text ) {
+        //does nothing
+        Logger.getLogger(DropDownToggleButton.class.getName()).log(Level.FINER, "DropDownToggleButton cannot display text."); //NOI18N
+    }
+
+    @Override
+    public String getText() {
+        return null;
     }
     
     private class Model extends JToggleButton.ToggleButtonModel {

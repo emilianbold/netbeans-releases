@@ -35,12 +35,12 @@ public class ProductCodeResource {
     @Context
     protected ResourceContext resourceContext;
     protected String id;
-  
+
     /** Creates a new instance of ProductCodeResource */
     public ProductCodeResource() {
     }
 
-    public void setId(String id) {
+    protected void setId(String id) {
         this.id = id;
     }
 
@@ -175,7 +175,7 @@ public class ProductCodeResource {
 
         private ProductCode parent;
 
-        public void setParent(ProductCode parent) {
+        protected void setParent(ProductCode parent) {
             this.parent = parent;
         }
 

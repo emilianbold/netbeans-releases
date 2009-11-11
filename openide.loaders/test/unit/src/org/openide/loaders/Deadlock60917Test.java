@@ -83,7 +83,7 @@ public class Deadlock60917Test extends NbTestCase {
 
     @RandomlyFails
     public void testWhatHappensWhenALoaderBecomesInvalidAndFileIsOpened() throws Exception {
-        final ForgetableLoader l = (ForgetableLoader)DataLoader.getLoader(ForgetableLoader.class);
+        final ForgetableLoader l = DataLoader.getLoader(ForgetableLoader.class);
 		FileSystem lfs = TestUtilHid.createLocalFileSystem(getWorkDir(), new String[] {
 			"folder/f.keep",
 			"folder/f.forget",
@@ -97,11 +97,11 @@ public class Deadlock60917Test extends NbTestCase {
 		final DataObject our = DataObject.find(primary);
 		assertEquals("The right loader", l, our.getLoader());
 
-		OpenCookie oc = (OpenCookie)our.getCookie(OpenCookie.class);
+		OpenCookie oc = our.getCookie(OpenCookie.class);
 		oc.open();
 		waitEQ();
 		
-		EditorCookie ec = (EditorCookie)our.getCookie(EditorCookie.class);
+		EditorCookie ec = our.getCookie(EditorCookie.class);
 		assertNotNull("We have ec", ec);
 		
 		Document d = ec.openDocument();
@@ -135,7 +135,7 @@ public class Deadlock60917Test extends NbTestCase {
 			public void run () throws IOException {
 				javax.swing.SwingUtilities.invokeLater(awt);
 			
-				FileObject[] two = (FileObject[])our.files().toArray(new FileObject[0]);
+				FileObject[] two = our.files().toArray(new FileObject[0]);
 				assertEquals("Two", 2, two.length);
 				
 				// delete just primary file

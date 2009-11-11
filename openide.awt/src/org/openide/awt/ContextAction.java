@@ -126,10 +126,12 @@ implements Action, ContextAwareAction {
     }
 
     public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
-        support.removePropertyChangeListener(listener);
-        if (!support.hasListeners(null)) {
-            global.unregisterListener(type, this);
-            support = null;
+        if( null != support ) {
+            support.removePropertyChangeListener(listener);
+            if (!support.hasListeners(null)) {
+                global.unregisterListener(type, this);
+                support = null;
+            }
         }
     }
 

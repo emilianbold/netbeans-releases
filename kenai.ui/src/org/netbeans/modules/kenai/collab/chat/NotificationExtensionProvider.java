@@ -64,20 +64,20 @@ public class NotificationExtensionProvider implements PacketExtensionProvider {
         formatter.setTimeZone(TimeZone.getTimeZone("UTC")); //NOI18N
         Date stamp = formatter.parse(parser.getAttributeValue("", "stamp")); //NOI18N
 
-        String serviceName = parser.getAttributeValue("", "service");
-        String author = parser.getAttributeValue("", "user");
-        URI uri = new URI(parser.getAttributeValue("", "uri"));
-        KenaiService.Type type = KenaiService.Type.forId(parser.getAttributeValue("", "type"));
+        String serviceName = parser.getAttributeValue("", "service"); // NOI18N
+        String author = parser.getAttributeValue("", "user"); // NOI18N
+        URI uri = new URI(parser.getAttributeValue("", "uri")); // NOI18N
+        KenaiService.Type type = KenaiService.Type.forId(parser.getAttributeValue("", "type")); // NOI18N
 
         int tag = parser.next();
         List<KenaiNotification.Modification> modifications = new ArrayList();
-        while (!(tag == XmlPullParser.END_TAG && "notification".equals(parser.getName()))) {
-            if (tag == XmlPullParser.START_TAG && "modification".equals(parser.getName())) {
-                String mid = parser.getAttributeValue("", "id");
-                String mresource = parser.getAttributeValue("", "resource");
+        while (!(tag == XmlPullParser.END_TAG && "notification".equals(parser.getName()))) { // NOI18N
+            if (tag == XmlPullParser.START_TAG && "modification".equals(parser.getName())) { // NOI18N
+                String mid = parser.getAttributeValue("", "id"); // NOI18N
+                String mresource = parser.getAttributeValue("", "resource"); // NOI18N
                 KenaiNotification.Modification.Type mtype;
                 try {
-                    mtype = KenaiNotification.Modification.Type.valueOf(parser.getAttributeValue("", "type").toUpperCase());
+                    mtype = KenaiNotification.Modification.Type.valueOf(parser.getAttributeValue("", "type").toUpperCase()); // NOI18N
                 } catch (Exception e) {
                     mtype = KenaiNotification.Modification.Type.UNKNOWN;
                 }
@@ -85,7 +85,7 @@ public class NotificationExtensionProvider implements PacketExtensionProvider {
             }
             tag = parser.next();
         }
-        return new NotificationExtension("notification", NAMESPACE,
+        return new NotificationExtension("notification", NAMESPACE, // NOI18N
                 new KenaiNotification(stamp,type,uri,author,serviceName,modifications));
     }
 }

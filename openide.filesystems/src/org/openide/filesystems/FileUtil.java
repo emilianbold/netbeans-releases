@@ -921,11 +921,9 @@ public final class FileUtil extends Object {
         File retVal = (File) fo.getAttribute("java.io.File"); // NOI18N;        
 
         if (retVal == null) {
-            URL fileURL = null;
-            int[] types = new int[] { URLMapper.INTERNAL, URLMapper.EXTERNAL };
-
-            for (int i = 0; ((fileURL == null) || "file".equals(fileURL.getProtocol())) && (i < types.length); i++) { // NOI18N
-                fileURL = URLMapper.findURL(fo, types[i]);
+            URL fileURL = URLMapper.findURL(fo, URLMapper.INTERNAL);
+            if (fileURL == null || !"file".equals(fileURL.getProtocol())) {  //NOI18N
+                fileURL = URLMapper.findURL(fo, URLMapper.EXTERNAL);
             }
 
             if ((fileURL != null) && "file".equals(fileURL.getProtocol())) {
@@ -1492,16 +1490,11 @@ public final class FileUtil extends Object {
     }
 
     /**
-     * Construct a stream handler that handles the <code>nbfs</code> URL protocol
-     * used for accessing file objects directly.
-     * This method is not intended for module use; only the core
-     * should need to call it.
-     * Modules probably need only use {@link URLMapper} to create and decode such
-     * URLs.
-     * @since 3.17
+     * @deprecated No longer used.
      */
+    @Deprecated
     public static URLStreamHandler nbfsURLStreamHandler() {
-        return FileURL.HANDLER;
+        return new FileURL.Handler();
     }
 
     /** Recursively checks whether the file is underneath the folder. It checks whether

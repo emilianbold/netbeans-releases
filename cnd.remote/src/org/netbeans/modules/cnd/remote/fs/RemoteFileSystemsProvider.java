@@ -45,8 +45,10 @@ import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.spi.utils.FileSystemsProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -70,6 +72,9 @@ public class RemoteFileSystemsProvider extends FileSystemsProvider {
     protected Data getImpl(CharSequence path) {
         if (USE_REMOTE_FS) {
             String prefix = BasicCompiler.getIncludeFileBase();
+            if (Utilities.isWindows()) {
+                path = path.toString().replace('\\', '/');
+            }
             if (CharSequenceUtils.startsWith(path, prefix)) {
                 CharSequence rest = path.subSequence(prefix.length(), path.length());
                 int slashPos = CharSequenceUtils.indexOf(rest, "/"); // NOI18N
@@ -88,10 +93,28 @@ public class RemoteFileSystemsProvider extends FileSystemsProvider {
         return null;
     }
 
+    @Override
+    protected String getCaseInsensitivePathImpl(CharSequence path) {
+        if (USE_REMOTE_FS) {
+            String prefix = BasicCompiler.getIncludeFileBase();
+            if (Utilities.isWindows()) {
+                path = path.toString().replace('\\', '/');
+            }
+            if (CharSequenceUtils.startsWith(path, prefix)) {
+                CharSequence start = path.subSequence(0, prefix.length());
+                CharSequence rest = path.subSequence(prefix.length(), path.length());
+                return start + 
+                        (CndFileUtils.isSystemCaseSensitive() ? rest.toString() : RemoteFileSupport.fixCaseSensitivePathIfNeeded(rest.toString()));
+            }
+        }
+        return null;
+    }
+
+
     private ExecutionEnvironment getExecutionEnvironment(String hostName) {
         ExecutionEnvironment result = null;
         for(ExecutionEnvironment env : ServerList.getEnvironments()) {
-            if (env.getHost().equals(hostName)) {
+            if (corresponds(hostName, env)) {
                 result = env;
                 if (ConnectionManager.getInstance().isConnectedTo(env)) {
                     break;
@@ -99,6 +122,20 @@ public class RemoteFileSystemsProvider extends FileSystemsProvider {
             }
         }
         return result;
+    }
+
+    private boolean corresponds(String hostName, ExecutionEnvironment env) {
+        String envHost = env.getHost();
+        if (hostName.startsWith(envHost)) {
+            if (hostName.equals(envHost)) {
+                return true;
+            }
+            envHost += ("-" + env.getSSHPort()); //NOI18N
+            if (hostName.equals(envHost)) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

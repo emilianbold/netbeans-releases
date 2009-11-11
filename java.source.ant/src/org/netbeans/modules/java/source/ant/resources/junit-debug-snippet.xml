@@ -68,6 +68,9 @@ made subject to such option by the copyright holder.
     </target>
     <target name="-prepare-execution" depends="-init-debug-args">
         <macrodef name="junit-debug-template">
+            <!-- This macros is intended to be used in conjunction with the
+            org.apache.tools.ant.module.spi.AntLogger. Note, the last task
+            deletes just created test report. -->
             <element name="extra-args" implicit="yes" optional="yes"/>
             <sequential>
                 <translate-classpath classpath="${classpath}" targetProperty="classpath-translated" />
@@ -103,7 +106,7 @@ made subject to such option by the copyright holder.
                         <mapper from="test-sys-prop.*" to="*" type="glob"/>
                     </syspropertyset>
                 </java>
-                <!-- cannot delete ${test.result.file} yet, will be parsed soon; XXX deleteOnExit? -->
+                <delete file="${test.result.file}" deleteonexit="true" />
             </sequential>
         </macrodef>
     </target>

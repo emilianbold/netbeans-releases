@@ -124,6 +124,7 @@ import javax.swing.event.TreeModelListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.event.TreeWillExpandListener;
+import javax.swing.plaf.TreeUI;
 import javax.swing.plaf.UIResource;
 import javax.swing.text.Position;
 import javax.swing.tree.ExpandVetoException;
@@ -225,7 +226,10 @@ public abstract class TreeView extends JScrollPane {
      * Defaults to false meaning prefix is used.
      */
     transient private boolean quickSearchUsingSubstring = false;
-    
+
+    /** wait cursor is shown automatically during expanding */
+    transient private boolean autoWaitCursor = true;
+
     /** Holds VisualizerChildren for all visible nodes */
     private final VisualizerHolder visHolder = new VisualizerHolder();
 
@@ -585,17 +589,31 @@ public abstract class TreeView extends JScrollPane {
     /** Expands all paths.
     */
     public void expandAll() {
-        int i = 0;
-        int j;
+        TreeUI treeUI = tree.getUI();
+        try {
+            tree.setUI(null);
+            TreeNode root = (TreeNode) tree.getModel().getRoot();
+            expandOrCollapseAll(new TreePath(root), true);
+        } finally {
+            tree.setUI(treeUI);
+            tree.updateUI();
+        }
+    }
 
-        do {
-            do {
-                j = tree.getRowCount();
-                tree.expandRow(i);
-            } while (j != tree.getRowCount());
-
-            i++;
-        } while (i < tree.getRowCount());
+    private void expandOrCollapseAll(TreePath parent, boolean expand) {
+        TreeNode node = (TreeNode) parent.getLastPathComponent();
+        if (node.getChildCount() > 0) {
+            for (Enumeration<TreeNode> e = node.children(); e.hasMoreElements();) {
+                TreeNode n = e.nextElement();
+                TreePath path = parent.pathByAddingChild(n);
+                expandOrCollapseAll(path, expand);
+            }
+        }
+        if (expand) {
+            tree.expandPath(parent);
+        } else {
+            tree.collapsePath(parent);
+        }
     }
 
     //
@@ -859,6 +877,15 @@ public abstract class TreeView extends JScrollPane {
         return tree.getSelectionModel().getSelectionMode();
     }
 
+    /**
+     * Controls automatic setting of wait cursor when node is expanded
+     * @param enable true if wait cursor should be shown automatically
+     * @since 6.21
+     */
+    public void setAutoWaitCursor(boolean enable) {
+        autoWaitCursor = enable;
+    }
+
     //
     // showing and removing the wait cursor
     //
@@ -901,8 +928,8 @@ public abstract class TreeView extends JScrollPane {
 
     private void prepareWaitCursor(final Node node) {
         // check type of node
-        if (node == null) {
-            showWaitCursor(false);
+        if (node == null || !autoWaitCursor) {
+            return;
         }
 
         showWaitCursor(true);
@@ -1277,8 +1304,6 @@ public abstract class TreeView extends JScrollPane {
         }
 
         public synchronized void treeCollapsed(final TreeExpansionEvent ev) {
-
-            showWaitCursor(false);
             class Request implements Runnable {
                 private TreePath path;
 

@@ -53,6 +53,7 @@ import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
+import java.beans.PropertyChangeEvent;
 import java.lang.reflect.InvocationTargetException;
 import javax.swing.Icon;
 import javax.swing.plaf.UIResource;
@@ -65,6 +66,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeListener;
 import java.lang.reflect.Method;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -87,7 +89,7 @@ import org.openide.util.Exceptions;
  * @since 6.10.0
  *
  */
-final class CloseButtonTabbedPane extends JTabbedPane implements ChangeListener {
+final class CloseButtonTabbedPane extends JTabbedPane implements ChangeListener, PropertyChangeListener {
 
     private static final boolean JDK6_OR_LATER = System.getProperty("java.version").substring(0, 3).compareTo("1.6") >= 0;
     private Image closeTabImage;
@@ -168,8 +170,11 @@ final class CloseButtonTabbedPane extends JTabbedPane implements ChangeListener 
     @Override
     public void insertTab(String title, Icon icon, Component component, String tip, int index) {
         super.insertTab(title, icon, component, tip, index);
-        if (JDK6_OR_LATER && !hideCloseButton(component)) {
-            callSetTabComponentAt(index, new ButtonTab());
+        if (JDK6_OR_LATER) {
+            component.addPropertyChangeListener(TabbedPaneFactory.NO_CLOSE_BUTTON, this);
+            if (!hideCloseButton(component)) {
+                callSetTabComponentAt(index, new ButtonTab());
+            }
         }
         if (title != null) {
             setTitleAt(index, title);
@@ -177,14 +182,10 @@ final class CloseButtonTabbedPane extends JTabbedPane implements ChangeListener 
     }
 
     @Override
-    public void setIconAt(int index, Icon icon) {
-        super.setIconAt(index, icon);
-        if (JDK6_OR_LATER) {
-            ButtonTab buttonTab = ((ButtonTab) callGetTabComponentAt(index));
-            if (buttonTab != null) {
-                buttonTab.setIcon(icon);
-            }
-        }
+    public void removeTabAt(int index) {
+        Component c = getComponentAt(index);
+        c.removePropertyChangeListener(TabbedPaneFactory.NO_CLOSE_BUTTON, this);
+        super.removeTabAt(index);
     }
 
     private static final boolean HTML_TABS_BROKEN = htmlTabsBroken();
@@ -522,33 +523,38 @@ final class CloseButtonTabbedPane extends JTabbedPane implements ChangeListener 
         }
     }
 
-    int lastSel = -1;
     public void stateChanged(ChangeEvent e) {
         if (!JDK6_OR_LATER) {
             reset();
         }
-        if (isWindowsLaF()) {
+    }
+
+    @Override
+    public Color getBackgroundAt(int index) {
+        if( isWindowsLaF() && !isWindowsXPLaF() ) {
             // In Windows L&F selected and unselected tab may have same color
             // which make hard to distinguish which tab is selected (especially
             // in SCROLL_TAB_LAYOUT). In such case manage tab colors manually.
             Color selected = UIManager.getColor("controlHighlight");
             Color unselected = UIManager.getColor("control");
             if (selected.equals(unselected)) {
-                int sel = getSelectedIndex();
-                if (sel != lastSel) {
-                    selected = UIManager.getColor("controlLtHighlight");
-                    selected = new Color((selected.getRed() + unselected.getRed()) / 2,
-                            (selected.getGreen() + unselected.getGreen()) / 2,
-                            (selected.getBlue() + unselected.getBlue()) / 2);
-                }
-                if (lastSel >= 0 && lastSel < getTabCount()) {
-                    setBackgroundAt(lastSel, unselected);
-                }
-                if (sel >= 0) {
-                    setBackgroundAt(sel, selected);
-                }
-                lastSel = sel;
+                //make unselected tabs darker
+                unselected = new Color(Math.max(selected.getRed() - 12, 0),
+                        Math.max(selected.getGreen() - 12, 0),
+                        Math.max(selected.getBlue() - 12, 0));
             }
+            return index == getSelectedIndex() ? selected : unselected;
+        }
+        return super.getBackgroundAt(index);
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getSource() instanceof Component) {
+            assert evt.getPropertyName().equals(TabbedPaneFactory.NO_CLOSE_BUTTON);
+            Component c = (Component) evt.getSource();
+            int idx = indexOfComponent(c);
+            boolean noCloseButton = (Boolean) evt.getNewValue();
+            callSetTabComponentAt(idx, noCloseButton ? null : new ButtonTab());
         }
     }
 
@@ -766,13 +772,19 @@ final class CloseButtonTabbedPane extends JTabbedPane implements ChangeListener 
                     }
                     return "";
                 }
+
+                @Override
+                public Icon getIcon() {
+                    int i = callIndexOfTabComponent(ButtonTab.this);
+                    Icon icon = i >= 0 ? getIconAt(i) : null;
+                    if (super.getIcon() != icon) {
+                        setIcon(icon);
+                    }
+                    return icon;
+                }
             };
             add(label);
             add(new TabButton());
-        }
-
-        void setIcon(Icon icon) {
-            label.setIcon(icon);
         }
 
         private class TabButton extends JButton implements ActionListener {

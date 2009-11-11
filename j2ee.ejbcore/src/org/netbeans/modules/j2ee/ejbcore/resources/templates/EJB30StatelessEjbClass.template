@@ -3,16 +3,24 @@
 <#assign licenseLast = " */">
 <#include "../../Licenses/license-${project.license}.txt">
 
+<#if package?? && package != "">
 package ${package};
 
+</#if>
 import javax.ejb.Stateless;
+<#if annotationLocalBean??>
+import javax.ejb.LocalBean;
+</#if>
 
 /**
  *
  * @author ${user}
  */
 @Stateless
-public class ${name} {
+<#if annotationLocalBean??>
+@LocalBean
+</#if>
+public class ${name} <#if interfaces??>implements ${interfaces} </#if>{
     
     // Add business logic below. (Right-click in editor and choose
     // "Insert Code > Add Business Method")

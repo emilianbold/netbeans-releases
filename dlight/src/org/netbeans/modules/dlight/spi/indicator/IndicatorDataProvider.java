@@ -104,6 +104,7 @@ public abstract class IndicatorDataProvider<T extends IndicatorDataProviderConfi
             for (DataTableMetadata.Column pcol : providedColumns) {
                 for (DataTableMetadata.Column icol : indicatorColumns) {
                     if (icol.equals(pcol)) {
+                        indicator.columnProvided(icol);
                         addIndicatorDataProviderListener(indicator);
                         return true;
                     }

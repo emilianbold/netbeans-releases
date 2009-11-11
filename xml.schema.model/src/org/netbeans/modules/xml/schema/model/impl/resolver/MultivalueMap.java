@@ -198,23 +198,59 @@ public class MultivalueMap<K, V> {
             // The processedItems is required because the sourceTree can be not
             // a tree but rather a graph. So it's necessary to exclude cycling!
             HashSet<I> processedItems = new HashSet<I>();
-            populateRoots(source, startItem, leafs, processedItems);
+            Path<I> iterationStack = new Path<I>(startItem);
+            populateRoots(source, iterationStack, leafs, processedItems);
             return leafs;
         }
 
-        private static <I> void populateRoots(BidirectionalGraph<I> source,
-                I startItem, Set<I> leafs, Set<I> processedItems) {
-            //
-            List<I> children = source.getFrom(startItem);
-            if (children.isEmpty()) {
-                leafs.add(startItem);
+        private static class Path<I> {
+
+            private I mItem;
+            private Path<I> mParentPath;
+
+            public Path(I item) {
+                mItem = item;
             }
+
+            public Path(Path<I> parentPath, I item) {
+                mItem = item;
+                mParentPath = parentPath;
+            }
+
+            public I getItem() {
+                return mItem;
+            }
+
+            public boolean containsInPath(I item) {
+                if (item == mItem) {
+                    return true;
+                } else if (mParentPath != null) {
+                    return mParentPath.containsInPath(item);
+                } else {
+                    return false;
+                }
+            }
+
+        }
+
+        private static <I> void populateRoots(BidirectionalGraph<I> source,
+                Path<I> iterationStack, Set<I> leafs, Set<I> processedItems) {
+            //
+            I startItem = iterationStack.getItem();
             processedItems.add(startItem);
             //
+            List<I> referencesToStartItem = source.getFrom(startItem);
+            if (referencesToStartItem.isEmpty()) {
+                leafs.add(startItem);
+            }
+            //
             // Process children
-            for (I child : children) {
-                if (!processedItems.contains(child)) {
-                    populateRoots(source, child, leafs, processedItems);
+            for (I referenceToStartItem : referencesToStartItem) {
+                if (!processedItems.contains(referenceToStartItem)) {
+                    Path<I> path = new Path<I>(iterationStack, referenceToStartItem);
+                    populateRoots(source, path, leafs, processedItems);
+                } else if (iterationStack.containsInPath(referenceToStartItem)) {
+                    leafs.add(referenceToStartItem);
                 }
             }
         }

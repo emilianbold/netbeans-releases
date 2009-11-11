@@ -88,7 +88,7 @@ public final class DLightConfiguration {
         DLightConfigurationAccessor.setDefault(new DLightConfigurationAccessorImpl());
     }
 
-    private static final String CONFIGURATION_OPTIONS = "ConfigurationOptions";//NOI18N
+    static final String CONFIGURATION_OPTIONS = "ConfigurationOptions";//NOI18N
     private final FileObject rootFolder;
     private final ToolsConfiguration toolsConfiguration;
     private final DLightConfigurationOptions configurationOptions;
@@ -155,7 +155,7 @@ public final class DLightConfiguration {
         return isSystem;
     }
 
-    boolean isDefault(){
+    public boolean isDefault(){
         return isDefault;
     }
 
@@ -239,6 +239,10 @@ public final class DLightConfiguration {
             getConfigurationOptions();
         }   
         return configurationOptions;
+    }
+
+    FileObject getRootFolder(){
+        return rootFolder;
     }
 
     private DLightConfigurationOptions getConfigurationOptions() {
@@ -384,7 +388,7 @@ public final class DLightConfiguration {
         public boolean isHidden(DLightConfiguration configuration) {
             return configuration.isHidden;
         }
-        
+
     }
    
 }

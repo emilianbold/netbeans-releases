@@ -141,7 +141,7 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
             } catch (FileNotFoundException exc) {
                 Exceptions.printStackTrace(exc);
             } catch (IOException exc) {
-                Exceptions.printStackTrace(exc);
+                Logger.getLogger("global").log(Level.INFO, null, exc);
             }
         }
         return result;

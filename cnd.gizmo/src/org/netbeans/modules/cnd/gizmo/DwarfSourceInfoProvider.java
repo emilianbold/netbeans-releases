@@ -39,6 +39,7 @@
 package org.netbeans.modules.cnd.gizmo;
 
 import java.io.FileNotFoundException;
+import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.cnd.gizmo.support.GizmoServiceInfo;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -50,7 +51,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.WeakHashMap;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
+import org.netbeans.modules.cnd.api.remote.RemoteBinaryService;
+import org.netbeans.modules.cnd.api.remote.RemoteBinaryService.RemoteBinaryID;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
 import org.netbeans.modules.cnd.dwarfdump.Dwarf;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfEntry;
@@ -61,6 +65,7 @@ import org.netbeans.modules.dlight.management.remote.spi.PathMapperProvider;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.netbeans.modules.dlight.util.DLightLogger;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
@@ -77,8 +82,8 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
     public DwarfSourceInfoProvider() {
         cache = new WeakHashMap<String, Map<String, AbstractFunctionToLine>>();
     }
-    
-    public SourceFileInfo fileName(String functionQName, int lineNumber, long offset, Map<String, String> serviceInfo) {
+
+    public SourceFileInfo getSourceFileInfo(String functionQName, int lineNumber, long offset, Map<String, String> serviceInfo) {
         SourceFileInfo info = _fileName(functionQName, lineNumber, offset, serviceInfo);
         if (info != null) {
             PathMapperProvider provider = Lookup.getDefault().lookup(PathMapperProvider.class);
@@ -102,7 +107,29 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
         if (serviceInfo == null){
             return null;
         }
-        String executable = serviceInfo.get(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE);
+
+        ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.fromUniqueID(serviceInfo.get(ServiceInfoDataStorage.EXECUTION_ENV_KEY));
+
+        String executable = null;
+
+        if (execEnv.isLocal()) {
+            executable = serviceInfo.get(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE);
+        } else {
+            String executableID = serviceInfo.get(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE);
+            RemoteBinaryID id = RemoteBinaryService.RemoteBinaryID.fromIDString(executableID);
+            Future<Boolean> remoteSyncResult = RemoteBinaryService.getResult(id);
+
+            if (remoteSyncResult != null && remoteSyncResult.isDone()) {
+                try {
+                    if (remoteSyncResult.get() == true) {
+                        executable = RemoteBinaryService.getFileName(id);
+                    }
+                } catch (InterruptedException ex) {
+                } catch (ExecutionException ex) {
+                }
+            }
+        }
+
         if (executable != null) {
             Map<String, AbstractFunctionToLine> sourceInfoMap = getSourceInfo(executable);
             if (TRACE) {
@@ -161,21 +188,21 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
         return sourceInfoMap;
     }
 
-    private void processEntries(CompilationUnit compilationUnit, List<DwarfEntry> declarations, String filePath, String compDir, 
+    private void processEntries(CompilationUnit compilationUnit, List<DwarfEntry> declarations, String filePath, String compDir,
             TreeSet<LineNumber> lineNumbers, Map<String, AbstractFunctionToLine> sourceInfoMap, Set<Long> antiLoop) throws IOException {
         for (DwarfEntry entry : declarations) {
             prosessEntry(compilationUnit, entry, filePath, compDir, lineNumbers, sourceInfoMap, antiLoop);
         }
     }
 
-    private void prosessEntry(CompilationUnit compilationUnit, DwarfEntry entry, String filePath, String compDir, 
+    private void prosessEntry(CompilationUnit compilationUnit, DwarfEntry entry, String filePath, String compDir,
             TreeSet<LineNumber> lineNumbers, Map<String, AbstractFunctionToLine> sourceInfoMap, Set<Long> antiLoop) throws IOException {
         if (antiLoop.contains(entry.getRefference())) {
             return;
         }
         antiLoop.add(entry.getRefference());
         switch (entry.getKind()) {
-            case DW_TAG_subprogram: 
+            case DW_TAG_subprogram:
             {
                 if (entry.getLine() < 0 || entry.getDeclarationFilePath() == null) {
                     return;
@@ -240,7 +267,7 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
             }
             return cached;
         }
-        
+
         private String _initPath(String filePath, String compDir, DwarfEntry entry) throws IOException{
             String entyFilePath = entry.getDeclarationFilePath();
             if (entyFilePath != null && filePath.endsWith(entyFilePath)) {
@@ -293,7 +320,7 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
         private final int[] offsetStorage;
         private final int baseLine;
         private final String filePath;
-        
+
         public FunctionToLine(String filePath, String compDir, DwarfEntry entry, TreeSet<LineNumber> numbers, Map<String, String> onePath) throws IOException {
             assert entry.getKind() == TAG.DW_TAG_subprogram;
             assert entry.getLowAddress() != 0;
@@ -321,7 +348,7 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
         }
 
         public SourceFileInfo getLine(int offset, Map<String, String> serviceInfo){
-            if (offset == 0) {
+            if (offset <= 0) {
                 //return new SourceFileInfo(toAbsolutePath(serviceInfo, filePath), baseLine, 0);
                 if (baseLine > 0) {
                     return new SourceFileInfo(filePath, baseLine, 0);

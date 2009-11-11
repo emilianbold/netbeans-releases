@@ -83,7 +83,7 @@ public class SQLDataObject extends MultiDataObject {
     public boolean isConsole() {
         try {
             // the "console" files are stored in the SFS
-            return "nbfs".equals(getPrimaryFile().getURL().getProtocol()); // NOI18N
+            return "nbfs".equals(getPrimaryFile().getURL().getProtocol()) && !isTemplate(); // NOI18N
         } catch (FileStateInvalidException e) {
             return false;
         }

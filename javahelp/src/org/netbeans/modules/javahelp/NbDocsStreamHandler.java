@@ -50,22 +50,13 @@ import org.openide.modules.ModuleInfo;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.URLStreamHandlerRegistration;
 
 /** Handler & connection cribbed from NbResourceStreamHandler.
  * @author Jesse Glick
  */
-final class NbDocsStreamHandler extends URLStreamHandler {
-
-    @org.openide.util.lookup.ServiceProvider(service=java.net.URLStreamHandlerFactory.class)
-    public static final class Factory implements URLStreamHandlerFactory {
-        public URLStreamHandler createURLStreamHandler(String protocol) {
-            if (protocol.equals("nbdocs")) { // NOI18N
-                return new NbDocsStreamHandler();
-            } else {
-                return null;
-            }
-        }
-    }
+@URLStreamHandlerRegistration(protocol="nbdocs")
+public final class NbDocsStreamHandler extends URLStreamHandler {
 
     /** Make a URLConnection for nbdocs: URLs.
      * @param u the URL

@@ -40,7 +40,9 @@
 package org.netbeans.modules.cnd.remote.server;
 
 import java.beans.PropertyChangeSupport;
+import java.io.IOException;
 import java.util.Collection;
+import java.util.concurrent.CancellationException;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -76,6 +78,8 @@ public class RemoteServerRecord implements ServerRecord {
     private String reason;
     private String displayName;
     private RemoteSyncFactory syncFactory;
+    private boolean x11forwarding;
+//    private boolean x11forwardingPossible;
     
     /**
      * Create a new ServerRecord. This is always called from RemoteServerList.get, but can be
@@ -99,6 +103,8 @@ public class RemoteServerRecord implements ServerRecord {
             editable = true;
             state = connect ? State.UNINITIALIZED : State.OFFLINE;
         }
+        x11forwarding = Boolean.getBoolean("cnd.remote.X11"); //NOI18N;
+//        x11forwardingPossible = true;
     }
 
     @Override
@@ -144,7 +150,9 @@ public class RemoteServerRecord implements ServerRecord {
         if (rss.needsSetupOrUpdate()) {
             rss.setup();
         }
-
+//        if (ostate == State.UNINITIALIZED) {
+//            checkX11Forwarding();
+//        }
         synchronized (stateLock) {
             if (rss.isCancelled()) {
                 state = State.CANCELLED;
@@ -160,6 +168,17 @@ public class RemoteServerRecord implements ServerRecord {
             pcs.firePropertyChange(RemoteServerRecord.PROP_STATE_CHANGED, ostate, state);
         }
     }
+
+//    private void checkX11Forwarding() {
+//        X11ForwardingChecker x11checker = new X11ForwardingChecker(executionEnvironment);
+//        try {
+//            x11forwardingPossible = x11checker.check();
+//        } catch (IOException ex) {
+//            ex.printStackTrace();
+//        } catch (CancellationException ex) {
+//            ex.printStackTrace();
+//        }
+//    }
     
     public boolean resetOfflineState() {
         synchronized (stateLock) {
@@ -308,5 +327,21 @@ public class RemoteServerRecord implements ServerRecord {
             }
         }
         return true;
-    }    
+    }
+
+    public boolean getX11Forwarding() {
+        return x11forwarding;
+    }
+
+    public void setX11Forwarding(boolean x11forwarding) {
+        this.x11forwarding = x11forwarding;
+    }
+
+//    public boolean isX11forwardingPossible() {
+//        return x11forwardingPossible;
+//    }
+//
+//    public void setX11forwardingPossible(boolean x11forwardingPossible) {
+//        this.x11forwardingPossible = x11forwardingPossible;
+//    }
 }

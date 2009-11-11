@@ -36,41 +36,115 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.api.remote;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.Future;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Lookup;
 
 /**
  * Makes a remote binary accessible locally
+ * Gets a local path to a binary built on remote machine.
+ * In the case it is shared, returns just a path to the same physical binary.
+ * In the case it is not shared, ensures that the file is copied to the local host
+ * and returns full path to the copy
  * @author Vladimir Kvashin
  */
 public abstract class RemoteBinaryService {
 
-    protected RemoteBinaryService() {}
+    private final static Map<RemoteBinaryID, Future<Boolean>> readiness =
+            Collections.synchronizedMap(new HashMap<RemoteBinaryID, Future<Boolean>>());
+
+    protected RemoteBinaryService() {
+    }
 
     /**
-     * Gets a local path to a binary built on remote machine.
-     * In the case it is shared, returns just a path to the same physical binary.
-     * In the case it is not shared, ensures that the file is copied to the local host
-     * and returns full path to the copy
+     * Returns an ID to be used as a refference to the RemoteBinaryService.
      *
      * The method can be very slow.
      * It should never be called from AWT thread.
      */
-    public static String getRemoteBinary(ExecutionEnvironment execEnv, String remotePath) {
+    public static RemoteBinaryID getRemoteBinary(ExecutionEnvironment execEnv, String remotePath) {
         if (execEnv.isLocal()) {
-            return remotePath;
+            return new RemoteBinaryID(remotePath);
         } else {
             RemoteBinaryService rbs = Lookup.getDefault().lookup(RemoteBinaryService.class);
+
             if (rbs == null) {
                 return null;
-            } else {
-                return rbs.getRemoteBinaryImpl(execEnv, remotePath);
             }
+
+            RemoteBinaryResult result = rbs.getRemoteBinaryImpl(execEnv, remotePath);
+
+            if (result == null) {
+                return null;
+            }
+
+            RemoteBinaryID id = new RemoteBinaryID(result.localFName);
+            Future<Boolean> prevResult = readiness.put(id, result.syncResult);
+
+            if (prevResult != null && prevResult != result.syncResult) {
+                prevResult.cancel(true);
+            }
+
+            return id;
         }
     }
 
-    protected abstract String getRemoteBinaryImpl(ExecutionEnvironment execEnv, String remotePath);
+    public static String getFileName(RemoteBinaryID id) {
+        return id.toIDString();
+    }
+
+    public static Future<Boolean> getResult(RemoteBinaryID id) {
+        return readiness.get(id);
+    }
+
+    protected abstract RemoteBinaryResult getRemoteBinaryImpl(ExecutionEnvironment execEnv, String remotePath);
+
+    protected static class RemoteBinaryResult {
+
+        public final String localFName;
+        public final Future<Boolean> syncResult;
+
+        public RemoteBinaryResult(String localFName, Future<Boolean> syncResult) {
+            this.localFName = localFName;
+            this.syncResult = syncResult;
+        }
+    }
+
+    public static class RemoteBinaryID {
+
+        private final String id;
+
+        private RemoteBinaryID(String id) {
+            this.id = id;
+        }
+
+        public static RemoteBinaryID fromIDString(String str) {
+            return new RemoteBinaryID(str);
+        }
+
+        public String toIDString() {
+            return id;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof RemoteBinaryID)) {
+                return false;
+            }
+            RemoteBinaryID that = (RemoteBinaryID)obj;
+            return id.equals(that.id);
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 29 * hash + (this.id != null ? this.id.hashCode() : 0);
+            return hash;
+        }
+    }
 }

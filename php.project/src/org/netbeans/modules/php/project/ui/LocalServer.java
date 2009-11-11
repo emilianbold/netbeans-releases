@@ -301,10 +301,12 @@ public class LocalServer implements Comparable<LocalServer> {
 
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
                 boolean cellHasFocus) {
-            assert value instanceof LocalServer;
             setName("ComboBox.listRenderer"); // NOI18N
-            String srcRoot = ((LocalServer) value).getSrcRoot();
-            setText(srcRoot.length() == 0 ? " " : srcRoot); // NOI18N // combo is too low otherwise
+            if (value != null) {
+                assert value instanceof LocalServer;
+                String srcRoot = ((LocalServer) value).getSrcRoot();
+                setText(srcRoot.length() == 0 ? " " : srcRoot); // NOI18N // combo is too low otherwise
+            }
 
             if (isSelected) {
                 setBackground(list.getSelectionBackground());

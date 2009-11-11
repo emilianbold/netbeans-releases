@@ -209,7 +209,7 @@ public class ProjectPropPanel extends javax.swing.JPanel {
 ////        makeCustomizerProvider.removeActionListener(this);
 //    }
 
-    class SourceRootChooser extends DirectoryChooserInnerPanel {
+    static class SourceRootChooser extends DirectoryChooserInnerPanel {
 
         public SourceRootChooser(String baseDir, List<String> feed) {
             super(baseDir, feed);

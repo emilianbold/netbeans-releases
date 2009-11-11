@@ -19,6 +19,7 @@ import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode.IssueProperty;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
+import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -94,6 +95,7 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
         if(format != null) {
             StringBuffer sb = new StringBuffer();
             sb.append("<html>");                                                // NOI18N
+            s = TextUtils.escapeForHTMLLabel(s);
             format.format(new Object[] {s}, sb, null);
             sb.append("</html>");                                               // NOI18N
             s = sb.toString();
@@ -111,9 +113,9 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
         FontMetrics fm = label.getFontMetrics(label.getFont());
         int width = label.getSize().width - iconWidth;
 
-        String sufix = "..."; // NOI18N
+        String sufix = "...";                                                   // NOI18N
         int sufixLength = fm.stringWidth(sufix);
-        int desired = width - sufixLength - 10;
+        int desired = width - sufixLength;
         if (desired <= 0) return text;
 
         for (int i = 0; i <= text.length() - 1; i++) {
@@ -153,16 +155,16 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
         @Override
         public String toString() {
             StringBuffer sb = new StringBuffer();
-            sb.append("[");
-            sb.append("background=");
+            sb.append("[");                                                     // NOI18N
+            sb.append("background=");                                           // NOI18N
             sb.append(background);
-            sb.append(", foreground=");
+            sb.append(", foreground=");                                         // NOI18N
             sb.append(foreground);
-            sb.append(", format=");
+            sb.append(", format=");                                             // NOI18N
             sb.append(format != null ? format.toPattern() : null);
-            sb.append(", tooltip=");
+            sb.append(", tooltip=");                                            // NOI18N
             sb.append(tooltip);
-            sb.append("]");
+            sb.append("]");                                                     // NOI18N
             return sb.toString();
         }
         @Override

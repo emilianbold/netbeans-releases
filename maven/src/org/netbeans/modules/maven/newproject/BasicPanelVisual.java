@@ -94,6 +94,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -182,6 +183,11 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
                         }
                         if (FileUtil.toFileObject(projLoc) == null) {
                             problems.add(NbBundle.getMessage(BasicPanelVisual.class, "ERR_Project_Folder_is_not_valid_path"));
+                            return false;
+                        }
+                        //#167136
+                        if (Utilities.isWindows() && fil.getAbsolutePath().startsWith("\\\\")) {
+                            problems.add(NbBundle.getMessage(BasicPanelVisual.class, "ERR_Project_Folder_is_UNC"));
                             return false;
                         }
                         return true;

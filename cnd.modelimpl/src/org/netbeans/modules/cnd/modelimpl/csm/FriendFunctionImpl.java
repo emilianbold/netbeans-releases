@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
-import antlr.collections.AST;
+import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -83,7 +83,12 @@ public class FriendFunctionImpl extends FunctionImpl<CsmFriendFunction> implemen
         assert (friendClassUID != null) : "null object for UID " + friendClassUID;
         return cls;
     }
-    
+
+    @Override
+    public Kind getKind() {
+        return Kind.FUNCTION_FRIEND;
+    }
+
     @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);

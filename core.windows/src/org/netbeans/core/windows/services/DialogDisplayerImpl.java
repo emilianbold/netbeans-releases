@@ -44,6 +44,7 @@ package org.netbeans.core.windows.services;
 
 
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dialog;
 import java.awt.EventQueue;
 import java.awt.Frame;
@@ -58,6 +59,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.JRootPane;
+import javax.swing.SwingUtilities;
+import org.netbeans.core.windows.view.ui.DefaultSeparateContainer;
 
 
 // Extracted from core/NbTopManager.
@@ -118,8 +121,17 @@ public class DialogDisplayerImpl extends DialogDisplayer {
                 else {
                     Window w = KeyboardFocusManager.getCurrentKeyboardFocusManager ().getActiveWindow ();
                     if (!(w instanceof NbPresenter) || !w.isVisible()) {
-                        // don't set non-ide window as parent
-                        w = WindowManager.getDefault ().getMainWindow ();
+                        // undocked window is not instanceof NbPresenter although it's NetBeans's native window
+                        // all docked windows implements ModeUIBase interface
+                        if (! (w instanceof DefaultSeparateContainer.ModeUIBase)) {
+                            Container cont = SwingUtilities.getAncestorOfClass(Window.class, w);
+                            if (cont != null && (cont instanceof DefaultSeparateContainer.ModeUIBase)) {
+                                w = (Window) cont;
+                            } else {
+                                // don't set non-ide window as parent
+                                w = WindowManager.getDefault ().getMainWindow ();
+                            }
+                        }
                     } else if (w instanceof NbPresenter && ((NbPresenter) w).isLeaf ()) {
                         w = WindowManager.getDefault ().getMainWindow ();
                     }
@@ -170,6 +182,7 @@ public class DialogDisplayerImpl extends DialogDisplayer {
                 }
             }
             
+            @SuppressWarnings("deprecation")
             public void showDialog () {
                 if (testResult != null) {
                     // running in Unit test
@@ -275,6 +288,7 @@ public class DialogDisplayerImpl extends DialogDisplayer {
     /* Schedules notification for specific later time if called before
      * <code>runDelayed</code>, otherwise works as superclass method.
      */  
+    @Override
     public void notifyLater(final NotifyDescriptor descriptor) {
         class R implements Runnable {
             public boolean noParent;

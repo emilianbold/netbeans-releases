@@ -109,11 +109,10 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
     @Override
     protected boolean isUnformattableToken(JoinedTokenSequence jts, int tagTokenOffset) {
         Token token = getTokenAtOffset(jts, tagTokenOffset);
-        if (token.id() == XMLTokenId.BLOCK_COMMENT ||
-                token.id() == XMLTokenId.CDATA_SECTION) {
+
+        if (token.id() == XMLTokenId.BLOCK_COMMENT || token.id() == XMLTokenId.CDATA_SECTION) {
             return true;
         }
-
         return false;
     }
 
@@ -147,7 +146,6 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
             String tagName = tagImage.substring(startIndex);
             return tagName;
         }
-
         return null;
     }
 
@@ -174,7 +172,6 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
                     }
                 }
             }
-
             jts.move(originalOffset);
             jts.moveNext();
         }
@@ -215,23 +212,23 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
             jts.moveNext();
             return r;
         }
-
         jts.move(originalOffset);
         jts.moveNext();
         return -1;
     }
 
-    @Override
-    public void reformat(Context context, final int startOffset, final int endOffset)
-            throws BadLocationException {
-       final BaseDocument doc = (BaseDocument) context.document();
-       doc.render(new Runnable() {
-           public void run() {
-               doReformat(doc, startOffset, endOffset);            }
-       }); 
-        
-    }
-    
+// # 170343
+//    @Override
+//    public void reformat(Context context, final int startOffset, final int endOffset)
+//            throws BadLocationException {
+//       final BaseDocument doc = (BaseDocument) context.document();
+//       doc.render(new Runnable() {
+//           public void run() {
+//               doReformat(doc, startOffset, endOffset);            
+//           }
+//       }); 
+//    }
+
     public BaseDocument doReformat(BaseDocument doc, int startOffset, int endOffset) {
         spacesPerTab = IndentUtils.indentLevelSize(doc);
         try {
@@ -300,9 +297,6 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
         else {
              doc.insertString(so, "\n" + newIndentText, null);
         }
-      //  if (previousEndOffset < so) {
-        //    doc.remove(previousEndOffset, so - previousEndOffset);
-  //  }
     }
 
     /**
@@ -438,7 +432,6 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
         }
     }
     
-       
     private boolean isSubSectionToFormatNested(BaseDocument baseDoc, int startOffset){
       AbstractDocument doc = (AbstractDocument)baseDoc;
       doc.readLock();
@@ -462,6 +455,5 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
           doc.readUnlock();
       }
       return false;
-  }
-   
+    }
 }

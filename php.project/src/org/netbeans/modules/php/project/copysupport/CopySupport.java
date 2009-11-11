@@ -56,6 +56,7 @@ import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.connections.RemoteConnections;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
+import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -92,8 +93,6 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
     private final RequestProcessor.Task initTask;
 
     private volatile boolean projectOpened = false;
-    // @GuardedBy(this)
-    private boolean fileChangeListenerRegistered = false;
     private final ProxyOperationFactory proxyOperationFactory;
     // @GuardedBy(this)
     private FileSystem fileSystem;
@@ -179,7 +178,7 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
         LOGGER.log(Level.FINE, "Copy support REGISTERING FS listener for project {0}", project.getName());
         assert Thread.holdsLock(this);
 
-        if (fileChangeListenerRegistered) {
+        if (fileChangeListener != null) {
             LOGGER.log(Level.FINE, "\t-> not needed for project {0} (already registered)", project.getName());
             return;
         }
@@ -194,15 +193,15 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
                 LOGGER.log(Level.WARNING, null, ex);
             }
         } else {
-            FileUtil.addRecursiveListener(this, FileUtil.toFile(getSources()));
+            fileChangeListener = new SourcesFileChangeListener(this);
+            FileUtil.addRecursiveListener(fileChangeListener, FileUtil.toFile(getSources()));
             LOGGER.log(Level.FINE, "\t-> RECURSIVE listener registered for project {0}", project.getName());
         }
-        fileChangeListenerRegistered = true;
     }
 
     private synchronized void unregisterFileChangeListener() {
         LOGGER.log(Level.FINE, "Copy support UNREGISTERING FS listener for project {0}", project.getName());
-        if (!fileChangeListenerRegistered) {
+        if (fileChangeListener == null) {
             LOGGER.log(Level.FINE, "\t-> not needed for project {0} (not registered)", project.getName());
         } else {
             if (ALLOW_BROKEN) {
@@ -210,13 +209,24 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
                 fileSystem.removeFileChangeListener(fileChangeListener);
                 LOGGER.log(Level.FINE, "\t-> NON-RECURSIVE listener unregistered for project {0}", project.getName());
             } else {
-                FileUtil.removeRecursiveListener(this, FileUtil.toFile(getSources()));
-                LOGGER.log(Level.FINE, "\t-> RECURSIVE listener unregistered for project {0}", project.getName());
+                assert fileChangeListener instanceof SourcesFileChangeListener : "FS listener of incorrect type: " + fileChangeListener.getClass().getName();
+                // #172777
+                try {
+                    FileUtil.removeRecursiveListener(fileChangeListener, FileUtil.toFile(getSources()));
+                    LOGGER.log(Level.FINE, "\t-> RECURSIVE listener unregistered for project {0}", project.getName());
+                } catch (IllegalArgumentException ex) {
+                    LOGGER.log(Level.WARNING,
+                            "If this happens to you reliably, report issue with steps to reproduce and attach IDE log (http://www.netbeans.org/community/issues).", ex);
+                    FileObject originalSources = ((SourcesFileChangeListener) fileChangeListener).getSources();
+                    FileObject currentSources = getSources();
+                    LOGGER.log(Level.INFO,
+                            "registered sources (valid): {0} ({1}), current sources (valid): {2} ({3}), equals: {4}",
+                            new Object[] {originalSources, originalSources.isValid(), currentSources, currentSources.isValid(), originalSources.equals(currentSources)});
+                }
             }
             fileSystem = null;
             fileChangeListener = null;
         }
-        fileChangeListenerRegistered = false;
     }
 
     public void waitFinished() {
@@ -449,6 +459,45 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
                 }
                 return remoteRetval;
             }
+        }
+    }
+
+    // #172777
+    private static class SourcesFileChangeListener implements FileChangeListener {
+        private final CopySupport copySupport;
+        private final FileObject sources;
+
+        public SourcesFileChangeListener(CopySupport copySupport) {
+            this.copySupport = copySupport;
+            this.sources = copySupport.getSources();
+        }
+
+        public FileObject getSources() {
+            return sources;
+        }
+
+        public void fileFolderCreated(FileEvent fe) {
+            copySupport.fileFolderCreated(fe);
+        }
+
+        public void fileDataCreated(FileEvent fe) {
+            copySupport.fileDataCreated(fe);
+        }
+
+        public void fileChanged(FileEvent fe) {
+            copySupport.fileChanged(fe);
+        }
+
+        public void fileDeleted(FileEvent fe) {
+            copySupport.fileDeleted(fe);
+        }
+
+        public void fileRenamed(FileRenameEvent fe) {
+            copySupport.fileRenamed(fe);
+        }
+
+        public void fileAttributeChanged(FileAttributeEvent fe) {
+            copySupport.fileAttributeChanged(fe);
         }
     }
 }

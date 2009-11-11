@@ -48,9 +48,7 @@ import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.debugger.actions.ContinueAction;
@@ -58,7 +56,6 @@ import org.netbeans.jellytools.modules.debugger.actions.NewBreakpointAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
@@ -121,64 +118,53 @@ public class ExceptionBreakpointsTest extends DebuggerTestCase {
     /**
      *
      */
-    public void testExceptionBreakpointCreation() throws Throwable {
+    public void testExceptionBreakpointCreation() {
+        EditorOperator eo = new EditorOperator("MemoryView.java");
         try {
-            
-            EditorOperator eo = new EditorOperator("MemoryView.java");
-            try {
-                eo.clickMouse(50,50,1);
-            } catch (Throwable t) {
-                System.err.println(t.getMessage());
-            }
-            new NewBreakpointAction().perform();
-            NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
-            setBreakpointType(dialog, "Exception");
-
-            new JTextFieldOperator(dialog, 0).setText("java.lang.NullPointerException");
-            new JComboBoxOperator(dialog, 2).selectItem(Bundle.getString("org.netbeans.modules.debugger.jpda.ui.breakpoints.Bundle", "LBL_Exception_Breakpoint_Type_Catched"));
-            dialog.ok();
-            Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
-            JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.breakpointsViewTitle));
-            assertEquals("Thread breakpoint was not created.", "Exception NullPointerException caught", jTableOperator.getValueAt(0, 0).toString());
-        } catch (Throwable th) {
-            Utilities.captureScreen(this);
-            throw th;
+            eo.clickMouse(50,50,1);
+        } catch (Throwable t) {
+            System.err.println(t.getMessage());
         }
+        new NewBreakpointAction().perform();
+        NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
+        setBreakpointType(dialog, "Exception");
+
+        new JTextFieldOperator(dialog, 0).setText("java.lang.NullPointerException");
+        new JComboBoxOperator(dialog, 2).selectItem(Bundle.getString("org.netbeans.modules.debugger.jpda.ui.breakpoints.Bundle", "LBL_Exception_Breakpoint_Type_Catched"));
+        dialog.ok();
+        Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
+        JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.breakpointsViewTitle));
+        assertEquals("Thread breakpoint was not created.", "Exception NullPointerException caught", jTableOperator.getValueAt(0, 0).toString());
     }
 
     /**
      *
      */
     public void testExceptionBreakpointFunctionality() throws Throwable {
+        new NewBreakpointAction().perform();
+        NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
+        setBreakpointType(dialog, "Exception");
+        new JTextFieldOperator(dialog, 0).setText("java.lang.ClassNotFoundException");
+        new JComboBoxOperator(dialog, 2).selectItem(Bundle.getString("org.netbeans.modules.debugger.jpda.ui.breakpoints.Bundle", "LBL_Exception_Breakpoint_Type_Catched"));
+        dialog.ok();
+        new EventTool().waitNoEvent(1500);
+        Utilities.startDebugger();
         try {
-            new NewBreakpointAction().perform();
-            NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
-            setBreakpointType(dialog, "Exception");
-            new JTextFieldOperator(dialog, 0).setText("java.lang.ClassNotFoundException");
-            new JComboBoxOperator(dialog, 2).selectItem(Bundle.getString("org.netbeans.modules.debugger.jpda.ui.breakpoints.Bundle", "LBL_Exception_Breakpoint_Type_Catched"));
-            dialog.ok();
-            new EventTool().waitNoEvent(1500);
-            Utilities.startDebugger();
-            try {
-                Utilities.waitStatusText(Utilities.runningStatusBarText);
-            } catch (Throwable e) {
-                if (!Utilities.checkConsoleForText(Utilities.runningStatusBarText, 0)) {
-                    System.err.println(e.getMessage());
-                    throw e;
-                }
+            Utilities.waitStatusText(Utilities.runningStatusBarText);
+        } catch (Throwable e) {
+            if (!Utilities.checkConsoleForText(Utilities.runningStatusBarText, 0)) {
+                System.err.println(e.getMessage());
+                throw e;
             }
-            new ContinueAction().perform();
-            try {
-                Utilities.waitStatusText("Thread main stopped at URLClassLoader.java");
-            } catch (Throwable e) {
-                if (!Utilities.checkConsoleForText("Thread main stopped at URLClassLoader.java", 0)) {
-                    System.err.println(e.getMessage());
-                    throw e;
-                }
+        }
+        new ContinueAction().perform();
+        try {
+            Utilities.waitStatusText("Thread main stopped at URLClassLoader.java");
+        } catch (Throwable e) {
+            if (!Utilities.checkConsoleForText("Thread main stopped at URLClassLoader.java", 0)) {
+                System.err.println(e.getMessage());
+                throw e;
             }
-        } catch (Throwable th) {
-            Utilities.captureScreen(this);
-            throw th;
         }
     }
 
@@ -186,143 +172,123 @@ public class ExceptionBreakpointsTest extends DebuggerTestCase {
      *
      */
     public void testExceptionBreakpointMatchClasses() throws Throwable {
+        new NewBreakpointAction().perform();
+        NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
+        setBreakpointType(dialog, "Exception");
+        new JTextFieldOperator(dialog, 0).setText("java.lang.ClassNotFoundException");
+        new JComboBoxOperator(dialog, 2).selectItem(Bundle.getString("org.netbeans.modules.debugger.jpda.ui.breakpoints.Bundle", "LBL_Exception_Breakpoint_Type_Catched"));
+        new JCheckBoxOperator(dialog, 0).changeSelection(true);
+        new JTextFieldOperator(dialog, 1).setText("java.lang.ClassLoader");
+        dialog.ok();
+        new EventTool().waitNoEvent(1500);
+        Utilities.startDebugger();
         try {
-            new NewBreakpointAction().perform();
-            NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
-            setBreakpointType(dialog, "Exception");
-            new JTextFieldOperator(dialog, 0).setText("java.lang.ClassNotFoundException");
-            new JComboBoxOperator(dialog, 2).selectItem(Bundle.getString("org.netbeans.modules.debugger.jpda.ui.breakpoints.Bundle", "LBL_Exception_Breakpoint_Type_Catched"));
-            new JCheckBoxOperator(dialog, 0).changeSelection(true);
-            new JTextFieldOperator(dialog, 1).setText("java.lang.ClassLoader");
-            dialog.ok();
-            new EventTool().waitNoEvent(1500);
-            Utilities.startDebugger();
-            try {
-                Utilities.waitStatusText("Thread main stopped at ClassLoader.java");
-            } catch (Throwable e) {
-                if (!Utilities.checkConsoleLastLineForText("Thread main stopped at ClassLoader.java")) {
-                    System.err.println(e.getMessage());
-                    System.out.println("Problem: console last line - " + Utilities.getConsoleLastLineText());
-                    if (!Utilities.checkConsoleForText("Thread main stopped at ClassLoader.java", 3))
-                        throw e;
-                }
-            }
-            new ContinueAction().perform();
-            try {
-                Utilities.waitStatusText("Thread main stopped at ClassLoader.java");
-            } catch (Throwable e) {
-                if (!Utilities.checkConsoleLastLineForText("Thread main stopped at ClassLoader.java")) {
-                    System.err.println(e.getMessage());
-                    throw e;
-                }
-            }
-            new ContinueAction().perform();
-            try {
-                Utilities.waitStatusText("Thread main stopped at ClassLoader.java");
-            } catch (Throwable e) {
-                if (!Utilities.checkConsoleLastLineForText("Thread main stopped at ClassLoader.java")) {
-                    System.err.println(e.getMessage());
-                    throw e;
-                }
-            }
-            assertFalse("The debugger hit disabled breakpoint", Utilities.checkConsoleForText("Thread main stopped at URLClassLoader.java", 0));
-        } catch (Throwable th) {
-            Utilities.captureScreen(this);
-            throw th;
-        }
-    }
-
-    /**
-     *
-     */
-    public void testExceptionBreakpointExcludeClasses() throws Throwable {
-        try {
-            new NewBreakpointAction().perform();
-            NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
-            setBreakpointType(dialog, "Exception");
-            new JTextFieldOperator(dialog, 0).setText("java.lang.ClassNotFoundException");
-            new JComboBoxOperator(dialog, 2).selectItem(Bundle.getString("org.netbeans.modules.debugger.jpda.ui.breakpoints.Bundle", "LBL_Exception_Breakpoint_Type_Catched"));
-            new JCheckBoxOperator(dialog, 0).changeSelection(true);
-            new JTextFieldOperator(dialog, 2).setText("java.net.URLClassLoader*");
-            dialog.ok();
-            Utilities.startDebugger();
-            try {
-                Utilities.waitStatusText("Thread main stopped at ClassLoader.java");
-            } catch (Throwable e) {
-                if (!Utilities.checkConsoleLastLineForText("Thread main stopped at ClassLoader.java")) {
-                    System.err.println(e.getMessage());
-                    throw e;
-                }
-            }
-            new ContinueAction().perform();
-            try {
-                Utilities.waitStatusText("Thread main stopped at ClassLoader.java");
-            } catch (Throwable e) {
-                if (!Utilities.checkConsoleLastLineForText("Thread main stopped at ClassLoader.java")) {
-                    System.err.println(e.getMessage());
-                    throw e;
-                }
-            }
-            new ContinueAction().perform();
-            try {
-                Utilities.waitStatusText("Thread main stopped at ClassLoader.java");
-            } catch (Throwable e) {
-                if (!Utilities.checkConsoleLastLineForText("Thread main stopped at ClassLoader.java")) {
-                    System.err.println(e.getMessage());
-                    throw e;
-                }
-            }
-            assertFalse("The debugger hit disabled breakpoint", Utilities.checkConsoleForText("Thread main stopped at URLClassLoader.java", 0));
-        } catch (Throwable th) {
-            Utilities.captureScreen(this);
-            throw th;
-        }
-    }
-
-    /**
-     *
-     */
-    public void testExceptionBreakpointHitCount() throws Throwable {
-        try {
-            new NewBreakpointAction().perform();
-            NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
-            setBreakpointType(dialog, "Exception");
-            new JTextFieldOperator(dialog, 0).setText("java.lang.ClassNotFoundException");
-            new JComboBoxOperator(dialog, 2).selectItem(Bundle.getString("org.netbeans.modules.debugger.jpda.ui.breakpoints.Bundle", "LBL_Exception_Breakpoint_Type_Catched"));
-            new JCheckBoxOperator(dialog, 2).changeSelection(true);
-            new JComboBoxOperator(dialog, 3).selectItem(Bundle.getString("org.netbeans.modules.debugger.jpda.ui.breakpoints.Bundle", "ConditionsPanel.cbWhenHitCount.equals"));
-            new JTextFieldOperator(dialog, 3).setText("1");
-            dialog.ok();
-            Utilities.startDebugger();
             Utilities.waitStatusText("Thread main stopped at ClassLoader.java");
-            new ContinueAction().perform();
-            assertEquals("The debugger hit disabled breakpoint", Utilities.checkConsoleForNumberOfOccurrences("Thread main stopped", 0), 1);
-        } catch (Throwable th) {
-            Utilities.captureScreen(this);
-            throw th;
+        } catch (Throwable e) {
+            if (!Utilities.checkConsoleLastLineForText("Thread main stopped at ClassLoader.java")) {
+                System.err.println(e.getMessage());
+                System.out.println("Problem: console last line - " + Utilities.getConsoleLastLineText());
+                if (!Utilities.checkConsoleForText("Thread main stopped at ClassLoader.java", 3))
+                    throw e;
+            }
         }
+        new ContinueAction().perform();
+        try {
+            Utilities.waitStatusText("Thread main stopped at ClassLoader.java");
+        } catch (Throwable e) {
+            if (!Utilities.checkConsoleLastLineForText("Thread main stopped at ClassLoader.java")) {
+                System.err.println(e.getMessage());
+                throw e;
+            }
+        }
+        new ContinueAction().perform();
+        try {
+            Utilities.waitStatusText("Thread main stopped at ClassLoader.java");
+        } catch (Throwable e) {
+            if (!Utilities.checkConsoleLastLineForText("Thread main stopped at ClassLoader.java")) {
+                System.err.println(e.getMessage());
+                throw e;
+            }
+        }
+        assertFalse("The debugger hit disabled breakpoint", Utilities.checkConsoleForText("Thread main stopped at URLClassLoader.java", 0));
     }
 
     /**
      *
      */
-    public void testConditionalExceptionBreakpoint() throws Throwable {
+    public void testExceptionBreakpointExcludeClasses() throws Throwable{
+        new NewBreakpointAction().perform();
+        NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
+        setBreakpointType(dialog, "Exception");
+        new JTextFieldOperator(dialog, 0).setText("java.lang.ClassNotFoundException");
+        new JComboBoxOperator(dialog, 2).selectItem(Bundle.getString("org.netbeans.modules.debugger.jpda.ui.breakpoints.Bundle", "LBL_Exception_Breakpoint_Type_Catched"));
+        new JCheckBoxOperator(dialog, 0).changeSelection(true);
+        new JTextFieldOperator(dialog, 2).setText("java.net.URLClassLoader*");
+        dialog.ok();
+        Utilities.startDebugger();
         try {
-            new NewBreakpointAction().perform();
-            NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
-            setBreakpointType(dialog, "Exception");
-            new JTextFieldOperator(dialog, 0).setText("java.lang.ClassNotFoundException");
-            new JComboBoxOperator(dialog, 2).selectItem(Bundle.getString("org.netbeans.modules.debugger.jpda.ui.breakpoints.Bundle", "LBL_Exception_Breakpoint_Type_Catched"));
-            new JCheckBoxOperator(dialog, 1).changeSelection(true);
-            new JEditorPaneOperator(dialog, 0).setText("false");
-            dialog.ok();
-            Utilities.startDebugger();
-            Utilities.waitStatusText(Utilities.runningStatusBarText);
-            assertFalse("The debugger hit disabled breakpoint", Utilities.checkConsoleForText("Thread main stopped", 0));
-        } catch (Throwable th) {
-            Utilities.captureScreen(this);
-            throw th;
+            Utilities.waitStatusText("Thread main stopped at ClassLoader.java");
+        } catch (Throwable e) {
+            if (!Utilities.checkConsoleLastLineForText("Thread main stopped at ClassLoader.java")) {
+                System.err.println(e.getMessage());
+                throw e;
+            }
         }
+        new ContinueAction().perform();
+        try {
+            Utilities.waitStatusText("Thread main stopped at ClassLoader.java");
+        } catch (Throwable e) {
+            if (!Utilities.checkConsoleLastLineForText("Thread main stopped at ClassLoader.java")) {
+                System.err.println(e.getMessage());
+                throw e;
+            }
+        }
+        new ContinueAction().perform();
+        try {
+            Utilities.waitStatusText("Thread main stopped at ClassLoader.java");
+        } catch (Throwable e) {
+            if (!Utilities.checkConsoleLastLineForText("Thread main stopped at ClassLoader.java")) {
+                System.err.println(e.getMessage());
+                throw e;
+            }
+        }
+        assertFalse("The debugger hit disabled breakpoint", Utilities.checkConsoleForText("Thread main stopped at URLClassLoader.java", 0));
+    }
+
+    /**
+     *
+     */
+    public void testExceptionBreakpointHitCount() {        
+        new NewBreakpointAction().perform();
+        NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
+        setBreakpointType(dialog, "Exception");
+        new JTextFieldOperator(dialog, 0).setText("java.lang.ClassNotFoundException");
+        new JComboBoxOperator(dialog, 2).selectItem(Bundle.getString("org.netbeans.modules.debugger.jpda.ui.breakpoints.Bundle", "LBL_Exception_Breakpoint_Type_Catched"));
+        new JCheckBoxOperator(dialog, 2).changeSelection(true);
+        new JComboBoxOperator(dialog, 3).selectItem(Bundle.getString("org.netbeans.modules.debugger.jpda.ui.breakpoints.Bundle", "ConditionsPanel.cbWhenHitCount.equals"));
+        new JTextFieldOperator(dialog, 3).setText("1");
+        dialog.ok();
+        Utilities.startDebugger();
+        Utilities.waitStatusText("Thread main stopped at ClassLoader.java");
+        new ContinueAction().perform();
+        assertEquals("The debugger hit disabled breakpoint", Utilities.checkConsoleForNumberOfOccurrences("Thread main stopped", 0), 1);
+    }
+
+    /**
+     *
+     */
+    public void testConditionalExceptionBreakpoint() {        
+        new NewBreakpointAction().perform();
+        NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
+        setBreakpointType(dialog, "Exception");
+        new JTextFieldOperator(dialog, 0).setText("java.lang.ClassNotFoundException");
+        new JComboBoxOperator(dialog, 2).selectItem(Bundle.getString("org.netbeans.modules.debugger.jpda.ui.breakpoints.Bundle", "LBL_Exception_Breakpoint_Type_Catched"));
+        new JCheckBoxOperator(dialog, 1).changeSelection(true);
+        new JEditorPaneOperator(dialog, 0).setText("false");
+        dialog.ok();
+        Utilities.startDebugger();
+        Utilities.waitStatusText(Utilities.runningStatusBarText);
+        assertFalse("The debugger hit disabled breakpoint", Utilities.checkConsoleForText("Thread main stopped", 0));
     }
 
     protected void setBreakpointType(NbDialogOperator dialog, String type) {

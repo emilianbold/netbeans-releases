@@ -123,4 +123,6 @@ public class RestConstants {
     public static final String RESOURCE_CONTEXT = JERSEY_API_PACKAGE + "core.ResourceContext";          //NOI18N
     
     public static final String STATELESS = JavaEE5_EJB_PACKAGE + "Stateless";    //NOI18N
+
+    public static final String APPLICATION_PATH = REST_API_PACKAGE + "ApplicationPath"; //NOI18N
 }

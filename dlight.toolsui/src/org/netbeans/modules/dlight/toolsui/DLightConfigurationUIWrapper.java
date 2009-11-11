@@ -78,15 +78,6 @@ public class DLightConfigurationUIWrapper {
         initWrapper(allDLightTools);
     }
 
-    private boolean canEnable(String dataProviders, String toolID) {
-        if (dataProviders != null && dataProviders.indexOf("DTrace") < 0) { // NOI18N
-            if (toolID.equals("dlight.tool.threadmap") || toolID.equals("dlight.tool.fops")) { // NOI18N
-                return false;
-            }
-            return true;
-        }
-        return true;
-    }
 
     private void initWrapper(List<DLightTool> allDLightTools) {
         tools = new ArrayList<DLightToolUIWrapper>();
@@ -96,8 +87,8 @@ public class DLightConfigurationUIWrapper {
             DLightTool toolToAdd = findTool(confDlightTools, dlightTool.getID());
             toolToAdd = toolToAdd == null ? dlightTool : toolToAdd;
             if (toolToAdd != null && toolToAdd.isVisible()) {
-                boolean canEnable = canEnable(dlightConfiguration.getCollectorProviders(), dlightTool.getID());
-                boolean enabled = canEnable ? inList(dlightTool, confDlightTools) : false;
+                boolean canEnable = dlightConfiguration.getToolByID(dlightTool.getID()) != null;
+                boolean enabled = toolToAdd.isEnabled() ? inList(dlightTool, confDlightTools) : false;
                 tools.add(new DLightToolUIWrapper(toolToAdd, enabled, canEnable));
             }
         }

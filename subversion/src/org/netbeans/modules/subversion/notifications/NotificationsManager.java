@@ -57,6 +57,7 @@ import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnClient;
+import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.kenai.SvnKenaiSupport;
 import org.netbeans.modules.subversion.ui.diff.DiffAction;
 import org.netbeans.modules.subversion.ui.diff.Setup;
@@ -67,8 +68,10 @@ import org.netbeans.modules.versioning.util.VCSNotificationDisplayer;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakSet;
+import org.tigris.subversion.svnclientadapter.ISVNInfo;
 import org.tigris.subversion.svnclientadapter.ISVNStatus;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
+import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNStatusKind;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
@@ -132,7 +135,7 @@ public class NotificationsManager {
             refresh = files.size() != size;
         }
         if (refresh) {
-            notificationTask.schedule(100);
+            notificationTask.schedule(1000);
         }
     }
 
@@ -143,14 +146,9 @@ public class NotificationsManager {
     }
 
     public void setupPane(JTextPane pane, final File[] files, String fileNames, final File projectDir, final String url, final String revision) {
-         String msg =
-            NbBundle.getMessage(
-                NotificationsManager.class,
-                "MSG_NotificationBubble_Description",                           // NOI18N
-                fileNames,
-                url,
-                CMD_DIFF
-            );
+         String msg = revision == null
+                 ? NbBundle.getMessage(NotificationsManager.class, "MSG_NotificationBubble_DeleteDescription", fileNames, CMD_DIFF) //NOI18N
+                 : NbBundle.getMessage(NotificationsManager.class, "MSG_NotificationBubble_Description", fileNames, url, CMD_DIFF); //NOI18N
         pane.setText(msg);
 
         pane.addHyperlinkListener(new HyperlinkListener() {
@@ -159,7 +157,7 @@ public class NotificationsManager {
                     if(CMD_DIFF.equals(e.getDescription())) {
                         Context ctx = new Context(files);
                         DiffAction.diff(ctx, Setup.DIFFTYPE_REMOTE, NbBundle.getMessage(NotificationsManager.class, "LBL_Remote_Changes", projectDir.getName()));  // NOI18N
-                    } else {
+                    } else if (revision != null) {
                         try {
                             SearchHistoryAction.openSearch(new SVNUrl(url), projectDir, Long.parseLong(revision));
                         } catch (MalformedURLException ex) {
@@ -242,24 +240,35 @@ public class NotificationsManager {
                     SvnClient client = Subversion.getInstance().getClient(repositoryUrl);
                     if (client != null) {
                         HashSet<File> files = entry.getValue();
-                        for (File file : files) {
-                            // get repository status
-                            ISVNStatus[] statuses = client.getStatus(file, false, false, true);
-                            if (statuses.length == 1) { // is an interesting status
-                                ISVNStatus status = statuses[0];
-                                SVNStatusKind repositoryTextStatus = status.getRepositoryTextStatus();
-                                if (repositoryTextStatus != null && 
-                                    (  repositoryTextStatus.equals(SVNStatusKind.MODIFIED)
-                                    || repositoryTextStatus.equals(SVNStatusKind.DELETED)
-                                    || repositoryTextStatus.equals(SVNStatusKind.ADDED)))
-                                {
-                                    addToMap(notifications, file, status);
+                        ISVNStatus[] statuses = client.getStatus(files.toArray(new File[files.size()]));
+                        for (ISVNStatus status : statuses) {
+                            if ((SVNStatusKind.UNVERSIONED.equals(status.getTextStatus())
+                                    || SVNStatusKind.IGNORED.equals(status.getTextStatus()))) {
+                                continue;
+                            }
+                            File file = status.getFile();
+                            SVNRevision.Number rev = status.getRevision();
+                            // get repository info - last revision if possible
+                            ISVNInfo info = null;
+                            boolean removed = false;
+                            try {
+                                info = client.getInfo(status.getUrl(), SVNRevision.HEAD, rev);
+                            } catch (SVNClientException ex) {
+                                LOG.log(Level.FINE, null, ex);
+                                // XXX or should we run remote status to determine if the file was deleted?
+                                removed = SvnClientExceptionHandler.isFileNotFoundInRevision(ex.getMessage());
+                            }
+                            if (info != null || removed) {
+                                Long repositoryRev = removed ? null : info.getLastChangedRevision().getNumber();
+                                // XXX some hack to look up deleted file's last revision
+                                if (isModifiedInRepository(rev.getNumber(), repositoryRev)) {
+                                    addToMap(notifications, file, repositoryRev);
                                     // this will refresh versioning view as well
                                     cache.refresh(file, status);
                                 }
                             }
-                            alreadySeen.add(file);
                         }
+                        alreadySeen.addAll(files);
                     }
                 } catch (SVNClientException ex) {
                     LOG.log(Level.FINE, null, ex);
@@ -268,14 +277,18 @@ public class NotificationsManager {
             }
         }
 
+        private boolean isModifiedInRepository (long revision, Long repositoryRevision) {
+            return repositoryRevision == null // file is probably remotely deleted
+                    || revision < repositoryRevision; // base revision is lower than the repository revision
+        }
+
         /**
          * Adds new notification or adds file to already existing notification
          * @param notifications sorted by revision number
          * @param file file to add to a notification
-         * @param status remote status of the file
+         * @param revision repository revision
          */
-        private void addToMap(HashMap<Long, Notification> notifications, File file, ISVNStatus status) {
-            Long revision = Long.valueOf(status.getLastChangedRevision().getNumber());
+        private void addToMap(HashMap<Long, Notification> notifications, File file, Long revision) {
             Notification revisionNotification = notifications.get(revision);
             if (revisionNotification == null) {
                 revisionNotification = new Notification(revision);
@@ -326,7 +339,8 @@ public class NotificationsManager {
             for (Map.Entry<Long, Notification> e : notifications.entrySet()) {
                 Notification notification = e.getValue();
                 File[] files = notification.getFiles();
-                notifyFileChange(files, files[0].getParentFile(), repositoryUrl.toString(), notification.getRevision().toString());
+                Long revision = notification.getRevision();
+                notifyFileChange(files, files[0].getParentFile(), repositoryUrl.toString(), revision == null ? null : revision.toString());
             }
         }
 

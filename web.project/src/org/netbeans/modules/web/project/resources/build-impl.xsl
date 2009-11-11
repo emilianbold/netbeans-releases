@@ -277,7 +277,10 @@ introduced by support for multiple source roots. -jglick
                 <condition property="do.tmp.war.package.with.custom.manifest">
                     <and>
                         <isset property="has.custom.manifest"/>
-                        <isfalse value="${{directory.deployment.supported}}"/>
+                        <or>
+                            <isfalse value="${{directory.deployment.supported}}"/>
+                            <isset property="dist.ear.dir"/>
+                        </or>
                     </and>
                 </condition>
                 <condition property="do.tmp.war.package.without.custom.manifest">
@@ -285,11 +288,17 @@ introduced by support for multiple source roots. -jglick
                         <not>
                             <isset property="has.custom.manifest"/>
                         </not>
-                        <isfalse value="${{directory.deployment.supported}}"/>
+                        <or>
+                            <isfalse value="${{directory.deployment.supported}}"/>
+                            <isset property="dist.ear.dir"/>
+                        </or>
                     </and>
                 </condition>
                 <condition property="do.tmp.war.package">
-                    <isfalse value="${{directory.deployment.supported}}"/>
+                    <or>
+                        <isfalse value="${{directory.deployment.supported}}"/>
+                        <isset property="dist.ear.dir"/>
+                    </or>
                 </condition>
                 
                 <property value="${{build.web.dir}}/META-INF" name="build.meta.inf.dir"/>
@@ -314,12 +323,6 @@ introduced by support for multiple source roots. -jglick
                 <property name="javadoc.encoding.used" value="${{source.encoding}}"/>
                 <property name="includes" value="**"/>
                 <property name="excludes" value=""/>
-                <condition property="javac.compilerargs.jaxws" value="-Djava.endorsed.dirs='${{jaxws.endorsed.dir}}'" else="">
-                    <and>
-                        <isset property="jaxws.endorsed.dir"/>
-                        <available file="nbproject/jaxws-build.xml"/>
-                    </and>
-                </condition>
                 <property name="runmain.jvmargs" value=""/>
                 <path id="endorsed.classpath.path" path="${{endorsed.classpath}}"/>
                 <condition property="endorsed.classpath.cmd.line.arg" value="-Xbootclasspath/p:'${{toString:endorsed.classpath.path}}'" else="">
@@ -460,7 +463,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                                 <path path="@{{classpath}}"/>
                             </classpath>
                             <compilerarg line="${{endorsed.classpath.cmd.line.arg}}"/>
-                            <compilerarg line="${{javac.compilerargs}} ${{javac.compilerargs.jaxws}}"/>
+                            <compilerarg line="${{javac.compilerargs}}"/>
                             <customize/>
                         </javac>
                     </sequential>
@@ -490,6 +493,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                             <xsl:attribute name="dir">${basedir}</xsl:attribute> <!-- #47474: match <java> -->
                             <xsl:attribute name="failureproperty">tests.failed</xsl:attribute>
                             <xsl:attribute name="errorproperty">tests.failed</xsl:attribute>
+                            <xsl:attribute name="tempdir">${java.io.tmpdir}</xsl:attribute>
                             <xsl:if test="/p:project/p:configuration/webproject3:data/webproject3:explicit-platform">
                                 <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
                             </xsl:if>
@@ -1166,9 +1170,14 @@ exists or setup the property manually. For example like this:
                     </copyfiles>
                 </xsl:for-each>
             </target>
-            
+
+            <target depends="init" name="-clean-webinf-lib" if="dist.ear.dir">
+                <!-- this may need to be optimized in future -->
+                <delete dir="${{build.web.dir}}/WEB-INF/lib"/>
+            </target>
+
             <target name="do-ear-dist">
-                <xsl:attribute name="depends">init,compile,compile-jsps,-pre-dist,library-inclusion-in-manifest</xsl:attribute>
+                <xsl:attribute name="depends">init,-clean-webinf-lib,compile,compile-jsps,-pre-dist,library-inclusion-in-manifest</xsl:attribute>
                 <xsl:attribute name="if">do.tmp.war.package</xsl:attribute>
                 <dirname property="dist.jar.dir" file="${{dist.ear.war}}"/>
                 <mkdir dir="${{dist.jar.dir}}"/>
@@ -1678,7 +1687,7 @@ exists or setup the property manually. For example like this:
                 <mkdir dir="${{build.test.results.dir}}"/>
                 <webproject1:debug args="${{test.class}}"
                         classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner"
-                        classpath="${{ant.home}}/lib/ant.jar:${{ant.home}}/lib/ant-junit.jar:${{debug.test.classpath}}">
+                        classpath="${{ant.home}}/lib/ant.jar:${{ant.home}}/lib/ant-junit.jar:${{debug.test.classpath}}:${{j2ee.platform.embeddableejb.classpath}}">
                     <customize>
                         <arg value="showoutput=true"/>
                         <arg value="formatter=org.apache.tools.ant.taskdefs.optional.junit.BriefJUnitResultFormatter"/>

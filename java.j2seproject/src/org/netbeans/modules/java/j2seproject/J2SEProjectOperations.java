@@ -45,7 +45,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -78,10 +80,7 @@ public class J2SEProjectOperations implements DeleteOperationImplementation, Cop
     private final J2SEActionProvider actionProvider;
     
     //RELY: Valid only on original project after the notifyMoving or notifyCopying was called
-    private String appArgs;
-    //RELY: Valid only on original project after the notifyMoving or notifyCopying was called
-    private String workDir;
-    
+    private final Map<String,String> privatePropsToRestore = new HashMap<String,String>();
     //RELY: Valid only on original project after the notifyMoving or notifyCopying was called
     private String libraryPath;
     //RELY: Valid only on original project after the notifyMoving or notifyCopying was called
@@ -125,7 +124,11 @@ public class J2SEProjectOperations implements DeleteOperationImplementation, Cop
         files.addAll(Arrays.asList(project.getSourceRoots().getRoots()));
         files.addAll(Arrays.asList(project.getTestSourceRoots().getRoots()));
         addFile(project.getProjectDirectory(), "manifest.mf", files); // NOI18N
-        addFile(project.getProjectDirectory(), "master.jnlp", files); // NOI18N
+        addFile(project.getProjectDirectory(), "master-application.jnlp", files); // NOI18N
+        addFile(project.getProjectDirectory(), "master-applet.jnlp", files); // NOI18N
+        addFile(project.getProjectDirectory(), "master-component.jnlp", files); // NOI18N
+        addFile(project.getProjectDirectory(), "preview-application.html", files); // NOI18N
+        addFile(project.getProjectDirectory(), "preview-applet.html", files); // NOI18N
         // add libraries folder if it is within project:
         AntProjectHelper helper = project.getAntProjectHelper();
         if (helper.getLibrariesLocation() != null) {
@@ -240,22 +243,34 @@ public class J2SEProjectOperations implements DeleteOperationImplementation, Cop
     private void readPrivateProperties () {
         ProjectManager.mutex().readAccess(new Runnable() {
             public void run () {
-                appArgs = project.getUpdateHelper().getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH).getProperty(J2SEProjectProperties.APPLICATION_ARGS);
-                workDir = project.getUpdateHelper().getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH).getProperty(J2SEProjectProperties.RUN_WORK_DIR);        
+                privatePropsToRestore.clear();
+                backUpPrivateProp(J2SEProjectProperties.APPLICATION_ARGS);
+                backUpPrivateProp(J2SEProjectProperties.RUN_WORK_DIR);
+                backUpPrivateProp(J2SEProjectProperties.COMPILE_ON_SAVE);                                                
             }
         });
+    }    
+    //where
+    /**
+     * Threading: Has to be called under project mutex
+     */
+    private void backUpPrivateProp(String propName) {
+        assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
+        final String tmp = project.getUpdateHelper().getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH).getProperty(propName);
+        if (tmp != null) {
+            privatePropsToRestore.put(propName, tmp);
+        }
     }
+
+
     
     private void fixPrivateProperties (final J2SEProjectOperations original) {
-        if (original != null && (original.appArgs != null || original.workDir != null)) {
+        if (original != null && !original.privatePropsToRestore.isEmpty()) {
             ProjectManager.mutex().writeAccess(new Runnable () {
                 public void run () {
                     final EditableProperties ep = project.getUpdateHelper().getProperties (AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-                    if (original.appArgs != null) {
-                        ep.put(J2SEProjectProperties.APPLICATION_ARGS, original.appArgs);
-                    }
-                    if (original.workDir != null) {
-                        ep.put (J2SEProjectProperties.RUN_WORK_DIR, original.workDir);
+                    for (Map.Entry<String,String> entry : original.privatePropsToRestore.entrySet()) {
+                        ep.put(entry.getKey(), entry.getValue());
                     }
                     project.getUpdateHelper().putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
                 }

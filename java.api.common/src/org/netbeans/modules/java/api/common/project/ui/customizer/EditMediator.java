@@ -273,6 +273,15 @@ public final class EditMediator implements ActionListener, ListSelectionListener
                 for (String path : filePaths) {
                     File fl = PropertyUtils.resolveFile(base, path);
                     FileObject fo = FileUtil.toFileObject(fl);
+                    if (fo == null) {
+                        JOptionPane.showMessageDialog (
+                            SwingUtilities.getWindowAncestor (list.getComponent ()),
+                            NbBundle.getMessage (EditMediator.class, "LBL_Missing_JAR", fl),
+                                NbBundle.getMessage (EditMediator.class, "LBL_Missing_JAR_title"),
+                                JOptionPane.WARNING_MESSAGE
+                        );
+                        continue;
+                    }
                     assert fo != null : fl;
                     if (FileUtil.isArchiveFile (fo))
                         try {

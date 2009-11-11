@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.cnd.apt.impl.support;
 
-import antlr.TokenStream;
+import org.netbeans.modules.cnd.antlr.TokenStream;
 import java.io.IOException;
 import java.io.Reader;
 import java.lang.ref.Reference;

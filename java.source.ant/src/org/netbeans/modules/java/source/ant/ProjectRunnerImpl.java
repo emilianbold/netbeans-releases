@@ -63,6 +63,7 @@ import org.apache.tools.ant.module.api.AntTargetExecutor;
 import org.apache.tools.ant.module.api.support.AntScriptUtils;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.project.runner.JavaRunner;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -135,6 +136,7 @@ public class ProjectRunnerImpl implements JavaRunnerImplementation {
         String projectName = getValue(properties, PROP_PROJECT_NAME, String.class);
         Iterable<String> runJVMArgs = getMultiValue(properties, PROP_RUN_JVMARGS, String.class);
         Iterable<String> args = getMultiValue(properties, PROP_APPLICATION_ARGS, String.class);
+        final String tmpDir = getValue(properties, "tmp.dir", String.class);  //NOI18N
         if (workDir == null) {
             Parameters.notNull("toRun", toRun);
             Project project = FileOwnerQuery.getOwner(toRun);
@@ -208,13 +210,16 @@ public class ProjectRunnerImpl implements JavaRunnerImplementation {
         setProperty(antProps, "platform.java", javaTool);
         setProperty(antProps, "work.dir", workDir);
         setProperty(antProps, "run.jvmargs", toOneLine(runJVMArgs));
+        if (tmpDir != null) {
+            setProperty(antProps, "tmp.dir", tmpDir);   //NOI18N
+        }
         if (toRun == null) {
             // #152881 - pass arguments only if not run single
             setProperty(antProps, "application.args", toOneLine(args));
         }
         {
             FileObject source = toRun;
-            final Charset charset = getValue(properties, "runtime.encoding", Charset.class);   //NOI18N
+            final Charset charset = getValue(properties, JavaRunner.PROP_RUNTIME_ENCODING, Charset.class);   //NOI18N
             String encoding = charset != null && Charset.isSupported(charset.name()) ? charset.name() : null;
             if (encoding == null) {
                 if (source == null) {

@@ -42,24 +42,45 @@
 package org.netbeans.modules.ant.freeform;
 
 import java.io.File;
+import java.util.HashSet;
+import java.util.Set;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.SharabilityQuery;
+import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.queries.SharabilityQueryImplementation;
+import org.netbeans.modules.ant.freeform.spi.support.Util;
+import org.openide.filesystems.FileUtil;
+import org.openide.xml.XMLUtil;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
 
 /**
  *
  * @author Jan Lahoda
+ * @author Tomas Zezula
  */
-public class FreeformSharabilityQuery implements SharabilityQueryImplementation {
+public class FreeformSharabilityQuery implements SharabilityQueryImplementation, AntProjectListener {
 
     private String nbproject;
     private String nbprojectPrivate;
+    private volatile  Set<File> exported;
+    private final FreeformProject project;
 
     /** Creates a new instance of FreeformSharabilityQuery */
-    public FreeformSharabilityQuery(AntProjectHelper helper) {
+    public FreeformSharabilityQuery(final FreeformProject project) {
+        assert project != null;
+        this.project = project;
+        final AntProjectHelper helper = project.helper();
 	nbproject = helper.resolveFile("nbproject").getAbsolutePath();
-	nbprojectPrivate = helper.resolveFile("nbproject/private").getAbsolutePath();
+	nbprojectPrivate = helper.resolveFile("nbproject/private").getAbsolutePath();        
+        helper.addAntProjectListener(this);
     }
+
+
 
     public int getSharability(File file) {
 	String absolutePath = file.getAbsolutePath();
@@ -71,8 +92,51 @@ public class FreeformSharabilityQuery implements SharabilityQueryImplementation 
 	if (absolutePath.startsWith(nbproject)) {
 	    return absolutePath.startsWith(nbprojectPrivate) ? SharabilityQuery.NOT_SHARABLE : SharabilityQuery.SHARABLE;
 	}
+
+        if (isExported(file)) {
+            return SharabilityQuery.NOT_SHARABLE;
+        }
 	
 	return SharabilityQuery.UNKNOWN;
+    }
+
+    public void configurationXmlChanged(AntProjectEvent ev) {
+        exported = null;
+    }
+
+    public void propertiesChanged(AntProjectEvent ev) {
+    }
+
+    private boolean isExported(final File file) {
+        Set<File> _exported = this.exported;
+        if (_exported == null) {
+            final Set<File> _exportedFinal = _exported = new HashSet<File>();
+            ProjectManager.mutex().readAccess(new Runnable() {
+                public void run () {
+                    final Element root = project.getPrimaryConfigurationData();
+                    final NodeList exports = root.getElementsByTagNameNS(FreeformProjectType.NS_GENERAL, "export"); //NOI18N
+                    for (int i=0; i< exports.getLength(); i++) {
+                        final Element export = (Element) exports.item(i);
+                        final Element location = Util.findElement(export, "location", FreeformProjectType.NS_GENERAL);   //NOI18N
+                        if (location != null) {
+                            final String path = Util.findText(location);
+                            if (path != null) {
+                                final File exportedFile = Util.resolveFile(project.evaluator(), FileUtil.toFile(project.getProjectDirectory()), path);
+                                if (exportedFile != null) {
+                                    _exportedFinal.add(exportedFile);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            synchronized (this) {
+                if (exported == null) {
+                    exported = _exported;
+                }
+            }
+        }
+        return _exported.contains(file);
     }
     
 }

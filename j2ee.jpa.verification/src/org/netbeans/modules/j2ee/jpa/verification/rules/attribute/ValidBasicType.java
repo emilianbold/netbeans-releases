@@ -47,9 +47,11 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.j2ee.jpa.model.AttributeWrapper;
+import org.netbeans.modules.j2ee.jpa.model.JPAAnnotations;
 import org.netbeans.modules.j2ee.jpa.verification.JPAEntityAttributeCheck;
 import org.netbeans.modules.j2ee.jpa.verification.JPAProblemContext;
 import org.netbeans.modules.j2ee.jpa.verification.common.Rule;
+import org.netbeans.modules.j2ee.jpa.verification.common.Utilities;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Basic;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.util.NbBundle;
@@ -105,6 +107,11 @@ public class ValidBasicType extends JPAEntityAttributeCheck {
             if (type != null && types.isSameType(attrType, type)){
                 return null;
             }
+        }
+
+        if (Utilities.hasAnnotation(attrib.getJavaElement(), JPAAnnotations.ELEMENT_COLLECTION)) {
+            //according to annotation it's not basic  type and need to be verified in appropriate validator
+            return null;
         }
         
         return new ErrorDescription[]{Rule.createProblem(attrib.getJavaElement(),

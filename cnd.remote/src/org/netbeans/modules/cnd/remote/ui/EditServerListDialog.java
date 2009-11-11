@@ -284,7 +284,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
             btRemoveServer.setEnabled(record.isRemote() && buttonsEnabled);            
             checkDefaultButton(record);
             btProperties.setEnabled(record.isRemote());
-            btPathMapper.setEnabled(buttonsEnabled && record.isRemote());
+            btPathMapper.setEnabled(buttonsEnabled && record.isRemote() && record.getSyncFactory().isPathMappingCustomizable());
             if (!record.isOnline()) {
                 showReason(record.getReason());
                 btRetry.setEnabled(true);
@@ -351,6 +351,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
                     if (HostPropertiesDialog.invokeMe(record)) {
                         lstDevHosts.repaint();
                     }
+                    btPathMapper.setEnabled(buttonsEnabled && record.isRemote() && record.getSyncFactory().isPathMappingCustomizable());
                 }
             } else if (b.getActionCommand().equals(CMD_RETRY)) {
                 this.revalidateRecord(getSelectedRecord(), null, false);

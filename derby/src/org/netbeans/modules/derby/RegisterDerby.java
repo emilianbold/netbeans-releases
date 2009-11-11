@@ -64,9 +64,11 @@ import org.openide.execution.NbProcessDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
+import org.openide.windows.InputOutput;
 
 
 /**
@@ -312,6 +314,10 @@ public class RegisterDerby implements DatabaseRuntime {
         } catch (Exception e) {
             Util.showInformation(e.getLocalizedMessage());
             return false;
+        } finally {
+            InputOutput io = org.openide.windows.IOProvider.getDefault().getIO(
+                    NbBundle.getMessage(StartAction.class, "LBL_outputtab"), false);
+            io.getOut().close();
         }
     }
     

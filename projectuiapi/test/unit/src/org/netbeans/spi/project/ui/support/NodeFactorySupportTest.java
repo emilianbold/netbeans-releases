@@ -44,6 +44,7 @@ package org.netbeans.spi.project.ui.support;
 import java.lang.reflect.InvocationTargetException;
 import junit.framework.TestCase;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
@@ -67,9 +68,8 @@ public class NodeFactorySupportTest extends TestCase {
      * Test of createCompositeChildren method, of class org.netbeans.spi.project.ui.support.NodeFactorySupport.
      */
     public void testCreateCompositeChildren() throws InterruptedException, InvocationTargetException {
-        System.out.println("createCompositeChildren");
         InstanceContent ic = new InstanceContent();
-        final TestDelegates dels = new TestDelegates(ic);
+        final Children dels = new TestDelegates(ic);
         final Node node1 = new AbstractNode(Children.LEAF);
         final Node node2 = new AbstractNode(Children.LEAF);
         final Node node3 = new AbstractNode(Children.LEAF);
@@ -86,10 +86,8 @@ public class NodeFactorySupportTest extends TestCase {
         col.add(fact1);
         col.add(fact2);
         ic.set(col, null);
-        
-        Node[] nds = dels.getNodes();
-        assertEquals(nds[0], node1);
-        assertEquals(nds[1], node2);
+
+        assertEquals(Arrays.asList(node1, node2), Arrays.asList(dels.getNodes(true)));
         
         col.add(0, fact4);
         col.add(fact3);
@@ -127,14 +125,6 @@ public class NodeFactorySupportTest extends TestCase {
        
        protected @Override Lookup createLookup() {
            return new AbstractLookup(content);
-       }
-       
-       public @Override void addNotify() {
-           super.addNotify();
-       }
-       
-       public @Override void removeNotify() {
-           super.removeNotify();
        }
    }
     

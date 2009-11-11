@@ -58,7 +58,7 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelListener;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelerFactory;
-import org.netbeans.modules.websvc.core.jaxws.actions.JaxWsRefreshClientAction;
+import org.netbeans.modules.websvc.core.jaxws.actions.JaxWsRefreshAction;
 import org.netbeans.modules.websvc.api.jaxws.bindings.BindingsHandler;
 import org.netbeans.modules.websvc.api.jaxws.bindings.BindingsHandlerChain;
 import org.netbeans.modules.websvc.api.jaxws.bindings.BindingsHandlerChains;
@@ -239,7 +239,7 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, JaxWsRe
     public Action[] getActions(boolean context) {
         ArrayList<Action> actions = new ArrayList<Action>(Arrays.asList(
             SystemAction.get(OpenAction.class),
-            SystemAction.get(JaxWsRefreshClientAction.class),
+            SystemAction.get(JaxWsRefreshAction.class),
             null,
             SystemAction.get(WSEditAttributesAction.class),
             null,

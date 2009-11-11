@@ -125,7 +125,7 @@ public class ModInstall extends ModuleInstall implements ErrorHandler, EntityRes
         if (existsDefaultIndexLocation()) {
             final int freq = RepositoryPreferences.getInstance().getIndexUpdateFrequency();
             //#138102
-            RequestProcessor.getDefault().post(new Runnable() {
+            new RequestProcessor("Maven Repo Index Transfer/Scan").post(new Runnable() {
 
                 public void run() {
                     List<RepositoryInfo> ris = RepositoryPreferences.getInstance().getRepositoryInfos();

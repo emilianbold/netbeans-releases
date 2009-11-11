@@ -43,6 +43,7 @@ package org.netbeans.modules.php.editor.indent;
 
 import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
 import org.netbeans.modules.php.editor.indent.FmtOptions.CategorySupport;
+import static  org.netbeans.modules.php.editor.indent.FmtOptions.CategorySupport.OPTION_ID;
 
 /**
  *
@@ -58,12 +59,15 @@ public class FmtTabsIndents extends javax.swing.JPanel {
 //        tabSizeField.putClientProperty(OPTION_ID, tabSize);
 //        indentSizeField.putClientProperty(OPTION_ID, new String [] { indentSize, spacesPerTab });
 //        rightMarginField.putClientProperty(OPTION_ID, rightMargin);
+        continuationIndentSizeField.putClientProperty(OPTION_ID, FmtOptions.continuationIndentSize);
+        initialIndentSizeField.putClientProperty(OPTION_ID, FmtOptions.initialIndent);
     }
     
     public static PreferencesCustomizer.Factory getController() {
         return new CategorySupport.Factory(PreferencesCustomizer.TABS_AND_INDENTS_ID, FmtTabsIndents.class, //NOI18N
                 org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "SAMPLE_TabsIndents"), // NOI18N
-                new String[] { FmtOptions.rightMargin, "30" } //NOI18N
+                new String[] { FmtOptions.rightMargin, "30" }, //NOI18N
+                new String[] { FmtOptions.initialIndent, "0" } //NOI18N
                 );
     }
     
@@ -77,55 +81,56 @@ public class FmtTabsIndents extends javax.swing.JPanel {
 
         continuationIndentSizeLabel = new javax.swing.JLabel();
         continuationIndentSizeField = new javax.swing.JTextField();
-        labelIndentLabel = new javax.swing.JLabel();
-        labelIndentField = new javax.swing.JTextField();
+        initialIndentLabel = new javax.swing.JLabel();
+        initialIndentSizeField = new javax.swing.JTextField();
 
-        setName("null");
+        setName(org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "LBL_TabsAndIndents")); // NOI18N
         setOpaque(false);
 
         continuationIndentSizeLabel.setLabelFor(continuationIndentSizeField);
         org.openide.awt.Mnemonics.setLocalizedText(continuationIndentSizeLabel, org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "LBL_ContinuationIndentSize")); // NOI18N
 
-        labelIndentLabel.setLabelFor(labelIndentField);
-        org.openide.awt.Mnemonics.setLocalizedText(labelIndentLabel, org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "LBL_LabelIndent")); // NOI18N
+        initialIndentLabel.setLabelFor(initialIndentSizeField);
+        org.openide.awt.Mnemonics.setLocalizedText(initialIndentLabel, org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "FmtTabsIndents.initialIndentLabel.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(continuationIndentSizeLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 226, Short.MAX_VALUE)
-                    .add(labelIndentLabel))
+                .add(continuationIndentSizeLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 226, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(continuationIndentSizeField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 36, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(labelIndentField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 36, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                .add(continuationIndentSizeField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 36, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+            .add(layout.createSequentialGroup()
+                .add(initialIndentLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 116, Short.MAX_VALUE)
+                .add(initialIndentSizeField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 36, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
-
-        layout.linkSize(new java.awt.Component[] {continuationIndentSizeField, labelIndentField}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
-
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
+                .add(12, 12, 12)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(initialIndentLabel)
+                    .add(initialIndentSizeField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(continuationIndentSizeLabel)
                     .add(continuationIndentSizeField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(labelIndentLabel)
-                    .add(labelIndentField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        continuationIndentSizeField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "FmtTabsIndents.continuationIndentSizeField.AccessibleContext.accessibleName")); // NOI18N
+        continuationIndentSizeField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "FmtTabsIndents.continuationIndentSizeField.AccessibleContext.accessibleDescription")); // NOI18N
+        initialIndentSizeField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "FmtTabsIndents.initialIndentSizeField.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField continuationIndentSizeField;
     private javax.swing.JLabel continuationIndentSizeLabel;
-    private javax.swing.JTextField labelIndentField;
-    private javax.swing.JLabel labelIndentLabel;
+    private javax.swing.JLabel initialIndentLabel;
+    private javax.swing.JTextField initialIndentSizeField;
     // End of variables declaration//GEN-END:variables
     
 }

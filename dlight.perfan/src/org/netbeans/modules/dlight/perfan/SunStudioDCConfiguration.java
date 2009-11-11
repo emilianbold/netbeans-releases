@@ -115,6 +115,15 @@ public final class SunStudioDCConfiguration
             new Column(THAMetric.RaceMetric.getMetricID(),
             THAMetric.RaceMetric.getMetricValueClass(),
             THAMetric.RaceMetric.getMetricDisplayedName(), null);
+    //openmp support
+    public static final Column c_iOMPWait =
+            new Column(TimeMetric.OMPWaitTimeInclusive.getMetricID(),
+            TimeMetric.OMPWaitTimeInclusive.getMetricValueClass(),
+            TimeMetric.OMPWaitTimeInclusive.getMetricDisplayedName(), null);
+    public static final Column c_iOMPWork =
+            new Column(TimeMetric.OMPWorkTimeInclusive.getMetricID(),
+            TimeMetric.OMPWorkTimeInclusive.getMetricValueClass(),
+            TimeMetric.OMPWorkTimeInclusive.getMetricDisplayedName(), null);
     public static final Column c_ulockSummary = new Column("user_lock", Long.class, loc("SSDataCollector.ColumnName.user_lock"), null); // NOI18N
     public static final Column c_threadsCount = new Column("ss_threads", Long.class, loc("SSDataCollector.ColumnName.threads"), null); // NOI18N
 

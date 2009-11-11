@@ -43,7 +43,6 @@ package org.netbeans.modules.java.source.usages;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.Collections;
 import java.util.Iterator;
@@ -71,8 +70,9 @@ public class PersistentClassIndex extends ClassIndexImpl {
     
     private final Index index;
     private final URL root;
+    private final File cacheRoot;
     private final boolean isSource;
-    private WeakReference<JavaSource> dirty;
+    private URL dirty;
     private static final Logger LOGGER = Logger.getLogger(PersistentClassIndex.class.getName());
     private static IndexFactory indexFactory = LuceneIndexFactory.getInstance();
     
@@ -82,12 +82,13 @@ public class PersistentClassIndex extends ClassIndexImpl {
         assert root != null;
         this.root = root;
         assert indexFactory != null;
+        this.cacheRoot = cacheRoot;
         this.index = indexFactory.create(cacheRoot);
         this.isSource = source;
     }
     
     public BinaryAnalyser getBinaryAnalyser () {
-        return new BinaryAnalyser (this.index);
+        return new BinaryAnalyser (this.index, this.cacheRoot);
     }
     
     public SourceAnalyser getSourceAnalyser () {        
@@ -188,14 +189,7 @@ public class PersistentClassIndex extends ClassIndexImpl {
     }
     
     public synchronized void setDirty (final URL url) {
-        final FileObject fo = url != null ? URLMapper.findFileObject(url) : null;
-        final JavaSource js = fo != null ? JavaSource.forFileObject(fo) : null;
-        if (js == null) {
-            this.dirty = null;
-        }
-        else if (this.dirty == null || this.dirty.get() != js) {
-            this.dirty = new WeakReference (js);
-        }
+        this.dirty = url;
     }
     
     public @Override String toString () {
@@ -216,12 +210,13 @@ public class PersistentClassIndex extends ClassIndexImpl {
     // Private methods ---------------------------------------------------------                          
     
     private void updateDirty () {
-        WeakReference<JavaSource> jsRef;        
+        final URL url;
         synchronized (this) {
-            jsRef = this.dirty;
+            url = this.dirty;
         }
-        if (jsRef != null) {
-            final JavaSource js = jsRef.get();
+        if (url != null) {
+            final FileObject file = url != null ? URLMapper.findFileObject(url) : null;
+            final JavaSource js = file != null ? JavaSource.forFileObject(file) : null;
             if (js != null) {
                 final long startTime = System.currentTimeMillis();
                 Iterator<FileObject> files = js.getFileObjects().iterator();

@@ -223,7 +223,7 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
         Project project = Templates.getProject(wizard);
         params[1] = project.getClass().getName();
         J2eeModule j2eeModule = RestUtils.getJ2eeModule(project);
-        params[2] = j2eeModule == null ? null : j2eeModule.getModuleVersion(); //NOI18N
+        params[2] = j2eeModule == null ? null : j2eeModule.getModuleVersion()+"(WAR)"; //NOI18N
         params[3] = "REST FROM DATABASE"; //NOI18N
         LogUtils.logWsWizard(params);
 

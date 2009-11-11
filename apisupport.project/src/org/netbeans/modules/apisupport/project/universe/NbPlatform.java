@@ -121,6 +121,8 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
     public static final int HARNESS_VERSION_65 = 6;
     /** Harness version found in 6.7. */
     public static final int HARNESS_VERSION_67 = 7;
+    /** Harness version found in 6.8. */
+    public static final int HARNESS_VERSION_68 = 8;
 
     static {
         final File install = NbPlatform.defaultPlatformLocation();
@@ -154,6 +156,8 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
     
     /**
      * Reset cached info so unit tests can start from scratch.
+     * <p><b>Do not use outside of tests!</b> Concurrent call may cause
+     * {@link #getPlatformsInternal()} to fail.</p>
      */
     public static void reset() {
         platforms = null;
@@ -905,7 +909,9 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
                     String spec = jf.getManifest().getMainAttributes().getValue(ManifestManager.OPENIDE_MODULE_SPECIFICATION_VERSION);
                     if (spec != null) {
                         SpecificationVersion v = new SpecificationVersion(spec);
-                        if (v.compareTo(new SpecificationVersion("1.14")) >= 0) { // NOI18N
+                        if (v.compareTo(new SpecificationVersion("1.18")) >= 0) { // NOI18N
+                            return harnessVersion = HARNESS_VERSION_68;
+                        } else if (v.compareTo(new SpecificationVersion("1.14")) >= 0) { // NOI18N
                             return harnessVersion = HARNESS_VERSION_67;
                         } else if (v.compareTo(new SpecificationVersion("1.12")) >= 0) { // NOI18N
                             return harnessVersion = HARNESS_VERSION_65;
@@ -991,6 +997,8 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
                 return NbBundle.getMessage(NbPlatform.class, "LBL_harness_version_6.5");
             case HARNESS_VERSION_67:
                 return NbBundle.getMessage(NbPlatform.class, "LBL_harness_version_6.7");
+            case HARNESS_VERSION_68:
+                return NbBundle.getMessage(NbPlatform.class, "LBL_harness_version_6.8");
             default:
                 assert version == HARNESS_VERSION_UNKNOWN;
                 return NbBundle.getMessage(NbPlatform.class, "LBL_harness_version_unknown");

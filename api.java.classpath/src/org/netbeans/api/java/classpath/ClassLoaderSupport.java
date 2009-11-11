@@ -43,15 +43,10 @@ package org.netbeans.api.java.classpath;
 
 import java.beans.PropertyChangeListener;
 import java.net.URL;
-import java.util.*;
 
 import org.openide.execution.NbClassLoader;
 import org.openide.filesystems.*;
 import org.openide.util.WeakListeners;
-import org.openide.ErrorManager;
-import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
 
 /** Classloader for the filesystem pool. Attaches itself as a listener to
  * each file a class has been loaded from. If such a file is deleted, modified

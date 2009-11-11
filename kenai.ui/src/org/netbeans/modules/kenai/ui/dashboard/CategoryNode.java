@@ -59,12 +59,10 @@ public class CategoryNode extends LeafNode {
 
     private JPanel panel;
     private JLabel name;
-    private JLabel progress;
     private String categoryName;
     private Icon icon;
 
     private final Object LOCK = new Object();
-    private int loadingCounter = 0;
 
     public CategoryNode( DashboardImpl dashboard, String name, Icon icon ) {
         super( null );
@@ -85,8 +83,6 @@ public class CategoryNode extends LeafNode {
                 name = new TreeLabel(categoryName);
                 name.setBorder(new EmptyBorder(0,0,0,5));
                 panel.add(name, BorderLayout.WEST);
-                progress = createProgressLabel("");
-                panel.add(progress, BorderLayout.CENTER);
                 name.setFont(name.getFont().deriveFont(Font.BOLD));
             }
 
@@ -97,25 +93,7 @@ public class CategoryNode extends LeafNode {
             } else {
                 name.setForeground(ColorManager.getDefault().getDefaultBackground());
             }
-            progress.setVisible(loadingCounter > 0);
         }
-            return panel;
+        return panel;
     }
-
-    void loadingStarted() {
-        synchronized( LOCK ) {
-            loadingCounter++;
-            fireContentChanged();
-        }
-    }
-
-    void loadingFinished() {
-        synchronized( LOCK ) {
-            loadingCounter--;
-            if( loadingCounter < 0 )
-                loadingCounter = 0;
-            fireContentChanged();
-        }
-    }
-
 }

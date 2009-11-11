@@ -74,6 +74,6 @@ public abstract class SupportAccessor {
 //
 //    public abstract Collection<? extends IndexingSupport> getDirtySupports ();
 
-    public abstract void store(IndexingSupport support) throws IOException;
+    public abstract void store(IndexingSupport support, boolean optimize) throws IOException;
 
 }

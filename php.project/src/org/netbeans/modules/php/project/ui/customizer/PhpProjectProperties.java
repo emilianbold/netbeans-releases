@@ -46,12 +46,10 @@ import org.netbeans.modules.php.project.ui.PathUiSupport;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
 import javax.swing.ListCellRenderer;
 import org.netbeans.api.project.ProjectManager;
@@ -63,6 +61,7 @@ import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ProjectSettings;
 import org.netbeans.modules.php.project.api.PhpLanguageOptions;
 import org.netbeans.modules.php.project.classpath.IncludePathSupport;
+import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -566,18 +565,11 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
 
     // http://wiki.netbeans.org/UsageLoggingSpecification
     private void logUsage(FileObject projectDir, FileObject sourceDir, String activeRunAsType, int numOfConfigs, boolean copyFiles) {
-        StringBuilder sb = new StringBuilder(200);
-        LogRecord logRecord = new LogRecord(Level.INFO, "USG_PROJECT_CONFIG_PHP"); // NOI18N
-        logRecord.setLoggerName(PhpProject.USG_LOGGER_NAME);
-        logRecord.setResourceBundle(NbBundle.getBundle(PhpProjectProperties.class));
-        logRecord.setResourceBundleName(PhpProjectProperties.class.getPackage().getName() + ".Bundle"); // NOI18N
-        logRecord.setParameters(new Object[] {
-            FileUtil.isParentOf(projectDir, sourceDir) ? "EXTRA_SRC_DIR_NO" : "EXTRA_SRC_DIR_YES", // NOI18N
-            activeRunAsType,
-            Integer.toString(numOfConfigs),
-            copyFiles ? "COPY_FILES_YES" : "COPY_FILES_NO" // NOI18N
-        });
-        Logger.getLogger(PhpProject.USG_LOGGER_NAME).log(logRecord);
+        PhpProjectUtils.logUsage(PhpProjectProperties.class, "USG_PROJECT_CONFIG_PHP", Arrays.asList(
+                FileUtil.isParentOf(projectDir, sourceDir) ? "EXTRA_SRC_DIR_NO" : "EXTRA_SRC_DIR_YES", // NOI18N
+                activeRunAsType,
+                Integer.toString(numOfConfigs),
+                copyFiles ? "COPY_FILES_YES" : "COPY_FILES_NO")); // NOI18N
     }
 
     public PhpProject getProject() {

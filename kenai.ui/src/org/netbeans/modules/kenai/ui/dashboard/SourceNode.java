@@ -86,13 +86,13 @@ public class SourceNode extends LeafNode {
             if( source.isSupported() ) {
                 btn = new LinkButton(NbBundle.getMessage(SourceNode.class, "LBL_GetSources"), SourceAccessor.getDefault().getOpenSourcesAction(source)); //NOI18N
                 String featureName = source.getScmFeatureName();
-                String repotype = "MSG_UNKNOWN_SCM";
+                String repotype = "MSG_UNKNOWN_SCM"; // NOI18N
                 if (featureName.equals(KenaiService.Names.SUBVERSION)) {
-                    repotype = "MSG_SUBVERSION";
+                    repotype = "MSG_SUBVERSION"; // NOI18N
                 } else if (featureName.equals(KenaiService.Names.GIT)) {
-                    repotype = "MSG_GIT";
+                    repotype = "MSG_GIT"; // NOI18N
                 } else if (featureName.equals(KenaiService.Names.MERCURIAL)) {
-                    repotype = "MSG_MERCURIAL";
+                    repotype = "MSG_MERCURIAL"; // NOI18N
                 }
                 btn.setToolTipText(NbBundle.getMessage(SourceNode.class, repotype));
                 lbl1 = new TreeLabel("("); //NOI18N

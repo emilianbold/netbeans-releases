@@ -1,4 +1,3 @@
-// <editor-fold defaultstate="collapsed" desc=" License Header ">
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
@@ -37,16 +36,17 @@
  * 
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
-// </editor-fold>
 
 package org.netbeans.modules.glassfish.common.ui;
 
 import java.util.Map;
+import org.netbeans.modules.glassfish.common.EnableComet;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -105,6 +105,7 @@ public class InstanceCustomizer extends javax.swing.JPanel {
         if(cometEnabledChanged) {
             String cometEnabled = Boolean.toString(cometCheckBox.isSelected());
             commonSupport.setEnvironmentProperty(GlassfishModule.COMET_FLAG, cometEnabled, true);
+            RequestProcessor.getDefault().post(new EnableComet(commonSupport));
         }
         if (monitorEnabledChanged) {
             String monitorEnabled = Boolean.toString(monitorCheckBox.isSelected());

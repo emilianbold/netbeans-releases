@@ -39,4 +39,6 @@
 package org.netbeans.modules.dlight.procfs.api;
 
 public interface LWPUsage extends PUsage {
+
+    public static final int FILESIZE = 256;
 }

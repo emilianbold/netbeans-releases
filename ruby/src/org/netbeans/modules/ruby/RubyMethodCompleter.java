@@ -44,10 +44,10 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import org.jrubyparser.ast.CallNode;
 import org.jrubyparser.ast.ClassNode;
 import org.jrubyparser.ast.FCallNode;
+import org.jrubyparser.ast.IScopingNode;
 import org.jrubyparser.ast.Node;
 import org.jrubyparser.ast.NodeType;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -112,10 +112,10 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
 
         final String prefix = request.prefix;
         final int lexOffset = request.lexOffset;
-        final TokenHierarchy<Document> th = request.th;
+        final TokenHierarchy<?> th = request.th;
         final AstPath path = request.path;
         final QuerySupport.Kind kind = request.kind;
-        final Node target = request.target;
+        final Node target = request.target != null ? AstUtilities.findNextNonNewLineNode(request.target) : null;
 
         TokenSequence<? extends RubyTokenId> ts = LexUtilities.getRubyTokenSequence(th, lexOffset);
 
@@ -167,6 +167,10 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
                     // up and do it a bit more cleverly
                     type = getTypesForConstant(lhs);
                     if (!type.isKnown()) {
+                        // try fqn
+                        type = getTypesForConstant(AstUtilities.getFqnName(path, lhs));
+                    }
+                    if (!type.isKnown()) {
                         type = createTypeInferencer(request, method).inferType(_lhs);
                     }
                     if (type.isKnown() && call.isLHSConstant()) {
@@ -178,12 +182,18 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
                 if (!type.isKnown() && call.isLHSConstant() && callType != null) {
                     type = callType;
                 }
-            } else { // try method chaining
-                if (target.getNodeType() == NodeType.CALLNODE) {
-                    Node receiver = ((CallNode) target).getReceiverNode();
-                    type = RubyTypeInferencer.create(request.createContextKnowledge()).inferType(receiver);
+            } else if (AstUtilities.isAssignmentNode(target)) {
+                if (!target.childNodes().isEmpty()) {
+                    Node child = target.childNodes().get(0);
+                    if (AstUtilities.isCall(child)) {
+                        type = RubyTypeInferencer.create(request.createContextKnowledge()).inferType(child);
+                    }
                 }
             }
+        }
+
+        if (!type.isKnown() && AstUtilities.isCall(target)) {
+            type = getTypeForCall(target);
         }
 
         // I'm not doing any data flow analysis at this point, so
@@ -282,6 +292,58 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
         return done;
     }
 
+    private RubyType getTypeForCall(Node target) {
+        if ("".equals(request.prefix)) {
+            // we often have broken AST here, try to handle one commmon case
+            Node realTarget = findClosestMatchingNode(target);
+            if (realTarget != null) {
+                target = realTarget;
+            }
+            return RubyTypeInferencer.create(request.createContextKnowledge()).inferType(target);
+        } else {
+            if (target instanceof CallNode) {
+                Node receiver = ((CallNode) target).getReceiverNode();
+                return RubyTypeInferencer.create(request.createContextKnowledge()).inferType(receiver);
+            } else { // receiver is self
+                IScopingNode clazz = AstUtilities.findClassOrModule(request.path);
+                if (clazz != null) {
+                    return RubyType.create(AstUtilities.getClassOrModuleName(clazz));
+                }
+            }
+        }
+        return RubyType.createUnknown();
+    }
+
+    private Node findClosestMatchingNode(Node target) {
+        // when we have e.g.
+        // a_method().anotherMethod.^ (<= invoke CC here)
+        // Foo.new
+        //
+        // the target is Foo and anotherMethod is its receiver (since the AST is broken)
+        // this method tries to find the real target based on the lhs.
+        String name = AstUtilities.getCallName(target);
+        String lhs = call.getLhs();
+        if (lhs.equals(name)) {
+            return target;
+        }
+        int lastDot = lhs.lastIndexOf(".");
+        if (lastDot != -1) {
+            lhs = lhs.substring(lastDot + 1, lhs.length());
+            int lastLeftParen = lhs.lastIndexOf("(");
+            if (lastLeftParen != -1) {
+                lhs = lhs.substring(lastLeftParen + 1, lhs.length());
+            }
+        }
+        if (name.equals(lhs)) {
+            return target;
+        }
+        for (Node child : target.childNodes()) {
+            if (AstUtilities.isCall(child) && lhs.equals(AstUtilities.getCallName(child))) {
+                return child;
+            }
+        }
+        return null;
+    }
     /**
      * Compute the current method call at the given offset. Returns false if
      * we're not in a method call. The argument index is returned in

@@ -60,10 +60,18 @@ import org.openide.util.Exceptions;
 public class UnbufferSupport {
 
     private static final java.util.logging.Logger log = Logger.getInstance();
+    private static final boolean UNBUFFER_DISABLED = Boolean.getBoolean("execution.no_unbuffer"); // NOI18N
     private static final HashMap<ExecutionEnvironment, String> cache =
             new HashMap<ExecutionEnvironment, String>();
 
+    private UnbufferSupport() {
+    }
+
     public static void initUnbuffer(final ExecutionEnvironment execEnv, final MacroMap env) throws IOException {
+        if (UNBUFFER_DISABLED) {
+            return;
+        }
+
         final MacroExpander macroExpander = MacroExpanderFactory.getExpander(execEnv);
         // Setup LD_PRELOAD to load unbuffer library...
 
@@ -160,6 +168,13 @@ public class UnbufferSupport {
                             new File(unbufferPath, unbufferLib).getAbsolutePath(); // NOI18N
 
                     ldPreload = WindowsSupport.getInstance().convertToAllShellPaths(ldPreload);
+
+                    if (ldPreload == null) {
+                        // i.e. cannot convert [cygpath not found, for example]
+                        // will not set LD_PRELOAD
+                        return;
+                    }
+
                 } else if (isMacOS) {
                     // TODO: FIXME (?) For Mac and Windows just put unbuffer
                     // with path to it to LD_PRELOAD/DYLD_INSERT_LIBRARIES

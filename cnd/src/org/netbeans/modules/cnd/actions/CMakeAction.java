@@ -50,6 +50,8 @@ import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
+import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
+import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.loaders.CMakeDataObject;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -83,7 +85,7 @@ public class CMakeAction extends AbstractExecutorRunAction {
     }
 
     protected void performAction(Node node) {
-        performAction(node, null, null, null, null);
+        performAction(node, null, null, getProject(node), null);
     }
 
     public static Future<Integer> performAction(final Node node, final ExecutionListener listener, final Writer outputListener, final Project project, final InputOutput inputOutput) {
@@ -112,6 +114,9 @@ public class CMakeAction extends AbstractExecutorRunAction {
         //String arguments = proFile.getName();
         String[] arguments =  getArguments(node, Tool.CMakeTool); // NOI18N
         ExecutionEnvironment execEnv = getExecutionEnvironment(fileObject, project);
+        if (!checkConnection(execEnv)) {
+            return null;
+        }
         Map<String, String> envMap = getEnv(execEnv, node, null);
         StringBuilder argsFlat = new StringBuilder();
         for (int i = 0; i < arguments.length; i++) {
@@ -131,7 +136,13 @@ public class CMakeAction extends AbstractExecutorRunAction {
             }
             inputOutput = tab;
         }
-        ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, inputOutput, "CMake"); // NOI18N
+        RemoteSyncWorker syncWorker = RemoteSyncSupport.createSyncWorker(project, inputOutput.getOut(), inputOutput.getErr());
+        if (syncWorker != null) {
+            if (!syncWorker.startup(envMap)) {
+                return null;
+            }
+        }
+        ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, outputListener, inputOutput, "CMake", syncWorker); // NOI18N
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv)
         .setWorkingDirectory(buildDir.getPath())
         .setCommandLine(quoteExecutable(executable)+" "+argsFlat.toString()) // NOI18N

@@ -48,6 +48,8 @@
 package org.netbeans.modules.javadoc.search;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
 import org.openide.ErrorManager;
 
 import org.openide.filesystems.FileObject;
@@ -57,32 +59,45 @@ import org.openide.filesystems.FileObject;
  * @author  Petr Suchomel
  * @version 0.1
  */
-class JavadocSearchEngineImpl extends JavadocSearchEngine {
+final class JavadocSearchEngineImpl extends JavadocSearchEngine {
 
-    private ArrayList tasks;
+    private final List<IndexSearchThread> tasks = new ArrayList<IndexSearchThread>();
 
     private IndexSearchThread.DocIndexItemConsumer diiConsumer;
+    private boolean isStopped = false;
 
     /** Used to search for set elements in javadoc repository
      * @param items to search for
      * @throws NoJavadocException if no javadoc directory is mounted, nothing can be searched
      */
     public void search(String[] items, final SearchEngineCallback callback) throws NoJavadocException {
-        FileObject docRoots[] = JavadocRegistry.getDefault().getDocRoots();
-        tasks = new ArrayList( docRoots.length );
-
         diiConsumer = new IndexSearchThread.DocIndexItemConsumer() {
                           public void addDocIndexItem( final DocIndexItem dii ) {
                               callback.addItem(dii);
                           }
 
                           public void indexSearchThreadFinished( IndexSearchThread t ) {
-                              tasks.remove( t );
-                              if ( tasks.isEmpty() )
+                              boolean isEmpty;
+                              synchronized(JavadocSearchEngineImpl.this) {
+                                  if (IndexSearch.LOG.isLoggable(Level.FINE)) {
+                                      IndexSearch.LOG.fine("JavadocSearchEngineImpl.indexSearchThreadFinished: tasks: " + tasks.size());
+                                  }
+                                  tasks.remove( t );
+                                  isEmpty = tasks.isEmpty();
+                              }
+                              if (isEmpty) {
                                   callback.finished();
+                              }
                           }
                       };
                       
+        FileObject[] docRoots = JavadocRegistry.getDefault().getDocRoots();
+        synchronized(this) {
+            if (isStopped) {
+                return;
+            }
+        }
+
         if ( docRoots.length <= 0 ) {            
             callback.finished();
             throw new NoJavadocException();            
@@ -104,17 +119,49 @@ class JavadocSearchEngineImpl extends JavadocSearchEngine {
             
             IndexSearchThread searchThread = st.getSearchThread( toFind, indexFo, diiConsumer );
 
-            tasks.add( searchThread );
-            searchThread.go();            
+            synchronized(this) {
+                if (isStopped) {
+                    return;
+                }
+                tasks.add( searchThread );
+            }
         }
-        //callback.finished();
+
+        // run search threads
+        IndexSearchThread[] tasksArray;
+        synchronized(this) {
+            tasksArray = tasks.toArray(new IndexSearchThread[tasks.size()]);
+        }
+        for (IndexSearchThread searchThread : tasksArray) {
+            if (isStopped) {
+                return;
+            } else {
+                searchThread.go();
+            }
+        }
     }
     
     /** Stops execution of Javadoc search thread
      */
     public void stop() {
-        for( int i = 0; i < tasks.size(); i++ ) {
-            SearchThreadJdk12 searchThread = (SearchThreadJdk12)tasks.get( i );
+        IndexSearchThread[] tasksArray = null;
+        boolean noTask;
+        synchronized(this) {
+            if (isStopped) {
+                return;
+            }
+            isStopped = true;
+            noTask = tasks.isEmpty();
+            if (!noTask) {
+                tasksArray = tasks.toArray(new IndexSearchThread[tasks.size()]);
+            }
+        }
+        IndexSearch.LOG.fine("JavadocSearchEngineImpl.stop");
+        if (noTask) {
+            diiConsumer.indexSearchThreadFinished(null);
+            return;
+        }
+        for (IndexSearchThread searchThread : tasksArray) {
             searchThread.finish();
         }
     }    

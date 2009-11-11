@@ -103,6 +103,7 @@ public class RemoteFileSearcherImpl implements FileSearcher {
             os.append("exit $?\n"); // NOI18N
 
             os.flush();
+            os.close();
 
             String line = ProcessUtils.readProcessOutputLine(p);
             int result = p.waitFor();

@@ -40,6 +40,8 @@
 package org.netbeans.modules.jira.kenai;
 
 import java.awt.Image;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.net.PasswordAuthentication;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -56,9 +58,11 @@ import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.util.KenaiUtil;
+import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
+import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -67,7 +71,7 @@ import org.openide.util.NbBundle;
  *
  * @author Tomas Stupka, Jan Stola
  */
-public class KenaiRepository extends JiraRepository {
+public class KenaiRepository extends JiraRepository implements PropertyChangeListener {
 
     static final String ICON_PATH = "org/netbeans/modules/bugtracking/ui/resources/kenai-small.png"; // NOI18N
     private Image icon;
@@ -79,11 +83,12 @@ public class KenaiRepository extends JiraRepository {
 
     public KenaiRepository(KenaiProject kenaiProject, String repoName, String url, String host, String project) {
         // use name for id, can't be changed anyway
-        super(repoName, repoName, url, getKenaiUser(), getKenaiPassword(), null, null);
+        super(getRepositoryId(repoName, url), repoName, url, getKenaiUser(), getKenaiPassword(), null, null);
         icon = ImageUtilities.loadImage(ICON_PATH, true);
         this.projectName = project;
         this.host = host;
         this.kenaiProject = kenaiProject;
+        Kenai.getDefault().addPropertyChangeListener(this);
     }
 
     @Override
@@ -137,34 +142,48 @@ public class KenaiRepository extends JiraRepository {
             return new Query[0];
         }
 
-        // my issues - only if logged in
-        if(KenaiUtil.isLoggedIn()) {
-            if(myIssues == null) {
-                Project p = configuration.getProjectByKey(projectName);
-                if(p != null) {
-                    FilterDefinition fd = new FilterDefinition();
-                    fd.setAssignedToFilter(new CurrentUserFilter());
-                    fd.setProjectFilter(new ProjectFilter(p));
-                    fd.setStatusFilter(new StatusFilter(getOpenStatuses()));
-                    myIssues =
-                        new KenaiQuery(
-                            NbBundle.getMessage(KenaiRepository.class, "LBL_MyIssues"), // NOI18N
-                            this,
-                            fd,
-                            projectName,
-                            true,
-                            true);
-                } else {
-                    // XXX warning
-                }
-            }
-            queries.add(myIssues);
+        Query mi = getMyIssuesQuery(configuration);
+        if(mi != null) {
+            queries.add(mi);
         }
+
         Query ai = getAllIssuesQuery(configuration);
         if(ai != null) {
             queries.add(ai);
         }
+
         return queries.toArray(new Query[queries.size()]);
+    }
+
+    Query getMyIssuesQuery() throws MissingResourceException {
+        JiraConfiguration configuration = getConfiguration();
+        if(configuration == null) {
+            return null;
+        }
+        return getMyIssuesQuery(configuration);
+    }
+
+    synchronized private Query getMyIssuesQuery(JiraConfiguration configuration) throws MissingResourceException {
+        if(myIssues == null) {
+            Project p = configuration.getProjectByKey(projectName);
+            if(p != null) {
+                FilterDefinition fd = new FilterDefinition();
+                fd.setAssignedToFilter(new CurrentUserFilter());
+                fd.setProjectFilter(new ProjectFilter(p));
+                fd.setStatusFilter(new StatusFilter(getOpenStatuses()));
+                myIssues =
+                    new KenaiQuery(
+                        NbBundle.getMessage(KenaiRepository.class, "LBL_MyIssues"), // NOI18N
+                        this,
+                        fd,
+                        projectName,
+                        true,
+                        true);
+            } else {
+                // XXX warning
+            }
+        }
+        return myIssues;
     }
 
     Query getAllIssuesQuery() throws MissingResourceException {
@@ -175,7 +194,7 @@ public class KenaiRepository extends JiraRepository {
         return getAllIssuesQuery(configuration);
     }
 
-    private Query getAllIssuesQuery(JiraConfiguration configuration) throws MissingResourceException {
+    synchronized private Query getAllIssuesQuery(JiraConfiguration configuration) throws MissingResourceException {
         if (allIssues == null) {
             Project p = configuration.getProjectByKey(projectName);
             if (p != null) {
@@ -221,6 +240,14 @@ public class KenaiRepository extends JiraRepository {
 
     protected void setCredentials(String user, String password) {
         super.setCredentials(user, password, null, null);
+    }
+
+    @Override
+    protected void getRemoteFilters() {
+        if(!KenaiUtil.isLoggedIn()) {
+            return;
+        }
+        super.getRemoteFilters();
     }
 
     @Override
@@ -298,4 +325,31 @@ public class KenaiRepository extends JiraRepository {
          return users;
     }
 
+    private static String getRepositoryId(String name, String url) {
+        return TextUtils.encodeURL(url) + ":" + name;                           // NOI18N
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if(evt.getPropertyName().equals(Kenai.PROP_LOGIN)) {
+//            if(myIssues != null) {
+//                KenaiQueryController c = (KenaiQueryController) myIssues.getController();
+//                c.populate(getQueryUrl());
+//            }
+
+            // XXX move to spi?
+            // get kenai credentials
+            String user;
+            String psswd;
+            PasswordAuthentication pa = KenaiUtil.getPasswordAuthentication(false);
+            if(pa != null) {
+                user = pa.getUserName();
+                psswd = new String(pa.getPassword());
+            } else {
+                user = "";                                                      // NOI18N
+                psswd = "";                                                     // NOI18N
+            }
+
+            setCredentials(user, psswd);
+        }
+    }
 }

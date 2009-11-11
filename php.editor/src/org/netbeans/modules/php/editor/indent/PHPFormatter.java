@@ -162,14 +162,14 @@ public class PHPFormatter implements Formatter {
                 TokenId id = token.id();
                 // If we're in a string literal (or regexp or documentation) leave
                 // indentation alone!
-                if (id == PHPTokenId.PHP_COMMENT || id == PHPTokenId.PHP_COMMENT_START || id == PHPTokenId.PHP_COMMENT_END ||
+                if (id == PHPTokenId.PHP_COMMENT ||
                     id == PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE ||
 
 // TODO: please review!! without this line PHP formatter clobers
 // all indentation done by HTML formatter:
                     id == PHPTokenId.T_INLINE_HTML ||
 
-                    id == PHPTokenId.PHP_HEREDOC_TAG
+                    id == PHPTokenId.PHP_HEREDOC_TAG || id == PHPTokenId.PHP_NOWDOC_TAG
                 ) {
                     // No indentation for literal strings in Ruby, since they can
                     // contain newlines. Leave it as is.
@@ -177,6 +177,15 @@ public class PHPFormatter implements Formatter {
                 }
 
                 if (id == PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING){
+
+                    if (ts.movePrevious()){
+                        if (ts.token().id() == PHPTokenId.PHP_HEREDOC_TAG
+                                || ts.token().id() == PHPTokenId.PHP_NOWDOC_TAG){
+                            return true;
+                        }
+                        ts.moveNext();
+                    }
+
                     int startLine = Utilities.getLineOffset(doc, ts.offset());
                     int currentLine = Utilities.getLineOffset(doc, pos);
 
@@ -185,21 +194,6 @@ public class PHPFormatter implements Formatter {
                         return true;
                     }
                 }
-// XXX: resurrect support for heredoc
-//                if (id == PHPTokenId.STRING_END || id == PHPTokenId.QUOTED_STRING_END) {
-//                    // Possibly a heredoc
-//                    TokenSequence<? extends PHPTokenId> ts = LexUtilities.getRubyTokenSequence(doc, pos);
-//                    ts.move(pos);
-//                    OffsetRange range = LexUtilities.findHeredocBegin(ts, token);
-//                    if (range != OffsetRange.NONE) {
-//                        String text = doc.getText(range.getStart(), range.getLength());
-//                        if (text.startsWith("<<-")) { // NOI18N
-//                            return false;
-//                        } else {
-//                            return true;
-//                        }
-//                    }
-//                }
             } else {
                 // No PHP token -- leave the formatting alone!
                 return true;
@@ -216,7 +210,7 @@ public class PHPFormatter implements Formatter {
                     id == PHPTokenId.PHPDOC_COMMENT || id == PHPTokenId.PHPDOC_COMMENT_START || id == PHPTokenId.PHPDOC_COMMENT_END ||
                     id == PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING ||
                     id == PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE ||
-                    id == PHPTokenId.PHP_HEREDOC_TAG
+                    id == PHPTokenId.PHP_HEREDOC_TAG || id == PHPTokenId.PHP_NOWDOC_TAG
                 ) {
                     // No indentation for literal strings in Ruby, since they can
                     // contain newlines. Leave it as is.
@@ -226,6 +220,14 @@ public class PHPFormatter implements Formatter {
         }
 
         return false;
+    }
+
+    private static boolean isSectionBorderLine(BaseDocument doc, int lineStart) throws BadLocationException{
+        int firstNonWS = Utilities.getFirstNonWhiteFwd(doc, lineStart);
+        TokenSequence<? extends PHPTokenId> ts = LexUtilities.getPositionedSequence(doc, firstNonWS);
+        PHPTokenId id = ts.token().id();
+
+        return id == PHPTokenId.PHP_CLOSETAG || id == PHPTokenId.PHP_OPENTAG;
     }
 
     private void prettyPrint(final Context context, final ParserResult info) {
@@ -282,6 +284,8 @@ public class PHPFormatter implements Formatter {
         return null;
     }
 
+
+
     private void astReformat(final Context context, final Map<Position, Integer> indentLevels) {
         Document document = context.document();
         document.putProperty("HTML_FORMATTER_ACTS_ON_TOP_LEVEL", Boolean.TRUE); //NOI18N
@@ -298,6 +302,7 @@ public class PHPFormatter implements Formatter {
                     int indentBias = 0;
                     boolean indentBiasCalculated = (startOffset == 0);
                     try {
+                        int initIndentSize = CodeStyle.get(doc).getInitialIndent();
                         int numberOfLines = Utilities.getLineOffset(doc, doc.getLength() - 1) + 1;
                         Map<Integer, Integer> indentDeltaByLine = new LinkedHashMap<Integer, Integer>();
 
@@ -316,6 +321,10 @@ public class PHPFormatter implements Formatter {
                             indentDeltaByLine.put(lineNumber, lineDelta == null
                                     ? indentDelta : lineDelta + indentDelta);
                         }
+
+                        boolean templateEdit = doc.getProperty("code-template-insert-handler") != null; //NOI18N
+
+
 
                         for (int i = 0, currentIndent = 0; i < numberOfLines; i++) {
                             int lineStart = Utilities.getRowStartFromLineOffset(doc, i);
@@ -336,19 +345,23 @@ public class PHPFormatter implements Formatter {
                                     }
                                 }
 
-                                if (i >= firstLine && !indentBiasCalculated) {
-                                    indentBias = currentIndent - GsfUtilities.getLineIndent(doc, lineStart) - htmlSuggestion;
+                                if (!indentBiasCalculated
+                                        && (templateEdit && i >= firstLine
+                                        || !templateEdit && i >= firstLine - 1)){
+
+                                    indentBias = currentIndent - GsfUtilities.getLineIndent(doc, lineStart) - htmlSuggestion + initIndentSize;
                                     indentBiasCalculated = true;
                                 }
-
+                                
 //                                System.err.println("lineDelta[" + i + "]=" + lineDelta);
 //                                System.err.println("htmlSuggestion[" + i + "]=" + htmlSuggestion);
                                 //TODO:
                                 if (lineStart >= context.startOffset() && lineStart <= context.endOffset()) {
                                     int actualIndent = 0;
+                                    int initialIndent = isSectionBorderLine(doc, lineStart) ? 0 : initIndentSize;
 
-                                    if (currentIndent + htmlSuggestion > indentBias) {
-                                        actualIndent = currentIndent + htmlSuggestion - indentBias;
+                                    if (currentIndent + htmlSuggestion  + initialIndent > indentBias) {
+                                        actualIndent = currentIndent + htmlSuggestion + initialIndent - indentBias;
                                     }
 
                                     GsfUtilities.setLineIndentation(doc, lineStart, actualIndent);

@@ -43,6 +43,7 @@ import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -50,9 +51,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.modules.dlight.core.stack.api.Function;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
+import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.modules.dlight.perfan.spi.datafilter.CollectedObjectsFilter;
 import org.netbeans.modules.dlight.perfan.stack.impl.FunctionCallImpl;
+import org.netbeans.modules.dlight.perfan.stack.impl.FunctionImpl;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
@@ -62,7 +66,7 @@ final class Erprint {
 
     private static final Pattern specPattern = Pattern.compile("[^:]*: (.*)"); // NOI18N
     private static final Pattern sortPattern = Pattern.compile(".* \\( (.*) \\)"); // NOI18N
-    private static final Pattern choicePattern = Pattern.compile("^[ \t]+([0-9]+)\\) .* \\((.*)\\)"); // NOI18N
+    private static final Pattern choicePattern = Pattern.compile("^[ \t]+([0-9]+)\\) .*:0x([0-9a-f]+) +\\((.*)\\)"); // NOI18N
     private static final String choiceMarker = "Available name list:"; // NOI18N
     private final Logger log = DLightLogger.getLogger(Erprint.class);
     private final AtomicInteger locks = new AtomicInteger();
@@ -204,6 +208,27 @@ final class Erprint {
         }
     }
 
+    Metrics getExperimentMetrics() throws IOException {
+        synchronized (this) {
+            // Get current metrics ...
+            String[] data = exec(ErprintCommand.metrics());
+
+            if (data == null || data.length != 2) {
+                return null;
+            }
+
+            Matcher specMatcher = specPattern.matcher(data[0]);
+            Matcher sortMatcher = sortPattern.matcher(data[1]);
+            Metrics prevMetrics = null;
+
+            if (specMatcher.matches() && sortMatcher.matches()) {
+                prevMetrics = new Metrics(specMatcher.group(1), sortMatcher.group(1));
+            }
+
+            return prevMetrics;
+        }
+    }
+
     String[] getHotFunctions(ErprintCommand command, int limit) throws IOException {
         String[] stat = exec(command);
         ArrayList<String> result = new ArrayList<String>();
@@ -303,42 +328,64 @@ final class Erprint {
     }
 
     FunctionStatistic getFunctionStatistic(FunctionCall functionCall) throws IOException {
+        FunctionStatistic result = new FunctionStatistic(new String[0]);
+
         synchronized (this) {
             if (stopped) {
-                return new FunctionStatistic(new String[0]);
+                return result;
             }
 
-            String functionName = functionCall.getFunction().getName();
+            final Function f = functionCall.getFunction();
+            String functionName = f.getName();
             String[] stat = exec(ErprintCommand.fsingle(functionName));
+            String choice = "1"; // NOI18N
 
             if (stat != null && stat.length > 0 && choiceMarker.equals(stat[0])) { // NOI18N
-                String choice = "1"; // NOI18N
+                String cfname;
+                String address;
 
                 FunctionCallImpl fci = (functionCall instanceof FunctionCallImpl)
                         ? (FunctionCallImpl) functionCall : null;
 
-                String fname = (fci == null) ? null : fci.getFileName();
+                final String fname = (fci == null) ? null : fci.getSourceFile();
+                long funcRef = -1;
 
-                if (fname != null) {
-                    for (String line : stat) {
-                        Matcher m = choicePattern.matcher(line);
-                        String cfname;
-                        if (m.matches()) {
-                            choice = m.group(1);
-                            cfname = m.group(2);
+                if (f instanceof FunctionImpl) {
+                    funcRef = ((FunctionImpl) f).getRef();
+                }
 
-                            if (cfname.endsWith(fname)) {
+                for (String line : stat) {
+                    Matcher m = choicePattern.matcher(line);
+                    if (m.matches()) {
+                        choice = m.group(1);
+                        address = m.group(2);
+                        cfname = m.group(3);
+
+                        if (fname != null && cfname.endsWith(fname)) {
+                            break;
+                        }
+
+                        try {
+                            if (Long.parseLong(address, 16) == funcRef) {
                                 break;
                             }
+                        } catch (NumberFormatException ex) {
                         }
                     }
                 }
+
 
                 post(choice);
                 stat = outProcessor.getOutput();
             }
 
-            return new FunctionStatistic(stat == null ? new String[0] : stat);
+            result = new FunctionStatistic(stat == null ? new String[0] : stat);
+
+            if (stat != null) {
+                refineSourceInfo(result, functionCall, Integer.parseInt(choice));
+            }
+
+            return result;
         }
     }
 
@@ -369,6 +416,49 @@ final class Erprint {
             }
 
             return output;
+        }
+    }
+
+    private void refineSourceInfo(FunctionStatistic fstat, FunctionCall functionCall, int choice) throws IOException {
+        Function f = functionCall.getFunction();
+
+        if (!(f instanceof FunctionImpl)) {
+            return;
+        }
+
+        FunctionImpl func = (FunctionImpl) f;
+        String funcName = func.getName();
+        long funcRef = func.getRef();
+
+        synchronized (this) {
+            Metrics prev_metrics = null;
+            try {
+                prev_metrics = setMetrics(Metrics.constructFrom(Arrays.asList(SunStudioDCConfiguration.c_address), null));
+                String[] stat = exec(ErprintCommand.source(funcName, choice));
+                Pattern refPattern = Pattern.compile(".*:0x([0-9a-f]+) +([0-9]+).*"); // NOI18N
+                for (String s : stat) {
+                    if (s.startsWith("Source file:")) { // NOI18N
+                        fstat.setSrcFile(s.substring(13).trim());
+                        continue;
+                    }
+
+                    Matcher m = refPattern.matcher(s);
+                    if (m.matches()) {
+                        try {
+                            long ref = Long.parseLong(m.group(1), 16);
+                            if (ref == funcRef) {
+                                fstat.setSrcFileLine(Integer.parseInt(m.group(2)));
+                                break;
+                            }
+                        } catch (NumberFormatException ex) {
+                        }
+                    }
+                }
+            } finally {
+                if (prev_metrics != null) {
+                    setMetrics(prev_metrics);
+                }
+            }
         }
     }
 
@@ -438,7 +528,7 @@ final class Erprint {
             int pos1 = 0;
             int pos2 = 0;
             int c;
-            char[] parray = new char[256];
+            char[] parray = new char[4096];
             char[] result = null;
 
             // Read first char before perform post...

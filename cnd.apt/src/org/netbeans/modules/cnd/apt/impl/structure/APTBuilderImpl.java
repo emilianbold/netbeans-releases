@@ -41,9 +41,9 @@
 
 package org.netbeans.modules.cnd.apt.impl.structure;
 
-import antlr.TokenStream;
-import antlr.TokenStreamException;
-import antlr.TokenStreamRecognitionException;
+import org.netbeans.modules.cnd.antlr.TokenStream;
+import org.netbeans.modules.cnd.antlr.TokenStreamException;
+import org.netbeans.modules.cnd.antlr.TokenStreamRecognitionException;
 import java.util.LinkedList;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;

@@ -144,4 +144,8 @@ class OccurenceImpl implements Occurence {
     public ModelElement gotoDeclaratin() {
         return (gotDeclaration != null) ? gotDeclaration : getDeclaration();
     }
+
+    public boolean gotoDeclarationEnabled() {
+        return true;
+    }
 }

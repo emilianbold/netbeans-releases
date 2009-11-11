@@ -51,14 +51,17 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 import javax.swing.Icon;
 import javax.swing.JLabel;
-import javax.swing.text.Document;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.util.KenaiUtil;
+import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiException;
+import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiNotification;
 import org.netbeans.modules.kenai.api.KenaiNotification.Modification;
 import org.netbeans.modules.kenai.api.KenaiProject;
@@ -128,8 +131,8 @@ public class VCSKenaiSupportImpl extends VCSKenaiSupport implements PropertyChan
     public void addVCSNoficationListener(PropertyChangeListener l) {
         PropertyChangeListener[] ls = support.getPropertyChangeListeners(PROP_KENAI_VCS_NOTIFICATION);
         if(ls == null || ls.length == 0) {
-            Dashboard.getDefault().addPropertyChangeListener(this);
-            registerVCSNotificationListener(Dashboard.getDefault().getOpenProjects());
+            Kenai.getDefault().addPropertyChangeListener(Kenai.PROP_LOGIN, this);
+            attachToDashboard(false);
         }
         support.addPropertyChangeListener(PROP_KENAI_VCS_NOTIFICATION, l);
     }
@@ -138,26 +141,63 @@ public class VCSKenaiSupportImpl extends VCSKenaiSupport implements PropertyChan
         support.removePropertyChangeListener(PROP_KENAI_VCS_NOTIFICATION, l);
         PropertyChangeListener[] ls = support.getPropertyChangeListeners(PROP_KENAI_VCS_NOTIFICATION);
         if(ls == null || ls.length == 0) {
-            Dashboard.getDefault().removePropertyChangeListener(this);
+            Kenai.getDefault().removePropertyChangeListener(Kenai.PROP_LOGIN, this);
+            detachFromDashboard(false);
         }
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
         if(evt.getPropertyName().equals(Dashboard.PROP_OPENED_PROJECTS)) {
             registerVCSNotificationListener(Dashboard.getDefault().getOpenProjects());
-        } 
+        } else if (evt.getPropertyName().equals(Kenai.PROP_LOGIN)) {
+            if (KenaiUtil.isLoggedIn()) {
+                attachToDashboard(true);
+            } else {
+                detachFromDashboard(true);
+            }
+        }
+    }
+
+    /**
+     * Attaches a listener to the kenai dashboard if immediate is set to true or user is logged into kenai
+     * @param immediate
+     */
+    private void attachToDashboard (boolean immediate) {
+        if (immediate || KenaiUtil.isLoggedIn()) {
+            Dashboard.getDefault().addPropertyChangeListener(this);
+            registerVCSNotificationListener(Dashboard.getDefault().getOpenProjects());
+        }
+    }
+
+    /**
+     * Dettaches a listener from the kenai dashboard if immediate is set to true or user is logged into kenai
+     * @param immediate
+     */
+    private void detachFromDashboard (boolean immediate) {
+        if (immediate || KenaiUtil.isLoggedIn()) {
+            Dashboard.getDefault().removePropertyChangeListener(this);
+            unregisterVCSNotificationListener(Dashboard.getDefault().getOpenProjects());
+        }
     }
 
     private void registerVCSNotificationListener(ProjectHandle[] phs) {
         synchronized(registeredKenaiListenres) {
             // unregister registered
-            for (KenaiProjectListener l : registeredKenaiListenres) {
-                l.kp.removePropertyChangeListener(l);
-            }
+            unregisterVCSNotificationListener(phs);
             // register on all handlers
             for (ProjectHandle projectHandle : phs) {
                 KenaiProject kp = KenaiUtil.getKenaiProject(projectHandle);
-                kp.addPropertyChangeListener(new KenaiProjectListener(kp));
+                KenaiProjectListener l = new KenaiProjectListener(kp);
+                registeredKenaiListenres.add(l);
+                kp.addPropertyChangeListener(l);
+            }
+        }
+    }
+
+    private void unregisterVCSNotificationListener(ProjectHandle[] phs) {
+        synchronized(registeredKenaiListenres) {
+            for (KenaiProjectListener l : registeredKenaiListenres) {
+                l.kp.removePropertyChangeListener(l);
             }
         }
     }
@@ -204,7 +244,7 @@ public class VCSKenaiSupportImpl extends VCSKenaiSupport implements PropertyChan
         }
     }
 
-    private class KenaiUserImpl extends KenaiUser {
+    private static class KenaiUserImpl extends KenaiUser {
         org.netbeans.modules.kenai.ui.spi.KenaiUserUI delegate;
 
         public KenaiUserImpl(org.netbeans.modules.kenai.ui.spi.KenaiUserUI delegate) {
@@ -256,11 +296,15 @@ public class VCSKenaiSupportImpl extends VCSKenaiSupport implements PropertyChan
     private class VCSKenaiNotificationImpl extends VCSKenaiNotification {
         private final KenaiNotification kn;
         private final File projectDir;
+        private final KenaiProject kp;
+        private String serviceName;
 
-        public VCSKenaiNotificationImpl(KenaiNotification kn, File projectDir) {
+        public VCSKenaiNotificationImpl(KenaiNotification kn, KenaiProject kp, File projectDir) {
+            assert kp != null;
             assert kn != null;
             assert kn.getType() == KenaiService.Type.SOURCE;
             this.kn = kn;
+            this.kp = kp;
             this.projectDir = projectDir;
         }
 
@@ -273,12 +317,34 @@ public class VCSKenaiSupportImpl extends VCSKenaiSupport implements PropertyChan
         }
 
         public Service getService() {
-            if(kn.getServiceName().equals(KenaiService.Names.SUBVERSION)) {
-                return Service.VCS_SVN;
-            } else if (kn.getServiceName().equals(KenaiService.Names.MERCURIAL)) {
-                return Service.VCS_HG;
+            if(serviceName == null) {
+                KenaiFeature[] features = null;
+                try {
+                    features = kp.getFeatures(KenaiService.Type.SOURCE);
+                    for (KenaiFeature kf : features) {
+                        if(kf.getName().equals(kn.getServiceName())) {
+                            serviceName = kf.getService();
+                            break;
+                        }
+                    }
+                } catch (KenaiException ex) {
+                    LOG.log(Level.WARNING, null, ex);
+                }
+                if(serviceName == null) {
+                    // fallback
+                    serviceName = kn.getServiceName();
+                }
+
             }
-            return Service.UNKNOWN;
+
+            if(serviceName.equals(KenaiService.Names.SUBVERSION)) {
+                return Service.VCS_SVN;
+            } else if (serviceName.equals(KenaiService.Names.MERCURIAL)) {
+                return Service.VCS_HG;
+            } else {
+                LOG.warning("Unknown kenai scm service name " + serviceName);
+                return Service.UNKNOWN;
+            }
         }
 
         public List<VCSKenaiModification> getModifications() {
@@ -375,9 +441,16 @@ public class VCSKenaiSupportImpl extends VCSKenaiSupport implements PropertyChan
                 if (!url.equals(kn.getUri().toString())) {
                     continue;
                 }
-                String name = KenaiProject.getNameForRepository(url);
+                KenaiProject kp;
+                try {
+                    kp = KenaiProject.forRepository(url);
+                } catch (KenaiException ex) {
+                    LOG.log(Level.WARNING, null, ex);
+                    return;
+                }
+                String name = kp.getName();
                 if (name.equals(projectName)) {
-                    support.firePropertyChange(PROP_KENAI_VCS_NOTIFICATION, null, new VCSKenaiNotificationImpl(kn, FileUtil.toFile(projectDir)));
+                    support.firePropertyChange(PROP_KENAI_VCS_NOTIFICATION, null, new VCSKenaiNotificationImpl(kn, kp, FileUtil.toFile(projectDir)));
                 }
             }
         }

@@ -317,6 +317,12 @@ public class GlobalComponentsIndexSupport implements Runnable {
             if (mIndexedTypes.contains(componentType)) {
                 assert globalSComp instanceof Named;
                 String name = Named.class.cast(globalSComp).getName();
+                if (name == null || name.length() == 0) {
+                    // Skip components without a name attribute or
+                    // with empty attributes' value.
+                    continue;
+                }
+                //
                 Object value = resultIndex.get(name);
                 if (value == null) {
                     resultIndex.put(name, globalSComp);

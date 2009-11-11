@@ -381,14 +381,106 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         uploadDirectlyLabel = new JLabel();
         advancedButton = new JButton();
 
-        setFocusTraversalPolicy(null);
+        setFocusTraversalPolicy(new FocusTraversalPolicy() {
+
+
+
+            public Component getDefaultComponent(Container focusCycleRoot){
+                return urlTextField;
+            }//end getDefaultComponent
+            public Component getFirstComponent(Container focusCycleRoot){
+                return urlTextField;
+            }//end getFirstComponent
+            public Component getLastComponent(Container focusCycleRoot){
+                return advancedButton;
+            }//end getLastComponent
+            public Component getComponentAfter(Container focusCycleRoot, Component aComponent){
+                if(aComponent ==  urlTextField){
+                    return indexFileTextField;
+                }
+                if(aComponent ==  uploadDirectoryTextField){
+                    return uploadFilesComboBox;
+                }
+                if(aComponent ==  indexFileTextField){
+                    return indexFileBrowseButton;
+                }
+                if(aComponent ==  preservePermissionsCheckBox){
+                    return uploadDirectlyCheckBox;
+                }
+                if(aComponent ==  indexFileBrowseButton){
+                    return argsTextField;
+                }
+                if(aComponent ==  uploadFilesComboBox){
+                    return preservePermissionsCheckBox;
+                }
+                if(aComponent ==  argsTextField){
+                    return urlHintLabel;
+                }
+                if(aComponent ==  urlHintLabel){
+                    return remoteConnectionComboBox;
+                }
+                if(aComponent ==  runAsComboBox){
+                    return urlTextField;
+                }
+                if(aComponent ==  uploadDirectlyCheckBox){
+                    return advancedButton;
+                }
+                if(aComponent ==  manageRemoteConnectionButton){
+                    return uploadDirectoryTextField;
+                }
+                if(aComponent ==  remoteConnectionComboBox){
+                    return manageRemoteConnectionButton;
+                }
+                return urlTextField;//end getComponentAfter
+            }
+            public Component getComponentBefore(Container focusCycleRoot, Component aComponent){
+                if(aComponent ==  indexFileTextField){
+                    return urlTextField;
+                }
+                if(aComponent ==  uploadFilesComboBox){
+                    return uploadDirectoryTextField;
+                }
+                if(aComponent ==  indexFileBrowseButton){
+                    return indexFileTextField;
+                }
+                if(aComponent ==  uploadDirectlyCheckBox){
+                    return preservePermissionsCheckBox;
+                }
+                if(aComponent ==  argsTextField){
+                    return indexFileBrowseButton;
+                }
+                if(aComponent ==  preservePermissionsCheckBox){
+                    return uploadFilesComboBox;
+                }
+                if(aComponent ==  urlHintLabel){
+                    return argsTextField;
+                }
+                if(aComponent ==  remoteConnectionComboBox){
+                    return urlHintLabel;
+                }
+                if(aComponent ==  urlTextField){
+                    return runAsComboBox;
+                }
+                if(aComponent ==  advancedButton){
+                    return uploadDirectlyCheckBox;
+                }
+                if(aComponent ==  uploadDirectoryTextField){
+                    return manageRemoteConnectionButton;
+                }
+                if(aComponent ==  manageRemoteConnectionButton){
+                    return remoteConnectionComboBox;
+                }
+                return advancedButton;//end getComponentBefore
+
+            }}
+        );
 
         runAsLabel.setLabelFor(runAsComboBox);
-
         Mnemonics.setLocalizedText(runAsLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_RunAs")); // NOI18N
-        urlLabel.setLabelFor(urlTextField);
 
+        urlLabel.setLabelFor(urlTextField);
         Mnemonics.setLocalizedText(urlLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_ProjectUrl")); // NOI18N
+
         indexFileLabel.setLabelFor(indexFileTextField);
 
         Mnemonics.setLocalizedText(indexFileLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_IndexFile"));
@@ -400,8 +492,8 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         });
 
         argsLabel.setLabelFor(argsTextField);
-
         Mnemonics.setLocalizedText(argsLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_Arguments")); // NOI18N
+
         urlHintLabel.setEditable(false);
         urlHintLabel.setLineWrap(true);
         urlHintLabel.setRows(2);
@@ -420,22 +512,24 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         });
 
         uploadDirectoryLabel.setLabelFor(uploadDirectoryTextField);
-
-
         Mnemonics.setLocalizedText(uploadDirectoryLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_UploadDirectory")); // NOI18N
-        Mnemonics.setLocalizedText(remoteConnectionHintLabel, "dummy");
+
+        remoteConnectionHintLabel.setLabelFor(this);
+        Mnemonics.setLocalizedText(remoteConnectionHintLabel, "dummy"); // NOI18N
+
         uploadFilesLabel.setLabelFor(uploadFilesComboBox);
-
-
-
         Mnemonics.setLocalizedText(uploadFilesLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_UploadFiles")); // NOI18N
-        Mnemonics.setLocalizedText(uploadFilesHintLabel, "dummy");
-        Mnemonics.setLocalizedText(preservePermissionsCheckBox, NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.preservePermissionsCheckBox.text"));
-        preservePermissionsLabel.setLabelFor(preservePermissionsCheckBox);
 
+        uploadFilesHintLabel.setLabelFor(this);
+
+        Mnemonics.setLocalizedText(uploadFilesHintLabel, "dummy"); // NOI18N
+        Mnemonics.setLocalizedText(preservePermissionsCheckBox, NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.preservePermissionsCheckBox.text"));
+
+        preservePermissionsLabel.setLabelFor(preservePermissionsCheckBox);
 
         Mnemonics.setLocalizedText(preservePermissionsLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.preservePermissionsLabel.text")); // NOI18N
         Mnemonics.setLocalizedText(uploadDirectlyCheckBox, NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.uploadDirectlyCheckBox.text"));
+
         uploadDirectlyLabel.setLabelFor(uploadDirectlyCheckBox);
 
         Mnemonics.setLocalizedText(uploadDirectlyLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.uploadDirectlyLabel.text"));
@@ -591,9 +685,13 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         uploadFilesComboBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.uploadFilesComboBox.AccessibleContext.accessibleDescription")); // NOI18N
         uploadFilesHintLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.uploadFilesHintLabel.AccessibleContext.accessibleName")); // NOI18N
         uploadFilesHintLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.uploadFilesHintLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        preservePermissionsCheckBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.preservePermissionsCheckBox.AccessibleContext.accessibleName")); // NOI18N
         preservePermissionsCheckBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.preservePermissionsCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+        preservePermissionsLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.preservePermissionsLabel.AccessibleContext.accessibleName")); // NOI18N
         preservePermissionsLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.preservePermissionsLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        uploadDirectlyCheckBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.uploadDirectlyCheckBox.AccessibleContext.accessibleName")); // NOI18N
         uploadDirectlyCheckBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.uploadDirectlyCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+        uploadDirectlyLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.uploadDirectlyLabel.AccessibleContext.accessibleName")); // NOI18N
         uploadDirectlyLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.uploadDirectlyLabel.AccessibleContext.accessibleDescription")); // NOI18N
         advancedButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.advancedButton.AccessibleContext.accessibleName")); // NOI18N
         advancedButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.advancedButton.AccessibleContext.accessibleDescription")); // NOI18N
@@ -793,9 +891,12 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         }
 
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            assert value instanceof UploadFiles;
             setName("ComboBox.listRenderer"); // NOI18N
-            setText(((UploadFiles) value).getLabel());
+            // #175236
+            if (value != null) {
+                assert value instanceof UploadFiles;
+                setText(((UploadFiles) value).getLabel());
+            }
             setIcon(null);
             if (isSelected) {
                 setBackground(list.getSelectionBackground());

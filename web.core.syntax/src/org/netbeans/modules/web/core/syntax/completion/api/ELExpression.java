@@ -50,6 +50,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
@@ -805,10 +806,17 @@ public class ELExpression {
                     }
 
                     //get all methods of the type
-                    List<ExecutableElement> allMethods = ElementFilter
-                            .methodsIn(controller.getElements().getAllMembers(
-                                    (TypeElement)controller.getTypes().asElement(
-                                            lastKnownType)));
+                    Element el= controller.getTypes().asElement(
+                            lastKnownType);
+                    List<ExecutableElement> allMethods;
+                    if ( el instanceof TypeElement ){
+                        allMethods= ElementFilter.methodsIn(
+                                controller.getElements().getAllMembers(
+                                        (TypeElement) el));
+                    }
+                    else {
+                        allMethods = Collections.emptyList();
+                    }
 
                     lastKnownType = null;
 
@@ -819,12 +827,12 @@ public class ELExpression {
                             TypeMirror returnType = method.getReturnType();
                             lastReturnType = returnType;
 
-                            if (returnType.getKind() == TypeKind.DECLARED) { // should always be true
+                            if (returnType.getKind() == TypeKind.ARRAY) {
+                                continue parts;
+                            }
+                            else {
                                 lastFoundType = lastKnownType = returnType;
                                 break;
-                            }
-                            else if (returnType.getKind() == TypeKind.ARRAY) {
-                                continue parts;
                             }
                         }
 
@@ -862,12 +870,12 @@ public class ELExpression {
                     {
                         TypeMirror typeMirror = ((ArrayType)lastReturnType).
                             getComponentType();
-                        if ( typeMirror.getKind() == TypeKind.DECLARED){
-                            lastFoundType = lastKnownType = typeMirror;
-                        }
-                        else if ( typeMirror.getKind() == TypeKind.ARRAY){
+                        if ( typeMirror.getKind() == TypeKind.ARRAY){
                             lastReturnType = typeMirror;
                             continue;
+                        }
+                        else {
+                            lastFoundType = lastKnownType = typeMirror;
                         }
                     }
                     else if ( controller.getTypes().isAssignable( 
@@ -917,8 +925,7 @@ public class ELExpression {
                     lastReturnType = null;
                 }
             }
-
-            if ( lastKnownType == null && handler!= null){
+            if ( lastKnownType == null && lastReturnType == null && handler!= null){
                 handler.typeNotFound(parts[i-1].getIndex(), parts[i-1].getPart());
             }
             return lastFoundType;
