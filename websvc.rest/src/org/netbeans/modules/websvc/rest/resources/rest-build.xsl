@@ -79,12 +79,9 @@ package org.netbeans.rest.application.config;
  * and registers all REST root resources created in the project.
  * Please, DO NOT EDIT this class !
  */
-@javax.ws.rs.ApplicationPath("___APPLICATION_PATH___")
+@javax.ws.rs.ApplicationPath("${rest.resources.path}")
 public class ApplicationConfig extends javax.ws.rs.core.Application {
 }]]></echo>
-                <replace file="${{build.generated.sources.dir}}/rest/org/netbeans/rest/application/config/ApplicationConfig.java"
-                         token="___APPLICATION_PATH___"
-                         value="${{rest.resources.path}}"/>
             </target>
 
         </project>
