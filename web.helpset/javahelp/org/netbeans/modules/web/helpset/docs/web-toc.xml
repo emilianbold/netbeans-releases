@@ -111,6 +111,7 @@
                 <tocitem text="About JavaServer Faces Framework Support" target="framework_jsf_about" />
                 <tocitem text="Creating a New Application with JSF Support" target="framework_jsf_create" />
                 <tocitem text="Adding JSF Support to an Existing Application" target="framework_jsf_add" />
+                <tocitem text="Creating JSF Pages" target="framework_jsf_create_page" />
                 <tocitem text="Editing JSF Pages" target="framework_jsf_edit" />
                 <tocitem text="Working with JSF Components in the Palette" target="framework_jsf_palette" />
                 <tocitem text="Creating a JSF Form for Entity Data" target="framework_jsf_form_entity" />
