@@ -767,52 +767,18 @@ final class BasicSearchCriteria {
                                 throws BufferedCharSequence.SourceIOException  {
 
         ArrayList<TextDetail> txtDetails = new ArrayList<TextDetail>();
-        int lineNumber = 1;
-        int lineStartOffset = 0;
-        int prevCR = 0;
+        FindState fs = new FindState(bcs);
 
         Matcher matcher = textPattern.matcher(bcs);
         while (matcher.find()) {
             int matcherStart = matcher.start();
-            try {
-                while (bcs.position() < matcherStart) {
-                    char curChar = bcs.nextChar();
-                    switch (curChar) {
-                        case BufferedCharSequence.UnicodeLineTerminator.LF:
-                        case BufferedCharSequence.UnicodeLineTerminator.PS:
-                        case BufferedCharSequence.UnicodeLineTerminator.LS:
-                        case BufferedCharSequence.UnicodeLineTerminator.FF:
-                        case BufferedCharSequence.UnicodeLineTerminator.NEL:
-                            lineNumber++;
-                            lineStartOffset = bcs.position();
-                            prevCR = 0;
-                            break;
-                        case BufferedCharSequence.UnicodeLineTerminator.CR:
-                            prevCR++;
-                            char nextChar = bcs.charAt(bcs.position());
-                            if (nextChar !=
-                                BufferedCharSequence.UnicodeLineTerminator.LF) {
 
-                                lineNumber++;
-                                lineStartOffset = bcs.position();
-                                prevCR = 0;
-                            }
-                            break;
-                        default:
-                            prevCR = 0;
-                    }
-                }
-            } catch (IndexOutOfBoundsException ioobe) {
-                // It is OK. It means that EOF is reached, i.e.
-                // bcs.position() >= bcs.length()
-            }
-            int column = matcherStart - lineStartOffset + 1 - prevCR;
-            String lineText = bcs.getLineText(lineStartOffset);
+            int column = fs.calcColumn(matcherStart);
+            int lineNumber = fs.getLineNumber();
+            String lineText = fs.getLineText();
 
             TextDetail det = newTextDetail(dataObject, sp, matcher);
-            det.setColumn(column);
-            det.setLine(lineNumber);
-            det.setLineText(lineText);
+            det.associate(lineNumber, column, lineText);
 
             txtDetails.add(det);
         } // while (matcher.find())
@@ -925,28 +891,63 @@ final class BasicSearchCriteria {
     }
 
     /**
-     * For debug only! Visualization of the new line symbols like '\n', '\r'.
-     * @param s the initial string
-     * @return A string like the initial string, but all new line symbols are
-     * replaced with their readable equivalences.
+     * Utility class providing optimal calculating of the column.
      */
-    private static String translate(String s) {
-        StringBuilder sb = new StringBuilder();
-        for(int i=0; i<s.length(); i++) {
-            char c = s.charAt(i);
-            switch(c) {
-                case '\n':
-                    sb.append("'\n'");
-                    break;
-                case '\r':
-                    sb.append("'\r'");
-                    break;
-                default:
-                    sb.append(c);
-                    break;
-            }
+    private class FindState {
+        int lineNumber = 1;
+        int lineStartOffset = 0;
+        int prevCR = 0;
+
+        BufferedCharSequence bcs;
+
+        FindState(BufferedCharSequence bcs) {
+           this.bcs = bcs;
         }
-        return sb.toString();
-    }
+
+        int getLineNumber() {
+            return lineNumber;
+        }
+
+        String getLineText() {
+            return bcs.getLineText(lineStartOffset);
+        }
+
+        int calcColumn(int matcherStart) {
+            try {
+                while (bcs.position() < matcherStart) {
+                    char curChar = bcs.nextChar();
+                    switch (curChar) {
+                        case BufferedCharSequence.UnicodeLineTerminator.LF:
+                        case BufferedCharSequence.UnicodeLineTerminator.PS:
+                        case BufferedCharSequence.UnicodeLineTerminator.LS:
+                        case BufferedCharSequence.UnicodeLineTerminator.FF:
+                        case BufferedCharSequence.UnicodeLineTerminator.NEL:
+                            lineNumber++;
+                            lineStartOffset = bcs.position();
+                            prevCR = 0;
+                            break;
+                        case BufferedCharSequence.UnicodeLineTerminator.CR:
+                            prevCR++;
+                            char nextChar = bcs.charAt(bcs.position());
+                            if (nextChar !=
+                                BufferedCharSequence.UnicodeLineTerminator.LF) {
+
+                                lineNumber++;
+                                lineStartOffset = bcs.position();
+                                prevCR = 0;
+                            }
+                            break;
+                        default:
+                            prevCR = 0;
+                    }
+                }
+            } catch (IndexOutOfBoundsException ioobe) {
+                // It is OK. It means that EOF is reached, i.e.
+                // bcs.position() >= bcs.length()
+            }
+            int column = matcherStart - lineStartOffset + 1 - prevCR;
+            return column;
+        }
+    } // FindState
 
 }
