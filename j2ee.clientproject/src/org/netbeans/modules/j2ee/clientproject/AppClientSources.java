@@ -44,7 +44,9 @@ package org.netbeans.modules.j2ee.clientproject;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientProjectProperties;
@@ -78,7 +80,7 @@ public class AppClientSources implements Sources, PropertyChangeListener, Change
     private final SourceRoots sourceRoots;
     private final SourceRoots testRoots;
     private boolean dirty;
-    private volatile SourceGroup[] cachedGroups;
+    private volatile Map<String, SourceGroup[]> cachedGroups = new HashMap<String, SourceGroup[]>();
     private long eventId;
     private Sources delegate;
     private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
@@ -104,7 +106,7 @@ public class AppClientSources implements Sources, PropertyChangeListener, Change
      * {@link AppClientSources#fireChange} method.
      */
     public SourceGroup[] getSourceGroups(final String type) {
-        final SourceGroup[] _cachedGroups = this.cachedGroups;
+        final SourceGroup[] _cachedGroups = this.cachedGroups.get(type);
         if (_cachedGroups != null) {
             return _cachedGroups;
         }
@@ -125,7 +127,7 @@ public class AppClientSources implements Sources, PropertyChangeListener, Change
                 SourceGroup[] groups = _delegate.getSourceGroups(type);
                 synchronized (AppClientSources.this) {
                     if (myEventId == eventId) {
-                        AppClientSources.this.cachedGroups = groups;
+                        AppClientSources.this.cachedGroups.put(type, groups);
                     }
                 }
                 return groups;
@@ -186,7 +188,7 @@ public class AppClientSources implements Sources, PropertyChangeListener, Change
     private void fireChange() {
         ChangeListener[] _listeners;
         synchronized (this) {
-            cachedGroups=null;
+            cachedGroups.clear();
             dirty = true;
         }
         synchronized (listeners) {

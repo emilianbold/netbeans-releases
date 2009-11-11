@@ -43,6 +43,8 @@ package org.netbeans.modules.j2ee.ejbjarproject;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.EjbJarLogicalViewProvider;
@@ -75,7 +77,7 @@ public class EjbJarSources implements Sources, PropertyChangeListener, ChangeLis
     private Sources delegate;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private boolean dirty;
-    private volatile SourceGroup[] cachedGroups;
+    private volatile Map<String, SourceGroup[]> cachedGroups = new HashMap<String, SourceGroup[]>();
     private long eventId;
 
     EjbJarSources(Project project, AntProjectHelper helper, PropertyEvaluator evaluator,
@@ -99,7 +101,7 @@ public class EjbJarSources implements Sources, PropertyChangeListener, ChangeLis
      * {@link EjbJarSources#fireChange} method.
      */
     public SourceGroup[] getSourceGroups(final String type) {
-        final SourceGroup[] _cachedGroups = this.cachedGroups;
+        final SourceGroup[] _cachedGroups = this.cachedGroups.get(type);
         if (_cachedGroups != null) {
             return _cachedGroups;
         }
@@ -120,7 +122,7 @@ public class EjbJarSources implements Sources, PropertyChangeListener, ChangeLis
                 SourceGroup[] groups = _delegate.getSourceGroups(type);
                 synchronized (EjbJarSources.this) {
                     if (myEventId == eventId) {
-                        EjbJarSources.this.cachedGroups = groups;
+                        EjbJarSources.this.cachedGroups.put(type, groups);
                     }
                 }
 
@@ -177,7 +179,7 @@ public class EjbJarSources implements Sources, PropertyChangeListener, ChangeLis
 
     private void fireChange() {
         synchronized (this) {
-            cachedGroups=null;
+            cachedGroups.clear();
             dirty = true;
         }
         changeSupport.fireChange();

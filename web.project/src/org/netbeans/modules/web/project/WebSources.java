@@ -44,6 +44,9 @@ package org.netbeans.modules.web.project;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -81,7 +84,7 @@ public class WebSources implements Sources, PropertyChangeListener, ChangeListen
     private Sources delegate;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private boolean dirty;
-    private volatile SourceGroup[] cachedGroups;
+    private volatile Map<String, SourceGroup[]> cachedGroups = new HashMap<String, SourceGroup[]>();
     private long eventId;
 
     WebSources(Project project, AntProjectHelper helper, PropertyEvaluator evaluator, SourceRoots sourceRoots, SourceRoots testRoots) {
@@ -104,7 +107,7 @@ public class WebSources implements Sources, PropertyChangeListener, ChangeListen
      * {@link WebSources#fireChange} method.
      */
     public SourceGroup[] getSourceGroups(final String type) {
-        final SourceGroup[] _cachedGroups = this.cachedGroups;
+        final SourceGroup[] _cachedGroups = this.cachedGroups.get(type);
         if (_cachedGroups != null) {
             return _cachedGroups;
         }
@@ -125,7 +128,7 @@ public class WebSources implements Sources, PropertyChangeListener, ChangeListen
                 SourceGroup[] groups = _delegate.getSourceGroups(type);
                 synchronized (WebSources.this) {
                     if (myEventId == eventId) {
-                        WebSources.this.cachedGroups = groups;
+                        WebSources.this.cachedGroups.put(type, groups);
                     }
                 }
     
@@ -192,7 +195,7 @@ public class WebSources implements Sources, PropertyChangeListener, ChangeListen
 
     private void fireChange() {
         synchronized (this) {
-            cachedGroups=null;
+            cachedGroups.clear();
             dirty = true;
         }
         changeSupport.fireChange();
