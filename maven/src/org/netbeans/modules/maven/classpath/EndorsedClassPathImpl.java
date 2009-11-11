@@ -97,13 +97,17 @@ public final class EndorsedClassPathImpl implements ClassPathImplementation, Pro
         }
     }
 
-    private String[] getBootClasspath() {
+    String[] getBootClasspath() {
         String carg = PluginPropertyUtils.getPluginProperty(project, Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER, "compilerArgument", "compile");
+        if (carg != null) {
+            //TODO
+        }
         Properties cargs = PluginPropertyUtils.getPluginPropertyParameter(project, Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER, "compilerArguments", "compile");
-        String carg2 = cargs.getProperty("bootclasspath");
-        System.out.println("cargs=" + carg2);
-        if (carg2 != null) {
-            return StringUtils.split(File.pathSeparator);
+        if (cargs != null) {
+            String carg2 = cargs.getProperty("bootclasspath");
+            if (carg2 != null) {
+                return StringUtils.split(File.pathSeparator);
+            }
         }
         return null;
     }

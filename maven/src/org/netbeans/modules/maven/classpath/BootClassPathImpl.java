@@ -84,8 +84,10 @@ public final class BootClassPathImpl implements ClassPathImplementation, Propert
     public synchronized List<? extends PathResourceImplementation> getResources() {
         if (this.resourcesCache == null) {
             ArrayList<PathResourceImplementation> result = new ArrayList<PathResourceImplementation> ();
-//TODO            result.addAll(ecpImpl.getResources());
-
+            String[] bcp = ecpImpl.getBootClasspath();
+            if (bcp != null) {
+//                result.addAll(ecpImpl.getResources());
+            }
             JavaPlatform jp = findActivePlatform ();
             if (jp != null) {
                 //TODO May also listen on CP, but from Platform it should be fixed.
@@ -119,9 +121,15 @@ public final class BootClassPathImpl implements ClassPathImplementation, Propert
         }                
         
         //TODO ideally we would handle this by toolchains in future.
+        String val;
         AuxiliaryProperties props = project.getLookup().lookup(AuxiliaryProperties.class);
-        assert props != null;
-        String val = props.get(Constants.HINT_JDK_PLATFORM, true);
+        if (props == null) {
+            //this happens when findActivePlatform is called from the project lookup creation
+            //loop, fallback to the default prop impl then
+            val = project.getAuxProps().get(Constants.HINT_JDK_PLATFORM, true);
+        } else {
+            val = props.get(Constants.HINT_JDK_PLATFORM, true);
+        }
         lastHintValue = val;
         JavaPlatform plat = getActivePlatform(val);
         if (plat == null) {
