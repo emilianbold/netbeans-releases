@@ -471,6 +471,13 @@ final class CloseButtonTabbedPane extends JTabbedPane implements ChangeListener,
     
     private void fireCloseRequest(Component c) {
         firePropertyChange(PROP_CLOSE, null, c);
+        if (getTabLayoutPolicy() == JTabbedPane.SCROLL_TAB_LAYOUT) {
+            int idx = getSelectedIndex();
+            if (idx > 0) {
+                setSelectedIndex(0);
+                setSelectedIndex(idx);
+            }
+        }
     }
 
     static void fixGetBoundsAt(Rectangle b) {

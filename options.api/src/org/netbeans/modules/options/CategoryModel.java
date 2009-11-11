@@ -69,8 +69,8 @@ import org.openide.util.lookup.ProxyLookup;
  * @author Radek Matous
  */
 public final class CategoryModel implements LookupListener {
+    private static final RequestProcessor RP = new RequestProcessor("org.netbeans.modules.options.CategoryModel");  //NOI18N
     private static Reference<CategoryModel> INSTANCE = new WeakReference<CategoryModel>(new CategoryModel());
-    private final RequestProcessor RP = new RequestProcessor();
     private static String currentCategoryID = null;
     private String highlitedCategoryID = null;
     private boolean categoriesValid = true;
