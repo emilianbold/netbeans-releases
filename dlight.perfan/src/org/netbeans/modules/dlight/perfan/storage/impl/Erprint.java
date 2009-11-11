@@ -528,7 +528,7 @@ final class Erprint {
             int pos1 = 0;
             int pos2 = 0;
             int c;
-            char[] parray = new char[256];
+            char[] parray = new char[4096];
             char[] result = null;
 
             // Read first char before perform post...
