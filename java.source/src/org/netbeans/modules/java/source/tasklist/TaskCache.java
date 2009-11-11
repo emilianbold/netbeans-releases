@@ -488,21 +488,19 @@ public class TaskCache {
     }
 
     private static void doRefresh(TransactionContext c) {
-        if (TasklistSettings.isTasklistEnabled()) {
-            if (TasklistSettings.isBadgesEnabled() && !c.toRefresh.isEmpty()) {
-                ErrorAnnotator an = ErrorAnnotator.getAnnotator();
+        if (TasklistSettings.isBadgesEnabled() && !c.toRefresh.isEmpty()) {
+            ErrorAnnotator an = ErrorAnnotator.getAnnotator();
 
-                if (an != null) {
-                    an.updateInError(c.toRefresh);
-                }
+            if (an != null) {
+                an.updateInError(c.toRefresh);
             }
+        }
 
-            for (URL root : c.rootsToRefresh) {
-                FileObject rootFO = URLMapper.findFileObject(root);
+        for (URL root : c.rootsToRefresh) {
+            FileObject rootFO = URLMapper.findFileObject(root);
 
-                if (rootFO != null) {
-                    JavaTaskProvider.refresh(rootFO);
-                }
+            if (rootFO != null) {
+                JavaTaskProvider.refresh(rootFO);
             }
         }
     }

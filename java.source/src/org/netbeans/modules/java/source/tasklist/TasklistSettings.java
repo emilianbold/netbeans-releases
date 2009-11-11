@@ -40,6 +40,8 @@
  */
 package org.netbeans.modules.java.source.tasklist;
 
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
@@ -51,77 +53,45 @@ import org.openide.util.NbPreferences;
  */
 public class TasklistSettings {
 
-    private static final String KEY_ENABLED = "enabled"; //NOI18N
-    private static final String KEY_ERROR_BADGES = "error-badges"; //NOI18N
     private static final String KEY_DEPENDENCY_TRACKING = "dependency-tracking"; //NOI18N
-    
-    private static final boolean DEFAULT_ENABLED = true;
-    private static final boolean DEFAULT_ERROR_BADGES = true;
     private static final String DEFAULT_DEPENDENCY_TRACKING = DependencyTracking.ENABLED.name();
+
+    static {
+        getPreferencesNode().addPreferenceChangeListener(new PreferenceChangeListener() {
+
+            private DependencyTracking curr = getDependencyTracking();
+
+            public void preferenceChange(PreferenceChangeEvent evt) {
+                if (KEY_DEPENDENCY_TRACKING.equals(evt.getKey())) {
+                    final DependencyTracking dt = getDependencyTracking();
+                    if (curr != dt) {
+                        if (dt.ordinal() > curr.ordinal()) {
+                            IndexingManager.getDefault().refreshAllIndices(JavaIndex.NAME);
+                        }
+                        ErrorAnnotator an = ErrorAnnotator.getAnnotator();
+                        if (an != null) {
+                            an.updateAllInError();
+                        }
+                        curr = dt;
+                    }
+                }
+            }
+        });
+    }
     
     private TasklistSettings() {
     }
     
-    public static boolean isTasklistEnabled() {
-        return getPreferencesNode().getBoolean(KEY_ENABLED, DEFAULT_ENABLED);
-    }
-    
-    public static void setTasklistsEnabled(boolean enabled) {
-        if (isTasklistEnabled() != enabled) {
-            getPreferencesNode().putBoolean(KEY_ENABLED, enabled);
-            if (enabled) {
-// XXX:                RepositoryUpdater.getDefault().rebuildAll(true);
-                IndexingManager.getDefault().refreshAllIndices(JavaIndex.NAME);
-            }
-            
-            ErrorAnnotator an = ErrorAnnotator.getAnnotator();
-            
-            if (an != null) {
-                an.updateAllInError();
-            }
-            
-            JavaTaskProvider.refreshAll();
-        }
-    }
-    
     public static boolean isBadgesEnabled() {
-        return getPreferencesNode().getBoolean(KEY_ERROR_BADGES, DEFAULT_ERROR_BADGES);
+        return getDependencyTracking() != DependencyTracking.DISABLED;
     }
 
-    public static void setBadgesEnabled(boolean enabled) {
-        if (isBadgesEnabled() != enabled) {
-            getPreferencesNode().putBoolean(KEY_ERROR_BADGES, enabled);
-            
-            ErrorAnnotator an = ErrorAnnotator.getAnnotator();
-            
-            if (an != null) {
-                an.updateAllInError();
-            }
-        }
-    }
-    
     public static DependencyTracking getDependencyTracking() {
         String s = getPreferencesNode().get(KEY_DEPENDENCY_TRACKING, DEFAULT_DEPENDENCY_TRACKING);
         try {
             return DependencyTracking.valueOf(s);
         } catch (IllegalArgumentException e) {
             return DependencyTracking.valueOf(DEFAULT_DEPENDENCY_TRACKING);
-        }
-    }
-    
-    public static void setDependencyTracking(DependencyTracking dt) {
-        final DependencyTracking curr = getDependencyTracking();
-        if (curr != dt) {
-            getPreferencesNode().put(KEY_DEPENDENCY_TRACKING, dt.name());
-            if (dt.ordinal() > curr.ordinal()) {
-                IndexingManager.getDefault().refreshAllIndices(JavaIndex.NAME);
-            }
-            
-            ErrorAnnotator an = ErrorAnnotator.getAnnotator();
-            
-            if (an != null) {
-                an.updateAllInError();
-            }
         }
     }
     
