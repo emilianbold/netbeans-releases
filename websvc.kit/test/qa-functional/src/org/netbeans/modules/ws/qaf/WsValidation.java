@@ -699,7 +699,7 @@ public class WsValidation extends WebServicesTestBase {
         ndo.ok();
         if (isService) {
             assertTrue("missing @HandlerChain", //NOI18N
-                    eo.contains("@HandlerChain(file = \"" + getWsName() + "_handler.xml\")")); //NOI18N
+                    eo.contains("@HandlerChain(file = \"" + handlerCfg.getName() + "\")")); //NOI18N
         } else {
             boolean isAnt = getProjectType().isAntBasedProject();
             waitForWsImport(isAnt ? "wsimport-client" : "wsimport", isAnt); //NOI18N
@@ -717,7 +717,7 @@ public class WsValidation extends WebServicesTestBase {
         ndo.ok();
         if (isService) {
             assertTrue("missing @HandlerChain", //NOI18N
-                    eo.contains("@HandlerChain(file = \"" + getWsName() + "_handler.xml\")")); //NOI18N
+                    eo.contains("@HandlerChain(file = \"" + handlerCfg.getName() + "\")")); //NOI18N
         } else {
             boolean isAnt = getProjectType().isAntBasedProject();
             waitForWsImport(isAnt ? "wsimport-client" : "wsimport", isAnt); //NOI18N
@@ -735,7 +735,7 @@ public class WsValidation extends WebServicesTestBase {
         ndo.ok();
         if (isService) {
             assertTrue("missing @HandlerChain", //NOI18N
-                    eo.contains("@HandlerChain(file = \"" + getWsName() + "_handler.xml\")")); //NOI18N
+                    eo.contains("@HandlerChain(file = \"" + handlerCfg.getName() + "\")")); //NOI18N
         } else {
             boolean isAnt = getProjectType().isAntBasedProject();
             waitForWsImport(isAnt ? "wsimport-client" : "wsimport", isAnt); //NOI18N
@@ -757,7 +757,7 @@ public class WsValidation extends WebServicesTestBase {
 
         if (isService) {
             assertFalse("offending @HandlerChain", //NOI18N
-                    eo.contains("@HandlerChain(file = \"" + getWsName() + "_handler.xml\")")); //NOI18N
+                    eo.contains("@HandlerChain(file = \"" + handlerCfg.getName() + "\")")); //NOI18N
             assertFalse(handlerCfg.exists());
         }
     }
