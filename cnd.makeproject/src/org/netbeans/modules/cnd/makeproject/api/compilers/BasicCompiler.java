@@ -73,7 +73,7 @@ public abstract class BasicCompiler extends Tool {
     public static String getIncludeFileBase() {
         if (includeFileNamePrefix == null) {
             // use always Unix path, because java.io.File on windows understands it well
-            includeFileNamePrefix = System.getProperty("netbeans.user").replace('\\', '/') + "/var/cache/cnd3/includes-cache/"; //NOI18N
+            includeFileNamePrefix = System.getProperty("netbeans.user").replace('\\', '/') + "/var/cache/cnd/remote-includes/"; //NOI18N
         }
         return includeFileNamePrefix;
     }
