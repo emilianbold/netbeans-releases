@@ -37,47 +37,43 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.ruby.options;
+package org.netbeans.modules.ruby;
 
-import java.util.prefs.Preferences;
-import org.openide.util.NbPreferences;
-
+import java.util.HashMap;
+import java.util.Map;
+import org.netbeans.modules.ruby.lexer.RubyTokenId;
 
 /**
+ * Maps types allowed in migrations to Ruby types.
  *
  * @author Erno Mononen
  */
-public final class TypeInferenceSettings {
-    
-    private static final TypeInferenceSettings INSTANCE = new TypeInferenceSettings();
-    private static final String METHODS = "ruby.type.inference.methods"; //NOI18N
-    private static final String RDOC = "ruby.type.inference.rdoc"; //NOI18N
+final class RailsMigrationTypeMapper {
 
-    private TypeInferenceSettings() {
+    private final Map<String, RubyType> types = new HashMap<String, RubyType>();
+    private static final RailsMigrationTypeMapper INSTANCE = new RailsMigrationTypeMapper();
+
+    private RailsMigrationTypeMapper() {
+        init();
     }
 
-    public static TypeInferenceSettings getDefault() {
-        return INSTANCE;
+    private void init() {
+        types.put("binary", RubyType.STRING);
+        types.put("boolean", RubyType.BOOLEAN);
+        types.put("date", RubyType.DATE);
+        types.put("datetime", RubyType.TIME);
+        types.put("decimal", RubyType.FIXNUM);
+        types.put("float", RubyType.FLOAT);
+        types.put("integer", RubyType.BIGNUM);
+        types.put("string", RubyType.STRING);
+        types.put("text", RubyType.STRING);
+        types.put("time", RubyType.TIME);
+        types.put("timestamp", RubyType.TIME);
     }
 
-    private Preferences getPreferences() {
-        return NbPreferences.forModule(TypeInferenceSettings.class);
-    }
-
-    public void setMethodTypeInference(boolean enabled) {
-        getPreferences().putBoolean(METHODS, enabled);
-    }
-
-    public boolean getMethodTypeInference() {
-        return getPreferences().getBoolean(METHODS, false);
-    }
-
-    public void setRdocTypeInference(boolean enabled) {
-        getPreferences().putBoolean(RDOC, enabled);
-    }
-
-    public boolean getRdocTypeInference() {
-        return getPreferences().getBoolean(RDOC, true);
+    static RubyType getMappedType(String migrationType) {
+        RubyType result = INSTANCE.types.get(migrationType);
+        return result != null ? result : RubyType.create(migrationType);
     }
 
 }

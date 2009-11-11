@@ -178,6 +178,10 @@ public final class IndexedMethod extends IndexedElement implements MethodElement
         this.smart = smart;
     }
 
+    public void setType(RubyType type) {
+        this.type = type;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {
