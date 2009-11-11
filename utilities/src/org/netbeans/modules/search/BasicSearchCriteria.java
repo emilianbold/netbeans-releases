@@ -809,36 +809,12 @@ final class BasicSearchCriteria {
             int column = matcherStart - lineStartOffset + 1 - prevCR;
             String lineText = bcs.getLineText(lineStartOffset);
 
-           try { // #174056, #175896
-                assert lineText.length() >= (column - 1) :
-                   "If the file associated with the following dataObject is " +
-                   "textual (i.e. non-binary file) then, \nplease, " +
-                   "re-open the issue 174056 with the following info:" +
-                   "\n" +
-                   "\nTrying to set illegal state of the TextDetail object:" +
-                   "\ndataObject: " + dataObject +
-                   "\nmatcher: " + matcher +
-                   "\ntextPattern: [" + textPattern + "]" +
-                   "\nmatcherStart: " + matcherStart +
-                   "\nlineStartOffset: " + lineStartOffset +
-                   "\nprevCR: " + prevCR +
-                   "\nlineText: [" + translate(lineText) + "]" +
-                   "\nlineText.length(): " + lineText.length() +
-                   "\ncolumn: " + column +
-                   "\n=> lineText.length() < (column - 1)" +
-                   "\n" +
-                   "\nOtherwise, please exclude the binary file from " +
-                   "the search\\replace operation."; // NOI18N
+            TextDetail det = newTextDetail(dataObject, sp, matcher);
+            det.setColumn(column);
+            det.setLine(lineNumber);
+            det.setLineText(lineText);
 
-                TextDetail det = newTextDetail(dataObject, sp, matcher);
-                det.setColumn(column);
-                det.setLine(lineNumber);
-                det.setLineText(lineText);
-
-                txtDetails.add(det);
-            } catch (AssertionError e) {
-                LOG.log(Level.WARNING, "Error in " + this, e);
-            }
+            txtDetails.add(det);
         } // while (matcher.find())
         txtDetails.trimToSize();
         return txtDetails;
