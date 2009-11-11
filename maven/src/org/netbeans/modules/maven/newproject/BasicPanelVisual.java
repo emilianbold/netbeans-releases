@@ -82,6 +82,7 @@ import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.modules.maven.MavenValidators;
 import org.netbeans.modules.maven.options.MavenOptionController;
 import org.netbeans.modules.maven.options.MavenSettings;
+import org.netbeans.modules.project.uiapi.Utilities;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.netbeans.validation.api.Problems;
 import org.netbeans.validation.api.Validator;
@@ -182,6 +183,11 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
                         }
                         if (FileUtil.toFileObject(projLoc) == null) {
                             problems.add(NbBundle.getMessage(BasicPanelVisual.class, "ERR_Project_Folder_is_not_valid_path"));
+                            return false;
+                        }
+                        //#167136
+                        if (Utilities.isWindows() && fil.getAbsolutePath().startsWith("\\\\")) {
+                            problems.add(NbBundle.getMessage(BasicPanelVisual.class, "ERR_Project_Folder_is_UNC"));
                             return false;
                         }
                         return true;
