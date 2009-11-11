@@ -123,12 +123,16 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-xml-actions-CollectXMLAction.instance">
                 <attr name="instanceCreate"
                       methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="displayName"
+                      bundlevalue="org.netbeans.modules.xml.actions.Bundle#NAME_CollectXMLAction"/>
                 <attr name="delegate"
                       methodvalue="org.netbeans.modules.xml.actions.CollectXMLAction.getInstance"/>
             </file>
             <file name="org-netbeans-modules-xml-actions-CollectDTDAction.instance">
                 <attr name="instanceCreate"
                       methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="displayName" 
+                      bundlevalue="org.netbeans.modules.xml.actions.Bundle#NAME_CollectDTDAction"/>
                 <attr name="delegate"
                       methodvalue="org.netbeans.modules.xml.actions.CollectDTDAction.getInstance"/>
             </file>
