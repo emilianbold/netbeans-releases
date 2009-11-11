@@ -319,6 +319,7 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
             customizerPanel.getParent().repaint();
         }
         else if (o instanceof String) {
+            DependencyTracking dt = getCurrentDependencyTracking();
             if (depScanningModel != severityComboBox.getModel()) {
                 severityComboBox.setModel(depScanningModel);
                 Mnemonics.setLocalizedText(severityLabel, depScanningLabel);
@@ -328,7 +329,6 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
             descriptionTextArea.setEnabled(true);
             descriptionTextArea.setText(wrapDescription(depScanningDescription));
             descriptionTextArea.setCaretPosition(0);
-            DependencyTracking dt = getCurrentDependencyTracking();
             if (dt != DependencyTracking.DISABLED)
                 severityComboBox.setSelectedIndex(deptracking2index.get(dt));
         }
