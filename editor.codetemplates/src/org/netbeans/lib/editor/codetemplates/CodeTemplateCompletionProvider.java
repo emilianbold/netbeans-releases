@@ -78,7 +78,7 @@ import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 public final class CodeTemplateCompletionProvider implements CompletionProvider {
 
     public CompletionTask createTask(int type, JTextComponent component) {
-        return type != COMPLETION_QUERY_TYPE || isAbbrevDisabled(component) ? null : new AsyncCompletionTask(new Query(), component);
+        return (type & COMPLETION_QUERY_TYPE) == 0 || isAbbrevDisabled(component) ? null : new AsyncCompletionTask(new Query(), component);
     }
 
     public int getAutoQueryTypes(JTextComponent component, String typedText) {

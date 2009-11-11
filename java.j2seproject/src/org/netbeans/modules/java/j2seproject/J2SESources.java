@@ -44,6 +44,8 @@ package org.netbeans.modules.java.j2seproject;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.io.File;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -81,7 +83,7 @@ public class J2SESources implements Sources, PropertyChangeListener, ChangeListe
     private final SourceRoots sourceRoots;
     private final SourceRoots testRoots;
     private boolean dirty;
-    private volatile SourceGroup[] cachedGroups;
+    private final Map<String,SourceGroup[]> cachedGroups = new ConcurrentHashMap<String,SourceGroup[]>();
     private long eventId;
     private Sources delegate;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
@@ -109,7 +111,7 @@ public class J2SESources implements Sources, PropertyChangeListener, ChangeListe
      * {@link J2SESources#fireChange} method.
      */
     public SourceGroup[] getSourceGroups(final String type) {
-        final SourceGroup[] _cachedGroups = this.cachedGroups;
+        final SourceGroup[] _cachedGroups = this.cachedGroups.get(type);
         if (_cachedGroups != null) {
             return _cachedGroups;
         }
@@ -142,7 +144,7 @@ public class J2SESources implements Sources, PropertyChangeListener, ChangeListe
                 }
                 synchronized (J2SESources.this) {
                     if (myEventId == eventId) {
-                        J2SESources.this.cachedGroups = groups;
+                        J2SESources.this.cachedGroups.put(type, groups);
                     }
                 }
                 return groups;
@@ -209,7 +211,7 @@ public class J2SESources implements Sources, PropertyChangeListener, ChangeListe
 
     private void fireChange() {
         synchronized (this) {
-            cachedGroups=null;
+            cachedGroups.clear();   //threading: CHM.clear is not atomic, the getSourceGroup may return staled data which is not a problem in this case.
             dirty = true;
         }        
         ProjectManager.mutex().postReadRequest(fireTask.activate());
