@@ -130,17 +130,6 @@ public class RubyUtils {
         return sb.toString();
     }
     
-    /**
-     * Similar to Rails' Inflector tableize method: converts a name
-     * to a corresponding table name:
-     * 
-     * @param word
-     * @return
-     */
-    public static String tableize(String word) {
-        return Inflector.getDefault().pluralize(RubyUtils.camelToUnderlinedName(word));
-    }
-    
     /** Is this name a valid operator name? */
     public static boolean isOperator(String name) {
         if (name.length() == 0) {
