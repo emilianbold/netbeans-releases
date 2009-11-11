@@ -319,19 +319,14 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
             return null;
         }
 
-        FunctionCallImpl fci = (FunctionCallImpl) functionCall;
+        final FunctionCallImpl fci = (FunctionCallImpl) functionCall;
+        final Long refID = fci.getFunctionRefID();
 
-        SourceFileInfo result = sourceFileInfoSupport.getSourceFileInfo(fci);
+        SourceFileInfo result = sourceFileInfoSupport.getSourceFileInfo(fci, pathMapper);
 
         if (result != null && result.isSourceKnown()) {
-            if (pathMapper != null) {
-                result = new SourceFileInfo(pathMapper.getLocalPath(result.getFileName()),
-                        result.getLine(), result.getColumn());
-                return result;
-            }
+            return result;
         }
-
-        final Long refID = fci.getFunctionRefID();
 
         synchronized (nonSSSourceInfoCache) {
             if (nonSSSourceInfoCache.containsKey(refID)) {
@@ -349,13 +344,14 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
                     log.finest("SourceLineInfo data from " + // NOI18N
                             provider.getClass().getSimpleName() + ": " + // NOI18N
                             result.toString());
-                    nonSSSourceInfoCache.put(refID, result);
-                    return result;
+                    break;
                 }
             }
+
+            nonSSSourceInfoCache.put(refID, result);
         }
 
-        return null;
+        return result;
     }
 
     private static class HotSpotFunctionsFetcherParams {
