@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-OpenIDE-Module: org.netbeans.modules.parsing.api
+OpenIDE-Module: org.netbeans.modules.parsing.api/1
 OpenIDE-Module-Implementation-Version: 2
 OpenIDE-Module-Install: org/netbeans/modules/parsing/impl/Installer.class
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/parsing/impl/Bundle.properties
