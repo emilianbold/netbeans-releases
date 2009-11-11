@@ -88,7 +88,9 @@ made subject to such option by the copyright holder.
 
     <folder name="org-netbeans-api-project-libraries">
         <folder name="Libraries">
-            <file name="CopyLibs.xml" url="CopyLibs.xml"/>
+            <file name="CopyLibs.xml" url="CopyLibs.xml">
+                <attr name="displayName" bundlevalue="org.netbeans.modules.java.j2seproject.Bundle#CopyLibs"/>
+            </file>
         </folder>
     </folder>
     <folder name="Projects">
