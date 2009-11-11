@@ -82,6 +82,17 @@ public abstract class AbstractCard implements Card {
     }
 
     /**
+     * Create a dummy card for a case where a card is specified but no such
+     * card actually exists.  The resulting card will return false from
+     * isValid() and return no usable capabilities, just CardInfo.
+     * @param name The ID/display name of the missing card
+     * @return A fake card
+     */
+    public static Card createBrokenCard (String name) {
+        return new BrokenCard(name);
+    }
+
+    /**
      * The default implementation only checks if the platform returns
      * isValid().
      * @return

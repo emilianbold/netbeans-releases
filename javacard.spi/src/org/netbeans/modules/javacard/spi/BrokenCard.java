@@ -58,7 +58,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Tim Boudreau
  */
-public final class BrokenCard implements Card, CardInfo, CapabilitiesProvider {
+final class BrokenCard implements Card, CardInfo, CapabilitiesProvider {
     private final String name;
     private final JavacardPlatform platform;
     public BrokenCard(String name) {

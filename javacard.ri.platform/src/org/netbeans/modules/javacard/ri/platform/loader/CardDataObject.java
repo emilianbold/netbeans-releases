@@ -76,7 +76,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.javacard.common.NodeRefresher;
 import org.netbeans.modules.javacard.ri.card.RICard;
-import org.netbeans.modules.javacard.spi.BrokenCard;
+import org.netbeans.modules.javacard.spi.AbstractCard;
 import org.netbeans.modules.javacard.spi.Card;
 import org.netbeans.modules.javacard.spi.capabilities.CardInfo;
 import org.netbeans.modules.javacard.spi.CardState;
@@ -186,7 +186,7 @@ public class CardDataObject extends PropertiesBasedDataObject<Card> implements C
                         LOGGER.log(Level.FINE, "Empty properties - " + //NOI18N
                                 "returning broken card instance"); //NOI18N
                     }
-                result = new BrokenCard(getName());
+                result = AbstractCard.createBrokenCard(getName());
             } else {
                 if (LOGGER.isLoggable(Level.FINE)) {
                     LOGGER.log(Level.FINE, "No cached instance - invoking " + //NOI18N
