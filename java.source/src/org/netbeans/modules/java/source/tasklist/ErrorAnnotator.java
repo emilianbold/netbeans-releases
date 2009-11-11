@@ -106,7 +106,7 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
     
     @Override
     public Image annotateIcon(Image icon, int iconType, Set files) {
-        if (!TasklistSettings.isTasklistEnabled() || !TasklistSettings.isBadgesEnabled())
+        if (!TasklistSettings.isBadgesEnabled())
             return null;
         
         boolean inError = false;

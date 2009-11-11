@@ -55,10 +55,12 @@ import java.util.Map;
 import java.util.prefs.AbstractPreferences;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTree;
 import javax.swing.event.ChangeEvent;
@@ -66,12 +68,15 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
+import org.netbeans.modules.java.hints.options.HintsPanel.ExtendedModel;
+import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
+import org.netbeans.modules.java.hints.options.DepScanningSettings.DependencyTracking;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
 import static org.netbeans.modules.java.hints.spi.AbstractHint.*;
 
@@ -82,9 +87,11 @@ import static org.netbeans.modules.java.hints.spi.AbstractHint.*;
  */
 class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListener, ChangeListener, ActionListener {
 
-    private Map<AbstractHint,ModifiedPreferences> changes;
+    private Map<AbstractHint,ModifiedPreferences> changes = new HashMap<AbstractHint, ModifiedPreferences>();
+    private DependencyTracking depScn = null;
     
     private static Map<HintSeverity,Integer> severity2index;
+    private static Map<DependencyTracking,Integer> deptracking2index;
     
     private static final String DESCRIPTION_HEADER = 
         "<html><head>" + // NOI18N
@@ -99,24 +106,41 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
         severity2index = new HashMap<HintSeverity, Integer>();
         severity2index.put( HintSeverity.ERROR, 0  );
         severity2index.put( HintSeverity.WARNING, 1  );
-        severity2index.put( HintSeverity.CURRENT_LINE_WARNING, 2  );        
+        severity2index.put( HintSeverity.CURRENT_LINE_WARNING, 2  );
+        deptracking2index = new HashMap<DepScanningSettings.DependencyTracking, Integer>();
+        deptracking2index.put(DependencyTracking.ENABLED, 0);
+        deptracking2index.put(DependencyTracking.ENABLED_WITHIN_PROJECT, 1);
+        deptracking2index.put(DependencyTracking.ENABLED_WITHIN_ROOT, 2);
     }
     
     private JTree errorTree;
+    private JLabel severityLabel;
     private JComboBox severityComboBox;
     private JCheckBox tasklistCheckBox;
     private JPanel customizerPanel;
     private JEditorPane descriptionTextArea;
+    private DefaultComboBoxModel defModel = new DefaultComboBoxModel();
+    private DefaultComboBoxModel depScanningModel = new DefaultComboBoxModel();
+    private String defLabel = NbBundle.getMessage(HintsPanel.class, "CTL_ShowAs_Label"); //NOI18N
+    private String depScanningLabel = NbBundle.getMessage(HintsPanel.class, "CTL_Scope_Label"); //NOI18N
+    private String depScanningDescription = NbBundle.getMessage(HintsPanel.class, "CTL_Scope_Desc"); //NOI18N
     
     HintsPanelLogic() {
-        changes = new HashMap<AbstractHint, ModifiedPreferences>();        
+        defModel.addElement(NbBundle.getMessage(HintsPanel.class, "CTL_AsError")); //NOI18N
+        defModel.addElement(NbBundle.getMessage(HintsPanel.class, "CTL_AsWarning")); //NOI18N
+        defModel.addElement(NbBundle.getMessage(HintsPanel.class, "CTL_WarningOnCurrentLine")); //NOI18N
+
+        depScanningModel.addElement(NbBundle.getMessage(HintsPanel.class, "CTL_AllProjects")); //NOI18N
+        depScanningModel.addElement(NbBundle.getMessage(HintsPanel.class, "CTL_Project")); //NOI18N
+        depScanningModel.addElement(NbBundle.getMessage(HintsPanel.class, "CTL_SrcRoot")); //NOI18N
     }
     
-    void connect( JTree errorTree, JComboBox severityComboBox, 
+    void connect( JTree errorTree, JLabel severityLabel, JComboBox severityComboBox,
                   JCheckBox tasklistCheckBox, JPanel customizerPanel,
                   JEditorPane descriptionTextArea) {
         
         this.errorTree = errorTree;
+        this.severityLabel = severityLabel;
         this.severityComboBox = severityComboBox;
         this.tasklistCheckBox = tasklistCheckBox;
         this.customizerPanel = customizerPanel;
@@ -150,12 +174,14 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
             ModifiedPreferences mn = changes.get(hint);
             mn.store(hint.getPreferences(HintsSettings.getCurrentProfileId()));            
         }
+        if (depScn != null)
+            DepScanningSettings.setDependencyTracking(depScn);
     }
     
     /** Were there any changes in the settings
      */
     boolean isChanged() {
-        return !changes.isEmpty();
+        return !changes.isEmpty() || depScn != null;
     }
     
     synchronized Preferences getCurrentPrefernces( AbstractHint hint ) {
@@ -172,8 +198,10 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
         return node;                
     }
     
-    
-    
+    synchronized DependencyTracking getCurrentDependencyTracking() {
+        return depScn != null ? depScn : DepScanningSettings.getDependencyTracking();
+    }
+
     static Object getUserObject( TreePath path ) {
         if( path == null )
             return null;
@@ -248,6 +276,11 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
         Object o = getUserObject(errorTree.getSelectionPath());
         
         if ( o instanceof AbstractHint ) {
+            if (defModel != severityComboBox.getModel()) {
+                severityComboBox.setModel(defModel);
+                Mnemonics.setLocalizedText(severityLabel, defLabel);
+            }
+
             AbstractHint hint = (AbstractHint) o;
             
             // Enable components
@@ -256,7 +289,7 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
             // Set proper values to the componetnts
             
             Preferences p = getCurrentPrefernces(hint);
-            
+
             HintSeverity severity = HintsSettings.getSeverity(hint, p);
             if (severity != null) {
                 severityComboBox.setSelectedIndex(severity2index.get(severity));
@@ -285,7 +318,25 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
             ((JComponent)customizerPanel.getParent()).revalidate();
             customizerPanel.getParent().repaint();
         }
+        else if (o instanceof String) {
+            if (depScanningModel != severityComboBox.getModel()) {
+                severityComboBox.setModel(depScanningModel);
+                Mnemonics.setLocalizedText(severityLabel, depScanningLabel);
+            }
+            componentsSetEnabled(false);
+            severityComboBox.setEnabled(true);
+            descriptionTextArea.setEnabled(true);
+            descriptionTextArea.setText(wrapDescription(depScanningDescription));
+            descriptionTextArea.setCaretPosition(0);
+            DependencyTracking dt = getCurrentDependencyTracking();
+            if (dt != DependencyTracking.DISABLED)
+                severityComboBox.setSelectedIndex(deptracking2index.get(dt));
+        }
         else { // Category or nonsense selected.
+            if (defModel != severityComboBox.getModel()) {
+                severityComboBox.setModel(defModel);
+                Mnemonics.setLocalizedText(severityLabel, defLabel);
+            }
             componentsSetEnabled(false);
         }
     }
@@ -293,7 +344,7 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
     // ActionListener implementation -------------------------------------------
     
     public void actionPerformed(ActionEvent e) {
-        if( errorTree.getSelectionPath() == null )
+        if( errorTree.getSelectionPath() == null || !severityComboBox.equals(e.getSource()))
             return;
         
         Object o = getUserObject(errorTree.getSelectionPath());
@@ -302,8 +353,11 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
             AbstractHint hint = (AbstractHint) o;
             Preferences p = getPreferences4Modification(hint);
             
-            if(HintsSettings.getSeverity(hint, p) != null && severityComboBox.equals( e.getSource() ) )
+            if(HintsSettings.getSeverity(hint, p) != null)
                 HintsSettings.setSeverity(p, index2severity(severityComboBox.getSelectedIndex()));            
+        } else if (o instanceof String) {
+            if (getCurrentDependencyTracking() != DependencyTracking.DISABLED)
+                depScn = index2deptracking(severityComboBox.getSelectedIndex());
         }
     }
 
@@ -329,6 +383,15 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
         throw new IllegalStateException( "Unknown severity");
     }
        
+    private DependencyTracking index2deptracking( int index ) {
+        for( Map.Entry<DependencyTracking,Integer> e : deptracking2index.entrySet()) {
+            if ( e.getValue() == index ) {
+                return e.getKey();
+            }
+        }
+        throw new IllegalStateException( "Unknown severity");
+    }
+
     private boolean toggle( TreePath treePath ) {
 
         if( treePath == null )
@@ -336,7 +399,7 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
 
         Object o = getUserObject(treePath);
 
-        DefaultTreeModel model = (DefaultTreeModel) errorTree.getModel();
+        ExtendedModel model = (ExtendedModel) errorTree.getModel();
         DefaultMutableTreeNode node = (DefaultMutableTreeNode) treePath.getLastPathComponent();
 
 
@@ -366,6 +429,12 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
             }            
             model.nodeChanged(node);
         }
+        else if (o instanceof String) {
+            DependencyTracking value = getCurrentDependencyTracking();
+            depScn = value != DependencyTracking.DISABLED ? DependencyTracking.DISABLED : index2deptracking(severityComboBox.getSelectedIndex());
+            model.nodeChanged(node);
+            model.nodeChanged(node.getParent());
+        }
 
         return false;
     }
@@ -386,7 +455,7 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
         tasklistCheckBox.setEnabled(enabled);
         descriptionTextArea.setEnabled(enabled);
     }
-        
+
     // Inner classes -----------------------------------------------------------
            
     private static class ModifiedPreferences extends AbstractPreferences {
@@ -458,5 +527,5 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
         
     }
 
-   
+
 }
