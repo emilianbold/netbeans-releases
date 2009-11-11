@@ -71,7 +71,6 @@ import org.openide.util.NbBundle;
 public abstract class WebRestSupport extends RestSupport {
 
     public static final String PROP_REST_RESOURCES_PATH = "rest.resources.path";//NOI18N
-    public static final String PROP_REST_ROOT_RESOURCES = "rest.root.resources";//NOI18N
     public static final String PROP_REST_CONFIG_TYPE = "rest.config.type"; //NOI18N
     public static final String CONFIG_TYPE_IDE = "ide"; //NOI18N
     public static final String CONFIG_TYPE_USER= "user"; //NOI18N
