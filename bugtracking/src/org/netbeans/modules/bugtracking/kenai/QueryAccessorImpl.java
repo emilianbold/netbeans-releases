@@ -46,6 +46,7 @@ import java.beans.PropertyChangeListener;
 import java.net.PasswordAuthentication;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -136,9 +137,35 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
         List<QueryHandle> queryHandles = getQueryHandles(repo, project);
 
         // listen on project events - e.g. project closed
-        registerProject(project, queryHandles);
+        registerProject(project, queryHandles);       
 
         return Collections.unmodifiableList(queryHandles);
+    }
+
+    private void sortQueries(List<QueryHandle> queryHandles) {
+        Collections.sort(queryHandles, new Comparator<QueryHandle>() {
+            public int compare(QueryHandle qh1, QueryHandle qh2) {
+                if(qh1 == null && qh1 == null) {
+                    return 0;
+                }
+                if(qh2 == null) {
+                    return 1;
+                }
+                if(qh1 == null) {
+                    return -1;
+                }
+                boolean predefined1 = false;
+                boolean predefined2 = false;
+                if(qh1 instanceof QueryDescriptor && ((QueryDescriptor) qh1).isPredefined()) predefined1 = true;
+                if(qh2 instanceof QueryDescriptor && ((QueryDescriptor) qh2).isPredefined()) predefined2 = true;                
+                if(predefined1 && !predefined2) {
+                    return -1;
+                } else if(predefined1 && !predefined2) {
+                    return 1;
+                }                 
+                return qh1.getDisplayName().compareTo(qh2.getDisplayName());
+            }
+        });
     }
 
     private List<QueryHandle> getQueriesForNoRepo(ProjectHandle project) {
@@ -186,18 +213,22 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
                 ret.add(qh);
             }
         }
+        sortQueries(ret);
         return ret;
     }
 
     private QueryHandleImpl createQueryHandle(Query q, boolean needsRefresh) {
         Repository repo = q.getRepository();
         KenaiSupport support = repo.getLookup().lookup(KenaiSupport.class);
+        boolean predefined = false;
         if(support != null) {
-            if(support.needsLogin(q)) {
-                return new LoginAwareQueryHandle(q, needsRefresh);
+            boolean needsLogin = support.needsLogin(q);
+            predefined = support.getAllIssuesQuery(repo) == q || support.getMyIssuesQuery(repo) == q;
+            if(needsLogin) {
+                return new LoginAwareQueryHandle(q, needsRefresh, predefined);
             }
         }
-        return new QueryHandleImpl(q, needsRefresh);
+        return new QueryHandleImpl(q, needsRefresh, predefined);
     }
 
     private void registerProject(ProjectHandle project, List<QueryHandle> queries) {
@@ -446,8 +477,8 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
 
     private class LoginAwareQueryHandle extends QueryHandleImpl {
         private String notLoggedIn = NbBundle.getMessage(QueryAccessorImpl.class, "LBL_NotLoggedIn"); // NOI18N
-        public LoginAwareQueryHandle(Query query, boolean needsRefresh) {
-            super(query, needsRefresh);
+        public LoginAwareQueryHandle(Query query, boolean needsRefresh, boolean predefined) {
+            super(query, needsRefresh, predefined);
         }
         @Override
         public String getDisplayName() {
