@@ -93,7 +93,7 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
      */
     private Map<String, FaceletsLibrary> faceletsLibraries;
 
-    private Logger LOGGER = Logger.getLogger(FaceletsLibrarySupport.class.getSimpleName());
+    private static final Logger LOGGER = Logger.getLogger(FaceletsLibrarySupport.class.getSimpleName());
 
     private FileChangeListener DDLISTENER = new FileChangeAdapter() {
 
@@ -208,7 +208,7 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
     private Map<String, FaceletsLibrary> findLibraries() {
         //use this module classloader
         ClassLoader originalLoader = this.getClass().getClassLoader();
-        LOGGER.log(Level.INFO, "Scanning facelets libraries, current classloader class=" + originalLoader.getClass().getName() + ", the used URLClassLoader will also contain following roots:");
+        LOGGER.log(Level.FINE, "Scanning facelets libraries, current classloader class=" + originalLoader.getClass().getName() + ", the used URLClassLoader will also contain following roots:");
 
         Collection<URL> urlsToLoad = new ArrayList<URL>();
         for (FileObject cpRoot : getJsfSupport().getClassPath().getRoots()) {
@@ -218,9 +218,9 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
                 String fsName = cpRoot.getFileSystem().getDisplayName(); //any better way?
                 if(!(fsName.endsWith("jsf-impl.jar") || fsName.endsWith("jsf-api.jar"))) { //NOI18N
                     urlsToLoad.add(URLMapper.findURL(cpRoot, URLMapper.INTERNAL));
-                    LOGGER.log(Level.INFO, "+++" + cpRoot); //NOI18N
+                    LOGGER.log(Level.FINE, "+++" + cpRoot); //NOI18N
                 } else {
-                    LOGGER.log(Level.INFO, "---" + cpRoot); //NOI18N
+                    LOGGER.log(Level.FINE, "---" + cpRoot); //NOI18N
                 }
 
             } catch (FileStateInvalidException ex) {
