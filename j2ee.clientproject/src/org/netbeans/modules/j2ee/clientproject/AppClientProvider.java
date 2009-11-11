@@ -472,10 +472,13 @@ public final class AppClientProvider extends J2eeModuleProvider
 
         public boolean isServerResourceChanged(long lastDeploy) {
             File resDir = getResourceDirectory();
-            if (resDir != null) {
-                for (File file : resDir.listFiles()) {
-                    if (file.lastModified() > lastDeploy) {
-                        return true;
+            if (resDir != null && resDir.exists() && resDir.isDirectory()) {
+                File[] children = resDir.listFiles();
+                if (children != null) {
+                    for (File file : children) {
+                        if (file.lastModified() > lastDeploy) {
+                            return true;
+                        }
                     }
                 }
             }
