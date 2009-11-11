@@ -61,6 +61,7 @@
 	<mapID target="framework_jsf_about" url="web/framework/jsf/about.html"/>
 	<mapID target="framework_jsf_add" url="web/framework/jsf/add.html"/>
 	<mapID target="framework_jsf_create" url="web/framework/jsf/create.html"/>
+	<mapID target="framework_jsf_create_page" url="web/framework/jsf/create-page.html"/>
 	<mapID target="framework_jsf_edit" url="web/framework/jsf/edit.html"/>
 	<mapID target="framework_jsf_palette" url="web/framework/jsf/palette.html"/>
 	<mapID target="framework_jsf_form_entity" url="web/framework/jsf/form-from-entity.html"/>
