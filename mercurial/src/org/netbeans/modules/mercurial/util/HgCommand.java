@@ -2184,7 +2184,7 @@ public class HgCommand {
         command.add("--template={rev}\t");                              //NOI18N
 
         List<String> list = null;
-        command.add(file.getAbsolutePath());
+        if (file != null) command.add(file.getAbsolutePath());
         list = exec(command);
         String parentRevision = "-1";                                   //NOI18N
         if (!list.isEmpty() && !isErrorAbort(list.get(0))) {

@@ -363,7 +363,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
         public void perform () {
             showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_LoadingDiff")); //NOI18N
             if (revision1 == null) {
-                revision1 = header.getLogInfoHeader().getLog().getAncestor(header.getFile());
+                revision1 = header.getLogInfoHeader().getLog().getAncestor(null);
             }
             final DiffStreamSource s1 = new DiffStreamSource(header.getFile(), revision1, revision1);
             final DiffStreamSource s2 = new DiffStreamSource(header.getFile(), revision2, revision2);
