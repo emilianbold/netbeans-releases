@@ -323,11 +323,7 @@ public final class CreateTestsAction extends NodeAction {
         ExternalProcessBuilder externalProcessBuilder = phpUnit.getProcessBuilder()
                 .workingDirectory(workingDirectory);
 
-        if (configFiles.bootstrap != null) {
-            externalProcessBuilder = externalProcessBuilder
-                    .addArgument(PhpUnit.PARAM_BOOTSTRAP)
-                    .addArgument(configFiles.bootstrap.getAbsolutePath());
-        }
+        // #176413 - bootstrap file not used for creating tests
         if (configFiles.configuration != null) {
             externalProcessBuilder = externalProcessBuilder
                     .addArgument(PhpUnit.PARAM_CONFIGURATION)
