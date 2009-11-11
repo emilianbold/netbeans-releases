@@ -47,6 +47,7 @@ import org.netbeans.modules.javacard.spi.Card;
 import org.netbeans.modules.javacard.spi.capabilities.CardInfo;
 import org.netbeans.modules.javacard.spi.JavacardPlatform;
 import org.netbeans.modules.javacard.spi.PlatformAndDeviceProvider;
+import org.netbeans.modules.javacard.spi.impl.TempPlatformAndDeviceProvider;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -74,10 +75,10 @@ public class BadPlatformOrDevicePanel extends javax.swing.JPanel implements Look
         if (!showDontShowAgainCheckbox) {
             jCheckBox1.setVisible(false);
         }
-        props = new PlatformAndDeviceProvider.Temp();
+        props = new TempPlatformAndDeviceProvider();
         props.setPlatformName(platform);
         props.setActiveDevice(device);
-        selPanel.setProperties(props);
+        selPanel.setPlatformAndCard(props);
     }
 
     public String getPlatform() {

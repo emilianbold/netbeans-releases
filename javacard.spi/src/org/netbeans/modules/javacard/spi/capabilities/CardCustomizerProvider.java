@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.javacard.spi.capabilities;
 
+import org.netbeans.modules.javacard.spi.Card;
 import org.netbeans.modules.javacard.spi.CardCustomizer;
 import org.netbeans.modules.javacard.spi.ICardCapability;
 
@@ -55,5 +56,5 @@ import org.netbeans.modules.javacard.spi.ICardCapability;
  * @author Tim Boudreau
  */
 public interface CardCustomizerProvider extends ICardCapability {
-    public CardCustomizer getCardCustomizer();
+    public CardCustomizer getCardCustomizer(Card card);
 }

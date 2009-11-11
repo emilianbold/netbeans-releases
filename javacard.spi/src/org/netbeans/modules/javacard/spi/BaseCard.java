@@ -40,6 +40,8 @@
 package org.netbeans.modules.javacard.spi;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -51,6 +53,7 @@ import org.netbeans.modules.javacard.spi.capabilities.AntTargetInterceptor;
 import org.netbeans.modules.javacard.spi.capabilities.ApduSupport;
 import org.netbeans.modules.javacard.spi.capabilities.CapabilitiesProvider;
 import org.netbeans.modules.javacard.spi.capabilities.CardContentsProvider;
+import org.netbeans.modules.javacard.spi.capabilities.CardCustomizerProvider;
 import org.netbeans.modules.javacard.spi.capabilities.CardInfo;
 import org.netbeans.modules.javacard.spi.capabilities.ClearEpromCapability;
 import org.netbeans.modules.javacard.spi.capabilities.DebugCapability;
@@ -74,7 +77,8 @@ import org.openide.util.lookup.Lookups;
  * <p/>
  * A Card is mostly a container for ICardCapability objects which start, stop,
  * resume, etc. the card.  This class handles the mechanics of, for example,
- * adding a StopCapability when the card is stopped and removing the StartCapability
+ * adding a StartCapability when the card is stopped and removing the StartCapability
+ * and replacing it with a StopCapability when the card is started.
  * (if the subclass returns non-null from createStopCapability() and
  * createStartCapability()).
  * <p/>
@@ -93,13 +97,26 @@ public abstract class BaseCard<T extends CapabilitiesProvider> extends AbstractC
     protected BaseCard(JavacardPlatform platform, String systemId, Class<T> type) {
         super(platform, systemId);
         this.type = type;
-        rp = new RequestProcessor("Java Card Instance " + systemId);
+        rp = new RequestProcessor("Java Card Instance " + systemId); //NOI18N
     }
 
+    /**
+     * Get the type, passed to the constructor, of the CapabilitiesProvider
+     * for this card.  For example, the CapabilitiesProvider of RI Cards
+     * reads a set of enum constants from DeclarableCapabilities to populate
+     * the set of supported types.
+     * @return The type
+     */
     protected final Class<T> type() {
         return type;
     }
 
+    /**
+     * Create a CardInfo with display name, etc. for this card.  All subclasses
+     * are expected to support CardInfo.
+     * @param t the CapabilitiesProvider of this card
+     * @return A CardInfo
+     */
     protected abstract CardInfo createCardInfo(T t);
 
     protected AntTargetInterceptor createAntTargetInterceptor(T t) {
@@ -146,6 +163,10 @@ public abstract class BaseCard<T extends CapabilitiesProvider> extends AbstractC
         return null;
     }
 
+    protected CardCustomizerProvider createCardCustomizerProvidert(T t) {
+        return null;
+    }
+
     protected void log(String toLog) {
         log(Level.FINE, toLog);
     }
@@ -171,6 +192,25 @@ public abstract class BaseCard<T extends CapabilitiesProvider> extends AbstractC
             }
         }
         initCapabilities(l.toArray(new ICardCapability[0]));
+    }
+
+    @Override
+    void logAddition(ICardCapability c) {
+        boolean asserts = false;
+        assert asserts = true;
+        if (asserts) {
+            Set<Class<? extends ICardCapability>> s = 
+                    new HashSet<Class<? extends ICardCapability>>(
+                    getCapability(type()).getSupportedCapabilityTypes());
+            int sz = s.size();
+            s.removeAll(Arrays.asList(c.getClass().getInterfaces()));
+            if (s.size() == sz) {
+                Logger.getLogger(BaseCard.class.getName()).log(Level.WARNING,
+                    "Adding a capability not in the list of supported capabilities: " + //NOI18N
+                    c.getClass().getName() + "; supported types: " + //NOI18N
+                    getCapability(type()).getSupportedCapabilityTypes());
+            }
+        }
     }
 
     /**
@@ -209,6 +249,9 @@ public abstract class BaseCard<T extends CapabilitiesProvider> extends AbstractC
         if (declaredCapabilities.contains(ProfileCapability.class)) {
             maybeAddCapability(createProfileCapability(props));
         }
+        if (state.isNotRunning() && declaredCapabilities.contains(CardCustomizerProvider.class)) {
+            maybeAddCapability(createCardCustomizerProvidert(props));
+        }
         maybeAddEpromCapabilities();
         log("calling subclass initLookup()"); //NOI18N
         initLookup();
@@ -216,7 +259,7 @@ public abstract class BaseCard<T extends CapabilitiesProvider> extends AbstractC
     }
 
     @Override
-    protected final Lookup createPreloadLookup() {
+    final Lookup createPreloadLookup() {
         return Lookups.fixed(loadData());
     }
 
@@ -250,6 +293,11 @@ public abstract class BaseCard<T extends CapabilitiesProvider> extends AbstractC
         }
     }
 
+    /**
+     * XXX DELETEME
+     * @param create
+     * @return
+     */
     protected FileObject getEpromFile(boolean create) {
         FileObject fld = Utils.sfsFolderForDeviceEepromsForPlatformNamed(getSystemId(), create);
         FileObject result = null;
@@ -276,6 +324,20 @@ public abstract class BaseCard<T extends CapabilitiesProvider> extends AbstractC
         //do nothing
     }
 
+    /**
+     * Adds and removes capabilities based on the current state.  Any
+     * implementation should call super(), unless it wants to assume complete
+     * responsibility for ensuring that the set of capabilities is appropriate
+     * to the state.
+     * <p/>
+     * The default implementation handles common state transitions, based on
+     * the set of supported capabilities - i.e., if the state goes from a
+     * not-started state to a started state, this method will automatically
+     * remove any StartCapability from this card, and add a StopCapability if
+     * createStopCapability() returns non-null.
+     * @param old The previous state
+     * @param nue The new state
+     */
     @Override
     protected void onStateChanged(CardState old, CardState nue) {
         if (old == nue) return;
@@ -283,6 +345,7 @@ public abstract class BaseCard<T extends CapabilitiesProvider> extends AbstractC
         CardInfo info = getCapability(CardInfo.class);
         String name = info == null || info.getDisplayName() == null ? getSystemId() : info.getDisplayName();
         StatusDisplayer.getDefault().setStatusText(nue.statusMessage(name));
+        T t = getCapability(type());
         switch (nue) {
             case BEFORE_RESUMING:
             case BEFORE_STARTING:
@@ -291,14 +354,16 @@ public abstract class BaseCard<T extends CapabilitiesProvider> extends AbstractC
                 removeCapability(ClearEpromCapability.class);
                 removeCapability(StartCapability.class);
                 removeCapability(ResumeCapability.class);
+                removeCapability(CardCustomizerProvider.class);
                 break;
             case RUNNING:
             case RUNNING_IN_DEBUG_MODE: {
                 CapabilitiesProvider props = getCapability(CapabilitiesProvider.class);
                 Set<Class<? extends ICardCapability>> declaredCapabilities = props.getSupportedCapabilityTypes();
                 if (declaredCapabilities.contains(StopCapability.class)) {
-                    maybeAddCapability(createStopCapability(getCapability(type())));
+                    maybeAddCapability(createStopCapability(t));
                 }
+                removeCapability(CardCustomizerProvider.class);
                 break;
             }
             case NOT_RUNNING:
@@ -307,7 +372,10 @@ public abstract class BaseCard<T extends CapabilitiesProvider> extends AbstractC
                 clearProcessReferences();
                 maybeAddEpromCapabilities();
                 if (declaredCapabilities.contains(StartCapability.class)) {
-                    maybeAddCapability(createStartCapability(getCapability(type())));
+                    maybeAddCapability(createStartCapability(t));
+                }
+                if (declaredCapabilities.contains(CardCustomizerProvider.class)) {
+                    maybeAddCapability(createCardCustomizerProvidert(t));
                 }
             case STOPPING:
                 //Do this here as well as in BEFORE_STOPPING, to handle

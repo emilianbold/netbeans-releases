@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.javacard.api;
+package org.netbeans.modules.javacard.spi.impl;
 
 import org.netbeans.modules.javacard.common.Utils;
 import org.netbeans.modules.javacard.common.JCConstants;
@@ -74,23 +74,23 @@ import org.netbeans.modules.javacard.spi.PlatformAndDeviceProvider;
  *
  * @author Tim Boudreau
  */
-public class DevicePanel2 extends SharedLayoutPanel implements ExplorerManager.Provider, ActionListener, PropertyChangeListener {
+public class DevicePanel extends SharedLayoutPanel implements ExplorerManager.Provider, ActionListener, PropertyChangeListener {
 
     private final ExplorerManager mgr = new ExplorerManager();
     private ExplorerManager parentManager;
     private PlatformAndDeviceProvider props;
     private final SettableProxyLookup lkp = new SettableProxyLookup();
     private final ChoiceView choice = new ChoiceView();
-    private final JButton button = new JButton(NbBundle.getMessage(DevicePanel2.class,
+    private final JButton button = new JButton(NbBundle.getMessage(DevicePanel.class,
             "LBL_MANAGE_DEVICES")); //NOI18N
-    private final JLabel lbl = new JLabel(NbBundle.getMessage(DevicePanel2.class,
+    private final JLabel lbl = new JLabel(NbBundle.getMessage(DevicePanel.class,
             "LBL_DEVICES")); //NOI18N
 
-    public DevicePanel2() {
+    public DevicePanel() {
         this(null);
     }
 
-    public DevicePanel2(final PlatformAndDeviceProvider props) {
+    public DevicePanel(final PlatformAndDeviceProvider props) {
         add(lbl);
         add(choice);
         add(button);
@@ -113,7 +113,7 @@ public class DevicePanel2 extends SharedLayoutPanel implements ExplorerManager.P
             }
         });
         if (props != null) {
-            setProperties(props);
+            setPlatformAndDevice(props);
         }
     }
 
@@ -144,14 +144,14 @@ public class DevicePanel2 extends SharedLayoutPanel implements ExplorerManager.P
     private Node noPlatformNode() {
         AbstractNode result = new AbstractNode(Children.LEAF);
         result.setIconBaseWithExtension("org/netbeans/modules/javacard/resources/empty.png"); //NOI18N
-        result.setDisplayName(NbBundle.getMessage(DevicePanel2.class, "LBL_NO_PLATFORM_SELECTED")); //NOI18N
+        result.setDisplayName(NbBundle.getMessage(DevicePanel.class, "LBL_NO_PLATFORM_SELECTED")); //NOI18N
         return result;
     }
 
     private Node invalidPlatformNode() {
         AbstractNode result = new AbstractNode(Children.LEAF);
         result.setIconBaseWithExtension("org/netbeans/modules/javacard/resources/empty.png"); //NOI18N
-        result.setDisplayName(NbBundle.getMessage(DevicePanel2.class, "LBL_INVALID_PLATFORM_SELECTED")); //NOI18N
+        result.setDisplayName(NbBundle.getMessage(DevicePanel.class, "LBL_INVALID_PLATFORM_SELECTED")); //NOI18N
         return result;
     }
 
@@ -266,7 +266,7 @@ public class DevicePanel2 extends SharedLayoutPanel implements ExplorerManager.P
         updateLookup();
     }
 
-    void setProperties(PlatformAndDeviceProvider props) {
+    public void setPlatformAndDevice(PlatformAndDeviceProvider props) {
         this.props = props;
     }
 }
