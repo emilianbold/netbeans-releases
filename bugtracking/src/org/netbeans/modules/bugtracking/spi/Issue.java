@@ -46,7 +46,6 @@ import java.util.Map;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
 import org.openide.util.NbBundle;
@@ -61,6 +60,7 @@ import static java.lang.Character.isSpaceChar;
 public abstract class Issue {
 
     private static final int SHORT_DISP_NAME_LENGTH = 15;
+
     private final PropertyChangeSupport support;
 
     /**
