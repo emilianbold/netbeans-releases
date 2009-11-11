@@ -84,8 +84,7 @@ public class LocalRepoProvider implements ArchetypeProvider {
             for (NBVersionInfo art : archs) {
                //TODO FINDout  how to get contain matadata 
                // boolean ng = artifact.getFiles().contains("META-INF/maven/archetype-metadata.xml");
-                Archetype arch = ( "maven-archetype".equalsIgnoreCase(art.getPackaging())) ? //NOI18N
-                                 new Archetype(true) : new Archetype();
+                Archetype arch = new Archetype(!"maven-archetype".equalsIgnoreCase(art.getPackaging())); //NOI18N
                 arch.setArtifactId(art.getArtifactId());
                 arch.setGroupId(art.getGroupId());
                 arch.setVersion(art.getVersion());
