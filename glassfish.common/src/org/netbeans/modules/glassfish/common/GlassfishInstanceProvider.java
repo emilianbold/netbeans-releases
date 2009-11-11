@@ -598,6 +598,8 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
             File f = new File(folderName);
             // !PW FIXME better heuristics to identify a valid V3 install
             result = f.exists();
+            result = result && f.isDirectory();
+            result = result && f.canRead();
         }
         return result;    
     }
@@ -608,6 +610,8 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
             File f = new File(folderName);
             // !PW FIXME better heuristics to identify a valid V3 install
             result = f.exists();
+            result = result && f.isDirectory();
+            result = result && f.canRead();
         }
         return result;    
     }
@@ -647,6 +651,29 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
             return;
         }
         candidate = new File(candidate).getAbsolutePath();
+
+        // sanity check the installRoot value.  Try to correct it
+        // if the most common mistake is made
+        //  (gfroot instead of installroot is the value given)
+        //
+        if (isValidHomeFolder(candidate)) {
+            String gfCandidate = candidate + File.separator + "glassfish";
+            if (!isValidGlassfishFolder(gfCandidate)) {
+                gfCandidate = candidate;
+                candidate = new File(gfCandidate).getParentFile().getAbsolutePath();
+                if (!isValidHomeFolder(candidate) || !isValidGlassfishFolder(gfCandidate)) {
+                    getLogger().log(Level.INFO, "Invalid value set for installRoot: " + System.getProperty(installRootPropName));
+                    return;
+                } else {
+                    getLogger().log(Level.INFO, "Fixed incorrect value set for installRoot: " + System.getProperty(installRootPropName));
+                }
+            } else {
+                // candidate and gfCandidate is valid
+            }
+        } else {
+            getLogger().log(Level.INFO, "Invalid installRoot: " + System.getProperty(installRootPropName));
+            return;
+        }
         
         String firstRunValue = NbPreferences.forModule(this.getClass()).get(ServerUtilities.PROP_FIRST_RUN+getInstallRootKey(), "false"); // NOI18N
         
