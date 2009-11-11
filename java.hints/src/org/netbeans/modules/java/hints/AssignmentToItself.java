@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -63,7 +64,7 @@ import org.openide.util.NbBundle;
  */
 public class AssignmentToItself extends AbstractHint {
 
-    private CancellableTreePathScanner<Boolean, List<Element>> scanner;
+    private final AtomicBoolean cancel = new AtomicBoolean();
     
     private Set<Kind> KINDS = Collections.<Tree.Kind>singleton(Tree.Kind.ASSIGNMENT);
     
@@ -76,6 +77,7 @@ public class AssignmentToItself extends AbstractHint {
     }
 
     public List<ErrorDescription> run(CompilationInfo info, TreePath treePath) {
+        cancel.set(false);
         
         Tree node = treePath.getLeaf();
 
@@ -114,10 +116,7 @@ public class AssignmentToItself extends AbstractHint {
     }
 
     public void cancel() {
-        if( scanner != null ) {
-            scanner.cancel();
-        }
-        
+        cancel.set(true);
     }
 
     public String getId() {
@@ -141,11 +140,11 @@ public class AssignmentToItself extends AbstractHint {
         List<Element> expElements = new ArrayList<Element>();
         
         // System.out.println(at);
-        scanner = new MethodCallScanner(trees);
+        CancellableTreePathScanner<Boolean, List<Element>> scanner = new MethodCallScanner(cancel, trees);
         Boolean varMI = scanner.scan(new TreePath( tp, var), varElements);
         varMI = varMI == null ? false : varMI;
         // System.out.println("  ------------");
-        scanner = new MethodCallScanner(trees);
+        scanner = new MethodCallScanner(cancel, trees);
         Boolean expMI = scanner.scan(new TreePath( tp, exp), expElements);
         expMI = expMI == null ? false : expMI;
         // System.out.println("VE" + varMI + " " + expMI);
@@ -172,7 +171,8 @@ public class AssignmentToItself extends AbstractHint {
 
         private Trees trees;
         
-        public MethodCallScanner( Trees trees ) {
+        public MethodCallScanner(AtomicBoolean cancel, Trees trees ) {
+            super(cancel);
             this.trees = trees;
         }
 
