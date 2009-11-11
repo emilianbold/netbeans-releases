@@ -173,23 +173,28 @@ public final class HostInfoUtils {
      * One should avoid to call this method from within AWT thread without prior 
      * call to isHostInfoAvailable().
      *
-     * @param execEnv execution environment to get information about
-     * @return information about the host represented by execEnv. <tt>null</tt>
-     * if interrupted of connection initiation is cancelled by user.
-     * Also returns null if execEnv parameter is null.
+     * @param execEnv execution environment to get information about.
+     * It should never be null, otherwise IllegalArgumentException is thrown.
+     * @return information about the host represented by execEnv.
+     * The return value is never null; in the case it is impossible to get HostInfo,
+     * IOException is thrown instead.
      * @throws IOException
      * @throws CancellationException 
      * @see #isHostInfoAvailable(org.netbeans.modules.nativeexecution.api.ExecutionEnvironment)
      */
     public static HostInfo getHostInfo(final ExecutionEnvironment execEnv) throws IOException, CancellationException {
         if (execEnv == null) {
-            return null;
+            throw new IllegalArgumentException("ExecutionEnvironment should not be null"); //NOI18N
         }
 
         Logger.assertNonUiThread();
 
         try {
-            return hostInfoCachedProcessor.compute(execEnv);
+            HostInfo result = hostInfoCachedProcessor.compute(execEnv);
+            if (result == null) {
+                throw new IOException("Can not get HostInfo for " + execEnv); //NOI18N
+            }
+            return result;
         } catch (InterruptedException ex) {
             throw new CancellationException("getHostInfo interrupted"); // NOI18N
         }
