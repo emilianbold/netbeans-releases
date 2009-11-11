@@ -77,6 +77,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeApplication;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleListener;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ResourceChangeReporter;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener.Artifact;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationImplementation2;
@@ -84,6 +85,8 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvid
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleFactory;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider.DeployOnSaveSupport;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.ResourceChangeReporterFactory;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.ResourceChangeReporterImplementation;
 import org.netbeans.modules.j2ee.earproject.model.ApplicationMetadataModelImpl;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
 import org.netbeans.modules.j2ee.earproject.util.EarProjectUtil;
@@ -113,6 +116,8 @@ public final class ProjectEar extends J2eeApplicationProvider
     public static final String FILE_DD        = "application.xml";//NOI18N
 
     private static final Logger LOGGER = Logger.getLogger(ProjectEar.class.getName());
+
+    private final ResourceChangeReporter rcr = ResourceChangeReporterFactory.createResourceChangeReporter(new EarResourceChangeReporter());
 
     private final EarProject project;
     
@@ -175,7 +180,12 @@ public final class ProjectEar extends J2eeApplicationProvider
     public ModuleChangeReporter getModuleChangeReporter () {
         return this;
     }
-    
+
+    @Override
+    public ResourceChangeReporter getResourceChangeReporter() {
+        return rcr;
+    }
+
     @Override
     public String getServerID () {
         return project.getServerID(); //helper.getStandardPropertyEvaluator ().getProperty (EarProjectProperties.J2EE_SERVER_TYPE);
@@ -794,6 +804,21 @@ public final class ProjectEar extends J2eeApplicationProvider
             for (ArtifactListener listener : toFire) {
                 listener.artifactsUpdated(recomputed);
             }
+        }
+    }
+
+    private class EarResourceChangeReporter implements ResourceChangeReporterImplementation {
+
+        public boolean isServerResourceChanged(long lastDeploy) {
+            File resDir = getResourceDirectory();
+            if (resDir != null) {
+                for (File file : resDir.listFiles()) {
+                    if (file.lastModified() > lastDeploy) {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
     }
 }
