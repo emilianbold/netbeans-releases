@@ -425,8 +425,9 @@ public class FmtOptions {
             }
             else if ( jc instanceof JComboBox) {
                 JComboBox cb  = (JComboBox)jc;
-                // Logger.global.info( cb.getSelectedItem() + " " + optionID);
-                String value = ((ComboItem) cb.getSelectedItem()).value;
+                ComboItem comboItem = ((ComboItem) cb.getSelectedItem());
+                String value = comboItem == null ? getDefaultAsString(optionID) : comboItem.value;
+                
                 if (getDefaultAsString(optionID).equals(value))
                     node.remove(optionID);
                 else
