@@ -16,10 +16,10 @@ class referencesActions extends sfActions {
      */
     public function executeIndex(sfWebRequest $request) {
         $this->categories_list = Doctrine::getTable("ReferencesCategory")
-            ->createQuery("c")
-            ->where("disabled is null")
-            ->orderBy("priority ASC")
-            ->execute();
+                ->createQuery("c")
+                ->where("disabled is null")
+                ->orderBy("priority ASC")
+                ->execute();
     }
 
     public function executeShowItemDetail(sfWebRequest $request) {
@@ -27,9 +27,9 @@ class referencesActions extends sfActions {
 
         $this->pager = new sfDoctrinePager('ReferencesFiles',10);
         $this->pager->getQuery()->from('ReferencesFiles c')
-            ->where("c.disabled is null")
-            ->andWhere("c.ref_id = ?", $this->getRoute()->getObject()->getId())
-            ->orderBy("priority ASC");
+                ->where("c.disabled is null")
+                ->andWhere("c.ref_id = ?", $this->getRoute()->getObject()->getId())
+                ->orderBy("priority ASC");
         $this->pager->setPage($request->getParameter('page', 1));
         $this->pager->init();
     }
@@ -38,9 +38,9 @@ class referencesActions extends sfActions {
 
         $this->pager = new sfDoctrinePager('ReferencesItems',10);
         $this->pager->getQuery()->from('ReferencesItems c')
-            ->where("c.disabled is null")
-            ->andWhere("c.ref_category_id = ?", $this->getRoute()->getObject()->getId())
-            ->orderBy("priority ASC")^
+                ->where("c.disabled is null")
+                ->andWhere("c.ref_category_id = ?", $this->getRoute()->getObject()->getId())
+                ->orderBy("priority ASC")^
 
     }
 }
