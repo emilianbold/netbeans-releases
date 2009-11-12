@@ -402,8 +402,12 @@ final class Erprint {
     }
 
     private void refineSourceInfo(FunctionStatistic fstat, FunctionCallImpl functionCall, int choice) throws IOException {
-        String funcName = functionCall.getFunction().getName();
-        long funcRef = functionCall.getFunctionRefID();
+        final String funcName = functionCall.getFunction().getName();
+        final long funcRef = functionCall.getFunctionRefID();
+
+        if ("(unknown)".equals(fstat.getSourceFile())) { // NOI18N
+            return;
+        }
 
         synchronized (this) {
             Metrics prev_metrics = null;

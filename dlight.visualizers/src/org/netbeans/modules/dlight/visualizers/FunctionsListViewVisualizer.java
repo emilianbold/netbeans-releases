@@ -144,10 +144,18 @@ public class FunctionsListViewVisualizer extends JPanel implements
     private ExecutorService sourcePrefetchExecutor;
     private static final boolean isMacLaf = "Aqua".equals(UIManager.getLookAndFeel().getID()); // NOI18N
     private static final Color macBackground = UIManager.getColor("NbExplorerView.background"); // NOI18N
+    private static final String displayNameFormat;
 //    private final FocusTraversalPolicy focusPolicy = new FocusTraversalPolicyImpl() ;
     private JComponent lastFocusedComponent = null;
     private Map<Integer, Boolean> ascColumnValues = new HashMap<Integer, Boolean>();
     private final SourceSupportProvider sourceSupportProvider;
+
+    static {
+        Color dlc = UIManager.getDefaults().getColor("Label.disabledForeground"); // NOI18N
+        String extraInfoPrefix = String.format("<font color='#%02x%02x%02x'<i>", dlc.getRed(), dlc.getGreen(), dlc.getBlue()); // NOI18N
+        String extraInfoSuffix = String.format("</i></font>", dlc); // NOI18N
+        displayNameFormat = "<html>%s" + extraInfoPrefix + " &lt;%s&gt;" + extraInfoSuffix + "</html>"; // NOI18N
+    }
 
     public FunctionsListViewVisualizer(FunctionsListDataProvider dataProvider, FunctionsListViewVisualizerConfiguration configuration) {
         super(new BorderLayout());
@@ -724,7 +732,32 @@ public class FunctionsListViewVisualizer extends JPanel implements
 
         @Override
         public String getDisplayName() {
-            return functionCall.getDisplayedName();
+            String dispName = functionCall.getDisplayedName().trim();
+            // Do some decoration...
+            // TODO: IMO all additional information (like sourcefile info)
+            // should be retrieved separately and mot with getDisplayedName
+
+            int idx = dispName.indexOf(';');
+//            if (idx < 0) {
+//                idx = dispName.indexOf('+');
+//            }
+
+
+            if (idx > 0) {
+                String funcname = dispName.substring(0, idx).trim();
+                String extraInfo = dispName.substring(idx + 1).trim();
+
+                // Cut line number
+                idx = extraInfo.indexOf(':');
+                if (idx > 0) {
+                    extraInfo = extraInfo.substring(0, idx).trim();
+                }
+
+                dispName = String.format(displayNameFormat, funcname, extraInfo);
+                dispName = dispName.replaceAll(" ", "&nbsp;"); // NOI18N
+            }
+
+            return dispName;
         }
 
         @Override

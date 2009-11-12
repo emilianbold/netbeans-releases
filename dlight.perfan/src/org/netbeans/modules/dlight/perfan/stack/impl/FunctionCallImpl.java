@@ -161,13 +161,13 @@ public class FunctionCallImpl extends FunctionCallWithMetric {
     }
 
     private synchronized void updateDisplayedName() {
-        StringBuilder sb = new StringBuilder(getFunction().getQuilifiedName());
+        StringBuilder sb = new StringBuilder(getFunction().getSignature());
 
         if (sourceInfo != null) {
             String file = sourceInfo.getFileName();
             int line = sourceInfo.getLine();
 
-            sb.append(", "); // NOI18N
+            sb.append("; "); // NOI18N
             sb.append(new File(file).getName());
 
             if (line > 0) {
