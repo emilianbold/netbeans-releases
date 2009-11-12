@@ -92,7 +92,9 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
 
     static {
         //First found server will be used by tests
-        if (ServerType.GLASSFISH.isAutoRegistered()) {
+        if (ServerType.GLASSFISH_V3.isAutoRegistered()) {
+            REGISTERED_SERVER = ServerType.GLASSFISH_V3;
+        } else if (ServerType.GLASSFISH.isAutoRegistered()) {
             REGISTERED_SERVER = ServerType.GLASSFISH;
         } else if (ServerType.TOMCAT.isAutoRegistered()) {
             REGISTERED_SERVER = ServerType.TOMCAT;
@@ -297,7 +299,9 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
             switch (this) {
                 case SJSAS:
                 case GLASSFISH:
-                    return System.getProperty("glassfish.home") != null; //NOI18N
+                    return System.getProperty("com.sun.aas.installRoot") != null; //NOI18N
+                case GLASSFISH_V3:
+                    return System.getProperty("org.glassfish.v3ee6.installRoot") != null; //NOI18N
                 case TOMCAT:
                     return System.getProperty("tomcat.home") != null; //NOI18N
                 case JBOSS:
@@ -320,11 +324,11 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
     }
 
     public void assertServerRunning() {
-        if (!REGISTERED_SERVER.equals(ServerType.GLASSFISH)) {
+        if (!(REGISTERED_SERVER.equals(ServerType.GLASSFISH) || REGISTERED_SERVER.equals(ServerType.GLASSFISH_V3))) {
             LOGGER.info("not yet supported for server: " + REGISTERED_SERVER.toString());
             return;
         }
-        J2eeServerNode gf = J2eeServerNode.invoke("GlassFish v2");
+        J2eeServerNode gf = getServerNode();
         gf.refresh();
         if (gf.isCollapsed()) {
             gf.expand();
@@ -446,6 +450,10 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
         //save IDE log in workdir
         FileObject ud = FileUtil.toFileObject(new File(System.getProperty("netbeans.user"))); //NOI18N
         FileObject log = ud.getFileObject("var/log/messages.log"); //NOI18N
+        File f = new File(getWorkDir(), "messages.log"); //NOI18N
+        if (f.exists()) {
+            f.delete();
+        }
         FileObject copy = FileUtil.toFileObject(getWorkDir()).createData("messages", "log"); //NOI18N
         InputStream is = log.getInputStream();
         FileLock lock = copy.lock();
@@ -463,7 +471,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
      * Start a server
      */
     public void testStartServer() throws IOException {
-        J2eeServerNode serverNode = J2eeServerNode.invoke(REGISTERED_SERVER.toString());
+        J2eeServerNode serverNode = getServerNode();
         serverNode.start();
         dumpOutput();
     }
@@ -472,7 +480,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
      * Stop a server
      */
     public void testStopServer() throws IOException {
-        J2eeServerNode serverNode = J2eeServerNode.invoke(REGISTERED_SERVER.toString());
+        J2eeServerNode serverNode = getServerNode();
         serverNode.stop();
         new EventTool().waitNoEvent(2000);
         dumpOutput();
@@ -615,7 +623,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
      */
     protected void undeployProject(String projectName) throws IOException {
         assertServerRunning();
-        J2eeServerNode serverNode = J2eeServerNode.invoke(REGISTERED_SERVER.toString());
+        J2eeServerNode serverNode = getServerNode();
         serverNode.expand();
         //Applications
         String applicationsLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.nodes.Bundle", "LBL_Applications");
@@ -636,6 +644,8 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
             case MAVEN_WEB:
                 if (ServerType.TOMCAT.equals(REGISTERED_SERVER)) {
                     appsNode = new Node(serverNode, webLabel);
+                } else if (ServerType.GLASSFISH_V3.equals(REGISTERED_SERVER)) {
+                    appsNode = new Node(serverNode, applicationsLabel);
                 } else {
                     appsNode = new Node(serverNode, applicationsLabel + "|" + webLabel);
                 }
@@ -735,8 +745,8 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
             dumpOutput();
             assertTrue("Build failed", oto.getText().indexOf("BUILD SUCCESSFUL") > -1); //NOI18N
         }
-        
-        
+
+
     }
 
     private void setProjectName(String projectName) {
@@ -820,5 +830,19 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
             return new File(System.getProperty("java.io.tmpdir"));
         }
         return f;
+    }
+
+    protected J2eeServerNode getServerNode() {
+        switch (REGISTERED_SERVER) {
+            case GLASSFISH:
+                return getServerNode(Server.GLASSFISH);
+            case GLASSFISH_V3:
+                return getServerNode(Server.GLASSFISH_V3);
+            case JBOSS:
+                return getServerNode(Server.JBOSS);
+            case TOMCAT:
+                return getServerNode(Server.TOMCAT);
+        }
+        return getServerNode(Server.ANY);
     }
 }

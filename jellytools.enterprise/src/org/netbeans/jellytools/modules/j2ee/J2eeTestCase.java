@@ -50,6 +50,7 @@ import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.modules.j2ee.nodes.GlassFishV2ServerNode;
+import org.netbeans.jellytools.modules.j2ee.nodes.GlassFishV3ServerNode;
 import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.JButtonOperator;
@@ -104,7 +105,7 @@ public class J2eeTestCase extends JellyTestCase {
             }
         }
         if (! (new File(tmpDir, PID_FILE_PREFIX + pid).createNewFile()))
-            LOG.warning("File '"+ tmpDirPath + File.pathSeparator + PID_FILE_PREFIX + pid + "' not successfully created!");;
+            LOG.warning("File '"+ tmpDirPath + File.pathSeparator + PID_FILE_PREFIX + pid + "' not successfully created!");
     }
 
     private static void registerGlassfish() {
@@ -330,7 +331,7 @@ public class J2eeTestCase extends JellyTestCase {
         }
         switch (server){
             case GLASSFISH_V3:
-                return J2eeServerNode.invoke("GlassFish");
+                return GlassFishV3ServerNode.invoke();
             case GLASSFISH:
                 return GlassFishV2ServerNode.invoke();
             case JBOSS:
