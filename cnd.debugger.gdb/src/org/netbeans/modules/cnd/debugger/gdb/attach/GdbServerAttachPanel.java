@@ -53,6 +53,7 @@ import org.netbeans.spi.debugger.ui.Controller;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  *
@@ -61,9 +62,8 @@ import org.openide.util.NbBundle;
 public class GdbServerAttachPanel extends javax.swing.JPanel {
     private final Controller controller;
 
-    // TODO: preserve between sessions
-    private static String lastHostValue = ""; //NOI18N
-    private static String lastPortValue = ""; //NOI18N
+    private static final String HOST_KEY = "last-gdbserver-host"; //NOI18N
+    private static final String PORT_KEY = "last-gdbserver-port"; //NOI18N
 
     /** Creates new form GdbServerAttachPanel */
     public GdbServerAttachPanel() {
@@ -71,8 +71,8 @@ public class GdbServerAttachPanel extends javax.swing.JPanel {
         initComponents();
         // Fill the Projects combo box
         GdbAttachPanel.fillProjectsCombo(projectCB);
-        hostTF.setText(lastHostValue);
-        portTF.setText(lastPortValue);
+        hostTF.setText(NbPreferences.forModule(GdbServerAttachPanel.class).get(HOST_KEY, "")); //NOI18N
+        portTF.setText(NbPreferences.forModule(GdbServerAttachPanel.class).get(PORT_KEY, "")); //NOI18N
     }
 
     Controller getController() {
@@ -152,17 +152,22 @@ public class GdbServerAttachPanel extends javax.swing.JPanel {
         }
 
         public boolean ok() {
-            lastHostValue = hostTF.getText();
-            if (lastHostValue.length() == 0) {
+            String hostValue = hostTF.getText();
+            if (hostValue.length() == 0) {
                 return false;
             }
-            lastPortValue = portTF.getText();
-            if (lastPortValue.length() == 0) {
+            String portValue = portTF.getText();
+            if (portValue.length() == 0) {
                 return false;
             }
+            
+            //store last values
+            NbPreferences.forModule(GdbServerAttachPanel.class).put(HOST_KEY, hostValue);
+            NbPreferences.forModule(GdbServerAttachPanel.class).put(PORT_KEY, portValue);
+
             ProjectCBItem pi = (ProjectCBItem) projectCB.getSelectedItem();
             if (pi != null) {
-                String target = lastHostValue + ':' + lastPortValue;
+                String target = hostValue + ':' + portValue;
                 try {
                     GdbDebugger.attachGdbServer(target, pi.getProjectInformation());
                 } catch (DebuggerStartException dse) {
