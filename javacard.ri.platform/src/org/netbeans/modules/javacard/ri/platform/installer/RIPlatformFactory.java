@@ -158,7 +158,7 @@ final class RIPlatformFactory implements Mutex.ExceptionAction<FileObject> {
     }
 
     public static boolean canInstall (Map<? extends Object, ? extends Object> m) {
-        Object o = m.get(JavacardPlatformKeyNames.PLATFORM_JAVACARD_SPECIFICATION_VERSION);
+        Object o = m.get(JavacardPlatformKeyNames.PLATFORM_JAVACARD_VERSION);
         return o == null ? false : canInstall(o.toString());
     }
 
