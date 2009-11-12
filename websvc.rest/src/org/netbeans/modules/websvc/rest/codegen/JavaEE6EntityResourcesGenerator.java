@@ -70,4 +70,21 @@ public class JavaEE6EntityResourcesGenerator extends EntityResourcesGenerator {
         imports.add(RestConstants.STATELESS);
         return imports;
     }
+
+    @Override
+    protected Object[] getAdditionalItemResourceAnnotationAttrs() {
+        return new Object[] {null, null};
+    }
+
+    @Override
+    protected String[] getAdditionalItemResourceAnnotations() {
+        return new String[] {RestConstants.STATELESS_ANNOTATION};
+    }
+
+    @Override
+    protected List<String> getAdditionalItemResourceImports(EntityResourceBean bean) {
+        List<String> imports = new ArrayList<String>();
+        imports.add(RestConstants.STATELESS);
+        return imports;
+    }
 }
