@@ -333,11 +333,13 @@ final class Erprint {
             }
 
             String functionName = functionCall.getFunction().getName();
+            String srcFile = functionCall.getSourceFile();
             String[] stat = exec(ErprintCommand.fsingle(functionName));
             String choice = "1"; // NOI18N
 
             if (stat != null && stat.length > 0 && choiceMarker.equals(stat[0])) { // NOI18N
                 String address;
+                String fname;
 
                 long funcRef = functionCall.getFunctionRefID();
 
@@ -346,9 +348,10 @@ final class Erprint {
                     if (m.matches()) {
                         choice = m.group(1);
                         address = m.group(2);
+                        fname = m.group(3);
 
                         try {
-                            if (Long.parseLong(address, 16) == funcRef) {
+                            if (Long.parseLong(address, 16) == funcRef || fname.endsWith(srcFile)) {
                                 break;
                             }
                         } catch (NumberFormatException ex) {

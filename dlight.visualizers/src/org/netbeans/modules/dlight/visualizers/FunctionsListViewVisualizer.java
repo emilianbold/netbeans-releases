@@ -145,16 +145,18 @@ public class FunctionsListViewVisualizer extends JPanel implements
     private static final boolean isMacLaf = "Aqua".equals(UIManager.getLookAndFeel().getID()); // NOI18N
     private static final Color macBackground = UIManager.getColor("NbExplorerView.background"); // NOI18N
     private static final String displayNameFormat;
+    private static final String plainDisplayNameFormat;
 //    private final FocusTraversalPolicy focusPolicy = new FocusTraversalPolicyImpl() ;
-    private JComponent lastFocusedComponent = null;
     private Map<Integer, Boolean> ascColumnValues = new HashMap<Integer, Boolean>();
     private final SourceSupportProvider sourceSupportProvider;
+    private static Color dlc = UIManager.getDefaults().getColor("Label.disabledForeground"); // NOI18N
+    private static Color elc = UIManager.getDefaults().getColor("Label.enabledForeground"); // NOI18N
 
     static {
-        Color dlc = UIManager.getDefaults().getColor("Label.disabledForeground"); // NOI18N
-        String extraInfoPrefix = String.format("<font color='#%02x%02x%02x'<i>", dlc.getRed(), dlc.getGreen(), dlc.getBlue()); // NOI18N
-        String extraInfoSuffix = String.format("</i></font>", dlc); // NOI18N
-        displayNameFormat = "<html>%s" + extraInfoPrefix + " &lt;%s&gt;" + extraInfoSuffix + "</html>"; // NOI18N
+        dlc = UIManager.getDefaults().getColor("Label.disabledForeground"); // NOI18N
+        elc = UIManager.getDefaults().getColor("Label.enabledForeground"); // NOI18N
+        displayNameFormat = "<html><pre><b>%s</b><i> &lt;%s&gt;</i></pre></html>"; // NOI18N
+        plainDisplayNameFormat = "<html><pre><b>%s</b></pre></html>"; // NOI18N
     }
 
     public FunctionsListViewVisualizer(FunctionsListDataProvider dataProvider, FunctionsListViewVisualizerConfiguration configuration) {
@@ -745,6 +747,9 @@ public class FunctionsListViewVisualizer extends JPanel implements
 
             if (idx > 0) {
                 String funcname = dispName.substring(0, idx).trim();
+                funcname = funcname.replace("&", "&amp;"); // NOI18N
+                funcname = funcname.replace("<", "&lt;"); // NOI18N
+                funcname = funcname.replace(">", "&gt;"); // NOI18N
                 String extraInfo = dispName.substring(idx + 1).trim();
 
                 // Cut line number
@@ -754,7 +759,13 @@ public class FunctionsListViewVisualizer extends JPanel implements
                 }
 
                 dispName = String.format(displayNameFormat, funcname, extraInfo);
-                dispName = dispName.replaceAll(" ", "&nbsp;"); // NOI18N
+                dispName = dispName.replace(" ", "&nbsp;"); // NOI18N
+            } else {
+                dispName = dispName.replace("&", "&amp;"); // NOI18N
+                dispName = dispName.replace("<", "&lt;"); // NOI18N
+                dispName = dispName.replace(">", "&gt;"); // NOI18N
+                dispName = String.format(plainDisplayNameFormat, dispName);
+                dispName = dispName.replace(" ", "&nbsp;"); // NOI18N
             }
 
             return dispName;
@@ -855,7 +866,11 @@ public class FunctionsListViewVisualizer extends JPanel implements
                     editor.setValue(value);
                     DefaultTableCellRenderer c = (DefaultTableCellRenderer) super.getTableCellRendererComponent(table, editor.getAsText(), isSelected, hasFocus, row, column);
                     Action goToSourceAction = ((FunctionCallNode) node).getGoToSourceAction();
-                    c.setEnabled(node != null && goToSourceAction != null && goToSourceAction.isEnabled());
+                    if (node != null && goToSourceAction != null && goToSourceAction.isEnabled()) {
+                        c.setForeground(elc);
+                    } else {
+                        c.setForeground(dlc);
+                    }
                     return c;
                 }
             }

@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.apt.support;
 
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import java.io.Reader;
-import java.io.StringReader;
 import org.netbeans.modules.cnd.apt.impl.support.generated.APTLexer;
 
 /**
@@ -51,7 +50,7 @@ import org.netbeans.modules.cnd.apt.impl.support.generated.APTLexer;
  * 
  * @author Vladimir Voskresensky
  */
-public class APTTokenStreamBuilder {
+public final class APTTokenStreamBuilder {
     private APTTokenStreamBuilder() {
     }   
     
