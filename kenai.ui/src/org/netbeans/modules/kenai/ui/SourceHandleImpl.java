@@ -254,7 +254,7 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
         if (!location.endsWith("/")) {//NOI18N
             location+="/";//NOI18N
         }
-        if (!remoteLocation.endsWith("/")) {//NOI18N
+        if (remoteLocation!=null && !remoteLocation.endsWith("/")) {//NOI18N
             remoteLocation+="/";//NOI18N
         }
 
