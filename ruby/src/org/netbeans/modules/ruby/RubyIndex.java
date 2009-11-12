@@ -55,6 +55,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -111,6 +112,12 @@ public final class RubyIndex {
 
     private final QuerySupport querySupport;
 
+    /**
+     * Caches the index to avoid querying roots (can be time consuming). Holds the index just for
+     * one FileObject at time.
+     */
+    private static final Map<FileObject, RubyIndex> CACHE = new WeakHashMap<FileObject, RubyIndex>(1);
+
     private static final SortedSet<InvocationCounter> mostTimeConsumingInvocations = new TreeSet<InvocationCounter>();
     /**
      * The base class for AR model classes, needs special handling in various
@@ -139,10 +146,18 @@ public final class RubyIndex {
     }
 
     public static RubyIndex get(final FileObject fo) {
-        return fo == null ? null : get(QuerySupport.findRoots(fo,
+        RubyIndex result = CACHE.get(fo);
+        if (result != null) {
+            return result;
+        }
+        result = fo == null ? null : get(QuerySupport.findRoots(fo,
                 Collections.singleton(RubyLanguage.SOURCE),
                 Collections.singleton(RubyLanguage.BOOT),
                 Collections.<String>emptySet()));
+        // cache the index just for one fo
+        CACHE.clear();
+        CACHE.put(fo, result);
+        return result;
     }
 
     public Collection<? extends IndexResult> query(
