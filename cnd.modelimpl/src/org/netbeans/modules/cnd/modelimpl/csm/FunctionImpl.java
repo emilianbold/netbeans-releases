@@ -47,7 +47,7 @@ import java.util.List;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.CsmFunction.OperatorKind;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
-import antlr.collections.AST;
+import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -105,9 +105,9 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     public FunctionImpl(AST ast, CsmFile file, CsmScope scope, boolean register, boolean global) throws AstRendererException {
         this(ast, file, null, scope, register, global);
     }
-    
+
     public FunctionImpl(AST ast, CsmFile file, CsmType type, CsmScope scope, boolean register, boolean global) throws AstRendererException {
-        
+
         super(ast, file);
         assert !CHECK_SCOPE || (scope != null);
         
@@ -115,7 +115,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         if (name.length()==0) {
             throw new AstRendererException((FileImpl)file, this.getStartOffset(), "Empty function name."); // NOI18N
         }
-        rawName = AstUtil.getRawNameInChildren(ast);
+        rawName = initRawName(ast);
         AST child = ast.getFirstChild();
         if (child != null) {
             setStatic(child.getType() == CPPTokenTypes.LITERAL_static);
@@ -212,7 +212,8 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
      * returns false
      */
     public boolean isPureDefinition() {
-        return getKind() == CsmDeclaration.Kind.FUNCTION_DEFINITION;
+        return getKind() == CsmDeclaration.Kind.FUNCTION_DEFINITION ||
+                getKind() == CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION;
     }
 
     protected boolean hasFlags(byte mask) {
@@ -253,6 +254,10 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
 
     protected String initName(AST node) {
         return findFunctionName(node);
+    }
+
+    protected CharSequence[] initRawName(AST node) {
+        return findFunctionRawName(node);
     }
     
     public CharSequence getDisplayName() {
@@ -308,7 +313,14 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         }
         return "";
     }
-    
+
+    private static CharSequence[] findFunctionRawName(AST ast) {
+        if( CastUtils.isCast(ast) ) {
+            return CastUtils.getFunctionRawName(ast);
+        }
+        return AstUtil.getRawNameInChildren(ast);
+    }  
+
     protected boolean isCStyleStatic() {
         return isStatic() && CsmKindUtilities.isFile(getScope());
     }
@@ -411,6 +423,26 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
                 def = findDefinition(dependent, uname);
                 if (def != null) {
                     break;
+                }
+            }
+        }
+        if (def == null) {
+            uname = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION) + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix();
+            def = findDefinition(prj, uname);
+            if (def == null) {
+                for (CsmProject lib : prj.getLibraries()) {
+                    def = findDefinition(lib, uname);
+                    if (def != null) {
+                        break;
+                    }
+                }
+            }
+            if (def == null && (prj instanceof ProjectBase)) {
+                for (CsmProject dependent : ((ProjectBase) prj).getDependentProjects()) {
+                    def = findDefinition(dependent, uname);
+                    if (def != null) {
+                        break;
+                    }
                 }
             }
         }

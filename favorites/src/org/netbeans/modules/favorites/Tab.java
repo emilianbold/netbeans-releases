@@ -48,8 +48,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.ObjectStreamException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collections;
 import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -66,7 +65,6 @@ import org.openide.explorer.view.BeanTreeView;
 import org.openide.explorer.view.TreeView;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.DataShadow;
@@ -161,13 +159,13 @@ implements Runnable, ExplorerManager.Provider {
     * @return Tree view that will serve as main view for this explorer.
     */
     protected TreeView initGui () {
-        TreeView view = new BeanTreeView();
-        view.setRootVisible(false);
-        view.setDragSource (true);
-        view.setUseSubstringInQuickSearch(true);
+        TreeView tView = new BeanTreeView();
+        tView.setRootVisible(false);
+        tView.setDragSource (true);
+        tView.setUseSubstringInQuickSearch(true);
         setLayout(new BorderLayout());
-        add (view);
-        return view;
+        add (tView);
+        return tView;
     }
 
     @Override
@@ -513,17 +511,7 @@ implements Runnable, ExplorerManager.Provider {
             }
 
             try {
-                Node[] toShadows = new Node[] {DataObject.find(file).getNodeDelegate()};
-                final DataFolder f = FavoritesNode.getFolder();
-                final DataObject [] arr = f.getChildren();
-                final List<DataObject> listAdd = new ArrayList<DataObject>();
-                DataObject createdDO = null;
-
-                createdDO = Actions.Add.createShadows(f, toShadows, listAdd);
-
-                //This is done to set desired order of nodes in view
-                Actions.Add.reorderAfterAddition(f, arr, listAdd);
-                Actions.Add.selectAfterAddition(createdDO);
+                Actions.Add.addToFavorites(Collections.singletonList(DataObject.find(file)));
             } catch (DataObjectNotFoundException e) {
                 LOG.log(Level.WARNING, null, e);
             }
@@ -575,5 +563,5 @@ implements Runnable, ExplorerManager.Provider {
         getDefault().scheduleValidation();
         return getDefault();
     }
-    
+
 } // end of Tab inner class

@@ -1,5 +1,5 @@
 var jsfcrud = {};
-jsfcrud.busyImagePath = '__WEB_FOLDER_PATH__busy.gif';
+jsfcrud.busyImagePath = '__WEB_BUSY_ICON_PATH__';
 jsfcrud.isDynamicFacesAvailable = typeof DynaFaces != 'undefined';
 jsfcrud.canAjaxEnableForm = true;
 if (!jsfcrud.isDynamicFacesAvailable) {

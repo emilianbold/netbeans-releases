@@ -64,7 +64,6 @@ import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 import org.netbeans.modules.kenai.ui.spi.SourceHandle;
 import org.netbeans.modules.mercurial.api.Mercurial;
 import org.netbeans.modules.subversion.api.Subversion;
-import org.netbeans.modules.versioning.system.cvss.api.CVS;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -97,15 +96,11 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
         } else if (KenaiService.Names.SUBVERSION.equals(feature.getService())) {
             prefs= NbPreferences.forModule(Subversion.class);
         } else if (KenaiService.Names.EXTERNAL_REPOSITORY.equals(feature.getService())) {
-            if (Subversion.isRepository(feature.getLocation())) {
-                externalScmType=KenaiService.Names.SUBVERSION;
-                return;
-            } else if (CVS.isRepository(feature.getLocation())) {
-                externalScmType=SCM_TYPE_CVS;
-                return;
-            } else if (Mercurial.isRepository(feature.getLocation())) {
-                externalScmType=KenaiService.Names.MERCURIAL;
-                return;
+            externalScmType = feature.getExtendedType();
+            if (KenaiService.Names.MERCURIAL.equals(externalScmType)) {
+                prefs= NbPreferences.forModule(Mercurial.class);
+            } else if (KenaiService.Names.SUBVERSION.equals(externalScmType)) {
+                prefs= NbPreferences.forModule(Subversion.class);
             }
         }
         this.projectHandle = projectHandle;
@@ -255,11 +250,25 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
 
     private boolean isUnder(FileObject projectDirectory) {
         String remoteLocation = (String) projectDirectory.getAttribute("ProvidedExtensions.RemoteLocation"); // NOI18N
-        if (remoteLocation==null || remoteLocation.length()==0) {
+        String location = feature.getLocation();
+        if (!location.endsWith("/")) {//NOI18N
+            location+="/";//NOI18N
+        }
+        if (!remoteLocation.endsWith("/")) {//NOI18N
+            remoteLocation+="/";//NOI18N
+        }
+
+        if (location.equals(remoteLocation))
+            return true;
+        try {
+            URI uri1 = new URI(location);
+            URI uri2 = new URI(remoteLocation);
+            if (location.substring(uri1.getScheme().length()).equals(remoteLocation.substring(uri2.getScheme().length())))
+                return true;
+        } catch (Exception e) {
+            //ignore
             return false;
         }
-        if (feature.getLocation().equals(remoteLocation))
-            return true;
         return false;
     }
 

@@ -46,6 +46,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Locale;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -75,8 +77,12 @@ public class JsfBinaryIndexer extends BinaryIndexer {
     private static final String TLD_LIB_SUFFIX = ".tld"; //NOI18N
     private static final String FACELETS_LIB_SUFFIX = ".taglib.xml"; //NOI18N
 
+    private static final Logger LOGGER = Logger.getLogger(JsfBinaryIndexer.class.getSimpleName());
+
     @Override
     protected void index(Context context) {
+        LOGGER.log(Level.FINE, "indexing " + context.getRoot()); //NOI18N
+
         if (context.getRoot() == null) {
             return;
         }
@@ -100,6 +106,8 @@ public class JsfBinaryIndexer extends BinaryIndexer {
                     IndexDocument doc = sup.createDocument(file);
                     doc.addPair(LIB_NAMESPACE_KEY, namespace, true, true);
                     sup.addDocument(doc);
+
+                    LOGGER.log(Level.FINE, "The file " + file + " indexed as a TLD (namespace=" + namespace + ")"); //NOI18N
                 }
             } catch (FileNotFoundException ex) {
                 Exceptions.printStackTrace(ex);
@@ -119,6 +127,8 @@ public class JsfBinaryIndexer extends BinaryIndexer {
                 IndexDocument doc = sup.createDocument(file);
                 doc.addPair(LIB_FACELETS_KEY, Boolean.TRUE.toString(), true, true);
                 sup.addDocument(doc);
+
+                LOGGER.log(Level.FINE, "The file " + file + " indexed as a Facelets Library Descriptor"); //NOI18N
             } catch (FileNotFoundException ex) {
                 Exceptions.printStackTrace(ex);
             } catch (IOException ex) {
@@ -133,6 +143,7 @@ public class JsfBinaryIndexer extends BinaryIndexer {
         //...and index as normal composite library
         FileObject resourcesFolder = context.getRoot().getFileObject("META-INF/resources"); //NOI18N //can it be stored in META-INF.* ????
         if(resourcesFolder != null) {
+            LOGGER.log(Level.FINE, "Composite Libraries Scan: META-INF/resources folder found"); //NOI18N
             try {
                 Enumeration<? extends FileObject> folders = resourcesFolder.getFolders(false);
                 final IndexingSupport sup = IndexingSupport.getInstance(context);
@@ -144,6 +155,7 @@ public class JsfBinaryIndexer extends BinaryIndexer {
                         if (file.getExt().equalsIgnoreCase("xhtml")) {
                             //NOI18N
                             //parse && index the html content of the file
+                            LOGGER.log(Level.FINE, "Composite Libraries Scan: found " + file); //NOI18N
                             Source source = Source.create(file);
                             try {
                                 ParserManager.parse(Collections.singleton(source), new UserTask() {
@@ -159,6 +171,8 @@ public class JsfBinaryIndexer extends BinaryIndexer {
                                                     IndexDocument doc = sup.createDocument(file);
                                                     ccmodel.storeToIndex(doc);
                                                     sup.addDocument(doc);
+
+                                                    LOGGER.log(Level.FINE, "Composite Libraries Scan: Model created for file " + file); //NOI18N
                                                 }
                                             }
                                         }

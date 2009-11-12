@@ -47,6 +47,7 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -54,6 +55,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -75,22 +77,29 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeApplication;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleListener;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ResourceChangeReporter;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener.Artifact;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationImplementation2;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleFactory;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider.DeployOnSaveSupport;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.ResourceChangeReporterFactory;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.ResourceChangeReporterImplementation;
 import org.netbeans.modules.j2ee.earproject.model.ApplicationMetadataModelImpl;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
 import org.netbeans.modules.j2ee.earproject.util.EarProjectUtil;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.spi.MetadataModelFactory;
-import org.netbeans.modules.j2ee.spi.ejbjar.EarImplementation2;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
@@ -108,6 +117,8 @@ public final class ProjectEar extends J2eeApplicationProvider
 
     private static final Logger LOGGER = Logger.getLogger(ProjectEar.class.getName());
 
+    private final ResourceChangeReporter rcr = ResourceChangeReporterFactory.createResourceChangeReporter(new EarResourceChangeReporter());
+
     private final EarProject project;
     
     private PropertyChangeSupport propertyChangeSupport;
@@ -118,6 +129,8 @@ public final class ProjectEar extends J2eeApplicationProvider
     private MetadataModel<ApplicationMetadata> metadataModel;
     
     private final DeployOnSaveSupport deployOnSaveSupport = new DeployOnSaveSupportProxy();
+
+    final CopyOnSaveSupport copyOnSaveSupport = new CopyOnSaveSupport();
     
     ProjectEar (EarProject project) { // ], AntProjectHelper helper) {
         this.project = project;
@@ -167,7 +180,12 @@ public final class ProjectEar extends J2eeApplicationProvider
     public ModuleChangeReporter getModuleChangeReporter () {
         return this;
     }
-    
+
+    @Override
+    public ResourceChangeReporter getResourceChangeReporter() {
+        return rcr;
+    }
+
     @Override
     public String getServerID () {
         return project.getServerID(); //helper.getStandardPropertyEvaluator ().getProperty (EarProjectProperties.J2EE_SERVER_TYPE);
@@ -276,7 +294,7 @@ public final class ProjectEar extends J2eeApplicationProvider
         
         // create model
         FileObject template = FileUtil.getConfigFile(
-                "org-netbeans-modules-j2ee-earproject/ear-5.xml"); // NOI18N
+                "org-netbeans-modules-j2ee-earproject/ear-6.xml"); // NOI18N
         assert template != null;
         
         FileObject root = FileUtil.createMemoryFileSystem().getRoot();
@@ -608,6 +626,98 @@ public final class ProjectEar extends J2eeApplicationProvider
     }
 
     /**
+     * This class handle copying of meta-inf resources to appropriate place in build
+     * dir. This class is used in true Deploy On Save.
+     *
+     * Class should not request project lock from FS listener methods
+     * (deadlock prone).
+     */
+    public class CopyOnSaveSupport extends FileChangeAdapter implements PropertyChangeListener {
+
+        private File resources = null;
+
+        private final List<ArtifactListener> listeners = new CopyOnWriteArrayList<ArtifactListener>();
+
+        /** Creates a new instance of CopyOnSaveSupport */
+        public CopyOnSaveSupport() {
+            super();
+        }
+
+        public void addArtifactListener(ArtifactListener listener) {
+            listeners.add(listener);
+        }
+
+        public void removeArtifactListener(ArtifactListener listener) {
+            listeners.remove(listener);
+        }
+
+        public void initialize() throws FileStateInvalidException {
+            resources = getResourceDirectory();
+
+            if (resources != null) {
+                FileUtil.addFileChangeListener(this, resources);
+            }
+
+            ProjectEar.this.project.evaluator().addPropertyChangeListener(this);
+        }
+
+        public void cleanup() throws FileStateInvalidException {
+            if (resources != null) {
+                FileUtil.removeFileChangeListener(this, resources);
+            }
+
+            ProjectEar.this.project.evaluator().removePropertyChangeListener(this);
+        }
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (EarProjectProperties.RESOURCE_DIR.equals(evt.getPropertyName())) {
+                try {
+                    cleanup();
+                    initialize();
+                } catch (org.openide.filesystems.FileStateInvalidException e) {
+                    LOGGER.log(Level.INFO, null, e);
+                }
+            }
+        }
+
+        @Override
+        public void fileChanged(FileEvent fe) {
+            handleResource(fe);
+        }
+
+        @Override
+        public void fileDataCreated(FileEvent fe) {
+            handleResource(fe);
+        }
+
+        @Override
+        public void fileRenamed(FileRenameEvent fe) {
+            handleResource(fe);
+        }
+
+        @Override
+        public void fileDeleted(FileEvent fe) {
+            handleResource(fe);
+        }
+
+        private void fireArtifactChange(Iterable<ArtifactListener.Artifact> files) {
+            for (ArtifactListener listener : listeners) {
+                listener.artifactsUpdated(files);
+            }
+        }
+
+        private void handleResource(FileEvent fe) {
+            FileObject resourceFo = FileUtil.toFileObject(resources);
+            if (resourceFo != null
+                    && (resourceFo.equals(fe.getFile()) || FileUtil.isParentOf(resourceFo, fe.getFile()))) {
+
+                fireArtifactChange(Collections.singleton(
+                        Artifact.forFile(FileUtil.toFile(fe.getFile())).serverResource()));
+            }
+        }
+    }
+
+    /**
      * This class is proxying events from child listeners and perform
      * <i>library-inclusion-in-manifest</i> (out of EJB and WEB) logic. Soo ugly but
      * inevitable :(
@@ -620,10 +730,12 @@ public final class ProjectEar extends J2eeApplicationProvider
             super();
         }
 
-        public synchronized void addArtifactListener(ArtifactListener listner) {
+        public synchronized void addArtifactListener(ArtifactListener listener) {
+            copyOnSaveSupport.addArtifactListener(listener);
+
             boolean register = listeners.isEmpty();
-            if (listner != null) {
-                listeners.add(listner);
+            if (listener != null) {
+                listeners.add(listener);
             }
 
             if (register) {
@@ -637,6 +749,8 @@ public final class ProjectEar extends J2eeApplicationProvider
         }
 
         public synchronized void removeArtifactListener(ArtifactListener listener) {
+            copyOnSaveSupport.removeArtifactListener(listener);
+
             if (listener != null) {
                 listeners.remove(listener);
             }
@@ -690,6 +804,24 @@ public final class ProjectEar extends J2eeApplicationProvider
             for (ArtifactListener listener : toFire) {
                 listener.artifactsUpdated(recomputed);
             }
+        }
+    }
+
+    private class EarResourceChangeReporter implements ResourceChangeReporterImplementation {
+
+        public boolean isServerResourceChanged(long lastDeploy) {
+            File resDir = getResourceDirectory();
+            if (resDir != null && resDir.exists() && resDir.isDirectory()) {
+                File[] children = resDir.listFiles();
+                if (children != null) {
+                    for (File file : children) {
+                        if (file.lastModified() > lastDeploy) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
         }
     }
 }

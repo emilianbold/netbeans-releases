@@ -97,7 +97,7 @@ public class IncludeErrorProvider extends CsmErrorProvider {
         return NbBundle.getMessage(IncludeErrorProvider.class, "HighlightProvider_HyperlinkActionsHints", tooltip,  InputEvent.getModifiersExText(altShortCut));// NOI18N
     }
 
-    private static class IncludeErrorInfo extends OffsetableErrorInfo implements CsmErrorInfo {
+    private static final class IncludeErrorInfo extends OffsetableErrorInfo implements CsmErrorInfo {
 
         private String message;
         
@@ -119,7 +119,7 @@ public class IncludeErrorProvider extends CsmErrorProvider {
         
     }
 
-    private static class IncludeWarningInfo extends OffsetableErrorInfo implements CsmErrorInfo {
+    private static final class IncludeWarningInfo extends OffsetableErrorInfo implements CsmErrorInfo {
 
         private String message;
 
@@ -141,7 +141,7 @@ public class IncludeErrorProvider extends CsmErrorProvider {
 
     }
 
-    private static class ErrorDirectiveInfo extends OffsetableErrorInfo implements CsmErrorInfo {
+    private static final class ErrorDirectiveInfo extends OffsetableErrorInfo implements CsmErrorInfo {
 
         private String message;
 
@@ -183,7 +183,7 @@ public class IncludeErrorProvider extends CsmErrorProvider {
             return false;
         }
         visited.add(file);
-        if (!CsmFileInfoQuery.getDefault().getBrokenIncludes(file).isEmpty()) {
+        if (CsmFileInfoQuery.getDefault().hasBrokenIncludes(file)) {
             return true;
         }
         for (CsmInclude incl : file.getIncludes()) {

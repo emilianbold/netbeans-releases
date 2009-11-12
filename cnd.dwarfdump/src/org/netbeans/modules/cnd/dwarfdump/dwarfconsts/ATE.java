@@ -56,7 +56,10 @@ public enum ATE {
     DW_ATE_signed_char(0x6),
     DW_ATE_unsigned(0x7),
     DW_ATE_unsigned_char(0x8),
+    DW_ATE_imaginary_float(0x9),
     DW_ATE_lo_user(0x80),
+    DW_ATE_SUN_interval_float(0x91),
+    DW_ATE_SUN_imaginary_float(0x92),
     DW_ATE_hi_user(0xff);
     
     private static final HashMap<Integer, ATE> hashmap = new HashMap<Integer, ATE>();

@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.xml.tools.java.actions;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -58,9 +60,20 @@ import org.openide.util.NbBundle;
  * @author Sonali
  */
 public class GenerateDOMScannerAction extends XMLGenerateAction implements CollectDTDAction.DTDAction {
-
     /** generated Serialized Version UID */
     private static final long serialVersionUID = 2567846356902367312L;
+
+    public static synchronized GenerateDOMScannerAction getInstance() {
+        GenerateDOMScannerAction actionInstance = null;
+        String thisClassName = GenerateDOMScannerAction.class.getName();
+        try {
+            Class actionInstanceClass = Class.forName(thisClassName);
+            actionInstance = (GenerateDOMScannerAction) actionInstanceClass.newInstance();
+        } catch(Exception e) {
+            Logger.getLogger(thisClassName).log(Level.SEVERE, "", e);
+        }
+        return actionInstance;
+    }
 
     /* Human presentable name of the action. This should be
      * presented as an item in a menu.

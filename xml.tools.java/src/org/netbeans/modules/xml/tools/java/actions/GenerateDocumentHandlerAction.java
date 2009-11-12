@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.xml.tools.java.actions;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -61,6 +63,18 @@ import org.openide.util.NbBundle;
 public class GenerateDocumentHandlerAction extends XMLGenerateAction implements CollectDTDAction.DTDAction {
         /** generated Serialized Version UID */
         private static final long serialVersionUID = 1342753912956042368L;
+
+    public static synchronized GenerateDocumentHandlerAction getInstance() {
+        GenerateDocumentHandlerAction actionInstance = null;
+        String thisClassName = GenerateDocumentHandlerAction.class.getName();
+        try {
+            Class actionInstanceClass = Class.forName(thisClassName);
+            actionInstance = (GenerateDocumentHandlerAction) actionInstanceClass.newInstance();
+        } catch(Exception e) {
+            Logger.getLogger(thisClassName).log(Level.SEVERE, "", e);
+        }
+        return actionInstance;
+    }
 
         /* Human presentable name of the action. This should be
          * presented as an item in a menu.

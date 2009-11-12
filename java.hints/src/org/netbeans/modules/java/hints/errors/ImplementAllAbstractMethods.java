@@ -98,7 +98,7 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Void> {
     public List<Fix> run(final CompilationInfo info, String diagnosticKey, final int offset, TreePath treePath, Data<Void> data) {
         final List<Fix> result = new ArrayList<Fix>();
 
-        analyze(info.getJavaSource(), offset, info, new Performer() {
+        analyze(offset, info, new Performer() {
             public void fixAllAbstractMethods(TreePath pathToModify, Tree toModify) {
                 result.add(new FixImpl(info.getJavaSource(), offset, null));
             }
@@ -133,18 +133,20 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Void> {
 
     }
 
-    private static void analyze(JavaSource js, int offset, CompilationInfo info, Performer performer) {
+    private static void analyze(int offset, CompilationInfo info, Performer performer) {
         final TreePath path = info.getTreeUtilities().pathFor(offset + 1);
         Element e = info.getTrees().getElement(path);
-        boolean isUsableElement = e != null && (e.getKind().isClass() || e.getKind().isInterface()) && e.getKind() != ElementKind.ENUM;
+        boolean isUsableElement = e != null && (e.getKind().isClass() || e.getKind().isInterface());
         final Tree leaf = path.getLeaf();
         
         if (isUsableElement) {
-            //#85806: do not propose implement all abstract methods when the current class contains abstract methods:
-            for (ExecutableElement ee : ElementFilter.methodsIn(e.getEnclosedElements())) {
-                if (ee.getModifiers().contains(Modifier.ABSTRACT)) {
-                    performer.makeClassAbstract(leaf, e.getSimpleName().toString());
-                    return;
+            if (e.getKind() != ElementKind.ENUM) {
+                //#85806: do not propose implement all abstract methods when the current class contains abstract methods:
+                for (ExecutableElement ee : ElementFilter.methodsIn(e.getEnclosedElements())) {
+                    if (ee.getModifiers().contains(Modifier.ABSTRACT)) {
+                        performer.makeClassAbstract(leaf, e.getSimpleName().toString());
+                        return;
+                    }
                 }
             }
 
@@ -185,7 +187,7 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Void> {
         }
     }
 
-    private static final class FixImpl implements Fix {
+    static final class FixImpl implements Fix {
 
         private JavaSource js;
         private int offset;
@@ -212,7 +214,7 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Void> {
 
                     public void run(final WorkingCopy copy) throws IOException {
                         copy.toPhase(Phase.RESOLVED);
-                        analyze(js, offset, copy, new Performer() {
+                        analyze(offset, copy, new Performer() {
                             public void fixAllAbstractMethods(TreePath pathToModify, Tree toModify) {
                                 if (toModify.getKind() == Kind.NEW_CLASS) {
                                     int insertOffset = (int) copy.getTrees().getSourcePositions().getEndPosition(copy.getCompilationUnit(), toModify);
@@ -256,6 +258,10 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Void> {
             }
             return null;
         }
-        
+
+        String toDebugString() {
+            return makeClassAbstractName == null ? "IAAM" : "MA:" + makeClassAbstractName;
+        }
+
     }
 }

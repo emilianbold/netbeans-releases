@@ -61,7 +61,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -69,6 +68,7 @@ import java.util.MissingResourceException;
 import java.util.Queue;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Formatter;
@@ -83,6 +83,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import org.netbeans.TopSecurityManager;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -471,7 +472,7 @@ public final class TopLogging {
         private static ThreadLocal<Boolean> FLUSHING = new ThreadLocal<Boolean>();
 
         private final Handler delegate;
-        private final Queue<LogRecord> queue = new LinkedBlockingQueue<LogRecord>(1000);
+        private final BlockingQueue<LogRecord> queue = new LinkedBlockingQueue<LogRecord>(1000);
         private RequestProcessor.Task flush;
         private int delay;
 
@@ -486,14 +487,35 @@ public final class TopLogging {
             if (RP.isRequestProcessorThread()) {
                 return;
             }
-            queue.offer(record);
+            if (!queue.offer(record)) {
+                for (;;) {
+                    try {
+                        // queue is full, schedule its clearing
+                        if (!schedule(0)) {
+                            return;
+                        }
+                        queue.put(record);
+                        Thread.yield();
+                        break;
+                    } catch (InterruptedException ex) {
+                        // OK, ignore and try again
+                    }
+                }
+            }
+            schedule(delay);
+        }
+
+        private boolean schedule(int d) {
             if (!Boolean.TRUE.equals(FLUSHING.get())) {
                 try {
                     FLUSHING.set(true);
-                    flush.schedule(delay);
+                    flush.schedule(d);
                 } finally {
                     FLUSHING.set(false);
                 }
+                return true;
+            } else {
+                return false;
             }
         }
 
@@ -631,6 +653,9 @@ public final class TopLogging {
             if (message != null && message.indexOf('\n') != -1 && record.getThrown() == null) {
                 // multi line messages print witout any wrappings
                 sb.append(message);
+                if (message.charAt(message.length() - 1) != '\n') {
+                    sb.append(lineSeparator);
+                }
                 return;
             }
             if ("stderr".equals(record.getLoggerName()) && record.getLevel() == Level.INFO) { // NOI18N
@@ -639,7 +664,7 @@ public final class TopLogging {
                 return;
             }
 
-            sb.append(record.getLevel().getLocalizedName());
+            sb.append(record.getLevel().getName());
             addLoggerName (sb, record);
             if (message != null) {
                 sb.append(": ");

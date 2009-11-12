@@ -39,10 +39,14 @@
 package org.netbeans.modules.mobility.project.ui;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -63,20 +67,22 @@ import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 
 /**
  *
  * @author Tim Boudreau
  */
-final class ProjectRootNodeChildren extends ChildFactory.Detachable<ChildKind> implements LookupListener, ChangeListener {
-
+final class ProjectRootNodeChildren extends ChildFactory.Detachable<Object> implements LookupListener, ChangeListener, Runnable {
+    private final Map<Object, NodeList> nodeListForKey = Collections.synchronizedMap(new HashMap<Object, NodeList>());
     private final J2MEProject project;
     private volatile Lookup.Result<NodeFactory> res;
-    private static final String FOREIGN_NODES_PATH =
+    static final String FOREIGN_NODES_PATH =
             "Projects/org-netbeans-modules-mobility-project/Nodes"; //NOI18N
     private Set<NodeList> lists = new HashSet<NodeList>();
     private final Object lock = new Object();
+    static final Logger LOGGER = Logger.getLogger(ProjectRootNodeChildren.class.getName());
 
     ProjectRootNodeChildren(J2MEProject project) {
         this.project = project;
@@ -84,6 +90,11 @@ final class ProjectRootNodeChildren extends ChildFactory.Detachable<ChildKind> i
 
     @Override
     protected void addNotify() {
+        cycle = false;
+        if (LOGGER.isLoggable(Level.FINER)) {
+            LOGGER.log(Level.FINER, "J2ME Project Root Node Children for " + //NOI18N
+                    projectString() + " addNotify()"); //NOI18N
+        }
         Lookup.Result result = Lookups.forPath(FOREIGN_NODES_PATH).lookupResult(NodeFactory.class);
         synchronized (lock) {
             res = result;
@@ -93,48 +104,89 @@ final class ProjectRootNodeChildren extends ChildFactory.Detachable<ChildKind> i
 
     @Override
     protected void removeNotify() {
+        if (LOGGER.isLoggable(Level.FINER)) {
+            LOGGER.log(Level.FINER, "J2ME Project Root Node Children for " + //NOI18N
+                    projectString() + " removeNotify()"); //NOI18N
+        }
         Set<NodeList> s;
         synchronized (lock) {
-            assert res != null : "removeNotify called twice or w/o addNotify()";
+            assert res != null : "removeNotify called twice or w/o addNotify()"; //NOI18N
             res.removeLookupListener(this);
             res = null;
             s = new HashSet<NodeList>(lists);
             lists.clear();
         }
         for (NodeList l : s) {
+            if (LOGGER.isLoggable(Level.FINEST)) {
+                LOGGER.log(Level.FINEST, "J2ME Project Root Node Children for " + //NOI18N
+                        projectString() + " detach " + //NOI18N
+                        "listener from " + l); //NOI18N
+            }
             l.removeChangeListener(this);
             l.removeNotify();
         }
+        nodeListForKey.clear();
       }
-    
-    protected boolean createKeys(List<ChildKind> toPopulate) {
+
+    volatile boolean cycle = false;
+    protected boolean createKeys(List<Object> toPopulate) {
+        if (cycle) {
+            //Issue #175202 refresh doesn't actually change key list,
+            //so nodes are not updated.  So instead, we force the keys
+            //to empty, and then refill them
+            RequestProcessor.getDefault().post(this, 150);
+            cycle = false;
+            return true;
+        }
         ProjectChildKeyProvider provider = Lookup.getDefault().lookup(
                 ProjectChildKeyProvider.class);
+        boolean addForeignNodes;
         if (provider == null) {
             toPopulate.addAll(Arrays.asList(ChildKind.values()));
+            addForeignNodes = true;
         } else {
             toPopulate.addAll(provider.getKeys());
+            addForeignNodes = toPopulate.contains(ChildKind.Foreign);
+        }
+        if (addForeignNodes) {
+            addForeignNodeKeys(toPopulate);
         }
         return true;
     }
 
     @Override
-    protected Node[] createNodesForKey(ChildKind key) {
-        switch (key) {
-            case Configurations:
-                return new Node[]{createConfigurationsNode()};
-            case Resources:
-                return new Node[]{createResourcesNode()};
-            case Sources:
-                return createSourcesNodes();
-            case Foreign :
-                return createForeignNodes();
-            default:
-                throw new AssertionError();
+    protected Node[] createNodesForKey(Object key) {
+        if (key instanceof ChildKind) {
+            switch ((ChildKind) key) {
+                case Configurations:
+                    return new Node[]{createConfigurationsNode()};
+                case Resources:
+                    return new Node[]{createResourcesNode()};
+                case Sources:
+                    return createSourcesNodes();
+                case Foreign :
+                    return new Node[0];
+                default:
+                    throw new AssertionError();
+            }
+        } else {
+            NodeList nl = nodeListForKey.get(key);
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "Foreign nodes created for J2ME Project " + //NOI18N
+                        projectString() + ": " + //NOI18N
+                        key);
+            }
+            if (nl != null) {
+                return new Node[] { nl.node(key) };
+            } else {
+                //removeNotify was called on another thread while we
+                //were iterating, and our keys-to-lists map was cleared
+                return new Node[0];
+            }
         }
     }
 
-    private Node[] createForeignNodes() {
+    void addForeignNodeKeys (List<Object> toPopulate) {
         Lookup.Result<NodeFactory> lkpResult;
         synchronized (lock) {
             lkpResult = res;
@@ -142,24 +194,35 @@ final class ProjectRootNodeChildren extends ChildFactory.Detachable<ChildKind> i
         if (lkpResult == null) {
             //removeNotify called while background thread still fetching nodes,
             //just exit, result won't be shown anyway
-            return new Node[0];
+            return;
         }
-        List<Node> nodes = new LinkedList<Node>();
+        nodeListForKey.clear();
         Set<NodeList> found = new HashSet<NodeList>();
+        synchronized(lock) {
+            found.addAll(lists);
+        }
+        Set<NodeList> toRemove = new HashSet<NodeList>(lists);
         for (NodeFactory f : lkpResult.allInstances()) {
-            NodeList list = f.createNodes(project);
-            list.addNotify();
-            list.addChangeListener(this);
-            for (Object key : list.keys()) {
-                nodes.add(list.node(key));
+            NodeList nl = f.createNodes(project);
+            if (!found.contains(nl)) {
+                found.add(nl);
+                nl.addNotify();
+                nl.addChangeListener(this);
+                toRemove.remove(nl);
+            }
+            for (Object o : nl.keys()) {
+                nodeListForKey.put (o, nl);
+                toPopulate.add(o);
             }
         }
-        synchronized (lock) {
-            lists.clear();
-            lists.addAll (found);
+        synchronized(lock) {
+            for (NodeList nl : toRemove) {
+                nl.removeChangeListener(this);
+                nl.removeNotify();
+            }
+            lists.removeAll(toRemove);
+            lists.addAll(found);
         }
-        Node[] result = nodes.toArray(new Node[nodes.size()]);
-        return result;
     }
 
     private Node createConfigurationsNode() {
@@ -191,10 +254,27 @@ final class ProjectRootNodeChildren extends ChildFactory.Detachable<ChildKind> i
     }
 
     public void resultChanged(LookupEvent ev) {
+        cycle = true;
         refresh(false);
     }
 
     public void stateChanged(ChangeEvent e) {
+        cycle = true;
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "Received state change from " + e.getSource() //NOI18N
+                    + " refereshing child nodes"); //NOI18N
+        }
         refresh (true);
+    }
+
+    private String projectString() {
+        //Project will be null for unit tests
+        return project == null ? "null" : //NOI18N
+            project.getProjectDirectory().getPath();
+    }
+
+    public void run() {
+        cycle = false;
+        refresh(true);
     }
 }

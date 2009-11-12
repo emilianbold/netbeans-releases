@@ -39,16 +39,20 @@
 
 package org.netbeans.modules.maven.j2ee.web;
 
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import javax.swing.JList;
 import org.netbeans.modules.maven.j2ee.POHImpl;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
-import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -59,11 +63,15 @@ import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.modules.maven.j2ee.ExecutionChecker;
 import org.netbeans.modules.maven.j2ee.SessionContent;
 import org.netbeans.modules.maven.j2ee.Wrapper;
+import org.netbeans.modules.maven.model.pom.Dependency;
+import org.netbeans.modules.maven.model.pom.Properties;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.util.Exceptions;
 
@@ -95,7 +103,7 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
     private ComboBoxUpdater<Wrapper> listener;
     
     /** Creates new form WebRunCustomizerPanel */
-    public WebRunCustomizerPanel(ModelHandle handle, Project project) {
+    public WebRunCustomizerPanel(final ModelHandle handle, Project project) {
         initComponents();
         this.handle = handle;
         this.project = project;
@@ -104,17 +112,68 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
         assert moduleProvider != null;
         assert module != null;
         loadComboModel();
-        if (module != null) {
-            txtJ2EEVersion.setText(module.getJ2eePlatformVersion());
-        }
-        initValues();
-        //MEVENIDE-604. how can the moduleProvider be null?
-        if (moduleProvider == null) {
-            Logger.getLogger(WebRunCustomizerPanel.class.getName()).info("Module provider instance mising in properties panel. Please report in http://jira.codehaus.org/browse/MEVENIDE-604");
-            txtContextPath.setText("");
+        comProfile.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                Profile prf = (Profile)value;
+                String val = "Web";
+                if (prf.equals(Profile.JAVA_EE_6_FULL)) {
+                    val = "Full";
+                }
+                return super.getListCellRendererComponent(list, val, index, isSelected, cellHasFocus);
+            }
+        });
+
+        Profile p = module.getJ2eeProfile();
+        String version = p.equals(Profile.JAVA_EE_6_WEB) ? Profile.JAVA_EE_6_FULL.toPropertiesString() : p.toPropertiesString();
+        txtJ2EEVersion.setText(version);
+        WebModuleImpl impl = moduleProvider.getWebModuleImplementation();
+        if (Profile.JAVA_EE_6_WEB.equals(impl.getDescriptorJ2eeProfile())) {
+            lblProfile.setVisible(true);
+            comProfile.setVisible(true);
+            comProfile.setEnabled(true);
+            comProfile.setModel(new DefaultComboBoxModel(new Object[] { Profile.JAVA_EE_6_WEB, Profile.JAVA_EE_6_FULL}));
+            Profile prop = impl.getPropertyJ2eeProfile();
+            if (prop != null) {
+                comProfile.setSelectedItem(prop);
+            } else {
+                comProfile.setSelectedItem(Profile.JAVA_EE_6_WEB);
+            }
+            comProfile.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    Profile p = (Profile) comProfile.getSelectedItem();
+                    org.netbeans.modules.maven.model.pom.Project root = handle.getPOMModel().getProject();
+                    if (p.equals(Profile.JAVA_EE_6_FULL)) {
+                        Properties props = root.getProperties();
+                        if (props == null) {
+                            props = handle.getPOMModel().getFactory().createProperties();
+                            root.setProperties(props);
+                        }
+                        replaceDependency("javaee-web-api", "javaee-api");
+                        props.setProperty(Constants.HINT_J2EE_VERSION, p.toPropertiesString());
+                        handle.markAsModified(handle.getPOMModel());
+                    } else {
+                        Properties props = root.getProperties();
+                        if (props != null && props.getProperty(Constants.HINT_J2EE_VERSION) != null) {
+                            props.setProperty(Constants.HINT_J2EE_VERSION, null);
+                            if (props.getProperties().size() == 0) {
+                                ((AbstractDocumentComponent)root).removeChild("properties", props);
+                            }
+                            replaceDependency("javaee-api", "javaee-web-api");
+                            handle.markAsModified(handle.getPOMModel());
+                        }
+                    }
+                }
+
+            });
         } else {
-            txtContextPath.setText(moduleProvider.getWebModuleImplementation().getContextPath());
+            lblProfile.setVisible(false);
+            comProfile.setVisible(false);
+            comProfile.setEnabled(false);
         }
+
+        initValues();
+        txtContextPath.setText(impl.getContextPath());
     }
     
     private void initValues() {
@@ -202,6 +261,8 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
         lblRelativeUrl = new javax.swing.JLabel();
         txtRelativeUrl = new javax.swing.JTextField();
         lblHint2 = new javax.swing.JLabel();
+        lblProfile = new javax.swing.JLabel();
+        comProfile = new javax.swing.JComboBox();
 
         lblServer.setLabelFor(comServer);
         org.openide.awt.Mnemonics.setLocalizedText(lblServer, org.openide.util.NbBundle.getMessage(WebRunCustomizerPanel.class, "LBL_Server")); // NOI18N
@@ -223,6 +284,10 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(lblHint2, org.openide.util.NbBundle.getMessage(WebRunCustomizerPanel.class, "LBL_Hint2")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(lblProfile, org.openide.util.NbBundle.getMessage(WebRunCustomizerPanel.class, "WebRunCustomizerPanel.lblProfile.text")); // NOI18N
+
+        comProfile.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -238,8 +303,8 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                             .add(layout.createSequentialGroup()
                                 .add(lblHint2)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 222, Short.MAX_VALUE))
-                            .add(txtRelativeUrl, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 329, Short.MAX_VALUE)))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 237, Short.MAX_VALUE))
+                            .add(txtRelativeUrl, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 377, Short.MAX_VALUE)))
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(lblContextPath)
@@ -247,10 +312,15 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
                             .add(lblServer))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, comServer, 0, 331, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, txtJ2EEVersion, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 331, Short.MAX_VALUE)
-                            .add(txtContextPath, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 331, Short.MAX_VALUE))))
-                .addContainerGap())
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, comServer, 0, 374, Short.MAX_VALUE)
+                            .add(txtContextPath, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 374, Short.MAX_VALUE)
+                            .add(layout.createSequentialGroup()
+                                .add(txtJ2EEVersion, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 148, Short.MAX_VALUE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(lblProfile)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(comProfile, 0, 159, Short.MAX_VALUE)))))
+                .add(0, 0, 0))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -262,7 +332,9 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(lblJ2EEVersion)
-                    .add(txtJ2EEVersion, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(txtJ2EEVersion, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(lblProfile)
+                    .add(comProfile, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(lblContextPath)
@@ -277,7 +349,7 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
                     .add(txtRelativeUrl, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(lblHint2)
-                .addContainerGap(102, Short.MAX_VALUE))
+                .addContainerGap(97, Short.MAX_VALUE))
         );
 
         txtJ2EEVersion.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WebRunCustomizerPanel.class, "WebRunCustomizerPanel.txtJ2EEVersion.AccessibleContext.accessibleDescription")); // NOI18N
@@ -363,11 +435,13 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox cbBrowser;
+    private javax.swing.JComboBox comProfile;
     private javax.swing.JComboBox comServer;
     private javax.swing.JLabel lblContextPath;
     private javax.swing.JLabel lblHint1;
     private javax.swing.JLabel lblHint2;
     private javax.swing.JLabel lblJ2EEVersion;
+    private javax.swing.JLabel lblProfile;
     private javax.swing.JLabel lblRelativeUrl;
     private javax.swing.JLabel lblServer;
     private javax.swing.JTextField txtContextPath;
@@ -375,5 +449,13 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
     private javax.swing.JTextField txtRelativeUrl;
     // End of variables declaration//GEN-END:variables
 
-    
+
+
+    private void replaceDependency(String oldArt, String newArt) {
+        Dependency d = ModelUtils.checkModelDependency(handle.getPOMModel(), "javax", oldArt, false);
+        if (d != null) {
+            d.setArtifactId(newArt);
+        }
+    }
+
 }

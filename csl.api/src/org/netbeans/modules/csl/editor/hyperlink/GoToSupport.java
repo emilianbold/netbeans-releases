@@ -189,18 +189,13 @@ public class GoToSupport {
                                 SwingUtilities.invokeLater(new Runnable() {
                                     public void run() {
                                         // Many alternatives - pop up a dialog and make the user choose
-                                        if (chooseAlternatives(doc, offset, location[0].getAlternativeLocations())) {
-                                            return;
+                                        if (!chooseAlternatives(doc, offset, location[0].getAlternativeLocations())) {
+                                            openLocation(location[0]);
                                         }
                                     }
                                 });
-                            }
-
-                            FileObject f = location[0].getFileObject();
-                            int offset = location[0].getOffset();
-
-                            if (f != null && f.isValid()) {
-                                UiUtils.open(f, offset);
+                            } else {
+                                openLocation(location[0]);
                             }
                         }
 
@@ -218,6 +213,15 @@ public class GoToSupport {
         }
         
         return result[0];
+    }
+
+    private static void openLocation(DeclarationLocation location) {
+        FileObject f = location.getFileObject();
+        int offset = location.getOffset();
+
+        if (f != null && f.isValid()) {
+            UiUtils.open(f, offset);
+        }
     }
 
     /** TODO - MOVE TO UTILITTY LIBRARY */

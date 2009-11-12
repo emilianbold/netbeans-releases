@@ -43,6 +43,7 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.logging.Logger;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Lookup;
@@ -56,7 +57,7 @@ public abstract class RemoteSyncFactory {
     /**
      * Creates an instance of RemoteSyncWorker.
      *
-     * @param localDir local directory that should be synchronized
+     * @param files local directories and files that should be synchronized
      *
      * @param executionEnvironment
      *
@@ -75,8 +76,26 @@ public abstract class RemoteSyncFactory {
      *
      * @return new instance of the RemoteSyncWorker
      */
-    public abstract RemoteSyncWorker createNew( ExecutionEnvironment executionEnvironment, 
-            PrintWriter out, PrintWriter err, File privProjectStorageDir, File... localDirs);
+    public abstract RemoteSyncWorker createNew(ExecutionEnvironment executionEnvironment, 
+            PrintWriter out, PrintWriter err, File privProjectStorageDir, File... files);
+
+    /**
+     * Creates an instance of RemoteSyncWorker.
+     *
+     * @param project determines executionEnvironment and dirs to sync
+     *
+     * @param out output stream:
+     * in the case implementation uses an external program (rsync? scp?),
+     * it can redirect its stdout here
+     *
+     * @param err error stream:
+     * in the case implementation uses an external program (rsync? scp?),
+     * it can redirect its stderr here
+     *
+     * @return new instance of the RemoteSyncWorker
+     */
+    public abstract RemoteSyncWorker createNew(Project project,
+            PrintWriter out, PrintWriter err);
 
     /**
      * Determines whether this factory is applicable for the given execution environment
@@ -141,5 +160,9 @@ public abstract class RemoteSyncFactory {
         RemoteSyncFactory[] factories = getFactories();
         assert factories.length > 0;
         return factories[0];
+    }
+
+    public boolean isPathMappingCustomizable() {
+        return false;
     }
 }

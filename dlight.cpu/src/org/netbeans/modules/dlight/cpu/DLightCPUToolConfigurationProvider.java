@@ -86,6 +86,7 @@ public final class DLightCPUToolConfigurationProvider
     public DLightToolConfiguration create() {
         final DLightToolConfiguration toolConfiguration = new DLightToolConfiguration(ID, TOOL_NAME);
         toolConfiguration.setLongName(DETAILED_TOOL_NAME);
+        toolConfiguration.setDescription(loc("CPUMonitorTool.Description"));//NOI18N
         toolConfiguration.setIcon("org/netbeans/modules/dlight/cpu/resources/cpu.png"); // NOI18N
 
         // SunStudio should collect data about most CPU-expensive functions
@@ -158,6 +159,7 @@ public final class DLightCPUToolConfigurationProvider
         IndicatorMetadata indicatorMetadata = new IndicatorMetadata(resultColumns);
         TimeSeriesIndicatorConfiguration indicatorConfiguration = new TimeSeriesIndicatorConfiguration(
                 indicatorMetadata, INDICATOR_POSITION);
+        indicatorConfiguration.setActionTooltip(loc("indicator.action.tooltip"));//NOI18N
         indicatorConfiguration.setTitle(loc("indicator.title")); // NOI18N
         indicatorConfiguration.setGraphScale(100);
         indicatorConfiguration.addTimeSeriesDescriptors(

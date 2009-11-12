@@ -43,7 +43,6 @@ import java.io.File;
 import java.io.PrintWriter;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
-import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.NbBundle;
 
@@ -52,14 +51,14 @@ import org.openide.util.NbBundle;
  * @author Vladimir Kvashin
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory.class, position=200)
-public class SharedSyncFactory extends RemoteSyncFactory {
+public class SharedSyncFactory extends BaseSyncFactory {
 
     /*package*/ static final String ID = "shared"; //NOI18N
 
     @Override
     public RemoteSyncWorker createNew( ExecutionEnvironment executionEnvironment,
-            PrintWriter out, PrintWriter err, File privProjectStorageDir, File... localDirs) {
-        return new SharedSyncWorker(executionEnvironment, out, err, localDirs);
+            PrintWriter out, PrintWriter err, File privProjectStorageDir, File... files) {
+        return new SharedSyncWorker(executionEnvironment, out, err, files);
     }
 
     @Override
@@ -83,5 +82,9 @@ public class SharedSyncFactory extends RemoteSyncFactory {
         return ! RemoteUtil.isForeign(execEnv);
     }
 
+    @Override
+    public boolean isPathMappingCustomizable() {
+        return true;
+    }
 
 }

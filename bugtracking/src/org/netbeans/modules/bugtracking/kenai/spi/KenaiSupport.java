@@ -53,6 +53,11 @@ import org.netbeans.modules.kenai.api.KenaiProject;
  */
 public abstract class KenaiSupport {
 
+    public enum BugtrackingType {
+        BUGZILLA,
+        JIRA
+    }
+    
     /**
      * Creates a {@link Repository} for the given {@link KenaiProject}
      *
@@ -74,5 +79,22 @@ public abstract class KenaiSupport {
      * @return
      */
     public abstract Query getAllIssuesQuery(Repository repository);
+
+    /**
+     * Determines the
+     *
+     * @return
+     */
+    public abstract BugtrackingType getType();
+
+    /**
+     * Determines if the query needs the user to be logged in to show some
+     * results - e.g. MyIssues queries have no results in case the user is
+     * not loged in
+     *
+     * @param query
+     * @return true if login needed, otherwise false
+     */
+    public abstract boolean needsLogin(Query query);
 
 }

@@ -263,7 +263,9 @@ public class CppSymbolProvider implements SymbolProvider {
         CsmSelect.CsmFilter nameFilter = CsmSelect.getFilterBuilder().createNameFilter(nameAcceptor);
 
         CsmSelect.CsmFilter simpleKindFilter = CsmSelect.getFilterBuilder().createKindFilter(
-                CsmDeclaration.Kind.FUNCTION, CsmDeclaration.Kind.FUNCTION_DEFINITION, CsmDeclaration.Kind.VARIABLE, CsmDeclaration.Kind.TYPEDEF);
+                CsmDeclaration.Kind.FUNCTION, CsmDeclaration.Kind.FUNCTION_DEFINITION, 
+                CsmDeclaration.Kind.FUNCTION_FRIEND, CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION,
+                CsmDeclaration.Kind.VARIABLE, CsmDeclaration.Kind.TYPEDEF);
 
         CsmSelect.CsmFilter simpleNameAndKindFilter = CsmSelect.getFilterBuilder().createCompoundFilter(nameFilter, simpleKindFilter);
         

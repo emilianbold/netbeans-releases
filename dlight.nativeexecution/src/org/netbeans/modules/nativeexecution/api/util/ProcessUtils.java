@@ -51,6 +51,9 @@ import java.util.logging.Logger;
 
 public final class ProcessUtils {
 
+    private ProcessUtils() {
+    }
+
     public static List<String> readProcessError(final Process p) throws IOException {
         if (p == null) {
             return Collections.<String>emptyList();

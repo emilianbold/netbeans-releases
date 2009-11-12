@@ -53,6 +53,7 @@ import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.java.editor.options.MarkOccurencesSettings;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -66,6 +67,7 @@ import org.openide.util.Exceptions;
  *
  * @author Jiri Prox
  */
+@RandomlyFails
 public class MarkOccurrencesTest extends NbTestCase {
     
     private FileObject fileObject;

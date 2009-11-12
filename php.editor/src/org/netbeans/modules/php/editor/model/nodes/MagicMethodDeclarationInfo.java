@@ -44,6 +44,7 @@ import java.util.List;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.model.Parameter;
+import org.netbeans.modules.php.editor.model.PhpKind;
 import org.netbeans.modules.php.editor.model.PhpModifiers;
 import org.netbeans.modules.php.editor.model.QualifiedName;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
@@ -56,6 +57,7 @@ public class MagicMethodDeclarationInfo extends ASTNodeInfo<PHPDocTag> {
     private String returnType;
     private String methodName;
     private int offset;
+    private int typeOffset;
     MagicMethodDeclarationInfo(PHPDocTag node) {
         super(node);
         String parts[] = node.getValue().split("\\s+", 3); //NOI18N
@@ -66,6 +68,7 @@ public class MagicMethodDeclarationInfo extends ASTNodeInfo<PHPDocTag> {
                 returnType = typeNames[0];
                 methodName = methodNames[0];
                 offset = getOriginalNode().getStartOffset()+PHPDocTag.Type.METHOD.toString().length() + 2 +node.getValue().indexOf(methodName);
+                typeOffset = getOriginalNode().getStartOffset()+PHPDocTag.Type.METHOD.toString().length() + 2 +node.getValue().indexOf(returnType);
             }
         }
     }
@@ -74,6 +77,37 @@ public class MagicMethodDeclarationInfo extends ASTNodeInfo<PHPDocTag> {
     public static MagicMethodDeclarationInfo create(PHPDocTag node) {
         MagicMethodDeclarationInfo retval = new MagicMethodDeclarationInfo(node);
         return (retval.methodName != null && retval.returnType != null) ? retval : null;
+    }
+
+    public ASTNodeInfo<PHPDocTag> getClassInfo() {
+        return new ASTNodeInfo<PHPDocTag>(getOriginalNode()) {
+
+            @Override
+            public String getName() {
+                return MagicMethodDeclarationInfo.this.getReturnType();
+            }
+
+            @Override
+            public OffsetRange getRange() {
+                return MagicMethodDeclarationInfo.this.getTypeRange();
+            }
+
+
+            @Override
+            public Kind getKind() {
+                return Kind.CLASS;
+            }
+
+            @Override
+            public QualifiedName getQualifiedName() {
+                return QualifiedName.create(getName());
+            }
+
+            @Override
+            public PhpKind getPhpKind() {
+                return PhpKind.CLASS;
+            }
+        };
     }
 
     @Override
@@ -99,6 +133,11 @@ public class MagicMethodDeclarationInfo extends ASTNodeInfo<PHPDocTag> {
     public OffsetRange getRange() {
         return new OffsetRange(offset,
                 offset+getName().length());
+    }
+
+    public OffsetRange getTypeRange() {
+        return new OffsetRange(typeOffset,
+                typeOffset+getReturnType().length());
     }
 
     public List<? extends Parameter> getParameters() {

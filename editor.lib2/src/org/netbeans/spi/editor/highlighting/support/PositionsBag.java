@@ -301,13 +301,29 @@ public final class PositionsBag extends AbstractHighlightsContainer {
                 }
 
                 if (startIdx != -1 && attributes.get(startIdx) != null) {
-                    startIdx++;
-                    if (startIdx <= endIdx) {
+                    if (startIdx + 1 < endIdx) {
+                        startIdx++;
                         marks.set(startIdx, startPosition);
                         attributes.set(startIdx, null);
                     } else {
-                        marks.add(startIdx, startPosition);
-                        attributes.add(startIdx, null);
+                        if (marks.get(startIdx).getOffset() < startPosition.getOffset()) {
+                            if (startIdx + 1 == endIdx) {
+                                startIdx++;
+                                marks.set(startIdx, startPosition);
+                                attributes.set(startIdx, null);
+                            } else {
+                                startIdx++;
+                                marks.add(startIdx, startPosition);
+                                attributes.add(startIdx, null);
+                            }
+                        } else {
+                            if (startIdx == 0 || attributes.get(startIdx - 1) == null) {
+                                startIdx--;
+                            } else {
+                                marks.set(startIdx, startPosition);
+                                attributes.set(startIdx, null);
+                            }
+                        }
                     }
                     changeStart = startPosition.getOffset();
                 }
@@ -363,13 +379,22 @@ public final class PositionsBag extends AbstractHighlightsContainer {
             
             if (startIdx == -1 || attributes.get(startIdx) == null) {
                 startIdx++;
+            } else if (startIdx > 0 && attributes.get(startIdx - 1) != null) {
+                attributes.set(startIdx, null);
+                startIdx++;
             }
 
             if (endIdx != -1 && attributes.get(endIdx) != null) {
-                endIdx++;
+                if (marks.get(endIdx).getOffset() < endOffset) {
+                    if (endIdx + 1 >= attributes.size() || attributes.get(endIdx + 1) == null) {
+                        endIdx++;
+                    }
+                } else {
+                    endIdx--;
+                }
             }
             
-            if (startIdx < endIdx) {
+            if (startIdx <= endIdx) {
                 if (changeStart == Integer.MAX_VALUE) {
                     changeStart = marks.get(startIdx).getOffset();
                 }
@@ -540,11 +565,14 @@ public final class PositionsBag extends AbstractHighlightsContainer {
             attributes.set(endIdx, attributes.get(endIdx));
             endIdx--;
 
-            startIdx++;
-            if (startIdx <= endIdx) {
+            if (startIdx != -1 && marks.get(startIdx).getOffset() == startPosition.getOffset()) {
+                attributes.set(startIdx, attrSet);
+            } else if (startIdx + 1 <= endIdx) {
+                startIdx++;
                 marks.set(startIdx, startPosition);
                 attributes.set(startIdx, attrSet);
             } else {
+                startIdx++;
                 marks.add(startIdx, startPosition);
                 attributes.add(startIdx, attrSet);
             }

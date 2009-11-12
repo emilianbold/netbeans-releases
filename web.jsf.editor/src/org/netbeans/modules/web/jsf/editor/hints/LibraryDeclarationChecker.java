@@ -46,19 +46,25 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import javax.swing.text.Position;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.AstNode.Attribute;
 import org.netbeans.editor.ext.html.parser.AstNodeUtils;
 import org.netbeans.editor.ext.html.parser.AstNodeVisitor;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
-import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.el.lexer.api.ELTokenId;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.jsf.editor.JsfSupport;
+import org.netbeans.modules.web.jsf.editor.JsfUtils;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -88,6 +94,7 @@ public class LibraryDeclarationChecker extends HintsProvider {
     //
     private void checkLibraryDeclarations(final List<Hint> hints, final RuleContext context) {
         HtmlParserResult result = (HtmlParserResult) context.parserResult;
+        final Snapshot snapshot = result.getSnapshot();
 
         //find all usages of composite components tags for this page
         Collection<String> declaredNamespaces = result.getNamespaces().keySet();
@@ -126,7 +133,7 @@ public class LibraryDeclarationChecker extends HintsProvider {
                     Hint hint = new Hint(DEFAULT_ERROR_RULE,
                             NbBundle.getMessage(HintsProvider.class, "MSG_UNDECLARED_COMPONENT"), //NOI18N
                             context.parserResult.getSnapshot().getSource().getFileObject(),
-                            new OffsetRange(node.startOffset(), node.startOffset() + node.name().length() + 1 /* "<".length */),
+                            JsfUtils.createOffsetRange(snapshot, node.startOffset(), node.startOffset() + node.name().length() + 1 /* "<".length */),
                             Collections.EMPTY_LIST, DEFAULT_ERROR_HINT_PRIORITY);
                     hints.add(hint);
                 }
@@ -145,7 +152,7 @@ public class LibraryDeclarationChecker extends HintsProvider {
                     Hint hint = new Hint(DEFAULT_ERROR_RULE,
                             NbBundle.getMessage(HintsProvider.class, "MSG_MISSING_LIBRARY"), //NOI18N
                             context.parserResult.getSnapshot().getSource().getFileObject(),
-                            new OffsetRange(attr.nameOffset(), attr.valueOffset() + attr.value().length()),
+                            JsfUtils.createOffsetRange(snapshot, attr.nameOffset(), attr.valueOffset() + attr.value().length()),
                             Collections.EMPTY_LIST, DEFAULT_ERROR_HINT_PRIORITY);
                     hints.add(hint);
                 }
@@ -167,6 +174,8 @@ public class LibraryDeclarationChecker extends HintsProvider {
                 }
             }, AstNode.NodeType.OPEN_TAG);
 
+            usages[0] += isFunctionLibraryPrefixUsadInEL(context, lib) ? 1 : 0;
+
             if (usages[0] == 0) {
                 //unused declaration
                 Attribute declAttr = namespace2Attribute.get(lib.getNamespace());
@@ -174,9 +183,9 @@ public class LibraryDeclarationChecker extends HintsProvider {
                     int from = declAttr.nameOffset();
                     int to = declAttr.valueOffset() + declAttr.value().length();
                     try {
-                        ranges.add(new PositionRange(context.doc, from, to));
+                        ranges.add(new PositionRange(context, from, to));
                     } catch (BadLocationException ex) {
-                        Exceptions.printStackTrace(ex);
+                        //just ignore
                     }
                 }
 
@@ -195,12 +204,37 @@ public class LibraryDeclarationChecker extends HintsProvider {
             Hint hint = new Hint(DEFAULT_WARNING_RULE,
                     NbBundle.getMessage(HintsProvider.class, "MSG_UNUSED_LIBRARY_DECLARATION"), //NOI18N
                     context.parserResult.getSnapshot().getSource().getFileObject(),
-                    new OffsetRange(from, to),
+                    JsfUtils.createOffsetRange(snapshot, from, to),
                     fixes, DEFAULT_ERROR_HINT_PRIORITY);
 
             hints.add(hint);
         }
 
+    }
+
+    private boolean isFunctionLibraryPrefixUsadInEL(RuleContext context, FaceletsLibrary lib) {
+        String libraryPrefix = ((HtmlParserResult)context.parserResult).getNamespaces().get(lib.getNamespace());
+        Document doc = context.doc;
+
+        //lets suppose we operate on the xhtml document which has a top level lexer and the EL
+        //is always embedded on the first embedding level
+        TokenHierarchy<Document> th = TokenHierarchy.get(doc);
+        TokenSequence<?> ts = th.tokenSequence();
+        ts.moveStart();
+        while(ts.moveNext()) {
+            TokenSequence<ELTokenId> elts = ts.embeddedJoined(ELTokenId.language());
+            if(elts != null) {
+                //check the EL expression for the function library prefix usages
+                elts.moveStart();
+                while(elts.moveNext()) {
+                    if(elts.token().id() == ELTokenId.TAG_LIB_PREFIX && CharSequenceUtilities.equals(libraryPrefix, elts.token().text())) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
     }
 
     private static class RemoveUnusedLibraryDeclarationHintFix extends RemoveUnusedLibrariesDeclarationHintFix {
@@ -268,9 +302,11 @@ public class LibraryDeclarationChecker extends HintsProvider {
 
         private Position from, to;
 
-        public PositionRange(BaseDocument doc, int from, int to) throws BadLocationException {
-            this.from = doc.createPosition(from);
-            this.to = doc.createPosition(to);
+        public PositionRange(RuleContext context, int from, int to) throws BadLocationException {
+            Snapshot snapshot = context.parserResult.getSnapshot();
+            //the constructor will simply throw BLE when the embedded to source offset conversion fails (returns -1)
+            this.from = context.doc.createPosition(snapshot.getOriginalOffset(from));
+            this.to = context.doc.createPosition(snapshot.getOriginalOffset(to));
         }
 
         public int getFrom() {

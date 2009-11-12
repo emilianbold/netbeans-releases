@@ -39,26 +39,49 @@
 
 package org.netbeans.modules.dlight.toolsui;
 
-import java.util.ArrayList;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Arrays;
 import java.util.List;
 import javax.swing.Action;
-import org.netbeans.modules.dlight.indicators.spi.IndicatorActionsProvider;
+import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
+import org.netbeans.modules.dlight.spi.indicator.IndicatorActionsProvider;
+import org.openide.awt.Actions;
 import org.openide.util.Lookup;
-import org.openide.util.actions.SystemAction;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author thp
  */
-@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.dlight.indicators.spi.IndicatorActionsProvider.class)
+@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.dlight.spi.indicator.IndicatorActionsProvider.class)
 public class IndicatorActionsProviderImpl implements IndicatorActionsProvider {
 
     public List<Action> getIndicatorActions(Lookup context) {
-        SystemAction action = SystemAction.get(ToolsCustomizerAction.class);
+        String preferredConfigurationDisplayName = null;
+        if (context != null) {
+            DLightConfiguration dlightConfiguration = context.lookup(DLightConfiguration.class);
+            if (dlightConfiguration != null) {
+                preferredConfigurationDisplayName = dlightConfiguration.getDisplayedName();
+            }
+        }
 
-        List<Action> list = new ArrayList<Action>();
-        list.add(action);
+        Action toolsCustomizerAction = Actions.alwaysEnabled(
+                new ToolsCustomizerActionListener(preferredConfigurationDisplayName),
+                NbBundle.getMessage(ToolsCustomizerAction.class, "CTL_ProfilerToolsAction"), // NOI18N
+                null, true);
 
-        return list;
+        return Arrays.asList(toolsCustomizerAction);
+    }
+
+    private static class ToolsCustomizerActionListener implements ActionListener {
+        private final String displayName;
+        public ToolsCustomizerActionListener(String displayName) {
+            this.displayName = displayName;
+        }
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            ToolsCustomizerAction.showCustomizer(displayName);
+        }
     }
 }

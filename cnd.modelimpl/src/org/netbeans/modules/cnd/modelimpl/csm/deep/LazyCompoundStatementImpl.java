@@ -40,11 +40,11 @@
  */
 package org.netbeans.modules.cnd.modelimpl.csm.deep;
 
-import antlr.TokenStream;
+import org.netbeans.modules.cnd.antlr.TokenStream;
 
 import org.netbeans.modules.cnd.api.model.deep.*;
 
-import antlr.collections.AST;
+import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;

@@ -223,7 +223,9 @@ class FieldElementImpl extends ScopeImpl implements FieldElement {
     @Override
     public String getIndexSignature() {
         StringBuilder sb = new StringBuilder();
-        sb.append(getName().substring(1)).append(";");//NOI18N
+        final String noDollarName = getName().substring(1);
+        sb.append(noDollarName.toLowerCase()).append(";");//NOI18N
+        sb.append(noDollarName).append(";");//NOI18N
         sb.append(getOffset()).append(";");//NOI18N
         sb.append(getPhpModifiers().toBitmask()).append(";");
         if (defaultType != null) {

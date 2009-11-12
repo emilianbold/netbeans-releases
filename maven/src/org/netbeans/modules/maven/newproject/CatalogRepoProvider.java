@@ -100,7 +100,7 @@ public class CatalogRepoProvider implements ArchetypeProvider {
                     String ver = el.getChildText(EL_VERSION);
                     String repo = el.getChildText(EL_REPOSITORY);
                     String desc = el.getChildText(EL_DESCRIPTION);
-                    Archetype archetype = new Archetype();
+                    Archetype archetype = new Archetype(false);
                     if (grId != null && artId != null && ver != null) {
                         archetype.setArtifactId(artId);
                         archetype.setGroupId(grId);

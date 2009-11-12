@@ -4,6 +4,8 @@
 
 <map version="1.0">
 	<mapID target="AboutCandC++Projects" url="WorkingWithCandC++Projects/AboutCandC++Projects.html"/>
+	<mapID target="AboutQtProjects" url="WorkingWithCandC++Projects/AboutQtProjects.html"/>
+	<mapID target="ProfilingCandC++Projects" url="ProfilingCandC++Projects/ProfilingCandC++Projects.html"/>
 	<mapID target="WorkingWithCandC++Projects" url="WorkingWithCandC++Projects/WorkingWithCandC++Projects.html"/>
 	<mapID target="ProjectTasks" url="WorkingWithCandC++Projects/ProjectTasks.html"/>
 	<mapID target="CreatingCorC++Project" url="WorkingWithCandC++Projects/CreatingCorC++Project.html"/>
@@ -91,6 +93,7 @@
 	<mapID target="ProjectPropsRunning" url="WorkingWithCandC++Projects/ProjectPropsRunning.html"/>
 	<mapID target="ProjectPropsCompiling" url="WorkingWithCandC++Projects/ProjectPropsCompilerGeneral.html"/>
 	<mapID target="ProjectPropsLinking" url="WorkingWithCandC++Projects/ProjectPropsLinkerGeneral.html"/>
+	<mapID target="ProjectPropsQt.html" url="WorkingWithCandC++Projects/ProjectPropsQt.html"/>
 	<mapID target="Environment" url="CandC++ProjectBasics/Environment.html"/>
 	<mapID target="SettingCandC++FileProperties" url="WorkingWithCandC++Projects/SettingCandC++FileProperties.html"/>
 	<mapID target="UsingAbbreviations" url="EditingSourceFiles/UsingAbbreviations.html"/>
@@ -165,7 +168,6 @@
 	<mapID target="CandC++BuildingTasks1" url="WorkingWithCandC++Projects/CandC++BuildingTasks.html"/>
 	<mapID target="CompilingSingleCandC++File1" url="WorkingWithCandC++Projects/CompilingSingleCandC++File.html"/>
 	<mapID target="WorkingWithCandC++Projects1" url="WorkingWithCandC++Projects/WorkingWithCandC++Projects.html"/>
-	<mapID target="SettingCandC++ProjectProperties" url="WorkingWithCandC++Projects/SettingCandC++ProjectProperties.html"/>
 	<mapID target="TypeView" url="EditingSourceFiles/TypeView.html"/>
 	<mapID target="IncludeView" url="EditingSourceFiles/IncludeView.html"/>
 	<mapID target="SourceHeaderSwitch" url="EditingSourceFiles/SourceHeaderSwitch.html"/>
@@ -264,7 +266,6 @@
 	<mapID target="NewRemoteDevelopmentHostWizardP1" url="WorkingWithCandC++Projects/NewRemoteDevelopmentHostWizardP1.html"/>
 	<mapID target="NewRemoteDevelopmentHostWizardP2" url="WorkingWithCandC++Projects/NewRemoteDevelopmentHostWizardP2.html"/>
 	<mapID target="NewRemoteDevelopmentHostWizardP3" url="WorkingWithCandC++Projects/NewRemoteDevelopmentHostWizardP3.html"/>
-	<mapID target="ProfilingCorC++Projects" url="WorkingWithCandC++Projects/ProfilingCorC++Projects.html"/>
 	<mapID target="ProjectPropsProfile" url="WorkingWithCandC++Projects/ProjectPropsProfile.html"/>
 	<mapID target="PackagingFiles" url="CandC++ProjectBasics/PackagingFiles.html"/>
 	<mapID target="credits" url="credits.html"/>
@@ -295,4 +296,8 @@
 	<mapID target="who_is_included" url="images/who_is_included.png"/>
 	<mapID target="Configuring1" url="WorkingWithCandC++Projects/Configuring.html"/>
 	<mapID target="RunningCorC++Project1" url="WorkingWithCandC++Projects/RunningCorC++Project.html"/>
+	<mapID target="ManagingProfileConfigurations" url="ProfilingCandC++Projects/ManagingProfileConfigurations.html"/>
+	<mapID target="OverviewOfCandC++Profiling" url="ProfilingCandC++Projects/OverviewOfCandC++Profiling.html"/>
+	<mapID target="ProfilingThreadedCandC++Apps" url="ProfilingCandC++Projects/ProfilingThreadedCandC++Apps.html"/>
+	<mapID target="ProjectPropsQt" url="WorkingWithCandC++Projects/ProjectPropsQt.html"/>
 </map>

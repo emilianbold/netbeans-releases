@@ -35,6 +35,7 @@ class ClassConstantElementImpl extends ModelElementImpl implements ClassConstant
     @Override
     public String getIndexSignature() {
         StringBuilder sb = new StringBuilder();
+        sb.append(getName().toLowerCase()).append(";");//NOI18N
         sb.append(getName()).append(";");//NOI18N
         sb.append(getOffset()).append(";");//NOI18N
         return sb.toString();

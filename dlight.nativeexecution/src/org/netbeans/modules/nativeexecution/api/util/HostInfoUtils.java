@@ -30,8 +30,7 @@ public final class HostInfoUtils {
     /**
      * String constant that can be used to identify a localhost.
      */
-    public static final String LOCALHOST = "127.0.0.1"; // NOI18N
-    private static final java.util.logging.Logger log = Logger.getInstance();
+    public static final String LOCALHOST = "localhost"; // NOI18N
     private static final List<String> myIPAdresses = new ArrayList<String>();
     private static final TasksCachedProcessor<ExecutionEnvironment, HostInfo> hostInfoCachedProcessor =
             new TasksCachedProcessor<ExecutionEnvironment, HostInfo>(new FetchHostInfoTask(), false);
@@ -40,18 +39,20 @@ public final class HostInfoUtils {
     static {
         NetworkInterface iface = null;
         try {
-            for (Enumeration ifaces = NetworkInterface.getNetworkInterfaces();
+            for (Enumeration<NetworkInterface> ifaces = NetworkInterface.getNetworkInterfaces();
                     ifaces.hasMoreElements();) {
-                iface = (NetworkInterface) ifaces.nextElement();
-                for (Enumeration ips = iface.getInetAddresses();
+                iface = ifaces.nextElement();
+                for (Enumeration<InetAddress> ips = iface.getInetAddresses();
                         ips.hasMoreElements();) {
-                    myIPAdresses.add(
-                            ((InetAddress) ips.nextElement()).getHostAddress());
+                    myIPAdresses.add((ips.nextElement()).getHostAddress());
                 }
             }
         } catch (SocketException ex) {
             Exceptions.printStackTrace(ex);
         }
+    }
+
+    private HostInfoUtils() {
     }
 
     /**
@@ -88,8 +89,8 @@ public final class HostInfoUtils {
      *        in.
      * @param fname name of file to check for
      * @return <tt>true</tt> if file exists, <tt>false</tt> otherwise.
-     * @throws ConnectException if host, identified by this execution
-     * environment is not connected.
+     * @throws IOException if host, identified by this execution
+     * environment is not connected or operation was terminated.
      */
     public static boolean fileExists(final ExecutionEnvironment execEnv,
             final String fname)
@@ -172,21 +173,28 @@ public final class HostInfoUtils {
      * One should avoid to call this method from within AWT thread without prior 
      * call to isHostInfoAvailable().
      *
-     * @param execEnv execution environment to get information about
-     * @return information about the host represented by execEnv. <tt>null</tt>
-     * if interrupted of connection initiation is cancelled by user.
-     * Also returns null if execEnv parameter is null.
+     * @param execEnv execution environment to get information about.
+     * It should never be null, otherwise IllegalArgumentException is thrown.
+     * @return information about the host represented by execEnv.
+     * The return value is never null; in the case it is impossible to get HostInfo,
+     * IOException is thrown instead.
+     * @throws IOException
+     * @throws CancellationException 
      * @see #isHostInfoAvailable(org.netbeans.modules.nativeexecution.api.ExecutionEnvironment)
      */
     public static HostInfo getHostInfo(final ExecutionEnvironment execEnv) throws IOException, CancellationException {
         if (execEnv == null) {
-            return null;
+            throw new IllegalArgumentException("ExecutionEnvironment should not be null"); //NOI18N
         }
 
         Logger.assertNonUiThread();
 
         try {
-            return hostInfoCachedProcessor.compute(execEnv);
+            HostInfo result = hostInfoCachedProcessor.compute(execEnv);
+            if (result == null) {
+                throw new IOException("Can not get HostInfo for " + execEnv); //NOI18N
+            }
+            return result;
         } catch (InterruptedException ex) {
             throw new CancellationException("getHostInfo interrupted"); // NOI18N
         }

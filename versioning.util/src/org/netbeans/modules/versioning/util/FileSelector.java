@@ -163,8 +163,8 @@ public class FileSelector extends javax.swing.JPanel implements ListSelectionLis
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
         dialog.getAccessibleContext().setAccessibleDescription(title);                     // NOI18N
 
-        dialog.setVisible(true);
         dialogDescriptor.setHelpCtx(helpCtx);
+        dialog.setVisible(true);
         boolean ret = dialogDescriptor.getValue() == okButton;
         if(ret) {
             saveSelectedFile(files);

@@ -84,6 +84,7 @@ import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.util.DLightLogger;
+import org.netbeans.modules.dlight.util.usagetracking.SunStudioUserCounter;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -298,7 +299,15 @@ public class SunStudioDataCollector
             cmd = command;
             sproHome = sprohome;
             validatedTarget = target;
-
+            if (sprohome != null) {
+                String ssBin;
+                if (!sprohome.endsWith("/") && !sprohome.endsWith("\\")) { // NOI18N
+                    ssBin = sprohome + "/bin/";// NOI18N
+                } else {
+                    ssBin = sprohome + "bin/";// NOI18N
+                }
+                SunStudioUserCounter.countTool(ssBin, execEnv, "gizmo"); // NOI18N
+            }
             return validationStatus;
         }
     }
@@ -340,42 +349,57 @@ public class SunStudioDataCollector
             Set<CollectedInfo> ci = EnumSet.<CollectedInfo>copyOf(collectedInfo);
             Set<DataTableMetadata> dtm = new HashSet<DataTableMetadata>();
             boolean bAttachable = true;
-
+            boolean isChanged = false;
             if (ci.contains(CollectedInfo.DEADLOCKS) || ci.contains(CollectedInfo.DATARACES)) {
-                ci.retainAll(EnumSet.of(CollectedInfo.DEADLOCKS, CollectedInfo.DATARACES));
+                isChanged = ci.retainAll(EnumSet.of(CollectedInfo.DEADLOCKS, CollectedInfo.DATARACES));
             }
+            if (!isChanged){//is we do not have THA
+                for (CollectedInfo info : collectedInfo) {
+                    ci.add(info);
 
-            for (CollectedInfo info : collectedInfo) {
-                ci.add(info);
+                    switch (info) {
+                        case FUNCTIONS_LIST:
+                            dtm.add(cpuInfoTable);
+                            break;
+                        case MEMORY:
+                            dtm.add(memInfoTable);
+                            bAttachable = false;
+                            break;
+                        case MEMSUMMARY:
+                            dtm.add(memSummaryInfoTable);
+                            bAttachable = false;
+                            break;
+                        case SYNCHRONIZATION:
+                            dtm.add(syncInfoTable);
+                            bAttachable = false;
+                            break;
+                        case SYNCSUMMARY:
+                            dtm.add(summaryInfoTable);
+                            bAttachable = false;
+                            break;
+                        case DEADLOCKS:
+                            dtm.add(deadlocksSummaryInfoTable);
+                            bAttachable = false;
+                            break;
+                        case DATARACES:
+                            dtm.add(dataracesSummaryInfoTable);
+                            bAttachable = false;
+                            break;
+                    }
+                }
+            }else{
+                for (CollectedInfo info : ci) {
+                    switch (info) {
 
-                switch (info) {
-                    case FUNCTIONS_LIST:
-                        dtm.add(cpuInfoTable);
-                        break;
-                    case MEMORY:
-                        dtm.add(memInfoTable);
-                        bAttachable = false;
-                        break;
-                    case MEMSUMMARY:
-                        dtm.add(memSummaryInfoTable);
-                        bAttachable = false;
-                        break;
-                    case SYNCHRONIZATION:
-                        dtm.add(syncInfoTable);
-                        bAttachable = false;
-                        break;
-                    case SYNCSUMMARY:
-                        dtm.add(summaryInfoTable);
-                        bAttachable = false;
-                        break;
-                    case DEADLOCKS:
-                        dtm.add(deadlocksSummaryInfoTable);
-                        bAttachable = false;
-                        break;
-                    case DATARACES:
-                        dtm.add(dataracesSummaryInfoTable);
-                        bAttachable = false;
-                        break;
+                        case DEADLOCKS:
+                            dtm.add(deadlocksSummaryInfoTable);
+                            bAttachable = false;
+                            break;
+                        case DATARACES:
+                            dtm.add(dataracesSummaryInfoTable);
+                            bAttachable = false;
+                            break;
+                    }
                 }
             }
 
@@ -552,8 +576,9 @@ public class SunStudioDataCollector
         this.notifyIndicators(data);
     }
 
-    /*package*/ void notifyIndicatorsThatProviderFinished() {
+    /*package*/ void notifyIndicatorsThatProviderFinished() {        
         super.suggestIndicatorsRepaint();
+        this.notifyIndicators(Arrays.asList(new DataRow(Arrays.asList("sunstudio.finished"),Arrays.asList(Boolean.TRUE) )));//NOI18N
     }
 
     private void targetStarted(DLightTarget source) {

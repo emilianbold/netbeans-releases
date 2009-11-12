@@ -56,8 +56,10 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
@@ -570,12 +572,21 @@ public final class NbMavenProjectImpl implements Project {
         return updater2;
     }
 
+    private static Map<String, String> pkg2Icon = new HashMap<String, String>() {{
+        put("jar", "org/netbeans/modules/maven/resources/jaricon.png"); //NOI18N
+        put("war", "org/netbeans/modules/maven/resources/webicon.gif"); //NOI18N
+        put("ejb", "org/netbeans/modules/maven/resources/ejbicon.gif"); //NOI18N
+        put("ear", "org/netbeans/modules/maven/resources/earicon.gif"); //NOI18N
+        put("pom", "org/netbeans/modules/maven/resources/Maven2Icon.gif"); //NOI18N
+        put("nbm", "org/netbeans/modules/maven/resources/nbmicon.png"); //NOI18N
+    }};
 
-    private Image getIcon() {
-        if (icon == null) {
-            icon = ImageUtilities.loadImage("org/netbeans/modules/maven/Maven2Icon.gif");//NOI18N
+    public static Image getIcon (MavenProject mPrj) {
+        String iconPath = pkg2Icon.get(mPrj.getPackaging().toLowerCase());
+        if (iconPath == null) {
+            iconPath = "org/netbeans/modules/maven/resources/Maven2Icon.gif"; //NOI18N
         }
-        return icon;
+        return ImageUtilities.loadImage(iconPath);
     }
 
     public String getName() {
@@ -981,13 +992,17 @@ public final class NbMavenProjectImpl implements Project {
                     toReturn = NbBundle.getMessage(NbMavenProjectImpl.class, "TXT_Maven_project_at", NbMavenProjectImpl.this.getProjectDirectory().getPath());
                 }
             }
-            toReturn = toReturn + " (" + pr.getPackaging() + ")"; //NOI18N
+            String pckg = pr.getPackaging().toLowerCase();
+            if (pkg2Icon.get(pckg) == null) {
+                toReturn = toReturn + " (" + pckg + ")"; // NOI18N
+            }
 
             return toReturn;
         }
 
         public Icon getIcon() {
-            return ImageUtilities.image2Icon(NbMavenProjectImpl.this.getIcon());
+            MavenProject pr = NbMavenProjectImpl.this.getOriginalMavenProject();
+            return ImageUtilities.image2Icon(NbMavenProjectImpl.getIcon(pr));
         }
 
         public Project getProject() {

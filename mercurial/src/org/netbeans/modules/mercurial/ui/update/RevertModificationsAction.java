@@ -59,8 +59,6 @@ import org.openide.NotifyDescriptor;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.mercurial.util.HgCommand;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  * Reverts local changes.
@@ -177,20 +175,8 @@ public class RevertModificationsAction extends ContextAction {
             DialogDisplayer.getDefault().notifyLater(e);
         }
 
-        if (revStr == null) {
-            for (File file : revertFiles) {
-                HgUtils.forceStatusRefresh(file);
-            }
-        } else {
-            HgUtils.forceStatusRefresh(revertFiles.get(0));
-        }
+        Mercurial.getInstance().getFileStatusCache().refreshAllRoots(Collections.singletonMap(repository, (Set<File>)new HashSet<File>(revertFiles)));
 
-        // refresh filesystem to take account of changes
-        FileObject rootObj = FileUtil.toFileObject(repository);
-        try {
-            rootObj.getFileSystem().refresh(true);
-        } catch (java.lang.Exception exc) {
-        }
         logger.outputInRed(
                 NbBundle.getMessage(RevertModificationsAction.class,
                 "MSG_REVERT_DONE")); // NOI18N

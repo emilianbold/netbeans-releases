@@ -92,7 +92,7 @@ final class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTre
     private final List<Column> metricsList;
 
     CallersCalleesVisualizer(StackDataProvider dataProvider, TreeTableVisualizerConfiguration configuration) {
-        super(configuration, (TreeTableDataProvider) dataProvider);
+        super(configuration, (TreeTableDataProvider<FunctionCallTreeTableNode>) dataProvider);
         this.configuration = (CallersCalleesVisualizerConfiguration) configuration;
         this.configuration.setNodeActionProvider(new NodeActionsProviderImpl());
         this.dataProvider = dataProvider;
@@ -453,7 +453,7 @@ final class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTre
 
         private final FunctionCallWithMetric functionCall;
         private final Future<SourceFileInfo> sourceFileInfoTask;
-        private boolean isEnabled = true;
+        private boolean isEnabled = false;
         private boolean gotTheInfo = false;
 
         public GoToSourceAction(FunctionCallWithMetric funcCall) {

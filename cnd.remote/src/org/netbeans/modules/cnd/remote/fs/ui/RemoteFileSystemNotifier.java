@@ -47,9 +47,9 @@ import java.util.List;
 import java.util.concurrent.CancellationException;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
-import org.netbeans.modules.cnd.remote.server.RemoteServerListUI;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionListener;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -75,6 +75,21 @@ public class RemoteFileSystemNotifier {
         List<String> getPendingFiles();
     }
 
+    private class Listener implements ConnectionListener {
+        public void connected(ExecutionEnvironment env) {
+            if (RemoteFileSystemNotifier.this.env.equals(env)) {
+                ConnectionManager.getInstance().removeConnectionListener(this);
+                RequestProcessor.getDefault().post(new NamedRunnable("Pending files synchronizer for " + env.getDisplayName()) { //NOI18N
+                    protected void runImpl() {
+                        notification.clear();
+                        callback.connected();
+                    }
+                });
+            }
+        }
+        public void disconnected(ExecutionEnvironment env) {}
+    }
+
     private final ExecutionEnvironment env;
     private final Callback callback;
     private boolean shown;
@@ -92,6 +107,9 @@ public class RemoteFileSystemNotifier {
                 return;
             } else {
                 shown = true;
+                ConnectionManager cm = ConnectionManager.getInstance();
+                ConnectionListener listener = new Listener();
+                cm.addConnectionListener(listener);
                 show();
             }
         }
@@ -119,12 +137,6 @@ public class RemoteFileSystemNotifier {
                 NbBundle.getMessage(RemoteFileSystemNotifier.class, "RemoteFileSystemNotifier.DETAILS", envString),
                 onClickAction,
                 NotificationDisplayer.Priority.HIGH);
-
-//        RequestProcessor.getDefault().post(new Runnable() {
-//            public void run() {
-//                notification.clear();
-//            }
-//        }, 45*1000);
     }
 
     private void showConnectDialog() {
@@ -138,7 +150,7 @@ public class RemoteFileSystemNotifier {
         Dialog dlg = DialogDisplayer.getDefault().createDialog(dd);
         dlg.setVisible(true);
         if (dd.getValue() == DialogDescriptor.OK_OPTION) {            
-            RequestProcessor.getDefault().post(new NamedRunnable("Pending files synchronizer for " + env.getDisplayName()) { //NOI18N
+            RequestProcessor.getDefault().post(new NamedRunnable("Requesting connection for " + env.getDisplayName()) { //NOI18N
                 protected void runImpl() {
                     connect(panel.getPassword(), panel.isRememberPassword());
                 }
@@ -156,9 +168,8 @@ public class RemoteFileSystemNotifier {
             } else {
                 ConnectionManager.getInstance().connectTo(env, password, rememberPassword);
             }
-            connected = true;
-            RemoteServerListUI.revalidate(env, password, rememberPassword);
-            callback.connected();
+            connected = true;            
+            // callback.connected(); // we now use listener instead
         } catch (IOException ex) {
             ex.printStackTrace();
         } catch (CancellationException ex) {

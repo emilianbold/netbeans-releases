@@ -41,10 +41,10 @@
 
 package org.netbeans.modules.cnd.apt.support;
 
-import antlr.RecognitionException;
-import antlr.TokenStream;
-import antlr.TokenStreamException;
-import antlr.TokenStreamSelector;
+import org.netbeans.modules.cnd.antlr.RecognitionException;
+import org.netbeans.modules.cnd.antlr.TokenStream;
+import org.netbeans.modules.cnd.antlr.TokenStreamException;
+import org.netbeans.modules.cnd.antlr.TokenStreamSelector;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -403,7 +403,11 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
                     List<APTToken> rightConcatTokens = new ArrayList<APTToken>();
                     rightConcatTokens.add(body.nextToken());
                     laToken = body.nextToken();
-                    if (isImplicitConcat(rightConcatTokens.get(0), laToken)) {
+                    if (rightConcatTokens.get(0).getType() == APTTokenTypes.SHARP && laToken.getType() == APTTokenTypes.ID) {
+                        // stringize right part before concatenation (IZ#175801)
+                        rightConcatTokens.set(0, stringizeParam(paramsMap.get(laToken.getTextID())));
+                        laToken = body.nextToken();
+                    } else if (isImplicitConcat(rightConcatTokens.get(0), laToken)) {
                         // Fix for IZ#149225: incorrect concatenation with token that starts with digit
                         rightConcatTokens.add(laToken);
                         laToken = body.nextToken();

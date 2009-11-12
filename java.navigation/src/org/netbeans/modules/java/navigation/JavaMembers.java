@@ -41,14 +41,13 @@
 
 package org.netbeans.modules.java.navigation;
 
-import org.netbeans.api.java.source.CompilationController;
+import java.util.ArrayList;
 import org.netbeans.api.java.source.JavaSource;
-import java.util.Arrays;
 import java.util.List;
-import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.swing.JDialog;
 
+import org.netbeans.api.java.source.ElementHandle;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -73,18 +72,21 @@ public final class JavaMembers {
         }
     }
 
-    public static void show(FileObject fileObject, Element[] elements, CompilationController compilationController) {
+    public static void show(FileObject fileObject, ElementHandle<?>[] elements) {
         if (fileObject != null) {
             String membersOf = "";
             if (elements != null && elements.length > 0) {
-                List<? extends Element> elementsList = Arrays.<Element>asList(elements);
+                List<String> namesList = new ArrayList<String>(elements.length);
+                for (ElementHandle<?> handle : elements) {
+                    namesList.add(handle.getQualifiedName());
+                }
                 if (elements[0].getKind() == ElementKind.PACKAGE && elements.length > 1) {
-                    membersOf = elementsList.subList(1, elementsList.size()).toString();
+                    membersOf = namesList.subList(1, namesList.size()).toString();
                 } else {
-                    membersOf = elementsList.toString();
+                    membersOf = namesList.toString();
                 }
             }
-            showDialog(membersOf, new JavaMembersPanel(fileObject, elements, compilationController));
+            showDialog(membersOf, new JavaMembersPanel(fileObject, elements));
         }
     }
 

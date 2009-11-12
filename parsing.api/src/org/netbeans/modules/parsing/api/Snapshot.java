@@ -41,7 +41,9 @@ package org.netbeans.modules.parsing.api;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -225,7 +227,11 @@ public final class Snapshot {
         if (tokenHierarchy == null) {
             Language<? extends TokenId> lang = Language.find(getMimeType());
             if (lang != null) {
-                tokenHierarchy = TokenHierarchy.create(text, lang);
+                //copy the InputAttributes from the source document to the
+                //charsequence token hierarchy
+                Document sourceDocument = source.getDocument(false);
+                InputAttributes inputAttrs = sourceDocument != null ? (InputAttributes)sourceDocument.getProperty(InputAttributes.class) : null;
+                tokenHierarchy = TokenHierarchy.create(text, false, lang, null, inputAttrs);
             }
         }
         return tokenHierarchy;

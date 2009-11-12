@@ -80,6 +80,7 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
 
+import java.util.Collections;
 import java.util.WeakHashMap;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -108,11 +109,18 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.editor.JumpList;
 
 import org.netbeans.modules.java.preprocessorbridge.api.JavaSourceUtil;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -676,22 +684,19 @@ public class EditorContextImpl extends EditorContext {
         final String className,
         final String fieldName
     ) {
-        JavaSource js = JavaSource.forFileObject(fo);
-        if (js == null) return -1;
         final int[] result = new int[] {-1};
-
-        final DataObject dataObject;
-        try {
-            dataObject = DataObject.find (fo);
-        } catch (DataObjectNotFoundException ex) {
+        final StyledDocument doc = findDocument(fo);
+        if (doc == null) {
             return -1;
         }
+
         try {
-            js.runUserActionTask(new CancellableTask<CompilationController>() {
-                public void cancel() {
-                }
-                public void run(CompilationController ci) throws Exception {
-                    if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {//TODO: ELEMENTS_RESOLVED may be sufficient
+            ParserManager.parse(Collections.singleton(Source.create(doc)), new UserTask() {
+                @Override
+                public void run(ResultIterator resultIterator) throws Exception {
+                    Result res = resultIterator.getParserResult();
+                    CompilationController ci = CompilationController.get(res);
+                    if (ci == null || ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {//TODO: ELEMENTS_RESOLVED may be sufficient
                         ErrorManager.getDefault().log(ErrorManager.WARNING,
                                 "Unable to resolve "+ci.getFileObject()+" to phase "+Phase.RESOLVED+", current phase = "+ci.getPhase()+
                                 "\nDiagnostics = "+ci.getDiagnostics()+
@@ -711,8 +716,6 @@ public class EditorContextImpl extends EditorContext {
                                     "No position for tree "+tree+" in "+className);
                             return;
                         }
-                        EditorCookie editor = (EditorCookie) dataObject.getCookie(EditorCookie.class);
-                        StyledDocument doc = editor.openDocument();
                         int l = doc.getLength();
                         while (pos < l && doc.getText(pos, 1).charAt(0) != '{') {
                             pos++;
@@ -734,16 +737,15 @@ public class EditorContextImpl extends EditorContext {
                                             "No position for tree "+tree+" of element "+elm+" in "+className);
                                     continue;
                                 }
-                                EditorCookie editor = (EditorCookie) dataObject.getCookie(EditorCookie.class);
-                                result[0] = NbDocument.findLineNumber(editor.openDocument(), pos) + 1;
+                                result[0] = NbDocument.findLineNumber(doc, pos) + 1;
                                 //return elms.getSourcePosition(elm).getLine();
                             }
                         }
                     }
                 }
-            },true);
-        } catch (IOException ioex) {
-            ErrorManager.getDefault().notify(ioex);
+            });
+        } catch (ParseException pex) {
+            ErrorManager.getDefault().notify(pex);
             return -1;
         }
         return result[0];
@@ -811,21 +813,15 @@ public class EditorContextImpl extends EditorContext {
         final String methodName,
         final String methodSignature
     ) {
-        JavaSource js = JavaSource.forFileObject(fo);
-        if (js == null) return new int[] {};
         final List<Integer> result = new ArrayList<Integer>();
-
-        final DataObject dataObject;
+        final StyledDocument doc = findDocument(fo);
+        if (doc == null) return new int[] {};
         try {
-            dataObject = DataObject.find (fo);
-        } catch (DataObjectNotFoundException ex) {
-            return new int[] {};
-        }
-        try {
-            js.runUserActionTask(new CancellableTask<CompilationController>() {
-                public void cancel() {
-                }
-                public void run(CompilationController ci) throws Exception {
+            ParserManager.parse(Collections.singleton(Source.create(doc)), new UserTask() {
+                @Override
+                public void run(ResultIterator resultIterator) throws Exception {
+                    Result res = resultIterator.getParserResult();
+                    CompilationController ci = CompilationController.get(res);
                     if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {//TODO: ELEMENTS_RESOLVED may be sufficient
                         ErrorManager.getDefault().log(ErrorManager.WARNING,
                                 "Unable to resolve "+ci.getFileObject()+" to phase "+Phase.RESOLVED+", current phase = "+ci.getPhase()+
@@ -891,16 +887,15 @@ public class EditorContextImpl extends EditorContext {
                                             while (pos > 0 && Character.isWhitespace(text.charAt(pos))) pos--;
                                         }
                                     }
-                                    EditorCookie editor = (EditorCookie) dataObject.getCookie(EditorCookie.class);
-                                    result.add(new Integer(NbDocument.findLineNumber(editor.openDocument(), pos) + 1));
+                                    result.add(new Integer(NbDocument.findLineNumber(doc, pos) + 1));
                                 }
                             }
                         }
                     }
                 }
-            },true);
-        } catch (IOException ioex) {
-            ErrorManager.getDefault().notify(ioex);
+            });
+        } catch (ParseException pex) {
+            ErrorManager.getDefault().notify(pex);
             return new int[] {};
         }
         int[] resultArray = new int[result.size()];
@@ -1085,24 +1080,20 @@ public class EditorContextImpl extends EditorContext {
     ) {
         DataObject dataObject = getDataObject (url);
         if (dataObject == null) return null;
-        JavaSource js = JavaSource.forFileObject(dataObject.getPrimaryFile());
-        if (js == null) return "";
-        EditorCookie ec = (EditorCookie) dataObject.getCookie(EditorCookie.class);
-        if (ec == null) return "";
-        StyledDocument doc;
-        try {
-            doc = ec.openDocument();
-        } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ex);
+//        JavaSource js = JavaSource.forFileObject(dataObject.getPrimaryFile());
+//        if (js == null) return "";
+        StyledDocument doc = findDocument(dataObject);
+        if (doc == null) {
             return "";
         }
         try {
             final int offset = NbDocument.findLineOffset(doc, lineNumber - 1);
             final String[] result = new String[] {""};
-            js.runUserActionTask(new CancellableTask<CompilationController>() {
-                public void cancel() {
-                }
-                public void run(CompilationController ci) throws Exception {
+            ParserManager.parse(Collections.singleton(Source.create(doc)), new UserTask() {
+                @Override
+                public void run(ResultIterator resultIterator) throws Exception {
+                    Result res = resultIterator.getParserResult();
+                    CompilationController ci = CompilationController.get(res);
                     if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {//TODO: ELEMENTS_RESOLVED may be sufficient
                         ErrorManager.getDefault().log(ErrorManager.WARNING,
                                 "Unable to resolve "+ci.getFileObject()+" to phase "+Phase.RESOLVED+", current phase = "+ci.getPhase()+
@@ -1128,10 +1119,10 @@ public class EditorContextImpl extends EditorContext {
                                 "No enclosing class for "+ci.getFileObject()+", offset = "+offset);
                     }
                 }
-            }, true);
+            });
             return result[0];
-        } catch (IOException ioex) {
-            ErrorManager.getDefault().notify(ioex);
+        } catch (ParseException pex) {
+            ErrorManager.getDefault().notify(pex);
             return "";
         } catch (IndexOutOfBoundsException ioobex) {
             //XXX: log the exception?
@@ -1179,9 +1170,11 @@ public class EditorContextImpl extends EditorContext {
             synchronized (sourceHandles) {
                 handle = sourceHandles.get(js);
             }
-            handle = JavaSourceUtil.createControllerHandle(fo, handle);
-            synchronized (sourceHandles) {
-                sourceHandles.put(js, handle);
+            if (handle == null) {
+                handle = JavaSourceUtil.createControllerHandle(fo, handle);
+                synchronized (sourceHandles) {
+                    sourceHandles.put(js, handle);
+                }
             }
             preferredCI = (CompilationController) handle.getCompilationController();
         } else {
@@ -1192,7 +1185,7 @@ public class EditorContextImpl extends EditorContext {
 
     @Override
     public Operation[] getOperations(String url, final int lineNumber,
-                                     BytecodeProvider bytecodeProvider) {
+                                     final BytecodeProvider bytecodeProvider) {
         DataObject dataObject = getDataObject (url);
         if (dataObject == null) return null;
         JavaSource js = JavaSource.forFileObject(dataObject.getPrimaryFile());
@@ -1207,77 +1200,40 @@ public class EditorContextImpl extends EditorContext {
             return null;
         }
         final int offset = findLineOffset(doc, (int) lineNumber);
-        Operation[] ops;
+        final Object[] result = new Object[1];
         //long t1, t2, t3, t4;
         //t1 = System.nanoTime();
-        try {
-            CompilationController ci = getPreferredCompilationController(dataObject.getPrimaryFile(), js);
-            if (ci == null) {
-                return new Operation[] {};
+        if (SourceUtils.isScanInProgress()) {
+            try {
+                ParserManager.parse(Collections.singleton(Source.create(doc)), new UserTask() {
+                    @Override
+                    public void run(ResultIterator resultIterator) throws Exception {
+                        Result res = resultIterator.getParserResult();
+                        CompilationController ci = CompilationController.get(res);
+                        result[0] = computeOperations(ci, offset, lineNumber, bytecodeProvider);
+                    }
+                });
+            } catch (ParseException pex) {
+                ErrorManager.getDefault().notify(pex);
+                return null;
             }
-            synchronized (ci) {
-                //t2 = System.nanoTime();
-                if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {//TODO: ELEMENTS_RESOLVED may be sufficient
-                    ErrorManager.getDefault().log(ErrorManager.WARNING,
-                            "Unable to resolve "+ci.getFileObject()+" to phase "+Phase.RESOLVED+", current phase = "+ci.getPhase()+
-                            "\nDiagnostics = "+ci.getDiagnostics()+
-                            "\nFree memory = "+Runtime.getRuntime().freeMemory());
+        } else {
+            try {
+                CompilationController ci = getPreferredCompilationController(dataObject.getPrimaryFile(), js);
+                if (ci == null) {
                     return new Operation[] {};
                 }
-                Scope scope = ci.getTreeUtilities().scopeFor(offset);
-                Element method = scope.getEnclosingMethod();
-                if (method == null) {
-                    return new Operation[] {};
+                synchronized (ci) {
+                    result[0] = computeOperations(ci, offset, lineNumber, bytecodeProvider);
                 }
-                Tree methodTree = ci.getTrees().getTree(method);
-                if (methodTree == null) { // method not found
-                    return new Operation[] {};
-                }
-                CompilationUnitTree cu = ci.getCompilationUnit();
-                ExpressionScanner scanner = new ExpressionScanner(lineNumber, cu, ci.getTrees().getSourcePositions());
-                ExpressionScanner.ExpressionsInfo info = new ExpressionScanner.ExpressionsInfo();
-                List<Tree> expTrees = methodTree.accept(scanner, info);
-
-                //com.sun.source.tree.ExpressionTree expTree = scanner.getExpressionTree();
-                if (expTrees == null || expTrees.size() == 0) {
-                    return new Operation[] {};
-                }
-                SourcePositions sp = ci.getTrees().getSourcePositions();
-                int treeStartLine =
-                        (int) cu.getLineMap().getLineNumber(
-                            sp.getStartPosition(cu, expTrees.get(0)));
-                int treeEndLine =
-                        (int) cu.getLineMap().getLineNumber(
-                            sp.getEndPosition(cu, expTrees.get(expTrees.size() - 1)));
-
-                if (treeStartLine == Diagnostic.NOPOS || treeEndLine == Diagnostic.NOPOS) {
-                    return null;
-                }
-                //t3 = System.nanoTime();
-                int[] indexes = bytecodeProvider.indexAtLines(treeStartLine, treeEndLine);
-                if (indexes == null) {
-                    return null;
-                }
-                Map<Tree, Operation> nodeOperations = new HashMap<Tree, Operation>();
-                ops = AST2Bytecode.matchSourceTree2Bytecode(
-                        cu,
-                        ci,
-                        expTrees, info, bytecodeProvider.byteCodes(),
-                        indexes,
-                        bytecodeProvider.constantPool(),
-                        new OperationCreationDelegateImpl(),
-                        nodeOperations);
-                if (ops != null) {
-                    assignNextOperations(methodTree, cu, ci, bytecodeProvider, expTrees, info, nodeOperations);
-                }
+                //t4 = System.nanoTime();
+                //System.err.println("PARSE TIMES 2: "+(t2-t1)/1000000+", "+(t3-t2)/1000000+", "+(t4-t3)/1000000+" TOTAL: "+(t4-t1)/1000000+" ms.");
+            } catch (IOException ioex) {
+                ErrorManager.getDefault().notify(ioex);
+                return null;
             }
-            //t4 = System.nanoTime();
-            //System.err.println("PARSE TIMES 2: "+(t2-t1)/1000000+", "+(t3-t2)/1000000+", "+(t4-t3)/1000000+" TOTAL: "+(t4-t1)/1000000+" ms.");
-        } catch (IOException ioex) {
-            ErrorManager.getDefault().notify(ioex);
-            return null;
         }
-        return ops;
+        return (Operation[])result[0];
     }
 
     private void assignNextOperations(Tree methodTree,
@@ -1381,14 +1337,17 @@ public class EditorContextImpl extends EditorContext {
     public MethodArgument[] getArguments(String url, final Operation operation) {
         DataObject dataObject = getDataObject (url);
         if (dataObject == null) return null;
-        JavaSource js = JavaSource.forFileObject(dataObject.getPrimaryFile());
-        if (js == null) return null;
+//        JavaSource js = JavaSource.forFileObject(dataObject.getPrimaryFile());
+//        if (js == null) return null;
+        final StyledDocument doc = findDocument(dataObject);
+        if (doc == null) return null;
         final MethodArgument args[][] = new MethodArgument[1][];
         try {
-            js.runUserActionTask(new CancellableTask<CompilationController>() {
-                public void cancel() {
-                }
-                public void run(CompilationController ci) throws Exception {
+            ParserManager.parse(Collections.singleton(Source.create(doc)), new UserTask() {
+                @Override
+                public void run(ResultIterator resultIterator) throws Exception {
+                    Result res = resultIterator.getParserResult();
+                    CompilationController ci = CompilationController.get(res);
                     if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
                         ErrorManager.getDefault().log(ErrorManager.WARNING,
                                 "Unable to resolve "+ci.getFileObject()+" to phase "+Phase.RESOLVED+", current phase = "+ci.getPhase()+
@@ -1410,9 +1369,9 @@ public class EditorContextImpl extends EditorContext {
                     args[0] = methodTree.accept(scanner, null);
                     args[0] = scanner.getArguments();
                 }
-            },true);
-        } catch (IOException ioex) {
-            ErrorManager.getDefault().notify(ioex);
+            });
+        } catch (ParseException pex) {
+            ErrorManager.getDefault().notify(pex);
             return null;
         }
         return args[0];
@@ -1422,24 +1381,18 @@ public class EditorContextImpl extends EditorContext {
     public MethodArgument[] getArguments(String url, final int methodLineNumber) {
         DataObject dataObject = getDataObject (url);
         if (dataObject == null) return null;
-        JavaSource js = JavaSource.forFileObject(dataObject.getPrimaryFile());
-        if (js == null) return null;
-        EditorCookie ec = (EditorCookie) dataObject.getCookie(EditorCookie.class);
-        if (ec == null) return null;
-        final StyledDocument doc;
-        try {
-            doc = ec.openDocument();
-        } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ex);
+        final StyledDocument doc = findDocument(dataObject);
+        if (doc == null) {
             return null;
         }
         final int offset = findLineOffset(doc, methodLineNumber);
         final MethodArgument args[][] = new MethodArgument[1][];
         try {
-            js.runUserActionTask(new CancellableTask<CompilationController>() {
-                public void cancel() {
-                }
-                public void run(CompilationController ci) throws Exception {
+            ParserManager.parse(Collections.singleton(Source.create(doc)), new UserTask() {
+                @Override
+                public void run(ResultIterator resultIterator) throws Exception {
+                    Result res = resultIterator.getParserResult();
+                    CompilationController ci = CompilationController.get(res);
                     if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
                         ErrorManager.getDefault().log(ErrorManager.WARNING,
                                 "Unable to resolve "+ci.getFileObject()+" to phase "+Phase.RESOLVED+", current phase = "+ci.getPhase()+
@@ -1460,9 +1413,9 @@ public class EditorContextImpl extends EditorContext {
                     args[0] = methodTree.accept(scanner, null);
                     args[0] = scanner.getArguments();
                 }
-            },true);
-        } catch (IOException ioex) {
-            ErrorManager.getDefault().notify(ioex);
+            });
+        } catch (ParseException pex) {
+            ErrorManager.getDefault().notify(pex);
             return null;
         }
         return args[0];
@@ -1480,14 +1433,18 @@ public class EditorContextImpl extends EditorContext {
     ) {
         DataObject dataObject = getDataObject (url);
         if (dataObject == null) return new String [0];
-        JavaSource js = JavaSource.forFileObject(dataObject.getPrimaryFile());
-        if (js == null) return new String [0];
+        final StyledDocument doc = findDocument(dataObject);
+        if (doc == null) {
+            return null;
+        }
+        if (doc == null) return new String [0];
         final List<String> imports = new ArrayList<String>();
         try {
-            js.runUserActionTask(new CancellableTask<CompilationController>() {
-                public void cancel() {
-                }
-                public void run(CompilationController ci) throws Exception {
+            ParserManager.parse(Collections.singleton(Source.create(doc)), new UserTask() {
+                @Override
+                public void run(ResultIterator resultIterator) throws Exception {
+                    Result res = resultIterator.getParserResult();
+                    CompilationController ci = CompilationController.get(res);
                     if (ci.toPhase(Phase.PARSED).compareTo(Phase.PARSED) < 0) {
                         ErrorManager.getDefault().log(ErrorManager.WARNING,
                                 "Unable to resolve "+ci.getFileObject()+" to phase "+Phase.RESOLVED+", current phase = "+ci.getPhase()+
@@ -1503,10 +1460,10 @@ public class EditorContextImpl extends EditorContext {
                         imports.add(importStr);
                     }
                 }
-            }, true);
-        } catch (IOException ioex) {
-            ErrorManager.getDefault().notify(ioex);
-            return new String [0];
+            });
+        } catch (ParseException pex) {
+            ErrorManager.getDefault().notify(pex);
+            return new String[0];
         }
         return imports.toArray(new String[0]);
         /*
@@ -1566,9 +1523,27 @@ public class EditorContextImpl extends EditorContext {
         try {
             CompilationController ci = getPreferredCompilationController(fo, js);
             //t2 = System.nanoTime();
-            ParseExpressionTask task = new ParseExpressionTask(expression, line, context);
-            if (ci == null) {
-                 js.runUserActionTask(task, false);
+            final ParseExpressionTask task = new ParseExpressionTask(expression, line, context);
+            if (SourceUtils.isScanInProgress()) {
+                final StyledDocument doc = findDocument(fo);
+                if (doc == null) {
+                    return null;
+                }
+                try {
+                    ParserManager.parse(Collections.singleton(Source.create(doc)), new UserTask() {
+                        @Override
+                        public void run(ResultIterator resultIterator) throws Exception {
+                            Result res = resultIterator.getParserResult();
+                            CompilationController ci = CompilationController.get(res);
+                            task.run(ci);
+                        }
+                    });
+                } catch (ParseException pex) {
+                    ErrorManager.getDefault().notify(pex);
+                    return null;
+                }
+            } else if (ci == null) {
+                js.runUserActionTask(task, false);
             } else {
                 try {
                     synchronized (ci) {
@@ -1986,6 +1961,93 @@ public class EditorContextImpl extends EditorContext {
         } catch (DataObjectNotFoundException ex) {
             return null;
         }
+    }
+
+    private static StyledDocument findDocument(FileObject fo) {
+        DataObject dataObject;
+        try {
+            dataObject = DataObject.find (fo);
+        } catch (DataObjectNotFoundException ex) {
+            return null;
+        }
+        EditorCookie ec = (EditorCookie) dataObject.getCookie(EditorCookie.class);
+        if (ec == null) return null;
+        StyledDocument doc;
+        try {
+            doc = ec.openDocument();
+        } catch (IOException ex) {
+            return null;
+        }
+        return doc;
+    }
+
+    private static StyledDocument findDocument(DataObject dataObject) {
+        EditorCookie ec = (EditorCookie) dataObject.getCookie(EditorCookie.class);
+        if (ec == null) return null;
+        StyledDocument doc;
+        try {
+            doc = ec.openDocument();
+        } catch (IOException ex) {
+            return null;
+        }
+        return doc;
+    }
+
+    private Operation[] computeOperations(CompilationController ci, int offset, int lineNumber, BytecodeProvider bytecodeProvider) throws IOException {
+        if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {//TODO: ELEMENTS_RESOLVED may be sufficient
+            ErrorManager.getDefault().log(ErrorManager.WARNING,
+                    "Unable to resolve "+ci.getFileObject()+" to phase "+Phase.RESOLVED+", current phase = "+ci.getPhase()+
+                    "\nDiagnostics = "+ci.getDiagnostics()+
+                    "\nFree memory = "+Runtime.getRuntime().freeMemory());
+            return new Operation[] {};
+        }
+        Scope scope = ci.getTreeUtilities().scopeFor(offset);
+        Element method = scope.getEnclosingMethod();
+        if (method == null) {
+            return new Operation[] {};
+        }
+        Tree methodTree = ci.getTrees().getTree(method);
+        if (methodTree == null) { // method not found
+            return new Operation[] {};
+        }
+        CompilationUnitTree cu = ci.getCompilationUnit();
+        ExpressionScanner scanner = new ExpressionScanner(lineNumber, cu, ci.getTrees().getSourcePositions());
+        ExpressionScanner.ExpressionsInfo info = new ExpressionScanner.ExpressionsInfo();
+        List<Tree> expTrees = methodTree.accept(scanner, info);
+
+        //com.sun.source.tree.ExpressionTree expTree = scanner.getExpressionTree();
+        if (expTrees == null || expTrees.size() == 0) {
+            return new Operation[] {};
+        }
+        SourcePositions sp = ci.getTrees().getSourcePositions();
+        int treeStartLine =
+                (int) cu.getLineMap().getLineNumber(
+                    sp.getStartPosition(cu, expTrees.get(0)));
+        int treeEndLine =
+                (int) cu.getLineMap().getLineNumber(
+                    sp.getEndPosition(cu, expTrees.get(expTrees.size() - 1)));
+
+        if (treeStartLine == Diagnostic.NOPOS || treeEndLine == Diagnostic.NOPOS) {
+            return null;
+        }
+        //t3 = System.nanoTime();
+        int[] indexes = bytecodeProvider.indexAtLines(treeStartLine, treeEndLine);
+        if (indexes == null) {
+            return null;
+        }
+        Map<Tree, Operation> nodeOperations = new HashMap<Tree, Operation>();
+        Operation[] ops = AST2Bytecode.matchSourceTree2Bytecode(
+                cu,
+                ci,
+                expTrees, info, bytecodeProvider.byteCodes(),
+                indexes,
+                bytecodeProvider.constantPool(),
+                new OperationCreationDelegateImpl(),
+                nodeOperations);
+        if (ops != null) {
+            assignNextOperations(methodTree, cu, ci, bytecodeProvider, expTrees, info, nodeOperations);
+        }
+        return ops;
     }
 
     private class EditorContextDispatchListener extends Object implements PropertyChangeListener {

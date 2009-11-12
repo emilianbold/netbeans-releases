@@ -80,6 +80,7 @@ public final class LibraryManager {
     private LibraryManager() {
     }
     private final Map<String, LibraryEntry> librariesEntries = new ConcurrentHashMap<String, LibraryEntry>();
+
     private static final class Lock {}
     private final Object lock = new Lock();
 
@@ -362,6 +363,14 @@ public final class LibraryManager {
             }
         }
         closeLibraries(toClose);
+    }
+
+    /*package*/
+    final void cleanLibrariesData(Collection<LibProjectImpl> libs) {
+        for (LibProjectImpl entry : libs) {
+            librariesEntries.remove(entry.getPath().toString());
+            entry.dispose(true);
+        }
     }
 
     private void closeLibraries(Collection<LibraryEntry> entries) {

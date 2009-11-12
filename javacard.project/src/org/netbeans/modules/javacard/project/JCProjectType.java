@@ -41,7 +41,6 @@
 package org.netbeans.modules.javacard.project;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.javacard.api.ProjectKind;
 import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.util.Exceptions;
@@ -49,8 +48,7 @@ import org.openide.util.Exceptions;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton.AntProjectHelperCallback;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.javacard.spi.ProjectKind;
 
 public class JCProjectType {
 

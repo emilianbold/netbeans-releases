@@ -80,28 +80,23 @@ public class DebuggingBreakpointsActionsTest extends DebuggerTestCase{
         System.out.println("########  " + getName() + "  #######");
     }
 
-    public void testToggleBreakpoints() throws Throwable {
-        try {            
-            Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
-            new OpenAction().performAPI(beanNode); // NOI18N
-            new Action(null, Utilities.setMainProjectAction) {}.perform(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName));
-            new EventTool().waitNoEvent(1000);
-            EditorOperator eo = new EditorOperator("MemoryView.java");
-            //place breakpoint
-            Utilities.toggleBreakpoint(eo, 80);
-            assertTrue("Breakpoint annotation is not displayed", Utilities.checkAnnotation(eo, 80, "Breakpoint"));
-        } catch (Throwable th) {
-            Utilities.captureScreen(this);
-            throw th;
-        }
+    public void testToggleBreakpoints() {        
+        Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
+        new OpenAction().performAPI(beanNode); // NOI18N
+        new Action(null, Utilities.setMainProjectAction) {}.perform(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName));
+        new EventTool().waitNoEvent(1000);
+        EditorOperator eo = new EditorOperator("MemoryView.java");
+        //place breakpoint
+        Utilities.toggleBreakpoint(eo, 80);
+        assertTrue("Breakpoint annotation is not displayed", Utilities.checkAnnotation(eo, 80, "Breakpoint"));
     }
 
     static int lastLineNumber = 0;
 
 
 
-    public void testRemoveBreakpoint() throws Throwable {
-        try {           
+    public void testRemoveBreakpoint() {
+        
             Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
             new OpenAction().performAPI(beanNode); // NOI18N
             new Action(null, Utilities.setMainProjectAction).perform(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName));
@@ -110,11 +105,7 @@ public class DebuggingBreakpointsActionsTest extends DebuggerTestCase{
             Utilities.toggleBreakpoint(eo, 80);
             //remove breakpoint
             Utilities.toggleBreakpoint(eo, 80, false);
-            assertFalse("Breakpoint annotation is not removed from line 80", Utilities.checkAnnotation(eo, 80, "Breakpoint"));
-        } catch (Throwable th) {
-            Utilities.captureScreen(this);
-            throw th;
-        }
+            assertFalse("Breakpoint annotation is not removed from line 80", Utilities.checkAnnotation(eo, 80, "Breakpoint"));        
     }
 
 

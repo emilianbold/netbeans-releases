@@ -47,7 +47,6 @@ import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.util.Iterator;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -58,9 +57,8 @@ import javax.swing.JLayeredPane;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import org.netbeans.modules.dlight.indicators.spi.IndicatorActionsProvider;
 import org.netbeans.modules.dlight.util.ui.DLightUIPrefs;
-import org.openide.util.Lookup;
+import org.openide.awt.Actions;
 
 /**
  * Convenient base class for indicator components.
@@ -71,12 +69,12 @@ public class GraphPanel<G extends JComponent, L extends JComponent> extends JLay
 
     private static final Color BORDER_COLOR = DLightUIPrefs.getColor(DLightUIPrefs.INDICATOR_BORDER_COLOR);
     private static final int PADDING = DLightUIPrefs.getInt(DLightUIPrefs.INDICATOR_PADDING);
-
     private final G graph;
     private final L legend;
     private final JComponent hAxis;
     private final JComponent vAxis;
     private final JButton button;
+    private List<Action> actions;
     private final JComponent graphPanel;
     private JComponent overlay;
 
@@ -87,13 +85,29 @@ public class GraphPanel<G extends JComponent, L extends JComponent> extends JLay
         this.vAxis = vAxis;
         this.button = button;
         this.graphPanel = createGraphPanel(title, graph, legend, hAxis, vAxis, button);
+        graphPanel.addMouseListener(new PopupMenuListener());
         setOpaque(true); // otherwise background is white
         setMinimumSize(graphPanel.getMinimumSize());
         setPreferredSize(graphPanel.getPreferredSize());
         add(graphPanel, Integer.valueOf(0));
     }
 
-    private static JPanel createGraphPanel(String title, JComponent graph, JComponent legend, JComponent hAxis, JComponent vAxis, JButton button) {
+    public void setPopupActions(List<Action> actions) {
+        this.actions = actions;
+    }
+
+    @Override
+    public void setToolTipText(String text) {
+        graphPanel.setToolTipText(text);
+    }
+
+    @Override
+    public String getToolTipText(MouseEvent event) {
+        return graphPanel.getToolTipText();
+    }
+
+    private static JPanel createGraphPanel(String title, JComponent graph,
+            JComponent legend, JComponent hAxis, JComponent vAxis, JButton button) {
         JPanel graphPanel = new JPanel(new GridBagLayout());
         GridBagConstraints c;
 
@@ -118,7 +132,7 @@ public class GraphPanel<G extends JComponent, L extends JComponent> extends JLay
             c = new GridBagConstraints();
             c.fill = GridBagConstraints.VERTICAL;
             c.weighty = 1.0;
-            c.insets = new Insets(PADDING / 2, PADDING, hAxis == null? PADDING : 0, 0);
+            c.insets = new Insets(PADDING / 2, PADDING, hAxis == null ? PADDING : 0, 0);
             graphPanel.add(vAxis, c);
         }
 
@@ -149,35 +163,37 @@ public class GraphPanel<G extends JComponent, L extends JComponent> extends JLay
             graphPanel.add(hAxis, c);
         }
 
-        graphPanel.addMouseListener(new PopupMenuListener());
+
 
         return graphPanel;
     }
 
-    private static class PopupMenuListener extends MouseAdapter implements MouseListener {
-        private JPopupMenu pm;
+    private JPopupMenu createPopupMenu() {
+        if (actions == null || actions.isEmpty()) {
+            return null;
+        }
+        JPopupMenu pm = new JPopupMenu();
+        for (Action action : actions) {
+            JMenuItem menuItem = new JMenuItem();
+            Actions.connect(menuItem, action, true); // Actions.connect() takes care of mnemonics
+            pm.add(menuItem);
+        }
+        return pm;
 
-        public PopupMenuListener() {
-            pm = new JPopupMenu();
+    }
 
-            Lookup.Template<IndicatorActionsProvider> template = new Lookup.Template<IndicatorActionsProvider>(IndicatorActionsProvider.class);
-            Lookup.Result<IndicatorActionsProvider> result = Lookup.getDefault().lookup(template);
-            Iterator iterator = result.allInstances().iterator();
-            while (iterator.hasNext()) {
-                Object caop = iterator.next();
-                if (caop instanceof IndicatorActionsProvider) {
-                    List<Action> list = ((IndicatorActionsProvider)caop).getIndicatorActions(null); // FIXUP: add DLightConfiguration, DLightTool, ... to lookup
-                    for (Action action : list) {
-                        pm.add(new JMenuItem(action));
-                    }
-                }
-            }
+    private class PopupMenuListener extends MouseAdapter implements MouseListener {
+
+        PopupMenuListener() {
         }
 
         @Override
         public void mousePressed(MouseEvent e) {
             if (e.isPopupTrigger()) {
-                pm.show(e.getComponent(), e.getX(), e.getY());
+                JPopupMenu pm = createPopupMenu();
+                if (pm != null) {
+                    pm.show(e.getComponent(), e.getX(), e.getY());
+                }
             }
         }
     }
@@ -246,5 +262,4 @@ public class GraphPanel<G extends JComponent, L extends JComponent> extends JLay
         revalidate();
         repaint();
     }
-
 }

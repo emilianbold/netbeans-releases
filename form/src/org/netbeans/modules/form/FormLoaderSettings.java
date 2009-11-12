@@ -439,6 +439,9 @@ public class FormLoaderSettings implements HelpCtx.Provider   {
         getPreferences().putBoolean(PROP_DISPLAY_WRITABLE_ONLY, value);
     }
 
+    private static final boolean USE_STORED_SEARCH_PATH = Boolean.getBoolean("nb.form.useStoredSearchPath"); // Issue 163705
+    private static final String DEFAULT_EDITOR_SEARCH_PATH = "org.netbeans.modules.form.editors2 , org.netbeans.modules.swingapp"; // NOI18N
+    
     /**
      * Getter for the editorSearchPath option.
      *
@@ -446,8 +449,12 @@ public class FormLoaderSettings implements HelpCtx.Provider   {
      */
     public String[] getEditorSearchPath() {
         if (editorSearchPath == null) {
-            editorSearchPath = translatedEditorSearchPath(
-                    toArray(getPreferences().get(PROP_EDITOR_SEARCH_PATH, "org.netbeans.modules.form.editors2 , org.netbeans.modules.swingapp"))); // NOI18N
+            if (USE_STORED_SEARCH_PATH) {
+                editorSearchPath = translatedEditorSearchPath(
+                    toArray(getPreferences().get(PROP_EDITOR_SEARCH_PATH, DEFAULT_EDITOR_SEARCH_PATH)));
+            } else {
+                editorSearchPath = toArray(DEFAULT_EDITOR_SEARCH_PATH);
+            }
         }
         return editorSearchPath;
     }
@@ -459,7 +466,9 @@ public class FormLoaderSettings implements HelpCtx.Provider   {
      */
     public void setEditorSearchPath(String[] value) {
         editorSearchPath = value;
-        getPreferences().put(PROP_EDITOR_SEARCH_PATH, fromArray(editorSearchPath));//NOI18N
+        if (USE_STORED_SEARCH_PATH) {
+            getPreferences().put(PROP_EDITOR_SEARCH_PATH, fromArray(editorSearchPath));
+        }
     }
 
     public boolean isPaletteInToolBar() {

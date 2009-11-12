@@ -44,6 +44,10 @@ package org.netbeans.modules.java.j2seproject;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.net.URL;
+import java.util.concurrent.atomic.AtomicInteger;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
@@ -55,7 +59,9 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.TestUtil;
+import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -164,6 +170,51 @@ public class J2SESourcesTest extends NbTestCase {
         assertFalse(g.contains(objectJava));
         assertTrue(g.contains(jcJava));
         assertFalse(g.contains(doc));
+    }
+
+    public void testFiring() throws Exception {
+        final Sources sources = project.getLookup().lookup(Sources.class);
+        final SourceRoots roots = ((J2SEProject)project).getSourceRoots();
+        SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        assertEquals(2, groups.length);
+        class EventCounter implements ChangeListener {            
+            final AtomicInteger count = new AtomicInteger();
+
+            public void stateChanged(ChangeEvent e) {
+                count.incrementAndGet();
+            }            
+        };
+        final EventCounter counter = new EventCounter();
+        sources.addChangeListener(counter);
+        final URL[] oldRootUrls = roots.getRootURLs();
+        final String[] oldRootLabels = roots.getRootNames();
+        final String[] oldRootProps = roots.getRootProperties();
+        final FileObject newRoot = projdir.createFolder("new_src"); //NOI18N
+        //test: adding of src root should fire once
+        URL[] newRootUrls = new URL[oldRootUrls.length+1];
+        System.arraycopy(oldRootUrls, 0, newRootUrls, 0, oldRootUrls.length);
+        newRootUrls[newRootUrls.length-1] = newRoot.getURL();
+        String[] newRootLabels = new String[oldRootLabels.length+1];
+        for (int i=0; i< oldRootLabels.length; i++) {
+            newRootLabels[i] = roots.getRootDisplayName(oldRootLabels[i], oldRootProps[i]);
+        }
+        newRootLabels[newRootLabels.length-1] = newRoot.getName();
+        roots.putRoots(newRootUrls, newRootLabels);
+        assertEquals(1, counter.count.get());
+        groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        assertEquals(3, groups.length);
+        //test: removing of src root should fire once
+        counter.count.set(0);
+        newRootUrls = new URL[oldRootUrls.length];
+        System.arraycopy(oldRootUrls, 0, newRootUrls, 0, oldRootUrls.length);
+        newRootLabels = new String[oldRootLabels.length];
+        for (int i=0; i< oldRootLabels.length; i++) {
+            newRootLabels[i] = roots.getRootDisplayName(oldRootLabels[i], oldRootProps[i]);
+        }
+        roots.putRoots(newRootUrls, newRootLabels);
+        assertEquals(1, counter.count.get());
+        groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        assertEquals(2, groups.length);
     }
     
     private static FileObject getFileObject (FileObject parent, String name) throws IOException {

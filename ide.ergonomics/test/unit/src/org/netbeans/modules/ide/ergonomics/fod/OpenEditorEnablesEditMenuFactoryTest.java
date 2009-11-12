@@ -40,19 +40,20 @@
 package org.netbeans.modules.ide.ergonomics.fod;
 
 import java.awt.EventQueue;
-import org.netbeans.modules.ide.Factory;
+import javax.swing.JEditorPane;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.logging.Level;
+import javax.swing.text.StyledDocument;
 import junit.framework.Test;
 import org.netbeans.api.actions.Openable;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.XMLFileSystem;
 import org.openide.loaders.DataObject;
-import org.openide.util.Lookup;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -110,13 +111,22 @@ public class OpenEditorEnablesEditMenuFactoryTest extends NbTestCase {
 
         FileObject folder = FileUtil.toFileObject(getWorkDir());
         FileObject txt = folder.createData("text.txt");
-        DataObject obj = DataObject.find(txt);
+        final DataObject obj = DataObject.find(txt);
         Openable open = obj.getLookup().lookup(Openable.class);
         assertNotNull("Can be opened: " + obj, open);
         open.open();
 
+        final EditorCookie ec = obj.getLookup().lookup(EditorCookie.class);
+        assertNotNull("EditorCookie found", ec);
+        StyledDocument doc = ec.openDocument();
+        assertNotNull("Document loaded", doc);
+
+
         EventQueue.invokeAndWait(new Runnable() {
             public void run() {
+                JEditorPane[] earr = ec.getOpenedPanes();
+                assertNotNull("panes found", earr);
+                assertEquals("One item", 1, earr.length);
                 Mode m = WindowManager.getDefault().findMode("editor");
                 assertNotNull("Editor mode found", m);
                 TopComponent[] arr = WindowManager.getDefault().getOpenedTopComponents(m);
@@ -131,6 +141,10 @@ public class OpenEditorEnablesEditMenuFactoryTest extends NbTestCase {
             if (fo != null) break;
             Thread.sleep(100);
         }
-        assertNotNull("Default layer is off and Edit is visible", fo);
+        assertNotNull(
+            "Default layer is off and Edit is visible: " +
+            Arrays.toString(FileUtil.getConfigFile("Menu").getChildren()),
+            fo
+        );
     }
 }

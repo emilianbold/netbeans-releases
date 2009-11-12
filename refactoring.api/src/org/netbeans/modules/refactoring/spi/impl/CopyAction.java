@@ -71,6 +71,6 @@ public class CopyAction extends RefactoringGlobalAction {
     }
 
     protected boolean enable(Lookup context) {
-        return ActionsImplementationFactory.canCopy(context);
+        return true;
     }
 }

@@ -80,6 +80,10 @@ import org.openide.util.RequestProcessor;
  */
 public class KenaiConnection implements PropertyChangeListener {
 
+    public static final String PROP_XMPP_STARTED = "xmpp_started"; // NOI18N
+
+    public static final String PROP_XMPP_FINISHED = "xmpp_finished"; // NOI18N
+
     //Map <kenai project name, message listener>
     private HashMap<String, PacketListener> groupListeners = new HashMap<String, PacketListener>();
     private HashMap<String, PacketListener> privateListeners = new HashMap<String, PacketListener>();
@@ -104,6 +108,7 @@ public class KenaiConnection implements PropertyChangeListener {
 
     private static ChatNotifications chatNotifications = ChatNotifications.getDefault();
 
+    private java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
 
     /**
      * Default singleton instance representing XMPP connection to kenai server
@@ -114,7 +119,7 @@ public class KenaiConnection implements PropertyChangeListener {
             instance = new KenaiConnection();
             ProviderManager providerManager = ProviderManager.getInstance();
             providerManager.addExtensionProvider("delay", "urn:xmpp:delay", new DelayExtensionProvider());//NOI18N
-            providerManager.addExtensionProvider("notification", NotificationExtensionProvider.NAMESPACE, new NotificationExtensionProvider());
+            providerManager.addExtensionProvider("notification", NotificationExtensionProvider.NAMESPACE, new NotificationExtensionProvider()); // NOI18N
             Kenai.getDefault().addPropertyChangeListener(instance);
         }
         return instance;
@@ -197,13 +202,32 @@ public class KenaiConnection implements PropertyChangeListener {
      */
     public synchronized void tryConnect()  {
         try {
+            propertyChangeSupport.firePropertyChange(PROP_XMPP_STARTED, null, null);
             connect();
             initChats();
             PresenceIndicator.getDefault().setStatus(Kenai.Status.ONLINE);
             isConnectionFailed = false;
         } catch (XMPPException ex) {
             isConnectionFailed = true;
+        } finally {
+            propertyChangeSupport.firePropertyChange(PROP_XMPP_FINISHED, null, null);
         }
+    }
+
+    /**
+     * Adds listener to Kenai instance
+     * @param l
+     */
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        propertyChangeSupport.addPropertyChangeListener(l);
+    }
+
+    /**
+     * Removes listener from Kenai instance
+     * @param l
+     */
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+        propertyChangeSupport.removePropertyChangeListener(l);
     }
 
     /**
@@ -281,12 +305,12 @@ public class KenaiConnection implements PropertyChangeListener {
             synchronized (KenaiConnection.this) {
                 final Message msg = (Message) packet;
                 String n = StringUtils.parseName(msg.getFrom());
-                if (n.contains("@")) {
+                if (n.contains("@")) { // NOI18N
                     n = StringUtils.parseName(n);
                 }
                 final String name = n;
-                final NotificationExtension ne = (NotificationExtension) msg.getExtension("notification", NotificationExtensionProvider.NAMESPACE);
-                if (ne != null && msg.getExtension("x", "jabber:x:delay") == null) {
+                final NotificationExtension ne = (NotificationExtension) msg.getExtension("notification", NotificationExtensionProvider.NAMESPACE); // NOI18N
+                if (ne != null && msg.getExtension("x", "jabber:x:delay") == null) { // NOI18N
                     post(new Runnable() {
                         public void run() {
                             try {
@@ -296,6 +320,9 @@ public class KenaiConnection implements PropertyChangeListener {
                             }
                         }
                     });
+                }
+                if (ne!=null && !Boolean.parseBoolean(System.getProperty("kenai.show.notifications.in.chat", "true"))) {
+                    return;
                 }
                 final LinkedList<Message> thisQ = groupMessageQueue.get(name);
                 thisQ.add(msg);
@@ -421,8 +448,6 @@ public class KenaiConnection implements PropertyChangeListener {
 
     private String USER;
     
-    private static final String CHAT_ROOM = "@muc." + Kenai.getDefault().getName(); // NOI18N
-
     /**
      * TODO: should return kenai account name
      * @return
@@ -433,7 +458,7 @@ public class KenaiConnection implements PropertyChangeListener {
 
 
     private String getChatroomName(KenaiFeature prj) {
-        return prj.getName() + CHAT_ROOM;
+        return prj.getName() + "@muc." + Kenai.getDefault().getUrl().getHost(); // NOI18N
     }
 
     public Collection<KenaiFeature> getMyChats() {

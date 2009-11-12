@@ -249,7 +249,7 @@ made subject to such option by the copyright holder.
     <folder name="org-netbeans-api-project-libraries">
         <folder name="Libraries">
             <file name="cdc-ant-utils.xml" url="Utils.xml"/>
-        </folder>x  
+        </folder>
     </folder>
      <folder name="Loaders">
         <folder name="image">

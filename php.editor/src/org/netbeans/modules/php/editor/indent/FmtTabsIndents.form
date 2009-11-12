@@ -23,30 +23,29 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="continuationIndentSizeLabel" pref="226" max="32767" attributes="0"/>
-                  <Component id="labelIndentLabel" min="-2" max="-2" attributes="0"/>
-              </Group>
+              <Component id="continuationIndentSizeLabel" pref="226" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="1" attributes="0">
-                  <Component id="continuationIndentSizeField" linkSize="2" min="-2" pref="36" max="-2" attributes="1"/>
-                  <Component id="labelIndentField" linkSize="2" min="-2" pref="36" max="-2" attributes="1"/>
-              </Group>
+              <Component id="continuationIndentSizeField" min="-2" pref="36" max="-2" attributes="1"/>
+          </Group>
+          <Group type="102" alignment="0" attributes="0">
+              <Component id="initialIndentLabel" min="-2" max="-2" attributes="0"/>
+              <EmptySpace pref="116" max="32767" attributes="0"/>
+              <Component id="initialIndentSizeField" min="-2" pref="36" max="-2" attributes="1"/>
           </Group>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
+              <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="initialIndentLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="initialIndentSizeField" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="continuationIndentSizeLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="continuationIndentSizeField" alignment="3" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="labelIndentLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="labelIndentField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="32767" attributes="0"/>
           </Group>
@@ -65,18 +64,31 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="continuationIndentSizeField">
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/editor/indent/Bundle.properties" key="FmtTabsIndents.continuationIndentSizeField.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/editor/indent/Bundle.properties" key="FmtTabsIndents.continuationIndentSizeField.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
-    <Component class="javax.swing.JLabel" name="labelIndentLabel">
+    <Component class="javax.swing.JLabel" name="initialIndentLabel">
       <Properties>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="labelIndentField"/>
+          <ComponentRef name="initialIndentSizeField"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/php/editor/indent/Bundle.properties" key="LBL_LabelIndent" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/php/editor/indent/Bundle.properties" key="FmtTabsIndents.initialIndentLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JTextField" name="labelIndentField">
+    <Component class="javax.swing.JTextField" name="initialIndentSizeField">
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/editor/indent/Bundle.properties" key="FmtTabsIndents.initialIndentSizeField.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
   </SubComponents>
 </Form>

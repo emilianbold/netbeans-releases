@@ -1,0 +1,59 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html lang="en-US">
+
+<head>
+<!-- GenHTML revision 22989-->
+
+  <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+  <title>Running CardHolderAuthorization Sample Web Application - Java Card 3 Development
+  </title>
+
+</head>
+
+<body class="body">
+
+
+
+<a name="RunningCardHolderAuthorizationSampleWebApp"></a><h2>Running <tt>CardHolderAuthorization</tt> Sample Web Application</h2><p class="p">The <tt>CardHolderAuthorization</tt> sample demonstrates how the authentication of a card holder to a
+locally accessible servlet grants a non-card holder access to a remotely accessible servlet. Card-holder-user
+authentication is tracked globally (card-wide). Authorization to access resources is protected by globally
+authenticated card-holder-user identity. Authorization to access resources can be granted by the card holder
+to other users. </p><p class="p">Running the <tt>CardHolderAuthorization</tt> sample consists of using the IDE to open the <tt>CardHolderApp</tt>
+and <tt>RemoteUserApp</tt> projects, and running the <tt>CardHolderApp</tt> and <tt>RemoteUserApp</tt> servlets on a local desktop
+that is networked with a remote desktop. After <tt>CardHolderApp</tt> is deployed and instantiated
+on the local desktop, a remote user attempts but fails to access <tt>RemoteUserApp</tt>
+running on the local desktop. After the login attempt fails, the card holder
+uses the <tt>CardHolderApp</tt> on the local desktop to authenticate and enable the remote user
+to access the <tt>RemoteUserApp</tt> running on the local desktop.</p><p class="p">In this sample, the URL for the <tt>RemoteUserApp</tt> is  <a href="http://IP Address:8020/RemoteUserApp">http://IP Address:8020/RemoteUserApp</a>and the URL
+for the <tt>CardHolderApp</tt> is <a href="http://localhost:8020/CardHolderApp">http://localhost:8020/CardHolderApp</a>.</p><h2>Before You Begin</h2><p class="p">Before performing the following procedure, the Java Card 3 Development Kit, Connected Editon
+must be downloaded and installed on your development system. </p><p class="p">The <tt>CardHolderApp</tt> and <tt>RemoteUserApp</tt> projects are located under the <b>JC_CONNECTED_HOME</b><tt>\samples\web\CardHolderAuthorization</tt> folder.</p>
+<hr><p class="p"><b>Note - </b>Refer to the <i>Java Card 3 Platform Development Kit User&#8217;s Guide</i> for additional details including screen captures.</p>
+<hr>
+<ol class="ol">
+<li class="li"><b>Click File &#62; Open Project in the main window.</b></li>
+<li class="li"><b>Go to the <b>JC_CONNECTED_HOME</b><tt>\samples\web\CardHolderAuthorization </tt>folder and open the <tt>CardHolderApp</tt> and <tt>RemoteUserApp</tt> projects.</b></li>
+<li class="li"><b>Select the <tt>CardHolderApp</tt> project and click the run button in the main window.
+</b><p class="p">The IDE compiles, builds, and runs the <tt>CardHolderApp</tt> application. When the application runs,
+the IDE launches the default browser and displays the Card Holder App page.</p></li>
+<li class="li"><b>Select the <tt>RemoteUserApp</tt> project and click the run button in the main window.
+</b><p class="p">The IDE compiles, builds, and runs the <tt>RemoteUserApp</tt> application. When the application runs,
+the IDE launches the default browser and displays the Remote User&#8217;s App page.</p></li>
+<li class="li"><b>From a remote workstation or PC networked with the platform running the sample,
+open a browser and enter the following URL:</b><p class="p"><a href="http://IP Address:8019/remoteuserapp">http://IP Address:8019/remoteuserapp</a></p><p class="p">This action is performed as a remote user who is attempting to access
+the Remote User&#8217;s App page. The attempt fails and the browser displays an
+HTTP error 403 page in the browser stating that card holder authorization is
+required.</p></li>
+<li class="li"><b>In the Card Holder App page, click the Authorize Remote User hyper link
+and enter the login and password.</b><p class="p">Login: <tt><b>admin</b></tt></p><p class="p">Password: <tt><b>1234</b></tt></p><p class="p">This action is performed as the card holder. The sample displays the authorization
+page in the browser.</p></li>
+<li class="li"><b>From the remote workstation or PC, either refresh the browser page or open
+a new browser page and reenter the URL <a href="http://IP Address:8019/remoteuserapp">http://IP Address:8019/remoteuserapp</a>.</b></li>
+<li class="li"><b>In the Card Holder App page, click the Remote User&#8217;s Servlet hyper link
+and enter the following login and password:</b><p class="p">Login: <tt><b>boss</b></tt></p><p class="p">Password: <tt><b>5678</b></tt></p><p class="p">The sample displays a Welcome Remote User page in the browser.</p></li>
+<li class="li"><b>Close the browser to stop the application.</b></li></ol>
+
+
+</body>
+</html>

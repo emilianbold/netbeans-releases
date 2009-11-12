@@ -96,7 +96,7 @@ public class HtmlCompletionProvider implements CompletionProvider {
     private static class Query extends AbstractQuery {
 
         private int anchor;
-        private Collection<? extends CompletionItem> items;
+        private volatile Collection<? extends CompletionItem> items =  Collections.<CompletionItem>emptyList();
         private JTextComponent component;
 
         @Override
@@ -107,7 +107,9 @@ public class HtmlCompletionProvider implements CompletionProvider {
         protected void doQuery(CompletionResultSet resultSet, Document doc, int caretOffset) {
             try {
                 HtmlCompletionQuery.CompletionResult result = new HtmlCompletionQuery(doc, caretOffset).query();
-                items = result != null ? result.getItems() : Collections.<CompletionItem>emptyList();
+                if(result != null) {
+                    items = result.getItems();
+                }
 
                 resultSet.addAllItems(items);
                 if(result != null) {

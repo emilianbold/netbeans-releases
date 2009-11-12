@@ -70,6 +70,8 @@ import org.netbeans.modules.ruby.codecoverage.RubyCoverageProvider;
 import org.netbeans.modules.ruby.platform.execution.DirectoryFileLocator;
 import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.RubyProcessCreator;
+import org.netbeans.modules.ruby.platform.gems.Gem;
+import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.railsprojects.RailsProject;
 import org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstance;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectProperties;
@@ -227,25 +229,57 @@ public final class RailsServerManager {
                 glassfishEnsureRunning(platform);
                 return false;
             } else {
-                ensurePortAvailable();
-                String displayName = NbBundle.getMessage(RailsServerManager.class,
-                        "LBL_ServerTab" , instance.getDisplayName(), projectName, Integer.toString(port)); // NOI18N
-                RubyExecutionDescriptor desc = new RubyExecutionDescriptor(platform, displayName, dir, "unknown"); // NOI18N
-                desc.cmd(getJavaExecutable());
-                desc.useInterpreter(false);
-                desc.initialArgs(instance.getServerCommand(platform, classPath, dir, port, debug));
-                desc.postBuild(getFinishAction());
-                desc.jvmArguments(jvmArgs);
-                desc.addStandardRecognizers();
-                desc.frontWindow(false);
-                desc.debug(debug);
-                desc.fastDebugRequired(debug);
-                desc.fileLocator(new DirectoryFileLocator(FileUtil.toFileObject(dir)));
-                desc.showSuspended(true);
-                // TODO - can we support code coverage for custom descriptors?
-                
+                // TODO -- This needs an API in 6.9...
+                // swap in the gem as the instance for v3 fcs
+                if (serverId.contains("]deployer:gfv3ee6:")) { // NOI18N
+                    final String newInstanceID = "GLASSFISH"; // NOI18N
+                    instance = ServerRegistry.getDefault().getServer(newInstanceID, platform);
+                    String gemName = "glassfish"; // NOI18N
+                    Gem gem = new Gem(gemName, null, null); // NOI18N
+                    Gem[] gems = new Gem[]{gem};
+                    GemManager gemManager = platform.getGemManager();
+                    if (!gemManager.isGemInstalled(gemName)) {
+                        // open a dialog to tell the user what is about to happen.
+                        DialogDisplayer.getDefault().notify(
+                                new NotifyDescriptor.Message(NbBundle.getMessage(RailsServerManager.class, "MSG_DOWNLOAD_GEM_FOR_DEBUG", gemName)));
+
+                        final RubyPlatform myplatform = platform;
+                        //Runnable asyncCompletionTask = new InstallationComplete();
+                        platform.getGemManager().install(gems, null, false, false, null, true, true, new Runnable() {
+
+                            public void run() {
+                                myplatform.recomputeRoots();
+                                instance = ServerRegistry.getDefault().getServer(newInstanceID, myplatform);
+                            }
+                        });
+                        //platform.recomputeRoots();
+                    } else {
+                        // open a dialog to tell them about the gem for debug
+                        DialogDisplayer.getDefault().notify(
+                                new NotifyDescriptor.Message(NbBundle.getMessage(RailsServerManager.class, "MSG_USE_GEM_FOR_DEBUG", gemName)));
+                    }
+                } else {
+                    // stick with the old strategy that was used from Prelude
+                    ensurePortAvailable();
+                    String displayName = NbBundle.getMessage(RailsServerManager.class,
+                            "LBL_ServerTab", instance.getDisplayName(), projectName, Integer.toString(port)); // NOI18N
+                    RubyExecutionDescriptor desc = new RubyExecutionDescriptor(platform, displayName, dir, "unknown"); // NOI18N
+                    desc.cmd(getJavaExecutable());
+                    desc.useInterpreter(false);
+                    desc.initialArgs(instance.getServerCommand(platform, classPath, dir, port, debug));
+                    desc.postBuild(getFinishAction());
+                    desc.jvmArguments(jvmArgs);
+                    desc.addStandardRecognizers();
+                    desc.frontWindow(false);
+                    desc.debug(debug);
+                    desc.fastDebugRequired(debug);
+                    desc.fileLocator(new DirectoryFileLocator(FileUtil.toFileObject(dir)));
+                    desc.showSuspended(true);
+                    // TODO - can we support code coverage for custom descriptors?
+
                 runServer(desc, displayName, new GrizzlyServerLineConvertor(instance));
-                return false;
+                    return false;
+                }
             }
         }
 

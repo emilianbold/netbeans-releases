@@ -160,6 +160,14 @@ public class RubyTypeAnalyzerTest extends RubyTestBase {
         assertTypes(instance.inferType("@t"), "Fixnum");
     }
 
+    public void testNestedMultipleAssigments() throws Exception {
+        RubyTypeInferencer instance = getInferencer("types.rb", " # d^one", false);
+        assertTypes(instance.inferType("u"), "String");
+        assertTypes(instance.inferType("i"), "Fixnum");
+        assertTypes(instance.inferType("o"), "Float");
+        assertTypes(instance.inferType("p"), "File");
+    }
+
     public void testTypeAssertions() throws Exception {
         RubyTypeInferencer instance = getInferencer("types.rb", " l^oc = {", true);
         assertTypes(instance.inferType("param1"), "String");
@@ -247,7 +255,7 @@ public class RubyTypeAnalyzerTest extends RubyTestBase {
     }
 
     public void testConstant() throws Exception {
-        assertTypes("constants.rb", "Colors::RED.byte^", "RED", "String");
+        assertTypes("constants.rb", "Colors::RED.byte^", "Colors::RED", "String");
         assertTypes("constants.rb", "puts b.down^case", "b", "String");
         // TODO fix and uncomment when reindexed
         // assertTypes("indexed constants type inference", "constants.rb", "REXML::COPY^RIGHT", "COPYRIGHT", "String");
@@ -255,6 +263,7 @@ public class RubyTypeAnalyzerTest extends RubyTestBase {
 
     public void testMethodType() throws Exception {
         assertTypes("method_type_inference.rb", "puts n^um.abs", "num", "Fixnum");
+        assertTypes("method_type_inference.rb", "puts cons^t", "const", "Fixnum");
     }
 
 //    public void testCoreMethodType() throws Exception {

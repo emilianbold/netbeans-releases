@@ -44,6 +44,7 @@ import org.netbeans.modules.bugzilla.BugzillaConnector;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
 import org.netbeans.modules.bugzilla.query.QueryController;
+import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 
 /**
  *
@@ -61,8 +62,12 @@ public class KenaiQueryController extends QueryController {
 
     @Override
     public void populate(String urlParameters) {
-        super.populate(urlParameters);
-        disableProduct(product);
+        if(BugzillaUtil.isNbRepository(getRepository())) {
+            super.populate(urlParameters == null ? "product=" + product : urlParameters); // NOI18N
+        } else {
+            super.populate(urlParameters);
+            disableProduct();
+        }
     }
 
     @Override

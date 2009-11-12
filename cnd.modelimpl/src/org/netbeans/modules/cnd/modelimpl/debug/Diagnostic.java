@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.cnd.modelimpl.debug;
 
-import antlr.RecognitionException;
+import org.netbeans.modules.cnd.antlr.RecognitionException;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;

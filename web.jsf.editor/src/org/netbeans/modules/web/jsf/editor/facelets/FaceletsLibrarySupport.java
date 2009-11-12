@@ -39,6 +39,7 @@
 package org.netbeans.modules.web.jsf.editor.facelets;
 
 import com.sun.faces.config.ConfigManager;
+import com.sun.faces.config.DocumentInfo;
 import com.sun.faces.facelets.tag.AbstractTagLibrary;
 import com.sun.faces.facelets.tag.TagLibrary;
 import com.sun.faces.facelets.tag.composite.CompositeLibrary;
@@ -63,15 +64,17 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.ServletContext;
 import org.netbeans.modules.web.jsf.editor.JsfSupport;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
-import org.w3c.dom.Document;
 
 /**
  *
@@ -89,6 +92,8 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
      * there is a tag library descriptor for the composite library
      */
     private Map<String, FaceletsLibrary> faceletsLibraries;
+
+    private static final Logger LOGGER = Logger.getLogger(FaceletsLibrarySupport.class.getSimpleName());
 
     private FileChangeListener DDLISTENER = new FileChangeAdapter() {
 
@@ -201,12 +206,28 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
     }
 
     private Map<String, FaceletsLibrary> findLibraries() {
-        //create a new classloader loading the classpath roots
-        ClassLoader originalLoader = Thread.currentThread().getContextClassLoader();
+        //use this module classloader
+        ClassLoader originalLoader = this.getClass().getClassLoader();
+        LOGGER.log(Level.FINE, "Scanning facelets libraries, current classloader class=" + originalLoader.getClass().getName() + ", the used URLClassLoader will also contain following roots:");
+
         Collection<URL> urlsToLoad = new ArrayList<URL>();
         for (FileObject cpRoot : getJsfSupport().getClassPath().getRoots()) {
-            urlsToLoad.add(URLMapper.findURL(cpRoot, URLMapper.INTERNAL));
+            try {
+                //exclude the jsf jars from the classpath, if jsf20 library is available,
+                //we'll use the jars from the netbeans library instead
+                String fsName = cpRoot.getFileSystem().getDisplayName(); //any better way?
+                if(!(fsName.endsWith("jsf-impl.jar") || fsName.endsWith("jsf-api.jar"))) { //NOI18N
+                    urlsToLoad.add(URLMapper.findURL(cpRoot, URLMapper.INTERNAL));
+                    LOGGER.log(Level.FINE, "+++" + cpRoot); //NOI18N
+                } else {
+                    LOGGER.log(Level.FINE, "---" + cpRoot); //NOI18N
+                }
+
+            } catch (FileStateInvalidException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
+        
         ClassLoader proxyLoader = new URLClassLoader(urlsToLoad.toArray(new URL[]{}), originalLoader);
 
         try {
@@ -254,7 +275,7 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
 
         //parse the libraries
         ConfigManager cm = ConfigManager.getInstance();
-        Document[] documents = (Document[]) callMethod("getConfigDocuments", ConfigManager.class, cm, null, faceletTaglibProviders, null, true); //NOI18N
+        DocumentInfo[] documents = (DocumentInfo[]) callMethod("getConfigDocuments", ConfigManager.class, cm, null, faceletTaglibProviders, null, true); //NOI18N
         if (documents == null) {
             return null; //error????
         }

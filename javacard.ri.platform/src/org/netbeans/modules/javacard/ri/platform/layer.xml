@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="org-netbeans-modules-javacard-spi">
+        <folder name="kinds">
+            <folder name="RI">
+                <file name="org-netbeans-modules-javacard-ri-platform-loader-AddHandler.instance"/>
+                <file name="org-netbeans-modules-javacard-ri-card-CustomizerProvider.instance"/>
+            </folder>
+        </folder>
+    </folder>
+    <folder name="Services">
+        <folder name="MIMEResolver">
+            <file name="JavacardPlatformResolver.xml" url="JavacardPlatformResolver.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                <attr name="position" intvalue="268"/>
+            </file>
+            <file name="JavaCardResolver.xml" url="CardResolver.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                <attr name="position" intvalue="269"/>
+            </file>
+        </folder>
+    </folder>
+
+    <folder name="Loaders">
+        <folder name="application">
+            <folder name="javacard">
+                <folder name="Factories">
+                    <file name="JavacardPlatformDataLoader.instance">
+                        <attr name="dataObjectClass" stringvalue="org.netbeans.modules.javacard.ri.platform.loader.JavacardPlatformDataObject"/>
+                        <attr name="instanceCreate" methodvalue="org.openide.loaders.DataLoaderPool.factory"/>
+                        <attr name="mimeType" stringvalue="application/javacard"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javacard/ri/platform/ri.png"/>
+                    </file>
+                </folder>
+            </folder>
+            <folder name="x-javacardserver">
+                <folder name="Factories">
+                    <file name="CardDataLoader.instance">
+                        <attr name="dataObjectClass" stringvalue="org.netbeans.modules.javacard.ri.platform.loader.CardDataObject"/>
+                        <attr name="instanceCreate" methodvalue="org.openide.loaders.DataLoaderPool.factory"/>
+                        <attr name="mimeType" stringvalue="application/x-javacardserver"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javacard/ri/platform/loader/card.png"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+    <folder name="org-netbeans-modules-javacard">
+        <folder name="templates">
+            <file name="ServerTemplate.jcard" url="ServerTemplate.jcard">
+                <attr name="template" boolvalue="true"/>
+<!--                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/> -->
+            </file>
+        </folder>
+    </folder>
+</filesystem>

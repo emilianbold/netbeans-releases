@@ -125,7 +125,7 @@ public class PatternResourcesIterator implements WizardDescriptor.InstantiatingI
             params[0] = LogUtils.WS_STACK_JAXRS;
             params[1] = project.getClass().getName();
             J2eeModule j2eeModule = RestUtils.getJ2eeModule(project);
-            params[2] = j2eeModule == null ? null : j2eeModule.getModuleVersion(); //NOI18N
+            params[2] = j2eeModule == null ? null : j2eeModule.getModuleVersion()+"(WAR)"; //NOI18N
             params[3] = "REST FROM PATTERNS"; //NOI18N
             params[4] = ((Pattern)wizard.getProperty(WizardProperties.PATTERN_SELECTION)).toString();
             LogUtils.logWsWizard(params);

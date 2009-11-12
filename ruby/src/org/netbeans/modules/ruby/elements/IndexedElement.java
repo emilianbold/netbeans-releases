@@ -126,8 +126,32 @@ public abstract class IndexedElement extends RubyElement {
         return fqn;
     }
 
+    @Override
     public RubyType getType() {
+        if (type == null && attributes != null) {
+            int lastSemiColon = attributes.lastIndexOf(';');
+            if (lastSemiColon != -1) {
+                int last2SemiColon = attributes.lastIndexOf(';', lastSemiColon - 1);
+                if (lastSemiColon != -1) {
+                    String typesS = attributes.substring(last2SemiColon + 1, lastSemiColon);
+                    type = parseTypes(typesS);
+                }
+            }
+        }
+        if (type == null) {
+            type = RubyType.createUnknown();
+        }
         return type;
+    }
+
+    private RubyType parseTypes(final String types) {
+        if (types.length() == 0) {
+            return RubyType.createUnknown();
+        }
+        if (!types.contains("|")) { // just one type
+            return RubyType.create(types);
+        }
+        return new RubyType(types.split("\\|")); // NOI18N
     }
 
     @Override
@@ -247,6 +271,9 @@ public abstract class IndexedElement extends RubyElement {
     
     /** Return flag corresponding to the given encoding chars */
     public static int stringToFlag(char first, char second) {
+        if (first == ';'){
+            return 0;
+        }
         int high = 0;
         int low = 0;
         if (first > '9') {

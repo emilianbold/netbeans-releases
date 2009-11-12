@@ -43,6 +43,7 @@ package org.netbeans.modules.web.jsf.api;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.WeakHashMap;
 import java.util.Map;
 import java.lang.ref.WeakReference;
@@ -52,10 +53,12 @@ import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.JSFConfigUtilities;
+import org.netbeans.modules.web.jsf.api.editor.JSFBeanCache;
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModelFactory;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
+import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
@@ -235,5 +238,20 @@ public class ConfigurationUtils {
         return null;
     }
     
+    /**
+     * Helper method which finds model managed bean element.
+     * @param webModule the web module, wher the managed bean is defined.
+     * @param name Name of the managed bean. 
+     * @return corresponding model element.
+     */
+    public static FacesManagedBean findFacesManagedBean(WebModule webModule, String name){
+        List<FacesManagedBean> beans = JSFBeanCache.getBeans(webModule);
+        for (FacesManagedBean managedBean : beans) {
+            if ( name.equals( managedBean.getManagedBeanName() )){
+                return managedBean;
+            }
+        }
+        return null;
+    }
         
 }

@@ -39,8 +39,11 @@
 
 package org.netbeans.modules.kenai.ui;
 
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.openide.util.Exceptions;
+import org.openide.util.NbPreferences;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -55,7 +58,14 @@ public class KenaiLoginTask implements Runnable {
     @SuppressWarnings("deprecation")
     public void run() {
         synchronized (monitor) {
-            UIUtils.tryLogin(false);
+            Preferences prefs = NbPreferences.forModule(KenaiLoginTask.class);
+            try {
+                if (prefs.keys().length > 0) {
+                    UIUtils.tryLogin(false);
+                }
+            } catch (BackingStoreException ex) {
+                Exceptions.printStackTrace(ex);
+            }
             isFinished = true;
             monitor.notify();
         }

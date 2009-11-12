@@ -74,7 +74,7 @@ public class ThreadMapToolConfigurationProvider implements DLightToolConfigurati
         final DLightToolConfiguration toolConfiguration = new DLightToolConfiguration(ID, TOOL_NAME);
         toolConfiguration.setLongName(DETAILED_TOOL_NAME);
         toolConfiguration.setIcon("org/netbeans/modules/dlight/msa/resources/thread_microstates_16.png");//NOI18N
-
+        toolConfiguration.setDescription(loc("ThreadMapTool.Description")); // NOI18N
         final List<Column> indicatorDataColumns = Arrays.asList(
                 MSASQLTables.prstat.P_SLEEP,
                 MSASQLTables.prstat.P_WAIT,
@@ -94,6 +94,7 @@ public class ThreadMapToolConfigurationProvider implements DLightToolConfigurati
                 new TimeSeriesDescriptor(ThreadStateResources.THREAD_RUNNING.color, ThreadStateResources.THREAD_RUNNING.name, TimeSeriesDescriptor.Kind.REL_SURFACE)); // NOI18N
         indicatorConfig.setDataRowHandler(new IndicatorDataHandler(indicatorDataColumns));
         indicatorConfig.setActionDisplayName(loc("ThreadMapTool.Indicator.Action")); // NOI18N
+        indicatorConfig.setActionTooltip(loc("ThreadMapTool.Indicator.Action.Tooltip"));//NOI18N
 
         // Here we should configure visualizer...
         // TODO: Currently is dummy imlpementation.

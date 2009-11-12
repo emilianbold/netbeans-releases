@@ -12,7 +12,7 @@ type="text/css">
 </head>
 <body>
 <h2>Resolve Missing Native Build Tools Dialog Box</h2>
-<i>This needs to be fixed.</i>
+
 <p>If the tools required to build the project are not in the  
 collection specified for the project, the 
 Resolve Missing Native Build Tools dialog box opens.</p>
@@ -48,20 +48,21 @@ corresponding remote path in the Remote Path field.
 <li><b>Tool Collection.</b> The tool collection list displays 
 the collections found on the current development host and the local 
 host. The default  
-collection is listed in bold type. For the local host, you can modify the list by adding or removing collections.</li>
+collection is listed in bold type. For the local host, you can modify
+the list by adding or removing collections.
 <ul>
 <li>To add a collection to the list, click Add and specify the 
-base directory in the Add New Tool Set dialog box. The Tool Set 
-Family and Tool Set Name are filled in automatically. You can specify
+base directory in the Add New Tool Collection dialog box. The Tool Collection
+Family and Tool Collection Name are filled in automatically. You can specify
 a different name for the collection. If you change the family,  
 make sure that the family you specify is the correct family for the 
-collection or the compiler flags might not be valid. 
+collection or the compiler flags might not be valid.
 </li>
 <li>To remove a collection from the list, select the collection and 
 click Remove.
 </li>
 <li>To duplicate a collection, select the collection from the list 
-and modify the base directory, tool set family, or tool set name in
+and modify the base directory, tool collection family, or tool collection name in
 the dialog box.
 </li>
 <li>To make a collection the default, select the collection and 
@@ -70,31 +71,29 @@ click Default.
 </ul>
 </li>
 <li><b>Base Directory.</b> The base directory for compilers for 
-the current development host. These fields can be edited for the local host 
-but not for remote hosts.</li>
+the current development host. To change the base directory,
+click the browse button and select a new directory.
+These fields can be edited for the local host 
+but not for remote hosts.  For a remote development host, you must enter the
+full path to the tools as they are run when you are logged into the remote host.
+<p>For each tool, the default command is the first one found in the
+base directory. To select a different command from the base directory
+or another directory, click the browse button and navigate to a different
+command in the Select Tool dialog box.</p></li>
 <ul>
-<li><b>C Compiler.</b> The C compiler to use for building projects. 
-The default compiler is the first one found in the base directory. You can select a compiler from the drop-down list, or select 
-Add from the list to add another compiler from the same directory.</li>
-<li><b>C++ Compiler.</b> The C++ compiler to use for building projects. 
-The default compiler is the first one found in the selected compiler 
-collection. You can select a compiler from the drop-down list, or select 
-Add from the list to add another compiler from the same directory.</li>
-<li><b>Fortran Compiler.</b> The Fortran compiler to use for building projects. 
-The default compiler is the first one found in the base directory. You can select a compiler from the drop-down list, or select 
-Add from the list to add another compiler from the same directory.</li>
+<li><b>C Compiler.</b> The C compiler to use for building C projects.
+</li>
+<li><b>C++ Compiler.</b> The C++ compiler to use for building C++ projects.
+</li>
+<li><b>Fortran Compiler.</b> The Fortran compiler to use for building Fortran projects.
+</li>
+<li><b>Assembler.</b> The assembler program to use for projects in assembly code.
+</li>
 </ul>
-<li><b>Make Command.</b> The make command to use for building 
-projects. The default command is the first one found in the 
-base directory. To select a different command from the base directory 
-or another directory, click the browse button and navigate to a different 
-command in the Select Tool dialog box.
+<li><b>Make Command.</b> The make command to use for building projects. 
 </li>
 <li><b>Debugger Command.</b> The gdb command to use when debugging 
-projects. The default command is the first one found in the 
-base directory. To select a different command from the base directory 
-or another directory, click the browse button and navigate to a different 
-command in the Select Tool dialog box. 
+projects.  
 </li>
 </ul>
 <hr>

@@ -90,7 +90,7 @@ made subject to such option by the copyright holder.
                 <classpath path="${antlr.jar}"/>
         </antlr>   
         -->
-        <java classname="antlr.Tool"  fork="true">
+        <java classname="org.netbeans.modules.cnd.antlr.Tool"  fork="true">
             <arg value="-o"/>
             <arg value="${antlr.output.dir}"/>
             <!--<arg value="-traceParser"/>-->

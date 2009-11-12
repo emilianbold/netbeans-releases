@@ -40,9 +40,12 @@ package org.netbeans.modules.dlight.tools.impl;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.netbeans.modules.dlight.tools.impl.SolarisProcfsSupport.Prusage;
+import org.netbeans.modules.dlight.util.DLightMath;
 import static org.netbeans.modules.dlight.tools.ProcDataProviderConfiguration.*;
 
 /**
@@ -55,16 +58,18 @@ import static org.netbeans.modules.dlight.tools.ProcDataProviderConfiguration.*;
  */
 public class ProcDataProviderSolaris implements ProcDataProvider.Engine {
 
+    private static final List<String> COLNAMES = Collections.unmodifiableList(Arrays.asList(
+            USR_TIME.getColumnName(), SYS_TIME.getColumnName(), THREADS.getColumnName()));
     private static final BigDecimal PERCENT = BigDecimal.valueOf(100);
     private final DataRowConsumer consumer;
     private final int cpuCount;
-    private final ServiceInfoDataStorage serviceInfoStorage;
+    //private final ServiceInfoDataStorage serviceInfoStorage;
     private Prusage prevPrusage;
     private Prusage currPrusage;
 
     public ProcDataProviderSolaris(DataRowConsumer consumer, ServiceInfoDataStorage serviceInfoStorage, int cpuCount) {
         this.consumer = consumer;
-        this.serviceInfoStorage = serviceInfoStorage;
+        //this.serviceInfoStorage = serviceInfoStorage;
         this.cpuCount = cpuCount;
     }
 
@@ -80,29 +85,23 @@ public class ProcDataProviderSolaris implements ProcDataProvider.Engine {
                 currPrusage = SolarisProcfsSupport.parsePrusage(line, currPrusage);
             } else {
                 if (prevPrusage != null) {
-                    int threads = Integer.parseInt(firstToken);
-                    BigDecimal cpuTime = currPrusage.tstamp().toBigDecimal().subtract(prevPrusage.tstamp().toBigDecimal()).multiply(BigDecimal.valueOf(cpuCount));
-                    BigDecimal usrTime = currPrusage.utime().toBigDecimal().subtract(prevPrusage.utime().toBigDecimal());
-                    BigDecimal sysTime = currPrusage.stime().toBigDecimal().subtract(prevPrusage.stime().toBigDecimal());
-                    float usrPercent = percent(usrTime, cpuTime);
-                    float sysPercent = percent(sysTime, cpuTime);
-                    DataRow row = new DataRow(
-                            Arrays.asList(
-                            USR_TIME.getColumnName(),
-                            SYS_TIME.getColumnName(),
-                            THREADS.getColumnName()),
-                            Arrays.asList(
-                            usrPercent,
-                            sysPercent,
-                            threads));
-                    consumer.consume(row);
+                    try {
+                        int threads = Integer.parseInt(firstToken);
+                        BigDecimal cpuTime = currPrusage.tstamp().toBigDecimal().subtract(prevPrusage.tstamp().toBigDecimal()).multiply(BigDecimal.valueOf(cpuCount));
+                        BigDecimal usrTime = currPrusage.utime().toBigDecimal().subtract(prevPrusage.utime().toBigDecimal());
+                        BigDecimal sysTime = currPrusage.stime().toBigDecimal().subtract(prevPrusage.stime().toBigDecimal());
+                        float[] times = DLightMath.ensureSumLessOrEqual(100f, percent(usrTime, cpuTime), percent(sysTime, cpuTime));
+                        DataRow row = new DataRow(COLNAMES, Arrays.asList(times[0], times[1], threads));
+                        consumer.consume(row);
+                    } catch (Exception ex) {
+                    }
                 }
                 prevPrusage = currPrusage;
                 currPrusage = null;
             }
         } catch (IllegalArgumentException ex) {
             // silently ignore malformed line
-            }
+        }
     }
 
     public void reset() {
@@ -125,9 +124,6 @@ public class ProcDataProviderSolaris implements ProcDataProvider.Engine {
         if (BigDecimal.ZERO.compareTo(total) < 0) { // 0 < total
             if (value.compareTo(BigDecimal.ZERO) <= 0) { // value <= 0
                 return 0f;
-            }
-            if (total.compareTo(value) <= 0) { // total <= value
-                return 100f;
             } else {
                 return value.multiply(PERCENT).divideToIntegralValue(total).floatValue();
             }

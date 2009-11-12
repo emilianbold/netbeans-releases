@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
-import antlr.collections.AST;
+import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.*;

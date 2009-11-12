@@ -271,6 +271,7 @@ public class WebLogicalViewProvider implements LogicalViewProvider2 {
         WebProjectProperties.DEBUG_TEST_CLASSPATH, 
         ProjectProperties.JAVAC_TEST_CLASSPATH,
         WebProjectProperties.WAR_CONTENT_ADDITIONAL,
+        ProjectProperties.ENDORSED_CLASSPATH,
         WebProjectProperties.WEB_DOCBASE_DIR
     };
 

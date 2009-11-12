@@ -685,4 +685,32 @@ public class LexUtilities {
         }
         return false;
     }
+
+    public static Token<?extends PHPTokenId> findNext(TokenSequence<?extends PHPTokenId> ts, List<PHPTokenId> ignores) {
+        if (ignores.contains(ts.token().id())) {
+            while (ts.moveNext() && ignores.contains(ts.token().id())) {}
+        }
+        return ts.token();
+    }
+
+    public static Token<?extends PHPTokenId> findPrevious(TokenSequence<?extends PHPTokenId> ts, List<PHPTokenId> ignores) {
+        if (ignores.contains(ts.token().id())) {
+            while (ts.movePrevious() && ignores.contains(ts.token().id())) {}
+        }
+        return ts.token();
+    }
+
+    public static Token<?extends PHPTokenId> findNextToken(TokenSequence<?extends PHPTokenId> ts, List<PHPTokenId> lookfor) {
+        if (!lookfor.contains(ts.token().id())) {
+            while (ts.moveNext() && !lookfor.contains(ts.token().id())) {}
+        }
+        return ts.token();
+    }
+
+    public static Token<?extends PHPTokenId> findPreviousToken(TokenSequence<?extends PHPTokenId> ts, List<PHPTokenId> lookfor) {
+        if (!lookfor.contains(ts.token().id())) {
+            while (ts.movePrevious() && !lookfor.contains(ts.token().id())) {}
+        }
+        return ts.token();
+    }
 }

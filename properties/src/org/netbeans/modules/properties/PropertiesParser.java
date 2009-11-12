@@ -234,7 +234,7 @@ class PropertiesParser {
             if(comment.charAt(comment.length() - 1) == '\n')
                 comHelp = comment.substring(0, comment.length() - 1);
 
-        commE = new Element.CommentElem(createBiasBounds(begPos, keyPos), comHelp);
+        commE = new Element.CommentElem(createBiasBounds(begPos, keyPos), UtilConvert.loadConvert(comHelp));
         // fl now contains the line after the comment or  null if none exists
 
 
@@ -321,8 +321,8 @@ class PropertiesParser {
                 valuePosFile = currentPos;
             }
             
-            keyE   = new Element.KeyElem  (createBiasBounds(keyPos, valuePosFile), key);
-            valueE = new Element.ValueElem(createBiasBounds(valuePosFile, currentPos), value);
+            keyE   = new Element.KeyElem  (createBiasBounds(keyPos, valuePosFile), UtilConvert.loadConvert(key));
+            valueE = new Element.ValueElem(createBiasBounds(valuePosFile, currentPos), UtilConvert.loadConvert(value));
         }
         
         return new Element.ItemElem(createBiasBounds(begPos, in.position), keyE, valueE, commE);

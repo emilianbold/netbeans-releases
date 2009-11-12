@@ -41,3 +41,8 @@ fi
 if [ -d "/Library/Receipts/baseide.pkg" ] ; then
     rm -rf "/Library/Receipts/baseide.pkg"
 fi
+
+if [ -d "/private/var/db/receipts" ] ; then
+    rm -rf "/private/var/db/receipts/org.netbeans.ide.baseide.plist"
+    rm -rf "/private/var/db/receipts/org.netbeans.ide.baseide.bom"
+fi

@@ -103,9 +103,8 @@ final class DtraceDataAndStackParser extends DtraceParser {
         IN_STACK        // we are waiting for subsequent row of ustack
     }
     private State state;
-    List<String> currData;
-    long currTimeStamp;
-    long currSampleDuration;
+    private List<String> currData;
+    private long currSampleDuration;
     private List<CharSequence> currStack = new ArrayList<CharSequence>(32);
     private List<String> colNames;
     private int colCount;

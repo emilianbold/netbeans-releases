@@ -57,6 +57,7 @@ import org.jdesktop.swingx.JXBusyLabel;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.netbeans.modules.kenai.api.*;
+import org.netbeans.modules.kenai.ui.Utilities;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.openide.awt.TabbedPaneFactory;
 import org.openide.util.*;
@@ -70,7 +71,7 @@ import org.openide.windows.WindowManager;
  * @author Jan Becicka
  */
 public class ChatTopComponent extends TopComponent {
-    private static final String KENAI_OPEN_CHATS_PREF = ".open.chats.";
+    private static final String KENAI_OPEN_CHATS_PREF = ".open.chats."; // NOI18N
     private static ChatTopComponent instance;
 
     /** path to the icon used by the component and its open action */
@@ -318,7 +319,7 @@ public class ChatTopComponent extends TopComponent {
         ChatNotifications.getDefault().removePrivate(name);
         int indexOfTab = getTab(createPrivateName(name));
         if (indexOfTab < 0) {
-            ChatPanel chatPanel = new ChatPanel(name + '@' + Kenai.getDefault().getName());
+            ChatPanel chatPanel = new ChatPanel(name + '@' + Kenai.getDefault().getUrl().getHost());
             addChat(chatPanel);
             indexOfTab = chats.getTabCount() - 1;
             chats.setSelectedComponent(chatPanel);
@@ -336,7 +337,7 @@ public class ChatTopComponent extends TopComponent {
     }
 
     public static final String createPrivateName(String name) {
-        return "private." + name;
+        return "private." + name; // NOI18N
     }
 
     public void addChat(ChatPanel chatPanel) { 
@@ -401,7 +402,7 @@ public class ChatTopComponent extends TopComponent {
             ChatPanel chatPanel = new ChatPanel(next);
             addChat(chatPanel);
         } else if (chs.size()!=0) {
-            String s = prefs.get(Kenai.getDefault().getName()+KENAI_OPEN_CHATS_PREF + Kenai.getDefault().getPasswordAuthentication().getUserName(),""); // NOI18N
+            String s = prefs.get(Kenai.getDefault().getUrl().getHost()+KENAI_OPEN_CHATS_PREF + Kenai.getDefault().getPasswordAuthentication().getUserName(),""); // NOI18N
             if (s.length() > 1) {
                 ChatPanel chatPanel = null;
                 for (String chat : s.split(",")) { // NOI18N
@@ -578,17 +579,21 @@ public class ChatTopComponent extends TopComponent {
         if (kenai.getStatus() == Kenai.Status.OFFLINE) {
             UIUtils.showLogin();
         } else {
-            RequestProcessor.getDefault().post(new Runnable() {
+            if (!Utilities.isChatSupported()) {
+                JOptionPane.showMessageDialog(retryLink, NbBundle.getMessage(ChatTopComponent.class, "ChatTopComponent.ChatNotAvailable", Kenai.getDefault().getName()));
+             } else {
+                RequestProcessor.getDefault().post(new Runnable() {
 
-                public void run() {
-                    try {
-                        PasswordAuthentication passwordAuthentication = kenai.getPasswordAuthentication();
-                        kenai.login(passwordAuthentication.getUserName(), passwordAuthentication.getPassword(), true);
-                    } catch (KenaiException ex) {
-                        Exceptions.printStackTrace(ex);
+                    public void run() {
+                        try {
+                            PasswordAuthentication passwordAuthentication = kenai.getPasswordAuthentication();
+                            kenai.login(passwordAuthentication.getUserName(), passwordAuthentication.getPassword(), true);
+                        } catch (KenaiException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
                     }
-                }
-            });
+                });
+             }
         }
 }//GEN-LAST:event_loginLinkMouseClicked
 
@@ -709,7 +714,7 @@ public class ChatTopComponent extends TopComponent {
                 b.append(","); // NOI18N
             }
         }
-        prefs.put(Kenai.getDefault().getName()+KENAI_OPEN_CHATS_PREF + Kenai.getDefault().getPasswordAuthentication().getUserName(), b.toString()); // NOI18N
+        prefs.put(Kenai.getDefault().getUrl().getHost()+KENAI_OPEN_CHATS_PREF + Kenai.getDefault().getPasswordAuthentication().getUserName(), b.toString()); // NOI18N
     }
 
     final class KenaiL implements PropertyChangeListener {

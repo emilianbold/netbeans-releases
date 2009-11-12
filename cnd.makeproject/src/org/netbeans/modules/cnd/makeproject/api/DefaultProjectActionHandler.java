@@ -45,11 +45,14 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
+import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.execution.NativeExecutor;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
@@ -60,6 +63,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.execution.ExecutorTask;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.windows.InputOutput;
 
@@ -67,7 +71,8 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
 
     private ProjectActionEvent pae;
     private volatile ExecutorTask executorTask;
-    private List<ExecutionListener> listeners = new ArrayList<ExecutionListener>();
+    private NativeExecutor executor;
+    private final List<ExecutionListener> listeners = new CopyOnWriteArrayList<ExecutionListener>();
 
     // VK: this is just to tie two pieces of logic together:
     // first is in determining the type of console for remote;
@@ -135,7 +140,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                         args = "/c " + IpeUtils.quoteIfNecessary(FilePathAdaptor.naturalize(pae.getExecutable())) // NOI18N
                                 + " " + getArguments(); // NOI18N
                     } else if (conf.getDevelopmentHost().isLocalhost()) {
-                        exe = IpeUtils.toAbsolutePath(pae.getProfile().getBaseDir(), pae.getExecutable());
+                        exe = IpeUtils.toAbsolutePath(pae.getProfile().getRunDir(), pae.getExecutable());
                     }
                     unbuffer = true;
                 } else {
@@ -223,8 +228,14 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                     env1[i] = pathname + csdirs + pi.pathSeparator() + defaultPath;
                 }
                 env = env1;
+                // Pass QMAKE from compiler set to the Makefile (IZ 174731)
+                if (conf.isQmakeConfiguration()) {
+                    String qmakePath = conf.getCompilerSet().getCompilerSet().getTool(Tool.QMakeTool).getPath();
+                    qmakePath = conf.getCompilerSet().getCompilerSet().normalizeDriveLetter(qmakePath.replace('\\', '/')); // NOI18N
+                    args += " QMAKE=" + IpeUtils.escapeOddCharacters(qmakePath); // NOI18N
+                }
             }
-            NativeExecutor projectExecutor = new NativeExecutor(
+            executor = new NativeExecutor(
                     execEnv,
                     runDirectory,
                     exe, args, env,
@@ -233,18 +244,38 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                     pae.getType() == ProjectActionEvent.Type.BUILD,
                     showInput,
                     unbuffer);
-            projectExecutor.addExecutionListener(this);
+            //if (pae.getType() == ProjectActionEvent.Type.RUN)
+            switch (pae.getType()) {
+                case DEBUG:
+                case RUN:
+                    if (ServerList.get(execEnv).getX11Forwarding() && !contains(env, "DISPLAY")) { //NOI18N if DISPLAY is set, let it do its work
+                        executor.setX11Forwarding(true);
+                    }
+            }
+            executor.addExecutionListener(this);
             if (rcfile != null) {
-                projectExecutor.setExitValueOverride(rcfile);
+                executor.setExitValueOverride(rcfile);
             }
             try {
-                executorTask = projectExecutor.execute(io);
+                executorTask = executor.execute(io);
             } catch (java.io.IOException ioe) {
                 ioe.printStackTrace();
             }
         } else {
             assert false;
         }
+    }
+
+    private boolean contains(String[] env, String var) {
+        for (String v : env) {
+            int pos = v.indexOf('='); //NOI18N
+            if (pos > 0) {
+                if (v.substring(0, pos).equals(var)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public void addExecutionListener(ExecutionListener l) {
@@ -258,27 +289,22 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
     }
 
     public boolean canCancel() {
-        if (pae.getType() != ProjectActionEvent.Type.RUN) {
-            return true;
-        } else {
-            if (RUN_REMOTE_IN_OUTPUT_WINDOW) {
-                if (!pae.getConfiguration().getDevelopmentHost().isLocalhost()) {
-                    return true;
-                }
-            }
-            int consoleType = pae.getProfile().getConsoleType().getValue();
-            if (consoleType == RunProfile.CONSOLE_TYPE_DEFAULT) {
-                consoleType = RunProfile.getDefaultConsoleType();
-            }
-            return consoleType != RunProfile.CONSOLE_TYPE_EXTERNAL;
-        }
+        return true;
     }
 
     public void cancel() {
-        ExecutorTask et = executorTask;
-        if (et != null) {
-            executorTask.stop();
-        }
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                ExecutorTask et = executorTask;
+                if (et != null) {
+                    executorTask.stop();
+                }
+                NativeExecutor ne = executor;
+                if (ne != null) {
+                    ne.stop(); // "kontrolny" ;)
+                }
+            }
+        });
     }
 
     public void executionStarted(int pid) {

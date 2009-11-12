@@ -43,7 +43,7 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import java.util.*;
 import org.netbeans.modules.cnd.api.model.*;
-import antlr.collections.AST;
+import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -239,6 +239,11 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                             }
                         }
                         break;
+                    case CPPTokenTypes.CSM_USING_DECLARATION: {
+                        UsingDeclarationImpl using = new UsingDeclarationImpl(token, getContainingFile(), ClassImpl.this, !isRenderingLocalContext(), curentVisibility);
+                        addMember(using, !isRenderingLocalContext());
+                        break;
+                    }
                     case CPPTokenTypes.CSM_TEMPL_FWD_CL_OR_STAT_MEM:
                         {
                             child = token.getFirstChild();
@@ -333,6 +338,8 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                         }
                         break;
                     case CPPTokenTypes.CSM_VISIBILITY_REDEF:
+                        UsingDeclarationImpl using = new UsingDeclarationImpl(token, getContainingFile(), ClassImpl.this, !isRenderingLocalContext(), curentVisibility);
+                        addMember(using, !isRenderingLocalContext());
                         break;
                     case CPPTokenTypes.RCURLY:
                         break;

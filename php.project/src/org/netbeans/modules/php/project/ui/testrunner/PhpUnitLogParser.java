@@ -44,9 +44,9 @@ import java.io.Reader;
 import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.project.ui.testrunner.TestSessionVO.TestCaseVO;
 import org.netbeans.modules.php.project.ui.testrunner.TestSessionVO.TestSuiteVO;
-import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.openide.util.Exceptions;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -74,7 +74,7 @@ public final class PhpUnitLogParser extends DefaultHandler {
     private PhpUnitLogParser(TestSessionVO testSession) throws SAXException {
         assert testSession != null;
         this.testSession = testSession;
-        xmlReader = PhpProjectUtils.createXmlReader();
+        xmlReader = FileUtils.createXmlReader();
         xmlReader.setContentHandler(this);
     }
 

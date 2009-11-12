@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.cnd.modelimpl.cache.impl;
 
-import antlr.collections.AST;
+import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;

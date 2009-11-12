@@ -229,7 +229,7 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
                 String displayName = rendata.getDisplayName(value);
                 if (displayName != null) {
                     if (rendata.isHtmlDisplayName(value)) {
-                        setText("<html>" + displayName + "</html>"); // NOI18N
+                        setText("<html>" + displayName.replaceAll(" ", "&nbsp;") + "</html>"); // NOI18N
                     } else {
                         setText (displayName);
                     }

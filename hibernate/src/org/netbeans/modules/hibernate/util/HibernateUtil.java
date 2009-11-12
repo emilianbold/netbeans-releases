@@ -617,6 +617,14 @@ public class HibernateUtil {
             String absolutePath = file.getPath();
             String sourceRootPath = sourceRoot.getPath();
             int index = absolutePath.indexOf(sourceRootPath);
+            if (index == -1) {
+                // file is not under the source root - constructing relativePath
+                relativePath = constructRelativePath(absolutePath, sourceRootPath);
+                if (relativePath==null) {
+                    return "";
+                }
+                return relativePath;
+            }
             relativePath = absolutePath.substring(index + sourceRootPath.length() + 1);
         } catch (Exception e) {
             logger.info("exception while parsing relative path");
@@ -734,5 +742,44 @@ public class HibernateUtil {
         //  if scan is in progress (IndexingManager.isIndexing()) then it would be possible to traverse filesystem (but see issue #158261)
 
         return files;
+    }
+
+    /**
+     * Returns the relative path from src to abs.
+     *
+     * @param      abs path to the target file   src path to the source directory.
+     * @return     The relative path from src to abs or null.
+     */
+    private static String constructRelativePath(String abs, String src) {
+        String[] field1 = abs.split("/");
+        String[] field2 = src.split("/");
+        StringBuilder result = null;
+        int length = (field1.length>field2.length)?(field2.length):(field1.length);
+        int numSameTokens = 0;
+        boolean empty = true;
+        for (int i=0; i<length; i++) {
+            if ( field1[i].equals(field2[i]) ) {
+                numSameTokens++;
+                if (field1[i].length()>0) {
+                    empty = false;
+                }
+            } else {
+                break;
+            }
+        }
+        if (empty) {
+            return null;
+        }
+        result= new StringBuilder("");
+        for (int i=numSameTokens;i<field2.length ;i++) {
+            result.append("../");
+        }
+        for (int i=numSameTokens;i<field1.length ;i++) {
+            result.append(field1[i]+"/");
+        }
+        if (result.charAt(result.length()-1) == '/' ) {
+            result.deleteCharAt(result.length()-1);
+        }
+        return result.toString();
     }
 }

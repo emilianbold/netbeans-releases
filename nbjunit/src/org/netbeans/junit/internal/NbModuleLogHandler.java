@@ -45,6 +45,7 @@ import java.io.StringWriter;
 import java.text.MessageFormat;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -53,6 +54,7 @@ import junit.framework.AssertionFailedError;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestResult;
+import org.netbeans.junit.NbTestCase;
 
 /** Registered in 'META-INF/services/java.util.logging.Handler' via
  * special classloader that delegates to FakeMetaInf.txt
@@ -114,6 +116,7 @@ public final class NbModuleLogHandler extends Handler {
         sb.append(txt);
         Throwable t = record.getThrown();
         if (t != null) {
+            sb.append('\n');
             StringWriter w = new StringWriter();
             t.printStackTrace(new PrintWriter(w));
             sb.append(w.toString().replace("\tat ", "  ").replace("\t... ", "  ... "));
@@ -126,6 +129,20 @@ public final class NbModuleLogHandler extends Handler {
     public NbModuleLogHandler() {
     }
 
+    /** number of threads currently running {@link NbTestCase#assertGC(String, Reference, Set)} */
+    private static final AtomicInteger ignoreOOME = new AtomicInteger();
+    /**
+     * Run a thunk while ignoring any OOME that might be thrown.
+     */
+    public static void whileIgnoringOOME(Runnable run) {
+        ignoreOOME.incrementAndGet();
+        try {
+            run.run();
+        } finally {
+            ignoreOOME.decrementAndGet();
+        }
+    }
+
     @Override
     public void publish(LogRecord record) {
         StringBuffer t = text;
@@ -134,6 +151,9 @@ public final class NbModuleLogHandler extends Handler {
         }
 
         if (record.getThrown() != null) {
+            if (ignoreOOME.get() > 0 && record.getThrown() instanceof OutOfMemoryError) {
+                return;
+            }
             if (exc.intValue() <= record.getLevel().intValue()) {
                 t.append(toString(record));
             }

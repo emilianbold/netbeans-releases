@@ -63,6 +63,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
+import org.openide.windows.InputOutput;
 
 public class CreateDomain extends Thread {
 
@@ -195,6 +196,16 @@ public class CreateDomain extends Thread {
                     NbPreferences.forModule(this.getClass()).put(ServerUtilities.PROP_FIRST_RUN+gip.getInstallRootKey(),
                             irf.getParentFile().getAbsolutePath());
                 }
+            }
+
+            String mess = 0 == retVal ?
+                NbBundle.getMessage(this.getClass(), "MSG_see_successful_results") :
+                NbBundle.getMessage(this.getClass(), "MSG_see_failure_results");
+            Object ret = DialogDisplayer.getDefault().notify(
+                    new NotifyDescriptor.Confirmation(mess, NotifyDescriptor.YES_NO_OPTION));
+            if (NotifyDescriptor.YES_OPTION.equals(ret)) {
+                InputOutput io = org.openide.windows.IOProvider.getDefault().getIO(NbBundle.getMessage(this.getClass(), "LBL_outputtab"), false);
+                io.select();
             }
         }
     }

@@ -58,15 +58,16 @@ public abstract class Crawler {
      *
      * @param root
      * @param checkTimeStamps
+     * @param detectDeletedFiles 
      * @param mimeTypesToCheck The set of mime types that the <code>Crawler</code> should check.
      *   Can be <code>null</code> in which case all mime types will be checked.
      *
      * @throws java.io.IOException
      */
-    protected Crawler(final URL root, boolean checkTimeStamps, CancelRequest cancelRequest) throws IOException {
+    protected Crawler(final URL root, boolean checkTimeStamps, boolean detectDeletedFiles, CancelRequest cancelRequest) throws IOException {
         this.root = root;
         this.checkTimeStamps = checkTimeStamps;
-        this.timeStamps = TimeStamps.forRoot(root, checkTimeStamps);
+        this.timeStamps = TimeStamps.forRoot(root, detectDeletedFiles);
         this.cancelRequest = cancelRequest;
     }
 

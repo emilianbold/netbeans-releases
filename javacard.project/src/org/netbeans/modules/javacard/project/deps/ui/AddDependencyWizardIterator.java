@@ -190,17 +190,11 @@ public final class AddDependencyWizardIterator implements WizardDescriptor.Itera
             steps[i] = c.getName();
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent) c;
-                // Sets step number of a component
-                // TODO if using org.openide.dialogs >= 7.8, can use WizardDescriptor.PROP_*:
-                jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i)); //NOII18N
-                // Sets steps names for a panel
-                jc.putClientProperty("WizardPanel_contentData", steps); //NOII18N
-                // Turn on subtitle creation on each step
-                jc.putClientProperty("WizardPanel_autoWizardStyle", Boolean.TRUE); //NOII18N
-                // Show steps on the left side with the image on the background
-                jc.putClientProperty("WizardPanel_contentDisplayed", Boolean.TRUE); //NOII18N
-                // Turn on numbering of all steps
-                jc.putClientProperty("WizardPanel_contentNumbered", Boolean.TRUE); //NOII18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i)); //NOII18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps); //NOII18N
+                jc.putClientProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE); //NOII18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.TRUE); //NOII18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.TRUE); //NOII18N
             }
         }
         return pnls;

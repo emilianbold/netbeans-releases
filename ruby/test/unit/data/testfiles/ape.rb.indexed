@@ -4,17 +4,17 @@ Document 0
 Searchable Keys:
   class : Ape
   class-ig : ape
-  field : authent
-  field : cats
-  field : dialogs
-  field : dianum
-  field : diarefs
-  field : footer
-  field : header
-  field : lnum
-  field : output
-  field : steps
-  field : w
+  field : authent|PRIVATE;;Authent;
+  field : cats|PRIVATE
+  field : dialogs|PRIVATE
+  field : dianum|PRIVATE;;Fixnum;
+  field : diarefs|PRIVATE;;Hash;
+  field : footer|PRIVATE;;NilClass;
+  field : header|PRIVATE;;String;
+  field : lnum|PRIVATE;;Fixnum;
+  field : output|PRIVATE
+  field : steps|PRIVATE;;Array;
+  field : w|PRIVATE;;Builder::XmlMarkup;
   fqn : Ape
   method : check(uri,username,password,requested_e_coll,requested_m_coll)|DOCUMENTED|
   method : check_new_entry(as_posted,new_entry,desc)
@@ -26,18 +26,18 @@ Searchable Keys:
   method : find_entry(feed_uri,name,id,report)|DOCUMENTED|;;String;
   method : footer(message)
   method : good(message,crumb_key)
-  method : header(uri)
+  method : header(uri);;String;
   method : info(message)
-  method : initialize(args)|PRIVATE|
-  method : line
+  method : initialize(args)|PRIVATE|;;Fixnum;
+  method : line;;Fixnum;
   method : list_item(message)
   method : might_fail(uri,requested_e_coll,requested_m_coll)
-  method : new(args)|PRIVATE|STATIC|
+  method : new(args)|PRIVATE|STATIC|;;Fixnum;
   method : report(output)
   method : report_html(output)
   method : report_li(dialog,marker,text)
   method : report_text
-  method : save_dialog(name,actor)|DOCUMENTED|
+  method : save_dialog(name,actor)|DOCUMENTED|;;Array;
   method : show_crumbs(key)
   method : show_message(crumb,tf)
   method : start_list(message)

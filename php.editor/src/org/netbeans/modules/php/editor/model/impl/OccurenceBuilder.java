@@ -96,6 +96,8 @@ import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.GotoLabel;
+import org.netbeans.modules.php.editor.parser.astnodes.GotoStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.Include;
 import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
@@ -119,6 +121,7 @@ class OccurenceBuilder {
     private Map<ASTNodeInfo<Scalar>, ConstantElement> constDeclarations;
     private Map<ConstantDeclarationInfo, ConstantElement> constDeclarations53;
     private Map<ASTNodeInfo<Scalar>, Scope> constInvocations;
+    private Map<ASTNodeInfo<Expression>, Scope> nsConstInvocations;
     private Map<ASTNodeInfo<FunctionDeclaration>, FunctionScope> fncDeclarations;
     private Map<ASTNodeInfo<MethodDeclaration>, MethodScope> methodDeclarations;
     private Map<MagicMethodDeclarationInfo, MethodScope> magicMethodDeclarations;
@@ -143,6 +146,8 @@ class OccurenceBuilder {
     private ElementInfo currentContextInfo;
     private ModelElement element;
     private Collection<ModelElement> declarations = new HashSet<ModelElement>();
+    private Map<ASTNodeInfo<GotoLabel>, Scope> gotoLabel;
+    private Map<ASTNodeInfo<GotoStatement>, Scope> gotoStatement;
 
     OccurenceBuilder(ModelElement element) {
         this(-1);
@@ -151,6 +156,7 @@ class OccurenceBuilder {
     OccurenceBuilder(int offset) {
         this.offset = offset;
         this.constInvocations = new HashMap<ASTNodeInfo<Scalar>, Scope>();
+        this.nsConstInvocations = new HashMap<ASTNodeInfo<Expression>, Scope>();
         this.constDeclarations = new HashMap<ASTNodeInfo<Scalar>, ConstantElement>();
         this.constDeclarations53 = new HashMap<ConstantDeclarationInfo, ConstantElement>();
         this.includes = new HashMap<IncludeInfo, IncludeElement>();
@@ -173,6 +179,24 @@ class OccurenceBuilder {
         this.variables = new HashMap<ASTNodeInfo<Variable>, Scope>();
         this.fldDeclarations = new HashMap<SingleFieldDeclarationInfo, FieldElementImpl>();
         this.docTags = new HashMap<PhpDocTypeTagInfo, Scope>();
+        this.gotoStatement =  new HashMap<ASTNodeInfo<GotoStatement>, Scope>();
+        this.gotoLabel = new HashMap<ASTNodeInfo<GotoLabel>, Scope>();
+    }
+
+    void prepare(GotoStatement statement, ScopeImpl scope) {
+        if (canBePrepared(statement, scope)) {
+            ASTNodeInfo<GotoStatement> node = ASTNodeInfo.create(statement);
+            gotoStatement.put(node, scope);
+            setOccurenceAsCurrent(new ElementInfo(node, scope));
+        }
+    }
+
+    void prepare(GotoLabel label, ScopeImpl scope) {
+        if (canBePrepared(label, scope)) {
+            ASTNodeInfo<GotoLabel> node = ASTNodeInfo.create(label);
+            gotoLabel.put(node, scope);
+            setOccurenceAsCurrent(new ElementInfo(node, scope));
+        }
     }
 
     void prepare(FieldAccess fieldAccess, Scope scope) {
@@ -270,6 +294,14 @@ class OccurenceBuilder {
                 case IFACE:
                     ifaceIDs.put(nodeInfo, scope);
                     break;
+                case CONSTANT:
+                    if (node instanceof NamespaceName) {
+                        nsConstInvocations.put(nodeInfo, scope);
+                        if (currentContextInfo != null) {
+                            return;
+                        }
+                    }
+                    break;
                 default:
                     throw new IllegalStateException();
             }
@@ -359,10 +391,14 @@ class OccurenceBuilder {
             setOccurenceAsCurrent(new ElementInfo(node, scope));
         }
     }
-    void prepare(MagicMethodDeclarationInfo node, MethodScope scope) {
+
+    void prepare(final MagicMethodDeclarationInfo node, MethodScope scope) {
         if (canBePrepared(node.getOriginalNode(), scope)) {
-            magicMethodDeclarations.put(node, scope);
-            setOccurenceAsCurrent(new ElementInfo(node, scope));
+            if (node.getKind().equals(Kind.METHOD)) {
+                magicMethodDeclarations.put(node, scope);
+                ElementInfo elementInfo = new ElementInfo(node, scope);
+                setOccurenceAsCurrent(elementInfo);
+            }
         }
     }
 
@@ -505,6 +541,17 @@ class OccurenceBuilder {
                 }
             }
         }
+        for (Entry<ASTNodeInfo<Expression>, Scope> entry : nsConstInvocations.entrySet()) {
+            ASTNodeInfo<Expression> nodeInfo = entry.getKey();
+            Expression originalNode = nodeInfo.getOriginalNode();
+            if (originalNode instanceof  NamespaceName && idName.equalsIgnoreCase(nodeInfo.getName())) {
+                List<? extends ModelElement> elems = CachingSupport.getConstants(idName, fileScope);
+                if (!elems.isEmpty()) {
+                    fileScope.addOccurence(new OccurenceImpl(elems, nodeInfo.getRange(), fileScope));
+                }
+            }
+        }
+
     }
 
     private void buildConstantDeclarations(ElementInfo nodeCtxInfo, FileScopeImpl fileScope) {
@@ -550,7 +597,7 @@ class OccurenceBuilder {
 
                 NamespaceIndexFilter filterQuery = new NamespaceIndexFilter(queryQN.toString());
                 if (isParent || isSelf) {
-                    TypeScope typeScope = ModelUtils.getFirst(getStaticTypeName(scope, clzName));
+                    TypeScope typeScope = ModelUtils.getFirst(VariousUtils.getStaticTypeName(scope, clzName));
                     if (typeScope != null) {
                         nodeQN = typeScope.getNamespaceName().append(QualifiedName.create(typeScope.getName()));
                     }
@@ -591,6 +638,7 @@ class OccurenceBuilder {
         for (Entry<ASTNodeInfo<StaticFieldAccess>, Scope> entry : staticFieldInvocations.entrySet()) {
             ASTNodeInfo<StaticFieldAccess> nodeInfo = entry.getKey();
             String fieldName = nodeInfo.getName();
+            if (fieldName == null) continue;
             if (fieldName.startsWith("$")) {
                 fieldName = fieldName.substring(1);
             }
@@ -606,7 +654,7 @@ class OccurenceBuilder {
 
                 NamespaceIndexFilter filterQuery = new NamespaceIndexFilter(queryQN.toString());
                 if (isParent || isSelf) {
-                    TypeScope typeScope = ModelUtils.getFirst(getStaticTypeName(scope, clzName));
+                    TypeScope typeScope = ModelUtils.getFirst(VariousUtils.getStaticTypeName(scope, clzName));
                     if (typeScope != null) {
                         nodeQN = typeScope.getNamespaceName().append(QualifiedName.create(typeScope.getName()));
                     }
@@ -653,7 +701,7 @@ class OccurenceBuilder {
 
                 NamespaceIndexFilter filterQuery = new NamespaceIndexFilter(queryQN.toString());
                 if (isParent || isSelf) {
-                    TypeScope typeScope = ModelUtils.getFirst(getStaticTypeName(scope, clzName));
+                    TypeScope typeScope = ModelUtils.getFirst(VariousUtils.getStaticTypeName(scope, clzName));
                     if (typeScope != null) {
                         nodeQN = typeScope.getNamespaceName().append(QualifiedName.create(typeScope.getName()));
                     }
@@ -847,6 +895,29 @@ class OccurenceBuilder {
             }
         }
     }
+    private void buildGotoStatements(ElementInfo nodeCtxInfo, FileScopeImpl fileScope) {
+        buildGoto(nodeCtxInfo, gotoStatement, fileScope);
+    }
+    private void buildGotoLabels(ElementInfo nodeCtxInfo, FileScopeImpl fileScope) {
+        buildGoto(nodeCtxInfo, gotoLabel, fileScope);
+    }
+    private static <T extends ASTNode> void buildGoto(ElementInfo nodeCtxInfo, Map<ASTNodeInfo<T>, Scope> entries, FileScopeImpl fileScope) {
+        String currentName = nodeCtxInfo.getName();
+        Scope currentScope = nodeCtxInfo.getScope();
+        for (Entry<ASTNodeInfo<T>, Scope> entry : entries.entrySet()) {
+            ASTNodeInfo<T> nodeInfo = entry.getKey();
+            String name = nodeInfo.getName();
+            Scope scope = entry.getValue();
+            if (currentName.equalsIgnoreCase(name) && currentScope == scope) {
+                fileScope.addOccurence(new OccurenceImpl(entry.getValue(), nodeInfo.getRange(), fileScope) {
+                    @Override
+                    public boolean gotoDeclarationEnabled() {
+                        return false;
+                    }
+                });
+            }
+        }
+    }
 
     private void buildVariables(ElementInfo nodeCtxInfo, FileScopeImpl fileScope) {
         String idName = nodeCtxInfo.getName();
@@ -878,6 +949,10 @@ class OccurenceBuilder {
         ASTNodeInfo.Kind kind = currentContextInfo != null ? currentContextInfo.getKind() : null;
         if (currentContextInfo != null && kind != null) {
             switch (kind) {
+                case GOTO:
+                    buildGotoLabels(currentContextInfo, fileScope);
+                    buildGotoStatements(currentContextInfo, fileScope);
+                    break;
                 case FUNCTION:
                     buildFunctionInvocations(currentContextInfo, fileScope);
                     buildFunctionDeclarations(currentContextInfo, fileScope);
@@ -1010,44 +1085,6 @@ class OccurenceBuilder {
         return VariousUtils.getType(scp, vartype, varBase.getStartOffset(), true);
     }
 
-    private static Collection<? extends ClassScope> getStaticClassName(Scope inScope, String staticClzName) {
-        ClassScope csi = null;
-        if (inScope instanceof MethodScope) {
-            MethodScope msi = (MethodScope) inScope;
-            csi = (ClassScope) msi.getInScope();
-        }
-        if (inScope instanceof ClassScope) {
-            csi = (ClassScope)inScope;
-        }
-        if (csi != null) {
-            if ("self".equals(staticClzName)) {
-                return Collections.singletonList(csi);
-            } else if ("parent".equals(staticClzName)) {
-                return csi.getSuperClasses();
-            }
-        }
-
-        return CachingSupport.getClasses(staticClzName, inScope);
-    }
-    private static Collection<? extends TypeScope> getStaticTypeName(Scope inScope, String staticTypeName) {
-        TypeScope csi = null;
-        if (inScope instanceof MethodScope) {
-            MethodScope msi = (MethodScope) inScope;
-            csi = (ClassScope) msi.getInScope();
-        }
-        if (inScope instanceof ClassScope || inScope instanceof InterfaceScope) {
-            csi = (TypeScope)inScope;
-        } 
-        if (csi != null) {
-            if ("self".equals(staticTypeName)) {
-                return Collections.singletonList(csi);
-            } else if ( "parent".equals(staticTypeName) && (csi instanceof ClassScope)) {
-                return ((ClassScope)csi).getSuperClasses();
-            }
-        }
-        return CachingSupport.getTypes(staticTypeName, inScope);
-    }
-
     @SuppressWarnings("unchecked")
     private static List<MethodScope> methods4TypeNames(FileScopeImpl fileScope, Set<String> typeNamesForIdentifier, final String name) {
         List<ClassScope> classes = new ArrayList<ClassScope>();
@@ -1084,42 +1121,38 @@ class OccurenceBuilder {
     private static List<MethodScope> name2Methods(FileScopeImpl fileScope, final String name, ASTNodeInfo<MethodInvocation> nodeInfo ) {
         IndexScope indexScope = fileScope.getIndexScope();
         PHPIndex index = indexScope.getIndex();
-        Set<String> typeNamesForIdentifier = index.typeNamesForIdentifier(name, null, QuerySupport.Kind.CASE_INSENSITIVE_PREFIX);
-        List<MethodScope> methods = Collections.emptyList();
+        List<MethodScope> retval = new ArrayList<MethodScope>();
         FunctionInvocation functionInvocation = nodeInfo.getOriginalNode().getMethod();
         int paramCount = functionInvocation.getParameters().size();
-
-        if (typeNamesForIdentifier.size() > 0) {
-            List<MethodScope> methodsSuggestions = methods4TypeNames(fileScope, typeNamesForIdentifier, name);
-            methods = new ArrayList<MethodScope>();
-            for (MethodScope methodScope : methodsSuggestions) {
-                List<? extends Parameter> parameters = methodScope.getParameters();
-                if (ModelElementImpl.nameKindMatch(name, QuerySupport.Kind.EXACT, methodScope.getName())
-                        && paramCount >= numberOfMandatoryParams(parameters) && paramCount <= parameters.size() ) {
-                    methods.add(methodScope);
+        Collection<IndexedFunction> methods = index.getMethods(null, (String) null, name, QuerySupport.Kind.CASE_INSENSITIVE_PREFIX, PHPIndex.ANY_ATTR);
+        for (IndexedFunction meth : methods) {
+            List<? extends Parameter> parameters = meth.getParameters();
+            if (ModelElementImpl.nameKindMatch(name, QuerySupport.Kind.EXACT, meth.getName()) && paramCount >= numberOfMandatoryParams(parameters) && paramCount <= parameters.size()) {            
+                String in = meth.getIn();
+                if (in != null) {
+                    ClassScope clz = ModelUtils.getFirst(CachingSupport.getClasses(in, fileScope));
+                    retval.add(new MethodScopeImpl(clz, meth));
                 }
             }
         }
-
-        return methods;
+        return retval;
     }
 
     private static List<FieldElementImpl> name2Fields(FileScopeImpl fileScope, String name) {
         IndexScope indexScope = fileScope.getIndexScope();
         PHPIndex index = indexScope.getIndex();
-        Set<String> typeNamesForIdentifier = index.typeNamesForIdentifier((name.startsWith("$")) ? name.substring(1) : name,
-                null, QuerySupport.Kind.CASE_INSENSITIVE_PREFIX);
-        List<FieldElementImpl> fields = Collections.emptyList();
-        if (typeNamesForIdentifier.size() > 0) {
-            fields = new ArrayList<FieldElementImpl>();
-            List<FieldElementImpl> fieldSuggestions = flds4TypeNames(fileScope, typeNamesForIdentifier, name);
-            for (FieldElementImpl fieldElementImpl : fieldSuggestions) {
-                if (ModelElementImpl.nameKindMatch(name, QuerySupport.Kind.EXACT, fieldElementImpl.getName())) {
-                    fields.add(fieldElementImpl);
+        List<FieldElementImpl> retval = new ArrayList<FieldElementImpl>();
+        Collection<IndexedConstant> fields = index.getFields(null, (String) null, name.startsWith("$") ? name.substring(1) : name, QuerySupport.Kind.CASE_INSENSITIVE_PREFIX, PHPIndex.ANY_ATTR);
+        for (IndexedConstant fld : fields) {
+            if (ModelElementImpl.nameKindMatch(name, QuerySupport.Kind.EXACT, fld.getName())) {
+                String in = fld.getIn();
+                if (in != null) {
+                    ClassScope clz = ModelUtils.getFirst(CachingSupport.getClasses(in, fileScope));
+                    retval.add(new FieldElementImpl(clz, fld));
                 }
             }
         }
-        return fields;
+        return retval;
     }
 
     /**

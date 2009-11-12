@@ -112,7 +112,7 @@ public class TestRestServicesAction extends NodeAction  {
                 // logging usage of action
                 Object[] params = new Object[2];
                 params[0] = LogUtils.WS_STACK_JAXRS;
-                params[1] = "TEST"; // NOI18N
+                params[1] = "TEST REST"; // NOI18N
                 LogUtils.logWsAction(params);
 
         }
@@ -127,17 +127,31 @@ public class TestRestServicesAction extends NodeAction  {
         Properties p = new Properties();
         p.setProperty(RestSupport.PROP_BASE_URL_TOKEN, RestSupport.BASE_URL_TOKEN);
 
+        String path = RestSupport.RESTBEANS_TEST_DIR;
         RestSupport rs = project.getLookup().lookup(RestSupport.class);
-        AntProjectHelper helper = rs.getAntProjectHelper();
-        EditableProperties projectProps = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        String path = projectProps.getProperty(RestSupport.PROP_RESTBEANS_TEST_DIR);
-        if (path == null) {
-            path = RestSupport.RESTBEANS_TEST_DIR;
+        if (rs != null) {
+            try {
+                String applicationPath = rs.getApplicationPath();
+                if (applicationPath != null) {
+                    if (!applicationPath.startsWith("/")) {
+                        applicationPath = "/"+applicationPath;
+                    }
+                    p.setProperty(RestSupport.PROP_APPLICATION_PATH, applicationPath);
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            AntProjectHelper helper = rs.getAntProjectHelper();
+            EditableProperties projectProps = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+            String path1 = projectProps.getProperty(RestSupport.PROP_RESTBEANS_TEST_DIR);
+            if (path1 != null) {
+                path = path1;
+            }
+            File testdir = helper.resolveFile(path);
+            FileObject testFO = rs.generateTestClient(testdir);
+            p.setProperty(RestSupport.PROP_RESTBEANS_TEST_URL, testFO.getURL().toString());
+            p.setProperty(RestSupport.PROP_RESTBEANS_TEST_FILE, FileUtil.toFile(testFO).getAbsolutePath());
         }
-        File testdir = helper.resolveFile(path);
-        FileObject testFO = rs.generateTestClient(testdir);
-        p.setProperty(RestSupport.PROP_RESTBEANS_TEST_URL, testFO.getURL().toString());
-        p.setProperty(RestSupport.PROP_RESTBEANS_TEST_FILE, FileUtil.toFile(testFO).getAbsolutePath());
         return p;
     }
 

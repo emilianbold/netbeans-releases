@@ -24,7 +24,7 @@
             <folder name="x-asm">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.asm.core.resources.Bundle"/>
 
-                <file name="org-netbeans-modules-cnd-asm-core-assistance-CodeHighlightFactory.instance"/> -->
+                <file name="org-netbeans-modules-cnd-asm-core-assistance-CodeHighlightFactory.instance"/>
                 <folder name="HyperlinkProviders">
                     <file name="AsmHyperlinkProvider.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.asm.core.hyperlink.AsmHyperlinkProvider"/>

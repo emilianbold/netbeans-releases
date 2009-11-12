@@ -60,7 +60,7 @@ import java.awt.event.KeyEvent;
 public class XmlMultiViewElement extends AbstractMultiViewElement implements java.io.Serializable {
     static final long serialVersionUID = -326467724916080580L;
 
-    private transient CloneableEditor xmlEditor;
+    private transient XmlMultiViewEditorSupport.XmlCloneableEditor xmlEditor;
     private transient javax.swing.JComponent toolbar;
 
     /** Creates a new instance of XmlMultiviewElement */
@@ -77,13 +77,23 @@ public class XmlMultiViewElement extends AbstractMultiViewElement implements jav
 
     public void componentHidden() {
     }
-
+    
     public void componentActivated() {
+        xmlEditor.componentActivated();
     }
-
+    
     public void componentShowing() {
+        xmlEditor.componentShowing();
     }
-
+    
+    public void componentOpened() {
+        xmlEditor.componentOpened();
+    }
+    
+    public void componentClosed() {
+        xmlEditor.componentClosed();
+    }
+    
     public org.openide.util.Lookup getLookup() {
         return new ProxyLookup(new org.openide.util.Lookup[] {
             dObj.getNodeDelegate().getLookup()
@@ -113,7 +123,7 @@ public class XmlMultiViewElement extends AbstractMultiViewElement implements jav
 
     private CloneableEditor getXmlEditor() {
         if (xmlEditor == null) {
-            xmlEditor = dObj.getEditorSupport().createCloneableEditor();
+            xmlEditor = (XmlMultiViewEditorSupport.XmlCloneableEditor) dObj.getEditorSupport().createCloneableEditor();
             final ActionMap map = xmlEditor.getActionMap();
             SaveAction act = (SaveAction) SystemAction.get(SaveAction.class);
             KeyStroke stroke = KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
@@ -122,4 +132,5 @@ public class XmlMultiViewElement extends AbstractMultiViewElement implements jav
         }
         return xmlEditor;
     }
+
 }

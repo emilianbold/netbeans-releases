@@ -155,11 +155,22 @@ public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
     /** Creates a new instance of BaseTestCase */
     public CndBaseTestCase(String testName) {
         super(testName);
+        setupUserDir();
     }
 
     public CndBaseTestCase(String name, ExecutionEnvironment testExecutionEnvironment) {
         super(name, testExecutionEnvironment);
+        setupUserDir();
     }
+
+    private void setupUserDir() {
+        File dataDir = getDataDir();
+        File dataDirParent = dataDir.getParentFile();
+        File userDir = new File(dataDirParent, "userdir");
+        userDir.mkdirs();
+        System.setProperty("netbeans.user", userDir.getAbsolutePath());
+    }
+
 
     @Override
     protected void tearDown() throws Exception {
@@ -172,6 +183,7 @@ public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
         
         Logger.getLogger("org.netbeans.modules.editor.settings.storage.Utils").setLevel(Level.SEVERE);
         System.setProperty("cnd.mode.unittest", "true");
+        System.setProperty("SUNW_NO_UPDATE_NOTIFY", "true");
         List<Class> list = new ArrayList<Class>();
         list.add(MockMimeLookup.class);
         for(Class cls : getServises()){

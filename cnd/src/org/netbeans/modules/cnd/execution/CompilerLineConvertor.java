@@ -188,6 +188,9 @@ public class CompilerLineConvertor implements LineConvertor {
 	if (!isEquals(scanner1.getChangeDirectoryPattern(), scanner2.getChangeDirectoryPattern())) {
 	    return false;
 	}
+	if (!isEquals(scanner1.getMakeAllInDirectoryPattern(), scanner2.getMakeAllInDirectoryPattern())) {
+	    return false;
+	}
 	if (!isEquals(scanner1.getStackHeaderPattern(), scanner2.getStackHeaderPattern())) {
 	    return false;
 	}

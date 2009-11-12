@@ -1943,14 +1943,13 @@ class JavaCodeGenerator extends CodeGenerator {
             SwingLayoutCodeGenerator.ComponentInfo info = new SwingLayoutCodeGenerator.ComponentInfo();
             info.id = subComp.getId();
             info.variableName = getExpressionJavaString(subComp.getCodeExpression(), ""); // NOI18N
-            info.clazz = subComp.getBeanClass();
+            info.component = (Component)subComp.getBeanInstance();
             Node.Property minProp = subComp.getPropertyByName("minimumSize"); // NOI18N
             Node.Property prefProp = subComp.getPropertyByName("preferredSize"); // NOI18N
             Node.Property maxProp = subComp.getPropertyByName("maximumSize"); // NOI18N
             info.sizingChanged = !(((minProp == null) || minProp.isDefaultValue())
                 && ((prefProp == null) || prefProp.isDefaultValue())
                 && ((maxProp == null) || maxProp.isDefaultValue()));
-            info.minSize = ((Component)subComp.getBeanInstance()).getMinimumSize();
             infos[i] = info;
         }
         CodeExpression contExpr = LayoutSupportManager.containerDelegateCodeExpression(

@@ -52,6 +52,7 @@ import org.netbeans.modules.dlight.toolsui.api.PanelWithApply;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 
 public class GizmoStringNodeProp extends Node.Property<String> {
 
@@ -67,23 +68,7 @@ public class GizmoStringNodeProp extends Node.Property<String> {
         this.name = name;
         this.description = description;
         this.stringConfiguration = stringConfiguration;
-    }
-
-    public GizmoStringNodeProp(GizmoStringConfiguration stringConfiguration, String def, String txt1, String name, String description) {
-        super(String.class);
-        this.name = name;
-        this.description = description;
-        this.stringConfiguration = stringConfiguration;
-        this.def = def;
-    }
-
-    public GizmoStringNodeProp(GizmoStringConfiguration stringConfiguration, String def, boolean canWrite, String txt1, String name, String description) {
-        super(String.class);
-        this.name = name;
-        this.description = description;
-        this.stringConfiguration = stringConfiguration;
-        this.canWrite = canWrite;
-        this.def = def;
+        setValue("title", NbBundle.getMessage(GizmoStringNodeProp.class, "DLG_TITLE_ConfigurationManager")); // NOI18N
     }
 
     @Override
@@ -96,15 +81,15 @@ public class GizmoStringNodeProp extends Node.Property<String> {
         return description;
     }
     
-    @Override
-    public String getHtmlDisplayName() {
-        if (getStringConfiguration().getModified()) {
-            return "<b>" + getDisplayName(); // NOI18N
-        }
-        else {
-            return null;
-        }
-    }
+//    @Override
+//    public String getHtmlDisplayName() {
+//        if (getStringConfiguration().getModified()) {
+//            return "<b>" + getDisplayName(); // NOI18N
+//        }
+//        else {
+//            return null;
+//        }
+//    }
 
     public String getValue() {
         return getStringConfiguration().getValueDef(def);
@@ -130,7 +115,8 @@ public class GizmoStringNodeProp extends Node.Property<String> {
 
     @Override
     public boolean supportsDefaultValue() {
-        return true;
+//        return true;
+        return false;
     }
 
     @Override
@@ -210,7 +196,7 @@ public class GizmoStringNodeProp extends Node.Property<String> {
         public void attachEnv(PropertyEnv env) {
             this.env = env;
         }
-
+        
         /**
          * Once the user presses OK, we attempt to validate the remote host. We never veto the action
          * because a failure should still close the property editor, but with the host still offline.

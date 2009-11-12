@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.php.editor.index;
 
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.api.ElementKind;
 
 
@@ -47,11 +48,32 @@ import org.netbeans.modules.csl.api.ElementKind;
  *
  * @author Petr Pisl
  */
-public class IndexedVariable extends IndexedConstant {
-        
+public class IndexedVariable extends IndexedElement implements IndexedTypedElement {
+    private String typeName;
     public IndexedVariable(String name, String in, PHPIndex index, String fileURL,
             int offset, int flags, String typeName){
-        super(name, in, index, fileURL, offset, flags, typeName, ElementKind.VARIABLE);
+        super(name, in, index, fileURL, offset, flags, ElementKind.VARIABLE);
+        this.typeName = typeName;
     }
 
+    public boolean isTypeResolved(){
+        if (typeName != null && typeName.contains("@")){//NOI18N
+            return false;
+        }
+        return true;
+    }
+
+    @CheckForNull
+    public String getTypeName() {
+        return isTypeResolved() ? typeName : null;
+    }
+
+    public void setTypeName(String typeName) {
+        // empty string causes a serious performance problem
+        if (typeName != null && typeName.length() == 0){
+            throw new IllegalArgumentException("typeName cannot be empty string!");
+        }
+
+        this.typeName = typeName;
+    }
 }

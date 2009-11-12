@@ -100,6 +100,7 @@ public final class LineAnnotationInfo {
                 lineOffset = el.getStartOffset();
             } catch (IndexOutOfBoundsException ioobe) {
                 // getElement throws IndexOutOfBoundsException if line doesn't exists!
+                return 0;
             }
 
         }
@@ -193,18 +194,24 @@ public final class LineAnnotationInfo {
     /**
      * @return the tooltip
      */
-    public String getTooltip() {
+    public synchronized String getTooltip() {
         if (tooltip == null) {
-            String tt = "";
+            if (notFormatedColumns == null || notFormatedColumns.length == 0){
+                return "";
+            }
+            StringBuilder sb = new StringBuilder();
+            sb.append("<html><body>");//NOI18N
             int i = 0;
+
             for (String col : getFileAnnotationInfo().getColumnNames()) {
-                if (tt.length() > 0) {
-                    tt += " | "; // NOI18N
+                if (i > 0) {
+                    sb.append("<br>"); // NOI18N
                 }
-                tt += col + ':' + notFormatedColumns[i];
+                sb.append(col).append(':').append(notFormatedColumns[i]);
                 i++;
             }
-            tooltip = tt;
+            sb.append("</body></html>");//NOI18N
+            tooltip = sb.toString();
         }
         return tooltip;
     }

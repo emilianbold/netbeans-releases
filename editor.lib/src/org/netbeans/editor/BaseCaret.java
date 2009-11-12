@@ -154,7 +154,7 @@ AtomicLockListener, FoldHierarchyListener {
      * prior the caret gets repainted elsewhere.
      */
     private Rectangle caretBounds;
-    
+
     /** Component this caret is bound to */
     protected JTextComponent component;
 
@@ -258,6 +258,11 @@ AtomicLockListener, FoldHierarchyListener {
      */
     private boolean updateAfterFoldHierarchyChange;
     private FoldHierarchyListener weakFHListener;
+
+    /**
+     * Whether at least one typing change occurred during possibly several atomic operations.
+     */
+    private boolean typingModificationOccurred;
 
     private Preferences prefs = null;
     private final PreferenceChangeListener prefsListener = new PreferenceChangeListener() {
@@ -639,9 +644,7 @@ AtomicLockListener, FoldHierarchyListener {
                     c.repaint(oldCaretBounds);
                 }
 
-                int dot = getDot();
-
-                if (updateCaretBounds() && (scrollViewToCaret || updateAfterFoldHierarchyChange)) {
+                if (updateCaretBounds()) {
                     Rectangle scrollBounds = new Rectangle(caretBounds);
                     
                     // Optimization to avoid extra repaint:
@@ -672,14 +675,24 @@ AtomicLockListener, FoldHierarchyListener {
                     
                     Rectangle visibleBounds = c.getVisibleRect();
                     
-                    // If folds have changed attempt to scrolll the view so that 
+                    // If folds have changed attempt to scroll the view so that 
                     // relative caret's visual position gets retained
                     // (the absolute position will change because of collapsed/expanded folds).
-                    if (oldCaretBounds != null && updateAfterFoldHierarchyChange) {
+                    boolean doScroll = scrollViewToCaret;
+                    if (oldCaretBounds != null && (!scrollViewToCaret || updateAfterFoldHierarchyChange)) {
                         int oldRelY = oldCaretBounds.y - visibleBounds.y;
-                        // Only fix if the caret is within visible bounds
-                        if (oldRelY < visibleBounds.height) {
+                        // Only fix if the caret is within visible bounds and the new x or y coord differs from the old one
+                        if (oldRelY >= 0 && oldRelY < visibleBounds.height &&
+                                (oldCaretBounds.y != caretBounds.y || oldCaretBounds.x != caretBounds.x))
+                        {
+                            doScroll = true; // Perform explicit scrolling
+                            int oldRelX = oldCaretBounds.x - visibleBounds.x;
+                            // Do not retain the horizontal caret bounds by scrolling
+                            // since many modifications do not explicitly say that they are typing modifications
+                            // and this would cause problems like #176268
+//                            scrollBounds.x = Math.max(caretBounds.x - oldRelX, 0);
                             scrollBounds.y = Math.max(caretBounds.y - oldRelY, 0);
+//                            scrollBounds.width = visibleBounds.width;
                             scrollBounds.height = visibleBounds.height;
                         }
                     }
@@ -693,7 +706,7 @@ AtomicLockListener, FoldHierarchyListener {
                     // of the visible window to see the context around the caret.
                     // This should work fine with PgUp/Down because these
                     // scroll the view explicitly.
-                    if (/* # 70915 !updateAfterFoldHierarchyChange && */
+                    if (scrollViewToCaret && /* # 70915 !updateAfterFoldHierarchyChange && */
                         (caretBounds.y > visibleBounds.y + visibleBounds.height + caretBounds.height
                             || caretBounds.y + caretBounds.height < visibleBounds.y - caretBounds.height)
                     ) {
@@ -704,9 +717,9 @@ AtomicLockListener, FoldHierarchyListener {
 
                     updateAfterFoldHierarchyChange = false;
                     
-                    // Ensure that the viewport will be scrolled so that
-                    // the caret is visible
-                    if (scrollViewToCaret) {
+                    // Ensure that the viewport will be scrolled either to make the caret visible
+                    // or to retain cart's relative visual position against the begining of the viewport's visible rectangle.
+                    if (doScroll) {
                         c.scrollRectToVisible(scrollBounds);
                     }
 
@@ -1137,6 +1150,7 @@ AtomicLockListener, FoldHierarchyListener {
         if (c != null) {
             BaseDocument doc = (BaseDocument)component.getDocument();
             BaseDocumentEvent bevt = (BaseDocumentEvent)evt;
+            boolean typingModification;
             if ((bevt.isInUndo() || bevt.isInRedo())
                     && component == Utilities.getLastActiveComponent()
                     && !Boolean.TRUE.equals(org.netbeans.lib.editor.util.swing.
@@ -1144,13 +1158,19 @@ AtomicLockListener, FoldHierarchyListener {
                ) {
                 // in undo mode and current component
                 undoOffset = evt.getOffset() + evt.getLength();
+                // Undo operations now cause the caret to move to the place where the undo occurs.
+                // In future we should put additional info into the document event whether it was
+                // a typing modification and if not the caret should not be relocated and scrolled.
+                typingModification = true;
             } else {
                 undoOffset = -1;
+                typingModification = org.netbeans.lib.editor.util.swing.
+                        DocumentUtilities.isTypingModification(component.getDocument());
             }
 
             modified = true;
 
-            modifiedUpdate();
+            modifiedUpdate(typingModification);
         }
     }
 
@@ -1160,6 +1180,7 @@ AtomicLockListener, FoldHierarchyListener {
             BaseDocument doc = (BaseDocument)c.getDocument();
             // make selection invisible if removal shrinked block to zero size
             BaseDocumentEvent bevt = (BaseDocumentEvent)evt;
+            boolean typingModification;
             if ((bevt.isInUndo() || bevt.isInRedo())
                 && c == Utilities.getLastActiveComponent()
                 && !Boolean.TRUE.equals(org.netbeans.lib.editor.util.swing.
@@ -1167,17 +1188,24 @@ AtomicLockListener, FoldHierarchyListener {
             ) {
                 // in undo mode and current component
                 undoOffset = evt.getOffset();
-            } else {
+                // Undo operations now cause the caret to move to the place where the undo occurs.
+                // In future we should put additional info into the document event whether it was
+                // a typing modification and if not the caret should not be relocated and scrolled.
+                typingModification = true;
+            } else { // Not undo or redo
                 undoOffset = -1;
+                typingModification = org.netbeans.lib.editor.util.swing.
+                        DocumentUtilities.isTypingModification(component.getDocument());
+
             }
 
             modified = true;
             
-            modifiedUpdate();
+            modifiedUpdate(typingModification);
         }
     }
     
-    private void modifiedUpdate() {
+    private void modifiedUpdate(boolean typingModification) {
         if (!inAtomicLock) {
             JTextComponent c = component;
             if (modified && c != null) {
@@ -1186,10 +1214,12 @@ AtomicLockListener, FoldHierarchyListener {
                 } else { // last modification was not undo
                     fireStateChanged();
                     // Scroll to caret only for component with focus
-                    dispatchUpdate(c.hasFocus());
+                    dispatchUpdate(c.hasFocus() && typingModification);
                 }
                 modified = false;
             }
+        } else {
+            typingModificationOccurred |= typingModification;
         }
     }
     
@@ -1201,9 +1231,10 @@ AtomicLockListener, FoldHierarchyListener {
         inAtomicLock = false;
         inAtomicUnlock = true;
         try {
-            modifiedUpdate();
+            modifiedUpdate(typingModificationOccurred);
         } finally {
             inAtomicUnlock = false;
+            typingModificationOccurred = false;
         }
     }
     
