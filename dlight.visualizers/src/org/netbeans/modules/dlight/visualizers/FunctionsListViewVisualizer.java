@@ -149,8 +149,8 @@ public class FunctionsListViewVisualizer extends JPanel implements
 //    private final FocusTraversalPolicy focusPolicy = new FocusTraversalPolicyImpl() ;
     private Map<Integer, Boolean> ascColumnValues = new HashMap<Integer, Boolean>();
     private final SourceSupportProvider sourceSupportProvider;
-    private static Color dlc = UIManager.getDefaults().getColor("Label.disabledForeground");
-    private static Color elc = UIManager.getDefaults().getColor("Label.enabledForeground");
+    private static Color dlc = UIManager.getDefaults().getColor("Label.disabledForeground"); // NOI18N
+    private static Color elc = UIManager.getDefaults().getColor("Label.enabledForeground"); // NOI18N
 
     static {
         dlc = UIManager.getDefaults().getColor("Label.disabledForeground"); // NOI18N
