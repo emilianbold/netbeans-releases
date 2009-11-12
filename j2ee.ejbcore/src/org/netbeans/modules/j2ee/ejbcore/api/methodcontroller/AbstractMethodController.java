@@ -104,10 +104,12 @@ public abstract class AbstractMethodController extends EjbMethodController {
             version = model.runReadAction(new MetadataModelAction<EjbJarMetadata, BigDecimal>() {
                 public BigDecimal run(EjbJarMetadata metadata) throws Exception {
                     EntityAndSession model = (EntityAndSession) metadata.findByEjbClass(ejbClass);
-                    results[LOCAL] = model.getLocal();
-                    results[REMOTE] = model.getRemote();
-                    results[LOCAL_HOME] = model.getLocalHome();
-                    results[REMOTE_HOME] = model.getHome();
+                    if (model != null){
+                        results[LOCAL] = model.getLocal();
+                        results[REMOTE] = model.getRemote();
+                        results[LOCAL_HOME] = model.getLocalHome();
+                        results[REMOTE_HOME] = model.getHome();
+                    }
                     return metadata.getRoot().getVersion();
                 }
             });

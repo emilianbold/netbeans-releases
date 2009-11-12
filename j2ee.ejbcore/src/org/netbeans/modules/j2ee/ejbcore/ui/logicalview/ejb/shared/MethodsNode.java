@@ -89,10 +89,12 @@ public class MethodsNode extends AbstractNode implements OpenCookie {
             iClassName = model.runReadAction(new MetadataModelAction<EjbJarMetadata, String>() {
                 public String run(EjbJarMetadata metadata) throws Exception {
                     EntityAndSession entityAndSession = (EntityAndSession) metadata.findByEjbClass(ejbClass);
-                    switch (viewType){
-                        case NO_INTERFACE: return entityAndSession.getEjbClass();
-                        case LOCAL: return entityAndSession.getLocal();
-                        case REMOTE: return entityAndSession.getRemote();
+                    if (entityAndSession != null){
+                        switch (viewType){
+                            case NO_INTERFACE: return entityAndSession.getEjbClass();
+                            case LOCAL: return entityAndSession.getLocal();
+                            case REMOTE: return entityAndSession.getRemote();
+                        }
                     }
                     return null;
                 }
