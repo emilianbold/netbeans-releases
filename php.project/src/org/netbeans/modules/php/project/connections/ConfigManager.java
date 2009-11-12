@@ -143,7 +143,7 @@ public final class ConfigManager {
     public synchronized Configuration currentConfiguration() {
         String activeConfig = configProvider.getActiveConfig();
         if (exists(activeConfig)) {
-            return new Configuration(configProvider.getActiveConfig());
+            return new Configuration(activeConfig);
         }
         // #176670
         LOGGER.log(Level.WARNING, "Missing configuration \"{0}\" found - perhaps deleted?", activeConfig);
