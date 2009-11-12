@@ -52,9 +52,9 @@ import org.netbeans.module.dlight.threads.api.Datarace;
 import org.netbeans.module.dlight.threads.api.Deadlock;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.modules.dlight.perfan.spi.datafilter.SunStudioFiltersProvider;
+import org.netbeans.modules.dlight.perfan.stack.impl.FunctionCallImpl;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
@@ -197,7 +197,7 @@ public final class PerfanDataStorage implements DataStorage {
         return result;
     }
 
-    public FunctionStatistic getFunctionStatistic(FunctionCall functionCall) {
+    public FunctionStatistic getFunctionStatistic(FunctionCallImpl functionCall) {
         FunctionStatistic result = null;
 
         try {
