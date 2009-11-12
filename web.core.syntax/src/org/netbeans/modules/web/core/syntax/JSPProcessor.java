@@ -39,9 +39,10 @@
 package org.netbeans.modules.web.core.syntax;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.TreeSet;
+import java.util.WeakHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.jsp.JspException;
@@ -56,6 +57,7 @@ import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.web.core.syntax.spi.JspColoringData;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
+import org.netbeans.modules.web.jsps.parserapi.JspParserAPI.ParseResult;
 import org.netbeans.modules.web.jsps.parserapi.Node.IncludeDirective;
 import org.netbeans.modules.web.jsps.parserapi.PageInfo;
 import org.openide.filesystems.FileObject;
@@ -75,6 +77,41 @@ public abstract class JSPProcessor {
     protected static final Logger logger = Logger.getLogger(JSPProcessor.class.getName());
     protected boolean processCalled = false;
     protected boolean processingSuccessful = true;
+
+    //static cache of FileObject---ParserData
+    private static final WeakHashMap<FileObject, ParserData> PARSER_DATA_CACHE = new WeakHashMap<FileObject, ParserData>();
+
+    private ParserData parserData;
+
+    private static class ParserData {
+        private JspParserAPI.ParseResult parserResult;
+        private JspColoringData coloringData;
+
+        public ParserData(JspParserAPI.ParseResult parserResult, JspColoringData coloringData) {
+            assert parserResult != null;
+            
+            this.parserResult = parserResult;
+            this.coloringData = coloringData;
+        }
+
+        public JspColoringData getColoringData() {
+            return coloringData;
+        }
+
+        public ParseResult getParserResult() {
+            return parserResult;
+        }
+    }
+
+    private ParserData getParserData() {
+        assert parserData != null; //never allow to return null
+        
+        return parserData;
+    }
+
+    private static ParserData getCachedParserData(FileObject file) {
+        return PARSER_DATA_CACHE.get(file);
+    }
 
     protected String createBeanVarDeclarations(List<String> localBeans) {
         //TODO: the parser data contains no information about offsets and
@@ -108,7 +145,7 @@ public abstract class JSPProcessor {
         }
 
         JspSyntaxSupport syntaxSupport = JspSyntaxSupport.get(doc);
-        JspColoringData coloringData = JspUtils.getJSPColoringData(fobj);
+        JspColoringData coloringData = getParserData().getColoringData();
 
         if (coloringData != null && coloringData.getPrefixMapper() != null) {
             Collection<String> prefixes = coloringData.getPrefixMapper().keySet();
@@ -141,16 +178,9 @@ public abstract class JSPProcessor {
     }
 
     protected PageInfo getPageInfo() {
-        JspParserAPI.ParseResult parseResult = JspUtils.getCachedParseResult(fobj, true, false);
+        JspParserAPI.ParseResult result = getParserData().getParserResult();
+        return result != null ? result.getPageInfo() : null;
 
-        if (parseResult != null) {
-            return parseResult.getPageInfo();
-        }
-
-        //report error but do not break the entire CC
-        logger.log(Level.INFO, null, "PageInfo obtained from JspParserAPI.ParseResult is null");
-
-        return null;
     }
 
     private PageInfo.BeanData[] getBeanData() {
@@ -201,9 +231,8 @@ public abstract class JSPProcessor {
             }
         };
 
-        JspSyntaxSupport jspSyntax = JspSyntaxSupport.get(doc);
         try {
-            JspParserAPI.ParseResult parseResult = jspSyntax.getParseResult();
+            JspParserAPI.ParseResult parseResult = getParserData().getParserResult();
 
             if (parseResult != null && parseResult.getNodes() != null) {
                 parseResult.getNodes().visit(visitor);
@@ -242,15 +271,8 @@ public abstract class JSPProcessor {
 
     public static boolean ignoreLockFromUnitTest = false;
     
-    public void process() throws BadLocationException {
+    public synchronized void process() throws BadLocationException {
         processCalled = true;
-
-        //workaround>>> issue #120195 - Deadlock in jspparser while reformatting JSP
-        if (DocumentUtilities.isWriteLocked(doc) && !ignoreLockFromUnitTest) {
-            processingSuccessful = false;
-            return;
-        }
-        //<<<workaround
 
         //get fileobject
         fobj = NbEditorUtilities.getFileObject(doc);
@@ -260,26 +282,68 @@ public abstract class JSPProcessor {
             return;
         }
 
-        //do not process broken source
-        JspParserAPI.ParseResult parseResult = JspUtils.getCachedParseResult(fobj, false, false);
-        if (parseResult == null || !parseResult.isParsingSuccess()) {
-            processingSuccessful = false;
-            return;
+        //workaround for issue #120195 - Deadlock in jspparser while reformatting JSP
+        //
+        //we MAY be called here this way:
+        //ActionFactory$FormatAction.actionPerformed()
+        //calls  doc.runAtomicAsUser (new Runnable () {
+             //trigger the formatters under writelock
+        // }
+        //so we cannot access the jsp parser since it may try acquire
+        //document readlock in another thread (TaglibParseSupport)
+        //
+        //possible solutions:
+        //1. use files by the jsp parser (do not try to access the editor document)
+        //2. would it help if we force the parsing in the current thred? In another words
+        //   can by readlock called from within a writelock? - doesn't make much sense, probably not possible
+        //3. cache the embeddings - the bottleneck is that we may return a virtual source very distinct
+        //   from what is currently in the editor
+        //4. cache the jsp parser result - should give us much more accurate results, at least
+        //   the java sections in the virtual source should reflect the current editor document state.
+        //
+        //#4 choosen for now as it seems to have the best risk/gain ratio
+        //
+        if (DocumentUtilities.isWriteLocked(doc) && !ignoreLockFromUnitTest) {
+            //try to get the parser result data from the cache
+            parserData = getCachedParserData(fobj);
+            if(parserData == null) {
+                //nothing in the cache, just fail
+                processingSuccessful = false;
+                return;
+            }
+        } else {
+
+            //call the jsp parser and cache the results
+            JspParserAPI.ParseResult parseResult = JspUtils.getCachedParseResult(fobj, true, false);
+            if (parseResult == null || !parseResult.isParsingSuccess()) {
+                processingSuccessful = false;
+                return;
+            }
+
+            //get & cache coloring data
+            JspColoringData coloringData = JspUtils.getJSPColoringData(fobj);
+            //having the coloring data doesn't seem to be necessary (according to the current code)
+
+            parserData = new ParserData(parseResult, coloringData);
+
+            //and cache...
+            PARSER_DATA_CACHE.put(fobj, parserData);
+
         }
 
-        final BadLocationException[] ble = new BadLocationException[1];
+        final AtomicReference<BadLocationException> ble = new AtomicReference<BadLocationException>();
         doc.render(new Runnable() {
 
             public void run() {
                 try {
                     renderProcess();
                 } catch (BadLocationException ex) {
-                    ble[0] = ex; //save
+                    ble.set(ex);
                 }
             }
         });
-        if (ble[0] != null) {
-            throw ble[0]; //just rethrow to this level
+        if (ble.get() != null) {
+            throw ble.get(); //just rethrow to this level
         }
     }
 

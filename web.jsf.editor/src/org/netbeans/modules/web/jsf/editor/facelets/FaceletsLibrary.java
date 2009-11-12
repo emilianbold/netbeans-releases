@@ -38,6 +38,7 @@ package org.netbeans.modules.web.jsf.editor.facelets;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.Collection;
+import org.netbeans.modules.web.jsf.editor.tld.LibraryDescriptor;
 import org.netbeans.modules.web.jsf.editor.tld.TldLibrary;
 
 public abstract class FaceletsLibrary {
@@ -52,7 +53,7 @@ public abstract class FaceletsLibrary {
 
     public abstract Collection<NamedComponent> getComponents();
 
-    public abstract TldLibrary getAssociatedTLDLibrary();
+    public abstract LibraryDescriptor getLibraryDescriptor();
 
     public String getNamespace() {
         return namespace;
@@ -69,18 +70,28 @@ public abstract class FaceletsLibrary {
     }
 
     public String getDefaultPrefix() {
-        return getAssociatedTLDLibrary() != null ? getAssociatedTLDLibrary().getDefaultPrefix() : null;
+        //returns either facelets or tld library
+        String prefixFromTheLibrary = getLibraryDescriptor() != null ? getLibraryDescriptor().getDefaultPrefix() : null;
+        if(prefixFromTheLibrary == null) {
+            //workaround - the facelets libraries (.taglib.xml) files don't declare the default prefix for the library
+            //so workarounding by using corrsponding .tld file if found
+            TldLibrary tldl = support.getJsfSupport().getTldLibrary(namespace);
+            return tldl != null ? tldl.getDefaultPrefix() : null;
+        } else {
+            return prefixFromTheLibrary;
+        }
+
     }
 
     public String getDisplayName() {
-        return getAssociatedTLDLibrary() != null ? getAssociatedTLDLibrary().getDisplayName() : getNamespace();
+        return getLibraryDescriptor() != null ? getLibraryDescriptor().getDisplayName() : getNamespace();
     }
 
     @Override
     public String toString() {
         return "FaceletsLibrary(namespace=" + getNamespace() +
                 ", default prefix= " + getDefaultPrefix() +
-                ", tld library= " + getAssociatedTLDLibrary(); //NOI18N
+                ", tld library= " + getLibraryDescriptor(); //NOI18N
     }
 
 
@@ -123,9 +134,9 @@ public abstract class FaceletsLibrary {
         }
 
         public TldLibrary.Tag getTag() {
-            TldLibrary tldLib = getAssociatedTLDLibrary();
-            if(tldLib != null) {
-                return tldLib.getTags().get(getName());
+            LibraryDescriptor libraryDescriptor = getLibraryDescriptor();
+            if(libraryDescriptor != null) {
+                return libraryDescriptor.getTags().get(getName());
             } else {
                 return null;
             }

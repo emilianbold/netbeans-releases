@@ -49,11 +49,14 @@ import org.netbeans.modules.csl.api.DataLoadersBridge;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
+import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibraryDescriptor;
+import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibraryDescriptorCache;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrarySupport;
 import org.netbeans.modules.web.jsf.editor.index.JsfIndex;
+import org.netbeans.modules.web.jsf.editor.tld.LibraryDescriptor;
 import org.netbeans.modules.web.jsf.editor.tld.TldLibrariesCache;
 import org.netbeans.modules.web.jsf.editor.tld.TldLibrary;
-import org.netbeans.modules.web.jsf.editor.tld.TldLibraryException;
+import org.netbeans.modules.web.jsf.editor.tld.LibraryDescriptorException;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -101,6 +104,7 @@ public class JsfSupport {
 
     }
     private TldLibrariesCache tldLibrariesCache;
+    private FaceletsLibraryDescriptorCache faceletsDescriptorsCache;
     private FaceletsLibrarySupport faceletsLibrarySupport;
     private WebModule wm;
     private ClassPath classpath;
@@ -113,6 +117,7 @@ public class JsfSupport {
         this.classpath = ClassPath.getClassPath(wm.getDocumentBase(), ClassPath.COMPILE);
         //create classpath support
         this.tldLibrariesCache = new TldLibrariesCache(this);
+        this.faceletsDescriptorsCache = new FaceletsLibraryDescriptorCache(this);
 
         this.faceletsLibrarySupport = new FaceletsLibrarySupport(this);
         //register html extension
@@ -137,10 +142,27 @@ public class JsfSupport {
     public TldLibrary getTldLibrary(String namespace) {
         try {
             return tldLibrariesCache.getLibrary(namespace);
-        } catch (TldLibraryException e) {
+        } catch (LibraryDescriptorException e) {
             Exceptions.printStackTrace(e);
         }
         return null;
+    }
+
+    public FaceletsLibraryDescriptor getFaceletsLibraryDescriptor(String namespace) {
+        try {
+            return faceletsDescriptorsCache.getLibrary(namespace);
+        } catch (LibraryDescriptorException e) {
+            Exceptions.printStackTrace(e);
+        }
+        return null;
+    }
+
+    /** Returns a library descriptor for facelets library. If there is a .taglib.xml
+     *  file returns the data from it otherwise tries to find corresponding .tld file.
+     */
+    public LibraryDescriptor getLibraryDescriptor(String namespace) {
+        FaceletsLibraryDescriptor fld = getFaceletsLibraryDescriptor(namespace);
+        return fld != null ? fld : getTldLibrary(namespace);
     }
 
     /** Library's uri to library map */
