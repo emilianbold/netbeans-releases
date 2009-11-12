@@ -81,6 +81,7 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
         final DLightToolConfiguration toolConfiguration =
                 new DLightToolConfiguration(ID, toolName);
         toolConfiguration.setIcon("org/netbeans/modules/dlight/fops/resources/i_o_usage_16.png");//NOI18N
+        toolConfiguration.setDescription(getMessage("Tool.Description"));//NOI18N
         Column opColumn = new Column("operation", String.class, getMessage("Column.OpType"), null); // NOI18N
         Column fileColumn = new Column("file", String.class, getMessage("Column.Filename"), null); // NOI18N
         Column sizeColumn = new Column("size", Long.class, getMessage("Column.Size"), null); // NOI18N
@@ -149,6 +150,7 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
         indicatorConfiguration.addDetailDescriptors(
                 new DetailDescriptor(FILE_COUNT_ID, getMessage("Indicator.FileCount"), String.valueOf(0))); // NOI18N
         indicatorConfiguration.setActionDisplayName(getMessage("Indicator.Action")); // NOI18N
+        indicatorConfiguration.setActionTooltip(getMessage("Indicator.Action.Tooltip")); // NOI18N
         indicatorConfiguration.setLabelFormatter(new BytesFormatter());
 
         AdvancedTableViewVisualizerConfiguration tableConfiguration =

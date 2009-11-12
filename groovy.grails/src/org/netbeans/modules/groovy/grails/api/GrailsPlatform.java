@@ -56,7 +56,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -81,7 +80,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 
 /**
  * Class providing the access to basic Grails runtime routines.

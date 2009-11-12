@@ -181,7 +181,7 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
             PersistenceUnit pu[] = pudo.getPersistence().getPersistenceUnit();
             //only add if a PU exists, if there are more we do not know where to add - UI needed to ask
             if (pu.length == 1) {
-                pudo.addClass(pu[0], entityFQN);
+                pudo.addClass(pu[0], entityFQN, false);
             }
         }
     }

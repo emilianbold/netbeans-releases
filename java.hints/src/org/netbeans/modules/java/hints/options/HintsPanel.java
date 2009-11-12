@@ -45,13 +45,16 @@ import java.awt.Component;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.prefs.Preferences;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
 import javax.swing.JTree;
-import javax.swing.UIManager;
+import javax.swing.event.TreeModelListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeCellRenderer;
+import javax.swing.tree.TreeModel;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 import org.openide.filesystems.FileObject;
@@ -66,8 +69,9 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
     private DefaultTreeCellRenderer dr = new DefaultTreeCellRenderer();
     private JCheckBox renderer = new JCheckBox();
     private HintsPanelLogic logic;
-       
       
+    DefaultMutableTreeNode extraNode = new DefaultMutableTreeNode(NbBundle.getMessage(HintsPanel.class, "CTL_DepScanning")); //NOI18N
+
     HintsPanel() {        
         initComponents();
         
@@ -81,18 +85,11 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
         errorTree.setShowsRootHandles( true );
         errorTree.getSelectionModel().setSelectionMode( TreeSelectionModel.SINGLE_TREE_SELECTION );
         
-        DefaultComboBoxModel model = new DefaultComboBoxModel();
-        model.addElement( NbBundle.getMessage(HintsPanel.class, "CTL_AsError"));
-        model.addElement( NbBundle.getMessage(HintsPanel.class, "CTL_AsWarning"));
-        model.addElement( NbBundle.getMessage(HintsPanel.class, "CTL_WarningOnCurrentLine"));      
-        severityComboBox.setModel(model);
-        
         toProblemCheckBox.setVisible(false);
         
         update();
-          
-        errorTree.setModel( RulesManager.getInstance().getHintsTreeModel() );       
-        
+
+        errorTree.setModel(new ExtendedModel());
     }
     
     /** This method is called from within the constructor to
@@ -252,7 +249,7 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
             logic.disconnect();
         }
         logic = new HintsPanelLogic();
-        logic.connect(errorTree, severityComboBox, toProblemCheckBox, customizerPanel, descriptionTextArea);
+        logic.connect(errorTree, severityLabel, severityComboBox, toProblemCheckBox, customizerPanel, descriptionTextArea);
     }
     
     void cancel() {
@@ -294,6 +291,9 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
         }
         else {
             renderer.setText( value.toString() );
+            if (value == extraNode) {
+                renderer.setSelected(logic.getCurrentDependencyTracking() != DepScanningSettings.DependencyTracking.DISABLED);
+            }
         }
 
         return renderer;
@@ -334,7 +334,49 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
     private javax.swing.JPanel treePanel;
     // End of variables declaration//GEN-END:variables
 
+    class ExtendedModel implements TreeModel {
 
+        private DefaultTreeModel delegate = (DefaultTreeModel) RulesManager.getInstance().getHintsTreeModel();
 
+        public Object getRoot() {
+            return delegate.getRoot();
+        }
+
+        public Object getChild(Object parent, int index) {
+            return parent == getRoot() && index == delegate.getChildCount(parent) ? extraNode : delegate.getChild(parent, index);
+        }
+
+        public int getChildCount(Object parent) {
+            return parent == getRoot() ? delegate.getChildCount(parent) + 1 : delegate.getChildCount(parent);
+        }
+
+        public boolean isLeaf(Object node) {
+            return node == extraNode ? true : delegate.isLeaf(node);
+        }
+
+        public void valueForPathChanged(TreePath path, Object newValue) {
+            delegate.valueForPathChanged(path, newValue);
+        }
+
+        public int getIndexOfChild(Object parent, Object child) {
+            return child == extraNode ? delegate.getChildCount(parent) : delegate.getIndexOfChild(parent, child);
+        }
+
+        public void addTreeModelListener(TreeModelListener l) {
+            delegate.addTreeModelListener(l);
+        }
+
+        public void removeTreeModelListener(TreeModelListener l) {
+            delegate.removeTreeModelListener(l);
+        }
+
+        public void nodeChanged(TreeNode node) {
+            if (node == extraNode) {
+                delegate.nodeChanged((TreeNode)delegate.getRoot());
+            } else {
+                delegate.nodeChanged(node);
+            }
+        }
+    }
 }
 

@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.jar.Manifest;
@@ -298,9 +299,9 @@ public abstract class ServerCommand {
 
         private Manifest info;
 
-        public SetPropertyCommand(final String property, final String value) {
+        public SetPropertyCommand(final String property, final String value, String format) {
             super("set"); // NOI18N
-            query = "target=" + property + PARAM_SEPARATOR + "value=" + value; // NOI18N
+            query = MessageFormat.format(format, property,value); 
         }
 
         @Override

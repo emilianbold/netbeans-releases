@@ -44,8 +44,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.Collections;
 import junit.framework.Test;
 import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.cnd.remote.support.RemoteTestBase;
@@ -67,8 +66,6 @@ public abstract class AbstractSyncWorkerTestCase extends RemoteTestBase {
 
     public AbstractSyncWorkerTestCase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
-        Logger.getLogger("cnd.remote.logger").setLevel(Level.FINEST);
-        Logger.getLogger("nativeexecution.support.logger.level").setLevel(Level.FINEST);
     }
 
     @ForAllEnvironments
@@ -112,7 +109,8 @@ public abstract class AbstractSyncWorkerTestCase extends RemoteTestBase {
         System.err.printf("testUploadFile: %s to %s:%s\n", src.getAbsolutePath(), execEnv.getDisplayName(), dst);
         File privProjectStorageDir = createTempFile(src.getName() + "-nbproject-private-", "", true);
         BaseSyncWorker worker = createWorker(src, execEnv, out, err, privProjectStorageDir);
-        worker.synchronizeImpl(dst);
+        worker.startup(Collections.<String, String>emptyMap());
+        worker.shutdown();
         CommonTasksSupport.rmDir(execEnv, dst, true, err).get();
         removeDirectory(privProjectStorageDir);
     }

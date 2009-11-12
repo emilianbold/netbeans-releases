@@ -261,7 +261,12 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
 
                 Map<String, Object> params = new HashMap<String, Object>();
                 params.put(JavaRunner.PROP_PROJECT_NAME, config.getExecutionName());
-                params.put(JavaRunner.PROP_WORK_DIR, config.getExecutionDirectory());
+                String proppath = config.getProperties().getProperty("exec.workingdir"); //NOI18N
+                if (proppath != null) {
+                    params.put(JavaRunner.PROP_WORK_DIR, FileUtil.normalizeFile(new File(proppath)));
+                } else {
+                    params.put(JavaRunner.PROP_WORK_DIR, config.getExecutionDirectory());
+                }
                 if (RUN_MAIN.equals(actionName) ||
                     DEBUG_MAIN.equals(actionName)) {
                     FileObject selected = config.getSelectedFileObject();
@@ -434,8 +439,8 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                 params.put(JavaRunner.PROP_WORK_DIR, dir);
                 jvmProps.add("-Dbasedir=\"" + dir + "\""); //NOI18N
             } else {
-                params.put(JavaRunner.PROP_WORK_DIR, config.getExecutionDirectory());
-                jvmProps.add("-Dbasedir=\"" + config.getExecutionDirectory().getAbsolutePath()+ "\""); //NOI18N
+                    params.put(JavaRunner.PROP_WORK_DIR, config.getExecutionDirectory());
+                    jvmProps.add("-Dbasedir=\"" + config.getExecutionDirectory().getAbsolutePath()+ "\""); //NOI18N
             }
             //add properties defined in surefire plugin
             Properties sysProps = PluginPropertyUtils.getPluginPropertyParameter(config.getMavenProject(), Constants.GROUP_APACHE_PLUGINS,
@@ -505,7 +510,11 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                     File root = FileUtilities.resolveFilePath(base, add);
                     if (root != null) {
                         try {
-                            roots.add(root.toURI().toURL());
+                            URL url = root.toURI().toURL();
+                            if (FileUtil.isArchiveFile(url)) {
+                                url = FileUtil.getArchiveRoot(url);
+                            }
+                            roots.add(url);
                         } catch (MalformedURLException ex) {
                             Logger.getLogger(CosChecker.class.getName()).info("Cannot convert '" + add + "' to URL");
                         }

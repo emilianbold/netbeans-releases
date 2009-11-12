@@ -82,7 +82,6 @@ import org.netbeans.modules.dlight.threadmap.storage.ThreadInfoImpl;
 import org.netbeans.modules.dlight.threadmap.storage.ThreadStateImpl;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.Range;
-import org.openide.util.Exceptions;
 
 // TODO: review synchronization... oversynchronized.
 public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
@@ -135,80 +134,72 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
 
         final List<ThreadData> data = new ArrayList<ThreadData>();
         final HashMap<Integer, List<ThreadState>> lwpStates = new HashMap<Integer, List<ThreadState>>();
-        ResultSet rset = null;
 
         try {
+
             queryDataStatement.setLong(1, query.getTimeFrom());
             queryDataStatement.setLong(2, query.getTimeTo());
-            rset = queryDataStatement.executeQuery();
+            ResultSet rset = queryDataStatement.executeQuery();
+            try {
 
-            while (!rset.isLast()) {
-                rset.next();
-                if (rset.getRow() == 0) {
-                    break;
+                while (rset.next()) {
+                    int threadID = rset.getInt(MSASQLTables.lwps.LWP_ID.getColumnName());
+
+                    final ThreadInfo lwpInfo;
+                    final List<ThreadState> states;
+
+                    if (ti.containsKey(threadID)) {
+                        lwpInfo = ti.get(threadID);
+                    } else {
+                        lwpInfo = getLWPInfo(threadID);
+                        ti.put(threadID, lwpInfo);
+                    }
+
+                    if (lwpStates.containsKey(threadID)) {
+                        states = lwpStates.get(threadID);
+                    } else {
+                        states = new ArrayList<ThreadState>();
+                        lwpStates.put(threadID, states);
+                        data.add(new ThreadData() {
+
+                            public ThreadInfo getThreadInfo() {
+                                return lwpInfo;
+                            }
+
+                            public List<ThreadState> getThreadState() {
+                                return states;
+                            }
+                        });
+                    }
+
+                    long ts = rset.getLong(MSASQLTables.msa.TIMESTAMP.getColumnName());
+                    long sample = rset.getLong(MSASQLTables.msa.SAMPLE.getColumnName());
+
+                    long[] stateValues = new long[13];
+                    stateValues[0] = 1; // ???
+                    stateValues[1] = 0;
+                    stateValues[2] = 0;
+                    stateValues[3] = rset.getLong(MSASQLTables.msa.LWP_MSA_USR.getColumnName());
+                    stateValues[4] = rset.getLong(MSASQLTables.msa.LWP_MSA_SYS.getColumnName());
+                    stateValues[5] = rset.getLong(MSASQLTables.msa.LWP_MSA_TRP.getColumnName());
+                    stateValues[6] = rset.getLong(MSASQLTables.msa.LWP_MSA_TFL.getColumnName());
+                    stateValues[7] = rset.getLong(MSASQLTables.msa.LWP_MSA_DFL.getColumnName());
+                    stateValues[8] = rset.getLong(MSASQLTables.msa.LWP_MSA_KFL.getColumnName());
+                    stateValues[9] = rset.getLong(MSASQLTables.msa.LWP_MSA_LAT.getColumnName());
+                    stateValues[10] = rset.getLong(MSASQLTables.msa.LWP_MSA_STP.getColumnName());
+                    stateValues[11] = rset.getLong(MSASQLTables.msa.LWP_MSA_LCK.getColumnName());
+                    stateValues[12] = rset.getLong(MSASQLTables.msa.LWP_MSA_SLP.getColumnName());
+
+                    ThreadState threadState = new ThreadStateImpl(ts, sample, stateValues);
+                    states.add(threadState);
                 }
 
-                int threadID = rset.getInt(MSASQLTables.lwps.LWP_ID.getColumnName());
-
-                final ThreadInfo lwpInfo;
-                final List<ThreadState> states;
-
-                if (ti.containsKey(threadID)) {
-                    lwpInfo = ti.get(threadID);
-                } else {
-                    lwpInfo = getLWPInfo(threadID);
-                    ti.put(threadID, lwpInfo);
-                }
-
-                if (lwpStates.containsKey(threadID)) {
-                    states = lwpStates.get(threadID);
-                } else {
-                    states = new ArrayList<ThreadState>();
-                    lwpStates.put(threadID, states);
-                    data.add(new ThreadData() {
-
-                        public ThreadInfo getThreadInfo() {
-                            return lwpInfo;
-                        }
-
-                        public List<ThreadState> getThreadState() {
-                            return states;
-                        }
-                    });
-                }
-
-                long ts = rset.getLong(MSASQLTables.msa.TIMESTAMP.getColumnName());
-                long sample = rset.getLong(MSASQLTables.msa.SAMPLE.getColumnName());
-
-                long[] stateValues = new long[13];
-                stateValues[0] = 1; // ???
-                stateValues[1] = 0;
-                stateValues[2] = 0;
-                stateValues[3] = rset.getLong(MSASQLTables.msa.LWP_MSA_USR.getColumnName());
-                stateValues[4] = rset.getLong(MSASQLTables.msa.LWP_MSA_SYS.getColumnName());
-                stateValues[5] = rset.getLong(MSASQLTables.msa.LWP_MSA_TRP.getColumnName());
-                stateValues[6] = rset.getLong(MSASQLTables.msa.LWP_MSA_TFL.getColumnName());
-                stateValues[7] = rset.getLong(MSASQLTables.msa.LWP_MSA_DFL.getColumnName());
-                stateValues[8] = rset.getLong(MSASQLTables.msa.LWP_MSA_KFL.getColumnName());
-                stateValues[9] = rset.getLong(MSASQLTables.msa.LWP_MSA_LAT.getColumnName());
-                stateValues[10] = rset.getLong(MSASQLTables.msa.LWP_MSA_STP.getColumnName());
-                stateValues[11] = rset.getLong(MSASQLTables.msa.LWP_MSA_LCK.getColumnName());
-                stateValues[12] = rset.getLong(MSASQLTables.msa.LWP_MSA_SLP.getColumnName());
-
-                ThreadState threadState = new ThreadStateImpl(ts, sample, stateValues);
-                states.add(threadState);
+            } finally {
+                rset.close();
             }
+
         } catch (SQLException ex) {
-            if (log.isLoggable(Level.FINE)) {
-                log.fine("SQLException: " + ex.getMessage()); // NOI18N
-            }
-        } finally {
-            if (rset != null) {
-                try {
-                    rset.close();
-                } catch (SQLException ex) {
-                }
-            }
+            log.log(Level.SEVERE, null, ex);
         }
 
         ThreadMapData tmd = new ThreadMapData() {
@@ -258,9 +249,7 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
             try {
                 queryDataStatement = sqlStorage.prepareStatement(query);
             } catch (SQLException ex) {
-                if (log.isLoggable(Level.FINE)) {
-                    log.fine("SQLException: " + ex.getMessage()); // NOI18N
-                }
+                log.log(Level.SEVERE, null, ex);
             }
 
             query = String.format("select %s, sum(%s), sum(%s), sum(%s), sum(%s), sum(%s), sum(%s), sum(%s), sum(%s), sum(%s), sum(%s) from %s where %s >= ? and %s < ? group by %s", // NOI18N
@@ -282,9 +271,7 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
             try {
                 querySummaryStatement = sqlStorage.prepareStatement(query);
             } catch (SQLException ex) {
-                if (log.isLoggable(Level.FINE)) {
-                    log.fine("SQLException: " + ex.getMessage()); // NOI18N
-                }
+                log.log(Level.SEVERE, null, ex);
             }
 
             query = String.format("select %s from %s where %s = ?", // NOI18N
@@ -295,11 +282,8 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
             try {
                 queryLWPInfo = sqlStorage.prepareStatement(query);
             } catch (SQLException ex) {
-                if (log.isLoggable(Level.FINE)) {
-                    log.fine("SQLException: " + ex.getMessage()); // NOI18N
-                }
+                log.log(Level.SEVERE, null, ex);
             }
-
 
             ti.clear();
         }
@@ -310,28 +294,23 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
 
     private synchronized ThreadInfo getLWPInfo(int lwpID) {
         ThreadInfo lwpInfo = null;
-        ResultSet rset = null;
 
         try {
             queryLWPInfo.setInt(1, lwpID);
-            rset = queryLWPInfo.executeQuery();
+            ResultSet rset = queryLWPInfo.executeQuery();
+            try {
 
-            if (rset.next()) {
-                long startts = rset.getLong(1);
-                lwpInfo = new ThreadInfoImpl(lwpID, "Thread " + lwpID, startts); // NOI18N
+                if (rset.next()) {
+                    long startts = rset.getLong(1);
+                    lwpInfo = new ThreadInfoImpl(lwpID, "Thread " + lwpID, startts); // NOI18N
+                }
+
+            } finally {
+                rset.close();
             }
 
         } catch (SQLException ex) {
-            if (log.isLoggable(Level.FINE)) {
-                log.fine("SQLException: " + ex.getMessage()); // NOI18N
-            }
-        } finally {
-            if (rset != null) {
-                try {
-                    rset.close();
-                } catch (SQLException ex) {
-                }
-            }
+            log.log(Level.SEVERE, null, ex);
         }
 
         return lwpInfo;
@@ -359,69 +338,64 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
 
         // TODO: for now take the first one...
         Range<Long> interval = intervals.iterator().next().getInterval();
-        ResultSet rset = null;
+
         try {
             querySummaryStatement.setLong(1, interval.getStart());
             querySummaryStatement.setLong(2, interval.getEnd());
 
-            rset = querySummaryStatement.executeQuery();
+            ResultSet rset = querySummaryStatement.executeQuery();
+            try {
 
-            while (!rset.isLast()) {
-                rset.next();
-                if (rset.getRow() == 0) {
-                    break;
+                while (rset.next()) {
+                    int threadID = rset.getInt(MSASQLTables.lwps.LWP_ID.getColumnName());
+
+                    final ThreadInfo lwpInfo = getLWPInfo(threadID);
+                    if (lwpInfo == null) {
+                        continue;
+                    }
+                    final List<StateDuration> states = new ArrayList<StateDuration>();
+
+                    for (int colNum = 2; colNum < 12; colNum++) {
+                        final long stateDuration = rset.getLong(colNum);
+                        if (stateDuration > 0) {
+                            final MSAState state = MSAState.fromCode(colNum - 2, query.isFullState());
+                            states.add(new StateDuration() {
+
+                                public MSAState getState() {
+                                    return state;
+                                }
+
+                                public long getDuration() {
+                                    return stateDuration;
+                                }
+
+                                @Override
+                                public String toString() {
+                                    return String.format("%s: %dns", state.toString(), stateDuration); // NOI18N
+                                }
+                            });
+                        }
+                    }
+
+                    result.add(new ThreadSummaryData() {
+
+                        public ThreadInfo getThreadInfo() {
+                            return lwpInfo;
+                        }
+
+                        public List<StateDuration> getThreadSummary() {
+                            return states;
+                        }
+                    });
                 }
 
-                int threadID = rset.getInt(MSASQLTables.lwps.LWP_ID.getColumnName());
-
-                final ThreadInfo lwpInfo = getLWPInfo(threadID);
-                final List<StateDuration> states = new ArrayList<StateDuration>();
-
-                for (int colNum = 2; colNum < 12; colNum++) {
-                    final long stateDuration = rset.getLong(colNum);
-                    if (stateDuration > 0) {
-                        final MSAState state = MSAState.fromCode(colNum - 2, query.isFullState());
-                        states.add(new StateDuration() {
-
-                            public MSAState getState() {
-                                return state;
-                            }
-
-                            public long getDuration() {
-                                return stateDuration;
-                            }
-
-                            @Override
-                            public String toString() {
-                                return String.format("%s: %dns", state.toString(), stateDuration); // NOI18N
-                            }
-                        });
-                    }
-                }
-
-                result.add(new ThreadSummaryData() {
-
-                    public ThreadInfo getThreadInfo() {
-                        return lwpInfo;
-                    }
-
-                    public List<StateDuration> getThreadSummary() {
-                        return states;
-                    }
-                });
+            } finally {
+                rset.close();
             }
 
         } catch (SQLException ex) {
-            Exceptions.printStackTrace(ex);
-        } finally {
-            if (rset != null) {
-                try {
-                    rset.close();
-                } catch (SQLException ex) {
-                }
-            }
+            log.log(Level.SEVERE, null, ex);
         }
-
 
         return new ThreadMapSummaryData() {
 

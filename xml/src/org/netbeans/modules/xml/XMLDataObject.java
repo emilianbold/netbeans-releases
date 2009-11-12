@@ -84,7 +84,7 @@ public final class XMLDataObject extends org.openide.loaders.XMLDataObject
      * @param loader loader of this data object
      */
     public XMLDataObject (final FileObject fo, MultiFileLoader loader) throws DataObjectExistsException {
-        super (fo, loader);
+        super (fo, loader, false);
         
         CookieSet set = getCookieSet();
         set.add (cookieManager = new DataObjectCookieManager (this, set));

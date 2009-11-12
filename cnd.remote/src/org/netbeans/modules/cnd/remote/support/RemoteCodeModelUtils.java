@@ -49,7 +49,6 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
@@ -59,10 +58,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 public class RemoteCodeModelUtils {
 
     public static void scheduleReparse(ExecutionEnvironment execEnv) {
-        CndFileUtils.clearFileExistenceCache();
-        for (CsmProject csmProject : getCsmProjects(execEnv)) {
-            csmProject.scheduleReparse();
-        }
+        CsmModelAccessor.getModel().scheduleReparse(getCsmProjects(execEnv));
     }
 
     private static Collection<CsmProject> getCsmProjects(ExecutionEnvironment execEnv) {

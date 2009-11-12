@@ -90,6 +90,8 @@ public class ModuleNodeTest extends NbTestCase {
         LogicalViewProvider lvp = earProject.getLookup().lookup(LogicalViewProvider.class);
         assertNotNull("have a LogicalViewProvider", lvp);
         Node root = lvp.createLogicalView();
+        // force nodes initialization:
+        root.getChildren().getNodes(true);
         LogicalViewNode j2eeModules = (LogicalViewNode) root.getChildren().findChild(LogicalViewNode.J2EE_MODULES_NAME);
         assertSame("have ejb module's node", 1, j2eeModules.getChildren().getNodes(true).length);
         
@@ -116,6 +118,8 @@ public class ModuleNodeTest extends NbTestCase {
         LogicalViewProvider lvp = earProject.getLookup().lookup(LogicalViewProvider.class);
         assertNotNull("have a LogicalViewProvider", lvp);
         Node root = lvp.createLogicalView();
+        // force nodes initialization:
+        root.getChildren().getNodes(true);
         LogicalViewNode j2eeModules = (LogicalViewNode) root.getChildren().findChild(LogicalViewNode.J2EE_MODULES_NAME);
         assertSame("have ejb module's node", 1, j2eeModules.getChildren().getNodes(true).length);
         

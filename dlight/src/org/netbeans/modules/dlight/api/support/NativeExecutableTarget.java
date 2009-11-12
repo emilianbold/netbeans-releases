@@ -47,6 +47,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Logger;
@@ -90,7 +91,7 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
     private volatile Future<Integer> targetFutureResult;
     private volatile int pid = -1;
     private volatile Integer status = null;
-    private final Object stateLock = new String(NativeExecutableTarget.class.getName() + " - state lock"); // NOI18N
+    private final StateLock stateLock = new StateLock();
     private volatile State state;
     private LineConvertorFactory outConvertorFactory;
     private LineConvertorFactory errConvertorFactory;
@@ -120,8 +121,8 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
         this.templateCMD = this.cmd;
         Map<String, String> info = configuration.getInfo();
 
-        for (String name : info.keySet()) {
-            putToInfo(name, info.get(name));
+        for (Entry<String, String> entry : info.entrySet()) {
+            putToInfo(entry.getKey(), entry.getValue());
         }
 
         this.templateArgs = args.clone();
@@ -281,7 +282,7 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
                 }
 
                 if (errConvertorFactory != null) {
-                    descr = descr.outConvertorFactory(errConvertorFactory);
+                    descr = descr.errConvertorFactory(errConvertorFactory);
                 }
             }
 
@@ -347,5 +348,8 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
         public synchronized void terminate(NativeExecutableTarget target) {
             target.terminate();
         }
+    }
+
+    private final static class StateLock {
     }
 }

@@ -70,6 +70,7 @@ import org.netbeans.modules.glassfish.spi.RecognizerCookie;
 import org.netbeans.modules.glassfish.spi.ResourceDesc;
 import org.netbeans.modules.glassfish.spi.ServerCommand;
 import org.netbeans.modules.glassfish.spi.ServerCommand.GetPropertyCommand;
+import org.netbeans.modules.glassfish.spi.CommandFactory;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -364,7 +365,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
 
     public Future<OperationState> deploy(final OperationStateListener stateListener,
             final File application, final String name, final String contextRoot, Map properties) {
-        CommandRunner mgr = new CommandRunner(getInstanceProperties(), stateListener);
+        CommandRunner mgr = new CommandRunner(getCommandFactory(), getInstanceProperties(), stateListener);
         
         return mgr.deploy(application, name, contextRoot, properties);
     }
@@ -376,22 +377,22 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
         
     public Future<OperationState> redeploy(final OperationStateListener stateListener, 
             final String name, final String contextRoot) {
-        CommandRunner mgr = new CommandRunner(getInstanceProperties(), stateListener);
+        CommandRunner mgr = new CommandRunner(getCommandFactory(), getInstanceProperties(), stateListener);
         return mgr.redeploy(name, contextRoot);
     }
 
     public Future<OperationState> undeploy(final OperationStateListener stateListener, final String name) {
-        CommandRunner mgr = new CommandRunner(getInstanceProperties(), stateListener);
+        CommandRunner mgr = new CommandRunner(getCommandFactory(), getInstanceProperties(), stateListener);
         return mgr.undeploy(name);
     }
     
     public Future<OperationState> execute(ServerCommand command) {
-        CommandRunner mgr = new CommandRunner(getInstanceProperties());
+        CommandRunner mgr = new CommandRunner(getCommandFactory(), getInstanceProperties());
         return mgr.execute(command);
     }
     
     public AppDesc [] getModuleList(String container) {
-        CommandRunner mgr = new CommandRunner(getInstanceProperties());
+        CommandRunner mgr = new CommandRunner(getCommandFactory(), getInstanceProperties());
         int total = 0;
         Map<String, List<AppDesc>> appMap = mgr.getApplications(container);
         Collection<List<AppDesc>> appLists = appMap.values();
@@ -409,7 +410,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
     }
 
     public Map<String, ResourceDesc> getResourcesMap(String type) {
-        CommandRunner mgr = new CommandRunner(getInstanceProperties());
+        CommandRunner mgr = new CommandRunner(getCommandFactory(), getInstanceProperties());
         Map<String, ResourceDesc> resourcesMap = new HashMap<String, ResourceDesc>();
         List<ResourceDesc> resourcesList = mgr.getResources(type);
         for (ResourceDesc resource : resourcesList) {
@@ -645,6 +646,10 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
 
     void disableStop() {
         stopDisabled = true;
+    }
+
+    public CommandFactory getCommandFactory() {
+        return instanceProvider.getCommandFactory();
     }
 
     class StartOperationStateListener implements OperationStateListener {

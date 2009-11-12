@@ -65,6 +65,10 @@ public enum ConfigVersion {
             }
             return false;
         }
+        @Override
+        public boolean isVisible() {
+            return false;
+        }
     };
 
     @Override
@@ -77,4 +81,8 @@ public enum ConfigVersion {
     }
 
     public abstract boolean isSupported(WSStackVersion jaxWsVersion);
+
+    public boolean isVisible() {
+        return true;
+    }
 }

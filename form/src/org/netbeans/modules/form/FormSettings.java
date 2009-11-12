@@ -42,6 +42,7 @@
 package org.netbeans.modules.form;
 
 import java.util.*;
+import javax.swing.UIManager;
 import org.netbeans.modules.form.project.ClassPathUtils;
 
 /**
@@ -169,7 +170,8 @@ public class FormSettings {
         if (layoutCodeTarget == JavaCodeGenerator.LAYOUT_CODE_AUTO) {
             int globalLCT = FormLoaderSettings.getInstance().getLayoutCodeTarget();
             if (globalLCT == JavaCodeGenerator.LAYOUT_CODE_AUTO) {
-                layoutCodeTarget = ClassPathUtils.isJava6ProjectPlatform(
+                boolean isAquaLookAndFeel = "Aqua".equals(UIManager.getLookAndFeel().getID()); // NOI18N
+                layoutCodeTarget = !isAquaLookAndFeel && ClassPathUtils.isJava6ProjectPlatform(
                         FormEditor.getFormDataObject(formModel).getPrimaryFile()) ?
                     JavaCodeGenerator.LAYOUT_CODE_JDK6 : JavaCodeGenerator.LAYOUT_CODE_LIBRARY;
             }

@@ -47,7 +47,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CancellationException;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetUtils;
 import org.netbeans.modules.cnd.debugger.gdb.actions.AttachTableColumn;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
@@ -89,9 +89,9 @@ final class ProcessList {
                 if (exEnv.isRemote()) {
                     throw new IllegalStateException("Remote windows machines are not supported yet"); // NOI18N
                 }
-                File file = new File(CompilerSetManager.getCygwinBase() + "/bin", "ps.exe"); // NOI18N
+                File file = new File(CompilerSetUtils.getCygwinBase() + "/bin", "ps.exe"); // NOI18N
                 if (!file.exists()) {
-                    file = new File(CompilerSetManager.getMSysBase() + "/bin", "ps.exe"); // NOI18N
+                    file = new File(CompilerSetUtils.getMSysBase() + "/bin", "ps.exe"); // NOI18N
                 }
                 if (file.exists()) {
                     exec = file.getAbsolutePath();
@@ -108,7 +108,14 @@ final class ProcessList {
                     ptype = PTYPE.NONE;
                 }
                 if (exec.length() > 0) {
-                    argsSimple.add("-a"); // NOI18N
+                    String user = exEnv.getUser();
+                    // Request only user's processes (see IZ 176371)
+                    if (user != null && user.length() > 0) {
+                        argsSimple.add("-u"); // NOI18N
+                        argsSimple.add(user);
+                    } else {
+                        argsSimple.add("-a"); // NOI18N
+                    }
                     argsSimple.add("-o"); // NOI18N
                     // Used only localy, so we can use Utilities.getOperatingSystem()
                     if (hostInfo.getOSFamily() == HostInfo.OSFamily.MACOSX) {

@@ -102,7 +102,7 @@ public class NewWebServiceWizardIterator implements TemplateWizard.Iterator /*, 
         params[0] = creatorClassName.contains("jaxrpc") ? LogUtils.WS_STACK_JAXRPC : LogUtils.WS_STACK_JAXWS; //NOI18N
         params[1] = project.getClass().getName();
         J2eeModule j2eeModule = JaxWsUtils.getJ2eeModule(project);
-        params[2] = j2eeModule == null ? null : j2eeModule.getModuleVersion(); //NOI18N
+        params[2] = j2eeModule == null ? "J2SE" : j2eeModule.getModuleVersion()+"("+JaxWsUtils.getModuleType(project)+")"; //NOI18N
         int serviceType = ((Integer) wiz.getProperty(WizardProperties.WEB_SERVICE_TYPE)).intValue();
         params[3] = serviceType == WizardProperties.FROM_SCRATCH ? "WS FROM JAVA": "WS FROM EJB"; //NOI18N
         params[4] = (Boolean)wiz.getProperty(WizardProperties.IS_STATELESS_BEAN) ? "STATELESS EJB" : "SERVLET"; //NOI18N

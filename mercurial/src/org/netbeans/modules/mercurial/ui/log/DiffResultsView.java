@@ -42,7 +42,6 @@ package org.netbeans.modules.mercurial.ui.log;
 
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
-import org.openide.util.Cancellable;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
 import org.openide.ErrorManager;
@@ -218,6 +217,13 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
         return new ShowDiffTask(header, revision1, revision2, showLastDifference);
     }
 
+    /**
+     *
+     * @param header
+     * @param revision1 if null then parent revision will be used
+     * @param revision2
+     * @param showLastDifference
+     */
     protected void showDiff(RepositoryRevision.Event header, String revision1, String revision2, boolean showLastDifference) {
         synchronized(this) {
             cancelBackgroundTasks();
@@ -255,9 +261,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
     protected void showRevisionDiff(RepositoryRevision.Event rev, boolean showLastDifference) {
         if (rev.getFile() == null) return;
         long revision2 = Long.parseLong(rev.getLogInfoHeader().getLog().getRevision());
-        
-        String ancestor = rev.getLogInfoHeader().getLog().getAncestor();        
-        showDiff(rev, ancestor != null? ancestor: Long.toString(revision2 - 1), Long.toString(revision2), showLastDifference);
+        showDiff(rev, null, Long.toString(revision2), showLastDifference);
     }
 
     protected void showContainerDiff(RepositoryRevision container, boolean showLastDifference) {
@@ -345,7 +349,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
     private class ShowDiffTask extends HgProgressSupport {
         
         private final RepositoryRevision.Event header;
-        private final String revision1;
+        private String revision1;
         private final String revision2;
         private boolean showLastDifference;
 
@@ -358,6 +362,9 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
 
         public void perform () {
             showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_LoadingDiff")); //NOI18N
+            if (revision1 == null) {
+                revision1 = header.getLogInfoHeader().getLog().getAncestor(null);
+            }
             final DiffStreamSource s1 = new DiffStreamSource(header.getFile(), revision1, revision1);
             final DiffStreamSource s2 = new DiffStreamSource(header.getFile(), revision2, revision2);
 
@@ -387,9 +394,13 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
                         if (currentTask == ShowDiffTask.this) {
                             currentDiff = view;
                             setBottomComponent(currentDiff.getJComponent());
-                            if (currentDiff.getDifferenceCount() > 0) {
-                                currentDifferenceIndex = showLastDifference ? currentDiff.getDifferenceCount() - 1 : 0;
-                                currentDiff.setLocation(DiffController.DiffPane.Base, DiffController.LocationType.DifferenceIndex, currentDifferenceIndex);
+                            if (!setLocation(view)) {
+                                view.addPropertyChangeListener(new PropertyChangeListener() {
+                                    public void propertyChange(PropertyChangeEvent evt) {
+                                        view.removePropertyChangeListener(this);
+                                        setLocation(view);
+                                    }
+                                });
                             }
                             parent.refreshComponents(false);
                         }
@@ -398,6 +409,16 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
                     }
                 }
             });
+        }
+
+        private boolean setLocation (DiffController view) {
+            boolean locationSet = false;
+            if (view == currentDiff && view.getDifferenceCount() > 0) {
+                locationSet = true;
+                currentDifferenceIndex = showLastDifference ? view.getDifferenceCount() - 1 : 0;
+                view.setLocation(DiffController.DiffPane.Base, DiffController.LocationType.DifferenceIndex, currentDifferenceIndex);
+            }
+            return locationSet;
         }
     }
     

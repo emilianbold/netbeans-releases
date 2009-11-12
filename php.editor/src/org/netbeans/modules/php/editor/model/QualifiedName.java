@@ -58,7 +58,6 @@ import org.openide.util.Parameters;
  * @author Radek Matous
  */
 public class QualifiedName {
-
     private final QualifiedNameKind kind;
     private final LinkedList<String> segments;
 
@@ -78,25 +77,36 @@ public class QualifiedName {
     }
     public static Collection<QualifiedName> getAllNames(QualifiedName fullName, NamespaceScope contextNamespace) {
         Set<QualifiedName> namesProposals = new HashSet<QualifiedName>();
-        namesProposals.addAll(getRelativeNames(fullName, contextNamespace));
+        namesProposals.addAll(getRelatives(contextNamespace, fullName));
         namesProposals.add(fullName.toFullyQualified());
         return namesProposals;
     }
-    public static Collection<QualifiedName> getRelativeNames(QualifiedName fullName, NamespaceScope contextNamespace) {
+    public static Collection<QualifiedName> getRelativesToUses(NamespaceScope contextNamespace, QualifiedName fullName) {
+        Set<QualifiedName> namesProposals = new HashSet<QualifiedName>();
         Collection<? extends UseElement> declaredUses = contextNamespace.getDeclaredUses();
+        for (UseElement useElement : declaredUses) {
+            QualifiedName proposedName = QualifiedName.getSuffix(fullName, QualifiedName.create(useElement.getName()), true);
+            if (proposedName != null) {
+                namesProposals.add(proposedName);
+            }
+        }
+        return namesProposals;
+    }
+    public static Collection<QualifiedName> getRelativesToNamespace( NamespaceScope contextNamespace, QualifiedName fullName) {
         Set<QualifiedName> namesProposals = new HashSet<QualifiedName>();
         QualifiedName proposedName = QualifiedName.getSuffix(fullName, QualifiedName.create(contextNamespace), false);
         if (proposedName != null) {
             namesProposals.add(proposedName);
         }
-        for (UseElement useElement : declaredUses) {
-            proposedName = QualifiedName.getSuffix(fullName, QualifiedName.create(useElement.getName()), true);
-            if (proposedName != null) {
-                namesProposals.add(proposedName);
-            }
-        }        
         return namesProposals;
     }
+    public static Collection<QualifiedName> getRelatives( NamespaceScope contextNamespace, QualifiedName fullName) {
+        Set<QualifiedName> namesProposals = new HashSet<QualifiedName>();
+        namesProposals.addAll(getRelativesToNamespace(contextNamespace, fullName));
+        namesProposals.addAll(getRelativesToUses(contextNamespace, fullName));
+        return namesProposals;
+    }
+
     public static Collection<QualifiedName> getComposedNames(QualifiedName name, NamespaceScope contextNamespace) {
         Collection<? extends UseElement> declaredUses = contextNamespace.getDeclaredUses();
         Set<QualifiedName> namesProposals = new HashSet<QualifiedName>();
@@ -126,7 +136,10 @@ public class QualifiedName {
      * @return suffix name or null
      */
     public static QualifiedName getSuffix(QualifiedName fullName, final QualifiedName prefix, boolean isOverlapingRequired) {
-        return getRemainingName(fullName, prefix, false, isOverlapingRequired);
+        if (fullName.segments.size() >= prefix.segments.size()) {
+            return getRemainingName(fullName, prefix, false, isOverlapingRequired);
+        }
+        return null;
     }
 
     private static QualifiedName getRemainingName(QualifiedName fullName, final QualifiedName fragmentName, boolean prefixRequired, boolean isOverlapingRequired) {

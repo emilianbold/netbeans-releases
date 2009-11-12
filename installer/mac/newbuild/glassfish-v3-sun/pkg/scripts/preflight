@@ -26,3 +26,8 @@ fi
 if [ -d "/Library/Receipts/glassfish-v3-sun.pkg" ] ; then
     rm -rf "/Library/Receipts/glassfish-v3-sun.pkg"
 fi
+
+if [ -d "/private/var/db/receipts" ] ; then
+    rm -rf "/private/var/db/receipts/glassfish-v3-sun.plist"
+    rm -rf "/private/var/db/receipts/glassfish-v3-sun.bom"
+fi

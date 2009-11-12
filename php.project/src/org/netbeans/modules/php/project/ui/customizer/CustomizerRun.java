@@ -224,7 +224,6 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
                         .addPreferredGap(LayoutStyle.RELATED)
                         .add(configDel)))
                 .add(0, 0, 0))
-        
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(GroupLayout.LEADING)
@@ -239,7 +238,6 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
                 .addPreferredGap(LayoutStyle.UNRELATED)
                 .add(runPanel, GroupLayout.DEFAULT_SIZE, 197, Short.MAX_VALUE)
                 .addContainerGap())
-        
         );
 
         configLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.configLabel.AccessibleContext.accessibleName")); // NOI18N

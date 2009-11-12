@@ -85,13 +85,21 @@ public class Zipper {
 
     public void add(File srcDir, FileFilter filter, String base) throws IOException {
         // Create a buffer for reading the files
-        File[] srcFiles = srcDir.listFiles(filter);
         byte[] readBuf = new byte[1024*32];
-        // Compress the files
-        for (File file : srcFiles) {
-            addImpl(file, readBuf, base, filter);
+        if (srcDir.isDirectory()) {
+            File[] srcFiles = srcDir.listFiles(filter);
+            // Compress the files
+            for (File file : srcFiles) {
+                addImpl(file, readBuf, base, filter);
+            }
+        } else {
+            addImpl(srcDir, readBuf, base, filter);
         }
     }
+
+//    private void addImpl(File file, byte[] readBuf, String base, FileFilter filter) throws IOException, FileNotFoundException {
+//
+//    }
 
     public void close() throws IOException {
         if (zipOutputStream != null) { // Not thread safe!

@@ -1,0 +1,44 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html lang="en-US">
+
+<head>
+<!-- GenHTML revision 22989-->
+
+  <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+  <title>Running EventFacility Sample Web Application - Java Card 3 Development
+  </title>
+
+</head>
+
+<body class="body">
+
+
+
+<a name="RunningEventFacilitySampleWebApp"></a><h2>Running <tt>EventFacility</tt> Sample Web Application</h2><p class="p">The <tt>EventFacility</tt> sample demonstrates an Event facility containing two servlets, in which the first
+servlet registers a listener for events fired by another application. This sample contains
+two web applications that demonstrate the event mechanism. </p><p class="p">Running the <tt>EventFacility</tt> sample consists of using the using the IDE to open
+the <tt>EventListener</tt> and the <tt>EventSender</tt> projects, starting both the <tt>EventListener</tt> and <tt>EventSender</tt> applications, entering
+data in the Event Sender web page, clicking the Fire Event button on
+the page, and then using a hyperlink on the Event Listener page to
+display a list of received events.</p><h2>Before You Begin</h2><p class="p">Before performing the following procedure, the Java Card 3 Development Kit, Connected Editon
+must be downloaded and installed on your development system. </p><p class="p">The <tt>EventListener</tt> and the <tt>EventSender</tt> projects are located under the <b>JC_CONNECTED_HOME</b><tt>\samples\web\EventFacility</tt> folder.</p>
+<hr><p class="p"><b>Note - </b>Refer to the <i>Java Card 3 Platform Development Kit User&#8217;s Guide</i> for additional details including screen captures.</p>
+<hr>
+<ol class="ol">
+<li class="li"><b>Click File &#62; Open Project in the main window.</b></li>
+<li class="li"><b>Go to the <b>JC_CONNECTED_HOME</b><tt>\samples\web\EventFacility </tt>folder and open the <tt>EventListener</tt> and the <tt>EventSender</tt> projects.</b></li>
+<li class="li"><b>Select the EventListener project and click the run button in the main window.
+</b><p class="p">The IDE compiles, builds, and runs the <tt>SIOservice</tt> application. When the application runs,
+the IDE launches the default browser and displays a web page containing a
+hyperlink to the List of Received Events.</p></li>
+<li class="li"><b>Select the <tt>EventSender</tt> project and click the run button in the main window.</b><p class="p">The IDE compiles, builds, and runs the <tt>SIOservice</tt> application. When the application runs,
+the IDE launches the default browser and displays the Event Sender form.</p></li>
+<li class="li"><b>Enter some text in the Data field and click the Fire event button.</b><p class="p">The browser displays a page with the new text.</p></li>
+<li class="li"><b>In the Event Facility Listener page, click the List of Received Events hyperlink.</b><p class="p">The application displays a list of events fired by the custom event servlet.</p></li>
+<li class="li"><a name="z40000081424300"></a><b>Close the browser to stop the application.</b></li></ol>
+
+
+</body>
+</html>

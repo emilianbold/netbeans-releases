@@ -40,42 +40,9 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
 
-    <!-- [PENDING] Eventually it may be a good idea to just kill BookmarksAction and simply place Bookmarks/ -->
-    <!-- folder underneath Menu/Help/ and use SFS icons and so on to make it look pretty... -->
-    <!-- (Or make Menu/Help/Bookmarks.shadow a symlink to Bookmarks; this works now.) -->
-    <!-- Easy to do; note URLDataObject presenter currently uses OpenCookie vs. URLNodeCookie, could be changed. -->
-
-    <!--    <folder name="Bookmarks">
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
-        <attr name="helpID" stringvalue="org.netbeans.modules.url.BookmarksNode"/>
-
-
-        <file name="java-web-site.url" url="nbresloc:/org/netbeans/modules/utilities/java-web-site.url">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
-        </file>
-        <file name="apis-online.url" url="nbresloc:/org/netbeans/modules/utilities/apis-online.url">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
-        </file>
-        <file name="swing.url" url="nbresloc:/org/netbeans/modules/utilities/swing.url">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
-        </file>
-        <file name="netbeans-faq.url" url="nbresloc:/org/netbeans/modules/utilities/netbeans-faq.url">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
-        </file>
-        <file name="ffj-kb.url" url="nbresloc:/org/netbeans/modules/utilities/ffj-kb.url">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
-        </file>
-
-        <attr name="netbeans-faq.url/ffj-kb.url" boolvalue="true"/>
-        <attr name="ffj-kb.url/apis-online.url" boolvalue="true"/>
-        <attr name="apis-online.url/java-web-site.url" boolvalue="true"/>
-        <attr name="java-web-site.url/swing.url" boolvalue="true"/>
-
-    </folder> --><!-- Bookmarks -->
-    
     <folder name="Loaders">
         <folder name="text">
             <folder name="url">
@@ -289,11 +256,11 @@ made subject to such option by the copyright holder.
         </folder> <!-- Window -->
 
         <folder name="Help">
-            <file name="netbeans-kb.url" url="nbresloc:/org/netbeans/modules/utilities/netbeans-kb.url">
+            <file name="netbeans-kb.url" url="netbeans-kb.url">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
                 <attr name="position" intvalue="300"/>
             </file>         
-            <file name="shortcuts.xml" url="nbresloc:/org/netbeans/modules/utilities/shortcuts.xml">
+            <file name="shortcuts.xml" url="shortcuts.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
                 <attr name="position" intvalue="400"/>
             </file>
@@ -321,7 +288,7 @@ made subject to such option by the copyright holder.
         <folder name="entities">
             <folder name="NetBeans">
                 <!-- public ID for pdf link xml -->
-                <file name="DTD_PDF_Document_Menu_Link_1_0" url="nbres:/org/netbeans/modules/pdf/pdf_link.dtd"/>
+                <file name="DTD_PDF_Document_Menu_Link_1_0" url="../pdf/pdf_link.dtd"/>
             </folder> <!-- NetBeans -->
         </folder> <!-- entities -->
 

@@ -54,11 +54,9 @@ import java.io.PrintWriter;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.*;
-import org.netbeans.modules.javacard.Utils;
-import org.netbeans.modules.javacard.api.ProjectKind;
+import org.netbeans.modules.javacard.common.Utils;
 import org.netbeans.modules.javacard.constants.FileWizardConstants;
-import org.netbeans.modules.javacard.constants.JCConstants;
-import org.netbeans.modules.javacard.constants.ProjectPropertyNames;
+import org.netbeans.modules.javacard.common.JCConstants;
 import org.netbeans.modules.javacard.project.JCProject;
 import org.netbeans.modules.javacard.project.refactoring.AppletXMLRefactoringSupport;
 import static org.netbeans.modules.javacard.templates.ClassicAppletDeploymentWizardPanel.PROP_APPLET_NAME;
@@ -83,6 +81,7 @@ import java.util.Collections;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
+import org.netbeans.modules.javacard.spi.ProjectKind;
 
 public final class ClassicAppletWizardIterator implements WizardDescriptor.InstantiatingIterator {
 

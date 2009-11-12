@@ -50,25 +50,29 @@ public class FileAnnotationInfo {
     private JEditorPane editorPane;
     private String filePath;
     private String tooltip;
-    private List<LineAnnotationInfo> lineAnnotationInfo;
-    private List<LineAnnotationInfo> blockAnnotationInfo;
+    private final List<LineAnnotationInfo> lineAnnotationsInfo;
+    private final List<LineAnnotationInfo> blockAnnotationsInfo;
     private boolean annotated;
     private String columnNames[];
     private int maxColumnWidth[];
 
     public FileAnnotationInfo() {
-        lineAnnotationInfo = new ArrayList<LineAnnotationInfo>();
-        blockAnnotationInfo = new ArrayList<LineAnnotationInfo>();
+        lineAnnotationsInfo = new ArrayList<LineAnnotationInfo>();
+        blockAnnotationsInfo = new ArrayList<LineAnnotationInfo>();
         tooltip = null;
         annotated = false;
     }
 
     public int getAnnotationLength() {
-        if (lineAnnotationInfo != null && lineAnnotationInfo.size() > 0) {
-            return lineAnnotationInfo.get(0).getAnnotation().length();
+        synchronized (lineAnnotationsInfo) {
+            if (lineAnnotationsInfo.size() > 0) {
+                return lineAnnotationsInfo.get(0).getAnnotation().length();
+            }
         }
-        if (blockAnnotationInfo != null && blockAnnotationInfo.size() > 0) {
-            return blockAnnotationInfo.get(0).getAnnotation().length();
+        synchronized (blockAnnotationsInfo) {
+            if (blockAnnotationsInfo.size() > 0) {
+                return blockAnnotationsInfo.get(0).getAnnotation().length();
+            }
         }
         return 0;
     }
@@ -91,7 +95,15 @@ public class FileAnnotationInfo {
      * @return the lineAnnotationInfo
      */
     public List<LineAnnotationInfo> getLineAnnotationInfo() {
-        return lineAnnotationInfo;
+        synchronized (lineAnnotationsInfo) {
+            return new ArrayList<LineAnnotationInfo>(lineAnnotationsInfo);
+        }
+    }
+
+    public void addLineAnnotationInfo(LineAnnotationInfo lineAnnotationInfo) {
+        synchronized (lineAnnotationsInfo) {
+            lineAnnotationsInfo.add(lineAnnotationInfo);
+        }
     }
 
 //    public LineAnnotationInfo getLineAnnotationInfoByLine(int line) {
@@ -104,10 +116,12 @@ public class FileAnnotationInfo {
 //    }
 
     public LineAnnotationInfo getLineAnnotationInfoByLineOffset(int offset) {
-        for (LineAnnotationInfo lineInfo : lineAnnotationInfo) {
-            if (lineInfo.getPosition() != null) {
-                if (lineInfo.getPosition().getOffset() == offset) {
-                    return lineInfo;
+        synchronized (lineAnnotationsInfo) {
+            for (LineAnnotationInfo lineInfo : lineAnnotationsInfo) {
+                if (lineInfo.getPosition() != null) {
+                    if (lineInfo.getPosition().getOffset() == offset) {
+                        return lineInfo;
+                    }
                 }
             }
         }
@@ -115,10 +129,12 @@ public class FileAnnotationInfo {
     }
 
     public LineAnnotationInfo getBlockAnnotationInfoByLineOffset(int offset) {
-        for (LineAnnotationInfo lineInfo : blockAnnotationInfo) {
-            if (lineInfo.getPosition() != null) {
-                if (lineInfo.getPosition().getOffset() == offset) {
-                    return lineInfo;
+        synchronized (blockAnnotationsInfo) {
+            for (LineAnnotationInfo lineInfo : blockAnnotationsInfo) {
+                if (lineInfo.getPosition() != null) {
+                    if (lineInfo.getPosition().getOffset() == offset) {
+                        return lineInfo;
+                    }
                 }
             }
         }
@@ -126,10 +142,12 @@ public class FileAnnotationInfo {
     }
 
     public LineAnnotationInfo getLineAnnotationInfoByYCoordinate(int y) {
-        for (LineAnnotationInfo lineInfo : lineAnnotationInfo) {
-            if (lineInfo.getPosition() != null) {
-                if (lineInfo.getY1() <= y && y <= lineInfo.getY2()) {
-                    return lineInfo;
+        synchronized (lineAnnotationsInfo) {
+            for (LineAnnotationInfo lineInfo : lineAnnotationsInfo) {
+                if (lineInfo.getPosition() != null) {
+                    if (lineInfo.getY1() <= y && y <= lineInfo.getY2()) {
+                        return lineInfo;
+                    }
                 }
             }
         }
@@ -137,21 +155,16 @@ public class FileAnnotationInfo {
     }
 
     public LineAnnotationInfo getBlockAnnotationInfoByYCoordinate(int y) {
-        for (LineAnnotationInfo lineInfo : blockAnnotationInfo) {
-            if (lineInfo.getPosition() != null) {
-                if (lineInfo.getY1() <= y && y <= lineInfo.getY2()) {
-                    return lineInfo;
+        synchronized (blockAnnotationsInfo) {
+            for (LineAnnotationInfo lineInfo : blockAnnotationsInfo) {
+                if (lineInfo.getPosition() != null) {
+                    if (lineInfo.getY1() <= y && y <= lineInfo.getY2()) {
+                        return lineInfo;
+                    }
                 }
             }
         }
         return null;
-    }
-
-    /**
-     * @param lineAnnotationInfo the lineAnnotationInfo to set
-     */
-    public void setLineAnnotationInfo(List<LineAnnotationInfo> lineAnnotationInfo) {
-        this.lineAnnotationInfo = lineAnnotationInfo;
     }
 
     /**
@@ -171,17 +184,23 @@ public class FileAnnotationInfo {
     /**
      * @return the tooltip
      */
-    public String getTooltip() {
+    public synchronized String getTooltip() {
         if (tooltip == null) {
-            String tt = "";
+            StringBuilder sb = new StringBuilder();
+            boolean first = true;
+            sb.append("<html><body>");//NOI18N
             for (String col : getColumnNames()) {
-                if (tt.length() > 0) {
-                    tt += " | "; // NOI18N
+                if (first) {
+                    first = false;
+                } else {
+                    sb.append("<br>"); // NOI18N
                 }
-                tt += col;
+                sb.append(col);
             }
-            tooltip = tt;
+            sb.append("</body></html>");//NOI18N
+            tooltip = sb.toString();
         }
+        
         return tooltip;
     }
 
@@ -189,11 +208,11 @@ public class FileAnnotationInfo {
     public String toString() {
         StringBuilder buf = new StringBuilder();
         buf.append("Line Annotations:\n"); // NOI18N
-        for(LineAnnotationInfo line : lineAnnotationInfo) {
+        for(LineAnnotationInfo line : getLineAnnotationInfo()) {
             buf.append('\t').append(line.toString()).append('\n'); // NOI18N
         }
         buf.append("Block Annotations:\n"); // NOI18N
-        for(LineAnnotationInfo line : blockAnnotationInfo) {
+        for(LineAnnotationInfo line : getBlockAnnotationInfo()) {
             buf.append('\t').append(line.toString()).append('\n'); // NOI18N
         }
         return buf.toString();
@@ -245,13 +264,14 @@ public class FileAnnotationInfo {
      * @return the blockAnnotationInfo
      */
     public List<LineAnnotationInfo> getBlockAnnotationInfo() {
-        return blockAnnotationInfo;
+        synchronized (blockAnnotationsInfo) {
+            return new ArrayList<LineAnnotationInfo>(blockAnnotationsInfo);
+        }
     }
 
-    /**
-     * @param blockAnnotationInfo the blockAnnotationInfo to set
-     */
-    public void setBlockAnnotationInfo(List<LineAnnotationInfo> blockAnnotationInfo) {
-        this.blockAnnotationInfo = blockAnnotationInfo;
+    public void addBlockAnnotationInfo(LineAnnotationInfo lineAnnotationInfo) {
+        synchronized (blockAnnotationsInfo) {
+            blockAnnotationsInfo.add(lineAnnotationInfo);
+        }
     }
 }

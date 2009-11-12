@@ -137,7 +137,7 @@ public class ServerFileDistributorTest extends ServerRegistryTestBase {
         File testFile = new File(f,
                 testFilePath.replace("/", File.separator));
         DeploymentChangeDescriptor desc = dist.distributeOnSave(module,
-                dtarget.getModuleChangeReporter(), Collections.singleton(Artifact.forFile(testFile)));
+                dtarget.getModuleChangeReporter(), null, Collections.singleton(Artifact.forFile(testFile)));
 
         File created = new File(getWorkDir(),
                 createdFilePath.replace("/", File.separator));

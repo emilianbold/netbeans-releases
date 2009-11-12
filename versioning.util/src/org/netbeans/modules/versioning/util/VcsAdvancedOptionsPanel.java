@@ -7,8 +7,6 @@
 package org.netbeans.modules.versioning.util;
 
 import java.awt.CardLayout;
-import java.util.HashMap;
-import java.util.Map;
 import javax.swing.DefaultListModel;
 import javax.swing.JComponent;
 
@@ -26,6 +24,9 @@ public class VcsAdvancedOptionsPanel extends javax.swing.JPanel {
     public void addPanel(String name, JComponent component) {
         ((DefaultListModel)versioningSystemsList.getModel()).addElement(name);
         containerPanel.add(name, component);
+        if (versioningSystemsList.getModel().getSize() == 1) {
+            versioningSystemsList.setSelectedIndex(0);
+        }
     }
     
     /** This method is called from within the constructor to

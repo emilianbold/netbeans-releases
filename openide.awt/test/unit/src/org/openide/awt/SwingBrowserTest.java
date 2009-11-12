@@ -41,15 +41,10 @@
 
 package org.openide.awt;
 
-import java.awt.Color;
 import java.awt.Component;
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringBufferInputStream;
-import java.io.StringReader;
 import java.lang.reflect.InvocationTargetException;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -68,10 +63,6 @@ public class SwingBrowserTest extends TestCase {
 
     public SwingBrowserTest(String testName) {
         super(testName);
-    }
-
-    protected void setUp() throws Exception {
-        
     }
 
     public void testSimpleUseOfBrowser() throws Exception {
@@ -268,8 +259,8 @@ public class SwingBrowserTest extends TestCase {
         public void connect() throws IOException {
         }
 
-        public InputStream getInputStream() throws IOException {
-            return new StringBufferInputStream("blabla");
+        public @Override InputStream getInputStream() throws IOException {
+            return new ByteArrayInputStream("blabla".getBytes());
         }
 
         public void disconnect() {
@@ -280,7 +271,7 @@ public class SwingBrowserTest extends TestCase {
             return false;
         }
 
-        public int getResponseCode() throws IOException {
+        public @Override int getResponseCode() throws IOException {
             System.out.println("connecting "+toString()+" ... isEDT = "+SwingUtilities.isEventDispatchThread());
 //            Thread.dumpStack();
             if (sIn != null) {
@@ -301,7 +292,7 @@ public class SwingBrowserTest extends TestCase {
             return super.getResponseCode();
         }
 
-        public String toString() {
+        public @Override String toString() {
             return "MyConnection ["+url.toExternalForm()+" sIn "+sIn+" sOut "+sOut+"]";
         }
         

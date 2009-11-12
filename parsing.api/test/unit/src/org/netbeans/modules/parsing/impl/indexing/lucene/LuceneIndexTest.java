@@ -98,7 +98,7 @@ public class LuceneIndexTest extends NbTestCase {
             docwrap.addPair("oct", Integer.toOctalString(i), true, true);
             index.addDocument(docwrap);
         }
-        index.store();
+        index.store(true);
         BitSet expected = new BitSet(1000);
         expected.set(0, 1000);
         assertIndex(expected);
@@ -106,7 +106,7 @@ public class LuceneIndexTest extends NbTestCase {
             index.removeDocument(Integer.toString(i));
             expected.clear(i);
         }
-        index.store();
+        index.store(true);
         assertIndex(expected);
     }
 
@@ -120,7 +120,7 @@ public class LuceneIndexTest extends NbTestCase {
         docwrap.addPair("bin", Integer.toBinaryString(1), true, true);
         docwrap.addPair("oct", Integer.toOctalString(1), true, true);
         index.addDocument(docwrap);
-        index.store();
+        index.store(true);
         //Existing index => valid
         assertTrue(index.isValid());
         assertTrue(indexFolder.listFiles().length>0);
@@ -136,7 +136,7 @@ public class LuceneIndexTest extends NbTestCase {
         docwrap.addPair("bin", Integer.toBinaryString(1), true, true);
         docwrap.addPair("oct", Integer.toOctalString(1), true, true);
         index.addDocument(docwrap);
-        index.store();
+        index.store(true);
         assertTrue(index.isValid());
         assertTrue(indexFolder.listFiles().length>0);
 

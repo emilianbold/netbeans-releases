@@ -32,7 +32,7 @@ public final class IndicatorProvider {
      * @return new instance of data collector is returned each time this method is invoked;
      */
     public Indicator<?> createIndicator(final String toolID,
-            final IndicatorConfiguration configuraiton) {
+            final IndicatorConfiguration configuraiton, boolean isDetailsEnabled) {
         
         Collection<? extends IndicatorFactory> result =
                 Lookup.getDefault().lookupAll(IndicatorFactory.class);
@@ -46,6 +46,7 @@ public final class IndicatorProvider {
                 @SuppressWarnings("unchecked")
                 // Impossible to do it in checked manner. Have to rely on factory ID check.
                 Indicator<?> indicator = indicatorFactory.create(configuraiton);
+                indicator.getDefaultAction().setEnabled(isDetailsEnabled);
                 IndicatorAccessor.getDefault().setToolID(indicator, toolID);
                 IndicatorAccessor.getDefault().initMouseListener(indicator);
                 return indicator;

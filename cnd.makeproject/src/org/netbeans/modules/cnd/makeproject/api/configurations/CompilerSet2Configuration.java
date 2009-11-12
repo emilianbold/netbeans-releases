@@ -169,11 +169,40 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
         return 0; // Default
     }
 
+//    private CompilerSet getCompilerSet(int platform, String name) {
+//        List<CompilerFlavor> list =  CompilerSet.CompilerFlavor.getFlavors(platform);
+//        for (CompilerFlavor flavor : list) {
+//            CompilerSet cs = CompilerSet.getCustomCompilerSet("", flavor, flavor.toString());
+//            if (name.equals(cs.getName())) {
+//                ToolchainDescriptor d = flavor.getToolchainDescriptor();
+//
+//                CompilerDescriptor compiler = d.getC();
+//                cs.addTool(SunCCompiler.create(null, flavor, Tool.CCompiler, compiler.getNames()[0], compiler.getNames()[0], ""));
+//                compiler = d.getCpp();
+//                cs.addTool(SunCCCompiler.create(null, flavor, Tool.CCCompiler, compiler.getNames()[0], compiler.getNames()[0], ""));
+//                compiler = d.getFortran();
+//                cs.addTool(SunFortranCompiler.create(null, flavor, Tool.FortranCompiler, compiler.getNames()[0], compiler.getNames()[0], ""));
+//                compiler = d.getAssembler();
+//                cs.addTool(Assembler.create(null, flavor, Tool.Assembler, compiler.getNames()[0], compiler.getNames()[0], ""));
+//
+//                return cs;
+//            }
+//        }
+//        return null;
+//    }
+
     /*
      * TODO: spread it out (Sergey)
      * Should this return csm.getCurrentCompilerSet()? (GRP)
      */
     public CompilerSet getCompilerSet() {
+//        if (dhconf.isLocalhost()) {
+//            int hostPlatform = CompilerSetManager.getDefault(dhconf.getExecutionEnvironment()).getPlatform();
+//            int buildPlatform = dhconf.getBuildPlatformConfiguration().getValue();
+//            if (hostPlatform != buildPlatform) {
+//                return getCompilerSet(buildPlatform, getCompilerSetName().getValue());
+//            }
+//        }
         return getCompilerSetManager().getCompilerSet(getCompilerSetName().getValue());
     }
 

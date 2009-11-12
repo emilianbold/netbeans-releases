@@ -260,8 +260,10 @@ public class CppEditorSupport extends DataEditorSupport implements EditorCookie,
          */
         @Override
         protected void componentActivated() {
-            if (support.getDocument() != null) {
-                log.log("CES.componentActivated: Activating " + getShortName() + // NOI18N
+            super.componentActivated();
+            Document doc = support.getDocument();
+            if (doc != null) {
+                log.log("CES.componentActivated: Activating " + getShortName(doc) + // NOI18N
                         " [" + Thread.currentThread().getName() + "]"); // NOI18N
                 if (activationPerformers != null) {
                     int n = activationPerformers.size();
@@ -270,8 +272,7 @@ public class CppEditorSupport extends DataEditorSupport implements EditorCookie,
                         a.performActivation(this);
                     }
                 }
-                super.componentActivated();
-                CppMetaModel.getDefault().scheduleParsing(support.getDocument());
+                CppMetaModel.getDefault().scheduleParsing(doc);
                 support.attachParsingListener();
             } else {
                 log.log("CES.componentActivated: Activating without document!!!" + // NOI18N
@@ -280,8 +281,8 @@ public class CppEditorSupport extends DataEditorSupport implements EditorCookie,
         }
 
         /* XXX -Debug method. Remove later? */
-        private String getShortName() {
-            String longname = (String) support.getDocument().getProperty(Document.TitleProperty);
+        private static String getShortName(Document doc) {
+            String longname = (String) doc.getProperty(Document.TitleProperty);
             longname = longname == null ? "" : longname;
             int slash = longname.lastIndexOf(File.separatorChar);
 
@@ -305,6 +306,7 @@ public class CppEditorSupport extends DataEditorSupport implements EditorCookie,
          */
         @Override
         protected void componentDeactivated() {
+            super.componentDeactivated();
             support.removeParsingListener();
         }
 

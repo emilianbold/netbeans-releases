@@ -60,6 +60,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
@@ -117,11 +118,15 @@ import org.netbeans.modules.web.jsf.palette.items.JsfTable;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerUtil.TypeInfo;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerUtil.MethodInfo;
 import org.netbeans.modules.web.jsf.api.facesmodel.Application;
+import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -174,6 +179,8 @@ public class JSFClientGenerator {
     private static final String TABLE_BODY_VAR = "__TABLE_BODY__"; //NOI18N
     private static final String JSF_UTIL_CLASS_VAR = "__JSF_UTIL_CLASS__"; //NOI18N
     private static final String LINK_TO_INDEX_VAR = "__LINK_TO_INDEX__"; //NOI18N
+    private static final String INDENT = "            "; // TODO: jsut reformat generated code
+
     
     public static void generateJSFPages(ProgressContributor progressContributor, ProgressPanel progressPanel, final Project project, final String entityClass, String jsfFolderBase, String jsfFolderName, final String controllerPackage, final String controllerClass, FileObject pkg, FileObject controllerFileObject, final EmbeddedPkSupport embeddedPkSupport, final List<String> entities, final boolean ajaxify, String jpaControllerPackage, FileObject jpaControllerFileObject, FileObject converterFileObject, final boolean genSessionBean, int progressIndex) throws IOException {
         final boolean isInjection = Util.isContainerManaged(project); //Util.isSupportedJavaEEVersion(project);
@@ -313,13 +320,14 @@ public class JSFClientGenerator {
             FileObject target = FileUtil.createData(pagesRootFolder, JSFCRUD_STYLESHEET);
             JSFFrameworkProvider.createFile(target, content, projectEncoding);
         }
-        
-        final String rootRelativePathToWebFolder = wm.getContextPath() + "/faces/";
+
+        final String facesServletMapping = ConfigurationUtils.getFacesServletMapping(wm);;
+        final String busyIconPath = wm.getContextPath() + "/"+ConfigurationUtils.translateURI(facesServletMapping, JSFCRUD_AJAX_BUSY_IMAGE);
         
         if (pagesRootFolder.getFileObject(JSFCRUD_JAVASCRIPT) == null) {
             String content = JSFFrameworkProvider.readResource(JSFClientGenerator.class.getClassLoader().getResourceAsStream(RESOURCE_FOLDER + JSFCRUD_JAVASCRIPT), "UTF-8"); //NOI18N
             FileObject target = FileUtil.createData(pagesRootFolder, JSFCRUD_JAVASCRIPT);//NOI18N
-            content = content.replaceAll("__WEB_FOLDER_PATH__", rootRelativePathToWebFolder);
+            content = content.replaceAll("__WEB_BUSY_ICON_PATH__", busyIconPath);//NOI18N
             JSFFrameworkProvider.createFile(target, content, projectEncoding);  //NOI18N
         }
 
@@ -366,8 +374,8 @@ public class JSFClientGenerator {
         converterFileObject = generateConverter(converterFileObject, controllerFileObject, pkg, controllerClass, simpleControllerName, entityClass, 
                 simpleEntityName, idGetter.get(0), managedBean, jpaControllerClass, genSessionBean, isInjection);
         
-        final String styleAndScriptTags = "<link rel=\"stylesheet\" type=\"text/css\" href=\"" + rootRelativePathToWebFolder + JSFCRUD_STYLESHEET + "\" />" +
-            (ajaxify ? "<%@ include file=\"/" + JSPF_FOLDER + "/" + JSFCRUD_AJAX_JSPF + "\" %><scfaceript type=\"text/javascript\" src=\"" + rootRelativePathToWebFolder + JSFCRUD_JAVASCRIPT + "\"></script>" : "");
+        final String styleAndScriptTags = "<link rel=\"stylesheet\" type=\"text/css\" href=\"" + wm.getContextPath() + "/" + ConfigurationUtils.translateURI(facesServletMapping, JSFCRUD_STYLESHEET) + "\" />" +
+            (ajaxify ? "<%@ include file=\"/" + JSPF_FOLDER + "/" + JSFCRUD_AJAX_JSPF + "\" %><script type=\"text/javascript\" src=\"" + wm.getContextPath() + "/" + ConfigurationUtils.translateURI(facesServletMapping, JSFCRUD_JAVASCRIPT) + "\"></script>" : "");
             
         boolean welcomePageExists = addLinkToListJspIntoIndexJsp(wm, simpleEntityName, styleAndScriptTags, projectEncoding, "");
         final String linkToIndex = welcomePageExists ? "<br />\n<h:commandLink value=\"Index\" action=\"welcome\" immediate=\"true\" />\n" : "";  //NOI18N
@@ -493,6 +501,12 @@ public class JSFClientGenerator {
                 templateContent = templateContent.replace(justTitleEnd, replaceHeadWith); //NOI18N
                 JSFFrameworkProvider.createFile(templatefl,templateContent, projectEncoding);
             }
+            //insert style and script tags if not already present
+            if (content.indexOf(styleAndScriptTags) == -1) {
+                String justTitleEnd = "</title>"; //NOI18N
+                String replaceHeadWith = justTitleEnd + endLine + styleAndScriptTags;    //NOI18N
+                content = content.replace(justTitleEnd, replaceHeadWith); //NOI18N
+            }
             
             //make sure <f:view> is outside of <html>
             String html = "<html>";
@@ -513,20 +527,37 @@ public class JSFClientGenerator {
                 }
             }
 
-            String find = "Hello from the Facelets"; //NOI18N
-            if ( content.indexOf(find) > -1){
+            String find = "</h:body>"; //NOI18N
+            boolean isFound = false;
+            if (content.indexOf(find)>-1) {
+                isFound = true;
+            } else {
+                find = "</body>";   //NOI18N
+                if (content.indexOf(find)>-1) {
+                    isFound = true;
+                }
+            }
+
+            if ( isFound ){
                 StringBuffer replace = new StringBuffer();
-                replace.append(find);
-                replace.append(endLine);
                 String managedBeanName = getManagedBeanName(simpleEntityName);
-                String commandLink = JSFFrameworkProvider.readResource(JSFClientGenerator.class.getClassLoader().getResourceAsStream(TEMPLATE_FOLDER + COMMAND_LINK_TEMPLATE2), "UTF-8"); //NOI18N
-                commandLink = commandLink.replaceAll("\\_\\_PAGE\\_LINK\\_\\_", pageLink);
-                commandLink = commandLink.replaceAll(ENTITY_NAME_VAR, simpleEntityName);
+                String commandLink = "";
+                if (pageLink == null || "".equals(pageLink)) {
+                    commandLink = JSFFrameworkProvider.readResource(JSFClientGenerator.class.getClassLoader().getResourceAsStream(TEMPLATE_FOLDER + COMMAND_LINK_TEMPLATE), "UTF-8"); //NOI18N
+                    commandLink = commandLink.replaceAll(MANAGED_BEAN_NAME_VAR, managedBeanName);
+                    commandLink = commandLink.replaceAll(ENTITY_NAME_VAR, simpleEntityName);
+                } else {
+                    commandLink = JSFFrameworkProvider.readResource(JSFClientGenerator.class.getClassLoader().getResourceAsStream(TEMPLATE_FOLDER + COMMAND_LINK_TEMPLATE2), "UTF-8"); //NOI18N
+                    commandLink = commandLink.replaceAll("\\_\\_PAGE\\_LINK\\_\\_", pageLink);
+                    commandLink = commandLink.replaceAll(ENTITY_NAME_VAR, simpleEntityName);
+                }
                 if (content.indexOf(commandLink) > -1) {
                     //return, indicating welcomeJsp exists
                     return true;
                 }
                 replace.append(commandLink);
+                replace.append(find);
+                replace.append(endLine);
                 content = content.replace(find, replace.toString()); //NOI18N
                 JSFFrameworkProvider.createFile(indexfl, content, projectEncoding); //NOI18N
                 //return, indicating welcomeJsp exists
@@ -810,6 +841,20 @@ public class JSFClientGenerator {
             finally {
                 //TODO: RETOUCHE correct write to JSF model?
                 model.endTransaction();
+                DataObject facesDO;
+                try {
+                    facesDO = DataObject.find(fo);
+                    if (facesDO !=null) {
+                        SaveCookie save = facesDO.getCookie(SaveCookie.class);
+                        if (save != null) {
+                            save.save();
+                        }
+                    }
+                } catch (DataObjectNotFoundException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         }
     }
@@ -975,8 +1020,14 @@ public class JSFClientGenerator {
         StringBuffer getIdBody = null;
         if (embeddable[0]) {
             getIdBody = new StringBuffer();
-            getIdBody.append(idPropertyType[0] + " id = new " + idPropertyType[0] + "();\n");
             int params = paramSetters.size();
+            if(params > 0){
+                getIdBody.append(idPropertyType[0] + " id = new " + idPropertyType[0] + "();\n");
+            }
+            else {
+                getIdBody.append(idPropertyType[0] + " id;\n");//do not initialize, user need to update code and may be use not default constructor
+            }
+
             getIdBody.append("String params[] = new String[" + params + "];\n" +
                     "int p = 0;\n" +
                     "int grabStart = 0;\n" +
@@ -1001,14 +1052,16 @@ public class JSFClientGenerator {
                     "params[i] = params[i].replace(escape + escape, escape);\n" +
                     "}\n\n"
                     );
-                    
             for (int i = 0; i < paramSetters.size(); i++) {
                 MethodModel setter = paramSetters.get(i);
                 String type = setter.getParameters().get(0).getType();
-                getIdBody.append("id." + setter.getName() + "(" 
+                getIdBody.append("id." + setter.getName() + "("
                         + createIdFieldInitialization(type, "params[" + i + "]") + ");\n");
             }
             
+            if( params==0) {
+                     getIdBody.append(NbBundle.getMessage(JSFClientGenerator.class, "ERR_NO_SETTERS_CONVERTER", new String[]{INDENT, idPropertyType[0], "getId()"})+"\n");//NOI18N;
+            }
             getIdBody.append("return id;\n");
         }
         
@@ -1070,6 +1123,7 @@ public class JSFClientGenerator {
                 getAsStringBody.append(propName);
             }
             getAsStringBody.append(";\n");
+            getAsStringBody.append(NbBundle.getMessage(JSFClientGenerator.class, "ERR_NO_SETTERS_CONVERTER", new String[]{INDENT, idPropertyType[0], "getAsString()"})+"\n");//NOI18N;
         } else {
             String oDotGetId = "o." + idGetterName[0] + "()";
             if (isPrimitiveIdPropertyType[0]) {
@@ -1081,6 +1135,7 @@ public class JSFClientGenerator {
         getAsStringBody.append("} else {\n"
                 + "throw new IllegalArgumentException(\"object \" + object + \" is of type \" + object.getClass().getName() + \"; expected type: " + entityClass +"\");\n}");
         
+
         final MethodModel getAsString = MethodModel.create(
                 "getAsString",
                 "java.lang.String",
@@ -1321,11 +1376,19 @@ public class JSFClientGenerator {
                     TypeElement entityType = workingCopy.getElements().getTypeElement(entityClass);
                     StringBuffer codeToPopulatePkFields = new StringBuffer();
                     if (embeddable[0]) {
-                        for (ExecutableElement pkMethod : embeddedPkSupport.getPkAccessorMethods(workingCopy, entityType)) {
+                        Set<ExecutableElement> methods = embeddedPkSupport.getPkAccessorMethods(workingCopy, entityType);
+                        boolean missedSetters = false;
+                        for (ExecutableElement pkMethod : methods) {
                             if (embeddedPkSupport.isRedundantWithRelationshipField(workingCopy, entityType, pkMethod)) {
                                 codeToPopulatePkFields.append(fieldName + "." +idGetterName[0] + "().s" + pkMethod.getSimpleName().toString().substring(1) + "(" +  //NOI18N
                                     fieldName + "." + embeddedPkSupport.getCodeToPopulatePkField(workingCopy, entityType, pkMethod) + ");\n");
+                                if(!embeddedPkSupport.getPkSetterMethodExist(workingCopy, entityType, pkMethod)) {
+                                    missedSetters = true;
+                                }
                             }
+                        }
+                        if(missedSetters){
+                            codeToPopulatePkFields.append(NbBundle.getMessage(JSFClientGenerator.class, "ERR_NO_SETTERS_CONTROLLER", new String[]{INDENT, idPropertyType[0]})+"\n");//NOI18N;
                         }
                     }
 

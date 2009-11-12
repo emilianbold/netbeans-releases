@@ -62,9 +62,11 @@ import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
+import org.netbeans.modules.cnd.makeproject.configurations.ui.BuildPlatformNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.CompilerSetNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.DevelopmentHostNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.RequiredProjectsNodeProp;
+import org.netbeans.modules.cnd.makeproject.ui.customizer.MakeCustomizer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Sheet;
@@ -79,8 +81,10 @@ public class MakeConfiguration extends Configuration {
     public static final String OBJECTDIR_MACRO_NAME = "OBJECTDIR"; // NOI18N
     public static final String OBJECTDIR_MACRO = "${" + OBJECTDIR_MACRO_NAME + "}"; // NOI18N
     // Project Types
-    private static String[] TYPE_NAMES = {
-        getString("MakefileName"),
+    private static String[] TYPE_NAMES_UNMANAGED = {
+        getString("MakefileName")
+    };
+    private static String[] TYPE_NAMES_MANAGED = {
         getString("ApplicationName"),
         getString("DynamicLibraryName"),
         getString("StaticLibraryName"),
@@ -129,7 +133,12 @@ public class MakeConfiguration extends Configuration {
 
     public MakeConfiguration(String baseDir, String name, int configurationTypeValue, String host) {
         super(baseDir, name);
-        configurationType = new IntConfiguration(null, configurationTypeValue, TYPE_NAMES, null);
+        if (configurationTypeValue == TYPE_MAKEFILE) {
+            configurationType = new IntConfiguration(null, configurationTypeValue, TYPE_NAMES_UNMANAGED, null);
+        }
+        else {
+            configurationType = new ManagedIntConfiguration(null, configurationTypeValue, TYPE_NAMES_MANAGED, null);
+        }
         developmentHost = new DevelopmentHostConfiguration(ExecutionEnvironmentFactory.fromUniqueID(host));
         compilerSet = new CompilerSet2Configuration(developmentHost);
         cRequired = new LanguageBooleanConfiguration();
@@ -556,7 +565,7 @@ public class MakeConfiguration extends Configuration {
 //    public Sheet getGeneralSheet(Project project) {
 //        return getBuildSheet(project);
 //    }
-    public Sheet getBuildSheet(Project project) {
+    public Sheet getBuildSheet(Project project, MakeCustomizer makeCustomizer) {
         Sheet sheet = new Sheet();
 
         Sheet.Set set = new Sheet.Set();
@@ -564,8 +573,8 @@ public class MakeConfiguration extends Configuration {
         set.setDisplayName(getString("ProjectDefaultsTxt"));
         set.setShortDescription(getString("ProjectDefaultsHint"));
         set.put(new DevelopmentHostNodeProp(getDevelopmentHost(), true, getString("DevelopmentHostTxt"), getString("DevelopmentHostHint"))); // NOI18N
+//        set.put(new BuildPlatformNodeProp(getDevelopmentHost().getBuildPlatformConfiguration(), developmentHost, makeCustomizer, getDevelopmentHost().isLocalhost(), "builtPlatform", getString("PlatformTxt"), getString("PlatformHint"))); // NOI18N
         set.put(new CompilerSetNodeProp(getCompilerSet(), true, "CompilerSCollection2", getString("CompilerCollectionTxt"), getString("CompilerCollectionHint"))); // NOI18N
-        //set.put(new PlatformNodeProp(getPlatform(), false, getString("PlatformTxt"), getString("PlatformHint"))); // NOI18N
         set.put(new BooleanNodeProp(getCRequired(), true, "cRequired", getString("CRequiredTxt"), getString("CRequiredHint"))); // NOI18N
         set.put(new BooleanNodeProp(getCppRequired(), true, "cppRequired", getString("CppRequiredTxt"), getString("CppRequiredHint"))); // NOI18N
         set.put(new BooleanNodeProp(getFortranRequired(), true, "fortranRequired", getString("FortranRequiredTxt"), getString("FortranRequiredHint"))); // NOI18N
@@ -838,6 +847,34 @@ public class MakeConfiguration extends Configuration {
         val = IpeUtils.expandMacro(val, "${CND_CONF}", getName()); // NOI18N
         val = IpeUtils.expandMacro(val, "${CND_DISTDIR}", MakeConfiguration.DIST_FOLDER); // NOI18N
         return val;
+    }
+
+    /*
+     * Special version of IntConfiguration
+     * Names are shifted one (because Makefile is not allowed as a choice anymore for managed projects)
+     */
+    static class ManagedIntConfiguration extends IntConfiguration {
+        public ManagedIntConfiguration(IntConfiguration master, int def, String[] names, String[] options) {
+            super(master, def, names, options);
+        }
+
+        @Override
+        public void setValue(String s) {
+            String[] names = getNames();
+            if (s != null) {
+                for (int i = 0; i < names.length; i++) {
+                    if (s.equals(names[i])) {
+                        setValue(i+1);
+                        break;
+                    }
+                }
+            }
+        }
+
+        @Override
+        public String getName() {
+            return getNames()[getValue()-1];
+        }
     }
 //
 //    private String[] getCompilerSetDisplayNames() {

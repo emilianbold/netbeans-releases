@@ -75,6 +75,7 @@ public final class LibrariesCustomizer {
         DialogDescriptor descriptor = new DialogDescriptor (customizer,NbBundle.getMessage(LibrariesCustomizer.class,
                 "TXT_LibrariesManager"));
         Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
+        setAccessibleDescription(dlg, customizer.getAccessibleContext().getAccessibleDescription());
         try {
             dlg.setVisible(true);
             if (descriptor.getValue() == DialogDescriptor.OK_OPTION) {
@@ -118,6 +119,7 @@ public final class LibrariesCustomizer {
                 true, DialogDescriptor.OK_CANCEL_OPTION, null, null);
         p.setDialogDescriptor(dd);
         Dialog dlg = DialogDisplayer.getDefault().createDialog (dd);
+        setAccessibleDescription(dlg, customizer.getAccessibleContext().getAccessibleDescription());
         dlg.setVisible(true);
         if (dd.getValue() == DialogDescriptor.OK_OPTION) {
             LibraryImplementation impl;
@@ -160,6 +162,7 @@ public final class LibrariesCustomizer {
         DialogDescriptor descriptor = new DialogDescriptor (customizer,NbBundle.getMessage(LibrariesCustomizer.class,
                 "LibrariesCustomizer.customizeLibrary.title"));
         Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
+        setAccessibleDescription(dlg, customizer.getAccessibleContext().getAccessibleDescription());
         try {
             dlg.setVisible(true);
             if (descriptor.getValue() == DialogDescriptor.OK_OPTION) {
@@ -170,6 +173,12 @@ public final class LibrariesCustomizer {
             }
         } finally {
             dlg.dispose();
+        }
+    }
+
+    private static void setAccessibleDescription(final Dialog dlg, final String description ) {
+        if (description != null) {
+            dlg.getAccessibleContext().setAccessibleDescription(description);
         }
     }
     

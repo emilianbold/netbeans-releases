@@ -210,8 +210,8 @@ public class ${controllerClassName} {
     public static class ${controllerClassName}Converter implements Converter {
 <#if keyEmbedded>
 
-        private static final String SEPARATOR = "<_unique--separator_>";
-        private static final String SEPARATOR_ESCAPED = "\\<\\_unique\\-\\-separator\\_\\>";
+        private static final String SEPARATOR = "#";
+        private static final String SEPARATOR_ESCAPED = "\\#";
 </#if>
 
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {

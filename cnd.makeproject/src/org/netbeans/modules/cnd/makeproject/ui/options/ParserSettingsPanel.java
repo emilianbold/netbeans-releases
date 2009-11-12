@@ -138,14 +138,20 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
         }
     }
 
-    public CompilerSetManager getCompilerSetManager(ExecutionEnvironment execEnv) {
+    private CompilerSetManager getCompilerSetManager(ExecutionEnvironment execEnv) {
         ToolsCacheManager manager = ToolsPanel.getToolsCacheManager();
-        return manager.getCompilerSetManagerCopy(execEnv, true);
+        CompilerSetManager copy = manager.getCompilerSetManagerCopy(execEnv, true);
+        while (copy.isPending()) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException ex) {
+                // skip
+            }
+        }
+        return copy;
     }
     
     private void updateCompilerCollections(final CompilerSet csToSelect) {
-
-        compilerCollectionComboBox.removeAllItems();
 
         final AtomicReference<CompilerSetPresenter> toSelect = new AtomicReference<CompilerSetPresenter>();
         final List<CompilerSetPresenter> allCS = new ArrayList<CompilerSetPresenter>();
@@ -153,6 +159,8 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
 
         final Runnable uiUpdater = new Runnable() { //NOI18N
             public void run() {
+                compilerCollectionComboBox.removeActionListener(ParserSettingsPanel.this);
+                compilerCollectionComboBox.removeAllItems();
                 for (CompilerSetPresenter cs : allCS) {
                     compilerCollectionComboBox.addItem(cs);
                 }
@@ -166,6 +174,7 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
                     compilerCollectionComboBox.setSelectedItem(toSelect.get());
                 }
                 updateTabs();
+                compilerCollectionComboBox.addActionListener(ParserSettingsPanel.this);
             }
         };
 
@@ -191,7 +200,7 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
                     // localhost only mode (either cnd.remote is not installed or no devhosts were specified
                     for (CompilerSet cs : getCompilerSetManager(ExecutionEnvironmentFactory.getLocal()).getCompilerSets()) {
                         for (Tool tool : cs.getTools()) {
-                            tool.waitReady();
+                            tool.waitReady(false);
                         }
                         CompilerSetPresenter csp = new CompilerSetPresenter(cs, cs.getName());
                         if (csToSelect == cs) {
@@ -213,6 +222,9 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
             return;
         }
         CompilerSet compilerCollection = csp.cs;
+        if (compilerCollection.isUrlPointer()) {
+            return;
+        }
         // Show only the selected C and C++ compiler from the compiler collection
         ArrayList<Tool> toolSet = new ArrayList<Tool>();
         Tool cCompiler = compilerCollection.getTool(Tool.CCompiler);
@@ -367,10 +379,7 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
         }
         try {
             updating = true;
-//            init();
-            compilerCollectionComboBox.removeActionListener(this);
             updateCompilerCollections(tp.getCurrentCompilerSet());
-            compilerCollectionComboBox.addActionListener(this);
             PredefinedPanel[] viewedPanels = getPredefinedPanels();
             for (int i = 0; i < viewedPanels.length; i++) {
                 viewedPanels[i].update();
@@ -439,19 +448,4 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
     private PredefinedPanel[] getPredefinedPanels() {
         return predefinedPanels.values().toArray(new PredefinedPanel[predefinedPanels.size()]);
     }
-    
-//    private synchronized void init() {
-//        if (!initialized) {
-//            ServerList registry = (ServerList) Lookup.getDefault().lookup(ServerList.class);
-//            if (registry != null) {
-//                ServerRecord record = registry.getDefaultRecord();
-//                if (record != null) {
-//                    Logger rdlog = Logger.getLogger("cnd.remote.logger"); // NOI18N
-//                    rdlog.fine("ParserSettingsPanel<Init>: Validating " + record.getName());
-//                    record.validate(); // ensure the development host is initialized
-//                }
-//            }
-//        }
-//        initialized = true;
-//    }
 }

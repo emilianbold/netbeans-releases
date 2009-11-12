@@ -43,7 +43,7 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import java.util.*;
-import antlr.collections.AST;
+import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -152,6 +152,10 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
     private CsmFunction findDeclaration(Resolver parent) {
         String uname = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION) + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix();
         Collection<? extends CsmDeclaration> defs = getContainingFile().getProject().findDeclarations(uname);
+        if (defs.isEmpty()) {
+            uname = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION_FRIEND) + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix();
+            defs = getContainingFile().getProject().findDeclarations(uname);
+        }
         CsmDeclaration def = null;
         if (defs.isEmpty()) {
             CsmObject owner = findOwner(parent);

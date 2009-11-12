@@ -93,6 +93,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.DialogDisplayer;
+import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.execution.ExecutorTask;
@@ -100,6 +101,7 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -135,6 +137,7 @@ public class ProjectHelper {
     //private static final String DEFAULT_PLATFORM = "default_platform"; //NOI18N
     private static final String RUN_JVM_ARGS_KEY = "run.jvmargs"; //NOI18N
     private static final String PROP_ENDORSED = "jaxbwiz.endorsed.dirs"; //NOI18N
+    private static final String JAXB_API_JAR_DIR = "ext/jaxb/api"; //NOI18N
     private static final String PROP_XJC_DEF_CLASSPATH = "jaxbwiz.xjcdef.classpath" ;//NOI18N
     private static final String PROP_XJC_RUN_CLASSPATH = "jaxbwiz.xjcrun.classpath" ;//NOI18N
     private static final String PROP_JAXB_GEN_SRC_CLASSPATH = "jaxbwiz.gensrc.classpath";//NOI18N
@@ -145,6 +148,9 @@ public class ProjectHelper {
     private static final String PROP_SYS_RUN_ENDORSED_VAL = "${" + PROP_ENDORSED + "}" ; //NOI18N
     //private static final SpecificationVersion JDK_1_6 = new SpecificationVersion("1.6"); //NOI18N
     private static final String JAXB_CONTEXT_CLASS_RES_PATH = "javax/xml/bind/JAXBContext.class"; //NOI18N
+
+    public static final String IDE_MODULE_INSTALL_NAME = "modules/org-netbeans-modules-xml-wsdl-model.jar"; // NOI18N
+    public static final String IDE_MODULE_INSTALL_CBN = "org.netbeans.modules.xml.wsdl.model"; // NOI18N
 
     // Make sure nobody instantiates this class.
     private ProjectHelper(){ }
@@ -807,8 +813,7 @@ public class ProjectHelper {
         //String ret = "\"${netbeans.home}/../java2/modules/ext/jaxws21/api" //NOI18N
         //        + File.pathSeparator 
         //        + "${netbeans.home}/../java2/modules/ext/jaxws21\""; //NOI18N
-        String ret = "\"${netbeans.home}/../ide9/modules/ext/jaxb/api\""; //NOI18N
-
+        String ret = "\"${netbeans.home}/../ide12/modules/" + JAXB_API_JAR_DIR + "\""; //NOI18N
         return ret;
     }
 
@@ -1108,6 +1113,25 @@ public class ProjectHelper {
         }                
     }        
 
+    public static void checkAndDeregisterScript(Project prj){
+        if (prj != null){
+            Schemas ss = getXMLBindingSchemas(prj);
+            if ((ss == null) || (ss.sizeSchema() == 0)){
+                AntBuildExtender ext = prj.getLookup().lookup(AntBuildExtender.class);
+                if (ext != null && ext.getExtension(JAXB_ANT_XTN_NAME) != null) {
+                    ext.removeExtension(JAXB_ANT_XTN_NAME);
+                    try {
+                        ProjectManager.getDefault().saveProject(prj);
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (IllegalArgumentException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+        }
+    }
+
     public static void cleanupLocalSchemaDir(Project project, Schema schema){
         FileObject projectSchemasDir = getFOProjectSchemaDir(project);        
         FileObject schemaDir = projectSchemasDir.getFileObject(
@@ -1145,5 +1169,41 @@ public class ProjectHelper {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-    }    
+    }
+
+    public static void setPrivateProjPros(Project prj){
+        boolean changedPrivateProp = false;
+        boolean changedProjProp = false;
+
+        AntProjectHelper helper = getAntProjectHelper(prj);
+        EditableProperties privateEP = helper.getProperties(
+                AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+        
+        InstalledFileLocator installedFileLocator = InstalledFileLocator.getDefault();
+        File f = installedFileLocator.locate(IDE_MODULE_INSTALL_NAME, IDE_MODULE_INSTALL_CBN, false);
+        if (f != null) {
+            File jaxbApiDir = new File(f.getParentFile(), JAXB_API_JAR_DIR); 
+            privateEP.setProperty(PROP_ENDORSED, jaxbApiDir.getPath());
+            helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateEP);
+            changedPrivateProp = true;
+        }
+
+        EditableProperties projectEP = helper.getProperties(
+                AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        String endorsedDirVal = getEndorsedDirs(prj);
+        String existingVal = projectEP.getProperty(PROP_ENDORSED);
+        if ((existingVal == null) || (!endorsedDirVal.equals(existingVal))){
+            projectEP.setProperty(PROP_ENDORSED, endorsedDirVal);
+            helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectEP);
+            changedProjProp = true;
+        }
+
+        if (changedPrivateProp || changedProjProp){
+            try {
+                ProjectManager.getDefault().saveProject(prj);
+            } catch (IOException e) {
+                ErrorManager.getDefault().notify(e);
+            }
+        }
+    }
 }

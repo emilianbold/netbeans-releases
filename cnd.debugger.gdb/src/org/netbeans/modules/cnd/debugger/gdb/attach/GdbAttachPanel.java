@@ -508,7 +508,7 @@ public class GdbAttachPanel extends JPanel implements ProcessListReader {
 
     }
 
-    class MyDevHostListCellRenderer extends DefaultListCellRenderer {
+    static class MyDevHostListCellRenderer extends DefaultListCellRenderer {
 
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {

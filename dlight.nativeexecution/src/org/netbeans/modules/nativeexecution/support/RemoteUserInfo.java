@@ -42,6 +42,7 @@ import com.jcraft.jsch.UIKeyboardInteractive;
 import com.jcraft.jsch.UserInfo;
 import java.awt.Component;
 import java.util.Arrays;
+import java.util.concurrent.CancellationException;
 import javax.swing.JOptionPane;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.PasswordManager;
@@ -142,7 +143,7 @@ final class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
                     return true;
                 } else {
                     pm.clearPassword(env);
-                    return false;
+                    throw new CancellationException(loc("USER_AUTH_CANCELED")); // NOI18N
                 }
             }
         }

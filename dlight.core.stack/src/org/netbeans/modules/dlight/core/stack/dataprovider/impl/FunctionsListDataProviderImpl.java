@@ -40,7 +40,6 @@ package org.netbeans.modules.dlight.core.stack.dataprovider.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
@@ -64,7 +63,7 @@ import org.openide.util.Lookup;
  */
 class FunctionsListDataProviderImpl implements FunctionsListDataProvider {
 
-    private final Object lock = new String("FunctionsListDataProviderImpl.lock");//NOI18N
+    private final Lock lock = new Lock();
     private StackDataStorage storage;
     private ServiceInfoDataStorage serviceInfoStorage;
     private final List<DataFilter> filters = new ArrayList<DataFilter>();
@@ -110,7 +109,7 @@ class FunctionsListDataProviderImpl implements FunctionsListDataProvider {
                 Lookup.getDefault().lookupAll(SourceFileInfoProvider.class);
 
         for (SourceFileInfoProvider provider : sourceInfoProviders) {
-            final SourceFileInfo sourceInfo = provider.fileName(functionCall.getFunction().getQuilifiedName(), -1, functionCall.getOffset(), serviceInfoStorage.getInfo());
+            final SourceFileInfo sourceInfo = provider.getSourceFileInfo(functionCall.getFunction().getQuilifiedName(), -1, functionCall.getOffset(), serviceInfoStorage.getInfo());
             if (sourceInfo != null && sourceInfo.isSourceKnown()) {
                 return sourceInfo;
             }
@@ -132,5 +131,9 @@ class FunctionsListDataProviderImpl implements FunctionsListDataProvider {
 
     public boolean hasTheSameDetails(DataTableMetadata metadata, FunctionDatatableDescription functionDescription, List<Column> metricsColumn) {
         return true;
+    }
+
+    private final static class Lock {
+        
     }
 }

@@ -58,7 +58,6 @@ public class IndexedFunction extends IndexedFullyQualified implements FunctionEl
     List<Parameter> parameters;
     private String namespaceName;
     private String returnType;
-    private boolean includeIn;
     
     public IndexedFunction(String name, String in, PHPIndex index, String fileUrl, List<Parameter> arguments, int offset, int flags, ElementKind kind) {
         this(name,in,null,index,fileUrl,arguments,offset,flags,kind);
@@ -99,7 +98,6 @@ public class IndexedFunction extends IndexedFullyQualified implements FunctionEl
     }
     
     private String getSignatureImpl(boolean includeIn, boolean includeParamInfo) {
-        this.includeIn = includeIn;
         StringBuilder sb = new StringBuilder();
         if (in != null && includeIn) {
             sb.append(in);
@@ -122,14 +120,14 @@ public class IndexedFunction extends IndexedFullyQualified implements FunctionEl
                         } else {
                         for (QualifiedName qName : types) {
                             sb.append(qName.toString()).append(' ');//NOI18N
-                            }
+                        }
                     }
                 }
                 sb.append(param.getName());
                 if (includeParamInfo) {
                     String defaultValue = param.getDefaultValue();
                     if (defaultValue != null) {
-                        sb.append("=").append(defaultValue).append(" "); //NOI18N
+                        sb.append(" = ").append(defaultValue); //NOI18N
                     }
                 }
             }

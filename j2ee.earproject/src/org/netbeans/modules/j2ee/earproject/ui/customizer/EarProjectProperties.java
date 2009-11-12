@@ -596,6 +596,9 @@ public final class EarProjectProperties {
     }
     
     public static void addItemToAppDD(EarProject project, Application dd, ClassPathSupport.Item item) {
+        if (item.isBroken()) {
+            return;
+        }
         String path = getCompletePathInArchive(project, item);
         Module mod = null;
         if (item.getType() == ClassPathSupport.Item.TYPE_ARTIFACT) {

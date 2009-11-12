@@ -214,13 +214,16 @@ class MavenJaxWsSupportProvider implements JAXWSLightSupportProvider, PropertyCh
                             for (PortComponent port : ports) {
                                 // key = imlpementation class package name
                                 // value = service name
-                                QName portName = port.getWsdlPort();                               
-                                result.put(port.getDisplayName(),
-                                new ServiceInfo(
-                                        wsDesc.getWebserviceDescriptionName(),
-                                        (portName == null ? null : portName.getLocalPart()),
-                                        port.getDisplayName(),
-                                        wsDesc.getWsdlFile()));
+                                String implClass = port.getDisplayName();
+                                if (WSUtils.isInSourceGroup(prj, implClass)) {
+                                    QName portName = port.getWsdlPort();
+                                    result.put(implClass,
+                                    new ServiceInfo(
+                                            wsDesc.getWebserviceDescriptionName(),
+                                            (portName == null ? null : portName.getLocalPart()),
+                                            implClass,
+                                            wsDesc.getWsdlFile()));
+                                }
                             }
 
                         }

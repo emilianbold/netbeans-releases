@@ -242,7 +242,7 @@ public final class CreateHostWizardIterator implements WizardDescriptor.Iterator
         }
 
         final RemoteSyncFactory syncFactory = result.getSyncFactory();
-        final ServerRecord record = ServerList.addServer(execEnv, displayName, syncFactory, false, false);
+        final ServerRecord record = ServerList.createServerRecord(execEnv, displayName, syncFactory);
 
         return record;
     }

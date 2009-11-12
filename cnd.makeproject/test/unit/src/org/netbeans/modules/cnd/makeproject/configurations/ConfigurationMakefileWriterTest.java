@@ -50,10 +50,6 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
@@ -64,33 +60,19 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
+import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbPreferences;
 
 /**
  * Create a sample web project by unzipping a template into some directory
  */
-public class ConfigurationMakefileWriterTest {
+public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
 
     private static final boolean TRACE = false;
 
-    public ConfigurationMakefileWriterTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
-
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
+    public ConfigurationMakefileWriterTest(String name) {
+        super(name);
     }
 
     public static File getBaseFolder(){
@@ -108,6 +90,7 @@ public class ConfigurationMakefileWriterTest {
             System.out.println("-----------------------------------------------------" + testName);
         }
         System.setProperty("org.netbeans.modules.cnd.makeproject.api.runprofiles", "true"); // NOI18N
+        System.setProperty("cnd.remote.fs", "false");
         Logger logger = Logger.getLogger(NbPreferences.class.getName());
         logger.setLevel(Level.SEVERE);
         logger = Logger.getLogger("org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory"); // NOI18N
@@ -390,10 +373,10 @@ public class ConfigurationMakefileWriterTest {
         golden.append("${OBJECTDIR}/test.o: nbproject/Makefile-${CND_CONF}.mk test.cc \n");
         golden.append("\t${MKDIR} -p ${OBJECTDIR}\n");
         golden.append("\t${RM} $@.d\n");
-        golden.append("\t$(COMPILE.cc) -g -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/test.o test.cc\n");
+        golden.append("\t$(COMPILE.cc) -g  -MMD -MP -MF $@.d -o ${OBJECTDIR}/test.o test.cc\n");
         golden.append("dist/Default/MyCompilerSet-Windows/libXxx.dll: ${OBJECTFILES}\n");
         golden.append("\t${MKDIR} -p dist/Default/MyCompilerSet-Windows\n");
-        golden.append("\t${LINK.cc} -shared -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libXxx.dll -fPIC ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
+        golden.append("\t${LINK.cc} -shared -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libXxx.dll ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
         testDynamicLibrary("DynLib_MinGW_Windows", "MinGW", Platform.PLATFORM_WINDOWS, golden.toString());
     }
 
@@ -404,10 +387,10 @@ public class ConfigurationMakefileWriterTest {
         golden.append("${OBJECTDIR}/test.o: nbproject/Makefile-${CND_CONF}.mk test.cc \n");
         golden.append("\t${MKDIR} -p ${OBJECTDIR}\n");
         golden.append("\t${RM} $@.d\n");
-        golden.append("\t$(COMPILE.cc) -g -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/test.o test.cc\n");
+        golden.append("\t$(COMPILE.cc) -g  -MMD -MP -MF $@.d -o ${OBJECTDIR}/test.o test.cc\n");
         golden.append("dist/Default/MyCompilerSet-Windows/libXxx.dll: ${OBJECTFILES}\n");
         golden.append("\t${MKDIR} -p dist/Default/MyCompilerSet-Windows\n");
-        golden.append("\t${LINK.cc} -mno-cygwin -shared -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libXxx.dll -fPIC ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
+        golden.append("\t${LINK.cc} -mno-cygwin -shared -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libXxx.dll ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
         testDynamicLibrary("DynLib_Cygwin_Windows", "Cygwin", Platform.PLATFORM_WINDOWS, golden.toString());
     }
 }

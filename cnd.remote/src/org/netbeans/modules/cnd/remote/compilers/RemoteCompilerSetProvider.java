@@ -39,14 +39,20 @@
 
 package org.netbeans.modules.cnd.remote.compilers;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetProvider;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
-import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
-import org.netbeans.modules.cnd.remote.support.SystemIncludesUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.openide.util.Exceptions;
 
 /**
  * @author gordonp
@@ -75,13 +81,17 @@ public class RemoteCompilerSetProvider implements CompilerSetProvider {
             RemoteUtil.LOGGER.warning("RCSP.getPlatform: Got null response on platform"); //NOI18N
             platform = ""; //NOI18N
         }
-        if (platform.startsWith("Windows")) { // NOI18N
+        if (platform.startsWith("Windows") || platform.startsWith("PLATFORM_WINDOWS")) { // NOI18N
             return PlatformTypes.PLATFORM_WINDOWS;
-        } else if (platform.startsWith("Linux")) { // NOI18N
+        } else if (platform.startsWith("Linux") || platform.startsWith("PLATFORM_LINUX")) { // NOI18N
             return PlatformTypes.PLATFORM_LINUX;
         } else if (platform.startsWith("SunOS")) { // NOI18N
             return platform.contains("86") ? PlatformTypes.PLATFORM_SOLARIS_INTEL : PlatformTypes.PLATFORM_SOLARIS_SPARC; // NOI18N
-        } else if (platform.toLowerCase().startsWith("mac")) { // NOI18N
+        } else if (platform.startsWith("PLATFORM_SOLARIS_INTEL")) { // NOI18N
+            return PlatformTypes.PLATFORM_SOLARIS_INTEL;
+        } else if (platform.startsWith("PLATFORM_SOLARIS_SPARC")) { // NOI18N
+            return PlatformTypes.PLATFORM_SOLARIS_SPARC;
+        } else if (platform.toLowerCase().startsWith("mac") || platform.startsWith("PLATFORM_MACOSX")) { // NOI18N
             return PlatformTypes.PLATFORM_MACOSX;
         } else {
             return PlatformTypes.PLATFORM_GENERIC;
@@ -97,14 +107,43 @@ public class RemoteCompilerSetProvider implements CompilerSetProvider {
     }
 
     public Runnable createCompilerSetDataLoader(List<CompilerSet> sets) {
-            return SystemIncludesUtils.createLoader(env, sets);
+        return new Runnable() {
+            public void run() {}
+        };
     }
 
     public String[] getCompilerSetData(String path) {
-        RemoteCommandSupport rcs = new RemoteCommandSupport(env,
-                CompilerSetScriptManager.SCRIPT + " " + path); //NOI18N
-        if (rcs.run() == 0) {
-            return rcs.getOutput().split("\n"); // NOI18N
+        //RemoteCommandSupport rcs = new RemoteCommandSupport(env,
+        //        CompilerSetManager.getRemoteScriptFile() + " " + path); //NOI18N
+        //if (rcs.run() == 0) {
+        //    return rcs.getOutput().split("\n"); // NOI18N
+        //}
+        //return null;
+        try {
+            NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(env);
+            HostInfo hinfo = HostInfoUtils.getHostInfo(env);
+            pb.setExecutable(hinfo.getShell()).setArguments("-s"); // NOI18N
+            Process process = pb.call();
+            process.getOutputStream().write(CompilerSetManager.getRemoteScript(path).getBytes());
+            process.getOutputStream().close();
+
+            List<String> lines = ProcessUtils.readProcessOutput(process);
+            int status = -1;
+
+            try {
+                status = process.waitFor();
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+
+            if (status != 0) {
+               RemoteUtil.LOGGER.warning("CSSM.runScript: FAILURE "+status); // NOI18N
+                ProcessUtils.logError(Level.ALL, RemoteUtil.LOGGER, process);
+            } else {
+                return lines.toArray(new String[lines.size()]);
+            }
+        } catch (IOException ex) {
+            RemoteUtil.LOGGER.warning("CSSM.runScript: IOException [" + ex.getMessage() + "]"); // NOI18N
         }
         return null;
     }

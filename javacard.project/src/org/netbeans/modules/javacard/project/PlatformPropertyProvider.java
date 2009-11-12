@@ -47,7 +47,7 @@ import java.util.Collections;
 import java.util.Map;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.javacard.Utils;
+import org.netbeans.modules.javacard.JCUtil;
 import org.netbeans.modules.propdos.ObservableProperties;
 import org.netbeans.modules.propdos.PropertiesAdapter;
 import org.netbeans.modules.javacard.constants.ProjectPropertyNames;
@@ -55,6 +55,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.openide.loaders.DataObject;
 import org.openide.util.ChangeSupport;
+import org.openide.util.NbCollections;
 import org.openide.util.WeakListeners;
 
 class PlatformPropertyProvider implements PropertyProvider, PropertyChangeListener, Runnable {
@@ -73,7 +74,7 @@ class PlatformPropertyProvider implements PropertyProvider, PropertyChangeListen
         if (adap != null) {
             ObservableProperties props = adap.asProperties();
             props.addPropertyChangeListener(WeakListeners.propertyChange(this, props));
-            return new PropertiesMapAdapter(props);
+            return NbCollections.checkedMapByFilter(props, String.class, String.class, false);
         }
         return Collections.<String, String>emptyMap();
     }
@@ -81,7 +82,7 @@ class PlatformPropertyProvider implements PropertyProvider, PropertyChangeListen
     protected PropertiesAdapter findAdapter() {
         PropertyProvider projectProps = antHelper.getPropertyProvider(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         String platformName = projectProps.getProperties().get(ProjectPropertyNames.PROJECT_PROP_ACTIVE_PLATFORM);
-        DataObject dob = Utils.findPlatformDataObjectNamed(platformName);
+        DataObject dob = JCUtil.findPlatformDataObjectNamed(platformName);
         if (dob != null) {
             PropertiesAdapter adap = dob.getLookup().lookup(PropertiesAdapter.class);
             return adap;

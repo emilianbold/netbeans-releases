@@ -57,6 +57,10 @@ made subject to such option by the copyright holder.
         <resource>jar:nbinst:///modules/ext/jaxb/api/jsr173_api.jar!/</resource>
     </volume>
     <volume>
+        <type>javadoc</type>
+        <resource>jar:nbinst:///docs/jaxb-api-doc.zip!/</resource>
+    </volume>
+    <volume>
         <type>maven-pom</type>
         <resource>http://download.java.net/maven/1/com.sun.xml.bind/poms/jaxb-impl-2.2-EA.pom</resource>
     </volume>

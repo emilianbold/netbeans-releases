@@ -169,9 +169,23 @@ public class XMLDataObject extends MultiDataObject {
      *
      * @param fo the primary file object, never <code>null</code>
      * @param loader loader of this data object, never <code>null</code>
-     *
      */
     public XMLDataObject (FileObject fo, MultiFileLoader loader)
+    throws DataObjectExistsException {
+        this(fo, loader, true);
+    }
+
+    /**
+     * Constructs XMLDataObject without any registered cookies (for editor,
+     * open, etc.). Useful for subclasses.
+     *
+     * @param fo the primary file object, never <code>null</code>
+     * @param loader loader of this data object, never <code>null</code>
+     * @param registerEditor call with false to skip registrations of various
+     *   editor related cookies
+     * @since 7.10
+     */
+    protected XMLDataObject (FileObject fo, MultiFileLoader loader, boolean registerEditor)
     throws DataObjectExistsException {
         super (fo, loader);
         
@@ -179,20 +193,26 @@ public class XMLDataObject extends MultiDataObject {
 
         status = STATUS_NOT;
 
+        if (registerEditor) {
+            registerEditor();
+        }
+    }
+
+    private void registerEditor() {
         // register provided cookies
         // EditorCookie must be for back compatability consulted with subclasses
         //
         // In new model subclasses should directly provide its CookieSet.Factory that
         // uses last prevails order instead of old CookieSet first prevails order.
         // It completely prevails over this factory :-)
-        
+
         CookieSet.Factory factory = new CookieSet.Factory() {
             public <T extends Node.Cookie> T createCookie(Class<T> klass) {
                 if (klass.isAssignableFrom(EditorCookie.class)
-                   || klass.isAssignableFrom(OpenCookie.class) 
-                   || klass.isAssignableFrom(CloseCookie.class) 
+                   || klass.isAssignableFrom(OpenCookie.class)
+                   || klass.isAssignableFrom(CloseCookie.class)
                    || klass.isAssignableFrom(PrintCookie.class) ) {
-                
+
                     if (editor == null) editor = createEditorCookie();  // the first pass
                     if (editor == null) return null;                    //??? gc unfriendly
 
@@ -202,15 +222,15 @@ public class XMLDataObject extends MultiDataObject {
                 }
             }
         };
-                
+
         CookieSet cookies = getCookieSet();
-        // EditorCookie.class must be synchronized with 
+        // EditorCookie.class must be synchronized with
         // XMLEditor.Env->findCloneableOpenSupport
         cookies.add(EditorCookie.class, factory);
         cookies.add(OpenCookie.class, factory);
         cookies.add(CloseCookie.class, factory);
         cookies.add(PrintCookie.class, factory);
-        
+
         // set info for this file
         //getIP ().resolveInfo ();        #16045
         cookies.assign( SaveAsCapable.class, new SaveAsCapable() {
@@ -421,7 +441,7 @@ public class XMLDataObject extends MultiDataObject {
         }
         protected void notifyUnmodified () {
             super.notifyUnmodified ();
-            SaveCookie save = (SaveCookie) getDataObject ().getCookie (SaveCookie.class);
+            SaveCookie save = getDataObject().getCookie(SaveCookie.class);
             if (save != null) {
                 ((XMLDataObject) getDataObject ()).removeSaveCookie (save);
                 getDataObject ().setModified (false);
@@ -880,7 +900,7 @@ public class XMLDataObject extends MultiDataObject {
     @Deprecated
     public static Info getRegisteredInfo(String publicId) {  //!!! to be replaced by lookup
         synchronized (infos) {
-            Info ret = (Info) infos.get(publicId);
+            Info ret = infos.get(publicId);
             return ret == null ? null : (Info)ret.clone ();
         }
     }

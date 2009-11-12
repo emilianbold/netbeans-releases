@@ -126,7 +126,8 @@ public class NamespaceKeyArray extends HostKeyArray implements UpdatebleHost, Cs
                 Collection<CsmOffsetableDeclaration> decl = namespace.getDeclarations();
                 if (decl != null) {
                     for (CsmDeclaration d : decl) {
-                        if (d != null && d.getKind() == CsmDeclaration.Kind.FUNCTION_DEFINITION) {
+                        if (d != null && (d.getKind() == CsmDeclaration.Kind.FUNCTION_DEFINITION ||
+                                d.getKind() == CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION)) {
                             CsmFunctionDefinition def = (CsmFunctionDefinition) d;
                             CsmFunction func = def.getDeclaration();
                             if (func != null) {
@@ -167,9 +168,11 @@ public class NamespaceKeyArray extends HostKeyArray implements UpdatebleHost, Cs
                 }
             } else if( d.getKind() == CsmDeclaration.Kind.VARIABLE ) {
                 return true;
-            } else if( d.getKind() == CsmDeclaration.Kind.FUNCTION ) {
+            } else if( d.getKind() == CsmDeclaration.Kind.FUNCTION ||
+                    d.getKind() == CsmDeclaration.Kind.FUNCTION_FRIEND) {
                 return true;
-            } else if( d.getKind() == CsmDeclaration.Kind.FUNCTION_DEFINITION ) {
+            } else if( d.getKind() == CsmDeclaration.Kind.FUNCTION_DEFINITION ||
+                    d.getKind() == CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION) {
                 CsmFunctionDefinition definition = (CsmFunctionDefinition) d;
                 CsmFunction func = definition.getDeclaration();
                 if( func == null || func == definition ) {
@@ -212,9 +215,11 @@ public class NamespaceKeyArray extends HostKeyArray implements UpdatebleHost, Cs
 //                    return new GlobalVarNode(definition);
 //                }
 //            }
-                else if( d.getKind() == CsmDeclaration.Kind.FUNCTION ) {
+                else if( d.getKind() == CsmDeclaration.Kind.FUNCTION ||
+                        d.getKind() == CsmDeclaration.Kind.FUNCTION_FRIEND) {
                     return new GlobalFuncNode((CsmFunction) d);
-                } else if( d.getKind() == CsmDeclaration.Kind.FUNCTION_DEFINITION ) {
+                } else if( d.getKind() == CsmDeclaration.Kind.FUNCTION_DEFINITION ||
+                        d.getKind() == CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION) {
                     CsmFunctionDefinition definition = (CsmFunctionDefinition) d;
                     CsmFunction func = definition.getDeclaration();
                     if( func == null || func == definition ) {

@@ -369,25 +369,24 @@ public final class TaskListProvider extends PushTaskScanner {
                     LOG.log(Level.FINER, "RefreshTask.run: issues to validate: {0}", issuesToValidate); //NOI18N
                 }
             }
-            List<String> repositoryUrls = getRepositoriesFor(scope);
-            // if the issue's repository is not among allAssociatedRepositories, then it is probably not associated yet
-            // and the issue would never be displayed. So show unassociated issues/repositories by default.
-            Collection<String> allAssociatedRepositories = BugtrackingOwnerSupport.getInstance().getAllAssociatedUrls();
-            if (LOG.isLoggable(Level.FINER)) {
-                LOG.log(Level.FINER, "RefreshTask.run: all associated repositories: {0}", allAssociatedRepositories); //NOI18N
-            }
-            if (repositoryUrls == null) {
-                return;
-            }
-            // validate issues
-            for (Map.Entry<LazyIssue, IssueProvider> e : issuesToValidate.entrySet()) {
-                if (isIssueFromRepository(e.getKey(), repositoryUrls, allAssociatedRepositories)) {
-                    if (LOG.isLoggable(Level.FINER)) {
-                        LOG.log(Level.FINER, "RefreshTask.run: issue {0} is valid under current scope", e.getKey().getName()); //NOI18N
+            List<String> repositoryUrls;
+            if (!issuesToValidate.isEmpty() && (repositoryUrls = getRepositoriesFor(scope)) != null) {
+                // if the issue's repository is not among allAssociatedRepositories, then it is probably not associated yet
+                // and the issue would never be displayed. So show unassociated issues/repositories by default.
+                Collection<String> allAssociatedRepositories = BugtrackingOwnerSupport.getInstance().getAllAssociatedUrls();
+                if (LOG.isLoggable(Level.FINER)) {
+                    LOG.log(Level.FINER, "RefreshTask.run: all associated repositories: {0}", allAssociatedRepositories); //NOI18N
+                }
+                // validate issues
+                for (Map.Entry<LazyIssue, IssueProvider> e : issuesToValidate.entrySet()) {
+                    if (isIssueFromRepository(e.getKey(), repositoryUrls, allAssociatedRepositories)) {
+                        if (LOG.isLoggable(Level.FINER)) {
+                            LOG.log(Level.FINER, "RefreshTask.run: issue {0} is valid under current scope", e.getKey().getName()); //NOI18N
+                        }
+                        issuesToInclude.put(e.getKey(), e.getValue());
+                    } else if (LOG.isLoggable(Level.FINER)) {
+                        LOG.log(Level.FINER, "RefreshTask.run: issue {0} is invalid under current scope", e.getKey().getName()); //NOI18N
                     }
-                    issuesToInclude.put(e.getKey(), e.getValue());
-                } else if (LOG.isLoggable(Level.FINER)) {
-                    LOG.log(Level.FINER, "RefreshTask.run: issue {0} is invalid under current scope", e.getKey().getName()); //NOI18N
                 }
             }
             // list of tasks eventually inserted into the tasklist

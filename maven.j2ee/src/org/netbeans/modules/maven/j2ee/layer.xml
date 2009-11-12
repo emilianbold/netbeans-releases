@@ -52,7 +52,7 @@ made subject to such option by the copyright holder.
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.newproject.Bundle"/>
                     <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.newproject.BasicEEWizardIterator.createWebAppIterator"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/newproject/WebAppDescription.html"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/Maven2Icon.gif"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/resources/webicon.gif"/>
                     <attr name="template" boolvalue="true"/>
                 </file>
                 <file name="EJB">
@@ -60,7 +60,7 @@ made subject to such option by the copyright holder.
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.newproject.Bundle"/>
                     <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.newproject.BasicEEWizardIterator.createEJBIterator"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/newproject/EjbDescription.html"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/Maven2Icon.gif"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/resources/ejbicon.gif"/>
                     <attr name="template" boolvalue="true"/>
                 </file>
                 <file name="EA">
@@ -68,7 +68,7 @@ made subject to such option by the copyright holder.
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.newproject.Bundle"/>
                     <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.newproject.EAWizardIterator.createIterator"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/newproject/EADescription.html"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/Maven2Icon.gif"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/resources/earicon.gif"/>
                     <attr name="template" boolvalue="true"/>
                 </file>
             </folder>

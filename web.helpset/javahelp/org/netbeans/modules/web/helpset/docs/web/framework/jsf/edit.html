@@ -1,0 +1,118 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<!--
+*     Copyright © 2009 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <title>Editing JSF Pages</title>
+        <link href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css"
+            rel="StyleSheet" type="text/css">
+    </head>
+
+    <body>
+        <h2>Editing JSF Pages</h2>
+
+        <p><small><a href="#seealso">See Also</a></small></p>
+
+        <p>You can edit JSF pages using the IDE's source editor. From the Projects window,
+            you can double-click any JSF-related file node to open it in the editor.</p>
+
+        <h3>Facelets Files</h3>
+
+        <p>The IDE's editor provides the following support when editing Facelets pages.</p>
+
+        <ul>
+            <li><strong>Code completion:</strong>
+
+                <ul>
+                    <li><strong>JSF and Facelets tags:</strong> Press Ctrl-Space on JSF and
+                        Facelets tags to invoke a pop-up listing valid tag entries for completing
+                        a tag you've begun typing.</li>
+
+                    <li><strong>JSF namespaces:</strong> If you apply code-completion for a
+                        tag whose namespace is not yet declared in the file, the namespace
+                        is automatically added to the page's &lt;html&gt; tag.</li>
+
+                    <li><strong>JSF namespace paths:</strong> If you manually declare a
+                        namespace, press Ctrl-Space between the quotes of a namespace
+                        declaration to invoke a list of possible paths.</li>
+
+                    <li><strong>EL (Expression Language) expressions:</strong> When typing EL
+                        expressions in the editor, press Ctrl-Space to call up a list of possible
+                        entries for completing the expression. The pop-up list typically includes
+                        JSF managed beans and their properties, property bundle messages, and
+                        implicit objects.</li>
+                </ul>
+
+            <li><strong>Documentation:</strong> Press Ctrl-Space on JSF and Facelets
+                tags to invoke a documentation pop-up that describes the given tag.</li>
+
+            <li><strong>Hints and Error Messages:</strong> The editor provides you with
+                warning and error messages while you edit JSF pages. Errors display with
+                a red badge in the left margin of the editor, and the corresponding code
+                is underlined in red. You can hover your mouse over the badge or underlined
+                code to view a tooltip describing the cause of the error. The editor checks
+                whether:
+
+                <ul>
+                    <li>a declared library exists</li>
+                    <li>the library matched by the tag prefix contains such a component or tag</li>
+                    <li>the tag contains all required attributes</li>
+                    <li>all entered attributes are defined in the component's interface</li>
+                    <li>undeclared components exist on the page</li>
+                    <li>taglib declarations exist without usages</li>
+                </ul></li>
+
+            <li><strong>Syntax highlighting:</strong>
+
+                <ul>
+                    <li>JSF and Facelets tags display in blue.</li>
+                    <li>Tag attributes display in green.</li>
+                    <li>Tag attribute values display in orange.</li>
+                    <li>EL expressions display in black, with light-green background.</li>
+                </ul></li>
+        </ul>
+
+        <h3>Configuration Files</h3>
+
+        <p>JSF 2.0 (JSR-314) does not require the Faces configuration file (<code>faces-config.xml</code>),
+            however, if you add this file to your project, the following support is available.</p>
+
+        <h4>Configuration Dialogs</h4>
+
+        <p>Right-click menu support provides several dialogs that enable you to create entries
+            into the configuration file:</p>
+
+        <ul>
+            <li><strong>Navigation Case dialog</strong>: Right-click in the editor and choose Insert &gt; Navigation Case.</li>
+            <li><strong>Navigation Rule dialog</strong>: Right-click in the editor and choose Insert &gt; Navigation Rule.</li>
+            <li><strong>Managed Bean dialog</strong>: Right-click in the editor and choose Insert &gt; Managed Bean.</li>
+        </ul>
+
+        <h4>Hyperlinking</h4>
+
+        <p>Hyperlinking is available in JSF configuration files, enabling you to quickly
+            navigate between a source and its reference. To make use of hyperlinking in
+            configuration files, hover the mouse over a JSF class entity while pressing
+            Ctrl. The class declaration displays as a hyperlink. Clicking on the link opens
+            the appropriate Java class in the Source Editor. In Facelets (and JSP) pages,
+            you can press Ctrl while hovering over managed beans, or accessor methods used
+            within JSF tags. Clicking the hyperlink that displays opens the respective
+            class or property in the Source Editor.</p>
+
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="about.html">About JavaServer Faces Framework Support</a></dd>
+            <dd><a href="create.html">Creating a New Application with JSF Support</a></dd>
+            <dd><a href="add.html">Adding JavaServer Faces Framework Support to an Existing Application</a></dd>
+            <dd><a href="../about_framework.html">About Web Application Frameworks</a></dd>
+        </dl>
+
+        <hr><small><a href="../../../credits.html">Legal Notices</a></small>
+        <table cellpadding="20" border="0"><tr><td>&nbsp;</td></tr></table>
+    </body>
+</html>

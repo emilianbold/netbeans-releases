@@ -106,6 +106,7 @@ import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -133,8 +134,10 @@ import org.w3c.dom.Text;
     privateNamespace=EarProjectType.PRIVATE_CONFIGURATION_NAMESPACE
 )
 public final class EarProject implements Project, AntProjectListener {
+
+    private static Logger LOGGER = Logger.getLogger(EarProject.class.getName());
     
-    private static final Icon EAR_PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/j2ee/earproject/ui/resources/projectIcon.gif", false); // NOI18N
+    private final Icon EAR_PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/j2ee/earproject/ui/resources/projectIcon.gif", false); // NOI18N
     public static final String ARTIFACT_TYPE_EAR = "ear";
     
     private final AntProjectHelper helper;
@@ -241,6 +244,7 @@ public final class EarProject implements Project, AntProjectListener {
             UILookupMergerSupport.createRecommendedTemplatesMerger(),
             LookupProviderSupport.createSourcesMerger(),
             buildExtender,
+            new SourceForBinaryQueryImpl(this),
         });
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-j2ee-earproject/Lookup"); //NOI18N
     }
@@ -436,9 +440,18 @@ public final class EarProject implements Project, AntProjectListener {
                         EarProject.class.getResource("resources/build.xsl"),
                         true);
             } catch (IOException e) {
-                Logger.getLogger("global").log(Level.INFO, null, e);
+                LOGGER.log(Level.INFO, null, e);
             }
-            
+
+
+            // Register copy on save support
+            try {
+                getAppModule().copyOnSaveSupport.initialize();
+            }
+            catch (FileStateInvalidException e) {
+                LOGGER.log(Level.INFO, null, e);
+            }
+
             // register project's classpaths to GlobalPathRegistry
             GlobalPathRegistry.getDefault().register(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
             
@@ -563,7 +576,15 @@ public final class EarProject implements Project, AntProjectListener {
             } catch (IOException e) {
                 Exceptions.printStackTrace(e);
             }
-            
+
+            // Unregister copy on save support
+            try {
+                getAppModule().copyOnSaveSupport.cleanup();
+            }
+            catch (FileStateInvalidException e) {
+                LOGGER.log(Level.INFO, null, e);
+            }
+
             Deployment.getDefault().disableCompileOnSaveSupport(appModule);
             
             // unregister project's classpaths to GlobalPathRegistry

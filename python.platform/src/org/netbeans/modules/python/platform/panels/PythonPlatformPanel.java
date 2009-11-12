@@ -25,6 +25,8 @@ import org.netbeans.modules.python.platform.models.PythonPlatformListModel;
 import org.netbeans.modules.python.platform.renderers.PlatformListCellRenderer;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.NotifyDescriptor.Message;
 import org.openide.awt.Mnemonics;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
@@ -452,7 +454,14 @@ public class PythonPlatformPanel extends javax.swing.JPanel {
                 loadPlatform();
                 platformListModel.refresh();
             } catch (PythonException ex) {
-                Exceptions.printStackTrace(ex);
+                NotifyDescriptor message = new Message(
+                        ex.getMessage(), NotifyDescriptor.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notify(message);
+                //Exceptions.printStackTrace(ex);
+            }catch(Exception ex){
+                NotifyDescriptor message = new Message(
+                        "Invlaid Python Type", NotifyDescriptor.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notify(message);
             }
         }
 

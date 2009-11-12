@@ -44,33 +44,54 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.PathMap;
+import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
+import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.remote.ui.EditPathMapDialog;
+import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
+import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
+import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
+import org.openide.util.Utilities;
 
 /**
  * An implementation of PathMap which returns remote path information.
  * 
  * @author gordonp
  */
-public class RemotePathMap extends PathMap {
+public abstract class RemotePathMap extends PathMap {
 
-    private final static Map<ExecutionEnvironment, RemotePathMap> pmtable =
-            new HashMap<ExecutionEnvironment, RemotePathMap>();
+    private final static Map<ExecutionEnvironment, Map<String, RemotePathMap>> pmtable =
+            new HashMap<ExecutionEnvironment, Map<String, RemotePathMap>>();
 
     public static RemotePathMap getPathMap(ExecutionEnvironment env) {
-        RemotePathMap pathmap = pmtable.get(env);
-        if (pathmap == null) {
+        String syncID = getEnvSyncID(env);
+        Map<String, RemotePathMap> pathmaps = pmtable.get(env);
+        RemotePathMap pathmap = null;
+        if (pathmaps == null) {
             synchronized (pmtable) {
-                pathmap = new RemotePathMap(env);
-                pmtable.put(env, pathmap);
+                pathmaps = new HashMap<String, RemotePathMap>();
+                pmtable.put(env, pathmaps);
+            }
+        }
+        pathmap = pathmaps.get(syncID);
+        if (pathmap == null) {
+            boolean customizable = ServerList.get(env).getSyncFactory().isPathMappingCustomizable();
+            synchronized (pmtable) {
+                pathmap = customizable ? new CustomizableRemotePathMap(env) : new FixedRemotePathMap(env);
+                pathmap.init();
+                pathmaps.put(syncID, pathmap);
             }
         }
         return pathmap;
@@ -82,20 +103,14 @@ public class RemotePathMap extends PathMap {
 
     //
 
-    private final HashMap<String, String> map = new HashMap<String, String>();
-    private final ExecutionEnvironment execEnv;
-
-    private RemotePathMap(ExecutionEnvironment execEnv) {
+    protected final HashMap<String, String> map = new HashMap<String, String>();
+    protected final ExecutionEnvironment execEnv;
+    protected RemotePathMap(ExecutionEnvironment execEnv) {
         this.execEnv = execEnv;
-        init();
     }
 
-    /** 
-     *
-     * Initialization the path map here:
-     */
-    public void init() {
-        synchronized ( map ) {
+    protected final boolean loadFromPrefs() {
+        synchronized (map) {
             String list = getPreferences(execEnv);
 
             if (list == null) {
@@ -122,27 +137,34 @@ public class RemotePathMap extends PathMap {
                         }
                     }
                 } else {
-                    // 2. Automated mappings gathering entry point
-                    HostMappingsAnalyzer ham = new HostMappingsAnalyzer(execEnv);
-                    map.putAll(ham.getMappings());
-                    // TODO: what about consequent runs. User may share something, we need to check it
+                    return false;
                 }
             } else {
                 // 3. Deserialization
                 String[] paths = list.split(DELIMITER);
-                for (int i = 0; i < paths.length; i+=2) {
-                    if (i+1 < paths.length) { //TODO: only during development
-                        map.put(paths[i], paths[i+1]);
+                for (int i = 0; i < paths.length; i += 2) {
+                    if (i + 1 < paths.length) { //TODO: only during development
+                        map.put(paths[i], paths[i + 1]);
                     } else {
                         System.err.println("mapping serialization flaw. Was found: " + list);
                     }
                 }
             }
+            return true;
         }
     }
-
+    /** 
+     *
+     * Initialization the path map here:
+     */
+    public abstract void init();
+    
     // PathMap
     public String getRemotePath(String lpath, boolean useDefault) {
+        CndUtils.assertNotNull(lpath, "local path should not be null"); // nOI18N
+        if (lpath == null) {
+            return null;
+        }
         String ulpath = unifySeparators(lpath);
         String rpath = null;
         int max = 0;
@@ -165,6 +187,10 @@ public class RemotePathMap extends PathMap {
     }
 
     public String getLocalPath(String rpath, boolean useDefault) {
+        CndUtils.assertNotNull(rpath, "remote path should not be null"); // nOI18N
+        if (rpath == null) {
+            return null;
+        }
         String urpath = unifySeparators(rpath);
         for (Map.Entry<String, String> entry : map.entrySet()) {
             String value = unifySeparators(entry.getValue());
@@ -185,6 +211,10 @@ public class RemotePathMap extends PathMap {
      * @return true if path is remote, false otherwise
      */
     public boolean checkRemotePath(String lpath, boolean fixMissingPaths) {
+        CndUtils.assertNotNull(lpath, "local path should not be null"); // nOI18N
+        if (lpath == null) {
+            return false;
+        }
         String ulpath = unifySeparators(lpath);
         for (Map.Entry<String, String> entry : map.entrySet()) {
             String mpoint = unifySeparators(entry.getValue());
@@ -220,16 +250,29 @@ public class RemotePathMap extends PathMap {
     }
 
     public void addMapping(String localParent, String remoteParent) {
+        addMappingImpl(localParent, remoteParent);
+    }
+
+    protected void addMappingImpl(String localParent, String remoteParent) {
+        CndUtils.assertNotNull(localParent, "local path shouldn't be null"); //NOI18N
+        CndUtils.assertNotNull(remoteParent, "remote path shouldn't be null"); //NOI18N
+        if (localParent == null || remoteParent == null) {
+            return;
+        }
         synchronized( map ) {
             Map<String, String> clone = new LinkedHashMap<String, String>(map);
             clone.put(localParent,remoteParent);
-            updatePathMap(clone);
+            updatePathMapImpl(clone);
         }
     }
 
 
     // Utility
     public void updatePathMap(Map<String, String> newPathMap) {
+        updatePathMapImpl(newPathMap);
+    }
+
+    protected void updatePathMapImpl(Map<String, String> newPathMap) {
         synchronized( map ) {
             map.clear();
             StringBuilder sb = new StringBuilder();
@@ -262,24 +305,37 @@ public class RemotePathMap extends PathMap {
     // inside path mapper we use only / and lowercase 
     // TODO: lowercase should be only windows issue -- possible flaw
     private static String unifySeparators(String path) {
-        return path.replace('\\', '/').toLowerCase();
+        String result = path.replace('\\', '/');
+        if (!CndFileUtils.isSystemCaseSensitive()) {
+            result = result.toLowerCase();
+        }
+        return result;
     }
 
     public static boolean isSubPath(String path, String pathToValidate) {
+        CndUtils.assertNotNull(path, "path should not be null"); // nOI18N
+        CndUtils.assertNotNull(pathToValidate, "pathToValidate should not be null"); // nOI18N
+        if (path == null || pathToValidate == null) {
+            return false;
+        }
         return unifySeparators(pathToValidate).startsWith(unifySeparators(path));
     }
 
     private static final String REMOTE_PATH_MAP = "remote-path-map"; // NOI18N
     private static final String DELIMITER = "\n"; // NOI18N
 
+    private static String getEnvSyncID(ExecutionEnvironment env) {
+        return ServerList.get(env).getSyncFactory().getID();
+    }
+
     private static String getPreferences(ExecutionEnvironment execEnv) {
         return NbPreferences.forModule(RemotePathMap.class).get(
-                REMOTE_PATH_MAP + ExecutionEnvironmentFactory.toUniqueID(execEnv), null);
+                REMOTE_PATH_MAP + ExecutionEnvironmentFactory.toUniqueID(execEnv) + getEnvSyncID(execEnv), null);
     }
 
     private void setPreferences(String newValue) {
         NbPreferences.forModule(RemotePathMap.class).put(
-                REMOTE_PATH_MAP + ExecutionEnvironmentFactory.toUniqueID(execEnv), newValue);
+                REMOTE_PATH_MAP + ExecutionEnvironmentFactory.toUniqueID(execEnv) + getEnvSyncID(execEnv), newValue);
     }
 
     private static boolean validateMapping(ExecutionEnvironment execEnv,
@@ -333,4 +389,122 @@ public class RemotePathMap extends PathMap {
         }
         return false;
     }
+
+    private final static class CustomizableRemotePathMap extends RemotePathMap {
+
+        private CustomizableRemotePathMap(ExecutionEnvironment exc) {
+            super(exc);
+        }
+
+        @Override
+        public void init() {
+            if (!loadFromPrefs()) {
+                // 2. Automated mappings gathering entry point
+                HostMappingsAnalyzer ham = new HostMappingsAnalyzer(execEnv);
+                map.putAll(ham.getMappings());
+                // TODO: what about consequent runs. User may share something, we need to check it
+            }
+        }
+    }
+
+    private static final String NO_MAPPING_PREFIX = "///"; // NOI18N
+    private final static class FixedRemotePathMap extends RemotePathMap {
+
+        private volatile String remoteBase;
+        
+        private FixedRemotePathMap(ExecutionEnvironment exc) {
+            super(exc);
+            initRemoteBase(false);
+        }
+
+        @Override
+        public void init() {
+            if (!loadFromPrefs()) {
+                if (remoteBase != null) {
+                    super.addMappingImpl("/", remoteBase); // NOI18N
+                }
+            }
+        }
+
+        @Override
+        public String getRemotePath(String lpath, boolean useDefault) {
+            CndUtils.assertNotNull(lpath, "local path should not be null"); // nOI18N
+            if (lpath == null) {
+                return null;
+            }
+            initRemoteBase(true);
+            if (remoteBase == null) {
+                return useDefault ? lpath : null;
+            }
+            String remotePath = lpath;
+            // for IZ#175198
+            if (remotePath.startsWith(NO_MAPPING_PREFIX)) {
+                return remotePath;
+            }
+            if (!isSubPath(remoteBase, lpath)) {
+                if (Utilities.isWindows() && !"/".equals(lpath)) { // NOI18N
+                    lpath = WindowsSupport.getInstance().convertToMSysPath(lpath);
+                }
+                remotePath = super.getRemotePath(lpath, useDefault);
+            }
+            return remotePath;
+        }
+
+        @Override
+        public String getLocalPath(String rpath, boolean useDefault) {
+            initRemoteBase(true);
+            // for IZ#175198
+            if (rpath.startsWith(NO_MAPPING_PREFIX)) {
+                return rpath;
+            }
+            String res = super.getLocalPath(rpath, useDefault);
+            if (Utilities.isWindows() && !"/".equals(res)) { // NOI18N
+                res = WindowsSupport.getInstance().convertFromMSysPath(res);
+            }
+            return res;
+        }
+
+        private void initRemoteBase(boolean addMapping) {
+            if (remoteBase == null) {
+                remoteBase = getRemoteSyncRoot(super.execEnv);
+                if (addMapping && remoteBase != null) {
+                    addMappingImpl("/", remoteBase); // NOI18N
+                }
+            }
+        }
+
+        @Override
+        public void addMapping(String localParent, String remoteParent) {
+            CndUtils.assertTrue(false, "Should never be called for " + getClass().getSimpleName()); //NOI18N
+        }
+
+        @Override
+        public void updatePathMap(Map<String, String> newPathMap) {
+            CndUtils.assertTrue(false, "Should never be called for " + getClass().getSimpleName()); //NOI18N
+        }
+    }
+
+    public static String getRemoteSyncRoot(ExecutionEnvironment executionEnvironment) {
+        String root;
+        root = System.getProperty("cnd.remote.sync.root." + executionEnvironment.getHost()); //NOI18N
+        if (root != null) {
+            return root;
+        }
+        root = System.getProperty("cnd.remote.sync.root"); //NOI18N
+        if (root != null) {
+            return root;
+        }
+        String home = RemoteUtil.getHomeDirectory(executionEnvironment);
+        final ExecutionEnvironment local = ExecutionEnvironmentFactory.getLocal();
+        MacroExpander expander = MacroExpanderFactory.getExpander(local);
+        String localHostID = local.getHost();
+        try {
+            localHostID = expander.expandPredefinedMacros("${hostname}-${osname}-${platform}${_isa}"); // NOI18N
+        } catch (ParseException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        // each local host maps into own remote folder to prevent collisions on path mapping level
+        return (home == null) ? null : home + "/.netbeans/remote/" + localHostID; // NOI18N
+    }
 }
+

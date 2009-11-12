@@ -159,7 +159,8 @@ public class CustomizationTest extends FromWSDLTSuite {
         dumpThreads();
         new NbDialogOperator("Information").ok();
         try {
-            waitForWsImport("(wsimport-service-clean-" + getWsName()); //NOI18N
+            boolean isAnt = getProjectType().isAntBasedProject();
+            waitForWsImport("(wsimport-service-clean-" + getWsName(), isAnt); //NOI18N
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }

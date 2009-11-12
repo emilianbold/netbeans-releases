@@ -83,7 +83,11 @@ public class JspLexer implements Lexer<JspTokenId> {
     private final TokenFactory<JspTokenId> tokenFactory;
     
     public Object state() {
-        return lexerState + lexerStateBeforeEL * 1000 + lexerStateJspScriptlet * 1000000;
+        //encode each state in 6 bits = 2^6 = 64 which is the maximum of the state value
+        return lexerState + 
+                (lexerStateBeforeEL << 6) +
+                (lexerStateBeforeScriptlet << 12) +
+                (lexerStateJspScriptlet << 18);
     }
     
     //main internal lexer state
@@ -94,6 +98,9 @@ public class JspLexer implements Lexer<JspTokenId> {
     //we have 8 states just in attribute value so I would have to copy the EL
     //recognition code eight-times.
     private int lexerStateBeforeEL = INIT;
+
+    //the same for jsp scriptlets
+    private int lexerStateBeforeScriptlet = INIT;
     
     //internal state signalling whether the lexer is in <jsp:scriptlet> tag
     private int lexerStateJspScriptlet = INIT;
@@ -154,7 +161,9 @@ public class JspLexer implements Lexer<JspTokenId> {
     private static final int ISI_EL              = 39; //expression language in content (after ${ or #{ )
     private static final int ISA_BS              = 40; //after backslash in text - needed to disable EL by scaping # or $
     private static final int ISP_GT_SCRIPTLET    = 41; //before closing < symbol in jsp:expression/s/d tag
-    
+
+    //BE AWARE WHEN ADDING MORE STATES - each lexer state are encoded in 6 bits, so max value is 64!!!
+
     //scriptlet substate states
     //in standart syntax jsp
     private static final int JAVA_SCRITPLET = 1; //java scriptlet
@@ -176,10 +185,11 @@ public class JspLexer implements Lexer<JspTokenId> {
             lexerStateJspScriptlet = INIT;
         } else {
             int encoded = ((Integer) info.state()).intValue();
-            lexerStateJspScriptlet = encoded / 1000000;
-            int reminder = encoded % 1000000;
-            lexerStateBeforeEL = reminder / 1000;
-            lexerState = encoded % 1000;
+            //the state is encoded in 6 bits, decode using bits shifting
+            lexerStateJspScriptlet = encoded >> 18;
+            lexerStateBeforeScriptlet = encoded << 14 >>> 26; //encoded << (32-18) >>> (32-6)
+            lexerStateBeforeEL = encoded << 20 >>> 26; //encoded << (32-12) >>> (32-6)
+            lexerState = encoded << 26 >>> 26; //encoded << (32-6) >>> (32-6)
         }
         if(inputAttributes != null) {
             jspParseData = (JspParseData)inputAttributes.getValue(LanguagePath.get(JspTokenId.language()), JspParseData.class);
@@ -285,6 +295,24 @@ public class JspLexer implements Lexer<JspTokenId> {
     /** Looks ahead into the character buffer and checks if a jsp tag name follows. */
     private boolean followsJspTag() {
         return isJspTag(getPossibleTagName());
+    }
+
+    private boolean followsScriptletExpressionDelimiter(int actChar) {
+        if(actChar == '<') {
+            int next = input.read();
+            if(next == '%') {
+                next = input.read();
+                if(next == '=') {
+                    //yes, it follows
+                    return true;
+                } else {
+                    input.backup(2); //backup %+next
+                }
+            } else {
+                input.backup(1); //backup next
+            }
+        }
+        return false;
     }
     
     public Token<JspTokenId> nextToken() {
@@ -654,7 +682,28 @@ public class JspLexer implements Lexer<JspTokenId> {
                         lexerState = ((lexerState == ISI_TAG_STRING2) ? ISP_TAG : ISP_DIR);
                         return token(JspTokenId.ATTR_VALUE);
                     }
-                    
+
+                    if(followsScriptletExpressionDelimiter(actChar)) {
+                        if(input.readLength() == 3) {
+                            //just the delimiter in buffer, we may make the token
+
+                            //remember where we jumped into the scriptlet,
+                            //we'll return to the state once we reach end of the
+                            //scriptlet
+                            lexerStateBeforeScriptlet = lexerState;
+                            lexerStateJspScriptlet = JAVA_EXPRESSION;
+                            lexerState = ISI_SCRIPTLET;
+                            
+                            return token(JspTokenId.SYMBOL2);
+                            
+                        } else {
+                            //first tokenize the text before
+                            input.backup(3); //backup <%=
+                            //keep the state
+                            return token(JspTokenId.ATTR_VALUE);
+                        }
+                    }
+
                     switch (actChar) {
                         case '\\':
                             switch (lexerState) {
@@ -838,7 +887,8 @@ public class JspLexer implements Lexer<JspTokenId> {
                         case '>':
                             if(input.readLength() == 2) {
                                 //just the '%>' symbol read
-                                lexerState = INIT;
+                                lexerState = lexerStateBeforeScriptlet;
+                                lexerStateBeforeScriptlet = INIT;
                                 lexerStateJspScriptlet = INIT;
                                 return token(JspTokenId.SYMBOL2);
                             } else {

@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.web.jsf.editor.hints;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -54,7 +53,6 @@ import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.Rule;
 import org.netbeans.modules.editor.NbEditorDocument;
-import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.core.syntax.completion.api.ELExpression.InspectPropertiesTask;
 import org.netbeans.modules.web.jsf.api.editor.JSFBeanCache;
@@ -66,6 +64,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /**
+ * @todo fix Issue #176270 for this currently unused class
+ *
  * @author ads
  *
  */

@@ -103,6 +103,11 @@ public class SvnCmdLineClientInvocationHandler extends SvnClientInvocationHandle
         }
         return returnValue;
     }
+
+    @Override
+    protected boolean isCommandLine () {
+        return true;
+    }
     
 }
 

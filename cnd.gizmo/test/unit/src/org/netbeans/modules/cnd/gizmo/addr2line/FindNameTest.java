@@ -57,6 +57,8 @@ import org.netbeans.modules.cnd.dwarfdump.section.DwarfLineInfoSection.LineNumbe
 import org.netbeans.modules.cnd.gizmo.DwarfSourceInfoProvider;
 import org.netbeans.modules.cnd.gizmo.support.GizmoServiceInfo;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
+import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.util.Exceptions;
 
 /**
@@ -140,7 +142,8 @@ public class FindNameTest extends NbTestCase {
             DwarfSourceInfoProvider provider = new DwarfSourceInfoProvider();
             Map<String, String> serviceInfo = new HashMap<String, String>();
             serviceInfo.put(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE, executable);
-            fileInfo = provider.fileName(function, -1, shift, serviceInfo);
+            serviceInfo.put(ServiceInfoDataStorage.EXECUTION_ENV_KEY, ExecutionEnvironmentFactory.toUniqueID(ExecutionEnvironmentFactory.getLocal()));
+            fileInfo = provider.getSourceFileInfo(function, -1, shift, serviceInfo);
             if (full) {
                 Dwarf dwarf = new Dwarf(executable);
                 try {

@@ -50,6 +50,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import javax.swing.border.EmptyBorder;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -106,7 +107,8 @@ public class NavigationSideBar extends JPanel implements Accessible {
     }
 
     public NavigationSideBar(JTextComponent component) {
-        setLayout(new FlowLayout(FlowLayout.LEFT, 17, 0));
+        setLayout(new FlowLayout(FlowLayout.LEFT, 14, 0));
+        setBorder(new EmptyBorder(2,2,2,2));
 
         this.component = component;
         this.doc = component.getDocument();
@@ -163,7 +165,7 @@ public class NavigationSideBar extends JPanel implements Accessible {
         for (final AstNode node : nesting) {
             final JLabel label = new javax.swing.JLabel();
             label.setForeground(Color.BLACK);
-            label.setFont(new Font("Courier New", Font.PLAIN, getColoring().getFont().getSize())); // NOI18N
+            label.setFont(new Font("Monospaced", Font.PLAIN, (int) (getColoring().getFont().getSize() * .9))); // NOI18N
             label.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
             label.setText(getDrawText(node.name()));
             label.addMouseListener(new java.awt.event.MouseAdapter() {

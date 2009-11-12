@@ -74,6 +74,7 @@ public class CompilerSetReporter {
                 if (addLineFeed) {
                     writer.write('\n');
                 }
+                writer.flush();
             } catch (IOException ex) {
             }
         }

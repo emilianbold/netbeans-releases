@@ -178,6 +178,10 @@ public final class IndexedMethod extends IndexedElement implements MethodElement
         this.smart = smart;
     }
 
+    public void setType(RubyType type) {
+        this.type = type;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {
@@ -260,34 +264,5 @@ public final class IndexedMethod extends IndexedElement implements MethodElement
     
     public String getEncodedAttributes() {
         return attributes;
-    }
-
-    @Override
-    public RubyType getType() {
-        if (type == null && attributes != null) {
-            int lastSemiColon = attributes.lastIndexOf(';');
-            if (lastSemiColon != -1) {
-                int last2SemiColon = attributes.lastIndexOf(';', lastSemiColon -1);
-                if (lastSemiColon != -1) {
-                    String typesS = attributes.substring(last2SemiColon + 1, lastSemiColon);
-                    type = parseTypes(typesS);
-                }
-            }
-        }
-        if (type == null) {
-            type = RubyType.createUnknown();
-        }
-        return type;
-    }
-
-    private RubyType parseTypes(final String types) {
-        if (types.length() == 0) {
-            return RubyType.createUnknown();
-        }
-        if (!types.contains("|")) { // just one type
-            return RubyType.create(types);
-        }
-        return new RubyType(types.split("\\|")); // NOI18N
-
     }
 }

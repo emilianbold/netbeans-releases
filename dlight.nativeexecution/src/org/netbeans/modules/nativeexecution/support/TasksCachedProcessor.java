@@ -105,13 +105,14 @@ public final class TasksCachedProcessor<P, R>
 
         try {
             return f.get();
+        } catch (InterruptedException ex) {
+            cache.remove(arg, f);
+            throw new CancellationException(ex.getMessage());
         } catch (Throwable th) {
             cache.remove(arg, f);
-
             if (log.isLoggable(Level.FINE)) {
                 log.log(Level.FINE, "TasksCachedProcessor: exception while task execution:", th); // NOI18N
             }
-
             throw new CancellationException(th.getMessage());
         } finally {
             if (removeOnCompletion) {

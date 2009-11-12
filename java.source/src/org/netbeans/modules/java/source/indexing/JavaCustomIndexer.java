@@ -214,7 +214,9 @@ public class JavaCustomIndexer extends CustomIndexer {
                             javaContext.checkSums.store();
                             javaContext.sa.store();
                             javaContext.uq.typesEvent(_at, _rt, compileResult.addedTypes);
-                            BuildArtifactMapperImpl.classCacheUpdated(context.getRootURI(), JavaIndex.getClassFolder(context.getRootURI()), removedFiles, compileResult.createdFiles, false);
+                            if (!context.checkForEditorModifications()) { // #152222
+                                BuildArtifactMapperImpl.classCacheUpdated(context.getRootURI(), JavaIndex.getClassFolder(context.getRootURI()), removedFiles, compileResult.createdFiles, false);
+                            }
                             return null;
                         }
                     });
@@ -468,33 +470,7 @@ public class JavaCustomIndexer extends CustomIndexer {
         return binaryNames;
     }
 
-    private static boolean checkDeps(final Context context) {
-        if (context.isSupplementaryFilesIndexing())
-            return false;
-        switch(TasklistSettings.getDependencyTracking()) {
-            case DISABLED:
-                return false;
-            case ENABLED_WITHIN_ROOT:
-                if (context.isAllFilesIndexing())
-                    return false;
-        }
-        return true;
-    }
-
-    private static Map<URL, Set<URL>> findDependent(final URL root, final Collection<ElementHandle<TypeElement>> classes, boolean includeFilesInError) throws IOException {
-        final Map<URL, Set<URL>> ret = new LinkedHashMap<URL, Set<URL>>();
-
-        //performance: filter out anonymous innerclasses:
-        for (Iterator<ElementHandle<TypeElement>> i = classes.iterator(); i.hasNext(); ) {
-            if (ANONYMOUS.matcher(i.next().getBinaryName()).find()) {
-                i.remove();
-            }
-        }
-
-        if (classes.isEmpty() && !includeFilesInError) {
-            return ret;
-        }
-
+    private static Map<URL, Set<URL>> findDependent(final URL root, final Collection<ElementHandle<TypeElement>> classes, boolean includeFilesInError) throws IOException {                
         //get dependencies
         Map<URL, List<URL>> deps = IndexingController.getDefault().getRootDependencies();
 
@@ -511,6 +487,26 @@ public class JavaCustomIndexer extends CustomIndexer {
                 }
                 l2.add (u1);
             }
+        }
+        return findDependent(root, deps, inverseDeps, classes, includeFilesInError);
+    }
+
+
+    public static Map<URL, Set<URL>> findDependent(final URL root,
+            final Map<URL, List<URL>> sourceDeps,
+            final Map<URL, List<URL>> inverseDeps,
+            final Collection<ElementHandle<TypeElement>> classes,
+            boolean includeFilesInError) throws IOException {
+        final Map<URL, Set<URL>> ret = new LinkedHashMap<URL, Set<URL>>();
+
+        //performance: filter out anonymous innerclasses:
+        for (Iterator<ElementHandle<TypeElement>> i = classes.iterator(); i.hasNext(); ) {
+            if (ANONYMOUS.matcher(i.next().getBinaryName()).find()) {
+                i.remove();
+            }
+        }
+        if (classes.isEmpty() && !includeFilesInError) {
+            return ret;
         }
 
         //get sorted list of depenedent roots
@@ -585,7 +581,7 @@ public class JavaCustomIndexer extends CustomIndexer {
             if (!ClassIndexManager.getDefault().createUsagesQuery(depRoot, true).isEmpty()) {
                 final ClassIndex index = ClasspathInfo.create(EMPTY, EMPTY, ClassPathSupport.createClassPath(depRoot)).getClassIndex();
 
-                final List<URL> dep = deps != null ? deps.get(depRoot) : null;
+                final List<URL> dep = sourceDeps != null ? sourceDeps.get(depRoot) : null;
                 if (dep != null) {
                     for (URL url : dep) {
                         final Set<ElementHandle<TypeElement>> b = bases.get(url);

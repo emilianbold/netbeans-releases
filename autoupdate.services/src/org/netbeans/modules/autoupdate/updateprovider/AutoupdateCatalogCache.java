@@ -94,7 +94,6 @@ public class AutoupdateCatalogCache {
     }
     
     public URL writeCatalogToCache (String codeName, URL original) throws IOException {
-        synchronized(codeName.intern ()) {
             URL url = null;
             File dir = getCatalogCache ();
             assert dir != null && dir.exists () : "Cache directory must exist.";
@@ -107,34 +106,36 @@ public class AutoupdateCatalogCache {
             } catch (MalformedURLException ex) {
                 assert false : ex;
             }
-            assert new File (dir, codeName).exists () : "Cache " + cache + " exists.";
-            err.log (Level.FINER, "Cache file " + cache + " was wrote from original URL " + original);
-            if(cache.exists() && cache.length()==0) {
-                err.log (Level.INFO, "Written cache size is zero bytes");
+            synchronized (getLock(cache)) {
+                assert cache.exists() : "Cache " + cache + " exists.";
+                err.log(Level.FINER, "Cache file " + cache + " was wrote from original URL " + original);
+                if (cache.exists() && cache.length() == 0) {
+                    err.log(Level.INFO, "Written cache size is zero bytes");
+                }
             }
-            return url;
-        }
+            return url;        
     }
     
-    public synchronized URL getCatalogURL (String codeName) {
-        File dir = getCatalogCache ();
-        assert dir != null && dir.exists () : "Cache directory must exist.";
-        File cache = new File (dir, codeName);
-        
-        if (cache != null && cache.exists ()) {
-            if(cache.length() == 0) {
-                err.log(Level.INFO, "Cache file " + cache + " exists and of zero size");
+    public URL getCatalogURL(String codeName) {
+        File dir = getCatalogCache();
+        assert dir != null && dir.exists() : "Cache directory must exist.";
+        File cache = new File(dir, codeName);
+        synchronized (getLock(cache)) {
+            if (cache != null && cache.exists()) {
+                if (cache.length() == 0) {
+                    err.log(Level.INFO, "Cache file " + cache + " exists and of zero size");
+                    return null;
+                }
+                URL url = null;
+                try {
+                    url = cache.toURI().toURL();
+                } catch (MalformedURLException ex) {
+                    assert false : ex;
+                }
+                return url;
+            } else {
                 return null;
             }
-            URL url = null;
-            try {
-                url = cache.toURI ().toURL ();
-            } catch (MalformedURLException ex) {
-                assert false : ex;
-            }
-            return url;
-        } else {
-            return null;
         }
     }
     private File getLicenseDir() {
@@ -150,8 +151,8 @@ public class AutoupdateCatalogCache {
     }
 
     public String getLicense(String name, URL url) {
-        synchronized (name.intern()) {
-            File file = getLicenseFile(name);
+        File file = getLicenseFile(name);
+        synchronized (name.intern()) {            
             if (!file.exists()) {
                 if (url == null) {
                     return null;
@@ -174,13 +175,13 @@ public class AutoupdateCatalogCache {
                     }
                 }
             }
-            return readFile(file);
+            return readLicenseFile(name);
         }
     }
 
     public void storeLicense(String name, String content) {
-        synchronized (name.intern()) {
-            File file = getLicenseFile(name);
+        File file = getLicenseFile(name);
+        synchronized (name.intern()) {            
             if (file.exists() || content == null) {
                 return;
             }
@@ -188,9 +189,11 @@ public class AutoupdateCatalogCache {
         }
     }
     
-    private String readFile(File file) {
+    private String readLicenseFile(String name) {
+        File file = getLicenseFile(name);
         FileInputStream fr = null;
-        try {
+        synchronized (name.intern()) {
+            try {
                 fr = new FileInputStream(file);
                 byte[] buffer = new byte[8192];
                 int n = 0;
@@ -203,7 +206,7 @@ public class AutoupdateCatalogCache {
                 err.log(Level.INFO, "Can`t read license from file " + file, e);
                 return null;
             } finally {
-                if(fr != null) {
+                if (fr != null) {
                     try {
                         fr.close();
                     } catch (IOException e) {
@@ -211,6 +214,7 @@ public class AutoupdateCatalogCache {
                     }
                 }
             }
+        }
     }
     private void writeToFile(String content, File file) {
         FileOutputStream fw = null;
@@ -237,7 +241,7 @@ public class AutoupdateCatalogCache {
         // -- report success or IOException
         // -- if success then do copy
         
-        err.log(Level.INFO, "Processing URL: " + sourceUrl); // NOI18N
+        err.log(Level.FINE, "Processing URL: " + sourceUrl); // NOI18N
         
         String prefix = "";
         while (prefix.length () < 3) {
@@ -246,10 +250,44 @@ public class AutoupdateCatalogCache {
         final File temp = File.createTempFile (prefix, null, cache.getParentFile ()); //NOI18N
         temp.deleteOnExit();        
 
-        DownloadListener nwl = new DownloadListener(sourceUrl, cache, temp,allowZeroSize);
+        DownloadListener nwl = new DownloadListener(sourceUrl, temp, allowZeroSize);
         
         NetworkAccess.Task task = NetworkAccess.createNetworkAcessTask (sourceUrl, AutoupdateSettings.getOpenConnectionTimeout (), nwl);
         task.waitFinished ();
         nwl.notifyException ();
+        synchronized(getLock(cache)) {
+            updateCachedFile(cache, temp);
+        }
+    }
+
+    public String getLock(File cache) {
+        return cache.getAbsolutePath().intern();
+    }
+    public String getLock(URL cache) {
+        return getLock(new File(cache.getFile()));
+    }
+    
+    private void updateCachedFile(File cache, File temp) {
+        if (cache.exists() && !cache.delete()) {
+            err.log(Level.INFO, "Cannot delete cache " + cache);
+            try {
+               Thread.sleep(200);
+            } catch (InterruptedException ie) {
+                assert false : ie;
+            }
+            cache.delete();
+        }
+
+        if (temp.length() == 0) {
+            err.log(Level.INFO, "Temp cache size is zero bytes");
+        }
+
+        if (!temp.renameTo(cache)) {
+            err.log(Level.INFO, "Cannot rename temp " + temp + " to cache " + cache);
+        }
+
+        if (cache.exists() && cache.length() == 0) {
+            err.log(Level.INFO, "Final cache size is zero bytes");
+        }
     }
 }

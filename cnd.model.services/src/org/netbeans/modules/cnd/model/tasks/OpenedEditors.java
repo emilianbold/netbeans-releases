@@ -86,13 +86,13 @@ public final class OpenedEditors {
         EditorRegistry.addPropertyChangeListener(new PropertyChangeListener() {
 
             public void propertyChange(PropertyChangeEvent evt) {
-                stateChanged();
+                stateChanged(evt);
             }
         });
     }
 
     public void fireStateChanged() {
-        stateChanged();
+        stateChanged(null);
     }
 
     public static OpenedEditors getDefault() {
@@ -130,8 +130,10 @@ public final class OpenedEditors {
         return new ArrayList<FileObject>(visibleEditors2Files.values());
     }
 
-    private synchronized void stateChanged() {
-        if (SHOW_TIME || TRACE_FILES) { System.err.println("OpenedEditors.stateChanged()"); }
+    private synchronized void stateChanged(PropertyChangeEvent evt) {
+        if (SHOW_TIME || TRACE_FILES) { 
+            System.err.println("OpenedEditors.stateChanged() with event " + (evt == null ? "null" : evt.getPropertyName()));
+        }
 
         for (JTextComponent c : visibleEditors) {
             c.removePropertyChangeListener(componentListener);

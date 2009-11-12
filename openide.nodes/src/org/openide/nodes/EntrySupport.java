@@ -364,10 +364,12 @@ abstract class EntrySupport {
         private void updateRemove(Node[] current, Set<Entry> toRemove) {
             List<Node> nodes = new LinkedList<Node>();
 
+            ChildrenArray cha = array.get();
             for (Entry en : toRemove) {
                 Info info = map.remove(en);
                 checkInfo(info, en, null, map);
                 nodes.addAll(info.nodes(true));
+                cha.remove(info);
             }
 
             // modify the current set of entries
@@ -690,15 +692,21 @@ abstract class EntrySupport {
                 n.fireSubNodesChange(true, arr, null);
             }
         }
-        //
-        // ChildrenArray operations call only under lock
-        //
-        /** @return either nodes associated with this children or null if
-         * they are not created
+
+        /**
+         * @return either nodes associated with this children or null if they are not created
          */
         public Node[] testNodes() {
             ChildrenArray arr = array.get();
-            return (arr == null) ? null : arr.nodes();
+            if (arr == null) {
+                return null;
+            }
+            try {
+                Children.PR.enterReadAccess();
+                return arr.nodes();
+            } finally {
+                Children.PR.exitReadAccess();
+            }
         }
 
         /** Obtains references to array holder. If it does not exist, it is created.
@@ -889,16 +897,6 @@ abstract class EntrySupport {
                 Children.PR.exitWriteAccess();
             }
         }
-        /** Forces finalization of nodes for given info.
-         * Called from finalizer of Info.
-         */
-        final void finalizeNodes() {
-            ChildrenArray arr = array.get();
-
-            if (arr != null) {
-                arr.finalizeNodes();
-            }
-        }
 
         /** Information about an entry. Contains number of nodes,
          * position in the array of nodes, etc.
@@ -910,13 +908,6 @@ abstract class EntrySupport {
 
             public Info(Entry entry) {
                 this.entry = entry;
-            }
-
-            /** Finalizes the content of ChildrenArray.
-             */
-            @Override
-            protected void finalize() {
-                finalizeNodes();
             }
 
             public Collection<Node> nodes(boolean hasToExist) {

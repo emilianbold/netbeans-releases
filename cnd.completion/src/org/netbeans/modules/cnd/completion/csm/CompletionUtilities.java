@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery.CsmCompletionResult;
@@ -159,7 +160,7 @@ public class CompletionUtilities {
                                 out = getAssociatedObjects(resultx.getItems(), false, currentFile);
                             }
                         }
-                    }
+                    }                    
                     break;
                 }
             }
@@ -212,7 +213,7 @@ public class CompletionUtilities {
         return null;
     }
 
-    static int findEndOfMethod(Document doc, int startPos) {
+    public static int findEndOfMethod(Document doc, int startPos) {
         int level = 0;
         CharSequence text = DocumentUtilities.getText(doc);
         for (int i = startPos; i < doc.getLength(); i++) {

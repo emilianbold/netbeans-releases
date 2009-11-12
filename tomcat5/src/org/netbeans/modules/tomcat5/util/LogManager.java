@@ -71,10 +71,10 @@ public class LogManager {
     private Map/*<String, LogViewer>*/ contextLogViewers = Collections.synchronizedMap(new HashMap());
     private TomcatManager manager;
     
-    private Object serverLogLock = new Object();
-    private Object sharedContextLogLock = new Object();
-    private Object juliLogLock = new Object();
-    private Object contextLogLock = new Object();
+    private final Object serverLogLock = new Object();
+    private final Object sharedContextLogLock = new Object();
+    private final Object juliLogLock = new Object();
+    private final Object contextLogLock = new Object();
     
     private Boolean juliJarExist;
     
@@ -114,7 +114,7 @@ public class LogManager {
                     Thread.sleep(2000);  // time for server log
                 } catch (InterruptedException e) {
                 } finally {
-                    serverLog.interrupt();
+                    closeServerLog();
                 }
             }
         }.start();

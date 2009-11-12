@@ -41,8 +41,8 @@
 
 package org.netbeans.modules.cnd.modelimpl.parser.apt;
 
-import antlr.TokenStream;
-import antlr.TokenStreamException;
+import org.netbeans.modules.cnd.antlr.TokenStream;
+import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -336,6 +336,12 @@ public final class APTFindMacrosWalker extends APTSelfWalker {
                     }
                     if (target == null && targetPrj != null) {
                         target = targetPrj.getUnresolvedFile();
+                    }
+                    if (target == null) {
+                        ProjectBase currentPrj = (ProjectBase) current.getProject();
+                        if (currentPrj != null) {
+                            target = currentPrj.getUnresolvedFile();
+                        }
                     }
                 }
             }

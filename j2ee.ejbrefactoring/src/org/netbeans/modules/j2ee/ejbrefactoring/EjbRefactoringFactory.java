@@ -68,12 +68,12 @@ public class EjbRefactoringFactory implements RefactoringPluginFactory{
     }
     
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
-        
+
         FileObject source = getRefactoringSource(refactoring);
         if (source == null){
             return null;
         }
-        
+
         List<EjbJar> ejbJars = getEjbJars(source);
         if (ejbJars.isEmpty()){
             return null;
@@ -93,7 +93,7 @@ public class EjbRefactoringFactory implements RefactoringPluginFactory{
         } else {
             msg = "TXT_EjbJarGeneralWarning";//NO18N
         }
-        return new EjbRefactoringPlugin(NbBundle.getMessage(EjbRefactoringFactory.class, msg, ejbJarPaths));
+        return new EjbRefactoringPlugin(refactoring, NbBundle.getMessage(EjbRefactoringFactory.class, msg, ejbJarPaths));
     }
     
     /**

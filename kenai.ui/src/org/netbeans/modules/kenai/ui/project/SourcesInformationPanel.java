@@ -162,9 +162,9 @@ public class SourcesInformationPanel extends javax.swing.JPanel implements Refre
     private String addRepoHeaderWithButton(final KenaiFeature repo, String htmlID, int order) {
         String _appString = ""; //NOI18N
         if (repo.getService().equals(KenaiService.Names.SUBVERSION) || repo.getService().equals(KenaiService.Names.MERCURIAL)) {
-            String repotype = "MSG_MERCURIAL";
+            String repotype = "MSG_MERCURIAL"; // NOI18N
             if (repo.getService().equals(KenaiService.Names.SUBVERSION)) {
-                repotype = "MSG_SUBVERSION";
+                repotype = "MSG_SUBVERSION"; // NOI18N
             }
             _appString += String.format("<a name=\"repo%d\"></a><table cellpadding=\"0\" border=\"0\" cellspacing=\"0\"><tr><td><h3>%s (%s)</h3></td><td width=\"200\" align=\"right\"><input type=\"reset\" id=\"%s\" value=\"%s\"></td></tr></table>", //NOI18N
                     order,
@@ -173,9 +173,9 @@ public class SourcesInformationPanel extends javax.swing.JPanel implements Refre
                     htmlID,
                     NbBundle.getMessage(SourcesInformationPanel.class, "MSG_GET_THIS_REPO")); //NOI18N
         } else {
-            String repotype = "MSG_UNKNOWN_SCM";
+            String repotype = "MSG_UNKNOWN_SCM"; // NOI18N
             if (repo.getService().equals(KenaiService.Names.GIT)) {
-                repotype = "MSG_GIT";
+                repotype = "MSG_GIT"; // NOI18N
             }
             _appString += String.format("<a name=\"repo%d\"></a><h3>%s (%s)</h3>", order, repo.getDisplayName(), NbBundle.getMessage(SourcesInformationPanel.class, repotype)); //NOI18N
         }
@@ -228,13 +228,13 @@ public class SourcesInformationPanel extends javax.swing.JPanel implements Refre
                         return WAIT_STRING;
                     }
                     final KenaiFeature repo = repos[k];
-                    String repotype = "MSG_UNKNOWN_SCM";
+                    String repotype = "MSG_UNKNOWN_SCM"; // NOI18N
                     if (repo.getService().equals(KenaiService.Names.SUBVERSION)) {
-                        repotype = "MSG_SUBVERSION";
+                        repotype = "MSG_SUBVERSION"; // NOI18N
                     } else if (repo.getService().equals(KenaiService.Names.GIT)) {
-                        repotype = "MSG_GIT";
+                        repotype = "MSG_GIT"; // NOI18N
                     } else if (repo.getService().equals(KenaiService.Names.MERCURIAL)) {
-                        repotype = "MSG_MERCURIAL";
+                        repotype = "MSG_MERCURIAL"; // NOI18N
                     }
                     _appString += String.format("<div class=\"item\">-&nbsp;%s <i>(%s)</i></div>", //NOI18N
                             repo.getDisplayName(), NbBundle.getMessage(SourcesInformationPanel.class, repotype));

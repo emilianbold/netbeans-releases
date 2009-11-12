@@ -254,7 +254,7 @@ public final class MacroExpanderFactory {
 
             OS os = hi.getOS();
 
-            predefinedMacros.put("hostname", hi.getHostname().toLowerCase());
+            predefinedMacros.put("hostname", hi.getHostname().toLowerCase()); // NOI18N
             predefinedMacros.put("soext", soext); // NOI18N
             predefinedMacros.put("platform", hi.getCpuFamily().name().toLowerCase()); // NOI18N
             predefinedMacros.put("osname", osname); // NOI18N

@@ -52,6 +52,7 @@ import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.WizardDescriptor;
@@ -66,11 +67,19 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.modules.target.iterator.api.TargetChooserPanel;
 import org.netbeans.modules.web.core.Util;
 import org.netbeans.modules.web.taglib.TLDDataObject;
 import org.netbeans.modules.web.taglib.TaglibCatalog;
 import org.netbeans.modules.web.taglib.model.Taglib;
 import org.netbeans.modules.web.taglib.model.TagFileType;
+import org.netbeans.modules.web.wizards.targetpanel.providers.CssTargetPanelProvider;
+import org.netbeans.modules.web.wizards.targetpanel.providers.HtmlTargetPanelProvider;
+import org.netbeans.modules.web.wizards.targetpanel.providers.JSFTargetPanelProvider;
+import org.netbeans.modules.web.wizards.targetpanel.providers.JspTargetPanelProvider;
+import org.netbeans.modules.web.wizards.targetpanel.providers.TagLibTargetPanelProvider;
+import org.netbeans.modules.web.wizards.targetpanel.providers.TagTargetPanelProvider;
+import org.netbeans.modules.web.wizards.targetpanel.providers.XhtmlTargetPanelProvider;
 
 /** A template wizard iterator (sequence of panels).
  * Used to fill in the second and subsequent panels in the New wizard.
@@ -107,6 +116,10 @@ public class PageIterator implements TemplateWizard.Iterator {
     public static PageIterator createHtmlIterator() {
         return new PageIterator(FileType.HTML);
     }
+    
+    public static PageIterator createJSIterator() {
+        return new PageIterator(FileType.JS);
+    }
 
     public static PageIterator createXHtmlIterator() {
         return new PageIterator(FileType.XHTML);
@@ -128,12 +141,16 @@ public class PageIterator implements TemplateWizard.Iterator {
             if (sourceGroups == null || sourceGroups.length == 0) {
                 sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
             }
-            folderPanel = new TargetChooserPanel(project, sourceGroups, fileType);
+            //folderPanel = new TargetChooserPanel(project, sourceGroups, fileType);
+            folderPanel = new org.netbeans.modules.target.iterator.api.
+                    TargetChooserPanel<FileType>(project, sourceGroups, fileType);
 
             return new WizardDescriptor.Panel[]{
                         folderPanel
                     };
-        } else if (fileType.equals(FileType.HTML) || fileType.equals(FileType.XHTML) || fileType.equals(FileType.CSS)) {
+        } else if (fileType.equals(FileType.HTML) || fileType.equals(FileType.XHTML) 
+                || fileType.equals(FileType.CSS) || fileType.equals(FileType.JS) ) 
+        {
             SourceGroup[] docRoot = sources.getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT);
             SourceGroup[] srcRoots = Util.getJavaSourceGroups(project);
             if (docRoot != null && srcRoots != null) {
@@ -144,7 +161,9 @@ public class PageIterator implements TemplateWizard.Iterator {
             if (sourceGroups == null || sourceGroups.length == 0) {
                 sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
             }
-            folderPanel = new TargetChooserPanel(project, sourceGroups, fileType);
+            folderPanel = new TargetChooserPanel<FileType>(project, sourceGroups, 
+                    fileType);
+            
             return new WizardDescriptor.Panel[]{
                         folderPanel
                     };
@@ -159,7 +178,7 @@ public class PageIterator implements TemplateWizard.Iterator {
             if (sourceGroups == null || sourceGroups.length == 0) {
                 sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
             }
-            folderPanel = new TargetChooserPanel(project, sourceGroups, fileType);
+            folderPanel = new TargetChooserPanel<FileType>(project, sourceGroups, fileType );
             return new WizardDescriptor.Panel[]{
                         folderPanel
                     };
@@ -180,7 +199,8 @@ public class PageIterator implements TemplateWizard.Iterator {
             if (sourceGroups == null || sourceGroups.length == 0) {
                 sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
             }
-            folderPanel = new TargetChooserPanel(project, sourceGroups, fileType);
+            folderPanel = new TargetChooserPanel<FileType>(project, sourceGroups, 
+                    fileType);
             return new WizardDescriptor.Panel[]{
                         folderPanel
                     };
@@ -188,6 +208,11 @@ public class PageIterator implements TemplateWizard.Iterator {
         return new WizardDescriptor.Panel[]{
                     Templates.createSimpleTargetChooser(project, sourceGroups)
                 };
+    }
+    private static boolean isJSF20(WebModule wm) {
+        ClassPath classpath = ClassPath.getClassPath(wm.getDocumentBase(), ClassPath.COMPILE);
+        boolean isJSF20 = classpath.findResource("javax/faces/application/ProjectStage.class") != null; //NOI18N
+        return isJSF20;
     }
 
     public Set<DataObject> instantiate(TemplateWizard wiz) throws IOException {
@@ -204,35 +229,38 @@ public class PageIterator implements TemplateWizard.Iterator {
         DataFolder df = DataFolder.findFolder(dir);
         FileObject template = Templates.getTemplate(wiz);
         FileObject templateParent = template.getParent();
-        TargetChooserPanel panel = (TargetChooserPanel) folderPanel;
         
         Map<String, Object> wizardProps = new HashMap<String, Object>();
         String defaultNamespace = null;
 
         if (FileType.JSP.equals(fileType) || FileType.JSF.equals(fileType)) {
-            if (panel.isSegment()) {
-                if (panel.isXml()) {
+            if (isSegment(wiz)) {
+                if (isXml(wiz)) {
                     template = templateParent.getFileObject("JSPFX", "jspf"); //NOI18N
                 } else {
                     template = templateParent.getFileObject("JSPF", "jspf"); //NOI18N
                 }
             } else {
-                if (panel.isXml()) {
+                if (isXml(wiz)) {
                     template = templateParent.getFileObject("JSPX", "jspx"); //NOI18N
                 }
-                if (panel.isFacelets()) {
+                if (isFacelets(wiz)) {
                     template = templateParent.getFileObject("JSP", "xhtml"); //NOI18N
+                    WebModule wm = WebModule.getWebModule(df.getPrimaryFile());
+                    if (wm != null && isJSF20(wm)) {
+                        wizardProps.put("isJSF20", Boolean.TRUE);
+                    }
                 }
             }
         } else if (FileType.TAG.equals(fileType)) {
-            if (panel.isSegment()) {
-                if (panel.isXml()) {
+            if (isSegment(wiz)) {
+                if (isXml(wiz)) {
                     template = templateParent.getFileObject("TagFileFX", "tagf"); //NOI18N
                 } else {
                     template = templateParent.getFileObject("TagFileF", "tagf"); //NOI18N
                 }
             } else {
-                if (panel.isXml()) {
+                if (isXml(wiz)) {
                     template = templateParent.getFileObject("TagFileX", "tagx"); //NOI18N
                 }
             }
@@ -258,11 +286,15 @@ public class PageIterator implements TemplateWizard.Iterator {
                 if (defaultNamespace != null) {
                     taglib.setDefaultNamespace(defaultNamespace);
                 }
-                taglib.setUri(panel.getUri());
-                taglib.setShortName(panel.getPrefix());
+                taglib.setUri(wiz.getProperty(TagLibTargetPanelProvider.URI).toString());
+                taglib.setShortName(wiz.getProperty(
+                        TagLibTargetPanelProvider.PREFIX).toString());
                 tldDO.write(taglib);
-            } else if (FileType.TAG.equals(fileType) && panel.isTldCheckBoxSelected()) { //Write Tag File to TLD 
-                FileObject tldFo = panel.getTldFileObject();
+            } else if (FileType.TAG.equals(fileType) && 
+                    (Boolean)wiz.getProperty(TagTargetPanelProvider.IS_TLD_SELECTED)) 
+            { //Write Tag File to TLD 
+                FileObject tldFo = (FileObject)wiz.getProperty(
+                        TagTargetPanelProvider.TLD_FILE_OBJECT);
                 if (tldFo != null) {
                     if (!tldFo.canWrite()) {
                         String mes = java.text.MessageFormat.format(
@@ -286,12 +318,14 @@ public class PageIterator implements TemplateWizard.Iterator {
                         }
                         if (taglib != null) {
                             TagFileType tag = new TagFileType();
-                            tag.setName(panel.getTagName());
+                            tag.setName(wiz.getProperty( 
+                                    TagTargetPanelProvider.TAG_NAME).toString());
                             String packageName = null;
                             for (int i = 0; i < sourceGroups.length && packageName == null; i++) {
-                                packageName = org.openide.filesystems.FileUtil.getRelativePath(sourceGroups[i].getRootFolder(), dobj.getPrimaryFile());
+                                FileObject rootFolder = sourceGroups[i].getRootFolder();
+                                packageName = rootFolder.getName()+"/"+org.openide.filesystems.FileUtil.getRelativePath(rootFolder, dobj.getPrimaryFile());
                             }
-                            tag.setPath("/" + packageName); //NOI18N
+                            tag.setPath("/" +packageName); //NOI18N
                             taglib.addTagFile(tag);
                             SaveCookie save = (SaveCookie) tldDO.getCookie(SaveCookie.class);
                             if (save != null) {
@@ -309,7 +343,18 @@ public class PageIterator implements TemplateWizard.Iterator {
         }
         return Collections.singleton(dobj);
     }
-
+    
+    private boolean isXml(TemplateWizard wiz ){
+        return (Boolean)wiz.getProperty(FileType.IS_XML);
+    }
+    
+    private boolean isSegment(TemplateWizard wiz ){
+        return (Boolean)wiz.getProperty(FileType.IS_SEGMENT);
+    }
+    
+    private boolean isFacelets(TemplateWizard wiz ){
+        return (Boolean)wiz.getProperty(FileType.IS_FACELETS);
+    }
     private transient int index;
     private transient WizardDescriptor.Panel[] panels;
     private transient TemplateWizard wiz;

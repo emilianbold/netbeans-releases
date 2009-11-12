@@ -578,8 +578,13 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         }
     }
 
+    public void saveAndClose() {
+        save();
+        closed();
+    }
+
     public boolean save() {
-        return save(null);
+        return save(NbBundle.getMessage(MakeProject.class, "ProjectNotSaved")); // FIXUP: move message into Bundle for this class after UI freeze
     }
 
     public boolean save(final String extraMessage) {
@@ -593,8 +598,8 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
      * Check needed header extensions and store list in the NB/project properties.
      * @param needAdd list of needed extensions of header files.
      */
-    public void addAdditionalHeaderExtensions(Collection<String> needAdd) {
-        ((MakeProject) getProject()).addAdditionalHeaderExtensions(needAdd);
+    public boolean addAdditionalHeaderExtensions(Collection<String> needAdd) {
+        return ((MakeProject) getProject()).addAdditionalHeaderExtensions(needAdd);
     }
 
     public CndVisibilityQuery getFolderVisibilityQuery() {

@@ -40,11 +40,13 @@ package org.netbeans.modules.dlight.tools.impl;
 
 import java.math.BigInteger;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.netbeans.modules.dlight.tools.impl.LinuxProcfsSupport.CpuStat;
 import org.netbeans.modules.dlight.tools.impl.LinuxProcfsSupport.ProcessStat;
+import org.netbeans.modules.dlight.util.DLightMath;
 import static org.netbeans.modules.dlight.tools.ProcDataProviderConfiguration.*;
 
 /**
@@ -54,7 +56,10 @@ import static org.netbeans.modules.dlight.tools.ProcDataProviderConfiguration.*;
  */
 public class ProcDataProviderLinux implements ProcDataProvider.Engine {
 
+    private static final List<String> COLNAMES = Collections.unmodifiableList(Arrays.asList(
+            USR_TIME.getColumnName(), SYS_TIME.getColumnName(), THREADS.getColumnName()));
     private static final BigInteger PERCENT = BigInteger.valueOf(100);
+
     private final DataRowConsumer consumer;
     private final ServiceInfoDataStorage serviceInfoStorage;
     private final boolean decreaseThreads;
@@ -93,15 +98,8 @@ public class ProcDataProviderLinux implements ProcDataProvider.Engine {
                     if (decreaseThreads) {
                         --threads;
                     }
-                    float usrPercent = percent(usrTicks, cpuTicks);
-                    float sysPercent = percent(sysTicks, cpuTicks);
-                    DataRow row = new DataRow(
-                            Arrays.asList(USR_TIME.getColumnName(),
-                            SYS_TIME.getColumnName(),
-                            THREADS.getColumnName()),
-                            Arrays.asList(usrPercent,
-                            sysPercent,
-                            threads));
+                    float[] times = DLightMath.ensureSumLessOrEqual(100f, percent(usrTicks, cpuTicks), percent(sysTicks, cpuTicks));
+                    DataRow row = new DataRow(COLNAMES, Arrays.asList(times[0], times[1], threads));
                     consumer.consume(row);
                 }
             }
@@ -122,9 +120,6 @@ public class ProcDataProviderLinux implements ProcDataProvider.Engine {
         if (BigInteger.ZERO.compareTo(total) < 0) { // 0 < total
             if (value.compareTo(BigInteger.ZERO) <= 0) { // value <= 0
                 return 0f;
-            }
-            if (total.compareTo(value) <= 0) { // total <= value
-                return 100f;
             } else {
                 return value.multiply(PERCENT).divide(total).floatValue();
             }

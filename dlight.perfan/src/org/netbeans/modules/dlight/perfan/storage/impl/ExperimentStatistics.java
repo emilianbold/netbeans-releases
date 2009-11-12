@@ -41,6 +41,7 @@ package org.netbeans.modules.dlight.perfan.storage.impl;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
+import org.netbeans.modules.dlight.api.storage.DataUtil;
 import org.netbeans.modules.dlight.util.DLightLogger;
 
 /**
@@ -88,12 +89,12 @@ public final class ExperimentStatistics {
             try {
                 if (id.startsWith("User Lock")) { // NOI18N
                     StringTokenizer t = tokenize(s.substring(scidx + 1));
-                    _t_usrLock = parseDouble(t.nextToken());
-                    _t_usrLock_p = parseDouble(t.nextToken());
+                    _t_usrLock = DataUtil.toDouble(t.nextToken(), Double.NaN);
+                    _t_usrLock_p = DataUtil.toDouble(t.nextToken(), Double.NaN);
                 } else if (id.startsWith("Total Thread Time") || id.startsWith("Total LWP Time")) { // NOI18N
-                    _totalThreadTime = parseDouble(s.substring(scidx + 1));
+                    _totalThreadTime = DataUtil.toDouble(s.substring(scidx + 1), Double.NaN);
                 } else if (id.startsWith("Duration")) { // NOI18N
-                    _duration = parseDouble(s.substring(scidx + 1));
+                    _duration = DataUtil.toDouble(s.substring(scidx + 1), Double.NaN);
                 }
             } catch (NoSuchElementException ex) {
                 DLightLogger.instance.log(Level.INFO, "Failed to parse statistics line", ex); // NOI18N
@@ -102,8 +103,8 @@ public final class ExperimentStatistics {
 
         startTime = _startTime;
         endTime = _endTime;
-        duration = _duration;
-        totalThreadTime = _totalThreadTime;
+        duration = (_duration == null || Double.isNaN(_duration))? null : _duration;
+        totalThreadTime = (_totalThreadTime == null || Double.isNaN(_totalThreadTime))? null : _totalThreadTime;
         avrgThreadsNumber = _avrgThreadsNumber;
         t_userCPU = _t_userCPU;
         t_userCPU_p = _t_userCPU_p;
@@ -111,8 +112,8 @@ public final class ExperimentStatistics {
         t_sysCPU_p = _t_sysCPU_p;
         t_waitCPU = _t_waitCPU;
         t_waitCPU_p = _t_waitCPU_p;
-        t_usrLock = _t_usrLock;
-        t_usrLock_p = _t_usrLock_p;
+        t_usrLock = (_t_usrLock == null || Double.isNaN(_t_usrLock))? null : _t_usrLock;
+        t_usrLock_p = (_t_usrLock_p == null || Double.isNaN(_t_usrLock_p))? null : _t_usrLock_p;
     }
 
     public Double getDuration() {
@@ -133,22 +134,5 @@ public final class ExperimentStatistics {
 
     private static StringTokenizer tokenize(String line) {
         return new StringTokenizer(line, " ()%"); // NOI18N
-    }
-
-    /**
-     * Accepts both '.' and ',' as decimal separator.
-     * Some whitespace around is also allowed.
-     *
-     * @param val  string to parse
-     * @return parsed double value or null is cannot parse
-     */
-    private static Double parseDouble(String val) {
-        Double result = null;
-        try {
-            result = Double.parseDouble(val.replace(',', '.'));
-        } catch (NumberFormatException ex) {
-            DLightLogger.instance.log(Level.FINE, "Failed to parse double value: ", val); // NOI18N
-        }
-        return result;
     }
 }

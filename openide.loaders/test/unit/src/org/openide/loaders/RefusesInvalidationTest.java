@@ -84,7 +84,7 @@ public class RefusesInvalidationTest extends NbTestCase {
 
     
     public void testWhatHappensWhenALoaderBecomesInvalidAndFileIsOpened() throws Exception {
-        final ForgetableLoader l = (ForgetableLoader)DataLoader.getLoader(ForgetableLoader.class);
+        final ForgetableLoader l = DataLoader.getLoader(ForgetableLoader.class);
 		FileSystem lfs = TestUtilHid.createLocalFileSystem(getWorkDir(), new String[] {
 			"folder/f.keep",
 			"folder/f.forget",
@@ -102,7 +102,7 @@ public class RefusesInvalidationTest extends NbTestCase {
 			DataObject[] all;
 			
 			public void run () throws IOException {
-				FileObject[] two = (FileObject[])our.files().toArray(new FileObject[0]);
+				FileObject[] two = our.files().toArray(new FileObject[0]);
 				assertEquals("Two", 2, two.length);
 				
 				// or secondary

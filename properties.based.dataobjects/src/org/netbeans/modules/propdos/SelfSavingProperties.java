@@ -43,21 +43,9 @@ package org.netbeans.modules.propdos;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.util.Exceptions;
-import org.openide.util.Parameters;
-import org.openide.util.RequestProcessor;
 
-import java.awt.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
 import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.filesystems.FileSystem;
@@ -70,156 +58,52 @@ import org.openide.filesystems.FileSystem;
  *
  * @author Tim Boudreau
  */
-abstract class SelfSavingProperties extends ObservableProperties {
+abstract class SelfSavingProperties extends AntStyleResolvingProperties {
 
-    private final Runnable r = new R();
-    private static RequestProcessor rp = new RequestProcessor(
-            "Self Saving Properties", 1, true); //NOI18N
-    private final RequestProcessor.Task task = rp.create(r);
     //A properties subclass that writes itself to disk on a timer after
     //it is modified.  Customizer UI does not have to explicitly save it.
     protected final DataObject dob;
-    //This does not need synchronization directly as long as it is accessed
-    //under a lock on this - it will always be called from put() which
-    //is synchronized
-    private final Set<PropertyChangeEvent> pendingEvents = new HashSet<PropertyChangeEvent>();
-    private final List<PropertyChangeListener> listeners = new LinkedList<PropertyChangeListener>();
+//    static { PropertiesBasedDataObject.LOGGER.setLevel(Level.ALL); }
 
     SelfSavingProperties(DataObject ob) {
         this.dob = ob;
     }
 
-    @Override
-    public synchronized Object put(Object key, Object value) {
-        Object result = super.put(key, value);
-        if (!equals(value, result)) {
-            if (!loading) {
-                if (!Boolean.getBoolean("JCProjectTest")) { //NOI18N
-                    task.schedule(500);
-                }
-                CoalescablePropertyChangeEvent evt =
-                    new CoalescablePropertyChangeEvent(
-                    this, key.toString(), result, value);
-                pendingEvents.add(evt);
-                if (PropertiesBasedDataObject.LOGGER.isLoggable(Level.FINEST)) {
-                    PropertiesBasedDataObject.LOGGER.log(Level.FINEST,
-                            "Scheduling write of " + dob.getPrimaryFile().getPath() + //NOI18N
-                            " in 500ms due to write of property " + key + " to " + //NOI18N
-                            value, new Exception());
-                }
-            }
-        }
-        return result;
-    }
-    private volatile boolean loading;
-
-    protected void fireEvents (Collection<PropertyChangeEvent> events) {
-        synchronized(this) {
-            pendingEvents.addAll(events);
-        }
-        firePendingChangeEvents();
-    }
-
-    private boolean equals(Object a, Object b) {
-        if (a == null && b == null) {
-            return true;
-        } else if ((a == null) != (b == null)) {
-            return false;
-        } else if (a != null) {
-            return a.equals(b);
-        } else {
-            return b.equals(a);
-        }
-    }
-
-    protected final boolean isLoading() {
-        return loading;
-    }
-
-    @Override
-    public synchronized void load(InputStream inStream) throws IOException {
-        loading = true;
-        try {
-            super.load(inStream);
-        } finally {
-            loading = false;
-        }
-    }
-
-    private final class R implements Runnable {
-
-        public void run() {
-            if (!EventQueue.isDispatchThread()) {
-                try {
-                    if (PropertiesBasedDataObject.LOGGER.isLoggable(Level.FINEST)) {
-                        PropertiesBasedDataObject.LOGGER.log(Level.FINEST,
-                                "Begin write of " + //NOI18N
-                                SelfSavingProperties.this.dob.getPrimaryFile().getPath(),
-                                new Exception());
-                    }
-                    write();
-                    if (PropertiesBasedDataObject.LOGGER.isLoggable(Level.FINEST)) {
-                        PropertiesBasedDataObject.LOGGER.log(Level.FINEST,
-                                "Successful write of " + //NOI18N
-                                SelfSavingProperties.this.dob.getPrimaryFile().getPath() +
-                                " invoking onWriteCompleted() in " +
-                                getClass().getName()); //NOI18N
-                    }
-                    onWriteCompleted();
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                } finally {
-                    EventQueue.invokeLater(this);
-                }
-            } else {
-                firePendingChangeEvents();
-            }
-        }
-    }
-
-    @Override
-    public void addPropertyChangeListener(PropertyChangeListener pcl) {
-        synchronized (r) {
-            listeners.add(pcl);
-        }
-    }
-
-    @Override
-    public void removePropertyChangeListener(PropertyChangeListener pcl) {
-        synchronized (r) {
-            listeners.remove(pcl);
-        }
-    }
-
-    private void firePendingChangeEvents() {
-        Set<PropertyChangeEvent> toFire;
-        synchronized (this) {
-            toFire = new HashSet<PropertyChangeEvent>(pendingEvents);
-            pendingEvents.clear();
-        }
-        PropertyChangeListener[] ls;
-        synchronized (r) {
-            ls = listeners.toArray(new PropertyChangeListener[listeners.size()]);
-        }
-        for (PropertyChangeListener l : ls) {
-            for (PropertyChangeEvent e : toFire) {
-                try {
-                    l.propertyChange(e);
-                } catch (RuntimeException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-        }
-    }
-
     protected abstract void onWriteCompleted() throws IOException;
+    
+    @Override
+    public String toString() {
+        return dob.getPrimaryFile().getPath() + "[" + super.toString() + "]" ; //NOI18N
+    }
 
+    @Override
+    void onChangeOccurred() throws IOException {
+        if (PropertiesBasedDataObject.LOGGER.isLoggable(Level.FINEST)) {
+            PropertiesBasedDataObject.LOGGER.log(Level.FINEST,
+                    "Begin write of " + //NOI18N
+                    SelfSavingProperties.this.dob.getPrimaryFile().getPath(),
+                    new Exception());
+        }
+        write();
+        if (PropertiesBasedDataObject.LOGGER.isLoggable(Level.FINEST)) {
+            PropertiesBasedDataObject.LOGGER.log(Level.FINEST,
+                    "Successful write of " + //NOI18N
+                    SelfSavingProperties.this.dob.getPrimaryFile().getPath()
+                    + " invoking onWriteCompleted() in "
+                    + getClass().getName()); //NOI18N
+        }
+        onWriteCompleted();
+    }
     volatile boolean writing;
+
     private void write() throws IOException {
         //Method may be reentered while another thread is still writing
-        if (writing || !dob.isValid()) return;
+        if (writing || !dob.isValid()) {
+            return;
+        }
         final FileObject fo = dob.getPrimaryFile();
         fo.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+
             public void run() throws IOException {
                 writing = true;
                 FileLock lock = fo.lock();
@@ -239,35 +123,5 @@ abstract class SelfSavingProperties extends ObservableProperties {
                 }
             }
         });
-    }
-
-    private static final class CoalescablePropertyChangeEvent extends PropertyChangeEvent {
-
-        CoalescablePropertyChangeEvent(SelfSavingProperties source, String name, Object old, Object nue) {
-            super(source, name, old, nue);
-            Parameters.notNull("property name", name); //NOI18N
-            Parameters.notNull("source", source); //NOI18N
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            boolean result = obj != null && obj.getClass() == CoalescablePropertyChangeEvent.class;
-            if (result) {
-                CoalescablePropertyChangeEvent other = (CoalescablePropertyChangeEvent) obj;
-                Object otherSource = other.getSource();
-                result = otherSource == getSource();
-                if (result) {
-                    String otherName = other.getPropertyName();
-                    result = getPropertyName().equals(otherName);
-                }
-            }
-            return result;
-        }
-
-        @Override
-        public int hashCode() {
-            int srcCode = System.identityHashCode(getSource());
-            return srcCode * 41 * getPropertyName().hashCode();
-        }
     }
 }

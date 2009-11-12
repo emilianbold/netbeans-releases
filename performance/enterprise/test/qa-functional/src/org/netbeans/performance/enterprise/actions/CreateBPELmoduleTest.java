@@ -47,7 +47,7 @@ import org.netbeans.performance.enterprise.setup.EnterpriseSetup;
 
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
+import org.netbeans.jellytools.NewJavaProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.junit.NbTestSuite;
@@ -60,7 +60,7 @@ import org.netbeans.junit.NbModuleSuite;
  */
 public class CreateBPELmoduleTest extends PerformanceTestCase {
     
-    private NewProjectNameLocationStepOperator wizard_location;
+    private NewJavaProjectNameLocationStepOperator wizard_location;
     private NewProjectWizardOperator wizard;
     private String category, project, project_name, project_type;
     
@@ -111,7 +111,7 @@ public class CreateBPELmoduleTest extends PerformanceTestCase {
         wizard.selectProject(project);
         wizard.move(0, 0);    
         wizard.next();
-        wizard_location = new NewProjectNameLocationStepOperator();
+        wizard_location = new NewJavaProjectNameLocationStepOperator();
         String directory = CommonUtilities.getTempDir() + "createdProjects";
         wizard_location.txtProjectLocation().clearText();
         wizard_location.txtProjectLocation().typeText(directory);

@@ -284,4 +284,24 @@ public class FileModel2Test extends TraceModelTestBase {
         // IZ#174256 : parser cant understand _Pragma operator
         performTest("iz174256.cc");
     }
+
+    public void testIZ175324() throws Exception {
+        // IZ#175324 : Bad code parsing
+        performTest("iz175324.cc");
+    }
+
+    public void testIZ168253() throws Exception {
+        // IZ#168253 : Unable to resolve identifier for some header files
+        performTest("iz168253.cc");
+    }
+
+    public void testIZ175653() throws Exception {
+        // IZ#175653 : Support for binary constants
+        performTest("iz175653.cc");
+    }
+
+    public void testIZ176530() throws Exception {
+        // IZ#176530 : Unresolved function parameters in function parameters
+        performTest("iz176530.cc");
+    }
 }

@@ -159,7 +159,7 @@ public class MonitorsUpdateService {
     }
 
     boolean isBlank() {
-        return !(isMemoryMonitor || isSyncMonitor);
+        return !(isMemoryMonitor || isSyncMonitor || isDataRaceMonitor || isDeadlockMonitor);
     }
 
     private class Updater implements Runnable {

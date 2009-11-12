@@ -51,21 +51,27 @@ import java.beans.PropertyChangeSupport;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grails.api.GrailsPlatform;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.openide.util.WeakListeners;
 
-final class BootClassPathImplementation implements ClassPathImplementation, PropertyChangeListener {
+final class BootClassPathImplementation implements ClassPathImplementation {
+
+    private static final Logger LOGGER = Logger.getLogger(BootClassPathImplementation.class.getName());
 
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
+
+    private final ProjectConfigListener projectConfigListener = new ProjectConfigListener();
 
     private final GrailsProjectConfig config;
 
     private List<PathResourceImplementation> resourcesCache;
 
-    private long eventId;  
+    private long eventId;
 
     private BootClassPathImplementation(GrailsProjectConfig config) {
         this.config = config;
@@ -75,15 +81,15 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
         GrailsProjectConfig config = GrailsProjectConfig.forProject(project);
         BootClassPathImplementation impl = new BootClassPathImplementation(config);
 
-        config.addPropertyChangeListener(WeakListeners.propertyChange(impl, config));
+        config.addPropertyChangeListener(WeakListeners.propertyChange(impl.projectConfigListener, config));
         return impl;
     }
 
     public List<PathResourceImplementation> getResources() {
         long currentId;
         synchronized (this) {
-            if (this.resourcesCache != null) {
-                return this.resourcesCache;
+            if (resourcesCache != null) {
+                return resourcesCache;
             }
             currentId = eventId;
         }
@@ -110,21 +116,12 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
 
         synchronized (this) {
             if (currentId == eventId) {
-                if (this.resourcesCache == null) {
-                    this.resourcesCache = Collections.unmodifiableList(result);
+                if (resourcesCache == null) {
+                    resourcesCache = Collections.unmodifiableList(result);
                 }
-                return this.resourcesCache;
+                return resourcesCache;
             }
             return Collections.unmodifiableList (result);
-        }
-    }
-
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (GrailsProjectConfig.GRAILS_JAVA_PLATFORM_PROPERTY.equals(evt.getPropertyName())) {
-            synchronized (this) {
-                this.resourcesCache = null;
-            }
-            this.support.firePropertyChange(ClassPathImplementation.PROP_RESOURCES, null, null);
         }
     }
 
@@ -136,4 +133,20 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
         this.support.removePropertyChangeListener(listener);
     }
 
+    private class ProjectConfigListener implements PropertyChangeListener {
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (GrailsProjectConfig.GRAILS_JAVA_PLATFORM_PROPERTY.equals(evt.getPropertyName())
+                    || GrailsProjectConfig.GRAILS_PLATFORM_PROPERTY.equals(evt.getPropertyName())) {
+
+                LOGGER.log(Level.FINE, "Boot classpath changed due to change in {0}", evt.getPropertyName());
+
+                synchronized (BootClassPathImplementation.this) {
+                    resourcesCache = null;
+                    eventId++;
+                }
+                support.firePropertyChange(ClassPathImplementation.PROP_RESOURCES, null, null);
+            }
+        }
+    }
 }

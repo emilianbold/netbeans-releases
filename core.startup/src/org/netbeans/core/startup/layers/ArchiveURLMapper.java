@@ -120,7 +120,7 @@ public class ArchiveURLMapper extends URLMapper {
                     }
                     File archiveFile = FileUtil.toFile (fo);
                     if (archiveFile == null) {
-                        archiveFile = copyJAR(fo, archiveFileURI);
+                        archiveFile = copyJAR(fo, archiveFileURI, false);
                     }
                     // XXX new URI("substring").getPath() might be better?
                     String offset = path.length()>index+2 ? URLDecoder.decode(path.substring(index+2),"UTF-8"): "";   //NOI18N
@@ -191,11 +191,26 @@ public class ArchiveURLMapper extends URLMapper {
      * refreshed cached map "mountRoots". 
      */ 
     private static class JFSReference extends SoftReference<JarFileSystem> {
-        private FileChangeListener fcl; 
-        public JFSReference(JarFileSystem jfs) {
+        private FileChangeListener fcl;
+
+        public JFSReference(JarFileSystem jfs) throws IOException {
             super(jfs);
             final File root = jfs.getJarFile();
-            FileObject rootFo = FileUtil.toFileObject(root);
+            URI nestedRootURI = null;
+            FileObject rootFo = null;
+            if (copiedJARs.values().contains(root)) {
+                // nested jar
+                for (Map.Entry<URI, File> entry : copiedJARs.entrySet()) {
+                    if (entry.getValue().equals(root)) {
+                        nestedRootURI = entry.getKey();
+                        rootFo = URLMapper.findFileObject(nestedRootURI.toURL());
+                    }
+                }
+            } else {
+                // regular jar
+                rootFo = FileUtil.toFileObject(root);
+            }
+            final URI nestedRootURIFinal = nestedRootURI;
             if (rootFo != null) {
                 fcl = new FileChangeAdapter() {
                     public @Override void fileDeleted(FileEvent fe) {
@@ -204,9 +219,23 @@ public class ArchiveURLMapper extends URLMapper {
                     public @Override void fileRenamed(FileRenameEvent fe) {
                         releaseMe(root);
                     }
+
+                    @Override
+                    public void fileChanged(FileEvent fe) {
+                        if (nestedRootURIFinal != null) {
+                            try {
+                                // update copy of nested jar and re-register root
+                                copyJAR(fe.getFile(), nestedRootURIFinal, true);
+                                releaseMe(root);
+                                // and register again
+                                getFileSystem(root);
+                            } catch (IOException e) {
+                                Exceptions.printStackTrace(e);
+                            }
+                        }
+                    }
                 };
                 rootFo.addFileChangeListener(FileUtil.weakFileChangeListener(fcl, rootFo));
-                
             }
         }
         
@@ -222,12 +251,14 @@ public class ArchiveURLMapper extends URLMapper {
     }
 
     private static final Map<URI,File> copiedJARs = new HashMap<URI,File>();
-    private File copyJAR(FileObject fo, URI archiveFileURI) throws IOException {
+    private static File copyJAR(FileObject fo, URI archiveFileURI, boolean replace) throws IOException {
         synchronized (copiedJARs) {
             File copy = copiedJARs.get(archiveFileURI);
-            if (copy == null) {
-                copy = File.createTempFile("copy", "-" + archiveFileURI.toString().replaceFirst(".+/", "")); // NOI18N
-                copy.deleteOnExit();
+            if (copy == null || replace) {
+                if (copy == null) {
+                    copy = File.createTempFile("copy", "-" + archiveFileURI.toString().replaceFirst(".+/", "")); // NOI18N
+                    copy.deleteOnExit();
+                }
                 InputStream is = fo.getInputStream();
                 try {
                     OutputStream os = new FileOutputStream(copy);

@@ -171,9 +171,9 @@ public class UIDManager {
         private void incCounter(Map<Class, Integer> uidClasses, Object o) {
             Integer num = uidClasses.get(o.getClass());
             if (num != null) {
-                num = new Integer(num.intValue() + 1);
+                num = Integer.valueOf(num.intValue() + 1);
             } else {
-                num = new Integer(1);
+                num = Integer.valueOf(1);
             }
             uidClasses.put(o.getClass(), num);
         }

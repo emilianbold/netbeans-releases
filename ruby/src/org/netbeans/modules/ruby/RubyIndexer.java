@@ -54,6 +54,7 @@ import java.util.Set;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jrubyparser.ast.ArrayNode;
 import org.jrubyparser.ast.CallNode;
 import org.jrubyparser.ast.ClassNode;
 import org.jrubyparser.ast.Colon2Node;
@@ -66,6 +67,7 @@ import org.jrubyparser.ast.SClassNode;
 import org.jrubyparser.ast.SelfNode;
 import org.jrubyparser.ast.StrNode;
 import org.jrubyparser.ast.INameNode;
+import org.jrubyparser.ast.NewlineNode;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
@@ -78,6 +80,7 @@ import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
 import org.netbeans.modules.ruby.RubyStructureAnalyzer.AnalysisResult;
+import org.netbeans.modules.ruby.elements.AstAttributeElement;
 import org.netbeans.modules.ruby.elements.AstElement;
 import org.netbeans.modules.ruby.elements.ClassElement;
 import org.netbeans.modules.ruby.elements.Element;
@@ -202,11 +205,20 @@ public class RubyIndexer extends EmbeddingIndexer {
                                                      // TODO: Add class info to tell whether methods are static
 
     static final String FIELD_DB_TABLE = "dbtable"; //NOI18N
+    /**
+     * Explicitly specfied table name in an AR model class (using set_table_name).
+     */
+    static final String FIELD_EXPLICIT_DB_TABLE = "explicit-dbtable"; //NOI18N
     static final String FIELD_DB_VERSION = "dbversion"; //NOI18N
     static final String FIELD_DB_COLUMN = "dbcolumn"; //NOI18N
     /** Special version the schema.rb is marked with (rather than a migration number) */
     static final String SCHEMA_INDEX_VERSION = "schema"; // NOI18N
 
+    /**
+     * The name of the method that sets the table name for an AR model class.
+     */
+    private static final String SET_TABLE_NAME = "set_table_name"; //NOII8N
+    
     // Method Document
     //static final String FIELD_PARAMS = "params"; //NOI18N
     //static final String FIELD_RDOC = "rdoc"; //NOI18N
@@ -1160,6 +1172,12 @@ public class RubyIndexer extends EmbeddingIndexer {
 
                         if (superClass != null) {
                             document.addPair(FIELD_EXTENDS_NAME, superClass, true, true);
+                            //XXX: search for explicitly set table name only
+                            // if one of the ancestors is ActiveRecord::Base
+                            String tableName = getExplicitTableName(clz);
+                            if (tableName != null) {
+                                document.addPair(FIELD_EXPLICIT_DB_TABLE, tableName, true, true);
+                            }
                         }
                     }
 
@@ -1292,6 +1310,12 @@ public class RubyIndexer extends EmbeddingIndexer {
 
                         break;
                     }
+
+                        case CALL: {
+                            System.out.println("Huh: " + child);
+                            break;
+                        }
+
 
                     case CONSTRUCTOR:
                     case METHOD: {
@@ -1444,20 +1468,27 @@ public class RubyIndexer extends EmbeddingIndexer {
         }
 
         private void indexAttribute(AstElement child, IndexDocument document, boolean nodoc) {
-            String attribute = child.getName();
+            
+            AstAttributeElement attributeElement = (AstAttributeElement) child;
+            String attribute = attributeElement.getName();
 
-            boolean isDocumented = isDocumented(child.getNode());
+            int flags = getModifiersFlag(child.getModifiers());
+            boolean isDocumented = isDocumented(attributeElement.getNode());
 
-            int flags = isDocumented ? IndexedMethod.DOCUMENTED : 0;
+            if(isDocumented) {
+                flags |= IndexedMethod.DOCUMENTED;
+            }
             if (nodoc) {
                 flags |= IndexedElement.NODOC;
             }
-
-            char first = IndexedElement.flagToFirstChar(flags);
-            char second = IndexedElement.flagToSecondChar(flags);
-            
-            if (isDocumented) {
+            if (flags != 0) {
+                char first = IndexedElement.flagToFirstChar(flags);
+                char second = IndexedElement.flagToSecondChar(flags);
                 attribute = attribute + (";" + first) + second;
+            }
+            RubyType type = child.getType();
+            if (type.isKnown()) {
+                attribute += ";;" + type.asIndexedString() + ";";
             }
             
             document.addPair(FIELD_ATTRIBUTE_NAME, attribute, true, true);
@@ -1479,22 +1510,23 @@ public class RubyIndexer extends EmbeddingIndexer {
         }
 
         private void indexField(AstElement child, IndexDocument document, boolean nodoc) {
-            String signature = child.getName();
+            StringBuilder signature = new StringBuilder(child.getName());
             int flags = getModifiersFlag(child.getModifiers());
             if (nodoc) {
                 flags |= IndexedElement.NODOC;
             }
-
             if (flags != 0) {
-                StringBuilder sb = new StringBuilder(signature);
-                sb.append(';');
-                sb.append(IndexedElement.flagToFirstChar(flags));
-                sb.append(IndexedElement.flagToSecondChar(flags));
-                signature = sb.toString();
+                signature.append(';');
+                signature.append(IndexedElement.flagToFirstChar(flags));
+                signature.append(IndexedElement.flagToSecondChar(flags));
+            }
+            RubyType type = child.getType();
+            if (type.isKnown()) {
+                signature.append(";;" + type.asIndexedString() + ";");
             }
 
             // TODO - gather documentation on fields? naeh
-            document.addPair(FIELD_FIELD_NAME, signature, true, true);
+            document.addPair(FIELD_FIELD_NAME, signature.toString(), true, true);
         }
 
         private void indexGlobal(AstElement child, IndexDocument document/*, boolean nodoc*/) {
@@ -1568,6 +1600,34 @@ public class RubyIndexer extends EmbeddingIndexer {
                     document.addPair(FIELD_REQUIRE, relative, true, true);
                 }
             }
+        }
+
+        /**
+         * Gets the table name explicitly specified for the class.
+         * 
+         * @param node
+         * @return
+         */
+        private String getExplicitTableName(Node node) {
+            for (Node child : node.childNodes()) {
+                if (child instanceof FCallNode
+                        && SET_TABLE_NAME.equals(AstUtilities.getName(child))) {
+                    Node arg = ((FCallNode) child).getArgsNode();
+                    if (arg != null && arg instanceof ArrayNode) {
+                        ArrayNode value = (ArrayNode) arg;
+                        if (value.size() > 0) {
+                            return AstUtilities.getNameOrValue(value.get(0));
+                        }
+                    }
+                    // no point in continuing
+                    return null;
+                }
+                String tableName = getExplicitTableName(child);
+                if (tableName != null) {
+                    return tableName;
+                }
+            }
+            return null;
         }
     }
 

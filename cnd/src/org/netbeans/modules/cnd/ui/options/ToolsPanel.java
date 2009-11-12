@@ -41,6 +41,7 @@
 package org.netbeans.modules.cnd.ui.options;
 
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Font;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
@@ -74,10 +75,10 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -200,19 +201,43 @@ public final class ToolsPanel extends JPanel implements ActionListener,
     }
 
     private void addCompilerSet() {
+        if (csm == null) {
+            // Compiler set manager is not initialized yet
+            // (initializeLong still running). Stop here to avoid NPEs.
+            return;
+        }
+
         AddCompilerSetPanel panel = new AddCompilerSetPanel(csm);
         String title = isRemoteHostSelected() ? getString("NEW_TOOL_SET_TITLE_REMOTE", ExecutionEnvironmentFactory.toUniqueID(csm.getExecutionEnvironment())) : getString("NEW_TOOL_SET_TITLE");
         DialogDescriptor dialogDescriptor = new DialogDescriptor(panel, title);
         panel.setDialogDescriptor(dialogDescriptor);
+        boolean oldHostValid = cacheManager.isDevHostValid(execEnv);
         DialogDisplayer.getDefault().notify(dialogDescriptor);
         if (dialogDescriptor.getValue() != DialogDescriptor.OK_OPTION) {
+            boolean newHostValid = cacheManager.isDevHostValid(execEnv);
+            if (oldHostValid != newHostValid) {
+                // we didn't add the collection, but host changed its valid state
+                dataValid();
+            }
             return;
         }
 
-        CompilerSet cs = panel.getCompilerSet();
-        csm.add(cs);
-        changed = true;
-        update(false, cs);
+        final CompilerSet cs = panel.getCompilerSet();
+        updating = true;
+        final Cursor oldCursor = getCursor();
+        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        RequestProcessor.getDefault().post(new Runnable(){
+            public void run() {
+                csm.add(cs);
+                changed = true;
+                SwingUtilities.invokeLater(new Runnable(){
+                    public void run() {
+                        update(false, cs);
+                        setCursor(oldCursor);
+                    }
+                });
+            }
+        });
     }
 
     private void duplicateCompilerSet() {
@@ -316,6 +341,8 @@ public final class ToolsPanel extends JPanel implements ActionListener,
     public void update(final boolean doInitialize, final CompilerSet selectedCS) {
         updating = true;
         if (!initialized || doInitialize) {
+            final Cursor oldCursor = getCursor();
+            setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             RequestProcessor.getDefault().post(new Runnable(){
                 public void run() {
                      initializeLong();
@@ -323,6 +350,7 @@ public final class ToolsPanel extends JPanel implements ActionListener,
                         public void run() {
                             initializeUI();
                             updateUI(doInitialize, selectedCS);
+                            setCursor(oldCursor);
                         }
                      });
                 }
@@ -512,6 +540,8 @@ public final class ToolsPanel extends JPanel implements ActionListener,
 
                 validate();
                 repaint();
+            } else {
+                lblErrors.setText("");
             }
 
             boolean baseDirValid = getToolCollectionPanel().isBaseDirValid();
@@ -915,19 +945,24 @@ public final class ToolsPanel extends JPanel implements ActionListener,
 private void btVersionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btVersionsActionPerformed
     btVersions.setEnabled(false);
 
+    final Cursor oldCursor = getCursor();
+    setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
     RequestProcessor.getDefault().post(new Runnable() {
 
         public void run() {
-            String versions = getToolCollectionPanel().getVersion(currentCompilerSet);
+            CompilerSet set = currentCompilerSet;
+            if (set != null) {
+                String versions = getToolCollectionPanel().getVersion(set);
 
-            NotifyDescriptor nd = new NotifyDescriptor.Message(versions);
-            nd.setTitle(getString("LBL_VersionInfo_Title")); // NOI18N
-            DialogDisplayer.getDefault().notify(nd);
-
+                NotifyDescriptor nd = new NotifyDescriptor.Message(versions);
+                nd.setTitle(getString("LBL_VersionInfo_Title")); // NOI18N
+                DialogDisplayer.getDefault().notify(nd);
+            }
             SwingUtilities.invokeLater(new Runnable() {
 
                 public void run() {
                     btVersions.setEnabled(true);
+                    setCursor(oldCursor);
                 }
             });
         }
@@ -956,7 +991,7 @@ private void btVersionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         }
     }
 
-    class MyDevHostListCellRenderer extends DefaultListCellRenderer {
+    static class MyDevHostListCellRenderer extends DefaultListCellRenderer {
 
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
@@ -971,6 +1006,10 @@ private void btVersionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     }
 
 private void btRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRestoreActionPerformed
+    if (csm == null) {
+        // restore is available after long initialization
+        return;
+    }
     NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
             getString("RESTORE_TXT"),
             getString("RESTORE_TITLE"),
@@ -1044,6 +1083,9 @@ private void btRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
             }
             if (selectedName != null) {
                 selectedCS[0] = csm.getCompilerSet(selectedName);
+            }
+            if (execEnv.isLocal()) {
+                WindowsSupport.getInstance().init();
             }
             log.finest("Restored defaults\n");
         }

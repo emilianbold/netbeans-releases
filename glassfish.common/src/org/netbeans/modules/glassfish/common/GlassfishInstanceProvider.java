@@ -56,7 +56,10 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.RegisteredDDCatalog;
+import org.netbeans.modules.glassfish.spi.ServerCommand;
+import org.netbeans.modules.glassfish.spi.ServerCommand.SetPropertyCommand;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
+import org.netbeans.modules.glassfish.spi.CommandFactory;
 import org.netbeans.modules.glassfish.spi.Utils;
 import org.netbeans.spi.server.ServerInstanceImplementation;
 import org.netbeans.spi.server.ServerInstanceProvider;
@@ -122,7 +125,13 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                     new String[]{"lib" + File.separator + "schemas" + File.separator + "web-app_3_0.xsd"}, // NOI18N
                     new String[0],
                     true, new String[]{"docs/javaee6-doc-api.zip"}, // NOI18N
-                    new String[] {"--nopassword"}); // NOI18N
+                    new String[]{"--nopassword"}, // NOI18N
+                    new CommandFactory() {
+
+                public SetPropertyCommand getSetPropertyCommand(String name, String value) {
+                    return new ServerCommand.SetPropertyCommand(name, value, "DEFAULT={0}={1}"); // NOI18N
+                }
+            });
         }
         return ee6Provider;
     }
@@ -145,8 +154,14 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                     new String[0],
                     new String[]{"lib" + File.separator + "schemas" + File.separator + "web-app_3_0.xsd"}, // NOI18N
                     false,
-                    new String[]{"docs/javaee6-doc-api.zip"},  // NOI18N
-                    null);
+                    new String[]{"docs/javaee6-doc-api.zip"}, // NOI18N
+                    null,
+                    new CommandFactory() {
+
+                        public SetPropertyCommand getSetPropertyCommand(String name, String value) {
+                            return new ServerCommand.SetPropertyCommand(name, value, "target={0}&value={1}"); // NOI18N
+                        }
+                    });
         }
         return preludeProvider;
     }
@@ -173,13 +188,14 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
     private boolean needsJdk6;
     private String[] javadocFilenames;
     private List noPasswordOptions;
+    private CommandFactory cf;
 
     private GlassfishInstanceProvider(String[] uriFragments, String[] instancesDirNames,
             String displayName, String propName, String defaultName, String personalName,
             String installName, String direct, String indirect, String prefKey,
             String[] requiredFiles, String[] excludedFiles, boolean needsJdk6,
             String[] javadocFilenames,
-            String[] noPasswordOptionsArray) {
+            String[] noPasswordOptionsArray, CommandFactory cf) {
         this.instancesDirNames = instancesDirNames;
         this.displayName = displayName;
         this.uriFragments = uriFragments;
@@ -198,6 +214,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
         if (null != noPasswordOptionsArray) {
             noPasswordOptions.addAll(Arrays.asList(noPasswordOptionsArray));
         }
+        this.cf = cf;
         init();
     }
 
@@ -581,6 +598,8 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
             File f = new File(folderName);
             // !PW FIXME better heuristics to identify a valid V3 install
             result = f.exists();
+            result = result && f.isDirectory();
+            result = result && f.canRead();
         }
         return result;    
     }
@@ -591,6 +610,8 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
             File f = new File(folderName);
             // !PW FIXME better heuristics to identify a valid V3 install
             result = f.exists();
+            result = result && f.isDirectory();
+            result = result && f.canRead();
         }
         return result;    
     }
@@ -626,6 +647,34 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
 //                !NbPreferences.forModule(this.getClass()).getBoolean(ServerUtilities.PROP_FIRST_RUN, false);
 
         String candidate = System.getProperty(installRootPropName);
+        if (null == candidate) {
+            return;
+        }
+        candidate = new File(candidate).getAbsolutePath();
+
+        // sanity check the installRoot value.  Try to correct it
+        // if the most common mistake is made
+        //  (gfroot instead of installroot is the value given)
+        //
+        if (isValidHomeFolder(candidate)) {
+            String gfCandidate = candidate + File.separator + "glassfish";
+            if (!isValidGlassfishFolder(gfCandidate)) {
+                gfCandidate = candidate;
+                candidate = new File(gfCandidate).getParentFile().getAbsolutePath();
+                if (!isValidHomeFolder(candidate) || !isValidGlassfishFolder(gfCandidate)) {
+                    getLogger().log(Level.INFO, "Invalid value set for installRoot: " + System.getProperty(installRootPropName));
+                    return;
+                } else {
+                    getLogger().log(Level.INFO, "Fixed incorrect value set for installRoot: " + System.getProperty(installRootPropName));
+                }
+            } else {
+                // candidate and gfCandidate is valid
+            }
+        } else {
+            getLogger().log(Level.INFO, "Invalid installRoot: " + System.getProperty(installRootPropName));
+            return;
+        }
+        
         String firstRunValue = NbPreferences.forModule(this.getClass()).get(ServerUtilities.PROP_FIRST_RUN+getInstallRootKey(), "false"); // NOI18N
         
         // we may be migrating from 'old' to new
@@ -764,5 +813,9 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
             }
             return candidate;
         }
+    }
+
+    CommandFactory getCommandFactory() {
+       return cf;
     }
 }

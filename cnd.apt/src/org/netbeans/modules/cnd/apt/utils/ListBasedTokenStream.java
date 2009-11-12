@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.cnd.apt.utils;
 
-import antlr.TokenStream;
+import org.netbeans.modules.cnd.antlr.TokenStream;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.cnd.apt.support.APTToken;

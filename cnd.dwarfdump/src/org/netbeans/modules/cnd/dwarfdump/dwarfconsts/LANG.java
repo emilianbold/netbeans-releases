@@ -58,8 +58,12 @@ public enum LANG {
     DW_LANG_Fortran90(0x0008, "Fortran 90"), // NOI18N
     DW_LANG_Pascal83(0x0009, "Pascal 83"), // NOI18N
     DW_LANG_Modula2(0x000a, "Modula 2"), // NOI18N
+    DW_LANG_Java(0x000b, "Java"), // NOI18N
     DW_LANG_C99(0x000c, "C 99"), // NOI18N
+    DW_LANG_Ada95(0x000d, "Ada"), // NOI18N
+    DW_LANG_Fortran95(0x000e, "Fortran 95"), // NOI18N
     DW_LANG_lo_user(0x8000, null), // NOI18N
+    DW_LANG_SUN_Assembler(0x9001, "Assembler"), // NOI18N
     DW_LANG_hi_user(0xffff, null); // NOI18N
     
 /* What about dwarf 3.0 ?

@@ -126,4 +126,9 @@ public class WhereUsedInQuoteTestCase extends CsmWhereUsedQueryPluginTestCaseBas
         props.put(WhereUsedQuery.FIND_REFERENCES, true);
         performWhereUsed("memory.h", 52, 25, props);
     }
+
+    public void testIZ175700() throws Exception {
+        // IZ#175700 : [code model] Parser does not recognized inline initialization in constructor
+        performWhereUsed("quote.cc", 169, 12);
+    }
 }

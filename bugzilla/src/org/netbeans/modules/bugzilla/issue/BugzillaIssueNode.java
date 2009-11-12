@@ -85,6 +85,18 @@ public class BugzillaIssueNode extends IssueNode {
         super.fireDataChanged();
     }
 
+    private Integer getIssueTypeSortKey(String issueType) {
+        BugzillaConfiguration bc = getBugzillaIssue().getBugzillaRepository().getConfiguration();
+        if(bc == null || !bc.isValid()) {
+            return null;
+        }
+        List<String> s = bc.getIssueTypes();
+        if(s == null) {
+            return null;
+        }
+        return s.indexOf(issueType);
+    }
+
     private Integer getSeveritySortKey(String severity) {
         BugzillaConfiguration bc = getBugzillaIssue().getBugzillaRepository().getConfiguration();
         if(bc == null || !bc.isValid()) {
@@ -173,7 +185,7 @@ public class BugzillaIssueNode extends IssueNode {
         @Override
         public Object getValue(String attributeName) {
             if("sortkey".equals(attributeName)) {                               // NOI18N
-                return getSeveritySortKey(getBugzillaIssue().getFieldValue(IssueField.ISSUE_TYPE));
+                return getIssueTypeSortKey(getBugzillaIssue().getFieldValue(IssueField.ISSUE_TYPE));
             } else {
                 return super.getValue(attributeName);
             }

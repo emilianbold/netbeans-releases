@@ -60,7 +60,7 @@ import org.openide.util.NbBundle;
 // Implement HelpCtx.Provider interface to provide help ids for help system
 // public class FunctionBreakpointPanel extends JPanel implements Controller {
 //
-public class AddressBreakpointPanel extends JPanel implements Controller {
+public class AddressBreakpointPanel extends JPanel implements Controller, ControllerProvider {
     
     private ConditionsPanel             conditionsPanel;
     private ActionsPanel                actionsPanel; 
@@ -237,7 +237,10 @@ public class AddressBreakpointPanel extends JPanel implements Controller {
         }
         return null;
     }
-    
+
+    public Controller getController() {
+        return this;
+    }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel lAddress;

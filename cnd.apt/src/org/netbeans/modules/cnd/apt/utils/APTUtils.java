@@ -41,9 +41,9 @@
 
 package org.netbeans.modules.cnd.apt.utils;
 
-import antlr.Token;
-import antlr.TokenStream;
-import antlr.TokenStreamException;
+import org.netbeans.modules.cnd.antlr.Token;
+import org.netbeans.modules.cnd.antlr.TokenStream;
+import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -174,6 +174,7 @@ public class APTUtils {
                 // Numbers
             case APTTokenTypes.DECIMALINT:
             case APTTokenTypes.HEXADECIMALINT:
+            case APTTokenTypes.BINARYINT:
             case APTTokenTypes.FLOATONE:
             case APTTokenTypes.FLOATTWO:
             case APTTokenTypes.OCTALINT:
@@ -316,6 +317,7 @@ public class APTUtils {
                 case APTTokenTypes.DECIMALINT:
                 case APTTokenTypes.HEXADECIMALINT:
                 case APTTokenTypes.OCTALINT:
+                case APTTokenTypes.BINARYINT:
                     return true;
             }
         }

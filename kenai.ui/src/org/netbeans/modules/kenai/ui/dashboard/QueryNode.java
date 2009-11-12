@@ -130,6 +130,7 @@ public class QueryNode extends AsynchronousLeafNode<List<QueryResultHandle>> imp
                     QueryResultHandle qrh = data.get(i);
                     if (qrh.getResultType() == QueryResultHandle.ResultType.NAMED_RESULT) {
                         LinkButton btn = new LinkButton(qrh.getText(), accessor.getOpenQueryResultAction(qrh));
+                        btn.setToolTipText(qrh.getToolTipText());
                         buttons.add(btn);
                         panel.add(btn, new GridBagConstraints(col++, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
                         if (i < data.size() - 1 && data.get(i+1).getResultType()==QueryResultHandle.ResultType .NAMED_RESULT) {

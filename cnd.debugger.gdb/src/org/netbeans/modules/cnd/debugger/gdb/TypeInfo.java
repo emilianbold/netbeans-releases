@@ -83,7 +83,7 @@ public class TypeInfo {
         }
         
         if (var.getName().equals(NbBundle.getMessage(AbstractVariable.class, "LBL_BaseClass"))) { // NOI18N
-            rawInfo = debugger.requestSymbolType(var.getType());
+            rawInfo = debugger.requestBaseClassType(var.getType());
         } else {
             rawInfo = debugger.requestSymbolTypeFromName(var.getFullName());
         }

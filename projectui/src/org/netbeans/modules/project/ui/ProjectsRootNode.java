@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.project.ui;
 
+import java.awt.EventQueue;
 import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -266,6 +267,16 @@ public class ProjectsRootNode extends AbstractNode {
             sources2projects.clear();
             setKeys(Collections.<Pair>emptySet());
         }
+
+        @Override
+        public int getNodesCount(boolean optimalResult) {
+            if (optimalResult) {
+                setKeys(getKeys());
+            }
+            return super.getNodesCount(optimalResult);
+        }
+
+
         
         protected Node[] createNodes(Pair p) {
             Project project = p.project;
@@ -512,7 +523,7 @@ public class ProjectsRootNode extends AbstractNode {
                 return;
             }
             FileObject fo = p.getProjectDirectory();
-            if (newProj.getProjectDirectory().equals(fo)) {
+            if (newProj != null && newProj.getProjectDirectory().equals(fo)) {
                 Node n = null;
                 if (logicalView) {
                     n = ch.logicalViewForProject(newProj, null);
@@ -557,7 +568,18 @@ public class ProjectsRootNode extends AbstractNode {
                 OpenProjectList.log(Level.FINER, "done {0}", toStringForLog());
                 setProjectFiles();
             } else {
-                OpenProjectList.log(Level.FINE, "wrong directories. current: " + fo + " new " + newProj.getProjectDirectory());
+                FileObject newDir;
+                if (newProj != null) {
+                    newDir = newProj.getProjectDirectory();
+                } else {
+                    newDir = null;
+                    EventQueue.invokeLater(new Runnable() {
+                        public void run() {
+                            OpenProjectList.getDefault().close(new Project[] { pair.project }, false);
+                        }
+                    });
+                }
+                OpenProjectList.log(Level.FINE, "wrong directories. current: " + fo + " new " + newDir);
             }
         }
 
@@ -781,11 +803,7 @@ public class ProjectsRootNode extends AbstractNode {
         
         // sources change
         public void stateChanged(ChangeEvent e) {
-            Hacks.RP.post(new Runnable () {
-                public void run() {
-                    setProjectFiles();
-                }
-            });
+            fsRefreshTask.schedule(DELAY);
         }
 
         @Override

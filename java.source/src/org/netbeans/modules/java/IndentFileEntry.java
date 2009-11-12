@@ -50,7 +50,6 @@ import javax.swing.text.StyledDocument;
 import javax.swing.text.EditorKit;
 import org.netbeans.api.queries.FileEncodingQuery;
 
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileUtil;
@@ -58,6 +57,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.FileEntry;
 import org.openide.text.IndentEngine;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -215,11 +215,8 @@ public abstract class IndentFileEntry extends FileEntry.Format {
             indentator.write(text);
             indentator.close();
             return writer.toString();
-        } catch (Exception ex) {
-	    ErrorManager.getDefault().annotate(
-		ex, ErrorManager.WARNING, "Indentation engine error",
-                    NbBundle.getMessage(IndentFileEntry.class, "EXMSG_IndentationEngineError"), ex, null);// NOI18N
-            ErrorManager.getDefault().notify(ex);
+        } catch (Exception ex) {	    
+            Exceptions.printStackTrace(Exceptions.attachMessage(ex,NbBundle.getMessage(IndentFileEntry.class, "EXMSG_IndentationEngineError")));
             return text;
         }
     }

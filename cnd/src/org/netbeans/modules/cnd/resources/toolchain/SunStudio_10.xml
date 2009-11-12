@@ -51,11 +51,26 @@ made subject to such option by the copyright holder.
     </default_locations>
     <c>
         <version flags="-V" pattern=".*Sun C 5.7"/>
+        <architecture>
+            <default flags="" default="true"/>
+            <bits_32 flags=""/>
+            <bits_64 flags="-xarch=generic64"/>
+        </architecture>
     </c>
     <cpp>
         <version flags="-V" pattern=".*Sun C\+\+ 5.7"/>
+        <architecture>
+            <default flags="" default="true"/>
+            <bits_32 flags=""/>
+            <bits_64 flags="-xarch=generic64"/>
+        </architecture>
     </cpp>
     <fortran>
         <version flags="-V" pattern=".*Sun Fortran 95 8.1"/>
+        <architecture>
+            <default flags="" default="true"/>
+            <bits_32 flags=""/>
+            <bits_64 flags="-xarch=generic64"/>
+        </architecture>
     </fortran>
 </toolchaindefinition>

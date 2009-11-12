@@ -47,7 +47,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import org.netbeans.api.project.Project;
@@ -73,17 +72,20 @@ import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
  */
 public class CppSymbolDemanglerImpl implements CppSymbolDemangler {
 
+    private static final String ECHO = "echo"; // NOI18N
+    private static final String DEM = "dem"; // NOI18N
+    private static final String GCPPFILT = "gc++filt"; // NOI18N
+    private static final String CPPFILT = "c++filt"; // NOI18N
+    private static final String EQUALS_EQUALS = " == "; // NOI18N
+
     private static final int MAX_CMDLINE_LENGTH = 2000;
+
     private final static Map<String, String> demangledCache = new HashMap<String, String>();
     private final static List<String> searchPaths = new ArrayList<String>();
     private final ExecutionEnvironment env;
     private final CPPCompiler cppCompiler;
     private String demanglerTool;
-    private boolean checkGnuDemangler;
-    private static final String GNU_DEMANGLER_1 = "gc++filt"; //NOI18N
-    private static final String GNU_DEMANGLER_2 = "c++filt"; //NOI18N
-    private static final String SS_DEMANGLER = "dem"; //NOI18N
-    private static final String EQUALS_EQUALS = " == "; //NOI18N
+    private boolean demanglerChecked;
 
     /*package*/ CppSymbolDemanglerImpl(Map<String, String> serviceInfo) {
         if (serviceInfo == null ||
@@ -106,30 +108,27 @@ public class CppSymbolDemanglerImpl implements CppSymbolDemangler {
 
             if (nPrj == null || conf == null) {
                 cppCompiler = CPPCompiler.GNU;
-                demanglerTool = GNU_DEMANGLER_1;
-                checkGnuDemangler = true;
+                demanglerTool = GCPPFILT;
                 env = ExecutionEnvironmentFactory.getLocal();
                 return;
             }
 
             CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
-            String demangle_utility = SS_DEMANGLER;
 
             if (compilerSet.getCompilerFlavor().isGnuCompiler()) {
                 cppCompiler = CPPCompiler.GNU;
-                demangle_utility = GNU_DEMANGLER_1;
-                checkGnuDemangler = true;
+                demanglerTool = GCPPFILT;
             } else {
                 cppCompiler = CPPCompiler.SS;
+                demanglerTool = DEM;
             }
 
             String binDir = compilerSet.getDirectory();
             if (!searchPaths.contains(binDir)) {
                 searchPaths.add(binDir);
             }
-            
+
             env = conf.getDevelopmentHost().getExecutionEnvironment();
-            demanglerTool = demangle_utility;
         } else {
             env = ExecutionEnvironmentFactory.fromUniqueID(serviceInfo.get(ServiceInfoDataStorage.EXECUTION_ENV_KEY));
             cppCompiler = CppSymbolDemanglerFactory.CPPCompiler.valueOf(serviceInfo.get(GizmoServiceInfo.CPP_COMPILER));
@@ -139,22 +138,20 @@ public class CppSymbolDemanglerImpl implements CppSymbolDemangler {
                 searchPaths.add(binDir);
             }
 
-            String demangle_utility = SS_DEMANGLER;
             if (cppCompiler == CPPCompiler.GNU) {
-                demangle_utility = GNU_DEMANGLER_1;
-                checkGnuDemangler = true;
+                demanglerTool = GCPPFILT;
+            } else {
+                demanglerTool = DEM;
             }
-            demanglerTool = demangle_utility;
         }
     }
 
     /*package*/ CppSymbolDemanglerImpl(CPPCompiler cppCompiler) {
         this.cppCompiler = cppCompiler;
         if (cppCompiler == CPPCompiler.GNU) {
-            demanglerTool = GNU_DEMANGLER_1;
-            checkGnuDemangler = true;
+            demanglerTool = GCPPFILT;
         } else {
-            demanglerTool = SS_DEMANGLER;
+            demanglerTool = DEM;
         }
         env = ExecutionEnvironmentFactory.getLocal();
     }
@@ -254,11 +251,17 @@ public class CppSymbolDemanglerImpl implements CppSymbolDemangler {
      * @param mangledNames
      */
     private void splitAndDemangle(List<String> mangledNames) {
+
+        if (demanglerTool == null) {
+            // demangler not found
+            return;
+        }
+
         ListIterator<String> it = mangledNames.listIterator();
         while (it.hasNext()) {
 
             int startIdx = it.nextIndex();
-            int cmdlineLength = demanglerTool.length();
+            int cmdlineLength = ECHO.length() + demanglerTool.length();
             while (it.hasNext() && cmdlineLength < MAX_CMDLINE_LENGTH) {
                 String name = it.next();
                 cmdlineLength += name.length() + 3; // space and quotes
@@ -271,22 +274,31 @@ public class CppSymbolDemanglerImpl implements CppSymbolDemangler {
     }
 
     private void demangleImpl(List<String> mangledNames) {
-        if (cppCompiler == CPPCompiler.GNU) {
-            checkGnuDemangler();
+        checkDemanglerIfNeeded();
+
+        if (demanglerTool == null) {
+            // demangler not found
+            return;
         }
 
         final NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
-        npb.setExecutable(demanglerTool);
-        npb.setArguments(mangledNames.toArray(new String[mangledNames.size()]));
+
+        if (demanglerTool.indexOf(GCPPFILT) >= 0 || demanglerTool.indexOf(CPPFILT) >=0) {
+            StringBuilder cmdline = new StringBuilder();
+            cmdline.append(ECHO).append(" \""); // NOI18N
+            for (String name : mangledNames) {
+                cmdline.append(name).append('\n'); // NOI18N
+            }
+            cmdline.append("\" | ").append(demanglerTool); // NOI18N
+            npb.setCommandLine(cmdline.toString());
+        } else {
+            npb.setExecutable(demanglerTool);
+            npb.setArguments(mangledNames.toArray(new String[mangledNames.size()]));
+        }
 
         try {
-            Future<NativeProcess> task = DLightExecutorService.submit(new Callable<NativeProcess>() {
-
-                public NativeProcess call() throws Exception {
-                    return npb.call();
-                }
-            }, "CPPSymbolDemangler call");//NOI18N
-            NativeProcess np = task.get();
+            Future<Process> task = DLightExecutorService.submit(npb, "CPPSymbolDemangler call");//NOI18N
+            NativeProcess np = (NativeProcess) task.get();
             BufferedReader reader = new BufferedReader(new InputStreamReader(np.getInputStream()));
             try {
                 ListIterator<String> it = mangledNames.listIterator();
@@ -318,15 +330,21 @@ public class CppSymbolDemanglerImpl implements CppSymbolDemangler {
         }
     }
 
-    private synchronized void checkGnuDemangler() {
-        if (checkGnuDemangler) {
-            if (HostInfoUtils.searchFile(env, searchPaths, demanglerTool, true) == null) {
-                String demanglerTool2 = demanglerTool.replace(GNU_DEMANGLER_1, GNU_DEMANGLER_2);
-                if (HostInfoUtils.searchFile(env, searchPaths, demanglerTool2, true) != null) {
-                    demanglerTool = demanglerTool2;
+    private synchronized void checkDemanglerIfNeeded() {
+        if (!demanglerChecked) {
+            String absPath = HostInfoUtils.searchFile(env, searchPaths, demanglerTool, true);
+            if (absPath == null) {
+                String fallbackDemangler = CPPFILT;
+                absPath = HostInfoUtils.searchFile(env, searchPaths, fallbackDemangler, true);
+                if (absPath == null) {
+                    demanglerTool = null;
+                } else {
+                    demanglerTool = absPath;
                 }
+            } else {
+                demanglerTool = absPath;
             }
-            checkGnuDemangler = false;
+            demanglerChecked = true;
         }
     }
 
@@ -347,9 +365,7 @@ public class CppSymbolDemanglerImpl implements CppSymbolDemangler {
      *      is functional, <code>false</code> otherwise
      */
     /*package*/ boolean isToolAvailable() {
-        if (cppCompiler == CPPCompiler.GNU) {
-            checkGnuDemangler();
-        }
-        return HostInfoUtils.searchFile(env, searchPaths, demanglerTool, true) != null;
+        checkDemanglerIfNeeded();
+        return demanglerTool != null;
     }
 }

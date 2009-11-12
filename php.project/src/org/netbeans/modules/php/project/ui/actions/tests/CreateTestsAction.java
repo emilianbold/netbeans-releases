@@ -299,7 +299,7 @@ public final class CreateTestsAction extends NodeAction {
             final File generatedFile = getGeneratedFile(className, parent);
 
             // test does not exist yet
-            Future<Integer> result = generateSkeleton(phpUnit, configFiles, PhpProjectUtils.getFullyQualifiedName(phpProject, phpClass), sourceFo, workingDirectory, paramSkeleton);
+            Future<Integer> result = generateSkeleton(phpUnit, configFiles, phpClass.getFullyQualifiedName(), sourceFo, workingDirectory, paramSkeleton);
             try {
                 if (result.get() != 0) {
                     // test not generated
@@ -323,11 +323,7 @@ public final class CreateTestsAction extends NodeAction {
         ExternalProcessBuilder externalProcessBuilder = phpUnit.getProcessBuilder()
                 .workingDirectory(workingDirectory);
 
-        if (configFiles.bootstrap != null) {
-            externalProcessBuilder = externalProcessBuilder
-                    .addArgument(PhpUnit.PARAM_BOOTSTRAP)
-                    .addArgument(configFiles.bootstrap.getAbsolutePath());
-        }
+        // #176413 - bootstrap file not used for creating tests
         if (configFiles.configuration != null) {
             externalProcessBuilder = externalProcessBuilder
                     .addArgument(PhpUnit.PARAM_CONFIGURATION)
