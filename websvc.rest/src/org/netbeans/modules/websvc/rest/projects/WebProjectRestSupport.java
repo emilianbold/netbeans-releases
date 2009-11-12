@@ -46,10 +46,10 @@ import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
@@ -62,10 +62,11 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.websvc.api.jaxws.project.LogUtils;
+import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.model.api.RestApplication;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
-import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
+import org.netbeans.modules.websvc.rest.support.Utils;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
 import org.netbeans.modules.websvc.wsstack.jaxrs.JaxRs;
 import org.netbeans.modules.websvc.wsstack.jaxrs.JaxRsStackProvider;
@@ -141,7 +142,7 @@ public class WebProjectRestSupport extends WebRestSupport {
         if (!isRestSupportOn()) {
             needsRefresh = true;
             setProjectProperty(REST_SUPPORT_ON, "true");
-            resourceUrl = setApplicationConfigProperty(isAnnotationConfigAvailable());
+            resourceUrl = setApplicationConfigProperty(RestUtils.isAnnotationConfigAvailable(project));
         }
 
         extendBuildScripts();
@@ -151,6 +152,12 @@ public class WebProjectRestSupport extends WebRestSupport {
         String restConfigType = getProjectProperty(PROP_REST_CONFIG_TYPE);
         if (restConfigType == null || CONFIG_TYPE_DD.equals(restConfigType)) {
             addResourceConfigToWebApp(resourceUrl);
+        }
+        if (CONFIG_TYPE_IDE.equals(restConfigType)) {
+            FileObject buildFo = Utils.findBuildXml(project);
+            if (buildFo != null) {
+                ActionUtils.runTarget(buildFo, new String[] {WebRestSupport.REST_CONFIG_TARGET}, null);
+            }
         }
         ProjectManager.getDefault().saveProject(getProject());
         if (needsRefresh) {
@@ -370,21 +377,6 @@ public class WebProjectRestSupport extends WebRestSupport {
             }
         }
         return null;
-    }
-
-    private boolean isAnnotationConfigAvailable() throws IOException {
-        WebApp webApp = findWebApp();
-        if (webApp != null && getRestServletMapping(webApp) != null) {
-            return false;
-        }
-        SourceGroup[] sourceGroups = SourceGroupSupport.getJavaSourceGroups(project);
-        if (sourceGroups.length>0) {
-            ClassPath cp = ClassPath.getClassPath(sourceGroups[0].getRootFolder(), ClassPath.COMPILE);
-            if (cp.findResource("javax/ws/rs/ApplicationPath.class") != null && cp.findResource("javax/ws/rs/core/Application.class") != null) {
-                return true;
-            }
-        }
-        return false;
     }
    
 }

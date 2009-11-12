@@ -42,12 +42,10 @@ package org.netbeans.modules.websvc.rest.nodes;
 
 import java.io.IOException;
 import org.apache.tools.ant.module.api.support.ActionUtils;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.spi.ApplicationConfigPanel;
 import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
-import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
 import org.netbeans.modules.websvc.rest.support.Utils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -105,7 +103,7 @@ public class RestConfigurationAction extends NodeAction  {
                 ApplicationConfigPanel configPanel = new ApplicationConfigPanel(
                         oldConfigType,
                         oldApplicationPath,
-                        restSupport.getAntProjectHelper() != null && isAnnotationConfigAvailable(project));
+                        restSupport.getAntProjectHelper() != null && RestUtils.isAnnotationConfigAvailable(project));
 
                 DialogDescriptor desc = new DialogDescriptor(configPanel,
                     NbBundle.getMessage(RestConfigurationAction.class, "TTL_ApplicationConfigPanel"));
@@ -113,8 +111,7 @@ public class RestConfigurationAction extends NodeAction  {
                 if (NotifyDescriptor.OK_OPTION.equals(desc.getValue())) {
                     String newConfigType = configPanel.getConfigType();
                     String newApplicationPath = configPanel.getApplicationPath();
-                    boolean applPathChanged = !oldApplicationPath.equals(newApplicationPath);
-                    if (!oldConfigType.equals(newConfigType) || applPathChanged) {
+                    if (!oldConfigType.equals(newConfigType) || !oldApplicationPath.equals(newApplicationPath)) {
 
                         if (!oldConfigType.equals(newConfigType)) {
                             // set up rest.config.type property
@@ -133,12 +130,10 @@ public class RestConfigurationAction extends NodeAction  {
                                 newApplicationPath = newApplicationPath.substring(1);
                             }
                             restSupport.setProjectProperty(WebRestSupport.PROP_REST_RESOURCES_PATH, newApplicationPath);
-                            if (applPathChanged) {
-                                try {
-                                    setRootResources(project);
-                                } catch (IOException ex) {
-                                    ex.printStackTrace();
-                                }
+                            try {
+                                setRootResources(project);
+                            } catch (IOException ex) {
+                                ex.printStackTrace();
                             }
                         } else if (!WebRestSupport.CONFIG_TYPE_USER.equals(newConfigType)) { // Deployment Descriptor
                             // add entries to dd
@@ -166,18 +161,6 @@ public class RestConfigurationAction extends NodeAction  {
     @Override
     public boolean asynchronous() {
         return true;
-    }
-
-    private boolean isAnnotationConfigAvailable(Project project) throws IOException {
-        SourceGroup[] sourceGroups = SourceGroupSupport.getJavaSourceGroups(project);
-        if (sourceGroups.length>0) {
-            ClassPath cp = ClassPath.getClassPath(sourceGroups[0].getRootFolder(), ClassPath.COMPILE);
-            if (cp.findResource("javax/ws/rs/ApplicationPath.class") != null && // NOI18N
-                cp.findResource("javax/ws/rs/core/Application.class") != null) { // NOI18N
-                return true;
-            }
-        }
-        return false;
     }
     
 }
