@@ -2652,6 +2652,10 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             }
             return true;
         }
+
+        public @Override String toString() {
+            return super.toString() + ", suspectFilesOrFileObjects=" + suspectFilesOrFileObjects; //NOI18N
+        }
     } // End of RefreshWork class
 
     private static class RootsWork extends AbstractRootsWork {
@@ -3133,7 +3137,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 LOGGER.log(Level.WARNING, null, e);
             }
         }
-    } // End of RootsWork class
+    } // End of AbstractRootsWork class
 
     private final class InitialRootsWork extends RootsWork {
 
