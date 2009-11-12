@@ -187,7 +187,7 @@ public class FinderMethodGenerator extends AbstractMethodGenerator {
         String primKeyClass = ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, String>() {
             public String run(EjbJarMetadata metadata) throws Exception {
                 Entity entity = (Entity) metadata.findByEjbClass(ejbClass);
-                return entity.getPrimKeyClass();
+                return entity != null ? entity.getPrimKeyClass() : null;
             }
         });
 
