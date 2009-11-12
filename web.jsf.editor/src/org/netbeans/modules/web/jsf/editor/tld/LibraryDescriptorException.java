@@ -43,9 +43,9 @@ package org.netbeans.modules.web.jsf.editor.tld;
  *
  * @author marekfukala
  */
-public class TldLibraryException extends Exception {
+public class LibraryDescriptorException extends Exception {
 
-    public TldLibraryException(String message, Throwable cause) {
+    public LibraryDescriptorException(String message, Throwable cause) {
         super(message, cause);
     }
 

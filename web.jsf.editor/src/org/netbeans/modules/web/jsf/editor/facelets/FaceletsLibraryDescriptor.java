@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.jsf.editor.tld;
+package org.netbeans.modules.web.jsf.editor.facelets;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -46,6 +46,8 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.xml.services.UserCatalog;
+import org.netbeans.modules.web.jsf.editor.tld.LibraryDescriptor;
+import org.netbeans.modules.web.jsf.editor.tld.LibraryDescriptorException;
 import org.openide.filesystems.FileObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -58,34 +60,31 @@ import org.xml.sax.SAXException;
  * @author marekfukala
  */
 
-public class TldLibrary extends LibraryDescriptor {
+public class FaceletsLibraryDescriptor extends LibraryDescriptor {
 
-    static TldLibrary create(FileObject definitionFile) throws LibraryDescriptorException {
-        return new TldLibrary(definitionFile);
+    static FaceletsLibraryDescriptor create(FileObject definitionFile) throws LibraryDescriptorException {
+        return new FaceletsLibraryDescriptor(definitionFile);
     }
 
-    static TldLibrary create(InputStream content) throws LibraryDescriptorException {
-        return new TldLibrary(content);
+    static FaceletsLibraryDescriptor create(InputStream content) throws LibraryDescriptorException {
+        return new FaceletsLibraryDescriptor(content);
     }
 
-    public TldLibrary() {
-    }
-
-    private TldLibrary(FileObject definitionFile) throws LibraryDescriptorException {
+    private FaceletsLibraryDescriptor(FileObject definitionFile) throws LibraryDescriptorException {
         super(definitionFile);
         parseLibrary();
     }
 
-    private TldLibrary(InputStream content) throws LibraryDescriptorException {
+    private FaceletsLibraryDescriptor(InputStream content) throws  LibraryDescriptorException {
         super(content);
         parseLibrary(content);
     }
 
-    public  static String parseNamespace(InputStream content) {
-        return parseNamespace(content, "taglib", "uri"); //NOI18N
+    public static String parseNamespace(InputStream content) {
+        return parseNamespace(content, "facelet-taglib", "namespace"); //NOI18N
     }
-
-    protected void parseLibrary(InputStream content) throws LibraryDescriptorException {
+    
+    protected  void parseLibrary(InputStream content) throws LibraryDescriptorException {
         try {
             DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
@@ -95,23 +94,19 @@ public class TldLibrary extends LibraryDescriptor {
             Document doc = docBuilder.parse(is);
 
             //usually the default taglib prefix
-            Node tagLib = getNodeByName(doc, "taglib"); //NOI18N
- 
-            prefix = getTextContent(tagLib, "short-name"); //NOI18N
-            if(prefix == null) {
-                //no default prefix
-                prefix = "";
-            }
+            Node tagLib = getNodeByName(doc, "facelet-taglib"); //NOI18N
 
-            uri = getTextContent(tagLib, "uri"); //NOI18N
+            uri = getTextContent(tagLib, "namespace"); //NOI18N
             if(uri == null) {
-                throw new LibraryDescriptorException("Missing uri entry in " + getDefinitionFile().getPath() + " library.", null);
+                throw new IllegalStateException("Missing namespace entry in " + getDefinitionFile().getPath() + " library.", null);
             }
 
+            //TODO fix the code according to the schema!
+            //I cannot count on the existing documents
             displayName = getTextContent(tagLib, "display-name"); //NOI18N
             if(displayName == null) {
                 //no display-name specified in the TLD, lets try to get the displayname from names registry
-                displayName = TldUtils.getLibraryDisplayName(uri);
+//                displayName = TldUtils.getLibraryDisplayName(uri);
                 if(displayName == null) {
                     //no entry even here, use TLD file name
                     displayName = getDefinitionFile().getNameExt();
@@ -123,7 +118,7 @@ public class TldLibrary extends LibraryDescriptor {
             if (tagNodes != null) {
                 for (int i = 0; i < tagNodes.getLength(); i++) {
                     Node tag = tagNodes.item(i);
-                    String tagName = getTextContent(tag, "name"); //NOI18N
+                    String tagName = getTextContent(tag, "tag-name"); //NOI18N
                     String tagDescription = getTextContent(tag, "description"); //NOI18N
 
                     Map<String, Attribute> attrs = new HashMap<String, Attribute>();
@@ -142,14 +137,15 @@ public class TldLibrary extends LibraryDescriptor {
             }
 
         } catch (ParserConfigurationException ex) {
-            throw new LibraryDescriptorException("Error parsing TLD library: ", ex); //NOI18N
+            throw new LibraryDescriptorException("Error parsing facelets library: ", ex); //NOI18N
         } catch (SAXException ex) {
-            throw new LibraryDescriptorException("Error parsing TLD library: ", ex); //NOI18N
+            throw new LibraryDescriptorException("Error parsing facelets library: ", ex); //NOI18N
         } catch (IOException ex) {
-            throw new LibraryDescriptorException("Error parsing TLD library: ", ex); //NOI18N
+            throw new LibraryDescriptorException("Error parsing facelets library: ", ex); //NOI18N
         }
 
 
     }
 
+   
 }

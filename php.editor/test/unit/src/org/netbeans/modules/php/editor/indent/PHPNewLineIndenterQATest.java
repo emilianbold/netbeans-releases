@@ -60,6 +60,18 @@ public class PHPNewLineIndenterQATest extends PHPTestBase {
     }
 
 
+    public void test17357_1_stableFixed() throws Exception{
+        testIndentInFile("testfiles/indent/qa/issues/stable_fixedIssues/173357_1.php");
+    }
+
+    public void test173357_2_stableFixed() throws Exception{
+        testIndentInFile("testfiles/indent/qa/issues/stable_fixedIssues/173357_2.php");
+    }
+
+    public void test176061_stableFixed() throws Exception{
+        testIndentInFile("testfiles/indent/qa/issues/stable_fixedIssues/176061.php");
+    }
+
     public void testClassAfterFunction_stable() throws Exception {
         testIndentInFile("testfiles/indent/qa/issues/stable_fixedIssues/classAfterFunction.php");
     }

@@ -275,9 +275,11 @@ public class FaceletsTaglibConfigProcessorPatched extends AbstractConfigProcesso
                 NodeList tags =
                         documentElement.getElementsByTagNameNS(namespace, TAG);
                 processTags(documentElement, tags, taglibrary);
-                NodeList functions =
-                        documentElement.getElementsByTagNameNS(namespace, FUNCTION);
-                processFunctions(functions, taglibrary);
+
+                //do not process functions
+//                NodeList functions =
+//                        documentElement.getElementsByTagNameNS(namespace, FUNCTION);
+//                processFunctions(functions, taglibrary);
                 compiler.addTagLibrary(taglibrary);
             }
         }

@@ -52,6 +52,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -548,6 +550,14 @@ public class CssCompletion implements CodeCompletionHandler {
                     if ( anchorIndex!= -1 ){
                         url = url.substring( 0, anchorIndex);
                     }
+                    //"normalize" the URL - use just the "path" part
+                    try {
+                        URL _url = new URL(url);
+                        url = _url.getPath();
+                    } catch(MalformedURLException mue) {
+                        Logger.getLogger("global").log(Level.INFO, null, mue);
+                    }
+
                     if ( url.startsWith( helpZipUrl)){
                         url = url.substring(helpZipUrl.length());
                     }

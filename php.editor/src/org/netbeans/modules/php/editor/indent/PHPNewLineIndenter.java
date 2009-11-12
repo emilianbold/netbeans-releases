@@ -157,7 +157,7 @@ public class PHPNewLineIndenter {
                         if (stringLineStart >= caretLineStart){
                             // string starts on the same line:
                             // current line indent + continuation size
-                            newIndent = Utilities.getRowIndent(doc, stringLineStart) + continuationSize;
+                            newIndent = Utilities.getRowIndent(doc, stringLineStart) + indentSize;
                         } else {
                             // string starts before:
                             // repeat indent from the previous line
@@ -196,7 +196,7 @@ public class PHPNewLineIndenter {
                             }
                             else if (delimiter.tokenId == PHPTokenId.PHP_CURLY_OPEN && ts.movePrevious()) {
                                 int startExpression = findStartTokenOfExpression(ts);
-                                newIndent = Utilities.getRowIndent(doc, startExpression) + continuationSize * 1;
+                                newIndent = Utilities.getRowIndent(doc, startExpression) + indentSize;
                                 break;
                             }
 
@@ -225,10 +225,10 @@ public class PHPNewLineIndenter {
                                     if (startExpression != -1) {
                                         int offsetArrayDeclaration = offsetArrayDeclaration(startExpression, ts);
                                         if (offsetArrayDeclaration > -1) {
-                                            newIndent = Utilities.getRowIndent(doc, offsetArrayDeclaration) + continuationSize * 1;
+                                            newIndent = Utilities.getRowIndent(doc, offsetArrayDeclaration) + indentSize;
                                         }
                                         else {
-                                            newIndent = Utilities.getRowIndent(doc, startExpression) + continuationSize * 2;
+                                            newIndent = Utilities.getRowIndent(doc, startExpression) + continuationSize;
                                         }
                                     }
                                     break;
@@ -237,7 +237,7 @@ public class PHPNewLineIndenter {
                             else if (ts.token().id() == PHPTokenId.PHP_OBJECT_OPERATOR) {
                                 int startExpression = findStartTokenOfExpression(ts);
                                 if (startExpression != -1) {
-                                    newIndent = Utilities.getRowIndent(doc, startExpression) + continuationSize * 2;
+                                    newIndent = Utilities.getRowIndent(doc, startExpression) + continuationSize;
                                     break;
                                 }
                             }
