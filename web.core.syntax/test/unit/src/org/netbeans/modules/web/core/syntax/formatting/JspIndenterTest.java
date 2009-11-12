@@ -331,6 +331,14 @@ public class JspIndenterTest extends TestBase2 {
         insertNewline(
                 "<html>\n    ${\"expression+\n           exp2\"\n                }^",
                 "<html>\n    ${\"expression+\n           exp2\"\n                }\n                ^", null);
+        // #176397
+        insertNewline(
+                "<html>^${\"expression\"}</html>",
+                "<html>\n    ^${\"expression\"}</html>", null);
+        insertNewline(
+                "<html>^${\"expression\"}",
+                "<html>\n    ^${\"expression\"}", null);
+
 
 // #128034
 //        insertNewline(
