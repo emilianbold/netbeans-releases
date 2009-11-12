@@ -223,12 +223,12 @@ public class RemoteFileSupport implements RemoteFileSystemNotifier.Callback {
         NativeProcess process = processBuilder.call();
         final InputStream is = process.getInputStream();
         final BufferedReader rdr = new BufferedReader(new InputStreamReader(is));
-        String fileName;
+        String inputLine;
         RemoteUtil.LOGGER.finest("Synchronizing dir " + dir.getAbsolutePath() + " with " + execEnv + ':' + remoteDir);
-        while ((fileName = rdr.readLine()) != null) {
-            CndUtils.assertTrueInConsole(fileName.length() > 2, "unexpected file information " + fileName); // NOI18N
-            boolean directory = fileName.charAt(0) == 'D';
-            fileName = fileName.substring(2);
+        while ((inputLine = rdr.readLine()) != null) {
+            CndUtils.assertTrueInConsole(inputLine.length() > 2, "unexpected file information " + inputLine); // NOI18N
+            boolean directory = inputLine.charAt(0) == 'D';
+            String fileName = inputLine.substring(2);
             if (directory) {
                 fileName = fixCaseSensitivePathIfNeeded(fileName);
             }
