@@ -37,14 +37,14 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.util;
+package org.netbeans.modules.kenai.api;
 
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.kenai.util.NbModuleOwnerSupport.ConfigData;
-import org.netbeans.modules.kenai.util.NbModuleOwnerSupport.OwnerInfo;
+import org.netbeans.modules.kenai.api.NbModuleOwnerSupport.ConfigData;
+import org.netbeans.modules.kenai.api.NbModuleOwnerSupport.OwnerInfo;
 
 /**
  * @author Marian Petras

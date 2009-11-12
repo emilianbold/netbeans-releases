@@ -48,7 +48,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.kenai.FeatureData;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
-import org.netbeans.modules.kenai.util.NbModuleOwnerSupport;
 
 /**
  *
