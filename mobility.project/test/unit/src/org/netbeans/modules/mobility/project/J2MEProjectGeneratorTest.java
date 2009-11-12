@@ -51,7 +51,6 @@ import java.beans.PropertyChangeListener;
 import junit.framework.*;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.modules.java.platform.JavaPlatformProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
@@ -67,25 +66,15 @@ import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.openide.ErrorManager;
-import javax.swing.text.Document;
-import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.mobility.cldcplatform.J2MEPlatform;
-import org.netbeans.modules.mobility.project.ProjectConfigurationsHelper;
 import org.netbeans.modules.mobility.project.ui.customizer.J2MEProjectProperties;
 import org.netbeans.spi.mobility.cfgfactory.ProjectConfigurationFactory.ConfigurationTemplateDescriptor;
 import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
-import org.openide.util.lookup.Lookups;
-import org.openide.windows.TopComponent;
 
 /**
  *
