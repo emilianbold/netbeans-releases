@@ -68,7 +68,7 @@ public class LibrariesStorageRefreshTest extends NbTestCase {
         super.setUp();
         MockLookup.setInstances(new LibrariesStorageTest.TestEntityCatalog());
         this.storageFolder = TestUtil.makeScratchDir(this);
-        LibrariesStorageTest.createLibraryDefinition(this.storageFolder,"Library1");
+        LibrariesStorageTest.createLibraryDefinition(this.storageFolder,"Library1", null);
         this.storage = new LibrariesStorage (this.storageFolder);
     }
 

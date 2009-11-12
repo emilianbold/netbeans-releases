@@ -45,9 +45,15 @@ made subject to such option by the copyright holder.
 
     <folder name="org-netbeans-api-project-libraries">
         <folder name="Libraries">
-            <file name="swing-layout.xml" url="swing-layout.xml"/>
-            <file name="absolutelayout.xml" url="absolutelayout.xml"/>
-            <file name="beans_binding.xml" url="beans_binding.xml"/>
+            <file name="swing-layout.xml" url="swing-layout.xml">
+                <attr name="displayName" bundlevalue="org.netbeans.modules.form.resources.Bundle#swing-layout"/>
+            </file>
+            <file name="absolutelayout.xml" url="absolutelayout.xml">
+                <attr name="displayName" bundlevalue="org.netbeans.modules.form.resources.Bundle#absolutelayout"/>
+            </file>
+            <file name="beans_binding.xml" url="beans_binding.xml">
+                <attr name="displayName" bundlevalue="org.netbeans.modules.form.resources.Bundle#beans-binding"/>
+            </file>
         </folder>
     </folder>
   <folder name="Loaders">

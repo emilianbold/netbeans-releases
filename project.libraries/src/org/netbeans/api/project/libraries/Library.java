@@ -173,7 +173,7 @@ public final class Library {
      * @return String the display name, never returns null.
      */
     public String getDisplayName () {
-        return this.getLocalizedString(this.impl.getLocalizingBundle(),this.impl.getName());
+        return org.netbeans.modules.project.libraries.ui.LibrariesCustomizer.getLocalizedName(this.impl);
     }
 
 
