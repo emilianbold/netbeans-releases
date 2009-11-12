@@ -205,21 +205,21 @@ public class DocumentFinder
         }
         b = (Boolean)props.get(EditorFindSupport.FIND_BLOCK_SEARCH);
         boolean blockSearch = (b != null && b.booleanValue());
-        Integer i = (Integer) props.get(EditorFindSupport.FIND_BLOCK_SEARCH_START);
-        int blockSearchStart = (i != null) ? i.intValue() : 0;
+        Position blockStartPos = (Position) props.get(EditorFindSupport.FIND_BLOCK_SEARCH_START);
+        int blockSearchStartOffset = (blockStartPos != null) ? blockStartPos.getOffset() : 0;
         Position pos = (Position) props.get(EditorFindSupport.FIND_BLOCK_SEARCH_END);
-        int blockSearchEnd = (pos != null) ? pos.getOffset() : doc.getLength();
+        int blockSearchEndOffset = (pos != null) ? pos.getOffset() : doc.getLength();
 
-        if (blockSearchStart > blockSearchEnd) {
-            LOG.log(Level.WARNING, "end="+blockSearchEnd+" < start="+blockSearchStart);
+        if (blockSearchStartOffset > blockSearchEndOffset) {
+            LOG.log(Level.WARNING, "end="+blockSearchEndOffset+" < start="+blockSearchStartOffset);
             //Changing places start and end block position
-            int tmp = blockSearchStart;
-            blockSearchStart = blockSearchEnd;
-            blockSearchEnd = tmp;
+            int tmp = blockSearchStartOffset;
+            blockSearchStartOffset = blockSearchEndOffset;
+            blockSearchEndOffset = tmp;
         }
         CharSequence docText = DocumentUtilities.getText(doc);
         CharSequence blockText = blockSearch
-                ? docText.subSequence(blockSearchStart, blockSearchEnd)
+                ? docText.subSequence(blockSearchStartOffset, blockSearchEndOffset)
                 : docText;
         int initOffset;
         if (back && !blockSearch)
@@ -227,7 +227,7 @@ public class DocumentFinder
         else if (back && blockSearch)
             initOffset = endOffset - startOffset;
         else if (!back && blockSearch) 
-            initOffset = startOffset - blockSearchStart;
+            initOffset = startOffset - blockSearchStartOffset;
          else
             initOffset = startOffset;
         if (initOffset < 0 || initOffset > blockText.length ()) {
@@ -235,7 +235,7 @@ public class DocumentFinder
                 Level.INFO,
                 "Index: " + initOffset +
                 "\nOffset: " + startOffset + "-" + endOffset +
-                "\nBlock: " + blockSearchStart + "-" + blockSearchEnd +
+                "\nBlock: " + blockSearchStartOffset + "-" + blockSearchEndOffset +
                 "\nLength : " + blockText.length ()
             );
             initOffset = Math.max (initOffset, 0);
@@ -247,7 +247,7 @@ public class DocumentFinder
             return new FindReplaceResult(ret, replaceText);
         }
         if (blockSearch)
-            ret[0] = blockSearchStart + findRet;
+            ret[0] = blockSearchStartOffset + findRet;
         else
             ret[0] = findRet;
         

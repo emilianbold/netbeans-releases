@@ -95,8 +95,8 @@ public final class EditorFindSupport {
     * FIND_HISTORY: java.util.List - History of search expressions
     * FIND_HISTORY_SIZE: java.lang.Integer - Maximum size of the history
     * FIND_BLOCK_SEARCH: java.lang.Boolean - search in block
-    * FIND_BLOCK_SEARCH_START: java.lang.Integer - start offset of the block
-    * FIND_BLOCK_SEARCH_END: java.lang.Integer - end offset of the block
+    * FIND_BLOCK_SEARCH_START: javax.swing.text.Position - start position of the block in block search
+    * FIND_BLOCK_SEARCH_END: javax.swing.text.Position - end position of the block in block search
     * 
     */
     public static final String FIND_WHAT = "find-what"; // NOI18N
@@ -126,9 +126,6 @@ public final class EditorFindSupport {
     /** It's public only to keep backwards compatibility of th FindSupport class. */
     public static final String REVERT_MAP = "revert-map"; // NOI18N
 
-    private static final String SEARCH_BLOCK_START="search-block-start"; //NOI18N
-    private static final String SEARCH_BLOCK_END="search-block-end"; //NOI18N
-    
     /** It's public only to keep backwards compatibility of th FindSupport class. */
     public static final String FIND_HISTORY_PROP = "find-history-prop"; //NOI18N
     /** It's public only to keep backwards compatibility of th FindSupport class. */
@@ -168,7 +165,7 @@ public final class EditorFindSupport {
         return findSupport;
     }
 
-    public Map<String, Object> getDefaultFindProperties() {
+    public Map<String, Object> createDefaultFindProperties() {
         HashMap<String, Object> props = new HashMap<String, Object>();
         
         props.put(FIND_WHAT, null);
@@ -193,7 +190,7 @@ public final class EditorFindSupport {
     
     public Map<String, Object> getFindProperties() {
         if (findProps == null) {
-            findProps = getDefaultFindProperties();
+            findProps = createDefaultFindProperties();
         }
         return findProps;
     }
@@ -212,40 +209,24 @@ public final class EditorFindSupport {
      * compatibility of the {@link org.netbeans.editor.FindSupport} class.
      */
     public int[] getBlocks(int[] blocks, Document doc,
-                    int startPos, int endPos) throws BadLocationException {
+                    int startOffset, int endOffset) throws BadLocationException {
         Map props = getValidFindProperties(null);
         
-        Boolean b = (Boolean)props.get(FIND_BLOCK_SEARCH);
-        boolean blockSearch = (b != null && b.booleanValue());
-        Integer i = (Integer) props.get(FIND_BLOCK_SEARCH_START);
-        int blockSearchStart = (i != null) ? i.intValue() : -1;
-        int blockSearchEnd = getBlockEndOffset();
+        boolean blockSearch = Boolean.TRUE.equals(props.get(FIND_BLOCK_SEARCH));
+        Position blockSearchStartPos = (Position) props.get(FIND_BLOCK_SEARCH_START);
+        Position blockSearchEndPos = (Position) props.get(FIND_BLOCK_SEARCH_END);
 
-        if (blockSearch && blockSearchStart>-1 && blockSearchEnd >0){
-            if (endPos>=blockSearchStart && startPos <=blockSearchEnd){
-                startPos = Math.max(blockSearchStart, startPos);
-                endPos = Math.min(blockSearchEnd, endPos);
-            }else{
+        if (blockSearch && blockSearchStartPos != null && blockSearchEndPos != null){
+            if (endOffset >= blockSearchStartPos.getOffset() &&
+                    startOffset <= blockSearchEndPos.getOffset())
+            {
+                startOffset = Math.max(blockSearchStartPos.getOffset(), startOffset);
+                endOffset = Math.min(blockSearchEndPos.getOffset(), endOffset);
+            } else {
                 return blocks;
             }
         }
-        return DocumentFinder.findBlocks(doc, startPos, endPos, props, blocks);
-    }
-
-    /**
-     * Get find property without performing initialization
-     * of find properties. This is useful for example for base document
-     * when it wants to query whether it should do highlight search.
-     *
-     * <p><b>IMPORTANT:</b> This method is public only for keeping backwards
-     * compatibility of the {@link org.netbeans.editor.FindSupport} class.
-     */
-    public Object getPropertyNoInit(String name) {
-        if (findProps == null) {
-            return null;
-        } else {
-            return getFindProperty(name);
-        }
+        return DocumentFinder.findBlocks(doc, startOffset, endOffset, props, blocks);
     }
 
     /** Set find property with specified name and fire change.
@@ -265,17 +246,18 @@ public final class EditorFindSupport {
         firePropertyChange(name, oldValue, newValue);
     }
 
-    /** Add/replace properties from some other map
-    * to current find properties. If the added properties
-    * are different than the original ones,
-    * the property change is fired.
-    */
+    /**
+     * Add/replace properties from some other map
+     * to current find properties. If the added properties
+     * are different than the original ones,
+     * the property change is fired.
+     */
     public void putFindProperties(Map<String, Object> propsToAdd) {
-        if (!getFindProperties().equals(propsToAdd)) {
+        if (getFindProperties() != propsToAdd) {
             getFindProperties().putAll(propsToAdd);
         }
         //highlight will not be updated on empty properties
-        if (propsToAdd.get(FIND_BLOCK_SEARCH_END)!=null) {
+        if (propsToAdd.get(FIND_BLOCK_SEARCH_END) != null) {
             firePropertyChange(null, null, null);
         }
     }
@@ -365,16 +347,16 @@ public final class EditorFindSupport {
                 boolean back = (b != null && b.booleanValue());
                 b = (Boolean)props.get(FIND_BLOCK_SEARCH);
                 boolean blockSearch = (b != null && b.booleanValue());
-                Integer i = (Integer) props.get(FIND_BLOCK_SEARCH_START);
-                int blockSearchStart = (i != null) ? i.intValue() : -1;
+                Position blockStartPos = (Position) props.get(FIND_BLOCK_SEARCH_START);
+                int blockSearchStartOffset = (blockStartPos != null) ? blockStartPos.getOffset() : -1;
                 
                 Position endPos = (Position) props.get(FIND_BLOCK_SEARCH_END);
-                int blockSearchEnd = (endPos != null) ? endPos.getOffset() : -1;
+                int blockSearchEndOffset = (endPos != null) ? endPos.getOffset() : -1;
                 int pos;
                 try {
-                    int start = (blockSearch && blockSearchStart > -1) ? blockSearchStart : 0;
-                    int end = (blockSearch && blockSearchEnd > 0) ? blockSearchEnd : -1;
-                    if (start>0 && end == -1) return false;
+                    int start = (blockSearch && blockSearchStartOffset > -1) ? blockSearchStartOffset : 0;
+                    int end = (blockSearch && blockSearchEndOffset > 0) ? blockSearchEndOffset : -1;
+                    if (start > 0 && end == -1) return false;
                     int findRet[] = findInBlock(comp, caretPos, 
                         start, 
                         end, 
@@ -520,8 +502,8 @@ public final class EditorFindSupport {
             
             Boolean b = (Boolean)props.get(FIND_BLOCK_SEARCH);
             boolean blockSearch = (b != null && b.booleanValue());
-            Integer i = (Integer) props.get(FIND_BLOCK_SEARCH_START);
-            int blockSearchStart = (i != null) ? i.intValue() : -1;
+            Position blockStartPos = (Position) props.get(FIND_BLOCK_SEARCH_START);
+            int blockSearchStart = (blockStartPos != null) ? blockStartPos.getOffset() : -1;
             int blockSearchEnd = getBlockEndOffset();
 
             try {
@@ -566,7 +548,7 @@ public final class EditorFindSupport {
     }
     
     /** Find the text from the caret position.
-    * @param props search properties
+    * @param localProps search properties
     * @param oppositeDir whether search in opposite direction
     */
     public boolean find(Map<String, Object> props, boolean oppositeDir) {
@@ -653,7 +635,7 @@ public final class EditorFindSupport {
     *   or equal to blockEndPos (except blockEndPos=-1).
     * @param blockEndPos ending position of the block. It can be -1 for the end
     *   of document. It must be greater or equal than blockStartPos (except blockEndPos=-1).
-    * @param props search properties
+    * @param localProps search properties
     * @param oppositeDir whether search in opposite direction
     * @param displayWrap whether display messages about the wrapping
     * @return either null when nothing was found or integer array with three members
@@ -677,15 +659,13 @@ public final class EditorFindSupport {
 
     boolean replaceImpl(Map<String, Object> props, boolean oppositeDir, JTextComponent c) throws BadLocationException {
         props = getValidFindProperties(props);
-        Boolean b = (Boolean)props.get(FIND_BACKWARD_SEARCH);
-        boolean back = (b != null && b.booleanValue());
+        boolean back = Boolean.TRUE.equals(props.get(FIND_BACKWARD_SEARCH));
         if (oppositeDir) {
             back = !back;
         }
-        b = (Boolean)props.get(FIND_BLOCK_SEARCH);
-        boolean blockSearch = (b != null && b.booleanValue());
-        Integer i = (Integer) props.get(FIND_BLOCK_SEARCH_START);
-        int blockSearchStart = (i != null) ? i.intValue() : -1;
+        boolean blockSearch = Boolean.TRUE.equals(props.get(FIND_BLOCK_SEARCH));
+        Position blockSearchStartPos = (Position) props.get(FIND_BLOCK_SEARCH_START);
+        int blockSearchStartOffset = (blockSearchStartPos != null) ? blockSearchStartPos.getOffset() : -1;
 
         if (c != null) {
             String s = (String)props.get(FIND_REPLACE_WITH);
@@ -706,25 +686,29 @@ public final class EditorFindSupport {
             }
 
             Document doc = c.getDocument();
-            int startPos = c.getSelectionStart();
-            int len = c.getSelectionEnd() - startPos;
+            int startOffset = c.getSelectionStart();
+            int len = c.getSelectionEnd() - startOffset;
             DocUtils.atomicLock(doc);
             try {
                 if (len > 0) {
-                    doc.remove(startPos, len);
+                    doc.remove(startOffset, len);
                 }
                 if (s != null && s.length() > 0) {
-                    doc.insertString(startPos, s, null);
+                    doc.insertString(startOffset, s, null);
+                    if (startOffset == blockSearchStartOffset) { // Replaced at begining of block
+                        blockSearchStartPos = doc.createPosition(startOffset);
+                        props.put(EditorFindSupport.FIND_BLOCK_SEARCH_START, blockSearchStartPos);
+                    }
                 }
             } finally {
                 DocUtils.atomicUnlock(doc);
                 if (blockSearch){
-                    setBlockSearchHighlight(blockSearchStart, getBlockEndOffset());
+                    setBlockSearchHighlight(blockSearchStartOffset, getBlockEndOffset());
                 }
             }
             
             // adjust caret pos after replace operation
-            int adjustedCaretPos = (back || s == null) ? startPos : startPos + s.length();
+            int adjustedCaretPos = (back || s == null) ? startOffset : startOffset + s.length();
             caret.setDot(adjustedCaretPos);
             
         }
@@ -745,10 +729,10 @@ public final class EditorFindSupport {
      */
     void replaceAllImpl(Map<String, Object> props, JTextComponent c) {
         props = getValidFindProperties(props);
-        props = new HashMap<String, Object>(props);
-        String replaceWithOriginal = (String)props.get(FIND_REPLACE_WITH);
+        Map<String,Object> localProps = new HashMap<String, Object>(props);
+        String replaceWithOriginal = (String)localProps.get(FIND_REPLACE_WITH);
 
-        Object findWhat = props.get(FIND_WHAT);
+        Object findWhat = localProps.get(FIND_WHAT);
         if (findWhat == null) { // nothing to search for
             return;
         }
@@ -761,22 +745,19 @@ public final class EditorFindSupport {
         int replacedCnt = 0;
         int totalCnt = 0;
 
-        Boolean b = (Boolean)props.get(FIND_BLOCK_SEARCH);
-        boolean blockSearch = (b != null && b.booleanValue());
-        b = (Boolean)props.get(FIND_WRAP_SEARCH);
-        boolean wrapSearch = (b != null && b.booleanValue());
-        b = (Boolean)props.get(FIND_BACKWARD_SEARCH);
-        boolean backSearch = (b != null && b.booleanValue());
+        boolean blockSearch = Boolean.TRUE.equals(localProps.get(FIND_BLOCK_SEARCH));
+        boolean wrapSearch = Boolean.TRUE.equals(localProps.get(FIND_WRAP_SEARCH));
+        boolean backSearch = Boolean.TRUE.equals(localProps.get(FIND_BACKWARD_SEARCH));
 
         if (wrapSearch){
-            props.put(FIND_WRAP_SEARCH, Boolean.FALSE);
-            props.put(FIND_BACKWARD_SEARCH, Boolean.FALSE);
+            localProps.put(FIND_WRAP_SEARCH, Boolean.FALSE);
+            localProps.put(FIND_BACKWARD_SEARCH, Boolean.FALSE);
             firePropertyChange(null, null, null);
         }
 
-        Integer i = (Integer) props.get(FIND_BLOCK_SEARCH_START);
-        int blockSearchStart = (i != null) ? i.intValue() : -1;
-        int blockSearchEnd = getBlockEndOffset();
+        Position blockSearchStartPos = (Position) localProps.get(FIND_BLOCK_SEARCH_START);
+        int blockSearchStartOffset = (blockSearchStartPos != null) ? blockSearchStartPos.getOffset() : -1;
+        int blockSearchEndOffset = getBlockEndOffset();
 
         if (c != null) {
             DocUtils.atomicLock(doc);
@@ -797,14 +778,14 @@ public final class EditorFindSupport {
 
                 int actualPos = wrapSearch ? 0 : c.getCaret().getDot();
 
-                int pos = (blockSearch && blockSearchStart > -1) ? ( backSearch ? blockSearchEnd : blockSearchStart) : (backSearch? -1 : actualPos); // actual position
+                int pos = (blockSearch && blockSearchStartOffset > -1) ? ( backSearch ? blockSearchEndOffset : blockSearchStartOffset) : (backSearch? -1 : actualPos); // actual position
 
                 while (true) {
-                    blockSearchEnd = getBlockEndOffset();
+                    blockSearchEndOffset = getBlockEndOffset();
                     FindReplaceResult result = findReplaceInBlock(replaceWithOriginal, c, pos,
-                            (blockSearch && blockSearchStart > -1) ? blockSearchStart : startPosWholeSearch,
-                            (blockSearch && blockSearchEnd > 0) ? blockSearchEnd : endPosWholeSearch,
-                            props, backSearch);
+                            (blockSearch && blockSearchStartOffset > -1) ? blockSearchStartOffset : startPosWholeSearch,
+                            (blockSearch && blockSearchEndOffset > 0) ? blockSearchEndOffset : endPosWholeSearch,
+                            localProps, backSearch);
                     if (result == null){
                         break;
                     }
@@ -831,7 +812,13 @@ public final class EditorFindSupport {
 
                     } else { // can and will insert the new string
                         if (replaceWith != null && replaceWith.length() > 0) {
-                            doc.insertString(blk[0], replaceWith, null);
+                            int offset = blk[0];
+                            doc.insertString(offset, replaceWith, null);
+                            if (offset == blockSearchStartOffset) { // Replaced at begining of block
+                                blockSearchStartPos = doc.createPosition(offset);
+                                // Update position in original properties
+                                props.put(EditorFindSupport.FIND_BLOCK_SEARCH_START, blockSearchStartPos);
+                            }
                         }
                         pos = backSearch ? blk[0] : blk[0] + ((replaceWith != null) ? replaceWith.length() : 0);
                         replacedCnt++;
@@ -864,7 +851,7 @@ public final class EditorFindSupport {
             } finally {
                 DocUtils.atomicUnlock(doc);
                 if (blockSearch){
-                    setBlockSearchHighlight(blockSearchStart, getBlockEndOffset());
+                    setBlockSearchHighlight(blockSearchStartOffset, getBlockEndOffset());
                 }
             }
         }
