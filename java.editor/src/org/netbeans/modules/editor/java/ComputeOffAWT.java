@@ -39,121 +39,27 @@
 
 package org.netbeans.modules.editor.java;
 
-import java.awt.Component;
-import java.awt.Cursor;
-import java.awt.Dialog;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
+import org.netbeans.api.progress.ProgressUtils;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
-import org.openide.windows.WindowManager;
 
 /**
  *
  * @author Jan Lahoda
  */
-public class RunOffAWT {
-
-    private static final int DISPLAY_DIALOG_MS = 9450;
-    private static final int DISPLAY_CLOCK_MS = 50;
-
-    public static void runOffAWT(final Runnable what, String featureName, final AtomicBoolean cancelOut) {
-        if (!SwingUtilities.isEventDispatchThread()) {
-            what.run();
-        }
-
-        final CountDownLatch latch = new CountDownLatch(1);
-        final AtomicReference<Dialog> d = new AtomicReference<Dialog>();
-        
-        WORKER.post(new Runnable() {
-            public void run() {
-                if (cancelOut.get()) return ;
-                
-                what.run();
-
-                latch.countDown();
-
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        Dialog dd = d.get();
-
-                        if (dd != null) {
-                            dd.setVisible(false);
-                        }
-                    }
-                });
-            }
-        });
-
-        Component glassPane = ((JFrame) WindowManager.getDefault().getMainWindow()).getGlassPane();
-        
-        if (waitMomentarily(glassPane, null, DISPLAY_CLOCK_MS, latch))
-            return ;
-
-        Cursor wait = org.openide.util.Utilities.createProgressCursor(glassPane);
-
-        if (waitMomentarily(glassPane, wait, DISPLAY_DIALOG_MS, latch))
-            return ;
-
-            String warning = NbBundle.getMessage(GoToSupport.class, "LBL_Long", featureName);
-            String cancelButton = NbBundle.getMessage(GoToSupport.class, "BTN_Long_Cancel");
-
-            DialogDescriptor nd = new DialogDescriptor(warning, featureName, true, new Object[] {cancelButton}, cancelButton, DialogDescriptor.DEFAULT_ALIGN, null, new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    cancelOut.set(true);
-                    d.get().setVisible(false);
-                }
-            });
-
-            nd.setMessageType(NotifyDescriptor.INFORMATION_MESSAGE);
-
-            d.set(DialogDisplayer.getDefault().createDialog(nd));
-            d.get().setVisible(true);
-    }
-
-    private static boolean waitMomentarily(Component glassPane, Cursor wait, int timeout, final CountDownLatch l) {
-        Cursor original = glassPane.getCursor();
-
-        try {
-            if (wait != null)
-                glassPane.setCursor(wait);
-
-            glassPane.setVisible(true);
-            try {
-                return l.await(timeout, TimeUnit.MILLISECONDS);
-            } catch (InterruptedException ex) {
-                Logger.getLogger(RunOffAWT.class.getName()).log(Level.FINE, null, ex);
-                return true;
-            }
-        } finally {
-            glassPane.setVisible(false);
-            glassPane.setCursor(original);
-        }
-    }
+public class ComputeOffAWT {
 
     public static <T> T computeOffAWT(Worker<T> w, String featureName, final JavaSource source, Phase phase) {
         AtomicBoolean cancel = new AtomicBoolean();
         Compute<T> c = new Compute(cancel, source, phase, w);
 
-        runOffAWT(c, featureName, cancel);
+        ProgressUtils.runOffEventDispatchThread(c, featureName, cancel, false);
 
         return c.result;
     }
@@ -197,12 +103,11 @@ public class RunOffAWT {
         }
         
     }
-    private static final RequestProcessor WORKER = new RequestProcessor(RunOffAWT.class.getName());
-
+    
     public static interface Worker<T> {
         T process(CompilationInfo info);
     }
 
-    private RunOffAWT() {
+    private ComputeOffAWT() {
     }
 }

@@ -94,6 +94,7 @@ import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.java.editor.javadoc.JavadocImports;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -137,11 +138,11 @@ public class GoToSupport {
         if (!tooltip && !javadoc) {
             final AtomicBoolean cancel = new AtomicBoolean();
             
-            RunOffAWT.runOffAWT(new Runnable() {
+            ProgressUtils.runOffEventDispatchThread(new Runnable() {
                 public void run() {
                     performGoToImpl(doc, offset, goToSource, tooltip, javadoc, cancel);
                 }
-            }, NbBundle.getMessage(GoToSupport.class, goToSource ? "LBL_GoToSource" : "LBL_GoToDeclaration"), cancel);
+            }, NbBundle.getMessage(GoToSupport.class, goToSource ? "LBL_GoToSource" : "LBL_GoToDeclaration"), cancel, false);
             
             return null;
         } else {

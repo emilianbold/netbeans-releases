@@ -60,9 +60,9 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.editor.java.RunOffAWT;
 import org.netbeans.modules.java.editor.imports.ComputeImports.Pair;
 import org.netbeans.modules.java.editor.overridden.PopupUtil;
 import org.openide.filesystems.FileObject;
@@ -139,7 +139,7 @@ public class FastImportAction extends BaseAction {
                 }
             };
 
-            RunOffAWT.runOffAWT(new Runnable() {
+            ProgressUtils.runOffEventDispatchThread(new Runnable() {
 
                 public void run() {
                     try {
@@ -148,7 +148,7 @@ public class FastImportAction extends BaseAction {
                         Exceptions.printStackTrace(ex);
                     }
                 }
-            }, NbBundle.getMessage(FastImportAction.class, "LBL_Fast_Import"), cancel); // NOI18N
+            }, NbBundle.getMessage(FastImportAction.class, "LBL_Fast_Import"), cancel, false); // NOI18N
             
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
