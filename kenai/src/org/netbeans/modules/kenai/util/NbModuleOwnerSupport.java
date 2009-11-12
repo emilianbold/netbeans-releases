@@ -62,6 +62,266 @@ import org.openide.util.Lookup;
 import org.openide.util.Union2;
 
 /**
+ * Generic mechanism for reading and finding mappings between paths
+ * and auxiliary data. The general use that the client has some
+ * <em>absolute</em> path to a&nbsp;file or directory and needs to find data
+ * assigned to that path.
+ * <p>
+ * The mechanism for finding mappings is bound only by the contents of disks
+ * (or other storage systems) mounted to the local filesystem(s)&nbsp;&ndash;
+ * it does not use the concept of projects and files belonging to them.
+ * <p>
+ * The mappings (path&thinsp;&rarr;&thinsp;data) are stored in text files,
+ * referred to as <em>mapping files</em> in the rest of this documentation.
+ * There can exist multiple mapping files of different names&nbsp;&ndash;
+ * each name for a&nbsp;different purpose (e.g. different kind of data).
+ * When the user asks for data assigned to a&nbsp;certain path, they must
+ * specify both the path and the name of the mapping file.
+ *
+ * <h4>How it works</h4>
+ *
+ * When the user asks for data assigned to a&nbsp;certain path, the mechanism
+ * first finds the mapping file. At first, the name of file given by the
+ * specified absolute path is compared with the specified name of the mapping
+ * file. If the names match and the specified absolute path denotes an existing
+ * plain file (not folder), the file given by the specified absolute path is
+ * used as the mapping file. Otherwise, the mechanism tries to locate the
+ * mapping file in the parent of the absolute path, then in the parent of that
+ * parent and so on, up to the root of the directory hierarchy. As soon as one
+ * mapping file is found, the search is stopped. (This means that mapping files
+ * deeper in the directory structure <em>completely</em> override mapping files
+ * that are located higher in the directory structure.) If no mapping file
+ * is found, then the result of the query is {@code null}.
+ * <p>
+ * When the file is found, its content is loaded and parsed, or taken from
+ * the cache if it has already been loaded and parsed in the past and not
+ * removed from the cache since then. (The content of an already loaded and
+ * parsed file can be removed from the cache if it is edged out by other,
+ * more recently used mapping files, or in the case of heap size shortage.)
+ * The mapping file is read line-by-line and its content stored into
+ * a&nbsp;data structure, which is than stored in the cache. Lines not
+ * conforming to the syntax rules (see below) are silently ignored, possibly
+ * just a&nbsp;note may be written to the log file.
+ * <p>
+ * The data structure is then searched for an entry matching the specified
+ * absolute path. If such an entry is found, the data stored in that entry
+ * is returned, otherwise {@code null} is returned.
+ * <p>
+ * The returned data (if any) is passed in the form of instance of class
+ * {@link NbModuleOwnerSupport.OwnerInfo}. This class is essentially
+ * a&nbsp;wrapper around a&nbsp;list of {@code String}s.
+ * <p>
+ * The assumption is that most clients will be interested only in the
+ * first string. So there is a&nbsp;dedicated method for getting the first
+ * string:
+ * {@link NbModuleOwnerSupport.OwnerInfo#getOwner OwnerInfo.getOwner()}.
+ * The other {@code String}s (if any) can be obtained using method
+ * {@link NbModuleOwnerSupport.OwnerInfo#getExtraData OwnerInfo.getExtraData()}.
+ * There is also a short-cut method that allows to get the first string
+ * without first obtaining an instance of {@code OwnerInfo}:
+ * {@link NbModuleOwnerSupport#getOwner NbModuleOwnerSupport.getOwner()}.
+ *
+ * <h4>Syntax of mapping files</h4>
+ *
+ * A mapping file is a text file consisting of a list of mappings, one mapping
+ * per line. The simpliest expression for definition of a mapping is
+ * <blockquote>
+ * <span style="font-style: oblique">relative path</span>
+ * <tt>=</tt>
+ * <span style="font-style: oblique">assigned data</span>
+ * </blockquote>
+ * The path on the left side must be relative and is considered
+ * <em>relative to the folder that contains the mapping file</em>.
+ * Only plain slash ({@code '/'}) is considered a directory separator,
+ * no matter what is the target platform. Backslash character ({@code '\'})
+ * is reserved for escaping special characters (see below).
+ * <p>
+ * There may be any number of white-space characters (spaces, tabs)
+ * around the equal-sign ({@code '='}). These white-space characters are
+ * ignored. If a white-space character at the end of a path is not to be
+ * ignored, it must be escaped with a backslash. Similarly, equal-signs
+ * must be escaped should they be considered part of the path.
+ * <p>
+ * The right side is a slash-separated list of strings. If a slash
+ * character should not be considered a separator, it must be escaped
+ * by a backslash. Similarly, if a backslash should be part of a string,
+ * it must be escaped by another backslash. Slash and backslash are the only
+ * characters that must be escaped in the right side of the expression,
+ * other characters (including spaces, tabs and equal-signs) may be left
+ * un-escaped.
+ * <p>
+ * Empty lines and lines starting with the hash-character ({@code '#'})
+ * are silently ignored.
+ *
+ * <h5>Path patterns</h5>
+ *
+ * It is allowed to use simple patterns in the left side of a mapping
+ * expression. Regular expressions are not supported, just folder/file-name
+ * prefixes are supported. Prefix is a string followed by a star-sign
+ * ({@code '*'}):
+ * <blockquote>
+ * <span style="font-style: oblique">prefix</span><tt>*
+ * =
+ * </tt><span style="font-style: oblique">value</span>
+ * </blockquote>
+ * Each part of the mappingFileLine on the left side can be expressed as a prefix,
+ * e.&thinsp;g.:
+ * <blockquote>
+ * <span style="font-style: oblique">prefixA</span><tt>&#42;/</tt><span style="font-style: oblique">prefixB</span><tt>*
+ * =
+ * </tt><span style="font-style: oblique">value</span>
+ * </blockquote>
+ * Each part of the mappingFileLine on the left side is matched against the
+ * corresponding part of the path passed to method
+ * {@link #getOwnerInfo getOwnerInfo()} or {@link #getOwner getOwner()}.
+ * For example, if the mapping file is located in directory
+ * <tt>/foo</tt>, it contains expression <tt>bar&#42;/baz=fred</tt> and the user
+ * asks for the data assigned to directory <tt>foo/barge/baz</tt>, then
+ * directory name <tt>barge</tt> is matched against mappingFileLine <tt>bar*</tt>
+ * and name <tt>baz</tt> is matched against mappingFileLine <tt>baz</tt>.
+ *
+ * <h5>Resolution of mappingFileLine conflicts</h5>
+ *
+ * If there are multiple patterns matching the corresponding part of the path,
+ * then the most specific mappingFileLine part is used. The following rules are applied
+ * (in this order) when comparing the level of specificity:
+ * <ol>
+ *     <li>non-prefix patterns are more specific than prefix patterns</li>
+ *     <li>longer patterns are more specific than shorter patterns</li>
+ * </ol>
+ *
+ * <h5>Scope of a mapping</h5>
+ *
+ * Each mapping expression effectively maps not only the path/directory
+ * explicitly specified by the left side of the expression but also all
+ * its direct and indirect children (files and subdirectories), excluding those
+ * that are mapped with a more specific mapping expression. The words &quot;more
+ * specific expression&quot; refer to a more specific path mappingFileLine on the left
+ * side of the mapping expression.
+ * <p>
+ * Path mappingFileLine <var>A</var> is considered to be more specific than
+ * path mappingFileLine <var>B</var> if the first part of mappingFileLine <var>A</var>
+ * is more specific than the first part of mappingFileLine <var>B</var>.
+ * If first parts of the path patterns are equally specific, second parts
+ * of the path patterns are compared, etc. If all the compared parts are
+ * equally specific and one path mappingFileLine consists of more mappingFileLine parts than
+ * the other mappingFileLine, than the path mappingFileLine consisting of more mappingFileLine parts
+ * is considered more specific.
+ *
+ * <h4>Examples</h4>
+ *
+ * <h5>API usage</h5>
+ *
+ * <h6>Example 1</h6>
+ *
+ * User asks for a name assigned to path &quot;foo/bar/baz&quot; and specifies
+ * that the mappings should be taken from mapping file &quot;.names&quot;.
+ * This is probably the most common use case and allows to use the short-cut
+ * method {@link #getOwner() NbModuleOwnerSupport.getOwner()}:
+ * <blockquote>
+ *     <code>String name
+ *           = NbModuleOwnerSupport.getInstance().getOwner(".names",
+ *             "foo/bar/baz")</code>:
+ * </blockquote>
+ *
+ * <h6>Example 2</h6>
+ *
+ * User asks for names of a component, subcomponent and a subsubcomponent
+ * assigned to path &quot;xxx/yyy&quot;:
+ * <blockquote>
+ * <pre><code>OwnerInfo info = NbModuleOwnerSupport.getInstance().getOwnerInfo(".components", "xxx/yyy");
+ *String component       = info.getOwner();
+ *List&lt;String&gt; extraData = info.getExtraData();
+ *String subcomponent    = extraData.size() &gt;= 1 ? extraData.get(0) : null;
+ *String subsubcomponent = extraData.size() &gt;= 2 ? extraData.get(1) : null;</code></pre>
+ * </blockquote>
+ *
+ * <h5>Scope</h5>
+ *
+ * <h6>Example 1</h6>
+ *
+ * Mapping file &quot;/foo/.names&quot; contains mapping
+ *
+ * <blockquote>
+ * <code>bar = Lucy</code>
+ * </blockquote>
+ *
+ * and the user asks for data assigned to file
+ * &quot;/foo/bar/baz/SomeFile.txt&quot;. The answer is &quot;Lucy&quot;
+ * because the mapping applies not only for &quot;/foo/bar&quot; but for the
+ * whole subtree below &quot;/foo/bar/&quot;.
+ *
+ * <h6>Example 2</h6>
+ *
+ * Mapping file &quot;/foo/.names&quot; contains mapping
+ *
+ * <blockquote>
+ * <pre><code>bar = Lucy
+ *bar/baz = Alice
+ *bar/boo = Paul</code></pre>
+ * </blockquote>
+ *
+ * Now, if the user asks for data assigned to file
+ * &quot;/foo/bar/baz/SomeFile.txt&quot;, the answer would be &quot;Alice&quot;
+ * because path mappingFileLine <tt>bar/baz</tt> is more specific than mappingFileLine
+ * <tt>bar</tt> and the more specific mapping overrides the less specific one.
+ * <p>
+ * If the user asks for data assigned to file (or folder)
+ * &quot;/foo/bar/Data.dat&quot;, they will get answer &quot;Lucy&quot; as
+ * <tt>bar</tt> is the only matching mappingFileLine and it is not overridden by any
+ * more specific matching mappingFileLine.
+ *
+ * <h5>Pattern conflicts</h5>
+ *
+ * <h6>Example 1</h6>
+ *
+ * A mapping file contains the following mappings:
+ *
+ * <blockquote>
+ * <pre><code>bar/baz = John
+ *bar/baz* = Alice</code></pre>
+ * </blockquote>
+ *
+ * If the user asks for data assigned to path &quot;foo/bar/baz&quot;,
+ * they would get &quot;John&quot; because &quot;baz&quot; is more specific
+ * than &quot;baz*&quot;.
+ *
+ * <h6>Example 2</h6>
+ *
+ * A mapping file contains the following mappings:
+ *
+ * <blockquote>
+ * <pre><code>bar&#42;/baz = John
+ *bar/baz* = Alice</code></pre>
+ * </blockquote>
+ *
+ * Now, if the user asks for data assigned to path &quot;foo/bar/baz&quot;,
+ * they would get &quot;Alice&quot; because &quot;bar&quot; is more specific
+ * than &quot;bar*&quot;.
+ *
+ * <h6>Example 3</h6>
+ *
+ * A mapping file contains the following mappings:
+ *
+ * <blockquote>
+ * <pre><code>bar/baz* = John
+ *bar/baza* = Alice</code></pre>
+ * </blockquote>
+ *
+ * Now, if the user asks for data assigned to path &quot;foo/bar/bazaar&quot;,
+ * they would get &quot;Alice&quot; because &quot;baza*&quot; is more specific
+ * than &quot;baz*&quot;.
+ *
+ * <h6>Example 4</h6>
+ *
+ * A mapping file contains the following mappings:
+ * 
+ * <blockquote>
+ * <pre><code>bar/baz* = John
+ *bar/baz&#42;/thing = Alice</code></pre>
+ * </blockquote>
+ *
+ * If the user asks for data assigned to path &quot;foo/bar/baz&quot;
  *
  * @author Marian Petras
  */
@@ -81,7 +341,49 @@ public abstract class NbModuleOwnerSupport {
         return instance;
     }
 
-    public final OwnerInfo getOwner(String configFileName, File path) {
+    /**
+     * Find the first string of all strings mapped to the given (absolute) path.
+     * This is a convenient method for getting the first part of data
+     * assigned to the path without first obtaining instance
+     * of {@link NbModuleOwnerSupport.OwnerInfo}.
+     * <p>
+     * This is an equivalent of
+     * <blockquote><pre><code>NbModuleOwnerSupport.OwnerInfo ownerInfo = getOwnerInfo(configFileName, path);
+     *if (ownerInfo != null) {
+     *    return ownerInfo.getOwner();
+     *} else {
+     *    return null;
+     *}</code></pre></blockquote>
+     * 
+     * @param  mapping file to read the mapping data from
+     * @param  path  absolute path for which the data should be found for
+     * @return  object holding the data assigned to the given path;
+     *          or {@code null} if no mapping file of the specified name
+     *          has been found, or if the mapping file did not contain
+     *          any mapping for the given path
+     * @exception  java.lang.IllegalArgumentException
+     *             if either the file name or the path was {@code null}
+     *             or if the path was not absolute
+     */
+    public final String getOwner(String configFileName, File path) {
+        OwnerInfo ownerInfo = getOwnerInfo(configFileName, path);
+        return (ownerInfo != null) ? ownerInfo.getOwner() : null;
+    }
+
+    /**
+     * Finds data mapped to the given (absolute) path.
+     *
+     * @param  mapping file to read the mapping data from
+     * @param  path  absolute path for which the data should be found for
+     * @return  object holding the data assigned to the given path;
+     *          or {@code null} if no mapping file of the specified name
+     *          has been found, or if the mapping file did not contain
+     *          any mapping for the given path
+     * @exception  java.lang.IllegalArgumentException
+     *             if either the file name or the path was {@code null}
+     *             or if the path was not absolute
+     */
+    public final OwnerInfo getOwnerInfo(String configFileName, File path) {
         checkConfigFileName(configFileName);
         checkPath(path);
 
@@ -241,7 +543,7 @@ public abstract class NbModuleOwnerSupport {
             int lineNum = 0;
             try {
                 for (String line : getConfigFileLines(dataFile)) {
-                    processPatternFileLine(line, ++lineNum, parser);
+                    processPatternFileLine(dataFile, line, ++lineNum, parser);
                 }
             } finally {
                 processNodes();
@@ -261,33 +563,46 @@ public abstract class NbModuleOwnerSupport {
                                         new FileInputStream(dataFile))));
         }
 
-        private void processPatternFileLine(String line, int lineNum,
+        private void processPatternFileLine(File dataFile,
+                                            String line, int lineNum,
                                             PatternParser parser) {
-            int equalSignIndex = line.indexOf('=');
-            if (equalSignIndex == -1) {
-                LOG.log(Level.INFO,
-                        "syntax error at line {0} (missing '=')",   //NOI18N
-                        Integer.valueOf(lineNum));
-                return;
+            if (line.length() == 0) {
+                return;     //silently ignore empty lines
             }
 
-            String patternString = line.substring(0, equalSignIndex);
-            List<String> patternPath = parser.parsePattern(patternString);
+            if (line.charAt(0) == '#') {
+                return;     //skip comment lines
+            }
+
+            List<String> patternPath = parser.parsePattern(line);
             if (patternPath == null) {
-                LOG.log(Level.INFO,
-                        "syntax error at line {0}"                  //NOI18N
-                            + " (invalid pattern on the left side)",//NOI18N
-                        Integer.valueOf(lineNum));
+                ParsingFailure failure = parser.getFailure();
+                if ((failure != ParsingFailure.EMPTY_LINE)
+                        && LOG.isLoggable(Level.INFO)) {
+                    StringBuilder msg = new StringBuilder(100);
+                    msg.append("syntax error in mapping file ")         //NOI18N
+                       .append(dataFile)
+                       .append(" at line ").append(lineNum)             //NOI18N
+                       .append(": ").append(failure.getDescription());  //NOI18N
+                    if (failure == ParsingFailure.SYNTAX_ERROR) {
+                        int column = parser.getSyntaxErrorPosition();
+                        if (column != -1) {
+                            msg.append(" at column ").append(column);   //NOI18N
+                        }
+                    }
+                    LOG.info(msg.toString());
+                }
                 return;
             }
 
-            String infoString = line.substring(equalSignIndex + 1);
+            String infoString = line.substring(parser.getSeparatorPosition() + 1);
             OwnerInfo info = OwnerInfo.parseSpec(infoString);
             if (info == null) {
                 LOG.log(Level.INFO,
-                        "syntax error at line {0}"                  //NOI18N
+                        "syntax error in mapping file {0} at line {1}"  //NOI18N
                             + " (no Bugzilla component specified)", //NOI18N
-                        Integer.valueOf(lineNum));
+                        new Object[] { dataFile,
+                                       Integer.valueOf(lineNum) });
                 return;
             }
 
@@ -600,7 +915,7 @@ public abstract class NbModuleOwnerSupport {
 
         private static final int getCharIndex(char c) {
             return ((c | 0x20) + 159) & 0xff; // | 0x20 .. toLowerCase()
-                                              // + 159 ... (-'a' modulo 256)
+                                              // + 159 ... 256 - 'a'
                                               // & 0xff .. modulo 256
         }
 
@@ -608,6 +923,22 @@ public abstract class NbModuleOwnerSupport {
             int firstSlashPos = path.indexOf('/');
             return (firstSlashPos != -1) ? path.substring(0, firstSlashPos)
                                          : path;
+        }
+
+        enum ParsingFailure {
+            EMPTY_LINE("empty line"),                                   //NOI18N
+            EMPTY_PATH("empty path"),                                   //NOI18N
+            ABSOLUTE_PATH("not a relative path"),                       //NOI18N
+            NO_SEPARATOR("missing '='"),                                //NOI18N
+            SYNTAX_ERROR("syntax error");                               //NOI18N
+
+            private final String description;
+            ParsingFailure(String description) {
+                this.description = description;
+            }
+            String getDescription() {
+                return description;
+            }
         }
 
         private static final class PatternParser {
@@ -619,12 +950,15 @@ public abstract class NbModuleOwnerSupport {
             private String patternBeingParsed;
             private int state;
 
-            /* boundaries of the sub-pattern being recognized: */
+            /* boundaries of the sub-mappingFileLine being recognized: */
             private int begin;
 
             /* storage for the result: */
             private String firstString;
             private List<String> result;
+            private int separatorPosition;
+            private ParsingFailure failure;
+            private int syntaxErrorPosition;
 
             PatternParser() {
                 reset();
@@ -635,55 +969,130 @@ public abstract class NbModuleOwnerSupport {
 
                 firstString = null;
                 result = null;
+                separatorPosition = -1;
+                failure = null;
+                syntaxErrorPosition = -1;
 
                 begin = -1;
 
                 state = INIT;
             }
 
-            private List<String> parsePattern(final String pattern) {
-                reset();
-                this.patternBeingParsed = pattern;
+            ParsingFailure getFailure() {
+                return failure;
+            }
 
-                final int length = pattern.length();
-                if (length == 0) {
+            int getSyntaxErrorPosition() {
+                return syntaxErrorPosition;
+            }
+
+            /**
+             * Returns position of the separator between a path mappingFileLine
+             * and the assigned data (the equal-sign).
+             */
+            int getSeparatorPosition() {
+                return separatorPosition;
+            }
+
+            private List<String> parsePattern(final String mappingFileLine) {
+                reset();
+                this.patternBeingParsed = mappingFileLine;
+
+                final int length = mappingFileLine.length();
+                int i;
+
+                for (i = 0; i < length; i++) {
+                    char c = mappingFileLine.charAt(i);
+                    if ((c != ' ') && (c != '\t')) {
+                        break;
+                    }
+                }
+                if (i == length) {
+                    failure = ParsingFailure.EMPTY_LINE;
+                    return null;
+                }
+                if (mappingFileLine.charAt(i) == '=') {
+                    failure = ParsingFailure.EMPTY_PATH;
                     return null;
                 }
 
-                for (int i = 0; i < length; i++) {
-                    final char c = pattern.charAt(i);
+                final int patternBeginning = i;
+
+                boolean escaped = false;
+                boolean containsEscapedChars = false;
+                int lastNonSpacePos = i;
+                loop:
+                for (; i < length; i++) {
+                    final char c = mappingFileLine.charAt(i);
 
                     switch (state) {
                         case INIT:
+                            assert !escaped;
                             if (c == '*') {
                                 storePatternPart("*");                  //NOI18N
                                 state = STAR;
-                            } else if (c != '/') {
-                                begin = i;  //remember beginning of the pattern
-                                state = NAME;
-                            } else {
+                            } else if (c == '=') {
+                                separatorPosition = i;
+                                break loop;
+                            } else if (c == '/') {
                                 /* slash at the beginning OR two slashes */
-                                return null;
+                                failure = (i == patternBeginning)
+                                          ? ParsingFailure.ABSOLUTE_PATH
+                                          : ParsingFailure.SYNTAX_ERROR;
+                                break loop;
+                            } else {
+                                if (c == '\\') {
+                                    escaped = true;
+                                    containsEscapedChars = true;
+                                }
+                                if ((c != ' ') && (c != '\t')) {
+                                    lastNonSpacePos = i;
+                                }
+                                begin = i;
+                                state = NAME;
                             }
                             break;
                         case NAME:
-                            if (c == '*') {
-                                storePatternPart(i + 1);    //including the star
+                            if (escaped) {
+                                escaped = false;
+                                lastNonSpacePos = i;
+                                /* no other change */
+                            } else if (c == '*') {
+                                storePatternPart(i + 1,     //including the star
+                                                 containsEscapedChars);
+                                containsEscapedChars = false;
                                 state = STAR;
                             } else if (c == '/') {
-                                storePatternPart(i);
+                                storePatternPart(i, containsEscapedChars);
+                                containsEscapedChars = false;
                                 state = INIT;
+                            } else if (c == '=') {
+                                separatorPosition = i;
+                                break loop;
+                            } else {
+                                if (c == '\\') {
+                                    escaped = true;
+                                    containsEscapedChars = true;
+                                }
+                                if ((c != ' ') && (c != '\t')) {
+                                    lastNonSpacePos = i;
+                                }
                             }
-                                /* else no change */
                             break;
                         case STAR:
-                            if (c == '*') {
-                                /* no change */
+                            assert !escaped;
+                            if (c == '*') {         //two stars together
+                                failure = ParsingFailure.SYNTAX_ERROR;
+                                break loop;
                             } else if (c == '/') {
                                 state = INIT;
+                            } else if (c == '=') {
+                                separatorPosition = i;
+                                break loop;
                             } else {
                                 /* non-special character after a star */
-                                return null;
+                                failure = ParsingFailure.SYNTAX_ERROR;
+                                break loop;
                             }
                             break;
                         default:
@@ -692,21 +1101,55 @@ public abstract class NbModuleOwnerSupport {
                     }
                 } //for (...)
 
+                if (failure != null) {
+                    syntaxErrorPosition = i;
+                    return null;
+                }
+
+                if (separatorPosition == -1) {
+                    failure = ParsingFailure.NO_SEPARATOR;
+                    return null;
+                }
+
                 switch (state) {
                     case INIT:
-                        /* pattern ends with '/' */
+                        /* mappingFileLine ends with '/' */
                         storePatternPart("*");                          //NOI18N
                         break;
                     case NAME:
-                        storePatternPart(length);
+                        if (lastNonSpacePos >= begin) {
+                            storePatternPart(lastNonSpacePos + 1,
+                                             containsEscapedChars);
+                            containsEscapedChars = false;
+                        } else {
+                            storePatternPart("*");                      //NOI18N
+                        }
                         break;
                 }
 
                 return makeFinalResult();
             } // method parsePattern()
 
-            private void storePatternPart(int endIndex) {
-                storePatternPart(patternBeingParsed.substring(begin, endIndex));
+            private void storePatternPart(int endIndex,
+                                          boolean containsEscapedChars) {
+                assert begin >= 0;
+                assert endIndex > begin;
+                String patternPart;
+                if (!containsEscapedChars) {
+                    patternPart = patternBeingParsed.substring(begin, endIndex);
+                } else {
+                    StringBuilder buf = new StringBuilder(endIndex - begin - 1);
+                    for (int i = begin; i < endIndex; i++) {
+                        char c = patternBeingParsed.charAt(i);
+                        if (c == '\\') {
+                            continue;
+                        }
+                        buf.append(c);
+                    }
+                    assert buf.length() < (endIndex - begin);  //at least one backslash skipped
+                    patternPart = buf.toString();
+                }
+                storePatternPart(patternPart);
             }
 
             private void storePatternPart(String part) {
@@ -714,7 +1157,7 @@ public abstract class NbModuleOwnerSupport {
                     firstString = part;
                 } else {
                     if (result == null) {
-                        result = new ArrayList<String>(3);
+                        result = new ArrayList<String>(4);
                         result.add(firstString);
                     }
                     result.add(part);
@@ -777,6 +1220,9 @@ public abstract class NbModuleOwnerSupport {
 
     }
 
+    /**
+     * Wrapper around a (non-empty) list of {@code String}s.
+     */
     public static class OwnerInfo {
 
         private final String owner;
@@ -861,10 +1307,28 @@ public abstract class NbModuleOwnerSupport {
             }
         }
 
+        /**
+         * Creates an instance of {@code OwnerInfo} holding just one
+         * {@code String}.
+         *
+         * @param  owner  the {@code String} to be held by the instance
+         * @exception  java.lang.IllegalArgumentException
+         *             if the given {@code String} is {@code null}
+         */
         public OwnerInfo(String owner) {
             this(owner, (String[]) null);
         }
 
+        /**
+         * Creates an instance of {@code OwnerInfo} holding the given
+         * {@code String}s.
+         *
+         * @param  owner  the {@code String} to be held by the instance
+         * @param  extraData  additional strings to be held by the instance,
+         *                    or {@code null} if no extra data are to be held
+         * @exception  java.lang.IllegalArgumentException
+         *             if the given {@code String} is {@code null}
+         */
         public OwnerInfo(String owner, String... extraData) {
             checkOwner(owner);
 
@@ -881,6 +1345,16 @@ public abstract class NbModuleOwnerSupport {
             }
         }
 
+        /**
+         * Creates an instance of {@code OwnerInfo} holding the given
+         * {@code String}s.
+         *
+         * @param  owner  the {@code String} to be held by the instance
+         * @param  extraData  additional strings to be held by the instance,
+         *                    or {@code null} if no extra data are to be held
+         * @exception  java.lang.IllegalArgumentException
+         *             if the given {@code String} is {@code null}
+         */
         public OwnerInfo(String owner, List<String> extraData) {
             checkOwner(owner);
 
@@ -901,12 +1375,25 @@ public abstract class NbModuleOwnerSupport {
             }
         }
 
+        /**
+         * Returns the first string of the list of strings held by this object.
+         * 
+         * @return  first string held by this object
+         */
         public String getOwner() {
             return owner;
         }
 
+        /**
+         * Returns a list containing the next (second, third, etc.) strings
+         * held by this object.
+         *
+         * @return  list of strings held by this object,
+         *          or an empty list of this object holds just one string
+         */
         public List<String> getExtraData() {
-            return extraData;
+            return (extraData != null) ? extraData
+                                       : Collections.<String>emptyList();
         }
 
         @Override
