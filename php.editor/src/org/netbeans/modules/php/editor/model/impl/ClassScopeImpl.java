@@ -68,9 +68,16 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
 
     @Override
     void addElement(ModelElementImpl element) {
-        assert element instanceof VariableName ||element instanceof MethodScope ||
+        assert  element instanceof TypeScope || element instanceof VariableName ||element instanceof MethodScope ||
                 element instanceof FieldElement || element instanceof ClassConstantElement : element.getPhpKind();
-        super.addElement(element);
+        if (element instanceof TypeScope) {
+            Scope inScope = getInScope();
+            if (inScope instanceof ScopeImpl) {
+                ((ScopeImpl)inScope).addElement(element);
+            }
+        } else {
+            super.addElement(element);
+        }
     }
 
     //new contructors
