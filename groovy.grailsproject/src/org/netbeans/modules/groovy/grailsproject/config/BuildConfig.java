@@ -210,6 +210,8 @@ public final class BuildConfig {
             } else {
                 localPlugins = Collections.emptyList();
             }
+        } else {
+            localPlugins = Collections.emptyList();
         }
     }
 

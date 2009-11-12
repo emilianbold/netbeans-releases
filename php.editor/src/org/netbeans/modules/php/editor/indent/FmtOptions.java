@@ -129,7 +129,7 @@ public class FmtOptions {
             { expandTabToSpaces, TRUE}, //NOI18N
             { tabSize, "8"}, //NOI18N
             { indentSize, "4"}, //NOI18N
-            { continuationIndentSize, "4"}, //NOI18N
+            { continuationIndentSize, "8"}, //NOI18N
             { reformatComments, FALSE }, //NOI18N
             { indentHtml, TRUE }, //NOI18N
             { rightMargin, "80"}, //NOI18N

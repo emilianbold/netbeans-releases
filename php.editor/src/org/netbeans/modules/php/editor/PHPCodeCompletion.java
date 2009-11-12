@@ -123,7 +123,6 @@ import static org.netbeans.modules.php.editor.CompletionContextFinder.lexerToAST
  */
 public class PHPCodeCompletion implements CodeCompletionHandler {
     private static final Logger LOGGER = Logger.getLogger(PHPCodeCompletion.class.getName());
-    private static final String GLOBAL_VAR_MARKER = "!GLOBAL";
 
 
     final static Map<String,KeywordCompletionType> PHP_KEYWORDS = new HashMap<String, KeywordCompletionType>();
@@ -154,6 +153,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         PHP_KEYWORDS.put("abstract", KeywordCompletionType.ENDS_WITH_SPACE);
         PHP_KEYWORDS.put("clone", KeywordCompletionType.ENDS_WITH_SPACE);
         PHP_KEYWORDS.put("global", KeywordCompletionType.ENDS_WITH_SPACE);
+        PHP_KEYWORDS.put("goto", KeywordCompletionType.ENDS_WITH_SPACE);
         PHP_KEYWORDS.put("throw", KeywordCompletionType.ENDS_WITH_SPACE);
         PHP_KEYWORDS.put("if", KeywordCompletionType.CURSOR_INSIDE_BRACKETS);
         PHP_KEYWORDS.put("switch", KeywordCompletionType.CURSOR_INSIDE_BRACKETS);
