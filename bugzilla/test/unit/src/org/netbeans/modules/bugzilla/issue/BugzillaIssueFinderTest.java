@@ -278,6 +278,13 @@ public class BugzillaIssueFinderTest extends NbTestCase {
         testGetIssueNumber("duplicate  \n  * of issue 123456", "123456");
     }
 
+    @Test
+    public void testBug176091() {
+        issueFinder = BugzillaIssueFinder.getTestInstance();
+
+        checkIssueSpans("See issue 1446.", "issue 1446");
+    }
+
     private void checkIssueSpans(String str, String... substr) {
         checkTestValidity(str != null);
         checkTestValidity(substr != null);

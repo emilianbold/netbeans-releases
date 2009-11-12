@@ -37,14 +37,14 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.util;
+package org.netbeans.modules.kenai.api;
 
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.kenai.util.NbModuleOwnerSupport.ConfigData;
-import org.netbeans.modules.kenai.util.NbModuleOwnerSupport.OwnerInfo;
+import org.netbeans.modules.kenai.api.NbModuleOwnerSupport.ConfigData;
+import org.netbeans.modules.kenai.api.NbModuleOwnerSupport.OwnerInfo;
 
 /**
  * @author Marian Petras
@@ -69,16 +69,10 @@ public class NbModuleOwnerSupportTest extends NbTestCase {
         moduleOwnerSupport = null;
     }
 
-    public void testEmpty() throws IOException {
-        loadCfgData("empty");
-
-        checkOwner("/test", null);
-    }
-
     public void testSimple1() throws IOException {
         loadCfgData("simple1");
 
-        checkOwner("/test", "alpha/beta");
+        checkOwner("/test", "alpha", "beta");
         checkOwner("/tes", null);
     }
 
@@ -130,20 +124,148 @@ public class NbModuleOwnerSupportTest extends NbTestCase {
         checkOwner("/gamma/omega", "Thomas");
     }
 
-    private void checkOwner(String path, String expectedComponentSpec) {
+    public void testSpaceAroundEqualSign() throws Exception {
+        loadCfgData("space_around_equalsign");
+
+        checkOwner("/path001", "value001");
+        checkOwner("/path002", "value002");
+        checkOwner("/path003", "value003");
+        checkOwner("/path004", "value004");
+        checkOwner("/path005", "value005");
+        checkOwner("/path006", "value006");
+        checkOwner("/path007", "value007");
+        checkOwner("/path010", "value010");
+        checkOwner("/path011", "value011");
+        checkOwner("/path012", "value012");
+
+        checkOwner("/path013", null);
+        checkOwner("/path013 ", "value013");
+        checkOwner("/path014", null);
+        checkOwner("/path014  ", "value014");
+        checkOwner("/path015", null);
+        checkOwner("/path015  ", "value015");
+        checkOwner("/path016", null);
+        checkOwner("/path016   ", "value016");
+        checkOwner("/path017", null);
+        checkOwner("/path017   ", "value017");
+        checkOwner("/path018", null);
+        checkOwner("/path018   ", "value018");
+        checkOwner("/path019", null);
+        checkOwner("/path019     ", "value019");
+        checkOwner("/path020", null);
+        checkOwner("/path020 ", "value020");
+        checkOwner("/path021", null);
+        checkOwner("/path021\t ", "value021");
+        checkOwner("/path022", null);
+        checkOwner("/path022\t", "value022");
+        checkOwner("/path023", null);
+        checkOwner("/path023\t\t", "value023");
+        checkOwner("/path024", null);
+        checkOwner("/path024\t\t", "value024");
+        checkOwner("/path025", null);
+        checkOwner("/path025 =", "value025");
+        checkOwner("/path026", null);
+        checkOwner("/path026  =", "value026");
+        checkOwner("/path027", null);
+        checkOwner("/path027  =", "value027");
+        checkOwner("/path028", null);
+        checkOwner("/path028  ==", "value028");
+        checkOwner("/path029", null);
+        checkOwner("/path029  = =", "value029");
+        checkOwner("/path030", null);
+        checkOwner("/path030  =", "value030");
+
+        checkOwner("/path131", "value131");
+        checkOwner("/path132", "value132");
+        checkOwner("/path133", "value133");
+        checkOwner("/path134", "value134");
+        checkOwner("/path135", "value135");
+        checkOwner("/path136", "value136");
+        checkOwner("/path137", "value137");
+        checkOwner("/path140", "value140");
+        checkOwner("/path141", "value141");
+        checkOwner("/path142", "value142");
+
+        checkOwner("/path143", " value143");
+        checkOwner("/path144", "  value144");
+        checkOwner("/path145", "  value145");
+        checkOwner("/path146", "   value146");
+        checkOwner("/path147", "   value147");
+        checkOwner("/path148", "   value148");
+        checkOwner("/path149", "     value149");
+        checkOwner("/path150", " value150");
+        checkOwner("/path151", " \tvalue151");
+        checkOwner("/path152", "\tvalue152");
+        checkOwner("/path153", "\t\tvalue153");
+        checkOwner("/path154", "\t\tvalue154");
+    }
+
+    public void testEscapingOnRightSide() throws Exception {
+        loadCfgData("escaping_chars_in_assigned_data");
+
+        checkOwner("/path00", null);
+        checkOwner("/path01", null);
+        checkOwner("/path02", null);
+        checkOwner("/path03", null);
+        checkOwner("/path04", null);
+        checkOwner("/path05", null);
+        checkOwner("/path06", null);
+        checkOwner("/path07", null);
+        checkOwner("/path08", null);
+        checkOwner("/path09", " ");
+        checkOwner("/path10", "\t");
+        checkOwner("/path11", "  ");
+        checkOwner("/path12", "   ");
+        checkOwner("/path13", "  \t");
+        checkOwner("/path14", "\t\t");
+        checkOwner("/path15", "\t\t\t");
+        checkOwner("/path16", "\t \t");
+        checkOwner("/path17", "\t  ");
+        checkOwner("/path18", "=  ");
+        checkOwner("/path19", "==");
+        checkOwner("/path20", "==");
+        checkOwner("/path21", "=");
+        checkOwner("/path22", "===");
+        checkOwner("/path23", "=  value");
+        checkOwner("/path24", "==value");
+        checkOwner("/path25", "==value");
+        checkOwner("/path26", "=value");
+        checkOwner("/path27", "===value");
+        checkOwner("/path28", "\\");
+        checkOwner("/path29", "\\=");
+        checkOwner("/path30", "\\ ");
+        checkOwner("/path31", "\\\t");
+        checkOwner("/path32", "\\=");
+        checkOwner("/path33", "\\value");
+        checkOwner("/path34", "\\=value");
+        checkOwner("/path35", "\\ value");
+        checkOwner("/path36", "\\\tvalue");
+        checkOwner("/path37", "\\=value");
+        checkOwner("/path38", "alpha beta");
+        checkOwner("/path39", "alpha\tbeta");
+        checkOwner("/path40", "alpha=beta");
+        checkOwner("/path41", "alpha\\beta");
+        checkOwner("/path42", "abcdefghijklmnopqrstuvwxyz");
+        checkOwner("/path43", "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+        checkOwner("/path44", "0123456789");
+        checkOwner("/path45", ".,;:?!@&$%*()#+=|[]{}\"'`<>-~");
+
+        checkOwner("/path101", "alpha", "beta", "gamma");
+        checkOwner("/path102", "alpha/beta", "gamma");
+        checkOwner("/path103", "alpha", "beta/gamma");
+        checkOwner("/path104", "alpha", "", "beta", "gamma");
+        checkOwner("/path105", "alpha", "/beta", "gamma");
+    }
+
+    private void checkOwner(String path, String expectedOwner, String... expectedExtraData) {
         OwnerInfo expected;
-        if (expectedComponentSpec != null) {
-            expected = OwnerInfo.parseSpec(expectedComponentSpec);
-            if (expected == null) {
-                throw new IllegalArgumentException(
-                        "Illegal component/subcomponent specification: "
-                        + expectedComponentSpec);
-            }
+        if (expectedOwner != null) {
+            expected = new OwnerInfo(expectedOwner, expectedExtraData);
         } else {
             expected = null;
         }
 
-        assertEquals(expected, moduleOwnerSupport.getOwner("dummy", new File(path)));
+        assertEquals(expected, moduleOwnerSupport.getOwnerInfo("dummy", new File(path)));
     }
 
     private void loadCfgData(String fileName) throws IOException {
