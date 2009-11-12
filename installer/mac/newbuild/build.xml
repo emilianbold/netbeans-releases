@@ -212,7 +212,7 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="commonfiles/Info.plist" filtering="true" tofile="${module.builddir}/Info.plist">
             <filterset>
                 <filter token="INSTALLDIR" value="${app.name}/Contents/Resources/NetBeans"/>
-                <filter token="BUNDLE" value="org.netbeans.ide.${module.name}"/>
+                <filter token="BUNDLE" value="org.netbeans.ide.${module.name}.${nb.id}"/>
             </filterset>
         </copy>
         
@@ -233,29 +233,30 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="${basedir}/netBeans/baseide/build/scripts/addproduct_id.sh" todir="${scriptsdir}"/>
         <copy file="${basedir}/netBeans/baseide/build/scripts/get_current_jdk.sh" todir="${scriptsdir}"/>
         <copy file="${basedir}/netBeans/baseide/build/scripts/add_cluster.sh" todir="${scriptsdir}"/>
+        <copy file="${basedir}/netBeans/baseide/build/scripts/clean_receipts.sh" todir="${scriptsdir}"/>
         <copy file="${basedir}/netBeans/baseide/build/scripts/servicetag.sh"    todir="${scriptsdir}"/>
         <copy file="${basedir}/netBeans/baseide/build/scripts/servicetag.jar"   todir="${scriptsdir}"/>        
         
-        <echo message="Building ${module.name} into ${basedir}/build/${module.name}.pkg"/>
+        <echo message="Building ${module.name} into ${basedir}/build/${module.name}-${nb.id}.pkg"/>
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value=" /Developer/Tools/packagemaker -build -v -p ${basedir}/build/${module.name}.pkg -f ${module.builddir}/netbeans -i ${module.builddir}/Info.plist -r ${scriptsdir} -d ${module.builddir}/Description.plist"/>
+            <arg value=" /Developer/Tools/packagemaker -build -v -p ${basedir}/build/${module.name}-${nb.id}.pkg -f ${module.builddir}/netbeans -i ${module.builddir}/Info.plist -r ${scriptsdir} -d ${module.builddir}/Description.plist"/>
         </exec>                                         
     </target>          
 
 
     <target name="init-bundles">
         <property name="main.bundles" value="
-                                             -javase(./build/baseide.pkg ./build/javase.pkg),
-                                             -java(./build/baseide.pkg ./build/javase.pkg ./build/javaee.pkg ./build/groovy.pkg ./build/ergonomics.pkg ./build/glassfish-v3.pkg ./build/tomcat.pkg),
-                                             -cpp(./build/baseide.pkg ./build/cpp.pkg),
-                                             -ruby(./build/baseide.pkg ./build/ruby.pkg ./build/glassfish-v3.pkg),
-                                             -php(./build/baseide.pkg ./build/php.pkg)
+                                             -javase(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg),
+                                             -java(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/javaee-${nb.id}.pkg ./build/groovy-${nb.id}.pkg ./build/ergonomics-${nb.id}.pkg ./build/glassfish-v3-${glassfish.v3.id}.pkg ./build/tomcat-${tomcat.id}.pkg),
+                                             -cpp(./build/baseide-${nb.id}.pkg ./build/cpp-${nb.id}.pkg),
+                                             -ruby(./build/baseide-${nb.id}.pkg ./build/ruby-${nb.id}.pkg ./build/glassfish-v3-${glassfish.v3.id}.pkg),
+                                             -php(./build/baseide-${nb.id}.pkg ./build/php-${nb.id}.pkg)
                                              "/>
 
         <property name="fx.bundles" value="    
                                                (./build/*pkg), 
-                                               -javafx(./build/baseide.pkg ./build/javase.pkg ./build/javafx.pkg)
+                                               -javafx(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/javafx-${nb.id}.pkg)
                                           "/>
 
         <condition property="bundles" value="${main.bundles}" else="${main.bundles},${fx.bundles}"> 
@@ -480,7 +481,11 @@ Microsystems, Inc. All Rights Reserved.
         <ant target="prepare-lproj-dirs"/>                                             
         
         <copy file="dmg/distribution${bundle.type}.dist" tofile="${mpkg.file}/Contents/distribution.dist">                                    
-            <filterset>                      
+            <filterset>
+                <filter token="NB_ID" value="${nb.id}"/>
+                <filter token="GLASSFISHV3_ID" value="${glassfish.v3.id}"/>
+                <filter token="TOMCAT_ID" value="${tomcat.id}"/>
+                <filter token="OPENESB_ID" value="${openesb.id}"/>
                 <filter token="SIZE_CPP" value="${sizeof.cpp}"/>                
                 <filter token="SIZE_JAVASE" value="${sizeof.javase}"/> 
                 <filter token="SIZE_JAVAFX" value="${sizeof.javafx}"/> 
@@ -496,7 +501,7 @@ Microsystems, Inc. All Rights Reserved.
                 <filter token="SIZE_BASEIDE" value="${sizeof.baseide}"/>                
                 <filter token="SIZE_PHP" value="${sizeof.php}"/>    
                 <filter token="SIZE_MYSQL" value="${sizeof.mysql}"/> 
-                <filter token="SIZE_MYSQLSTARTUP" value="${sizeof.mysqlstartup}"/>                 
+                <filter token="SIZE_MYSQLSTARTUP" value="${sizeof.mysqlstartup}"/>
             </filterset>
         </copy> 
         

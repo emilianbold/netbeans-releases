@@ -76,15 +76,8 @@ fi
 
 "$script_dir"/perm.sh
 
-if [ -d "/Library/Receipts/glassfish.pkg" ] ; then
-    rm -rf "/Library/Receipts/glassfish.pkg"
-fi
-
-if [ -d "/private/var/db/receipts" ] ; then
-    rm -rf "/private/var/db/receipts/glassfish.plist"
-    rm -rf "/private/var/db/receipts/glassfish.bom"
-fi
-
+#clean receipts
+"$script_dir"/clean_receipts.sh "glassfish" "glassfish"
 
 #Fix for 132115
 sed -i '' "s/never/TUE/" $2/updatecenter/config/config.xml

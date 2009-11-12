@@ -91,6 +91,7 @@ Microsystems, Inc. All Rights Reserved.
         
         <copy file="${basedir}/../commonfiles/unpack200.sh" tofile="${scriptsdir}/unpack200.sh"/>
         <copy file="${basedir}/../commonfiles/get_current_jdk.sh" tofile="${scriptsdir}/get_current_jdk.sh"/>
+        <copy file="${basedir}/../commonfiles/clean_receipts.sh" tofile="${scriptsdir}/clean_receipts.sh"/>
         <copy file="${basedir}/../netBeans/baseide/build/scripts/env.sh" tofile="${scriptsdir}/env.sh"/>
         <copy file="${basedir}/../netBeans/baseide/build/scripts/servicetag.jar" tofile="${scriptsdir}/servicetag.jar"/>
         <copy file="${basedir}/../netBeans/baseide/build/scripts/servicetag.sh" tofile="${scriptsdir}/servicetag.sh"/>

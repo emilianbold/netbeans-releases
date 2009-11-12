@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
         <key>CFBundleIdentifier</key>
-            <string>openesb</string>
+            <string>openesb.@OPENESB_ID@</string>
 	<key>CFBundleShortVersionString</key>
             <string>@APPVERSION@</string>
 	<key>IFPkgFlagAllowBackRev</key>

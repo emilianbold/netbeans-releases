@@ -65,6 +65,7 @@ Microsystems, Inc. All Rights Reserved.
             <filterset>
                 <filter token="INSTALLDIR" value="${openesb.install.dir}"/>
                 <filter token="APPVERSION" value="${openesb.version}"/>
+                <filter token="OPENESB_ID" value="${openesb.id}"/>
             </filterset>
         </copy>
         
@@ -81,12 +82,14 @@ Microsystems, Inc. All Rights Reserved.
         
         <copy file="${basedir}/../commonfiles/unpack200.sh" tofile="${scriptsdir}/unpack200.sh"/>
         <copy file="${basedir}/../commonfiles/get_current_jdk.sh" tofile="${scriptsdir}/get_current_jdk.sh"/>
+        <copy file="${basedir}/../commonfiles/clean_receipts.sh" tofile="${scriptsdir}/clean_receipts.sh"/>
         <copy file="${basedir}/../netBeans/baseide/pkg/scripts/perm.sh" tofile="${scriptsdir}/perm.sh"/>
+        <copy file="${basedir}/../netBeans/baseide/pkg/scripts/env.sh" tofile="${scriptsdir}/env.sh"/>
         
-        <echo message="Building openesb.pkg into ${basedir}/../build/openesb.pkg"/>
+        <echo message="Building openesb-${openesb.id}.pkg into ${basedir}/../build/openesb-${openesb.id}.pkg"/>
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value="cd ${basedir} ; /Developer/Tools/packagemaker -build -v -p ${basedir}/../build/openesb.pkg -f ${appdir} -i ${builddir}/Info.plist -r ${scriptsdir} -d ${builddir}/Description.plist"/>
+            <arg value="cd ${basedir} ; /Developer/Tools/packagemaker -build -v -p ${basedir}/../build/openesb-${openesb.id}.pkg -f ${appdir} -i ${builddir}/Info.plist -r ${scriptsdir} -d ${builddir}/Description.plist"/>
         </exec>
     </target>
     

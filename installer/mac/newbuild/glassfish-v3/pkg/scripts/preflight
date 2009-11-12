@@ -23,11 +23,8 @@ if [ -d "$2" ] ; then
     rm -rf "$2"
 fi
 
-if [ -d "/Library/Receipts/glassfish-v3.pkg" ] ; then
-    rm -rf "/Library/Receipts/glassfish-v3.pkg"
-fi
+script_dir=`dirname "$0"`
+. "$script_dir"/env.sh
 
-if [ -d "/private/var/db/receipts" ] ; then
-    rm -rf "/private/var/db/receipts/glassfish-v3.plist"
-    rm -rf "/private/var/db/receipts/glassfish-v3.bom"
-fi
+#clean receipts
+"$script_dir"/clean_receipts.sh "glassfish-v3-$GLASSFISHV3_ID" "glassfish-v3"

@@ -60,6 +60,7 @@ Microsystems, Inc. All Rights Reserved.
                 <filter token="VERSION" value="${baseide.version}"/>
                 <filter token="EXENAME" value="netbeans"/>
                 <filter token="ICONFILENAME" value="netbeans.icns"/>
+                <filter token="NB_ID" value="${nb.id}"/>
             </filterset>
         </copy>
         
@@ -91,18 +92,27 @@ NB_CLUSTER_DIR="${nbClusterDir}"
 GLASSFISH_V3_INSTALL_DIR="${glassfish.v3.install.dir}"
 MYSQL_INSTALL_DIR="${mysql.install.dir}"
 SERVICE_TAG_SOURCE="${servicetag.source}"
+NB_ID="${nb.id}"
+GLASSFISHV3_ID="${glassfish.v3.id}"
+TOMCAT_ID="${tomcat.id}"
 ]]></echo>
+<!--
+OPENESB_ID="${openesb.id}"
+GLASSFISH_ID...
+-->
         
         <copy file="pkg/Info.plist" filtering="true" tofile="${builddir}/Info.plist">
             <filterset>
                 <filter token="APPVERSION" value="${baseide.version}"/> 
                 <filter token="INSTALLDIR" value="${install.dir}"/>
-                <filter token="BASEVERSION" value="${baseide.version}"/>                
+                <filter token="BASEVERSION" value="${baseide.version}"/>
+                <filter token="NB_ID" value="${nb.id}"/>
             </filterset>
         </copy>
 
         <copy file="${basedir}/../../commonfiles/unpack200.sh" tofile="${scriptsdir}/unpack200.sh"/>
-        <copy file="${basedir}/../../commonfiles/get_current_jdk.sh" tofile="${scriptsdir}/get_current_jdk.sh"/>        
+        <copy file="${basedir}/../../commonfiles/get_current_jdk.sh" tofile="${scriptsdir}/get_current_jdk.sh"/>
+        <copy file="${basedir}/../../commonfiles/clean_receipts.sh" tofile="${scriptsdir}/clean_receipts.sh"/>
         <copy file="${basedir}/servicetag/dist/servicetag.jar"   tofile="${scriptsdir}/servicetag.jar"/>
 
 
@@ -120,7 +130,7 @@ SERVICE_TAG_SOURCE="${servicetag.source}"
         
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value="/Developer/Tools/packagemaker -build -v -p ${basedir}/../../build/baseide.pkg -f ${builddir}/app -i ${builddir}/Info.plist -r ${scriptsdir} -d ${builddir}/Description.plist"/>
+            <arg value="/Developer/Tools/packagemaker -build -v -p ${basedir}/../../build/baseide-${nb.id}.pkg -f ${builddir}/app -i ${builddir}/Info.plist -r ${scriptsdir} -d ${builddir}/Description.plist"/>
         </exec>
     </target>
     
