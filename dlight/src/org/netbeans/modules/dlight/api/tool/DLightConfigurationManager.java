@@ -40,6 +40,7 @@ package org.netbeans.modules.dlight.api.tool;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import org.netbeans.api.annotations.common.NullUnknown;
@@ -211,11 +212,14 @@ public final class DLightConfigurationManager {
             return result;
         }
 
-        FileObject[] configurations = configurationsFolder.getChildren();
+        List<FileObject> configurations = Arrays.asList(configurationsFolder.getChildren());
 
-        if (configurations == null || configurations.length == 0) {
+        if (configurations.isEmpty()) {
             return result;
         }
+
+        // configurations created by user do not have positions => pass false to suppress warnings
+        configurations = FileUtil.getOrder(configurations, false);
 
         for (FileObject conf : configurations) {
             result.add(DLightConfiguration.create(conf));
