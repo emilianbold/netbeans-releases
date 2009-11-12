@@ -47,6 +47,7 @@ import java.util.Map;
 import java.util.concurrent.CancellationException;
 import javax.swing.DefaultBoundedRangeModel;
 import junit.framework.TestCase;
+import org.netbeans.insane.live.CancelException;
 
 /**
  *
