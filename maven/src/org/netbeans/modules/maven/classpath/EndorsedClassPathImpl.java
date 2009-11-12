@@ -45,6 +45,7 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -73,7 +74,7 @@ public final class EndorsedClassPathImpl implements ClassPathImplementation {
     private PropertyChangeSupport support = new PropertyChangeSupport(this);
     private final NbMavenProjectImpl project;
     private BootClassPathImpl bcp;
-
+    private String[] current;
 
 
     EndorsedClassPathImpl(NbMavenProjectImpl project) {
@@ -90,6 +91,7 @@ public final class EndorsedClassPathImpl implements ClassPathImplementation {
                     result.add (ClassPathSupport.createResource(u));
                 }
             }
+            current = boot;
             resourcesCache = Collections.unmodifiableList (result);
         }
         return this.resourcesCache;
@@ -121,11 +123,19 @@ public final class EndorsedClassPathImpl implements ClassPathImplementation {
     /**
      * Resets the cache and firesPropertyChange
      */
-    void resetCache () {
+    boolean resetCache () {
+        String[] newones = getBootClasspath();
+        boolean fire = false;
         synchronized (this) {
-            resourcesCache = null;
+            if (!Arrays.equals(newones, current)) {
+                resourcesCache = null;
+                fire = true;
+            }
         }
-        support.firePropertyChange(PROP_RESOURCES, null, null);
+        if (fire) {
+            support.firePropertyChange(PROP_RESOURCES, null, null);
+        }
+        return fire;
     }
 
     void setBCP(BootClassPathImpl aThis) {

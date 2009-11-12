@@ -119,15 +119,9 @@ public final class BootClassPathImpl implements ClassPathImplementation, Propert
         }                
         
         //TODO ideally we would handle this by toolchains in future.
-        String val;
-        AuxiliaryProperties props = project.getLookup().lookup(AuxiliaryProperties.class);
-        if (props == null) {
-            //this happens when findActivePlatform is called from the project lookup creation
-            //loop, fallback to the default prop impl then
-            val = project.getAuxProps().get(Constants.HINT_JDK_PLATFORM, true);
-        } else {
-            val = props.get(Constants.HINT_JDK_PLATFORM, true);
-        }
+
+        //only use the default auximpl otherwise we get recursive calls problems.
+        String val = project.getAuxProps().get(Constants.HINT_JDK_PLATFORM, true);
         lastHintValue = val;
         JavaPlatform plat = getActivePlatform(val);
         if (plat == null) {
@@ -168,9 +162,13 @@ public final class BootClassPathImpl implements ClassPathImplementation, Propert
     public void propertyChange(PropertyChangeEvent evt) {
         String newVal = project.getLookup().lookup(AuxiliaryProperties.class).get(Constants.HINT_JDK_PLATFORM, true);
         if (evt.getSource() == project && evt.getPropertyName().equals(NbMavenProjectImpl.PROP_PROJECT)) {
-            //Active platform was changed
-            if ( (newVal == null && lastHintValue != null) || (newVal != null && !newVal.equals(lastHintValue))) {
-                resetCache ();
+            if (ecpImpl.resetCache()) {
+                resetCache();
+            } else {
+                //Active platform was changed
+                if ( (newVal == null && lastHintValue != null) || (newVal != null && !newVal.equals(lastHintValue))) {
+                    resetCache ();
+                }
             }
         }
         else if (evt.getSource() == platformManager && 
