@@ -74,11 +74,7 @@ public final class RubyTestMethodNode extends TestMethodNode {
 
     private static final Logger LOGGER = Logger.getLogger(RubyTestMethodNode.class.getName());
     private static final ExecutorService EXECUTOR = Executors.newCachedThreadPool();
-
-    /**
-     * Resolving the stack trace may take a lot of time, so
-     */
-    private final FutureTask<String> stackTraceLocationHolder;
+    private FutureTask<String> stackTraceLocationHolder;
 
     public RubyTestMethodNode(Testcase testcase, Project project) {
         super(testcase, project, Lookups.singleton(new Locator() {
@@ -87,13 +83,15 @@ public final class RubyTestMethodNode extends TestMethodNode {
                 node.getPreferredAction().actionPerformed(null);
             }
         }));
-        stackTraceLocationHolder = getTestCaseLineFromStackTrace(testcase);
     }
 
     /**
      */
     @Override
     public Action getPreferredAction() {
+        if (stackTraceLocationHolder == null){
+            stackTraceLocationHolder = getTestCaseLineFromStackTrace(testcase);
+        }
         // the location to jump from the node
         String testLocation = testcase.getLocation();
         String stackTraceLocation = null;
