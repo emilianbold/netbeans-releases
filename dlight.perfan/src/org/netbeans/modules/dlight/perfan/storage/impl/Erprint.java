@@ -411,6 +411,9 @@ final class Erprint {
                 prev_metrics = setMetrics(Metrics.constructFrom(Arrays.asList(SunStudioDCConfiguration.c_address), null));
                 String[] stat = exec(ErprintCommand.source(funcName, choice));
                 Pattern refPattern = Pattern.compile(".*:0x([0-9a-f]+) +([0-9]+).*"); // NOI18N
+                long delta = Long.MAX_VALUE;
+                int closestLine = -1;
+
                 for (String s : stat) {
                     if (s.startsWith("Source file:")) { // NOI18N
                         fstat.setSrcFile(s.substring(13).trim());
@@ -421,13 +424,22 @@ final class Erprint {
                     if (m.matches()) {
                         try {
                             long ref = Long.parseLong(m.group(1), 16);
-                            if (ref == funcRef) {
-                                fstat.setSrcFileLine(Integer.parseInt(m.group(2)));
-                                break;
+                            long new_delta = Math.abs(funcRef - ref);
+                            if (new_delta < delta) {
+                                closestLine = Integer.parseInt(m.group(2));
+                                if (new_delta == 0) {
+                                    break;
+                                }
+                                delta = new_delta;
                             }
+
                         } catch (NumberFormatException ex) {
                         }
                     }
+                }
+
+                if (closestLine > 0) {
+                    fstat.setSrcFileLine(closestLine);
                 }
             } finally {
                 if (prev_metrics != null) {
