@@ -166,12 +166,16 @@ public class JsfIndex {
      public Map<String, FileObject> getAllTldLibraries() {
         Map<String, FileObject> map = new HashMap<String, FileObject>();
         try {
-            Collection<? extends IndexResult> results = getBinaryIndex().query(JsfBinaryIndexer.LIB_NAMESPACE_KEY, "", QuerySupport.Kind.PREFIX, JsfBinaryIndexer.LIB_NAMESPACE_KEY);
+            Collection<? extends IndexResult> results = getBinaryIndex().query(
+                    JsfBinaryIndexer.TLD_LIBRARY_MARK_KEY,
+                    "true",
+                    QuerySupport.Kind.EXACT,
+                    JsfBinaryIndexer.TLD_LIBRARY_MARK_KEY, JsfBinaryIndexer.LIBRARY_NAMESPACE_KEY);
 
             for (IndexResult result : results) {
                 FileObject file = result.getFile(); //expensive? use result.getRelativePath?
                 if(file != null) {
-                    map.put(result.getValue(JsfBinaryIndexer.LIB_NAMESPACE_KEY), file);
+                    map.put(result.getValue(JsfBinaryIndexer.LIBRARY_NAMESPACE_KEY), file);
                 }
 
             }
@@ -184,12 +188,18 @@ public class JsfIndex {
     public FileObject getTldFile(String namespace) {
         try {
             Collection<? extends IndexResult> results =
-                    getBinaryIndex().query(JsfBinaryIndexer.LIB_NAMESPACE_KEY, namespace, QuerySupport.Kind.EXACT, JsfBinaryIndexer.LIB_NAMESPACE_KEY);
-            if (results.size() == 0) {
-                return null;
+                    getBinaryIndex().query(
+                    JsfBinaryIndexer.LIBRARY_NAMESPACE_KEY,
+                    namespace, QuerySupport.Kind.EXACT,
+                    JsfBinaryIndexer.TLD_LIBRARY_MARK_KEY, JsfBinaryIndexer.LIBRARY_NAMESPACE_KEY);
+
+            //now filter out all libs which are no of TLD type
+            for(IndexResult result : results) {
+                if(result.getValue(JsfBinaryIndexer.TLD_LIBRARY_MARK_KEY) != null) {
+                    return result.getFile();
+                }
             }
-            IndexResult result = results.iterator().next(); //get first occurance
-            return result.getFile();
+
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -199,7 +209,11 @@ public class JsfIndex {
     public Collection<FileObject> getAllFaceletsLibraryDescriptors() {
         Collection<FileObject> files = new ArrayList<FileObject>();
         try {
-            Collection<? extends IndexResult> results = getBinaryIndex().query(JsfBinaryIndexer.LIB_FACELETS_KEY, "true", QuerySupport.Kind.EXACT, JsfBinaryIndexer.LIB_FACELETS_KEY);
+             Collection<? extends IndexResult> results = getBinaryIndex().query(
+                    JsfBinaryIndexer.FACELETS_LIBRARY_MARK_KEY,
+                    "true",
+                    QuerySupport.Kind.EXACT,
+                    JsfBinaryIndexer.FACELETS_LIBRARY_MARK_KEY);
 
             for (IndexResult result : results) {
                 FileObject file = result.getFile();
@@ -214,5 +228,24 @@ public class JsfIndex {
         return files;
     }
 
+    public FileObject getFaceletsLibaryDescriptorFile(String namespace) {
+        try {
+               Collection<? extends IndexResult> results =
+                    getBinaryIndex().query(
+                    JsfBinaryIndexer.LIBRARY_NAMESPACE_KEY,
+                    namespace, QuerySupport.Kind.EXACT,
+                    JsfBinaryIndexer.FACELETS_LIBRARY_MARK_KEY, JsfBinaryIndexer.LIBRARY_NAMESPACE_KEY);
+
+            //now filter out all libs which are no of Facelets type
+            for(IndexResult result : results) {
+                if(result.getValue(JsfBinaryIndexer.FACELETS_LIBRARY_MARK_KEY) != null) {
+                    return result.getFile();
+                }
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
+    }
 
 }

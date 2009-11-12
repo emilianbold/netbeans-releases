@@ -67,7 +67,7 @@ public class TldLibrariesCache {
         }
     }
 
-    public synchronized TldLibrary getLibrary(String namespace) throws TldLibraryException {
+    public synchronized TldLibrary getLibrary(String namespace) throws LibraryDescriptorException {
         TldLibrary lib = LIBRARIES.get(namespace);
         if(lib == null) {
             FileObject file = support.getIndex().getTldFile(namespace);
@@ -102,7 +102,7 @@ public class TldLibrariesCache {
                         TldLibrary.create(Thread.currentThread().getContextClassLoader().getResourceAsStream("org/netbeans/modules/web/jsf/editor/resources/jstl-fn.tld"))); //NOI18N
                 DEFAULT_LIBRARIES.add(
                         TldLibrary.create(Thread.currentThread().getContextClassLoader().getResourceAsStream("org/netbeans/modules/web/jsf/editor/resources/mojarra_ext.tld"))); //NOI18N
-            } catch (TldLibraryException ex) {
+            } catch (LibraryDescriptorException ex) {
                 //warn user, this should not happen
                 Logger.global.warning(ex.getMessage());
             }
