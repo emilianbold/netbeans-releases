@@ -137,4 +137,8 @@ abstract class TestRecognizerHandler {
     private static String toMultipleLines(String toConvert) {
         return toConvert.replace("\\n", "\n"); //NOI18N
     }
+
+    protected static boolean isEmpty(String str) {
+        return str == null || "".equals(str.trim());
+    }
 }

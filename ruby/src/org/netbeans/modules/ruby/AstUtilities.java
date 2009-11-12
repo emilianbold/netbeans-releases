@@ -310,10 +310,19 @@ public class AstUtilities {
         }
     }
 
+    /**
+     * <strong>This method may block for a long time; use with caution.</strong>.
+     */
     public static Node getForeignNode(final IndexedElement elem) {
         return getForeignNode(elem, null);
     }
 
+    /**
+     * <strong>This method may block for a long time; use with caution.</strong>.
+     * @param elem
+     * @param foreignInfoHolder
+     * @return
+     */
     public static Node getForeignNode(final IndexedElement elem, final Parser.Result[] foreignInfoHolder) {
         FileObject fo = elem.getFileObject();
         if (fo == null) {
