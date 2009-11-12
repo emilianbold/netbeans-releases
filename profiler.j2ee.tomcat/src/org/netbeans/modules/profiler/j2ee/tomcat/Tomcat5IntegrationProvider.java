@@ -74,7 +74,7 @@ public class Tomcat5IntegrationProvider extends AbstractTomcatIntegrationProvide
         IntegrationHints retValue;
         String targetOS = attachSettings.getHostOS();
 
-        if (isTomcatExeUsed(this.getInstallationPath())) {
+        if (isTomcatExeUsed(targetOS, this.getInstallationPath())) {
             retValue = new IntegrationProvider.IntegrationHints();
             retValue.addStep(MessageFormat.format(INTEGR_REVIEW_STEP1_WINEXE_MSG,
                                                   new Object[] { getModifiedScriptPath(targetOS, true) }));
@@ -95,7 +95,7 @@ public class Tomcat5IntegrationProvider extends AbstractTomcatIntegrationProvide
     public void modify(AttachSettings attachSettings) throws ModificationException {
         String targetOS = attachSettings.getHostOS();
 
-        if (isTomcatExeUsed(this.getInstallationPath())) {
+        if (isTomcatExeUsed(targetOS, this.getInstallationPath())) {
             StringBuffer catalinaScript = getChangedLines(targetOS, attachSettings, getCatalinaBase(), false);
 
             File catalinaScriptFile = new File(getModifiedScriptPath(targetOS, false));
@@ -124,7 +124,7 @@ public class Tomcat5IntegrationProvider extends AbstractTomcatIntegrationProvide
         ValidationResult retValue = super.validateInstallation(targetOS, path);
 
         if (!retValue.isValid()) {
-            if (isTomcatExeUsed(path) && IntegrationUtils.isWindowsPlatform(targetOS)) { // Tomcat installed by the windows installer has no catalina.bat; check for tomcat*.exe instead
+            if (isTomcatExeUsed(targetOS, path)) { // Tomcat installed by the windows installer has no catalina.bat; check for tomcat*.exe instead
                 retValue = new ValidationResult(true, "No CATALINA script found. Using " + getTomcatExe() + " instead"); // NOI18N
             }
         }
@@ -220,17 +220,20 @@ public class Tomcat5IntegrationProvider extends AbstractTomcatIntegrationProvide
         }
     }
 
-    private boolean isTomcatExeUsed(final String path) {
-        final String separator = System.getProperty("file.separator"); // NOI18N
-        final File exeFile = new File(path + separator + "bin" + separator + getTomcatExe()); // NOI18N
-        final File scriptFile = new File(getScriptPath(IntegrationUtils.PLATFORM_WINDOWS_OS, false)); // this method is called only for Windows tomcat installation
+    private boolean isTomcatExeUsed(String targetOS, final String path) {
+        if (IntegrationUtils.isWindowsPlatform(targetOS)) {
+            final String separator = System.getProperty("file.separator"); // NOI18N
+            final File exeFile = new File(path + separator + "bin" + separator + getTomcatExe()); // NOI18N
+            final File scriptFile = new File(getScriptPath(IntegrationUtils.PLATFORM_WINDOWS_OS, false)); // this method is called only for Windows tomcat installation
 
-        return exeFile.exists() && !scriptFile.exists();
+            return exeFile.exists() && !scriptFile.exists();
+        }
+        return false;
     }
 
     private void addWinExeHint(final IntegrationProvider.IntegrationHints hints, final String targetOS,
                                final AttachSettings attachSettings) {
-        if (isTomcatExeUsed(this.getInstallationPath())) {
+        if (isTomcatExeUsed(targetOS, this.getInstallationPath())) {
             hints.addHint(MessageFormat.format(MANUAL_WINEXE_HINT_MSG,
                                                new Object[] {
                                                    getScriptPath(targetOS, true), getModifiedScriptPath(targetOS, true),
