@@ -157,7 +157,7 @@ public final class NbMavenProjectImpl implements Project {
 
     private FileObject fileObject;
     private FileObject folderFileObject;
-    private File projectFile;
+    private final File projectFile;
     private Image icon;
     private final Lookup lookup;
     private Updater updater1;
@@ -245,7 +245,7 @@ public final class NbMavenProjectImpl implements Project {
      * @param properties
      * @return
      */
-    public synchronized MavenProject loadMavenProject(MavenEmbedder embedder, List<String> activeProfiles, Properties properties) {
+    public MavenProject loadMavenProject(MavenEmbedder embedder, List<String> activeProfiles, Properties properties) {
 //        AggregateProgressHandle hndl = createDownloadHandle();
         try {
 //            ProgressTransferListener.setAggregateHandle(hndl);
