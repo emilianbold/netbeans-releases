@@ -82,6 +82,7 @@ import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
 /**
@@ -324,6 +325,11 @@ public class BugzillaIssue extends Issue {
             node = createNode();
         }
         return node;
+    }
+
+    @Override
+    public Node[] getSelection() {
+        return super.getSelection();
     }
 
     @Override

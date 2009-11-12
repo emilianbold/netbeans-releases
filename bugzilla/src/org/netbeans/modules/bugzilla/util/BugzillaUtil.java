@@ -39,25 +39,34 @@
 
 package org.netbeans.modules.bugzilla.util;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
-import java.util.regex.Pattern;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
+import org.netbeans.modules.kenai.api.NbModuleOwnerSupport;
+import org.netbeans.modules.kenai.api.NbModuleOwnerSupport.OwnerInfo;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -160,7 +169,6 @@ public class BugzillaUtil {
         return retval;
     }
 
-    private static Pattern netbeansUrlPattern = Pattern.compile("(https|http)://(([a-z]|\\d)+\\.)*([a-z]|\\d)*netbeans([a-z]|\\d)*(([a-z]|\\d)*\\.)+org(.*)"); // NOI18N
     /**
      * Determines wheter the given {@link Repository} is the
      * repository hosting netbeans or not
@@ -169,16 +177,54 @@ public class BugzillaUtil {
      * @return true if the given repository is the netbenas bugzilla, otherwise false
      */
     public static boolean isNbRepository(Repository repo) {
-        // XXX dummy implementation
-        String url = repo.getUrl();
-        boolean ret = netbeansUrlPattern.matcher(url).matches();
-        if(ret) {
-            return true;
-        }
-        String nbUrl = System.getProperty("netbeans.bugzilla.url");  // NOI18N
-        if(nbUrl == null || nbUrl.equals("")) {                      // NOI18N
-            return false;
-        }
-        return url.startsWith(nbUrl);
+        return BugtrackingUtil.isNbRepository(repo);
     }
+
+    // XXX <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    // XXX move to nbmoduleownersuport
+    public static OwnerInfo getOwnerInfo(Node node) {
+        final Lookup nodeLookup = node.getLookup();
+
+        Project project = nodeLookup.lookup(Project.class);
+        if (project != null) {
+            return getOwnerInfo(project);
+        }
+
+        DataObject dataObj = nodeLookup.lookup(DataObject.class);
+        if (dataObj != null) {
+            return getOwnerInfo(dataObj);
+        }
+        return null;
+    }
+
+    private static OwnerInfo getOwnerInfo(Project project) {
+        FileObject fileObject = project.getProjectDirectory();
+        return getOwnerInfo(fileObject);
+    }
+
+    private static OwnerInfo getOwnerInfo(FileObject fileObject) {
+        if (fileObject == null) {
+            return null;
+        }
+        File file = org.openide.filesystems.FileUtil.toFile(fileObject);
+        if (file == null) {
+            return null;
+        }
+        return NbModuleOwnerSupport.getInstance().getOwnerInfo(NbModuleOwnerSupport.NB_BUGZILLA_CONFIG, file);
+    }
+
+    private static OwnerInfo getOwnerInfo(DataObject dataObj) {
+        FileObject fileObj = dataObj.getPrimaryFile();
+        if (fileObj == null) {
+            return null;
+        }
+
+        Project project = FileOwnerQuery.getOwner(fileObj);
+        if (project != null) {
+            return getOwnerInfo(project);
+        }
+        return getOwnerInfo(fileObj);
+    }
+    // XXX >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
 }

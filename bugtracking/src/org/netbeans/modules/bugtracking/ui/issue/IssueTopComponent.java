@@ -63,6 +63,7 @@ import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.RepositoryComboRenderer;
 import org.netbeans.modules.bugtracking.util.RepositoryComboSupport;
+import org.openide.nodes.Node;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -82,6 +83,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     private RequestProcessor rp = new RequestProcessor("Bugtracking issue", 1, true); // NOI18N
     private Task prepareTask;
     private RepositoryComboSupport rs;
+    private Node[] context;
 
     /**
      * Creates new {@code IssueTopComponent}.
@@ -106,12 +108,13 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         return issue;
     }
 
-    public void initNewIssue(Repository toSelect) {
-        initNewIssue(toSelect, false);
+    public void initNewIssue(Repository toSelect, Node[] context) {
+        initNewIssue(toSelect, false, context);
     }
 
-    public void initNewIssue(Repository defaultRepository, boolean suggestedSelectionOnly) {
+    public void initNewIssue(Repository defaultRepository, boolean suggestedSelectionOnly, Node[] context) {
         BugtrackingUtil.logBugtrackingUsage(defaultRepository, "ISSUE_EDIT"); // NOI18N
+        this.context = context;
 
         Font f = new JLabel().getFont();
         int s = f.getSize();
@@ -311,6 +314,8 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                     if (issue == null) {
                         return;
                     }
+
+                    IssueAccessor.getInstance().setSelection(issue, context);
                     controller = issue.getController();
 
                     SwingUtilities.invokeLater(new Runnable() {

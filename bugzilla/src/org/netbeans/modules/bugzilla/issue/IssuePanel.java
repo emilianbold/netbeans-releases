@@ -105,11 +105,14 @@ import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
+import org.netbeans.modules.kenai.api.NbModuleOwnerSupport.OwnerInfo;
 import org.netbeans.modules.kenai.ui.spi.KenaiUserUI;
+import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.WindowManager;
 
 /**
  * Panel showing (and allowing to edit) details of an issue.
@@ -128,6 +131,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private boolean skipReload;
     private boolean usingTargetMilestones;
     private PropertyChangeListener tasklistListener;
+    private OwnerInfo ownerInfo;
 
     public IssuePanel() {
         initComponents();
@@ -262,12 +266,51 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         tasklistButton.setEnabled(false);
         reloadForm(true);
 
+        if(BugtrackingUtil.isNbRepository(issue.getRepository())) {
+            Node[] selection = issue.getSelection();
+            if(selection == null) {
+                // XXX not sure why we need this - i'm going to keep it for now,
+                // doesn't seem to harm
+                selection = WindowManager.getDefault().getRegistry().getActivatedNodes();
+            }
+            ownerInfo = ((BugzillaRepository) issue.getRepository()).getOwnerInfo(selection);
+        }
+        selectProduct();
+
         // Hack to "link" the width of both columns
         Dimension dim = ccField.getPreferredSize();
         int width1 = Math.max(osCombo.getPreferredSize().width, platformCombo.getPreferredSize().width);
         int width2 = Math.max(priorityCombo.getPreferredSize().width, showIssueType ? issueTypeCombo.getPreferredSize().width : severityCombo.getPreferredSize().width);
         int gap = LayoutStyle.getSharedInstance().getPreferredGap(osCombo, platformCombo, LayoutStyle.RELATED, SwingConstants.EAST, this);
         ccField.setPreferredSize(new Dimension(2*Math.max(width1,width2)+gap,dim.height));
+    }
+
+    private void selectProduct() {
+        if (ownerInfo != null) {
+            String owner = findInModel(productCombo, ownerInfo.getOwner());
+            selectInCombo(productCombo, owner, true);
+            List<String> data = ownerInfo.getExtraData();
+            if (data != null && data.size() > 0) {
+                String component = findInModel(componentCombo, data.get(0));
+                selectInCombo(componentCombo, component, true);
+            }
+        } else {
+            if(issue.getRepository() instanceof KenaiRepository) {
+                String productName = ((KenaiRepository)issue.getRepository()).getProductName();
+                selectInCombo(productCombo, productName, true);
+            }
+        }
+    }
+
+    private String findInModel(JComboBox combo, String value) {
+        ComboBoxModel model = combo.getModel();
+        for(int i = 0; i < model.getSize(); i++) {
+            String element = model.getElementAt(i).toString();
+            if(value.toLowerCase().equals(element.toString().toLowerCase())) {
+                return element;
+            }
+        }
+        return null;
     }
 
     private static void swap(GroupLayout layout, JComponent comp1, JComponent comp2, JComponent temp) {
@@ -320,7 +363,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         org.openide.awt.Mnemonics.setLocalizedText(submitButton, NbBundle.getMessage(IssuePanel.class, isNew ? "IssuePanel.submitButton.text.new" : "IssuePanel.submitButton.text")); // NOI18N
         if (isNew && force) {
             // Preselect the first product
-            productCombo.setSelectedIndex(0);
+            selectProduct();
             initStatusCombo("NEW"); // NOI18N
         } else {
             String format = NbBundle.getMessage(IssuePanel.class, "IssuePanel.headerLabel.format"); // NOI18N

@@ -48,6 +48,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import static java.lang.Character.isSpaceChar;
@@ -71,6 +72,11 @@ public abstract class Issue {
     private Repository repository;
 
     private static final RequestProcessor rp = new RequestProcessor("Bugtracking Issue"); // NOI18N
+
+    static {
+        IssueAccessorImpl.create();
+    }
+    private Node[] selection;
 
     /**
      * Creates an issue
@@ -300,4 +306,11 @@ public abstract class Issue {
         support.firePropertyChange(EVENT_ISSUE_DATA_CHANGED, null, null);
     }
 
+    void setSelection(Node[] nodes) {
+        this.selection = nodes;
+}
+
+    protected Node[] getSelection() {
+        return selection;
+    }
 }

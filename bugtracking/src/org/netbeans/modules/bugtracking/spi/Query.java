@@ -46,6 +46,7 @@ import java.util.List;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.openide.nodes.Node;
 
 /**
  * Represents an query on a bugtracing repository.
@@ -76,6 +77,11 @@ public abstract class Query implements Comparable<Query> {
     private List<QueryNotifyListener> notifyListeners;
     protected boolean saved;
     private long lastRefresh = -1;
+
+    static {
+        QueryAccessorImpl.create();
+    }
+    private Node[] selection;
 
     /**
      * Creates a query
@@ -136,6 +142,9 @@ public abstract class Query implements Comparable<Query> {
      */
     protected void setSaved(boolean saved) {
         this.saved = saved;
+        if(saved) {
+            selection = null;
+        }
         fireQuerySaved();
     }
 
@@ -280,5 +289,13 @@ public abstract class Query implements Comparable<Query> {
             notifyListeners = new ArrayList<QueryNotifyListener>();
         }
         return notifyListeners;
+    }
+
+    void setSelection(Node[] nodes) {
+        this.selection = nodes;
+}
+
+    protected Node[] getSelection() {
+        return selection;
     }
 }

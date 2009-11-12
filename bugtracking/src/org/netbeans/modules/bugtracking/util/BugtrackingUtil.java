@@ -64,6 +64,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -701,4 +702,29 @@ public class BugtrackingUtil {
         }
     }
     
+    private static Pattern netbeansUrlPattern = Pattern.compile("(https|http)://(([a-z]|\\d)+\\.)*([a-z]|\\d)*netbeans([a-z]|\\d)*(([a-z]|\\d)*\\.)+org(.*)"); // NOI18N
+    /**
+     * Determines wheter the given {@link Repository} is the
+     * repository hosting netbeans or not
+     *
+     * @param repo
+     * @return true if the given repository is the netbenas bugzilla, otherwise false
+     */
+    public static boolean isNbRepository(Repository repo) {
+        // XXX dummy implementation
+        String url = repo.getUrl();
+        return isNbRepository(url);
+}
+
+    public static boolean isNbRepository(String url) {
+        boolean ret = netbeansUrlPattern.matcher(url).matches();
+        if(ret) {
+            return true;
+        }
+        String nbUrl = System.getProperty("netbeans.bugzilla.url");  // NOI18N
+        if(nbUrl == null || nbUrl.equals("")) {                      // NOI18N
+            return false;
+        }
+        return url.startsWith(nbUrl);
+    }
 }

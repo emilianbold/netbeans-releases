@@ -37,58 +37,28 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugzilla.kenai;
+package org.netbeans.modules.bugtracking.spi;
 
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.bugzilla.BugzillaConfig;
-import org.netbeans.modules.bugzilla.BugzillaConnector;
-import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
-import org.netbeans.modules.bugzilla.query.BugzillaQuery;
-import org.netbeans.modules.bugzilla.query.QueryController;
+import org.netbeans.modules.bugtracking.ui.issue.IssueAccessor;
+import org.openide.nodes.Node;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class KenaiQuery extends BugzillaQuery {
-    private final String product;
-    private boolean predefinedQuery = false;
+class IssueAccessorImpl extends IssueAccessor {
+    private static IssueAccessorImpl qa;
 
-    public KenaiQuery(String name, BugzillaRepository repository, String urlParameters, String product, boolean saved, boolean predefined) {
-        super(name, repository, urlParameters, saved, false, false);
-        this.product = product;
-        this.predefinedQuery = predefined;
-        this.setLastRefresh(repository.getIssueCache().getQueryTimestamp(getStoredQueryName()));
-        controller = createControler(repository, this, urlParameters);
-        boolean autoRefresh = BugzillaConfig.getInstance().getQueryAutoRefresh(getDisplayName());
-        if(autoRefresh) {
-            getRepository().scheduleForRefresh(this);
-        }
+    static void create() {
+        IssueAccessor.IMPL = new IssueAccessorImpl();
+    }
+
+    private IssueAccessorImpl() {
     }
 
     @Override
-    protected QueryController createControler(BugzillaRepository r, BugzillaQuery q, String parameters) {
-        KenaiQueryController c = new KenaiQueryController(r, q, parameters, product, predefinedQuery);
-        return c;
-    }
-
-    void setUrlParameters(String urlParameters) {
-        super.urlParameters = urlParameters;
-    }
-
-    @Override
-    protected void logQueryEvent(int count, boolean autoRefresh) {
-        BugtrackingUtil.logQueryEvent(
-            BugzillaConnector.getConnectorName(),
-            getDisplayName(),
-            count,
-            true,
-            autoRefresh);
-    }
-
-    @Override
-    public String getStoredQueryName() {
-        return super.getStoredQueryName() + "-" + product;
+    public void setSelection(Issue issue, Node[] nodes) {
+        issue.setSelection(nodes);
     }
 
 }
