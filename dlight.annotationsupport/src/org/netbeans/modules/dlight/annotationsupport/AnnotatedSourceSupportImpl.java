@@ -218,6 +218,18 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
         }
     }
 
+    private static class HideAnnotate implements Runnable {
+        JTextComponent jEditorPane;
+
+        public HideAnnotate(JTextComponent jEditorPane) {
+            this.jEditorPane = jEditorPane;
+        }
+
+        public void run() {
+            AnnotationBarManager.hideAnnotationBar(jEditorPane);
+        }
+    }
+
     private static class UnAnnotate implements Runnable {
         JTextComponent jEditorPane;
 
@@ -226,7 +238,7 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
         }
 
         public void run() {
-            AnnotationBarManager.hideAnnotationBar(jEditorPane);
+            AnnotationBarManager.unAnnotate(jEditorPane);
         }
     }
 
@@ -275,7 +287,7 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
                     for (FileAnnotationInfo fileAnnotationInfo : activeAnnotations.values()) {
                         if (fileAnnotationInfo.isAnnotated()) {
 //                            SwingUtilities.invokeLater(new UnAnnotate(fileAnnotationInfo.getEditorPane()));
-                            new UnAnnotate(fileAnnotationInfo.getEditorPane()).run();
+                            new HideAnnotate(fileAnnotationInfo.getEditorPane()).run();
                         }
                     }
                 }
