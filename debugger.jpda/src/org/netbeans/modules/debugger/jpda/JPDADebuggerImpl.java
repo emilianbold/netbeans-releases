@@ -359,6 +359,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 return ; // We're already running
             }
             try {
+                logger.fine("JPDADebuggerImpl.waitRunning(): starting = "+starting+", state = "+state+", exception = "+exception);
                 LOCK2.wait ();
             } catch (InterruptedException e) {
                  throw new DebuggerStartException (e);
@@ -613,6 +614,9 @@ public class JPDADebuggerImpl extends JPDADebugger {
     }
 
     public void setException (Exception e) {
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("JPDADebuggerImpl.setException("+e+")");
+        }
         synchronized (LOCK2) {
             exception = e;
             starting = false;

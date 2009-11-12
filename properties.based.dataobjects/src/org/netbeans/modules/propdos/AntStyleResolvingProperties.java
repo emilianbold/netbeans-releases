@@ -153,6 +153,14 @@ public class AntStyleResolvingProperties extends ObservableProperties {
 
     @Override
     public void store(OutputStream out, String comments) throws IOException {
+        if (PropertiesBasedDataObject.LOGGER.isLoggable(Level.FINE)) {
+            PropertiesBasedDataObject.LOGGER.log(Level.FINE, "Writing a " + //NOI18N
+                    getClass().getName() + " to disk"); //NOI18N
+        }
+        if (PropertiesBasedDataObject.LOGGER.isLoggable(Level.FINEST)) {
+            PropertiesBasedDataObject.LOGGER.log(Level.FINEST, "DATA:" + //NOI18N
+                    this);
+        }
         EditableProperties props = new EditableProperties(true);
         for (Map.Entry<Object,Object> e : entrySet()) {
             String key = (String) e.getKey();
@@ -248,10 +256,10 @@ public class AntStyleResolvingProperties extends ObservableProperties {
                 CoalescablePropertyChangeEvent evt = new CoalescablePropertyChangeEvent(this, key.toString(), result, value);
                 pendingEvents.add(evt);
                 if (PropertiesBasedDataObject.LOGGER.isLoggable(Level.FINEST)) {
-                    PropertiesBasedDataObject.LOGGER.log(Level.FINEST, "Scheduling write of " + this
-                            + " in 500ms due to write of property " + key + " to " + value, new Exception());
+                    PropertiesBasedDataObject.LOGGER.log(Level.FINEST, "Scheduling write of " + this //NOI18N
+                            + " in 500ms due to write of property " + key + " to " + value, new Exception()); //NOI18N
                 }
-                if (!Boolean.getBoolean("JCProjectTest")) {
+                if (!Boolean.getBoolean("JCProjectTest")) { //NOI18N
                     //NOI18N
                     if (!sync) {
                         task.schedule(500);

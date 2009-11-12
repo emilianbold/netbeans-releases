@@ -42,6 +42,7 @@ package org.netbeans.modules.mercurial.ui.log;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import org.netbeans.modules.mercurial.HgException;
@@ -72,7 +73,7 @@ public class HgLogMessage {
     private boolean bMerged;
     private String rootURL;
     private OutputLogger logger;
-    private String ancestor;
+    private HashMap<File, String> ancestors = new HashMap<File, String>();
 
     public HgLogMessage(String changeset){
     }
@@ -180,6 +181,7 @@ public class HgLogMessage {
     }
 
     public  String getAncestor (File file) {
+        String ancestor = getAncestorFromMap(file);
         if (ancestor != null) {
             return ancestor;
         }
@@ -206,6 +208,7 @@ public class HgLogMessage {
                 }
             }
         }
+        addAncestorToMap(file, ancestor);
         return ancestor;
     }
 
@@ -244,5 +247,13 @@ public class HgLogMessage {
         sb.append("\npaths: ");
         sb.append(this.paths);
         return sb.toString();
+    }
+
+    private void addAncestorToMap(File file, String ancestor) {
+        ancestors.put(file, ancestor);
+    }
+
+    private String getAncestorFromMap(File file) {
+        return ancestors.get(file);
     }
 }

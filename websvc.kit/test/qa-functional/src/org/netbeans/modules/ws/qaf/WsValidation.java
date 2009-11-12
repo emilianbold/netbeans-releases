@@ -308,6 +308,8 @@ public class WsValidation extends WebServicesTestBase {
         try {
             // wait at most 60 second until progress dialog dismiss
             JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", 60000); //NOI18N
+            new JButtonOperator(new JDialogOperator("REST Resources Configuration"), "OK").pushNoBlock();
+            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", 60000); //NOI18N
             new JDialogOperator(progressLabel).waitClosed();
         } catch (TimeoutExpiredException e) {
             // ignore when progress dialog was closed before we started to wait for it
@@ -323,7 +325,6 @@ public class WsValidation extends WebServicesTestBase {
         restWsNode.expand();
         EditorOperator eo = new EditorOperator(restName + ".java"); //NOI18N
         assertTrue("myIntMethod missing", eo.contains("myIntMethod")); //NOI18N
-        workaroundIZ152542(eo);
         assertTrue("@GET missing", eo.contains("@GET")); //NOI18N
         assertTrue("@Consumes missing", eo.contains("@Consumes")); //NOI18N
         assertTrue("@Produces missing", eo.contains("@Produces")); //NOI18N
@@ -563,7 +564,7 @@ public class WsValidation extends WebServicesTestBase {
                 "testWsHandlers",
                 "testDeployWsProject",
                 "testTestWS",
-// IZ# 175453               "testGenerateWrapper",
+                "testGenerateWrapper",
                 "testGenerateWSDL",
                 "testDeployWsProject",
                 "testCreateWsClient",
@@ -699,7 +700,7 @@ public class WsValidation extends WebServicesTestBase {
         ndo.ok();
         if (isService) {
             assertTrue("missing @HandlerChain", //NOI18N
-                    eo.contains("@HandlerChain(file = \"" + getWsName() + "_handler.xml\")")); //NOI18N
+                    eo.contains("@HandlerChain(file = \"" + handlerCfg.getName() + "\")")); //NOI18N
         } else {
             boolean isAnt = getProjectType().isAntBasedProject();
             waitForWsImport(isAnt ? "wsimport-client" : "wsimport", isAnt); //NOI18N
@@ -717,7 +718,7 @@ public class WsValidation extends WebServicesTestBase {
         ndo.ok();
         if (isService) {
             assertTrue("missing @HandlerChain", //NOI18N
-                    eo.contains("@HandlerChain(file = \"" + getWsName() + "_handler.xml\")")); //NOI18N
+                    eo.contains("@HandlerChain(file = \"" + handlerCfg.getName() + "\")")); //NOI18N
         } else {
             boolean isAnt = getProjectType().isAntBasedProject();
             waitForWsImport(isAnt ? "wsimport-client" : "wsimport", isAnt); //NOI18N
@@ -735,7 +736,7 @@ public class WsValidation extends WebServicesTestBase {
         ndo.ok();
         if (isService) {
             assertTrue("missing @HandlerChain", //NOI18N
-                    eo.contains("@HandlerChain(file = \"" + getWsName() + "_handler.xml\")")); //NOI18N
+                    eo.contains("@HandlerChain(file = \"" + handlerCfg.getName() + "\")")); //NOI18N
         } else {
             boolean isAnt = getProjectType().isAntBasedProject();
             waitForWsImport(isAnt ? "wsimport-client" : "wsimport", isAnt); //NOI18N
@@ -757,7 +758,7 @@ public class WsValidation extends WebServicesTestBase {
 
         if (isService) {
             assertFalse("offending @HandlerChain", //NOI18N
-                    eo.contains("@HandlerChain(file = \"" + getWsName() + "_handler.xml\")")); //NOI18N
+                    eo.contains("@HandlerChain(file = \"" + handlerCfg.getName() + "\")")); //NOI18N
             assertFalse(handlerCfg.exists());
         }
     }
@@ -983,11 +984,4 @@ public class WsValidation extends WebServicesTestBase {
         }
     }
 
-    private void workaroundIZ152542(EditorOperator eo) {
-        for (int i = 54; i < 78; i++) {
-            eo.select(54);
-            eo.deleteLine(54);
-        }
-        eo.save();
-    }
 }

@@ -41,6 +41,8 @@ package org.netbeans.modules.kenai.ui;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Map;
 import java.util.WeakHashMap;
 import javax.swing.AbstractAction;
@@ -77,7 +79,7 @@ import org.openide.util.actions.SystemAction;
 import org.openide.windows.WindowManager;
 
 
-public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction {
+public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction, PropertyChangeListener {
 
     private static Map<Project, String> repoForProjCache = new WeakHashMap<Project, String>();
 
@@ -89,6 +91,7 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
     public static synchronized KenaiPopupMenu getDefault() {
         if (inst == null) {
             inst = new KenaiPopupMenu();
+            Kenai.getDefault().addPropertyChangeListener(Kenai.PROP_URL_CHANGED, inst);
         }
         return inst;
     }
@@ -100,6 +103,12 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
 
     public void actionPerformed(ActionEvent e) {
         assert false;
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (Kenai.PROP_URL_CHANGED.equals(evt.getPropertyName())) {
+            repoForProjCache.clear();
+        }
     }
 
     private final class KenaiPopupMenuPresenter extends AbstractAction implements Presenter.Popup {

@@ -40,18 +40,14 @@
 package org.netbeans.modules.javacard.ri.card;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.netbeans.modules.javacard.common.Utils;
 import org.netbeans.modules.javacard.spi.DeclarableCapabilities;
 import org.netbeans.modules.javacard.spi.ICardCapability;
@@ -155,6 +151,10 @@ final class CardProperties implements ICardCapability, CapabilitiesProvider {
     private static final Logger LOGGER = Logger.getLogger(CardProperties.class.getPackage().getName());
     CardProperties(PropertiesAdapter props) {
         this.props = props;
+    }
+
+    Properties toProperties() {
+        return props.asProperties();
     }
 
     public String getContactedPort() {

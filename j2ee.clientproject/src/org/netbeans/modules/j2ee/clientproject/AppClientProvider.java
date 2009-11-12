@@ -51,8 +51,6 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -66,7 +64,6 @@ import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientProjectPro
 import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.j2ee.dd.api.client.AppClient;
 import org.netbeans.modules.j2ee.dd.api.client.AppClientMetadata;
-import org.netbeans.modules.j2ee.dd.api.client.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.webservices.WebservicesMetadata;
 import org.netbeans.modules.j2ee.dd.spi.MetadataUnit;
 import org.netbeans.modules.j2ee.dd.spi.client.AppClientMetadataModelFactory;
@@ -75,9 +72,12 @@ import org.netbeans.modules.j2ee.deployment.common.api.EjbChangeDescriptor;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ResourceChangeReporter;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleFactory;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation2;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.ResourceChangeReporterFactory;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.ResourceChangeReporterImplementation;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.websvc.api.client.WebServicesClientConstants;
@@ -97,7 +97,9 @@ public final class AppClientProvider extends J2eeModuleProvider
         implements J2eeModuleImplementation2, ModuleChangeReporter, EjbChangeDescriptor, PropertyChangeListener {
     
     public static final String FILE_DD = "application-client.xml";//NOI18N
-    
+
+    private final ResourceChangeReporter rcr = ResourceChangeReporterFactory.createResourceChangeReporter(new AppClientResourceChangeReporter());
+
     private final AppClientProject project;
     private final AntProjectHelper helper;
     private final ClassPathProviderImpl cpProvider;
@@ -202,7 +204,12 @@ public final class AppClientProvider extends J2eeModuleProvider
     public ModuleChangeReporter getModuleChangeReporter() {
         return this;
     }
-    
+
+    @Override
+    public ResourceChangeReporter getResourceChangeReporter() {
+        return rcr;
+    }
+
     @Override
     public String getServerID() {
         return helper.getStandardPropertyEvaluator().getProperty(AppClientProjectProperties.J2EE_SERVER_TYPE);
@@ -460,7 +467,25 @@ public final class AppClientProvider extends J2eeModuleProvider
         }
         return propertyChangeSupport;
     }
-    
+
+    private class AppClientResourceChangeReporter implements ResourceChangeReporterImplementation {
+
+        public boolean isServerResourceChanged(long lastDeploy) {
+            File resDir = getResourceDirectory();
+            if (resDir != null && resDir.exists() && resDir.isDirectory()) {
+                File[] children = resDir.listFiles();
+                if (children != null) {
+                    for (File file : children) {
+                        if (file.lastModified() > lastDeploy) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+    }
+
     private static class IT implements Iterator {
         
         Enumeration ch;

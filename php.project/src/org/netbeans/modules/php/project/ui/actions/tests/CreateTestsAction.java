@@ -66,6 +66,7 @@ import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
@@ -216,11 +217,12 @@ public final class CreateTestsAction extends NodeAction {
         FileUtil.runAtomicAction(new Runnable() {
             public void run() {
                 try {
+                    final PhpVisibilityQuery phpVisibilityQuery = PhpVisibilityQuery.forProject(phpProject);
                     for (FileObject fo : files) {
-                        generateTest(phpUnit, phpProject, fo, proceeded, failed, toOpen);
+                        generateTest(phpUnit, phpProject, phpVisibilityQuery, fo, proceeded, failed, toOpen);
                         Enumeration<? extends FileObject> children = fo.getChildren(true);
                         while (children.hasMoreElements()) {
-                            generateTest(phpUnit, phpProject, children.nextElement(), proceeded, failed, toOpen);
+                            generateTest(phpUnit, phpProject, phpVisibilityQuery, children.nextElement(), proceeded, failed, toOpen);
                         }
                     }
                 } catch (ExecutionException ex) {
@@ -261,13 +263,14 @@ public final class CreateTestsAction extends NodeAction {
         }
     }
 
-    private void generateTest(PhpUnit phpUnit, PhpProject phpProject, FileObject sourceFo,
+    private void generateTest(PhpUnit phpUnit, PhpProject phpProject, PhpVisibilityQuery phpVisibilityQuery, FileObject sourceFo,
             Set<FileObject> proceeded, Set<FileObject> failed, Set<File> toOpen) throws ExecutionException {
         if (sourceFo.isFolder()
                 || !FileUtils.isPhpFile(sourceFo)
                 || proceeded.contains(sourceFo)
                 || CommandUtils.isUnderTests(phpProject, sourceFo, false)
-                || CommandUtils.isUnderSelenium(phpProject, sourceFo, false)) {
+                || CommandUtils.isUnderSelenium(phpProject, sourceFo, false)
+                || !PhpProjectUtils.isVisible(phpVisibilityQuery, sourceFo)) {
             return;
         }
         proceeded.add(sourceFo);
@@ -323,11 +326,7 @@ public final class CreateTestsAction extends NodeAction {
         ExternalProcessBuilder externalProcessBuilder = phpUnit.getProcessBuilder()
                 .workingDirectory(workingDirectory);
 
-        if (configFiles.bootstrap != null) {
-            externalProcessBuilder = externalProcessBuilder
-                    .addArgument(PhpUnit.PARAM_BOOTSTRAP)
-                    .addArgument(configFiles.bootstrap.getAbsolutePath());
-        }
+        // #176413 - bootstrap file not used for creating tests
         if (configFiles.configuration != null) {
             externalProcessBuilder = externalProcessBuilder
                     .addArgument(PhpUnit.PARAM_CONFIGURATION)

@@ -104,18 +104,21 @@ public class JPDAConnect extends Task {
     }
     
     public void addClasspath (Path path) {
+        logger.fine("addClasspath("+path+")");
         if (classpath != null)
             throw new BuildException ("Only one classpath subelement is supported");
         classpath = path;
     }
     
     public void addBootclasspath (Path path) {
+        logger.fine("addBootclasspath("+path+")");
         if (bootclasspath != null)
             throw new BuildException ("Only one bootclasspath subelement is supported");
         bootclasspath = path;
     }
     
     public void addSourcepath (JPDAStart.Sourcepath path) {
+        logger.fine("addSourcepath("+path+")");
         if (sourcepath != null)
             throw new BuildException ("Only one sourcepath subelement is supported");
         sourcepath = path;
@@ -137,6 +140,7 @@ public class JPDAConnect extends Task {
         return name;
     }
     
+    @Override
     public void execute () throws BuildException {
         logger.fine("JPDAConnect.execute ()"); // NOI18N
         Path plainSourcepath = null;
@@ -197,7 +201,7 @@ public class JPDAConnect extends Task {
         }
         properties.put ("baseDir", baseDir); // NOI18N
 
-        logger.fine("JPDAStart: properties = "+properties);
+        logger.fine("JPDAConnect: properties = "+properties);
         
 
         synchronized(lock) {

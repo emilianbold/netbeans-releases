@@ -462,7 +462,6 @@ public final class CndFileUtils {
             if (TRACE_EXTERNAL_CHANGES) {
                 System.err.println("clean cache for " + file);
             }
-            getNormalizedFilesMap().remove(file);
             getFilesMap().remove(file);
         }
     }

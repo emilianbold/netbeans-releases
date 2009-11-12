@@ -120,7 +120,7 @@ public class MessageHandlerWizard implements WizardDescriptor.InstantiatingItera
             params[0] = creatorClassName.contains("jaxrpc") ? LogUtils.WS_STACK_JAXRPC : LogUtils.WS_STACK_JAXWS; //NOI18N
             params[1] = project.getClass().getName();
             J2eeModule j2eeModule = JaxWsUtils.getJ2eeModule(project);
-            params[2] = j2eeModule == null ? null : j2eeModule.getModuleVersion(); //NOI18N
+            params[2] = j2eeModule == null ? "J2SE" : j2eeModule.getModuleVersion()+"("+JaxWsUtils.getModuleType(project)+")"; //NOI18N
             params[3] = "MESSAGE HANDLER"; //NOI18N
             LogUtils.logWsWizard(params);
         }

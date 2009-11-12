@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.UnknownHostException;
 import java.text.MessageFormat;
+import java.util.MissingResourceException;
 import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
@@ -160,13 +161,23 @@ public class BugzillaExecutor {
         if(status == null || status.isOK()) {
             return false;
         }
-        Bugzilla.LOG.log(Level.FINE, "command {0} returned status : {1}", new Object[] {cmd, status.getMessage()});
+        Bugzilla.LOG.log(Level.FINE, "command {0} returned status : {1}", new Object[] {cmd, status.getMessage()}); // NOI18N
 
         if (status.getException() instanceof CoreException) {
             throw (CoreException) status.getException();
         }
-        
-        cmd.setErrorMessage(status.getMessage());
+
+        boolean isHtml = false;
+        String errMsg = null;
+        if(status instanceof RepositoryStatus) {
+            RepositoryStatus rstatus = (RepositoryStatus) status;
+            errMsg = rstatus.getHtmlMessage();
+            isHtml = errMsg != null;
+        }
+        if(errMsg == null) {
+            errMsg = status.getMessage();
+        }
+        cmd.setErrorMessage(errMsg);
         cmd.setFailed(true);
 
         if(!handleExceptions) {
@@ -182,11 +193,15 @@ public class BugzillaExecutor {
                 notifyErrorMessage(
                         NbBundle.getMessage(BugzillaExecutor.class, "MSG_BUGZILLA_VERSION_WARNING1", version) + "\n" +          // NOI18N
                         (ua ? NbBundle.getMessage(BugzillaExecutor.class, "MSG_BUGZILLA_VERSION_WARNING2") + "\n\n" : "\n") +   // NOI18N
-                        NbBundle.getMessage(BugzillaExecutor.class, "MSG_BUGZILLA_VERSION_WARNING3", status.getMessage()));     // NOI18N
+                        NbBundle.getMessage(BugzillaExecutor.class, "MSG_BUGZILLA_ERROR_WARNING", status.getMessage()));        // NOI18N
                 return true;
             }
         }
-        notifyErrorMessage(NbBundle.getMessage(BugzillaExecutor.class, "MSG_BUGZILLA_VERSION_WARNING3", status.getMessage()));
+        if(isHtml) {
+            notifyHtmlMessage(errMsg, repository);
+        } else {
+            notifyErrorMessage(NbBundle.getMessage(BugzillaExecutor.class, "MSG_BUGZILLA_ERROR_WARNING", errMsg)); // NOI18N
+        }
         return true;
     }
 
@@ -200,6 +215,63 @@ public class BugzillaExecutor {
                     new Object[] {NotifyDescriptor.OK_OPTION},
                     NotifyDescriptor.OK_OPTION);
         DialogDisplayer.getDefault().notify(nd);
+    }
+
+    private static boolean notifyHtmlMessage(String html, BugzillaRepository repository) throws MissingResourceException {
+        if (html != null && !html.trim().equals("")) {                          // NOI18N
+            html = parseHtmlMessage(html);
+            final HtmlPanel p = new HtmlPanel();
+            String label = NbBundle.getMessage(
+                                BugzillaExecutor.class,
+                                "MSG_ServerResponse",                           // NOI18N
+                                new Object[] { repository.getDisplayName() }
+                           );
+            p.setHtml(repository.getUrl(), html, label);
+            DialogDescriptor dialogDescriptor = 
+                    new DialogDescriptor(
+                            p,
+                            NbBundle.getMessage(BugzillaExecutor.class, "CTL_ServerResponse"), // NOI18N
+                            true,
+                            new Object[] { NotifyDescriptor.CANCEL_OPTION },
+                            NotifyDescriptor.CANCEL_OPTION,
+                            DialogDescriptor.DEFAULT_ALIGN,
+                            new HelpCtx(p.getClass()),
+                            null
+                    );
+            DialogDisplayer.getDefault().notify(dialogDescriptor);
+            return true;
+        }
+        return false;
+    }
+
+    @SuppressWarnings("empty-statement")
+    private static String parseHtmlMessage(String html) {
+        int idxS = html.indexOf("<div id=\"bugzilla-body\">");              // NOI18N
+        if(idxS < 0) {
+            return html;
+        }
+        int idx = idxS;
+        int idxE = html.indexOf("</div>", idx);                             // NOI18N
+        int levels = 1;
+        while(true) {
+            idx = html.indexOf("<div", idx + 1);                            // NOI18N
+            if(idx < 0 || idx > idxE) {
+                break;
+            }
+            levels++;
+        }
+
+        idxE = idxS;
+        for (int i = 0; i < levels; i++) {
+            idxE = html.indexOf("</div>", idxE + 1);                        // NOI18N
+        }
+        idxE = idxE > 6 ? idxE + 6 : html.length();
+        html = html.substring(idxS, idxE);
+
+        // very nice
+        html = html.replaceAll("Please press \\<b\\>Back\\</b\\> and try again.", ""); // NOI18N
+
+        return html;
     }
 
     public boolean handleIOException(IOException io) {
@@ -247,11 +319,11 @@ public class BugzillaExecutor {
                 if(INVALID_USERNAME_OR_PASSWORD.equals(msg) ||
                    msg.contains(INVALID_USERNAME_OR_PASSWORD))
                 {
-                    return NbBundle.getMessage(BugzillaExecutor.class, "MSG_INVALID_USERNAME_OR_PASSWORD"); 
+                    return NbBundle.getMessage(BugzillaExecutor.class, "MSG_INVALID_USERNAME_OR_PASSWORD"); // NOI18N
                 } else if(msg.startsWith(REPOSITORY_LOGIN_FAILURE) ||
                          (msg.startsWith(REPOSITORY) && msg.endsWith(COULD_NOT_BE_FOUND)))
                 {
-                    return NbBundle.getMessage(BugzillaExecutor.class, "MSG_UNABLE_LOGIN_TO_REPOSITORY"); 
+                    return NbBundle.getMessage(BugzillaExecutor.class, "MSG_UNABLE_LOGIN_TO_REPOSITORY");   // NOI18N
                 }
             }
             return null;
@@ -262,7 +334,7 @@ public class BugzillaExecutor {
             if(msg != null) {
                 msg = msg.trim().toLowerCase();
                 if(msg.startsWith(MIDAIR_COLLISION)) {
-                    return NbBundle.getMessage(BugzillaExecutor.class, "MSG_MID-AIR_COLLISION"); 
+                    return NbBundle.getMessage(BugzillaExecutor.class, "MSG_MID-AIR_COLLISION");            // NOI18N
                 }
             }
             return null;
@@ -272,13 +344,13 @@ public class BugzillaExecutor {
             IStatus status = ce.getStatus();
             Throwable t = status.getException();
             if(t instanceof UnknownHostException) {
-                return NbBundle.getMessage(BugzillaExecutor.class, "MSG_HOST_NOT_FOUND");
+                return NbBundle.getMessage(BugzillaExecutor.class, "MSG_HOST_NOT_FOUND");                   // NOI18N
             }
             String msg = getMessage(ce);
             if(msg != null) {
                 msg = msg.trim().toLowerCase();
                 if(HTTP_ERROR_NOT_FOUND.equals(msg)) {
-                    return NbBundle.getMessage(BugzillaExecutor.class, "MSG_HOST_NOT_FOUND");
+                    return NbBundle.getMessage(BugzillaExecutor.class, "MSG_HOST_NOT_FOUND");               // NOI18N
                 }
             }
             return null;
@@ -304,59 +376,11 @@ public class BugzillaExecutor {
             if (status instanceof RepositoryStatus) {
                 RepositoryStatus rs = (RepositoryStatus) status;
                 String html = rs.getHtmlMessage();
-                if(html != null && !html.trim().equals("")) {                   // NOI18N
-                    html = parseHtmlMessage(html);
-                    final HtmlPanel p = new HtmlPanel();
-                    String label = NbBundle.getMessage(BugzillaExecutor.class, "MSG_ServerResponse", new Object[] {repository.getDisplayName()}); // NOI18N
-                    p.setHtml(repository.getUrl(), html, label);
-                    DialogDescriptor dialogDescriptor = 
-                            new DialogDescriptor(
-                                p,
-                                NbBundle.getMessage(BugzillaExecutor.class, "CTL_ServerResponse"), // NOI18N
-                                true,
-                                new Object[] {NotifyDescriptor.CANCEL_OPTION},
-                                NotifyDescriptor.CANCEL_OPTION,
-                                DialogDescriptor.DEFAULT_ALIGN,
-                                new HelpCtx(p.getClass()),
-                                null);
-
-                    DialogDisplayer.getDefault().notify(dialogDescriptor);
-                    return;
-                }
+                if(notifyHtmlMessage(html, repository)) return;
             }
             String msg = getMessage(ce);
             notifyErrorMessage(msg);
         }
-
-        @SuppressWarnings("empty-statement")
-        private static String parseHtmlMessage(String html) {
-            int idxS = html.indexOf("<div id=\"bugzilla-body\">");              // NOI18N
-            if(idxS < 0) {
-                return html;
-            }
-            int idx = idxS;
-            int idxE = html.indexOf("</div>", idx);                             // NOI18N
-            int levels = 1;
-            while(true) {
-                idx = html.indexOf("<div", idx + 1);                            // NOI18N
-                if(idx < 0 || idx > idxE) {
-                    break;
-                }
-                levels++;
-            }
-
-            idxE = idxS;
-            for (int i = 0; i < levels; i++) {
-                idxE = html.indexOf("</div>", idxE + 1);                        // NOI18N
-            }
-            idxE = idxE > 6 ? idxE + 6 : html.length();
-            html = html.substring(idxS, idxE);
-
-            // very nice
-            html = html.replaceAll("Please press \\<b\\>Back\\</b\\> and try again.", ""); // NOI18N
-
-            return html;
-        }        
 
         private static class LoginHandler extends ExceptionHandler {
             public LoginHandler(CoreException ce, String msg, BugzillaExecutor executor, BugzillaRepository repository) {
@@ -416,7 +440,7 @@ public class BugzillaExecutor {
         try {
             BugzillaAutoupdate.getInstance().checkAndNotify(repository);
         } catch (Throwable t) {
-            Bugzilla.LOG.log(Level.SEVERE, "Exception in Bugzilla autoupdate check.", t);
+            Bugzilla.LOG.log(Level.SEVERE, "Exception in Bugzilla autoupdate check.", t);                   // NOI18N
         }
     }
 }

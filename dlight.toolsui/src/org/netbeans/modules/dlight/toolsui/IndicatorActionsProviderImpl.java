@@ -40,14 +40,15 @@
 package org.netbeans.modules.dlight.toolsui;
 
 import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
+import java.awt.event.ActionListener;
+import java.util.Arrays;
 import java.util.List;
 import javax.swing.Action;
 import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorActionsProvider;
+import org.openide.awt.Actions;
 import org.openide.util.Lookup;
-import org.openide.util.actions.SystemAction;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -65,48 +66,22 @@ public class IndicatorActionsProviderImpl implements IndicatorActionsProvider {
             }
         }
 
-        List<Action> list = new ArrayList<Action>();
-        list.add(new ToolsCustomizerActionByDisplayName(preferredConfigurationDisplayName));
+        Action toolsCustomizerAction = Actions.alwaysEnabled(
+                new ToolsCustomizerActionListener(preferredConfigurationDisplayName),
+                NbBundle.getMessage(ToolsCustomizerAction.class, "CTL_ProfilerToolsAction"), // NOI18N
+                null, true);
 
-        return list;
-    }
-}
-
-class ToolsCustomizerActionByDisplayName implements Action {
-    private ToolsCustomizerAction action;
-    private String displayName;
-
-    public ToolsCustomizerActionByDisplayName(String displayName) {
-        this.displayName = displayName;
-        this.action = SystemAction.get(ToolsCustomizerAction.class);
+        return Arrays.asList(toolsCustomizerAction);
     }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        action.showCustomizer(displayName);
-    }
-
-    public void addPropertyChangeListener(PropertyChangeListener arg0) {
-        action.addPropertyChangeListener(arg0);
-    }
-
-    public void removePropertyChangeListener(PropertyChangeListener arg0) {
-        action.addPropertyChangeListener(arg0);
-    }
-
-    public boolean isEnabled() {
-        return action.isEnabled();
-    }
-
-    public void setEnabled(boolean arg0) {
-        action.setEnabled(arg0);
-    }
-
-    public void putValue(String arg0, Object arg1) {
-        action.putValue(arg0, arg1);
-    }
-
-    public Object getValue(String arg0) {
-        return action.getValue(arg0);
+    private static class ToolsCustomizerActionListener implements ActionListener {
+        private final String displayName;
+        public ToolsCustomizerActionListener(String displayName) {
+            this.displayName = displayName;
+        }
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            ToolsCustomizerAction.showCustomizer(displayName);
+        }
     }
 }

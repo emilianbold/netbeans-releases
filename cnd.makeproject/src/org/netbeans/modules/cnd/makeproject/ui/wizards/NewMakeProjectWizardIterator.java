@@ -50,9 +50,11 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.MakeProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -242,6 +244,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
             release.getQmakeConfiguration().getBuildMode().setValue(QmakeConfiguration.RELEASE_MODE);
             MakeConfiguration[] confs = new MakeConfiguration[]{debug, release};
             MakeProjectGenerator.createProject(dirF, projectName, makefileName, confs, null, null, null, mainFile);
+            ConfigurationDescriptorProvider.recordCreatedProjectMetrics(confs);
             FileObject dir = FileUtil.toFileObject(dirF);
             resultSet.add(dir);
         }

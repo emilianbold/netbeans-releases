@@ -44,6 +44,9 @@ package org.netbeans.modules.java.j2seproject;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -327,9 +330,21 @@ public class J2SEProjectGenerator {
         ep = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
         ep.setProperty(J2SEProjectProperties.COMPILE_ON_SAVE, "true"); // NOI18N
         h.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
+        logUsage();
         return h;
     }
-
+    
+    private static final String loggerName = "org.netbeans.ui.metrics.j2se"; // NOI18N
+    private static final String loggerKey = "USG_PROJECT_CREATE_J2SE"; // NOI18N
+    
+    // http://wiki.netbeans.org/UsageLoggingSpecification
+    private static void logUsage() {
+        LogRecord logRecord = new LogRecord(Level.INFO, loggerKey);
+        logRecord.setLoggerName(loggerName);
+        //logRecord.setParameters(new Object[] {""}); // NOI18N
+        Logger.getLogger(loggerName).log(logRecord);
+    }
+    
     private static void copyRequiredLibraries(AntProjectHelper h, ReferenceHelper rh) throws IOException {
         if (!h.isSharableProject()) {
             return; 

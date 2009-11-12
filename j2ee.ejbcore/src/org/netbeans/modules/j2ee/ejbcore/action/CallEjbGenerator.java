@@ -113,7 +113,7 @@ public class CallEjbGenerator {
                     Ejb ejb = metadata.findByEjbClass(ejbReference.getEjbClass());
                     return new Object[]{ejb instanceof Session,
                                         metadata.getRoot().getVersion(),
-                                        ejb.getEjbName()};
+                                        ejb != null ? ejb.getEjbName() : null};
                 }
             });
         } catch (IOException ioe) {

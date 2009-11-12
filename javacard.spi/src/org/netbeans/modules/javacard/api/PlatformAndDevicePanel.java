@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.javacard.api;
 
+import org.netbeans.modules.javacard.spi.impl.DevicePanel;
 import java.awt.EventQueue;
 import org.netbeans.swing.layouts.SharedLayoutParentPanel;
 import org.openide.explorer.ExplorerManager;
@@ -54,6 +55,7 @@ import org.openide.util.NbBundle;
 import javax.swing.*;
 import java.beans.PropertyVetoException;
 import org.netbeans.modules.javacard.spi.PlatformAndDeviceProvider;
+import org.netbeans.modules.javacard.spi.impl.TempPlatformAndDeviceProvider;
 import org.openide.util.HelpCtx;
 
 /**
@@ -64,7 +66,7 @@ public class PlatformAndDevicePanel extends SharedLayoutParentPanel implements E
 
     PlatformAndDeviceProvider props;
     private final ExplorerManager mgr = new ExplorerManager();
-    DevicePanel2 devicePanel = new DevicePanel2();
+    DevicePanel devicePanel = new DevicePanel();
     PlatformPanel platformPanel = new PlatformPanel();
 
     public PlatformAndDevicePanel(PlatformAndDeviceProvider props) {
@@ -72,7 +74,7 @@ public class PlatformAndDevicePanel extends SharedLayoutParentPanel implements E
         add(platformPanel);
         add(devicePanel);
         if (props != null) {
-            setProperties(props);
+            setPlatformAndCard(props);
         }
         HelpCtx.setHelpIDString(this, "org.netbeans.modules.javacard.CustomizeDevice"); //NOI18N
     }
@@ -98,7 +100,7 @@ public class PlatformAndDevicePanel extends SharedLayoutParentPanel implements E
         //constructor, and we're being passed nulls because nothing was
         //yet stored in the wizard descriptor, don't destroy the default
         //value already in it
-        PlatformAndDeviceProvider tempProps = props == null ? new PlatformAndDeviceProvider.Temp() : props;
+        PlatformAndDeviceProvider tempProps = props == null ? new TempPlatformAndDeviceProvider() : props;
 
         if (activeDevice != null) {
             tempProps.setActiveDevice(activeDevice);
@@ -106,13 +108,13 @@ public class PlatformAndDevicePanel extends SharedLayoutParentPanel implements E
         if (activePlatform != null) {
             tempProps.setPlatformName(activePlatform);
         }
-        setProperties(tempProps);
+        setPlatformAndCard(tempProps);
     }
 
-    public void setProperties(final PlatformAndDeviceProvider props) {
+    public void setPlatformAndCard(final PlatformAndDeviceProvider props) {
         this.props = props;
-        platformPanel.setProperties(props);
-        devicePanel.setProperties(props);
+        platformPanel.setPlatformFrom(props);
+        devicePanel.setPlatformAndDevice(props);
         //Force children initialization with some slightly
         //ridiculous contortions.  This call *should* block for
         //children creation but in fact doesn't.  However, our ChildFactory

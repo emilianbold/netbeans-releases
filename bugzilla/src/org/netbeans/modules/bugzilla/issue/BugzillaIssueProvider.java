@@ -762,7 +762,7 @@ public final class BugzillaIssueProvider extends IssueProvider implements Proper
                     LOG.log(Level.FINE, "KenaiBugzillaLazyIssue.lookupRepository: getting repository for: " + projectName);
                     repo = KenaiUtil.getKenaiBugtrackingRepository(projectName);
                 } catch (KenaiException ex) {
-                    LOG.log(Level.INFO, "KenaiBugzillaLazyIssue.lookupRepository: getting repository for " + projectName, ex);
+                    LOG.log(Level.FINE, "KenaiBugzillaLazyIssue.lookupRepository: getting repository for " + projectName, ex);
                 }
                 loginStatusChanged = false;
             }

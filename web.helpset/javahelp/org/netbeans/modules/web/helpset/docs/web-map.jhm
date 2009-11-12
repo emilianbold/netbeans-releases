@@ -61,6 +61,8 @@
 	<mapID target="framework_jsf_about" url="web/framework/jsf/about.html"/>
 	<mapID target="framework_jsf_add" url="web/framework/jsf/add.html"/>
 	<mapID target="framework_jsf_create" url="web/framework/jsf/create.html"/>
+	<mapID target="framework_jsf_create_page" url="web/framework/jsf/create-page.html"/>
+	<mapID target="framework_jsf_create_managed_bean" url="web/framework/jsf/create-managed-bean.html"/>
 	<mapID target="framework_jsf_edit" url="web/framework/jsf/edit.html"/>
 	<mapID target="framework_jsf_palette" url="web/framework/jsf/palette.html"/>
 	<mapID target="framework_jsf_form_entity" url="web/framework/jsf/form-from-entity.html"/>
@@ -99,12 +101,12 @@
 	<mapID target="org.netbeans.modules.web.freeform.ui.WebClasspathWizardPanel" url="web/csh/projwiz_freeform/WebClasspathWizardPanel.html"/>
 	<mapID target="org.netbeans.modules.web.freeform.ui.WebLocationsPanel" url="web/csh/dbox_projprops_freeform/WebLocationsPanel.html"/>
 	<mapID target="org.netbeans.modules.web.freeform.ui.WebLocationsWizardPanel" url="web/csh/projwiz_freeform/WebLocationsWizardPanel.html"/>
-	<mapID target="org.netbeans.modules.web.jsf.dialogs.AddManagedBeanDialog" url="web/create/tag/framework/jsf/AddManagedBeanDialog.html"/>
-	<mapID target="org.netbeans.modules.web.jsf.dialogs.AddNavigationCaseDialog" url="web/create/tag/framework/jsf/AddNavigationCaseDialog.html"/>
-	<mapID target="org.netbeans.modules.web.jsf.dialogs.AddNavigationRuleDialog" url="web/create/tag/framework/jsf/AddNavigationRuleDialog.html"/>
+	<mapID target="org.netbeans.modules.web.jsf.dialogs.AddManagedBeanDialog" url="web/framework/jsf/AddManagedBeanDialog.html"/>
+	<mapID target="org.netbeans.modules.web.jsf.dialogs.AddNavigationCaseDialog" url="web/framework/jsf/AddNavigationCaseDialog.html"/>
+	<mapID target="org.netbeans.modules.web.jsf.dialogs.AddNavigationRuleDialog" url="web/framework/jsf/AddNavigationRuleDialog.html"/>
 	<mapID target="org.netbeans.modules.web.jsf.wizards.JSFConfigurationPanelVisual" url="web/csh/projwiz_standard/PanelSupportedFrameworks.html"/>
-	<mapID target="org.netbeans.modules.web.jsf.wizards.ManagedBeanPanel" url="web/create/tag/framework/jsf/file_ManagedBeanPanel.html"/>
-        <mapID target="org.netbeans.modules.web.jsf.wizards.PersistenceClientIterator$PersistenceClientEntitySelection" url="web/create/tag/framework/jsf/file_jsffromentity_panel1.html"/>
+	<mapID target="org.netbeans.modules.web.jsf.wizards.ManagedBeanPanel" url="web/framework/jsf/file_ManagedBeanPanel.html"/>
+        <mapID target="org.netbeans.modules.web.jsf.wizards.PersistenceClientIterator$PersistenceClientEntitySelection" url="web/framework/jsf/file_jsffromentity_panel1.html"/>
 	<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerCompile" url="web/csh/dbox_projprops/WebCustomizerCompile.html"/>
 	<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerFrameworks" url="web/csh/dbox_projprops/CustomizerFrameworks.html"/>
 	<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerJavadoc" url="web/csh/dbox_projprops/WebCustomizerJavadoc.html"/>

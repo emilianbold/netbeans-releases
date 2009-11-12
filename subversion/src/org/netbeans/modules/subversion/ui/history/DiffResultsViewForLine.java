@@ -217,15 +217,15 @@ final class DiffResultsViewForLine extends DiffResultsView {
                         kit.read(r, styledDoc, 0);
                     } catch (javax.swing.text.BadLocationException e) {
                         throw new IOException("Can not locate the beginning of the document."); // NOI18N
-                    } finally {
-                        r.close();
                     }
                 }
             } catch (IOException ex) {
                 Subversion.LOG.log(Level.INFO, null, ex);
             } finally {
                 try {
-                    r.close();
+                    if (r != null) {
+                        r.close();
+                    }
                 } catch (IOException ex) {
                     Subversion.LOG.log(Level.INFO, null, ex);
                 }

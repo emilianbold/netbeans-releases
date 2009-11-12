@@ -235,6 +235,18 @@ final class TextDetail {
         this.matchedText = matchedText;
     }
 
+    /**
+     * Associates a result of the find with underlying text details.
+     * @param lineNumber the line position of the text.
+     * @param column the column position of the text or 0 (1 based).
+     * @param lineText text of the line.
+     */
+    void associate(int lineNumber, int column, String lineText) {
+         setLine(lineNumber);
+         setColumn(column);
+         setLineText(lineText);
+    }
+
     private void prepareLine() {
         if (dobj == null || !dobj.isValid()) {
             lineObj = null;

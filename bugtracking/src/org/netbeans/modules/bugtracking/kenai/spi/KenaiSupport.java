@@ -81,18 +81,20 @@ public abstract class KenaiSupport {
     public abstract Query getAllIssuesQuery(Repository repository);
 
     /**
-     * Returns the default "My Issues" query for the given repository
-     *
-     * @return
-     */
-    public abstract Query getMyIssuesQuery(Repository repository);
-
-    /**
      * Determines the
      *
      * @return
      */
     public abstract BugtrackingType getType();
 
+    /**
+     * Determines if the query needs the user to be logged in to show some
+     * results - e.g. MyIssues queries have no results in case the user is
+     * not loged in
+     *
+     * @param query
+     * @return true if login needed, otherwise false
+     */
+    public abstract boolean needsLogin(Query query);
 
 }

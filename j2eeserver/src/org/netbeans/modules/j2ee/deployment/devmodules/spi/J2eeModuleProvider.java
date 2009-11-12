@@ -72,6 +72,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.impl.projects.J2eeModuleProviderAccessor;
 
@@ -105,6 +106,18 @@ public abstract class J2eeModuleProvider {
     public abstract J2eeModule getJ2eeModule ();
     
     public abstract ModuleChangeReporter getModuleChangeReporter ();
+
+    /**
+     * Return the class reporting any possible change in resources intended to
+     * be deployed on server.
+     *
+     * @return class reporting changes in server resources
+     * @since 1.63
+     */
+    @CheckForNull
+    public ResourceChangeReporter getResourceChangeReporter() {
+        return null;
+    }
     
     public final ConfigSupport getConfigSupport () {
         ConfigSupportImpl confSupp;

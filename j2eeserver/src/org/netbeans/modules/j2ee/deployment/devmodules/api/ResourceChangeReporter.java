@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,26 +31,49 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javacard.api;
 
-import org.openide.util.Lookup;
-import org.openide.util.lookup.ProxyLookup;
+package org.netbeans.modules.j2ee.deployment.devmodules.api;
+
+import org.netbeans.modules.j2ee.deployment.config.ResourceChangeReporterAccessor;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.ResourceChangeReporterImplementation;
 
 /**
- * Workaround for issues with ChoiceView & ExplorerManager.createLookup()
+ * API class for indication of changes in resources intended to be deployed
+ * to server.
  *
- * @author Tim Boudreau
+ * @author Petr Hejl
+ * @since 1.63
  */
-final class SettableProxyLookup extends ProxyLookup {
-    private final Lookup[] lkps = new Lookup[] { Lookup.EMPTY, Lookup.EMPTY };
-    void setFirstLookup (Lookup lkp) {
-        lkps[0] = lkp == null ? Lookup.EMPTY : lkp;
-        setLookups(lkps);
+public final class ResourceChangeReporter {
+
+    static {
+        ResourceChangeReporterAccessor.DEFAULT = new ResourceChangeReporterAccessor() {
+
+            @Override
+            public ResourceChangeReporter createResourceChangeReporter(ResourceChangeReporterImplementation impl) {
+                return new ResourceChangeReporter(impl);
+            }
+        };
     }
 
-    void setSecondLookup (Lookup lkp) {
-        lkps[1] = lkp == null ? Lookup.EMPTY : lkp;
-        setLookups(lkps);
+    private final ResourceChangeReporterImplementation impl;
+
+    private ResourceChangeReporter(ResourceChangeReporterImplementation impl) {
+        this.impl = impl;
+    }
+
+    /**
+     * Returns <code>true</code> if resource was changed.
+     *
+     * @param lastDeploy timestamp of the last deploy
+     * @return <code>true</code> if resource was changed.
+     */
+    public boolean isServerResourceChanged(long lastDeploy) {
+        return impl.isServerResourceChanged(lastDeploy);
     }
 }

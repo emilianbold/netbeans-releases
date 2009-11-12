@@ -58,7 +58,7 @@ public class WebProjectCustomizerRun extends javax.swing.JPanel implements Actio
     /** Creates new form WebProjectCustomizerRun */
     public WebProjectCustomizerRun(WebProjectProperties props) {
         initComponents();
-        platformAndDevicePanel21.setProperties(props);
+        platformAndDevicePanel21.setPlatformAndCard(props);
         pageComboBox.setModel(props.PAGES);
         servletRadioButton.setModel(props.SELECT_SERVLET);
         pageRadioButton.setModel(props.SELECT_PAGE);

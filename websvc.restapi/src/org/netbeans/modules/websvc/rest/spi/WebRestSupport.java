@@ -57,8 +57,12 @@ import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
 import org.netbeans.modules.websvc.rest.model.api.RestApplication;
 import org.netbeans.modules.websvc.rest.model.api.RestApplicationModel;
 import org.netbeans.modules.websvc.rest.model.api.RestApplications;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -67,7 +71,6 @@ import org.openide.util.Exceptions;
 public abstract class WebRestSupport extends RestSupport {
 
     public static final String PROP_REST_RESOURCES_PATH = "rest.resources.path";//NOI18N
-    public static final String PROP_REST_ROOT_RESOURCES = "rest.root.resources";//NOI18N
     public static final String PROP_REST_CONFIG_TYPE = "rest.config.type"; //NOI18N
     public static final String CONFIG_TYPE_IDE = "ide"; //NOI18N
     public static final String CONFIG_TYPE_USER= "user"; //NOI18N
@@ -351,6 +354,27 @@ public abstract class WebRestSupport extends RestSupport {
             }
         }
         return Collections.emptyList();
+    }
+
+    protected String setApplicationConfigProperty(boolean annotationConfigAvailable) {
+        ApplicationConfigPanel configPanel = new ApplicationConfigPanel(annotationConfigAvailable);
+        DialogDescriptor desc = new DialogDescriptor(configPanel,
+                NbBundle.getMessage(WebRestSupport.class, "TTL_ApplicationConfigPanel"));
+        DialogDisplayer.getDefault().notify(desc);
+        if (NotifyDescriptor.OK_OPTION.equals(desc.getValue())) {
+            String configType = configPanel.getConfigType();
+            setProjectProperty(WebRestSupport.PROP_REST_CONFIG_TYPE, configType);
+            if (WebRestSupport.CONFIG_TYPE_IDE.equals(configType)) {
+                String applicationPath = configPanel.getApplicationPath();
+                if (applicationPath.startsWith("/")) {
+                    applicationPath = applicationPath.substring(1);
+                }
+                setProjectProperty(WebRestSupport.PROP_REST_RESOURCES_PATH, applicationPath);
+            } else if (WebRestSupport.CONFIG_TYPE_DD.equals(configType)) {
+                return configPanel.getApplicationPath();
+            }
+        }
+        return null;
     }
 
 }

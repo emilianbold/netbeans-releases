@@ -61,7 +61,6 @@ import org.netbeans.modules.javacard.common.JCConstants;
 import org.netbeans.modules.javacard.common.Utils;
 import org.netbeans.modules.javacard.ri.platform.installer.PlatformInfo;
 import org.netbeans.modules.javacard.ri.spi.CardsFactory;
-import org.netbeans.modules.javacard.spi.BrokenJavacardPlatform;
 import org.netbeans.modules.javacard.spi.JavacardDeviceKeyNames;
 import org.netbeans.modules.javacard.spi.JavacardPlatform;
 import org.netbeans.modules.javacard.spi.JavacardPlatformKeyNames;
@@ -229,9 +228,9 @@ public class RIPlatform extends JavacardPlatform {
         } catch (MutexException ex) {
             Exceptions.printStackTrace(ex);
         }
-        if (riProps == null) return new BrokenJavacardPlatform("none"); //NOI18N
+        if (riProps == null) return brokenPlatform(); //NOI18N
         FileObject fo = FileUtil.toFileObject(riProps);
-        if (fo == null) return new BrokenJavacardPlatform("none"); //NOI18N
+        if (fo == null) return brokenPlatform(); //NOI18N
         try {
             DataObject dob = DataObject.find(fo);
             JavacardPlatform result = dob.getNodeDelegate().getLookup().lookup(JavacardPlatform.class);
@@ -239,7 +238,11 @@ public class RIPlatform extends JavacardPlatform {
         } catch (DataObjectNotFoundException ex) {
             Exceptions.printStackTrace(ex);
         }
-        return new BrokenJavacardPlatform("none"); //NOI18N
+        return brokenPlatform(); //NOI18N
+    }
+
+    private static JavacardPlatform brokenPlatform() {
+        return JavacardPlatform.createBrokenJavacardPlatform("none"); //NOI18N
     }
 
     private List<? extends Provider> getCardProviders() {

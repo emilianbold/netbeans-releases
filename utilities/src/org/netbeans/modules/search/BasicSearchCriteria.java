@@ -43,9 +43,7 @@ package org.netbeans.modules.search;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.FileInputStream;
-import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -53,6 +51,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -65,7 +64,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openidex.search.SearchPattern;
 import static java.util.logging.Level.FINER;
 import static java.util.logging.Level.FINEST;
@@ -131,7 +129,8 @@ final class BasicSearchCriteria {
     private ChangeListener usabilityChangeListener;
 
     private static Pattern patternCR = Pattern.compile("\r"); //NOI18N
-    private static Pattern patternLineSeparator = Pattern.compile("(?:\r\n|\n|\r)"); //NOI18N
+    private static Pattern patternLineSeparator =
+                                     Pattern.compile("(?:\r\n|\n|\r)"); //NOI18N
 
     /**
      * holds {@code Charset} that was used for full-text search of the last
@@ -144,6 +143,16 @@ final class BasicSearchCriteria {
      * {@code DataObject}s.
      */
     private Map<DataObject, List<TextDetail>> detailsMap;
+
+    /**
+     * Holds a {@code DataObject} that will be used to create
+     * a {@code TextDetail}. It should be set to {@code null} immediately after
+     * all {@code TextDetail}s are created for given {@code DataObject}.
+     *
+     * @see #findDataObject(org.openide.filesystems.FileObject)
+     * @see #freeDataObject()
+     */
+    private DataObject dataObject;
 
     BasicSearchCriteria() {
         if (LOG.isLoggable(FINER)) {
@@ -259,7 +268,9 @@ final class BasicSearchCriteria {
         assert textPatternExpr != null;
         try {
             if (LOG.isLoggable(FINEST)) {
-                LOG.finest(" - textPatternExpr = \"" + textPatternExpr + '"');  //NOI18N
+                LOG.finest(" - textPatternExpr = \"" + 
+                           textPatternExpr +
+                           '"');  //NOI18N
             }
             int flags = 0;
             if (!caseSensitive) {
@@ -269,7 +280,8 @@ final class BasicSearchCriteria {
             textPattern = Pattern.compile(textPatternExpr, flags);
             return true;
         } catch (PatternSyntaxException ex) {
-            LOG.finest(" - invalid regexp - setting 'textPattern' to <null>");  //NOI18N
+            LOG.finest(" - invalid regexp - " +
+                       "setting 'textPattern' to <null>");  //NOI18N
             textPattern = null;
             return false;
         }
@@ -283,7 +295,8 @@ final class BasicSearchCriteria {
                 tmpSearch += "(" + i + ")";
             }
             try{
-                Pattern.compile(tmpSearch).matcher("123456789").replaceFirst(replaceExpr);
+                Pattern.compile(tmpSearch).matcher("123456789").
+                                                      replaceFirst(replaceExpr);
             }catch(Exception e){
                 return false;
             }
@@ -308,7 +321,9 @@ final class BasicSearchCriteria {
                 flags |= Pattern.UNICODE_CASE;
             }
             if (LOG.isLoggable(FINEST)) {
-                LOG.finest(" - textPatternExpr = \"" + textPatternExpr + '"');  //NOI18N
+                LOG.finest(" - textPatternExpr = \"" + 
+                           textPatternExpr +
+                           '"');  //NOI18N
             }
 	    String searchRegexp = RegexpMaker.makeRegexp(textPatternExpr,
                                                          wholeWords);
@@ -406,7 +421,8 @@ final class BasicSearchCriteria {
             return null;
         }
         
-        assert (fileNamePatternExpr != null) && (fileNamePatternExpr.length() != 0);
+        assert (fileNamePatternExpr != null) &&
+               (fileNamePatternExpr.length() != 0);
         
         if (fileNamePattern != null) {
             return fileNamePattern;
@@ -439,7 +455,8 @@ final class BasicSearchCriteria {
         } else {
             fileNamePatternExpr = pattern;
             fileNamePattern = null;
-            fileNamePatternSpecified = checkFileNamePattern(fileNamePatternExpr);
+            fileNamePatternSpecified =
+                    checkFileNamePattern(fileNamePatternExpr);
             fileNamePatternValid = fileNamePatternSpecified;
         }
         updateUsability();
@@ -453,8 +470,9 @@ final class BasicSearchCriteria {
     private void compileSimpleFileNamePattern() {
         assert fileNamePatternExpr != null;
         try {
-            fileNamePattern = Pattern.compile(RegexpMaker.makeMultiRegexp(fileNamePatternExpr),
-                                              Pattern.CASE_INSENSITIVE);
+            fileNamePattern =
+               Pattern.compile(RegexpMaker.makeMultiRegexp(fileNamePatternExpr),
+                               Pattern.CASE_INSENSITIVE);
         } catch (PatternSyntaxException ex) {
             assert false;
             fileNamePattern = null;
@@ -492,8 +510,8 @@ final class BasicSearchCriteria {
     /**
      * Returns the replacement expression.
      * 
-     * @return  replace expression, or {@code null} if no replace expression has been
-     *          specified
+     * @return  replace expression, or {@code null} if no replace expression has
+     *          been specified
      */
     String getReplaceExpr() {
         return replaceExpr;
@@ -507,7 +525,8 @@ final class BasicSearchCriteria {
      */
     String getReplaceString() {
         if ((replaceString == null) && (replaceExpr != null)){
-            String[] sGroups = replaceExpr.split("\\\\\\\\", replaceExpr.length()); //NOI18N
+            String[] sGroups =
+                   replaceExpr.split("\\\\\\\\", replaceExpr.length()); //NOI18N
             String res = "";                         //NOI18N
             for(int i=0;i<sGroups.length;i++){
                 String tmp = sGroups[i];
@@ -547,8 +566,9 @@ final class BasicSearchCriteria {
     }
     
     boolean isUsable() {
-        return (textPatternSpecified || (!isSearchAndReplace() && fileNamePatternSpecified))
-               && !isInvalid();
+        return (textPatternSpecified || 
+                (!isSearchAndReplace() && fileNamePatternSpecified)) &&
+                !isInvalid();
     }
     
     private boolean isInvalid() {
@@ -594,7 +614,7 @@ final class BasicSearchCriteria {
      * are compiled.
      */
     void onOk() {
-        LOG.finer("onOk()");                                              //NOI18N
+        LOG.finer("onOk()");                                            //NOI18N
         if (textPatternValid && (textPattern == null)) {
             if (regexp){
                 compileRegexpPattern();
@@ -632,7 +652,8 @@ final class BasicSearchCriteria {
             return false;
         }
         
-        if (fileObj.isFolder() || !fileObj.isValid() || (isFullText() && !isTextFile(fileObj))) {
+        if (fileObj.isFolder() || !fileObj.isValid() ||
+                (isFullText() && !isTextFile(fileObj))) {
             return false;
         }
 
@@ -707,14 +728,15 @@ final class BasicSearchCriteria {
         SearchPattern sp = createSearchPattern();
         BufferedCharSequence bcs = null;
         try {
-            DataObject dObj = DataObject.find(fo);
             FileInputStream fis = (FileInputStream)fo.getInputStream();
             bcs = new BufferedCharSequence(fis, lastCharset);
-            ArrayList<TextDetail> txtDetails = getTextDetails(bcs, dObj, sp);
+            ArrayList<TextDetail> txtDetails = getTextDetails(bcs, fo, sp);
             if (txtDetails.isEmpty()){
                 return false;
             }
-            getDetailsMap().put(dObj, txtDetails);
+            assert dataObject != null;
+            getDetailsMap().put(dataObject, txtDetails);
+            freeDataObject();
             return true;
         }
         catch(DataObjectNotFoundException e){
@@ -733,7 +755,8 @@ final class BasicSearchCriteria {
                     "checkFileContent", e); // NOI18N
         }
         catch(Exception e){
-            LOG.severe("Unexpected Exception during process for the " + fo); // NOI18N
+            LOG.severe("Unexpected Exception during process for the " +
+                       fo); // NOI18N
             LOG.throwing(BasicSearchCriteria.class.getName(),
                     "checkFileContent", e); // NOI18N
         }
@@ -750,80 +773,41 @@ final class BasicSearchCriteria {
     }
 
     private ArrayList<TextDetail> getTextDetails(BufferedCharSequence bcs,
-                                                 DataObject data,
+                                                 FileObject fo,
                                                  SearchPattern sp)
-                                throws BufferedCharSequence.SourceIOException  {
+                                throws BufferedCharSequence.SourceIOException,
+                                       DataObjectNotFoundException {
 
         ArrayList<TextDetail> txtDetails = new ArrayList<TextDetail>();
-        int lineNumber = 1;
-        int lineStartOffset = 0;
-        int prevCR = 0;
+        FindState fs = new FindState(bcs);
 
         Matcher matcher = textPattern.matcher(bcs);
         while (matcher.find()) {
             int matcherStart = matcher.start();
-            try {
-                while (bcs.position() < matcherStart) {
-                    char curChar = bcs.nextChar();
-                    switch (curChar) {
-                        case '\n':
-                            lineNumber++;
-                            lineStartOffset = bcs.position();
-                            prevCR = 0;
-                            break;
-                        case '\r':
-                            prevCR++;
-                            if (bcs.charAt(bcs.position()) != '\n') {
-                                lineNumber++;
-                                lineStartOffset = bcs.position();
-                                prevCR = 0;
-                            }
-                            break;
-                        default:
-                            prevCR = 0;
-                    }
-                }
-            } catch (IndexOutOfBoundsException ioobe) {
-                // It is OK. It means that EOF is reached, i.e.
-                // cb.position() >= cb.length()
-            }
-            int column = matcherStart - lineStartOffset + 1 - prevCR;
-            String lineText = bcs.getLineText(lineStartOffset);
 
-            // #174056
-            assert lineText.length() > (column - 1) :
-                "Please, re-open the Issue 174056 with the following info:" +
-                "\nTrying to set illegal state of the TextDetail object:" +
-                "\nmatcher: " + matcher +
-                "\ntextPattern: [" + textPattern + "]" +
-                "\nmatcherStart: " + matcherStart +
-                "\nlineStartOffset: " + lineStartOffset +
-                "\nprevCR: " + prevCR +
-                "\nlineText: [" + lineText + "]" +
-                "\nlineText.length(): " + lineText.length() +
-                "\ncolumn: " + column +
-                "\n=> lineText.length() < (column - 1)"; // NOI18N
+            int column = fs.calcColumn(matcherStart);
+            int lineNumber = fs.getLineNumber();
+            String lineText = fs.getLineText();
 
-            TextDetail det = newTextDetail(data, sp, matcher);
-            det.setColumn(column);
-            det.setLine(lineNumber);
-            det.setLineText(lineText);
-            
+            findDataObject(fo);
+            TextDetail det = newTextDetail(sp, matcher);
+            det.associate(lineNumber, column, lineText);
+
             txtDetails.add(det);
         } // while (matcher.find())
         txtDetails.trimToSize();
         return txtDetails;
     }
 
-    private TextDetail newTextDetail(DataObject dObj,
-                                     SearchPattern searchPattern,
+    private TextDetail newTextDetail(SearchPattern searchPattern,
                                      Matcher matcher) {
         String group = matcher.group();
         int start = matcher.start();
         int end = matcher.end();
         int countCR = countCR(group);
         int markLength = end - start - countCR;
-        TextDetail det = new TextDetail(dObj, searchPattern);
+        assert dataObject != null;
+        TextDetail det = new TextDetail(dataObject, searchPattern);
         det.setMatchedText(group);
         det.setStartOffset(start);
         det.setEndOffset(end);
@@ -918,5 +902,76 @@ final class BasicSearchCriteria {
                                     caseSensitive, 
                                     regexp);
     }
-    
+
+    private void findDataObject(FileObject fo)
+                                            throws DataObjectNotFoundException {
+        if(dataObject == null) {
+            dataObject = DataObject.find(fo);
+        }
+    }
+
+    private void freeDataObject() {
+        dataObject = null;
+    }
+
+    /**
+     * Utility class providing optimal calculating of the column.
+     */
+    private class FindState {
+        int lineNumber = 1;
+        int lineStartOffset = 0;
+        int prevCR = 0;
+
+        BufferedCharSequence bcs;
+
+        FindState(BufferedCharSequence bcs) {
+           this.bcs = bcs;
+        }
+
+        int getLineNumber() {
+            return lineNumber;
+        }
+
+        String getLineText() {
+            return bcs.getLineText(lineStartOffset);
+        }
+
+        int calcColumn(int matcherStart) {
+            try {
+                while (bcs.position() < matcherStart) {
+                    char curChar = bcs.nextChar();
+                    switch (curChar) {
+                        case BufferedCharSequence.UnicodeLineTerminator.LF:
+                        case BufferedCharSequence.UnicodeLineTerminator.PS:
+                        case BufferedCharSequence.UnicodeLineTerminator.LS:
+                        case BufferedCharSequence.UnicodeLineTerminator.FF:
+                        case BufferedCharSequence.UnicodeLineTerminator.NEL:
+                            lineNumber++;
+                            lineStartOffset = bcs.position();
+                            prevCR = 0;
+                            break;
+                        case BufferedCharSequence.UnicodeLineTerminator.CR:
+                            prevCR++;
+                            char nextChar = bcs.charAt(bcs.position());
+                            if (nextChar !=
+                                BufferedCharSequence.UnicodeLineTerminator.LF) {
+
+                                lineNumber++;
+                                lineStartOffset = bcs.position();
+                                prevCR = 0;
+                            }
+                            break;
+                        default:
+                            prevCR = 0;
+                    }
+                }
+            } catch (IndexOutOfBoundsException ioobe) {
+                // It is OK. It means that EOF is reached, i.e.
+                // bcs.position() >= bcs.length()
+            }
+            int column = matcherStart - lineStartOffset + 1 - prevCR;
+            return column;
+        }
+    } // FindState
+
 }

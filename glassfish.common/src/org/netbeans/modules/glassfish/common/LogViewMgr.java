@@ -472,7 +472,8 @@ public class LogViewMgr {
 
                 // ignoreEof is true for log files and false for process streams.
                 // FIXME Should differentiate filter types more cleanly.
-                Filter filter = ignoreEof ? new LogFileFilter(localizedLevels) : new StreamFilter();
+                Filter filter = ignoreEof ? new LogFileFilter(localizedLevels) : 
+                    (uri.contains("]deployer:gfv3ee6:") ? new LogFileFilter(localizedLevels) :new StreamFilter());
                 
                 // read from the input stream and put all the changes to the I/O window
                 char [] chars = new char[1024];

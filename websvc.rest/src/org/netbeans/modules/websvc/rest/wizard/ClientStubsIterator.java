@@ -159,7 +159,7 @@ public final class ClientStubsIterator implements WizardDescriptor.Instantiating
             Project project = Templates.getProject(wizard);
             params[1] = project.getClass().getName();
             J2eeModule j2eeModule = RestUtils.getJ2eeModule(project);
-            params[2] = j2eeModule == null ? null : j2eeModule.getModuleVersion(); //NOI18N
+            params[2] = j2eeModule == null ? null : j2eeModule.getModuleVersion()+"(WAR)";//NOI18N
             boolean isJMaki = (Boolean)wizard.getProperty(WizardProperties.CREATE_JMAKI_REST_COMPONENTS);
             params[3] = isJMaki ? "REST CLIENT JMAKI" : "REST CLIENT"; //NOI18N
             params[4] = wizard.getProperty(WizardProperties.WADL_TO_STUB) != null ?

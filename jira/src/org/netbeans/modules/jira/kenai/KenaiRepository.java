@@ -40,6 +40,8 @@
 package org.netbeans.modules.jira.kenai;
 
 import java.awt.Image;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.net.PasswordAuthentication;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -60,6 +62,7 @@ import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
+import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -68,7 +71,7 @@ import org.openide.util.NbBundle;
  *
  * @author Tomas Stupka, Jan Stola
  */
-public class KenaiRepository extends JiraRepository {
+public class KenaiRepository extends JiraRepository implements PropertyChangeListener {
 
     static final String ICON_PATH = "org/netbeans/modules/bugtracking/ui/resources/kenai-small.png"; // NOI18N
     private Image icon;
@@ -85,6 +88,7 @@ public class KenaiRepository extends JiraRepository {
         this.projectName = project;
         this.host = host;
         this.kenaiProject = kenaiProject;
+        Kenai.getDefault().addPropertyChangeListener(this);
     }
 
     @Override
@@ -323,5 +327,29 @@ public class KenaiRepository extends JiraRepository {
 
     private static String getRepositoryId(String name, String url) {
         return TextUtils.encodeURL(url) + ":" + name;                           // NOI18N
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if(evt.getPropertyName().equals(Kenai.PROP_LOGIN)) {
+//            if(myIssues != null) {
+//                KenaiQueryController c = (KenaiQueryController) myIssues.getController();
+//                c.populate(getQueryUrl());
+//            }
+
+            // XXX move to spi?
+            // get kenai credentials
+            String user;
+            String psswd;
+            PasswordAuthentication pa = KenaiUtil.getPasswordAuthentication(false);
+            if(pa != null) {
+                user = pa.getUserName();
+                psswd = new String(pa.getPassword());
+            } else {
+                user = "";                                                      // NOI18N
+                psswd = "";                                                     // NOI18N
+            }
+
+            setCredentials(user, psswd);
+        }
     }
 }

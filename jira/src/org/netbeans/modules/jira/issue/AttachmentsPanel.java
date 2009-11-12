@@ -384,6 +384,7 @@ public class AttachmentsPanel extends JPanel {
                                 PatchUtils.applyPatch(file, context);
                             }
                         } else {
+                            file = FileUtil.normalizeFile(file);
                             String contentType = FileUtil.getMIMEType(FileUtil.toFileObject(file));
                             if ((contentType == null) || ("content/unknown".equals(contentType))) { // NOI18N
                                 contentType = FileTaskAttachmentSource.getContentTypeFromFilename(file.getName());

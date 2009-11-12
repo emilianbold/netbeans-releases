@@ -25,7 +25,7 @@ final class ConditionImpl implements Condition {
 
     synchronized void countdown() {
         steps--;
-        card.log("ConditionImpl " + this + " countdown " + steps);
+        card.log("ConditionImpl " + this + " countdown " + steps); //NOI18N
         if (steps == 0) {
             signalAll();
         }
@@ -33,7 +33,7 @@ final class ConditionImpl implements Condition {
 
     public void await() throws InterruptedException {
         if (done) return;
-        card.log("ConditionImpl " + this + " await in " + Thread.currentThread());
+        card.log("ConditionImpl " + this + " await in " + Thread.currentThread()); //NOI18N
         synchronized (lock) {
             lock.wait();
         }
@@ -41,7 +41,7 @@ final class ConditionImpl implements Condition {
 
     public void awaitUninterruptibly() {
         if (done) return;
-        card.log("ConditionImpl " + this + " awaitUninterruptibly " + Thread.currentThread());
+        card.log("ConditionImpl " + this + " awaitUninterruptibly " + Thread.currentThread()); //NOI18N
         try {
             synchronized (lock) {
                 await();
@@ -82,7 +82,7 @@ final class ConditionImpl implements Condition {
 
     public void signalAll() {
         done = true;
-        card.log("ConditionImpl " + this + " signalAll ");
+        card.log("ConditionImpl " + this + " signalAll "); //NOI18N
         synchronized (lock) {
             lock.notifyAll();
         }

@@ -206,7 +206,7 @@ public final class SessionGenerator {
         }
 
         if (hasLocal && hasRemote){
-            this.templateParameters.put(TEMPLATE_PROPERTY_INTERFACES, localName + ", " + remoteName); //NOI18N
+            this.templateParameters.put(TEMPLATE_PROPERTY_INTERFACES, remoteName + ", " + localName); //NOI18N
         } else if (hasLocal){
             this.templateParameters.put(TEMPLATE_PROPERTY_INTERFACES, localName);
         } else if (hasRemote){

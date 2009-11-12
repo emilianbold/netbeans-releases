@@ -85,6 +85,7 @@ public class Jira {
     private KenaiSupport kenaiSupport;
     
     private Jira() {
+        ModuleLifecycleManager.instantiated = true;
         JiraCorePlugin jcp = new JiraCorePlugin();
         try {
             jcp.start(null);

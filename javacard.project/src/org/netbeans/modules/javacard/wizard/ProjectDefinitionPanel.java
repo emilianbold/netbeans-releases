@@ -92,7 +92,7 @@ public class ProjectDefinitionPanel extends JPanel implements DocumentListener, 
         servletMappingField.getDocument().addDocumentListener(this);
         JCProjectProperties props = new JCProjectProperties();
         props.setPlatformName (JCConstants.DEFAULT_JAVACARD_PLATFORM_FILE_NAME);
-        platformAndDevicePanel1.setProperties(props);
+        platformAndDevicePanel1.setPlatformAndCard(props);
         String key;
         switch (kind) {
             case CLASSIC_APPLET:

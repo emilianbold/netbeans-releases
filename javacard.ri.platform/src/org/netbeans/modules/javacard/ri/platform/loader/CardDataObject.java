@@ -44,14 +44,11 @@ import java.awt.event.ActionEvent;
 import org.netbeans.modules.propdos.PropertiesAdapter;
 import org.netbeans.modules.propdos.PropertiesBasedDataObject;
 import org.netbeans.modules.propdos.ObservableProperties;
-import java.awt.Component;
-import java.awt.EventQueue;
 import java.awt.Image;
 import java.lang.reflect.InvocationTargetException;
 import org.netbeans.modules.javacard.common.Utils;
 import org.netbeans.modules.javacard.common.JCConstants;
 import org.netbeans.modules.javacard.spi.JavacardDeviceKeyNames;
-import org.netbeans.validation.api.ui.ValidationGroup;
 import org.openide.actions.DeleteAction;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -77,15 +74,10 @@ import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.BorderFactory;
-import org.netbeans.modules.javacard.common.KeysAndValues;
 import org.netbeans.modules.javacard.common.NodeRefresher;
 import org.netbeans.modules.javacard.ri.card.RICard;
-import org.netbeans.modules.javacard.spi.BrokenCard;
-import org.netbeans.modules.javacard.ri.platform.installer.DevicePropertiesPanel;
+import org.netbeans.modules.javacard.spi.AbstractCard;
 import org.netbeans.modules.javacard.spi.Card;
-import org.netbeans.modules.javacard.spi.CardCustomizer;
-import org.netbeans.modules.javacard.spi.capabilities.CardCustomizerProvider;
 import org.netbeans.modules.javacard.spi.capabilities.CardInfo;
 import org.netbeans.modules.javacard.spi.CardState;
 import org.netbeans.modules.javacard.spi.CardStateObserver;
@@ -110,7 +102,6 @@ public class CardDataObject extends PropertiesBasedDataObject<Card> implements C
     public CardDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader, Card.class);
         content.add(new StringBuilder("platform"), new PlatformConverter()); //NOI18N
-        content.add(new CustomizerProvider());
         platformName = pf.getParent().getName();
         myName = pf.getName();
     }
@@ -195,14 +186,13 @@ public class CardDataObject extends PropertiesBasedDataObject<Card> implements C
                         LOGGER.log(Level.FINE, "Empty properties - " + //NOI18N
                                 "returning broken card instance"); //NOI18N
                     }
-                result = new BrokenCard(getName());
+                result = AbstractCard.createBrokenCard(getName());
             } else {
                 if (LOGGER.isLoggable(Level.FINE)) {
                     LOGGER.log(Level.FINE, "No cached instance - invoking " + //NOI18N
                             "Card.create() for " + platform.getDisplayName() + //NOI18N
                             " with " + properties); //NOI18N
                 }
-//                result = AbstractCard.create(platform, properties);
                 result = new RICard(this, platform, getName());
             }
         }
@@ -243,6 +233,7 @@ public class CardDataObject extends PropertiesBasedDataObject<Card> implements C
         firePropertyChange(propertyName, null, newValue);
     }
 
+    /*
     private class CustomizerProvider implements CardCustomizerProvider {
 
         public CardCustomizer getCardCustomizer() {
@@ -278,6 +269,7 @@ public class CardDataObject extends PropertiesBasedDataObject<Card> implements C
             return pnl;
         }
     }
+     */
 
     private class PlatformConverter implements InstanceContent.Convertor<StringBuilder, JavacardPlatform> {
 
