@@ -224,7 +224,6 @@ public final class ToolsPanel extends JPanel implements ActionListener,
 
         final CompilerSet cs = panel.getCompilerSet();
         updating = true;
-        final Cursor oldCursor = getCursor();
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         RequestProcessor.getDefault().post(new Runnable(){
             public void run() {
@@ -232,8 +231,8 @@ public final class ToolsPanel extends JPanel implements ActionListener,
                 changed = true;
                 SwingUtilities.invokeLater(new Runnable(){
                     public void run() {
+                        setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                         update(false, cs);
-                        setCursor(oldCursor);
                     }
                 });
             }
@@ -341,7 +340,6 @@ public final class ToolsPanel extends JPanel implements ActionListener,
     public void update(final boolean doInitialize, final CompilerSet selectedCS) {
         updating = true;
         if (!initialized || doInitialize) {
-            final Cursor oldCursor = getCursor();
             setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             RequestProcessor.getDefault().post(new Runnable(){
                 public void run() {
@@ -350,7 +348,7 @@ public final class ToolsPanel extends JPanel implements ActionListener,
                         public void run() {
                             initializeUI();
                             updateUI(doInitialize, selectedCS);
-                            setCursor(oldCursor);
+                            setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                         }
                      });
                 }
@@ -944,27 +942,25 @@ public final class ToolsPanel extends JPanel implements ActionListener,
 
 private void btVersionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btVersionsActionPerformed
     btVersions.setEnabled(false);
+    final CompilerSet set = currentCompilerSet;
+    if (set == null) {
+        return;
+    }
 
-    final Cursor oldCursor = getCursor();
     setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
     RequestProcessor.getDefault().post(new Runnable() {
 
         public void run() {
-            CompilerSet set = currentCompilerSet;
-            if (set != null) {
-                String versions = getToolCollectionPanel().getVersion(set);
-
-                NotifyDescriptor nd = new NotifyDescriptor.Message(versions);
-                nd.setTitle(getString("LBL_VersionInfo_Title")); // NOI18N
-                DialogDisplayer.getDefault().notify(nd);
-            }
+            String versions = getToolCollectionPanel().getVersion(set);
             SwingUtilities.invokeLater(new Runnable() {
-
                 public void run() {
                     btVersions.setEnabled(true);
-                    setCursor(oldCursor);
+                    setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                 }
             });
+            NotifyDescriptor nd = new NotifyDescriptor.Message(versions);
+            nd.setTitle(getString("LBL_VersionInfo_Title")); // NOI18N
+            DialogDisplayer.getDefault().notify(nd);
         }
     });
 }//GEN-LAST:event_btVersionsActionPerformed
