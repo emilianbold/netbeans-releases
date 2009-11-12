@@ -109,7 +109,7 @@ public final class ServicesNode extends AbstractNode {
     @Override
     public Action[] getActions(boolean context) {
         FileObject platformsAction = FileUtil.getConfigFile(
-                "Menu/Tools/JavaPlatformsCustomizerAction.instance"); //NOI18N
+                "Menu/Tools/JavaPlatformsCustomizerAction.shadow"); //NOI18N
         if (platformsAction != null) {
             try {
                 DataObject dob = DataObject.find(platformsAction);
