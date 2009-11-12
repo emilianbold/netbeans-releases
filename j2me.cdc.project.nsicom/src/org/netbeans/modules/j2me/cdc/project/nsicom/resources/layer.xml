@@ -40,7 +40,7 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
     <folder name="Buildsystem">
         <folder name="org.netbeans.modules.kjava.j2meproject">
@@ -93,7 +93,9 @@ made subject to such option by the copyright holder.
     </folder>    
     <folder name="org-netbeans-api-project-libraries">
         <folder name="Libraries">
-            <file name="nsicom-ant-utils.xml" url="Utils.xml"/>
+            <file name="nsicom-ant-utils.xml" url="Utils.xml">
+                <attr name="displayName" bundlevalue="org/netbeans/modules/j2me/cdc/project/nsicom/Bundle#nsicom-ant-utils"/>
+            </file>
         </folder>
     </folder>
 </filesystem>

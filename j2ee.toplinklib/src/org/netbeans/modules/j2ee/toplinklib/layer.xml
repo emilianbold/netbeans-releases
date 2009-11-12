@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 
 <!--
 
@@ -48,7 +48,9 @@ made subject to such option by the copyright holder.
 <filesystem>
     <folder name="org-netbeans-api-project-libraries">
         <folder name="Libraries">
-            <file name="toplink.xml" url="toplink_lib.xml"/>
+            <file name="toplink.xml" url="toplink_lib.xml">
+                <attr name="displayName" bundlevalue="org.netbeans.modules.j2ee.toplinklib.Bundle#toplink"/>
+            </file>
         </folder>
     </folder>
 </filesystem>
