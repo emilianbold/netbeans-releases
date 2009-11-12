@@ -148,7 +148,7 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
         }
         lock.lock();
         try {
-            if (!t.isSuspended()) {
+            if (!(t.isSuspended() || ((JPDAThreadImpl) t).isSuspendedNoFire())) {
                 // Can not step when it's not suspended.
                 if (smartLogger.isLoggable(Level.FINER)) {
                     smartLogger.finer("Can not step into next method! Thread "+t+" not suspended!");

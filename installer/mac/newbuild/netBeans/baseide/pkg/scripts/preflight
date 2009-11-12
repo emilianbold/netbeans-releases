@@ -19,12 +19,12 @@
 
 set -e
 
-basename=`dirname "$0"`
-if [ -z "$basename" ]
+dirname=`dirname "$0"`
+if [ -z "$dirname" ]
 then
-    basename=.
+    dirname=.
 fi
-. "$basename"/env.sh
+. "$dirname"/env.sh
 
 if [ -n "$NETBEANS_INSTALL_DIR" ] && [ -d "$NETBEANS_INSTALL_DIR" ] && [ 1 -eq "$NETBEANS_CHECK_BUILDNUMBER" ] ; then
     #read build_info to get current build number
@@ -38,11 +38,5 @@ if [ -n "$NETBEANS_INSTALL_DIR" ] && [ -d "$NETBEANS_INSTALL_DIR" ] && [ 1 -eq "
 fi
 
 
-if [ -d "/Library/Receipts/baseide.pkg" ] ; then
-    rm -rf "/Library/Receipts/baseide.pkg"
-fi
-
-if [ -d "/private/var/db/receipts" ] ; then
-    rm -rf "/private/var/db/receipts/org.netbeans.ide.baseide.plist"
-    rm -rf "/private/var/db/receipts/org.netbeans.ide.baseide.bom"
-fi
+#clean receipts
+"$dirname"/clean_receipts.sh "baseide-$NB_ID" "org.netbeans.ide.baseide"

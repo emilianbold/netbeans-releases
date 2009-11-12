@@ -23,11 +23,7 @@ if [ -d "$2" ] ; then
     rm -rf "$2"
 fi
 
-if [ -d "/Library/Receipts/sjsas.pkg" ] ; then
-    rm -rf "/Library/Receipts/sjsas.pkg"
-fi
+script_dir=`dirname "$0"`
 
-if [ -d "/private/var/db/receipts" ] ; then
-    rm -rf "/private/var/db/receipts/sjsas.plist"
-    rm -rf "/private/var/db/receipts/sjsas.bom"
-fi
+#clean receipts
+"$script_dir"/clean_receipts.sh "sjsas" "sjsas"

@@ -19,17 +19,14 @@
 
 set -e
 
-script_dir=`dirname "$0"`
+dirname=`dirname "$0"`
+
+. "$dirname"/env.sh
 
 #add Product ID
-"$script_dir"/addproduct_id.sh "RUBY"
+"$dirname"/addproduct_id.sh "RUBY"
 
-if [ -d "/Library/Receipts/ruby.pkg" ] ; then
-    rm -rf "/Library/Receipts/ruby.pkg"
-fi
+#clean receipts
+"$dirname"/clean_receipts.sh "ruby-$NB_ID" "org.netbeans.ide.ruby"
 
-if [ -d "/private/var/db/receipts" ] ; then
-    rm -rf "/private/var/db/receipts/org.netbeans.ide.ruby.plist"
-    rm -rf "/private/var/db/receipts/org.netbeans.ide.ruby.bom"
-fi
 

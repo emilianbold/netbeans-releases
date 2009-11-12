@@ -48,13 +48,18 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
+import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
+import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
 import org.openide.filesystems.FileObject;
 import javax.xml.xpath.*;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
@@ -448,5 +453,23 @@ public class RestUtils {
             return provider.getJ2eeModule();
         }
         return null;
+    }
+
+    public static boolean isAnnotationConfigAvailable(Project project) throws IOException {
+        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
+        if (wm != null) {
+            Profile profile = wm.getJ2eeProfile();
+            if (Profile.JAVA_EE_6_WEB.equals(profile) || Profile.JAVA_EE_6_FULL.equals(profile)) {
+                SourceGroup[] sourceGroups = SourceGroupSupport.getJavaSourceGroups(project);
+                if (sourceGroups.length>0) {
+                    ClassPath cp = ClassPath.getClassPath(sourceGroups[0].getRootFolder(), ClassPath.COMPILE);
+                    if (cp.findResource("javax/ws/rs/ApplicationPath.class") != null && //NOI18M
+                            cp.findResource("javax/ws/rs/core/Application.class") != null) { //NOI18N
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 }
