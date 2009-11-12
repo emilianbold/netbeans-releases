@@ -220,20 +220,18 @@ public final class JavaTaskProvider extends PushTaskScanner {
         Set<FileObject> nueFilesWithErrors = new HashSet<FileObject>();
         
         try {
-            if (TasklistSettings.isTasklistEnabled()) {
-                for (URL u : TaskCache.getDefault().getAllFilesWithRecord(root.getURL())) {
-                    FileObject file = URLMapper.findFileObject(u);
-                    
-                    if (file != null) {
-                        List<Task> result = TaskCache.getDefault().getErrors(file);
-                        
-                        LOG.log(Level.FINE, "Setting {1} for {0}\n", new Object[] {file, result});
-                        
-                        callback.setTasks(file, result);
-                        
-                        if (!fixedFiles.remove(file)) {
-                            nueFilesWithErrors.add(file);
-                        }
+            for (URL u : TaskCache.getDefault().getAllFilesWithRecord(root.getURL())) {
+                FileObject file = URLMapper.findFileObject(u);
+
+                if (file != null) {
+                    List<Task> result = TaskCache.getDefault().getErrors(file);
+
+                    LOG.log(Level.FINE, "Setting {1} for {0}\n", new Object[] {file, result});
+
+                    callback.setTasks(file, result);
+
+                    if (!fixedFiles.remove(file)) {
+                        nueFilesWithErrors.add(file);
                     }
                 }
             }

@@ -70,6 +70,8 @@ public final class RubyType {
     public static final RubyType SYMBOL = new RubyType("Symbol");
     public static final RubyType TRUE_CLASS = new RubyType("TrueClass");
     public static final RubyType INTEGER = new RubyType("Integer");
+    public static final RubyType DATE = new RubyType("Date");
+    public static final RubyType TIME = new RubyType("Time");
 
     /**
      * Union type for {{@link #TRUE_CLASS}, {@link #FALSE_CLASS}}. Value of this

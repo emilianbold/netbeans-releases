@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.dlight.perfan.lineinfo.impl;
 
+import java.io.File;
+import org.netbeans.modules.dlight.management.remote.spi.PathMapper;
 import org.netbeans.modules.dlight.perfan.stack.impl.FunctionCallImpl;
 import org.netbeans.modules.dlight.perfan.storage.impl.FunctionStatistic;
 import org.netbeans.modules.dlight.perfan.storage.impl.PerfanDataStorage;
@@ -63,12 +65,12 @@ public final class SSSourceFileInfoSupport {
         return new SSSourceFileInfoSupport(storage);
     }
 
-    public SourceFileInfo getSourceFileInfo(final FunctionCallImpl functionCall) {
+    public SourceFileInfo getSourceFileInfo(final FunctionCallImpl functionCall, PathMapper pathMapper) {
         SourceFileInfo result = null;
 
         try {
             SourceFileInfoFetchTaskParams params = new SourceFileInfoFetchTaskParams(
-                    functionCall, storage);
+                    functionCall, storage, pathMapper);
             result = sourceLineInfoCachedProvider.compute(params);
         } catch (Throwable ex) {
         }
@@ -80,10 +82,12 @@ public final class SSSourceFileInfoSupport {
 
         public final FunctionCallImpl functionCall;
         public final PerfanDataStorage storage;
+        public final PathMapper pathMapper;
 
-        SourceFileInfoFetchTaskParams(FunctionCallImpl functionCall, PerfanDataStorage storage) {
+        SourceFileInfoFetchTaskParams(FunctionCallImpl functionCall, PerfanDataStorage storage, PathMapper pathMapper) {
             this.functionCall = functionCall;
             this.storage = storage;
+            this.pathMapper = pathMapper;
         }
 
         @Override
@@ -94,8 +98,22 @@ public final class SSSourceFileInfoSupport {
 
             SourceFileInfoFetchTaskParams that = (SourceFileInfoFetchTaskParams) obj;
 
-            return this.functionCall.getFunctionRefID() == that.functionCall.getFunctionRefID() &&
-                    this.storage.equals(that.storage);
+            if (this.functionCall.getFunctionRefID() != that.functionCall.getFunctionRefID() ||
+                    !this.storage.equals(that.storage)) {
+                return false;
+            }
+
+            if (this.pathMapper == null) {
+                if (that.pathMapper != null) {
+                    return false;
+                }
+            } else if (that.pathMapper == null) {
+                return false;
+            } else if (!this.pathMapper.equals(that.pathMapper)) {
+                return false;
+            }
+
+            return true;
         }
 
         @Override
@@ -103,6 +121,7 @@ public final class SSSourceFileInfoSupport {
             int hash = 3;
             hash = (int) (17 * hash + this.functionCall.getFunctionRefID());
             hash = 17 * hash + (this.storage != null ? this.storage.hashCode() : 0);
+            hash = 17 * hash + (this.pathMapper != null ? this.pathMapper.hashCode() : 0);
             return hash;
         }
     }
@@ -125,9 +144,17 @@ public final class SSSourceFileInfoSupport {
                     if (fStatistics != null) {
                         sourceFile = fStatistics.getSourceFile();
                         line = fStatistics.getSrcFileLine();
+                        if (sourceFile != null && params.pathMapper != null && !"(unknown)".equals(sourceFile)) { // NOI18N
+                            String localFile = params.pathMapper.getLocalPath(sourceFile);
+                            if (localFile != null) {
+                                File localFileFile = new File(localFile);
+                                sourceFile = localFileFile.exists() ? localFileFile.getAbsolutePath() : null;
+                            }
+                        }
                         params.functionCall.setSourceFile(sourceFile);
                     }
                 }
+
                 result = new SourceFileInfo(sourceFile, line, 0);
             }
 

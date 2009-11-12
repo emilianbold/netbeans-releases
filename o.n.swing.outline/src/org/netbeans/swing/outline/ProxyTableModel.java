@@ -95,6 +95,10 @@ final class ProxyTableModel implements TableModel {
     
     public Object getValueAt(int rowIndex, int columnIndex) {
         Object node = getNodeForRow(rowIndex);
+        if (node == null) {
+            assert false : "Some node should exist on row " + rowIndex + " and on column " + columnIndex + ", but was null.";
+            return null;
+        }
         return rowmodel.getValueFor(node, columnIndex);
     }
     

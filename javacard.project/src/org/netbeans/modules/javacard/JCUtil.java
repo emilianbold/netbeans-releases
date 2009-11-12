@@ -46,7 +46,6 @@ import java.net.URL;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javacard.common.CommonSystemFilesystemPaths;
 import org.netbeans.modules.javacard.common.JCConstants;
-import org.netbeans.modules.javacard.spi.BrokenJavacardPlatform;
 import org.netbeans.modules.javacard.spi.JavacardPlatform;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.filesystems.FileObject;
@@ -89,7 +88,7 @@ public final class JCUtil {
             result = dob.getLookup().lookup(JavacardPlatform.class);
         }
         if (result == null) {
-            result = new BrokenJavacardPlatform(name);
+            result = JavacardPlatform.createBrokenJavacardPlatform(name);
         }
         return result;
     }

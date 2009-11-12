@@ -54,7 +54,6 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Breakpoint;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.debugger.common.EditorContextBridge;
 import org.netbeans.modules.cnd.debugger.common.breakpoints.LineBreakpoint;
 import org.netbeans.spi.debugger.ui.Controller;
@@ -64,7 +63,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.cnd.utils.MIMENames;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.Utilities;
 
@@ -287,9 +285,7 @@ public class LineBreakpointPanel extends JPanel implements ControllerProvider, H
                 return false;
             }
             String path = tfFileName.getText().trim();
-            if (new File(path).exists()) {
-                path = "file:"+path; //NOI18N
-            }
+            path = correctURL(path);
             breakpoint.setURL(path);
             breakpoint.setLineNumber(Integer.parseInt(tfLineNumber.getText().trim()));
 
@@ -337,6 +333,14 @@ public class LineBreakpointPanel extends JPanel implements ControllerProvider, H
             return true;
         }
 
+        private String correctURL(String path) {
+            String slash = Utilities.isWindows() ? "/" : ""; //NOI18N
+            if (new File(path).exists()) {
+                path = "file:" + slash + path; //NOI18N
+            }
+            return path;
+        }
+
         /**
          * Called when "Cancel" button is pressed.
          *
@@ -354,9 +358,7 @@ public class LineBreakpointPanel extends JPanel implements ControllerProvider, H
                 return ;
             }
             try {
-                if (new File(path).exists()) {
-                    path = "file:"+path; //NOI18N
-                }
+                path = correctURL(path);
                 URL url = new URL(path);
                 try {
                     File f = new File(url.toURI());

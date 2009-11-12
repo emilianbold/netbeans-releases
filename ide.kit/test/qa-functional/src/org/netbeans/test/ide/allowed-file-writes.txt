@@ -80,3 +80,9 @@ config/Services/org-netbeans-modules-db-explorer-DatabaseOption.settings
 config/javafx
 config/javafx/samples
 config/javafx/samples/sdksamples.xml
+
+# JNA native binaries
+var/cache/jna
+var/cache/jna/libjnidispatch.so
+var/cache/jna/libjnidispatch.jnilib
+var/cache/jna/jnidispatch.dll

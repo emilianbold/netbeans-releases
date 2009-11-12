@@ -54,6 +54,7 @@ import java.util.Set;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jrubyparser.ast.ArrayNode;
 import org.jrubyparser.ast.CallNode;
 import org.jrubyparser.ast.ClassNode;
 import org.jrubyparser.ast.Colon2Node;
@@ -66,6 +67,7 @@ import org.jrubyparser.ast.SClassNode;
 import org.jrubyparser.ast.SelfNode;
 import org.jrubyparser.ast.StrNode;
 import org.jrubyparser.ast.INameNode;
+import org.jrubyparser.ast.NewlineNode;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
@@ -203,11 +205,20 @@ public class RubyIndexer extends EmbeddingIndexer {
                                                      // TODO: Add class info to tell whether methods are static
 
     static final String FIELD_DB_TABLE = "dbtable"; //NOI18N
+    /**
+     * Explicitly specfied table name in an AR model class (using set_table_name).
+     */
+    static final String FIELD_EXPLICIT_DB_TABLE = "explicit-dbtable"; //NOI18N
     static final String FIELD_DB_VERSION = "dbversion"; //NOI18N
     static final String FIELD_DB_COLUMN = "dbcolumn"; //NOI18N
     /** Special version the schema.rb is marked with (rather than a migration number) */
     static final String SCHEMA_INDEX_VERSION = "schema"; // NOI18N
 
+    /**
+     * The name of the method that sets the table name for an AR model class.
+     */
+    private static final String SET_TABLE_NAME = "set_table_name"; //NOII8N
+    
     // Method Document
     //static final String FIELD_PARAMS = "params"; //NOI18N
     //static final String FIELD_RDOC = "rdoc"; //NOI18N
@@ -1161,6 +1172,12 @@ public class RubyIndexer extends EmbeddingIndexer {
 
                         if (superClass != null) {
                             document.addPair(FIELD_EXTENDS_NAME, superClass, true, true);
+                            //XXX: search for explicitly set table name only
+                            // if one of the ancestors is ActiveRecord::Base
+                            String tableName = getExplicitTableName(clz);
+                            if (tableName != null) {
+                                document.addPair(FIELD_EXPLICIT_DB_TABLE, tableName, true, true);
+                            }
                         }
                     }
 
@@ -1293,6 +1310,12 @@ public class RubyIndexer extends EmbeddingIndexer {
 
                         break;
                     }
+
+                        case CALL: {
+                            System.out.println("Huh: " + child);
+                            break;
+                        }
+
 
                     case CONSTRUCTOR:
                     case METHOD: {
@@ -1577,6 +1600,34 @@ public class RubyIndexer extends EmbeddingIndexer {
                     document.addPair(FIELD_REQUIRE, relative, true, true);
                 }
             }
+        }
+
+        /**
+         * Gets the table name explicitly specified for the class.
+         * 
+         * @param node
+         * @return
+         */
+        private String getExplicitTableName(Node node) {
+            for (Node child : node.childNodes()) {
+                if (child instanceof FCallNode
+                        && SET_TABLE_NAME.equals(AstUtilities.getName(child))) {
+                    Node arg = ((FCallNode) child).getArgsNode();
+                    if (arg != null && arg instanceof ArrayNode) {
+                        ArrayNode value = (ArrayNode) arg;
+                        if (value.size() > 0) {
+                            return AstUtilities.getNameOrValue(value.get(0));
+                        }
+                    }
+                    // no point in continuing
+                    return null;
+                }
+                String tableName = getExplicitTableName(child);
+                if (tableName != null) {
+                    return tableName;
+                }
+            }
+            return null;
         }
     }
 

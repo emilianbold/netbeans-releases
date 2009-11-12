@@ -80,6 +80,8 @@ class ToolbarRow extends JPanel {
      */
     private final List<ToolbarConstraints> constraints = new ArrayList<ToolbarConstraints>( 20 );
 
+    private static final String FAKE_NAME = "__fake_drag_container__"; //NOI18N
+
 
     //drag context
     private ToolbarConstraints dragConstraints;
@@ -154,8 +156,7 @@ class ToolbarRow extends JPanel {
      * visualize toolbar drop feedback.
      */
     private void addDropConstraints() {
-        dropConstraints = new ToolbarConstraints("__fake_drag_container__",  //NOI18N
-                ToolbarConstraints.Align.left, false, true);
+        dropConstraints = new ToolbarConstraints(FAKE_NAME, ToolbarConstraints.Align.left, false, true);
         dropReplacement = new JLabel();
         dropReplacement.setName(dropConstraints.getName());
         add( dropReplacement );
@@ -224,6 +225,12 @@ class ToolbarRow extends JPanel {
 
             if( dropIndex > constraints.indexOf(dropConstraints) )
                 dropIndex--;
+            if( isLastVisibleToolbar(targetTc) && isStretchLastToolbar() ) {
+                if( bounds.x + bounds.width - bounds.width/4 < screenLocation.x ) {
+                    dropConstraints.setAlign(ToolbarConstraints.Align.right);
+                    dropIndex = constraints.size()+1;
+                }
+            }
             constraints.remove(dropConstraints);
             if( dropIndex <= constraints.size() )
                 constraints.add(dropIndex, dropConstraints);
@@ -388,6 +395,16 @@ class ToolbarRow extends JPanel {
         return count;
     }
 
+    private boolean isLastVisibleToolbar( ToolbarConstraints toolbarConstraints ) {
+        for( int i=constraints.size()-1; i>=0; i-- ) {
+            ToolbarConstraints tc = constraints.get(i);
+            if( !tc.isVisible() || FAKE_NAME.equals(tc.getName()) )
+                continue;
+            return tc == toolbarConstraints;
+        }
+        return false;
+    }
+
     /**
      * @param align
      * @return List of components that are stacked to the given side.
@@ -476,6 +493,10 @@ class ToolbarRow extends JPanel {
             res.setLocation( location );
         }
         return res;
+    }
+
+    private boolean isStretchLastToolbar() {
+        return isMetalLaF || isNimbusLaF || isGTKLaF || isAquaLaF;
     }
 
     private static final boolean isMetalLaF = "Metal".equals(UIManager.getLookAndFeel().getID()); //NOI18N
@@ -590,8 +611,7 @@ class ToolbarRow extends JPanel {
             int x = 0;
             for( Component c : leftBars ) {
                 int barWidth = bar2width.get(c);
-                if( (isMetalLaF || isNimbusLaF || isGTKLaF || isAquaLaF)
-                        && leftBars.indexOf(c) == leftBars.size()-1 ) {
+                if( (isStretchLastToolbar()) && leftBars.indexOf(c) == leftBars.size()-1 ) {
                     //stretch the last left bar across the remaining free space
                     //up to the first right bar / right border of the toolbar row
                     int rightBarsWidth = 0;

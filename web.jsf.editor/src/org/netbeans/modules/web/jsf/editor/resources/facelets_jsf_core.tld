@@ -2381,26 +2381,33 @@ will not pass validation.</p> ]]>
       </deferred-method>
     </attribute>
 
-    <attribute>
-      <description></description>
-      <name>contentType</name>
-      <required>false</required>
-    </attribute>
+        <attribute>
+            <description>
+                Specifies the content-type of the response.
+            </description>
+            <name>contentType</name>
+            <required>false</required>
+            <type>java.lang.String</type>
+        </attribute>
+
+        <attribute>
+            <description>
+                Specifies the character encoding that should be used for the
+                response.
+            </description>
+            <name>encoding</name>
+            <required>false</required>
+            <type>java.lang.String</type>
+        </attribute>
 
     <attribute>
-      <description></description>
-      <name>encoding</name>
-      <required>false</required>
-    </attribute>
-
-    <attribute>
-      <description></description>
+      <description>Deprecated facelets 1.1.x substitute for beforePhase attribute.</description>
       <name>beforePhaseListener</name>
       <required>false</required>
     </attribute>
 
     <attribute>
-      <description></description>
+      <description>Deprecated facelets 1.1.x substitute for afterPhase attribute.</description>
       <name>afterPhaseListener</name>
       <required>false</required>
     </attribute>

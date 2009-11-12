@@ -84,6 +84,7 @@ public class PHPDocCommentParser {
      * @return
      */
     public PHPDocBlock parse(final int startOffset, final int endOffset, final String comment) {
+        assert startOffset <= endOffset;
         List<PHPDocTag> tags = new ArrayList<PHPDocTag>(); // list of tags
         String blockDescription = "";   // description of the block
         if (comment == null || comment.length() == 0) {
@@ -154,8 +155,8 @@ public class PHPDocCommentParser {
                     tags.add(tag);
                 }
             }
-        }
-        return new PHPDocBlock(startOffset + 3, endOffset, blockDescription, tags);
+        }        
+        return new PHPDocBlock(Math.min(startOffset + 3, endOffset), endOffset, blockDescription, tags);
     }
 
     private PHPDocTag createTag(int start, int end, PHPDocTag.Type type, String description, String originalComment, int originalCommentStart) {

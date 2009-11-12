@@ -504,8 +504,8 @@ public class CssCompletion implements CodeCompletionHandler {
 
     @Override
     public ElementHandle resolveLink(String link, ElementHandle elementHandle) {
-        return CssHelpResolver.getHelpZIPURL() == null ? null : 
-            new ElementHandle.UrlHandle(CssHelpResolver.getHelpZIPURL() + 
+        return CssHelpResolver.getHelpZIPURLasString() == null ? null :
+            new ElementHandle.UrlHandle(CssHelpResolver.getHelpZIPURLasString() +
                     normalizeLink( elementHandle, link));
     }
 
@@ -531,13 +531,14 @@ public class CssCompletion implements CodeCompletionHandler {
         int index = link.lastIndexOf('#');
         if ( index !=-1 ){
             if ( index ==0 || link.charAt(index-1) =='/'){
+                String helpZipUrl = CssHelpResolver.getHelpZIPURL().getPath();
                 if ( handle instanceof CssPropertyElement ){
                     String name = ((CssPropertyElement)handle).property().name();
                     URL propertyHelpURL = CssHelpResolver.instance().
                         getPropertyHelpURL(name);
                     String path = propertyHelpURL.getPath();
-                    if ( path.startsWith( CssHelpResolver.getHelpZIPURL())){
-                        path = path.substring(CssHelpResolver.getHelpZIPURL().length());
+                    if ( path.startsWith( helpZipUrl )){
+                        path = path.substring(helpZipUrl.length());
                     }
                     return path+link.substring( index );
                 }
@@ -547,8 +548,8 @@ public class CssCompletion implements CodeCompletionHandler {
                     if ( anchorIndex!= -1 ){
                         url = url.substring( 0, anchorIndex);
                     }
-                    if ( url.startsWith( CssHelpResolver.getHelpZIPURL())){
-                        url = url.substring(CssHelpResolver.getHelpZIPURL().length());
+                    if ( url.startsWith( helpZipUrl)){
+                        url = url.substring(helpZipUrl.length());
                     }
                     return url+link.substring( index );
                 }

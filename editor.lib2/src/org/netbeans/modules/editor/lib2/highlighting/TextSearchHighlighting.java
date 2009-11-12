@@ -74,6 +74,7 @@ public class TextSearchHighlighting extends AbstractHighlightsContainer implemen
     private static final Logger LOG = Logger.getLogger(TextSearchHighlighting.class.getName());
     
     public static final String LAYER_TYPE_ID = "org.netbeans.modules.editor.lib2.highlighting.TextSearchHighlighting"; //NOI18N
+    private static final RequestProcessor RP = new RequestProcessor(LAYER_TYPE_ID);
     
     private final MimePath mimePath;
     private final JTextComponent component;
@@ -135,7 +136,7 @@ public class TextSearchHighlighting extends AbstractHighlightsContainer implemen
     private void fillInTheBag() {
         final Document d = document;
         final OffsetsBag b = bag;
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
             private boolean documentLocked = false;
 
             public void run() {

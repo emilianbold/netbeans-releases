@@ -40,9 +40,7 @@
 package org.netbeans.modules.cnd.remote.server;
 
 import java.beans.PropertyChangeSupport;
-import java.io.IOException;
 import java.util.Collection;
-import java.util.concurrent.CancellationException;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -53,6 +51,7 @@ import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.spi.remote.setup.HostSetupProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -101,7 +100,14 @@ public class RemoteServerRecord implements ServerRecord {
             state = State.ONLINE;
         } else {
             editable = true;
-            state = connect ? State.UNINITIALIZED : State.OFFLINE;
+            if (connect) {
+                state = State.UNINITIALIZED;
+            } else if (ConnectionManager.getInstance().isConnectedTo(env)) {
+                state = State.ONLINE;
+            } else {
+                state = State.OFFLINE;
+            }
+            
         }
         x11forwarding = Boolean.getBoolean("cnd.remote.X11"); //NOI18N;
 //        x11forwardingPossible = true;

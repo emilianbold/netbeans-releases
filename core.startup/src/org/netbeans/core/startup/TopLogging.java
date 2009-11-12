@@ -653,6 +653,9 @@ public final class TopLogging {
             if (message != null && message.indexOf('\n') != -1 && record.getThrown() == null) {
                 // multi line messages print witout any wrappings
                 sb.append(message);
+                if (message.charAt(message.length() - 1) != '\n') {
+                    sb.append(lineSeparator);
+                }
                 return;
             }
             if ("stderr".equals(record.getLoggerName()) && record.getLevel() == Level.INFO) { // NOI18N
