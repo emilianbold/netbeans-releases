@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,37 +31,17 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- */
-
-package demo;
-
-import java.io.File;
-import java.util.*;
-import org.netbeans.insane.model.*;
-
-/*
- * Locates shortest root references to all String instances.
  *
- * @author Nenik
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-public class DemoQuery {
 
-    public static void main(String[] args) throws Exception {
-        // use the real path to the file
-        String fName = "ins.xml";
+package org.netbeans.insane.live;
 
-        // parse the heap image
-        HeapModel model = Support.parseSimpleXMLDump(new File(fName));
-
-        // get all instaces of class String
-        Collection instances = model.getObjectsOfType("[C");
-        
-        // and print their root reference chains
-        for (Iterator it = instances.iterator(); it.hasNext(); ) {
-            Item itm = (Item)it.next();
-            System.out.println("--");
-            
-            Support.findRoots(model, itm, false);
-        }
-    }
+/** Exception to throw in case the computation shall be cancelled.
+ *
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
+ */
+public final class CancelException extends RuntimeException {
 }

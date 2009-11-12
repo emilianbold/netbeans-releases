@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
     <folder name="Buildsystem">
         <folder name="org.netbeans.modules.kjava.j2meproject">
@@ -85,7 +85,9 @@
     </folder>
     <folder name="org-netbeans-api-project-libraries">
         <folder name="Libraries">
-            <file name="savaje-ant-utils.xml" url="Utils.xml"/>
+            <file name="savaje-ant-utils.xml" url="Utils.xml">
+                <attr name="displayName" bundlevalue="org.netbeans.modules.j2me.cdc.project.savaje.Bundle#savaje-ant-utils"/>
+            </file>
         </folder>
     </folder>
 
