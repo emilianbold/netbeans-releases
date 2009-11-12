@@ -47,7 +47,7 @@ import java.awt.Component;
  *
  * @author Tim Boudreau
  */
-public interface JavacardPlatformDeviceManagerDialogProvider {
+public interface DeviceManagerDialogProvider {
     /**
      * Show a dialog for managing cards on this platform.  This method
      * will only be called in the AWT event queue;  implementations should

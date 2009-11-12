@@ -67,7 +67,7 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.javacard.spi.JavacardPlatform;
-import org.netbeans.modules.javacard.spi.JavacardPlatformDeviceManagerDialogProvider;
+import org.netbeans.modules.javacard.spi.DeviceManagerDialogProvider;
 import org.netbeans.modules.javacard.spi.PlatformAndDeviceProvider;
 
 /**
@@ -176,19 +176,11 @@ public class DevicePanel extends SharedLayoutPanel implements ExplorerManager.Pr
     }
 
     public void actionPerformed(ActionEvent e) {
-        FileObject fo = Utils.sfsFolderForDeviceConfigsForPlatformNamed(props.getPlatformName(), true);
-        DataObject dob;
-        try {
-            dob = DataObject.find(fo);
-//            new ServersPanel(dob.getNodeDelegate()).showDialog();
-            JavacardPlatformDeviceManagerDialogProvider prov = dob.getLookup().lookup(JavacardPlatformDeviceManagerDialogProvider.class);
-            if (prov != null) {
-                prov.showManageDevicesDialog(this);
-            }
-        } catch (DataObjectNotFoundException ex) {
-            Exceptions.printStackTrace(ex);
+        DataObject dob = Utils.findPlatformDataObjectNamed(props.getPlatformName());
+        DeviceManagerDialogProvider prov = dob.getLookup().lookup(DeviceManagerDialogProvider.class);
+        if (prov != null) {
+            prov.showManageDevicesDialog(this);
         }
-        propertyChange(null);
     }
 
     private void updateLookup() {
