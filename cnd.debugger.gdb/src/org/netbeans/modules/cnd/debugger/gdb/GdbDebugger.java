@@ -356,6 +356,21 @@ public class GdbDebugger implements PropertyChangeListener {
                     warn(true, msg);
                     return; // since we've failed, a return here keeps us from sending more gdb commands
                 } else {
+                    String resp = cb.getResponse();
+                    if (platform == PlatformTypes.PLATFORM_WINDOWS
+                        && resp.startsWith("Attaching to process")) { // NOI18N
+                        // See IZ 171405 - on windows we should get real pid
+                        try {
+                            long oldPid = programPID;
+                            int endline = resp.indexOf("\\n"); //NOI18N
+                            programPID = Long.parseLong(resp.substring(21, endline).trim());
+                            if (programPID != oldPid) {
+                                log.info("Pid changed from " + oldPid + " to " + programPID); // NOI18N
+                            }
+                        } catch (Exception ex) {
+                            //do nothing
+                        }
+                    }
                     if (isSharedLibrary) {
                         if (platform == PlatformTypes.PLATFORM_MACOSX && pgm == null) {
                             pgm = getMacExePath();
@@ -366,7 +381,7 @@ public class GdbDebugger implements PropertyChangeListener {
                     }
 
                     // 1) see if path was explicitly loaded by target_attach (this is system dependent)
-                    if (!symbolsRead(cb.getResponse(), path)) {
+                    if (!symbolsRead(resp, path)) {
                         // 2) see if we can validate via /proc (or perhaps other platform specific means)
                         if (!core && validAttachViaSlashProc(programPID, path)) { // Linux or Solaris
                             if (isSolaris()) {
