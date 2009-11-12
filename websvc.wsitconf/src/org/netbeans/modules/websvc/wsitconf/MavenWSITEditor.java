@@ -89,7 +89,9 @@ public class MavenWSITEditor implements WSEditor, UndoManagerHolder {
 
     private UndoManager undoManager;
     private Collection<FileObject> createdFiles = new LinkedList<FileObject>();
-            
+
+    boolean isClient = false;
+
     /**
      * Creates a new instance of MavenWSITEditor
      */
@@ -108,7 +110,7 @@ public class MavenWSITEditor implements WSEditor, UndoManagerHolder {
         WSDLModel clientWsdlModel;
         WSDLModel wsdlModel;
 
-        boolean isClient = !jaxWsService.isServiceProvider();
+        isClient = !jaxWsService.isServiceProvider();
         if (project != null) {
             try {
                 wsdlModel = MavenWSITModelSupport.getModel(node, project, jaxWsSupport, jaxWsService, this, true, createdFiles);
@@ -141,44 +143,46 @@ public class MavenWSITEditor implements WSEditor, UndoManagerHolder {
     public void cancel(Node node) {
         if (node == null) return;
         WSDLModel model = null;
-        
-        // remove imports from main config file if a new config file was imported
-        FileObject srcRoot = node.getLookup().lookup(FileObject.class);
-        if (srcRoot != null) {
-            Project p = FileOwnerQuery.getOwner(srcRoot);
-            if (p != null) {
-                FileObject clientConfigFolder = getClientConfigFolder(p);
-                WSDLModel mainModel = WSITModelSupport.getMainClientModel(clientConfigFolder);
-                if (mainModel != null) {
-                    Collection<Import> imports = mainModel.getDefinitions().getImports();
-                    for (Import i : imports) {
-                        try {
-                            WSDLModel importedModel = i.getImportedWSDLModel();
-                            ModelSource importedms = importedModel.getModelSource();
-                            FileObject importedfo = org.netbeans.modules.xml.retriever.catalog.Utilities.getFileObject(importedms);
-                            mainModel.startTransaction();
-                            if (createdFiles.contains(importedfo)) {
-                                mainModel.getDefinitions().removeImport(i);
-                            }
-                            mainModel.endTransaction();
-                            FileObject mainFO = Utilities.getFileObject(mainModel.getModelSource());
-                            if (mainFO == null) {
-                                logger.log(Level.INFO, "Cannot find fileobject in lookup for: " + mainModel.getModelSource());
-                            }
+
+        if (isClient) {
+            // remove imports from main config file if a new config file was imported
+            FileObject srcRoot = node.getLookup().lookup(FileObject.class);
+            if (srcRoot != null) {
+                Project p = FileOwnerQuery.getOwner(srcRoot);
+                if (p != null) {
+                    FileObject clientConfigFolder = getClientConfigFolder(p);
+                    WSDLModel mainModel = WSITModelSupport.getMainClientModel(clientConfigFolder);
+                    if (mainModel != null) {
+                        Collection<Import> imports = mainModel.getDefinitions().getImports();
+                        for (Import i : imports) {
                             try {
-                                DataObject mainDO = DataObject.find(mainFO);
-                                if ((mainDO != null) && (mainDO.isModified())) {
-                                    SaveCookie wsdlSaveCookie = mainDO.getCookie(SaveCookie.class);
-                                    if(wsdlSaveCookie != null){
-                                        wsdlSaveCookie.save();
-                                    }
-                                    mainDO.setModified(false);
+                                WSDLModel importedModel = i.getImportedWSDLModel();
+                                ModelSource importedms = importedModel.getModelSource();
+                                FileObject importedfo = org.netbeans.modules.xml.retriever.catalog.Utilities.getFileObject(importedms);
+                                mainModel.startTransaction();
+                                if (createdFiles.contains(importedfo)) {
+                                    mainModel.getDefinitions().removeImport(i);
                                 }
-                            } catch (IOException ioe) {
-                                // ignore - just don't do anything
+                                mainModel.endTransaction();
+                                FileObject mainFO = Utilities.getFileObject(mainModel.getModelSource());
+                                if (mainFO == null) {
+                                    logger.log(Level.INFO, "Cannot find fileobject in lookup for: " + mainModel.getModelSource());
+                                }
+                                try {
+                                    DataObject mainDO = DataObject.find(mainFO);
+                                    if ((mainDO != null) && (mainDO.isModified())) {
+                                        SaveCookie wsdlSaveCookie = mainDO.getCookie(SaveCookie.class);
+                                        if(wsdlSaveCookie != null){
+                                            wsdlSaveCookie.save();
+                                        }
+                                        mainDO.setModified(false);
+                                    }
+                                } catch (IOException ioe) {
+                                    // ignore - just don't do anything
+                                }
+                            } catch (CatalogModelException ex) {
+                                logger.log(Level.SEVERE, null, ex);
                             }
-                        } catch (CatalogModelException ex) {
-                            logger.log(Level.SEVERE, null, ex);
                         }
                     }
                 }

@@ -67,6 +67,7 @@ import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
 import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -196,11 +197,23 @@ public class MavenWsitProvider extends WsitProvider {
             if (j2eeModule != null) {
                 J2eeModule.Type type = j2eeModule.getType();
                 if (J2eeModule.Type.WAR.equals(type) && !client) {
-                    return project.getProjectDirectory().getFileObject("src/main/webapp/WEB-INF");
+                    FileObject dir = null;
+                    try {
+                        dir = FileUtil.createFolder(project.getProjectDirectory(), "src/main/webapp/WEB-INF");
+                    } catch (IOException ex) {
+                        logger.log(Level.FINE, ex.getLocalizedMessage());
+                    }
+                    return dir;
                 }
             }
         }
-        return project.getProjectDirectory().getFileObject("src/main/resources/META-INF");
+        FileObject cfgDir = null;
+        try {
+            cfgDir = FileUtil.createFolder(project.getProjectDirectory(), "src/main/resources/META-INF");
+        } catch (IOException ex) {
+            logger.log(Level.FINE, ex.getLocalizedMessage());
+        }
+        return cfgDir;
     }
 
     @Override
