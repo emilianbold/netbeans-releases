@@ -79,15 +79,13 @@ public final class BootClassPathImpl implements ClassPathImplementation, Propert
     BootClassPathImpl(NbMavenProjectImpl project, EndorsedClassPathImpl ecpImpl) {
         this.project = project;
         this.ecpImpl = ecpImpl;
+        ecpImpl.setBCP(this);
     }
 
     public synchronized List<? extends PathResourceImplementation> getResources() {
         if (this.resourcesCache == null) {
             ArrayList<PathResourceImplementation> result = new ArrayList<PathResourceImplementation> ();
-            String[] bcp = ecpImpl.getBootClasspath();
-            if (bcp != null) {
-//                result.addAll(ecpImpl.getResources());
-            }
+            result.addAll(ecpImpl.getResources());
             JavaPlatform jp = findActivePlatform ();
             if (jp != null) {
                 //TODO May also listen on CP, but from Platform it should be fixed.
@@ -111,7 +109,7 @@ public final class BootClassPathImpl implements ClassPathImplementation, Propert
         this.support.removePropertyChangeListener (listener);
     }
 
-    JavaPlatform findActivePlatform () {
+    synchronized JavaPlatform findActivePlatform () {
         activePlatformValid = true;
         if (platformManager == null) {
             platformManager = JavaPlatformManager.getDefault();

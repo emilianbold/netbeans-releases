@@ -40,33 +40,40 @@
 package org.netbeans.modules.maven.classpath;
 
 import hidden.org.codehaus.plexus.util.StringUtils;
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.Constants;
+import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileUtil;
 
 /**
- *
+ * NO listening on changes here, let the BootClassPath deal with it..
  * @author  Milos Kleint
  */
-public final class EndorsedClassPathImpl implements ClassPathImplementation, PropertyChangeListener {
+public final class EndorsedClassPathImpl implements ClassPathImplementation {
 
     private List<? extends PathResourceImplementation> resourcesCache;
     private PropertyChangeSupport support = new PropertyChangeSupport(this);
     private final NbMavenProjectImpl project;
+    private BootClassPathImpl bcp;
 
-//    private String lastNonDefault = null;
-//    private String lastNonDefaultPlatform = null;
 
 
     EndorsedClassPathImpl(NbMavenProjectImpl project) {
@@ -74,9 +81,15 @@ public final class EndorsedClassPathImpl implements ClassPathImplementation, Pro
     }
 
     public synchronized List<? extends PathResourceImplementation> getResources() {
+        assert bcp != null;
         if (this.resourcesCache == null) {
             ArrayList<PathResourceImplementation> result = new ArrayList<PathResourceImplementation> ();
-            getBootClasspath();
+            String[] boot = getBootClasspath();
+            if (boot != null) {
+                for (URL u :  stripDefaultJavaPlatform(boot)) {
+                    result.add (ClassPathSupport.createResource(u));
+                }
+            }
             resourcesCache = Collections.unmodifiableList (result);
         }
         return this.resourcesCache;
@@ -90,14 +103,7 @@ public final class EndorsedClassPathImpl implements ClassPathImplementation, Pro
         this.support.removePropertyChangeListener (listener);
     }
 
-
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (true) {
-            resetCache();
-        }
-    }
-
-    String[] getBootClasspath() {
+    private String[] getBootClasspath() {
         String carg = PluginPropertyUtils.getPluginProperty(project, Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER, "compilerArgument", "compile");
         if (carg != null) {
             //TODO
@@ -106,7 +112,7 @@ public final class EndorsedClassPathImpl implements ClassPathImplementation, Pro
         if (cargs != null) {
             String carg2 = cargs.getProperty("bootclasspath");
             if (carg2 != null) {
-                return StringUtils.split(File.pathSeparator);
+                return StringUtils.split(carg2, File.pathSeparator);
             }
         }
         return null;
@@ -115,10 +121,44 @@ public final class EndorsedClassPathImpl implements ClassPathImplementation, Pro
     /**
      * Resets the cache and firesPropertyChange
      */
-    private void resetCache () {
+    void resetCache () {
         synchronized (this) {
             resourcesCache = null;
         }
         support.firePropertyChange(PROP_RESOURCES, null, null);
     }
+
+    void setBCP(BootClassPathImpl aThis) {
+        bcp = aThis;
+    }
+
+    private List<URL> stripDefaultJavaPlatform(String[] boot) {
+        List<URL> toRet = new ArrayList<URL>();
+        Set<URL> defs = getDefJavaPlatBCP();
+        for (String s : boot) {
+            File f = FileUtilities.convertStringToFile(s);
+            URL entry = FileUtil.urlForArchiveOrDir(f);
+            if (entry != null && !defs.contains(entry)) {
+                toRet.add(entry);
+            }
+        }
+        return toRet;
+    }
+
+    private final Set<URL> djpbcp = new HashSet<URL>();
+
+    private Set<URL> getDefJavaPlatBCP() {
+        synchronized (djpbcp) {
+            if (djpbcp.size() == 0) {
+                JavaPlatformManager mngr = JavaPlatformManager.getDefault();
+                JavaPlatform jp = mngr.getDefaultPlatform();
+                ClassPath cp = jp.getBootstrapLibraries();
+                for (ClassPath.Entry ent : cp.entries()) {
+                    djpbcp.add(ent.getURL());
+                }
+            }
+            return Collections.unmodifiableSet(djpbcp);
+        }
+    }
+
 }
