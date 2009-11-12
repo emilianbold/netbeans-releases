@@ -43,6 +43,8 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -63,20 +65,22 @@ import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 
 /**
  *
  * @author Tim Boudreau
  */
-final class ProjectRootNodeChildren extends ChildFactory.Detachable<ChildKind> implements LookupListener, ChangeListener {
+final class ProjectRootNodeChildren extends ChildFactory.Detachable<ChildKind> implements LookupListener, ChangeListener, Runnable {
 
     private final J2MEProject project;
     private volatile Lookup.Result<NodeFactory> res;
-    private static final String FOREIGN_NODES_PATH =
+    static final String FOREIGN_NODES_PATH =
             "Projects/org-netbeans-modules-mobility-project/Nodes"; //NOI18N
     private Set<NodeList> lists = new HashSet<NodeList>();
     private final Object lock = new Object();
+    static final Logger LOGGER = Logger.getLogger(ProjectRootNodeChildren.class.getName());
 
     ProjectRootNodeChildren(J2MEProject project) {
         this.project = project;
@@ -84,6 +88,11 @@ final class ProjectRootNodeChildren extends ChildFactory.Detachable<ChildKind> i
 
     @Override
     protected void addNotify() {
+        cycle = false;
+        if (LOGGER.isLoggable(Level.FINER)) {
+            LOGGER.log(Level.FINER, "J2ME Project Root Node Children for " + //NOI18N
+                    projectString() + " addNotify()"); //NOI18N
+        }
         Lookup.Result result = Lookups.forPath(FOREIGN_NODES_PATH).lookupResult(NodeFactory.class);
         synchronized (lock) {
             res = result;
@@ -93,21 +102,39 @@ final class ProjectRootNodeChildren extends ChildFactory.Detachable<ChildKind> i
 
     @Override
     protected void removeNotify() {
+        if (LOGGER.isLoggable(Level.FINER)) {
+            LOGGER.log(Level.FINER, "J2ME Project Root Node Children for " + //NOI18N
+                    projectString() + " removeNotify()"); //NOI18N
+        }
         Set<NodeList> s;
         synchronized (lock) {
-            assert res != null : "removeNotify called twice or w/o addNotify()";
+            assert res != null : "removeNotify called twice or w/o addNotify()"; //NOI18N
             res.removeLookupListener(this);
             res = null;
             s = new HashSet<NodeList>(lists);
             lists.clear();
         }
         for (NodeList l : s) {
+            if (LOGGER.isLoggable(Level.FINEST)) {
+                LOGGER.log(Level.FINEST, "J2ME Project Root Node Children for " + //NOI18N
+                        projectString() + " detach " + //NOI18N
+                        "listener from " + l); //NOI18N
+            }
             l.removeChangeListener(this);
             l.removeNotify();
         }
       }
-    
+
+    volatile boolean cycle = false;
     protected boolean createKeys(List<ChildKind> toPopulate) {
+        if (cycle) {
+            //Issue #175202 refresh doesn't actually change key list,
+            //so nodes are not updated.  So instead, we force the keys
+            //to empty, and then refill them
+            RequestProcessor.getDefault().post(this, 150);
+            cycle = false;
+            return true;
+        }
         ProjectChildKeyProvider provider = Lookup.getDefault().lookup(
                 ProjectChildKeyProvider.class);
         if (provider == null) {
@@ -146,12 +173,20 @@ final class ProjectRootNodeChildren extends ChildFactory.Detachable<ChildKind> i
         }
         List<Node> nodes = new LinkedList<Node>();
         Set<NodeList> found = new HashSet<NodeList>();
+        final boolean log = LOGGER.isLoggable(Level.FINEST);
+
         for (NodeFactory f : lkpResult.allInstances()) {
             NodeList list = f.createNodes(project);
             list.addNotify();
             list.addChangeListener(this);
             for (Object key : list.keys()) {
-                nodes.add(list.node(key));
+                Node foreignNode = list.node(key);
+                nodes.add(foreignNode);
+                if (log) {
+                    LOGGER.log(Level.FINEST, list + " provides foreign node " + //NOI18N
+                            foreignNode + " for " + //NOI18N
+                            projectString());
+                }
             }
         }
         synchronized (lock) {
@@ -159,6 +194,14 @@ final class ProjectRootNodeChildren extends ChildFactory.Detachable<ChildKind> i
             lists.addAll (found);
         }
         Node[] result = nodes.toArray(new Node[nodes.size()]);
+        if (LOGGER.isLoggable(Level.FINE) && nodes.size() > 0) {
+            LOGGER.log(Level.FINE, "Foreign nodes created for J2ME Project " + //NOI18N
+                    projectString() + ": " + //NOI18N
+                    nodes);
+        } else if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "No foreign nodes for J2ME Project " + //NOI18N
+                    projectString()); //NOI18N
+        }
         return result;
     }
 
@@ -191,10 +234,27 @@ final class ProjectRootNodeChildren extends ChildFactory.Detachable<ChildKind> i
     }
 
     public void resultChanged(LookupEvent ev) {
+        cycle = true;
         refresh(false);
     }
 
     public void stateChanged(ChangeEvent e) {
+        cycle = true;
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "Received state change from " + e.getSource() //NOI18N
+                    + " refereshing child nodes"); //NOI18N
+        }
         refresh (true);
+    }
+
+    private String projectString() {
+        //Project will be null for unit tests
+        return project == null ? "null" : //NOI18N
+            project.getProjectDirectory().getPath();
+    }
+
+    public void run() {
+        cycle = false;
+        refresh(true);
     }
 }

@@ -63,6 +63,8 @@ import javax.swing.BorderFactory;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.javacard.common.JCConstants;
 import org.netbeans.modules.javacard.ri.platform.RIPlatform;
+import org.netbeans.modules.javacard.ri.platform.installer.ServersPanel;
+import org.netbeans.modules.javacard.spi.DeviceManagerDialogProvider;
 import org.netbeans.modules.javacard.spi.JavacardPlatform;
 import org.netbeans.modules.javacard.spi.JavacardPlatformKeyNames;
 import org.netbeans.modules.javacard.spi.ProjectKind;
@@ -87,7 +89,7 @@ import org.openide.util.Utilities;
  *
  * @author Tim Boudreau
  */
-public class JavacardPlatformDataObject extends PropertiesBasedDataObject<JavacardPlatform> {
+public class JavacardPlatformDataObject extends PropertiesBasedDataObject<JavacardPlatform> implements DeviceManagerDialogProvider {
 
     private static final String ICON_BASE = "org/netbeans/modules/javacard/ri/platform/ri.png"; //NOI18N
 
@@ -129,6 +131,10 @@ public class JavacardPlatformDataObject extends PropertiesBasedDataObject<Javaca
             JavacardPlatform result = new RIPlatform(properties);
             return result;
         }
+    }
+
+    public void showManageDevicesDialog(Component parent) {
+        new ServersPanel(getNodeDelegate()).showDialog();
     }
 
     private static final class ND extends DataNode {
