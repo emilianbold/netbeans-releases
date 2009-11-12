@@ -49,6 +49,8 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
 
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -57,6 +59,10 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider;
@@ -70,6 +76,8 @@ import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
 import org.netbeans.modules.web.jsf.api.metamodel.JsfModel;
 import org.netbeans.modules.web.jsf.api.metamodel.JsfModelFactory;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
@@ -318,8 +326,7 @@ public class JsfHyperlinkProvider implements HyperlinkProvider {
             }
             else {
                 String fqn = bean.getManagedBeanClass();
-                JavaSource javaSource = JavaSource.create( 
-                        ClasspathInfo.create(mySource)  );
+                JavaSource javaSource = JavaSource.create( getClassPathInfo() );
                 openElement( javaSource , fqn);
                 return;
             }
@@ -396,6 +403,34 @@ public class JsfHyperlinkProvider implements HyperlinkProvider {
                 Exceptions.printStackTrace(e);
             }
         }
+        
+        private ClasspathInfo getClassPathInfo(){
+            //ClasspathInfo.create(mySource);
+            Project project = FileOwnerQuery.getOwner(mySource);
+            return ClasspathInfo.create( getClassPath(project, ClassPath.BOOT ), 
+                    getClassPath(project, ClassPath.COMPILE ), 
+                    getClassPath(project, ClassPath.SOURCE ));
+        }
 
+        private static ClassPath getClassPath( Project project, String type ) {
+            ClassPathProvider provider = project.getLookup().lookup( 
+                    ClassPathProvider.class);
+            if ( provider == null ){
+                return null;
+            }
+            Sources sources = project.getLookup().lookup(Sources.class);
+            if ( sources == null ){
+                return null;
+            }
+            SourceGroup[] sourceGroups = sources.getSourceGroups( 
+                    JavaProjectConstants.SOURCES_TYPE_JAVA );
+            ClassPath[] paths = new ClassPath[ sourceGroups.length];
+            int i=0;
+            for (SourceGroup sourceGroup : sourceGroups) {
+                FileObject rootFolder = sourceGroup.getRootFolder();
+                paths[ i ] = provider.findClassPath( rootFolder, type);
+            }
+            return ClassPathSupport.createProxyClassPath( paths );
+        }
     }
 }
