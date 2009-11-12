@@ -43,9 +43,17 @@ package org.netbeans.modules.ruby.testrunner.ui;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.gsf.testrunner.api.DiffViewAction;
 import org.netbeans.modules.gsf.testrunner.api.Locator;
@@ -64,6 +72,14 @@ import org.openide.util.lookup.Lookups;
  */
 public final class RubyTestMethodNode extends TestMethodNode {
 
+    private static final Logger LOGGER = Logger.getLogger(RubyTestMethodNode.class.getName());
+    private static final ExecutorService EXECUTOR = Executors.newCachedThreadPool();
+
+    /**
+     * Resolving the stack trace may take a lot of time, so
+     */
+    private final FutureTask<String> stackTraceLocationHolder;
+
     public RubyTestMethodNode(Testcase testcase, Project project) {
         super(testcase, project, Lookups.singleton(new Locator() {
 
@@ -71,6 +87,7 @@ public final class RubyTestMethodNode extends TestMethodNode {
                 node.getPreferredAction().actionPerformed(null);
             }
         }));
+        stackTraceLocationHolder = getTestCaseLineFromStackTrace(testcase);
     }
 
     /**
@@ -79,16 +96,25 @@ public final class RubyTestMethodNode extends TestMethodNode {
     public Action getPreferredAction() {
         // the location to jump from the node
         String testLocation = testcase.getLocation();
-        String stackTrace = getTestCaseLineFromStackTrace(testcase);
-        String jumpToLocation = stackTrace != null
-                ? stackTrace
+        String stackTraceLocation = null;
+        try {
+            stackTraceLocation = stackTraceLocationHolder.get(300, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException ex) {
+            // ignore
+        } catch (ExecutionException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        } catch (TimeoutException ex) {
+            // ignore
+        }
+        String jumpToLocation = stackTraceLocation != null
+                ? stackTraceLocation
                 : testLocation;
 
         return jumpToLocation == null
                 ? new JumpToTestAction(testcase, project, NbBundle.getMessage(RubyTestMethodNode.class, "LBL_GoToSource"), false)
                 : new JumpToCallStackAction(this, jumpToLocation);
     }
-    
+
     /**
      * Gets the line from the stack trace representing the last line in the test class.
      * If that can't be resolved
@@ -98,22 +124,30 @@ public final class RubyTestMethodNode extends TestMethodNode {
      *
      * @return
      */
-    private String getTestCaseLineFromStackTrace(Testcase testcase) {
-        if (testcase.getTrouble() == null) {
-            return null;
-        }
-        String[] stacktrace = testcase.getTrouble().getStackTrace();
-        if (stacktrace == null || stacktrace.length <= 1) {
-            return null;
-        }
-        if (stacktrace.length > 2) {
-            String candidateLine = findLocationLine(stacktrace, testcase.getName(), getFileName(testcase));
-            if (candidateLine != null) {
-                return  candidateLine;
+    private FutureTask<String> getTestCaseLineFromStackTrace(final Testcase testcase) {
+        // may end up triggering parsing (AstUtilities#getForeignNode), so run in another thread
+        FutureTask<String> result = new FutureTask<String>(new Callable<String>() {
+            public String call() throws Exception {
+                Thread.sleep(9000);
+                if (testcase.getTrouble() == null) {
+                    return null;
+                }
+                final String[] stacktrace = testcase.getTrouble().getStackTrace();
+                if (stacktrace == null || stacktrace.length <= 1) {
+                    return null;
+                }
+                if (stacktrace.length > 2) {
+                    String candidateLine = findLocationLine(stacktrace, testcase.getName(), getFileName(testcase));
+                    if (candidateLine != null) {
+                        return candidateLine;
+                    }
+                }
+                // fall back to the second line (the first one contains the failure msg)
+                return stacktrace[1];
             }
-        }
-        // fall back to the second line (the first one contains the failure msg)
-        return stacktrace[1];
+        });
+        EXECUTOR.execute(result);
+        return result;
     }
 
     // package private for unit tests
