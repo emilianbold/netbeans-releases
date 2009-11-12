@@ -177,7 +177,9 @@ public class Reformatter implements ReformatTask {
         if (endOffset < 0)
             return;
         int embeddingOffset = -1;
+        int firstLineIndent = 0;
         if (!"text/x-java".equals(context.mimePath())) { //NOI18N
+            firstLineIndent = context.lineIndent(context.lineStartOffset(region.getStartOffset()));
             TokenSequence<JavaTokenId> ts = controller.getTokenHierarchy().tokenSequence(JavaTokenId.language());
             if (ts != null) {
                 ts.move(startOffset);
@@ -208,7 +210,7 @@ public class Reformatter implements ReformatTask {
         TreePath path = getCommonPath(startOffset, endOffset);
         if (path == null)
             return;
-        for (Diff diff : Pretty.reformat(controller, path, cs, startOffset, endOffset, templateEdit)) {
+        for (Diff diff : Pretty.reformat(controller, path, cs, startOffset, endOffset, templateEdit, firstLineIndent)) {
             int start = diff.getStartOffset();
             int end = diff.getEndOffset();
             String text = diff.getText();
@@ -441,10 +443,12 @@ public class Reformatter implements ReformatTask {
             this.endOffset = endOffset;
         }
 
-        public static LinkedList<Diff> reformat(CompilationInfo info, TreePath path, CodeStyle cs, int startOffset, int endOffset, boolean templateEdit) {
+        public static LinkedList<Diff> reformat(CompilationInfo info, TreePath path, CodeStyle cs, int startOffset, int endOffset, boolean templateEdit, int firstLineIndent) {
             Pretty pretty = new Pretty(info, path, cs, startOffset, endOffset, templateEdit);
-            if (pretty.indent >= 0)
+            if (pretty.indent >= 0) {
+                pretty.indent += firstLineIndent;
                 pretty.scan(path, null);
+            }
             if (path.getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT) {
                 pretty.tokens.moveEnd();
                 pretty.tokens.movePrevious();
