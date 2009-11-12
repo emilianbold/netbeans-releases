@@ -47,6 +47,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
@@ -60,6 +62,7 @@ import org.openide.util.NbBundle;
  * @author Radek Matous, Tomas Mysik
  */
 public final class ConfigManager {
+    static final Logger LOGGER = Logger.getLogger(ConfigManager.class.getName());
     private static final String PROP_DISPLAY_NAME = "$label"; // NOI18N
 
     private final Map<String/*|null*/, Map<String, String/*|null*/>/*|null*/> configs;
@@ -138,7 +141,13 @@ public final class ConfigManager {
     }
 
     public synchronized Configuration currentConfiguration() {
-        return new Configuration(configProvider.getActiveConfig());
+        String activeConfig = configProvider.getActiveConfig();
+        if (exists(activeConfig)) {
+            return new Configuration(configProvider.getActiveConfig());
+        }
+        // #176670
+        LOGGER.log(Level.WARNING, "Missing configuration \"{0}\" found - perhaps deleted?", activeConfig);
+        return createNew(activeConfig, activeConfig);
     }
 
     public Configuration defaultConfiguration() {
