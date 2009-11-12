@@ -274,11 +274,11 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
         // javadoc
         List<URL> javadocList = new ArrayList<URL>();
         try {
-            File javadocFile = InstalledFileLocator.getDefault().locate("docs/jsr311-api-doc.zip", null, false); //NOI18N
+            File javadocFile = InstalledFileLocator.getDefault().locate("docs/jsr311-api-1.1.1-javadoc.zip", null, false); //NOI18N
             if (javadocFile != null && javadocFile.exists()) {
                     javadocList.add(FileUtil.getArchiveRoot(javadocFile.toURI().toURL()));
             }
-            javadocFile = InstalledFileLocator.getDefault().locate("docs/jersey-api-doc.zip", null, false); //NOI18N
+            javadocFile = InstalledFileLocator.getDefault().locate("docs/jersey-1.1.4-javadoc.zip", null, false); //NOI18N
             if (javadocFile != null && javadocFile.exists()) {
                     javadocList.add(FileUtil.getArchiveRoot(javadocFile.toURI().toURL()));
             }
