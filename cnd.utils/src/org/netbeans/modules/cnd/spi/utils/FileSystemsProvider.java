@@ -58,6 +58,11 @@ public abstract class FileSystemsProvider {
             this.fileSystem = fileSystem;
             this.path = path;
         }
+
+        @Override
+        public String toString() {
+            return this.fileSystem.getDisplayName() + ":" + path; // NOI18N
+        }
     }
 
     private static final FileSystemsProvider DEFAULT = new DefaultProvider();
