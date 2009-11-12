@@ -112,6 +112,11 @@ public class RemoteFileSystem extends FileSystem {
         return remoteFileSupport;
     }
 
+    @Override
+    public String toString() {
+        return getDisplayName();
+    }
+
     private static class RootFileObject extends RemoteDirectory {
 
         public RootFileObject(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, File cache) {

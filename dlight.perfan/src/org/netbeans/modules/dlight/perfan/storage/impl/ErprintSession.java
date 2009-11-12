@@ -43,8 +43,8 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.netbeans.modules.dlight.perfan.spi.datafilter.CollectedObjectsFilter;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.perfan.spi.datafilter.SunStudioFiltersProvider;
+import org.netbeans.modules.dlight.perfan.stack.impl.FunctionCallImpl;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -268,7 +268,7 @@ public class ErprintSession {
         }
     }
 
-    public FunctionStatistic getFunctionStatistic(FunctionCall functionCall, boolean restart) throws IOException {
+    public FunctionStatistic getFunctionStatistic(FunctionCallImpl functionCall, boolean restart) throws IOException {
         final Erprint erp = restartAndLock(restart);
         try {
             return erp.getFunctionStatistic(functionCall);

@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.visualizers;
 
+import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.dlight.spi.SourceSupportProvider;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -99,6 +100,7 @@ import org.netbeans.modules.dlight.core.stack.spi.AnnotatedSourceSupport;
 import org.netbeans.modules.dlight.management.api.DLightSession.SessionState;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
+import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.visualizers.api.ColumnsUIMapping;
 import org.netbeans.swing.etable.ETableColumnModel;
 import org.netbeans.swing.outline.Outline;
@@ -117,7 +119,8 @@ import org.openide.util.NbBundle;
 public class FunctionsListViewVisualizer extends JPanel implements
         Visualizer<FunctionsListViewVisualizerConfiguration>, OnTimerTask, ComponentListener, ExplorerManager.Provider {
 
-    private static final long MIN_REFRESH_MILLIS = 500;
+    private final static long MIN_REFRESH_MILLIS = 500;
+    private final static Logger log = DLightLogger.getLogger(FunctionsListViewVisualizer.class);
     private Future<Boolean> task;
     private Future<Boolean> detailedTask;
     private final QueryLock queryLock = new QueryLock();
@@ -141,10 +144,18 @@ public class FunctionsListViewVisualizer extends JPanel implements
     private ExecutorService sourcePrefetchExecutor;
     private static final boolean isMacLaf = "Aqua".equals(UIManager.getLookAndFeel().getID()); // NOI18N
     private static final Color macBackground = UIManager.getColor("NbExplorerView.background"); // NOI18N
+    private static final String displayNameFormat;
 //    private final FocusTraversalPolicy focusPolicy = new FocusTraversalPolicyImpl() ;
     private JComponent lastFocusedComponent = null;
     private Map<Integer, Boolean> ascColumnValues = new HashMap<Integer, Boolean>();
     private final SourceSupportProvider sourceSupportProvider;
+
+    static {
+        Color dlc = UIManager.getDefaults().getColor("Label.disabledForeground"); // NOI18N
+        String extraInfoPrefix = String.format("<font color='#%02x%02x%02x'<i>", dlc.getRed(), dlc.getGreen(), dlc.getBlue()); // NOI18N
+        String extraInfoSuffix = String.format("</i></font>", dlc); // NOI18N
+        displayNameFormat = "<html>%s" + extraInfoPrefix + " &lt;%s&gt;" + extraInfoSuffix + "</html>"; // NOI18N
+    }
 
     public FunctionsListViewVisualizer(FunctionsListDataProvider dataProvider, FunctionsListViewVisualizerConfiguration configuration) {
         super(new BorderLayout());
@@ -721,7 +732,32 @@ public class FunctionsListViewVisualizer extends JPanel implements
 
         @Override
         public String getDisplayName() {
-            return functionCall.getDisplayedName();//functionCall.getFunction().getName() + (functionCall.hasOffset() ? ("+0x" + functionCall.getOffset()) : "");//NOI18N
+            String dispName = functionCall.getDisplayedName().trim();
+            // Do some decoration...
+            // TODO: IMO all additional information (like sourcefile info)
+            // should be retrieved separately and mot with getDisplayedName
+
+            int idx = dispName.indexOf(';');
+//            if (idx < 0) {
+//                idx = dispName.indexOf('+');
+//            }
+
+
+            if (idx > 0) {
+                String funcname = dispName.substring(0, idx).trim();
+                String extraInfo = dispName.substring(idx + 1).trim();
+
+                // Cut line number
+                idx = extraInfo.indexOf(':');
+                if (idx > 0) {
+                    extraInfo = extraInfo.substring(0, idx).trim();
+                }
+
+                dispName = String.format(displayNameFormat, funcname, extraInfo);
+                dispName = dispName.replaceAll(" ", "&nbsp;"); // NOI18N
+            }
+
+            return dispName;
         }
 
         @Override
@@ -733,66 +769,68 @@ public class FunctionsListViewVisualizer extends JPanel implements
     private class GoToSourceAction extends AbstractAction {
 
         private final FunctionCallNode functionCallNode;
-        private SourceFileInfo sourceInfo;
+        private final Future<SourceFileInfo> futureSourceInfo;
         private Future<Boolean> goToSourceTask;
 
         public GoToSourceAction(FunctionCallNode funcCallNode) {
             super(NbBundle.getMessage(FunctionsListViewVisualizer.class, "GoToSourceActionName"));//NOI18N
-            setEnabled(false);
             this.functionCallNode = funcCallNode;
+
             synchronized (sourcePrefetchExecutorLock) {
                 if (sourcePrefetchExecutor == null) {
                     sourcePrefetchExecutor = Executors.newFixedThreadPool(2);
                 }
             }
-            sourcePrefetchExecutor.submit(new Runnable() {
 
-                public void run() {
-                    getSource();
+            futureSourceInfo = sourcePrefetchExecutor.submit(new Callable<SourceFileInfo>() {
+
+                public SourceFileInfo call() throws Exception {
+                    return getSource();
                 }
             });
+
+            setEnabled(false);
         }
 
         public synchronized void actionPerformed(ActionEvent e) {
-            if (goToSourceTask == null || goToSourceTask.isDone()) {
-                goToSourceTask = DLightExecutorService.submit(new Callable<Boolean>() {
-
-                    public Boolean call() {
-                        boolean result = goToSource();
-                        return result;
-                    }
-                }, "GoToSource from Functions List View"); // NOI18N
+            if (goToSourceTask != null && !goToSourceTask.isDone()) {
+                // Already in progress...
+                return;
             }
+
+            goToSourceTask = DLightExecutorService.submit(new Callable<Boolean>() {
+
+                public Boolean call() {
+                    return goToSource();
+                }
+            }, "GoToSource from Functions List View"); // NOI18N
         }
 
         private boolean goToSource() {
-            SourceFileInfo source = getSource();
-            if (source != null && source.isSourceKnown()) {
-                sourceSupportProvider.showSource(source);
-
-                return true;
-            } else {
-                return false;
+            try {
+                SourceFileInfo source = futureSourceInfo.get();
+                if (source != null && source.isSourceKnown()) {
+                    sourceSupportProvider.showSource(source);
+                    return true;
+                }
+            } catch (InterruptedException ex) {
+                // OK. just skip
+            } catch (ExecutionException ex) {
+                log.fine(ex.getMessage());
             }
+
+            return false;
         }
 
         private SourceFileInfo getSource() {
-            synchronized (this) {
-                if (sourceInfo != null) {
-                    return sourceInfo;
-                }
-            }
             FunctionCallWithMetric functionCall = functionCallNode.getFunctionCall();
             SourceFileInfo result = dataProvider.getSourceFileInfo(functionCall);
+
             if (result != null && result.isSourceKnown()) {
-                synchronized (this) {
-                    if (sourceInfo == null) {
-                        sourceInfo = result;
-                    }
-                }
                 setEnabled(true);
-                functionCallNode.fire();
             }
+
+            functionCallNode.fire();
 
             return result;
         }
