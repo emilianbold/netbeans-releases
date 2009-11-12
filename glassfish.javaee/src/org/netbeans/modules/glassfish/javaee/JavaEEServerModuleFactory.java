@@ -250,7 +250,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
     }
 
     private static final String[] JAXRS_LIBRARIES =
-             {"asm-all-repackaged", "jackson-asl", "jersey-bundle", "jersey-gf-bundle", "jersey-multipart", "jettison", "jsr311-api"}; //NOI18N
+             {"asm-all-repackaged", "jackson-asl", "jackson-core-asl", "jersey-bundle", "jersey-gf-bundle", "jersey-multipart", "jettison", "jsr311-api"}; //NOI18N
     private static final String PRELUDE_RESTLIB = "restlib_gfv3"; // NOI18N
     private static final String V3_RESTLIB = "restlib_gfv3ee6"; // NOI18N
 
