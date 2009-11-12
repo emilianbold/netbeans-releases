@@ -77,6 +77,10 @@ public class SelectionModeTest extends NbTestCase {
     protected boolean runInEQ() {
         return true;
     }
+
+    protected @Override int timeOut() {
+        return 500000;
+    }
     
     /** Create tree and a selection of nodes for test.
      */
@@ -234,7 +238,6 @@ public class SelectionModeTest extends NbTestCase {
     public void testDiscontigousSelection () throws Exception {
         // try setSelectionMode; if not present then fail
         setSelectionMode (tree, TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
-        PropertyVetoException exp = null;
         
         // single
         try {

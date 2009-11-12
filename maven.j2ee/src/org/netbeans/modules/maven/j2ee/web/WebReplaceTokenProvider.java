@@ -268,6 +268,10 @@ public class WebReplaceTokenProvider implements ReplaceTokenProvider, ActionConv
         }
 
         WebModule webModule = WebModule.getWebModule(javaClass);
+        if (webModule == null) {
+            //not sure how it can happen, but #176535 proves it can
+            return false;
+        }
         try {
             MetadataModel<WebAppMetadata> metadataModel = webModule
                     .getMetadataModel();

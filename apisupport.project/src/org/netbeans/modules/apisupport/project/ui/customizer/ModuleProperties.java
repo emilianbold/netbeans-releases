@@ -217,11 +217,19 @@ public abstract class ModuleProperties {
      */
     void storeProperties() throws IOException {
         // Store changes into in nbproject/project.properties
-        getHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH,
-                getProjectProperties());
+        File ppf = new File(getProjectDirectoryFile(), AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        if (getProjectProperties().size() > 0 || ppf.exists()) {
+            // #161230: don't create empty properties file
+            getHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH,
+                    getProjectProperties());
+        }
         // Store changes into in nbproject/private/private.properties
-        getHelper().putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH,
-                getPrivateProperties());
+        ppf = new File(getProjectDirectoryFile(), AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+        if (getPrivateProperties().size() > 0 || ppf.exists()) {
+            // #161230: don't create empty properties file
+            getHelper().putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH,
+                    getPrivateProperties());
+        }
     }
     
     /**
