@@ -48,8 +48,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.kenai.FeatureData;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
-import org.netbeans.modules.kenai.util.NbModuleOwnerSupport;
-import org.netbeans.modules.kenai.util.NbModuleOwnerSupport.OwnerInfo;
 
 /**
  *
@@ -175,10 +173,6 @@ public final class KenaiFeature {
      * @return bug tracking component or null
      */
     public static String getComponentForFile(File file) {
-        OwnerInfo info = NbModuleOwnerSupport.getInstance().getOwner(".bugtracking", file);//NOI18N
-        if (info!=null) {
-            return info.getOwner();
-        }
-        return null;
+        return NbModuleOwnerSupport.getInstance().getOwner(".bugtracking", file);//NOI18N
     }
 }
