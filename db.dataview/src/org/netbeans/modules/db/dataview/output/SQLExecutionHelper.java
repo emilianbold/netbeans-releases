@@ -513,7 +513,7 @@ class SQLExecutionHelper {
                 }
             }
         } catch (SQLException e) {
-            mLogger.log(Level.SEVERE, "Failed to set up table model" + e); // NOI18N
+            mLogger.log(Level.SEVERE, "Failed to set up table model.", e); // NOI18N
             throw e;
         } finally {
             dataView.getDataViewPageContext().setCurrentRows(rows);
