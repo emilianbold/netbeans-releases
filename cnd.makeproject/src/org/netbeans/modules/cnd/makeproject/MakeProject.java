@@ -917,9 +917,7 @@ public final class MakeProject implements Project, AntProjectListener {
 
         protected void projectClosed() {
             if (projectDescriptorProvider.getConfigurationDescriptor() != null) {
-                // FIXUP: Should be moved to MakeonfigurationDescriptor but can't now due to l10n freeze.
-                projectDescriptorProvider.getConfigurationDescriptor().save(NbBundle.getMessage(MakeProject.class, "ProjectNotSaved"));
-                projectDescriptorProvider.getConfigurationDescriptor().closed();
+                projectDescriptorProvider.getConfigurationDescriptor().saveAndClose();
             }
 
             GlobalPathRegistry.getDefault().unregister(MakeProjectPaths.SOURCES, sourcepath.getClassPath());
