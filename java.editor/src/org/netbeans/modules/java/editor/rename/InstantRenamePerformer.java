@@ -92,8 +92,8 @@ import org.netbeans.editor.MarkBlock;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.util.swing.MutablePositionRegion;
 import org.netbeans.modules.editor.java.JavaKit.JavaDeleteCharAction;
-import org.netbeans.modules.editor.java.RunOffAWT;
-import org.netbeans.modules.editor.java.RunOffAWT.Worker;
+import org.netbeans.modules.editor.java.ComputeOffAWT;
+import org.netbeans.modules.editor.java.ComputeOffAWT.Worker;
 import org.netbeans.modules.java.editor.javadoc.JavadocImports;
 import org.netbeans.modules.java.editor.semantic.FindLocalUsagesQuery;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
@@ -198,7 +198,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
             
             final boolean[] wasResolved = new boolean[1];
 
-            Set<Token> changePoints = RunOffAWT.computeOffAWT(new Worker<Set<Token>>() {
+            Set<Token> changePoints = ComputeOffAWT.computeOffAWT(new Worker<Set<Token>>() {
                 public Set<Token> process(CompilationInfo info) {
                     try {
                         return computeChangePoints(info, caret, wasResolved);
