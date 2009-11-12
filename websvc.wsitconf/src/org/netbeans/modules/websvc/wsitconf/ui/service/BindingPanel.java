@@ -180,6 +180,7 @@ public class BindingPanel extends SectionInnerPanel {
         }
         if (supportedConfigVersions.isEmpty()) {
             supportedConfigVersions.add(ConfigVersion.CONFIG_1_0);
+            cfgVersionCombo.addItem(ConfigVersion.CONFIG_1_0);
         }
         inSync = false;
 
