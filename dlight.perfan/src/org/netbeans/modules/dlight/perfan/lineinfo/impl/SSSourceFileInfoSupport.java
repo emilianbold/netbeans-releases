@@ -151,11 +151,11 @@ public final class SSSourceFileInfoSupport {
                                 sourceFile = localFileFile.exists() ? localFileFile.getAbsolutePath() : null;
                             }
                         }
-                        params.functionCall.setSourceFile(sourceFile);
                     }
                 }
 
                 result = new SourceFileInfo(sourceFile, line, 0);
+                params.functionCall.setSourceFileInfo(result);
             }
 
             return result;

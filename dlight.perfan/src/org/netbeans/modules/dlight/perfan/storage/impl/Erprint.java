@@ -51,12 +51,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.netbeans.modules.dlight.core.stack.api.Function;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.modules.dlight.perfan.spi.datafilter.CollectedObjectsFilter;
 import org.netbeans.modules.dlight.perfan.stack.impl.FunctionCallImpl;
-import org.netbeans.modules.dlight.perfan.stack.impl.FunctionImpl;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
@@ -327,7 +324,7 @@ final class Erprint {
         return new FunctionStatistic(stat);
     }
 
-    FunctionStatistic getFunctionStatistic(FunctionCall functionCall) throws IOException {
+    FunctionStatistic getFunctionStatistic(FunctionCallImpl functionCall) throws IOException {
         FunctionStatistic result = new FunctionStatistic(new String[0]);
 
         synchronized (this) {
@@ -335,35 +332,20 @@ final class Erprint {
                 return result;
             }
 
-            final Function f = functionCall.getFunction();
-            String functionName = f.getName();
+            String functionName = functionCall.getFunction().getName();
             String[] stat = exec(ErprintCommand.fsingle(functionName));
             String choice = "1"; // NOI18N
 
             if (stat != null && stat.length > 0 && choiceMarker.equals(stat[0])) { // NOI18N
-                String cfname;
                 String address;
 
-                FunctionCallImpl fci = (functionCall instanceof FunctionCallImpl)
-                        ? (FunctionCallImpl) functionCall : null;
-
-                final String fname = (fci == null) ? null : fci.getSourceFile();
-                long funcRef = -1;
-
-                if (f instanceof FunctionImpl) {
-                    funcRef = ((FunctionImpl) f).getRef();
-                }
+                long funcRef = functionCall.getFunctionRefID();
 
                 for (String line : stat) {
                     Matcher m = choicePattern.matcher(line);
                     if (m.matches()) {
                         choice = m.group(1);
                         address = m.group(2);
-                        cfname = m.group(3);
-
-                        if (fname != null && cfname.endsWith(fname)) {
-                            break;
-                        }
 
                         try {
                             if (Long.parseLong(address, 16) == funcRef) {
@@ -419,16 +401,9 @@ final class Erprint {
         }
     }
 
-    private void refineSourceInfo(FunctionStatistic fstat, FunctionCall functionCall, int choice) throws IOException {
-        Function f = functionCall.getFunction();
-
-        if (!(f instanceof FunctionImpl)) {
-            return;
-        }
-
-        FunctionImpl func = (FunctionImpl) f;
-        String funcName = func.getName();
-        long funcRef = func.getRef();
+    private void refineSourceInfo(FunctionStatistic fstat, FunctionCallImpl functionCall, int choice) throws IOException {
+        String funcName = functionCall.getFunction().getName();
+        long funcRef = functionCall.getFunctionRefID();
 
         synchronized (this) {
             Metrics prev_metrics = null;

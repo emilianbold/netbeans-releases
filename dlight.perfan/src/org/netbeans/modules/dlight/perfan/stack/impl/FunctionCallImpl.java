@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.perfan.stack.impl;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -46,10 +47,10 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.netbeans.modules.dlight.core.stack.api.Function;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
+import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
 
 /**
  * This class holds metric values for Function calls.
@@ -72,22 +73,22 @@ public class FunctionCallImpl extends FunctionCallWithMetric {
      * in an unique way [equals relies on this now!]
      *
      */
-    private final StringBuilder displayedName = new StringBuilder();
     private final Map<FunctionMetric, Object> metrics;
     private final long ref;
-    private String srcFileName = null;
+    private String displayedName = null;
+    private SourceFileInfo sourceInfo = null;
 
     public FunctionCallImpl(
             final FunctionImpl function, long offset,
             final Map<FunctionMetric, Object> metrics) {
         super(function, offset);
         this.ref = function.getRef();
-        this.metrics = metrics;
+        this.metrics = Collections.unmodifiableMap(metrics);
         updateDisplayedName();
     }
 
-    public void setSourceFile(String fileName) {
-        this.srcFileName = fileName;
+    public synchronized void setSourceFileInfo(SourceFileInfo sourceInfo) {
+        this.sourceInfo = sourceInfo;
         updateDisplayedName();
     }
 
@@ -95,15 +96,13 @@ public class FunctionCallImpl extends FunctionCallWithMetric {
         return ref;
     }
 
-    public String getSourceFile() {
-        return srcFileName;
+    public synchronized String getSourceFile() {
+        return sourceInfo == null ? null : sourceInfo.getFileName();
     }
 
     @Override
-    public String getDisplayedName() {
-        synchronized (displayedName) {
-            return displayedName.toString();
-        }
+    public synchronized String getDisplayedName() {
+        return displayedName;
     }
 
     public Object getMetricValue(FunctionMetric metric) {
@@ -161,29 +160,26 @@ public class FunctionCallImpl extends FunctionCallWithMetric {
         return null;
     }
 
-    private void updateDisplayedName() {
-        synchronized (displayedName) {
-            displayedName.setLength(0);
+    private synchronized void updateDisplayedName() {
+        StringBuilder sb = new StringBuilder(getFunction().getQuilifiedName());
 
-            Function f = getFunction();
+        if (sourceInfo != null) {
+            String file = sourceInfo.getFileName();
+            int line = sourceInfo.getLine();
 
-            if (f != null) {
-                displayedName.append(f.getName());
-            } else {
-                displayedName.append("<unknown>"); // NOI18N
-            }
+            sb.append(", "); // NOI18N
+            sb.append(new File(file).getName());
 
-            if (srcFileName != null) {
-                displayedName.append(", " + srcFileName); // NOI18N
-                if (hasOffset()) {
-                    displayedName.append(":").append(getOffset()); // NOI18N
-                }
-            }
-
-            if (displayedName.length() == 0) {
-                displayedName.append(super.getDisplayedName());
+            if (line > 0) {
+                sb.append(':').append(line);
             }
         }
+
+        if (sb.length() == 0) {
+            sb.append(super.getDisplayedName());
+        }
+
+        displayedName = sb.toString();
     }
     private static final Pattern FUNCTION_PATTERN = Pattern.compile("\\s+(.+?)(?:\\s+\\+\\s+0x([0-9a-fA-F]+))?(?:,\\s+line\\s+(\\d+)\\s+in\\s+\"(.+)\")?"); // NOI18N
 
@@ -205,24 +201,27 @@ public class FunctionCallImpl extends FunctionCallWithMetric {
 
     private static FunctionCall parseFunctionCall(String line) {
         Matcher m = FUNCTION_PATTERN.matcher(line);
-        if (m.matches()) {
-            FunctionImpl func = new FunctionImpl(m.group(1), m.group(1).hashCode());
-
-            long lineNumber = -1;
-            if (m.group(3) != null) {
-                try {
-                    lineNumber = Long.parseLong(m.group(3));
-                } catch (NumberFormatException ex) {
-                }
-            }
-            FunctionCallImpl call = new FunctionCallImpl(func, lineNumber, new HashMap<FunctionMetric, Object>());
-            if (m.group(4) != null) {
-                call.setSourceFile(m.group(4));
-            }
-
-            return call;
-        } else {
+        if (!m.matches()) {
             return null;
         }
+
+        FunctionImpl func = new FunctionImpl(m.group(1), m.group(1).hashCode());
+
+        int lineNumber = -1;
+
+        if (m.group(3) != null) {
+            try {
+                lineNumber = Integer.parseInt(m.group(3));
+            } catch (NumberFormatException ex) {
+            }
+        }
+
+        FunctionCallImpl call = new FunctionCallImpl(func, lineNumber, new HashMap<FunctionMetric, Object>());
+        
+        if (m.group(4) != null) {
+            call.setSourceFileInfo(new SourceFileInfo(m.group(4), lineNumber, 0));
+        }
+
+        return call;
     }
 }

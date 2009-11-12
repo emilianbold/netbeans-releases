@@ -324,32 +324,32 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
 
         SourceFileInfo result = sourceFileInfoSupport.getSourceFileInfo(fci, pathMapper);
 
-        if (result != null && result.isSourceKnown()) {
-            return result;
-        }
+        if (result == null || !result.isSourceKnown()) {
+            synchronized (nonSSSourceInfoCache) {
+                if (nonSSSourceInfoCache.containsKey(refID)) {
+                    result = nonSSSourceInfoCache.get(refID);
+                } else {
+                    Collection<? extends SourceFileInfoProvider> sourceInfoProviders =
+                            Lookup.getDefault().lookupAll(SourceFileInfoProvider.class);
 
-        synchronized (nonSSSourceInfoCache) {
-            if (nonSSSourceInfoCache.containsKey(refID)) {
-                return nonSSSourceInfoCache.get(refID);
-            }
+                    for (SourceFileInfoProvider provider : sourceInfoProviders) {
+                        result = provider.getSourceFileInfo(
+                                functionCall.getFunction().getQuilifiedName(),
+                                (int) functionCall.getOffset(), -1, serviceInfo);
+                        if (result != null && result.isSourceKnown()) {
+                            log.finest("SourceLineInfo data from " + // NOI18N
+                                    provider.getClass().getSimpleName() + ": " + // NOI18N
+                                    result.toString());
+                            break;
+                        }
+                    }
 
-            Collection<? extends SourceFileInfoProvider> sourceInfoProviders =
-                    Lookup.getDefault().lookupAll(SourceFileInfoProvider.class);
-
-            for (SourceFileInfoProvider provider : sourceInfoProviders) {
-                result = provider.getSourceFileInfo(
-                        functionCall.getFunction().getQuilifiedName(),
-                        (int) functionCall.getOffset(), -1, serviceInfo);
-                if (result != null && result.isSourceKnown()) {
-                    log.finest("SourceLineInfo data from " + // NOI18N
-                            provider.getClass().getSimpleName() + ": " + // NOI18N
-                            result.toString());
-                    break;
+                    nonSSSourceInfoCache.put(refID, result);
                 }
             }
-
-            nonSSSourceInfoCache.put(refID, result);
         }
+
+        fci.setSourceFileInfo(result);
 
         return result;
     }
@@ -596,7 +596,7 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
                 if (!skipFunction) {
                     FunctionCallImpl fc = new FunctionCallImpl(f, lineNumber, metricsValues);
                     if (fileName != null) {
-                        fc.setSourceFile(fileName);
+                        fc.setSourceFileInfo(new SourceFileInfo(fileName, lineNumber, 0));
                     }
                     result.add(fc);
                 }
@@ -745,7 +745,7 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
                     if (!skipFunction) {
                         FunctionCallImpl fc = new FunctionCallImpl(f, lineNumber, metricsValues);
                         if (fileName != null) {
-                            fc.setSourceFile(fileName);
+                            fc.setSourceFileInfo(new SourceFileInfo(fileName, lineNumber, 0));
                         }
                         result.add(fc);
                     }
