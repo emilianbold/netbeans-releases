@@ -1,0 +1,83 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<!--
+ *     	  Copyright © 2009 Sun Microsystems, Inc. All rights reserved.
+ *	  Use is subject to license terms.
+-->
+
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <title>Creating Managed Beans</title>
+        <link href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css"
+            rel="stylesheet" type="text/css">
+    </head>
+
+    <body>
+        <h2>Creating Managed Beans</h2>
+
+        <p><small><a href="#seealso">See Also</a></small></p>
+
+        <p>You can create JSF managed beans for your application using the IDE's Managed Bean wizard.
+            In JSF 2.0, any metadata that you specify in the wizard is translated into annotations
+            that are applied to the managed bean once it is generated. If you prefer to register the
+            managed bean with the application using a Faces configuration file (<code>faces-config.xml</code>)
+            instead, the wizard provides the option of doing so.</p>
+
+        <h4>To create a new JSF managed bean:</h4>
+
+        <ol>
+            <li>In the Projects window, right-click your project node and choose New &gt;
+                JSF Managed Bean (Ctrl-N). The JSF Managed Bean wizard opens.
+
+                <br><br>
+                (If JSF Managed Bean is not listed, choose Other. Then select the JavaServer
+                Faces category and JSF Managed Bean file type. Click Next.)</li>
+
+            <li>In the <strong>Class Name</strong> field, type in a name for the managed bean.</li>
+
+            <li>In <strong>Location</strong>, specify the top-level location for the file.
+                ('Source Packages' is the default option, and places the file in the project's
+                <code>src/java</code> folder.</li>
+
+            <li>In <strong>Package</strong>, specify a package name for the new class. If you
+                specify the name of a package that does not exist, it will be created upon
+                completing the wizard. The <strong>Created File</strong> field provides a read-only
+                path to the new location for the file.</li>
+
+            <li>(Optional.) If you want to to register the managed bean with the application using
+                a Faces configuration file, select the 'Add data to configuration file' option.
+                Doing so will prevent the wizard from generating annotations in the new class. If
+                a <code>faces-config.xml</code> does not yet exist for the application, one will be
+                created upon completing the wizard.</li>
+
+            <li>(Optional.) Specify configuration details:
+                <ul>
+                    <li><strong>Name:</strong> Specifies the name which the managed bean can be
+                        invoked by. If left blank, the managed bean can be accessed using the name
+                        of the managed bean class, but with the first letter in lowercase.</li>
+                    
+                    <li><strong>Scope:</strong> Specifies the scope into which a newly created
+                        instance of the specified managed bean will be stored. (Default is
+                        <code>request</code>; choose <code>none</code> if you want to refrain
+                        from placing bean instances in any scope).</li>
+
+                    <li><strong>Description:</strong> A textual description of the element, which
+                        can be flagged with a language code using the <code>xml:lang</code> attribute.</li>
+                </ul></li>
+
+            <li>Click Finish. The new managed bean is generated and opens in the editor.</li>
+        </ol>
+
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="create-page.html">Creating JSF Pages</a></dd>
+            <dd><a href="edit.html">Editing JSF Pages</a></dd>
+            <dd><a href="create.html">Creating a New Application with JSF Support</a></dd>
+            <dd><a href="about.html">About JavaServer Faces Framework Support</a></dd>
+        </dl>
+
+        <hr><small><a href="../../../credits.html">Legal Notices</a></small>
+        <table cellpadding="20" border="0"><tr><td>&nbsp;</td></tr></table>
+    </body>
+</html>

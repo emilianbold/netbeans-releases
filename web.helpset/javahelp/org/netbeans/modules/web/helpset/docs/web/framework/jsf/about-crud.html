@@ -1,68 +1,69 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
 <!--
- *     	  Copyright � 2009 Sun Microsystems, Inc. All rights reserved. 
- *	  Use is subject to license terms.
+ *       Copyright © 2009 Sun Microsystems, Inc. All rights reserved.
+ *       Use is subject to license terms.
 -->
+
 <html>
-<head>
-<meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<meta name="lastupdated" content="9Jul07">
-<!-- p2 -->
-<title>About CRUD Applications</title>
-<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
-</head>
-<body>
-<h2>About CRUD Applications</h2>
-<p><small> <a href="#seealso">See Also</a> </small></p>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <title>About JSF CRUD Applications</title>
+        <link href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css"
+            rel="stylesheet" type="text/css">
+    </head>
 
-<p>A Create, Read, Update, and Delete (CRUD) application is a simple programming pattern that allows you to read 
-and manage the data in a data source. 
-The IDE provides support for this common programming task by letting you quickly generate code for CRUD 
-functionality based on entity classes in your project.</p>
+    <body>
+        <h2>About JSF CRUD Applications</h2>
 
-<p>A JSF application that implements CRUD functionality typically contains the following artifacts.</p>
+        <p><small><a href="#seealso">See Also</a></small></p>
 
-<ul>
-    <li><b>JPA Controller classes.</b>
-    A typical JSF application may have JPA and JSF controller classes.
-    A JPA controller class is a wrapper for an entity class that provides clients with access to the database 
-    through the methods in the entity class.
-    A JPA controller class contains the logic for creating, editing and destorying an entry in the data source, 
-    getting all of the entries in the data source, and getting a specific entry in the data source.
-    Generally you would not need to modify the JPA controller classes unless the database schema changed, in which case
-    you could regenerate the classes for the new schema.</li>
-    <li><b>JSF Controller classes.</b>
-    A JSF controller class generally contains code that invokes methods in the JPA controller classes and 
-    demonstrates which exceptions to catch.
-    To modify your application you would generally modify the JSF controller classes.</li>
-    <li><b>JSF Converter classes.</b> A JSF converter class takes input from the form and converts it into the type that matches the data 
-    in the data source.</li>
-    <li><b>JSP pages.</b> The JSP pages are the web user interface for accessing and modifying the data in the data source.</li>
-</ul>
+        <p>A CRUD (Create, Read, Update, and Delete) application is a simple programming pattern
+            that allows you to read and manage the data in a data source. The IDE provides support
+            for this common programming task by letting you quickly generate code for CRUD
+            functionality based on entity classes in your project.</p>
 
-<p>The following wizards generate code for implementing CRUD functionality in the application.</p>
-    <ul>
-        <li><b>JPA Controller Classes from Entity Classes.</b> This wizard generates the CRUD controller classes based on the entity classes in the project. 
-        The wizard creates one controller for each entity class and places the controller in the same package as the entity class.</li>
-        <li><b>JSF Pages from Entity Classes.</b> This wizard generates the JSF controller classes, converters and JSP pages based on the entity classes in the project.
-        For each entity class, the wizard creates four JSP pages that let you view, edit, create, and destroy entries in the data source.
-        The JSP pages use the JSF framework and access the JSF converter and controller classes. </li>
-    </ul>
-    
-<dl> 
-  <dt><a name="seealso">See Also</a></dt>
-  <dd><a href="framework_jsf_fromentity.html">Generating JSF Pages from an Entity Class</a></dd>
-  <dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/general/persistence_entityclasses.html">Creating an Entity Class</a></dd>
-  <dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/general/persist_jpa_fromentity.html">Generating JPA Controller Classes from an Entity Class</a></dd>
-  <dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/general/persistence_fromdb.html">Generating Persistent Entity Classes from a Database</a></dd>
-  <dd><a href="framework_jsf_add.html">Adding JSF Support to an Existing Application</a></dd>
-  <dd><a href="about_framework.html">About Web Application Frameworks</a></dd>
-</dl>
+        <p>A JSF 2.0 application that implements CRUD functionality typically contains the
+            following artifacts.</p>
+
+        <ul>
+            <li><strong>JPA entity beans</strong>: entity classes generated from a persistence
+                provider, which correspond to data maintained in the data source</li>
+
+            <li><strong>stateless EJB session beans</strong>: for creation, retrieval,
+                modification and removal of entity instances. EJBs contain the business
+                logic for the application, and interface the JSF managed beans with the
+                entity beans.</li>
+
+            <li><strong>JSF session-scoped, managed beans</strong>: controller classes that
+                are coupled with Facelets pages to handle requests. They generally contain
+                code to invoke methods in the EJB session beans.</li>
+
+            <li><strong>Facelets pages</strong>: define views that are used to display data
+                and enable users to input data.</li>
+        </ul>
+
+        <p>You can use the JSF Pages from Entity Classes wizard to generate the above artifacts
+            for your application, based on entity classes contained in the project. See
+            <a href="pages-from-entities.html">Generating JSF Pages from Entity Classes</a>
+            for more details.</p>
+
+        <p class="note">If your project does not use JSF, you can use the
+            <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/general/persist_jpa_fromentity.html">JPA
+                Controller Classes from Entity Classes wizard</a>. This wizard generates
+                CRUD controller classes based on the entity classes in the project. One
+                controller for each entity class is created and placed in the same package
+                as the entity class.</p>
+
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="pages-from-entities.html">Generating JSF Pages from Entity Classes</a></dd>
+            <dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/general/persistence_fromdb.html">Generating Persistent Entity Classes from a Database</a></dd>
+            <dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/general/persistence_about.html">About Java Persistence</a></dd>
+            <dd><a href="about.html">About JavaServer Faces Framework Support</a></dd>
+        </dl>
+
         <hr><small><a href="../../../credits.html">Legal Notices</a></small>
-<table cellpadding="50" border="0">
-  <tr> 
-    <td>&nbsp;</td>
-  </tr>
-</table>
-</body>
+        <table cellpadding="20" border="0"><tr><td>&nbsp;</td></tr></table>
+    </body>
 </html>
