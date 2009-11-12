@@ -55,6 +55,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.DataLoadersBridge;
 import org.netbeans.modules.csl.api.DeclarationFinder;
@@ -101,12 +102,12 @@ public class GoToSupport {
         final AtomicBoolean cancel = new AtomicBoolean();
         String name = NbBundle.getMessage(GoToSupport.class, "NM_GoToDeclaration");
 
-        RunOffAWT.runOffAWT(new Runnable() {
+        ProgressUtils.runOffEventDispatchThread(new Runnable() {
 
             public void run() {
                 perform(doc, offset, false, cancel);
             }
-        }, name, cancel);
+        }, name, cancel, false);
     }
     
     private static String perform(final Document doc, final int offset, final boolean tooltip, final AtomicBoolean cancel) {

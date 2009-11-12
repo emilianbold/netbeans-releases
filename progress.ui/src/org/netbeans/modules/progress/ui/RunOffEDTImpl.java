@@ -132,7 +132,7 @@ public class RunOffEDTImpl implements RunOffEDTProvider {
             return;
         }
 
-        Cursor wait = org.openide.util.Utilities.createProgressCursor(glassPane);
+        Cursor wait = Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR);
 
         if (waitMomentarily(glassPane, wait, dlgTime, latch)) {
             return;

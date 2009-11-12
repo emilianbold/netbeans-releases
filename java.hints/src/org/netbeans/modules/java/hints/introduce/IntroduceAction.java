@@ -36,7 +36,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.modules.editor.java.RunOffAWT;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.java.hints.infrastructure.HintAction;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.DialogDisplayer;
@@ -112,7 +112,7 @@ public final class IntroduceAction extends HintAction {
         final Map<IntroduceKind, String> errorMessages = new EnumMap<IntroduceKind, String>(IntroduceKind.class);
 
         final AtomicBoolean cancel = new AtomicBoolean();
-        RunOffAWT.runOffAWT(new Runnable() {
+        ProgressUtils.runOffEventDispatchThread(new Runnable() {
 
             public void run() {
                 try {
@@ -130,7 +130,7 @@ public final class IntroduceAction extends HintAction {
                     Exceptions.printStackTrace(ex);
                 }
             }
-        }, NbBundle.getMessage(IntroduceAction.class, "LBL_Indroduce_Action"), cancel);
+        }, NbBundle.getMessage(IntroduceAction.class, "LBL_Indroduce_Action"), cancel, false);
 
         if (cancel.get()) {
             return null;
