@@ -327,7 +327,16 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     }
     
     /**
-     * Returns true if this thread is suspended by debugger.
+     * Returns true if this thread is temporarily suspended by debugger to process events.
+     *
+     * @return true if this thread is suspended by debugger
+     */
+    public boolean isSuspendedNoFire () {
+        return suspendedNoFire;
+    }
+
+    /**
+     * Returns true if the JPDA thread is suspended by debugger.
      *
      * @return true if this thread is suspended by debugger
      */
