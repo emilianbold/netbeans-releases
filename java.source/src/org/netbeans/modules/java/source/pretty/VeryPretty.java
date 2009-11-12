@@ -1541,6 +1541,10 @@ public final class VeryPretty extends JCTree.Visitor {
     }
 
     private void adjustSpans(Iterable<? extends Tree> original, String code) {
+        if (tree2Tag == null) {
+            return; //nothing to  copy
+        }
+        
         java.util.List<Tree> linearized = new LinkedList<Tree>();
         if (!new Linearize().scan(original, linearized) != Boolean.TRUE) {
             return; //nothing to  copy
