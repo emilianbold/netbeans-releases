@@ -82,7 +82,7 @@ class EntityGenerateFromIntfVisitor implements MethodType.MethodTypeVisitor, Abs
         this.primaryKeyClass = model.runReadAction(new MetadataModelAction<EjbJarMetadata, String>() {
             public String run(EjbJarMetadata metadata) throws Exception {
                 Entity entity = (Entity) metadata.findByEjbClass(ejbClass);
-                return entity.getPrimKeyClass();
+                return entity != null ? entity.getPrimKeyClass() : null;
             }
         });
     }
