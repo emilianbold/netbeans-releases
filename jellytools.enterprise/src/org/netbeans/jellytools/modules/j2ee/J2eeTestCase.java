@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.jellytools.modules.j2ee;
@@ -49,6 +49,7 @@ import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.modules.j2ee.nodes.GlassFishV2ServerNode;
 import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.JButtonOperator;
@@ -65,6 +66,7 @@ import static org.netbeans.junit.NbModuleSuite.Configuration;
 public class J2eeTestCase extends JellyTestCase {
     private static final String PID_FILE_PREFIX = "J2EE_TEST_CASE_PID_FILE";
     private static final String GLASSFISH_PATH = "com.sun.aas.installRoot";
+    private static final String GLASSFISH_V3_PATH = "org.glassfish.v3ee6.installRoot";
     private static final String TOMCAT_PATH = "org.netbeans.modules.tomcat.autoregister.catalinaHome";
     private static final String JBOSS_PATH = "org.netbeans.modules.j2ee.jboss4.installRoot";
     private static final String GLASSFISH_HOME = "glassfish.home";
@@ -84,10 +86,10 @@ public class J2eeTestCase extends JellyTestCase {
     }
 
     /**
-     * Create a temp file starting with J2EE_TEST_CASE_PID_FILE and ending with 
+     * Create a temp file starting with J2EE_TEST_CASE_PID_FILE and ending with
      * the pid of the test process. The pid is used by hudson to print stacktrace
      * before aborting build because of timeout.
-     * 
+     *
      * @throws java.io.IOException
      */
     private void createPid() throws IOException{
@@ -104,12 +106,20 @@ public class J2eeTestCase extends JellyTestCase {
         if (! (new File(tmpDir, PID_FILE_PREFIX + pid).createNewFile()))
             LOG.warning("File '"+ tmpDirPath + File.pathSeparator + PID_FILE_PREFIX + pid + "' not successfully created!");;
     }
-    
+
     private static void registerGlassfish() {
         String glassfishPath = getServerHome(GLASSFISH);
         if (isValidPath(glassfishPath) && isValidPath(glassfishPath + "/domains/domain1")) {
             LOG.info("Setting server path " + glassfishPath);
             System.setProperty(GLASSFISH_PATH, glassfishPath);
+        }
+    }
+
+    private static void registerGlassfishV3() {
+        String glassfishPath = getServerHome(GLASSFISH_V3);
+        if (isValidPath(glassfishPath) && isValidPath(glassfishPath + "/glassfish/domains/domain1")) {
+            LOG.info("Setting server path " + glassfishPath);
+            System.setProperty(GLASSFISH_V3_PATH, glassfishPath);
         }
     }
 
@@ -135,6 +145,7 @@ public class J2eeTestCase extends JellyTestCase {
             case JBOSS:
                 return System.getProperty(JBOSS_HOME);
             case GLASSFISH:
+            case GLASSFISH_V3:
                 String glassfishPath = System.getProperty(GLASSFISH_HOME);
                 if (glassfishPath == null){
                     glassfishPath = System.getProperty("j2ee.appserver.path");
@@ -164,15 +175,15 @@ public class J2eeTestCase extends JellyTestCase {
             return false;
         }
     }
-    
+
     /**
      *
-     * Create all modules suite. 
-     * 
+     * Create all modules suite.
+     *
      * @param server server needed for the suite
      * @param clazz class object to create suite for
      * @param testNames test names to add into suite
-     * @return executable Test instance 
+     * @return executable Test instance
      */
     protected static Test createAllModulesServerSuite(Server server, Class<? extends TestCase> clazz, String... testNames){
         Configuration result = NbModuleSuite.createConfiguration(clazz);
@@ -181,9 +192,9 @@ public class J2eeTestCase extends JellyTestCase {
     }
 
     /**
-     * Add tests into configuration. Tests are added only if it's sure there 
+     * Add tests into configuration. Tests are added only if it's sure there
      * is some server registered in the IDE.
-     * 
+     *
      * @param conf test configuration
      * @param testNames names of added tests
      * @return clone of the test configuration
@@ -191,12 +202,12 @@ public class J2eeTestCase extends JellyTestCase {
     protected static Configuration addServerTests(Configuration conf, String... testNames) {
         return addServerTests(ANY, conf, testNames);
     }
-    
+
     /**
      * Add tests into configuration.
-     * Tests are added only if there is the server instance registered in the 
+     * Tests are added only if there is the server instance registered in the
      * IDE.
-     * 
+     *
      * @param server server that is needed by tests
      * @param conf test configuration
      * @param testNames names of added tests
@@ -205,12 +216,12 @@ public class J2eeTestCase extends JellyTestCase {
     protected static Configuration addServerTests(Server server, Configuration conf, String... testNames) {
         return addServerTests(server, conf, null, testNames);
     }
-    
+
     /**
      * Add tests into configuration.
-     * Tests are added only if there is the server instance registered in the 
+     * Tests are added only if there is the server instance registered in the
      * IDE.
-     * 
+     *
      * @param server server that is needed by tests
      * @param conf test configuration
      * @param clazz tested class
@@ -222,6 +233,12 @@ public class J2eeTestCase extends JellyTestCase {
             LOG.info("adding server tests");
             return addTest(conf, clazz, testNames);
         } else {
+            if (server.equals(GLASSFISH_V3) || server.equals(ANY)){
+                registerGlassfishV3();
+                if (isRegistered(GLASSFISH_V3)) {
+                    return addTest(conf, clazz, testNames);
+                }
+            }
             if (server.equals(GLASSFISH) || server.equals(ANY)){
                 registerGlassfish();
                 if (isRegistered(GLASSFISH)) {
@@ -246,6 +263,7 @@ public class J2eeTestCase extends JellyTestCase {
                 logServer(JBOSS_HOME, getServerHome(JBOSS));
                 logServer(TOMCAT_HOME, getServerHome(TOMCAT));
                 logServer(GLASSFISH_HOME, getServerHome(GLASSFISH));
+                logServer(GLASSFISH_HOME, getServerHome(GLASSFISH_V3));
             }
             try{
                 return conf.addTest("testEmpty");
@@ -255,7 +273,7 @@ public class J2eeTestCase extends JellyTestCase {
             }
         }
     }
-    
+
     private static void logServer(String propName, String value){
         if (value == null){
             LOG.info(propName + " is not set");
@@ -264,7 +282,7 @@ public class J2eeTestCase extends JellyTestCase {
         }
     }
     /**
-     * Returns <code>true</code> if given server is registered in the IDE, 
+     * Returns <code>true</code> if given server is registered in the IDE,
      * <code>false</code> otherwise
      * @param server to decide about
      * @return <code>true</code> if the <code>server</code> is registered
@@ -272,6 +290,9 @@ public class J2eeTestCase extends JellyTestCase {
     protected static boolean isRegistered(Server server) {
         boolean result;
         switch (server){
+            case GLASSFISH_V3:
+                result =  System.getProperty(GLASSFISH_V3_PATH) != null;
+                break;
             case GLASSFISH:
                 result =  System.getProperty(GLASSFISH_PATH) != null;
                 break;
@@ -291,16 +312,16 @@ public class J2eeTestCase extends JellyTestCase {
                     }
                 }
                 return false;
-            default: 
+            default:
                 throw new IllegalArgumentException("Unsupported server");
         }
         return result;
     }
-    
+
     /**
      * Returns J2eeServerNode for given server
-     * 
-     * @param server 
+     *
+     * @param server
      * @return J2eeServerNode for given server
      */
     protected J2eeServerNode getServerNode(Server server){
@@ -308,9 +329,11 @@ public class J2eeTestCase extends JellyTestCase {
             throw new IllegalArgumentException("Server is not registred in IDE");
         }
         switch (server){
-            case GLASSFISH:
+            case GLASSFISH_V3:
                 return J2eeServerNode.invoke("GlassFish");
-            case JBOSS: 
+            case GLASSFISH:
+                return GlassFishV2ServerNode.invoke();
+            case JBOSS:
                 return J2eeServerNode.invoke("JBoss");
             case TOMCAT:
                 return J2eeServerNode.invoke("Tomcat");
@@ -328,19 +351,19 @@ public class J2eeTestCase extends JellyTestCase {
                 throw new IllegalArgumentException("Unsupported server");
         }
     }
-    
+
     public static enum Server {
 
-        TOMCAT, GLASSFISH, JBOSS, ANY
+        TOMCAT, GLASSFISH, GLASSFISH_V3, JBOSS, ANY
     }
     /**
-     * Empty test is executed while there is missing server and other tests would 
+     * Empty test is executed while there is missing server and other tests would
      * fail because of missing server.
      */
     public void testEmpty(){
         // nothing to do
     }
-    
+
     private static Configuration addTest(Configuration conf, Class<? extends TestCase> clazz, String... testNames){
         if ((testNames == null) || (testNames.length == 0)){
             return conf;
@@ -397,5 +420,5 @@ public class J2eeTestCase extends JellyTestCase {
                 dialog.close();
             }
         }
-    }   
+    }
 }
