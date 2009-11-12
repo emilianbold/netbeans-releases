@@ -61,7 +61,6 @@ import org.netbeans.modules.kenai.LicenceData;
 import org.netbeans.modules.kenai.ProjectData;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.util.NbModuleOwnerSupport;
-import org.netbeans.modules.kenai.util.NbModuleOwnerSupport.OwnerInfo;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -269,9 +268,9 @@ public final class KenaiProject {
      * @throws KenaiException 
      */
     public static KenaiProject forFile(File file) throws KenaiException {
-        OwnerInfo info = NbModuleOwnerSupport.getInstance().getOwner(".kenai", file);//NOI18N
-        if (info!=null) {
-            return KenaiProject.get(info.getOwner());
+        String projectName = NbModuleOwnerSupport.getInstance().getOwner(".kenai", file);//NOI18N
+        if (projectName!=null) {
+            return KenaiProject.get(projectName);
         } else {
             FileObject f = FileUtil.toFileObject(file);
             if (f!=null) {
