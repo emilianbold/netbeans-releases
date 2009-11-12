@@ -231,7 +231,7 @@ final class RubyMethodTypeInferencer {
     }
 
     private RubyType getReceiverType(final Node receiver) {
-        RubyType type = RubyTypeInferencer.create(knowledge).inferType(receiver);
+        RubyType type = RubyTypeInferencer.create(knowledge, fast).inferType(receiver);
         if (!type.isKnown()) {
             String name = null;
             if (receiver instanceof Colon2Node) {

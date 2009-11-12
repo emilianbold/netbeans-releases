@@ -230,7 +230,10 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
 
     private void handleServerChanged() {
         RubyInstance server = (RubyInstance) serverComboBox.getSelectedItem();
-        uiProperties.setServer(server, getSelectedConfig());
+        String config = getSelectedConfig();
+        if (config != null && server != null) {
+            uiProperties.setServer(server, getSelectedConfig());
+        }
     }
     
     private void initRailsEnvCombo() {
