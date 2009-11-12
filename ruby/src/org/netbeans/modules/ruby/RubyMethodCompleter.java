@@ -186,7 +186,7 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
                 if (!target.childNodes().isEmpty()) {
                     Node child = target.childNodes().get(0);
                     if (AstUtilities.isCall(child)) {
-                        type = RubyTypeInferencer.create(request.createContextKnowledge()).inferType(child);
+                        type = RubyTypeInferencer.create(request.createContextKnowledge(), false).inferType(child);
                     }
                 }
             }
@@ -299,11 +299,11 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
             if (realTarget != null) {
                 target = realTarget;
             }
-            return RubyTypeInferencer.create(request.createContextKnowledge()).inferType(target);
+            return RubyTypeInferencer.create(request.createContextKnowledge(), false).inferType(target);
         } else {
             if (target instanceof CallNode) {
                 Node receiver = ((CallNode) target).getReceiverNode();
-                return RubyTypeInferencer.create(request.createContextKnowledge()).inferType(receiver);
+                return RubyTypeInferencer.create(request.createContextKnowledge(), false).inferType(receiver);
             } else { // receiver is self
                 IScopingNode clazz = AstUtilities.findClassOrModule(request.path);
                 if (clazz != null) {
@@ -668,7 +668,7 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
     private static RubyTypeInferencer createTypeInferencer(final CompletionRequest request, final Node target) {
         ContextKnowledge knowledge = request.createContextKnowledge();
         request.target = target;
-        return RubyTypeInferencer.create(knowledge);
+        return RubyTypeInferencer.create(knowledge, false);
     }
 
     private RubyType getTypesForConstant(final String constantFqn) {

@@ -42,7 +42,6 @@ import java.awt.Component;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
@@ -57,7 +56,6 @@ import org.netbeans.modules.ruby.railsprojects.database.RailsAdapterFactory;
 import org.netbeans.modules.ruby.railsprojects.database.RailsDatabaseConfiguration;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
-import org.openide.util.Utilities;
 
 /**
  * A panel for Rails database adapters.
@@ -339,19 +337,15 @@ private void userNameFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN
 
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 
+            if (value == null) { //apple JDK bug
+                return this;
+            }
+
             RailsDatabaseConfiguration dbConf = (RailsDatabaseConfiguration) value;
 
-            try {
-                setText(dbConf.getDisplayName());
-                setForeground(isSelected ? list.getSelectionForeground() : list.getForeground());
-                setBackground(isSelected ? list.getSelectionBackground() : list.getBackground());
-            } catch (NullPointerException npe) {
-                // catching NPE on OS X here because of #167499 (Apple JDK bug).
-                if (!Utilities.isMac()) {
-                    throw npe;
-                }
-                LOGGER.log(Level.INFO, "Caught NPE (#167499)", npe);
-            }
+            setText(dbConf.getDisplayName());
+            setForeground(isSelected ? list.getSelectionForeground() : list.getForeground());
+            setBackground(isSelected ? list.getSelectionBackground() : list.getBackground());
 
             return this;
         }
