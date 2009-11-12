@@ -1921,7 +1921,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             return cancelled.get();
         }
 
-        protected final boolean isExternalCancel() {
+        protected final boolean isCancelledExternally() {
             return externalCancel.get();
         }
 
@@ -3161,7 +3161,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                             OpenProjects.getDefault().openProjects().get(1000, TimeUnit.MILLISECONDS);
                             retry = false;
                         } catch (TimeoutException ex) {
-                            if (isExternalCancel()) {
+                            if (isCancelledExternally()) {
                                 return false;
                             }
                         } catch (Exception ex) {
