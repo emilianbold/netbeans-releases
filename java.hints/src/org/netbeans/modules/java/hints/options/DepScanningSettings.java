@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,54 +31,26 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.java.source.tasklist;
 
-import java.util.prefs.PreferenceChangeEvent;
-import java.util.prefs.PreferenceChangeListener;
+package org.netbeans.modules.java.hints.options;
+
 import java.util.prefs.Preferences;
-import org.netbeans.modules.java.source.indexing.JavaIndex;
-import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import org.netbeans.api.java.source.JavaSource;
 import org.openide.util.NbPreferences;
 
 /**
  *
- * @author Jan Lahoda
+ * @author Dusan Balek
  */
-public class TasklistSettings {
+class DepScanningSettings {
 
     private static final String KEY_DEPENDENCY_TRACKING = "dependency-tracking"; //NOI18N
     private static final String DEFAULT_DEPENDENCY_TRACKING = DependencyTracking.ENABLED.name();
-
-    static {
-        getPreferencesNode().addPreferenceChangeListener(new PreferenceChangeListener() {
-
-            private DependencyTracking curr = getDependencyTracking();
-
-            public void preferenceChange(PreferenceChangeEvent evt) {
-                if (KEY_DEPENDENCY_TRACKING.equals(evt.getKey())) {
-                    final DependencyTracking dt = getDependencyTracking();
-                    if (curr != dt) {
-                        if (dt.ordinal() > curr.ordinal()) {
-                            IndexingManager.getDefault().refreshAllIndices(JavaIndex.NAME);
-                        }
-                        ErrorAnnotator an = ErrorAnnotator.getAnnotator();
-                        if (an != null) {
-                            an.updateAllInError();
-                        }
-                        curr = dt;
-                    }
-                }
-            }
-        });
-    }
-    
-    private TasklistSettings() {
-    }
-    
-    public static boolean isBadgesEnabled() {
-        return getDependencyTracking() != DependencyTracking.DISABLED;
-    }
 
     public static DependencyTracking getDependencyTracking() {
         String s = getPreferencesNode().get(KEY_DEPENDENCY_TRACKING, DEFAULT_DEPENDENCY_TRACKING);
@@ -94,9 +60,16 @@ public class TasklistSettings {
             return DependencyTracking.valueOf(DEFAULT_DEPENDENCY_TRACKING);
         }
     }
-    
+
+    public static void setDependencyTracking(DependencyTracking dt) {
+        final DependencyTracking curr = getDependencyTracking();
+        if (curr != dt) {
+            getPreferencesNode().put(KEY_DEPENDENCY_TRACKING, dt.name());
+        }
+    }
+
     private static Preferences getPreferencesNode() {
-        return NbPreferences.forModule(TasklistSettings.class).node("tasklist");
+        return NbPreferences.forModule(JavaSource.class).node("tasklist");
     }
 
     public static enum DependencyTracking {
