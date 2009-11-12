@@ -475,7 +475,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         } else if (e.getSource() == panel.searchButton) {
             onRefresh();
         } else if (e.getSource() == panel.saveChangesButton) {
-            onSave();
+            onSave(true); // refresh
         } else if (e.getSource() == panel.cancelChangesButton) {
             onCancelChanges();
         } else if (e.getSource() == panel.gotoIssueButton) {
@@ -483,7 +483,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         } else if (e.getSource() == panel.webButton) {
             onWeb();
         } else if (e.getSource() == panel.saveButton) {
-            onSave();
+            onSave(false); // do not refresh
         } else if (e.getSource() == panel.urlToggleButton) {
             onDefineAs();
         } else if (e.getSource() == panel.refreshButton) {
@@ -545,7 +545,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         query.setFilter(filter);
     }
 
-    private void onSave() {
+    private void onSave(final boolean refresh) {
        Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
             public void run() {
                 Bugzilla.LOG.fine("on save start");
@@ -560,6 +560,10 @@ public class QueryController extends BugtrackingController implements DocumentLi
                 assert name != null;
                 save(name);
                 Bugzilla.LOG.fine("on save finnish");
+
+                if(refresh) {
+                    onRefresh();
+                }
             }
 
        });
