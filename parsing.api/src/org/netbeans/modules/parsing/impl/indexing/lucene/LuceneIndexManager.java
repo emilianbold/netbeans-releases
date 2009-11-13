@@ -49,7 +49,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  *
  * @author Tomas Zezula
  */
-public class LuceneIndexManager {
+public final class LuceneIndexManager {
 
     private static LuceneIndexManager instance;
     private volatile boolean invalid;
