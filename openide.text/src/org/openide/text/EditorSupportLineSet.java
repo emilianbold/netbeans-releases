@@ -113,25 +113,24 @@ final class EditorSupportLineSet extends DocumentLine.Set {
                 editor.getComponent().requestActive();
             }
         }
-
+        
         @Override
         public void show(ShowOpenType openType, ShowVisibilityType visibilityType, int column) {
             CloneableEditorSupport support = pos.getCloneableEditorSupport();
-
+            
             if ((openType == ShowOpenType.NONE) && !support.isDocumentLoaded()) {
                 return;
             }
-
+            
             CloneableEditorSupport.Pane editor = null;
-
+            
             if ((openType == ShowOpenType.REUSE) || (openType == ShowOpenType.REUSE_NEW)) {
                 editor = support.openReuse(pos, column, openType);
-            } else if (openType == ShowOpenType.OPEN) {
+            } else if ((openType == ShowOpenType.OPEN) || (openType == ShowOpenType.NONE)) {
+                //For ShowOpenType.NONE if editor is not yet opened method returns above
                 editor = support.openAt(pos, column);
-            } else if (openType == ShowOpenType.NONE) {
-                editor = support.getAnyEditor();
             }
-
+            
             if (editor != null) {
                 if (visibilityType == ShowVisibilityType.FRONT) {
                     editor.getComponent().requestVisible();
