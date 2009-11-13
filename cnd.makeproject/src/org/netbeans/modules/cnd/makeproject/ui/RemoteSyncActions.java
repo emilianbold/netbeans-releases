@@ -40,8 +40,6 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.io.InterruptedIOException;
@@ -54,8 +52,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.Action;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
@@ -78,22 +74,45 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
-import org.openide.util.actions.Presenter;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
 class RemoteSyncActions {
 
-    private static SyncNodeAction  syncNodeAction;
+    private static UploadAction uploadAction;
+    private static DownloadAction downloadAction;
 
+    /* A common active nodes cache to be used by all actions */
+    private static final AtomicReference<Node[]> activatedNodesCache = new AtomicReference<Node[]>();
+
+    /** A task that activatedNodesCache */
+    private static final RequestProcessor.Task clearCacheTask = RequestProcessor.getDefault().create(new Runnable() {
+                public void run() {
+                    activatedNodesCache.set(null);
+                }
+    });
+    
+    /** prevents instance creation */
     private RemoteSyncActions() {
     }
 
-    public static Action createSyncNodeAction() {
-        if (syncNodeAction == null) {
-            syncNodeAction = new SyncNodeAction();
+    public static Action createUploadAction() {
+        if (uploadAction == null) {
+            uploadAction = new UploadAction();
         }
-        return syncNodeAction;
+        return uploadAction;
+    }
+
+    public static Action createDownloadAction() {
+        if (downloadAction == null) {
+            downloadAction = new DownloadAction();
+        }
+        return downloadAction;
+    }
+
+    private static void cacheActiveNodes(Node[] activatedNodes)  {
+        activatedNodesCache.set(activatedNodes);
+        clearCacheTask.schedule(5000);
     }
 
     /** contains upload / download similarites */
@@ -158,9 +177,9 @@ class RemoteSyncActions {
                     progressHandle.progress(progressMessage, cnt++);
                 }
             } catch (CancellationException ex) {
-                // nothing
+                cancelled = true;
             } catch (InterruptedIOException ex) {
-                // nothing
+                cancelled = true;
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             } finally {
@@ -170,6 +189,8 @@ class RemoteSyncActions {
             time = System.currentTimeMillis() - time;
             if (errCnt == 0) {
                 tab.getOut().println(NbBundle.getMessage(RemoteSyncActions.class, "SUMMARY_SUCCESS", okCnt));
+            } else if (cancelled) {
+                tab.getOut().println(NbBundle.getMessage(RemoteSyncActions.class, "SUMMARY_CANCELLED", okCnt));
             } else {
                 tab.getErr().println(NbBundle.getMessage(RemoteSyncActions.class, "SUMMARY_ERROR", okCnt));
             }
@@ -256,31 +277,19 @@ class RemoteSyncActions {
         }
     }
 
-    private static class SyncNodeAction extends NodeAction implements Presenter.Menu, Presenter.Popup {
+    private static abstract class BaseAction extends NodeAction {
 
         private boolean enabled;
-        protected final AtomicReference<Node[]> activatedNodesCache = new AtomicReference<Node[]>();
-        private final RequestProcessor.Task clearCacheTask;
 
-
-        private SyncNodeAction() {
-            clearCacheTask = RequestProcessor.getDefault().create(new Runnable() {
-                public void run() {
-                    activatedNodesCache.set(null);
-                }
-            });
-        }
+        protected abstract void performAction(ExecutionEnvironment execEnv, Node[] activatedNodes);
+        protected abstract String getDummyItemText();
+        protected abstract String getItemText(String hostName);
 
         @Override
         protected boolean enable(Node[] activatedNodes) {
+            cacheActiveNodes(activatedNodes);
             ExecutionEnvironment execEnv = getEnv(activatedNodes);
             enabled = execEnv != null && execEnv.isRemote();
-            if (enabled) {
-                activatedNodesCache.set(activatedNodes);
-                clearCacheTask.schedule(5000);
-            } else {
-                activatedNodesCache.set(null);
-            }
             return enabled;
         }
 
@@ -291,7 +300,10 @@ class RemoteSyncActions {
 
         @Override
         protected void performAction(Node[] activatedNodes) {
-            // never called
+            final ExecutionEnvironment execEnv = getEnv(activatedNodes);
+            if (execEnv != null && execEnv.isRemote()) {
+                performAction(execEnv, activatedNodes);
+            }
         }
 
         @Override
@@ -301,83 +313,74 @@ class RemoteSyncActions {
 
         @Override
         public String getName() {
-            return NbBundle.getMessage(RemoteSyncActions.class, "LBL_RemoteSyncAction_Name_0");
-        }
-
-        @Override
-        public void actionPerformed(java.awt.event.ActionEvent ev) {
-            System.err.printf("!!!\n");
-        }
-
-        @Override
-        public JMenuItem getPopupPresenter() {
-            return createSubMenu();
-        }
-
-        @Override
-        public JMenuItem getMenuPresenter() {
-            return createSubMenu();
-        }
-
-        private JMenu createDummy() {
-            JMenu dummy = new JMenu(NbBundle.getMessage(getClass(), "LBL_RemoteSyncAction_Name_0"));
-            dummy.setEnabled(false);
-            return dummy;
-        }
-
-        private JMenu createSubMenu() {
             if (!wasEnabled()) {
-                return createDummy();
+                return getDummyItemText();
             }
             final Node[] activatedNodes = activatedNodesCache.get();
             if (activatedNodes == null || activatedNodes.length == 0) {
-                return createDummy();
+                return getDummyItemText();
             }
 
             final ExecutionEnvironment execEnv = getEnv(activatedNodes);
             if (execEnv == null || execEnv.isLocal()) {
-                return createDummy();
+                return getDummyItemText();
             }
             final String hostName = ServerList.get(execEnv).getDisplayName();
+            return getItemText(hostName);
+        }
+    }
 
-            JMenu subMenu = new JMenu(NbBundle.getMessage(getClass(), "LBL_RemoteSyncAction_Name_1", hostName));
-            JMenuItem itemUpload = new JMenuItem(NbBundle.getMessage(getClass(), "LBL_UploadAction_Name", hostName));
-            itemUpload.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    RequestProcessor.getDefault().post(new NamedRunnable("Uploading to " + hostName) { // NOI18N
-                        @Override
-                        protected void runImpl() {
-                            upload(execEnv, activatedNodes);
-                        }
-                    });
+    private static class UploadAction extends BaseAction  {
+
+        @Override
+        protected String getDummyItemText() {
+            return NbBundle.getMessage(RemoteSyncActions.class, "LBL_UploadAction_Name_0");
+        }
+
+        @Override
+        protected String getItemText(String hostName) {
+            return NbBundle.getMessage(RemoteSyncActions.class, "LBL_UploadAction_Name_1", hostName);
+        }
+
+        @Override
+        protected void performAction(final ExecutionEnvironment execEnv, final Node[] activatedNodes) {
+            RequestProcessor.getDefault().post(new NamedRunnable("Uploading to " + ServerList.get(execEnv).getDisplayName()) { // NOI18N
+                @Override
+                protected void runImpl() {
+                    upload(execEnv, activatedNodes);
                 }
             });
-            subMenu.add(itemUpload);
+        }
 
-            JMenuItem itemDownload = new JMenuItem(NbBundle.getMessage(getClass(), "LBL_DownloadAction_Name", hostName));
-            itemDownload.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    RequestProcessor.getDefault().post(new NamedRunnable("Uploading to " + hostName) { // NOI18N
-                        @Override
-                        protected void runImpl() {
-                            download(execEnv, activatedNodes);
-                        }
-                    });
+    }
+
+    private static class DownloadAction extends BaseAction{
+
+        @Override
+        protected String getDummyItemText() {
+            return NbBundle.getMessage(RemoteSyncActions.class, "LBL_DownloadAction_Name_0");
+        }
+
+        @Override
+        protected String getItemText(String hostName) {
+            return NbBundle.getMessage(RemoteSyncActions.class, "LBL_DownloadAction_Name_1", hostName);
+        }
+
+        @Override
+        protected void performAction(final ExecutionEnvironment execEnv, final Node[] activatedNodes) {
+            RequestProcessor.getDefault().post(new NamedRunnable("Uploading to " + ServerList.get(execEnv).getDisplayName()) { // NOI18N
+                @Override
+                protected void runImpl() {
+                    download(execEnv, activatedNodes);
                 }
             });
-            subMenu.add(itemDownload);
-
-            return subMenu;
         }
     }
 
     private static ExecutionEnvironment getEnv(Node[] activatedNodes) {
         ExecutionEnvironment result = null;
         for (Node node : activatedNodes) {
-            Node parent = node.getParentNode();
-            Node[] children = node.getChildren().getNodes();
             Project project = getNodeProject(node);
-            System.err.printf("PROJECT %s\n", project == null ? "NULL" : project.getProjectDirectory().getPath());
             ExecutionEnvironment env = getEnv(project);
             if (env != null) {
                 if (result == null) {
@@ -418,13 +421,6 @@ class RemoteSyncActions {
         }
     }
 
-//    private static Node getTopParent(Node node) {
-//        for (Node parent = node.getParentNode(); parent != null; parent = node.getParentNode()) {
-//            node = parent;
-//        }
-//        return node;
-//    }
-
     private static InputOutput getTab(String name, boolean reuse) {
         InputOutput tab;
         if (reuse) {
@@ -436,6 +432,7 @@ class RemoteSyncActions {
             tab.getOut().reset();
         } catch (IOException ex) {
         }
+        tab.select();
         return tab;
     }
 

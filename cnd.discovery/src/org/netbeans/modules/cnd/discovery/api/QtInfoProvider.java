@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguratio
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 
 /**
@@ -79,7 +80,6 @@ public abstract class QtInfoProvider {
 
     private static class Default extends QtInfoProvider {
 
-        private static final String FAKE_DIR = "FAKE_DIR"; // NOI18N
         private final Map<String, String> cache;
 
         private Default() {
@@ -93,17 +93,9 @@ public abstract class QtInfoProvider {
          * @return list of include directories, may be empty if qmake is not found
          */
         public List<String> getQtIncludeDirectories(MakeConfiguration conf) {
-            String baseDir;
-            String cacheKey = getCacheKey(conf);
-            synchronized (cache) {
-                baseDir = cache.get(cacheKey);
-                if (baseDir == null) {
-                    baseDir = queryQtIncludeDir(conf);
-                    cache.put(cacheKey, baseDir);
-                }
-            }
+            String baseDir = getBaseQtIncludeDir(conf);
             List<String> result;
-            if (baseDir != null && !baseDir.equals(FAKE_DIR)) {
+            if (baseDir != null) {
                 result = new ArrayList<String>();
                 result.add(baseDir);
                 QmakeConfiguration qmakeConfiguration = conf.getQmakeConfiguration();
@@ -146,9 +138,6 @@ public abstract class QtInfoProvider {
             } else {
                 result = Collections.emptyList();
             }
-            if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.log(Level.FINE, "Qt include dirs for {0} = {1}", new Object[] {cacheKey, result});
-            }
             return result;
         }
 
@@ -167,18 +156,43 @@ public abstract class QtInfoProvider {
             return conf.getDevelopmentHost().getHostKey() + '/' + getQmakePath(conf); // NOI18N
         }
 
-        private static String queryQtIncludeDir(MakeConfiguration conf) {
-            ExecutionEnvironment execEnv = conf.getDevelopmentHost().getExecutionEnvironment();
+        private String getBaseQtIncludeDir(MakeConfiguration conf) {
+            String cacheKey = getCacheKey(conf);
+            String baseDir;
+            synchronized (cache) {
+                if (cache.containsKey(cacheKey)) {
+                    baseDir = cache.get(cacheKey);
+                } else {
+                    ExecutionEnvironment execEnv = conf.getDevelopmentHost().getExecutionEnvironment();
+                    String qmakePath = getQmakePath(conf);
+                    if (ConnectionManager.getInstance().isConnectedTo(execEnv)) {
+                        baseDir = queryBaseQtIncludeDir(execEnv, qmakePath);
+                        if (baseDir != null && execEnv.isRemote()) {
+                            baseDir = BasicCompiler.getIncludeFilePrefix(execEnv) + baseDir;
+                        }
+                        cache.put(cacheKey, baseDir);
+                    } else {
+                        baseDir = BasicCompiler.getIncludeFilePrefix(execEnv)
+                                + guessBaseQtIncludeDir(qmakePath);
+                        // do not cache this result, so that we can
+                        // really query qmake once connection is up
+                    }
+                }
+            }
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "Qt include dir for {0} = {1}", new Object[] {cacheKey, baseDir});
+            }
+            return baseDir;
+        }
+
+        private static String queryBaseQtIncludeDir(ExecutionEnvironment execEnv, String qmakePath) {
             NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
-            npb.setExecutable(getQmakePath(conf));
+            npb.setExecutable(qmakePath);
             npb.setArguments("-query", "QT_INSTALL_HEADERS"); // NOI18N
             try {
                 NativeProcess process = npb.call();
                 String output = ProcessUtils.readProcessOutputLine(process).trim();
                 if (process.waitFor() == 0 && 0 < output.length()) {
-                    if (execEnv.isRemote()) {
-                        output = BasicCompiler.getIncludeFilePrefix(execEnv) + output;
-                    }
                     return output;
                 }
             } catch (IOException ex) {
@@ -186,7 +200,19 @@ public abstract class QtInfoProvider {
             } catch (InterruptedException ex) {
                 LOGGER.log(Level.INFO, null, ex);
             }
-            return FAKE_DIR;
+            return null;
+        }
+
+        private static String guessBaseQtIncludeDir(String qmakePath) {
+            // .../bin/qmake -> .../include/qt4
+            String binDir = IpeUtils.getDirName(qmakePath);
+            if (binDir != null) {
+                String baseDir = IpeUtils.getDirName(binDir);
+                if (baseDir != null) {
+                    return baseDir + "/include/qt4"; // NOI18N
+                }
+            }
+            return "/usr/include/qt4"; // NOI18N
         }
     }
 }
