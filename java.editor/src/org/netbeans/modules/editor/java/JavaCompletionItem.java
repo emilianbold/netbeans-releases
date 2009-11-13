@@ -52,6 +52,7 @@ import java.awt.event.KeyEvent;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.lang.model.SourceVersion;
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
 import javax.lang.model.util.ElementFilter;
@@ -751,11 +752,15 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                     if (ta.getKind() == TypeKind.TYPEVAR) {
                                         TypeVariable tv = (TypeVariable)ta;
                                         if (elem == tv.asElement().getEnclosingElement()) {
-                                            sb.append(" type=\""); //NOI18N
+                                            sb.append(" typeVar=\""); //NOI18N
+                                            sb.append(tv.asElement().getSimpleName());
+                                            sb.append("\" type=\""); //NOI18N
                                             ta = tv.getUpperBound();
                                             sb.append(Utilities.getTypeName(ta, true));
                                             sb.append("\" default=\""); //NOI18N
                                             sb.append(Utilities.getTypeName(ta, false));
+                                            if (SourceVersion.RELEASE_5.compareTo(controller.getSourceVersion()) <= 0)
+                                                asTemplate = true;
                                         } else {
                                             sb.append(" editable=false default=\""); //NOI18N
                                             sb.append(Utilities.getTypeName(ta, true));
