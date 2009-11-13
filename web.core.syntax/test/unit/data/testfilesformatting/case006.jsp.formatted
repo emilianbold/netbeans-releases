@@ -10,8 +10,8 @@
 <table bgcolor="red"
        class="<%= s.toLowerCase()%>"
        id="<%= s.toLowerCase().concat("test").
-                               toLowerCase().
-                               format("asdasd")%>"
+       toLowerCase().
+       format("asdasd")%>"
        dir="sdfsdf">
     <jsp:body>
         <jsp:useBean

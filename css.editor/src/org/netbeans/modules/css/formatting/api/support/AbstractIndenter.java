@@ -1103,6 +1103,19 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                     // set indentThisLine to false if line does not start with language
                     // but process tokens from the line
                     indentThisLine = firstNonWhite == rowStartOffset;
+                    if (!indentThisLine) {
+                        /*
+                         * line of XHTML code containing just EL, eg. "#{bean.smth}",
+                         * results in firstNonWhite==0 and rowStartOffset==2 ('#{' does not get any EL token).
+                         * that's a reason for below hack:
+                         */
+                        if (rowStartOffset - firstNonWhite == 2) {
+                            String st = doc.getText(firstNonWhite, 2);
+                            if ("#{".equals(st) || "${".equals(st)) {
+                                indentThisLine = true;
+                            }
+                        }
+                    }
                 } else {
                     // line is empty:
                     emptyLine = true;
@@ -1130,7 +1143,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                 }
 
                 // ask formatter for line indentation:
-                IndenterContextData<T1> cd = new IndenterContextData<T1>(joinedTS, rowStartOffset, rowEndOffset, firstNonWhite, nextLineStartOffset, emptyLine);
+                IndenterContextData<T1> cd = new IndenterContextData<T1>(joinedTS, rowStartOffset, rowEndOffset, firstNonWhite, nextLineStartOffset, emptyLine, indentThisLine);
                 cd.setLanguageBlockStart(line == realStartingLine);
                 cd.setLanguageBlockEnd(line == realEndingLine);
                 List<IndentCommand> preliminaryNextLineIndent = new ArrayList<IndentCommand>();
