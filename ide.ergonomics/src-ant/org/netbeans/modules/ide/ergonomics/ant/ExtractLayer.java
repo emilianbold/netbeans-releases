@@ -284,7 +284,7 @@ implements FileNameMapper, URIResolver, EntityResolver {
             }
             linePattern.setPattern("(" + sb + ") *=");
         } catch (Exception ex) {
-            throw new BuildException("Cannot parse layers", ex);
+            throw new BuildException("Cannot parse layers: " + ex.getMessage(), ex);
         }
         Map<String,ResArray> bundles = new HashMap<String,ResArray>();
         bundles.put("", new ResArray());
