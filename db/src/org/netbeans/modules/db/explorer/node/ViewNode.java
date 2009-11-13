@@ -114,7 +114,7 @@ public class ViewNode extends BaseNode implements SchemaNameProvider {
                     }
                 );
             } catch (MetadataModelException e) {
-                Exceptions.printStackTrace(e);
+                NodeRegistry.handleMetadataModelException(this.getClass(), connection, e, true);
             }
         }
     }
@@ -213,7 +213,7 @@ public class ViewNode extends BaseNode implements SchemaNameProvider {
                 }
             );
         } catch (MetadataModelException e) {
-            Exceptions.printStackTrace(e);
+            NodeRegistry.handleMetadataModelException(ViewNode.class, connection, e, true);
         }
 
         return array[0];
@@ -235,7 +235,7 @@ public class ViewNode extends BaseNode implements SchemaNameProvider {
                 }
             );
         } catch (MetadataModelException e) {
-            Exceptions.printStackTrace(e);
+            NodeRegistry.handleMetadataModelException(ViewNode.class, connection, e, true);
         }
 
         return array[0];

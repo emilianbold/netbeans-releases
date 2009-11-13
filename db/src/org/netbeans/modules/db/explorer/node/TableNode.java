@@ -117,7 +117,7 @@ public class TableNode extends BaseNode implements SchemaNameProvider {
                     }
                 );
             } catch (MetadataModelException e) {
-                Exceptions.printStackTrace(e);
+                NodeRegistry.handleMetadataModelException(this.getClass(), connection, e, true);
             }
 
         }
@@ -232,7 +232,7 @@ public class TableNode extends BaseNode implements SchemaNameProvider {
                 }
             );
         } catch (MetadataModelException e) {
-            Exceptions.printStackTrace(e);
+            NodeRegistry.handleMetadataModelException(TableNode.class, connection, e, true);
         }
 
         return array[0];
@@ -254,7 +254,7 @@ public class TableNode extends BaseNode implements SchemaNameProvider {
                 }
             );
         } catch (MetadataModelException e) {
-            Exceptions.printStackTrace(e);
+            NodeRegistry.handleMetadataModelException(TableNode.class, connection, e, true);
         }
 
         return array[0];

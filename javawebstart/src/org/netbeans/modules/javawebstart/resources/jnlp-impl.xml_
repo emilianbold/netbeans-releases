@@ -52,6 +52,10 @@ made subject to such option by the copyright holder.
     <target name="default">
         <echo message="Default target is not set, you must specify which target you want to run."/>
     </target>
+
+    <target name="-init-platform" unless="platform.home">
+        <property name="platform.home" value="${java.home}"/>
+    </target>
     
     <!-- Main target -->
     
@@ -225,8 +229,8 @@ made subject to such option by the copyright holder.
     
     <!-- Running/Debugging -->
     
-    <target name="jws-run" depends="jar,-verify-jnlp-enabled,-verify-codebase" description="Start javaws execution">
-        <exec executable="${java.home}/bin/javaws">
+    <target name="jws-run" depends="jar,-verify-jnlp-enabled,-verify-codebase,-init-platform" description="Start javaws execution">
+        <exec executable="${platform.home}/bin/javaws">
             <arg file="${jnlp.dest.dir}/${jnlp.file}"/>
         </exec>
     </target>

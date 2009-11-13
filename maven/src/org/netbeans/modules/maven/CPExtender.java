@@ -309,6 +309,10 @@ public class CPExtender extends ProjectClassPathModifierImplementation implement
                 toRet[1] = toRet[1] + "/maven2";//NOI18N
                 toRet[2] = toRet[2].substring("maven2/".length());//NOI18N
             }
+            if (toRet[2].startsWith("mirror/eclipse/rt/eclipselink/maven.repo/")) {//NOI18N
+                toRet[1] = toRet[1] + "/mirror/eclipse/rt/eclipselink/maven.repo";//NOI18N
+                toRet[2] = toRet[2].substring("mirror/eclipse/rt/eclipselink/maven.repo/".length());//NOI18N
+            }
             toRet[2] = toRet[2].replace('/', '.'); //NOI18N
             return toRet;
         }
