@@ -449,7 +449,7 @@ public final class WindowsSupport {
             return this.srcType == that.srcType &&
                     this.trgType == that.trgType &&
                     this.isSinglePath == that.isSinglePath &&
-                    this.path.equals(that.path);
+                    ((this.path == null) ? (that.path == null) : this.path.equals(that.path));
         }
 
         @Override
