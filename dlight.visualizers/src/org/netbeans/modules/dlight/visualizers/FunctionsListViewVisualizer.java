@@ -663,6 +663,9 @@ public class FunctionsListViewVisualizer extends JPanel implements
         private PropertySet propertySet;
         private final Action[] actions;
         private final GoToSourceAction goToSourceAction;
+        private String plainDisplayName = null;
+        private String htmlDisplayName = null;
+        private String functionName = null;
 
         FunctionCallNode(FunctionCallWithMetric row) {
             super(Children.LEAF);
@@ -682,7 +685,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
 
                             @Override
                             public Object getValue() throws IllegalAccessException, InvocationTargetException {
-                                return !functionCall.hasMetric(metric.getColumnName()) ? getMessage("NotDefined")
+                                return !functionCall.hasMetric(metric.getColumnName()) ? getMessage("NotDefined") // NOI18N
                                         : functionCall.getMetricValue(metric.getColumnName());
                             }
 
@@ -692,11 +695,16 @@ public class FunctionsListViewVisualizer extends JPanel implements
                         };
                         result.add(property);
                     }
+
                     return result.toArray(new Property[0]);
-
-
                 }
             };
+            updateNames();
+        }
+
+        @Override
+        public synchronized String getName() {
+            return functionName;
         }
 
         public FunctionCallWithMetric getFunctionCall() {
@@ -723,6 +731,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
         }
 
         private void fire() {
+            updateNames();
             fireDisplayNameChange(null, getDisplayName());
         }
 
@@ -733,36 +742,38 @@ public class FunctionsListViewVisualizer extends JPanel implements
         }
 
         @Override
-        public String getDisplayName() {
-            if (useHtmlFormat) {
-                return getHtmlDisplayName();
-            }
-
-            String dispName = functionCall.getDisplayedName();
-
-            int idx = dispName.indexOf(';');
-
-            if (idx > 0) {
-                dispName = dispName.substring(0, idx);
-            }
-
-            return dispName.trim();
+        public synchronized String getDisplayName() {
+            return useHtmlFormat ? htmlDisplayName : plainDisplayName;
         }
 
         @Override
-        public String getHtmlDisplayName() {
-            String dispName = functionCall.getDisplayedName().trim();
+        public synchronized String getHtmlDisplayName() {
+            return htmlDisplayName;
+        }
 
-            int idx = dispName.indexOf(';');
+        private synchronized void updateNames() {
+            plainDisplayName = functionCall.getDisplayedName();
 
-            if (idx > 0) {
-                dispName = dispName.substring(0, idx).trim();
+            String name = functionCall.getFunction().getName();
+            String funcName = functionCall.getFunction().getQuilifiedName();
+            int idx1 = name.indexOf(funcName);
+
+            int idx2 = funcName.lastIndexOf(':');
+            if (idx2 > 0) {
+                idx1 += idx2 + 1;
+                funcName = funcName.substring(idx2 + 1);
             }
 
-            dispName = dispName.replace("&", "&amp;"); // NOI18N
-            dispName = dispName.replace("<", "&lt;"); // NOI18N
-            dispName = dispName.replace(">", "&gt;"); // NOI18N
-            dispName = dispName.replace(" ", "&nbsp;"); // NOI18N
+            this.functionName = funcName;
+
+            String prefix = name.substring(0, idx1);
+            String suffix = name.substring(idx1 + funcName.length());
+
+            prefix = toHtml(prefix);
+            suffix = toHtml(suffix);
+            funcName = "<b>" + funcName + "</b>"; // NOI18N
+
+            String dispName = prefix + funcName + suffix + "&nbsp;"; // NOI18N
 
             final GoToSourceAction action = getGoToSourceAction();
             StringBuilder result = new StringBuilder("<html>"); // NOI18N
@@ -770,15 +781,15 @@ public class FunctionsListViewVisualizer extends JPanel implements
             String infoSuffix = null;
 
             if (action.isEnabled()) {
-                result.append("<b>" + dispName + "</b>&nbsp;"); // NOI18N
+                result.append(dispName);
 
                 SourceFileInfo sourceInfo = action.getSource();
                 if (sourceInfo != null && sourceInfo.isSourceKnown()) {
                     String fname = new File(sourceInfo.getFileName()).getName();
                     int line = sourceInfo.getLine();
                     String infoPrefix = line > 0
-                            ? NbBundle.getMessage(FunctionsListViewVisualizer.class, "FunctionCallNode.prefix.withLine") // NOI18N
-                            : NbBundle.getMessage(FunctionsListViewVisualizer.class, "FunctionCallNode.prefix.withoutLine"); // NOI18N
+                            ? getMessage("FunctionCallNode.prefix.withLine") // NOI18N
+                            : getMessage("FunctionCallNode.prefix.withoutLine"); // NOI18N
 
                     infoSuffix = infoPrefix + "&nbsp;" + fname + (line > 0 ? ":" + line : ""); // NOI18N
                     result.append(String.format(htmlDisabledColorFormat, infoSuffix));
@@ -788,12 +799,21 @@ public class FunctionsListViewVisualizer extends JPanel implements
             }
 
             result.append("</html>"); // NOI18N
-            return result.toString();
+
+            htmlDisplayName = result.toString();
         }
 
         @Override
         public PropertySet[] getPropertySets() {
             return new PropertySet[]{propertySet};
+        }
+
+        private String toHtml(String plain) {
+            plain = plain.replace("&", "&amp;"); // NOI18N
+            plain = plain.replace("<", "&lt;"); // NOI18N
+            plain = plain.replace(">", "&gt;"); // NOI18N
+            plain = plain.replace(" ", "&nbsp;"); // NOI18N
+            return plain;
         }
     }
 
