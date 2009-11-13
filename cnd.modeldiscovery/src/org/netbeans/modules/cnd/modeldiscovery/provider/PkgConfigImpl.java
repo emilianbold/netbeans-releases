@@ -52,7 +52,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
@@ -76,19 +75,17 @@ public class PkgConfigImpl implements PkgConfig {
     private String drivePrefix;
     private PlatformInfo pi;
 
-    public PkgConfigImpl(Project project) {
-        if (project != null) {
-            MakeConfiguration mc = project.getLookup().lookup((MakeConfiguration.class));
-            if (mc != null) {
-                pi = mc.getPlatformInfo();
-                CompilerSet set = mc.getCompilerSet().getCompilerSet();
-                initPackagesFromSet(set);
-                return;
-            }
+    public PkgConfigImpl(MakeConfiguration mc) {
+        // TODO: need to support mc
+        if (false && mc != null) {
+            pi = mc.getPlatformInfo();
+            CompilerSet set = mc.getCompilerSet().getCompilerSet();
+            initPackagesFromSet(set);
+        } else {
+            // otherwise
+            pi = PlatformInfo.localhost();
+            initPackagesFromSet(null);
         }
-        // otherwise
-        pi = PlatformInfo.localhost();
-        initPackagesFromSet(null);
     }
 
     // for test
@@ -98,9 +95,16 @@ public class PkgConfigImpl implements PkgConfig {
     }
 
     private List<String> envPaths(String folder){
+        // TODO: get from remote
         String additionalPaths = System.getenv("PKG_CONFIG_PATH"); // NOI18N
         List<String> res = new ArrayList<String>();
-        res.add(folder);
+        String prefix = "";
+//        ExecutionEnvironment execEnv = pi.getExecutionEnvironment();
+//        if (execEnv.isRemote()) {
+//            // system files are in local cache
+//            prefix = BasicCompiler.getIncludeFilePrefix(execEnv);
+//        }
+        res.add(prefix + folder);
         if (additionalPaths != null && additionalPaths.length() > 0) {
             StringTokenizer st;
             if (pi.isWindows()){
@@ -109,7 +113,7 @@ public class PkgConfigImpl implements PkgConfig {
                 st = new StringTokenizer(additionalPaths, ":"); // NOI18N
             }
             while(st.hasMoreTokens()) {
-                res.add(st.nextToken());
+                res.add(prefix + st.nextToken());
             }
         }
         return res;

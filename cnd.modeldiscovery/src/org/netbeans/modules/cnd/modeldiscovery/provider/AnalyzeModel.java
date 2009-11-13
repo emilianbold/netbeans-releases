@@ -285,7 +285,7 @@ public class AnalyzeModel implements DiscoveryProvider {
         private List<SourceFileProperties> getSourceFileProperties(String root){
             List<SourceFileProperties> res = new ArrayList<SourceFileProperties>();
             Map<String,List<String>> searchBase = search(root);
-            PkgConfig pkgConfig = PkgConfigManager.getDefault().getPkgConfig(null);
+            PkgConfig pkgConfig = PkgConfigManager.getDefault().getPkgConfig(makeConfigurationDescriptor.getActiveConfiguration());
             boolean preferLocal = ((Boolean)getProperty(PREFER_LOCAL_FILES).getValue()).booleanValue();
             Item[] items = makeConfigurationDescriptor.getProjectItems();
             Map<String,Item> projectSearchBase = new HashMap<String,Item>();
