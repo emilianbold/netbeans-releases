@@ -47,6 +47,7 @@ import java.text.MessageFormat;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.ruby.rubyproject.Util;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.filesystems.FileUtil;
@@ -228,6 +229,10 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
                     return MessageFormat.format(format, new Object[] {file});
                 }
             }
+        }
+
+        if (Util.isProjectAlready(destFolder)) {
+            return NbBundle.getMessage(PanelProjectLocationExtSrc.class, "MSG_ProjectAlreadyProject");
         }
         
         if (!foundRails) {

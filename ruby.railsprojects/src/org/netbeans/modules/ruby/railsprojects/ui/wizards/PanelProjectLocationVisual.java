@@ -252,13 +252,18 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             NbBundle.getMessage(PanelProjectLocationVisual.class,"MSG_ProjectFolderExists"));
             return false;
         }
+
+        if (Util.isProjectAlready(destFolder)) {
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_ProjectAlreadyProject"));
+            return false;
+        }
         
         String msg = Util.getProjectNameWarning(projectNameTextField.getText());
         if (msg != null) {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg); // NOI18N
             // warning only, don't return false
         }
-        
+
         return true;
     }
     
