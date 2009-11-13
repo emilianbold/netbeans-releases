@@ -109,7 +109,7 @@ public class UnixHostInfoProvider implements HostInfoProvider {
 
             pb.environment().put("TMPBASE", tmpDirBase); // NOI18N
             pb.environment().put("PATH", pb.environment().get("PATH") + File.pathSeparator + "/bin:/usr/bin"); // NOI18N
-            pb.environment().put("NB_KEY", HostInfoFactory.getNBKey());
+            pb.environment().put("NB_KEY", HostInfoFactory.getNBKey()); // NOI18N
 
             Process hostinfoProcess = pb.start();
 
