@@ -49,6 +49,7 @@ import org.netbeans.modules.websvc.wsitconf.spi.features.AdvancedSecurityFeature
 import org.netbeans.modules.websvc.wsitconf.spi.features.ClientDefaultsFeature;
 import org.netbeans.modules.websvc.wsitconf.spi.features.SecureConversationFeature;
 import org.netbeans.modules.websvc.wsitconf.spi.features.ServiceDefaultsFeature;
+import org.netbeans.modules.websvc.wsitconf.spi.features.TrustStoreFeature;
 import org.netbeans.modules.websvc.wsitconf.spi.features.ValidatorsFeature;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitconf.util.UndoCounter;
@@ -82,7 +83,7 @@ import org.openide.DialogDisplayer;
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.wsitconf.spi.SecurityProfile.class)
 public class MessageAuthenticationProfile extends ProfileBase 
-        implements SecureConversationFeature,ClientDefaultsFeature,ServiceDefaultsFeature,ValidatorsFeature, AdvancedSecurityFeature {
+        implements SecureConversationFeature,ClientDefaultsFeature,ServiceDefaultsFeature,ValidatorsFeature, AdvancedSecurityFeature, TrustStoreFeature {
 
     private static final String DEFAULT_USERNAME = "wsit";
     private static final String DEFAULT_PASSWORD = "wsitPassword";
@@ -265,4 +266,9 @@ public class MessageAuthenticationProfile extends ProfileBase
     public boolean isValidatorSupported(ConfigVersion cfgVersion, String validatorType) {
         return true;
     }
+
+    public boolean isTrustStoreRequired(ConfigVersion cfgVersion, WSDLComponent component, boolean client) {
+        return true;
+    }
+
 }
