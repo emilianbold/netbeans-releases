@@ -77,6 +77,7 @@ Microsystems, Inc. All Rights Reserved.
             <filterset>
                 <filter token="INSTALLDIR" value="${glassfish.v3.sun.install.dir}"/>
                 <filter token="APPVERSION" value="${glassfish.v3.sun.version}"/>
+                <filter token="GLASSFISHV3_SUN_ID" value="${glassfish.v3.sun.id}"/>
             </filterset>
         </copy>
         
@@ -104,10 +105,10 @@ Microsystems, Inc. All Rights Reserved.
 
         <!--<copy file="${basedir}/getport/dist/getport.jar" tofile="${scriptsdir}/getport.jar"/>        -->
         
-        <echo message="Building glassfish-v3-sun.pkg into ${basedir}/../build/glassfish-v3-sun.pkg"/>
+        <echo message="Building glassfish-v3-sun-${glassfish.v3.sun.id}.pkg into ${basedir}/../build/glassfish-v3-sun-${glassfish.v3.sun.id}.pkg"/>
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value="cd ${basedir} ; /Developer/Tools/packagemaker -build -v -p ${basedir}/../build/glassfish-v3-sun.pkg -f ${appdir} -i ${builddir}/Info.plist -r ${scriptsdir} -d ${builddir}/Description.plist"/>
+            <arg value="cd ${basedir} ; /Developer/Tools/packagemaker -build -v -p ${basedir}/../build/glassfish-v3-sun-${glassfish.v3.sun.id}.pkg -f ${appdir} -i ${builddir}/Info.plist -r ${scriptsdir} -d ${builddir}/Description.plist"/>
         </exec>
     </target>
     

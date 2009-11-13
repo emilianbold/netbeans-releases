@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
         <key>CFBundleIdentifier</key>
-            <string>glassfish-v3-sun</string>
+            <string>glassfish-v3-sun.@GLASSFISHV3_SUN_ID@</string>
 	<key>CFBundleShortVersionString</key>
             <string>@APPVERSION@</string>
 	<key>IFPkgFlagAllowBackRev</key>

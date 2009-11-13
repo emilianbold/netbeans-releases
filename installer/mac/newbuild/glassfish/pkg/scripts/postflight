@@ -77,7 +77,7 @@ fi
 "$script_dir"/perm.sh
 
 #clean receipts
-"$script_dir"/clean_receipts.sh "glassfish" "glassfish"
+"$script_dir"/clean_receipts.sh "glassfish-$GLASSFISH_ID" "glassfish"
 
 #Fix for 132115
 sed -i '' "s/never/TUE/" $2/updatecenter/config/config.xml

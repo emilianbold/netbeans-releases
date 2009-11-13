@@ -78,7 +78,7 @@ fi
 
 
 #clean receipts
-"$script_dir"/clean_receipts.sh "sjsas" "sjsas"
+"$script_dir"/clean_receipts.sh "sjsas-$SJSAS_ID" "sjsas"
 
 
 #Fix for 132115

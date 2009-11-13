@@ -388,18 +388,18 @@
 	<set property="tomcat.full.version" value="${tomcat.version}.0.0"/>
 
 
-	<set property="glassfish.milestone.number" value="60"/>
-	<set property="glassfish.milestone.number.real" value="60e"/>
+	<set property="glassfish.milestone.number" value="31"/>
+	<set property="glassfish.milestone.number.real" value="31g"/>
 	<set property="glassfish.build.type" value="fcs"/>
-       	<set property="glassfish.build.number" value="20090114"/>
-    <set property="glassfish.version" value="2.1"/>
+       	<set property="glassfish.build.number" value="20091019"/>
+        <set property="glassfish.version" value="2.1.1"/>
 
 	
-	<set property="sjsas.milestone.number" value="60"/>
-	<set property="sjsas.milestone.number.real" value="60e"/>
+	<set property="sjsas.milestone.number" value="31"/>
+	<set property="sjsas.milestone.number.real" value="31g"/>
 	<set property="sjsas.build.type" value="fcs"/>
-	<set property="sjsas.build.number" value="20090309"/>
-	<set property="sjsas.version" value="2.1"/>
+	<set property="sjsas.build.number" value="20091019"/>
+	<set property="sjsas.version" value="2.1.1"/>
 
 	   
         <condition property="server.milestone.number" value="${sjsas.milestone.number}" else="${glassfish.milestone.number}">
@@ -1884,7 +1884,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-groovy"             version="${nb.full.version}"/>
             <component uid="nb-soa"                version="${nb.full.version}"/>
             <component uid="nb-portalpack"         version="3.0.0.0.${portalpack.build.number}"/>
-            <component uid="sjsas"                 version="2.1.${sjsas.milestone.number}.${sjsas.build.number}"/>
+            <component uid="sjsas"                 version="2.1.1.${sjsas.milestone.number}.${sjsas.build.number}"/>
             <component uid="openesb"               version="5.0.7.${server.milestone.number}.${openesb.build.number}"/>
             <component uid="sjsam"                 version="5.0.7.${sjsas.milestone.number}.${sjsam.build.number}"/>
 	    <component uid="javaeesdk-samples"     version="1.0.${javaeesdk-samples.update.number}.${javaeesdk-samples.milestone.number}.${javaeesdk-samples.build.number}"/>
@@ -1948,7 +1948,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <!--<component uid="nb-webcommon"    version="${nb.full.version}"/>-->
             <component uid="nb-javaee"       version="${nb.full.version}"/>
             <component uid="nb-ruby"         version="${nb.full.version}"/>
-            <component uid="glassfish"       version="2.1.${glassfish.milestone.number}.${glassfish.build.number}"/>
+            <component uid="glassfish"       version="2.1.1.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="mysql"           version="5.0.67.0.0"/>
             <component uid="mysql-connector" version="5.1.6.0.0"/>
 	    <bundleProperty name="${welcome.type}" value="mysql"/>
