@@ -374,10 +374,7 @@ class RemoteSyncActions {
     private static ExecutionEnvironment getEnv(Node[] activatedNodes) {
         ExecutionEnvironment result = null;
         for (Node node : activatedNodes) {
-            Node parent = node.getParentNode();
-            Node[] children = node.getChildren().getNodes();
             Project project = getNodeProject(node);
-            System.err.printf("PROJECT %s\n", project == null ? "NULL" : project.getProjectDirectory().getPath());
             ExecutionEnvironment env = getEnv(project);
             if (env != null) {
                 if (result == null) {
@@ -417,13 +414,6 @@ class RemoteSyncActions {
             return getNodeProject(node.getParentNode());
         }
     }
-
-//    private static Node getTopParent(Node node) {
-//        for (Node parent = node.getParentNode(); parent != null; parent = node.getParentNode()) {
-//            node = parent;
-//        }
-//        return node;
-//    }
 
     private static InputOutput getTab(String name, boolean reuse) {
         InputOutput tab;
