@@ -31,13 +31,13 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <Component id="containerUriLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="498" max="32767" attributes="0"/>
+              <EmptySpace pref="501" max="32767" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
               <Component id="mediaTypeLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="523" max="32767" attributes="0"/>
+              <EmptySpace pref="529" max="32767" attributes="0"/>
           </Group>
-          <Component id="jSeparator1" alignment="0" pref="594" max="32767" attributes="1"/>
+          <Component id="jSeparator1" alignment="0" pref="600" max="32767" attributes="1"/>
           <Group type="102" alignment="0" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="classLabel" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -65,11 +65,11 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
-                  <Component id="uriTextField" alignment="0" pref="285" max="32767" attributes="1"/>
-                  <Component id="representationClassTextField" alignment="0" pref="285" max="32767" attributes="0"/>
-                  <Component id="containerRepresentationClassTextField" alignment="0" pref="285" max="32767" attributes="1"/>
-                  <Component id="containerUriTextField" alignment="0" pref="285" max="32767" attributes="1"/>
-                  <Component id="medaTypeComboBox" alignment="0" pref="285" max="32767" attributes="1"/>
+                  <Component id="uriTextField" alignment="0" pref="315" max="32767" attributes="1"/>
+                  <Component id="representationClassTextField" alignment="0" pref="315" max="32767" attributes="0"/>
+                  <Component id="containerRepresentationClassTextField" alignment="0" pref="315" max="32767" attributes="1"/>
+                  <Component id="containerUriTextField" alignment="0" pref="315" max="32767" attributes="1"/>
+                  <Component id="medaTypeComboBox" alignment="0" pref="315" max="32767" attributes="1"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" max="-2" attributes="0">
@@ -185,9 +185,6 @@
           <ResourceString bundle="org/netbeans/modules/websvc/rest/wizard/Bundle.properties" key="DESC_Uri" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
-      <Events>
-        <EventHandler event="keyTyped" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="uriChanged"/>
-      </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="projectLabel">
       <Properties>

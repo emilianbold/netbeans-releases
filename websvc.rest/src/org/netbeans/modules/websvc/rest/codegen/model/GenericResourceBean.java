@@ -72,6 +72,7 @@ public class GenericResourceBean {
     private Set<HttpMethodType> methodTypes;
     private boolean privateFieldForQueryParam;
     private boolean generateUriTemplate = true;
+    private boolean rootResource = true;
     private List<GenericResourceBean> subResources;
    
     public GenericResourceBean(String name, String packageName, String uriTemplate) {
@@ -212,13 +213,13 @@ public class GenericResourceBean {
         return subResources;
     }
 
-    public boolean isPrivateFieldForQueryParam() {
-        return privateFieldForQueryParam;
-    }
-
-    public void setPrivateFieldForQueryParam(boolean privateFieldForQueryParam) {
-        this.privateFieldForQueryParam = privateFieldForQueryParam;
-    }
+//    public boolean isPrivateFieldForQueryParam() {
+//        return privateFieldForQueryParam;
+//    }
+//
+//    public void setPrivateFieldForQueryParam(boolean privateFieldForQueryParam) {
+//        this.privateFieldForQueryParam = privateFieldForQueryParam;
+//    }
 
     public boolean isGenerateUriTemplate() {
         return generateUriTemplate;
@@ -226,6 +227,13 @@ public class GenericResourceBean {
 
     public void setGenerateUriTemplate(boolean flag) {
         this.generateUriTemplate = flag;
+    }
+    public boolean isRootResource() {
+        return rootResource;
+    }
+
+    public void setRootResource(boolean flag) {
+        this.rootResource = flag;
     }
     
     public List<ParameterInfo> getInputParameters() {
