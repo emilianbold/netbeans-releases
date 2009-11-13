@@ -673,6 +673,10 @@ public class PHPNewLineIndenterTest extends PHPTestBase {
     public void testObjectOperatorContinue11() throws Exception {
         testIndentInFile("testfiles/indent/objectOperatorContinue_11.php");
     }
+    
+    public void test174835_01()throws Exception {
+        testIndentInFile("testfiles/indent/issue174835_01.php");
+    }
 
     @Override
     protected boolean runInEQ() {
