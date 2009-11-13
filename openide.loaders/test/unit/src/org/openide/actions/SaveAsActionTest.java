@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import javax.swing.Action;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.SaveAsCapable;
 import org.openide.util.Lookup;
@@ -163,7 +164,8 @@ public class SaveAsActionTest extends NbTestCase {
         
         assertTrue( "action is enabled for editor windows with SaveAsCapable in their Lookup", action.isEnabled() );
     }
-    
+
+    @RandomlyFails // NB-Core-Build #3579, #3580
     public void testSaveAsActionDoesNotRefreshWithoutListeners() throws Exception {
         SaveAsAction action = (SaveAsAction)SaveAsAction.create();
         

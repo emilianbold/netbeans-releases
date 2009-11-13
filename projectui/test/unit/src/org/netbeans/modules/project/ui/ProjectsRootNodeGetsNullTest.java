@@ -43,7 +43,6 @@ import java.awt.EventQueue;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -52,7 +51,6 @@ import java.util.concurrent.TimeoutException;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
-import javax.swing.Action;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -66,7 +64,6 @@ import org.openide.filesystems.URLMapper;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.util.ContextAwareAction;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
@@ -83,6 +80,10 @@ public class ProjectsRootNodeGetsNullTest extends NbTestCase {
     @Override
     protected Level logLevel() {
         return Level.OFF;
+    }
+
+    protected @Override int timeOut() {
+        return 500000;
     }
 
     public void testNPEIfObjectNotFound() throws Exception {
@@ -165,7 +166,6 @@ public class ProjectsRootNodeGetsNullTest extends NbTestCase {
 
         int i = 0;
         Project first = null;
-        Node node = null;
         Node[] all = logicalView.getChildren().getNodes();
         for (Node n : all) {
             i++;
@@ -173,7 +173,6 @@ public class ProjectsRootNodeGetsNullTest extends NbTestCase {
             if (p == null) {
                 assertNull("Just one project does not have test lookup: " + first, first);
                 first = p;
-                node = n;
                 continue;
             }
             assertNotNull("Project type is correct " + i, p);
