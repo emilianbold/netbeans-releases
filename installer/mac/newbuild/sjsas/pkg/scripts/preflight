@@ -24,6 +24,7 @@ if [ -d "$2" ] ; then
 fi
 
 script_dir=`dirname "$0"`
+. "$script_dir"/env.sh
 
 #clean receipts
-"$script_dir"/clean_receipts.sh "sjsas" "sjsas"
+"$script_dir"/clean_receipts.sh "sjsas-$SJSAS_ID" "sjsas"

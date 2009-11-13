@@ -484,6 +484,9 @@ Microsystems, Inc. All Rights Reserved.
             <filterset>
                 <filter token="NB_ID" value="${nb.id}"/>
                 <filter token="GLASSFISHV3_ID" value="${glassfish.v3.id}"/>
+                <!--filter token="GLASSFISHV3_SUN_ID" value="${glassfish.v3.sun.id}"/>
+                <filter token="GLASSFISH_ID" value="${glassfish.id}"/>
+                <filter token="SJSAS_ID" value="${sjsas.id}"/-->
                 <filter token="TOMCAT_ID" value="${tomcat.id}"/>
                 <filter token="OPENESB_ID" value="${openesb.id}"/>
                 <filter token="SIZE_CPP" value="${sizeof.cpp}"/>                

@@ -76,6 +76,7 @@ Microsystems, Inc. All Rights Reserved.
             <filterset>
                 <filter token="INSTALLDIR" value="${glassfish.install.dir}"/>
                 <filter token="APPVERSION" value="${glassfish.version}"/>
+                <filter token="GLASSFISH_ID" value="${glassfish.id}"/>
             </filterset>
         </copy>
         
@@ -100,10 +101,10 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="${basedir}/../netBeans/baseide/build/scripts/perm.sh" tofile="${scriptsdir}/perm.sh"/>        
         <copy file="${basedir}/getport/dist/getport.jar" tofile="${scriptsdir}/getport.jar"/>
         
-        <echo message="Building glassfish.pkg into ${basedir}/../build/glassfish.pkg"/>
+        <echo message="Building glassfish-${glassfish.id}.pkg into ${basedir}/../build/glassfish-${glassfish.id}.pkg"/>
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value="cd ${basedir} ; /Developer/Tools/packagemaker -build -v -p ${basedir}/../build/glassfish.pkg -f ${appdir} -i ${builddir}/Info.plist -r ${scriptsdir} -d ${builddir}/Description.plist"/>
+            <arg value="cd ${basedir} ; /Developer/Tools/packagemaker -build -v -p ${basedir}/../build/glassfish-${glassfish.id}.pkg -f ${appdir} -i ${builddir}/Info.plist -r ${scriptsdir} -d ${builddir}/Description.plist"/>
         </exec>
     </target>
     

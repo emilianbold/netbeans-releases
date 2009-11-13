@@ -25,5 +25,7 @@ fi
 
 script_dir=`dirname "$0"`
 
+. "$script_dir"/env.sh
+
 #clean receipts
-"$script_dir"/clean_receipts.sh "glassfish-v3-sun" "glassfish-v3-sun"
+"$script_dir"/clean_receipts.sh "glassfish-v3-sun-$GLASSFISHV3_SUN_ID" "glassfish-v3-sun"

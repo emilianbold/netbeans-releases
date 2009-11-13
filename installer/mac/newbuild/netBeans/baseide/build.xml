@@ -98,7 +98,9 @@ TOMCAT_ID="${tomcat.id}"
 ]]></echo>
 <!--
 OPENESB_ID="${openesb.id}"
-GLASSFISH_ID...
+GLASSFISH_ID="${glassfish.id}"
+GLASSFISHV3_SUN_ID="${glassfish.v3.sun.id}"
+SJSAS_ID="${sjsas.id}"
 -->
         
         <copy file="pkg/Info.plist" filtering="true" tofile="${builddir}/Info.plist">
