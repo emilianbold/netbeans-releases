@@ -28,9 +28,9 @@
     <property name="tomcat_location" value="${binary_cache_host}/tomcat/apache-tomcat-${tomcat.version}.zip"/> 
             
     <!-- GlassFish properties   -->   
-    <property name="glassfish.install.dir" value="${install.dir}/glassfish-v2.1"/>
-    <property name="glassfish.version" value="v2.1"/>
-    <property name="glassfish.display.version" value="V2.1"/>
+    <property name="glassfish.install.dir" value="${install.dir}/glassfish-v2.1.1"/>
+    <property name="glassfish.version" value="v2.1.1"/>
+    <property name="glassfish.display.version" value="V2.1.1"/>
     <!--<property name="glassfish_location" value="${gf_builds_host}/java/re/glassfish_branch/9.1.1/promoted/fcs/b60e/images/mac/glassfish-image-SNAPSHOT.jar"/>-->
     <property name="glassfish_location"    value="file:${user.home}/releng/hudson/glassfish-image-v2.1-b60e.jar"/>
     <!--<property name="glassfish_location_ml" value="${gf_builds_host}/java/re/glassfish_branch/9.1.1/promoted/fcs/b60e/l10n/mac/glassfish-image-SNAPSHOT-ml.jar"/>-->
@@ -39,12 +39,12 @@
 
     <!-- SJSAS properties   -->
     <property name="sjsas.install.dir" value="${install.dir}/SUNWappserver"/>
-    <property name="sjsas.version" value="v2.1"/>
-    <property name="sjsas.display.version" value="v2.1"/>
-    <property name="sjsas.milestone.number" value="60e"/>
-    <property name="sjsas_location" value="${gf_builds_host}/java/re/glassfish_branch/9.1.1/promoted/fcs/b${sjsas.milestone.number}/bundles/appserver_install_image-mac-b${sjsas.milestone.number}.zip"/>
+    <property name="sjsas.version" value="v2.1.1"/>
+    <property name="sjsas.display.version" value="v2.1.1"/>
+    <property name="sjsas.milestone.number" value="31g"/>
+    <property name="sjsas_location" value="${gf_builds_host}/java/re/glassfish_branch/2.1.1/promoted/fcs/b${sjsas.milestone.number}/bundles/appserver_install_image-mac-b${sjsas.milestone.number}.zip"/>
     <!--property name="sjsas_location"    value="file:${user.home}/releng/hudson/appserver_install_image-mac-b${sjsas.milestone.number}.zip"/-->
-    <property name="sjsas_location_ml" value="${gf_builds_host}/java/re/glassfish_branch/9.1.1/promoted/fcs/b${sjsas.milestone.number}/l10n-nb/appserver_install_image-mac-b${sjsas.milestone.number}-ml.zip"/>
+    <property name="sjsas_location_ml" value="${gf_builds_host}/java/re/glassfish_branch/2.1.1/promoted/fcs/b${sjsas.milestone.number}/l10n-nb/appserver_install_image-mac-b${sjsas.milestone.number}-ml.zip"/>
     <!--property name="sjsas_location_ml" value="file:${user.home}/releng/hudson/appserver_install_image-mac-b${sjsas.milestone.number}-ml.zip"/-->
 
 
