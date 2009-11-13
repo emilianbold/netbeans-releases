@@ -564,7 +564,7 @@ class AutoupdateCatalogParser extends DefaultHandler {
     public static final class ModuleItem {
         private final String moduleCodeName;
         private final String specVersion;
-        public final URL distributionURL;
+        private final URL distributionURL;
         public final String targetcluster;
 
         private ModuleItem(String moduleCodeName, String specVersion, URL distributionURL, String targetcluster) {
@@ -576,7 +576,7 @@ class AutoupdateCatalogParser extends DefaultHandler {
 
 
 
-        private static ModuleItem createModule(
+        static ModuleItem createModule(
             String moduleCodeName,
             String specVersion,
             URL distributionURL,
@@ -602,6 +602,10 @@ class AutoupdateCatalogParser extends DefaultHandler {
 
         String getSpecVersion() {
             return specVersion;
+        }
+
+        URL getURL() {
+            return distributionURL;
         }
 
         @Override

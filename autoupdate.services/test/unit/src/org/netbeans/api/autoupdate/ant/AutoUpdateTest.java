@@ -39,6 +39,11 @@
 
 package org.netbeans.api.autoupdate.ant;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 import org.netbeans.junit.NbTestCase;
 
 /**
@@ -51,8 +56,53 @@ public class AutoUpdateTest extends NbTestCase {
         super(name);
     }
 
-    public void testSampleExecute() throws Exception {
-        ExecuteAnt.execute("autoupdate.xml", "-verbose");
-        fail(ExecuteAnt.getStdOut());
+    public void testDownloadAndExtractModule() throws Exception {
+        clearWorkDir();
+
+        File f = new File(getWorkDir(), "org-netbeans-api-annotations-common.xml");
+        ExecuteAnt.extractResource(f, "org-netbeans-api-annotations-common.xml");
+
+        File nbm = generateNBM("org-netbeans-api-annotations-common.nbm",
+            "netbeans/config/Modules/org-netbeans-api-annotations-common.xml",
+            "netbeans/modules/org-netbeans-api-annotations-common.jar");
+
+        File target = new File(getWorkDir(), "target");
+        target.mkdirs();
+
+        ExecuteAnt.execute(
+            "autoupdate.xml", "-verbose", "-Durl=" + f.toURI().toURL(),
+            "-Dincludes=org.netbeans.api.annotations.common",
+            "-Dtarget=" + target
+        );
+
+        File xml = new File(
+            new File(new File(new File(target, "platform11"), "config"), "Modules"),
+            "org-netbeans-api-annotations-common.xml"
+        );
+        assertTrue("xml file created", xml.exists());
+
+        File jar = new File(
+            new File(new File(target, "platform11"), "modules"),
+            "org-netbeans-api-annotations-common.jar"
+        );
+        assertTrue("jar file created", jar.exists());
     }
+
+    public File generateNBM (String name, String... files) throws IOException {
+        File f = new File (getWorkDir (), name);
+
+        ZipOutputStream os = new ZipOutputStream (new FileOutputStream (f));
+        os.putNextEntry (new ZipEntry ("Info/info.xml"));
+        os.write ("nothing".getBytes ());
+        os.closeEntry ();
+        for (String n : files) {
+            os.putNextEntry(new ZipEntry(n));
+            os.write("empty".getBytes());
+            os.closeEntry();
+        }
+        os.close();
+
+        return f;
+    }
+
 }

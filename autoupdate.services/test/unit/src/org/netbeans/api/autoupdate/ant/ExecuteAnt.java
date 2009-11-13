@@ -94,11 +94,13 @@ final class ExecuteAnt extends Assert {
     }
     
     final static File extractResource(String res) throws Exception {
-        URL u = ExecuteAnt.class.getResource(res);
-        assertNotNull ("Resource should be found " + res, u);
-        
         File f = File.createTempFile("res", ".xml");
         f.deleteOnExit ();
+        return extractResource(f, res);
+    }
+    final static File extractResource(File f, String res) throws Exception {
+        URL u = ExecuteAnt.class.getResource(res);
+        assertNotNull ("Resource should be found " + res, u);
         
         FileOutputStream os = new FileOutputStream(f);
         InputStream is = u.openStream();

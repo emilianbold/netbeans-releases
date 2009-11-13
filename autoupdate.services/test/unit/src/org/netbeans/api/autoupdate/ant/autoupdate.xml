@@ -12,9 +12,11 @@
         </taskdef>
 
         <autoupdate
-            updatecenter="http://deadlock.netbeans.org/hudson/job/nbms-and-javadoc/lastSuccessfulBuild/artifact/nbbuild/nbms/updates.xml.gz"
-            netbeansdestdir="${root}"
-        />
+            updatecenter="${url}"
+            netbeansdestdir="${target}"
+        >
+            <modules includes="${includes}"/>
+        </autoupdate>
         
     </target>
 </project>

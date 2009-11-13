@@ -40,15 +40,22 @@
 package org.netbeans.api.autoupdate.ant;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
-import org.apache.tools.ant.types.PatternSet;
+import org.apache.tools.ant.taskdefs.Get;
 import org.netbeans.api.autoupdate.ant.AutoupdateCatalogParser.ModuleItem;
 
 /**
@@ -56,16 +63,7 @@ import org.netbeans.api.autoupdate.ant.AutoupdateCatalogParser.ModuleItem;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public class AutoUpdate extends Task {
-    static {
-        /*
-        System.setProperty("org.openide.util.Lookup", "org.netbeans.modules.autoupdate.ant.LookupImpl");
-        Thread.currentThread().setContextClassLoader(AutoUpdate.class.getClassLoader());
-        Lookup l = Lookup.getDefault();
-        assert l instanceof LookupImpl;
-         */
-    }
-
-    private List<PatternSet> modules = new ArrayList<PatternSet>();
+    private List<Modules> modules = new ArrayList<Modules>();
     private File dir;
     private URL catalog;
 
@@ -77,10 +75,10 @@ public class AutoUpdate extends Task {
         this.dir = dir;
     }
 
-    public PatternSet createModules() {
-        final PatternSet ps = new PatternSet();
-        modules.add(ps);
-        return ps;
+    public Modules createModules() {
+        final Modules m = new Modules();
+        modules.add(m);
+        return m;
     }
 
     @Override
@@ -89,14 +87,6 @@ public class AutoUpdate extends Task {
         if (arr == null) {
             throw new BuildException("netbeans.dest.dir must existing be directory: " + dir);
         }
-        StringBuilder sb = new StringBuilder();
-        String sep = "";
-        for (File f : arr) {
-            sb.append(sep).append(f.getPath());
-            sep = File.pathSeparator;
-        }
-        System.setProperty("netbeans.dirs", sb.toString());
-        System.setProperty("netbeans.user", "memory"); // no userdir
 
         // no userdir
         Map<String, ModuleItem> units = AutoupdateCatalogParser.getUpdateItems(catalog, catalog);
@@ -105,12 +95,62 @@ public class AutoUpdate extends Task {
             if (!matches(uu.getCodeName())) {
                 continue;
             }
+
+            byte[] bytes = new byte[4096];
+            try {
+                File f = File.createTempFile(uu.getCodeName().replace('.', '-'), ".nbm");
+                f.deleteOnExit();
+                Get get = new Get();
+                get.setProject(getProject());
+                get.setTaskName("get:" + uu.getCodeName());
+                get.setSrc(uu.getURL());
+                get.setDest(f);
+                get.execute();
+
+                File cluster = new File(dir, uu.targetcluster);
+
+                ZipFile zf = new ZipFile(f);
+                Enumeration<? extends ZipEntry> en = zf.entries();
+                while (en.hasMoreElements()) {
+                    ZipEntry zipEntry = en.nextElement();
+                    if (!zipEntry.getName().startsWith("netbeans/")) {
+                        continue;
+                    }
+                    File trgt = new File(cluster, zipEntry.getName().substring(9).replace('/', File.separatorChar));
+                    trgt.getParentFile().mkdirs();
+                    log("Writing " + trgt, Project.MSG_VERBOSE);
+
+                    InputStream is = zf.getInputStream(zipEntry);
+                    OutputStream os = new FileOutputStream(trgt);
+                    for (;;) {
+                        int len = is.read(bytes);
+                        if (len == -1) {
+                            break;
+                        }
+                        os.write(bytes, 0, len);
+                    }
+                }
+                
+            } catch (IOException ex) {
+                throw new BuildException(ex);
+            }
         }
     }
 
     private boolean matches(String cnb) {
-        for (PatternSet ps : modules) {
+        for (Modules ps : modules) {
+            if (ps.pattern.matcher(cnb).matches()) {
+                return true;
+            }
         }
         return false;
+    }
+
+    public static final class Modules {
+        Pattern pattern;
+
+        public void setIncludes(String regExp) {
+            pattern = Pattern.compile(regExp);
+        }
     }
 }
