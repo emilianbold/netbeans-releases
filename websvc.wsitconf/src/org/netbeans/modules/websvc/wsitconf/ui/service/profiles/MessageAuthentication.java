@@ -101,12 +101,14 @@ public class MessageAuthentication extends ProfileBaseForm {
             setCombo(wssVersionCombo, SecurityPolicyModelHelper.isWss11(p));
             setChBox(reqSigConfChBox, SecurityPolicyModelHelper.isRequireSignatureConfirmation(p));
             p = PolicyModelHelper.getTopLevelElement(bootPolicy, Policy.class,false);
-            WSDLComponent tokenKind = null;
-            if (ConfigVersion.CONFIG_1_0.equals(cfgVersion)) {
-                tokenKind = SecurityTokensModelHelper.getSupportingToken(p, SecurityTokensModelHelper.SIGNED_SUPPORTING);
-            } else {
-                tokenKind = SecurityTokensModelHelper.getSupportingToken(p, SecurityTokensModelHelper.SIGNED_ENCRYPTED);
-            }
+            WSDLComponent tokenKind = SecurityTokensModelHelper.getSupportingToken(p, SecurityTokensModelHelper.ENDORSING);
+//            if (tokenKind == null) {
+                if (ConfigVersion.CONFIG_1_0.equals(cfgVersion)) {
+                    tokenKind = SecurityTokensModelHelper.getSupportingToken(p, SecurityTokensModelHelper.SIGNED_SUPPORTING);
+                } else {
+                    tokenKind = SecurityTokensModelHelper.getSupportingToken(p, SecurityTokensModelHelper.SIGNED_ENCRYPTED);
+                }
+//            }
             String tokenType = SecurityTokensModelHelper.getTokenType(tokenKind);
             setCombo(supportTokenCombo, tokenType);
         } else {
@@ -115,12 +117,14 @@ public class MessageAuthentication extends ProfileBaseForm {
             setChBox(derivedKeysSecConvChBox, false);
             setCombo(wssVersionCombo, SecurityPolicyModelHelper.isWss11(comp));
             setChBox(reqSigConfChBox, SecurityPolicyModelHelper.isRequireSignatureConfirmation(comp));
-            WSDLComponent tokenKind = null;
-            if (ConfigVersion.CONFIG_1_0.equals(cfgVersion)) {
-                tokenKind = SecurityTokensModelHelper.getSupportingToken(comp, SecurityTokensModelHelper.SIGNED_SUPPORTING);
-            } else {
-                tokenKind = SecurityTokensModelHelper.getSupportingToken(comp, SecurityTokensModelHelper.SIGNED_ENCRYPTED);
-            }
+            WSDLComponent tokenKind = SecurityTokensModelHelper.getSupportingToken(comp, SecurityTokensModelHelper.ENDORSING);
+//            if (tokenKind == null) {
+                if (ConfigVersion.CONFIG_1_0.equals(cfgVersion)) {
+                    tokenKind = SecurityTokensModelHelper.getSupportingToken(comp, SecurityTokensModelHelper.SIGNED_SUPPORTING);
+                } else {
+                    tokenKind = SecurityTokensModelHelper.getSupportingToken(comp, SecurityTokensModelHelper.SIGNED_ENCRYPTED);
+                }
+//            }
             String tokenType = SecurityTokensModelHelper.getTokenType(tokenKind);
             setCombo(supportTokenCombo, tokenType);
         }
