@@ -51,8 +51,6 @@ import java.awt.event.ComponentListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.beans.PropertyEditor;
-import java.beans.PropertyEditorManager;
 import java.lang.reflect.InvocationTargetException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -144,19 +142,27 @@ public class FunctionsListViewVisualizer extends JPanel implements
     private ExecutorService sourcePrefetchExecutor;
     private static final boolean isMacLaf = "Aqua".equals(UIManager.getLookAndFeel().getID()); // NOI18N
     private static final Color macBackground = UIManager.getColor("NbExplorerView.background"); // NOI18N
-    private static final String displayNameFormat;
-    private static final String plainDisplayNameFormat;
+    private static final boolean useHtmlFormat;
+    private static final String htmlEnabledDisplayNameFormat;
+    private static final String htmlDisabledDisplayNameFormat;
 //    private final FocusTraversalPolicy focusPolicy = new FocusTraversalPolicyImpl() ;
     private Map<Integer, Boolean> ascColumnValues = new HashMap<Integer, Boolean>();
     private final SourceSupportProvider sourceSupportProvider;
-    private static Color dlc = UIManager.getDefaults().getColor("Label.disabledForeground"); // NOI18N
-    private static Color elc = UIManager.getDefaults().getColor("Label.enabledForeground"); // NOI18N
 
     static {
-        dlc = UIManager.getDefaults().getColor("Label.disabledForeground"); // NOI18N
-        elc = UIManager.getDefaults().getColor("Label.enabledForeground"); // NOI18N
-        displayNameFormat = "<html><pre><b>%s</b><i> &lt;%s&gt;</i></pre></html>"; // NOI18N
-        plainDisplayNameFormat = "<html><pre><b>%s</b></pre></html>"; // NOI18N
+        Boolean property = Boolean.getBoolean("FunctionsListViewVisualizer.usehtml"); // NOI18N
+        useHtmlFormat = property == null || Boolean.TRUE.equals(property);
+
+        Color dlc = UIManager.getDefaults().getColor("Label.disabledForeground"); // NOI18N
+
+        if (dlc == null) {
+            dlc = Color.GRAY;
+        }
+
+        String colorPrefix = String.format("<font color='#%02x%02x%02x'>", dlc.getRed(), dlc.getGreen(), dlc.getBlue()); // NOI18N
+        String colorSuffix = "</font>"; // NOI18N
+        htmlEnabledDisplayNameFormat = "<html><b>%s</b>" + colorPrefix + "&nbsp;%s&nbsp;%s" + colorSuffix + "</html>"; // NOI18N
+        htmlDisabledDisplayNameFormat = "<html>" + colorPrefix + "%s" + colorSuffix + "</html>"; // NOI18N
     }
 
     public FunctionsListViewVisualizer(FunctionsListDataProvider dataProvider, FunctionsListViewVisualizerConfiguration configuration) {
@@ -723,7 +729,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
         }
 
         private void fire() {
-            fireDisplayNameChange(getDisplayName() + "_", getDisplayName()); // NOI18N
+            fireDisplayNameChange(null, getDisplayName());
         }
 
         @Override
@@ -734,39 +740,52 @@ public class FunctionsListViewVisualizer extends JPanel implements
 
         @Override
         public String getDisplayName() {
-            String dispName = functionCall.getDisplayedName().trim();
-            // Do some decoration...
-            // TODO: IMO all additional information (like sourcefile info)
-            // should be retrieved separately and mot with getDisplayedName
+            if (useHtmlFormat) {
+                return getHtmlDisplayName();
+            }
+
+            String dispName = functionCall.getDisplayedName();
 
             int idx = dispName.indexOf(';');
-//            if (idx < 0) {
-//                idx = dispName.indexOf('+');
-//            }
-
 
             if (idx > 0) {
-                String funcname = dispName.substring(0, idx).trim();
-                funcname = funcname.replace("&", "&amp;"); // NOI18N
-                funcname = funcname.replace("<", "&lt;"); // NOI18N
-                funcname = funcname.replace(">", "&gt;"); // NOI18N
-                String extraInfo = dispName.substring(idx + 1).trim();
-
-                // Cut line number
-                idx = extraInfo.indexOf(':');
-                if (idx > 0) {
-                    extraInfo = extraInfo.substring(0, idx).trim();
-                }
-
-                dispName = String.format(displayNameFormat, funcname, extraInfo);
-                dispName = dispName.replace(" ", "&nbsp;"); // NOI18N
-            } else {
-                dispName = dispName.replace("&", "&amp;"); // NOI18N
-                dispName = dispName.replace("<", "&lt;"); // NOI18N
-                dispName = dispName.replace(">", "&gt;"); // NOI18N
-                dispName = String.format(plainDisplayNameFormat, dispName);
-                dispName = dispName.replace(" ", "&nbsp;"); // NOI18N
+                dispName = dispName.substring(0, idx);
             }
+
+            return dispName.trim();
+        }
+
+        @Override
+        public String getHtmlDisplayName() {
+            String dispName = functionCall.getDisplayedName().trim();
+
+            // Do some decoration...
+            // TODO: IMO all additional information (like sourcefile info)
+            // should be retrieved separately and not with getDisplayedName
+
+            int idx = dispName.indexOf(';');
+            String sourceInfo = null;
+            String funcname = null;
+            String infoPrefix = null;
+
+            if (idx > 0) {
+                funcname = dispName.substring(0, idx).trim();
+                sourceInfo = dispName.substring(idx + 1).trim();
+                infoPrefix = sourceInfo.indexOf(':') > 0
+                        ? NbBundle.getMessage(FunctionsListViewVisualizer.class, "FunctionCallNode.prefix.withLine") // NOI18N
+                        : NbBundle.getMessage(FunctionsListViewVisualizer.class, "FunctionCallNode.prefix.withoutLine"); // NOI18N
+            } else {
+                funcname = dispName;
+            }
+
+            funcname = funcname.replace("&", "&amp;"); // NOI18N
+            funcname = funcname.replace("<", "&lt;"); // NOI18N
+            funcname = funcname.replace(">", "&gt;"); // NOI18N
+            funcname = funcname.replace(" ", "&nbsp;"); // NOI18N
+
+            dispName = (sourceInfo == null)
+                    ? String.format(htmlDisabledDisplayNameFormat, funcname)
+                    : String.format(htmlEnabledDisplayNameFormat, funcname, infoPrefix, sourceInfo);
 
             return dispName;
         }
@@ -851,31 +870,23 @@ public class FunctionsListViewVisualizer extends JPanel implements
 
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            if (column != 0 || value == null) {
-                return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            }
+            final DefaultTableCellRenderer renderer = (DefaultTableCellRenderer) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
-            Column nameColumn = metadata.getColumnByName(functionDatatableDescription.getNameColumn());
-            PropertyEditor editor = PropertyEditorManager.findEditor(nameColumn.getColumnClass());
+            renderer.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+
+            if (column != 0 || value == null) {
+                return renderer;
+            }
 
             Node node = currentChildren.getNodeAt(row);
 
-            if (editor != null && node != null && node instanceof FunctionCallNode) {
-                String sval = value.toString().trim();
-                if (sval.length() > 0) {
-                    editor.setValue(value);
-                    DefaultTableCellRenderer c = (DefaultTableCellRenderer) super.getTableCellRendererComponent(table, editor.getAsText(), isSelected, hasFocus, row, column);
-                    Action goToSourceAction = ((FunctionCallNode) node).getGoToSourceAction();
-                    if (node != null && goToSourceAction != null && goToSourceAction.isEnabled()) {
-                        c.setForeground(elc);
-                    } else {
-                        c.setForeground(dlc);
-                    }
-                    return c;
-                }
+            if (node != null && node instanceof FunctionCallNode) {
+                Action goToSourceAction = ((FunctionCallNode) node).getGoToSourceAction();
+                renderer.setEnabled(goToSourceAction != null && goToSourceAction.isEnabled());
+                renderer.setToolTipText(node.getHtmlDisplayName());
             }
 
-            return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            return renderer;
         }
     }
 
