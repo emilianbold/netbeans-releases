@@ -44,15 +44,12 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.types.PatternSet;
-import org.netbeans.api.autoupdate.UpdateManager;
-import org.netbeans.api.autoupdate.UpdateUnit;
-import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
-import org.netbeans.core.startup.MainLookup;
-import org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogProvider;
+import org.netbeans.api.autoupdate.ant.AutoupdateCatalogParser.ModuleItem;
 
 /**
  *
@@ -70,9 +67,10 @@ public class AutoUpdate extends Task {
 
     private List<PatternSet> modules = new ArrayList<PatternSet>();
     private File dir;
+    private URL catalog;
 
     public void setUpdateCenter(URL u) {
-        MainLookup.register(new AutoupdateCatalogProvider("AntProvider", "AntProvider", u));
+        catalog = u;
     }
 
     public void setNetBeansDestDir(File dir) {
@@ -100,13 +98,10 @@ public class AutoUpdate extends Task {
         System.setProperty("netbeans.dirs", sb.toString());
         System.setProperty("netbeans.user", "memory"); // no userdir
 
-        try {
-            UpdateUnitProviderFactory.getDefault().refreshProviders(null, true);
-        } catch (IOException ex) {
-            throw new BuildException(ex);
-        }
-        for (UpdateUnit uu : UpdateManager.getDefault().getUpdateUnits()) {
-            log("found module: " + uu.getCodeName(), Project.MSG_VERBOSE);
+        // no userdir
+        Map<String, ModuleItem> units = AutoupdateCatalogParser.getUpdateItems(catalog, catalog);
+        for (ModuleItem uu : units.values()) {
+            log("found module: " + uu, Project.MSG_VERBOSE);
             if (!matches(uu.getCodeName())) {
                 continue;
             }
