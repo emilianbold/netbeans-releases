@@ -767,7 +767,7 @@ public class JavaMembersPanel extends javax.swing.JPanel {
     private void close() {
         Window window = SwingUtilities.getWindowAncestor(JavaMembersPanel.this);
         if (window != null) {
-            window.setVisible(false);
+            ResizablePopup.cleanup(window);
         }
     }
 

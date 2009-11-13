@@ -48,6 +48,7 @@ import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.impl.indexing.CancelRequest;
 import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
+import org.netbeans.modules.parsing.impl.indexing.lucene.LuceneIndexFactory;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -74,8 +75,7 @@ public final class Context {
     private FileObject root;
     private IndexingSupport indexingSupport;
 
-    //unit test
-    final IndexFactoryImpl factory;
+    private final IndexFactoryImpl factory;
 
     Context (final FileObject indexBaseFolder,
              final URL rootURL, final String indexerName, final int indexerVersion,
@@ -91,7 +91,7 @@ public final class Context {
         this.rootURL = rootURL;
         this.indexerName = indexerName;
         this.indexerVersion = indexerVersion;
-        this.factory = factory;
+        this.factory = factory != null ? factory : new LuceneIndexFactory();
         this.followUpJob = followUpJob;
         final String path = getIndexerPath(indexerName, indexerVersion); //NOI18N
         this.indexFolder = FileUtil.createFolder(this.indexBaseFolder,path);
@@ -99,6 +99,10 @@ public final class Context {
         this.sourceForBinaryRoot = sourceForBinaryRoot;
         this.cancelRequest = cancelRequest;
     }
+
+    // -----------------------------------------------------------------------
+    // Public implementation
+    // -----------------------------------------------------------------------
 
     /**
      * Returns the cache folder where the indexer may store language metadata.
@@ -222,6 +226,14 @@ public final class Context {
      */
     public boolean isCancelled() {
         return cancelRequest == null ? false : cancelRequest.isRaised();
+    }
+
+    // -----------------------------------------------------------------------
+    // Package private implementation
+    // -----------------------------------------------------------------------
+
+    IndexFactoryImpl getIndexFactory() {
+        return this.factory;
     }
 
     String getIndexerName () {
