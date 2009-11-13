@@ -52,6 +52,9 @@ import org.openide.util.NbBundle;
  */
 public class JsfCompletionItem {
 
+    //html items priority varies from 10 to 20
+    private static final int JSF_DEFAULT_SORT_PRIORITY = 5;
+
     //----------- Factory methods --------------
     public static JsfTag createTag(int substitutionOffset, FaceletsLibrary.NamedComponent component, String declaredPrefix, boolean autoimport) {
         return new JsfTag(substitutionOffset, component, declaredPrefix, autoimport);
@@ -110,7 +113,7 @@ public class JsfCompletionItem {
 
         @Override
         public int getSortPriority() {
-            return DEFAULT_SORT_PRIORITY + 5; //jsf tags are more important than html content
+            return JSF_DEFAULT_SORT_PRIORITY; //jsf tags are more important than html content
         }
 
         @Override
