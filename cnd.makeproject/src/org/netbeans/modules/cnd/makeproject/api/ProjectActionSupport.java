@@ -50,6 +50,7 @@ import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.CommandProvider;
@@ -72,6 +73,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -316,6 +318,11 @@ public class ProjectActionSupport {
 
             final ProjectActionEvent pae = paes[currentAction];
 
+            if (!checkProject(pae)) {
+                progressHandle.finish();
+                return;
+            }
+
             // Validate executable
             switch (pae.getType()) {
                 case RUN:
@@ -420,6 +427,23 @@ public class ProjectActionSupport {
                     }
                 });
             }
+        }
+
+        /** checks whether the project is ok (not deleted) */
+        private boolean checkProject(ProjectActionEvent pae) {
+            Project project = pae.getProject();
+            if (project != null) { // paranoidal null checks are better than latent NPE :)
+                FileObject projectDirectory = project.getProjectDirectory();
+                if (projectDirectory != null) {
+                    FileObject nbproject = projectDirectory.getFileObject("nbproject");
+                    if (nbproject != null) {
+                        // I'm more sure in java.io.File.exists() - practice shows that FileObjects might be sometimes cached...
+                        File file = FileUtil.toFile(nbproject);
+                        return file != null && file.exists();
+                    }
+                }
+            }
+            return false;
         }
 
         private boolean checkExecutable(ProjectActionEvent pae) {
