@@ -50,8 +50,10 @@ import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
@@ -166,13 +168,17 @@ public abstract class QtInfoProvider {
         }
 
         private static String queryQtIncludeDir(MakeConfiguration conf) {
-            NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(conf.getDevelopmentHost().getExecutionEnvironment());
+            ExecutionEnvironment execEnv = conf.getDevelopmentHost().getExecutionEnvironment();
+            NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
             npb.setExecutable(getQmakePath(conf));
             npb.setArguments("-query", "QT_INSTALL_HEADERS"); // NOI18N
             try {
                 NativeProcess process = npb.call();
                 String output = ProcessUtils.readProcessOutputLine(process).trim();
                 if (process.waitFor() == 0 && 0 < output.length()) {
+                    if (execEnv.isRemote()) {
+                        output = BasicCompiler.getIncludeFilePrefix(execEnv) + output;
+                    }
                     return output;
                 }
             } catch (IOException ex) {

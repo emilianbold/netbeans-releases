@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.compilers.ToolchainProject;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
+import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.api.remote.ServerList;
@@ -282,7 +283,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         return command;
     }
 
-    protected static File getBuildDirectory(Node node,int tool){
+    protected static String getBuildDirectory(Node node,int tool){
         DataObject dataObject = node.getCookie(DataObject.class);
         FileObject fileObject = dataObject.getPrimaryFile();
         File makefile = FileUtil.toFile(fileObject);
@@ -308,7 +309,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
             bdir = makefile.getParent();
         }
         File buildDir = getAbsoluteBuildDir(bdir, makefile);
-        return buildDir;
+        return buildDir.getAbsolutePath();
     }
 
     protected static String[] getArguments(Node node, int tool) {
@@ -483,10 +484,10 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         }
     }
 
-    protected static void traceExecutable(String executable, File buildDir, StringBuilder argsFlat, Map<String, String> envMap) {
+    protected static void traceExecutable(String executable, String buildDir, StringBuilder argsFlat, Map<String, String> envMap) {
         if (TRACE) {
             StringBuilder buf = new StringBuilder("Run " + executable); // NOI18N
-            buf.append("\n\tin folder   " + buildDir.getPath()); // NOI18N
+            buf.append("\n\tin folder   " + buildDir); // NOI18N
             buf.append("\n\targuments   " + argsFlat); // NOI18N
             buf.append("\n\tenvironment "); // NOI18N
             for (Map.Entry<String, String> v : envMap.entrySet()) {
@@ -497,7 +498,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         }
     }
 
-    protected static void traceExecutable(String executable, File buildDir, String[] args, Map<String, String> envMap) {
+    protected static void traceExecutable(String executable, String buildDir, String[] args, Map<String, String> envMap) {
         if (TRACE) {
             StringBuilder argsFlat = new StringBuilder();
             for (int i = 0; i < args.length; i++) {
@@ -505,6 +506,25 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
                 argsFlat.append(args[i]);
             }
             traceExecutable(executable, buildDir, argsFlat, envMap);
+        }
+    }
+
+    protected static String convertToRemoteIfNeeded(ExecutionEnvironment execEnv, String localDir) {
+        if (!checkConnection(execEnv)) {
+            return null;
+        }
+        if (execEnv.isRemote()) {
+            return HostInfoProvider.getMapper(execEnv).getRemotePath(localDir, false);
+        }
+        return localDir;
+    }
+
+    protected static String convertToRemoveSeparatorsIfNeeded(ExecutionEnvironment execEnv, String localPath) {
+        if (execEnv.isRemote()) {
+            // on remote we always have Unix
+            return localPath.replace("\\", "/"); // NOI18N
+        } else {
+            return localPath;
         }
     }
 
@@ -527,18 +547,20 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         }
     }
 
-    protected static final class ProcessChangeListener implements ChangeListener, Runnable {
+    protected static final class ProcessChangeListener implements ChangeListener, Runnable, LineConvertorFactory {
         private final ExecutionListener listener;
-        private final Writer outputListener;
+        private Writer outputListener;
+        private final LineConvertor lineConvertor;
         private final InputOutput tab;
         private final String resourceKey;
         private final RemoteSyncWorker syncWorker;
         private long startTimeMillis;
         private Runnable postRunnable;
 
-        public ProcessChangeListener(ExecutionListener listener, Writer outputListener, InputOutput tab, String resourceKey, RemoteSyncWorker syncWorker) {
+        public ProcessChangeListener(ExecutionListener listener, Writer outputListener, LineConvertor lineConvertor, InputOutput tab, String resourceKey, RemoteSyncWorker syncWorker) {
             this.listener = listener;
             this.outputListener = outputListener;
+            this.lineConvertor = lineConvertor;
             this.tab = tab;
             this.resourceKey = resourceKey;
             this.syncWorker = syncWorker;
@@ -563,17 +585,11 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
                     break;
                 case CANCELLED:
                 {
-                    if (outputListener != null) {
-                        try {
-                            outputListener.flush();
-                            outputListener.close();
-                        } catch (IOException ex) {
-                            ex.printStackTrace();
-                        }
-                    }
+                    closeOutputListener();
                     if (listener != null) {
                         listener.executionFinished(process.exitValue());
                     }
+                    shutdownSyncWorker();
                     postRunnable = new Runnable() {
                         public void run() {
                             String message = getString("Output."+resourceKey+"Terminated", formatTime(System.currentTimeMillis() - startTimeMillis)); // NOI18N
@@ -584,19 +600,11 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
                             StatusDisplayer.getDefault().setStatusText(statusMessage);
                         }
                     };
-                    shutdownSyncWorker();
                     break;
                 }
                 case ERROR:
                 {
-                    if (outputListener != null) {
-                        try {
-                            outputListener.flush();
-                            outputListener.close();
-                        } catch (IOException ex) {
-                            ex.printStackTrace();
-                        }
-                    }
+                    closeOutputListener();
                     if (listener != null) {
                         listener.executionFinished(-1);
                     }
@@ -615,14 +623,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
                 }
                 case FINISHED:
                 {
-                    if (outputListener != null) {
-                        try {
-                            outputListener.flush();
-                            outputListener.close();
-                        } catch (IOException ex) {
-                            ex.printStackTrace();
-                        }
-                    }
+                    closeOutputListener();
                     if (listener != null) {
                         listener.executionFinished(process.exitValue());
                     }
@@ -655,40 +656,46 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
             }
         }
 
+        public LineConvertor newLineConvertor() {
+            return new LineConvertor() {
+                @Override
+                public List<ConvertedLine> convert(String line) {
+                    return ProcessChangeListener.this.convert(line);
+                }
+            };
+        }
+
         private void shutdownSyncWorker() {
             if (syncWorker != null) {
                 syncWorker.shutdown();
             }
         }
-    }
 
-    protected static final class ProcessLineConvertorFactory implements LineConvertorFactory {
-        private final Writer outputListener;
-        private final LineConvertor lineConvertor;
-
-        public ProcessLineConvertorFactory(Writer outputListener, LineConvertor lineConvertor) {
-            this.outputListener = outputListener;
-            this.lineConvertor = lineConvertor;
+        private synchronized void closeOutputListener(){
+            if (outputListener != null) {
+                try {
+                    outputListener.flush();
+                    outputListener.close();
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+                outputListener = null;
+            }
         }
 
-        public LineConvertor newLineConvertor() {
-            return new LineConvertor() {
-                @Override
-                public List<ConvertedLine> convert(String line) {
-                    if (outputListener != null) {
-                        try {
-                            outputListener.write(line);
-                            outputListener.write("\n"); // NOI18N
-                        } catch (IOException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                    }
-                    if (lineConvertor != null) {
-                        return lineConvertor.convert(line);
-                    }
-                    return null;
+        private synchronized List<ConvertedLine> convert(String line) {
+            if (outputListener != null) {
+                try {
+                    outputListener.write(line);
+                    outputListener.write("\n"); // NOI18N
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
-            };
+            }
+            if (lineConvertor != null) {
+                return lineConvertor.convert(line);
+            }
+            return null;
         }
     }
 }

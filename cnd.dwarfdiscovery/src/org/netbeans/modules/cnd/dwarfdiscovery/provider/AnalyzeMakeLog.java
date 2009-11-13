@@ -45,10 +45,6 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
-import org.netbeans.modules.cnd.api.remote.PathMap;
-import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.discovery.api.Configuration;
 import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.ProjectImpl;
@@ -57,7 +53,6 @@ import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.NbBundle;
 
 /**
@@ -219,36 +214,22 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
     }
 
     @Override
-    protected List<SourceFileProperties> getSourceFileProperties(String objFileName, Map<String,SourceFileProperties> map, PathMap pathMapper){
+    protected List<SourceFileProperties> getSourceFileProperties(String objFileName, Map<String,SourceFileProperties> map, ProjectProxy project){
         ProviderProperty p = getProperty(RESTRICT_COMPILE_ROOT);
         String root = "";
         if (p != null) {
             root = (String)p.getValue();
         }
-        List<SourceFileProperties> res = runLogReader(objFileName, root, progress, pathMapper);
+        List<SourceFileProperties> res = runLogReader(objFileName, root, progress, project);
         progress = null;
         return res;
 
     }
     
-    /* package-local */ List<SourceFileProperties> runLogReader(String objFileName, String root, Progress progress, PathMap pathMapper){
-        LogReader clrf = new LogReader(objFileName, root, pathMapper);
+    /* package-local */ List<SourceFileProperties> runLogReader(String objFileName, String root, Progress progress, ProjectProxy project){
+        LogReader clrf = new LogReader(objFileName, root, project);
         List<SourceFileProperties> list = clrf.getResults(progress, isStoped);
         return list;
-    }
-
-    private PathMap getPathMapper(ProjectProxy project){
-        Project p = project.getProject();
-        if (p != null) {
-            RemoteProject info = p.getLookup().lookup(RemoteProject.class);
-            if (info != null) {
-                ExecutionEnvironment developmentHost = info.getDevelopmentHost();
-                if (developmentHost != null && developmentHost.isRemote()) {
-                    return HostInfoProvider.getMapper(developmentHost);
-                }
-            }
-        }
-        return null;
     }
 
     private Progress progress;
@@ -276,7 +257,7 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
                             set = detectMakeLog(project);
                         }
                         if (set != null && set.length() > 0) {
-                            myFileProperties = getSourceFileProperties(new String[]{set},null, getPathMapper(project));
+                            myFileProperties = getSourceFileProperties(new String[]{set},null, project);
                         }
                     }
                     return myFileProperties;

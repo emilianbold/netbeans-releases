@@ -38,8 +38,8 @@
  */
 package org.netbeans.modules.cnd.modeldiscovery.provider;
 
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 
 /**
  *
@@ -49,7 +49,7 @@ import org.netbeans.modules.cnd.discovery.api.PkgConfigManager;
 public class PkgConfigManagerImpl extends PkgConfigManager {
 
     @Override
-    public PkgConfig getPkgConfig(Project project) {
-        return new PkgConfigImpl(project);
+    public PkgConfig getPkgConfig(MakeConfiguration conf) {
+        return new PkgConfigImpl(conf);
     }
 }

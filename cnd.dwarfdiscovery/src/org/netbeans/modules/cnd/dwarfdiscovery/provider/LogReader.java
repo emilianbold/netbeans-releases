@@ -53,15 +53,23 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
+import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager;
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PackageConfiguration;
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PkgConfig;
 import org.netbeans.modules.cnd.discovery.api.Progress;
+import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
@@ -79,15 +87,17 @@ public class LogReader {
     private final String fileName;
     private List<SourceFileProperties> result;
     private final PathMap pathMapper;
+    private final ProjectProxy project;
     
-    public LogReader(String fileName, String root, PathMap pathMapper){
+    public LogReader(String fileName, String root, ProjectProxy project) {
         if (root.length()>0) {
             this.root = CndFileUtils.normalizeFile(new File(root)).getAbsolutePath();
         } else {
             this.root = root;
         }
         this.fileName = fileName;
-        this.pathMapper = pathMapper;
+        this.project = project;
+        this.pathMapper = getPathMapper(project);
        
         // XXX
         setWorkingDir(root);
@@ -102,6 +112,33 @@ public class LogReader {
         }
         return path;
     }
+
+    private PathMap getPathMapper(ProjectProxy project) {
+        Project p = project.getProject();
+        if (p != null) {
+            RemoteProject info = p.getLookup().lookup(RemoteProject.class);
+            if (info != null) {
+                ExecutionEnvironment developmentHost = info.getDevelopmentHost();
+                if (developmentHost != null && developmentHost.isRemote()) {
+                    return HostInfoProvider.getMapper(developmentHost);
+                }
+            }
+        }
+        return null;
+    }
+
+    private MakeConfiguration getConfiguration(ProjectProxy project) {
+        if (project != null && project.getProject() != null) {
+            ConfigurationDescriptorProvider pdp = project.getProject().getLookup().lookup(ConfigurationDescriptorProvider.class);
+            if (pdp != null && pdp.gotDescriptor()) {
+                MakeConfigurationDescriptor confDescr = pdp.getConfigurationDescriptor();
+                if (confDescr != null) {
+                    return confDescr.getActiveConfiguration();
+                }
+            }
+        }
+        return null;
+    }
     
     private void run(Progress progress, AtomicBoolean isStoped) {
         if (TRACE) {System.out.println("LogReader is run for " + fileName);} //NOI18N
@@ -110,7 +147,8 @@ public class LogReader {
         File file = new File(fileName);
         if (file.exists() && file.canRead()){
             try {
-                PkgConfig pkgConfig = PkgConfigManager.getDefault().getPkgConfig(null);
+                MakeConfiguration conf = getConfiguration(this.project);
+                PkgConfig pkgConfig = PkgConfigManager.getDefault().getPkgConfig(conf);
                 BufferedReader in = new BufferedReader(new FileReader(file));
                 long length = file.length();
                 long read = 0;

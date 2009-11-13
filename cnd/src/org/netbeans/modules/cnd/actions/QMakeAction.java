@@ -55,7 +55,6 @@ import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.cnd.loaders.QtProjectDataObject;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -110,7 +109,7 @@ public class QMakeAction extends AbstractExecutorRunAction {
         FileObject fileObject = dataObject.getPrimaryFile();
         File proFile = FileUtil.toFile(fileObject);
         // Build directory
-        File buildDir = getBuildDirectory(node,Tool.QMakeTool);
+        String buildDir = getBuildDirectory(node,Tool.QMakeTool);
         // Executable
         String executable = getCommand(node, project, Tool.QMakeTool, "qmake"); // NOI18N
         // Arguments
@@ -118,7 +117,8 @@ public class QMakeAction extends AbstractExecutorRunAction {
         String[] args = getArguments(node, Tool.QMakeTool); // NOI18N
 
         ExecutionEnvironment execEnv = getExecutionEnvironment(fileObject, project);
-        if (!checkConnection(execEnv)) {
+        buildDir = convertToRemoteIfNeeded(execEnv, buildDir);
+        if (buildDir == null) {
             return null;
         }
         Map<String, String> envMap = getEnv(execEnv, node, null);
@@ -146,10 +146,10 @@ public class QMakeAction extends AbstractExecutorRunAction {
                 return null;
             }
         }
-        ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, outputListener, inputOutput, "QMake", syncWorker); // NOI18N
+        ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, outputListener, null, inputOutput, "QMake", syncWorker); // NOI18N
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv)
         .setCommandLine(quoteExecutable(executable)+" "+argsFlat) // NOI18N
-        .setWorkingDirectory(buildDir.getPath())
+        .setWorkingDirectory(buildDir)
         .unbufferOutput(false)
         .addNativeProcessListener(processChangeListener);
         npb.getEnvironment().putAll(envMap);
@@ -163,7 +163,7 @@ public class QMakeAction extends AbstractExecutorRunAction {
         .outLineBased(true)
         .showProgress(true)
         .postExecution(processChangeListener)
-        .outConvertorFactory(new ProcessLineConvertorFactory(outputListener, null));
+        .outConvertorFactory(processChangeListener);
         ExecutionService es = ExecutionService.newService(npb, descr, "qmake"); // NOI18N
         return es.run();
     }

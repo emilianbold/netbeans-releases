@@ -114,7 +114,7 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
         final FileObject fileObject = dataObject.getPrimaryFile();
         File makefile = FileUtil.toFile(fileObject);
         // Build directory
-        File buildDir = getBuildDirectory(node,Tool.MakeTool);
+        String buildDir = getBuildDirectory(node,Tool.MakeTool);
         // Executable
         String executable = getCommand(node, project, Tool.MakeTool, "make"); // NOI18N
         // Arguments
@@ -125,14 +125,9 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
             args = new String[]{"-f", makefile.getName(), target}; // NOI18N
         }
         final ExecutionEnvironment execEnv = getExecutionEnvironment(fileObject, project);
-        if (!checkConnection(execEnv)) {
+        buildDir = convertToRemoteIfNeeded(execEnv, buildDir);
+        if (buildDir == null) {
             return null;
-        }
-        if (execEnv.isRemote()) {
-            String s = HostInfoProvider.getMapper(execEnv).getRemotePath(buildDir.getAbsolutePath());
-            if (s != null) {
-                buildDir = new File(s);
-            }
         }
         Map<String, String> envMap = getEnv(execEnv, node, additionalEnvironment);
         if (isSunStudio(node, project)) {
@@ -161,17 +156,17 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
                 return null;
             }
         }
-        ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, outputListener, inputOutput, "Make", syncWorker); // NOI18N
+        ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, outputListener,
+                new CompilerLineConvertor(project, execEnv, fileObject.getParent()), inputOutput, "Make", syncWorker); // NOI18N
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv)
         .setExecutable(executable)
-        .setWorkingDirectory(buildDir.getPath())
+        .setWorkingDirectory(buildDir)
         .setArguments(args)
         .unbufferOutput(false)
         .addNativeProcessListener(processChangeListener);
         npb.getEnvironment().putAll(envMap);
         npb.redirectError();
         
-        LineConvertorFactory factory = new ProcessLineConvertorFactory(outputListener, new CompilerLineConvertor(project, execEnv, fileObject.getParent()));
         ExecutionDescriptor descr = new ExecutionDescriptor()
         .controllable(true)
         .frontWindow(true)
@@ -180,8 +175,8 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
         .inputOutput(inputOutput)
         .outLineBased(true)
         .postExecution(processChangeListener)
-        .errConvertorFactory(factory)
-        .outConvertorFactory(factory);
+        .errConvertorFactory(processChangeListener)
+        .outConvertorFactory(processChangeListener);
         ExecutionService es = ExecutionService.newService(npb, descr, "make"); // NOI18N
         return es.run();
     }
