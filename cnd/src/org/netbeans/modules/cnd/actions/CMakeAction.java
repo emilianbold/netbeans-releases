@@ -49,7 +49,6 @@ import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
-import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.loaders.CMakeDataObject;
@@ -143,7 +142,7 @@ public class CMakeAction extends AbstractExecutorRunAction {
                 return null;
             }
         }
-        ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, outputListener, inputOutput, "CMake", syncWorker); // NOI18N
+        ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, outputListener, null, inputOutput, "CMake", syncWorker); // NOI18N
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv)
         .setWorkingDirectory(buildDir)
         .setCommandLine(quoteExecutable(executable)+" "+argsFlat.toString()) // NOI18N
@@ -158,7 +157,7 @@ public class CMakeAction extends AbstractExecutorRunAction {
         .inputOutput(inputOutput)
         .showProgress(true)
         .postExecution(processChangeListener)
-        .outConvertorFactory(new ProcessLineConvertorFactory(outputListener, null));
+        .outConvertorFactory(processChangeListener);
         // Execute the makefile
         ExecutionService es = ExecutionService.newService(npb, descr, "cmake"); // NOI18N
         return es.run();

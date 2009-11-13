@@ -181,7 +181,7 @@ public class ShellRunAction extends AbstractExecutorRunAction {
                 return null;
             }
         }
-        ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, outputListener, inputOutput, "Run", syncWorker); // NOI18N
+        ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, outputListener, null, inputOutput, "Run", syncWorker); // NOI18N
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv)
         .setWorkingDirectory(buildDir)
         .setCommandLine(quoteExecutable(shellCommand)+" "+argsFlat.toString()) // NOI18N
@@ -190,7 +190,6 @@ public class ShellRunAction extends AbstractExecutorRunAction {
         npb.getEnvironment().putAll(envMap);
         npb.redirectError();
 
-        LineConvertorFactory factory = new ProcessLineConvertorFactory(outputListener, null);
         ExecutionDescriptor descr = new ExecutionDescriptor()
         .controllable(true)
         .frontWindow(true)
@@ -199,8 +198,8 @@ public class ShellRunAction extends AbstractExecutorRunAction {
         .outLineBased(true)
         .showProgress(true)
         .postExecution(processChangeListener)
-        .errConvertorFactory(factory)
-        .outConvertorFactory(factory);
+        .errConvertorFactory(processChangeListener)
+        .outConvertorFactory(processChangeListener);
 
         // Execute the shellfile
         ExecutionService es = ExecutionService.newService(npb, descr, "Run"); // NOI18N

@@ -50,7 +50,6 @@ import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
-import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -147,7 +146,7 @@ public class QMakeAction extends AbstractExecutorRunAction {
                 return null;
             }
         }
-        ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, outputListener, inputOutput, "QMake", syncWorker); // NOI18N
+        ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, outputListener, null, inputOutput, "QMake", syncWorker); // NOI18N
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv)
         .setCommandLine(quoteExecutable(executable)+" "+argsFlat) // NOI18N
         .setWorkingDirectory(buildDir)
@@ -164,7 +163,7 @@ public class QMakeAction extends AbstractExecutorRunAction {
         .outLineBased(true)
         .showProgress(true)
         .postExecution(processChangeListener)
-        .outConvertorFactory(new ProcessLineConvertorFactory(outputListener, null));
+        .outConvertorFactory(processChangeListener);
         ExecutionService es = ExecutionService.newService(npb, descr, "qmake"); // NOI18N
         return es.run();
     }

@@ -156,7 +156,8 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
                 return null;
             }
         }
-        ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, outputListener, inputOutput, "Make", syncWorker); // NOI18N
+        ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, outputListener,
+                new CompilerLineConvertor(project, execEnv, fileObject.getParent()), inputOutput, "Make", syncWorker); // NOI18N
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv)
         .setExecutable(executable)
         .setWorkingDirectory(buildDir)
@@ -166,7 +167,6 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
         npb.getEnvironment().putAll(envMap);
         npb.redirectError();
         
-        LineConvertorFactory factory = new ProcessLineConvertorFactory(outputListener, new CompilerLineConvertor(project, execEnv, fileObject.getParent()));
         ExecutionDescriptor descr = new ExecutionDescriptor()
         .controllable(true)
         .frontWindow(true)
@@ -175,8 +175,8 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
         .inputOutput(inputOutput)
         .outLineBased(true)
         .postExecution(processChangeListener)
-        .errConvertorFactory(factory)
-        .outConvertorFactory(factory);
+        .errConvertorFactory(processChangeListener)
+        .outConvertorFactory(processChangeListener);
         ExecutionService es = ExecutionService.newService(npb, descr, "make"); // NOI18N
         return es.run();
     }
