@@ -42,17 +42,15 @@
 package org.netbeans.modules.ruby.rubyproject.ui.wizards;
 
 import java.io.File;
-import java.io.IOException;
 import java.text.MessageFormat;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
-import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.ruby.rubyproject.Util;
 import org.netbeans.modules.ruby.rubyproject.ui.FoldersListSettings;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 
@@ -215,18 +213,8 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
         }
 
         // #47611: if there is a live project still residing here, forbid project creation.
-        if (destFolder.isDirectory()) {
-            FileObject destFO = FileUtil.toFileObject(destFolder);
-            assert destFO != null : "No FileObject for " + destFolder;
-            boolean clear = false;
-            try {
-                clear = ProjectManager.getDefault().findProject(destFO) == null;
-            } catch (IOException e) {
-                // need not report here; clear remains false -> error
-            }
-            if (!clear) {
-                return NbBundle.getMessage(PanelProjectLocationExtSrc.class, "MSG_ProjectFolderHasDeletedProject");
-            }
+        if (Util.isProjectAlready(destFolder)) {
+            return NbBundle.getMessage(PanelProjectLocationExtSrc.class, "MSG_ProjectAlreadyProject");
         }
         return null;
     }        
