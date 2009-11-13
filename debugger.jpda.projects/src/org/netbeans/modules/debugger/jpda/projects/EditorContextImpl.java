@@ -95,6 +95,10 @@ import javax.lang.model.util.Elements;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.tools.Diagnostic;
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.DebuggerManagerAdapter;
+import org.netbeans.api.debugger.DebuggerManagerListener;
+import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.JPDAThread;
@@ -156,6 +160,7 @@ public class EditorContextImpl extends EditorContext {
     private PropertyChangeListener  dispatchListener;
     private EditorContextDispatcher contextDispatcher;
     private final Map<JavaSource, JavaSourceUtil.Handle> sourceHandles = new WeakHashMap<JavaSource, JavaSourceUtil.Handle>();
+    private DebuggerManagerListener sessionsListener; // cleans up sourceHandles
 
 
     {
@@ -164,6 +169,12 @@ public class EditorContextImpl extends EditorContext {
         contextDispatcher = EditorContextDispatcher.getDefault();
         contextDispatcher.addPropertyChangeListener("text/x-java",
                 WeakListeners.propertyChange(dispatchListener, contextDispatcher));
+        sessionsListener = new SessionsListener();
+        DebuggerManager.getDebuggerManager().addDebuggerListener(
+                DebuggerManager.PROP_SESSIONS,
+                WeakListeners.create(DebuggerManagerListener.class,
+                                     sessionsListener,
+                                     new SessionsListenerRemoval()));
     }
 
 
@@ -2099,6 +2110,31 @@ public class EditorContextImpl extends EditorContext {
          public void addNextOperationTo(Operation operation, Operation next) {
              EditorContextImpl.this.addNextOperationTo(operation, next);
          }
+    }
+
+    private class SessionsListener extends DebuggerManagerAdapter {
+
+        @Override
+        public void sessionRemoved(Session session) {
+            int numSession = DebuggerManager.getDebuggerManager().getSessions().length;
+            if (numSession > 0) {
+                // Trigger the check for live values
+                sourceHandles.size();
+            } else {
+                // No debugger sessions - clean the map
+                sourceHandles.clear();
+            }
+        }
+
+    }
+
+    private static class SessionsListenerRemoval {
+
+        public void removeDebuggerListener (DebuggerManagerListener l) {
+            DebuggerManager.getDebuggerManager().removeDebuggerListener(
+                    DebuggerManager.PROP_SESSIONS, l);
+        }
+        
     }
 
 }
