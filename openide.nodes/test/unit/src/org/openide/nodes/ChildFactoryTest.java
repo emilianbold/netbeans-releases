@@ -135,6 +135,8 @@ public class ChildFactoryTest extends TestCase {
         assertEquals(1, n.length);
         assertEquals(NbBundle.getMessage(AsynchChildren.class, "LBL_WAIT"),
                 n[0].getDisplayName());
+        assertEquals(Collections.emptyList(), Arrays.asList(n[0].getPropertySets()));
+        assertEquals(Collections.emptyList(), Arrays.asList(n[0].getActions(true)));
         factory.wait = false;
         synchronized (factory) {
             factory.wait(2000);
