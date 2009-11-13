@@ -64,6 +64,8 @@ import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport.PathMapperException;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport.Worker;
 import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
@@ -464,22 +466,31 @@ class RemoteSyncActions {
     }
 
     private static void gatherFiles(Collection<File> files, Node node) {
-System.err.printf("GATHERING %s\n", node.getName());
         DataObject dataObject = node.getCookie(DataObject.class);
-        System.err.printf("\tdao %s\n", dataObject);
         if (dataObject != null) {
             FileObject fo = dataObject.getPrimaryFile();
-            System.err.printf("\tfo %s\n", (fo == null) ? "null" : fo.getNameExt());
             if (fo != null) {
                 File file = FileUtil.toFile(fo);
                 if (!file.isDirectory()) {
-                    System.err.printf("\t\tadded %s\n", file.getName());
                     files.add(file);
                 }
             }
         }
-        for (Node child : node.getChildren().getNodes()) {
-            gatherFiles(files, child);
+        Folder folder = node.getLookup().lookup(Folder.class);
+        if (folder != null) {
+            gatherFiles(files, folder);
+        }
+    }
+
+    private static void gatherFiles(Collection<File> files, Folder folder) {
+        for (Item item : folder.getItemsAsArray()) {
+            File file = item.getFile();
+            if (file != null && !file.isDirectory()) {
+                files.add(file);
+            }
+        }
+        for (Folder subfolder : folder.getFolders()) {
+            gatherFiles(files, subfolder);
         }
     }
 }
