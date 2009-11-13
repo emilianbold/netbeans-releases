@@ -37,14 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.netbeans.modules.web.jsf.editor.facelets;
+package org.netbeans.modules.web.jsf.editor.facelets.mojarra;
 
+import org.netbeans.modules.web.jsf.editor.facelets.*;
 import com.sun.faces.config.DocumentInfo;
 import com.sun.faces.config.processor.AbstractConfigProcessor;
 import com.sun.faces.util.FacesLogger;
 import com.sun.faces.facelets.util.ReflectionUtil;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrarySupport.Compiler;
-import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Element;
@@ -64,7 +64,7 @@ import javax.faces.FacesException;
  *  <code>/faces-taglib</code>.
  * </p>
  */
-public class FaceletsTaglibConfigProcessorPatched extends AbstractConfigProcessor {
+public class FaceletsTaglibConfigProcessor extends AbstractConfigProcessor {
 
     private static final Logger LOGGER = FacesLogger.CONFIG.getLogger();
     /**
@@ -193,10 +193,10 @@ public class FaceletsTaglibConfigProcessorPatched extends AbstractConfigProcesso
      */
     private static final String COMPOSITE_LIBRARY_NAME = "composite-library-name";
     //fake compiler, same name, different class, just not to change this class much
-    Compiler compiler = new Compiler();
+    public Compiler compiler = new Compiler();
     private FaceletsLibrarySupport support;
 
-    public FaceletsTaglibConfigProcessorPatched(FaceletsLibrarySupport support) {
+    public FaceletsTaglibConfigProcessor(FaceletsLibrarySupport support) {
         this.support = support;
     }
 
