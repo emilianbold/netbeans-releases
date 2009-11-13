@@ -125,22 +125,22 @@
         <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectServerWizardPanel_WAR_IMPORT" url="web/csh/projwiz_standard/PanelConfigureProject_servers.html"/>
 	<mapID target="org.netbeans.modules.web.project.ui.wizards.PanelSourceFolders" url="web/csh/projwiz_standard/SecondPanel.html"/>
 	<mapID target="org.netbeans.modules.web.project.ui.wizards.PanelSupportedFrameworks" url="web/csh/projwiz_standard/PanelSupportedFrameworks.html"/>
-	<mapID target="org.netbeans.modules.web.struts.dialogs.AddActionPanel" url="web/create/tag/framework/struts/AddActionPanel.html"/>
-	<mapID target="org.netbeans.modules.web.struts.dialogs.AddExceptionDialogPanel" url="web/create/tag/framework/struts/AddException.html"/>
-	<mapID target="org.netbeans.modules.web.struts.dialogs.AddFIActionPanel" url="web/create/tag/framework/struts/AddForwardIncludePanel.html"/>
-	<mapID target="org.netbeans.modules.web.struts.dialogs.AddFormBeanPanel" url="web/create/tag/framework/struts/AddFormBean.html"/>
-	<mapID target="org.netbeans.modules.web.struts.dialogs.AddFormPropertyPanel" url="web/create/tag/framework/struts/AddFormProperty.html"/>
-	<mapID target="org.netbeans.modules.web.struts.dialogs.AddForwardDialogPanel" url="web/create/tag/framework/struts/AddForward.html"/>
+	<mapID target="org.netbeans.modules.web.struts.dialogs.AddActionPanel" url="web/framework/struts/csh/AddActionPanel.html"/>
+	<mapID target="org.netbeans.modules.web.struts.dialogs.AddExceptionDialogPanel" url="web/framework/struts/csh/AddException.html"/>
+	<mapID target="org.netbeans.modules.web.struts.dialogs.AddFIActionPanel" url="web/framework/struts/csh/AddForwardIncludePanel.html"/>
+	<mapID target="org.netbeans.modules.web.struts.dialogs.AddFormBeanPanel" url="web/framework/struts/csh/AddFormBean.html"/>
+	<mapID target="org.netbeans.modules.web.struts.dialogs.AddFormPropertyPanel" url="web/framework/struts/csh/AddFormProperty.html"/>
+	<mapID target="org.netbeans.modules.web.struts.dialogs.AddForwardDialogPanel" url="web/framework/struts/csh/AddForward.html"/>
 	<mapID target="org.netbeans.modules.web.struts.ui.StrutsConfigurationPanelVisual" url="web/csh/projwiz_standard/PanelSupportedFrameworks.html"/>
-	<mapID target="org.netbeans.modules.web.struts.wizards.ActionPanel" url="web/create/tag/framework/struts/file_ActionPanel.html"/>
-	<mapID target="org.netbeans.modules.web.struts.wizards.ActionPanel1" url="web/create/tag/framework/struts/file_ActionPanel1.html"/>
-	<mapID target="org.netbeans.modules.web.struts.wizards.FormBeanNewPanel" url="web/create/tag/framework/struts/file_FormBeanNewPanel.html"/>
-	<mapID target="org.netbeans.modules.groovy.grailsproject.ui.wizards.GetProjectLocationStep" url="web/create/tag/framework/grails/NewGrailsProjectWizard.html"/>
-	<mapID target="org.netbeans.modules.groovy.grailsproject.ui.wizards.GetArtifactNameStep.create-controller" url="web/create/tag/framework/grails/NewGrailsArtifact.html"/>
-	<mapID target="org.netbeans.modules.groovy.grailsproject.ui.wizards.GetArtifactNameStep.create-domain-class" url="web/create/tag/framework/grails/NewGrailsArtifact.html"/>
-	<mapID target="org.netbeans.modules.groovy.grailsproject.ui.wizards.GetArtifactNameStep.create-script" url="web/create/tag/framework/grails/NewGrailsArtifact.html"/>
-	<mapID target="org.netbeans.modules.groovy.grailsproject.ui.wizards.GetArtifactNameStep.create-service" url="web/create/tag/framework/grails/NewGrailsArtifact.html"/>
-	<mapID target="org.netbeans.modules.groovy.grailsproject.ui.wizards.GetArtifactNameStep.create-unit-test" url="web/create/tag/framework/grails/NewGrailsArtifact.html"/>
+	<mapID target="org.netbeans.modules.web.struts.wizards.ActionPanel" url="web/framework/struts/csh/file_ActionPanel.html"/>
+	<mapID target="org.netbeans.modules.web.struts.wizards.ActionPanel1" url="web/framework/struts/csh/file_ActionPanel1.html"/>
+	<mapID target="org.netbeans.modules.web.struts.wizards.FormBeanNewPanel" url="web/framework/struts/csh/file_FormBeanNewPanel.html"/>
+	<mapID target="org.netbeans.modules.groovy.grailsproject.ui.wizards.GetProjectLocationStep" url="web/framework/grails/NewGrailsProjectWizard.html"/>
+	<mapID target="org.netbeans.modules.groovy.grailsproject.ui.wizards.GetArtifactNameStep.create-controller" url="web/framework/grails/NewGrailsArtifact.html"/>
+	<mapID target="org.netbeans.modules.groovy.grailsproject.ui.wizards.GetArtifactNameStep.create-domain-class" url="web/framework/grails/NewGrailsArtifact.html"/>
+	<mapID target="org.netbeans.modules.groovy.grailsproject.ui.wizards.GetArtifactNameStep.create-script" url="web/framework/grails/NewGrailsArtifact.html"/>
+	<mapID target="org.netbeans.modules.groovy.grailsproject.ui.wizards.GetArtifactNameStep.create-service" url="web/framework/grails/NewGrailsArtifact.html"/>
+	<mapID target="org.netbeans.modules.groovy.grailsproject.ui.wizards.GetArtifactNameStep.create-unit-test" url="web/framework/grails/NewGrailsArtifact.html"/>
 	<mapID target="propfiles.prop" url="ui_elements/editors/about_properties_editor.html"/>
 	<mapID target="servlet_create" url="web/create/servlet/servlet_create.html"/>
 	<mapID target="servlet_edit" url="web/create/servlet/servlet_edit.html"/>
