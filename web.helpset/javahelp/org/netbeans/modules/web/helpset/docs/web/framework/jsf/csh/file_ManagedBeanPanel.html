@@ -19,45 +19,66 @@
         <p>JSF managed beans are JavaBean components that are managed by a JSF implementation.
             A JSF managed bean describes how a bean is created and managed.</p>
 
-        <p>The New JSF Managed Bean wizard creates a new JSF managed bean. You open the New JSF Managed
-            Bean wizard by right-clicking a web application, choosing New &gt; Other and selecting JSF
-            Managed Bean from the Java Server Faces category.</p>
+        <p>The New JSF Managed Bean wizard creates a new JSF managed bean. You open the New
+            JSF Managed Bean wizard by right-clicking a web application, choosing New &gt;
+            Other and selecting JSF Managed Bean from the Java Server Faces category.</p>
 
         <p>In the Name and Location page, you have to set the following properties:</p>
 
         <ul>
-            <li><b>Class Name.</b> Specifies the JSF managed bean class name.</li>
-            <li><b>Project.</b> Specifies the project in which the JSF managed bean will be located.</li>
-            <li><b>Location.</b> Specifies a folder to house the JSF managed bean.</li>
-            <li><b>Package.</b> Specifies a package within the location to house the JSF managed bean.</li>
-            <li><b>Created File.</b> Specifies the file of the new JSF managed bean.</li>
-            <li><b>Configuration File.</b> Specifies the JSF configuration file. If none exists, you
-                cannot create a JSF managed bean. To create a JSF configuration file quickly and efficiently,
-                right-click the project node, choose Properties	and use the Frameworks panel. Not only
-                does this provide you with a JSF configuration file, but you also get the JSF 1.2 libraries
-                and a <tt>welcomeJSF.jsp</tt> file.</li>
-            <li><b>Scope.</b> Sets the scope of the JSF managed bean. Use the drop down list to set the
-                scope to one of the following:
+            <li><strong>Class Name:</strong> Specifies the JSF managed bean class name.</li>
+
+            <li><strong>Project:</strong> Specifies the project in which the JSF managed bean
+                will be located.</li>
+
+            <li><strong>Location:</strong> Specifies a folder to house the JSF managed bean.</li>
+
+            <li><strong>Package:</strong> Specifies a package within the location to house the
+                JSF managed bean.</li>
+
+            <li><strong>Created File:</strong> Specifies the file of the new JSF managed bean.</li>
+
+            <li><strong>Configuration File.</strong> Specifies the Faces configuration file
+                (<code>faces-config.xml</code>).
+
+                <p class="note">If you are using JSF 2.0, you do not need a configuration file.
+                    The managed bean is registered with the application using annotations. If
+                    you want to register the managed bean in a configuration file and your
+                    application does not have one, select the 'Add data to a configuration
+                    file' option and the wizard will create one for you.)</p>
+                
+                <p class="note">If you are using JSF 1.2 and your application not have a
+                    configuration file, you cannot proceed with the wizard. To create a new
+                    configuration file, use the JSF Faces Configuration wizard. (Coose File
+                    &gt; New File. Select the JavaServer Faces category and JSF Faces Configuration
+                    file type.)</p>
+            </li>
+
+            <li><strong>Scope:</strong> Sets the scope of the JSF managed bean. Use the drop-down
+                list to set the scope of the managed bean to one of the following:
 
                 <ul>
-                    <li><strong>request.</strong> Request scope contains data specific to an individual
-                        server request, and is discarded when the <tt>service</tt> method returns. This
-                        is the most common scope usage in web applications, and is the default setting
+                    <li><strong>request:</strong> Request scope contains data specific to an individual
+                        server request, and is discarded when the <code>service</code> method returns.
+                        This is the most common scope usage in web applications, and is the default setting
                         for the IDE.</li>
-                    <li><strong>session.</strong> Session scope contains data specific to a user session.</li>
-                    <li><strong>application.</strong> Application scope contains data for the entire web
+
+                    <li><strong>session:</strong> Session scope contains data specific to a user session.</li>
+
+                    <li><strong>application:</strong> Application scope contains data for the entire web
                         application.</li>
-                    <li><strong>none.</strong> No scope is selected.</li>
+                    
+                    <li><strong>none:</strong> No scope is selected.</li>
                 </ul></li>
 
-            <li><b>Bean Description.</b> Sets a description for the JSF managed bean.</li>
+            <li><strong>Bean Description:</strong> Sets a description for the JSF managed bean.</li>
         </ul>
 
         <dl>
             <dt><a name="seealso">See Also</a></dt>
-            <dd><a href="../about_framework.html">About Web Application Frameworks</a></dd>
-            <dd><a href="../framework_jsf_create.html">Creating a New Application with JSF Support</a></dd>
-            <dd><a href="../framework_jsf_add.html">Adding JSF Support to an Existing Application</a></dd>
+            <dd><a href="../create.html">Creating a New Application with JSF Support</a></dd>
+            <dd><a href="../about.html">About JavaServer Faces Framework Support</a></dd>
+            <dd><a href="../../about_framework.html">About Web Application Frameworks</a></dd>
         </dl>
 
         <hr><small><a href="../../../../credits.html">Legal Notices</a></small>
