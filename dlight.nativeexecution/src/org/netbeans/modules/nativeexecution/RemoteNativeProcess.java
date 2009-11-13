@@ -36,11 +36,11 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
         Throwable exception = null;
         ChannelStreams streams = null;
 
-        if (isInterrupted()) {
-            throw new InterruptedException();
-        }
-
         try {
+            if (isInterrupted()) {
+                throw new InterruptedException();
+            }
+
             final String commandLine = info.getCommandLineForShell();
             final ConnectionManager mgr = ConnectionManager.getInstance();
             final ExecutionEnvironment execEnv = info.getExecutionEnvironment();
