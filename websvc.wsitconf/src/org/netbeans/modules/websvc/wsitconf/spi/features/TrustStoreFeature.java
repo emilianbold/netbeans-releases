@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.websvc.wsitconf.spi.features;
 
-import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 
 /**
@@ -47,5 +46,5 @@ import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
  * @author snajper
  */
 public interface TrustStoreFeature {
-    public boolean isTrustStoreRequired(ConfigVersion cfgVersion, WSDLComponent component, boolean client);
+    public boolean isTrustStoreRequired(WSDLComponent component, boolean client);
 }

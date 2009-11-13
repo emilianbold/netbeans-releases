@@ -69,6 +69,7 @@ import org.netbeans.modules.websvc.wsitmodelext.security.TransportBinding;
 import org.netbeans.modules.websvc.wsitmodelext.security.TrustElement;
 import org.netbeans.modules.websvc.wsitmodelext.security.WssElement;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.CallbackHandler;
+import org.netbeans.modules.websvc.wsitmodelext.security.tokens.SecureConversationToken;
 import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
@@ -267,7 +268,28 @@ public class MessageAuthenticationProfile extends ProfileBase
         return true;
     }
 
-    public boolean isTrustStoreRequired(ConfigVersion cfgVersion, WSDLComponent component, boolean client) {
+    public boolean isTrustStoreRequired(WSDLComponent component, boolean client) {
+        WSDLComponent secBinding = null;
+        WSDLComponent endToken = SecurityTokensModelHelper.getSupportingToken(component, SecurityTokensModelHelper.ENDORSING);
+        WSDLComponent secConvT = SecurityTokensModelHelper.getTokenElement(endToken, SecureConversationToken.class);
+        boolean secConv = (secConvT instanceof SecureConversationToken);
+
+        if (secConv) {
+            WSDLComponent bootPolicy = SecurityTokensModelHelper.getTokenElement(secConvT, BootstrapPolicy.class);
+            secBinding = SecurityPolicyModelHelper.getSecurityBindingTypeElement(bootPolicy);
+            Policy p = (Policy) secBinding.getParent();
+            p = PolicyModelHelper.getTopLevelElement(bootPolicy, Policy.class,false);
+            WSDLComponent tokenKind = SecurityTokensModelHelper.getSupportingToken(p, SecurityTokensModelHelper.ENDORSING);
+            if (tokenKind == null) {
+                return false;
+            }
+        } else {
+            secBinding = SecurityPolicyModelHelper.getSecurityBindingTypeElement(component);
+            WSDLComponent tokenKind = SecurityTokensModelHelper.getSupportingToken(component, SecurityTokensModelHelper.ENDORSING);
+            if (tokenKind == null) {
+                return false;
+            }
+        }
         return true;
     }
 
