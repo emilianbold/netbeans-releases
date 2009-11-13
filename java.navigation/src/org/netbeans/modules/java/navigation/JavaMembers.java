@@ -67,7 +67,7 @@ public final class JavaMembers {
         if (fileObject != null) {
             JavaSource javaSource = JavaSource.forFileObject(fileObject);
             if (javaSource != null) {
-                  showDialog("", new JavaMembersPanel(fileObject)); //NOI18N
+                  showDialog("", new JavaMembersPanel(fileObject), fileObject); //NOI18N
             }
         }
     }
@@ -86,16 +86,16 @@ public final class JavaMembers {
                     membersOf = namesList.toString();
                 }
             }
-            showDialog(membersOf, new JavaMembersPanel(fileObject, elements));
+            showDialog(membersOf, new JavaMembersPanel(fileObject, elements), fileObject);
         }
     }
 
     //<editor-fold desc="Private methods">
-    private static void showDialog (final String membersOf, final JavaMembersPanel panel) {
+    private static void showDialog (final String membersOf, final JavaMembersPanel panel, FileObject file) {
         assert membersOf != null;
         assert panel != null;
         StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(JavaMembers.class, "LBL_WaitNode"));
-            JDialog dialog = ResizablePopup.getDialog();
+            JDialog dialog = ResizablePopup.getDialog(file);
 
             String title = NbBundle.getMessage(JavaMembers.class, "TITLE_Members", membersOf);
             dialog.setTitle(title); // NOI18N
