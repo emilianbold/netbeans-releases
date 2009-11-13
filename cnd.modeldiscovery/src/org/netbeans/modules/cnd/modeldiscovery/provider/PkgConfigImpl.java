@@ -139,6 +139,11 @@ public class PkgConfigImpl implements PkgConfig {
                     drivePrefix = "c:/cygwin"; // NOI18N
                     baseDirectory = "c:/cygwin/lib/pkgconfig/"; // NOI18N
                 }
+            } else {
+                String suffix = "/lib/pkgconfig/"; // NOI18N
+                if (baseDirectory.endsWith(suffix)){
+                    drivePrefix = baseDirectory.substring(0, baseDirectory.length()-suffix.length());
+                }
             }
             initPackages(envPaths(baseDirectory), true); // NOI18N
         } else {
