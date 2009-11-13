@@ -208,9 +208,15 @@ public class DirectoryDeploymentFacade  extends IncrementalDeployment {
         //Initializing resourceDirs in canFileDeploy() method.
         //Relying on the assumption that canFileDeploy() is & *will* always get
         //called with appropriate DeployableObject before this method.
-        if((resourceDirs != null) && (dm != null)){
-            Utils.registerResources(resourceDirs, (ServerInterface)((SunDeploymentManagerInterface)dm).getManagement());
+        if(acd instanceof DeploymentChangeDescriptor) {
+            DeploymentChangeDescriptor dcd = (DeploymentChangeDescriptor)acd;
+            if (dcd.serverResourcesChanged()) {
+                if ((resourceDirs != null) && (dm != null)) {
+                    Utils.registerResources(resourceDirs, (ServerInterface) ((SunDeploymentManagerInterface) dm).getManagement());
+                }
+            }
         }
+        
         if (null!=dm && userActivated){
             ViewLogAction.viewLog((SunDeploymentManagerInterface)dm);
         }
@@ -221,7 +227,7 @@ public class DirectoryDeploymentFacade  extends IncrementalDeployment {
             return ((IncrementalDeployment)inner).incrementalDeploy(module, acd);
         } else {
             return new ShortCircuitProgressObject(CommandType.REDEPLOY,
-                        NbBundle.getMessage(ShortCircuitProgressObject.class,"MESS_NO_DEPLOY_NECESSARY"),
+                        NbBundle.getMessage(DirectoryDeploymentFacade.class,"MESS_NO_DEPLOY_NECESSARY"),
                         StateType.COMPLETED,new TargetModuleID[] { module });
         }
 

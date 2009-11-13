@@ -389,14 +389,15 @@ public class PHPNewLineIndenter {
                     }
                     if (parentBalance == 0 && ts.moveNext() && ts.offset() < origOffset) {
                         // we should have the end of condtion and we need to find next token.
-                        token = LexUtilities.findNext(ts, Arrays.asList(
-                                PHPTokenId.WHITESPACE,
-                                PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHPDOC_COMMENT_START,
-                                PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_COMMENT_START,
-                                PHPTokenId.PHP_LINE_COMMENT));
-                        if (ts.offset() < origOffset) {
-                            start = ts.offset();
-                        }
+//                        token = LexUtilities.findNext(ts, Arrays.asList(
+//                                PHPTokenId.WHITESPACE,
+//                                PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHPDOC_COMMENT_START,
+//                                PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_COMMENT_START,
+//                                PHPTokenId.PHP_LINE_COMMENT));
+//                        if (ts.offset() < origOffset) {
+                            start = offsetIf;
+                            break;
+                        //}
                     }
                     else if (parentBalance > 0) {
                         // probably we are in a function in the condition

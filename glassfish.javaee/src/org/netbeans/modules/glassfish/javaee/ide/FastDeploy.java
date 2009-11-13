@@ -171,11 +171,17 @@ public class FastDeploy extends IncrementalDeployment {
                 appChangeDescriptor.ejbsChanged() ||
                 appChangeDescriptor.manifestChanged() ||
                 appChangeDescriptor.serverDescriptorChanged();
-        
-        File dir = getDirectoryForModule(targetModuleID);
-        if (null != dir) {
-            ResourceRegistrationHelper.deployResources(dir, dm);
+
+        if(appChangeDescriptor instanceof DeploymentChangeDescriptor) {
+            DeploymentChangeDescriptor dcd = (DeploymentChangeDescriptor)appChangeDescriptor;
+            if (dcd.serverResourcesChanged()) {
+                File dir = getDirectoryForModule(targetModuleID);
+                if (null != dir) {
+                    ResourceRegistrationHelper.deployResources(dir, dm);
+                }
+            }
         }
+                
         if (restart) {
             restartObject.addProgressListener(new ProgressListener() {
 
