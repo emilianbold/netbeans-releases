@@ -208,10 +208,6 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-core-actions-AboutAction.instance"/>
         </folder>
 
-       <folder name="Other">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
-        </folder>
-
     </folder>
 
 
