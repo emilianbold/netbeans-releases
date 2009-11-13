@@ -149,6 +149,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
     private static final Boolean ASYNC_ROOT_NODE = Boolean.getBoolean("cnd.async.root");// NOI18N
     private static final Logger log = Logger.getLogger("cnd.async.root");// NOI18N
     private static final MessageFormat ITEM_VIEW_FLAVOR = new MessageFormat("application/x-org-netbeans-modules-cnd-makeproject-uidnd; class=org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider$ViewItemNode; mask={0}"); // NOI18N
+    private static final boolean SYNC_PROJECT_ACTION = Boolean.getBoolean("cnd.remote.sync.project.action"); // NOI18N
     static final String PRIMARY_TYPE = "application"; // NOI18N
     static final String SUBTYPE = "x-org-netbeans-modules-cnd-makeproject-uidnd"; // NOI18N
     static final String MASK = "mask"; // NOI18N
@@ -234,10 +235,10 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                 if (nodes.length > 0 && index < nodes.length) {
                     returnNode = nodes[index];
                 }
-            /*
-            if (nodes.length > 0)
-            returnNode = nodes[nodes.length -1];
-             */
+                /*
+                if (nodes.length > 0)
+                returnNode = nodes[nodes.length -1];
+                 */
             }
         } finally {
             findPathMode = false;
@@ -331,7 +332,8 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                 } catch (Exception e) {
                     // skip
                 }
-            }});
+            }
+        });
     }
 
     public static void checkForChangedName(final Project project) {
@@ -698,7 +700,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
             ResourceBundle bundle = NbBundle.getBundle(MakeLogicalViewProvider.class);
 
-            return new Action[]{
+            Action[] result = new Action[] {
                         CommonProjectActions.newFileAction(),
                         null,
                         SystemAction.get(AddExistingItemAction.class),
@@ -728,13 +730,17 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                         CommonProjectActions.copyProjectAction(),
                         CommonProjectActions.deleteProjectAction(),
                         null,};
+            if (SYNC_PROJECT_ACTION) {
+                result = insertAfter(result, RemoteSyncActions.createSyncNodeAction(), RemoteDevelopmentAction.class);
+            }
+            return result;
         }
 
         private Action[] getAdditionalDiskFolderActions() {
 
             ResourceBundle bundle = NbBundle.getBundle(MakeLogicalViewProvider.class);
 
-            return new Action[]{
+            Action[] result = new Action[] {
                         CommonProjectActions.newFileAction(),
                         null,
                         new AddExternalItemAction(project),
@@ -761,6 +767,34 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                         CommonProjectActions.copyProjectAction(),
                         CommonProjectActions.deleteProjectAction(),
                         null,};
+            if (SYNC_PROJECT_ACTION) {
+                result = insertAfter(result, RemoteSyncActions.createSyncNodeAction(), RemoteDevelopmentAction.class);
+            }
+            return result;
+        }
+
+        private Action[] insertAfter(Action[] actions, Action actionToInsert, Class insertAfter) {
+            int insertPos = - 1;
+            for (int i = 0; i < actions.length; i++) {
+                if (actions[i] != null) {
+                    if (actions[i].getClass().equals(insertAfter)) {
+                        insertPos = i + 1;
+                        break;
+                    }
+                }
+            }
+            if (insertPos < 0) {
+                return actions;
+            } else {
+                Action[] newActions = new Action[actions.length+1];
+                System.arraycopy(actions, 0, newActions, 0, insertPos);
+                newActions[insertPos] = actionToInsert;
+                int rest = newActions.length - insertPos - 1;
+                if (rest > 0) {
+                    System.arraycopy(actions, insertPos, newActions, insertPos + 1, rest);
+                }
+                return newActions;
+            }
         }
 
         public void resultChanged(LookupEvent ev) {
@@ -1173,6 +1207,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                             //                        null,
                             SystemAction.get(DeleteAction.class),
                             createRenameAction(),
+                            RemoteSyncActions.createSyncNodeAction(),
                             null,
                             SystemAction.get(PropertiesFolderAction.class),};
             } else {
@@ -1192,6 +1227,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                             SystemAction.get(RemoveFolderAction.class),
                             //                SystemAction.get(RenameAction.class),
                             createRenameAction(),
+                            RemoteSyncActions.createSyncNodeAction(),
                             null,
                             SystemAction.get(PropertiesFolderAction.class),};
             }
@@ -1402,6 +1438,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         public Action[] getActions(boolean context) {
             return new Action[]{
                         new AddExternalItemAction(project),
+                        RemoteSyncActions.createSyncNodeAction(),
                         null,
                         SystemAction.get(org.openide.actions.FindAction.class),};
         }
@@ -1662,6 +1699,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 //                        newActions.add(null);
                     } else if (oldActions[i] != null && oldActions[i] instanceof RenameAction) {
                         newActions.add(createRenameAction());
+                        newActions.add(RemoteSyncActions.createSyncNodeAction());
                     } else if (key != null && key.equals("delete")) { // NOI18N
                         newActions.add(createDeleteAction());
                     } else if (oldActions[i] != null && oldActions[i] instanceof org.openide.actions.PropertiesAction && getFolder().isProjectFiles()) {
@@ -1687,6 +1725,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                         newActions.add(SystemAction.get(CompileSingleAction.class));
                     } else if (oldActions[i] != null && oldActions[i] instanceof RenameAction) {
                         newActions.add(createRenameAction());
+                        newActions.add(RemoteSyncActions.createSyncNodeAction());
                     } else if (oldActions[i] != null && oldActions[i] instanceof org.openide.actions.PropertiesAction && getFolder().isProjectFiles()) {
                         newActions.add(SystemAction.get(PropertiesItemAction.class));
                     } else if (key != null && key.equals("delete")) { // NOI18N
