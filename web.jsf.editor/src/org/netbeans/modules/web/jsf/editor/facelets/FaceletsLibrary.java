@@ -72,7 +72,7 @@ public abstract class FaceletsLibrary {
     public String getDefaultPrefix() {
         //returns either facelets or tld library
         String prefixFromTheLibrary = getLibraryDescriptor() != null ? getLibraryDescriptor().getDefaultPrefix() : null;
-        if(prefixFromTheLibrary == null) {
+        if(prefixFromTheLibrary == null && namespace != null) {
             //workaround - the facelets libraries (.taglib.xml) files don't declare the default prefix for the library
             //so workarounding by using corrsponding .tld file if found
             TldLibrary tldl = support.getJsfSupport().getTldLibrary(namespace);

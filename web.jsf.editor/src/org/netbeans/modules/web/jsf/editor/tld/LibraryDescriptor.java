@@ -240,6 +240,10 @@ public abstract class LibraryDescriptor {
             return description;
         }
 
+        public boolean hasNonGenenericAttributes() {
+            return getAttributes().size() > 1; //the ID attribute is the default generic one
+        }
+
         public Collection<Attribute> getAttributes() {
             return attrs.values();
         }

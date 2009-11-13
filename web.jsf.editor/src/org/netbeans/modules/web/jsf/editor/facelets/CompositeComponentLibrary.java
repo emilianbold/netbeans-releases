@@ -49,7 +49,6 @@ import org.netbeans.modules.web.jsf.editor.index.CompositeComponentModel;
 import org.netbeans.modules.web.jsf.editor.index.JsfIndex;
 import org.netbeans.modules.web.jsf.editor.tld.LibraryDescriptor;
 import org.netbeans.modules.web.jsf.editor.tld.LibraryDescriptorException;
-import org.netbeans.modules.web.jsf.editor.tld.TldLibrary;
 import org.openide.util.NbBundle;
 
 /**
@@ -107,16 +106,23 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
     @Override
     public LibraryDescriptor getLibraryDescriptor() {
         LibraryDescriptor libDescriptor = support.getJsfSupport().getLibraryDescriptor(getNamespace());
-        if (libDescriptor != null) {
-            //ohh, someone made a .taglib.xml or TLD for us, nice...
-            return libDescriptor;
-        }
+            if (libDescriptor != null) {
+                //ohh, someone made a .taglib.xml or TLD for us, nice...
+                return libDescriptor;
+            }
         //most cases, no tld, generate something so the completion and other stuff works
         //todo - implement reasonable caching
 //        if (generatedDescribingLibrary == null) {
         generatedDescribingLibrary = new CCTldLibrary();
 //        }
         return generatedDescribingLibrary;
+    }
+
+    @Override
+    public String toString() {
+        return "CompositeComponent(" + (getNamespace() == null ? //NOI18N
+            "created via indexing" :  //NOI18N
+            "created by Mojarra") + " " + super.toString(); //NOI18N
     }
 
     private JsfIndex index() {

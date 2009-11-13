@@ -250,11 +250,13 @@ public class CompositeComponentModel extends JsfPageModel {
                 }
             });
 
-            if (hasInterface[0]) {
-                return new CompositeComponentModel(file, interfaceAttrs, hasImplementation[0]);
-            }
+            //#176807 - The component file itself doesn't have to declare the interface or
+            //implementation, it can be done in another referred page
+//            if (hasInterface[0]) {
+            return new CompositeComponentModel(file, interfaceAttrs, hasImplementation[0]);
+//            }
 
-            return null;
+//            return null;
 
         }
 
