@@ -595,8 +595,10 @@ public class SunStudioDataCollector
                 npb.setArguments("-P", "" + at.getPID(), "-o", config.experimentDirectory); // NOI18N
 
                 ExecutionDescriptor descr = new ExecutionDescriptor();
-                descr = descr.errProcessorFactory(new StdErrRedirectorFactory());
-                descr = descr.outProcessorFactory(new StdErrRedirectorFactory());
+                if (log.isLoggable(Level.FINEST)) {
+                    descr = descr.errProcessorFactory(new StdErrRedirectorFactory());
+                    descr = descr.outProcessorFactory(new StdErrRedirectorFactory());
+                }
                 descr = descr.inputOutput(InputOutput.NULL);
 
                 ExecutionService service = ExecutionService.newService(npb, descr, "collect"); // NOI18N
