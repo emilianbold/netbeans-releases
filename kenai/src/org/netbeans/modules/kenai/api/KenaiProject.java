@@ -60,8 +60,6 @@ import org.netbeans.modules.kenai.FeatureData;
 import org.netbeans.modules.kenai.LicenceData;
 import org.netbeans.modules.kenai.ProjectData;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  * IDE-side representation of a Kenai project.

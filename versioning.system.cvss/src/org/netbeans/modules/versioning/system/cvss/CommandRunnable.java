@@ -127,7 +127,7 @@ class CommandRunnable implements Runnable, Cancellable {
         }
 
         boolean blockIndexing = 
-                cmdName.startsWith("update")
+                (cmdName.startsWith("update") && (options == null || !options.isDoNoChanges()))
              || cmdName.startsWith("export")
              || cmdName.startsWith("remove")
              || cmdName.startsWith("checkout")
