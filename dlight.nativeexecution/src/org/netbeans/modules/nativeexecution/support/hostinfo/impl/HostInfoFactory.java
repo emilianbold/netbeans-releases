@@ -39,6 +39,8 @@
 package org.netbeans.modules.nativeexecution.support.hostinfo.impl;
 
 import java.io.File;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -216,5 +218,20 @@ public final class HostInfoFactory {
         private void setName(String name) {
             this.name = name;
         }
+    }
+
+    /**
+     * @return unique key of the current NB instance, introduced to fix bug #176526
+     */
+    /*package-local*/ static String getNBKey() {
+        // use NB userdir to prevent local collisions
+        int hashCode = System.getProperty("netbeans.user", "").hashCode();
+        try {
+            // use host name to prevent remote collisions
+            InetAddress localhost = InetAddress.getLocalHost();
+            hashCode = 3 * hashCode + 5 * localhost.getHostName().hashCode();
+        } catch (UnknownHostException ex) {
+        }
+        return Integer.toHexString(hashCode);
     }
 }

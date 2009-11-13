@@ -81,8 +81,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
     private InputStream processOutput;
     private InputStream processError;
     private File resultFile;
-    private final boolean isWindows;
-    private final boolean isMacOS;
+    private final OSFamily osFamily;
 
     static {
         InstalledFileLocator fl = InstalledFileLocatorProvider.getDefault();
@@ -105,8 +104,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
         this.processOutput = new ByteArrayInputStream(
                 (loc("TerminalLocalNativeProcess.ProcessStarted.text") + '\n').getBytes()); // NOI18N
 
-        isWindows = hostInfo != null && hostInfo.getOSFamily() == OSFamily.WINDOWS;
-        isMacOS = hostInfo != null && hostInfo.getOSFamily() == OSFamily.MACOSX;
+        osFamily = hostInfo == null? OSFamily.UNKNOWN : hostInfo.getOSFamily();
     }
 
     protected void create() throws Throwable {
@@ -119,7 +117,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                 throw new IOException(loc("TerminalLocalNativeProcess.dorunNotFound.text")); // NOI18N
             }
 
-            if (isWindows && hostInfo.getShell() == null) {
+            if (osFamily == OSFamily.WINDOWS && hostInfo.getShell() == null) {
                 throw new IOException(loc("NativeProcess.shellNotFound.text")); // NOI18N
             }
 
@@ -135,7 +133,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
             resultFile.deleteOnExit();
 
-            String pidFile = (isWindows) ? WindowsSupport.getInstance().convertToShellPath(pidFileFile.getPath()) : pidFileFile.getPath();
+            String pidFile = (osFamily == OSFamily.WINDOWS) ? WindowsSupport.getInstance().convertToShellPath(pidFileFile.getPath()) : pidFileFile.getPath();
             String envFile = pidFile + ".env"; // NOI18N
             String shFile = pidFile + ".sh"; // NOI18N
 
@@ -173,7 +171,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             final MacroMap env = info.getEnvironment().clone();
 
             // setup DISPLAY variable for MacOS...
-            if (isMacOS) {
+            if (osFamily == OSFamily.MACOSX) {
                 ProcessBuilder pb1 = new ProcessBuilder("/bin/sh", "-c", "/bin/echo $DISPLAY"); // NOI18N
                 Process p1 = pb1.start();
                 int status = p1.waitFor();
@@ -197,7 +195,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                 // Do PATH normalization on Windows....
                 // Problem here is that this is done for PATH env. variable only!
 
-                if (isWindows) {
+                if (osFamily == OSFamily.WINDOWS) {
                     env.put("PATH", "/bin:/usr/bin:" + WindowsSupport.getInstance().convertToAllShellPaths(env.get("PATH"))); // NOI18N
                 }
 
@@ -292,7 +290,13 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             return -1;
         }
 
-        if (isWindows || isMacOS) {
+        if (osFamily == OSFamily.LINUX || osFamily == OSFamily.SUNOS) {
+            File f = new File("/proc/" + pid); // NOI18N
+
+            while (f.exists()) {
+                Thread.sleep(300);
+            }
+        } else {
             int rc = 0;
             while (rc == 0) {
                 try {
@@ -302,12 +306,6 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                     rc = -1;
                 }
 
-                Thread.sleep(300);
-            }
-        } else {
-            File f = new File("/proc/" + pid); // NOI18N
-
-            while (f.exists()) {
                 Thread.sleep(300);
             }
         }

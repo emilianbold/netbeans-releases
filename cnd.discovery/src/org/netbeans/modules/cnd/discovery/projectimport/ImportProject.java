@@ -127,7 +127,7 @@ import org.openide.util.RequestProcessor;
  */
 public class ImportProject implements PropertyChangeListener {
 
-    private static boolean TRACE = Boolean.getBoolean("cnd.discovery.trace.projectimport"); // NOI18N
+    private static boolean TRACE = true;//Boolean.getBoolean("cnd.discovery.trace.projectimport"); // NOI18N
     private Logger logger = Logger.getLogger("org.netbeans.modules.cnd.discovery.projectimport.ImportProject"); // NOI18N
     private File nativeProjectFolder;
     private File projectFolder;

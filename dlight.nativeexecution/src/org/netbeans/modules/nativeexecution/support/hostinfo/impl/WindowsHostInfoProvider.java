@@ -110,6 +110,8 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
 
             _tmpDirFile = new File(ioTmpDir, "dlight_" + env.get("USERNAME")); // NOI18N
 
+            _tmpDirFile = new File(_tmpDirFile, HostInfoFactory.getNBKey());
+
             // create the directory if absent (IZ#174327)
             _tmpDirFile.mkdirs();
 
