@@ -1,0 +1,24 @@
+<#-- FreeMarker template (see http://freemarker.org/) -->
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt"> 
+
+<#if package?? && package != "">
+package ${package};
+
+</#if>
+
+/**
+ * REST Web Service
+ *
+ * @author ${user}
+ */
+
+public class ${name} {
+    private String ${field_list};
+    /** Creates a new instance of ${name} */
+    public ${name}(${param_list}) {
+        ${assignment_list}
+    }
+}

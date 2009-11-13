@@ -173,6 +173,7 @@ public class PatternResourcesIterator implements WizardDescriptor.InstantiatingI
         HttpMethodType[] methods = GenericResourceBean.ITEM_METHODS;
         GenericResourceBean bean = new GenericResourceBean(className, packageName, uriTemplate, mimeTypes, types, methods);
         bean.setGenerateUriTemplate(false);
+        bean.setRootResource(false);
         
         String containerName = (String) wizard.getProperty(WizardProperties.CONTAINER_RESOURCE_CLASS);
         String containerUri = (String) wizard.getProperty(WizardProperties.CONTAINER_RESOURCE_URI);

@@ -329,7 +329,8 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
 
     public static String getExpressionText() {
         CodeEvaluator defaultInstance = getDefaultInstance();
-        return defaultInstance != null ? defaultInstance.getExpression() : ""; // NOI18N
+        HistoryRecord rec = defaultInstance != null ? defaultInstance.lastEvaluationRecord : null;
+        return rec != null ? rec.expr : "";
     }
 
     public static void addResultListener(final PropertyChangeListener listener) {

@@ -924,7 +924,7 @@ public class OutlineView extends JScrollPane {
                 if (column == 0) {
                     Node node = Visualizer.findNode (o);
                     if (node != null) {
-                        if (node.isLeaf ()) {
+                        if (node.isLeaf () && !node.canRename()) {
                             Action a = TreeView.takeAction (node.getPreferredAction (), node);
 
                             if (a != null) {

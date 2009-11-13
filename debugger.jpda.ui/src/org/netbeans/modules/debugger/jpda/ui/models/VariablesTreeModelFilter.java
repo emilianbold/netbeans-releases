@@ -554,7 +554,32 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
         }
         // Consider ancestors as the type + it's ancestors
         while (ov != null) {
-            type = ov.getType ();
+            type = null;
+            // Check for evaluation before type is retrieved:
+            if (checkEvaluated) {
+                boolean evaluated;
+                if (ov instanceof Refreshable) {
+                    synchronized (ov) { // Do the test and retrieve of type in synch
+                        evaluated = ((Refreshable) ov).isCurrent();
+                        if (evaluated) {
+                            type = ov.getType();
+                        } else {
+                            type = null;
+                        }
+                    }
+                } else {
+                    evaluated = true;
+                    type = ov.getType();
+                }
+                if (!evaluated) {
+                    return null;
+                }
+            } else {
+                type = ov.getType();
+            }
+            if (type == null) {
+                break;
+            }
             vf = (VariablesFilter) ancestorToFilterL.get (type);
             if (vf != null) return vf;
             ov = ov.getSuper ();

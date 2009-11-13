@@ -60,13 +60,12 @@ import java.util.StringTokenizer;
 import javax.swing.AbstractAction;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.xml.retriever.DocumentParserFactory;
 import org.netbeans.modules.xml.retriever.DocumentTypeParser;
-import org.netbeans.modules.xml.retriever.impl.IConstants;
 import org.netbeans.modules.xml.retriever.RetrieveEntry;
 import org.netbeans.modules.xml.retriever.RetrieverEngine;
-import org.netbeans.modules.xml.retriever.impl.RetrieverTask;
-import org.netbeans.modules.xml.retriever.impl.URLResourceRetriever;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.netbeans.modules.xml.retriever.catalog.CatalogWriteModel;
 import org.netbeans.modules.xml.retriever.catalog.CatalogWriteModelFactory;
@@ -176,7 +175,7 @@ public class RetrieverEngineImpl extends RetrieverEngine {
                 
                 updateDownloadingInfo(rent);
                 
-                HashMap<String,File> storedFileMap = null;;
+                HashMap<String,File> storedFileMap = null;
                 try {
                     storedFileMap = rt.goGetIt();
                 } catch (URISyntaxException ex) {
@@ -209,7 +208,7 @@ public class RetrieverEngineImpl extends RetrieverEngine {
                 createCatalogIfRequired(rent);
                 
                 DocumentTypeParser dtp = DocumentParserFactory.getParser(rent.getDocType());
-                List<String> thisFileRefs = null;;
+                List<String> thisFileRefs = null;
                 try {
                     thisFileRefs = dtp.getAllLocationOfReferencedEntities(storedFile);
                     //System.out.println("Parsed:"+storedFile+" Got:"+thisFileRefs);
@@ -498,12 +497,19 @@ public class RetrieverEngineImpl extends RetrieverEngine {
             return;
         CatalogWriteModel dr = null;
         try {
-            if(this.catalogFileObject == null)
+            if(this.catalogFileObject == null) {
+                Project project = FileOwnerQuery.getOwner(fobj);
+                if (project == null) {
+                    // See issue #176769
+                    // In can happen if the file was saved outside of the project
+                    return;
+                }
                 dr = CatalogWriteModelFactory.getInstance()
                 .getCatalogWriteModelForProject(fobj);
-            else
+            } else {
                 dr = CatalogWriteModelFactory.getInstance()
                 .getCatalogWriteModelForCatalogFile(this.catalogFileObject);
+            }
         } catch (CatalogModelException ex) {
             //ignore this exception but return
             return;

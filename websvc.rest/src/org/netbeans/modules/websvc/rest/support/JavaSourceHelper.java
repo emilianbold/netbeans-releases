@@ -352,7 +352,7 @@ public class JavaSourceHelper {
         try {
             FileObject fobj = targetFolder.getFileObject(className, Constants.JAVA_EXT);
             if (fobj == null) {
-                fobj = createDataObjectFromTemplate(template, targetFolder, packageName, className).getPrimaryFile();
+                fobj = createDataObjectFromTemplate(template, targetFolder, packageName, className, null).getPrimaryFile();
             }
             return JavaSource.forFileObject(fobj);
         } catch (IOException ex) {
@@ -362,7 +362,21 @@ public class JavaSourceHelper {
         return null;
     }
 
-    private static DataObject createDataObjectFromTemplate(String template, FileObject targetFolder, String packageName, String targetName) throws IOException {
+    public static JavaSource createJavaSource(String template, Map<String, String> params, FileObject targetFolder, String packageName, String className) {
+        try {
+            FileObject fobj = targetFolder.getFileObject(className, Constants.JAVA_EXT);
+            if (fobj == null) {
+                fobj = createDataObjectFromTemplate(template, targetFolder, packageName, className, params).getPrimaryFile();
+            }
+            return JavaSource.forFileObject(fobj);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        return null;
+    }
+
+    private static DataObject createDataObjectFromTemplate(String template, FileObject targetFolder, String packageName, String targetName, Map<String, String> params) throws IOException {
         assert template != null;
         assert targetFolder != null;
         assert targetName != null && targetName.trim().length() > 0;
@@ -371,8 +385,13 @@ public class JavaSourceHelper {
         DataObject templateDO = DataObject.find(templateFO);
         DataFolder dataFolder = DataFolder.findFolder(targetFolder);
 
-        Map<String, String> params = new HashMap<String, String>();
-        params.put("package", packageName);
+        Map<String, String> parameters = new HashMap<String, String>();
+        parameters.put("package", packageName);
+        if (params != null) {
+            for (String param: params.keySet()) {
+                parameters.put(param, params.get(param));
+            }
+        }
 
         return templateDO.createFromTemplate(dataFolder, targetName, params);
     }
