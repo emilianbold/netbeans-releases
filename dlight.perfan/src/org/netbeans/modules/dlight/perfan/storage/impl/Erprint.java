@@ -351,7 +351,8 @@ final class Erprint {
                         fname = m.group(3);
 
                         try {
-                            if (Long.parseLong(address, 16) == funcRef || fname.endsWith(srcFile)) {
+                            if (Long.parseLong(address, 16) == funcRef ||
+                                    (srcFile != null && fname.endsWith(srcFile))) {
                                 break;
                             }
                         } catch (NumberFormatException ex) {
