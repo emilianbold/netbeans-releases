@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.web.jsf.editor.completion;
 
-import java.awt.Color;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
@@ -111,7 +110,7 @@ public class JsfCompletionItem {
 
         @Override
         public int getSortPriority() {
-            return DEFAULT_SORT_PRIORITY - 5;
+            return DEFAULT_SORT_PRIORITY + 5; //jsf tags are more important than html content
         }
 
         @Override
