@@ -49,7 +49,6 @@ import org.netbeans.modules.db.metadata.model.api.ForeignKey;
 import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -98,7 +97,7 @@ public class ForeignKeyNode extends BaseNode {
                     }
                 );
             } catch (MetadataModelException e) {
-                Exceptions.printStackTrace(e);
+                NodeRegistry.handleMetadataModelException(this.getClass(), connection, e, true);
             }
         }
     }

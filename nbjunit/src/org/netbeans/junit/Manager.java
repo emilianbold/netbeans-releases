@@ -150,7 +150,7 @@ public class Manager extends Object {
     
     protected static Diff instantiateDiffImpl(String diffImplName) {
         Diff     impl = null;
-        Class               clazz;
+        Class<?>            clazz;
         Object              diffImpl = null;
         Class []            prmString = null;
         Method              method;

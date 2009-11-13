@@ -216,15 +216,19 @@ public class DependenciesNode extends AbstractNode {
             MavenProject mp = project.getOriginalMavenProject();
             if (type == TYPE_COMPILE) {
                 lst.addAll(create(mp.getCompileDependencies(), mp.getArtifacts()));
+                if (nonCPcount > 0) {
+                    lst.add(NULL);
+                }
             }
             if (type == TYPE_TEST) {
                 lst.addAll(create(mp.getTestDependencies(), mp.getArtifacts()));
                 int cnt = nonCPcount;
                 nonCPcount = 0;
                 lst.removeAll(create(mp.getCompileDependencies(), mp.getArtifacts()));
+                cnt = cnt - nonCPcount;
                 lst.removeAll(create(mp.getRuntimeDependencies(), mp.getArtifacts()));
                 nonCPcount = cnt - nonCPcount;
-                if (nonCPcount == 0) {
+                if (nonCPcount <= 0) {
                     lst.remove(NULL);
                 } else {
                     lst.add(NULL);
@@ -236,7 +240,7 @@ public class DependenciesNode extends AbstractNode {
                 nonCPcount = 0;
                 lst.removeAll(create(mp.getCompileDependencies(), mp.getArtifacts()));
                 nonCPcount = cnt - nonCPcount;
-                if (nonCPcount == 0) {
+                if (nonCPcount <= 0) {
                     lst.remove(NULL);
                 } else {
                     lst.add(NULL);
@@ -269,9 +273,9 @@ public class DependenciesNode extends AbstractNode {
                     System.out.println("not found artifact for " + d);
                 }
             }
-            if (nonCPCount > 0) {
-                lst.add(NULL);
-            }
+//            if (nonCPCount > 0) {
+//                lst.add(NULL);
+//            }
             this.nonCPcount = nonCPCount;
             return lst;
         }

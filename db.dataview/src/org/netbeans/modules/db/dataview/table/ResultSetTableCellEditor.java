@@ -129,7 +129,15 @@ public class ResultSetTableCellEditor extends DefaultCellEditor {
         };
 
         textField.addActionListener(delegate);
-    }   
+    }
+
+    @Override
+    public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+        if (DataViewUtils.isSQLConstantString(value)) {
+            value = "";
+        }
+        return super.getTableCellEditorComponent(table, value, isSelected, row, column);
+    }
 
     public ResultSetTableCellEditor(final JRendererCheckBox checkBox) {
         super(checkBox);

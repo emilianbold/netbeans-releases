@@ -49,7 +49,6 @@ import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.db.metadata.model.api.Parameter;
 import org.openide.nodes.PropertySupport;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -123,7 +122,7 @@ public class ProcedureParamNode  extends BaseNode {
                     }
                 );
             } catch (MetadataModelException e) {
-                Exceptions.printStackTrace(e);
+                NodeRegistry.handleMetadataModelException(this.getClass(), connection, e, true);
             }
         }
     }
@@ -165,7 +164,7 @@ public class ProcedureParamNode  extends BaseNode {
                 }
             );
         } catch (MetadataModelException e) {
-            Exceptions.printStackTrace(e);
+            NodeRegistry.handleMetadataModelException(this.getClass(), connection, e, true);
         }
 
         return array[0];

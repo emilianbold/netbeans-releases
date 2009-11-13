@@ -54,7 +54,6 @@ import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.db.metadata.model.api.Parameter;
 import org.netbeans.modules.db.metadata.model.api.Procedure;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -136,7 +135,7 @@ public class ProcedureParamNodeProvider extends NodeProvider {
                     }
                 );
             } catch (MetadataModelException e) {
-                Exceptions.printStackTrace(e);
+                NodeRegistry.handleMetadataModelException(this.getClass(), connection, e, true);
             }
         }
 

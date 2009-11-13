@@ -59,7 +59,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import static junit.framework.Assert.*;
+import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
 
 /**
@@ -88,6 +88,19 @@ public class MockServices {
      * @throws IllegalArgumentException if some classes are not instantiable as beans
      */
     public static void setServices(Class<?>... services) throws IllegalArgumentException {
+        try {
+            Class<?> mainLookup = forName("org.netbeans.core.startup.MainLookup");
+            ClassLoader l = new ServiceClassLoader(services, Thread.currentThread().getContextClassLoader(), false);
+            Method sClsLoaderChanged = mainLookup.getDeclaredMethod("systemClassLoaderChanged", ClassLoader.class);
+            sClsLoaderChanged.setAccessible(true);
+            sClsLoaderChanged.invoke(null, l);
+            return;
+        } catch (ClassNotFoundException ex) {
+            // Fine, not using core.jar.
+        } catch (Exception exc) {
+            LOG.log(Level.WARNING, "MainLookup couldn't be notified about the context class loader change", exc);
+        }
+
         ClassLoader l = new ServiceClassLoader(services);
         // Adapted from org.netbeans.ModuleManager.updateContextClassLoaders. See that class for comments.
         ThreadGroup g = Thread.currentThread().getThreadGroup();
@@ -109,20 +122,10 @@ public class MockServices {
                 continue;
             }
         }
+        
         // Need to also reset global lookup since it caches the singleton and we need to change it.
         try {
-            Class mainLookup = Class.forName("org.netbeans.core.startup.MainLookup");
-            Method sClsLoaderChanged = mainLookup.getDeclaredMethod("systemClassLoaderChanged",ClassLoader.class);
-            sClsLoaderChanged.setAccessible(true);
-            sClsLoaderChanged.invoke(null,l);
-        } catch (ClassNotFoundException x) {
-            // Fine, not using core.jar.
-        } catch(Exception exc) {
-            LOG.log(Level.WARNING, "MainLookup couldn't be notified about the context class loader change", exc);
-        }
-
-        try {
-            Class lookup = Class.forName("org.openide.util.Lookup");
+            Class<?> lookup = forName("org.openide.util.Lookup");
             Method defaultLookup = lookup.getDeclaredMethod("resetDefaultLookup");
             defaultLookup.setAccessible(true);
             defaultLookup.invoke(null);
@@ -133,6 +136,19 @@ public class MockServices {
         }
     }
 
+    private static Class<?> forName(String name) throws ClassNotFoundException {
+        ClassLoader l = Thread.currentThread().getContextClassLoader();
+        if (l != null) {
+            try {
+                return Class.forName(name, true, l);
+            } catch (ClassNotFoundException ex) {
+                // OK, try again
+            }
+        }
+        return Class.forName(name);
+    }
+
+
     private static final Logger LOG = Logger.getLogger(MockServices.class.getName());
 
     private static final class ServiceClassLoader extends ClassLoader {
@@ -140,10 +156,15 @@ public class MockServices {
         private final Class<?>[] services;
 
         public ServiceClassLoader(Class<?>[] services) {
-            super(MockServices.class.getClassLoader());
-            for (Class c : services) {
+            this(services, MockServices.class.getClassLoader(), true);
+        }
+        public ServiceClassLoader(Class<?>[] services, ClassLoader l, boolean test) {
+            super(l);
+            for (Class<?> c : services) {
                 try {
-                    assertEquals(c, getParent().loadClass(c.getName()));
+                    if (test) {
+                        Assert.assertEquals(c, getParent().loadClass(c.getName()));
+                    }
                     int mods = c.getModifiers();
                     if (!Modifier.isPublic(mods) || Modifier.isAbstract(mods)) {
                         throw new IllegalArgumentException("Class " + c.getName() + " must be public");

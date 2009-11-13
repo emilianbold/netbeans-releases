@@ -40,6 +40,7 @@
 package org.netbeans.modules.db.explorer.action;
 
 import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.explorer.node.NodeRegistry;
 import org.netbeans.modules.db.metadata.model.api.Action;
 import org.netbeans.modules.db.metadata.model.api.Catalog;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
@@ -47,7 +48,6 @@ import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.db.metadata.model.api.Schema;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.actions.NodeAction;
 
@@ -84,7 +84,7 @@ public abstract class BaseAction extends NodeAction {
                 }
             );
         } catch (MetadataModelException e) {
-            Exceptions.printStackTrace(e);
+            NodeRegistry.handleMetadataModelException(BaseAction.class, null, e, true);
         }
 
         return array[0];
