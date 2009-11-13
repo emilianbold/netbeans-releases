@@ -260,27 +260,28 @@ public final class KenaiProject {
     }
     private static final int repositoryPatternProjectGroup = 4;
 
-    /**
-     * Looks up project by File
-     * @param file file to look for
-     * @return instance of KenaiProject which belongs to file
-     * @throws KenaiException 
-     */
-    public static KenaiProject forFile(File file) throws KenaiException {
-        String projectName = NbModuleOwnerSupport.getInstance().getOwner(".kenai", file);//NOI18N
-        if (projectName!=null) {
-            return KenaiProject.get(projectName);
-        } else {
-            FileObject f = FileUtil.toFileObject(file);
-            if (f!=null) {
-                String remoteLocation = (String) f.getAttribute("ProvidedExtensions.RemoteLocation");//NOI18N
-                if (remoteLocation!=null) {
-                    return forRepository(remoteLocation);
-                }
-            }
-        }
-        return null;
-    }
+//  XXX not used for now
+//    /**
+//     * Looks up project by File
+//     * @param file file to look for
+//     * @return instance of KenaiProject which belongs to file
+//     * @throws KenaiException
+//     */
+//    public static KenaiProject forFile(File file) throws KenaiException {
+//        String projectName = NbModuleOwnerSupport.getInstance().getOwner(".kenai", file);//NOI18N
+//        if (projectName!=null) {
+//            return KenaiProject.get(projectName);
+//        } else {
+//            FileObject f = FileUtil.toFileObject(file);
+//            if (f!=null) {
+//                String remoteLocation = (String) f.getAttribute("ProvidedExtensions.RemoteLocation");//NOI18N
+//                if (remoteLocation!=null) {
+//                    return forRepository(remoteLocation);
+//                }
+//            }
+//        }
+//        return null;
+//    }
 
     /**
      * Looks up a project by repository location.

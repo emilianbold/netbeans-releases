@@ -43,7 +43,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.util.Map;
 import java.util.WeakHashMap;
 import javax.swing.AbstractAction;
@@ -60,10 +59,10 @@ import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
-import org.netbeans.modules.kenai.api.NbModuleOwnerSupport;
-import org.netbeans.modules.kenai.api.NbModuleOwnerSupport.OwnerInfo;
+import org.netbeans.modules.kenai.ui.api.NbModuleOwnerSupport;
 import org.netbeans.modules.kenai.ui.dashboard.DashboardImpl;
 import org.netbeans.modules.kenai.ui.spi.QueryAccessor;
+import org.netbeans.modules.kenai.ui.api.NbModuleOwnerSupport.OwnerInfo;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
@@ -71,11 +70,9 @@ import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.ContextAwareAction;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -176,7 +173,7 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
             // if isKenaiProject==true, there must be cached result + it is different from ""
             String kpName = null;
 
-            OwnerInfo ownerInfo = getOwner(proj);
+            OwnerInfo ownerInfo = NbModuleOwnerSupport.getInstance().getOwnerInfo(proj);
             if(ownerInfo != null) {
                 try {
                     // ensure project. If none with the given owner name available,
@@ -405,24 +402,5 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
             });
         }
     }
-
-    // XXX <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-    // XXX move into nbmoduleowner support
-    private OwnerInfo getOwner(Project project) {
-        FileObject fileObject = project.getProjectDirectory();
-        return getOwner( fileObject);
-    }
-
-    private OwnerInfo getOwner(FileObject fileObject) {
-        if (fileObject == null) {
-            return null;
-        }
-        File file = org.openide.filesystems.FileUtil.toFile(fileObject);
-        if (file == null) {
-            return null;
-        }
-        return NbModuleOwnerSupport.getInstance().getOwnerInfo(NbModuleOwnerSupport.NB_BUGZILLA_CONFIG, file);
-    }
-    // XXX >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 }

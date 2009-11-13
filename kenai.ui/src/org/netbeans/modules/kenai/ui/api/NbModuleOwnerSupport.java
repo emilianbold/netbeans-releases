@@ -37,7 +37,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.api;
+package org.netbeans.modules.kenai.ui.api;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -57,7 +57,12 @@ import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.Union2;
 
@@ -395,6 +400,87 @@ public abstract class NbModuleOwnerSupport {
             ErrorManager.getDefault().notify(ErrorManager.WARNING, t);
             return null;
         }
+    }
+
+    /**
+     * Finds data mapped to the given Project in a netbeans clone
+     *
+     * @param  project the {@link Project} for which the data should be found for
+     * @return  object holding the data assigned to the given project;
+     *          or {@code null} if no mapping file of the specified name
+     *          has been found, or if the mapping file did not contain
+     *          any mapping for the given path
+     * @exception  java.lang.IllegalArgumentException
+     *             if either the file name or the path was {@code null}
+     *             or if the path was not absolute
+     */
+    public OwnerInfo getOwnerInfo(Project project) {
+        FileObject fileObject = project.getProjectDirectory();
+        return getOwnerInfo(fileObject);
+    }
+
+    /**
+     * Finds data mapped to the given file from a netbeans clone
+     *
+     * @param  fileObject {@link FileObject} the project for which the data should be found for
+     * @return  object holding the data assigned to the given file;
+     *          or {@code null} if no mapping file of the specified name
+     *          has been found, or if the mapping file did not contain
+     *          any mapping for the given path
+     * @exception  java.lang.IllegalArgumentException
+     *             if either the file name or the path was {@code null}
+     *             or if the path was not absolute
+     */
+    public OwnerInfo getOwnerInfo(FileObject fileObject) {
+        if (fileObject == null) {
+            return null;
+        }
+        File file = org.openide.filesystems.FileUtil.toFile(fileObject);
+        if (file == null) {
+            return null;
+        }
+        return NbModuleOwnerSupport.getInstance().getOwnerInfo(NbModuleOwnerSupport.NB_BUGZILLA_CONFIG, file);
+    }
+
+    /**
+     * Finds data mapped to the given node reporsenting a file in a netbeans clone
+     *
+     * @param  node {@link Node} the project for which the data should be found for
+     * @return  object holding the data assigned to a file represented by the given node;
+     *          or {@code null} if no mapping file of the specified name
+     *          has been found, or if the mapping file did not contain
+     *          any mapping for the given path
+     * @exception  java.lang.IllegalArgumentException
+     *             if either the file name or the path was {@code null}
+     *             or if the path was not absolute
+     */
+    public OwnerInfo getOwnerInfo(Node node) {
+        final Lookup nodeLookup = node.getLookup();
+
+        Project project = nodeLookup.lookup(Project.class);
+        if (project != null) {
+            return getOwnerInfo(project);
+        }
+
+        DataObject dataObj = nodeLookup.lookup(DataObject.class);
+        if (dataObj != null) {
+            return getOwnerInfo(dataObj);
+        }
+        return null;
+    }
+
+
+    private OwnerInfo getOwnerInfo(DataObject dataObj) {
+        FileObject fileObj = dataObj.getPrimaryFile();
+        if (fileObj == null) {
+            return null;
+        }
+
+        Project project = FileOwnerQuery.getOwner(fileObj);
+        if (project != null) {
+            return getOwnerInfo(project);
+        }
+        return getOwnerInfo(fileObj);
     }
 
     private void checkConfigFileName(String configFileName)
