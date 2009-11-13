@@ -45,8 +45,6 @@ import org.netbeans.modules.parsing.impl.indexing.FileObjectIndexable;
 import org.netbeans.modules.parsing.impl.indexing.IndexImpl;
 import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
 import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
-import org.netbeans.modules.parsing.impl.indexing.SupportAccessor;
-import org.netbeans.modules.parsing.impl.indexing.lucene.LuceneIndexFactory;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.netbeans.modules.parsing.spi.indexing.SourceIndexerFactory;
@@ -64,49 +62,17 @@ public final class IndexingSupport {
 
     private static final Logger LOG = Logger.getLogger(IndexingSupport.class.getName());
     
-    static {
-        SupportAccessor.setInstance(new MyAccessor());
-    }
-
     private final Context context;
     private final IndexFactoryImpl spiFactory;
     private final IndexImpl spiIndex;
-//    private static final Map<String,IndexingSupport> instances = new HashMap<String,IndexingSupport>();
 
     private IndexingSupport (final Context ctx) throws IOException {
         IndexFactoryImpl factory = SPIAccessor.getInstance().getIndexFactory(ctx);
-        if (factory == null) {
-            factory = new LuceneIndexFactory();
-        }
         assert factory != null;
         this.context = ctx;
         this.spiFactory = factory;
         this.spiIndex = this.spiFactory.createIndex(ctx);
     }
-
-//    static Collection<? extends IndexingSupport> getDirtySupports () {
-//        return instances.values();
-//    }
-//
-//    static void beginTrans () {
-//        assert instances.isEmpty();
-//    }
-//
-//    static void endTrans () {
-//        try {
-//            for (Iterator<IndexingSupport> it = instances.values().iterator(); it.hasNext(); ) {
-//                final IndexingSupport is = it.next();
-//                it.remove();
-//                try {
-//                    is.spiIndex.store();
-//                } catch (IOException ex) {
-//                    LOG.log(Level.WARNING, null, ex);
-//                }
-//            }
-//        } finally {
-//            instances.clear();
-//        }
-//    }
 
     /**
      * Returns an {@link IndexingSupport} for given indexing {@link Context}
@@ -116,14 +82,7 @@ public final class IndexingSupport {
      * be created
      */
     public static IndexingSupport getInstance (final Context context) throws IOException {
-        Parameters.notNull("context", context);
-//        final String key = createkey(context);
-//        IndexingSupport support = instances.get(key);
-//        if (support == null) {
-//            support = new IndexingSupport(context);
-//            instances.put(key,support);
-//        }
-//        return support;
+        Parameters.notNull("context", context); //NOI18N
         IndexingSupport support = SPIAccessor.getInstance().context_getAttachedIndexingSupport(context);
         if (support == null) {
             support = new IndexingSupport(context);
@@ -177,7 +136,7 @@ public final class IndexingSupport {
      * @return the decument
      */
     public IndexDocument createDocument (final Indexable indexable) {
-        Parameters.notNull("indexable", indexable);
+        Parameters.notNull("indexable", indexable); //NOI18N
         return new IndexDocument(this.spiFactory.createDocument(indexable));
     }
 
@@ -186,7 +145,7 @@ public final class IndexingSupport {
      * @param document to be added
      */
     public void addDocument (final IndexDocument document) {
-        Parameters.notNull("document", document.spi);
+        Parameters.notNull("document", document.spi); //NOI18N
         spiIndex.addDocument (document.spi);
     }
 
@@ -195,7 +154,7 @@ public final class IndexingSupport {
      * @param indexable to be removed
      */
     public void removeDocuments (final Indexable indexable) {
-        Parameters.notNull("indexable", indexable);
+        Parameters.notNull("indexable", indexable); //NOI18N
         spiIndex.removeDocument (indexable.getRelativePath());
     }
 
@@ -209,35 +168,8 @@ public final class IndexingSupport {
      * @since 1.4
      */
     public void markDirtyDocuments (final Indexable indexable) {
-        Parameters.notNull("indexable", indexable);
+        Parameters.notNull("indexable", indexable); //NOI18N
         spiIndex.fileModified(indexable.getRelativePath());
     }
 
-//    private static String createkey (final Context ctx) {
-//        return ctx.getIndexFolder().getName() + SPIAccessor.getInstance().getIndexerName (ctx);
-//    }
-//
-    private static class MyAccessor extends SupportAccessor {
-
-//        @Override
-//        public void beginTrans() {
-//            IndexingSupport.beginTrans();
-//        }
-//
-//        @Override
-//        public void endTrans() {
-//            IndexingSupport.endTrans();
-//        }
-//
-//        @Override
-//        public Collection<? extends IndexingSupport> getDirtySupports() {
-//            return IndexingSupport.getDirtySupports();
-//        }
-
-        public void store(IndexingSupport support, boolean optimize) throws IOException {
-            assert support != null;
-            support.spiIndex.store(optimize);
-        }
-    }
-   
 }

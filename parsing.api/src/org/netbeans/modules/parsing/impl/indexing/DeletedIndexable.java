@@ -90,6 +90,32 @@ public final class DeletedIndexable implements IndexableImpl, FileObjectProvider
     }
 
     @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final DeletedIndexable other = (DeletedIndexable) obj;
+        if (this.root != other.root && (this.root == null || !this.root.equals(other.root))) {
+            return false;
+        }
+        if (this.relativePath != other.relativePath && (this.relativePath == null || !this.relativePath.equals(other.relativePath))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 83 * hash + (this.root != null ? this.root.hashCode() : 0);
+        hash = 83 * hash + (this.relativePath != null ? this.relativePath.hashCode() : 0);
+        return hash;
+    }
+
+    @Override
     public String toString() {
         return "DeletedIndexable@" + Integer.toHexString(System.identityHashCode(this)) + " [" + getURL() + "]"; //NOI18N
     }
