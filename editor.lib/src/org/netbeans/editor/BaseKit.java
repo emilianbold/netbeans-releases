@@ -2378,6 +2378,14 @@ public class BaseKit extends DefaultEditorKit {
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             if (target != null) {
+                // Scroll the component down due to the extra visual space becomes visible.
+                Rectangle bounds = target.getBounds();
+                bounds.x = 0;
+                bounds.y = bounds.height;
+                bounds.width = 1;
+                bounds.height = 1;
+                target.scrollRectToVisible(bounds);
+
                 Caret caret = target.getCaret();
                 int dot = target.getDocument().getLength(); // end of document
                 boolean select = selectionEndAction.equals(getValue(Action.NAME));

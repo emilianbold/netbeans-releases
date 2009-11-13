@@ -56,9 +56,9 @@ import javax.swing.text.Document;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.editor.java.RunOffAWT;
 import org.netbeans.spi.editor.hints.Context;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.LazyFixList;
@@ -90,7 +90,7 @@ public class JavaHintsPositionRefresher implements PositionRefresher {
             }
         };
         
-        RunOffAWT.runOffAWT(r, NbBundle.getMessage(JavaHintsPositionRefresher.class, "Refresh_hints"), context.getCancel()); // NOI18N
+        ProgressUtils.runOffEventDispatchThread(r, NbBundle.getMessage(JavaHintsPositionRefresher.class, "Refresh_hints"), context.getCancel(), false); // NOI18N
 
         return eds;
     }

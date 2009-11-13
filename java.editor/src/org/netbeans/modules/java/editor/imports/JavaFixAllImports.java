@@ -73,7 +73,7 @@ import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.java.source.ui.ElementIcons;
-import org.netbeans.modules.editor.java.RunOffAWT;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.java.editor.semantic.SemanticHighlighter;
 import org.netbeans.modules.editor.java.Utilities;
 import org.openide.DialogDescriptor;
@@ -144,7 +144,7 @@ public class JavaFixAllImports {
         if (javaSource == null) {
             StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(JavaFixAllImports.class, "MSG_CannotFixImports"));
         } else {
-            RunOffAWT.runOffAWT(new Runnable() {
+            ProgressUtils.runOffEventDispatchThread(new Runnable() {
 
                 public void run() {
                     try {
@@ -153,7 +153,7 @@ public class JavaFixAllImports {
                         Exceptions.printStackTrace(ex);
                     }
                 }
-            }, "Fix All Imports", cancel);
+            }, "Fix All Imports", cancel, false);
 
             if (id.get() != null && !cancel.get()) {
                 SwingUtilities.invokeLater(new Runnable() {
