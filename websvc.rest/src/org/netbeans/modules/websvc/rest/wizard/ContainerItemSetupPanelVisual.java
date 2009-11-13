@@ -44,14 +44,18 @@ package org.netbeans.modules.websvc.rest.wizard;
 import java.awt.event.KeyAdapter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.StringTokenizer;
 import javax.lang.model.element.TypeElement;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.ClassIndex.NameKind;
 import org.netbeans.api.java.source.ClassIndex.SearchScope;
@@ -83,7 +87,6 @@ public class ContainerItemSetupPanelVisual extends javax.swing.JPanel implements
     private Project project;
     private List<ChangeListener> listeners;
     
-    private boolean uriOveridden;
     private boolean resourceClassNameOveridden;
     private boolean containerUriOveridden;
     private boolean containerClassNameOveridden;
@@ -93,7 +96,19 @@ public class ContainerItemSetupPanelVisual extends javax.swing.JPanel implements
         this.listeners = new ArrayList<ChangeListener>();
         initComponents();
         packageComboBox.getEditor().getEditorComponent().addKeyListener(new KeyAdapter() {
+            @Override
             public void keyReleased(java.awt.event.KeyEvent evt) {
+                fireChange();
+            }
+        });
+        uriTextField.getDocument().addDocumentListener(new DocumentListener() {
+            public void changedUpdate(DocumentEvent e) {
+                fireChange();
+            }
+            public void insertUpdate(DocumentEvent e) {
+                fireChange();
+            }
+            public void removeUpdate(DocumentEvent e) {
                 fireChange();
             }
         });
@@ -142,12 +157,6 @@ public class ContainerItemSetupPanelVisual extends javax.swing.JPanel implements
 
         uriLabel.setLabelFor(uriTextField);
         org.openide.awt.Mnemonics.setLocalizedText(uriLabel, org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "LBL_UriTemplate")); // NOI18N
-
-        uriTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent evt) {
-                uriChanged(evt);
-            }
-        });
 
         projectLabel.setLabelFor(projectTextField);
         org.openide.awt.Mnemonics.setLocalizedText(projectLabel, org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "LBL_Project")); // NOI18N
@@ -263,11 +272,11 @@ public class ContainerItemSetupPanelVisual extends javax.swing.JPanel implements
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(containerUriLabel)
-                .addContainerGap(471, Short.MAX_VALUE))
+                .addContainerGap(501, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .add(mediaTypeLabel)
-                .addContainerGap(492, Short.MAX_VALUE))
-            .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 560, Short.MAX_VALUE)
+                .addContainerGap(529, Short.MAX_VALUE))
+            .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 600, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(classLabel)
@@ -278,14 +287,12 @@ public class ContainerItemSetupPanelVisual extends javax.swing.JPanel implements
                     .add(packageLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(packageComboBox, 0, 424, Short.MAX_VALUE)
-                    .add(resourceNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 424, Short.MAX_VALUE)
-                    .add(classTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 424, Short.MAX_VALUE)
-                    .add(projectTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 424, Short.MAX_VALUE)
-                    .add(locationComboBox, 0, 424, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(containerTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 424, Short.MAX_VALUE))))
+                    .add(packageComboBox, 0, 441, Short.MAX_VALUE)
+                    .add(resourceNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 441, Short.MAX_VALUE)
+                    .add(classTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 441, Short.MAX_VALUE)
+                    .add(projectTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 441, Short.MAX_VALUE)
+                    .add(locationComboBox, 0, 441, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, containerTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 441, Short.MAX_VALUE)))
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(contentClassLabel1)
@@ -293,11 +300,11 @@ public class ContainerItemSetupPanelVisual extends javax.swing.JPanel implements
                     .add(uriLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, uriTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 285, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, representationClassTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 285, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, containerRepresentationClassTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 285, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, containerUriTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 285, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, medaTypeComboBox, 0, 285, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, uriTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 315, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, representationClassTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 315, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, containerRepresentationClassTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 315, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, containerUriTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 315, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, medaTypeComboBox, 0, 315, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
                     .add(selectClassButton)
@@ -467,11 +474,6 @@ private void representationClassChanged(java.awt.event.KeyEvent evt) {//GEN-FIRS
     fireChange();
 }//GEN-LAST:event_representationClassChanged
 
-private void uriChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_uriChanged
-    uriOveridden = true;
-    fireChange();
-}//GEN-LAST:event_uriChanged
-
     private void selectClassButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectClassButtonActionPerformed
     fireChange();
     
@@ -577,6 +579,9 @@ private void uriChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_uriChang
         } else if (uriTextField.getText().trim().length() == 0) {
             AbstractPanel.setErrorMessage(wizard, "MSG_EmptyUriTemplate");
             return false;
+        } else if (!isValidUri(uriTextField.getText().trim())) {
+            AbstractPanel.setErrorMessage(wizard, "MSG_IncorrectUriTemplate");
+            return false;
         } else if (containerUriTextField.getText().trim().length() == 0) {
             AbstractPanel.setErrorMessage(wizard, "MSG_EmptyContainerUriTemplate");
             return false;
@@ -589,6 +594,35 @@ private void uriChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_uriChang
         } else if (getContainerClassFile() != null) {
             AbstractPanel.setErrorMessage(wizard, "MSG_ExistingClass");
             return false;
+        }
+        return true;
+    }
+
+    private boolean isValidUri(String uri) {
+        StringTokenizer segments = new StringTokenizer(uri, "/ "); //NOI18N
+        Set<String> uriParts = new HashSet<String>();
+        while (segments.hasMoreTokens()) {
+            String segment = segments.nextToken();
+            if (segment.startsWith("{")) { //NOI18N
+                if (segment.length() > 2 && segment.endsWith("}")) { //NOI18N
+                    String uriPart = segment.substring(1, segment.length() - 1);
+                    if (!Utilities.isJavaIdentifier(uriPart)) {
+                        return false;
+                    }
+                    if (uriParts.contains(uriPart)) {
+                        return false;
+                    } else {
+                        uriParts.add(uriPart);
+                    }
+
+                } else {
+                    return false;
+                }
+            } else {
+                if (segment.contains("{") || segment.contains("}")) { //NOI18N
+                    return false;
+                }
+            }
         }
         return true;
     }
