@@ -40,10 +40,15 @@
 package org.netbeans.modules.cnd.api.remote;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.Writer;
+import java.util.concurrent.ExecutionException;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
+import org.netbeans.modules.cnd.spi.remote.RemoteSyncService;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.util.Lookup;
 
 /**
  * Utility functions related with remote synchronization
@@ -100,4 +105,27 @@ public final class RemoteSyncSupport {
         return null;
     }
 
+    public static class PathMapperException extends Exception {
+
+        private final File file;
+        
+        public PathMapperException(File file) {
+            super("Could not find remote path for " + file.getAbsolutePath()); //NOI18N
+            this.file = file;
+        }
+
+        public File getFile() {
+            return file;
+        }
+    }
+
+    public interface Worker {
+        void process(File file, Writer err) throws PathMapperException, InterruptedException, ExecutionException, IOException;
+        void close();
+    }
+
+    public static Worker createUploader(Project project, ExecutionEnvironment execEnv) {
+        RemoteSyncService rss = Lookup.getDefault().lookup(RemoteSyncService.class);
+        return (rss == null) ? null : rss.getUploader(project, execEnv);
+    }
 }
