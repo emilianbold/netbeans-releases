@@ -88,9 +88,8 @@ public class MessageAuthentication extends ProfileBaseForm {
         WSDLComponent secBinding = null;
 
         WSDLComponent endToken = SecurityTokensModelHelper.getSupportingToken(comp, SecurityTokensModelHelper.ENDORSING);
-        boolean secConv = (endToken != null);
-
         WSDLComponent secConvT = SecurityTokensModelHelper.getTokenElement(endToken, SecureConversationToken.class);
+        boolean secConv = (secConvT instanceof SecureConversationToken);
         
         if (secConv) {
             WSDLComponent bootPolicy = SecurityTokensModelHelper.getTokenElement(secConvT, BootstrapPolicy.class);
@@ -101,11 +100,13 @@ public class MessageAuthentication extends ProfileBaseForm {
             setCombo(wssVersionCombo, SecurityPolicyModelHelper.isWss11(p));
             setChBox(reqSigConfChBox, SecurityPolicyModelHelper.isRequireSignatureConfirmation(p));
             p = PolicyModelHelper.getTopLevelElement(bootPolicy, Policy.class,false);
-            WSDLComponent tokenKind = null;
-            if (ConfigVersion.CONFIG_1_0.equals(cfgVersion)) {
-                tokenKind = SecurityTokensModelHelper.getSupportingToken(p, SecurityTokensModelHelper.SIGNED_SUPPORTING);
-            } else {
-                tokenKind = SecurityTokensModelHelper.getSupportingToken(p, SecurityTokensModelHelper.SIGNED_ENCRYPTED);
+            WSDLComponent tokenKind = SecurityTokensModelHelper.getSupportingToken(p, SecurityTokensModelHelper.ENDORSING);
+            if (tokenKind == null) {
+                if (ConfigVersion.CONFIG_1_0.equals(cfgVersion)) {
+                    tokenKind = SecurityTokensModelHelper.getSupportingToken(p, SecurityTokensModelHelper.SIGNED_SUPPORTING);
+                } else {
+                    tokenKind = SecurityTokensModelHelper.getSupportingToken(p, SecurityTokensModelHelper.SIGNED_ENCRYPTED);
+                }
             }
             String tokenType = SecurityTokensModelHelper.getTokenType(tokenKind);
             setCombo(supportTokenCombo, tokenType);
@@ -115,11 +116,13 @@ public class MessageAuthentication extends ProfileBaseForm {
             setChBox(derivedKeysSecConvChBox, false);
             setCombo(wssVersionCombo, SecurityPolicyModelHelper.isWss11(comp));
             setChBox(reqSigConfChBox, SecurityPolicyModelHelper.isRequireSignatureConfirmation(comp));
-            WSDLComponent tokenKind = null;
-            if (ConfigVersion.CONFIG_1_0.equals(cfgVersion)) {
-                tokenKind = SecurityTokensModelHelper.getSupportingToken(comp, SecurityTokensModelHelper.SIGNED_SUPPORTING);
-            } else {
-                tokenKind = SecurityTokensModelHelper.getSupportingToken(comp, SecurityTokensModelHelper.SIGNED_ENCRYPTED);
+            WSDLComponent tokenKind = SecurityTokensModelHelper.getSupportingToken(comp, SecurityTokensModelHelper.ENDORSING);
+            if (tokenKind == null) {
+                if (ConfigVersion.CONFIG_1_0.equals(cfgVersion)) {
+                    tokenKind = SecurityTokensModelHelper.getSupportingToken(comp, SecurityTokensModelHelper.SIGNED_SUPPORTING);
+                } else {
+                    tokenKind = SecurityTokensModelHelper.getSupportingToken(comp, SecurityTokensModelHelper.SIGNED_ENCRYPTED);
+                }
             }
             String tokenType = SecurityTokensModelHelper.getTokenType(tokenKind);
             setCombo(supportTokenCombo, tokenType);
@@ -141,9 +144,8 @@ public class MessageAuthentication extends ProfileBaseForm {
         WSDLComponent topSecBinding = SecurityPolicyModelHelper.getSecurityBindingTypeElement(comp);        
         
         WSDLComponent endToken = SecurityTokensModelHelper.getSupportingToken(comp, SecurityTokensModelHelper.ENDORSING);
-        boolean secConv = (endToken != null);
-
         WSDLComponent secConvT = SecurityTokensModelHelper.getTokenElement(endToken, SecureConversationToken.class);
+        boolean secConv = (secConvT instanceof SecureConversationToken);
 
         ConfigVersion configVersion = PolicyModelHelper.getConfigVersion(comp);
         SecurityPolicyModelHelper spmh = SecurityPolicyModelHelper.getInstance(configVersion);
@@ -179,14 +181,22 @@ public class MessageAuthentication extends ProfileBaseForm {
             }
             p = PolicyModelHelper.getTopLevelElement(bootPolicy, Policy.class,false);
             if (source.equals(supportTokenCombo)) {
-                if (ConfigVersion.CONFIG_1_0.equals(cfgVersion)) {
+                if (supportTokenCombo.getSelectedItem().equals(ComboConstants.X509)) {
+                    SecurityTokensModelHelper.removeSupportingTokens(p);
                     stmh.setSupportingTokens(p,
                             (String)supportTokenCombo.getSelectedItem(),
-                            SecurityTokensModelHelper.SIGNED_SUPPORTING);
+                            SecurityTokensModelHelper.ENDORSING);
                 } else {
-                    stmh.setSupportingTokens(p,
-                            (String)supportTokenCombo.getSelectedItem(),
-                            SecurityTokensModelHelper.SIGNED_ENCRYPTED);
+                    SecurityTokensModelHelper.removeSupportingTokens(p);
+                    if (ConfigVersion.CONFIG_1_0.equals(cfgVersion)) {
+                        stmh.setSupportingTokens(p,
+                                (String)supportTokenCombo.getSelectedItem(),
+                                SecurityTokensModelHelper.SIGNED_SUPPORTING);
+                    } else {
+                        stmh.setSupportingTokens(p,
+                                (String)supportTokenCombo.getSelectedItem(),
+                                SecurityTokensModelHelper.SIGNED_ENCRYPTED);
+                    }
                 }
             }
         } else {
@@ -205,14 +215,22 @@ public class MessageAuthentication extends ProfileBaseForm {
 //                spmh.enableMustSupportRefKeyIdentifier(wss, true);
             }
             if (source.equals(supportTokenCombo)) {
-                if (ConfigVersion.CONFIG_1_0.equals(cfgVersion)) {
+                if (supportTokenCombo.getSelectedItem().equals(ComboConstants.X509)) {
+                    SecurityTokensModelHelper.removeSupportingTokens(comp);
                     stmh.setSupportingTokens(comp,
                             (String)supportTokenCombo.getSelectedItem(),
-                            SecurityTokensModelHelper.SIGNED_SUPPORTING);
+                            SecurityTokensModelHelper.ENDORSING);
                 } else {
-                    stmh.setSupportingTokens(comp,
-                            (String)supportTokenCombo.getSelectedItem(),
-                            SecurityTokensModelHelper.SIGNED_ENCRYPTED);
+                    SecurityTokensModelHelper.removeSupportingTokens(comp);
+                    if (ConfigVersion.CONFIG_1_0.equals(cfgVersion)) {
+                        stmh.setSupportingTokens(comp,
+                                (String)supportTokenCombo.getSelectedItem(),
+                                SecurityTokensModelHelper.SIGNED_SUPPORTING);
+                    } else {
+                        stmh.setSupportingTokens(comp,
+                                (String)supportTokenCombo.getSelectedItem(),
+                                SecurityTokensModelHelper.SIGNED_ENCRYPTED);
+                    }
                 }
             }
         }

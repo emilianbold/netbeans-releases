@@ -257,6 +257,8 @@ public class PHPFormatterTest extends PHPTestBase {
 
         Preferences prefs = CodeStylePreferences.get(doc).getPreferences();
         prefs.putInt(FmtOptions.initialIndent, initialIndent);
+        prefs.putInt(FmtOptions.continuationIndentSize, 4);
+
         format(doc, formatter, formatStart, formatEnd, false);
 
         String after = doc.getText(0, doc.getLength());

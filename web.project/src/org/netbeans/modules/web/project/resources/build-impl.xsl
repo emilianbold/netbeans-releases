@@ -1347,7 +1347,7 @@ exists or setup the property manually. For example like this:
             
             <target name="debug">
                 <xsl:attribute name="description">Debug project in IDE.</xsl:attribute>
-                <xsl:attribute name ="depends">init,compile,compile-jsps,-do-compile-single-jsp,-pre-dist,-do-tmp-dist-with-manifest,-do-tmp-dist-without-manifest</xsl:attribute>
+                <xsl:attribute name ="depends">init,-init-cos,compile,compile-jsps,-do-compile-single-jsp,-pre-dist,-do-tmp-dist-with-manifest,-do-tmp-dist-without-manifest</xsl:attribute>
                 <xsl:attribute name="if">netbeans.home</xsl:attribute>
                 <nbstartserver debugmode="true"/>
                 <antcall target="connect-debugger"/>

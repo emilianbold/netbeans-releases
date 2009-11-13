@@ -37,27 +37,15 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.symfony.ui.actions;
+package org.netbeans.modules.websvc.wsitconf.spi.features;
 
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.php.symfony.ui.actions.GoToActionOrViewAction.GoToActionAction;
+import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
+import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 
-public class GoToActionOrViewActionTest extends NbTestCase {
-
-    public GoToActionOrViewActionTest(String name) {
-        super(name);
-    }
-
-    public void testGetActionMethodName() {
-        assertEquals("executeIndex", GoToActionAction.getActionMethodName("indexSuccess"));
-        assertEquals("executeNew", GoToActionAction.getActionMethodName("newSuccess"));
-        assertEquals("executeNew", GoToActionAction.getActionMethodName("newError"));
-        assertEquals("executeIndexDemo", GoToActionAction.getActionMethodName("indexDemoSuccess"));
-        assertEquals("executeIndexDemoUglyBug", GoToActionAction.getActionMethodName("indexDemoUglyBugSuccess"));
-        assertEquals("executeIndex2Demo3", GoToActionAction.getActionMethodName("index2Demo3Success"));
-        assertEquals("executeIndex_Demo", GoToActionAction.getActionMethodName("index_DemoSuccess"));
-
-        assertEquals("execute_admin", GoToActionAction.getActionMethodName("_adminInc"));
-        assertNull(GoToActionAction.getActionMethodName("_admin"));
-    }
+/**
+ *
+ * @author snajper
+ */
+public interface TrustStoreFeature {
+    public boolean isTrustStoreRequired(ConfigVersion cfgVersion, WSDLComponent component, boolean client);
 }

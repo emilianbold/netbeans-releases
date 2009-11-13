@@ -166,7 +166,7 @@ public final class GoToActionOrViewAction extends TextAction implements ContextA
 
     static final class GoToActionAction extends AbstractAction {
         private static final long serialVersionUID = -95284445913404L;
-        private static final Pattern ACTION_METHOD_NAME = Pattern.compile("^([a-z0-9_]+)[A-Z]"); // NOI18N
+        private static final Pattern ACTION_METHOD_NAME = Pattern.compile("^(\\w+)[A-Z]"); // NOI18N
 
         private final FileObject fo;
 
