@@ -42,8 +42,6 @@ package org.netbeans.modules.parsing.impl.indexing.lucene;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryMXBean;
 import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -58,7 +56,6 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.parsing.impl.indexing.IndexDocumentImpl;
 import org.netbeans.modules.parsing.impl.indexing.IndexableImpl;
 import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
-import org.netbeans.modules.parsing.impl.indexing.lucene.LuceneDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport.Kind;
 import org.openide.util.Exceptions;
 
@@ -77,6 +74,7 @@ public class LuceneIndexTest extends NbTestCase {
     }
 
     @Before
+    @Override
     public void setUp() throws IOException {
         clearWorkDir();
         wd = getWorkDir();
@@ -86,6 +84,7 @@ public class LuceneIndexTest extends NbTestCase {
     }
 
     @After
+    @Override
     public void tearDown() throws IOException {
         index.close();
     }
@@ -98,7 +97,7 @@ public class LuceneIndexTest extends NbTestCase {
             docwrap.addPair("oct", Integer.toOctalString(i), true, true);
             index.addDocument(docwrap);
         }
-        index.store(true);
+        index.store(true, null);
         BitSet expected = new BitSet(1000);
         expected.set(0, 1000);
         assertIndex(expected);
@@ -106,7 +105,7 @@ public class LuceneIndexTest extends NbTestCase {
             index.removeDocument(Integer.toString(i));
             expected.clear(i);
         }
-        index.store(true);
+        index.store(true, null);
         assertIndex(expected);
     }
 
@@ -120,7 +119,7 @@ public class LuceneIndexTest extends NbTestCase {
         docwrap.addPair("bin", Integer.toBinaryString(1), true, true);
         docwrap.addPair("oct", Integer.toOctalString(1), true, true);
         index.addDocument(docwrap);
-        index.store(true);
+        index.store(true, null);
         //Existing index => valid
         assertTrue(index.isValid());
         assertTrue(indexFolder.listFiles().length>0);
@@ -136,13 +135,13 @@ public class LuceneIndexTest extends NbTestCase {
         docwrap.addPair("bin", Integer.toBinaryString(1), true, true);
         docwrap.addPair("oct", Integer.toOctalString(1), true, true);
         index.addDocument(docwrap);
-        index.store(true);
+        index.store(true, null);
         assertTrue(index.isValid());
         assertTrue(indexFolder.listFiles().length>0);
 
         //Broken index => invalid
         clearValidityCache();
-        File bt = null;;
+        File bt = null;
         for (File file : indexFolder.listFiles()) {
             if (file.getName().endsWith(".cfs")) {
                 bt = file;

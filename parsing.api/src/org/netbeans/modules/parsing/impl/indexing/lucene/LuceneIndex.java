@@ -76,6 +76,7 @@ import org.apache.lucene.store.RAMDirectory;
 import org.netbeans.modules.parsing.impl.indexing.IndexDocumentImpl;
 import org.netbeans.modules.parsing.impl.indexing.IndexImpl;
 import org.netbeans.modules.parsing.impl.indexing.lucene.util.Evictable;
+import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -108,7 +109,7 @@ public class LuceneIndex implements IndexImpl, Evictable {
         if (forceFlush) {
             try {
                 LOGGER.fine("Extra flush forced"); //NOI18N
-                store(false);
+                store(false, null);
                 System.gc();
             } catch (IOException ioe) {
                 LOGGER.log(Level.WARNING, null, annotateException(ioe, indexFolder));
@@ -131,14 +132,14 @@ public class LuceneIndex implements IndexImpl, Evictable {
         if (forceFlush) {
             try {
                 LOGGER.fine("Extra flush forced"); //NOI18N
-                store(false);
+                store(false, null);
             } catch (IOException ioe) {
                 LOGGER.log(Level.WARNING, null, annotateException(ioe, indexFolder));
             }
         }
     }
     
-    public void store(final boolean optimize) throws IOException {
+    public void store(final boolean optimize, final Iterable<Indexable> indexedIndexables) throws IOException {
         LuceneIndexManager.getDefault().writeAccess(new LuceneIndexManager.Action<Void>() {
             public Void run() throws IOException {
                 checkPreconditions();
@@ -152,10 +153,16 @@ public class LuceneIndex implements IndexImpl, Evictable {
 
                     LuceneIndex.this.toAdd.clear();
                     LuceneIndex.this.toRemove.clear();
-                    for(LuceneDocument ldoc : toAdd) {
-                        LuceneIndex.this.staleFiles.remove(ldoc.getSourceName());
+                    if (indexedIndexables != null) {
+                        for(Indexable i : indexedIndexables) {
+                            LuceneIndex.this.staleFiles.remove(i.getRelativePath());
+                        }
+                    } else {
+                        for(LuceneDocument ldoc : toAdd) {
+                            LuceneIndex.this.staleFiles.remove(ldoc.getSourceName());
+                        }
+                        LuceneIndex.this.staleFiles.removeAll(toRemove);
                     }
-                    LuceneIndex.this.staleFiles.removeAll(toRemove);
                 }
 
                 if (toAdd.size() > 0 || toRemove.size() > 0) {
