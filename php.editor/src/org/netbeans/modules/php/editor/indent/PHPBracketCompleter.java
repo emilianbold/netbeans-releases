@@ -527,6 +527,11 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                 insertOffset = offset;
             }
 
+            // hofix for #174165
+            if (insertOffset > doc.getLength()){
+                insertOffset = doc.getLength();
+            }
+
             int indent = GsfUtilities.getLineIndent(doc, ts.offset());
             int afterLastNonWhite = Utilities.getRowLastNonWhite(doc, insertOffset);
 

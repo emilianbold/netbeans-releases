@@ -38,7 +38,7 @@
  */
 package org.netbeans.modules.web.jsf.editor.facelets;
 
-import com.sun.faces.config.ConfigManager;
+import org.netbeans.modules.web.jsf.editor.facelets.mojarra.FaceletsTaglibConfigProcessor;
 import com.sun.faces.config.DocumentInfo;
 import com.sun.faces.facelets.tag.AbstractTagLibrary;
 import com.sun.faces.facelets.tag.TagLibrary;
@@ -274,13 +274,17 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
         }
 
         //parse the libraries
-        ConfigManager cm = ConfigManager.getInstance();
-        DocumentInfo[] documents = (DocumentInfo[]) callMethod("getConfigDocuments", ConfigManager.class, cm, null, faceletTaglibProviders, null, true); //NOI18N
+
+        //#176771 fix - we need our own ConfigManager anyway :-(
+        //com.sun.faces.config.ConfigManager cm = com.sun.faces.config.ConfigManager.getInstance();
+        org.netbeans.modules.web.jsf.editor.facelets.mojarra.ConfigManager cm = org.netbeans.modules.web.jsf.editor.facelets.mojarra.ConfigManager.getInstance();
+        DocumentInfo[] documents = (DocumentInfo[]) callMethod("getConfigDocuments", org.netbeans.modules.web.jsf.editor.facelets.mojarra.ConfigManager.class, cm, null, faceletTaglibProviders, null, true); //NOI18N
+
         if (documents == null) {
             return null; //error????
         }
 
-        FaceletsTaglibConfigProcessorPatched processor = new FaceletsTaglibConfigProcessorPatched(this);
+        FaceletsTaglibConfigProcessor processor = new FaceletsTaglibConfigProcessor(this);
 
         //process the found documents
         processor.process(documents);
