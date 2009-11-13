@@ -865,9 +865,9 @@ exists or setup the property manually. For example like this:
                     <copyfiles>
                         <xsl:attribute name="todir">${dist.ear.dir}</xsl:attribute>
                         <xsl:if test="//carproject:included-library[@dirs]">
-<!--                            <xsl:if test="(@dirs = 200)">
+                            <xsl:if test="(@dirs = 200)">
                                 <xsl:attribute name="todir">${dist.ear.dir}/lib</xsl:attribute>
-                            </xsl:if> -->
+                            </xsl:if>
                             <xsl:if test="(@dirs = 300)">
                                 <xsl:attribute name="todir">${build.classes.dir}/META-INF/lib</xsl:attribute>
                             </xsl:if>
@@ -889,11 +889,11 @@ exists or setup the property manually. For example like this:
                                         <xsl:value-of select="."/>
                                     </xsl:variable>
                                     <xsl:value-of select="concat('${manifest.', $included.prop.name, '} ')"/>
-<!--                                    <xsl:if test="//carproject:included-library[@dirs]">
+                                    <xsl:if test="//carproject:included-library[@dirs]">
                                         <xsl:if test="(@dirs = 200)">
                                             <xsl:value-of select="concat('lib/${manifest.', $included.prop.name, '} ')"/>
                                         </xsl:if>
-                                    </xsl:if> -->
+                                    </xsl:if>
                                 </xsl:for-each>  
                             </xsl:attribute>
                         </attribute>

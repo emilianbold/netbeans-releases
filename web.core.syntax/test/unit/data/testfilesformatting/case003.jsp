@@ -33,7 +33,6 @@ return count;
 Bean created!  Setting foo.bar...<br>
 <jsp:setProperty name="foo" property="bar">
 <jsp:attribute name="value">
-<my:helloWorld/>
 <%
 String x =
 ""+System.currentTimeMillis();

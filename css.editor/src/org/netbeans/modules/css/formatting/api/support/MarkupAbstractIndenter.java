@@ -519,7 +519,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
                                     context.getLineStartOffset()));
                                 item.processed = true;
                             } else {
-                                if (closingTag && item.tagName.equalsIgnoreCase(tokenName)) {
+                                if (closingTag && item.tagName.equalsIgnoreCase(tokenName) && context.isIndentThisLine()) {
                                     iis.add(new IndentCommand(IndentCommand.Type.RETURN,
                                         context.getLineStartOffset()));
                                     item.processed = true;
