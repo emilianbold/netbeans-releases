@@ -1,0 +1,70 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<!--
+ *     	  Copyright © 2009 Sun Microsystems, Inc. All rights reserved.
+ *	  Use is subject to license terms.
+-->
+
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <title>Creating Facelets Templates</title>
+        <link href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css"
+            rel="stylesheet" type="text/css">
+    </head>
+
+    <body>
+        <h2>Creating Facelets Templates</h2>
+
+        <p><small><a href="#seealso">See Also</a></small></p>
+
+        <p>You can create Facelets Templates for your JSF 2.0 application using the Facelets
+            Template wizard. The wizard creates an XHTML template file using <code>&lt;h:head&gt;</code>
+            and <code>&lt;h:body&gt;</code> tags, and places associated stylesheets in the
+            <code>resources/css</code> folder of your application's web root. You can choose
+            from eight unique layout styles, and specify whether the layout is implemented using
+            CSS or an HTML <code>&lt;table&gt;</code> element.</p>
+
+        <h4>To create a new Facelets template:</h4>
+
+        <ol>
+            <li>In the Projects window, right-click your project node and choose New &gt;
+                Facelets Template. The Facelets Template wizard opens.
+
+                <br><br>
+                (If Facelets Template is not listed, choose Other. Then select the JavaServer
+                Faces category and Facelets Template file type. Click Next.)</li>
+
+            <li>In the <strong>File Name</strong> field, type in a name for the template.</li>
+
+            <li>In <strong>Location</strong>, specify the top-level location for the file.
+                ('Web Pages' is the default option, and places the file in the given project's
+                web root.</li>
+
+            <li>In <strong>Folder</strong>, specify a folder within the selected location,
+                if you require. The <strong>Created File</strong> field provides a read-only
+                path to the new location for the template file.</li>
+
+            <li>For <strong>Layout Style</strong>, specify whether you want the layout to be
+                generated using CSS styles or an HTML table.</li>
+
+            <li>Select the icon that corresponds to the layout you want generated. (A black
+                layout icon indicates that the icon is selected.)</li>
+
+            <li>Click Finish. The new Facelets template is generated and opens in the editor.
+                The wizard generates a <code>default.css</code> file, and a <code>cssLayout.css</code>
+                or <code>tableLayout.css</code> file, depending on your layout selection.</li>
+        </ol>
+
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="create-page.html">Creating JSF Pages</a></dd>
+            <dd><a href="edit.html">Editing JSF Pages</a></dd>
+            <dd><a href="create.html">Creating a New Application with JSF Support</a></dd>
+            <dd><a href="about.html">About JavaServer Faces Framework Support</a></dd>
+        </dl>
+
+        <hr><small><a href="../../../credits.html">Legal Notices</a></small>
+        <table cellpadding="20" border="0"><tr><td>&nbsp;</td></tr></table>
+    </body>
+</html>
