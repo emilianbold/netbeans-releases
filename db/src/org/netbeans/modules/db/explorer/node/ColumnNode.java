@@ -176,7 +176,7 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
                     }
                 );
             } catch (MetadataModelException e) {
-                Exceptions.printStackTrace(e);
+                NodeRegistry.handleMetadataModelException(this.getClass(), connection, e, true);
             }
         }
     }
@@ -241,7 +241,7 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
                 }
             );
         } catch (MetadataModelException e) {
-            Exceptions.printStackTrace(e);
+            NodeRegistry.handleMetadataModelException(this.getClass(), connection, e, true);
         }
 
         return array[0];
@@ -337,7 +337,7 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
                 }
             );
         } catch (MetadataModelException e) {
-            Exceptions.printStackTrace(e);
+            NodeRegistry.handleMetadataModelException(ColumnNode.class, connection, e, true);
         }
 
         return array[0];
@@ -359,7 +359,7 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
                 }
             );
         } catch (MetadataModelException e) {
-            Exceptions.printStackTrace(e);
+            NodeRegistry.handleMetadataModelException(ColumnNode.class, connection, e, true);
         }
 
         return array[0];
@@ -381,7 +381,7 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
                 }
             );
         } catch (MetadataModelException e) {
-            Exceptions.printStackTrace(e);
+            NodeRegistry.handleMetadataModelException(ColumnNode.class, connection, e, true);
         }
 
         return array[0];
@@ -403,7 +403,7 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
                 }
             );
         } catch (MetadataModelException e) {
-            Exceptions.printStackTrace(e);
+            NodeRegistry.handleMetadataModelException(ColumnNode.class, connection, e, true);
         }
 
         return array[0];
