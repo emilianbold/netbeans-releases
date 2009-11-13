@@ -1,8 +1,8 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
 <%
-String c =
-""+System.currentTimeMillis();
+            String c =
+                    "" + System.currentTimeMillis();
 %>
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
@@ -24,16 +24,15 @@ String c =
              comment -->
         <%! int count = 1;%>
         <%! int doubleCount() {
-        count = count * 2;
-        return count;
-        }%>
+                count = count * 2;
+                return count;
+            }%>
         <h1><h:outputText value="JavaServer Faces"/></h1>
 
         <jsp:useBean id="foo" class="javax.swing.JLabel">
             Bean created!  Setting foo.bar...<br>
             <jsp:setProperty name="foo" property="bar">
                 <jsp:attribute name="value">
-                    <my:helloWorld/>
                     <%
                                 String x =
                                         "" + System.currentTimeMillis();
