@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.cnd.actions;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Map;
@@ -50,6 +49,7 @@ import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
+import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.loaders.CMakeDataObject;
@@ -107,14 +107,15 @@ public class CMakeAction extends AbstractExecutorRunAction {
         DataObject dataObject = node.getCookie(DataObject.class);
         FileObject fileObject = dataObject.getPrimaryFile();
         // Build directory
-        File buildDir = getBuildDirectory(node,Tool.CMakeTool);
+        String buildDir = getBuildDirectory(node,Tool.CMakeTool);
         // Executable
         String executable = getCommand(node, project, Tool.CMakeTool, "cmake"); // NOI18N
         // Arguments
         //String arguments = proFile.getName();
         String[] arguments =  getArguments(node, Tool.CMakeTool); // NOI18N
         ExecutionEnvironment execEnv = getExecutionEnvironment(fileObject, project);
-        if (!checkConnection(execEnv)) {
+        buildDir = convertToRemoteIfNeeded(execEnv, buildDir);
+        if (buildDir == null) {
             return null;
         }
         Map<String, String> envMap = getEnv(execEnv, node, null);
@@ -144,7 +145,7 @@ public class CMakeAction extends AbstractExecutorRunAction {
         }
         ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, outputListener, inputOutput, "CMake", syncWorker); // NOI18N
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv)
-        .setWorkingDirectory(buildDir.getPath())
+        .setWorkingDirectory(buildDir)
         .setCommandLine(quoteExecutable(executable)+" "+argsFlat.toString()) // NOI18N
         .unbufferOutput(false)
         .addNativeProcessListener(processChangeListener);

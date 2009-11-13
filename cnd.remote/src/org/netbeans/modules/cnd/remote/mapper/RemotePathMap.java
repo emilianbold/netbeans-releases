@@ -442,7 +442,7 @@ public abstract class RemotePathMap extends PathMap {
                 return remotePath;
             }
             if (!isSubPath(remoteBase, lpath)) {
-                if (Utilities.isWindows() && !"/".equals(lpath)) { // NOI18N
+                if (lpath != null && Utilities.isWindows() && !"/".equals(lpath)) { // NOI18N
                     lpath = WindowsSupport.getInstance().convertToMSysPath(lpath);
                 }
                 remotePath = super.getRemotePath(lpath, useDefault);
@@ -458,7 +458,7 @@ public abstract class RemotePathMap extends PathMap {
                 return rpath;
             }
             String res = super.getLocalPath(rpath, useDefault);
-            if (Utilities.isWindows() && !"/".equals(res)) { // NOI18N
+            if (res != null && Utilities.isWindows() && !"/".equals(res)) { // NOI18N
                 res = WindowsSupport.getInstance().convertFromMSysPath(res);
             }
             return res;

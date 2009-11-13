@@ -52,7 +52,6 @@ import org.netbeans.api.extexecution.ExecutionDescriptor.LineConvertorFactory;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
-import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
@@ -124,26 +123,22 @@ public class ShellRunAction extends AbstractExecutorRunAction {
         File shellFile = FileUtil.toFile(fileObject);
         // Build directory
         String bdir = bes.getRunDirectory();
-        File buildDir = getAbsoluteBuildDir(bdir, shellFile);
+        String buildDir = getAbsoluteBuildDir(bdir, shellFile).getAbsolutePath();
         
         String[] shellCommandAndArgs = bes.getShellCommandAndArgs(fileObject); // from inside shell file or properties
         String shellCommand = shellCommandAndArgs[0];
-        String shellFilePath = IpeUtils.toRelativePath(buildDir.getPath(), shellFile.getPath()); // Absolute path to shell file
+        String shellFilePath = IpeUtils.toRelativePath(buildDir, shellFile.getPath()); // Absolute path to shell file
         if (shellFilePath.equals(shellFile.getName())) {
             shellFilePath = "."+File.separatorChar+shellFilePath; //NOI18N
         }
         String[] args = bes.getArguments(); // from properties
 
         ExecutionEnvironment execEnv = getExecutionEnvironment(fileObject, project);
-        if (!checkConnection(execEnv)) {
+        buildDir = convertToRemoteIfNeeded(execEnv, buildDir);
+        if (buildDir == null) {
             return null;
         }
-        if (execEnv.isRemote()) {
-            String s = HostInfoProvider.getMapper(execEnv).getRemotePath(buildDir.getAbsolutePath());
-            if (s != null) {
-                buildDir = new File(s);
-            }
-        }
+        shellFilePath = convertToRemoveSeparatorsIfNeeded(execEnv, shellFilePath);
         // Windows: The command is usually of the from "/bin/sh", but this
         // doesn't work here, so extract the 'sh' part and use that instead. 
         // FIXUP: This is not entirely correct though.
@@ -188,7 +183,7 @@ public class ShellRunAction extends AbstractExecutorRunAction {
         }
         ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, outputListener, inputOutput, "Run", syncWorker); // NOI18N
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv)
-        .setWorkingDirectory(buildDir.getPath())
+        .setWorkingDirectory(buildDir)
         .setCommandLine(quoteExecutable(shellCommand)+" "+argsFlat.toString()) // NOI18N
         .unbufferOutput(false)
         .addNativeProcessListener(processChangeListener);
