@@ -141,7 +141,7 @@ public class QueryRefreshTest extends NbTestCase implements TestConstants, Query
             public void run() {
                 // init columndescriptors before opening query to prevent some "do not call in awt asserts"
                 BugzillaIssue.getColumnDescriptors(repo);
-                QueryAction.openQuery(q);
+                QueryAction.openQuery(q, null);
             }
         }).waitFinished();
         schedulingHandler.waitUntilDone();
