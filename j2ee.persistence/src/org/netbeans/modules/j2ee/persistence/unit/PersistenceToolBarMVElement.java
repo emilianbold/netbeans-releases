@@ -47,7 +47,6 @@ import javax.swing.Action;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
-import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
 import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
@@ -113,16 +112,19 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
         return view;
     }
     
+    @Override
     public void componentOpened() {
         super.componentOpened();
         dObj.addPropertyChangeListener(this);
     }
     
+    @Override
     public void componentClosed() {
         super.componentClosed();
         dObj.removePropertyChangeListener(this);
     }
     
+    @Override
     public void componentShowing() {
         super.componentShowing();
         if (needInit){
@@ -164,10 +166,39 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
         String name = evt.getPropertyName();
         if (PUDataObject.PERSISTENCE_UNIT_ADDED_OR_REMOVED.equals(name)){
             repaintingTask.schedule(100);
-        } else if ((puDataObject.PROPERTY_DATA_MODIFIED.equals(name) 
-                || puDataObject.PROPERTY_DATA_UPDATED.equals(name))
+        } else if ((PUDataObject.PROPERTY_DATA_MODIFIED.equals(name)
+                || PUDataObject.PROPERTY_DATA_UPDATED.equals(name))
                 && !this.equals(puDataObject.getActiveMultiViewElement0())) {
             needInit = true;
+        } else if (PUDataObject.NO_UI_PU_CLASSES_CHANGED.equals(name) && this.equals(puDataObject.getActiveMultiViewElement0())) {
+            //need to refresh classes view of specific persistence unit
+            //TODO: review if it can be done easier as it looks quite complex
+            PersistenceUnit pu = evt.getNewValue() instanceof PersistenceUnit ? (PersistenceUnit) evt.getNewValue() : null;
+            if(pu != null) {
+                SectionContainer sc = view.getPersistenceUnitsCont();
+                SectionContainerNode sn = (SectionContainerNode) sc.getNode();
+                Children ch=sn.getChildren();
+                NodeSectionPanel nsp = null;
+                for(Node n:ch.getNodes()) {
+                    PersistenceUnitNode pun = (PersistenceUnitNode) n;
+                    String pusecname = pun.getDisplayName();
+                    if(pusecname.equals(pu.getName()))
+                    {
+                        nsp = sc.getSection(n);
+                        break;
+                    }
+                }
+                SectionPanel sp = nsp!=null && nsp instanceof SectionPanel ? ((SectionPanel)nsp) : null;
+                PersistenceUnitPanel up = (PersistenceUnitPanel) (sp.getInnerPanel() != null && sp.getInnerPanel() instanceof PersistenceUnitPanel ? sp.getInnerPanel() : null);
+                if(up != null) {
+                    up.initEntityList();
+                }
+                else {
+                    needInit = true;//at least mark as required to be refreshed
+                }
+            } else {
+                needInit = true;//at least mark as required to be refreshed
+            }
         }
     }
     
@@ -228,6 +259,7 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
             setRoot(root);
         }
 
+        @Override
         public Error validateView() {
             PersistenceValidator validator = new PersistenceValidator((PUDataObject)dObj);
             List<Error> result = validator.validate();
@@ -246,6 +278,7 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
             setIconBaseWithExtension("org/netbeans/modules/j2ee/persistence/unit/PersistenceIcon.gif"); //NOI18N
         }
         
+        @Override
         public HelpCtx getHelpCtx() {
             return new HelpCtx(PUDataObject.HELP_ID_DESIGN_PERSISTENCE_UNIT); //NOI18N
         }
