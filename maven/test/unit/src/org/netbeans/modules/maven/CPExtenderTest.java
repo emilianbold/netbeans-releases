@@ -114,6 +114,17 @@ public class CPExtenderTest extends TestCase {
         assertEquals("testng", result[3]);
         assertEquals("5.8", result[4]);
         assertEquals("jdk15", result[5]);
+
+
+
+        pom = new URL("http://ftp.ing.umu.se/mirror/eclipse/rt/eclipselink/maven.repo/org/eclipse/persistence/javax.persistence/2.0.0-M12/javax.persistence-2.0.0-M12.pom");
+        result = CPExtender.checkLibrary(pom, repos);
+        assertNotNull(result);
+        assertEquals("default", result[0]);
+        assertEquals("http://ftp.ing.umu.se/mirror/eclipse/rt/eclipselink/maven.repo/", result[1]);
+        assertEquals("org.eclipse.persistence", result[2]);
+        assertEquals("javax.persistence", result[3]);
+        assertEquals("2.0.0-M12", result[4]);
     }
     
 }
