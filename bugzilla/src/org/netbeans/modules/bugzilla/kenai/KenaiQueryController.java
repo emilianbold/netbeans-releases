@@ -41,13 +41,12 @@ package org.netbeans.modules.bugzilla.kenai;
 
 import java.util.List;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConnector;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
 import org.netbeans.modules.bugzilla.query.QueryController;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
-import org.netbeans.modules.kenai.api.NbModuleOwnerSupport.OwnerInfo;
+import org.netbeans.modules.kenai.ui.api.NbModuleOwnerSupport.OwnerInfo;
 import org.openide.nodes.Node;
 import org.openide.windows.WindowManager;
 
