@@ -65,7 +65,7 @@ fi
 USER=${USER:-`logname 2>/dev/null`}
 USER=${USER:-${USERNAME}}
 TMPBASE=${TMPBASE:-/var/tmp}
-TMPDIRBASE=${TMPBASE}/dlight_${USER}
+TMPDIRBASE=${TMPBASE}/dlight_${USER}/${NB_KEY}
 mkdir -p "${TMPDIRBASE}"
 
 echo BITNESS=${BITNESS}
