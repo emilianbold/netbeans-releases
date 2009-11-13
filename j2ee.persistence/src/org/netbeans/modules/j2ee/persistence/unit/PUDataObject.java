@@ -98,7 +98,8 @@ public class PUDataObject extends XmlMultiViewDataObject {
     private Persistence persistence;
     private static final String DESIGN_VIEW_ID = "persistence_multiview_design"; // NOI18N
     private static final Logger LOG = Logger.getLogger(PUDataObject.class.getName());
-    
+    public static final String NO_UI_PU_CLASSES_CHANGED = "non ui pu classes modified";  //NOI18N
+
     /**
      * The property name for the event fired when a persistence unit was added or removed.
      */ 
@@ -118,6 +119,7 @@ public class PUDataObject extends XmlMultiViewDataObject {
         parseDocument();
     }
     
+    @Override
     protected Node createNodeDelegate() {
         return new PUDataNode(this);
     }
@@ -296,6 +298,10 @@ public class PUDataObject extends XmlMultiViewDataObject {
         }
         persistenceUnit.addClass2(clazz);
         modelUpdated();
+        if(!fromPanel)//may need to update panels/design view
+        {
+            updateUIPanels(persistenceUnit, NO_UI_PU_CLASSES_CHANGED);
+        }
         return true;
     }
     
@@ -309,6 +315,10 @@ public class PUDataObject extends XmlMultiViewDataObject {
     public void removeClass(PersistenceUnit persistenceUnit, String clazz, boolean fromPanel){
         persistenceUnit.removeClass2(clazz);
         modelUpdated();
+        if(!fromPanel)//may need to update panels/design view
+        {
+            updateUIPanels(persistenceUnit, NO_UI_PU_CLASSES_CHANGED);
+        }
     }
     
     
@@ -341,12 +351,14 @@ public class PUDataObject extends XmlMultiViewDataObject {
             return DESIGN_VIEW_ID + String.valueOf(type);
         }
         
+        @Override
         public HelpCtx getHelpCtx() {
             return new HelpCtx(HELP_ID_DESIGN_PERSISTENCE_UNIT); //NOI18N
         }
         
     }
     
+    @Override
     public void showElement(Object element) {
         Object target=null;
         if (element instanceof PersistenceUnit) {
@@ -377,7 +389,16 @@ public class PUDataObject extends XmlMultiViewDataObject {
         setModified(true);
         modelSynchronizer.requestUpdateData();
     }
-    
+
+    /**
+     * it's used if need to update
+     * @param unit
+     */
+    private void updateUIPanels(PersistenceUnit unit, String kind)
+    {
+        firePropertyChange(NO_UI_PU_CLASSES_CHANGED, null , unit);
+    }
+
     /**
      * Call this method if the model got updated via UI, such as,visual editor
      */
@@ -389,18 +410,22 @@ public class PUDataObject extends XmlMultiViewDataObject {
         modelSynchronizer.updateDataFromModel(getPersistence(), lock, true);
     }
     
+    @Override
     public boolean isDeleteAllowed() {
         return true;
     }
     
+    @Override
     public boolean isCopyAllowed() {
         return true;
     }
     
+    @Override
     public boolean isMoveAllowed(){
         return true;
     }
     
+    @Override
     protected Image getXmlViewIcon() {
         return ImageUtilities.loadImage("org/netbeans/modules/j2ee/persistence/unit/PersistenceIcon.gif"); //NOI18N
     }

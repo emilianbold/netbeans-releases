@@ -110,8 +110,7 @@ public class PHPDOCCodeCompletion {
         TokenSequence<PHPTokenId> phpTS = (th != null) ? LexUtilities.getPHPTokenSequence(th, request.anchor) : null;
         if (phpTS != null) {
             phpTS.move(request.anchor);
-            phpTS.moveNext();
-            TokenSequence<PHPDocCommentTokenId> tokenSequence = phpTS.embedded(PHPDocCommentTokenId.language());
+            TokenSequence<PHPDocCommentTokenId> tokenSequence = phpTS.moveNext() ? phpTS.embedded(PHPDocCommentTokenId.language()) : null;
             if (tokenSequence == null) {
                 return false;
             }

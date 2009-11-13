@@ -217,6 +217,10 @@ public class JsAnalyzer implements StructureScanner {
 
                             // find the nearest { and start the fold here. 
                             int index = start;
+                            if (index >= text.length()) {
+                                // it can happen, if the javascript is on one line. see issue #174634
+                                break;
+                            }
                             char c = text.charAt(index);
                             if (c == '\n') {
                                 //skip new line at the end of the line
