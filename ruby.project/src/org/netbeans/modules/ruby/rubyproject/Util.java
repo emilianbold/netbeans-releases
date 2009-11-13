@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.ruby.rubyproject;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -48,6 +50,7 @@ import java.util.logging.Logger;
 import javax.swing.JComboBox;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.RubyUtils;
@@ -55,6 +58,7 @@ import org.netbeans.modules.ruby.platform.PlatformComponentFactory;
 import org.netbeans.modules.ruby.platform.RubyPreferences;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -219,4 +223,27 @@ public final class Util {
         return null;
     }
 
+    /**
+     * Returns <code>true</code> if the folder is already a project (the project could be only in memory).
+     * @param folder a folder to check (can be non-existing folder)
+     * @return <code>true</code> if the folder is already a project (the project could be only in memory)
+     */
+    public static boolean isProjectAlready(File folder) {
+        if (!folder.exists()) {
+            return false;
+        }
+        assert folder.isDirectory() : "Directory must be given: " + folder;
+
+        Project prj = null;
+        boolean foundButBroken = false;
+        try {
+            prj = ProjectManager.getDefault().findProject(FileUtil.toFileObject(folder));
+        } catch (IOException ex) {
+            foundButBroken = true;
+        } catch (IllegalArgumentException ex) {
+            // we have passed non-folder - should be already handled
+            assert false : "Should not get here";
+        }
+        return prj != null || foundButBroken;
+    }
 }
