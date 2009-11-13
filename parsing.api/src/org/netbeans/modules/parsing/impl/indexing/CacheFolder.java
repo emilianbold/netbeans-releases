@@ -47,10 +47,11 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -58,6 +59,8 @@ import org.openide.util.Exceptions;
  */
 public final class CacheFolder {
 
+    private static final Logger LOG = Logger.getLogger(CacheFolder.class.getName());
+    
     private static final String NB_USER_DIR = "netbeans.user";   //NOI18N
     private static final String INDEX_DIR = "var"+File.separatorChar+"cache"+File.separatorChar+"index";    //NOI18N
     private static final String SEGMENTS_FILE = "segments";      //NOI18N
@@ -90,7 +93,7 @@ public final class CacheFolder {
                 try {
                     index = Math.max (index,Integer.parseInt(segment.substring(SLICE_PREFIX.length())));
                 } catch (NumberFormatException nfe) {
-                    Exceptions.printStackTrace(nfe);
+                    LOG.log(Level.FINE, null, nfe);
                 }
             }
         }
@@ -122,7 +125,7 @@ public final class CacheFolder {
             try {
                 return new URL (source);
             } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
+                LOG.log(Level.FINE, null, ioe);
             }
         }
         return null;

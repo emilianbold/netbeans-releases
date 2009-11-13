@@ -181,14 +181,12 @@ import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
 import org.netbeans.modules.parsing.impl.indexing.FileObjectIndexable;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
-import org.netbeans.modules.parsing.impl.indexing.SupportAccessor;
 import org.netbeans.modules.parsing.impl.indexing.lucene.LuceneIndexFactory;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexer;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
-import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcher;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcherFactory;
 import org.netbeans.spi.editor.bracesmatching.MatcherContext;
@@ -1507,9 +1505,9 @@ public abstract class CslTestBase extends NbTestCase {
                 }
             });
         } finally {
-            IndexingSupport support = SPIAccessor.getInstance().context_getAttachedIndexingSupport(context);
-            if (support != null) {
-                SupportAccessor.getInstance().store(support,true);
+            IndexImpl index = SPIAccessor.getInstance().getIndexFactory(context).getIndex(context.getIndexFolder());
+            if (index != null) {
+                index.store(true, Collections.singleton(indexable));
             }
         }
 
@@ -4216,8 +4214,8 @@ public abstract class CslTestBase extends NbTestCase {
             documents.keySet().removeAll(toRemove);
         }
 
-        public void store(boolean optimize) throws IOException {
-            original.store(optimize);
+        public void store(boolean optimize, Iterable<Indexable> indexedIndexables) throws IOException {
+            original.store(optimize, indexedIndexables);
         }
 
         public Collection<? extends IndexDocumentImpl> query(String fieldName, String value, Kind kind, String... fieldsToLoad) throws IOException {

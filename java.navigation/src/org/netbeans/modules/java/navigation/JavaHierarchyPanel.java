@@ -625,7 +625,7 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
     private void close() {
         Window window = SwingUtilities.getWindowAncestor(JavaHierarchyPanel.this);
         if (window != null) {
-            window.setVisible(false);
+            ResizablePopup.cleanup(window);
         }
     }
 

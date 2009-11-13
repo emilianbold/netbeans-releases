@@ -40,25 +40,33 @@
 package org.netbeans.modules.parsing.impl.indexing;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 /**
  * Iterable over list of lists
  * @author Tomas Zezula
  */
 //@NotThreadSafe
-class ProxyIterable<T> implements Iterable<T> {
+final class ProxyIterable<T> implements Iterable<T> {
 
     private final Collection<? extends Iterable<? extends T>> delegates;
+    private final boolean allowDuplicates;
 
     public ProxyIterable(Collection<? extends Iterable<? extends T>> delegates) {
+        this(delegates, true);
+    }
+
+    public ProxyIterable(Collection<? extends Iterable<? extends T>> delegates, boolean allowDuplicates) {
         assert delegates != null;
         this.delegates = delegates;
+        this.allowDuplicates = allowDuplicates;
     }
 
     public Iterator<T> iterator() {
-        return new ProxyIterator<T>(delegates.iterator());
+        return new ProxyIterator<T>(delegates.iterator(), allowDuplicates);
     }
 
     @Override
@@ -66,39 +74,57 @@ class ProxyIterable<T> implements Iterable<T> {
         return "ProxyIterable@" + Integer.toHexString(System.identityHashCode(this)) + " [" + delegates + "]"; //NOI18N
     }
 
-    private class ProxyIterator<T> implements Iterator<T> {
+    private static final class ProxyIterator<T> implements Iterator<T> {
 
-        private Iterator<? extends Iterable< ? extends T>> it;
-        private Iterator<? extends T> current;
+        private final Iterator<? extends Iterable< ? extends T>> iterables;
+        private final Set<T> seen;
+        
+        private Iterator<? extends T> currentIterator;
+        private T currentObject;
 
-        public ProxyIterator(Iterator<? extends Iterable< ? extends T>> it) {
-            assert it != null;
-            this.it = it;
+        public ProxyIterator(Iterator<? extends Iterable< ? extends T>> iterables, boolean allowDuplicates) {
+            assert iterables != null;
+            this.iterables = iterables;
+            this.seen = allowDuplicates ? null : new HashSet<T>();
         }
 
         public boolean hasNext() {
-            return getCurrent() != null;
+            return getCurrent(false) != null;
         }
 
         public T next() {
-            Iterator<? extends T> curIt =  getCurrent();
-            if (curIt == null) {
+            T curObj =  getCurrent(true);
+            if (curObj == null) {
                 throw new NoSuchElementException();
             }
-            return curIt.next();
+            return curObj;
         }
 
-        private Iterator<? extends T> getCurrent() {
-            if (current != null && current.hasNext()) {
-                return current;
+        private T getCurrent(boolean move) {
+            if (currentObject != null && !move) {
+                return currentObject;
             }
-            while (it.hasNext()) {
-                current = it.next().iterator();
-                if (current.hasNext()) {
-                    return current;
+            
+            T oldCurObj = currentObject;
+            for(;;) {
+                if (currentIterator != null) {
+                    while(currentIterator.hasNext()) {
+                        T o = currentIterator.next();
+                        if (seen == null || seen.add(o)) {
+                            currentObject = o;
+                            return oldCurObj != null ? oldCurObj : currentObject;
+                        }
+                    }
                 }
-            }
-            return null;
+
+                if (iterables.hasNext()) {
+                    currentIterator = iterables.next().iterator();
+                } else {
+                    currentIterator = null;
+                    currentObject = null;
+                    return oldCurObj;
+                }
+            } 
         }
 
         public void remove() {

@@ -236,6 +236,10 @@ public final class QuerySupport {
             final Kind kind,
             final String... fieldsToLoad
     ) throws IOException {
+        Parameters.notNull("fieldName", fieldName); //NOI18N
+        Parameters.notNull("fieldValue", fieldValue); //NOI18N
+        Parameters.notNull("kind", kind); //NOI18N
+
         // check if there are stale indices
         for (Map.Entry<URL, IndexImpl> ie : indexes.entrySet()) {
             final IndexImpl index = ie.getValue();

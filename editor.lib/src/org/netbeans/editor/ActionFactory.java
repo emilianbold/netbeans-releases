@@ -1698,7 +1698,7 @@ public class ActionFactory {
                 }, NbBundle.getMessage(FormatAction.class, "Format_in_progress"), canceled, false); //NOI18N
                 } catch (Exception e) {
                     // not sure about this, but was getting j.l.Exception that the operation is too slow - wtf?
-                    Logger.getLogger(FormatAction.class.getName()).log(Level.INFO, null, e);
+                    Logger.getLogger(FormatAction.class.getName()).log(Level.FINE, null, e);
                 }
             }
         }
