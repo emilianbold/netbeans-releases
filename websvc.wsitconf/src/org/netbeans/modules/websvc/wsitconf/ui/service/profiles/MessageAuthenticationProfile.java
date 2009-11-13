@@ -49,6 +49,7 @@ import org.netbeans.modules.websvc.wsitconf.spi.features.AdvancedSecurityFeature
 import org.netbeans.modules.websvc.wsitconf.spi.features.ClientDefaultsFeature;
 import org.netbeans.modules.websvc.wsitconf.spi.features.SecureConversationFeature;
 import org.netbeans.modules.websvc.wsitconf.spi.features.ServiceDefaultsFeature;
+import org.netbeans.modules.websvc.wsitconf.spi.features.TrustStoreFeature;
 import org.netbeans.modules.websvc.wsitconf.spi.features.ValidatorsFeature;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitconf.util.UndoCounter;
@@ -68,6 +69,7 @@ import org.netbeans.modules.websvc.wsitmodelext.security.TransportBinding;
 import org.netbeans.modules.websvc.wsitmodelext.security.TrustElement;
 import org.netbeans.modules.websvc.wsitmodelext.security.WssElement;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.CallbackHandler;
+import org.netbeans.modules.websvc.wsitmodelext.security.tokens.SecureConversationToken;
 import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
@@ -82,7 +84,7 @@ import org.openide.DialogDisplayer;
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.wsitconf.spi.SecurityProfile.class)
 public class MessageAuthenticationProfile extends ProfileBase 
-        implements SecureConversationFeature,ClientDefaultsFeature,ServiceDefaultsFeature,ValidatorsFeature, AdvancedSecurityFeature {
+        implements SecureConversationFeature,ClientDefaultsFeature,ServiceDefaultsFeature,ValidatorsFeature, AdvancedSecurityFeature, TrustStoreFeature {
 
     private static final String DEFAULT_USERNAME = "wsit";
     private static final String DEFAULT_PASSWORD = "wsitPassword";
@@ -265,4 +267,30 @@ public class MessageAuthenticationProfile extends ProfileBase
     public boolean isValidatorSupported(ConfigVersion cfgVersion, String validatorType) {
         return true;
     }
+
+    public boolean isTrustStoreRequired(WSDLComponent component, boolean client) {
+        WSDLComponent secBinding = null;
+        WSDLComponent endToken = SecurityTokensModelHelper.getSupportingToken(component, SecurityTokensModelHelper.ENDORSING);
+        WSDLComponent secConvT = SecurityTokensModelHelper.getTokenElement(endToken, SecureConversationToken.class);
+        boolean secConv = (secConvT instanceof SecureConversationToken);
+
+        if (secConv) {
+            WSDLComponent bootPolicy = SecurityTokensModelHelper.getTokenElement(secConvT, BootstrapPolicy.class);
+            secBinding = SecurityPolicyModelHelper.getSecurityBindingTypeElement(bootPolicy);
+            Policy p = (Policy) secBinding.getParent();
+            p = PolicyModelHelper.getTopLevelElement(bootPolicy, Policy.class,false);
+            WSDLComponent tokenKind = SecurityTokensModelHelper.getSupportingToken(p, SecurityTokensModelHelper.ENDORSING);
+            if (tokenKind == null) {
+                return false;
+            }
+        } else {
+            secBinding = SecurityPolicyModelHelper.getSecurityBindingTypeElement(component);
+            WSDLComponent tokenKind = SecurityTokensModelHelper.getSupportingToken(component, SecurityTokensModelHelper.ENDORSING);
+            if (tokenKind == null) {
+                return false;
+            }
+        }
+        return true;
+    }
+
 }

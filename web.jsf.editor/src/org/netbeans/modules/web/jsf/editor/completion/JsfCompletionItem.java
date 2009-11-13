@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.web.jsf.editor.completion;
 
-import java.awt.Color;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
@@ -52,6 +51,9 @@ import org.openide.util.NbBundle;
  * @author marekfukala
  */
 public class JsfCompletionItem {
+
+    //html items priority varies from 10 to 20
+    private static final int JSF_DEFAULT_SORT_PRIORITY = 5;
 
     //----------- Factory methods --------------
     public static JsfTag createTag(int substitutionOffset, FaceletsLibrary.NamedComponent component, String declaredPrefix, boolean autoimport) {
@@ -111,7 +113,7 @@ public class JsfCompletionItem {
 
         @Override
         public int getSortPriority() {
-            return DEFAULT_SORT_PRIORITY - 5;
+            return JSF_DEFAULT_SORT_PRIORITY; //jsf tags are more important than html content
         }
 
         @Override

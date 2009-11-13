@@ -88,6 +88,10 @@ public class PHPFormatterQATest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/173354_3.php");
     }
 
+    public void test173107_stableFixed() throws Exception {
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/173107.php");
+    }
+
     /**
      * issue 160996
      * @throws Exception

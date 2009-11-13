@@ -37,34 +37,14 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.jsf.editor.tld;
+package org.netbeans.modules.websvc.wsitconf.spi.features;
 
-import java.util.HashMap;
-import java.util.Map;
+import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 
 /**
  *
- * @author marekfukala
+ * @author snajper
  */
-public class TldUtils {
-
-    private static Map<String, String> JSF_LIBRARY_DISPLAY_NAMES;
-
-
-    /** A workaround for missing <display-name> entry in jsf libraries. */
-    public static synchronized String getLibraryDisplayName(String libraryUri) {
-        if(JSF_LIBRARY_DISPLAY_NAMES == null) {
-            JSF_LIBRARY_DISPLAY_NAMES = new HashMap<String, String>();
-            
-            JSF_LIBRARY_DISPLAY_NAMES.put("http://java.sun.com/jsf/facelets", "Facelets"); //NOI18N
-            JSF_LIBRARY_DISPLAY_NAMES.put("http://mojarra.dev.java.net/mojarra_ext", "Mojarra Extensions"); //NOI18N
-            JSF_LIBRARY_DISPLAY_NAMES.put("http://java.sun.com/jsf/composite", "Composite Components"); //NOI18N
-            JSF_LIBRARY_DISPLAY_NAMES.put("http://java.sun.com/jsf/html", "Html Basic"); //NOI18N
-            JSF_LIBRARY_DISPLAY_NAMES.put("http://java.sun.com/jsf/core", "Jsf Core"); //NOI18N
-            JSF_LIBRARY_DISPLAY_NAMES.put("http://java.sun.com/jsp/jstl/core", "Jstl Core"); //NOI18N
-        }
-        
-        return JSF_LIBRARY_DISPLAY_NAMES.get(libraryUri);
-    }
-
+public interface TrustStoreFeature {
+    public boolean isTrustStoreRequired(WSDLComponent component, boolean client);
 }
