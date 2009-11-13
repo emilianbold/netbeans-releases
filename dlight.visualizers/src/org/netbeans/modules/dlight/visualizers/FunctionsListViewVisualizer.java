@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.dlight.visualizers;
 
-import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.dlight.spi.SourceSupportProvider;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -51,12 +50,12 @@ import java.awt.event.ComponentListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -143,15 +142,14 @@ public class FunctionsListViewVisualizer extends JPanel implements
     private static final boolean isMacLaf = "Aqua".equals(UIManager.getLookAndFeel().getID()); // NOI18N
     private static final Color macBackground = UIManager.getColor("NbExplorerView.background"); // NOI18N
     private static final boolean useHtmlFormat;
-    private static final String htmlEnabledDisplayNameFormat;
-    private static final String htmlDisabledDisplayNameFormat;
+    private static final String htmlDisabledColorFormat;
 //    private final FocusTraversalPolicy focusPolicy = new FocusTraversalPolicyImpl() ;
     private Map<Integer, Boolean> ascColumnValues = new HashMap<Integer, Boolean>();
     private final SourceSupportProvider sourceSupportProvider;
 
     static {
-        Boolean property = Boolean.getBoolean("FunctionsListViewVisualizer.usehtml"); // NOI18N
-        useHtmlFormat = property == null || Boolean.TRUE.equals(property);
+        String property = System.getProperty("FunctionsListViewVisualizer.usehtml", "true"); // NOI18N
+        useHtmlFormat = "true".equalsIgnoreCase(property); // NOI18N
 
         Color dlc = UIManager.getDefaults().getColor("Label.disabledForeground"); // NOI18N
 
@@ -159,10 +157,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
             dlc = Color.GRAY;
         }
 
-        String colorPrefix = String.format("<font color='#%02x%02x%02x'>", dlc.getRed(), dlc.getGreen(), dlc.getBlue()); // NOI18N
-        String colorSuffix = "</font>"; // NOI18N
-        htmlEnabledDisplayNameFormat = "<html><b>%s</b>" + colorPrefix + "&nbsp;%s&nbsp;%s" + colorSuffix + "</html>"; // NOI18N
-        htmlDisabledDisplayNameFormat = "<html>" + colorPrefix + "%s" + colorSuffix + "</html>"; // NOI18N
+        htmlDisabledColorFormat = String.format("<font color='#%02x%02x%02x'>", dlc.getRed(), dlc.getGreen(), dlc.getBlue()) + "%s</font>"; // NOI18N
     }
 
     public FunctionsListViewVisualizer(FunctionsListDataProvider dataProvider, FunctionsListViewVisualizerConfiguration configuration) {
@@ -382,38 +377,37 @@ public class FunctionsListViewVisualizer extends JPanel implements
         }
     }
 
-    private void asyncNotifyAnnotedSourceProviders(boolean cancelIfNotDone) {
-        synchronized (detailsQueryLock) {
-            if (detailedTask != null && !detailedTask.isDone()) {
-                if (cancelIfNotDone) {
-                    detailedTask.cancel(true);
-                } else {
-                    return;
-                }
-            }
-
-            detailedTask = DLightExecutorService.submit(new Callable<Boolean>() {
-
-                public Boolean call() {
-                    List<FunctionCallWithMetric> detailedCallsList =
-                            dataProvider.getDetailedFunctionsList(metadata, functionDatatableDescription, metrics);
-                    List<FunctionCallWithMetric> functionsList = Collections.<FunctionCallWithMetric>emptyList();
-                    if (!dataProvider.hasTheSameDetails(metadata, functionDatatableDescription, metrics)) {
-                        functionsList =
-                                (explorerManager.getRootContext() != null &&
-                                explorerManager.getRootContext().getChildren() != null &&
-                                explorerManager.getRootContext().getChildren() instanceof FunctionCallChildren) ? ((FunctionCallChildren) explorerManager.getRootContext().getChildren()).list : Collections.<FunctionCallWithMetric>emptyList();
-                    }
-
-                    asyncNotifyAnnotedSourceProviders(functionsList, detailedCallsList);
-                    return Boolean.TRUE;
-                }
-            }, "FunctionsListViewVisualizer Async Detailed data load for " + // NOI18N
-                    configuration.getID() + " from main table " + // NOI18N
-                    configuration.getMetadata().getName());
-        }
-    }
-
+//    private void asyncNotifyAnnotedSourceProviders(boolean cancelIfNotDone) {
+//        synchronized (detailsQueryLock) {
+//            if (detailedTask != null && !detailedTask.isDone()) {
+//                if (cancelIfNotDone) {
+//                    detailedTask.cancel(true);
+//                } else {
+//                    return;
+//                }
+//            }
+//
+//            detailedTask = DLightExecutorService.submit(new Callable<Boolean>() {
+//
+//                public Boolean call() {
+//                    List<FunctionCallWithMetric> detailedCallsList =
+//                            dataProvider.getDetailedFunctionsList(metadata, functionDatatableDescription, metrics);
+//                    List<FunctionCallWithMetric> functionsList = Collections.<FunctionCallWithMetric>emptyList();
+//                    if (!dataProvider.hasTheSameDetails(metadata, functionDatatableDescription, metrics)) {
+//                        functionsList =
+//                                (explorerManager.getRootContext() != null &&
+//                                explorerManager.getRootContext().getChildren() != null &&
+//                                explorerManager.getRootContext().getChildren() instanceof FunctionCallChildren) ? ((FunctionCallChildren) explorerManager.getRootContext().getChildren()).list : Collections.<FunctionCallWithMetric>emptyList();
+//                    }
+//
+//                    asyncNotifyAnnotedSourceProviders(functionsList, detailedCallsList);
+//                    return Boolean.TRUE;
+//                }
+//            }, "FunctionsListViewVisualizer Async Detailed data load for " + // NOI18N
+//                    configuration.getID() + " from main table " + // NOI18N
+//                    configuration.getMetadata().getName());
+//        }
+//    }
     private void asyncNotifyAnnotedSourceProviders(final List<FunctionCallWithMetric> functionsList, final List<FunctionCallWithMetric> list) {
         if (Thread.currentThread().isInterrupted()) {
             return;
@@ -668,7 +662,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
         private final FunctionCallWithMetric functionCall;
         private PropertySet propertySet;
         private final Action[] actions;
-        private final Action goToSourceAction;
+        private final GoToSourceAction goToSourceAction;
 
         FunctionCallNode(FunctionCallWithMetric row) {
             super(Children.LEAF);
@@ -724,7 +718,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
             return null;
         }
 
-        Action getGoToSourceAction() {
+        GoToSourceAction getGoToSourceAction() {
             return goToSourceAction;
         }
 
@@ -759,35 +753,42 @@ public class FunctionsListViewVisualizer extends JPanel implements
         public String getHtmlDisplayName() {
             String dispName = functionCall.getDisplayedName().trim();
 
-            // Do some decoration...
-            // TODO: IMO all additional information (like sourcefile info)
-            // should be retrieved separately and not with getDisplayedName
-
             int idx = dispName.indexOf(';');
-            String sourceInfo = null;
-            String funcname = null;
-            String infoPrefix = null;
 
             if (idx > 0) {
-                funcname = dispName.substring(0, idx).trim();
-                sourceInfo = dispName.substring(idx + 1).trim();
-                infoPrefix = sourceInfo.indexOf(':') > 0
-                        ? NbBundle.getMessage(FunctionsListViewVisualizer.class, "FunctionCallNode.prefix.withLine") // NOI18N
-                        : NbBundle.getMessage(FunctionsListViewVisualizer.class, "FunctionCallNode.prefix.withoutLine"); // NOI18N
-            } else {
-                funcname = dispName;
+                dispName = dispName.substring(0, idx).trim();
             }
 
-            funcname = funcname.replace("&", "&amp;"); // NOI18N
-            funcname = funcname.replace("<", "&lt;"); // NOI18N
-            funcname = funcname.replace(">", "&gt;"); // NOI18N
-            funcname = funcname.replace(" ", "&nbsp;"); // NOI18N
+            dispName = dispName.replace("&", "&amp;"); // NOI18N
+            dispName = dispName.replace("<", "&lt;"); // NOI18N
+            dispName = dispName.replace(">", "&gt;"); // NOI18N
+            dispName = dispName.replace(" ", "&nbsp;"); // NOI18N
 
-            dispName = (sourceInfo == null)
-                    ? String.format(htmlDisabledDisplayNameFormat, funcname)
-                    : String.format(htmlEnabledDisplayNameFormat, funcname, infoPrefix, sourceInfo);
+            final GoToSourceAction action = getGoToSourceAction();
+            StringBuilder result = new StringBuilder("<html>"); // NOI18N
 
-            return dispName;
+            String infoSuffix = null;
+
+            if (action.isEnabled()) {
+                result.append("<b>" + dispName + "</b>&nbsp;"); // NOI18N
+
+                SourceFileInfo sourceInfo = action.getSource();
+                if (sourceInfo != null && sourceInfo.isSourceKnown()) {
+                    String fname = new File(sourceInfo.getFileName()).getName();
+                    int line = sourceInfo.getLine();
+                    String infoPrefix = line > 0
+                            ? NbBundle.getMessage(FunctionsListViewVisualizer.class, "FunctionCallNode.prefix.withLine") // NOI18N
+                            : NbBundle.getMessage(FunctionsListViewVisualizer.class, "FunctionCallNode.prefix.withoutLine"); // NOI18N
+
+                    infoSuffix = infoPrefix + "&nbsp;" + fname + (line > 0 ? ":" + line : ""); // NOI18N
+                    result.append(String.format(htmlDisabledColorFormat, infoSuffix));
+                }
+            } else {
+                result.append(String.format(htmlDisabledColorFormat, dispName));
+            }
+
+            result.append("</html>"); // NOI18N
+            return result.toString();
         }
 
         @Override
@@ -799,7 +800,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
     private class GoToSourceAction extends AbstractAction {
 
         private final FunctionCallNode functionCallNode;
-        private final Future<SourceFileInfo> futureSourceInfo;
+        private SourceFileInfo sourceInfo;
         private Future<Boolean> goToSourceTask;
 
         public GoToSourceAction(FunctionCallNode funcCallNode) {
@@ -812,10 +813,21 @@ public class FunctionsListViewVisualizer extends JPanel implements
                 }
             }
 
-            futureSourceInfo = sourcePrefetchExecutor.submit(new Callable<SourceFileInfo>() {
+            sourcePrefetchExecutor.submit(new Runnable() {
 
-                public SourceFileInfo call() throws Exception {
-                    return getSource();
+                public void run() {
+                    FunctionCallWithMetric functionCall = functionCallNode.getFunctionCall();
+                    SourceFileInfo result = dataProvider.getSourceFileInfo(functionCall);
+
+                    if (result != null && result.isSourceKnown()) {
+                        setEnabled(true);
+                    }
+
+                    synchronized (this) {
+                        sourceInfo = result;
+                    }
+
+                    functionCallNode.fire();
                 }
             });
 
@@ -831,38 +843,20 @@ public class FunctionsListViewVisualizer extends JPanel implements
             goToSourceTask = DLightExecutorService.submit(new Callable<Boolean>() {
 
                 public Boolean call() {
-                    return goToSource();
+                    SourceFileInfo source = getSource();
+
+                    if (source == null || !source.isSourceKnown()) {
+                        return false;
+                    }
+
+                    sourceSupportProvider.showSource(source);
+                    return true;
                 }
             }, "GoToSource from Functions List View"); // NOI18N
         }
 
-        private boolean goToSource() {
-            try {
-                SourceFileInfo source = futureSourceInfo.get();
-                if (source != null && source.isSourceKnown()) {
-                    sourceSupportProvider.showSource(source);
-                    return true;
-                }
-            } catch (InterruptedException ex) {
-                // OK. just skip
-            } catch (ExecutionException ex) {
-                log.fine(ex.getMessage());
-            }
-
-            return false;
-        }
-
-        private SourceFileInfo getSource() {
-            FunctionCallWithMetric functionCall = functionCallNode.getFunctionCall();
-            SourceFileInfo result = dataProvider.getSourceFileInfo(functionCall);
-
-            if (result != null && result.isSourceKnown()) {
-                setEnabled(true);
-            }
-
-            functionCallNode.fire();
-
-            return result;
+        private synchronized SourceFileInfo getSource() {
+            return sourceInfo;
         }
     }
 
