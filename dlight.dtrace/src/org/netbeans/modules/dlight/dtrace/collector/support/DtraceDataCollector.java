@@ -489,13 +489,7 @@ public final class DtraceDataCollector
     public ValidationStatus validate(final DLightTarget target) {
         ValidationStatus status = validate(target, this, true);
         if (status.isValid()) {
-            String tool;
-            if (SunStudioUserCounter.getIDEType() == SunStudioUserCounter.IDEType.DLIGHTTOOL) {
-                tool = "dlight"; // NOI18N
-            } else {
-                tool = "dlightss"; // NOI18N
-            }
-            SunStudioUserCounter.countTool(SunStudioUserCounter.getSunStudioBinDir(), target.getExecEnv(), tool);
+            SunStudioUserCounter.countDLight(target.getExecEnv());
         }
         return status;
     }

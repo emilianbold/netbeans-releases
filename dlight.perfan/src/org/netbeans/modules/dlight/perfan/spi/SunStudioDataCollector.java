@@ -299,15 +299,7 @@ public class SunStudioDataCollector
             cmd = command;
             sproHome = sprohome;
             validatedTarget = target;
-            if (sprohome != null) {
-                String ssBin;
-                if (!sprohome.endsWith("/") && !sprohome.endsWith("\\")) { // NOI18N
-                    ssBin = sprohome + "/bin/";// NOI18N
-                } else {
-                    ssBin = sprohome + "bin/";// NOI18N
-                }
-                SunStudioUserCounter.countTool(ssBin, execEnv, "gizmo"); // NOI18N
-            }
+            SunStudioUserCounter.countGizmo(sprohome, execEnv); // NOI18N
             return validationStatus;
         }
     }
