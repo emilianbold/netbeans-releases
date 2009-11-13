@@ -121,7 +121,7 @@ public class CPExtenderTest extends TestCase {
         result = CPExtender.checkLibrary(pom, repos);
         assertNotNull(result);
         assertEquals("default", result[0]);
-        assertEquals("http://ftp.ing.umu.se/mirror/eclipse/rt/eclipselink/maven.repo/", result[1]);
+        assertEquals("http://ftp.ing.umu.se/mirror/eclipse/rt/eclipselink/maven.repo", result[1]);
         assertEquals("org.eclipse.persistence", result[2]);
         assertEquals("javax.persistence", result[3]);
         assertEquals("2.0.0-M12", result[4]);
