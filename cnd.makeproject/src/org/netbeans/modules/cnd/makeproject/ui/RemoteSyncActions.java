@@ -344,7 +344,7 @@ class RemoteSyncActions {
             JMenuItem itemUpload = new JMenuItem(NbBundle.getMessage(getClass(), "LBL_UploadAction_Name", hostName));
             itemUpload.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    RequestProcessor.getDefault().post(new NamedRunnable("Uploading to " + hostName) {
+                    RequestProcessor.getDefault().post(new NamedRunnable("Uploading to " + hostName) { // NOI18N
                         @Override
                         protected void runImpl() {
                             upload(execEnv, activatedNodes);
@@ -357,7 +357,7 @@ class RemoteSyncActions {
             JMenuItem itemDownload = new JMenuItem(NbBundle.getMessage(getClass(), "LBL_DownloadAction_Name", hostName));
             itemDownload.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    RequestProcessor.getDefault().post(new NamedRunnable("Uploading to " + hostName) {
+                    RequestProcessor.getDefault().post(new NamedRunnable("Uploading to " + hostName) { // NOI18N
                         @Override
                         protected void runImpl() {
                             download(execEnv, activatedNodes);
