@@ -61,6 +61,7 @@ import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.xml.parsers.ParserConfigurationException;
+import org.netbeans.modules.project.libraries.ui.LibrariesCustomizer;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
 import org.openide.filesystems.FileChangeAdapter;
@@ -178,6 +179,7 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
                             }
                             librariesByFileNames.put(descriptorFile.getPath(),impl);
                             libraries.put (impl.getName(),impl);
+                            LibrariesCustomizer.registerSource(impl, descriptorFile);
                         }
                     }
                 } catch (SAXException e) {
@@ -238,6 +240,7 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
         LibraryDeclarationParser parser = new LibraryDeclarationParser(handler,convertor);
         handler.setLibrary (impl);
         readLibrary (descriptorFile, parser);
+        LibrariesCustomizer.registerSource(impl, descriptorFile);
         return handler.getLibrary();
     }
 

@@ -25,8 +25,8 @@ import org.openide.util.NbBundle;
 
 public final class EjbFacadeVisualPanel2 extends JPanel implements DocumentListener {
     
-    private static final String CLASSNAME_LOCAL = NbBundle.getMessage(EjbFacadeVisualPanel2.class, "LBL_GeneratedFacadeLocal");
-    private static final String CLASSNAME_REMOTE = NbBundle.getMessage(EjbFacadeVisualPanel2.class, "LBL_GeneratedFacadeRemote");
+    private final String CLASSNAME_LOCAL = NbBundle.getMessage(EjbFacadeVisualPanel2.class, "LBL_GeneratedFacadeLocal");
+    private final String CLASSNAME_REMOTE = NbBundle.getMessage(EjbFacadeVisualPanel2.class, "LBL_GeneratedFacadeRemote");
     
     private WizardDescriptor wizard;
     private Project project;

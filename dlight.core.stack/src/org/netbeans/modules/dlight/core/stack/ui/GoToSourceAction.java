@@ -60,7 +60,7 @@ class GoToSourceAction extends AbstractAction {
 
     private final FunctionCall functionCall;
     private final Future<SourceFileInfo> sourceFileInfoTask;
-    private boolean isEnabled = true;
+    private boolean isEnabled = false;
     private boolean gotTheInfo = false;
     private final GoToSourceActionReadnessListener listener;
 

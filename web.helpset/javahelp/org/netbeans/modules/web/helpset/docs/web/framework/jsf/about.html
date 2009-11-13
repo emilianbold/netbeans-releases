@@ -1,0 +1,169 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<!--
+ *       Copyright © 2009 Sun Microsystems, Inc. All rights reserved.
+ *       Use is subject to license terms.
+-->
+
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <title>About JavaServer Faces Framework Support</title>
+        <link href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css"
+            rel="stylesheet" type="text/css">
+    </head>
+
+    <body>
+        <h2>About JavaServer Faces Framework Support</h2>
+
+        <p><small><a href="#seealso">See Also</a></small></p>
+
+        <p>Sun's JavaServer Faces (JSF) technology is a server-side user interface
+            component framework for building Java technology-based web applications.
+            The main components of JavaServer Faces technology are as follows:</p>
+
+        <ul>
+            <li>An API for representing UI components and managing their state; handling
+                events, server-side validation, and data conversion; defining page navigation;
+                supporting internationalization and accessibility; and providing extensibility
+                for all these features.</li>
+
+            <li>Various tag libraries for expressing UI components within web pages and for
+                wiring components to server-side objects</li>
+        </ul>
+
+        <p>JavaServer Faces technology provides a well-defined programming model and various
+            tag libraries. These features significantly ease the burden of building and
+            maintaining web applications with server-side UIs. With minimal effort, you can:</p>
+
+        <ul>
+            <li>Construct a UI with reusable and extensible components</li>
+            <li>Drop components onto a page by adding component tags</li>
+            <li>Wire component-generated events to server-side application code</li>
+            <li>Bind UI components on a page to server-side data</li>
+            <li>Save and restore UI state beyond the life of server requests</li>
+        </ul>
+
+        <p>For a complete description of the JSF framework, including documentation
+            and tutorials, see:</p>
+
+        <p>
+            <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                <param name="content" value="http://java.sun.com/javaee/javaserverfaces/index.jsp">
+                <param name="text" value="<html><u>http://java.sun.com/javaee/javaserverfaces/index.jsp</u></html>">
+                <param name="textFontSize" value="medium">
+                <param name="textColor" value="blue">
+            </object>
+        </p>
+
+        <p>The IDE provides functional support for the JavaServer Faces framework by including
+            the following features:</p>
+
+        <ul>
+            <li><a href="create.html">Project creation support</a>: The JavaServer Faces structural
+                template is included in the Frameworks panel of the New Web Application wizard,
+                enabling you to create new projects with built-in JSF support.</li>
+
+            <li><a href="edit.html">Editor support</a>: Editor support is provided for Facelets
+                pages and configuration files.</li>
+
+            <li><a href="palette.html">Palette support</a>: JSF tags are added to the Palette as
+                drag-and-drop components.</li>
+
+            <li><strong>Wizard support</strong>: Numerous wizards become available for
+                quick code template generation, including:
+
+                <ul>
+                    <li><a href="create-page.html">JSF Page wizard</a> to create Facelets and JSP pages</li>
+
+                    <li><a href="create-managed-bean.html">JSF Managed Bean wizard</a> to create a
+                        managed bean and register it with the application</li>
+
+                    <li><a href="pages-from-entities.html">JSF Pages from Entity Classes wizard</a>
+                        to generate a collection of files, classes and front-end pages for CRUD
+                        functionality with a back-end data store.</li>
+
+                    <li><a href="#">Facelets Template wizard</a> to create a Facelets template.
+                        The wizard provides numerous layout options.</li>
+
+                    <li><a href="#">Composite Component wizard</a> for creating composite user
+                        interface (UI) components, which can be reused in web pages.</li>
+                </ul></li>
+        </ul>
+
+        <ul class="note">
+            <li>Because JSF 2.0 (JSR-314) requires Java EE 6, support for JSF 2.0 is available
+                based on your project's Java EE version. IDE continues to provide support for
+                JSF 1.2 (JSR 127). This support is automatically available to you if your project
+                does not rely on Java EE 6.</li>
+        </ul>
+
+        <p>For more information on the JSF Framework, see the following resources:</p>
+
+        <h4>NetBeans Documentation:</h4>
+
+        <ul>
+            <li>JSF 2.0 Support in NetBeans IDE 6.8:<br>
+                <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                    <param name="content" value="http://www.netbeans.org/kb/docs/web/jsf20-support.html">
+                    <param name="text" value="&lt;html&gt;&lt;u&gt;http://www.netbeans.org/kb/docs/web/jsf20-support.html&lt;/u&gt;&lt;/html&gt;">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue">
+                </object></li>
+
+            <li>Generating a JavaServer Faces 2.0 CRUD Application from a Database:<br>
+                <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                    <param name="content" value="http://netbeans.org/kb/docs/web/jsf-crud.html">
+                    <param name="text" value="&lt;html&gt;&lt;u&gt;http://netbeans.org/kb/docs/web/jsf-crud.html&lt;/u&gt;&lt;/html&gt;">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue">
+                </object></li>
+
+            <li>Introduction to JSF 2.0:<br>
+                <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                    <param name="content" value="http://www.netbeans.org/kb/docs/web/jsf20-intro.html">
+                    <param name="text" value="&lt;html&gt;&lt;u&gt;http://www.netbeans.org/kb/docs/web/jsf20-intro.html&lt;/u&gt;&lt;/html&gt;">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue">
+                </object></li>
+
+            <li>Introduction to JSF 1.2:<br>
+                <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                    <param name="content" value="http://www.netbeans.org/kb/67/web/jastrologer-intro.html">
+                    <param name="text" value="&lt;html&gt;&lt;u&gt;http://www.netbeans.org/kb/67/web/jastrologer-intro.html&lt;/u&gt;&lt;/html&gt;">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue">
+                </object></li>
+        </ul>
+
+        <h4>External Resources:</h4>
+
+        <ul>
+            <li>Official JavaServer Faces Framework documentation:<br>
+                <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                    <param name="content" value="http://java.sun.com/javaee/javaserverfaces/reference/docs/">
+                    <param name="text" value="&lt;html&gt;&lt;u&gt;http://java.sun.com/javaee/javaserverfaces/reference/docs/&lt;/u&gt;&lt;/html&gt;">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue">
+                </object></li>
+
+            <li>The Java EE 6 Tutorial, Chapter 5: JavaServer Faces Technology<br>
+                <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                    <param name="content" value="http://java.sun.com/javaee/6/docs/tutorial/doc/bnaph.html">
+                    <param name="text" value="&lt;html&gt;&lt;u&gt;http://java.sun.com/javaee/6/docs/tutorial/doc/bnaph.html&lt;/u&gt;&lt;/html&gt;">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue">
+                </object></li>
+        </ul>
+
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="create.html">Creating a New Application with JSF Support</a></dd>
+            <dd><a href="add.html">Adding JavaServer Faces Framework Support to an Existing Application</a></dd>
+            <dd><a href="../about_framework.html">About Web Application Frameworks</a></dd>
+        </dl>
+
+        <hr><small><a href="../../../credits.html">Legal Notices</a></small>
+        <table cellpadding="20" border="0"><tr><td>&nbsp;</td></tr></table>
+    </body>
+</html>

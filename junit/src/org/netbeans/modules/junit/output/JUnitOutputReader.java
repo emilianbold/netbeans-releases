@@ -243,7 +243,9 @@ final class JUnitOutputReader {
                             return;
                         }
                         testSession.getCurrentTestCase().setTrouble(new Trouble(shortMsg.equals(ADD_ERROR_PREFIX)));
-                        if (commaIndex != -1) {
+                        boolean hasErrMsg = (commaIndex != -1) &&
+                                ((commaIndex + 2) <= insideBrackets.length()); // #166912
+                        if (hasErrMsg) {
                             int errMsgStart;
                             if (Character.isSpaceChar(insideBrackets.charAt(commaIndex + 1))) {
                                 errMsgStart = commaIndex + 2;
@@ -542,6 +544,7 @@ final class JUnitOutputReader {
     /**
      */
     void testTaskFinished() {
+            closePereviousReport(); // #171050
     }
 
     private void closePereviousReport(){
@@ -594,7 +597,6 @@ final class JUnitOutputReader {
     /**
      */
     void buildFinished(final AntEvent event) {
-        closePereviousReport();
         manager.sessionFinished(testSession);
     }
 
@@ -739,7 +741,7 @@ final class JUnitOutputReader {
             return false;
         }
     }
-    
+
     private File findReportFile() {
         File file = new File(resultsDir,
                              "TEST-" + testSession.getCurrentSuite().getName() + ".xml"); //NOI18N

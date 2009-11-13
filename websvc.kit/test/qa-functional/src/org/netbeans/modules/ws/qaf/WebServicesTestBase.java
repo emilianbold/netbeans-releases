@@ -59,7 +59,6 @@ import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.CleanJavaProjectAction;
 import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
-import org.netbeans.jellytools.modules.j2ee.nodes.GlassFishV2ServerNode;
 import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
@@ -67,6 +66,7 @@ import org.netbeans.jemmy.ComponentSearcher;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
+import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JTabbedPaneOperator;
@@ -90,10 +90,11 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
     private ProjectType projectType;
     private JavaEEVersion javaEEversion;
 
-
     static {
         //First found server will be used by tests
-        if (ServerType.GLASSFISH.isAutoRegistered()) {
+        if (ServerType.GLASSFISH_V3.isAutoRegistered()) {
+            REGISTERED_SERVER = ServerType.GLASSFISH_V3;
+        } else if (ServerType.GLASSFISH.isAutoRegistered()) {
             REGISTERED_SERVER = ServerType.GLASSFISH;
         } else if (ServerType.TOMCAT.isAutoRegistered()) {
             REGISTERED_SERVER = ServerType.TOMCAT;
@@ -114,7 +115,10 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
         WEB,
         EJB,
         APPCLIENT,
-        SAMPLE;
+        SAMPLE,
+        MAVEN_SE,
+        MAVEN_WEB,
+        MAVEN_EJB;
 
         /**
          * Get project template category name
@@ -138,6 +142,11 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
                 case SAMPLE:
                     //Samples
                     return Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Templates/Project/Samples");
+                case MAVEN_SE:
+                case MAVEN_WEB:
+                case MAVEN_EJB:
+                    //Maven
+                    return Bundle.getStringTrimmed("org.netbeans.modules.maven.newproject.Bundle", "Templates/Project/Maven2");
             }
             throw new AssertionError("Unknown type: " + this); //NOI18N
         }
@@ -161,6 +170,15 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
                 case APPCLIENT:
                     //Enterprise Application Client
                     return Bundle.getStringTrimmed("org.netbeans.modules.j2ee.clientproject.ui.wizards.Bundle", "Templates/Project/J2EE/emptyCar.xml");
+                case MAVEN_SE:
+                    //Maven Project
+                    return Bundle.getStringTrimmed("org.netbeans.modules.maven.newproject.Bundle", "Templates/Project/Maven2/Archetypes");
+                case MAVEN_WEB:
+                    //Maven Web Application
+                    return Bundle.getStringTrimmed("org.netbeans.modules.maven.newproject.Bundle", "Templates/Project/Maven2/WebApp");
+                case MAVEN_EJB:
+                    //Maven EJB Module
+                    return Bundle.getStringTrimmed("org.netbeans.modules.maven.newproject.Bundle", "Templates/Project/Maven2/EJB");
             }
             throw new AssertionError("Unknown type: " + this); //NOI18N
         }
@@ -172,6 +190,9 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
          */
         public int getServerComboBoxIndex() {
             switch (this) {
+                case MAVEN_SE:
+                case MAVEN_WEB:
+                case MAVEN_EJB:
                 case JAVASE_APPLICATION:
                     return -1;
                 case WEB:
@@ -189,14 +210,22 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
          */
         public int getServerVersionComboBoxIndex() {
             switch (this) {
+                case MAVEN_SE:
                 case JAVASE_APPLICATION:
                     return -1;
+                case MAVEN_WEB:
+                case MAVEN_EJB:
+                    return 0;
                 case WEB:
                 case APPCLIENT:
                 case EJB:
                     return 1;
             }
             throw new AssertionError("Unknown type: " + this); //NOI18N
+        }
+
+        public boolean isAntBasedProject() {
+            return this.ordinal() < 5;
         }
     }
 
@@ -206,7 +235,8 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
     protected enum JavaEEVersion {
 
         J2EE14,
-        JAVAEE5;
+        JAVAEE5,
+        JAVAEE6;
 
         @Override
         public String toString() {
@@ -217,7 +247,9 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
                 case JAVAEE5:
                     //Java EE 5
                     return Bundle.getStringTrimmed("org.netbeans.modules.j2ee.common.Bundle", "LBL_JavaEESpec_5");
-
+                case JAVAEE6:
+                    //Java EE 6
+                    return Bundle.getStringTrimmed("org.netbeans.api.j2ee.core.Bundle", "JavaEE6Full.displayName");
             }
             throw new AssertionError("Unknown type: " + this); //NOI18N
         }
@@ -230,6 +262,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
 
         SJSAS,
         GLASSFISH,
+        GLASSFISH_V3,
         TOMCAT,
         JBOSS;
 
@@ -244,6 +277,9 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
                     String label = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.sun.ide.j2ee.Bundle", "LBL_GLASSFISH_V2");
                     //Need only "GlassFish" to be able to handle both versions (v1, v2)
                     return label.substring(0, label.length() - 3);
+                case GLASSFISH_V3:
+                    //GlassFish V3
+                    return Bundle.getStringTrimmed("org.netbeans.modules.glassfish.javaee.Bundle", "TXT_DisplayName");
                 case TOMCAT:
                     //Tomcat
                     return Bundle.getStringTrimmed("org.netbeans.modules.tomcat5.util.Bundle", "LBL_DefaultDisplayName");
@@ -263,7 +299,9 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
             switch (this) {
                 case SJSAS:
                 case GLASSFISH:
-                    return System.getProperty("glassfish.home") != null; //NOI18N
+                    return System.getProperty("com.sun.aas.installRoot") != null; //NOI18N
+                case GLASSFISH_V3:
+                    return System.getProperty("org.glassfish.v3ee6.installRoot") != null; //NOI18N
                 case TOMCAT:
                     return System.getProperty("tomcat.home") != null; //NOI18N
                 case JBOSS:
@@ -286,11 +324,11 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
     }
 
     public void assertServerRunning() {
-        if (!REGISTERED_SERVER.equals(ServerType.GLASSFISH)) {
+        if (!(REGISTERED_SERVER.equals(ServerType.GLASSFISH) || REGISTERED_SERVER.equals(ServerType.GLASSFISH_V3))) {
             LOGGER.info("not yet supported for server: " + REGISTERED_SERVER.toString());
             return;
         }
-        GlassFishV2ServerNode gf = GlassFishV2ServerNode.invoke();
+        J2eeServerNode gf = getServerNode();
         gf.refresh();
         if (gf.isCollapsed()) {
             gf.expand();
@@ -412,6 +450,10 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
         //save IDE log in workdir
         FileObject ud = FileUtil.toFileObject(new File(System.getProperty("netbeans.user"))); //NOI18N
         FileObject log = ud.getFileObject("var/log/messages.log"); //NOI18N
+        File f = new File(getWorkDir(), "messages.log"); //NOI18N
+        if (f.exists()) {
+            f.delete();
+        }
         FileObject copy = FileUtil.toFileObject(getWorkDir()).createData("messages", "log"); //NOI18N
         InputStream is = log.getInputStream();
         FileLock lock = copy.lock();
@@ -429,7 +471,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
      * Start a server
      */
     public void testStartServer() throws IOException {
-        J2eeServerNode serverNode = J2eeServerNode.invoke(REGISTERED_SERVER.toString());
+        J2eeServerNode serverNode = getServerNode();
         serverNode.start();
         dumpOutput();
     }
@@ -438,7 +480,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
      * Stop a server
      */
     public void testStopServer() throws IOException {
-        J2eeServerNode serverNode = J2eeServerNode.invoke(REGISTERED_SERVER.toString());
+        J2eeServerNode serverNode = getServerNode();
         serverNode.stop();
         new EventTool().waitNoEvent(2000);
         dumpOutput();
@@ -481,24 +523,38 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
         LOGGER.info("Creating project in: " + op.txtProjectLocation().getText()); //NOI18N
         if (!(ProjectType.SAMPLE.equals(type) || ProjectType.JAVASE_APPLICATION.equals(type))) {
             //second panel in New Web, Ejb and AppClient project wizards
-            op.next();
-            //choose server type and Java EE version
-            JComboBoxOperator jcboServer = new JComboBoxOperator(op, type.getServerComboBoxIndex());
-            jcboServer.selectItem(REGISTERED_SERVER.toString());
+            if (ProjectType.APPCLIENT.equals(type) || ProjectType.EJB.equals(type) || ProjectType.WEB.equals(type)) {
+                op.next();
+                //choose server type and Java EE version
+                JComboBoxOperator jcboServer = new JComboBoxOperator(op, type.getServerComboBoxIndex());
+                jcboServer.selectItem(REGISTERED_SERVER.toString());
+            }
             JComboBoxOperator jcboVersion = new JComboBoxOperator(op, type.getServerVersionComboBoxIndex());
             jcboVersion.selectItem(javaeeVersion.toString());
         }
-        op.finish();
-        // Opening Projects
-        String openingProjectsTitle = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "LBL_Opening_Projects_Progress");
-        waitDialogClosed(openingProjectsTitle);
+        if (!type.isAntBasedProject()) {
+            op.btFinish().pushNoBlock();
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException ex) {
+                //ignore
+            }
+            if (JDialogOperator.findJDialog("Message", true, true) != null) {
+                new JButtonOperator(new JDialogOperator("Message")).push();
+            }
+            // Opening Projects
+            String openingProjectsTitle = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "LBL_Opening_Projects_Progress");
+            waitDialogClosed(openingProjectsTitle);
+        } else {
+            op.finish();
+        }
         if (ProjectType.SAMPLE.equals(type)) {
             checkMissingServer(name);
         }
         // wait project appear in projects view
         ProjectRootNode node = ProjectsTabOperator.invoke().getProjectRootNode(name);
         // wait classpath scanning finished
-        org.netbeans.junit.ide.ProjectSupport.waitScanFinished();
+        waitScanFinished();
         // get a project instance to return
         Project p = ((org.openide.nodes.Node) node.getOpenideNode()).getLookup().lookup(Project.class);
         assertNotNull("Project instance has not been found", p);
@@ -567,7 +623,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
      */
     protected void undeployProject(String projectName) throws IOException {
         assertServerRunning();
-        J2eeServerNode serverNode = J2eeServerNode.invoke(REGISTERED_SERVER.toString());
+        J2eeServerNode serverNode = getServerNode();
         serverNode.expand();
         //Applications
         String applicationsLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.nodes.Bundle", "LBL_Applications");
@@ -585,13 +641,17 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
         switch (getProjectType()) {
             case SAMPLE:
             case WEB:
+            case MAVEN_WEB:
                 if (ServerType.TOMCAT.equals(REGISTERED_SERVER)) {
                     appsNode = new Node(serverNode, webLabel);
+                } else if (ServerType.GLASSFISH_V3.equals(REGISTERED_SERVER)) {
+                    appsNode = new Node(serverNode, applicationsLabel);
                 } else {
                     appsNode = new Node(serverNode, applicationsLabel + "|" + webLabel);
                 }
                 break;
             case EJB:
+            case MAVEN_EJB:
                 appsNode = new Node(serverNode, applicationsLabel + "|" + ejbLabel);
                 break;
             case APPCLIENT:
@@ -626,6 +686,9 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
         if (jtpo != null) {
             for (int i = 0; i < jtpo.getTabCount(); i++) {
                 String tabTitle = jtpo.getTitleAt(i);
+                if (!jtpo.getComponentAt(i).isShowing()) {
+                    continue;
+                }
                 jtpo.selectPage(i);
                 OutputTabOperator oto = null;
                 if (tabTitle.indexOf("<html>") < 0) { //NOI18N
@@ -662,11 +725,28 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
     private void performProjectAction(String projectName, String actionName) throws IOException {
         ProjectRootNode node = new ProjectsTabOperator().getProjectRootNode(projectName);
         node.performPopupAction(actionName);
+        if (!getProjectType().isAntBasedProject()) {
+            //Select deployment server
+            String title = Bundle.getStringTrimmed("org.netbeans.modules.maven.j2ee.Bundle", "TIT_Select");
+            JDialogOperator ndo = new JDialogOperator(title);
+            new JComboBoxOperator(ndo, 0).selectItem(1);
+            new JButtonOperator(ndo, "OK").push();
+        }
         OutputTabOperator oto = new OutputTabOperator(projectName);
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", 600000); //NOI18N
-        oto.waitText("(total time: "); //NOI18N
-        dumpOutput();
-        assertTrue("Build failed", oto.getText().indexOf("BUILD SUCCESSFUL") > -1); //NOI18N
+        if (!getProjectType().isAntBasedProject()) {
+            oto.waitText("All operations"); //NOI18N
+            dumpOutput();
+            assertTrue("Build failed", oto.getText().indexOf("BUILD SUCCESSFUL") > -1); //NOI18N
+            assertTrue("Deploy failed", oto.getText().indexOf("[ERROR]") < 0); //NOI18N
+        } else {
+            //Ant projects
+            oto.waitText("(total time: "); //NOI18N
+            dumpOutput();
+            assertTrue("Build failed", oto.getText().indexOf("BUILD SUCCESSFUL") > -1); //NOI18N
+        }
+
+
     }
 
     private void setProjectName(String projectName) {
@@ -733,7 +813,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
             propertiesDialogOper.ok();
         }
         // if setting default server, it scans server jars; otherwise it continues immediatelly
-        org.netbeans.junit.ide.ProjectSupport.waitScanFinished();
+        waitScanFinished();
     }
 
     protected File getProjectsRootDir() throws IOException {
@@ -750,5 +830,19 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
             return new File(System.getProperty("java.io.tmpdir"));
         }
         return f;
+    }
+
+    protected J2eeServerNode getServerNode() {
+        switch (REGISTERED_SERVER) {
+            case GLASSFISH:
+                return getServerNode(Server.GLASSFISH);
+            case GLASSFISH_V3:
+                return getServerNode(Server.GLASSFISH_V3);
+            case JBOSS:
+                return getServerNode(Server.JBOSS);
+            case TOMCAT:
+                return getServerNode(Server.TOMCAT);
+        }
+        return getServerNode(Server.ANY);
     }
 }

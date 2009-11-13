@@ -42,13 +42,14 @@ import java.io.File;
 import java.util.Collections;
 import org.junit.Before;
 import org.junit.Test;
+import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.openide.util.Utilities;
 import static org.junit.Assert.*;
 
 /**
  * @author Alexey Vladykin
  */
-public class QmakeConfigurationTest {
+public class QmakeConfigurationTest extends CndBaseTestCase {
 
     private static final int[] QT_CONF_TYPES = {
         MakeConfiguration.TYPE_QT_APPLICATION,
@@ -56,8 +57,13 @@ public class QmakeConfigurationTest {
         MakeConfiguration.TYPE_QT_STATIC_LIB
     };
 
-    @Before
-    public void setUp() {
+    public QmakeConfigurationTest(String name) {
+        super(name);
+    }
+
+    @Override @Before
+    public void setUp() throws Exception {
+        super.setUp();
         System.setProperty("org.netbeans.modules.cnd.makeproject.api.runprofiles", "true");
     }
 

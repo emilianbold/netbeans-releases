@@ -54,6 +54,8 @@ public class CtagsParser {
     private static boolean exuberantCtags = false;
     // Relative path to product installed Exuberant ctags (all platforms)
     private final static String PROD_CTAGS_COMMAND = "sfw/bin/ctags"; // NOI18N
+    // Full path to OpenSolaris's version of Exuberant CTags
+    private final static String OS_CTAGS_COMMAND = "/bin/exctags"; // NOI18N
     // Full path to companion cd installed Exuberant ctags for Solaris
     private final static String CCD_CTAGS_COMMAND = "/opt/sfw/bin/ctags"; // NOI18N
     // Full path to standard installed ctags on Linux
@@ -332,6 +334,10 @@ public class CtagsParser {
 		if (new File(binPath).exists()) {
 		    exuberantCtags = true;
 		    ctagsCommandPlusOptions = binPath + " " + CTAGS_OPTIONS_EX_CTAGS; // NOI18N
+		}
+		else if (new File(OS_CTAGS_COMMAND).exists()) {
+		    exuberantCtags = true;
+		    ctagsCommandPlusOptions = OS_CTAGS_COMMAND + " " + CTAGS_OPTIONS_EX_CTAGS; // NOI18N
 		}
 		else if (new File(CCD_CTAGS_COMMAND).exists()) {
 		    exuberantCtags = true;

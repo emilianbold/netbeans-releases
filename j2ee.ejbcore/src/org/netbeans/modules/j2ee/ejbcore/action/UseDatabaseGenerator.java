@@ -101,7 +101,7 @@ public final class UseDatabaseGenerator {
         if (Util.isJavaEE5orHigher(project) && serviceLocatorStrategy == null &&
                 InjectionTargetQuery.isInjectionTarget(fileObject, className)) {
             boolean isStatic = InjectionTargetQuery.isStaticReferenceRequired(fileObject, className);
-            String fieldName = Utils.jndiNameToCamelCase(datasourceReferenceName, true, null);
+            String fieldName = Utils.makeJavaIdentifierPart(Utils.jndiNameToCamelCase(datasourceReferenceName, true, null));
             _RetoucheUtil.generateAnnotatedField(fileObject, className, "javax.annotation.Resource", fieldName, // NOI18N
                     "javax.sql.DataSource", Collections.singletonMap("name", datasourceReferenceName), isStatic); // NOI18N
         } else {
@@ -204,7 +204,7 @@ public final class UseDatabaseGenerator {
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = workingCopy.getElements().getTypeElement(className);
-                String methodName = "get" + Utils.jndiNameToCamelCase(datasourceReferenceName, false, null); //NO18N
+                String methodName = "get" + Utils.makeJavaIdentifierPart(Utils.jndiNameToCamelCase(datasourceReferenceName, false, null)); //NO18N
                 MethodModel methodModel = MethodModel.create(
                         methodName,
                         javax.sql.DataSource.class.getName(),

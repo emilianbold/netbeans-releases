@@ -58,7 +58,7 @@ public class WebProjectCustomizerRun extends javax.swing.JPanel implements Actio
     /** Creates new form WebProjectCustomizerRun */
     public WebProjectCustomizerRun(WebProjectProperties props) {
         initComponents();
-        platformAndDevicePanel21.setProperties(props);
+        platformAndDevicePanel21.setPlatformAndCard(props);
         pageComboBox.setModel(props.PAGES);
         servletRadioButton.setModel(props.SELECT_SERVLET);
         pageRadioButton.setModel(props.SELECT_PAGE);
@@ -96,7 +96,7 @@ public class WebProjectCustomizerRun extends javax.swing.JPanel implements Actio
         urlRadioButton = new javax.swing.JRadioButton();
         completeUrl = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
-        platformAndDevicePanel21 = new org.netbeans.modules.javacard.project.ui.PlatformAndDevicePanel();
+        platformAndDevicePanel21 = new org.netbeans.modules.javacard.api.PlatformAndDevicePanel();
 
         jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/javacard/resources/rc.png"))); // NOI18N
         jButton2.setText(org.openide.util.NbBundle.getMessage(WebProjectCustomizerRun.class, "WebProjectCustomizerRun.jButton2.text")); // NOI18N
@@ -301,7 +301,7 @@ private void urlRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
     private javax.swing.JCheckBox launchBrowserCheckBox;
     private javax.swing.JComboBox pageComboBox;
     private javax.swing.JRadioButton pageRadioButton;
-    private org.netbeans.modules.javacard.project.ui.PlatformAndDevicePanel platformAndDevicePanel21;
+    private org.netbeans.modules.javacard.api.PlatformAndDevicePanel platformAndDevicePanel21;
     private javax.swing.JRadioButton servletRadioButton;
     private javax.swing.JTextField servletTextField;
     private javax.swing.JRadioButton urlRadioButton;

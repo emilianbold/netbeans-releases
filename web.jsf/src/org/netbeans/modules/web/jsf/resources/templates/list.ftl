@@ -52,7 +52,7 @@
 <#list entityDescriptors as entityDescriptor>
                     <h:column>
                         <f:facet name="header">
-                            <h:outputText value="${r"#{"}bundle.List${entityName}Title_${entityDescriptor.id}${r"}"}"/>
+                            <h:outputText value="${r"#{"}bundle.List${entityName}Title_${entityDescriptor.id?replace(".","_")}${r"}"}"/>
                         </f:facet>
     <#if entityDescriptor.dateTimeFormat?? && entityDescriptor.dateTimeFormat != "">
                         <h:outputText value="${r"#{"}${entityDescriptor.name}${r"}"}">

@@ -55,6 +55,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.DataLoadersBridge;
 import org.netbeans.modules.csl.api.DeclarationFinder;
@@ -101,12 +102,12 @@ public class GoToSupport {
         final AtomicBoolean cancel = new AtomicBoolean();
         String name = NbBundle.getMessage(GoToSupport.class, "NM_GoToDeclaration");
 
-        RunOffAWT.runOffAWT(new Runnable() {
+        ProgressUtils.runOffEventDispatchThread(new Runnable() {
 
             public void run() {
                 perform(doc, offset, false, cancel);
             }
-        }, name, cancel);
+        }, name, cancel, false);
     }
     
     private static String perform(final Document doc, final int offset, final boolean tooltip, final AtomicBoolean cancel) {
@@ -189,18 +190,13 @@ public class GoToSupport {
                                 SwingUtilities.invokeLater(new Runnable() {
                                     public void run() {
                                         // Many alternatives - pop up a dialog and make the user choose
-                                        if (chooseAlternatives(doc, offset, location[0].getAlternativeLocations())) {
-                                            return;
+                                        if (!chooseAlternatives(doc, offset, location[0].getAlternativeLocations())) {
+                                            openLocation(location[0]);
                                         }
                                     }
                                 });
-                            }
-
-                            FileObject f = location[0].getFileObject();
-                            int offset = location[0].getOffset();
-
-                            if (f != null && f.isValid()) {
-                                UiUtils.open(f, offset);
+                            } else {
+                                openLocation(location[0]);
                             }
                         }
 
@@ -218,6 +214,15 @@ public class GoToSupport {
         }
         
         return result[0];
+    }
+
+    private static void openLocation(DeclarationLocation location) {
+        FileObject f = location.getFileObject();
+        int offset = location.getOffset();
+
+        if (f != null && f.isValid()) {
+            UiUtils.open(f, offset);
+        }
     }
 
     /** TODO - MOVE TO UTILITTY LIBRARY */

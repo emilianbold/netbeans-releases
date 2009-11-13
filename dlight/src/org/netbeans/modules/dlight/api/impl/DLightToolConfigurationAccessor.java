@@ -49,45 +49,44 @@ import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
  * @author masha
  */
 public abstract class DLightToolConfigurationAccessor {
-  private static volatile DLightToolConfigurationAccessor DEFAULT;
 
-  public static DLightToolConfigurationAccessor getDefault(){
-    DLightToolConfigurationAccessor a = DEFAULT;
-    if (a!= null){
-      return a;
+    private static volatile DLightToolConfigurationAccessor DEFAULT;
+
+    public static DLightToolConfigurationAccessor getDefault() {
+        DLightToolConfigurationAccessor a = DEFAULT;
+        if (a != null) {
+            return a;
+        }
+
+        try {
+            Class.forName(DLightToolConfiguration.class.getName(), true, DLightToolConfiguration.class.getClassLoader());//
+        } catch (Exception e) {
+        }
+        return DEFAULT;
     }
 
-    try{
-      Class.forName(DLightToolConfiguration.class.getName(), true,DLightToolConfiguration.class.getClassLoader());//
-    }catch(Exception e){
-
+    public static void setDefault(DLightToolConfigurationAccessor accessor) {
+        if (DEFAULT != null) {
+            throw new IllegalStateException();
+        }
+        DEFAULT = accessor;
     }
-    return DEFAULT;
-  }
 
-  public static void setDefault(DLightToolConfigurationAccessor accessor){
-    if (DEFAULT != null){
-      throw new IllegalStateException();
+    public DLightToolConfigurationAccessor() {
     }
-    DEFAULT = accessor;
-  }
 
-  public DLightToolConfigurationAccessor(){
+    public abstract List<DataCollectorConfiguration> getDataCollectors(DLightToolConfiguration conf);
 
-  }
+    public abstract List<IndicatorDataProviderConfiguration> getIndicatorDataProviders(DLightToolConfiguration conf);
 
-  public abstract List<DataCollectorConfiguration> getDataCollectors(DLightToolConfiguration conf);
+    public abstract List<IndicatorConfiguration> getIndicators(DLightToolConfiguration conf);
 
-  public abstract List<IndicatorDataProviderConfiguration> getIndicatorDataProviders(DLightToolConfiguration conf);
+    public abstract String getToolName(DLightToolConfiguration conf);
 
-  public abstract List<IndicatorConfiguration> getIndicators(DLightToolConfiguration conf);
+    public abstract String getDetailedToolName(DLightToolConfiguration conf);
 
-  public abstract String getToolName(DLightToolConfiguration conf);
+    public abstract String getToolDescription(DLightToolConfiguration conf);
 
-  public abstract String getDetailedToolName(DLightToolConfiguration conf) ;
-
-  public abstract String getToolDescription(DLightToolConfiguration conf) ;
-  
-  public abstract String getIconPath(DLightToolConfiguration conf);
+    public abstract String getIconPath(DLightToolConfiguration conf);
 
 }

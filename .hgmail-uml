@@ -1,4 +1,3 @@
-# Test the email notification
 [usersubs]
-cvs@uml.netbeans.org=antlr/*,uml*/*
-cvs@graph.netbeans.org=api.visual/*
+commits@uml.netbeans.org=antlr/*,uml*/*
+commits@platform.netbeans.org=api.visual/*

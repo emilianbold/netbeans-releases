@@ -39,9 +39,12 @@
 
 package org.netbeans.modules.mercurial.ui.log;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Level;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
@@ -70,6 +73,7 @@ public class HgLogMessage {
     private boolean bMerged;
     private String rootURL;
     private OutputLogger logger;
+    private HashMap<File, String> ancestors = new HashMap<File, String>();
 
     public HgLogMessage(String changeset){
     }
@@ -176,21 +180,36 @@ public class HgLogMessage {
         return id;
     }
 
-    public  String getAncestor() {
+    public  String getAncestor (File file) {
+        String ancestor = getAncestorFromMap(file);
+        if (ancestor != null) {
+            return ancestor;
+        }
         if(bMerged){
             try{
-                return HgCommand.getCommonAncestor(rootURL, parentOneRev, parentTwoRev, getLogger());
+                ancestor = HgCommand.getCommonAncestor(rootURL, parentOneRev, parentTwoRev, getLogger());
             } catch (HgException ex) {
-                return null;
+                Mercurial.LOG.log(Level.INFO, null, ex);
+            }
+        } else if (parentOneRev != null) {
+            ancestor = parentOneRev;
+        } else {
+            try{
+                ancestor = HgCommand.getParent(rootURL, file, rev);
+            } catch (HgException ex) {
+                Mercurial.LOG.log(Level.INFO, null, ex);
+            }
+            if (ancestor == null) {
+                // fallback to the old impl in case of any error
+                try {
+                    Integer.toString(Integer.parseInt(rev) - 1);
+                } catch (NumberFormatException ex) {
+                    ancestor = "-1";                                    //NOI18N
+                }
             }
         }
-        int revInt = -1;
-        try{
-            revInt = Integer.parseInt(rev);
-        }catch(NumberFormatException ex){
-        }
-        revInt = revInt > -1? revInt -1: -1;
-        return Integer.toString(revInt);
+        addAncestorToMap(file, ancestor);
+        return ancestor;
     }
 
     private OutputLogger getLogger() {
@@ -228,5 +247,13 @@ public class HgLogMessage {
         sb.append("\npaths: ");
         sb.append(this.paths);
         return sb.toString();
+    }
+
+    private void addAncestorToMap(File file, String ancestor) {
+        ancestors.put(file, ancestor);
+    }
+
+    private String getAncestorFromMap(File file) {
+        return ancestors.get(file);
     }
 }

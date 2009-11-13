@@ -55,7 +55,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleFactory;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.spi.ejbjar.EarImplementation;
 import org.netbeans.modules.j2ee.spi.ejbjar.EarImplementation2;
 import org.netbeans.modules.j2ee.spi.ejbjar.EarProvider;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarFactory;
@@ -76,6 +75,7 @@ public class EarModuleProviderImpl extends J2eeApplicationProvider implements Ea
     private Project project;
     private String serverInstanceID;
     private J2eeModule j2eemodule;
+
     private NbMavenProject mavenproject;
 
     
@@ -86,7 +86,7 @@ public class EarModuleProviderImpl extends J2eeApplicationProvider implements Ea
         earimpl = new EarImpl(project, this);
     }
     
-    public EarImplementation getEarImplementation() {
+    public EarImplementation2 getEarImplementation() {
         return earimpl;
     }
     

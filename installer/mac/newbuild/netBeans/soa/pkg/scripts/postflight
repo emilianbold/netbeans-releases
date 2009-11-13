@@ -19,11 +19,14 @@
 
 set -e
 
-script_dir=`dirname "$0"`
+dirname=`dirname "$0"`
+
+. "$dirname"/env.sh
 
 #add Product ID
-"$script_dir"/addproduct_id.sh "SOA"
+"$dirname"/addproduct_id.sh "SOA"
 
-if [ -d "/Library/Receipts/soa.pkg" ] ; then
-    rm -rf "/Library/Receipts/soa.pkg"
-fi
+#clean receipts
+"$dirname"/clean_receipts.sh "soa-$NB_ID" "org.netbeans.ide.soa"
+
+

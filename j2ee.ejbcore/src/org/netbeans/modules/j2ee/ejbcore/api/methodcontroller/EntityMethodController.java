@@ -99,10 +99,12 @@ public final class EntityMethodController extends AbstractMethodController {
             metadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, FileObject>() {
                 public FileObject run(EjbJarMetadata metadata) {
                     Entity entity = (Entity) metadata.findByEjbClass(ejbClass);
-                    results[IDX_ABSTRACT_SCHEMA_NAME] = entity.getAbstractSchemaName();
-                    results[IDX_PERSISTENCE_TYPE] = entity.getPersistenceType();
-                    results[IDX_LOCAL_HOME] = entity.getLocalHome();
-                    results[IDX_HOME] = entity.getHome();
+                    if (entity != null){
+                        results[IDX_ABSTRACT_SCHEMA_NAME] = entity.getAbstractSchemaName();
+                        results[IDX_PERSISTENCE_TYPE] = entity.getPersistenceType();
+                        results[IDX_LOCAL_HOME] = entity.getLocalHome();
+                        results[IDX_HOME] = entity.getHome();
+                    }
                     return null;
                 }
             });
@@ -318,7 +320,9 @@ public final class EntityMethodController extends AbstractMethodController {
                 return (Entity) metadata.findByEjbClass(ejbClass);
             }
         });
-        model.addQuery(buildQuery(model, clientView, ejbql));
+        if (model != null){
+            model.addQuery(buildQuery(model, clientView, ejbql));
+        }
         DDProvider.getDefault().getDDRoot(ddFileObject).write(ddFileObject); // EJB 2.1
     }
 

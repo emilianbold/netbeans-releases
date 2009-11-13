@@ -69,7 +69,7 @@ public class DependencyAnalyzeOutputProcessor implements OutputProcessor {
     DependencyAnalyzeOutputProcessor(NbMavenProjectImpl project) {
         started = false;
         start = Pattern.compile(".*Used undeclared dependencies.*", Pattern.DOTALL); //NOI18N
-        dependency = Pattern.compile("\\s*(.*):(.*):(.*):(.*):(.*)", Pattern.DOTALL); //NOI18N
+        dependency = Pattern.compile("\\s*(?:\\[WARNING\\])?\\s*(.*):(.*):(.*):(.*):(.*)", Pattern.DOTALL); //NOI18N
         this.project = project;
     }
 

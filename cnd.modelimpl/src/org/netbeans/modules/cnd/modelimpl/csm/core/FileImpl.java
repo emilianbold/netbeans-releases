@@ -42,11 +42,11 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.cnd.modelimpl.syntaxerr.spi.ReadOnlyTokenBuffer;
-import antlr.Parser;
-import antlr.RecognitionException;
-import antlr.Token;
-import antlr.TokenStream;
-import antlr.collections.AST;
+import org.netbeans.modules.cnd.antlr.Parser;
+import org.netbeans.modules.cnd.antlr.RecognitionException;
+import org.netbeans.modules.cnd.antlr.Token;
+import org.netbeans.modules.cnd.antlr.TokenStream;
+import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.cnd.api.model.*;
@@ -62,6 +62,7 @@ import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.support.APTLanguageFilter;
@@ -122,10 +123,14 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     public static final int SOURCE_C_FILE = 2;
     public static final int SOURCE_CPP_FILE = 3;
     public static final int HEADER_FILE = 4;
-    private static volatile long parseCount = 1;
+    private static volatile AtomicLong parseCount = new AtomicLong(1);
 
+    public static void incParseCount() {
+        parseCount.incrementAndGet();
+    }
+    
     public static int getParseCount() {
-        return (int) (parseCount & 0xFFFFFFFFL);
+        return (int) (parseCount.get() & 0xFFFFFFFFL);
     }
     private FileBuffer fileBuffer;
     /**
@@ -646,7 +651,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
      */
     private void render(AST tree) {
         new AstRenderer(this).render(tree);
-        parseCount++;
+        incParseCount();
     }
 
     private APTFile getFullAPT() {
@@ -1715,8 +1720,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                         if (curElem != null) {
                             if (curElem instanceof FunctionImplEx) {
                                 wereFakes = true;
-                                parseCount++;
+                                incParseCount();
                                 ((FunctionImplEx) curElem).fixFakeRegistration(projectParsedMode);
+                                incParseCount();
                             } else {
                                 DiagnosticExceptoins.register(new Exception("Incorrect fake registration class: " + curElem.getClass() + " for fake UID:" + fakeUid)); // NOI18N
                             }
@@ -1789,10 +1795,12 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         output.writeInt(lastParseTime);
         State curState = state;
         if (curState != State.PARSED && curState != State.INITIAL) {
-            System.err.printf("file is written in intermediate state %s, switching to PARSED: %s \n", curState, getAbsolutePath());
-            if (CndUtils.isDebugMode() && !firstDump){
-                firstDump = true;
-                CndUtils.threadsDump();
+            if (TraceFlags.TIMING) {
+                System.err.printf("file is written in intermediate state %s, switching to PARSED: %s \n", curState, getAbsolutePath());
+                if (CndUtils.isDebugMode() && !firstDump) {
+                    firstDump = true;
+                    CndUtils.threadsDump();
+                }
             }
             curState = State.PARSED;
         }

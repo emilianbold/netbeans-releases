@@ -72,6 +72,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.impl.projects.J2eeModuleProviderAccessor;
 
@@ -105,6 +106,18 @@ public abstract class J2eeModuleProvider {
     public abstract J2eeModule getJ2eeModule ();
     
     public abstract ModuleChangeReporter getModuleChangeReporter ();
+
+    /**
+     * Return the class reporting any possible change in resources intended to
+     * be deployed on server.
+     *
+     * @return class reporting changes in server resources
+     * @since 1.63
+     */
+    @CheckForNull
+    public ResourceChangeReporter getResourceChangeReporter() {
+        return null;
+    }
     
     public final ConfigSupport getConfigSupport () {
         ConfigSupportImpl confSupp;
@@ -195,7 +208,9 @@ public abstract class J2eeModuleProvider {
      * 
      * @throws ConfigurationException reports problems in retrieving data source
      *         definitions.
-     * @since 1.15 
+     * @since 1.15
+     * @deprecated use {@link ConfigSupport#getDatasources()}
+     *             on {@link #getConfigSupport()} result
      */
     public Set<Datasource> getModuleDatasources() throws ConfigurationException {
         Set<Datasource> projectDS = getConfigSupport().getDatasources();
@@ -260,7 +275,8 @@ public abstract class J2eeModuleProvider {
      * @exception DatasourceAlreadyExistsException if module data source(s) are conflicting
      * with data source(s) already deployed on the server
      *
-     * @since 1.15 
+     * @since 1.15
+     * @deprecated Nobody should use this method. Being an API is a mistake.
      */
     public void deployDatasources() throws ConfigurationException, DatasourceAlreadyExistsException {
         ServerInstance si = ServerRegistry.getInstance ().getServerInstance (getServerInstanceID ());

@@ -107,7 +107,7 @@ public final class ToolsCacheManager {
                 allCSMs.add(copiedManagers.get(copiedServer));
             }
         }
-        CompilerSetManager.setDefaults(allCSMs);
+        CompilerSetManager.setManagers(allCSMs);
         copiedManagers.clear();
     }
 

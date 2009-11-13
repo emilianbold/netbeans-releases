@@ -35,12 +35,12 @@ public class ManufacturerResource {
     @Context
     protected ResourceContext resourceContext;
     protected Integer id;
-  
+
     /** Creates a new instance of ManufacturerResource */
     public ManufacturerResource() {
     }
 
-    public void setId(Integer id) {
+    protected void setId(Integer id) {
         this.id = id;
     }
 
@@ -175,7 +175,7 @@ public class ManufacturerResource {
 
         private Manufacturer parent;
 
-        public void setParent(Manufacturer parent) {
+        protected void setParent(Manufacturer parent) {
             this.parent = parent;
         }
 

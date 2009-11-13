@@ -19,10 +19,14 @@
 
 set -e
 
+script_dir=`dirname "$0"`
+
+. "$script_dir"/env.sh
+
+
 if [ -d "$2" ] ; then
     rm -rf "$2"
 fi
 
-if [ -d "/Library/Receipts/tomcat.pkg" ] ; then
-    rm -rf "/Library/Receipts/tomcat.pkg"
-fi
+#clean receipts
+"$script_dir"/clean_receipts.sh "tomcat-$TOMCAT_ID" "apache.tomcat"

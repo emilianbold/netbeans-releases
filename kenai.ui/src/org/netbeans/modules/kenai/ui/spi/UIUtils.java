@@ -41,7 +41,6 @@ package org.netbeans.modules.kenai.ui.spi;
 
 import java.awt.Cursor;
 import java.awt.Dialog;
-import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -54,19 +53,15 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
-import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JRootPane;
-import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.text.html.HTMLDocument;
-import javax.swing.text.html.StyleSheet;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiUser;
 import org.netbeans.modules.kenai.collab.chat.KenaiConnection;
+import org.netbeans.modules.kenai.collab.chat.PresenceIndicator;
 import org.netbeans.modules.kenai.ui.KenaiLoginTask;
 import org.netbeans.modules.kenai.ui.LoginPanel;
 import org.netbeans.modules.kenai.ui.Utilities;
@@ -95,7 +90,7 @@ public final class UIUtils {
     private static Set<String> loggedParams; // to avoid logging same params more than once in a session
 
     public static String getPrefName(String name)  {
-        return Kenai.getDefault().getName() + name;
+        return Kenai.getDefault().getUrl().getHost() + name;
     }
 
     public static void waitStartupFinished() {
@@ -106,64 +101,11 @@ public final class UIUtils {
     }
 
     /**
-     * do we need this method at all
-     * TODO: remove me
-     * @return
-     * @deprecated
-     */
-    @Deprecated
-    public static final JTextPane createHTMLPane() {
-        JTextPane textPane = new JTextPane();
-        textPane.setContentType("text/html"); // NOI18N
-        Font font = UIManager.getFont("Label.font"); // NOI18N
-        String bodyRule = "body { font-family: " + font.getFamily() + "; " + // NOI18N
-                "font-size: " + font.getSize() + "pt; }"; // NOI18N
-
-        final StyleSheet styleSheet = ((HTMLDocument) textPane.getDocument()).getStyleSheet();
-
-        styleSheet.addRule(bodyRule);
-        styleSheet.addRule(".green {color: green;}"); // NOI18N
-        styleSheet.addRule(".red {color: red;"); // NOI18N
-        textPane.setEditable(false);
-        textPane.setBackground(UIManager.getColor("TextPane.background")); // NOI18N
-        return textPane;
-    }
-
-    /**
-     * do we need this method at all
-     * TODO: remove me
-     * @param text
-     * @return
-     * @deprecated
-     */
-    @Deprecated
-    public static final JButton createFocusableHyperlink(String text) {
-        final JButton hyperlink=new JButton("<html><body><a href=\"foo\">"+text+"</a>"); // NOI18N
-        hyperlink.setBorderPainted(false);
-        hyperlink.setContentAreaFilled(false);
-        hyperlink.setOpaque(false);
-        hyperlink.addMouseListener(new MouseAdapter() {
-            private Cursor oldCursor;
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                oldCursor = hyperlink.getCursor();
-                hyperlink.setCursor(new Cursor(Cursor.HAND_CURSOR));
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                hyperlink.setCursor(oldCursor);
-            }
-        });
-        return hyperlink;
-    }
-
-
-    /**
      * this method will be removed
      * will try to login using stored uname and password if not already logged in
+     * @param force
      * @return true if logged in, false otherwise
+     * @deprecated 
      */
     @Deprecated
     public static synchronized boolean tryLogin(boolean force) {
@@ -184,9 +126,10 @@ public final class UIUtils {
             return false;
         }
         String password=preferences.get(getPrefName(KENAI_PASSWORD_PREF), null); // NOI18N
+        PresenceIndicator.getDefault().init();
         try {
             KenaiConnection.getDefault();
-            Kenai.getDefault().login(uname, Scrambler.getInstance().descramble(password).toCharArray(), force?true:Boolean.parseBoolean(preferences.get(getPrefName(ONLINE_STATUS_PREF), "true")));
+            Kenai.getDefault().login(uname, Scrambler.getInstance().descramble(password).toCharArray(), force?true:Boolean.parseBoolean(preferences.get(getPrefName(ONLINE_STATUS_PREF), String.valueOf(Utilities.isChatSupported()))));
         } catch (KenaiException ex) {
             return false;
         }
@@ -198,6 +141,7 @@ public final class UIUtils {
      * @return true, if user was succesfully logged in
      */
     public static boolean showLogin() {
+        PresenceIndicator.getDefault().init();
         final LoginPanel loginPanel = new LoginPanel();
         final Preferences preferences = NbPreferences.forModule(LoginPanel.class);
         final String ctlLogin = NbBundle.getMessage(Utilities.class, "CTL_Login");
@@ -281,7 +225,7 @@ public final class UIUtils {
     static JLabel createUserWidget(final KenaiUserUI u) {
         final JLabel result = new JLabel(u.getUserName());
         result.setIcon(u.getIcon());
-        final String name = u.getKenaiUser().getFirstName() + " " + u.getKenaiUser().getLastName();
+        final String name = u.getKenaiUser().getFirstName() + " " + u.getKenaiUser().getLastName(); // NOI18N
         result.setToolTipText(NbBundle.getMessage(UserNode.class, u.getKenaiUser().isOnline()?"LBL_ONLINE_MEMBER_TOOLTIP": "LBL_OFFLINE_MEMBER_TOOLTIP", u.getUserName(), name));
         u.user.addPropertyChangeListener(new PropertyChangeListener() {
 

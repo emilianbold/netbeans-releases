@@ -70,7 +70,7 @@ class GlassFishGem implements RubyServer, ServerInstanceImplementation {
      */
     private static final Pattern[] PATTERNS = {
         Pattern.compile(".*INFO: Glassfish v3 started.*", Pattern.DOTALL),
-        Pattern.compile(".*Press Ctrl\\+C to stop.*", Pattern.DOTALL)
+        Pattern.compile(".*[0-9] milliseconds.*", Pattern.DOTALL)
     };
     
     private final List<RailsApplication> applications = new ArrayList<RailsApplication>();
@@ -123,7 +123,8 @@ class GlassFishGem implements RubyServer, ServerInstanceImplementation {
     }
 
     public String getServerPath() {
-        return "glassfish_rails";
+        // glassfish_rails is deprecated in 0.9.4 and newer
+        return compareVersion("0.9.4") >= 0 ? "glassfish" : "glassfish_rails";
     }
 
     public boolean isStartupMsg(String outputLine) {

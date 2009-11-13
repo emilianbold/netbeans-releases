@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import antlr.TokenStream;
+import org.netbeans.modules.cnd.antlr.TokenStream;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.SortedMap;

@@ -76,9 +76,10 @@ fi
 
 "$script_dir"/perm.sh
 
-if [ -d "/Library/Receipts/sjsas.pkg" ] ; then
-    rm -rf "/Library/Receipts/sjsas.pkg"
-fi
+
+#clean receipts
+"$script_dir"/clean_receipts.sh "sjsas-$SJSAS_ID" "sjsas"
+
 
 #Fix for 132115
 sed -i '' "s/never/TUE/" $2/updatecenter/config/config.xml

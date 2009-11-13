@@ -5,6 +5,5 @@
 
 <index version="1.0">
 
- <indexitem target="org.netbeans.modules.javacard.DevelopingforJavaCard3Platform" text="Index item 1 test"></indexitem>
- <indexitem target="org.netbeans.modules.javacard.CustomizingJavaCardPlatform" text="Index item 2 test"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.DevelopingforJavaCard3Platform" text="topic guidelines"></indexitem><indexitem target="org.netbeans.modules.javacard.CustomizingJavaCardPlatform" text="topic guidelines"></indexitem>
 </index>

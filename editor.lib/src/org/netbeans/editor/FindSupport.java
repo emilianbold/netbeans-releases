@@ -85,7 +85,7 @@ public class FindSupport {
     }
 
     public Map getDefaultFindProperties() {
-        return EditorFindSupport.getInstance().getDefaultFindProperties();
+        return EditorFindSupport.getInstance().createDefaultFindProperties();
     }
 
     public Map getFindProperties() {
@@ -100,14 +100,6 @@ public class FindSupport {
     int[] getBlocks(int[] blocks, BaseDocument doc,
                     int startPos, int endPos) throws BadLocationException {
         return EditorFindSupport.getInstance().getBlocks(blocks, doc, startPos, endPos);
-    }
-
-    /** Get find property without performing initialization
-    * of find properties. This is useful for example for base document
-    * when it wants to query whether it should do highlight search.
-    */
-    Object getPropertyNoInit(String name) {
-        return EditorFindSupport.getInstance().getPropertyNoInit(name);
     }
 
     /** Set find property with specified name and fire change.

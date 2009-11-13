@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.refactoring.java.plugins;
 
+import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
@@ -450,9 +451,12 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
             // add newmethods
             for (ElementHandle<ExecutableElement> handle : refactoring.getMethods()) {
                 ExecutableElement memberElm = handle.resolve(wc);
+                TreePath mpath = wc.getTrees().getPath(memberElm);
                 MethodTree tree = wc.getTrees().getTree(memberElm);
+                List<? extends AnnotationTree> annotations =
+                        filterOutOverrideAnnotation(tree.getModifiers().getAnnotations(), wc, mpath);
                 MethodTree newMethodTree = make.Method(
-                        make.Modifiers(Collections.<Modifier>emptySet(), tree.getModifiers().getAnnotations()),
+                        make.Modifiers(Collections.<Modifier>emptySet(), annotations),
                         tree.getName(),
                         tree.getReturnType(),
                         tree.getTypeParameters(),
@@ -495,6 +499,21 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
                 }
             }
             throw new IllegalStateException("wrong template, cannot find the interface in " + javac.getFileObject()); // NOI18N
+        }
+
+        private static List<? extends AnnotationTree> filterOutOverrideAnnotation(List<? extends AnnotationTree> annotations, CompilationInfo javac, TreePath pathToMethod) {
+            if (annotations.isEmpty()) {
+                return annotations;
+            }
+            List<AnnotationTree> newAnnotations = new ArrayList<AnnotationTree>(annotations.size());
+            TypeElement overrideAnn = javac.getElements().getTypeElement("java.lang.Override"); // NOI18N
+            for (AnnotationTree annotationTree : annotations) {
+                Element annotation = javac.getTrees().getElement(new TreePath(pathToMethod, annotationTree));
+                if (annotation == null || annotation != overrideAnn) {
+                    newAnnotations.add(annotationTree);
+                }
+            }
+            return newAnnotations;
         }
     }
     

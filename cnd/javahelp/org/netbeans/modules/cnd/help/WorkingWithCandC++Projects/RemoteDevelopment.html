@@ -5,8 +5,8 @@ Use is subject to license terms.
  -->
 <html>
   <head>
-    <meta content="text/html; charset=MacRoman" http-equiv="Content-Type">
-    <link rel="StyleSheet" type="text/css" href="/org/netbeans/modules/usersguide/ide.css">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <link href="/org/netbeans/modules/usersguide/ide.css" type="text/css" rel="StyleSheet">
     <meta content="Helen" name="generator">
     <title>Doing Remote Development</title>
   </head>
@@ -15,11 +15,11 @@ Use is subject to license terms.
        Doing Remote Development
     </h2>
     <p>
-       <a href="#seealso"><small>See Also</small></a><small>&nbsp;</small>
+       <small><a href="#seealso">See Also</a>&nbsp;</small>
     </p>
     <p>
        You can build, run, and debug projects on the local host (the system from which you started
-      the IDE) or on a remote host running a UNIX® operating system.
+      the IDE) or on a remote host running a Linux or Solaris operating system.
     </p>
     <p>
        When you create a project, the current development host is selected as the development host
@@ -42,9 +42,8 @@ Use is subject to license terms.
         define the mapping between local and remote paths to project source files when you define
         the remote host.
       </li>
-      
       <li>
-        Use the scp (secure copy) command to copy files to the remote host.
+        Use the Smart Secure Copy option to copy files to the remote host.
       </li>
     </ul>
     <p>
@@ -59,11 +58,14 @@ Use is subject to license terms.
       by selecting the remote development host in your project properties. Then you can use the IDE
       to build your project in the same way you do locally. The advantage of remote development is
       that you can gain access to compilers and tools that you might not have on your local host.
-      &nbsp;The remote server may also have more robust hardware, such as multicore processors to
-      enable parallel processing of your builds.
+      The remote server may also have more robust hardware, such as multicore processors to enable
+      parallel processing of your builds.
     </p>
     <p>
-       &nbsp;
+       If you have a remote machine running the Solaris 10 OS or OpenSolaris OS, you can take
+      advantage of the IDE's <a href=
+      "../ProfilingCandC++Projects/OverviewOfCandC++Profiling.html">C/C++ profiling tools</a> that
+      are supported on Solaris operating systems.
     </p>
     <table>
       <tr>
@@ -77,13 +79,20 @@ Use is subject to license terms.
         </td>
         <td>
           <a href="ConfiguringBuildTools.html">Configuring Build Tools</a><br>
-           <a href="ProjectPropsBuild.html">C/C++ Project Properties Dialog Box: Build</a> 
+           <a href="ProjectPropsBuild.html">C/C++ Project Properties Dialog Box: Build</a><br>
+               <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                    <param name="content" value="http://www.netbeans.org/kb/docs/cnd/remotedev-tutorial.html">
+                    <param name="text" value="<html><u>C/C++ Remote
+          Development tutorial (Web document)</u></html>">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue">
+                </object>
         </td>
       </tr>
     </table>
     <hr>
     <p>
-       <a href="../credits.html"><small>Legal Notices</small></a>
+       <small><a href="../credits.html">Legal Notices</a></small>
     </p>
     <table border="0" cellpadding="20">
       <tr>

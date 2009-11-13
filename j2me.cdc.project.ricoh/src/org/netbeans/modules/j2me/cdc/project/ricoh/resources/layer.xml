@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
@@ -98,7 +98,9 @@ made subject to such option by the copyright holder.
     </folder>    
     <folder name="org-netbeans-api-project-libraries">
         <folder name="Libraries">
-            <file name="ricoh-ant-utils.xml" url="Utils.xml"/>
+            <file name="ricoh-ant-utils.xml" url="Utils.xml">
+                <attr name="displayName" bundlevalue="org.netbeans.modules.j2me.cdc.project.ricoh.Bundle#ricoh-ant-utils"/>
+            </file>
         </folder>
     </folder>    
     

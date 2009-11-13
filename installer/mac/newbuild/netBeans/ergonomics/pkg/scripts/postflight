@@ -19,8 +19,10 @@
 
 set -e
 
-script_dir=`dirname "$0"`
+dirname=`dirname "$0"`
 
-if [ -d "/Library/Receipts/ergonomics.pkg" ] ; then
-    rm -rf "/Library/Receipts/ergonomics.pkg"
-fi
+. "$dirname"/env.sh
+
+#clean receipts
+"$dirname"/clean_receipts.sh "ergonomics-$NB_ID" "org.netbeans.ide.ergonomics"
+

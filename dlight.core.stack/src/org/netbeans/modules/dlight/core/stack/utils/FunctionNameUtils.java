@@ -106,7 +106,11 @@ public final class FunctionNameUtils {
                         }
                     }
                     break;
+                case '[':
+                    start = i + 1;
+                    break;
                 case '(':
+                case ']':
                     return functionSignature.substring(start, i);
             }
         }

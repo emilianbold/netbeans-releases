@@ -50,6 +50,8 @@ import org.netbeans.modules.php.editor.parser.astnodes.ClassName;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.GotoLabel;
+import org.netbeans.modules.php.editor.parser.astnodes.GotoStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
@@ -68,7 +70,6 @@ import org.netbeans.modules.php.editor.parser.astnodes.Variable;
  * @author Radek Matous
  */
 public class ASTNodeInfo<T extends ASTNode> {
-
     private T node;
     private Kind kind;
 
@@ -79,7 +80,7 @@ public class ASTNodeInfo<T extends ASTNode> {
         FIELD, STATIC_FIELD,
         CLASS_CONSTANT, STATIC_CLASS_CONSTANT,
         VARIABLE, CONSTANT, FUNCTION,PARAMETER,
-        INCLUDE, RETURN_MARKER}
+        INCLUDE, RETURN_MARKER, GOTO}
 
     ASTNodeInfo(T node) {
         this.node = node;
@@ -182,6 +183,12 @@ public class ASTNodeInfo<T extends ASTNode> {
         return new ASTNodeInfo<UseStatementPart>(statementPart);
     }
 
+    public static ASTNodeInfo<GotoStatement> create(GotoStatement statement) {
+        return new ASTNodeInfo<GotoStatement>(statement);
+    }
+    public static ASTNodeInfo<GotoLabel> create(GotoLabel label) {
+        return new ASTNodeInfo<GotoLabel>(label);
+    }
     public static ASTNodeInfo<FunctionInvocation> create(FunctionInvocation functionInvocation) {
         return new ASTNodeInfo<FunctionInvocation>(functionInvocation);
     }
@@ -235,7 +242,11 @@ public class ASTNodeInfo<T extends ASTNode> {
     }
 
     private static Kind toKind(ASTNode node) {
-        if (node instanceof FunctionInvocation) {
+        if (node instanceof GotoStatement) {
+            return Kind.GOTO;
+        } else if (node instanceof GotoLabel) {
+            return Kind.GOTO;
+        } else if (node instanceof FunctionInvocation) {
             return Kind.FUNCTION;
         } else if (node instanceof Variable) {
             return Kind.VARIABLE;
@@ -262,7 +273,13 @@ public class ASTNodeInfo<T extends ASTNode> {
     }
 
     protected static String toName(ASTNode node) {
-        if (node instanceof FunctionInvocation) {
+        if (node instanceof GotoStatement) {
+            GotoStatement gotoStatement = (GotoStatement) node;
+            return gotoStatement.getLabel().getName();
+        } else if (node instanceof GotoLabel) {
+            GotoLabel gotoLabel = (GotoLabel) node;
+            return gotoLabel.getName().getName();
+        } else if (node instanceof FunctionInvocation) {
             FunctionInvocation fi = (FunctionInvocation) node;
             return CodeUtils.extractFunctionName(fi);
         } else if (node instanceof Variable) {
@@ -308,7 +325,13 @@ public class ASTNodeInfo<T extends ASTNode> {
     }
 
     protected static OffsetRange toOffsetRange(ASTNode node) {
-        if (node instanceof FunctionInvocation) {
+        if (node instanceof GotoStatement) {
+            GotoStatement gotoStatement = (GotoStatement) node;
+            return toOffsetRange(gotoStatement.getLabel());
+        } else if (node instanceof GotoLabel) {
+            GotoLabel gotoLabel = (GotoLabel) node;
+            return toOffsetRange(gotoLabel.getName());
+        } else if (node instanceof FunctionInvocation) {
             return toOffsetRange(((FunctionInvocation) node).getFunctionName().getName());
         } else if (node instanceof Variable) {
             Variable var = (Variable) node;

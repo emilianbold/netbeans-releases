@@ -59,25 +59,15 @@ public class StorageAllocator {
     private StorageAllocator() {
         diskRepositoryPath = System.getProperty("cnd.repository.cache.path");
         if (diskRepositoryPath == null) {
-            long index = 0;
-            diskRepositoryPath = System.getProperty("java.io.tmpdir");
-            
-            diskRepositoryPath += File.separator +  
-                    System.getProperty("user.name") +  "-cnd68-caches-";  //NOI18N
-            
-            File diskRepositoryFile = new File(diskRepositoryPath + index);
-            // find name for directory which is not occupied by file
-
-            while (diskRepositoryFile.exists() && !diskRepositoryFile.isDirectory()) {
-                diskRepositoryFile = new File(diskRepositoryPath + ++index);
-            }
+            diskRepositoryPath = System.getProperty("netbeans.user") + //NOI18N
+                                 File.separator + "var" + File.separator + "cache" +  //NOI18N
+                                 File.separator + "cnd" + File.separator + "model";  //NOI18N
             // create directory if needed
+            File diskRepositoryFile = new File(diskRepositoryPath);
             if (!diskRepositoryFile.exists()) {
                 diskRepositoryFile.mkdirs();
             }
             diskRepositoryPath = diskRepositoryFile.getAbsolutePath();
-            
-            //System.out.println("Repository location is " + diskRepositoryPath);
         }
     };
     

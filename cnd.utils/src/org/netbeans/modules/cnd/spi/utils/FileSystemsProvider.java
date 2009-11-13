@@ -50,13 +50,18 @@ import org.openide.util.Lookup;
  */
 public abstract class FileSystemsProvider {
 
-    public final class Data {
+    public static final class Data {
         public final FileSystem fileSystem;
         public final String path;
 
         public Data(FileSystem fileSystem, String path) {
             this.fileSystem = fileSystem;
             this.path = path;
+        }
+
+        @Override
+        public String toString() {
+            return this.fileSystem.getDisplayName() + ":" + path; // NOI18N
         }
     }
 
@@ -66,6 +71,9 @@ public abstract class FileSystemsProvider {
         return DEFAULT;
     }
 
+    public static String getCaseInsensitivePath(CharSequence path) {
+        return getDefault().getCaseInsensitivePathImpl(path);
+    }
 
     public static Data get(File file) {
         return getDefault().getImpl(file);
@@ -77,6 +85,7 @@ public abstract class FileSystemsProvider {
 
     protected abstract Data getImpl(File file);
     protected abstract Data getImpl(CharSequence path);
+    protected abstract String getCaseInsensitivePathImpl(CharSequence path);
 
     private static class DefaultProvider extends FileSystemsProvider {
 
@@ -106,6 +115,16 @@ public abstract class FileSystemsProvider {
                 }
             }
             return null;
+        }
+
+        public String getCaseInsensitivePathImpl(CharSequence path) {
+            for (FileSystemsProvider provider : cache) {
+                String data = provider.getCaseInsensitivePathImpl(path);
+                if (data != null) {
+                    return data;
+                }
+            }
+            return path.toString();
         }
     }
 }

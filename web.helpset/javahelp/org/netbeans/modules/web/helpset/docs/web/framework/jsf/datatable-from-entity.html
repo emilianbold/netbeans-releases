@@ -1,0 +1,103 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<!--
+ *     	  Copyright © 2009 Sun Microsystems, Inc. All rights reserved.
+ *	  Use is subject to license terms.
+-->
+
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <title>Creating a JSF Data Table for Entity Data</title>
+        <link href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css"
+            rel="stylesheet" type="text/css">
+    </head>
+
+    <body>
+        <h2>Creating a JSF Data Table for Entity Data</h2>
+
+        <p><small><a href="#seealso">See Also</a></small></p>
+
+        <p>You can use the Data Table from Entity dialog to generate a JSF data table that
+            contains columns for all properties contained in an entity class. In order to
+            make use of this facility, you must already have a JSF managed bean created to
+            handle any back-end data associated with the entity class.</p>
+
+        <p class="note">If you use this dialog without having an associated managed bean,
+            you can enter a name for the managed bean in the dialog, and that name will be
+            used in the page regardless of whether it is valid or not. You can then create
+            a managed bean using the IDE's Managed Bean wizard, or if you use the JSF Pages
+            from Entity Classes wizard, managed beans are generated for all selected entity
+            classes.</p>
+
+        <h4>To generate a JSF data table from an entity class:</h4>
+
+        <ol>
+            <li>Open any Facelets page in the editor.</li>
+
+            <li>Make sure that you have declared the JSF tag libaries in the page's root
+                element (typically the <code>&lt;html&gt;</code> tag), as shown below:
+
+                <pre>
+xmlns:h=&quot;http://java.sun.com/jsf/html&quot;
+xmlns:f=&quot;http://java.sun.com/jsf/core&quot;</pre>
+            </li>
+
+            <li><em>Either</em> type '<code>jsf</code>' in the editor, press Ctrl-Space,
+                then select the JSF Data Table from Entity option, <em>or</em>, in the Palette,
+                click and drag the JSF Data Table from Entity component into the desired
+                location in the editor and release the mouse button. The JSF Table from
+                Entity dialog box opens.</li>
+
+            <li>In the Entity Bean drop-down, select the entity class that you want to
+                generate the data table from. The IDE scans the project for all entity classes
+                and makes them accessible from the drop-down list.</li>
+
+            <li>In the Managed Bean Property field, select a property. The property you choose
+                must return a <code>List</code> of objects that correspond to the entity bean
+                you selected in the Entity Bean drop-down.</li>
+
+            <li>Click OK. The IDE generates code for your Facelets page. For example, a managed
+                bean that contains a property that returns a <code>List</code> of <code>Product</code>
+                objects would display similarly to the following:
+
+                <pre>
+&lt;f:view&gt;
+    &lt;h:form&gt;
+        &lt;h1&gt;&lt;h:outputText value=&quot;List&quot;/&gt;&lt;/h1&gt;
+        &lt;h:dataTable value=&quot;#{productController.productItems}&quot; var=&quot;item&quot;&gt;
+            &lt;h:column&gt;
+                &lt;f:facet name=&quot;header&quot;&gt;
+                    &lt;h:outputText value=&quot;ProductId&quot;/&gt;
+                &lt;/f:facet&gt;
+                &lt;h:outputText value=&quot;#{item.productId}&quot;/&gt;
+            &lt;/h:column&gt;
+            ...
+            [ Other columns added here. ]
+            ...
+        &lt;/h:dataTable&gt;
+    &lt;/h:form&gt;
+&lt;/f:view&gt;</pre></li>
+
+            <li>Optionally, remove any of the entries for columns that you do not want to
+                display in your Facelets page.</li>
+        </ol>
+
+        <p class="note">You can customize the template that specifies the generated code for
+            the JSF Form from Entity dialog. To do so, click the Customize Template link in
+            the dialog, and in the template file make any changes to better suit your work
+            patterns. Save the file. The next time you use the dialog, the changes you made
+            to the template will appear in the generated code.</p>
+
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="form-from-entity.html">Creating a JSF Form for Entity Data</a></dd>
+            <dd><a href="palette.html">Working with JSF Components in the Palette</a></dd>
+            <dd><a href="edit.html">Editing JSF Pages</a></dd>
+            <dd><a href="about.html">About JavaServer Faces Framework Support</a></dd>
+        </dl>
+
+        <hr><small><a href="../../../credits.html">Legal Notices</a></small>
+        <table cellpadding="20" border="0"><tr><td>&nbsp;</td></tr></table>
+    </body>
+</html>

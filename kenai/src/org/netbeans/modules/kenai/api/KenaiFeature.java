@@ -41,6 +41,7 @@ package org.netbeans.modules.kenai.api;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.logging.Level;
@@ -166,4 +167,12 @@ public final class KenaiFeature {
         return "KenaiFeature " + getName() + ", url=" + getLocation() ;
     }
 
+    /**
+     * This method should be moved to bugtracking module
+     * @param file
+     * @return bug tracking component or null
+     */
+    public static String getComponentForFile(File file) {
+        return NbModuleOwnerSupport.getInstance().getOwner(".bugtracking", file);//NOI18N
+    }
 }

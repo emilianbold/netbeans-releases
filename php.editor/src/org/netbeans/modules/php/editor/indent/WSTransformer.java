@@ -73,6 +73,10 @@ class WSTransformer extends DefaultTreePathVisitor {
             PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_COMMENT,
             PHPTokenId.PHP_LINE_COMMENT);
 
+    private Collection<PHPTokenId> NO_BREAK_B4_TKNS = Arrays.asList(PHPTokenId.PHP_CLOSETAG,
+            PHPTokenId.PHP_ELSE, PHPTokenId.PHP_ELSEIF, PHPTokenId.PHP_ELSE, PHPTokenId.PHP_CATCH,
+            PHPTokenId.PHP_WHILE);
+
     public WSTransformer(Context context) {
         this.context = context;
         String openingBraceStyle = CodeStyle.get(context.document()).getOpeningBraceStyle();
@@ -103,13 +107,23 @@ class WSTransformer extends DefaultTreePathVisitor {
                     length = tokenSequence.token().length();
                 }
 
-                Replacement preOpenBracket = new Replacement(start, length, newLineReplacement);
-                replacements.add(preOpenBracket);
+                boolean precededByOpenTag = tokenSequence.token().id() == PHPTokenId.PHP_OPENTAG;
+
+                if (!precededByOpenTag && length > 0){
+                    if (tokenSequence.movePrevious()){
+                        precededByOpenTag = tokenSequence.token().id() == PHPTokenId.PHP_OPENTAG;
+                    }
+                }
+
+                if (!precededByOpenTag){
+                    Replacement preOpenBracket = new Replacement(start, length, newLineReplacement);
+                    replacements.add(preOpenBracket);
+                }
             }
 
             tokenSequence.move(node.getStartOffset());
 
-            if (tokenSequence.moveNext() && !wsAndCommentsContainBreak(tokenSequence, true)){
+            if (tokenSequence.moveNext() && !doNotSplitLine(tokenSequence, true)){
                 Replacement postOpen = new Replacement(tokenSequence.offset() +
                         tokenSequence.token().length(), 0, "\n"); //NOI18N
                 replacements.add(postOpen);
@@ -119,10 +133,11 @@ class WSTransformer extends DefaultTreePathVisitor {
 
             if (tokenSequence.movePrevious()){
                 int closPos = tokenSequence.offset();
-                if (!wsAndCommentsContainBreak(tokenSequence, false)){
+                if (!doNotSplitLine(tokenSequence, false)){
                     // avoid adding double line break in case that } is preceded with ;
                     tokenSequence.movePrevious();
-                    if (tokenSequence.token().id() != PHPTokenId.PHP_SEMICOLON){
+                    if (tokenSequence.token().id() != PHPTokenId.PHP_SEMICOLON
+                            && tokenSequence.token().id() != PHPTokenId.PHP_OPENTAG){
                         Replacement preClose = new Replacement(closPos, 0, "\n"); //NOI18N
                         replacements.add(preClose);
                     }
@@ -130,10 +145,13 @@ class WSTransformer extends DefaultTreePathVisitor {
                 }
 
                 tokenSequence.move(node.getEndOffset());
-                if (tokenSequence.movePrevious() && !wsAndCommentsContainBreak(tokenSequence, true)){
+                if (tokenSequence.movePrevious() && !doNotSplitLine(tokenSequence, true)){
+                    
                     Replacement postClose = new Replacement(tokenSequence.offset() +
                             tokenSequence.token().length(), 0, "\n"); //NOI18N
+
                     replacements.add(postClose);
+                    
                 }
             }
             
@@ -160,7 +178,7 @@ class WSTransformer extends DefaultTreePathVisitor {
             if (!isWithinUnbreakableRange(tokenSequence.offset())
                     && splitTrigger(tokenSequence)){
                 int splitPos = tokenSequence.offset() + 1;
-                if (wsAndCommentsContainBreak(tokenSequence, true)){
+                if (doNotSplitLine(tokenSequence, true)){
                     continue;
                 }
 
@@ -183,16 +201,19 @@ class WSTransformer extends DefaultTreePathVisitor {
         return false;
     }
 
-    private boolean wsAndCommentsContainBreak(TokenSequence<PHPTokenId> tokenSequence, boolean fwd) {
+    private boolean doNotSplitLine(TokenSequence<PHPTokenId> tokenSequence, boolean fwd) {
         //int orgOffset = tokenSequence.offset();
         boolean retVal = false;
         while (fwd && tokenSequence.moveNext() || !fwd && tokenSequence.movePrevious()) {
             if (WS_AND_COMMENT_TOKENS.contains(tokenSequence.token().id())) {
                 if (textContainsBreak(tokenSequence.token().text())) {
+                    // the split trigger is already followed by a break
                     retVal = true;
                     break;
                 }
             } else {
+                // do not break lines in expressions like <?php foo(); ?>, see issue #174595
+                retVal = NO_BREAK_B4_TKNS.contains(tokenSequence.token().id());
                 if (fwd){
                     tokenSequence.movePrevious();
                 } else {
@@ -201,10 +222,7 @@ class WSTransformer extends DefaultTreePathVisitor {
                 break; // return false
             }
         }
-
-//        tokenSequence.move(orgOffset);
-//        tokenSequence.moveNext();
-
+        
         return retVal;
     }
 

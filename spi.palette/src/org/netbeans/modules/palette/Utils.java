@@ -106,17 +106,21 @@ public final class Utils {
     }
     
     public static boolean isReadonly( Node node ) {
-        Object val = node.getValue( PaletteController.ATTR_IS_READONLY );
+        return getBoolean(node, PaletteController.ATTR_IS_READONLY, !node.canDestroy());
+    }
+
+    public static boolean getBoolean( Node node, String attrName, boolean defaultValue ) {
+        Object val = node.getValue( attrName );
         if( null == val ) {
             DataObject dobj = (DataObject)node.getCookie( DataObject.class );
             if( null != dobj ) {
-                val = dobj.getPrimaryFile().getAttribute( PaletteController.ATTR_IS_READONLY );
+                val = dobj.getPrimaryFile().getAttribute( attrName );
             }
         }
         if( null != val ) {
             return Boolean.valueOf( val.toString() ).booleanValue();
         } else {
-            return !node.canDestroy();
+            return defaultValue;
         }
     }
     

@@ -48,6 +48,8 @@ import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -56,6 +58,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.indicators.impl.TimeSeriesDescriptorAccessor;
 import org.netbeans.modules.dlight.util.ui.DLightUIPrefs;
 
 /**
@@ -64,9 +68,30 @@ import org.netbeans.modules.dlight.util.ui.DLightUIPrefs;
  * @author Alexey Vladykin
  */
 public class Legend extends JPanel {
+    private final List<TimeSeriesDescriptor> graphs;
+    private final List<DetailDescriptor> details;
 
     public Legend(List<TimeSeriesDescriptor> graphs, List<DetailDescriptor> details) {
-        super(new GridBagLayout());
+        this.graphs = graphs;
+        this.details = details;
+        init(null);
+    }
+
+    private boolean hasInfoToPaint(TimeSeriesDescriptor graph, Collection<Column> providedColumns){
+        TimeSeriesDescriptorAccessor accessor = TimeSeriesDescriptorAccessor.getDefault();
+        if (providedColumns == null || providedColumns.isEmpty() ||
+                accessor.getSourceColumns(graph) == null || accessor.getSourceColumns(graph) .isEmpty()){
+            return true;
+        }
+        //if the  intersection is not empty - returns tru
+        ArrayList<Column> list = new ArrayList<Column>(providedColumns);
+        list.retainAll(accessor.getSourceColumns(graph));
+        return !list.isEmpty();
+    }
+
+    private void init(Collection<Column> providedColumns){
+        removeAll();
+        setLayout(new GridBagLayout());
 
         Font font = DLightUIPrefs.getFont(DLightUIPrefs.INDICATOR_LEGEND_FONT);
 
@@ -80,9 +105,14 @@ public class Legend extends JPanel {
         setPreferredSize(size);
         setOpaque(true);
         GridBagConstraints c;
-
+        TimeSeriesDescriptorAccessor accessor = TimeSeriesDescriptorAccessor.getDefault();
         for (TimeSeriesDescriptor graph : graphs) {
-            JLabel label = new JLabel(graph.getDisplayName(), new ColorIcon(font.getSize(), graph.getColor()), SwingConstants.LEADING);
+            //check if should paint the graph
+            if (!hasInfoToPaint(graph, providedColumns)){
+                    continue;
+            }
+            JLabel label = new JLabel(accessor.getDisplayName(graph), 
+                    new ColorIcon(font.getSize(), accessor.getColor(graph)), SwingConstants.LEADING);
             label.setFont(font);
             label.setForeground(DLightUIPrefs.getColor(DLightUIPrefs.INDICATOR_LEGEND_FONT_COLOR));
             c = new GridBagConstraints();
@@ -136,6 +166,11 @@ public class Legend extends JPanel {
                 }
             });
         }
+    }
+
+    public final void updateWithInfoProvided(Collection<Column> columns){
+        init(columns);
+        repaint();
     }
 
     private void updateDetailImpl(String name, String value) {

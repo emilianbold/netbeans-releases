@@ -45,6 +45,8 @@ import org.netbeans.modules.hibernate.editor.EditorContextFactory;
 import org.netbeans.modules.hibernate.editor.DocumentContext;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.TokenItem;
@@ -73,7 +75,8 @@ public class CompletionContext {
         ATTRIBUTE_VALUE,
         NONE
     };
-    
+
+    private static final Logger LOGGER = Logger.getLogger(CompletionContext.class.getName());
     private CompletionType completionType = CompletionType.NONE;
     private Document doc;
     private int caretOffset;
@@ -85,7 +88,13 @@ public class CompletionContext {
     public CompletionContext(Document doc, int caretOffset) {
         this.doc = doc;
         this.caretOffset = caretOffset;
-        this.support = (XMLSyntaxSupport) ((BaseDocument)doc).getSyntaxSupport();
+
+        try {
+            this.support = (XMLSyntaxSupport) ((BaseDocument)doc).getSyntaxSupport();
+        } catch (ClassCastException cce) {
+            LOGGER.log(Level.FINE, cce.getMessage());
+            this.support = new XMLSyntaxSupport(((BaseDocument)doc));
+        }
         this.documentContext = EditorContextFactory.getDocumentContext(doc, caretOffset);
         this.lastTypedChar = support.lastTypedChar();
         initContext();

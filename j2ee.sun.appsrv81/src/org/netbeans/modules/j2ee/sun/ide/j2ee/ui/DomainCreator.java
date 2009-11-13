@@ -213,15 +213,18 @@ public final class DomainCreator {
                     }
                     
                     // Set all needed default properties
-                    factory.setProperty(PROP_DISPLAY_NAME, DEFAULT_SERVER_NAME);
                     int versionId = ServerLocationManager.getAppServerPlatformVersion(serverRoot);
                     if (versionId == ServerLocationManager.GF_V1) {
                         factory.setProperty(PROP_DISPLAY_NAME,
                                 NbBundle.getMessage(PluginProperties.class, "LBL_GLASSFISH_V1"));   // NOI18N
-                    }
-                    if (versionId > ServerLocationManager.GF_V1) {
-                        factory.setProperty(PROP_DISPLAY_NAME,
-                                NbBundle.getMessage(PluginProperties.class, "LBL_GLASSFISH_V2"));   // NOI18N
+                    } else if (versionId == ServerLocationManager.GF_V2) {
+                        factory.setProperty(PROP_DISPLAY_NAME, NbBundle.getMessage(PluginProperties.class, "LBL_GLASSFISH_V2"));  // NOI18N
+                    } else if (versionId == ServerLocationManager.GF_V2point1) {
+                        factory.setProperty(PROP_DISPLAY_NAME, NbBundle.getMessage(PluginProperties.class, "LBL_GLASSFISH_V2point1"));  // NOI18N
+                    } else if (versionId == ServerLocationManager.GF_V2point1point1) {
+                        factory.setProperty(PROP_DISPLAY_NAME, NbBundle.getMessage(PluginProperties.class, "LBL_GLASSFISH_V2point1point1"));  // NOI18N
+                    } else {
+                        factory.setProperty(PROP_DISPLAY_NAME, DEFAULT_SERVER_NAME);
                     }
                     factory.setProperty(PROP_USER_NAME, DEFAULT_USERNAME);
                     factory.setProperty(PROP_PASSWORD, DEFAULT_PASSWORD);

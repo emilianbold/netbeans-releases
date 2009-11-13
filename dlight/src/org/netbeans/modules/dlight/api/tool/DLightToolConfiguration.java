@@ -63,6 +63,7 @@ public final class DLightToolConfiguration {
     private boolean visible;
     private String iconPath = null;
     private String shortDescription;
+    private String detailsDescription;
 
     static {
         DLightToolConfigurationAccessor.setDefault(new DLightToolConfigurationAccessorImpl());
@@ -112,7 +113,7 @@ public final class DLightToolConfiguration {
     public void setDescription(final String description){
         this.shortDescription = description;
     }
-
+   
     public void setVisible(final boolean visible) {
         this.visible = visible;
     }

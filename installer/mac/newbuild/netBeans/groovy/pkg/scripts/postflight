@@ -19,11 +19,13 @@
 
 set -e
 
-script_dir=`dirname "$0"`
+dirname=`dirname "$0"`
+
+. "$dirname"/env.sh
 
 #add Product ID
-"$script_dir"/addproduct_id.sh "GROOVY"
+"$dirname"/addproduct_id.sh "GROOVY"
 
-if [ -d "/Library/Receipts/groovy.pkg" ] ; then
-    rm -rf "/Library/Receipts/groovy.pkg"
-fi
+#clean receipts
+"$dirname"/clean_receipts.sh "groovy-$NB_ID" "org.netbeans.ide.groovy"
+

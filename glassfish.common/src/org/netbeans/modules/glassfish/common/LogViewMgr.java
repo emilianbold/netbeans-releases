@@ -240,7 +240,7 @@ public class LogViewMgr {
         }
     }
     
-    private void stopReaders() {
+    public void stopReaders() {
         synchronized (readers) {
             for(WeakReference<LoggerRunnable> ref: readers) {
                 LoggerRunnable logger = ref.get();
@@ -472,7 +472,8 @@ public class LogViewMgr {
 
                 // ignoreEof is true for log files and false for process streams.
                 // FIXME Should differentiate filter types more cleanly.
-                Filter filter = ignoreEof ? new LogFileFilter(localizedLevels) : new StreamFilter();
+                Filter filter = ignoreEof ? new LogFileFilter(localizedLevels) : 
+                    (uri.contains("]deployer:gfv3ee6:") ? new LogFileFilter(localizedLevels) :new StreamFilter());
                 
                 // read from the input stream and put all the changes to the I/O window
                 char [] chars = new char[1024];
@@ -505,6 +506,12 @@ public class LogViewMgr {
                     
                     // sleep for a while when the stream is empty
                     try {
+                        if (ignoreEof) {
+                            // read from file case... not associated with a process...
+                            //     make sure there is no star
+                            io.getErr().close();
+                            io.getOut().close();
+                        }
                         Thread.sleep(DELAY);
                     } catch (InterruptedException e) {
                         // ignore
@@ -531,6 +538,8 @@ public class LogViewMgr {
                 
                 Thread.currentThread().setName(originalName);
             }
+            io.getErr().close();
+            io.getOut().close();
         }
 
         private void processLine(String line) {
@@ -545,8 +554,14 @@ public class LogViewMgr {
             // Track level, color, listener
             Message message = new Message(line);
             message.process(recognizers);
-            message.print();
-            selectIO();
+                message.print();
+                selectIO();
+            if (shutdown) {
+                // some messages get processed after the server has 'stopped'
+                //    prevent new stars on the output caption.
+                io.getErr().close();
+                io.getOut().close();
+            }
         }
     }
 

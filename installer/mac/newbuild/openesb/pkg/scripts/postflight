@@ -21,6 +21,8 @@ set -e
 
 script_dir=`dirname "$0"`
 
+. "$script_dir"/env.sh
+
 jdk_home=`"$script_dir"/get_current_jdk.sh`
 
 "$script_dir"/unpack200.sh "$2" "$2" "$jdk_home"
@@ -39,7 +41,6 @@ glassfish_dir=`pwd`
 
 "$script_dir"/perm.sh
 
-if [ -d "/Library/Receipts/openesb.pkg" ] ; then
-    rm -rf "/Library/Receipts/openesb.pkg"
-fi
+#clean receipts
+"$script_dir"/clean_receipts.sh "openesb-$OPENESB_ID" "openesb"
 

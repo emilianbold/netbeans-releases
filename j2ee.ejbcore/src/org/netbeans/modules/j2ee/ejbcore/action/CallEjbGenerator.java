@@ -113,7 +113,7 @@ public class CallEjbGenerator {
                     Ejb ejb = metadata.findByEjbClass(ejbReference.getEjbClass());
                     return new Object[]{ejb instanceof Session,
                                         metadata.getRoot().getVersion(),
-                                        ejb.getEjbName()};
+                                        ejb != null ? ejb.getEjbName() : null};
                 }
             });
         } catch (IOException ioe) {
@@ -235,7 +235,8 @@ public class CallEjbGenerator {
         ElementHandle<? extends Element> result = null;
         
         try {
-            if (InjectionTargetQuery.isInjectionTarget(fileObject, className)) {
+            if (InjectionTargetQuery.isInjectionTarget(fileObject, className) && 
+               !(Utils.getBeanType(ejbReference).equals(Session.SESSION_TYPE_STATEFUL) && Utils.isServlet(fileObject, className))) {
                 if (isTargetEjb2x) {
                     result = generateInjectionEjb21FromEE5(
                             fileObject,

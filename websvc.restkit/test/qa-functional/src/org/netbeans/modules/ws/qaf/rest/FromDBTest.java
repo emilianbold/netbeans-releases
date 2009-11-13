@@ -49,7 +49,6 @@ import org.netbeans.jellytools.actions.OutputWindowViewAction;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.ide.ProjectSupport;
 
 /**
  * Tests for New REST web services from Database wizard
@@ -96,7 +95,7 @@ public class FromDBTest extends CRUDTest {
         String generationTitle = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.wizard.fromdb.Bundle", "TXT_EntityClassesGeneration");
         waitDialogClosed(generationTitle);
         new EventTool().waitNoEvent(1500);
-        ProjectSupport.waitScanFinished();
+        waitScanFinished();
         Set<File> files = getFiles(getRestPackage() + ".service"); //NOI18N
         files.addAll(getFiles(getRestPackage() + ".converter")); //NOI18N
         assertEquals("Some files were not generated", 30, files.size()); //NOI18N

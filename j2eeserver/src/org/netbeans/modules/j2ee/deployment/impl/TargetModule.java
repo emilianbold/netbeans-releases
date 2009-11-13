@@ -62,7 +62,7 @@ public class TargetModule implements TargetModuleID, java.io.Serializable {
     private final String id;
     private final String instanceUrl;
     private final String targetName;
-    private final long timestamp;
+    private volatile long timestamp;
     private final String contentDirectory;
     private final String contextRoot;
     private transient TargetModuleID delegate;
@@ -101,7 +101,7 @@ public class TargetModule implements TargetModuleID, java.io.Serializable {
             return targetName;
     }
     public long getTimestamp() { return timestamp; }
-    //public void setTimestamp(long ts) { this.timestamp = ts; }
+    public void updateTimestamp() { this.timestamp = System.currentTimeMillis(); }
     public String getContentDirectory() {
         return contentDirectory;
     }

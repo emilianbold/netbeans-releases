@@ -64,7 +64,7 @@ public class QueryHandleImpl extends QueryHandle implements ActionListener, Prop
     private final PropertyChangeSupport changeSupport;
     private Issue[] issues = new Issue[0];
     private String stringValue;
-    private boolean needsRefresh;
+    protected boolean needsRefresh;
 
     QueryHandleImpl(Query query, boolean needsRefresh) {
         this.query = query;
@@ -123,7 +123,7 @@ public class QueryHandleImpl extends QueryHandle implements ActionListener, Prop
         return ret;
     }
 
-    void refreshIfNeeded() {
+    synchronized void refreshIfNeeded() {
         if(needsRefresh) {
             needsRefresh = false;
             query.refresh();
@@ -166,7 +166,7 @@ public class QueryHandleImpl extends QueryHandle implements ActionListener, Prop
             return false;
         }
         final QueryHandleImpl other = (QueryHandleImpl) obj;
-        if ((this.stringValue == null) ? (other.stringValue != null) : !this.stringValue.equals(other.stringValue)) {
+        if ((this.toString() == null) ? (other.toString() != null) : !this.toString().equals(other.toString())) {
             return false;
         }
         return true;

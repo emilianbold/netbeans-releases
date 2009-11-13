@@ -56,7 +56,6 @@ made subject to such option by the copyright holder.
 
 <mapID target="adddriver" url="adddriver.html" />
 <mapID target="connectdb" url="connectdb.html" />
-<mapID target="pointbasedb" url="pointbasedb.html" />
 <mapID target="derbydb" url="derbydb.html" />
 <mapID target="delobj" url="delobj.html" />
 

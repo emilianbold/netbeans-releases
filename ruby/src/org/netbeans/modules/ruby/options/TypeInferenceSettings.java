@@ -77,7 +77,7 @@ public final class TypeInferenceSettings {
     }
 
     public boolean getRdocTypeInference() {
-        return getPreferences().getBoolean(RDOC, false);
+        return getPreferences().getBoolean(RDOC, true);
     }
 
 }

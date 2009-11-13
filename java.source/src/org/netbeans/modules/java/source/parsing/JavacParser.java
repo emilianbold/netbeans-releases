@@ -296,52 +296,59 @@ public class JavacParser extends Parser {
     //@GuardedBy (org.netbeans.modules.parsing.impl.TaskProcessor.parserLock)
     @Override
     public void parse(final Snapshot snapshot, final Task task, SourceModificationEvent event) throws ParseException {
+        try {
+            parseImpl(snapshot, task, event);
+        } catch (IOException ioe) {
+            throw new ParseException ("JavacParser failure", ioe); //NOI18N
+        }
+    }
+
+    private void parseImpl(final Snapshot snapshot, final Task task, SourceModificationEvent event) throws IOException {
         assert task != null;
         assert privateParser || Utilities.holdsParserLock();
         parseId++;
-        canceled.set(false);
-        try {            
-            LOGGER.fine("parse: task: " + task.toString() +"\n" + (snapshot == null ? "null" : snapshot.getText()));      //NOI18N
-            switch (this.sourceCount) {
-                case 0:
-                    ClasspathInfo _tmpInfo = null;
-                    if (task instanceof ClasspathInfoProvider &&
-                        (_tmpInfo = ((ClasspathInfoProvider)task).getClasspathInfo()) != null) {
-                        cpInfo = _tmpInfo;
-                        ciImpl = new CompilationInfoImpl(cpInfo);
+        canceled.set(false);        
+        LOGGER.fine("parse: task: " + task.toString() +"\n" + (snapshot == null ? "null" : snapshot.getText()));      //NOI18N
+        switch (this.sourceCount) {
+            case 0:
+                ClasspathInfo _tmpInfo = null;
+                if (task instanceof ClasspathInfoProvider &&
+                    (_tmpInfo = ((ClasspathInfoProvider)task).getClasspathInfo()) != null) {
+                    cpInfo = _tmpInfo;
+                    ciImpl = new CompilationInfoImpl(cpInfo);
+                }
+                else {
+                    throw new IllegalArgumentException("No classpath provided by task: " + task);
+                }
+                break;
+            case 1:
+                init (snapshot, task, true);
+                boolean needsFullReparse = true;
+                if (supportsReparse) {
+                    Pair<DocPositionRegion,MethodTree> _changedMethod;
+                    synchronized (this) {
+                        _changedMethod = this.changedMethod;
+                        this.changedMethod = null;
                     }
-                    else {
-                        throw new IllegalArgumentException("No classpath provided by task: " + task);
+                    if (_changedMethod != null && ciImpl != null) {
+                        LOGGER.fine("\t:trying partial reparse:\n" + _changedMethod.first.getText());                           //NOI18N
+                        needsFullReparse = !reparseMethod(ciImpl, snapshot, _changedMethod.second, _changedMethod.first.getText());
                     }
-                    break;
-                case 1:
-                    init (snapshot, task, true);
-                    boolean needsFullReparse = true;
-                    if (supportsReparse) {
-                        Pair<DocPositionRegion,MethodTree> _changedMethod;
-                        synchronized (this) {
-                            _changedMethod = this.changedMethod;
-                            this.changedMethod = null;
-                        }
-                        if (_changedMethod != null && ciImpl != null) {
-                            LOGGER.fine("\t:trying partial reparse:\n" + _changedMethod.first.getText());                           //NOI18N
-                            needsFullReparse = !reparseMethod(ciImpl, snapshot, _changedMethod.second, _changedMethod.first.getText());
-                        }
+                }
+                if (needsFullReparse) {
+                    synchronized (positions) {
+                        positions.clear();
                     }
-                    if (needsFullReparse) {
-                        ciImpl = createCurrentInfo (this, file, root,snapshot, null);
-                        LOGGER.fine("\t:created new javac");                                    //NOI18N
-                    }
-                    break;
-                default:
-                    init (snapshot, task, false);
-                    ciImpl = createCurrentInfo(this, file, root, snapshot,
-                        ciImpl == null ? null : ciImpl.getJavacTask());
-            }            
-            cachedSnapShot = snapshot;
-        } catch (IOException ioe) {
-            throw new ParseException ("JavacParser failure", ioe);            //NOI18N
+                    ciImpl = createCurrentInfo (this, file, root,snapshot, null);
+                    LOGGER.fine("\t:created new javac");                                    //NOI18N
+                }
+                break;
+            default:
+                init (snapshot, task, false);
+                ciImpl = createCurrentInfo(this, file, root, snapshot,
+                    ciImpl == null ? null : ciImpl.getJavacTask());
         }
+        cachedSnapShot = snapshot;
     }
 
     //@GuardedBy (org.netbeans.modules.parsing.impl.TaskProcessor.parserLock)
@@ -355,7 +362,15 @@ public class JavacParser extends Parser {
             LOGGER.fine ("\t:invalid, reparse");                                //NOI18N
             invalid = false;
             if (cachedSnapShot != null) {
-                parse (cachedSnapShot, task, null);
+                try {
+                    parseImpl(cachedSnapShot, task, null);
+                } catch (FileObjects.InvalidFileException ife) {
+                    //Deleted file
+                    LOGGER.warning(ife.getMessage());
+                    return null;
+                } catch (IOException ioe) {
+                    throw new ParseException ("JavacParser failure", ioe); //NOI18N
+                }
             }            
         }
         final boolean isJavaParserResultTask = task instanceof JavaParserResultTask;
@@ -373,7 +388,15 @@ public class JavacParser extends Parser {
                 }
                 assert cachedSnapShot != null;
                 initialized = false;        //Reset initialized, world has changed.
-                parse (cachedSnapShot, task, null);
+                try {
+                    parseImpl(cachedSnapShot, task, null);
+                } catch (FileObjects.InvalidFileException ife) {
+                    //Deleted file
+                    LOGGER.warning(ife.getMessage());
+                    return null;
+                } catch (IOException ioe) {
+                    throw new ParseException ("JavacParser failure", ioe); //NOI18N
+                }
             }
         }
         JavacParserResult result = null;
@@ -387,10 +410,18 @@ public class JavacParser extends Parser {
                 LOGGER.warning("ParserResultTask: " + task + " doesn't provide phase, assuming RESOLVED");                   //NOI18N
             }
             Phase reachedPhase;
-            try {
-                    reachedPhase = moveToPhase(requiredPhase, ciImpl, true, false, false);
+            final DefaultCancelService cancelService = DefaultCancelService.instance(ciImpl.getJavacTask().getContext());
+            if (cancelService != null) {
+                cancelService.mayCancel.set(true);
+            }
+            try {                
+                reachedPhase = moveToPhase(requiredPhase, ciImpl, true, false, false);
             } catch (IOException ioe) {
                 throw new ParseException ("JavacParser failure", ioe);      //NOI18N
+            } finally {
+                if (cancelService != null) {
+                    cancelService.mayCancel.set(false);
+                }
             }
             if (reachedPhase.compareTo(requiredPhase)>=0) {
                 Index.cancel.set(canceled);
@@ -619,11 +650,7 @@ public class JavacParser extends Parser {
         if (sourceLevel == null) {
             sourceLevel = JavaPlatformManager.getDefault().getDefaultPlatform().getSpecification().getVersion().toString();
         }
-        JavacTaskImpl javacTask = createJavacTask(cpInfo, diagnosticListener, sourceLevel, false, oraculum, parser == null ? null : new CancelService() {
-            public @Override boolean isCanceled() {
-                return parser.canceled.get();
-            }
-        });
+        JavacTaskImpl javacTask = createJavacTask(cpInfo, diagnosticListener, sourceLevel, false, oraculum, parser == null ? null : new DefaultCancelService(parser));
         Context context = javacTask.getContext();
         JavacFlowListener.preRegister(context);
         TreeLoader.preRegister(context, cpInfo);
@@ -683,7 +710,7 @@ public class JavacParser extends Parser {
                 context.put(ClassNamesForFileOraculum.class, cnih);
             }
             if (cancelService != null) {
-                CancelServiceRegistrator.preRegister(context, cancelService);
+                DefaultCancelService.preRegister(context, cancelService);
             }
             return task;
         } finally {
@@ -946,15 +973,29 @@ public class JavacParser extends Parser {
     
     //Helper classes
             
-    private static class CancelServiceRegistrator extends CancelService {
+    private static class DefaultCancelService extends CancelService {
+
+        //May be the parser canceled inside javac?
+        final AtomicBoolean mayCancel = new AtomicBoolean();        
+        private final JavacParser parser;
+
+        private DefaultCancelService(final JavacParser parser) {
+            this.parser = parser;
+        }
 
         public static void preRegister(Context context, CancelService cancelServiceToRegister) {
             context.put(cancelServiceKey, cancelServiceToRegister);
         }
 
+        public static DefaultCancelService instance(final Context ctx) {
+            assert ctx != null;
+            final CancelService cancelService = CancelService.instance(ctx);
+            return (cancelService instanceof DefaultCancelService) ? (DefaultCancelService) cancelService : null;
+        }
+
         @Override
         public boolean isCanceled() {
-            throw new UnsupportedOperationException("Never use CancelServiceRegistrator as a CancelService");
+            return mayCancel.get() && parser.canceled.get();
         }
     }
 

@@ -124,7 +124,7 @@ class ModelBuilder {
         return classScope;
     }
 
-    void build(PHPDocTag node,  OccurenceBuilder occurencesBuilder) {
+    void buildMagicMethod(PHPDocTag node,  OccurenceBuilder occurencesBuilder) {
         MagicMethodDeclarationInfo info = MagicMethodDeclarationInfo.create(node);
         if (info != null) {
             MethodScopeImpl methodScope = new MethodScopeImpl(getCurrentScope(), info);

@@ -46,6 +46,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Locale;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -58,6 +60,7 @@ import org.netbeans.modules.parsing.spi.indexing.BinaryIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
+import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibraryDescriptor;
 import org.netbeans.modules.web.jsf.editor.tld.TldLibrary;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -69,14 +72,20 @@ import org.openide.util.Exceptions;
 public class JsfBinaryIndexer extends BinaryIndexer {
 
     static final String INDEXER_NAME = "jsfBinary"; //NOI18N
-    static final int INDEX_VERSION = 3;
-    static final String LIB_NAMESPACE_KEY = "namespace"; //NOI18N
-    static final String LIB_FACELETS_KEY = "faceletsLibrary"; //NOI18N
+    static final int INDEX_VERSION = 5;
+    static final String TLD_LIBRARY_MARK_KEY = "tagLibraryDescriptor"; //NOI18N
+    static final String FACELETS_LIBRARY_MARK_KEY = "faceletsLibraryDescriptor"; //NOI18N
+    static final String LIBRARY_NAMESPACE_KEY = "namespace"; //NOI18N
+
     private static final String TLD_LIB_SUFFIX = ".tld"; //NOI18N
     private static final String FACELETS_LIB_SUFFIX = ".taglib.xml"; //NOI18N
 
+    private static final Logger LOGGER = Logger.getLogger(JsfBinaryIndexer.class.getSimpleName());
+
     @Override
     protected void index(Context context) {
+        LOGGER.log(Level.FINE, "indexing " + context.getRoot()); //NOI18N
+
         if (context.getRoot() == null) {
             return;
         }
@@ -98,8 +107,11 @@ public class JsfBinaryIndexer extends BinaryIndexer {
                 if (namespace != null) {
                     IndexingSupport sup = IndexingSupport.getInstance(context);
                     IndexDocument doc = sup.createDocument(file);
-                    doc.addPair(LIB_NAMESPACE_KEY, namespace, true, true);
+                    doc.addPair(LIBRARY_NAMESPACE_KEY, namespace, true, true);
+                    doc.addPair(TLD_LIBRARY_MARK_KEY, Boolean.TRUE.toString(), true, true);
                     sup.addDocument(doc);
+
+                    LOGGER.log(Level.FINE, "The file " + file + " indexed as a TLD (namespace=" + namespace + ")"); //NOI18N
                 }
             } catch (FileNotFoundException ex) {
                 Exceptions.printStackTrace(ex);
@@ -110,15 +122,20 @@ public class JsfBinaryIndexer extends BinaryIndexer {
 
     }
 
-    //just store a marker "faceletsLibrary=true" if facelets library descriptor
     private void processFaceletsLibraryDescriptors(Context context) {
         FileObject root = context.getRoot();
         for (FileObject file : findLibraryDescriptors(root, FACELETS_LIB_SUFFIX)) {
             try {
-                IndexingSupport sup = IndexingSupport.getInstance(context);
-                IndexDocument doc = sup.createDocument(file);
-                doc.addPair(LIB_FACELETS_KEY, Boolean.TRUE.toString(), true, true);
-                sup.addDocument(doc);
+                String namespace = FaceletsLibraryDescriptor.parseNamespace(file.getInputStream());
+                if(namespace != null) {
+                    IndexingSupport sup = IndexingSupport.getInstance(context);
+                    IndexDocument doc = sup.createDocument(file);
+                    doc.addPair(LIBRARY_NAMESPACE_KEY, namespace, true, true);
+                    doc.addPair(FACELETS_LIBRARY_MARK_KEY, Boolean.TRUE.toString(), true, true);
+                    sup.addDocument(doc);
+
+                    LOGGER.log(Level.FINE, "The file " + file + " indexed as a Facelets Library Descriptor"); //NOI18N
+                }
             } catch (FileNotFoundException ex) {
                 Exceptions.printStackTrace(ex);
             } catch (IOException ex) {
@@ -133,6 +150,7 @@ public class JsfBinaryIndexer extends BinaryIndexer {
         //...and index as normal composite library
         FileObject resourcesFolder = context.getRoot().getFileObject("META-INF/resources"); //NOI18N //can it be stored in META-INF.* ????
         if(resourcesFolder != null) {
+            LOGGER.log(Level.FINE, "Composite Libraries Scan: META-INF/resources folder found"); //NOI18N
             try {
                 Enumeration<? extends FileObject> folders = resourcesFolder.getFolders(false);
                 final IndexingSupport sup = IndexingSupport.getInstance(context);
@@ -144,6 +162,7 @@ public class JsfBinaryIndexer extends BinaryIndexer {
                         if (file.getExt().equalsIgnoreCase("xhtml")) {
                             //NOI18N
                             //parse && index the html content of the file
+                            LOGGER.log(Level.FINE, "Composite Libraries Scan: found " + file); //NOI18N
                             Source source = Source.create(file);
                             try {
                                 ParserManager.parse(Collections.singleton(source), new UserTask() {
@@ -159,6 +178,8 @@ public class JsfBinaryIndexer extends BinaryIndexer {
                                                     IndexDocument doc = sup.createDocument(file);
                                                     ccmodel.storeToIndex(doc);
                                                     sup.addDocument(doc);
+
+                                                    LOGGER.log(Level.FINE, "Composite Libraries Scan: Model created for file " + file); //NOI18N
                                                 }
                                             }
                                         }
@@ -179,10 +200,11 @@ public class JsfBinaryIndexer extends BinaryIndexer {
 
     private Collection<FileObject> findLibraryDescriptors(FileObject classpathRoot, String suffix) {
         Collection<FileObject> files = new ArrayList<FileObject>();
-        Enumeration<? extends FileObject> fos = classpathRoot.getFolders(false);
+//        Enumeration<? extends FileObject> fos = classpathRoot.getFolders(false);
+        Enumeration<? extends FileObject> fos = classpathRoot.getFolders(true);
         while (fos.hasMoreElements()) {
             FileObject fo = fos.nextElement();
-            if ("META-INF".equals(fo.getName())) { //NOI18N
+//            if ("META-INF".equals(fo.getName())) { //NOI18N
                 Enumeration<? extends FileObject> children = fo.getChildren(true); //get children recursively
                 while(children.hasMoreElements()) {
                     FileObject file = children.nextElement();
@@ -190,7 +212,7 @@ public class JsfBinaryIndexer extends BinaryIndexer {
                         //found library, create a new instance and cache it
                         files.add(file);
                     }
-                }
+//                }
             }
         }
         return files;

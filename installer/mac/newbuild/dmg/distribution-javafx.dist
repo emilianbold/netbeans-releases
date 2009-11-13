@@ -122,7 +122,7 @@ function checkChoiceUpgradeAction() {
    
     <choice id="netbeans" title="netbeans-title" description="netbeans-description" start_selected="true" start_enabled="true" start_visible="true"></choice>
     <choice id="baseide" title="baseide-title" description="baseide-description" start_selected="true" start_enabled="true" start_visible="true">
-        <pkg-ref id="org.netbeans.ide"></pkg-ref>
+        <pkg-ref id="ident.pkg.baseide"></pkg-ref>
     </choice>
     <choice id="javase" title="javase-title" description="javase-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.javase.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
         <pkg-ref id="ident.pkg.javase"></pkg-ref>
@@ -131,8 +131,8 @@ function checkChoiceUpgradeAction() {
         <pkg-ref id="ident.pkg.javafx"></pkg-ref>
     </choice>
     
-    <pkg-ref id="org.netbeans.ide" version="0.0.0.0.1" installKBytes="@SIZE_BASEIDE@" auth="Root" onConclusion="None">file:./Contents/Packages/baseide.pkg</pkg-ref>
-    <pkg-ref id="ident.pkg.javase" version="0.0.0.0.1" installKBytes="@SIZE_JAVASE@" auth="Root" onConclusion="None">file:./Contents/Packages/javase.pkg</pkg-ref>
-    <pkg-ref id="ident.pkg.javafx" version="0.0.0.0.1" installKBytes="@SIZE_JAVAFX@" auth="Root" onConclusion="None">file:./Contents/Packages/javafx.pkg</pkg-ref>
+    <pkg-ref id="ident.pkg.baseide" version="0.0.0.0.1" installKBytes="@SIZE_BASEIDE@" auth="Root" onConclusion="None">file:./Contents/Packages/baseide-@NB_ID@.pkg</pkg-ref>
+    <pkg-ref id="ident.pkg.javase" version="0.0.0.0.1" installKBytes="@SIZE_JAVASE@" auth="Root" onConclusion="None">file:./Contents/Packages/javase-@NB_ID@.pkg</pkg-ref>
+    <pkg-ref id="ident.pkg.javafx" version="0.0.0.0.1" installKBytes="@SIZE_JAVAFX@" auth="Root" onConclusion="None">file:./Contents/Packages/javafx-@NB_ID@.pkg</pkg-ref>
  
 </installer-gui-script>

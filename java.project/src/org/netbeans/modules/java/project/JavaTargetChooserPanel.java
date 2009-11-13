@@ -54,11 +54,11 @@ import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.spi.project.ui.templates.support.Templates;
-import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -324,7 +324,7 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel<Wiza
 
                 }
                 catch( IOException e ) {
-                    ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, e );
+                    Exceptions.printStackTrace(e);
                 }
             }
         }

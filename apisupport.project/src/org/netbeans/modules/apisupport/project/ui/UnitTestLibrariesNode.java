@@ -70,6 +70,7 @@ import javax.swing.ImageIcon;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.ProjectXMLManager;
+import org.netbeans.modules.apisupport.project.queries.ModuleProjectClassPathExtender;
 import org.netbeans.modules.apisupport.project.ui.customizer.AddModulePanel;
 import org.netbeans.modules.apisupport.project.ui.customizer.EditTestDependencyPanel;
 import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
@@ -445,7 +446,7 @@ final class UnitTestLibrariesNode extends AbstractNode {
     }
 
     private static class AddJUnit4Action extends AbstractAction {
-        private final String testType;
+            private final String testType;
         private final NbModuleProject project;
         AddJUnit4Action(String testType, NbModuleProject project) {
             super(NbBundle.getMessage(UnitTestLibrariesNode.class, "LBL_resolve_missing_junit4"));
@@ -453,32 +454,28 @@ final class UnitTestLibrariesNode extends AbstractNode {
             this.project = project;
         }
         public void actionPerformed(ActionEvent e) {
+            Object result = DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(
+                    NbBundle.getMessage(UnitTestLibrariesNode.class, "LBL_also_add_nbjunit_question"),
+                    NbBundle.getMessage(UnitTestLibrariesNode.class, "LBL_also_add_nbjunit_title")));
+            boolean addNBJUnit;
+            if (result == NotifyDescriptor.NO_OPTION) {
+                addNBJUnit = false;
+            } else if (result == NotifyDescriptor.YES_OPTION) {
+                addNBJUnit = true;
+            } else {
+                return; // cancelled
+            }
             try {
-                ModuleList moduleList = project.getModuleList();
-                ModuleEntry junit4 = moduleList.getEntry("org.netbeans.libs.junit4");
-                ModuleEntry nbjunit = moduleList.getEntry("org.netbeans.modules.nbjunit");
-                if (junit4 == null || nbjunit == null) {
-                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                            NbBundle.getMessage(UnitTestLibrariesNode.class, "LBL_cannot_resolve_missing_junit4"),
-                            NotifyDescriptor.ERROR_MESSAGE));
-                    return;
+                ModuleProjectClassPathExtender.resolveJUnitDependencies(project, testType, addNBJUnit);
+            } catch (IOException ex) {
+                String msg = Exceptions.findLocalizedMessage(ex);
+                if (msg == null) {
+                    msg = NbBundle.getMessage(UnitTestLibrariesNode.class, "LBL_cannot_resolve_missing_junit4");
                 }
-                Object result = DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(
-                        NbBundle.getMessage(UnitTestLibrariesNode.class, "LBL_also_add_nbjunit_question"),
-                        NbBundle.getMessage(UnitTestLibrariesNode.class, "LBL_also_add_nbjunit_title")));
-                boolean addNBJUnit;
-                if (result == NotifyDescriptor.NO_OPTION) {
-                    addNBJUnit = false;
-                } else if (result == NotifyDescriptor.YES_OPTION) {
-                    addNBJUnit = true;
-                } else {
-                    return; // cancelled
-                }
-                ProjectXMLManager pxm = new ProjectXMLManager(project);
-                pxm.addTestDependency(testType, new TestModuleDependency(junit4, false, false, true));
-                if (addNBJUnit) {
-                    pxm.addTestDependency(testType, new TestModuleDependency(nbjunit, false, true, true));
-                }
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE));
+                return;
+            }
+            try {
                 ProjectManager.getDefault().saveProject(project);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);

@@ -40,6 +40,7 @@ package org.netbeans.modules.dlight.procfs.reader.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteOrder;
 import java.util.HashMap;
 import java.util.List;
 import org.netbeans.modules.dlight.procfs.api.LWPUsage;
@@ -48,18 +49,27 @@ import org.netbeans.modules.dlight.procfs.api.PUsage;
 import org.netbeans.modules.dlight.procfs.api.SamplingData;
 import org.netbeans.modules.dlight.procfs.reader.api.ProcReader;
 
-public abstract class ProcReaderImpl implements ProcReader {
+/**
+ *
+ * @author ak119685
+ */
+public abstract class ProcReaderImpl implements ProcReader,
+        ProcessStatusProvider,
+        ProcessUsageProvider,
+        ThreadsInfoProvider {
 
-    // LWPID => prev MSAInfo
-    private final static HashMap<Integer, MSAInfoImpl> prevMSAData = new HashMap<Integer, MSAInfoImpl>();
-    // LWPID => prev Timestamp
-    private final static HashMap<Integer, Long> prevTSData = new HashMap<Integer, Long>();
     private final static int MAXFILELENGTH = 512;
-    private final static ReusableByteBuffer buffer = new ReusableByteBuffer(MAXFILELENGTH, 10);
-    private final boolean bigendian;
+    // LWPID => prev MSAInfo
+    private final HashMap<Integer, MSAInfoImpl> prevMSAData = new HashMap<Integer, MSAInfoImpl>();
+    // LWPID => prev Timestamp
+    private final HashMap<Integer, Long> prevTSData = new HashMap<Integer, Long>();
+    private final ReusableByteBuffer buffer = new ReusableByteBuffer(MAXFILELENGTH, 10);
+    protected final ByteOrder byteOrder;
+    protected final DataModel dataModel;
 
-    public ProcReaderImpl(boolean bigendian) {
-        this.bigendian = bigendian;
+    public ProcReaderImpl(final ByteOrder byteOrder, final DataModel dataModel) {
+        this.byteOrder = byteOrder;
+        this.dataModel = dataModel;
     }
 
     public abstract PStatus getProcessStatus();
@@ -108,7 +118,7 @@ public abstract class ProcReaderImpl implements ProcReader {
         DataReader reader = null;
 
         try {
-            reader = newReader(is);
+            reader = newReader(is, LWPUsage.FILESIZE);
 
             reader.seek(0);
             final int lwpid = reader._int();
@@ -171,14 +181,26 @@ public abstract class ProcReaderImpl implements ProcReader {
     }
 
     private DataReader newReader(InputStream is) throws IOException {
+        return newReader(is, MAXFILELENGTH);
+    }
+
+    private DataReader newReader(InputStream is, int limit) throws IOException {
+        limit = Math.min(limit, MAXFILELENGTH);
+        
         int offset = 0;
         try {
             offset = buffer.getAndLockOffset();
-            is.read(buffer.buffer, offset, MAXFILELENGTH);
+            int read_total = 0;
+            int read = 0;
+
+            while (read >= 0 && read_total < limit) {
+                read = is.read(buffer.buffer, offset + read_total, limit - read_total);
+                read_total += read;
+            }
         } finally {
             is.close();
         }
 
-        return new DataReader(buffer, offset, bigendian);
+        return new DataReader(buffer, offset, byteOrder);
     }
 }

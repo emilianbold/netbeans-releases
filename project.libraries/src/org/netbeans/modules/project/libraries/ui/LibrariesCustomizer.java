@@ -63,8 +63,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
@@ -81,6 +83,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.AbstractNode;
@@ -97,7 +100,7 @@ import org.openide.util.lookup.Lookups;
 public final class LibrariesCustomizer extends JPanel implements ExplorerManager.Provider, HelpCtx.Provider {
 
     private static final Logger LOG = Logger.getLogger(LibrariesCustomizer.class.getName());
-    
+
     private ExplorerManager manager;
     private LibrariesModel model;
     private BeanTreeView libraries;
@@ -307,7 +310,7 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
         boolean editable = model.isLibraryEditable (impl);
         this.libraryName.setEnabled(editable);
         this.deleteButton.setEnabled(editable);
-        this.libraryName.setText (getLocalizedString(impl.getLocalizingBundle(),impl.getName()));
+        this.libraryName.setText (getLocalizedName(impl));
         LibraryTypeProvider provider = nodes[0].getLookup().lookup(LibraryTypeProvider.class);
         if (provider == null)
             return;
@@ -566,6 +569,30 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
         return true;
     }
 
+    private static Map<LibraryImplementation,FileObject> sources = new WeakHashMap<LibraryImplementation,FileObject>();
+    public static void registerSource(LibraryImplementation impl, FileObject descriptorFile) {
+        sources.put(impl, descriptorFile);
+    }
+
+
+    public static String getLocalizedName(LibraryImplementation impl) {
+        FileObject src = sources.get(impl);
+        if (src != null) {
+            Object obj = src.getAttribute("displayName"); // NOI18N
+            if (obj instanceof String) {
+                return (String)obj;
+            }
+        }
+        if (impl instanceof ProxyLibraryImplementation) {
+            String proxiedName = getLocalizedName(((ProxyLibraryImplementation)impl).getOriginal());
+            if (proxiedName != null) {
+                return proxiedName;
+            }
+        }
+
+        return getLocalizedString(impl.getLocalizingBundle(), impl.getName());
+    }
+
     static String getLocalizedString (String bundleResourceName, String key) {
         if (key == null) {
             return null;
@@ -623,6 +650,7 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
             this.setDefaultActionAllowed(false);
             this.tree.setEditable (false);
             this.tree.setShowsRootHandles (false);
+            this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(LibrariesCustomizer.class, "AD_Libraries"));
         }
         
     }
@@ -819,7 +847,7 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
         }
         
         public String getDisplayName () {
-            return getLocalizedString(this.lib.getLocalizingBundle(), this.lib.getName());
+            return getLocalizedName(this.lib);
         }
         
     }

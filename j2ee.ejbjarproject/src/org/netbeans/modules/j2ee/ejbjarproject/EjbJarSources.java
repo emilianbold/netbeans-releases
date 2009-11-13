@@ -43,6 +43,8 @@ package org.netbeans.modules.j2ee.ejbjarproject;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.EjbJarLogicalViewProvider;
@@ -56,7 +58,6 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
-import org.netbeans.spi.project.SourceGroupModifierImplementation;
 import org.netbeans.spi.project.SourceGroupModifierImplementation;
 import org.netbeans.spi.project.support.ant.SourcesHelper;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -76,6 +77,8 @@ public class EjbJarSources implements Sources, PropertyChangeListener, ChangeLis
     private Sources delegate;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private boolean dirty;
+    private volatile Map<String, SourceGroup[]> cachedGroups = new HashMap<String, SourceGroup[]>();
+    private long eventId;
 
     EjbJarSources(Project project, AntProjectHelper helper, PropertyEvaluator evaluator,
                 SourceRoots sourceRoots, SourceRoots testRoots) {
@@ -98,9 +101,14 @@ public class EjbJarSources implements Sources, PropertyChangeListener, ChangeLis
      * {@link EjbJarSources#fireChange} method.
      */
     public SourceGroup[] getSourceGroups(final String type) {
+        final SourceGroup[] _cachedGroups = this.cachedGroups.get(type);
+        if (_cachedGroups != null) {
+            return _cachedGroups;
+        }
         return ProjectManager.mutex().readAccess(new Mutex.Action<SourceGroup[]>() {
             public SourceGroup[] run() {
                 Sources _delegate;
+                long myEventId;
                 synchronized (EjbJarSources.this) {
                     if (dirty) {
                         delegate.removeChangeListener(EjbJarSources.this);
@@ -109,8 +117,16 @@ public class EjbJarSources implements Sources, PropertyChangeListener, ChangeLis
                         dirty = false;
                     }
                     _delegate = delegate;
+                    myEventId = ++eventId;
                 }
-                return _delegate.getSourceGroups(type);
+                SourceGroup[] groups = _delegate.getSourceGroups(type);
+                synchronized (EjbJarSources.this) {
+                    if (myEventId == eventId) {
+                        EjbJarSources.this.cachedGroups.put(type, groups);
+                    }
+                }
+
+                return groups;
             }
         });
     }
@@ -163,6 +179,7 @@ public class EjbJarSources implements Sources, PropertyChangeListener, ChangeLis
 
     private void fireChange() {
         synchronized (this) {
+            cachedGroups.clear();
             dirty = true;
         }
         changeSupport.fireChange();

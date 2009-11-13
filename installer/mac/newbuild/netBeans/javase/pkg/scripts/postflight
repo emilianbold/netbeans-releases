@@ -19,11 +19,14 @@
 
 set -e
 
-script_dir=`dirname "$0"`
+dirname=`dirname "$0"`
+
+. "$dirname"/env.sh
 
 #add Product ID
-"$script_dir"/addproduct_id.sh "JAVA"
+"$dirname"/addproduct_id.sh "JAVA"
 
-if [ -d "/Library/Receipts/javase.pkg" ] ; then
-    rm -rf "/Library/Receipts/javase.pkg"
-fi
+#clean receipts
+"$dirname"/clean_receipts.sh "javase-$NB_ID" "org.netbeans.ide.javase"
+
+

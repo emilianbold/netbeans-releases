@@ -48,7 +48,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import org.netbeans.api.html.lexer.HTMLTokenId;
@@ -86,6 +85,7 @@ import org.netbeans.modules.web.jsf.editor.completion.JsfCompletionItem;
 import org.netbeans.modules.web.jsf.editor.facelets.CompositeComponentLibrary;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
 import org.netbeans.modules.web.jsf.editor.hints.HintsRegistry;
+import org.netbeans.modules.web.jsf.editor.tld.LibraryDescriptor;
 import org.netbeans.modules.web.jsf.editor.tld.TldLibrary;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.lexer.MutableTextInput;
@@ -346,7 +346,7 @@ public class JsfHtmlExtension extends HtmlExtension {
             throw new IllegalStateException(msg.toString());
             //<<< end of issue debug
         }
-        TldLibrary lib = flib.getAssociatedTLDLibrary();
+        LibraryDescriptor lib = flib.getLibraryDescriptor();
 
         if (lib != null) {
             TldLibrary.Tag tag = lib.getTags().get(tagName);

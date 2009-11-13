@@ -43,9 +43,12 @@ package org.netbeans.api.java.source.gen;
 import com.sun.source.tree.*;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.TreePathScanner;
 import java.io.*;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.LinkedList;
+import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -1105,6 +1108,344 @@ public class CommentsTest extends GeneratorTest {
                 ClassTree topLevel = (ClassTree) cut.getTypeDecls().get(0);
                 MethodTree nue = (MethodTree) gu.importComments(method.getLeaf(), method.getCompilationUnit());
                 workingCopy.rewrite(topLevel, make.addClassMember(topLevel, nue));
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void testDuplicatedComment170213a() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package test;\n" +
+            "import java.io.File;\n" +
+            "import java.io.FileInputStream;\n" +
+            "import java.io.FileNotFoundException;\n" +
+            "public abstract class Test {\n" +
+            "    public void test() {\n" +
+            "        //t1\n" +
+            "        String allianceString = new String(\"[]\");\n" +
+            "        //t2\n" +
+            "        allianceString += \"\";\n" +
+            "        //t3\n" +
+            "    }\n" +
+            "}\n");
+        String golden = "package test;\n" +
+                        "import java.io.File;\n" +
+                        "import java.io.FileInputStream;\n" +
+                        "import java.io.FileNotFoundException;\n" +
+                        "public abstract class Test {\n" +
+                        "    public void test() {\n" +
+                        "        name();\n" +
+                        "    }\n" +
+                        "}\n";
+
+        JavaSource src = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                GeneratorUtilities gu = GeneratorUtilities.get(workingCopy);
+                ClassTree topLevel = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree method = (MethodTree) topLevel.getMembers().get(1);
+                BlockTree bt = gu.importComments(method.getBody(), cut);
+                ExpressionStatementTree est = make.ExpressionStatement(make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.Identifier("name"), Collections.<ExpressionTree>emptyList()));
+                BlockTree nue = make.Block(Collections.singletonList(est), false);
+                workingCopy.rewrite(bt, nue);
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void testDuplicatedComment170213b() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package test;\n" +
+            "import java.io.File;\n" +
+            "import java.io.FileInputStream;\n" +
+            "import java.io.FileNotFoundException;\n" +
+            "public abstract class Test {\n" +
+            "    public void test() {\n" +
+            "        //t1\n" +
+            "        String allianceString = new String(\"[]\");\n" +
+            "        //t2\n" +
+            "        allianceString += \"\";\n" +
+            "        //t3\n" +
+            "        //t4\n" +
+            "    }\n" +
+            "}\n");
+        String golden = "package test;\n" +
+                        "import java.io.File;\n" +
+                        "import java.io.FileInputStream;\n" +
+                        "import java.io.FileNotFoundException;\n" +
+                        "public abstract class Test {\n" +
+                        "    public void test() {\n" +
+                        "        name();\n" +
+                        "    }\n" +
+                        "}\n";
+
+        JavaSource src = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                GeneratorUtilities gu = GeneratorUtilities.get(workingCopy);
+                ClassTree topLevel = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree method = (MethodTree) topLevel.getMembers().get(1);
+                BlockTree bt = gu.importComments(method.getBody(), cut);
+                ExpressionStatementTree est = make.ExpressionStatement(make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.Identifier("name"), Collections.<ExpressionTree>emptyList()));
+                BlockTree nue = make.Block(Collections.singletonList(est), false);
+                workingCopy.rewrite(bt, nue);
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void testDuplicatedComment170213c() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package test;\n" +
+            "import java.io.File;\n" +
+            "import java.io.FileInputStream;\n" +
+            "import java.io.FileNotFoundException;\n" +
+            "public abstract class Test {\n" +
+            "    public void test() {\n" +
+            "        //t1\n" +
+            "        String allianceString = new String(\"[]\");\n" +
+            "        //t2\n" +
+            "        allianceString += \"\";//test1\n" +
+            "        //t3\n" +
+            "        //t4\n" +
+            "    }\n" +
+            "}\n");
+        String golden = "package test;\n" +
+                        "import java.io.File;\n" +
+                        "import java.io.FileInputStream;\n" +
+                        "import java.io.FileNotFoundException;\n" +
+                        "public abstract class Test {\n" +
+                        "    public void test() {\n" +
+                        "        name();\n" +
+                        "    }\n" +
+                        "}\n";
+
+        JavaSource src = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                GeneratorUtilities gu = GeneratorUtilities.get(workingCopy);
+                ClassTree topLevel = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree method = (MethodTree) topLevel.getMembers().get(1);
+                BlockTree bt = gu.importComments(method.getBody(), cut);
+                ExpressionStatementTree est = make.ExpressionStatement(make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.Identifier("name"), Collections.<ExpressionTree>emptyList()));
+                BlockTree nue = make.Block(Collections.singletonList(est), false);
+                workingCopy.rewrite(bt, nue);
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void testDuplicatedComment170213d() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package test;\n" +
+            "import java.io.File;\n" +
+            "import java.io.FileInputStream;\n" +
+            "import java.io.FileNotFoundException;\n" +
+            "public abstract class Test {\n" +
+            "    public void test() {\n" +
+            "        //nabytek\n" +
+            "        FileInputStream fis = new FileInputStream(new File(\"\"));//NOI18N\n" +
+            "        //foo\n" +
+            "        \n" +
+            "        fis.read();\n" +
+            "    }\n" +
+            "}\n");
+        String golden = "package test;\n" +
+                        "import java.io.File;\n" +
+                        "import java.io.FileInputStream;\n" +
+                        "import java.io.FileNotFoundException;\n" +
+                        "public abstract class Test {\n" +
+                        "    public void test() {\n" +
+                        "        //nabytek\n" +
+                        "        FileInputStream fis;\n" +
+                        "        fis = new FileInputStream(new File(\"\")); //NOI18N\n" +
+                        "        //foo\n" +
+                        "        \n" +
+                        "        fis.read();\n" +
+                        "    }\n" +
+                        "}\n";
+
+        JavaSource src = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(final WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                final TreeMaker make = workingCopy.getTreeMaker();
+
+                new TreePathScanner<Void, Void>() {
+                    @Override
+                    public Void visitVariable(VariableTree node, Void p) {
+                        GeneratorUtilities gu = GeneratorUtilities.get(workingCopy);
+                        gu.importComments(node, workingCopy.getCompilationUnit());
+                        StatementTree assignment = make.ExpressionStatement(make.Assignment(make.Identifier(node.getName()), node.getInitializer()));
+                        StatementTree declaration = make.Variable(node.getModifiers(), node.getName(), node.getType(), null);//XXX: mask out final
+
+                        gu.copyComments(node, declaration, true);
+                        gu.copyComments(node, assignment, false);
+                        
+                        List<StatementTree> nueStatements = new LinkedList<StatementTree>();
+
+                        BlockTree bt = (BlockTree) getCurrentPath().getParentPath().getLeaf();
+                        int index = bt.getStatements().indexOf(node);
+
+                        assertTrue(index != (-1));
+
+                        nueStatements.addAll(bt.getStatements().subList(0, index));
+                        nueStatements.add(declaration);
+                        nueStatements.add(assignment);
+                        nueStatements.addAll(bt.getStatements().subList(index + 1, bt.getStatements().size()));
+
+                        workingCopy.rewrite(bt, make.Block(nueStatements, false));
+
+                        return super.visitVariable(node, p);
+                    }
+                }.scan(workingCopy.getCompilationUnit(), null);
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void testComments175889a() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "/**test\n" +
+            " * test\n" +
+            " */\n" +
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "/**test\n" +
+            " * test\n" +
+            " */\n" +
+            "public class Test {\n" +
+            "}\n");
+        String golden =
+            "/**test\n" +
+            " * test\n" +
+            " */\n" +
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "/**test\n" +
+            " * test\n" +
+            " */\n" +
+            "public class Test {\n\n" +
+            "    public void test() {\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task task = new Task<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree method = make.Method(make.Modifiers(Collections.<Modifier>singleton(Modifier.PUBLIC)),
+                                                "test",
+                                                make.Type(workingCopy.getTypes().getNoType(TypeKind.VOID)),
+                                                Collections.<TypeParameterTree>emptyList(),
+                                                Collections.<VariableTree>emptyList(),
+                                                Collections.<ExpressionTree>emptyList(),
+                                                "{}",
+                                                null);
+                String commentText = "TESTTTT";
+                Comment comment = Comment.create(Comment.Style.JAVADOC, 0, 0, 0, commentText);
+                make.addComment(clazz, comment, true);
+                workingCopy.rewrite(clazz, make.addClassMember(clazz, method));
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void testComments175889b() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "/**test\n" +
+            " * test\n" +
+            " */\n" +
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "/**test\n" +
+            " * test\n" +
+            " */\n" +
+            "public class Test {\n" +
+            "}\n");
+        String golden =
+            "/**test\n" +
+            " * test\n" +
+            " */\n" +
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "/**test\n" +
+            " * test\n" +
+            " */\n" +
+            "public class Test {\n\n" +
+            "    public void test() {\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task task = new Task<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree method = make.Method(make.Modifiers(Collections.<Modifier>singleton(Modifier.PUBLIC)),
+                                                "test",
+                                                make.Type(workingCopy.getTypes().getNoType(TypeKind.VOID)),
+                                                Collections.<TypeParameterTree>emptyList(),
+                                                Collections.<VariableTree>emptyList(),
+                                                Collections.<ExpressionTree>emptyList(),
+                                                "{}",
+                                                null);
+                String commentText = "TESTTTT";
+                Comment comment = Comment.create(Comment.Style.JAVADOC, -1, -1, -1, commentText);
+                make.addComment(clazz, comment, true);
+                workingCopy.rewrite(clazz, make.addClassMember(clazz, method));
             }
 
         };

@@ -108,16 +108,16 @@ public class PersistenceUnitDataObjectTest extends PersistenceEditorTestBase{
     public void testAddClass() throws Exception{
         PersistenceUnit persistenceUnit = dataObject.getPersistence().getPersistenceUnit(0);
         String clazz = "com.foo.bar.FooClass";
-        dataObject.addClass(persistenceUnit, clazz);
+        dataObject.addClass(persistenceUnit, clazz, false);
         assertTrue(dataCacheContains(clazz));
     }
     
     public void testRemoveClass() throws Exception {
         PersistenceUnit persistenceUnit = dataObject.getPersistence().getPersistenceUnit(0);
         String clazz = "com.foo.bar.FooClass";
-        dataObject.addClass(persistenceUnit, clazz);
+        dataObject.addClass(persistenceUnit, clazz, false);
         assertTrue(dataCacheContains(clazz));
-        dataObject.removeClass(persistenceUnit, clazz);
+        dataObject.removeClass(persistenceUnit, clazz, false);
         assertFalse(dataCacheContains(clazz));
     }
 
@@ -126,9 +126,9 @@ public class PersistenceUnitDataObjectTest extends PersistenceEditorTestBase{
         String clazz = "com.foo.bar.FooClass";
         String clazz2 = "com.foo.bar.FooClass2";
         String clazz3 = "com.foo.bar.FooClass3";
-        dataObject.addClass(persistenceUnit, clazz);
-        dataObject.addClass(persistenceUnit, clazz2);
-        dataObject.addClass(persistenceUnit, clazz3);
+        dataObject.addClass(persistenceUnit, clazz, false);
+        dataObject.addClass(persistenceUnit, clazz2, false);
+        dataObject.addClass(persistenceUnit, clazz3, false);
         assertTrue(dataCacheContains(clazz));
         assertTrue(dataCacheContains(clazz2));
         assertTrue(dataCacheContains(clazz3));

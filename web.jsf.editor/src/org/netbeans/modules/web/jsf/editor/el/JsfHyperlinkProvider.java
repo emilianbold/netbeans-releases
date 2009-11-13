@@ -44,20 +44,40 @@ package org.netbeans.modules.web.jsf.editor.el;
 import java.awt.Toolkit;
 import java.io.IOException;
 
+import javax.lang.model.element.TypeElement;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
 
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.el.lexer.api.ELTokenId;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.api.editor.JSFEditorUtilities;
+import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
+import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
+import org.netbeans.modules.web.jsf.api.metamodel.JsfModel;
+import org.netbeans.modules.web.jsf.api.metamodel.JsfModelFactory;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
@@ -71,6 +91,7 @@ import org.openide.text.Line.ShowOpenType;
 import org.openide.text.Line.ShowVisibilityType;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * @author Tomasz.Slota@Sun.COM
@@ -261,13 +282,14 @@ public class JsfHyperlinkProvider implements HyperlinkProvider {
                             elTokenSequence.token().length());
                 if (res == JsfElExpression.EL_START ){
                     //TODO XXX Add code to point references to beans in JSF file
-                    (new OpenConfigFile(wm, elTokenSequence.token().text().toString())).run();
+                    (new OpenConfigFile(fObject, wm, 
+                            elTokenSequence.token().text().toString())).run();
                     return;
                 }
                 if (res == JsfElExpression.EL_JSF_BEAN || 
                         res == JsfElExpression.EL_JSF_BEAN_REFERENCE)
                 {
-                    if (!exp.gotoPropertyDeclaration(exp.getObjectClass())){
+                    if (!exp.gotoPropertyDeclaration(exp.getBaseObjectClass())){
                         String msg = NbBundle.getBundle(JsfHyperlinkProvider.class).
                             getString("MSG_source_not_found");
                         StatusDisplayer.getDefault().setStatusText(msg);
@@ -281,16 +303,33 @@ public class JsfHyperlinkProvider implements HyperlinkProvider {
     private static class OpenConfigFile implements Runnable {
         private String beanName;
         private WebModule wm;
+        private FileObject mySource;
         
-        OpenConfigFile(WebModule wm, String beanName){
+        OpenConfigFile(FileObject orig, WebModule wm, String beanName){
             this.beanName = beanName;
             this.wm = wm;
+            mySource = orig;
         }
         
         public void run(){
             if (wm == null) return;
             
-            FileObject config = ConfigurationUtils.findFacesConfigForManagedBean(wm, beanName);
+            FacesManagedBean bean = ConfigurationUtils.findFacesManagedBean( 
+                    wm, beanName);
+            if ( bean == null ){
+                return ;
+            }
+            FileObject config = null;
+            if ( bean instanceof ManagedBean) {
+                config = ((ManagedBean)bean).getModel().getModelSource().
+                    getLookup().lookup(FileObject.class);
+            }
+            else {
+                String fqn = bean.getManagedBeanClass();
+                JavaSource javaSource = JavaSource.create( getClassPathInfo() );
+                openElement( javaSource , fqn);
+                return;
+            }
             if (config != null) {
                 try{
                     DataObject dobj = DataObject.find(config);
@@ -338,6 +377,60 @@ public class JsfHyperlinkProvider implements HyperlinkProvider {
                     Exceptions.printStackTrace(exception);
                 }
             }
+        }
+        
+        private void openElement( final JavaSource javaSource, final String fqn){
+            try {
+                javaSource.runUserActionTask(
+                        new Task<CompilationController>() {
+                            
+                            public void run(
+                                    CompilationController controller )
+                                    throws Exception
+                            {
+                                controller.toPhase( Phase.ELEMENTS_RESOLVED );
+                                TypeElement typeElement = controller
+                                        .getElements().getTypeElement(fqn);
+                                if (typeElement == null) {
+                                    return;
+                                }
+                                ElementOpen.open(controller
+                                        .getClasspathInfo(), typeElement);
+                            }
+                        }, true);
+            }
+            catch( IOException e ){
+                Exceptions.printStackTrace(e);
+            }
+        }
+        
+        private ClasspathInfo getClassPathInfo(){
+            //ClasspathInfo.create(mySource);
+            Project project = FileOwnerQuery.getOwner(mySource);
+            return ClasspathInfo.create( getClassPath(project, ClassPath.BOOT ), 
+                    getClassPath(project, ClassPath.COMPILE ), 
+                    getClassPath(project, ClassPath.SOURCE ));
+        }
+
+        private static ClassPath getClassPath( Project project, String type ) {
+            ClassPathProvider provider = project.getLookup().lookup( 
+                    ClassPathProvider.class);
+            if ( provider == null ){
+                return null;
+            }
+            Sources sources = project.getLookup().lookup(Sources.class);
+            if ( sources == null ){
+                return null;
+            }
+            SourceGroup[] sourceGroups = sources.getSourceGroups( 
+                    JavaProjectConstants.SOURCES_TYPE_JAVA );
+            ClassPath[] paths = new ClassPath[ sourceGroups.length];
+            int i=0;
+            for (SourceGroup sourceGroup : sourceGroups) {
+                FileObject rootFolder = sourceGroup.getRootFolder();
+                paths[ i ] = provider.findClassPath( rootFolder, type);
+            }
+            return ClassPathSupport.createProxyClassPath( paths );
         }
     }
 }

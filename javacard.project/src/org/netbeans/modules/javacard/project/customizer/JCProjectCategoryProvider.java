@@ -47,9 +47,9 @@ import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.util.Lookup;
 
-import org.netbeans.modules.javacard.api.ProjectKind;
 import org.netbeans.modules.javacard.project.JCProject;
 import org.netbeans.modules.javacard.project.deps.ui.DependenciesPanel;
+import org.netbeans.modules.javacard.spi.ProjectKind;
 import org.openide.filesystems.FileObject;
 
 public class JCProjectCategoryProvider implements ProjectCustomizer.CompositeCategoryProvider {

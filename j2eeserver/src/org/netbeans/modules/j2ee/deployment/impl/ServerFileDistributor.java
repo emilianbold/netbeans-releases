@@ -133,46 +133,55 @@ public class ServerFileDistributor extends ServerProgress {
         return new AppChanges(descriptorRelativePaths, serverDescriptorRelativePaths, moduleType);
     }
 
-    public AppChangeDescriptor distribute(TargetModule targetModule, ModuleChangeReporter mcr) throws IOException {
+    public DeploymentChangeDescriptor distribute(TargetModule targetModule, ModuleChangeReporter mcr,
+            ResourceChangeReporter rcr) throws IOException {
+
         long lastDeployTime = targetModule.getTimestamp();
         TargetModuleID[] childModules = targetModule.getChildTargetModuleID();
         AppChanges changes = new AppChanges();
         File destDir = null;
 
-            //PENDING: whether module need to be stop first
-            for (int i=0; childModules != null && i<childModules.length; i++) {
-                // need to get the ModuleUrl for the child, not the root app... DUH
-                String url = incremental.getModuleUrl(childModules[i]);
-                destDir = incremental.getDirectoryForModule(childModules[i]);
-                Iterator source = (Iterator) childModuleFiles.get(url);
-                if (destDir == null)
-                    changes.record(_distribute(childModules[i], lastDeployTime));
-                else if (null != source)
-                    // original code assumed 1-to-1 correspondence between
-                    //   J2eeModule objects and TargetModuleID objects that are
-                    //   are children of a deployed EAR...
-                    // That assumption is not valid
-                    changes.record(_distribute(source, destDir, childModules[i], lastDeployTime));
-            }
-
-            //PENDING: whether ordering of copying matters
-            destDir = incremental.getDirectoryForModule(targetModule.delegate());
+        //PENDING: whether module need to be stop first
+        for (int i=0; childModules != null && i<childModules.length; i++) {
+            // need to get the ModuleUrl for the child, not the root app... DUH
+            String url = incremental.getModuleUrl(childModules[i]);
+            destDir = incremental.getDirectoryForModule(childModules[i]);
+            Iterator source = (Iterator) childModuleFiles.get(url);
             if (destDir == null)
-                changes.record(_distribute(targetModule.delegate(), lastDeployTime));
-            else
-                changes.record(_distribute(rootModuleFiles, destDir, targetModule.delegate(), lastDeployTime));
+                changes.record(_distribute(childModules[i], lastDeployTime));
+            else if (null != source)
+                // original code assumed 1-to-1 correspondence between
+                //   J2eeModule objects and TargetModuleID objects that are
+                //   are children of a deployed EAR...
+                // That assumption is not valid
+                changes.record(_distribute(source, destDir, childModules[i], lastDeployTime));
+        }
 
-            if (mcr != null)
-                changes.record(mcr, lastDeployTime);
+        //PENDING: whether ordering of copying matters
+        destDir = incremental.getDirectoryForModule(targetModule.delegate());
+        if (destDir == null) {
+            changes.record(_distribute(targetModule.delegate(), lastDeployTime));
+        } else {
+            changes.record(_distribute(rootModuleFiles, destDir, targetModule.delegate(), lastDeployTime));
+        }
 
-            setStatusDistributeCompleted(NbBundle.getMessage(
-                ServerFileDistributor.class, "MSG_DoneIncrementalDeploy", targetModule.getModuleID()));
+        if (mcr != null) {
+            changes.record(mcr, lastDeployTime);
+        }
 
-        return changes;
+        DeploymentChangeDescriptor descr = ChangeDescriptorAccessor.getDefault().newDescriptor(changes);
+        if (rcr != null && rcr.isServerResourceChanged(lastDeployTime)) {
+            descr = ChangeDescriptorAccessor.getDefault().withChangedServerResources(descr);
+        }
+
+        setStatusDistributeCompleted(NbBundle.getMessage(
+            ServerFileDistributor.class, "MSG_DoneIncrementalDeploy", targetModule.getModuleID()));
+
+        return descr;
     }
 
-    public DeploymentChangeDescriptor distributeOnSave(TargetModule targetModule, ModuleChangeReporter mcr,
-            Iterable<Artifact> artifacts) throws IOException {
+    public DeploymentChangeDescriptor distributeOnSave(TargetModule targetModule,
+            ModuleChangeReporter mcr, ResourceChangeReporter rcr, Iterable<Artifact> artifacts) throws IOException {
 
         long lastDeployTime = targetModule.getTimestamp();
         TargetModuleID[] childModules = targetModule.getChildTargetModuleID();
@@ -211,14 +220,16 @@ public class ServerFileDistributor extends ServerProgress {
             changes.record(mcr, lastDeployTime);
         }
 
+        DeploymentChangeDescriptor descr = ChangeDescriptorAccessor.getDefault().newDescriptor(changes);
+        // this should not be really necessary for DoS
+        if (rcr != null && rcr.isServerResourceChanged(lastDeployTime)) {
+            descr = ChangeDescriptorAccessor.getDefault().withChangedServerResources(descr);
+        }
+
         setStatusDistributeCompleted(NbBundle.getMessage(
             ServerFileDistributor.class, "MSG_DoneIncrementalDeploy", targetModule.getModuleID()));
 
-        return Accessor.getDefault().newDescriptor(changes);
-    }
-
-    public AppChanges _test_distribute(Iterator source, File destDir, TargetModuleID target, long lastDeployTime) throws IOException {
-        return _distribute(source, destDir, target, lastDeployTime);
+        return descr;
     }
 
     private AppChanges _distribute(TargetModuleID target,  long lastDeployTime) throws IOException {
@@ -689,38 +700,5 @@ public class ServerFileDistributor extends ServerProgress {
 
             return builder.toString();
         }
-    }
-
-    public static abstract class Accessor {
-
-        private static volatile Accessor accessor;
-
-        public static void setDefault(Accessor accessor) {
-            if (Accessor.accessor != null) {
-                throw new IllegalStateException("Already initialized accessor");
-            }
-            Accessor.accessor = accessor;
-        }
-
-        public static Accessor getDefault() {
-            if (accessor != null) {
-                return accessor;
-            }
-
-            // invokes static initializer of DeploymentChangeDescriptor.class
-            // that will assign value to the DEFAULT field above
-            Class c = DeploymentChangeDescriptor.class;
-            try {
-                Class.forName(c.getName(), true, c.getClassLoader());
-            } catch (ClassNotFoundException ex) {
-                assert false : ex;
-            }
-            assert accessor != null : "The accessor field must be initialized";
-            return accessor;
-        }
-
-        /** Accessor to constructor */
-        public abstract DeploymentChangeDescriptor newDescriptor(AppChanges desc);
-
     }
 }

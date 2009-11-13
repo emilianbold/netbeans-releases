@@ -214,7 +214,7 @@ class SQLExecutionHelper {
                     if (Thread.currentThread().isInterrupted()) {
                         break;
                     }
-                    deleteARow(rows[j], rsTable.getModel());
+                    deleteARow(rsTable.convertRowIndexToModel(rows[j]), rsTable.getModel());
                 }
             }
 
@@ -513,7 +513,7 @@ class SQLExecutionHelper {
                 }
             }
         } catch (SQLException e) {
-            mLogger.log(Level.SEVERE, "Failed to set up table model" + e); // NOI18N
+            mLogger.log(Level.SEVERE, "Failed to set up table model.", e); // NOI18N
             throw e;
         } finally {
             dataView.getDataViewPageContext().setCurrentRows(rows);

@@ -63,7 +63,6 @@ import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.KenaiUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
@@ -673,15 +672,19 @@ public final class BugzillaIssueProvider extends IssueProvider implements Proper
                                     return;
                                 }
                                 ResolveIssuePanel panel = new ResolveIssuePanel(issue);
-                                String title = NbBundle.getMessage(BugzillaIssueProvider.class, "BugzillaIssueProvider.resolveIssueButton.text"); //NOI18N
-                                if (BugtrackingUtil.show(panel, title, title)) {
+                                if (panel.showDialog()) {
                                     LOG.finer("Resolve action: resolving..."); //NOI18N
                                     String pattern = NbBundle.getMessage(BugzillaIssueProvider.class, "BugzillaIssueProvider.resolveIssueMessage"); //NOI18N
                                     final String resolution = panel.getSelectedResolution();
+                                    final String duplicateId = panel.getDuplicateId();
                                     final String comment = panel.getComment();
                                     runCancellableCommand(new Runnable () {
                                         public void run() {
-                                            issue.resolve(resolution);
+                                            if (BugzillaIssue.RESOLVE_DUPLICATE.equals(resolution)) {
+                                                issue.duplicate(duplicateId);
+                                            } else {
+                                                issue.resolve(resolution);
+                                            }
                                             if (comment.length() > 0) {
                                                 issue.addComment(comment);
                                             }
@@ -759,7 +762,7 @@ public final class BugzillaIssueProvider extends IssueProvider implements Proper
                     LOG.log(Level.FINE, "KenaiBugzillaLazyIssue.lookupRepository: getting repository for: " + projectName);
                     repo = KenaiUtil.getKenaiBugtrackingRepository(projectName);
                 } catch (KenaiException ex) {
-                    LOG.log(Level.INFO, "KenaiBugzillaLazyIssue.lookupRepository: getting repository for " + projectName, ex);
+                    LOG.log(Level.FINE, "KenaiBugzillaLazyIssue.lookupRepository: getting repository for " + projectName, ex);
                 }
                 loginStatusChanged = false;
             }

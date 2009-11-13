@@ -39,6 +39,10 @@
 
 package org.netbeans.modules.groovy.grailsproject.config;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -48,12 +52,13 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.groovy.grails.api.GrailsPlatform;
-import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.modules.groovy.grailsproject.plugins.GrailsPlugin;
 import org.openide.filesystems.FileObject;
@@ -63,11 +68,15 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Petr Hejl
  */
-public class BuildConfig {
+public final class BuildConfig {
+
+    public static final String BUILD_CONFIG_PLUGINS = BuildConfig.class.getName() + ".plugins";
 
     private static final Logger LOGGER = Logger.getLogger(BuildConfig.class.getName());
 
     private final GrailsProject project;
+
+    private final PropertyChangeSupport propertySupport = new PropertyChangeSupport(this);
 
     private Object buildSettingsInstance;
 
@@ -191,9 +200,27 @@ public class BuildConfig {
 
     private synchronized void loadLocalPluginsDefault() {
         if (GrailsPlatform.Version.VERSION_1_1.compareTo(GrailsProjectConfig.forProject(project).getGrailsPlatform().getVersion()) <= 0) {
-            // TODO cache
+            GrailsProjectConfig config = GrailsProjectConfig.forProject(project);
+            Map<String, File> cached = config.getLocalPlugins();
+            if (cached != null && isFilePresent()) {
+                localPlugins = new ArrayList<GrailsPlugin>();
+                for (Map.Entry<String, File> entry : cached.entrySet()) {
+                    localPlugins.add(new GrailsPlugin(entry.getKey(), null, null, entry.getValue()));
+                }
+            } else {
+                localPlugins = Collections.emptyList();
+            }
+        } else {
+            localPlugins = Collections.emptyList();
         }
-        localPlugins = Collections.emptyList();
+    }
+
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        propertySupport.addPropertyChangeListener(listener);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        propertySupport.removePropertyChangeListener(listener);
     }
 
     public void reload() {
@@ -201,6 +228,8 @@ public class BuildConfig {
 
         File currentProjectPluginsDir;
         File currentGlobalPluginsDir;
+        List<GrailsPlugin> currentLocalPlugins;
+
         synchronized (this) {
             File newProjectRoot = FileUtil.toFile(project.getProjectDirectory());
             assert newProjectRoot != null;
@@ -213,7 +242,7 @@ public class BuildConfig {
             LOGGER.log(Level.FINE, "Took {0} ms to load BuildSettings for {1}",
                     new Object[] {(System.currentTimeMillis() - start), project.getProjectDirectory().getNameExt()});
 
-            loadLocalPlugins();
+            currentLocalPlugins = loadLocalPlugins();
             currentProjectPluginsDir = loadProjectPluginsDir();
             currentGlobalPluginsDir = loadGlobalPluginsDir();
         }
@@ -221,8 +250,24 @@ public class BuildConfig {
         if (GrailsPlatform.Version.VERSION_1_1.compareTo(GrailsProjectConfig.forProject(project).getGrailsPlatform().getVersion()) <= 0) {
             GrailsProjectConfig config = project.getLookup().lookup(GrailsProjectConfig.class);
             if (config != null) {
-                config.setProjectPluginsDir(FileUtil.normalizeFile(currentProjectPluginsDir));
-                config.setGlobalPluginsDir(FileUtil.normalizeFile(currentGlobalPluginsDir));
+                ProjectConfigListener listener = new ProjectConfigListener();
+
+                config.addPropertyChangeListener(listener);
+                try {
+                    config.setProjectPluginsDir(FileUtil.normalizeFile(currentProjectPluginsDir));
+                    config.setGlobalPluginsDir(FileUtil.normalizeFile(currentGlobalPluginsDir));
+
+                    Map<String, File> prepared = new HashMap<String, File>();
+                    for (GrailsPlugin plugin : currentLocalPlugins) {
+                        prepared.put(plugin.getName(), plugin.getPath());
+                    }
+                    config.setLocalPlugins(prepared);
+                } finally {
+                    config.removePropertyChangeListener(listener);
+                }
+                if (listener.isChanged()) {
+                    propertySupport.firePropertyChange(BUILD_CONFIG_PLUGINS, null, null);
+                }
             }
         }
     }
@@ -334,12 +379,13 @@ public class BuildConfig {
         return Collections.unmodifiableList(localPlugins);
     }
 
-    private synchronized void loadLocalPlugins() {
+    private synchronized List<GrailsPlugin> loadLocalPlugins() {
         if (GrailsPlatform.Version.VERSION_1_1.compareTo(GrailsProjectConfig.forProject(project).getGrailsPlatform().getVersion()) <= 0) {
             localPlugins = getLocalPlugins11();
         } else {
             localPlugins = getLocalPlugins10();
         }
+        return localPlugins;
     }
 
     private List<GrailsPlugin> getLocalPlugins10() {
@@ -365,10 +411,15 @@ public class BuildConfig {
                         String key = (String) e.nextElement();
                         if (key.startsWith("grails.plugin.location.")) { // NOI18N
                             String value = properties.getProperty(key);
-                            key = key.substring("grails.plugin.location.".length());
-                            plugins.add(new GrailsPlugin(key, null, null, value));
+                            key = key.substring("grails.plugin.location.".length()); // NOI18N
+                            File file = new File(value);
+                            if (!file.isAbsolute()) {
+                                file = new File(projectRoot, value);
+                            }
+                            plugins.add(new GrailsPlugin(key, null, null, file));
                         }
                     }
+                    return plugins;
                 }
             }
         } catch (NoSuchMethodException ex) {
@@ -421,5 +472,25 @@ public class BuildConfig {
             LOGGER.log(Level.FINE, null, ex);
         }
         return null;
+    }
+
+    private static class ProjectConfigListener implements PropertyChangeListener {
+
+        private boolean changed = false;
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (GrailsProjectConfig.GRAILS_PROJECT_PLUGINS_DIR_PROPERTY.equals(evt.getPropertyName())
+                    || GrailsProjectConfig.GRAILS_GLOBAL_PLUGINS_DIR_PROPERTY.equals(evt.getPropertyName())
+                    || GrailsProjectConfig.GRAILS_LOCAL_PLUGINS_PROPERTY.equals(evt.getPropertyName())) {
+
+                synchronized (this) {
+                    changed = true;
+                }
+            }
+        }
+
+        public synchronized boolean isChanged() {
+            return changed;
+        }
     }
 }

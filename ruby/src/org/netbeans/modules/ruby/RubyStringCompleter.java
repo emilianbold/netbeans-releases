@@ -155,7 +155,7 @@ final class RubyStringCompleter extends RubyBaseCompleter {
     private boolean complete() {
         String prefix = request.prefix;
         int lexOffset = request.lexOffset;
-        TokenHierarchy<Document> th = request.th;
+        TokenHierarchy<?> th = request.th;
 
         TokenSequence<? extends RubyTokenId> ts = LexUtilities.getRubyTokenSequence(th, lexOffset);
 

@@ -62,6 +62,7 @@ import org.netbeans.spi.editor.highlighting.HighlightsChangeListener;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.support.AbstractHighlightsContainer;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
 /**
@@ -73,6 +74,7 @@ public class TextSearchHighlighting extends AbstractHighlightsContainer implemen
     private static final Logger LOG = Logger.getLogger(TextSearchHighlighting.class.getName());
     
     public static final String LAYER_TYPE_ID = "org.netbeans.modules.editor.lib2.highlighting.TextSearchHighlighting"; //NOI18N
+    private static final RequestProcessor RP = new RequestProcessor(LAYER_TYPE_ID);
     
     private final MimePath mimePath;
     private final JTextComponent component;
@@ -88,12 +90,12 @@ public class TextSearchHighlighting extends AbstractHighlightsContainer implemen
         this.component = component;
         this.document = component.getDocument();
         
-        // Let the bag update first...
+        // Let the internal listener update first...
+        this.document.addDocumentListener(WeakListeners.document(this, this.document));
+
+        // ...and the bag second
         this.bag = new OffsetsBag(document);
         this.bag.addHighlightsChangeListener(this);
-        
-        // ...and the internal listener second
-        this.document.addDocumentListener(WeakListeners.document(this, this.document));
         
         EditorFindSupport.getInstance().addPropertyChangeListener(
             WeakListeners.propertyChange(this, EditorFindSupport.getInstance())
@@ -120,21 +122,31 @@ public class TextSearchHighlighting extends AbstractHighlightsContainer implemen
     }
 
     public void insertUpdate(DocumentEvent e) {
-        this.bag.removeHighlights(e.getOffset(), e.getOffset() + e.getLength(), false);
+        this.bag.removeHighlights(Math.max(e.getOffset() - 1, 0), Math.min(e.getOffset() + 1, document.getLength()), false);
     }
 
     public void removeUpdate(DocumentEvent e) {
-        this.bag.removeHighlights(e.getOffset() - 1, e.getOffset() + e.getLength() - 1, false);
+        this.bag.removeHighlights(e.getOffset(), e.getOffset() + e.getLength(), false);
     }
 
     public void changedUpdate(DocumentEvent e) {
         // not interested
     }
-    
+
     private void fillInTheBag() {
-        document.render(new Runnable() {
+        final Document d = document;
+        final OffsetsBag b = bag;
+        RP.post(new Runnable() {
+            private boolean documentLocked = false;
+
             public void run() {
-                OffsetsBag newBag = new OffsetsBag(document);
+                if (!documentLocked) {
+                    documentLocked = true;
+                    d.render(this);
+                    return;
+                }
+
+                OffsetsBag newBag = new OffsetsBag(d);
 
                 if (LOG.isLoggable(Level.FINE)) {
                     LOG.fine("TSH: filling the bag; enabled = " + isEnabled());
@@ -143,7 +155,7 @@ public class TextSearchHighlighting extends AbstractHighlightsContainer implemen
                 if (isEnabled()) {
                     try {
                         int [] blocks = EditorFindSupport.getInstance().getBlocks(
-                            new int [] {-1, -1}, document, 0, document.getLength());
+                            new int [] {-1, -1}, d, 0, d.getLength());
 
                         assert blocks.length % 2 == 0 : "Wrong number of block offsets";
 
@@ -156,7 +168,7 @@ public class TextSearchHighlighting extends AbstractHighlightsContainer implemen
                     }
                 }
 
-                bag.setHighlights(newBag);
+                b.setHighlights(newBag);
             }
         });
     }

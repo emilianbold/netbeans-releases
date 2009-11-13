@@ -41,8 +41,14 @@
 package org.netbeans.swing.etable;
 
 import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsEnvironment;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.KeyboardFocusManager;
+import java.awt.Rectangle;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.Collator;
@@ -57,10 +63,13 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.JCheckBox;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.SwingUtilities;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
@@ -86,24 +95,53 @@ class ColumnSelectionPanel extends JPanel {
     /** Creates a new instance of ColumnSelectionPanel */
     public ColumnSelectionPanel(ETable table) {
         TableColumnModel colModel = table.getColumnModel();
-        setLayout(new GridBagLayout());
         if (! (colModel instanceof ETableColumnModel)) {
             return;
         }
+
         ETableColumnModel etcm = (ETableColumnModel)colModel;
         this.columnModel = etcm;
         List<TableColumn> columns = Collections.list(etcm.getColumns());
         columns.addAll(etcm.hiddenColumns);
         Collections.sort(columns, ETableColumnComparator.DEFAULT );
         int width = 1; // columns.size() / 10 + 1;
-        layoutPanel(columns, width, table);
+
+        JPanel p = layoutPanel(columns, width, table);
+        Dimension prefSize = p.getPreferredSize();
+        final Rectangle screenBounds = getUsableScreenBounds(getCurrentGraphicsConfiguration());
+        JScrollPane currentScrollPane;
+        JComponent toAdd = null;
+
+        if (prefSize.width > screenBounds.width - 100
+            || prefSize.height > screenBounds.height- 100
+            ) {
+            currentScrollPane = new JScrollPane() {
+                @Override
+                public Dimension getPreferredSize() {
+                    Dimension sz = new Dimension(super.getPreferredSize());
+                    if (sz.width > screenBounds.width - 100) {
+                        sz.width = screenBounds.width * 3 / 4;
+                    }
+                    if (sz.height > screenBounds.height - 100)
+                        sz.height = screenBounds.height * 3 / 4;
+                    return sz;
+                }
+            };
+            currentScrollPane.setViewportView(p);
+            toAdd = currentScrollPane;
+        } else {
+            toAdd = p;
+        }
+
+        add(toAdd);
     }
     
     /**
      * Adds checkbox for each ETableColumn contained in the columns parameter.
      */
     @SuppressWarnings("unchecked")
-    private void layoutPanel(List<TableColumn> columns, int width, ETable table) {
+    private JPanel layoutPanel(List<TableColumn> columns, int width, ETable table) {
+        JPanel toAdd = new JPanel(new GridBagLayout());
         Map<String, Object> displayNameToCheckBox = new HashMap<String, Object>();
         ArrayList<String> displayNames = new ArrayList<String>();
         for (int col = 0; col < columns.size (); col++) {
@@ -158,7 +196,7 @@ class ColumnSelectionPanel extends JPanel {
             gridBagConstraints.gridy = 0;
             gridBagConstraints.insets = new java.awt.Insets(5, 12, 12, 12);
             gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
-            add (new JLabel (hint.toString ()), gridBagConstraints);
+            toAdd.add (new JLabel (hint.toString ()), gridBagConstraints);
         }
         for (Iterator<String> it = displayNames.iterator(); it.hasNext(); i++) {
             if (i >= rows) {
@@ -189,8 +227,9 @@ class ColumnSelectionPanel extends JPanel {
             gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 12);
             gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
             gridBagConstraints.weightx = 1;
-            add(checkBox, gridBagConstraints);
+            toAdd.add(checkBox, gridBagConstraints);
         }
+        return toAdd;
     }
     
     /**
@@ -393,4 +432,23 @@ class ColumnSelectionPanel extends JPanel {
         }
         
     }
-}
+    
+    private static GraphicsConfiguration getCurrentGraphicsConfiguration() {
+	Component focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+        if (focusOwner != null) {
+            Window w = SwingUtilities.getWindowAncestor(focusOwner);
+            if (w != null) {
+                return w.getGraphicsConfiguration();
+            }
+        }
+
+        return GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
+    }
+
+    private static Rectangle getUsableScreenBounds(GraphicsConfiguration gconf) {
+        if (gconf == null) {
+            gconf = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
+        }
+
+        return new Rectangle(gconf.getBounds());
+    }}

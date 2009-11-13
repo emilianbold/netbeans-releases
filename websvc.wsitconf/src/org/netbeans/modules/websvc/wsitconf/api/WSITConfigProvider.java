@@ -110,6 +110,7 @@ public final class WSITConfigProvider extends Object {
     }
     
     public final JComponent getWSITClientConfig(org.netbeans.modules.xml.wsdl.model.Service service, WSDLModel clientModel, WSDLModel serviceModel, Node node) {
+        if (clientModel == null) throw new IllegalArgumentException("Client model cannot be null! " + Thread.getAllStackTraces());
         final ClientTopComponent ctc = new ClientTopComponent(service, clientModel, serviceModel, node);
         return ctc;
     } 

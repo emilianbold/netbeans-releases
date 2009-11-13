@@ -127,7 +127,41 @@ public class DLightMath {
         }
     }
 
-    public static long nextProductOf(long multiplier, long ref) {
-        return (ref / multiplier + 1) * multiplier;
+    public static long nearestMultipleOf(long multiplier, long value) {
+        long remainder = value % multiplier;
+        if (remainder < multiplier / 2) {
+            return value - remainder;
+        } else {
+            return value - remainder + multiplier;
+        }
+    }
+
+    public static long prevMultipleOf(long multiplier, long value) {
+        long remainder = value % multiplier;
+        if (remainder == 0) {
+            return value - multiplier;
+        } else {
+            return value - remainder;
+        }
+    }
+
+    public static long nextMultipleOf(long multiplier, long value) {
+        long remainder = value % multiplier;
+        return value - remainder + multiplier;
+    }
+
+    public static float[] ensureSumLessOrEqual(float limit, float... values) {
+        float[] result = values.clone();
+        float sum = 0;
+        for (float value : values) {
+            sum += value;
+        }
+        if (limit < sum) {
+            float scale = limit / sum;
+            for (int i = 0; i < values.length; ++i) {
+                result[i] *= scale;
+            }
+        }
+        return result;
     }
 }

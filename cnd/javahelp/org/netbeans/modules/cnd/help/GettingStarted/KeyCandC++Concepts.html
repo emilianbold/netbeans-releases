@@ -25,7 +25,7 @@ familiar with the following concepts:
 Projects<a name="projects"></a></h3>
 <p>
 A C or C++ project is a group of C or C++ source files and associated information about
-how to build and run the project, and so forth. The IDE stores project information 
+how to build and run the project. The IDE stores project information 
 in a project folder that includes a makefile and metadata files. Your source directories do not need to be located in the project folder.
 </p>
 <p>
@@ -56,6 +56,16 @@ for your project. You can create a makefile with the Makefile wizard in the IDE.
 updated when you set project properties in the IDE. To change a makefile that was 
 created outside the IDE, you must edit the makefile manually.
 </p>
+<p>If a C/C++ Project with Existing Makefile has a configure script, a qmake *.pro
+    script, or CMakeLists.txt script, the script is
+    run during project creation to create the makefile.  After the project
+    is created, if you need to change the makefile, you can rerun the project's
+    script from the command line. If you prefer to work within the IDE, you
+    can reconfigure the project by right-clicking the project node and selecting
+    Code Assistance &gt; Reconfigure Project...  The IDE will run the project's
+script to regenerate the makefile, and do a clean build of the project.</p>
+<p>If the project is a qmake or cmake project, you can edit the *.pro or CMakeLists.txt file
+before reconfiguring if you want.</p>
 <table>
 <tr>
 <th colspan="2" align="left"><a name="seealso">See also</a></th>

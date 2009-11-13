@@ -237,6 +237,21 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         performStaticTest("iz172227.cpp");
     }
 
+    public void testIZ171453() throws Exception {
+        // IZ#171453 : Private Inheretence: Using Directive
+        performStaticTest("iz171453.cpp");
+    }
+
+    public void testIZ175782() throws Exception {
+        // IZ#175782 : False positive used prior to declaration warnings
+        performStaticTest("iz175782.cpp");
+    }
+
+    public void testIZ175782_2() throws Exception {
+        // IZ#175782 : False positive used prior to declaration warnings
+        performStaticTest("iz175782_2.cpp");
+    }
+
     /////////////////////////////////////////////////////////////////////
     // FAILS
 
@@ -249,6 +264,16 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         @Override
         protected Class<?> getTestCaseDataClass() {
             return UnresolvedIdentifierTest.class;
+        }
+
+        public void testIZ161565() throws Exception {
+            // IZ#161565 : Usage of not-yet-declared function is not highlighted as error
+            performStaticTest("iz161565.cpp");
+        }
+
+        public void testIZ175231() throws Exception {
+            // IZ#175231 : Error parser doesn't handle linenumber:column correctly
+            performStaticTest("iz175231.cpp");
         }
     }
 }

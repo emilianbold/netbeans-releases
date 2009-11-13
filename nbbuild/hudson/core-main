@@ -43,6 +43,7 @@ if [ "$action" = "build" ]; then
     testmodule o.apache.tools.ant.module
     testmodule o.n.bootstrap
     testmodule o.n.core
+    testmodule o.n.insane
     testmodule o.n.swing.tabcontrol
     testmodule openide.actions
     testmodule openide.awt

@@ -508,6 +508,12 @@
 <mapID target="org.netbeans.modules.bugzilla.query.savePanel" url="collab/csh/issues_save_query.html" />
 <mapID target="org.netbeans.modules.bugtracking.patchContextChooser" url="collab/csh/issues_patchcontextchooser.html" />
 <mapID target="org.netbeans.modules.bugtracking.issueChooser" url="collab/csh/issues_issuechooser.html" />
+<mapID target="org.netbeans.modules.bugzilla.dependsOnChooser" url="collab/csh/issues_issuechooser.html" />
+<mapID target="org.netbeans.modules.bugzilla.blocksChooser" url="collab/csh/issues_blockschooser.html" />
+<mapID target="org.netbeans.modules.bugzilla.duplicateChooser" url="collab/csh/issues_duplicatechooser.html" />
+
+<!-- Issue tracking csh topic for JIRA plugin in kenai dashboar -->
+<mapID target="org.netbeans.modules.bugtracking.jira.JiraUpdater" url="collab/csh/issues_jiraplugin.html" />
 
 <!-- Issue tracking csh topic for parameter dialog in vcs commit dialog -->
 <mapID target="org.netbeans.modules.bugtracking.vcs.FormatPanel" url="collab/csh/issues_vcs_parameterformat.html" />
@@ -515,6 +521,10 @@
 <!-- Issue tracking csh topic for Options window -->
 <mapID target="org.netbeans.modules.bugzilla.options.BugzillaOptionsController" url="collab/csh/issues_options.html" />
 <mapID target="org.netbeans.modules.bugtracking.util.BugtrackingOptions" url="collab/csh/issues_options.html" />
+
+<!-- Issue tracking csh topic for Resolve issue from Task List window -->
+<mapID target="org.netbeans.modules.bugzilla.issue.ResolveIssuePanel" url="collab/csh/issues_resolve.html" />
+
 
 <!-- JIRA csh topic for dialog invoked when JIRA is not installed but user clicks My Issues or All Issues in Kenai Dashboard. JIRA support requires adding a plugin from Beta UC -->
 <mapID target="org.netbeans.modules.bugtracking.kenai.FakeJiraSupport" url="collab/issues_about.html" />

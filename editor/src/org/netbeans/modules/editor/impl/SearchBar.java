@@ -843,31 +843,22 @@ public final class SearchBar extends JPanel {
                 }
             }
 
-            int blockSearchStartPos = blockSearchVisible ? startSelection : 0;
-            int blockSearchEndPos = blockSearchVisible ? endSelection : 0;
+            int blockSearchStartOffset = blockSearchVisible ? startSelection : 0;
+            int blockSearchEndOffset = blockSearchVisible ? endSelection : 0;
 
             try{                
                 findProps.put(EditorFindSupport.FIND_BLOCK_SEARCH, blockSearchVisible);
-                findProps.put(EditorFindSupport.FIND_BLOCK_SEARCH_START, blockSearchStartPos);
-                int be = getBlockEndOffset();
-                if (be < 0 || be != blockSearchEndPos){
-                    findProps.put(EditorFindSupport.FIND_BLOCK_SEARCH_END, doc.createPosition(blockSearchEndPos));
-                }else{
-                    blockSearchEndPos = be;
-                }
-                FindSupport.getFindSupport().setBlockSearchHighlight(blockSearchStartPos, blockSearchEndPos);
+                findProps.put(EditorFindSupport.FIND_BLOCK_SEARCH_START, doc.createPosition(blockSearchStartOffset));
+                findProps.put(EditorFindSupport.FIND_BLOCK_SEARCH_END, doc.createPosition(blockSearchEndOffset));
+                FindSupport.getFindSupport().setBlockSearchHighlight(blockSearchStartOffset, blockSearchEndOffset);
             } catch(BadLocationException ble){
                 findProps.put(EditorFindSupport.FIND_BLOCK_SEARCH, Boolean.FALSE);
                 findProps.put(EditorFindSupport.FIND_BLOCK_SEARCH_START, null);
+                findProps.put(EditorFindSupport.FIND_BLOCK_SEARCH_END, null);
             }
             
             FindSupport.getFindSupport().putFindProperties(findProps);
         }
-    }
-    
-    private int getBlockEndOffset(){
-        Position pos = (Position) FindSupport.getFindSupport().getFindProperties().get(EditorFindSupport.FIND_BLOCK_SEARCH_END);
-        return (pos != null) ? pos.getOffset() : -1;
     }
     
     /**

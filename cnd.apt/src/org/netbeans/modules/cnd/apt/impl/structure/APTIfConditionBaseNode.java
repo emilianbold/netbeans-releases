@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.cnd.apt.impl.structure;
 
-import antlr.TokenStream;
+import org.netbeans.modules.cnd.antlr.TokenStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;

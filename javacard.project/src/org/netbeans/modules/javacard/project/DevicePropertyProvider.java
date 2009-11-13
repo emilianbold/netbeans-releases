@@ -40,7 +40,7 @@
  */
 package org.netbeans.modules.javacard.project;
 
-import org.netbeans.modules.javacard.Utils;
+import org.netbeans.modules.javacard.common.Utils;
 import org.netbeans.modules.propdos.PropertiesAdapter;
 import org.netbeans.modules.javacard.constants.ProjectPropertyNames;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;

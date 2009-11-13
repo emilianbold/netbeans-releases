@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.cnd.debugger.common.disassembly;
 
+import org.netbeans.modules.cnd.debugger.common.breakpoints.AddressBreakpoint;
 import org.openide.text.Annotation;
 
 /**
@@ -54,6 +55,13 @@ public interface DisassemblyService {
     boolean showAddress(String address);
 
     /**
+     * Opens disassembly and show the breakpoint
+     * @param address
+     * @return
+     */
+    boolean showBreakpoint(AddressBreakpoint b);
+
+    /**
      * Annotates address
      * @param address
      * @param annotationType
@@ -67,6 +75,13 @@ public interface DisassemblyService {
      * @return
      */
     int getAddressLine(String address);
+
+    /**
+     * Returns line number of the address breakpoint
+     * @param address
+     * @return
+     */
+    int getBreakpointLine(AddressBreakpoint b);
 
     /**
      * Returns address of the instruction on the specified line

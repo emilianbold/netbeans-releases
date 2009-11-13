@@ -3524,18 +3524,17 @@ public class LayoutDesigner implements LayoutConstants {
                     return null;
                 }
 
-                LayoutInterval neighbor = LayoutInterval.getDirectNeighbor(gap, alignment^1, false);
-                int p1 = neighbor.getCurrentSpace().positions[dimension][alignment];
-                int p2 = group.getCurrentSpace().positions[dimension][alignment];
-                int size = Math.abs(p2-p1);
+                LayoutInterval neighbor = LayoutInterval.getDirectNeighbor(gap, alignment^1, true);
+                if (neighbor != null) {
+                    int p1 = neighbor.getCurrentSpace().positions[dimension][alignment];
+                    int p2 = group.getCurrentSpace().positions[dimension][alignment];
+                    int size = Math.abs(p2-p1);
 
-                if (theGap == null || size < gapSize) {
-                    theGap = gap;
-                    gapSize = size;
+                    if (theGap == null || size < gapSize) {
+                        theGap = gap;
+                        gapSize = size;
+                    }
                 }
-//                if (LayoutInterval.canResize(gap) != LayoutInterval.canResize(theGap)) {
-//                    return null;
-//                }
             }
             else { // somewhere in the middle - can be just one
                 for (int i=n-2; i > 0; i--) {

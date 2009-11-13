@@ -43,6 +43,7 @@ package org.netbeans.modules.ruby;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import junit.framework.TestCase;
 
 /**
@@ -223,13 +224,6 @@ public class RubyUtilsTest extends TestCase {
             "undef", "unless", "until", "when", "while", "yield",
         };
     
-    public void testTableize() throws Exception {
-        assertEquals("posts", RubyUtils.tableize("Post"));
-        assertEquals("raw_scaled_scorers", RubyUtils.tableize("RawScaledScorer"));
-        assertEquals("egg_and_hams", RubyUtils.tableize("egg_and_ham"));
-        assertEquals("fancy_categories", RubyUtils.tableize("fancyCategory"));
-    }
-
     public void testParseConstantName() {
         assertEquals(Arrays.asList("Kernel", "RED"), Arrays.asList(RubyUtils.parseConstantName("RED")));
         assertEquals(Arrays.asList("Colors", "RED"), Arrays.asList(RubyUtils.parseConstantName("Colors::RED")));
@@ -261,5 +255,24 @@ public class RubyUtilsTest extends TestCase {
         assertTrue(RubyUtils.isRails23OrHigher(activesupport24));
 
         assertFalse(RubyUtils.isRails23OrHigher(notRails));
+    }
+
+    public void testGetParentModules() {
+        List<String> result = RubyUtils.getParentModules("Foo::Bar::Baz::Qux");
+        assertEquals(3, result.size());
+        assertEquals("Foo::Bar::Baz", result.get(0));
+        assertEquals("Foo::Bar", result.get(1));
+        assertEquals("Foo", result.get(2));
+
+        result = RubyUtils.getParentModules("Qux::");
+        assertEquals(1, result.size());
+        assertEquals("Qux", result.get(0));
+
+        result = RubyUtils.getParentModules("Qux");
+        assertTrue(result.isEmpty());
+
+        result = RubyUtils.getParentModules("");
+        assertTrue(result.isEmpty());
+
     }
 }

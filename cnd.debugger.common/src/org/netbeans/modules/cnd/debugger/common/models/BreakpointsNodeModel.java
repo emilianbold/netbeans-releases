@@ -163,7 +163,6 @@ public class BreakpointsNodeModel implements NodeModel {
     public String getIconBase(Object o) throws UnknownTypeException {
         boolean current = currentBreakpoint == o;
         boolean disabled = !((Breakpoint) o).isEnabled();
-        boolean invalid = ((Breakpoint) o).getValidity() == Breakpoint.VALIDITY.INVALID;
         if (o instanceof LineBreakpoint || o instanceof AddressBreakpoint) {
             String condition = ((CndBreakpoint) o).getCondition();
             boolean conditional = condition != null && condition.trim().length() > 0;
@@ -195,9 +194,6 @@ public class BreakpointsNodeModel implements NodeModel {
                     iconBase = LINE_BREAKPOINT;
                 }
             }
-            if (invalid && !disabled) {
-                iconBase += "_broken"; // NOI18N
-            }
             return iconBase;
         } else if (o instanceof FunctionBreakpoint) {
             String iconBase;
@@ -211,9 +207,6 @@ public class BreakpointsNodeModel implements NodeModel {
                 iconBase = DISABLED_BREAKPOINT;
             } else {
                 iconBase = BREAKPOINT;
-                if (invalid) {
-                    iconBase += "_broken"; // NOI18N
-                }
             }
             return iconBase;
         } else {

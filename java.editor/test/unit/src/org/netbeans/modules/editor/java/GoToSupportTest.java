@@ -278,7 +278,7 @@ public class GoToSupportTest extends NbTestCase {
             }
         }, true);
     }
-    
+
     public void testTooltipForInnerClasses() throws Exception {
         String code = "package test; public class Test {enum EE {A} class CC {} EE a; CC c;}";
         int[] offset = new int[] {82, 88};
@@ -490,8 +490,11 @@ public class GoToSupportTest extends NbTestCase {
                 fail("Should not be called.");
             }
             public void open(ClasspathInfo info, Element el) {
-                assertEquals(ElementKind.CLASS, el.getKind());
-                assertEquals("test.Auxiliary", ((TypeElement) el).getQualifiedName().toString());
+                //jlahoda: originally, GtS jumped directly to the owning class for synthetic constructors
+                //due to a performance improvement (not parsing the target class from source if the target class
+                //is not the current class), the jump is always performed to the specific element (constructor):
+                assertEquals(ElementKind.CONSTRUCTOR, el.getKind());
+                assertEquals("test.Auxiliary", ((TypeElement) el.getEnclosingElement()).getQualifiedName().toString());
                 wasCalled[0] = true;
             }
         }, false);
@@ -581,7 +584,7 @@ public class GoToSupportTest extends NbTestCase {
         performTest("package test; public class Test {public void test() {new AB(name);} private static class AB {public AB(String n){}}}", 58, new OrigUiUtilsCaller() {
             public void open(FileObject fo, int pos) {
                 assertTrue(source == fo);
-                assertEquals(68, pos);
+                assertEquals(93, pos);
                 wasCalled[0] = true;
             }
             public void beep() {
@@ -599,7 +602,7 @@ public class GoToSupportTest extends NbTestCase {
         performTest("package test; public class Test {public void test() {new AB<Object>(name);} private static class AB<T> {public AB(String n){}}}", 58, new OrigUiUtilsCaller() {
             public void open(FileObject fo, int pos) {
                 assertTrue(source == fo);
-                assertEquals(76, pos);
+                assertEquals(104, pos);
                 wasCalled[0] = true;
             }
             public void beep() {

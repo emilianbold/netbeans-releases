@@ -134,7 +134,7 @@ function checkChoiceUpgradeAction() {
    
     <choice id="netbeans" title="netbeans-title" description="netbeans-description" start_selected="true" start_enabled="true" start_visible="true"></choice>
     <choice id="baseide" title="baseide-title" description="baseide-description" start_selected="true" start_enabled="true" start_visible="true">
-        <pkg-ref id="org.netbeans.ide"></pkg-ref>
+        <pkg-ref id="ident.pkg.baseide"></pkg-ref>
     </choice>
     <choice id="javase" title="javase-title" description="javase-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.javase.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
         <pkg-ref id="ident.pkg.javase"></pkg-ref>
@@ -150,12 +150,12 @@ function checkChoiceUpgradeAction() {
         <pkg-ref id="ident.pkg.ergonomics"></pkg-ref>
     </choice>
     
-    <pkg-ref id="ident.pkg.glassfish.v3" version="0.0.0.0.0" installKBytes="@SIZE_GLASSFISHV3@" auth="Root" onConclusion="None">file:./Contents/Packages/glassfish-v3.pkg</pkg-ref>
-    <pkg-ref id="ident.pkg.tomcat" version="0.0.0.6.0" installKBytes="@SIZE_TOMCAT@" auth="Root" onConclusion="None">file:./Contents/Packages/tomcat.pkg</pkg-ref>   
-    <pkg-ref id="org.netbeans.ide" version="0.0.0.0.1" installKBytes="@SIZE_BASEIDE@" auth="Root" onConclusion="None">file:./Contents/Packages/baseide.pkg</pkg-ref>
-    <pkg-ref id="ident.pkg.javase" version="0.0.0.0.1" installKBytes="@SIZE_JAVASE@" auth="Root" onConclusion="None">file:./Contents/Packages/javase.pkg</pkg-ref>
-    <pkg-ref id="ident.pkg.javaee" version="0.0.0.0.1" installKBytes="@SIZE_JAVAEE@" auth="Root" onConclusion="None">file:./Contents/Packages/javaee.pkg</pkg-ref>
-    <pkg-ref id="ident.pkg.groovy" version="0.0.0.0.1" installKBytes="@SIZE_GROOVY@" auth="Root" onConclusion="None">file:./Contents/Packages/groovy.pkg</pkg-ref>
-    <pkg-ref id="ident.pkg.ergonomics" version="0.0.0.0.1" installKBytes="@SIZE_ERGONOMICS@" auth="Root" onConclusion="None">file:./Contents/Packages/ergonomics.pkg</pkg-ref>
+    <pkg-ref id="ident.pkg.glassfish.v3" version="0.0.0.0.0" installKBytes="@SIZE_GLASSFISHV3@" auth="Root" onConclusion="None">file:./Contents/Packages/glassfish-v3-@GLASSFISHV3_ID@.pkg</pkg-ref>
+    <pkg-ref id="ident.pkg.tomcat" version="0.0.0.6.0" installKBytes="@SIZE_TOMCAT@" auth="Root" onConclusion="None">file:./Contents/Packages/tomcat-@TOMCAT_ID@.pkg</pkg-ref>
+    <pkg-ref id="ident.pkg.baseide" version="0.0.0.0.1" installKBytes="@SIZE_BASEIDE@" auth="Root" onConclusion="None">file:./Contents/Packages/baseide-@NB_ID@.pkg</pkg-ref>
+    <pkg-ref id="ident.pkg.javase" version="0.0.0.0.1" installKBytes="@SIZE_JAVASE@" auth="Root" onConclusion="None">file:./Contents/Packages/javase-@NB_ID@.pkg</pkg-ref>
+    <pkg-ref id="ident.pkg.javaee" version="0.0.0.0.1" installKBytes="@SIZE_JAVAEE@" auth="Root" onConclusion="None">file:./Contents/Packages/javaee-@NB_ID@.pkg</pkg-ref>
+    <pkg-ref id="ident.pkg.groovy" version="0.0.0.0.1" installKBytes="@SIZE_GROOVY@" auth="Root" onConclusion="None">file:./Contents/Packages/groovy-@NB_ID@.pkg</pkg-ref>
+    <pkg-ref id="ident.pkg.ergonomics" version="0.0.0.0.1" installKBytes="@SIZE_ERGONOMICS@" auth="Root" onConclusion="None">file:./Contents/Packages/ergonomics-@NB_ID@.pkg</pkg-ref>
  
 </installer-gui-script>

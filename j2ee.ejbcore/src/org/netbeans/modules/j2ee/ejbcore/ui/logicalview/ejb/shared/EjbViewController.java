@@ -114,6 +114,9 @@ public final class EjbViewController {
                 displayName = ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, String>() {
                     public String run(EjbJarMetadata metadata) throws IOException {
                         Ejb ejb = metadata.findByEjbClass(ejbClass);
+                        if (ejb == null){
+                            return null;
+                        }
                         String name = ejb.getDefaultDisplayName();
                         if (name == null) {
                             name = ejb.getEjbName();
@@ -261,6 +264,9 @@ public final class EjbViewController {
             result = ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, String>() {
                 public String run(EjbJarMetadata metadata) throws IOException {
                     Ejb ejb = metadata.findByEjbClass(ejbClass);
+                    if (ejb == null){
+                        return null;
+                    }
                     assert ejb instanceof EntityAndSession;
                     EntityAndSession refModel = (EntityAndSession) ejb;
                     return "\t<ejb-ref>\n" +
@@ -283,6 +289,9 @@ public final class EjbViewController {
             result = ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, String>() {
                 public String run(EjbJarMetadata metadata) throws IOException {
                     Ejb ejb = metadata.findByEjbClass(ejbClass);
+                    if (ejb == null){
+                        return null;
+                    }
                     assert ejb instanceof EntityAndSession;
                     EntityAndSession refModel = (EntityAndSession) ejb;
                     return "\t<ejb-local-ref>\n" +

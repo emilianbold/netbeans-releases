@@ -690,10 +690,10 @@ public class DataNode extends AbstractNode {
                                                               java.lang.reflect.InvocationTargetException {
                 if (!canWrite())
                     throw new java.lang.IllegalAccessException();
-                if (!(val instanceof java.lang.String))
+                if (val == null)
                     throw new java.lang.IllegalArgumentException();
                 try {
-                    obj.rename((java.lang.String) val);
+                    obj.rename(val);
                 }
                 catch (java.io.IOException ex) {
                     java.lang.String msg = null;

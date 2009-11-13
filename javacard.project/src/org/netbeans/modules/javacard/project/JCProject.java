@@ -85,14 +85,11 @@ import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.queries.QuerySupport;
-import org.netbeans.modules.javacard.GuiUtils;
-import org.netbeans.modules.javacard.Utils;
-import org.netbeans.modules.javacard.api.Card;
-import org.netbeans.modules.javacard.api.JavacardPlatform;
-import org.netbeans.modules.javacard.api.ProjectKind;
-import static org.netbeans.modules.javacard.constants.JCConstants.RUNTIME_DESCRIPTOR;
+import org.netbeans.modules.javacard.JCUtil;
+import org.netbeans.modules.javacard.api.AntClasspathClosureProvider;
+import org.netbeans.modules.javacard.common.Utils;
+import static org.netbeans.modules.javacard.common.JCConstants.RUNTIME_DESCRIPTOR;
 import org.netbeans.modules.javacard.constants.ProjectPropertyNames;
-import org.netbeans.modules.javacard.platform.BrokenJavacardPlatform;
 import org.netbeans.modules.javacard.project.deps.ArtifactKind;
 import org.netbeans.modules.javacard.project.deps.Dependencies;
 import org.netbeans.modules.javacard.project.deps.DependenciesProvider;
@@ -101,9 +98,13 @@ import org.netbeans.modules.javacard.project.deps.Dependency;
 import org.netbeans.modules.javacard.project.deps.Path;
 import org.netbeans.modules.javacard.project.deps.ResolvedDependencies;
 import org.netbeans.modules.javacard.project.deps.ResolvedDependency;
-import org.netbeans.modules.javacard.project.ui.BadPlatformOrDevicePanel;
+import org.netbeans.modules.javacard.api.BadPlatformOrDevicePanel;
+import org.netbeans.modules.javacard.common.GuiUtils;
 import org.netbeans.modules.javacard.project.ui.ProblemPanel;
 import org.netbeans.modules.javacard.project.ui.UnsupportedEncodingDialog;
+import org.netbeans.modules.javacard.spi.Card;
+import org.netbeans.modules.javacard.spi.JavacardPlatform;
+import org.netbeans.modules.javacard.spi.ProjectKind;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.project.support.ExtraSourceJavadocSupport;
@@ -230,6 +231,7 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
                     updateHelper,
                     aux,
                     new Info(),
+                    new AntClasspathClosureProviderImpl(),
                     new JCLogicalViewProvider(this),
                     new JCProjectSources(this, antHelper, eval, getRoots()),
                     cpProvider,
@@ -274,11 +276,19 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
                 antHelper.getStockPropertyPreprovider(),
                 antHelper.getPropertyProvider(AntProjectHelper.PRIVATE_PROPERTIES_PATH));
 
+        File projDir = FileUtil.toFile(getProjectDirectory());
         PropertyEvaluator result = PropertyUtils.sequentialPropertyEvaluator(
                 antHelper.getStockPropertyPreprovider(),
                 globals,
                 PropertyUtils.userPropertiesProvider(baseEval2,
-                "user.properties.file", FileUtil.toFile(getProjectDirectory())), // NOI18N
+                ProjectPropertyNames.PROJECT_PROP_USER_PROPERTIES_FILE, projDir),
+                //XXX part of Anki's http://hg.netbeans.org/main/rev/9fbe6ffa43fb
+                //and almost certainly wrong - KEYSTORE_PASSWORD and KEYSTORE_ALIAS_PASSWORD
+                //are NOT pointers to properties files.
+//                PropertyUtils.userPropertiesProvider(baseEval2,
+//                ProjectPropertyNames.PROJECT_PROP_KEYSTORE_PASSWORD, projDir),
+//                PropertyUtils.userPropertiesProvider(baseEval2,
+//                ProjectPropertyNames.PROJECT_PROP_KEYSTORE_ALIAS_PASSWORD, projDir),
                 platformProperties,
                 deviceProperties,
                 privatePropsEval,
@@ -302,8 +312,8 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
     public JavacardPlatform getPlatform() {
         String platform = eval.getProperty(ProjectPropertyNames.PROJECT_PROP_ACTIVE_PLATFORM);
         if (platform != null) {
-            JavacardPlatform result = Utils.findPlatformNamed(platform);
-            return result == null ? new BrokenJavacardPlatform(platform) : result;
+            JavacardPlatform result = JCUtil.findPlatformNamed(platform);
+            return result == null ? JavacardPlatform.createBrokenJavacardPlatform(platform) : result;
         }
         return null;
     }
@@ -365,7 +375,7 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
         boolean badPlatform = platform == null || "".equals(platform);
         boolean badCard = card == null || "".equals(card);
         if (!badPlatform) {
-            JavacardPlatform p = Utils.findPlatformNamed(platform);
+            JavacardPlatform p = JCUtil.findPlatformNamed(platform);
             badPlatform = p == null || !p.isValid();
         }
         if (!badCard) {
@@ -756,7 +766,7 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
             if (bootPath == null) {
                 String platformName = eval.getProperty(ProjectPropertyNames.PROJECT_PROP_ACTIVE_PLATFORM);
                 if (platformName != null) {
-                    JavacardPlatform platform = Utils.findPlatformNamed(platformName);
+                    JavacardPlatform platform = JCUtil.findPlatformNamed(platformName);
                     if (platform != null && platform.isValid()) {
                         bootPath = platform.getBootstrapLibraries(kind);
                     } else {
@@ -850,6 +860,79 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
     public void showSelectPlatformAndDeviceDialog() {
         if (BadPlatformOrDevicePanel.isShowBrokenPlatformDialog()) {
             FIX_PLATFORM_DIALOG_QUEUE.add(this);
+        }
+    }
+
+    /**
+     * Recommended template types for different project types
+     * @return An array of undocumented magic strings
+     */
+    public static String[] recommendedTemplateTypes(ProjectKind kind) {
+        switch (kind) {
+            case WEB:
+                return new String[]{
+                            "java-classes", // NOI18N
+                            "java-beans", //NOI18N
+                            "XML", // NOI18N
+                            "web-service-clients", // NOI18N
+                            "simple-files", // NOI18N
+                            "ant-script", // NOI18N
+                        };
+            case EXTENDED_APPLET:
+            case CLASSIC_APPLET:
+            case EXTENSION_LIBRARY:
+            case CLASSIC_LIBRARY:
+                return new String[]{
+                            "java-classes", // NOI18N
+                            "java-beans", //NOI18N
+                            "simple-files", // NOI18N
+                            "XML", // NOI18N
+                            "ant-script", // NOI18N
+                        };
+            default:
+                throw new AssertionError();
+        }
+    }
+
+    /**
+     * Preferred templates for this project type
+     * @return Array of SFS paths to the templates
+     */
+    public static String[] privilegedTemplates(ProjectKind kind) {
+        switch (kind) {
+            case WEB:
+                return new String[]{
+                            "Templates/javacard/Servlet.java", // NOI18N
+                            "Templates/Classes/Class.java", // NOI18N
+                            "Templates/Classes/Package", // NOI18N
+                            "Templates/Classes/Interface.java", // NOI18N
+                        };
+            case EXTENDED_APPLET:
+                return new String[]{
+                            "Templates/javacard/ExtendedApplet.java", //NOI18N
+                            "Templates/Classes/Class.java", // NOI18N
+                            "Templates/Classes/Package", // NOI18N
+                            "Templates/Classes/Interface.java", // NOI18N
+                        };
+            case CLASSIC_APPLET:
+                return new String[]{
+                            "Templates/javacard/Applet.java", // NOI18N
+                            "Templates/Classes/Class.java", // NOI18N
+                            "Templates/Classes/Interface.java", // NOI18N
+                        };
+            case EXTENSION_LIBRARY:
+                return new String[]{
+                            "Templates/Classes/Class.java", // NOI18N
+                            "Templates/Classes/Package", // NOI18N
+                            "Templates/Classes/Interface.java", // NOI18N
+                        };
+            case CLASSIC_LIBRARY:
+                return new String[]{
+                            "Templates/Classes/Class.java", // NOI18N
+                            "Templates/Classes/Interface.java", // NOI18N
+                        };
+            default:
+                throw new AssertionError();
         }
     }
     private static PlatformAndDeviceDialogQueue FIX_PLATFORM_DIALOG_QUEUE = new PlatformAndDeviceDialogQueue();
@@ -1047,11 +1130,11 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
             RecommendedTemplates, PrivilegedTemplates {
 
         public String[] getRecommendedTypes() {
-            return kind().recommendedTemplateTypes();
+            return recommendedTemplateTypes(kind());
         }
 
         public String[] getPrivilegedTemplates() {
-            return kind().privilegedTemplates();
+            return privilegedTemplates(kind());
         }
     }
 
@@ -1110,11 +1193,11 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
                 }
                 genFilesHelper.refreshBuildScript(
                         GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                        Utils.getBuildImplXslTemplate(),
+                        JCUtil.getBuildImplXslTemplate(),
                         true);
                 genFilesHelper.refreshBuildScript(
                         GeneratedFilesHelper.BUILD_XML_PATH,
-                        Utils.getBuildXslTemplate(),
+                        JCUtil.getBuildXslTemplate(),
                         true);
                 String prop = eval.getProperty(ProjectPropertyNames.PROJECT_PROP_SOURCE_ENCODING);
                 Charset c = null;
@@ -1152,6 +1235,10 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
                                     if (buildProperties != null) { //unit test
                                         ep.setProperty(ProjectPropertyNames.PROJECT_PROP_USER_PROPERTIES_FILE,
                                                 buildProperties.getAbsolutePath()); //NOI18N
+                                        ep.put(ProjectPropertyNames.PROJECT_PROP_KEYSTORE_ALIAS_PASSWORD,
+                                                "password"); //NOI18N
+                                        ep.put(ProjectPropertyNames.PROJECT_PROP_KEYSTORE_PASSWORD,
+                                                "password"); //NOI18N
                                     }
                                 }
                                 // Synchronize the options with actual values
@@ -1285,11 +1372,11 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
             try {
                 genFilesHelper.refreshBuildScript(
                         GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                        Utils.getBuildImplXslTemplate(),
+                        JCUtil.getBuildImplXslTemplate(),
                         false);
                 genFilesHelper.refreshBuildScript(
                         GeneratedFilesHelper.BUILD_XML_PATH,
-                        Utils.getBuildXslTemplate(),
+                        JCUtil.getBuildXslTemplate(),
                         false);
             } catch (IOException e) {
                 Logger.getLogger(JCProject.class.getName()).log(Level.INFO,
@@ -1549,6 +1636,25 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
             //end deletia
             ProjectManager.getDefault().saveProject(JCProject.this);
             return null;
+        }
+    }
+    
+    private final class AntClasspathClosureProviderImpl extends AntClasspathClosureProvider {
+        @Override
+        public String getClasspathClosureAsString() {
+            return JCProject.this.getClasspathClosureAsString();
+        }
+
+        @Override
+        public File getTargetArtifact() {
+            String path = evaluator().evaluate("{" + ProjectPropertyNames.PROJECT_PROP_DIST_JAR + "}"); //NOI18N
+            path.replace ('/', File.separatorChar); //NOI18N
+            String projDir = FileUtil.toFile(getProjectDirectory()).getAbsolutePath();
+            if (!projDir.endsWith(File.separator)) {
+                projDir += File.separator;
+            }
+            projDir += path;
+            return new File(path);
         }
     }
 }

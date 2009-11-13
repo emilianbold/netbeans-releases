@@ -45,12 +45,11 @@ import java.io.IOException;
 import java.util.*;
 import javax.swing.JComponent;
 import javax.swing.event.*;
+
 import org.netbeans.modules.java.platform.InstallerRegistry;
 import org.netbeans.spi.java.platform.CustomPlatformInstall;
 import org.netbeans.spi.java.platform.GeneralPlatformInstall;
 import org.netbeans.spi.java.platform.PlatformInstall;
-
-import org.openide.loaders.*;
 import org.openide.util.NbBundle;
 import org.openide.WizardDescriptor;
 
@@ -127,6 +126,8 @@ public class PlatformInstallIterator implements WizardDescriptor.InstantiatingIt
         else if (panelIndex == 1) {
             return locationPanel;
         } else {
+            if (typeIterator == null)
+                throw new NullPointerException ("index: " + panelIndex);
             return typeIterator.current();
         }
     }
@@ -182,6 +183,8 @@ public class PlatformInstallIterator implements WizardDescriptor.InstantiatingIt
                 panelIndex = 3;
                 hasSelectorPanel = false;
                 this.typeIterator = ((CustomPlatformInstall) installers.get(0)).createIterator();
+                if (this.typeIterator == null)
+                    throw new NullPointerException ();
             }
             else {
                 panelIndex = 1;
@@ -218,6 +221,8 @@ public class PlatformInstallIterator implements WizardDescriptor.InstantiatingIt
             }
             else {
                 panelIndex = 3;
+                if (typeIterator == null)
+                    throw new NullPointerException ();
             }
         } else if (panelIndex == 1) {
             panelIndex = 2;

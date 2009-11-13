@@ -212,7 +212,7 @@ public class TableEditorPanel extends ListEditorPanel<LibraryItem> {
         }
     }
 
-    class MakeArtifactWrapper {
+    static class MakeArtifactWrapper {
 
         private MakeArtifact makeArtifact;
 

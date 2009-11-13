@@ -61,7 +61,7 @@ import org.netbeans.modules.dlight.util.ui.Renderer;
  */
 public final class StackRenderer implements Renderer<DataRow> {
 
-    private final Object lock = new String("StackRenderer.lock");//NOI18N
+    private final Lock lock = new Lock();
     private final List<Column> stackColumns;
 
     public StackRenderer(List<Column> stackColumns) {
@@ -106,7 +106,7 @@ public final class StackRenderer implements Renderer<DataRow> {
             }
             return resultPanel;
         }
-     
+
     }
     private boolean stackDataProviderSearched;
     private StackDataProvider stackDataProvider;
@@ -119,5 +119,8 @@ public final class StackRenderer implements Renderer<DataRow> {
             stackDataProviderSearched = true;
         }
         return stackDataProvider;
+    }
+
+    private final static class Lock {
     }
 }

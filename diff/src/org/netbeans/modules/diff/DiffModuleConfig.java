@@ -53,6 +53,8 @@ import org.netbeans.modules.diff.cmdline.CmdlineDiffProvider;
 import java.util.prefs.Preferences;
 import java.util.*;
 import java.awt.Color;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -261,6 +263,18 @@ public class DiffModuleConfig {
     public Preferences getPreferences() {
         return NbPreferences.forModule(DiffModuleConfig.class);
     }
-    
-    
+
+    /**
+     * Returns number of spaces replacing a tab in editor
+     * @param mimeType
+     * @return
+     */
+    public int getSpacesPerTabFor (String mimeType) {
+        int spacesPerTab = 1;
+        Preferences pref = MimeLookup.getLookup(mimeType).lookup(Preferences.class);
+        if (pref != null) {
+            spacesPerTab = pref.getInt(SimpleValueNames.TAB_SIZE, 1);
+        }
+        return spacesPerTab;
+    }
 }

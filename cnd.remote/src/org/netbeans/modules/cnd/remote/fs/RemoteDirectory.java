@@ -86,7 +86,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 String parentRemotePath;
                 int slashPos = relativePath.lastIndexOf('/');
                 if (slashPos == -1) {
-                    parentRemotePath = remotePath;
+                    parentRemotePath = (remotePath.length() == 0) ? "/" : remotePath; // NOI18N
                     parentFile = cache;
                 } else {
                     parentFile = file.getParentFile();

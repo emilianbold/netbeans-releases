@@ -74,7 +74,7 @@ import org.openide.util.RequestProcessor;
  */
 public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
 
-    private static JavaEEServerModuleFactory singleton = new JavaEEServerModuleFactory();
+    private static final JavaEEServerModuleFactory singleton = new JavaEEServerModuleFactory();
     
     private JavaEEServerModuleFactory() {
     }
@@ -250,7 +250,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
     }
 
     private static final String[] JAXRS_LIBRARIES =
-             {"asm-all-repackaged", "jackson-asl", "jersey-bundle", "jersey-gf-bundle", "jersey-multipart", "jettison", "jsr311-api"}; //NOI18N
+             {"asm-all-repackaged", "jackson-asl", "jackson-core-asl", "jersey-bundle", "jersey-gf-bundle", "jersey-multipart", "jettison", "jsr311-api"}; //NOI18N
     private static final String PRELUDE_RESTLIB = "restlib_gfv3"; // NOI18N
     private static final String V3_RESTLIB = "restlib_gfv3ee6"; // NOI18N
 
@@ -274,11 +274,11 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
         // javadoc
         List<URL> javadocList = new ArrayList<URL>();
         try {
-            File javadocFile = InstalledFileLocator.getDefault().locate("docs/jsr311-api-doc.zip", null, false); //NOI18N
+            File javadocFile = InstalledFileLocator.getDefault().locate("docs/jsr311-api-1.1.1-javadoc.zip", null, false); //NOI18N
             if (javadocFile != null && javadocFile.exists()) {
                     javadocList.add(FileUtil.getArchiveRoot(javadocFile.toURI().toURL()));
             }
-            javadocFile = InstalledFileLocator.getDefault().locate("docs/jersey-api-doc.zip", null, false); //NOI18N
+            javadocFile = InstalledFileLocator.getDefault().locate("docs/jersey-1.1.4-javadoc.zip", null, false); //NOI18N
             if (javadocFile != null && javadocFile.exists()) {
                     javadocList.add(FileUtil.getArchiveRoot(javadocFile.toURI().toURL()));
             }
@@ -334,9 +334,8 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
         return addLibrary(name, CLASS_LIBRARY_TYPE, libraryList, docList);
     }
 
-    private static boolean addLibrary(String name, String libType, List<URL> libraryList, List<URL> docList) {
+    private synchronized static boolean addLibrary(String name, String libType, List<URL> libraryList, List<URL> docList) {
         LibraryManager lmgr = LibraryManager.getDefault();
-        synchronized (lmgr) {
 
         int size = 0;
 
@@ -415,7 +414,6 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
             }
         }
         return lib != null;
-        }
     }
 
     static class InitializeLibrary implements PropertyChangeListener {
@@ -433,7 +431,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
         }
 
         public void propertyChange(PropertyChangeEvent evt) {
-            synchronized (lmgr) {
+            synchronized (singleton) {
             if (null != name) {
                 Library l = lmgr.getLibrary(name);
                 final PropertyChangeListener pcl = this;
@@ -466,7 +464,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
             RequestProcessor.getDefault().post(new Runnable() {
 
                 public void run() {
-                    synchronized (lmgr) {
+                    synchronized (singleton) {
                     if (null != lmgr) {
                         lmgr.removePropertyChangeListener(pcl);
                         content = null;

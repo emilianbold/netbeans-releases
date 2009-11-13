@@ -58,7 +58,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.openide.windows.WindowManager;
@@ -143,7 +143,7 @@ public class BrokenReferencesSupport {
                 projectDisplayName = ProjectUtils.getInformation(project).getDisplayName();
             }
         } catch (IOException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Exceptions.printStackTrace(e);
         }
         DialogDescriptor dd = new DialogDescriptor(customizer, 
             NbBundle.getMessage(BrokenReferencesCustomizer.class, 

@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.glassfish.common;
 
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -199,5 +200,19 @@ public class JvmConfigReader extends TreeParser.NodeReader {
             Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex); // NOI18N
         }
         return value;
+    }
+
+    public TreeParser.NodeReader getMonitoringFinder(final File btraceJar) {
+        return new TreeParser.NodeReader() {
+            @Override
+            public void readAttributes(String qname, Attributes attributes) throws SAXException {
+//                <monitoring-service [monitoring-enabled="false"] 
+                if (readJvmConfig) {
+                    if (!"false".equals(attributes.getValue("monitoring-enabled"))) {  // NOI18N
+                        optList.add("-javaagent:"+Util.quote(btraceJar.getAbsolutePath())+"=unsafe=true,noServer=true"); // NOI18N
+                    }
+                }
+            }
+        };
     }
 }

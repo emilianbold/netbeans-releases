@@ -43,6 +43,7 @@ package org.openide.nodes;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.List;
+import javax.swing.Action;
 import org.openide.util.NbBundle;
 
 /**
@@ -183,7 +184,11 @@ public abstract class ChildFactory <T> {
      * @return A Node, or null if no wait node should be shown.
      */
     protected Node createWaitNode() {
-        AbstractNode n = new AbstractNode(Children.LEAF);
+        AbstractNode n = new AbstractNode(Children.LEAF) {
+            public @Override Action[] getActions(boolean context) {
+                return new Action[0];
+            }
+        };
         n.setIconBaseWithExtension("org/openide/nodes/wait.gif"); //NOI18N
         n.setDisplayName(NbBundle.getMessage(ChildFactory.class, "LBL_WAIT")); //NOI18N
         return n;

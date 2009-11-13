@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.maven.api;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -53,13 +52,17 @@ import org.apache.maven.model.ReportPlugin;
 import org.apache.maven.model.ReportSet;
 import org.apache.maven.model.Repository;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.settings.Settings;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.NBPluginParameterExpressionEvaluator;
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluationException;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
 /**
@@ -81,7 +84,7 @@ public class PluginPropertyUtils {
     public static String getPluginProperty(Project prj, String groupId, String artifactId, String property, String goal) {
         NbMavenProjectImpl project = prj.getLookup().lookup(NbMavenProjectImpl.class);
         assert project != null : "Requires a maven project instance"; //NOI18N
-        return getPluginProperty(project.getOriginalMavenProject(), groupId, artifactId, property, goal);
+        return getPluginPropertyImpl(project.getOriginalMavenProject(), createEvaluator(project), groupId, artifactId, property, goal);
     }
 
     /**
@@ -89,6 +92,10 @@ public class PluginPropertyUtils {
      * current project and returns it's value if so, otherwise null
      */
     public static String getPluginProperty(MavenProject prj, String groupId, String artifactId, String property, String goal) {
+        return getPluginPropertyImpl(prj, createEvaluator(prj), groupId, artifactId, property, goal);
+    }
+
+    private static String getPluginPropertyImpl(MavenProject prj, NBPluginParameterExpressionEvaluator eval, String groupId, String artifactId, String property, String goal) {
         String toRet = null;
         if (prj.getBuildPlugins() == null) {
             return toRet;
@@ -101,7 +108,7 @@ public class PluginPropertyUtils {
                     for (Object obj2 : plug.getExecutions()) {
                         PluginExecution exe = (PluginExecution)obj2;
                         if (exe.getGoals().contains(goal)) {
-                            toRet = checkConfiguration(prj, exe.getConfiguration(), property);
+                            toRet = checkConfiguration(eval, exe.getConfiguration(), property);
                             if (toRet != null) {
                                 break;
                             }
@@ -109,7 +116,7 @@ public class PluginPropertyUtils {
                     }
                 }
                 if (toRet == null) {
-                    toRet = checkConfiguration(prj, plug.getConfiguration(), property);
+                    toRet = checkConfiguration(eval, plug.getConfiguration(), property);
                 }
             }
         }
@@ -124,7 +131,7 @@ public class PluginPropertyUtils {
                     Plugin plug = (Plugin)obj;
                     if (artifactId.equals(plug.getArtifactId()) &&
                         groupId.equals(plug.getGroupId())) {
-                        toRet = checkConfiguration(prj, plug.getConfiguration(), property);
+                        toRet = checkConfiguration(eval, plug.getConfiguration(), property);
                         break;
                     }
                 }
@@ -140,7 +147,7 @@ public class PluginPropertyUtils {
     public static String getReportPluginProperty(Project prj, String groupId, String artifactId, String property, String report) {
         NbMavenProjectImpl project = prj.getLookup().lookup(NbMavenProjectImpl.class);
         assert project != null : "Requires a maven project instance"; //NOI18N
-        return getReportPluginProperty(project.getOriginalMavenProject(), groupId, artifactId, property, report);
+        return getReportPluginPropertyImpl(project.getOriginalMavenProject(), createEvaluator(project), groupId, artifactId, property, report);
     }
 
     /**
@@ -148,6 +155,10 @@ public class PluginPropertyUtils {
      * current project and returns it's value if so, otherwise null
      */
     public static String getReportPluginProperty(MavenProject prj, String groupId, String artifactId, String property, String report) {
+        return getReportPluginPropertyImpl(prj, createEvaluator(prj), groupId, artifactId, property, report);
+    }
+
+    private static String getReportPluginPropertyImpl(MavenProject prj, NBPluginParameterExpressionEvaluator eval, String groupId, String artifactId, String property, String report) {
         String toRet = null;
         if (prj.getReportPlugins() == null) {
             return toRet;
@@ -160,7 +171,7 @@ public class PluginPropertyUtils {
                     for (Object obj2 : plug.getReportSets()) {
                         ReportSet exe = (ReportSet)obj2;
                         if (exe.getReports().contains(report)) {
-                            toRet = checkConfiguration(prj, exe.getConfiguration(), property);
+                            toRet = checkConfiguration(eval, exe.getConfiguration(), property);
                             if (toRet != null) {
                                 break;
                             }
@@ -168,7 +179,7 @@ public class PluginPropertyUtils {
                     }
                 }
                 if (toRet == null) {
-                    toRet = checkConfiguration(prj, plug.getConfiguration(), property);
+                    toRet = checkConfiguration(eval, plug.getConfiguration(), property);
                 }
             }
         }
@@ -214,12 +225,11 @@ public class PluginPropertyUtils {
     }
 
     
-    private static String checkConfiguration(MavenProject prj, Object conf, String property) {
+    private static String checkConfiguration(NBPluginParameterExpressionEvaluator eval, Object conf, String property) {
         if (conf != null && conf instanceof Xpp3Dom) {
             Xpp3Dom dom = (Xpp3Dom)conf;
             Xpp3Dom source = dom.getChild(property);
             if (source != null) {
-                NBPluginParameterExpressionEvaluator eval = new NBPluginParameterExpressionEvaluator(prj, EmbedderFactory.getProjectEmbedder().getSettings(), new Properties());
                 try {
                     Object evaluated = eval.evaluate(source.getValue().trim());
                     return evaluated != null ? ("" + evaluated) : source.getValue().trim(); //NOI18N
@@ -241,7 +251,7 @@ public class PluginPropertyUtils {
     public static String[] getPluginPropertyList(Project prj, String groupId, String artifactId, String multiproperty, String singleproperty, String goal) {
         NbMavenProjectImpl project = prj.getLookup().lookup(NbMavenProjectImpl.class);
         assert project != null : "Requires a maven project instance"; //NOI18N
-        return getPluginPropertyList(project.getOriginalMavenProject(), groupId, artifactId, multiproperty, singleproperty, goal);
+        return getPluginPropertyListImpl(project.getOriginalMavenProject(), createEvaluator(project), groupId, artifactId, multiproperty, singleproperty, goal);
     }
 
     /**
@@ -250,6 +260,10 @@ public class PluginPropertyUtils {
      * @param singleproperty - list's single value element (eg. "sourceRoot")
      */
     public static String[] getPluginPropertyList(MavenProject prj, String groupId, String artifactId, String multiproperty, String singleproperty, String goal) {
+        return getPluginPropertyListImpl(prj, createEvaluator(prj), groupId, artifactId, multiproperty, singleproperty, goal);
+    }
+
+    private static String[] getPluginPropertyListImpl(MavenProject prj, NBPluginParameterExpressionEvaluator eval, String groupId, String artifactId, String multiproperty, String singleproperty, String goal) {
         String[] toRet = null;
         if (prj.getBuildPlugins() == null) {
             return toRet;
@@ -262,7 +276,7 @@ public class PluginPropertyUtils {
                     for (Object obj2 : plug.getExecutions()) {
                         PluginExecution exe = (PluginExecution)obj2;
                         if (exe.getGoals().contains(goal)) {
-                            toRet = checkListConfiguration(prj, exe.getConfiguration(), multiproperty, singleproperty);
+                            toRet = checkListConfiguration(eval, exe.getConfiguration(), multiproperty, singleproperty);
                             if (toRet != null) {
                                 break;
                             }
@@ -270,7 +284,7 @@ public class PluginPropertyUtils {
                     }
                 }
                 if (toRet == null) {
-                    toRet = checkListConfiguration(prj, plug.getConfiguration(), multiproperty, singleproperty);
+                    toRet = checkListConfiguration(eval, plug.getConfiguration(), multiproperty, singleproperty);
                 }
             }
         }
@@ -288,7 +302,7 @@ public class PluginPropertyUtils {
                     Plugin plug = (Plugin)obj;
                     if (artifactId.equals(plug.getArtifactId()) &&
                         groupId.equals(plug.getGroupId())) {
-                        toRet = checkListConfiguration(prj, plug.getConfiguration(), multiproperty, singleproperty);
+                        toRet = checkListConfiguration(eval, plug.getConfiguration(), multiproperty, singleproperty);
                         break;
                     }
                 }
@@ -297,14 +311,74 @@ public class PluginPropertyUtils {
         return toRet;
     }
 
-    private static String[] checkListConfiguration(MavenProject prj, Object conf, String multiproperty, String singleproperty) {
+    /**
+     * gets the list of values for the given property, if configured in the current project.
+     * @param multiproperty list's root element (eg. "sourceRoots")
+     * @param singleproperty - list's single value element (eg. "sourceRoot")
+     */
+    public static String[] getReportPluginPropertyList(Project prj, String groupId, String artifactId, String multiproperty, String singleproperty, String goal) {
+        NbMavenProjectImpl project = prj.getLookup().lookup(NbMavenProjectImpl.class);
+        assert project != null : "Requires a maven project instance"; //NOI18N
+        return getReportPluginPropertyListImpl(project.getOriginalMavenProject(), createEvaluator(project), groupId, artifactId, multiproperty, singleproperty, goal);
+    }
+
+    /**
+     * gets the list of values for the given property, if configured in the current project.
+     * @param multiproperty list's root element (eg. "sourceRoots")
+     * @param singleproperty - list's single value element (eg. "sourceRoot")
+     */
+    public static String[] getReportPluginPropertyList(MavenProject prj, String groupId, String artifactId, String multiproperty, String singleproperty, String goal) {
+        return getReportPluginPropertyListImpl(prj, createEvaluator(prj), groupId, artifactId, multiproperty, singleproperty, goal);
+    }
+
+    private static String[] getReportPluginPropertyListImpl(MavenProject prj, NBPluginParameterExpressionEvaluator eval, String groupId, String artifactId, String multiproperty, String singleproperty, String goal) {
+        String[] toRet = null;
+        if (prj.getReportPlugins() == null) {
+            return toRet;
+        }
+        for (Object obj : prj.getReportPlugins()) {
+            ReportPlugin plug = (ReportPlugin)obj;
+            if (artifactId.equals(plug.getArtifactId()) &&
+                   groupId.equals(plug.getGroupId())) {
+                if (plug.getReportSets() != null) {
+                    for (Object obj2 : plug.getReportSets()) {
+                        ReportSet exe = (ReportSet)obj2;
+                        if (exe.getReports().contains(goal)) {
+                            toRet = checkListConfiguration(eval, exe.getConfiguration(), multiproperty, singleproperty);
+                            if (toRet != null) {
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (toRet == null) {
+                    toRet = checkListConfiguration(eval, plug.getConfiguration(), multiproperty, singleproperty);
+                }
+            }
+        }
+        if (toRet == null) {  //NOI18N
+            if (prj.getPluginManagement() != null) {
+                for (Object obj : prj.getPluginManagement().getPlugins()) {
+                    Plugin plug = (Plugin)obj;
+                    if (artifactId.equals(plug.getArtifactId()) &&
+                        groupId.equals(plug.getGroupId())) {
+                        toRet = checkListConfiguration(eval, plug.getConfiguration(), multiproperty, singleproperty);
+                        break;
+                    }
+                }
+            }
+        }
+        return toRet;
+    }
+
+
+    private static String[] checkListConfiguration(NBPluginParameterExpressionEvaluator eval, Object conf, String multiproperty, String singleproperty) {
         if (conf != null && conf instanceof Xpp3Dom) {
             Xpp3Dom dom = (Xpp3Dom)conf;
             Xpp3Dom source = dom.getChild(multiproperty);
             if (source != null) {
                 List<String> toRet = new ArrayList<String>();
                 Xpp3Dom[] childs = source.getChildren(singleproperty);
-                NBPluginParameterExpressionEvaluator eval = new NBPluginParameterExpressionEvaluator(prj, EmbedderFactory.getProjectEmbedder().getSettings(), new Properties());
                 for (Xpp3Dom ch : childs) {
                     try {
                         Object evaluated = eval.evaluate(ch.getValue().trim());
@@ -324,10 +398,14 @@ public class PluginPropertyUtils {
     public static Properties getPluginPropertyParameter(Project prj, String groupId, String artifactId, String propertyParameter, String goal) {
         NbMavenProjectImpl project = prj.getLookup().lookup(NbMavenProjectImpl.class);
         assert project != null : "Requires a maven project instance"; //NOI18N
-        return getPluginPropertyParameter(project.getOriginalMavenProject(), groupId, artifactId, propertyParameter, goal);
+        return getPluginPropertyParameterImpl(project.getOriginalMavenProject(), createEvaluator(project), groupId, artifactId, propertyParameter, goal);
     }
     
     public static Properties getPluginPropertyParameter(MavenProject prj, String groupId, String artifactId, String propertyParameter, String goal) {
+        return getPluginPropertyParameterImpl(prj, createEvaluator(prj), groupId, artifactId, propertyParameter, goal);
+    }
+
+    private static Properties getPluginPropertyParameterImpl(MavenProject prj, NBPluginParameterExpressionEvaluator eval, String groupId, String artifactId, String propertyParameter, String goal) {
         //TODO we might need to merge the props from various locations..
         Properties toRet = null;
         if (prj.getBuildPlugins() == null) {
@@ -341,7 +419,7 @@ public class PluginPropertyUtils {
                     for (Object obj2 : plug.getExecutions()) {
                         PluginExecution exe = (PluginExecution)obj2;
                         if (exe.getGoals().contains(goal)) {
-                            toRet = checkPropertiesConfiguration(prj, exe.getConfiguration(), propertyParameter);
+                            toRet = checkPropertiesConfiguration(eval, exe.getConfiguration(), propertyParameter);
                             if (toRet != null) {
                                 break;
                             }
@@ -349,7 +427,7 @@ public class PluginPropertyUtils {
                     }
                 }
                 if (toRet == null) {
-                    toRet = checkPropertiesConfiguration(prj, plug.getConfiguration(), propertyParameter);
+                    toRet = checkPropertiesConfiguration(eval, plug.getConfiguration(), propertyParameter);
                 }
             }
         }
@@ -364,7 +442,7 @@ public class PluginPropertyUtils {
                     Plugin plug = (Plugin)obj;
                     if (artifactId.equals(plug.getArtifactId()) &&
                         groupId.equals(plug.getGroupId())) {
-                        toRet = checkPropertiesConfiguration(prj, plug.getConfiguration(), propertyParameter);
+                        toRet = checkPropertiesConfiguration(eval, plug.getConfiguration(), propertyParameter);
                         break;
                     }
                 }
@@ -373,14 +451,13 @@ public class PluginPropertyUtils {
         return toRet;
     }
     
-    private static Properties checkPropertiesConfiguration(MavenProject prj, Object conf, String propertyParameter) {
+    private static Properties checkPropertiesConfiguration(NBPluginParameterExpressionEvaluator eval, Object conf, String propertyParameter) {
         if (conf != null && conf instanceof Xpp3Dom) {
             Xpp3Dom dom = (Xpp3Dom)conf;
             Xpp3Dom source = dom.getChild(propertyParameter);
             if (source != null) {
                 Properties toRet = new Properties();
                 Xpp3Dom[] childs = source.getChildren();
-                NBPluginParameterExpressionEvaluator eval = new NBPluginParameterExpressionEvaluator(prj, EmbedderFactory.getProjectEmbedder().getSettings(), new Properties());
                 for (Xpp3Dom ch : childs) {
                     try {
                         String val = ch.getValue();
@@ -564,5 +641,38 @@ public class PluginPropertyUtils {
     public @Deprecated static void checkEncoding(ModelHandle handle, String enc) {
         ModelUtils.checkEncoding(handle, enc);
     }
-    
+
+    private static NBPluginParameterExpressionEvaluator createEvaluator(NbMavenProjectImpl prj) {
+        //ugly
+        Settings ss = EmbedderFactory.getProjectEmbedder().getSettings();
+        ss.setLocalRepository(EmbedderFactory.getProjectEmbedder().getLocalRepository().getBasedir());
+
+        return new NBPluginParameterExpressionEvaluator(
+                prj.getOriginalMavenProject(),
+                ss,
+                prj.createSystemPropsForPropertyExpressions());
+    }
+
+    private static NBPluginParameterExpressionEvaluator createEvaluator(MavenProject prj) {
+        FileObject bsd = FileUtil.toFileObject(FileUtil.normalizeFile(prj.getBasedir()));
+        Properties props = new Properties();
+        if (bsd != null) {
+            Project p = FileOwnerQuery.getOwner(bsd);
+            if (p != null) {
+                NbMavenProjectImpl project = p.getLookup().lookup(NbMavenProjectImpl.class);
+                if (project != null) {
+                    props = project.createSystemPropsForPropertyExpressions();
+                }
+            }
+        }
+        //ugly
+        Settings ss = EmbedderFactory.getProjectEmbedder().getSettings();
+        ss.setLocalRepository(EmbedderFactory.getProjectEmbedder().getLocalRepository().getBasedir());
+
+        return new NBPluginParameterExpressionEvaluator(
+                prj,
+                ss,
+                props);
+    }
+
 }

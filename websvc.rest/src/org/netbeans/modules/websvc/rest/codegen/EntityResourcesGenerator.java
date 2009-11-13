@@ -158,7 +158,6 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator {
     protected PersistenceUnit persistenceUnit;
     protected String targetPackageName;
     protected FileObject targetFolder;
-    protected String packageName;
     protected FileObject resourceFolder;
     protected String resourcePackageName;
     protected FileObject converterFolder;
@@ -195,18 +194,17 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator {
         this.targetPackageName = targetPackageName;
 
         if (resourcePackage == null) {
-            this.resourcePackageName = targetPackageName + "." + this.RESOURCE_FOLDER;
+            this.resourcePackageName = targetPackageName + "." + RESOURCE_FOLDER;
         } else {
             this.resourcePackageName = resourcePackage;
         }
 
         if (converterPackage == null) {
-            this.converterPackageName = targetPackageName + "." + this.CONVERTER_FOLDER;
+            this.converterPackageName = targetPackageName + "." + CONVERTER_FOLDER;
         } else {
             this.converterPackageName = converterPackage;
         }
 
-        this.packageName = packageName;
     }
 
     private String toFilePath(String packageName) {
@@ -753,7 +751,7 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator {
     }
 
     protected ClassTree addAccessorMethods(WorkingCopy copy, ClassTree tree, String name, Object type) {
-        Modifier[] modifiers = new Modifier[]{Modifier.PROTECTED};
+        Modifier[] modifiers = new Modifier[]{Modifier.PUBLIC};
 
 //        String methodName = "get" + capitalizeFirstLetter(name);
 //        String bodyText = "{ return " + name + ";}";            //NOI18N
@@ -1437,7 +1435,7 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator {
 
     private ClassTree addUpdateEntityMethod(WorkingCopy copy, ClassTree tree,
             EntityResourceBean bean) {
-        Modifier[] modifiers = new Modifier[]{Modifier.PROTECTED};
+        Modifier[] modifiers = new Modifier[]{Modifier.PRIVATE};
         Object returnType = getEntityClassType(bean);
         String[] params = new String[]{"entity", "newEntity"};
         Object[] paramTypes = new Object[]{
@@ -1581,7 +1579,7 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator {
 
     private ClassTree addDeleteEntityMethod(WorkingCopy copy, ClassTree tree,
             EntityResourceBean bean) {
-        Modifier[] modifiers = new Modifier[]{Modifier.PROTECTED};
+        Modifier[] modifiers = new Modifier[]{Modifier.PRIVATE};
         String methodName = "deleteEntity";                 //NOI18N
 
         Object returnType = Constants.VOID;
@@ -2109,8 +2107,10 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator {
                 
                 template = "$COL_TYPE$<$CLASS$> $FIELD$ = entity.$GETTER$();" +
                         "$COL_TYPE$<$CLASS$> new$FIELD$ = new $CONCRETE_COL_TYPE$<$CLASS$>();" +
+                        "if ($FIELD$ != null) {" +
                         "for ($CLASS$ item : $FIELD$) {" +
                         "new$FIELD$.add(em.getReference($CLASS$.class, item.$ID_GETTER$()));" +
+                        "}" +
                         "}" +
                         "entity.$SETTER$(new$FIELD$);";
                 template = template.replace("$COL_TYPE$", f.getSimpleTypeName()).

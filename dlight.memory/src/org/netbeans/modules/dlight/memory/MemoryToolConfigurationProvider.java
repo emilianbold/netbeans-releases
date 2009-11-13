@@ -117,6 +117,7 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
         DLightToolConfiguration toolConfiguration = new DLightToolConfiguration(ID, TOOL_NAME);
         toolConfiguration.setLongName(TOOL_NAME_DETAILED);
         toolConfiguration.setIcon("org/netbeans/modules/dlight/memory/resources/memory.png"); // NOI18N
+        toolConfiguration.setDescription(loc("MemoryTool.Description"));//NOI18N
         DataCollectorConfiguration dcc = initSunStudioDataCollectorConfiguration();
         toolConfiguration.addDataCollectorConfiguration(dcc);
         DTDCConfiguration dtcc = initDtraceDataCollectorConfiguration();
@@ -199,6 +200,7 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
         indicatorConfiguration.addDetailDescriptors(
                 new DetailDescriptor(MAX_HEAP_DETAIL_ID, loc("MemoryTool.Legend.Max"), formatter.format(0))); // NOI18N
         indicatorConfiguration.setActionDisplayName(loc("indicator.action")); // NOI18N
+        indicatorConfiguration.setActionTooltip(loc("indicator.action.tooltip"));//NOI18N
         indicatorConfiguration.setLabelFormatter(formatter);
 
         DataTableMetadata detailedViewTableMetadata =

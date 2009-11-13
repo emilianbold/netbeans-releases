@@ -40,7 +40,7 @@
  */
 package org.netbeans.modules.javacard.project.refactoring;
 
-import org.netbeans.modules.javacard.Utils;
+import org.netbeans.modules.javacard.common.Utils;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;

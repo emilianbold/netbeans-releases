@@ -56,9 +56,9 @@ import java.util.Comparator;
 final class DocIndexItem extends Object {
 
     /** Standard comparators */
-    public static final Comparator REFERENCE_COMPARATOR = new ReferenceComparator();
-    public static final Comparator TYPE_COMPARATOR = new TypeComparator();
-    public static final Comparator ALPHA_COMPARATOR = new AlphaComparator();
+    public static final Comparator<DocIndexItem> REFERENCE_COMPARATOR = new ReferenceComparator();
+    public static final Comparator<DocIndexItem> TYPE_COMPARATOR = new TypeComparator();
+    public static final Comparator<DocIndexItem> ALPHA_COMPARATOR = new AlphaComparator();
 
     private String text = null;
     private URL contextURL = null;
@@ -89,6 +89,7 @@ final class DocIndexItem extends Object {
         return contextURL != null? new URL( contextURL, spec ): null;
     }
 
+    @Override
     public String toString() {
         if ( remark != null )
             return text + remark;
@@ -151,50 +152,56 @@ final class DocIndexItem extends Object {
 
     // COMPARATOR INNER CLASSES ----------------------------------------------------------------
 
-    static final class ReferenceComparator implements java.util.Comparator {
+    static final class ReferenceComparator implements Comparator<DocIndexItem> {
 
-        public int compare( Object dii1, Object dii2 ) {
-            int res = ((DocIndexItem)dii1).getPackage().compareTo( ((DocIndexItem)dii2).getPackage() );
+        public int compare( DocIndexItem dii1, DocIndexItem dii2 ) {
+            int res = dii1.getPackage().compareTo(dii2.getPackage());
 
             return res != 0 ? res : DocIndexItem.ALPHA_COMPARATOR.compare( dii1, dii2 );
         }
 
+        @Override
         public boolean equals( Object comp ) {
             return ( comp instanceof ReferenceComparator );
         }
 
+        @Override
         public int hashCode() {
             return 353;
         }
 
     }
 
-    static final class TypeComparator implements java.util.Comparator {
+    static final class TypeComparator implements Comparator<DocIndexItem> {
 
-        public int compare( Object dii1, Object dii2 ) {
-            return ((DocIndexItem)dii1).getIconIndex() - ((DocIndexItem)dii2).getIconIndex();
+        public int compare( DocIndexItem dii1, DocIndexItem dii2 ) {
+            return dii1.getIconIndex() - dii2.getIconIndex();
         }
 
+        @Override
         public boolean equals( Object comp ) {
             return ( comp instanceof TypeComparator );
         }
 
+        @Override
         public int hashCode() {
             return -34;
         }
         
     }
 
-    static final class AlphaComparator implements java.util.Comparator {
+    static final class AlphaComparator implements Comparator<DocIndexItem> {
 
-        public int compare( Object dii1, Object dii2 ) {
-            return ((DocIndexItem)dii1).toString().compareTo( ((DocIndexItem)dii2).toString() );
+        public int compare( DocIndexItem dii1, DocIndexItem dii2 ) {
+            return dii1.toString().compareTo( dii2.toString() );
         }
 
+        @Override
         public boolean equals( Object comp ) {
             return ( comp instanceof AlphaComparator );
         }
 
+        @Override
         public int hashCode() {
             return 33;
         }

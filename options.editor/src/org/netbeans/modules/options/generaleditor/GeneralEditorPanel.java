@@ -143,11 +143,11 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
             .add(layout.createSequentialGroup()
                 .add(lCodeFolding)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 839, Short.MAX_VALUE))
+                .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 530, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .add(lCamelCaseBehavior)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jSeparator3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 787, Short.MAX_VALUE))
+                .add(jSeparator3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 488, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -166,7 +166,7 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
                     .add(cbFoldInnerClasses)
                     .add(cbFoldImports)
                     .add(cbCamelCaseBehavior))
-                .addContainerGap(220, Short.MAX_VALUE))
+                .addContainerGap(40, Short.MAX_VALUE))
         );
 
         layout.linkSize(new java.awt.Component[] {cbFoldImports, cbFoldInitialComments, cbFoldInnerClasses, cbFoldJavadocComments, cbFoldMethods}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
@@ -204,7 +204,7 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
                 .add(cbCamelCaseBehavior)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(lCamelCaseBehaviorExample)
-                .addContainerGap(161, Short.MAX_VALUE))
+                .addContainerGap(59, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     

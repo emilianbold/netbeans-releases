@@ -75,7 +75,6 @@ public class ChildFactoryTest extends TestCase {
     }
     
     public void testChildrenCreate() {
-        System.out.println("testChildrenCreate");
         ChildFactory<?> f = new ProviderImpl();
         Children kids = Children.create(f, true);
         assertTrue(kids instanceof AsynchChildren);
@@ -105,7 +104,6 @@ public class ChildFactoryTest extends TestCase {
     //of the children implementation
     
     public void testGetNodesWaits() throws Exception {
-        System.out.println("testGetNodesWaits");
         factory.wait = false;
         kids.getNodes(false);
         synchronized (factory.lock) {
@@ -118,21 +116,18 @@ public class ChildFactoryTest extends TestCase {
     }
 
     public void testFindChildWaits() throws Exception {
-        System.out.println("testFindChildWaits");
         factory.wait = false;
         Node n = kids.findChild("D");
         assertNotNull(n);
     }
 
     public void testGetNodesWaitsFirstTime() {
-        System.out.println("testGetNodesWaits");
         factory.wait = false;
         Node[] n = kids.getNodes(true);
         assertEquals(4, n.length);
     }
 
     public void testInitialNodeIsWaitNode() throws Exception {
-        System.out.println("testInitialNodeIsWaitNode");
         factory.wait = true;
         kids.addNotify();
         Node[] n = kids.getNodes(false);
@@ -140,6 +135,8 @@ public class ChildFactoryTest extends TestCase {
         assertEquals(1, n.length);
         assertEquals(NbBundle.getMessage(AsynchChildren.class, "LBL_WAIT"),
                 n[0].getDisplayName());
+        assertEquals(Collections.emptyList(), Arrays.asList(n[0].getPropertySets()));
+        assertEquals(Collections.emptyList(), Arrays.asList(n[0].getActions(true)));
         factory.wait = false;
         synchronized (factory) {
             factory.wait(2000);
@@ -152,7 +149,6 @@ public class ChildFactoryTest extends TestCase {
     }
     
     public void testBatch() throws Exception {
-        System.out.println("testBatch");
         kids2.addNotify();
         Thread.yield();
         synchronized (factory2.lock) {
@@ -165,7 +161,6 @@ public class ChildFactoryTest extends TestCase {
     }
     
     public void testSynchChildren() throws Exception {
-        System.out.println("testSynchChildren");
         final SynchProviderImpl factory = new SynchProviderImpl();
         final Children ch = Children.create(factory, false);
         assertTrue(ch instanceof SynchChildren);
@@ -204,7 +199,6 @@ public class ChildFactoryTest extends TestCase {
     }
     
     public void testCancel() throws Exception {
-        System.out.println("testCancel");
         Thread.interrupted();
         factory.wait = true;
         kids.addNotify();
@@ -259,6 +253,20 @@ public class ChildFactoryTest extends TestCase {
         r.assertRemoved();
     }
 
+    public void testGetNodesCount() throws Exception {
+        DetachableImpl r = new DetachableImpl();
+        Children ch = Children.create(r, true);
+        Node n = new AbstractNode(ch);
+        assertEquals(2, n.getChildren().getNodesCount(true));
+        //Also test that return value is correct for unattached children
+        //(should wait for background thread to complete)
+        r = new DetachableImpl();
+        ch = Children.create(r, true);
+        assertEquals(2, ch.getNodesCount(true));
+        BatchProviderImpl b = new BatchProviderImpl();
+        ch = Children.create(b, true);
+        assertEquals(4, ch.getNodesCount(true));
+    }
 
     static final class ProviderImpl extends ChildFactory <String> {
         final Object lock = new Object();
@@ -407,7 +415,6 @@ public class ChildFactoryTest extends TestCase {
         }
         
         void waitFor() throws Exception {
-            System.err.println("Enter waitfor");
             synchronized (this) {
                 wait(1000);
             }

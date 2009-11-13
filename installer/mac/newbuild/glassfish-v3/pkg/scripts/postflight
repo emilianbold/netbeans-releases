@@ -67,9 +67,8 @@ echo Configuring GlassFish V3 in `pwd`
 
 "$script_dir"/perm.sh
 
-if [ -d "/Library/Receipts/glassfish-v3.pkg" ] ; then
-    rm -rf "/Library/Receipts/glassfish-v3.pkg"
-fi
+#clean receipts
+"$script_dir"/clean_receipts.sh "glassfish-v3-$GLASSFISHV3_ID" "glassfish-v3"
 
 #Fix for 132115
 #sed -i '' "s/never/TUE/" $2/updatecenter/config/config.xml

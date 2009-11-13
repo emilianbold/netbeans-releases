@@ -83,6 +83,8 @@ import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionName;
 import org.netbeans.modules.php.editor.parser.astnodes.GlobalStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.GotoLabel;
+import org.netbeans.modules.php.editor.parser.astnodes.GotoStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Include;
 import org.netbeans.modules.php.editor.parser.astnodes.InstanceOfExpression;
@@ -91,6 +93,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.LambdaFunctionDeclaration
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeTag;
@@ -167,8 +170,8 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         PHPDocTag.Type kind = node.getKind();
         ScopeImpl currentScope = modelBuilder.getCurrentScope();
         if (currentScope instanceof TypeScope && kind.equals(PHPDocTag.Type.METHOD)) {
-            modelBuilder.build(node, occurencesBuilder);
-        }
+            modelBuilder.buildMagicMethod(node, occurencesBuilder);
+        } 
     }
 
     @Override
@@ -223,48 +226,6 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         super.visit(node);
     }
 
-    /*private String resolveFieldType(String varName, String fieldName, FunctionScopeImpl functionScope, ReturnStatement node) {
-        VariableNameImpl var = (VariableNameImpl) ModelUtils.getFirst(functionScope.getDeclaredVariables(), varName);
-        if (var != null) {
-            String typeName = var.findFieldType(node.getStartOffset(), fieldName);
-            if (typeName != null) {
-                if (!typeName.contains("@")) {//NOI18N
-                    return typeName;
-                } else {
-                    String variableName = getName(typeName, VariousUtils.Kind.VAR, true);
-                    if (variableName != null && !variableName.equalsIgnoreCase(varName)) {
-                        return resolveVariableType(variableName, functionScope, node);
-                    }
-                }
-            }
-        }
-        if (varName != null) {
-            String varTypeName = resolveVariableType(varName, functionScope, node);
-            if (varTypeName != null) {
-                ClassScope classScope = ModelUtils.getFirst(ModelUtils.getDeclaredClasses(fileScope), varTypeName);
-                if (classScope != null) {
-                    FieldElementImpl fieldElement = (FieldElementImpl) ModelUtils.getFirst(classScope.getDeclaredFields(), fieldName, "$" + fieldName);
-                    if (fieldElement != null && fieldElement.defaultType != null) {
-                        return fieldElement.defaultType;
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
-    private String resolveFieldType(FieldAccess fieldAccess, FunctionScopeImpl varScope, ReturnStatement node) {
-        final VariableBase dispatcher = fieldAccess.getDispatcher();
-        final Variable field = fieldAccess.getField();
-        final String fieldName = CodeUtils.extractVariableName(field);        
-        if (dispatcher instanceof Variable && fieldName != null) {
-            final String varName = CodeUtils.extractVariableName((Variable) dispatcher);
-            if (varName != null) {
-                return resolveFieldType(varName, fieldName, varScope, node);
-            }
-        }
-        return null;
-    }*/
     private static Set<String> recursionDetection = new HashSet<String>();//#168868
     private String resolveVariableType(String varName, FunctionScopeImpl varScope, ReturnStatement node) {
         try {
@@ -299,6 +260,18 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         return null;
     }
 
+    @Override
+    public void visit(GotoLabel label) {
+        super.visit(label);
+        occurencesBuilder.prepare(label, modelBuilder.getCurrentScope());
+    }
+    @Override
+    public void visit(GotoStatement statement) {
+        super.visit(statement);
+        occurencesBuilder.prepare(statement, modelBuilder.getCurrentScope());
+    }
+
+
     public static String getName(String semiType, VariousUtils.Kind kind, boolean strict) {
         if (semiType != null) {
             String prefix = "@" + kind.toString(); // NOI18N
@@ -324,18 +297,6 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         }
         return null;
     }
-    /*public static String[] getField(String semiType) {
-        if (semiType != null) {
-            String prefix = "@" + VariousUtils.VAR_TYPE_PREFIX; // NOI18N
-            if (semiType.startsWith(prefix)) {
-                String[] split = semiType.split(prefix, 2);
-                if (split.length > 1 && (split[1].length() +prefix.length() == semiType.length())) {
-                    return split[1];
-                }
-            }
-        }
-        return null;
-    }*/
 
     @Override
     public void visit(Program program) {
@@ -369,6 +330,13 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             modelBuilder.reset();
         }
     }
+
+    @Override
+    public void visit(NamespaceName namespaceName) {
+        super.visit(namespaceName);
+        occurencesBuilder.prepare(Kind.CONSTANT, namespaceName, fileScope);
+    }
+
 
     @Override
     public void visit(UseStatementPart statementPart) {
@@ -869,7 +837,23 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                 if (currentScope instanceof ClassScope && !it.hasNext()) {
                     new FieldElementImpl(currentScope, sb.length() > 0 ? sb.toString() : null, phpDocTypeTagInfo);
                 }
-            }
+            } else if (node.getKind().equals(PHPDocTag.Type.GLOBAL) && phpDocTypeTagInfo.getKind().equals(Kind.VARIABLE)) {
+                final String typeName = phpDocTypeTagInfo.getTypeName();
+                final String varName = phpDocTypeTagInfo.getName();
+                VariableScope variableScope = getVariableScope(node.getStartOffset());
+                if (variableScope != null) {
+                    VariableNameImpl varN = findVariable(variableScope, varName);
+                    if (varN == null && variableScope instanceof VariableNameFactory) {
+                        VariableNameFactory factory = (VariableNameFactory) variableScope;
+                        final OffsetRange nameRange = new OffsetRange(node.getStartOffset(), node.getEndOffset());
+                        varN = new VariableNameImpl(factory, varName, variableScope.getFile(), nameRange, true);
+                    }
+                    if (varN != null) {
+                        varN.addElement(new VarAssignmentImpl(varN, variableScope,
+                                variableScope.getBlockRange(), varN.getNameRange(), typeName));
+                    }
+                }
+            } 
         }
 
         occurencesBuilder.prepare(node, currentScope);
@@ -909,23 +893,30 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         }
     }
 
-    private VariableNameImpl findVariable(Scope scope, final VariableBase leftHandSide) {
-
-        Map<String, VariableNameImpl> varnames = vars.get(scope);
-        VariableNameImpl varN = null;
-        while (scope != null) {
-            if (varnames != null) {
-                if (leftHandSide instanceof Variable) {
-                    varN = varnames.get(VariableNameImpl.toName((Variable) leftHandSide));
+    private VariableNameImpl findVariable(Scope scope, String varName) {
+        VariableNameImpl retval = null;
+        if (varName != null) {
+            Map<String, VariableNameImpl> varnames = vars.get(scope);
+            while (scope != null) {
+                if (varnames != null) {
+                    retval = varnames.get(varName);
+                    if (retval != null) {
+                        break;
+                    }
                 }
-                if (varN != null) {
-                    break;
-                }
+                scope = scope.getInScope();
+                varnames = vars.get(scope);
             }
-            scope = scope.getInScope();
-            varnames = vars.get(scope);
         }
-        return varN;
+        return retval;
+    }
+
+    private VariableNameImpl findVariable(Scope scope, final VariableBase leftHandSide) {
+        String varName = null;
+        if (leftHandSide instanceof Variable) {
+            varName = VariableNameImpl.toName((Variable) leftHandSide);
+        }
+        return varName != null ? findVariable(scope, varName) : null;
     }
 
     private VariableNameImpl createParameter(FunctionScopeImpl fncScope, Parameter parameter) {

@@ -498,9 +498,9 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         popupMenu.add(rollbackMenu);
         rollbackMenu.setEnabled(revisionCanBeRolledBack);
 
-        final int lineNr = al.getLineNum();
         if(isKenai() && al != null) {
             String author = al.getAuthor();
+            final int lineNr = al.getLineNum();
             final KenaiUser ku = kenaiUsersMap.get(author);
             if(ku != null) {
                 popupMenu.addSeparator();

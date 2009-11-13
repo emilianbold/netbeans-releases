@@ -708,8 +708,9 @@ public final class TestGeneratorSetup implements TestabilityJudge {
             result = TestabilityResult.combine(result, TestabilityResult.ABSTRACT_CLASS);
         if (!modifiers.contains(STATIC) && (classElem.getNestingKind() != NestingKind.TOP_LEVEL))
             result = TestabilityResult.combine(result, TestabilityResult.NONSTATIC_INNER_CLASS);
-        if (!hasTestableMethods(classElem))
-            result = TestabilityResult.combine(result, TestabilityResult.NO_TESTEABLE_METHODS);
+        // #175201
+        // if (!hasTestableMethods(classElem))
+        //    result = TestabilityResult.combine(result, TestabilityResult.NO_TESTEABLE_METHODS);
         if (isSkipExceptionClasses() && TestUtil.isClassException(compInfo, classElem)) 
             result = TestabilityResult.combine(result, TestabilityResult.EXCEPTION_CLASS);
 

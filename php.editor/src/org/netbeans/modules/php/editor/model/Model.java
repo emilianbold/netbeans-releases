@@ -70,7 +70,7 @@ public final class Model {
     }
 
     public ParameterInfoSupport getParameterInfoSupport(final int offset) {
-        return new ParameterInfoSupport(getModelVisitor(-1), info.getSnapshot().getSource().getDocument(false), offset);
+        return new ParameterInfoSupport(getModelVisitor(-1), offset);
     }
 
     public VariableScope getVariableScope(final int offset) {

@@ -85,8 +85,13 @@ public class RspecHandlerFactory implements TestHandlerFactory {
         void updateUI( Manager manager, TestSession session) {
             Testcase testcase = new Testcase(matcher.group(2), TestType.RSPEC.name(), session);
             String location = matcher.group(1);
-            if (location != null && !"".equals(location)) {
-                testcase.setLocation(matcher.group(1));
+            String failureLocation = matcher.group(5);
+            if (!isEmpty(location)) {
+                testcase.setLocation(location);
+            } else if (!isEmpty(failureLocation)) {
+                // on Win Rspec doesn't seem to output location, so use
+                // the stacktrace as the location instead
+                testcase.setLocation(failureLocation);
             }
             testcase.setTimeMillis(toMillis(matcher.group(3)));
             testcase.setClassName(matcher.group(2));

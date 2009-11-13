@@ -65,7 +65,7 @@ public class NewTemplateActionTest extends NbTestCase {
     }
     
     public void testContextAware () {
-        NewTemplateAction global = (NewTemplateAction)NewTemplateAction.get (NewTemplateAction.class);
+        NewTemplateAction global = NewTemplateAction.get(NewTemplateAction.class);
         
         CookieNode node = new CookieNode ();
         JPopupMenu popup = Utilities.actionsToPopup (new Action[] {
@@ -99,7 +99,7 @@ public class NewTemplateActionTest extends NbTestCase {
         P provider = new P ();
         Lookup lookup = Lookups.proxy (provider);
         
-        NewTemplateAction global = (NewTemplateAction)NewTemplateAction.get (NewTemplateAction.class);
+        NewTemplateAction global = NewTemplateAction.get(NewTemplateAction.class);
         Action clone = global.createContextAwareInstance (lookup);
         CookieNode node = new CookieNode ();
         

@@ -52,6 +52,7 @@ import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
 import org.netbeans.modules.maven.api.execute.ActiveJ2SEPlatformProvider;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.filesystems.FileObject;
@@ -70,7 +71,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
     private static final int TYPE_UNKNOWN = -1;
     
     private final NbMavenProjectImpl project;
-    private ClassPath[] cache = new ClassPath[8];
+    private ClassPath[] cache = new ClassPath[9];
     
     public ClassPathProviderImpl(NbMavenProjectImpl proj) {
         project = proj;
@@ -84,6 +85,9 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
         if (ClassPath.BOOT.equals(type)) {
             //TODO
             return new ClassPath[]{ getBootClassPath() };
+        }
+        if (ClassPathSupport.ENDORSED.equals(type)) {
+            return new ClassPath[]{ getEndorserdClassPath() };
         }
         if (ClassPath.COMPILE.equals(type)) {
             List<ClassPath> l = new ArrayList<ClassPath>(2);
@@ -115,6 +119,9 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
         if (ClassPath.BOOT.equals(type)) {
             return getBootClassPath();
         }
+        if (ClassPathSupport.ENDORSED.equals(type)) {
+            return getEndorserdClassPath();
+        }
         if (ClassPath.COMPILE.equals(type)) {
             return getCompileTimeClasspath(TYPE_SRC);
         }
@@ -140,6 +147,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
             return getSourcepath(fileType);
         } else if (type.equals(ClassPath.BOOT)) {
             return getBootClassPath();
+        } else if (type.equals(ClassPathSupport.ENDORSED)) {
+            return getEndorserdClassPath();
         } else if (type.equals("classpath/packaged")) { //NOI18N
             //a semi-private contract with visual web.
             return getProvidedClassPath();
@@ -263,7 +272,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
     private synchronized ClassPath getBootClassPath() {
         ClassPath cp = cache[6];
         if (cp == null) {
-            bcpImpl = new BootClassPathImpl(project);
+            getEndorserdClassPath();
+            bcpImpl = new BootClassPathImpl(project, ecpImpl);
             cp = ClassPathFactory.createClassPath(bcpImpl);
             cache[6] = cp;
         }
@@ -275,6 +285,18 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
     public JavaPlatform getJavaPlatform() {
         getBootClassPath();
         return bcpImpl.findActivePlatform();
+    }
+
+    private EndorsedClassPathImpl ecpImpl;
+
+    private ClassPath getEndorserdClassPath() {
+        ClassPath cp = cache[8];
+        if (cp == null) {
+            ecpImpl = new EndorsedClassPathImpl(project);
+            cp = ClassPathFactory.createClassPath(ecpImpl);
+            cache[8] = cp;
+        }
+        return cp;
     }
 }
 

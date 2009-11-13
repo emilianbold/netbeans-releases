@@ -54,6 +54,7 @@ import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.net.UnknownServiceException;
 import java.security.Permission;
+import org.openide.util.URLStreamHandlerRegistration;
 
 /** Special URL connection directly accessing an internal file object.
 *
@@ -65,20 +66,15 @@ final class FileURL extends URLConnection {
 
     /** Default implemenatation of handler for this type of URL.
      */
-    static URLStreamHandler HANDLER = new URLStreamHandler() {
-            /**
-            * @param u - URL to open connection to.
-            * @return new URLConnection.
-            */
-            public URLConnection openConnection(URL u)
-            throws IOException {
-                return new FileURL(u);
-            }
-
-            protected synchronized InetAddress getHostAddress(URL u) {
-                return null;
-            }
-        };
+    @URLStreamHandlerRegistration(protocol=PROTOCOL)
+    public static class Handler extends URLStreamHandler {
+        public URLConnection openConnection(URL u) throws IOException {
+            return new FileURL(u);
+        }
+        protected @Override synchronized InetAddress getHostAddress(URL u) {
+            return null;
+        }
+    }
 
     /** 1 URLConnection == 1 InputSteam*/
     InputStream iStream = null;

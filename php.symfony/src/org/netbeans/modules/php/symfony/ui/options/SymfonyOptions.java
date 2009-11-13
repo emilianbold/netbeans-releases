@@ -49,6 +49,8 @@ import org.openide.util.NbPreferences;
  * @author Tomas Mysik
  */
 public final class SymfonyOptions {
+    public static final String DEFAULT_SECRET = "UniqueSecret"; // NOI18N
+
     // Do not change arbitrary - consult with layer's folder OptionsExport
     // Path to Preferences node for storing these preferences
     private static final String PREFERENCES_PATH = "symfony"; // NOI18N
@@ -57,6 +59,10 @@ public final class SymfonyOptions {
 
     // symfony script
     private static final String SYMFONY = "symfony"; // NOI18N
+    // default params
+    private static final String PARAMS_FOR_PROJECT = "default.params.project"; // NOI18N
+    private static final String PARAMS_FOR_APPS = "default.params.apps"; // NOI18N
+    private static final String DEFAULT_PARAMS_FOR_APPS = "--escaping-strategy=on --csrf-secret=" + DEFAULT_SECRET; // NOI18N
 
     private volatile boolean symfonySearched = false;
 
@@ -82,6 +88,22 @@ public final class SymfonyOptions {
 
     public void setSymfony(String symfony) {
         getPreferences().put(SYMFONY, symfony);
+    }
+
+    public String getDefaultParamsForProject() {
+        return getPreferences().get(PARAMS_FOR_PROJECT, ""); // NOI18N
+    }
+
+    public void setDefaultParamsForProject(String params) {
+        getPreferences().put(PARAMS_FOR_PROJECT, params);
+    }
+
+    public String getDefaultParamsForApps() {
+        return getPreferences().get(PARAMS_FOR_APPS, DEFAULT_PARAMS_FOR_APPS);
+    }
+
+    public void setDefaultParamsForApps(String params) {
+        getPreferences().put(PARAMS_FOR_APPS, params);
     }
 
     private Preferences getPreferences() {

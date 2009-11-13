@@ -76,12 +76,16 @@ public class ClassNamesForFileOraculumImpl implements ClassNamesForFileOraculum 
             return null;
         }
 
+        fqn += "."; //fqn should always be a package name
+
         List<JavaFileObject> jfos = new LinkedList<JavaFileObject>();
         for (Map.Entry<JavaFileObject, List<String>> entry : misplacedSource2FQNs.entrySet()) {
             for (String s : entry.getValue()) {
                 if (s.startsWith(fqn)) {
-                    jfos.add(entry.getKey());
-                    break;
+                    if (s.indexOf('.', fqn.length()) == -1) {
+                        jfos.add(entry.getKey());
+                        break;
+                    }
                 }
             }
         }

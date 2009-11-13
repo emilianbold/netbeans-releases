@@ -41,6 +41,6 @@ chmod a+w logs
 "$script_dir"/addproduct_id.sh "TOMCAT"
 
 
-if [ -d "/Library/Receipts/tomcat.pkg" ] ; then
-    rm -rf "/Library/Receipts/tomcat.pkg"
-fi
+#clean receipts
+"$script_dir"/clean_receipts.sh "tomcat-$TOMCAT_ID" "apache.tomcat"
+

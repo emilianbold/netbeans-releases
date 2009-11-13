@@ -19,12 +19,13 @@
 
 set -e
 
-script_dir=`dirname "$0"`
+dirname=`dirname "$0"`
+
+. "$dirname"/env.sh
 
 #add Product ID
-"$script_dir"/addproduct_id.sh "CND"
-"$script_dir"/servicetag.sh "nb-cnd" "$2"
+"$dirname"/addproduct_id.sh "CND"
+"$dirname"/servicetag.sh "nb-cnd" "$2"
 
-if [ -d "/Library/Receipts/cpp.pkg" ] ; then
-    rm -rf "/Library/Receipts/cpp.pkg"
-fi
+#clean receipts
+"$dirname"/clean_receipts.sh "cpp-$NB_ID" "org.netbeans.ide.cpp"

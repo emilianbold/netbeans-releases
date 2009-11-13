@@ -780,7 +780,9 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                     if (comp != formModel.getTopRADComponent())
                         idToNameMap.put(comp.getId(), comp.getName());
                 }
-                System.out.println(layoutModel.dump(idToNameMap));
+                RADComponent top = formDesigner.getTopDesignComponent();
+                System.out.println(
+                        layoutModel.dump(idToNameMap, top != null ? top.getId() : null, e.isShiftDown()));
             }
         } else if (((keyCode == KeyEvent.VK_W)) && e.isAltDown() && e.isControlDown() && (e.getID() == KeyEvent.KEY_PRESSED)) {
             // generate layout test (one checkpoint)

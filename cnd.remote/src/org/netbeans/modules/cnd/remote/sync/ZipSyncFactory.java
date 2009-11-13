@@ -43,7 +43,6 @@ import java.io.File;
 import java.io.PrintWriter;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
-import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.NbBundle;
@@ -53,15 +52,15 @@ import org.openide.util.NbBundle;
  * @author Vladimir Kvashin
  */
 public @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory.class, position=100)
-class ZipSyncFactory extends RemoteSyncFactory {
+class ZipSyncFactory extends BaseSyncFactory {
 
     /*package*/ static final boolean ENABLE_SCP = CndUtils.getBoolean("cnd.remote.scp", false);
     /*package*/ static final String ID = "scp"; //NOI18N
     
     @Override
     public RemoteSyncWorker createNew( ExecutionEnvironment executionEnvironment,
-            PrintWriter out, PrintWriter err, File privProjectStorageDir, File... localDirs) {
-        return new ZipSyncWorker(executionEnvironment, out, err, privProjectStorageDir, localDirs);
+            PrintWriter out, PrintWriter err, File privProjectStorageDir, File... files) {
+        return new ZipSyncWorker(executionEnvironment, out, err, privProjectStorageDir, files);
     }
 
     @Override

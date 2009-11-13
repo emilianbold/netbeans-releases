@@ -41,37 +41,22 @@
 
 package org.openide.actions;
 
-
 import java.awt.event.ActionEvent;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import java.util.Arrays;
 import java.util.logging.Level;
 import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.ActionMap;
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
-
-import junit.textui.TestRunner;
-
-import org.netbeans.junit.*;
-import org.openide.actions.*;
-import org.openide.actions.ActionsInfraHid.UsefulThings;
+import org.netbeans.junit.Log;
 import org.openide.awt.DynamicMenuContent;
-import org.openide.util.Lookup;
 import org.openide.util.actions.CallbackSystemAction;
 import org.openide.util.actions.Presenter;
-import org.openide.util.datatransfer.PasteType;
 import org.openide.windows.TopComponent;
-
 
 /** Test behaviour of PasteAction intogether with clonning.
  */
 public class PasteActionTest extends AbstractCallbackActionTestHidden {
-    static {
-            ActionsInfraHid.UT.setActivated (null);
-    }
     
     public PasteActionTest(String name) {
         super(name);
@@ -156,7 +141,7 @@ public class PasteActionTest extends AbstractCallbackActionTestHidden {
         
         TopComponent tc = new TopComponent();
         tc.getActionMap ().put(javax.swing.text.DefaultEditorKit.pasteAction, action);
-        ActionsInfraHid.UT.setActivated (tc);
+        tc.requestActive();
         
         CharSequence log = Log.enable(PasteAction.class.getName(), Level.WARNING);
         global.actionPerformed (new ActionEvent (this, 0, "waitFinished"));
@@ -175,7 +160,7 @@ public class PasteActionTest extends AbstractCallbackActionTestHidden {
         
         TopComponent tc = new TopComponent();
         tc.getActionMap ().put(javax.swing.text.DefaultEditorKit.pasteAction, action);
-        ActionsInfraHid.UT.setActivated (tc);
+        tc.requestActive();
         global.actionPerformed (new ActionEvent (this, 0, "waitFinished"));
         
         action.assertCnt ("Not performed on action", 0);
@@ -242,20 +227,20 @@ public class PasteActionTest extends AbstractCallbackActionTestHidden {
     }
     
     public void testDisableIsOk() throws Exception {
-        PasteAction p = (PasteAction)PasteAction.get(PasteAction.class);
+        PasteAction p = PasteAction.get(PasteAction.class);
         
         class A extends AbstractAction {
             public void actionPerformed(ActionEvent e) {
             }
         }
-        A action = new A();
-        action.setEnabled(false);
+        A a = new A();
+        a.setEnabled(false);
 //        action.putValue("delegates", new A[0]);
         
         TopComponent td = new TopComponent();
-        td.getActionMap().put(javax.swing.text.DefaultEditorKit.pasteAction, action);
+        td.getActionMap().put(javax.swing.text.DefaultEditorKit.pasteAction, a);
         
-        ActionsInfraHid.UT.setActivated(td);
+        td.requestActive();
         
         assertFalse("Disabled", p.isEnabled());
         JMenuItem item = p.getMenuPresenter();

@@ -55,6 +55,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -111,6 +112,12 @@ public final class RubyIndex {
 
     private final QuerySupport querySupport;
 
+    /**
+     * Caches the index to avoid querying roots (can be time consuming). Holds the index just for
+     * one FileObject at time.
+     */
+    private static final Map<FileObject, RubyIndex> CACHE = new WeakHashMap<FileObject, RubyIndex>(1);
+
     private static final SortedSet<InvocationCounter> mostTimeConsumingInvocations = new TreeSet<InvocationCounter>();
     /**
      * The base class for AR model classes, needs special handling in various
@@ -139,10 +146,18 @@ public final class RubyIndex {
     }
 
     public static RubyIndex get(final FileObject fo) {
-        return fo == null ? null : get(QuerySupport.findRoots(fo,
+        RubyIndex result = CACHE.get(fo);
+        if (result != null) {
+            return result;
+        }
+        result = fo == null ? null : get(QuerySupport.findRoots(fo,
                 Collections.singleton(RubyLanguage.SOURCE),
                 Collections.singleton(RubyLanguage.BOOT),
                 Collections.<String>emptySet()));
+        // cache the index just for one fo
+        CACHE.clear();
+        CACHE.put(fo, result);
+        return result;
     }
 
     public Collection<? extends IndexResult> query(
@@ -898,17 +913,23 @@ public final class RubyIndex {
     }
     
     /** 
-     * Gets the most distant method in the hierarchy that the given method overrides or
+     * Gets either the most distant or the closest method in the hierarchy that the given method overrides or
      * the method itself if it doesn't override any super methods.
+     *
+     * @param className the name of class where the given <code>methodName</code> is.
+     * @param methodName the name of the method.
+     * @param closest if true, gets the closest super method, otherwise the most distant.
      * 
      * @return method or <code>null</code> if the was no such method.
      */
-    public IndexedMethod getSuperMethod(String className, String methodName) {
+    public IndexedMethod getSuperMethod(String className, String methodName, boolean closest) {
         Set<IndexedMethod> methods = getInheritedMethods(className, methodName, QuerySupport.Kind.EXACT);
 
         // todo: performance?
         List<IndexedClass> superClasses = getSuperClasses(className);
-        Collections.reverse(superClasses);
+        if (!closest) {
+            Collections.reverse(superClasses);
+        }
 
         for (IndexedClass superClass : superClasses) {
             for (IndexedMethod method : methods) {
@@ -951,7 +972,7 @@ public final class RubyIndex {
      */
     public Set<IndexedMethod> getAllOverridingMethodsInHierachy(String methodName, String className) {
 
-        IndexedMethod superMethod = getSuperMethod(className, methodName);
+        IndexedMethod superMethod = getSuperMethod(className, methodName, false);
         if (superMethod == null) {
             return Collections.emptySet();
         }
@@ -1300,6 +1321,9 @@ public final class RubyIndex {
         Set<IndexedConstant> constants = new HashSet<IndexedConstant>();
         for (String realType : classFqn.getRealTypes()) {
             constants.addAll(getConstants(realType, prefix));
+            for (String parentModule : RubyUtils.getParentModules(realType)) {
+                constants.addAll(getConstants(parentModule, prefix));
+            }
         }
         return constants;
     }

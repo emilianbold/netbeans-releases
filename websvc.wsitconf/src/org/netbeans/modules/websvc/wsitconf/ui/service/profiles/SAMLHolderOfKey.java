@@ -41,8 +41,6 @@
 
 package org.netbeans.modules.websvc.wsitconf.ui.service.profiles;
 
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
 import org.netbeans.modules.websvc.wsitconf.spi.SecurityProfile;
 import org.netbeans.modules.websvc.wsitconf.spi.features.SecureConversationFeature;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.AlgoSuiteModelHelper;
@@ -109,7 +107,6 @@ public class SAMLHolderOfKey extends ProfileBaseForm {
         
         tokenKind = SecurityTokensModelHelper.getTokenElement(secBinding, RecipientToken.class);
         token = SecurityTokensModelHelper.getTokenTypeElement(tokenKind);
-        setChBox(reqDerivedKeys, SecurityPolicyModelHelper.isRequireDerivedKeys(token));
 
         setCombo(algoSuiteCombo, AlgoSuiteModelHelper.getAlgorithmSuite(secBinding));
         setCombo(layoutCombo, SecurityPolicyModelHelper.getMessageLayout(secBinding));
@@ -172,12 +169,6 @@ public class SAMLHolderOfKey extends ProfileBaseForm {
                 asmh.setAlgorithmSuite(topSecBinding, (String) algoSuiteCombo.getSelectedItem());
             }
         }
-        if (source.equals(reqDerivedKeys)) {
-            WSDLComponent tokenKind = SecurityTokensModelHelper.getTokenElement(secBinding, RecipientToken.class);
-            WSDLComponent token = SecurityTokensModelHelper.getTokenTypeElement(tokenKind);
-            spmh.enableRequireDerivedKeys(token, reqDerivedKeys.isSelected());
-            return;
-        }
         if (source.equals(samlVersionCombo)) {            
             WSDLComponent tokenKind = SecurityTokensModelHelper.getTokenElement(secBinding, InitiatorToken.class);
             WSDLComponent token = SecurityTokensModelHelper.getTokenTypeElement(tokenKind);
@@ -207,7 +198,6 @@ public class SAMLHolderOfKey extends ProfileBaseForm {
         layoutLabel = new javax.swing.JLabel();
         layoutCombo = new javax.swing.JComboBox();
         encryptSignatureChBox = new javax.swing.JCheckBox();
-        reqDerivedKeys = new javax.swing.JCheckBox();
         encryptOrderChBox = new javax.swing.JCheckBox();
         samlVersionCombo = new javax.swing.JComboBox();
         samlVersionLabel = new javax.swing.JLabel();
@@ -257,15 +247,6 @@ public class SAMLHolderOfKey extends ProfileBaseForm {
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(reqDerivedKeys, org.openide.util.NbBundle.getMessage(SAMLHolderOfKey.class, "LBL_RequireDerivedKeys")); // NOI18N
-        reqDerivedKeys.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        reqDerivedKeys.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        reqDerivedKeys.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                reqDerivedKeysActionPerformed(evt);
-            }
-        });
-
         org.openide.awt.Mnemonics.setLocalizedText(encryptOrderChBox, org.openide.util.NbBundle.getMessage(SAMLHolderOfKey.class, "LBL_EncryptOrderLabel")); // NOI18N
         encryptOrderChBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         encryptOrderChBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -291,11 +272,6 @@ public class SAMLHolderOfKey extends ProfileBaseForm {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(reqDerivedKeys)
-                    .add(secConvChBox)
-                    .add(derivedKeysChBox)
-                    .add(encryptSignatureChBox)
-                    .add(encryptOrderChBox)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(layoutLabel)
@@ -305,7 +281,11 @@ public class SAMLHolderOfKey extends ProfileBaseForm {
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(samlVersionCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                             .add(algoSuiteCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(layoutCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
+                            .add(layoutCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                    .add(secConvChBox)
+                    .add(derivedKeysChBox)
+                    .add(encryptSignatureChBox)
+                    .add(encryptOrderChBox))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -326,8 +306,6 @@ public class SAMLHolderOfKey extends ProfileBaseForm {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(layoutLabel)
                     .add(layoutCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(reqDerivedKeys)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(secConvChBox)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -350,10 +328,6 @@ public class SAMLHolderOfKey extends ProfileBaseForm {
     private void encryptOrderChBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_encryptOrderChBoxActionPerformed
          setValue(encryptOrderChBox);
     }//GEN-LAST:event_encryptOrderChBoxActionPerformed
-
-    private void reqDerivedKeysActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reqDerivedKeysActionPerformed
-         setValue(reqDerivedKeys);
-    }//GEN-LAST:event_reqDerivedKeysActionPerformed
 
     private void derivedKeysChBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_derivedKeysChBoxActionPerformed
          setValue(derivedKeysChBox);
@@ -383,7 +357,6 @@ public class SAMLHolderOfKey extends ProfileBaseForm {
     private javax.swing.JCheckBox encryptSignatureChBox;
     private javax.swing.JComboBox layoutCombo;
     private javax.swing.JLabel layoutLabel;
-    private javax.swing.JCheckBox reqDerivedKeys;
     private javax.swing.JComboBox samlVersionCombo;
     private javax.swing.JLabel samlVersionLabel;
     private javax.swing.JCheckBox secConvChBox;

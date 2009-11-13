@@ -40,16 +40,16 @@
  */
 package org.netbeans.modules.javacard.shell;
 
+import java.awt.Color;
+import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.awt.event.KeyListener;
-import org.netbeans.modules.javacard.api.CardState;
 import org.openide.util.Exceptions;
 
-import javax.swing.*;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
-import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
@@ -59,8 +59,11 @@ import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.Vector;
-import org.netbeans.modules.javacard.api.Card;
-import org.netbeans.modules.javacard.api.CardStateObserver;
+import javax.swing.JTextPane;
+import javax.swing.KeyStroke;
+import org.netbeans.modules.javacard.spi.Card;
+import org.netbeans.modules.javacard.spi.CardState;
+import org.netbeans.modules.javacard.spi.CardStateObserver;
 import org.openide.util.NbBundle;
 
 /**
@@ -80,78 +83,12 @@ final class ShellPanel extends javax.swing.JPanel implements  CardStateObserver,
     private int guardPos = 0;
     private Vector<String> history = new Vector<String>();
     private int historyIndex = 0;
-    private Card server = null;
+    private Card card = null;
     private final CommandManager commandManager = new CommandManager();
 
     public ShellPanel() {
         initComponents();
         addStyles();
-
-//        ((AbstractDocument) shellTextPane.getStyledDocument()).setDocumentFilter(new DocumentFilter() {
-//
-//            @Override
-//            public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
-//                int cp = shellTextPane.getCaretPosition();
-//                if (cp < guardPos) {
-//                    shellTextPane.setCaretPosition(shellTextPane.getDocument().getLength());
-//                    cp = shellTextPane.getCaretPosition();
-//                }
-//
-//                Utils.sysOut("cp = " + cp + "  " + offset);
-//                super.insertString(fb, offset, string, attr);
-//                Utils.sysOut("insertString '" + string + "'");
-//
-//                int index = cp - guardPos; // gives exact index of char we need to delete
-//                int len = command.length();
-//                if (index < len) {
-//                    command.insert(index, string);
-//                    hintsUpdate();
-//                } else {
-//                    shellTextPane.setCaretPosition(shellTextPane.getDocument().getLength());
-//                    command.append(string);
-//                    hintsUpdate();
-//                }
-//
-//
-//            }
-//
-//            @Override
-//            public void remove(FilterBypass fb, int offset, int length) throws BadLocationException {
-//                int cp = shellTextPane.getCaretPosition();
-//                if (cp <= guardPos) {
-//                    return;
-//                }
-//                super.remove(fb, offset, length);
-//            }
-//
-//            @Override
-//            public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
-//                Utils.sysOut("can not replace '" + text + "'");
-//
-//                int cp = shellTextPane.getCaretPosition();
-//                if (cp < guardPos) {
-//                    shellTextPane.setCaretPosition(shellTextPane.getDocument().getLength());
-//                    cp = shellTextPane.getCaretPosition();
-//                }
-//
-//                Utils.sysOut("cp = " + cp + "  " + offset);
-//                super.replace(fb, offset, length, text, attrs);
-//                Utils.sysOut("replacing '" + text + "'");
-//
-//                int index = cp - guardPos; // gives exact index of char we need to delete
-//                int len = command.length();
-//                if (index < len) {
-//                    command.insert(index, text);
-//                    hintsUpdate();
-//                } else {
-//                    shellTextPane.setCaretPosition(shellTextPane.getDocument().getLength());
-//                    command.append(text);
-//                    hintsUpdate();
-//                }
-//
-//            }
-//        });
-
         shellTextPane.registerKeyboardAction(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -179,13 +116,13 @@ final class ShellPanel extends javax.swing.JPanel implements  CardStateObserver,
     }
 
     public void setServer(Card server) {
-        this.server = server;
+        this.card = server;
         server.addCardStateObserver(this);
         clear();
     }
 
-    public Card getServer() {
-        return server;
+    public Card getCard() {
+        return card;
     }
 
     @Override
@@ -205,7 +142,7 @@ final class ShellPanel extends javax.swing.JPanel implements  CardStateObserver,
 
     private void clear() {
         // append(APDUSender.getString("COPYRIGHT"), STYLE_COPYRIGHT); //NOI18N
-        append(server.toString(),STYLE_COPYRIGHT);
+        append(card.toString(),STYLE_COPYRIGHT);
         append(APDUSender.getString("INITIAL_TEXT"),STYLE_COPYRIGHT); //NOI18N
         prompt();
     }
@@ -340,7 +277,7 @@ final class ShellPanel extends javax.swing.JPanel implements  CardStateObserver,
             shellTextPane.setSelectionEnd(guardPos);
             shellTextPane.replaceSelection("");
             // append(APDUSender.getString("COPYRIGHT"), STYLE_COPYRIGHT); //NOI18N
-            append(server.toString(),STYLE_COPYRIGHT);
+            append(card.toString(),STYLE_COPYRIGHT);
             append(APDUSender.getString("INITIAL_TEXT"),STYLE_COPYRIGHT); //NOI18N
             return;
         }
@@ -694,6 +631,6 @@ final class ShellPanel extends javax.swing.JPanel implements  CardStateObserver,
     }
 
     void removeFromCard() {
-        server.removeCardStateObserver(this);
+        card.removeCardStateObserver(this);
     }
 }

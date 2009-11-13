@@ -217,16 +217,6 @@ made subject to such option by the copyright holder.
                   </folder>
               </folder>
           </folder>
-          <folder name="TaskList">
-              <folder name="text">
-                  <folder name="x-java">
-                      <file name="JavaTaskList.instance">
-                          <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
-                          <attr name="instanceCreate" newvalue="org.netbeans.modules.java.source.tasklist.TaskListOptionsPanelController"/>
-                      </file>
-                  </folder>
-              </folder>
-          </folder>
       </folder>
   </folder>
 

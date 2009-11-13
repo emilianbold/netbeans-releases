@@ -40,6 +40,8 @@
  */
 package org.netbeans.modules.xml.actions;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.xml.util.Util;
 import org.openide.util.HelpCtx;
 
@@ -49,10 +51,24 @@ import org.openide.util.HelpCtx;
  * @version 0.1
  */
 public class CollectDTDAction extends CollectSystemAction {
+    private static final long serialVersionUID = -284734180387549284L;
 
-private static final long serialVersionUID = -284734180387549284L;
+    public CollectDTDAction() {}
+
+    public static synchronized CollectDTDAction getInstance() {
+        CollectDTDAction actionInstance = null;
+        String thisClassName = CollectDTDAction.class.getName();
+        try {
+            Class actionInstanceClass = Class.forName(thisClassName);
+            actionInstance = (CollectDTDAction) actionInstanceClass.newInstance();
+        } catch(Exception e) {
+            Logger.getLogger(thisClassName).log(Level.SEVERE, "", e);
+        }
+        return actionInstance;
+    }
 
     /**
+     * Getter for action class
      */
     protected Class getActionLookClass () {
         return DTDAction.class;
@@ -69,16 +85,9 @@ private static final long serialVersionUID = -284734180387549284L;
     public HelpCtx getHelpCtx () {
         return new HelpCtx (CollectDTDAction.class);
     }
-
     
-    //
-    // interface DTDAction
-    //
-
     /**
-     *
+     * Interface DTDAction
      */
-    public static interface DTDAction {
-    }
-
+    public static interface DTDAction {}
 }

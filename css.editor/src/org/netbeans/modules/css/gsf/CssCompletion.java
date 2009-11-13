@@ -52,6 +52,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -106,8 +108,7 @@ public class CssCompletion implements CodeCompletionHandler {
         int caretOffset = context.getCaretOffset();
         String prefix = context.getPrefix() != null ? context.getPrefix() : "";
 
-        TokenHierarchy th = snapshot.getTokenHierarchy();
-        @SuppressWarnings("unchecked")
+        TokenHierarchy<?> th = snapshot.getTokenHierarchy();
         TokenSequence<CssTokenId> ts = th.tokenSequence(CssTokenId.language());
 
         assert ts != null;
@@ -121,6 +122,7 @@ public class CssCompletion implements CodeCompletionHandler {
         ts.move(astOffset);
         boolean hasNext = ts.moveNext();
 
+
         SimpleNode root = info.root();
         if (root == null) {
             //broken source
@@ -128,6 +130,10 @@ public class CssCompletion implements CodeCompletionHandler {
         }
 
         int astCaretOffset = snapshot.getEmbeddedOffset(caretOffset);
+
+        char charAfterCaret = snapshot.getText().length() > (astCaretOffset + 1) ?
+            snapshot.getText().subSequence(astCaretOffset, astCaretOffset + 1).charAt(0) :
+            ' '; //NOI18N
 
         SimpleNode node = SimpleNodeUtil.findDescendant(root, astCaretOffset);
         if (node == null) {
@@ -262,16 +268,21 @@ public class CssCompletion implements CodeCompletionHandler {
                 //like color: rgb|
                 //in such case the parser offers ( alternative which is valid
                 //so we must not use the prefix for filtering the results out.
-                if (alts.size() > 0 && filteredByPrefix.size() == 0) {
+                //do that only if the completion is not called in the middle of a text,
+                //there must be a whitespace after the caret
+                boolean addSpaceBeforeItem = false;
+                if (alts.size() > 0 && filteredByPrefix.size() == 0 && Character.isWhitespace(charAfterCaret)) {
                     completionItemInsertPosition = caretOffset; //complete on the position of caret
                     filteredByPrefix = alts; //prefix is empty, do not filter at all
+                    addSpaceBeforeItem = true;
                 }
 
                 return wrapPropertyValues(prop,
                         filteredByPrefix,
                         CompletionItemKind.VALUE,
                         completionItemInsertPosition,
-                        false);
+                        false,
+                        addSpaceBeforeItem);
 
 
             }
@@ -340,16 +351,21 @@ public class CssCompletion implements CodeCompletionHandler {
             //like color: rgb|
             //in such case the parser offers ( alternative which is valid
             //so we must not use the prefix for filtering the results out.
-            if (alts.size() > 0 && filteredByPrefix.size() == 0) {
+            //do that only if the completion is not called in the middle of a text,
+            //there must be a whitespace after the caret
+            boolean addSpaceBeforeItem = false;
+            if (alts.size() > 0 && filteredByPrefix.size() == 0 && Character.isWhitespace(charAfterCaret)) {
                 completionItemInsertPosition = caretOffset; //complete on the position of caret
                 filteredByPrefix = alts; //prefix is empty, do not filter at all
+                addSpaceBeforeItem = true;
             }
 
             return wrapPropertyValues(prop,
                     filteredByPrefix,
                     CompletionItemKind.VALUE,
                     completionItemInsertPosition,
-                    false);
+                    false,
+                    addSpaceBeforeItem);
 
 
         } else if (node.kind() == CssParserTreeConstants.JJTELEMENTNAME) {
@@ -401,7 +417,8 @@ public class CssCompletion implements CodeCompletionHandler {
             Collection<Element> props,
             CompletionItemKind kind,
             int anchor,
-            boolean addSemicolon) {
+            boolean addSemicolon,
+            boolean addSpaceBeforeItem) {
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(props.size());
         for (Element e : props) {
             if (e instanceof PropertyModel.ValueElement) {
@@ -410,7 +427,7 @@ public class CssCompletion implements CodeCompletionHandler {
                 }
             }
             CssValueElement handle = new CssValueElement(property, e);
-            CompletionProposal proposal = createValueCompletionItem(handle, e, kind, anchor, addSemicolon);
+            CompletionProposal proposal = createValueCompletionItem(handle, e, kind, anchor, addSemicolon, addSpaceBeforeItem);
             proposals.add(proposal);
         }
         return new DefaultCompletionResult(proposals, false);
@@ -489,8 +506,8 @@ public class CssCompletion implements CodeCompletionHandler {
 
     @Override
     public ElementHandle resolveLink(String link, ElementHandle elementHandle) {
-        return CssHelpResolver.getHelpZIPURL() == null ? null : 
-            new ElementHandle.UrlHandle(CssHelpResolver.getHelpZIPURL() + 
+        return CssHelpResolver.getHelpZIPURLasString() == null ? null :
+            new ElementHandle.UrlHandle(CssHelpResolver.getHelpZIPURLasString() +
                     normalizeLink( elementHandle, link));
     }
 
@@ -501,7 +518,7 @@ public class CssCompletion implements CodeCompletionHandler {
             return null;
         }
         final String[] retval = new String[1];
-        ((BaseDocument) document).runAtomic(new Runnable() {
+        ((BaseDocument) document).render(new Runnable() {
             public void run() {
                 retval[0] = getPrefix(LexerUtils.getCssTokenSequence(document, caretOffset), caretOffset);
             }
@@ -516,13 +533,14 @@ public class CssCompletion implements CodeCompletionHandler {
         int index = link.lastIndexOf('#');
         if ( index !=-1 ){
             if ( index ==0 || link.charAt(index-1) =='/'){
+                String helpZipUrl = CssHelpResolver.getHelpZIPURL().getPath();
                 if ( handle instanceof CssPropertyElement ){
                     String name = ((CssPropertyElement)handle).property().name();
                     URL propertyHelpURL = CssHelpResolver.instance().
                         getPropertyHelpURL(name);
                     String path = propertyHelpURL.getPath();
-                    if ( path.startsWith( CssHelpResolver.getHelpZIPURL())){
-                        path = path.substring(CssHelpResolver.getHelpZIPURL().length());
+                    if ( path.startsWith( helpZipUrl )){
+                        path = path.substring(helpZipUrl.length());
                     }
                     return path+link.substring( index );
                 }
@@ -532,8 +550,16 @@ public class CssCompletion implements CodeCompletionHandler {
                     if ( anchorIndex!= -1 ){
                         url = url.substring( 0, anchorIndex);
                     }
-                    if ( url.startsWith( CssHelpResolver.getHelpZIPURL())){
-                        url = url.substring(CssHelpResolver.getHelpZIPURL().length());
+                    //"normalize" the URL - use just the "path" part
+                    try {
+                        URL _url = new URL(url);
+                        url = _url.getPath();
+                    } catch(MalformedURLException mue) {
+                        Logger.getLogger("global").log(Level.INFO, null, mue);
+                    }
+
+                    if ( url.startsWith( helpZipUrl)){
+                        url = url.substring(helpZipUrl.length());
                     }
                     return url+link.substring( index );
                 }
@@ -570,6 +596,17 @@ public class CssCompletion implements CodeCompletionHandler {
 
     @Override
     public QueryType getAutoQuery(JTextComponent component, String typedText) {
+        int offset = component.getCaretPosition();
+        TokenSequence<CssTokenId> ts = LexerUtils.getJoinedTokenSequence(component.getDocument(), offset);
+        if(ts != null) {
+            if(ts.movePrevious() || ts.moveNext()) {
+                TokenId tid = ts.token().id();
+                if(tid == CssTokenId.IDENT) {
+                    return QueryType.COMPLETION;
+                }
+            }
+        }
+
         if (typedText == null || typedText.length() == 0) {
             return QueryType.NONE;
         }
@@ -581,6 +618,7 @@ public class CssCompletion implements CodeCompletionHandler {
                 return QueryType.STOP;
             }
             case ':':
+            case ' ':
             case ',': {
                 return QueryType.COMPLETION;
             }
@@ -612,7 +650,8 @@ public class CssCompletion implements CodeCompletionHandler {
             Element value,
             CompletionItemKind kind,
             int anchorOffset,
-            boolean addSemicolon) {
+            boolean addSemicolon,
+            boolean addSpaceBeforeItem) {
 
         String origin = value.origin();
 
@@ -630,10 +669,10 @@ public class CssCompletion implements CodeCompletionHandler {
         }
 
         if ("color".equals(origin)) { //NOI18N
-            return new ColorCompletionItem(element, value.toString(), origin, kind, anchorOffset, addSemicolon);
+            return new ColorCompletionItem(element, value.toString(), origin, kind, anchorOffset, addSemicolon, addSpaceBeforeItem);
         }
 
-        return new ValueCompletionItem(element, value.toString(), origin, kind, anchorOffset, addSemicolon);
+        return new ValueCompletionItem(element, value.toString(), origin, kind, anchorOffset, addSemicolon, addSpaceBeforeItem);
     }
 
     private CssCompletionItem createPropertyNameCompletionItem(CssElement element,
@@ -682,21 +721,29 @@ public class CssCompletion implements CodeCompletionHandler {
     private class ValueCompletionItem extends CssCompletionItem {
 
         private String origin; //property name to which this value belongs
+        private boolean addSpaceBeforeItem;
 
         private ValueCompletionItem(CssElement element,
                 String value,
                 String origin,
                 CompletionItemKind kind,
                 int anchorOffset,
-                boolean addSemicolon) {
+                boolean addSemicolon,
+                boolean addSpaceBeforeItem) {
 
             super(element, value, kind, anchorOffset, addSemicolon);
             this.origin = origin;
+            this.addSpaceBeforeItem = addSpaceBeforeItem;
         }
 
         @Override
         public String getInsertPrefix() {
-            return getName() + (addSemicolon ? ";" : ""); //NOI18N
+            return (addSpaceBeforeItem && textsStartsWith(getName()) ? " " : "") + getName() + (addSemicolon ? ";" : ""); //NOI18N
+        }
+
+        private boolean textsStartsWith(String text) {
+            char ch = text.charAt(0);
+            return Character.isLetterOrDigit(ch);
         }
 
         @Override
@@ -728,9 +775,10 @@ public class CssCompletion implements CodeCompletionHandler {
                 String origin,
                 CompletionItemKind kind,
                 int anchorOffset,
-                boolean addSemicolon) {
+                boolean addSemicolon,
+                boolean addSpaceBeforeItem) {
 
-            super(element, value, origin, kind, anchorOffset, addSemicolon);
+            super(element, value, origin, kind, anchorOffset, addSemicolon, addSpaceBeforeItem);
         }
 
         @Override
@@ -786,7 +834,7 @@ public class CssCompletion implements CodeCompletionHandler {
 
         @Override
         public String getInsertPrefix() {
-            return super.getInsertPrefix() + ":"; //NOI18N
+            return super.getInsertPrefix() + ": "; //NOI18N
         }
     }
 

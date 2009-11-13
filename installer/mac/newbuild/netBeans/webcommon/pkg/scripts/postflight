@@ -19,11 +19,14 @@
 
 set -e
 
-script_dir=`dirname "$0"`
+dirname=`dirname "$0"`
+
+. "$dirname"/env.sh
 
 #add Product ID
-"$script_dir"/addproduct_id.sh "WEBCOMMON"
+"$dirname"/addproduct_id.sh "WEBCOMMON"
 
-if [ -d "/Library/Receipts/webcommon.pkg" ] ; then
-    rm -rf "/Library/Receipts/webcommon.pkg"
-fi
+#clean receipts
+"$dirname"/clean_receipts.sh "webcommon-$NB_ID" "org.netbeans.ide.webcommon"
+
+

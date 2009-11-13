@@ -55,8 +55,15 @@ public class LibrariesCheck extends NbTestCase {
     public void testGetLibraries() throws Exception {
         FileObject fo = FileUtil.getConfigFile("org-netbeans-api-project-libraries/Libraries");
         assertNotNull("Libraries found", fo);
+        StringBuilder sb = new StringBuilder();
         for (FileObject f : fo.getChildren()) {
             System.setProperty("nblibraries." + f.getNameExt(), f.asText());
+            Object n = f.getAttribute("displayName");
+            if (n instanceof String) {
+                System.setProperty("displayName.nblibraries." + f.getNameExt(), (String)n);
+            } else {
+                sb.append("Missing displayName attribute: " + f).append("\n");
+            }
         }
     }
     public void testCheckLibrariesPretest() throws Exception {
@@ -81,6 +88,11 @@ public class LibrariesCheck extends NbTestCase {
                     continue;
                 }
                 if (l.asText().equals(contents)) {
+                    Object n = l.getAttribute("displayName");
+                    String origN = System.getProperty("displayName.nblibraries." + l.getNameExt());
+                    if (origN == null || !origN.equals(n)) {
+                        errors.append("Wrong name of " + l.getNameExt() + " old: " + origN + " new: " + n + "\n");
+                    }
                     continue;
                 }
                 errors.append("Wrong library: "+ l.getNameExt() + "\n");

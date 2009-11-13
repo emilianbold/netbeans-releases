@@ -42,7 +42,7 @@
 package org.netbeans.modules.cnd.modelimpl.csm;
 
 import org.netbeans.modules.cnd.api.model.*;
-import antlr.collections.AST;
+import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -67,7 +67,7 @@ import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
  * @author Vladimir Kvasihn
  */
 public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDeclaration> 
-        implements CsmUsingDeclaration, RawNamable, Disposable {
+        implements CsmUsingDeclaration, CsmMember, RawNamable, Disposable {
 
     private final CharSequence name;
     private final int startOffset;
@@ -77,22 +77,29 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
     private WeakReference<CsmDeclaration> refDeclaration;
     private boolean lastResolveFalure;
     private final CsmUID<CsmScope> scopeUID;
+    private final CsmVisibility visibility;
     
-    public UsingDeclarationImpl(AST ast, CsmFile file, CsmScope scope, boolean global) {
+    public UsingDeclarationImpl(AST ast, CsmFile file, CsmScope scope, boolean global, CsmVisibility visibility) {
         super(ast, file);
         this.scopeUID = UIDCsmConverter.scopeToUID(scope);
         name = NameCache.getManager().getString(ast.getText());
-        // TODO: here we override startOffset which is not good because startPosition is now wrong
-        startOffset = ((CsmAST)ast.getFirstChild()).getOffset();
         rawName = AstUtil.getRawNameInChildren(ast);
         if (!global) {
             Utils.setSelfUID(this);
         }
+        this.visibility = visibility;
+        // TODO: here we override startOffset which is not good because startPosition is now wrong
+        AST child = ast.getFirstChild();
+        if(child instanceof CsmAST) {
+            startOffset = ((CsmAST)child).getOffset();
+        } else {
+            startOffset = getStartOffset();
+        }
     }
-    
+
     public CsmDeclaration getReferencedDeclaration() {
         return getReferencedDeclaration(null);
-    }   
+    }
 
     public CsmDeclaration getReferencedDeclaration(Resolver resolver) {
         // TODO: process preceding aliases
@@ -177,6 +184,25 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
                     
                     referencedDeclaration = referencedDeclaration == null ? bestChoice : referencedDeclaration;
                 }
+                CsmClass cls = null;
+                if(namespace == null) {
+                    CharSequence[] partial = new CharSequence[rawName.length - 1];
+                    System.arraycopy(rawName, 0, partial, 0, rawName.length - 1);
+                    CsmObject result = ResolverFactory.createResolver(getContainingFile(), startOffset, resolver).resolve(partial, Resolver.CLASSIFIER);
+                    if (CsmKindUtilities.isClass(result)) {
+                        cls = (CsmClass)result;
+                    }
+                }
+                if(cls != null) {
+                    CharSequence lastName = rawName[rawName.length - 1];
+                    CsmFilter filter = CsmSelect.getFilterBuilder().createNameFilter(lastName, true, true, false);
+                    Iterator<CsmMember> it = CsmSelect.getClassMembers(cls, filter);
+                    if (it.hasNext()) {
+                        CsmMember member = it.next();
+                        referencedDeclaration = member;
+                    }
+                }
+
             }
             _setReferencedDeclaration(referencedDeclaration);
             lastResolveFalure = referencedDeclaration == null;
@@ -207,12 +233,28 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
         this.referencedDeclarationUID = UIDCsmConverter.declarationToUID(referencedDeclaration);
         assert this.referencedDeclarationUID != null || referencedDeclaration == null;
     }
-    
+
+    public CsmClass getContainingClass() {
+        CsmScope scope = getScope();
+        if(CsmKindUtilities.isClass(scope)) {
+            return (CsmClass) scope;
+        }
+        return null;
+    }
+
+    public CsmVisibility getVisibility() {
+        return visibility;
+    }
+
+    public boolean isStatic() {
+        return false;
+    }
+
     @Override
     public int getStartOffset() {
         return startOffset;
     }
-    
+
     public CsmDeclaration.Kind getKind() {
         return CsmDeclaration.Kind.USING_DECLARATION;
     }
@@ -256,6 +298,8 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
         // save cached declaration
         UIDObjectFactory.getDefaultFactory().writeUID(this.referencedDeclarationUID, output);
         UIDObjectFactory.getDefaultFactory().writeUID(this.scopeUID, output);
+
+        PersistentUtils.writeVisibility(this.visibility, output);
     }
     
     public UsingDeclarationImpl(DataInput input) throws IOException {
@@ -268,5 +312,7 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
         // read cached declaration
         this.referencedDeclarationUID = UIDObjectFactory.getDefaultFactory().readUID(input);        
         this.scopeUID = UIDObjectFactory.getDefaultFactory().readUID(input);
-    }      
+
+        this.visibility = PersistentUtils.readVisibility(input);
+    }
 }

@@ -42,6 +42,7 @@ package org.netbeans.modules.kenai.api;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
@@ -59,6 +60,8 @@ import org.netbeans.modules.kenai.FeatureData;
 import org.netbeans.modules.kenai.LicenceData;
 import org.netbeans.modules.kenai.ProjectData;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * IDE-side representation of a Kenai project.
@@ -253,9 +256,31 @@ public final class KenaiProject {
     }
     
     private static Pattern getRepositoryPattern() {
-        return Pattern.compile("(https|http)://([a-z]+\\.)?" + Kenai.getDefault().getName().replace(".", "\\.") + "/(svn|hg)/(\\S*)~(.*)");
+        return Pattern.compile("(https|http)://([a-z]+\\.)?" + Kenai.getDefault().getUrl().getHost().replace(".", "\\.") + "/(svn|hg)/(\\S*)~(.*)");
     }
     private static final int repositoryPatternProjectGroup = 4;
+
+    /**
+     * Looks up project by File
+     * @param file file to look for
+     * @return instance of KenaiProject which belongs to file
+     * @throws KenaiException 
+     */
+    public static KenaiProject forFile(File file) throws KenaiException {
+        String projectName = NbModuleOwnerSupport.getInstance().getOwner(".kenai", file);//NOI18N
+        if (projectName!=null) {
+            return KenaiProject.get(projectName);
+        } else {
+            FileObject f = FileUtil.toFileObject(file);
+            if (f!=null) {
+                String remoteLocation = (String) f.getAttribute("ProvidedExtensions.RemoteLocation");//NOI18N
+                if (remoteLocation!=null) {
+                    return forRepository(remoteLocation);
+                }
+            }
+        }
+        return null;
+    }
 
     /**
      * Looks up a project by repository location.
@@ -266,11 +291,16 @@ public final class KenaiProject {
      * @throws KenaiException if the project cannot be loaded
      */
     public static KenaiProject forRepository(String uri) throws KenaiException {
+        if (uri==null)
+            return null;
         Matcher m = getRepositoryPattern().matcher(uri);
         if (m.matches()) {
             return Kenai.getDefault().getProject(m.group(repositoryPatternProjectGroup));
         }
-
+        //hard coded support for external netbeans repositories
+        if (Kenai.getDefault().getUrl().getHost().equals("netbeans.org") && (uri.startsWith("https://hg.netbeans.org") || uri.startsWith("http://hg.netbeans.org"))) {//NOI18N
+            return Kenai.getDefault().getProject("ide");//NOI18N
+        }
         return null;
     }
 
@@ -282,9 +312,15 @@ public final class KenaiProject {
      * @return name of kenai project or null, if given uri is not from kenai
      */
     public static String getNameForRepository(String uri) {
+        if (uri==null)
+            return null;
         Matcher m = getRepositoryPattern().matcher(uri);
         if (m.matches()) {
             return m.group(repositoryPatternProjectGroup);
+        }
+        //hard coded support for external netbeans repositories
+        if (Kenai.getDefault().getUrl().getHost().equals("netbeans.org") && (uri.startsWith("https://hg.netbeans.org") || uri.startsWith("http://hg.netbeans.org"))) {//NOI18N
+            return "ide";//NOI18N
         }
         return null;
     }

@@ -41,8 +41,8 @@
 
 package org.netbeans.modules.cnd.modelimpl.parser;
 
-import antlr.Token;
-import antlr.collections.AST;
+import org.netbeans.modules.cnd.antlr.Token;
+import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.Serializable;
 import org.netbeans.modules.cnd.utils.cache.TextCache;
 

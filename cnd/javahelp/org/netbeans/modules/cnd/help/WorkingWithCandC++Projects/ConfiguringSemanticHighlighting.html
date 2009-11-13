@@ -15,14 +15,15 @@ type="text/css">
 <p><small><a href="#seealso">See Also</a>&nbsp; </small>
 <p>
 You can use the Options window to configure semantic highlighting for your 
-C and C++ projects.</p>
+C and C++ projects.  The IDE can display various code elements with text highlights
+such as different colors, underlining, or font weights to make the code easier to understand.</p>
 <p><b>To configure C and C++ semantic highlighting:</b></p>
 <ol>
 <li>Choose Tools &gt; Options.</li>
 <li>
 Click C/C++ in the top pane of the window.
 </li>
-<li>Click the Semantic Highlighting tab.</li>
+<li>Click the Highlighting tab.</li>
 <li>
 Modify the properties as desired.</li>
 </ol>
@@ -35,7 +36,7 @@ of that class, function, variable, or macro in the current file are
 highlighted.
 </li>
 <li><b>Keep Marks.</b> If this option is selected, highlighted classes, 
-functions, variable, and macros remain highlighted. 
+functions, variable, and macros remain highlighted until you move the cursor to another symbol.
 </li>
 <li><b>Highlight Inactive Code.</b> If this option selected, inactive code 
 is highlighted.
@@ -48,9 +49,20 @@ function names are highlighted.
 </li>
 <li><b>Highlight Macros.</b> If this option selected, macros are highlighted.
 </li>
-<li><b>Highlights Typedefs.</b> If this option is selected, 
-typedefs are highlighted
+<li><b>Highlight Typedefs.</b> If this option is selected, 
+typedefs are highlighted.
 </li>
+<li><b>Highlight Unused Variables.</b> If this option is selected, unused variables are highlighted.</li>
+<li><b>Highlight Syntax Errors.</b> If this option is selected, syntax errors are highlighted.</li>
+<li><b>Highlight Unresolved Include Files.</b> If this option is highlighted, include files that cannot
+    be resolved are highlighted.
+</li>
+<li><b>Highlight Unresolved Identifiers.</b> If this option is selected, unresolved identifiers are highlighted.</li>
+<li><b>Reparse on file change.</b> If this option is selected, files you edit are reparsed to check syntax after
+    each change, to keep the syntax highlighting accurate. If you deselect this option, reparsing occurs only
+    when the file is saved. Deselecting this option might be useful when working with very large files
+    if reparsing causes delays, but might cause temporary inaccuracy with highlighting.</li>
+
 </ul>
 <table>
 <tr>
@@ -58,8 +70,6 @@ typedefs are highlighted
 </tr>
 <tr>
 <td width="23"></td>
-<a href="ConfiguringSemanticHighlighting.html">Configuring C and 
-C++ Semantic Highlighting</a><br>
 <a href="ConfiguringProjectSettings.html">Configuring C and 
 C++ Project Settings</a><br>
 <a href="ConfiguringParsingSettings.html">Configuring C and 

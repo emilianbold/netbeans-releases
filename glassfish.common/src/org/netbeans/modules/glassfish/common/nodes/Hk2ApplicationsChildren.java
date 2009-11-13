@@ -82,7 +82,7 @@ public class Hk2ApplicationsChildren extends Children.Keys<Object> implements Re
                 if(commonSupport != null) {
                     try {
                         java.util.Map<String, String> ip = commonSupport.getInstanceProperties();
-                        CommandRunner mgr = new CommandRunner(ip);
+                        CommandRunner mgr = new CommandRunner(commonSupport.getCommandFactory(), ip);
                         java.util.Map<String, List<AppDesc>> appMap = mgr.getApplications(null);
                         for(Entry<String, List<AppDesc>> entry: appMap.entrySet()) {
                             List<AppDesc> apps = entry.getValue();

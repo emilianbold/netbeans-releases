@@ -488,9 +488,13 @@ final class ResultView extends TopComponent {
             }
 
             addSearchPair(panel, task);
+            // #176312 tab name needs to be set so scrolling is performed correctly
+            // after setSelectedComponent() in addTabPanel()
+            panel.setName(task.getSearchCriteria().getTextPatternExpr()); //NOI18N
             addTabPanel(panel);
+        } else {
+            panel.setName(task.getSearchCriteria().getTextPatternExpr()); //NOI18N
         }
-        panel.setName(task.getSearchCriteria().getTextPatternExpr()); //NOI18N
         return panel;
     }
     
