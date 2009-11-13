@@ -49,7 +49,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
-import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -74,21 +74,26 @@ public class QueryAction extends SystemAction {
     }
 
     public void actionPerformed(ActionEvent ev) {
-        openQuery(null);
+        openQuery(null, WindowManager.getDefault().getRegistry().getActivatedNodes());
     }
 
-    public static void openQuery(Query query) {
-//        Repository repository = BugtrackingOwnerSupport.getInstance()
-//                                .getRepository(BugtrackingOwnerSupport.ContextType
-//                                               .SELECTED_FILE_AND_ALL_PROJECTS) ;
-        openQuery(query, null);
+    private static void openQuery(Query query, Node[] context) {
+        openQuery(query, null, context);
     }
 
     public static void openQuery(final Query query, final Repository repositoryToSelect) {
+        openQuery(query, repositoryToSelect, null);
+    }
+
+    private static void openQuery(final Query query, final Repository repositoryToSelect, Node[] context) {
         openQuery(query, repositoryToSelect, false);
     }
 
     public static void openQuery(final Query query, final Repository repository, final boolean suggestedSelectionOnly) {
+        openQuery(query, repository, WindowManager.getDefault().getRegistry().getActivatedNodes(), suggestedSelectionOnly);
+    }
+
+    private static void openQuery(final Query query, final Repository repository, final Node[] context, final boolean suggestedSelectionOnly) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 BugtrackingManager.LOG.log(Level.FINE, "QueryAction.openQuery start. query [{0}]", new Object[] {query != null ? query.getDisplayName() : null});
@@ -98,7 +103,7 @@ public class QueryAction extends SystemAction {
                 }
                 if(tc == null) {
                     tc = new QueryTopComponent();
-                    tc.init(query, repository, suggestedSelectionOnly);
+                    tc.init(query, repository, context, suggestedSelectionOnly);
                 }
                 if(!tc.isOpened()) {
                     tc.open();

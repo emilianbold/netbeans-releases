@@ -173,6 +173,6 @@ public final class KenaiFeature {
      * @return bug tracking component or null
      */
     public static String getComponentForFile(File file) {
-        return NbModuleOwnerSupport.getInstance().getOwner(".bugtracking", file);//NOI18N
+        return NbModuleOwnerSupport.getInstance().getOwner(NbModuleOwnerSupport.NB_BUGZILLA_CONFIG, file);
     }
 }

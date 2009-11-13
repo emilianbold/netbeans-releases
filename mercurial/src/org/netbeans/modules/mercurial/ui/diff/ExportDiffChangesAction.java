@@ -119,7 +119,9 @@ public class ExportDiffChangesAction extends ContextAction {
         }
 
         final File root = HgUtils.getRootFile(context);
-        ExportDiffSupport exportDiffSupport = new ExportDiffSupport(new File[] {root}, HgModuleConfig.getDefault().getPreferences()) {
+        Set<File> roots = context.getRootFiles();
+        File contextFile = roots != null && roots.size() > 0 ? roots.iterator().next() : null;
+        ExportDiffSupport exportDiffSupport = new ExportDiffSupport(new File[] {contextFile}, HgModuleConfig.getDefault().getPreferences()) {
             @Override
             public void writeDiffFile(final File toFile) {
                 ExportDiffAction.saveFolderToPrefs(toFile);

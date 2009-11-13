@@ -37,71 +37,20 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.kenai.spi;
+package org.netbeans.modules.bugtracking.ui.issue;
 
-import org.netbeans.modules.bugtracking.spi.*;
-import org.netbeans.modules.bugtracking.issuetable.Filter;
-import org.netbeans.modules.kenai.api.KenaiProject;
+import org.netbeans.modules.bugtracking.spi.Issue;
+import org.openide.nodes.Node;
 
 /**
- * 
- * Provides Kenai specific functionality to a {@link BugtrackingController}.<br>
- * To use register your implementation in the {@link BugtrackingConnector}-s and
- * {@link Repositories} lookup.
- * 
+ *
  * @author Tomas Stupka
  */
-public abstract class KenaiSupport {
-
-    public enum BugtrackingType {
-        BUGZILLA,
-        JIRA
+public abstract class IssueAccessor {
+    protected static IssueAccessor IMPL;
+    public abstract void setSelection(Issue issue, Node[] nodes);
+    
+    static IssueAccessor getInstance() {
+        return IMPL;
     }
-    
-    /**
-     * Creates a {@link Repository} for the given {@link KenaiProject}
-     *
-     * @param project
-     * @return
-     */
-    public abstract Repository createRepository(KenaiProject project);
-
-    /**
-     * // XXX what is this!
-     * @param query
-     * @param filter
-     */
-    public abstract void setFilter(Query query, Filter filter);
-
-    /**
-     * Returns the default "All Issues" query for the given repository
-     * 
-     * @return
-     */
-    public abstract Query getAllIssuesQuery(Repository repository);
-
-    /**
-     * Returns the default "My Issues" query for the given repository
-     *
-     * @return
-     */
-    public abstract Query getMyIssuesQuery(Repository repository);
-    
-    /**
-     * Determines the
-     *
-     * @return
-     */
-    public abstract BugtrackingType getType();
-
-    /**
-     * Determines if the query needs the user to be logged in to show some
-     * results - e.g. MyIssues queries have no results in case the user is
-     * not loged in
-     *
-     * @param query
-     * @return true if login needed, otherwise false
-     */
-    public abstract boolean needsLogin(Query query);
-
 }

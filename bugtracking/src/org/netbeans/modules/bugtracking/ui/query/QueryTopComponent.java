@@ -84,6 +84,7 @@ import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.bugtracking.util.RepositoryComboSupport;
 import org.netbeans.modules.kenai.api.Kenai;
+import org.openide.nodes.Node;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -112,6 +113,7 @@ public final class QueryTopComponent extends TopComponent
     private RequestProcessor rp = new RequestProcessor("Bugtracking query", 1, true); // NOI18N
     private Task prepareTask;
     private RepositoryComboSupport rs;
+    private Node[] context;
 
     QueryTopComponent() {
         RepositoriesSupport.getInstance().addPropertyChangeListener(this);
@@ -133,8 +135,10 @@ public final class QueryTopComponent extends TopComponent
         return query;
     }
 
-    void init(Query query, Repository defaultRepository, boolean suggestedSelectionOnly) {
+    void init(Query query, Repository defaultRepository, Node[] context, boolean suggestedSelectionOnly) {
         this.query = query;
+        this.context = context;
+
         setNameAndTooltip();
 
         if(suggestedSelectionOnly) {
@@ -553,6 +557,8 @@ public final class QueryTopComponent extends TopComponent
                     if (query == null) {
                         return;
                     }
+                    
+                    QueryAccessor.getInstance().setSelection(query, context);
                     query.addPropertyChangeListener(QueryTopComponent.this);
                     query.addNotifyListener(QueryTopComponent.this);
 

@@ -61,8 +61,11 @@ import org.netbeans.modules.bugzilla.util.BugzillaConstants;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiProject;
+import org.netbeans.modules.kenai.api.NbModuleOwnerSupport.OwnerInfo;
+import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.windows.WindowManager;
 
 /**
  *
@@ -73,7 +76,7 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
     static final String ICON_PATH = "org/netbeans/modules/bugtracking/ui/resources/kenai-small.png"; // NOI18N
     private String urlParam;
     private Image icon;
-    private String product;
+    private final String product;
     private KenaiQuery myIssues;
     private KenaiQuery allIssues;
     private String host;
@@ -249,10 +252,21 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
 
     @Override
     protected QueryParameter[] getSimpleSearchParameters() {
-        return new QueryParameter[] {
-            new QueryParameter.SimpleQueryParameter("product",          //NOI18N
-                    new String[] { product } )
-        };
+        List<QueryParameter> ret = new ArrayList<QueryParameter>();
+        ret.add(new QueryParameter.SimpleQueryParameter("product", new String[] { product } ));    //NOI18N        
+
+        // XXX this relies on the fact that the user can't change the selection
+        //     while the quicksearch is oppened. Works for now, but might change in the future
+        Node[] nodes = WindowManager.getDefault().getRegistry().getActivatedNodes();
+        OwnerInfo ownerInfo = getOwnerInfo(nodes);
+        if(ownerInfo != null && ownerInfo.getOwner().equals(product)) {
+            List<String> data = ownerInfo.getExtraData();
+            if(data != null && data.size() > 0) {
+                ret.add(new QueryParameter.SimpleQueryParameter("component", new String[] { data.get(0) }));    //NOI18N
+    }
+        }
+
+        return ret.toArray(new QueryParameter[ret.size()]);
     }
 
     @Override
@@ -299,9 +313,30 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
         }
     }
 
+    @Override
+    public OwnerInfo getOwnerInfo(Node[] nodes) {
+        OwnerInfo ownerInfo = super.getOwnerInfo(nodes);
+        if(ownerInfo != null) {
+            if(ownerInfo.getOwner().equals(product)) {
+                return ownerInfo;
+            } else {
+                Bugzilla.LOG.warning(
+                        " returned owner [" +               // NOI18N
+                        ownerInfo.getOwner() +
+                        "] for " +                          // NOI18N
+                        nodes[0] +
+                        " is different then product [" +    // NOI18N
+                        product +
+                        "]");                               // NOI18N
+                return null;
+            }
+        }
+        return null;
+    }
+
     private boolean providePredefinedQueries() {
-        String provide = System.getProperty("org.netbeans.modules.bugzilla.noPredefinedQueries");
-        return !"true".equals(provide);
+        String provide = System.getProperty("org.netbeans.modules.bugzilla.noPredefinedQueries");   // NOI18N
+        return !"true".equals(provide);                                                             // NOI18N
     }
 
 }

@@ -51,7 +51,7 @@ import org.netbeans.modules.bugzilla.query.QueryController;
  * @author Tomas Stupka
  */
 public class KenaiQuery extends BugzillaQuery {
-    private String product;
+    private final String product;
     private boolean predefinedQuery = false;
 
     public KenaiQuery(String name, BugzillaRepository repository, String urlParameters, String product, boolean saved, boolean predefined) {

@@ -676,7 +676,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         } else if (e.getSource() == panel.searchButton) {
             onRefresh();
         } else if (e.getSource() == panel.saveChangesButton) {
-            onSave();
+            onSave(true);   // invoke refresh after save
         } else if (e.getSource() == panel.cancelChangesButton) {
             onCancelChanges();
         } else if (e.getSource() == panel.gotoIssueButton) {
@@ -684,7 +684,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         } else if (e.getSource() == panel.webButton) {
             onWeb();
         } else if (e.getSource() == panel.saveButton) {
-            onSave();
+            onSave(false); // do not refresh
         } else if (e.getSource() == panel.refreshButton) {
             onRefresh();
         } else if (e.getSource() == panel.modifyButton) {
@@ -736,7 +736,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         query.setFilter(filter);
     }
 
-    private void onSave() {
+    private void onSave(final boolean refresh) {
        Jira.getInstance().getRequestProcessor().post(new Runnable() {
             public void run() {
                 String name = query.getDisplayName();
@@ -751,6 +751,10 @@ public class QueryController extends BugtrackingController implements DocumentLi
                 }
                 assert name != null;
                 save(name, firstTime);
+
+                if(refresh) {
+                    onRefresh();
+                }
             }
        });
     }

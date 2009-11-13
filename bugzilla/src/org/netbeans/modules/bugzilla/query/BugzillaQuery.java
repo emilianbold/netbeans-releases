@@ -60,6 +60,7 @@ import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugzilla.commands.GetMultiTaskDataCommand;
 import org.netbeans.modules.bugzilla.commands.PerformQueryCommand;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
+import org.openide.nodes.Node;
 
 /**
  *
@@ -237,6 +238,11 @@ public class BugzillaQuery extends Query {
     @Override
     public boolean contains(Issue issue) {
         return issues.contains(issue.getID());
+    }
+
+    @Override
+    public Node[] getSelection() {
+        return super.getSelection();
     }
 
     public int getIssueStatus(String id) {

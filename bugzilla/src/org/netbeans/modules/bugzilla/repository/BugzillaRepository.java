@@ -78,6 +78,8 @@ import org.netbeans.modules.bugzilla.query.QueryController;
 import org.netbeans.modules.bugzilla.query.QueryParameter;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
+import org.netbeans.modules.kenai.api.NbModuleOwnerSupport.OwnerInfo;
+import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
@@ -467,6 +469,21 @@ public class BugzillaRepository extends Repository {
     @Override
     public Collection<RepositoryUser> getUsers() {
         return Collections.emptyList();
+    }
+
+    public OwnerInfo getOwnerInfo(Node[] nodes) {
+        if(nodes == null || nodes.length == 0) {
+            return null;
+        }
+        if(BugzillaUtil.isNbRepository(this)) {
+            if(nodes != null && nodes.length > 0) {
+                OwnerInfo ownerInfo = BugzillaUtil.getOwnerInfo(nodes[0]);
+                if(ownerInfo != null /*&& ownerInfo.getOwner().equals(product)*/ ) {
+                    return ownerInfo;
+                }
+            }
+        }
+        return null;
     }
 
     /**

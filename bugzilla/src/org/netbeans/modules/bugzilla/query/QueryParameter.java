@@ -40,20 +40,17 @@
 package org.netbeans.modules.bugzilla.query;
 
 import java.awt.Component;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
-import javax.swing.Icon;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JTextField;
+import javax.swing.ListModel;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
-import org.openide.util.ImageUtilities;
 
 /**
  *
@@ -261,7 +258,15 @@ public abstract class QueryParameter {
             list.clearSelection();
             int[] selection = new int[values.length];
             for (int i = 0; i < values.length; i++) {
-                selection[i] = ((DefaultListModel)list.getModel()).indexOf(values[i]);
+                ListModel model = list.getModel();
+                // need case sensitive compare
+                for(int j = 0; j < model.getSize(); j++) {
+                    ParameterValue pv = (ParameterValue) model.getElementAt(j);
+                    if(pv.getValue().toLowerCase().equals(values[i].getValue().toLowerCase())) {
+                        selection[i] = j;
+                        break;
+                    }
+                }
             }
             list.setSelectedIndices(selection);
             int idx = selection.length > 0 ? selection[0] : -1;

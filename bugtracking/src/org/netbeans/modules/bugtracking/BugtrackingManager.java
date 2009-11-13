@@ -213,20 +213,19 @@ public final class BugtrackingManager implements LookupListener {
             l.remove(4);
         }
         l.add(0, new RecentIssue(issue, System.currentTimeMillis()));
-//        if(LOG.isLoggable(Level.FINE)) {
-            SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        if(LOG.isLoggable(Level.FINE)) {
+            SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");   // NOI18N
             for (RecentIssue ri : l) {
-                System.out.println(
-                        "recent issue: [" +
+                LOG.fine(
+                        "recent issue: [" +                                     // NOI18N
                         ri.getIssue().getRepository().getDisplayName() +
-                        ", " +
+                        ", " +                                                  // NOI18N
                         ri.getIssue().getID() +
-                        ", " +
+                        ", " +                                                  // NOI18N
                         f.format(new Date(ri.getTimestamp())) +
-                        "]");
-//                LOG.fine("recent issue: " + new Date(ri.getTimestamp()) + " " + ri.issue);
+                        "]");                                                   // NOI18N
             }
-//        }
+        }
     }
 
     public Map<String, List<RecentIssue>> getAllRecentIssues() {

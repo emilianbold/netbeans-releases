@@ -327,6 +327,8 @@ import org.openide.util.Union2;
  */
 public abstract class NbModuleOwnerSupport {
 
+    public static String NB_BUGZILLA_CONFIG = ".nbbugzilla-components";         // NOI18N
+
     private static NbModuleOwnerSupport instance;
 
     protected NbModuleOwnerSupport() { }

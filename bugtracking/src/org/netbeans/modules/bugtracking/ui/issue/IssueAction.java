@@ -47,7 +47,9 @@ import java.awt.event.ActionEvent;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.openide.windows.WindowManager;
 
 /**
  * 
@@ -73,36 +75,20 @@ public class IssueAction extends SystemAction {
     }
 
     public static void openIssue() {
-        openIssue(null);
+        openIssue(null, WindowManager.getDefault().getRegistry().getActivatedNodes());
     }
 
     public static void openIssue(final Repository repository) {
+        openIssue(repository, WindowManager.getDefault().getRegistry().getActivatedNodes());
+    }
+
+    private static void openIssue(final Repository repository, final Node[] context) {
         final boolean repositoryGiven = repository != null;
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 IssueTopComponent tc = new IssueTopComponent();
-                tc.initNewIssue(repository, !repositoryGiven);
+                tc.initNewIssue(repository, !repositoryGiven, context);
                 tc.open();
-                tc.requestActive();
-            }
-        });
-    }
-
-    public static void openIssue(final Issue issue, final Repository repository,
-                                 final boolean suggestedSelectionOnly) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                IssueTopComponent tc = null;
-                if(issue != null) {
-                    tc = IssueTopComponent.find(issue);
-                }
-                if(tc == null) {
-                    tc = new IssueTopComponent();
-                }
-                tc.initNewIssue(repository, suggestedSelectionOnly);
-                if(!tc.isOpened()) {
-                    tc.open();
-                }
                 tc.requestActive();
             }
         });
