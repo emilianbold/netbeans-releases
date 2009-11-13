@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.compilers.ToolchainProject;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
+import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.api.remote.ServerList;
@@ -282,7 +283,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         return command;
     }
 
-    protected static File getBuildDirectory(Node node,int tool){
+    protected static String getBuildDirectory(Node node,int tool){
         DataObject dataObject = node.getCookie(DataObject.class);
         FileObject fileObject = dataObject.getPrimaryFile();
         File makefile = FileUtil.toFile(fileObject);
@@ -308,7 +309,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
             bdir = makefile.getParent();
         }
         File buildDir = getAbsoluteBuildDir(bdir, makefile);
-        return buildDir;
+        return buildDir.getAbsolutePath();
     }
 
     protected static String[] getArguments(Node node, int tool) {
@@ -483,10 +484,10 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         }
     }
 
-    protected static void traceExecutable(String executable, File buildDir, StringBuilder argsFlat, Map<String, String> envMap) {
+    protected static void traceExecutable(String executable, String buildDir, StringBuilder argsFlat, Map<String, String> envMap) {
         if (TRACE) {
             StringBuilder buf = new StringBuilder("Run " + executable); // NOI18N
-            buf.append("\n\tin folder   " + buildDir.getPath()); // NOI18N
+            buf.append("\n\tin folder   " + buildDir); // NOI18N
             buf.append("\n\targuments   " + argsFlat); // NOI18N
             buf.append("\n\tenvironment "); // NOI18N
             for (Map.Entry<String, String> v : envMap.entrySet()) {
@@ -497,7 +498,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         }
     }
 
-    protected static void traceExecutable(String executable, File buildDir, String[] args, Map<String, String> envMap) {
+    protected static void traceExecutable(String executable, String buildDir, String[] args, Map<String, String> envMap) {
         if (TRACE) {
             StringBuilder argsFlat = new StringBuilder();
             for (int i = 0; i < args.length; i++) {
@@ -505,6 +506,25 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
                 argsFlat.append(args[i]);
             }
             traceExecutable(executable, buildDir, argsFlat, envMap);
+        }
+    }
+
+    protected static String convertToRemoteIfNeeded(ExecutionEnvironment execEnv, String localDir) {
+        if (!checkConnection(execEnv)) {
+            return null;
+        }
+        if (execEnv.isRemote()) {
+            return HostInfoProvider.getMapper(execEnv).getRemotePath(localDir, false);
+        }
+        return localDir;
+    }
+
+    protected static String convertToRemoveSeparatorsIfNeeded(ExecutionEnvironment execEnv, String localPath) {
+        if (execEnv.isRemote()) {
+            // on remote we always have Unix
+            return localPath.replace("\\", "/"); // NOI18N
+        } else {
+            return localPath;
         }
     }
 
