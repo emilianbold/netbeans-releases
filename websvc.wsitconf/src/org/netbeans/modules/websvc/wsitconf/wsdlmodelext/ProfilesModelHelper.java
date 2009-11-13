@@ -54,6 +54,7 @@ import org.netbeans.modules.websvc.wsitconf.spi.SecurityProfileRegistry;
 import org.netbeans.modules.websvc.wsitconf.spi.features.AdvancedSecurityFeature;
 import org.netbeans.modules.websvc.wsitconf.spi.features.ClientDefaultsFeature;
 import org.netbeans.modules.websvc.wsitconf.spi.features.ServiceDefaultsFeature;
+import org.netbeans.modules.websvc.wsitconf.spi.features.TrustStoreFeature;
 import org.netbeans.modules.websvc.wsitconf.spi.features.ValidatorsFeature;
 import org.netbeans.modules.websvc.wsitmodelext.security.BootstrapPolicy;
 import org.netbeans.modules.websvc.wsitmodelext.security.SecurityPolicyQName;
@@ -447,6 +448,15 @@ public class ProfilesModelHelper {
         return (p instanceof ServiceDefaultsFeature);
     }
 
+    public static boolean isTruststoreRequired(String profile, WSDLComponent c, boolean client) {
+        SecurityProfile p = SecurityProfileRegistry.getDefault().getProfile(profile);
+        if (p instanceof TrustStoreFeature) {
+            return ((TrustStoreFeature)p).isTrustStoreRequired(c, client);
+        } else {
+            return !isSSLProfile(profile);
+        }
+    }
+    
     public static boolean isClientDefaultSetupSupported(String profile) {
         SecurityProfile p = SecurityProfileRegistry.getDefault().getProfile(profile);
         return (p instanceof ClientDefaultsFeature);
