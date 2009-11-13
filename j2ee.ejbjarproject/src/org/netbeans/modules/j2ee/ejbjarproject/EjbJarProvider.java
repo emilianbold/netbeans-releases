@@ -180,7 +180,7 @@ public final class EjbJarProvider extends J2eeModuleProvider
         if (path.startsWith("META-INF/")) { // NOI18N
             path = path.substring(8); // removing "META-INF/"
         }
-        return new File(getMetaInfAsFile(), path);
+        return FileUtil.normalizeFile(new File(getMetaInfAsFile(), path));
     }
     
     public ClassPathProvider getClassPathProvider() {
