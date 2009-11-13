@@ -49,6 +49,7 @@ import java.util.*;
 import java.util.concurrent.Future;
 import java.util.logging.Logger;
 import java.util.logging.Level;
+import javax.lang.model.SourceVersion;
 import javax.lang.model.element.*;
 import static javax.lang.model.element.ElementKind.*;
 import static javax.lang.model.element.Modifier.*;
@@ -1540,7 +1541,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                             if (tm != null && tm.getKind() == TypeKind.DECLARED) {
                                 TypeElement te = (TypeElement)((DeclaredType)tm).asElement();
                                 addMembers(env, tm, te, EnumSet.of(CONSTRUCTOR), base, false, true);
-                                if (!Utilities.hasAccessibleInnerClassConstructor(te, env.getScope(), controller.getTrees()))
+                                if ((te.getTypeParameters().isEmpty() || SourceVersion.RELEASE_5.compareTo(controller.getSourceVersion()) > 0)
+                                        && !Utilities.hasAccessibleInnerClassConstructor(te, env.getScope(), controller.getTrees()))
                                     toExclude = te;
                             }
                         }
@@ -1555,7 +1557,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                         if (smart.getKind() == TypeKind.DECLARED) {
                                             for (DeclaredType subtype : getSubtypesOf(env, (DeclaredType)smart)) {
                                                 TypeElement elem = (TypeElement)subtype.asElement();
-                                                if ((toExclude != elem || !subtype.getTypeArguments().isEmpty()) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(elem)))
+                                                if (toExclude != elem && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(elem)))
                                                     results.add(JavaCompletionItem.createTypeItem(elem, subtype, anchorOffset, true, elements.isDeprecated(elem), true, true));
                                                 subtypes.add(elem);
                                             }
