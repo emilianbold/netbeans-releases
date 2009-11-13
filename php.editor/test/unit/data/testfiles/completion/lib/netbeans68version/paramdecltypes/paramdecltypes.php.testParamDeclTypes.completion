@@ -48,6 +48,7 @@ KEYWORD    for                                        null
 KEYWORD    foreach                                    null
 KEYWORD    function                                   null
 KEYWORD    global                                     null
+KEYWORD    goto                                       null
 KEYWORD    if                                         null
 KEYWORD    implements                                 null
 KEYWORD    include                                    null
