@@ -43,10 +43,11 @@ package org.netbeans.modules.cnd.makeproject.ui;
 import java.io.File;
 import java.io.IOException;
 import java.io.InterruptedIOException;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -59,7 +60,12 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
+import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
+import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport.PathMapperException;
+import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport.Worker;
 import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
@@ -145,37 +151,43 @@ class RemoteSyncActions {
             try {
                 if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
                     ConnectionManager.getInstance().connectTo(execEnv);
-                }
-                PathMap pathMap = HostInfoProvider.getMapper(execEnv);
-                Collection<File> files = new ArrayList<File>();
-                gatherFiles(files, nodes);
+                }                
+                Map<Project, Collection<File>> filesMap = gatherFiles(nodes);
                 int cnt = 0;
-                progressHandle.switchToDeterminate(files.size());
-                for (File file : files) {
-                    if (cancelled) {
-                        break;
-                    }
-                    String progressMessage = getFileProgressMessage(file);
-                    String remotePath = pathMap.getRemotePath(file.getAbsolutePath(), false);
-                    if (remotePath == null) {
-                        tab.getErr().println(NbBundle.getMessage(RemoteSyncActions.class, "ERR_MAPPING", file.getAbsolutePath()));
-                    } else {
-                        tab.getOut().println(progressMessage);
-                        try {
-                            processFile(file, remotePath);
-                            okCnt++;
-                        } catch (InterruptedException ex) {
-                            break;
-                        } catch (ExecutionException ex) {
-                            tab.getErr().println(NbBundle.getMessage(RemoteSyncActions.class, "ERR_FILE", file.getAbsolutePath(), ex.getMessage()));
-                            errCnt++;
-                        } catch (IOException ex) {
-                            tab.getErr().println(NbBundle.getMessage(RemoteSyncActions.class, "ERR_FILE", file.getAbsolutePath(), ex.getMessage()));
-                            errCnt++;
-                        }
-                    }
-                    progressHandle.progress(progressMessage, cnt++);
+                int total = 0;
+                for (Collection<File> files : filesMap.values()) {
+                    total += files.size();
                 }
+                progressHandle.switchToDeterminate(total);
+                for (Map.Entry<Project, Collection<File>> entry : filesMap.entrySet()) {
+                    RemoteSyncSupport.Worker worker = createWorker(entry.getKey(), execEnv);
+                    try {
+                        for (File file : entry.getValue()) {
+                            if (cancelled) {
+                                break;
+                            }
+                            String progressMessage = getFileProgressMessage(file);
+                            tab.getOut().println(progressMessage);
+                            try {
+                                worker.process(file, tab.getErr());
+                                okCnt++;
+                            } catch (InterruptedException ex) {
+                                break;
+                            } catch (ExecutionException ex) {
+                                tab.getErr().println(NbBundle.getMessage(RemoteSyncActions.class, "ERR_FILE", file.getAbsolutePath(), ex.getMessage()));
+                                errCnt++;
+                            } catch (IOException ex) {
+                                tab.getErr().println(NbBundle.getMessage(RemoteSyncActions.class, "ERR_FILE", file.getAbsolutePath(), ex.getMessage()));
+                                errCnt++;
+                            }
+                            progressHandle.progress(progressMessage, cnt++);
+                        }
+                    } finally {
+                        worker.close();
+                    }
+                }
+            } catch (PathMapperException ex) {
+                tab.getErr().println(NbBundle.getMessage(RemoteSyncActions.class, "ERR_MAPPING", ex.getFile().getAbsolutePath()));
             } catch (CancellationException ex) {
                 cancelled = true;
             } catch (InterruptedIOException ex) {
@@ -207,12 +219,10 @@ class RemoteSyncActions {
 
         protected abstract String getProgressTitle();
         protected abstract String getFileProgressMessage(File file);
-        protected abstract void processFile(File file, String remotePath) throws InterruptedException, ExecutionException, IOException;
+        protected abstract RemoteSyncSupport.Worker createWorker(Project project, ExecutionEnvironment execEnv);
     }
 
     private static class Uploader extends UpDownLoader {
-
-        private final Set<String> checkedDirs = new HashSet<String>();
 
         public Uploader(ExecutionEnvironment execEnv, Node[] nodes, InputOutput tab) {
             super(execEnv, nodes, tab);
@@ -229,25 +239,8 @@ class RemoteSyncActions {
         }
 
         @Override
-        protected void processFile(File file, String remotePath) throws InterruptedException, ExecutionException, IOException {
-            checkDir(remotePath);
-            Future<Integer> task = CommonTasksSupport.uploadFile(file.getAbsolutePath(), execEnv, remotePath, 0700, tab.getErr());
-            int rc = task.get().intValue();
-            if (rc != 0) {
-                throw new IOException(NbBundle.getMessage(RemoteSyncActions.class, "ERR_RC", Integer.valueOf(rc)));
-            }
-        }
-
-        private void checkDir(String remoteFilePath) throws InterruptedException, ExecutionException {
-            int slashPos = remoteFilePath.lastIndexOf('/'); //NOI18N
-            if (slashPos >= 0) {
-                String remoteDir = remoteFilePath.substring(0, slashPos);
-                if (!checkedDirs.contains(remoteDir)) {
-                    checkedDirs.add(remoteDir);
-                    Future<Integer> task = CommonTasksSupport.mkDir(execEnv, remoteDir, null);
-                    task.get();
-                }
-            }
+        protected Worker createWorker(Project project, ExecutionEnvironment execEnv) {
+            return RemoteSyncSupport.createUploader(project, execEnv);
         }
     }
 
@@ -268,12 +261,22 @@ class RemoteSyncActions {
         }
 
         @Override
-        protected void processFile(File file, String remotePath) throws InterruptedException, ExecutionException, IOException {
-            Future<Integer> task = CommonTasksSupport.downloadFile(remotePath, execEnv, file.getAbsolutePath(), tab.getErr());
-            int rc = task.get().intValue();
-            if (rc != 0) {
-                throw new IOException(NbBundle.getMessage(RemoteSyncActions.class, "ERR_RC", Integer.valueOf(rc)));
-            }
+        protected Worker createWorker(final Project project, final ExecutionEnvironment execEnv) {
+            return new Worker() {
+                private final PathMap pathMap = HostInfoProvider.getMapper(execEnv);
+                public void process(File file, Writer err) throws PathMapperException, InterruptedException, ExecutionException, IOException {
+                    String remotePath = pathMap.getRemotePath(file.getAbsolutePath(), false);
+                    if (remotePath == null) {
+                        throw new RemoteSyncSupport.PathMapperException(file);
+                    }
+                    Future<Integer> task = CommonTasksSupport.downloadFile(remotePath, execEnv, file.getAbsolutePath(), err);
+                    int rc = task.get().intValue();
+                    if (rc != 0) {
+                        throw new IOException(NbBundle.getMessage(RemoteSyncActions.class, "ERR_RC", Integer.valueOf(rc)));
+                    }
+                }
+                public void close() {}
+            };
         }
     }
 
@@ -448,19 +451,46 @@ class RemoteSyncActions {
         worker.work();
     }
 
-    private static void gatherFiles(Collection<File> files, Node[] nodes) {
+    private static Map<Project, Collection<File>> gatherFiles(Node[] nodes) {
+        Map<Project, Collection<File>> result = new HashMap<Project, Collection<File>>();
         for (Node node : nodes) {
-            DataObject dataObject = node.getCookie(DataObject.class);
-            if (dataObject != null) {
-                FileObject fo = dataObject.getPrimaryFile();
-                if (fo != null) {
-                    File file = FileUtil.toFile(fo);
-                    if (!file.isDirectory()) {
-                        files.add(file);
-                    }
+            Project project = getNodeProject(node);
+            Collection<File> files = result.get(project);
+            if (files == null) {
+                files = new ArrayList<File>();
+                result.put(project, files);
+            }
+            gatherFiles(files, node);
+        }
+        return result;
+    }
+
+    private static void gatherFiles(Collection<File> files, Node node) {
+        DataObject dataObject = node.getCookie(DataObject.class);
+        if (dataObject != null) {
+            FileObject fo = dataObject.getPrimaryFile();
+            if (fo != null) {
+                File file = FileUtil.toFile(fo);
+                if (!file.isDirectory()) {
+                    files.add(file);
                 }
             }
-            gatherFiles(files, node.getChildren().getNodes());
+        }
+        Folder folder = node.getLookup().lookup(Folder.class);
+        if (folder != null) {
+            gatherFiles(files, folder);
+        }
+    }
+
+    private static void gatherFiles(Collection<File> files, Folder folder) {
+        for (Item item : folder.getItemsAsArray()) {
+            File file = item.getFile();
+            if (file != null && !file.isDirectory()) {
+                files.add(file);
+            }
+        }
+        for (Folder subfolder : folder.getFolders()) {
+            gatherFiles(files, subfolder);
         }
     }
 }
