@@ -115,11 +115,7 @@ public class DbUtil {
                     }
                 }
             } else {
-                String in_url = poolValues.get(__Url);
-                if (in_url != null) {
-                    url = in_url;
-                }
-                if (url.equals("")) {  //NOI18N
+                if (url == null || url.equals("")) {  //NOI18N
                     String urlPrefix = DriverMaps.getUrlPrefix(driverClassName, resType);
                     // !PW FIXME no access to vendor name yet.
 //                    String vName = ResourceConfigurator.getDatabaseVendorName(urlPrefix, null);
@@ -149,15 +145,17 @@ public class DbUtil {
             url = urlValue;
         }
         
-        if(driverClass == null || driverClass.equals("")) { //NOI18N
-            DatabaseConnection databaseConnection = getDatabaseConnection(url);
-            if (databaseConnection != null) {
-                driverClass = databaseConnection.getDriverClass();
-            } else {
-                //Fix Issue 78212 - NB required driver classname
-                String drivername = DriverMaps.getDriverName(url);
-                if (drivername != null) {
-                    driverClass = drivername;
+        if (url != null && (!url.equals(""))) { //NOI18N
+            if (driverClass == null || driverClass.equals("")) { //NOI18N
+                DatabaseConnection databaseConnection = getDatabaseConnection(url);
+                if (databaseConnection != null) {
+                    driverClass = databaseConnection.getDriverClass();
+                } else {
+                    //Fix Issue 78212 - NB required driver classname
+                    String drivername = DriverMaps.getDriverName(url);
+                    if (drivername != null) {
+                        driverClass = drivername;
+                    }
                 }
             }
         }

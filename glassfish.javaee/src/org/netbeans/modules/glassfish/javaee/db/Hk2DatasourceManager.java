@@ -193,18 +193,20 @@ public class Hk2DatasourceManager implements DatasourceManager {
                 Logger.getLogger("glassfish-javaee").log(Level.INFO, ex.getLocalizedMessage(), ex);
             }
 
-            for(JdbcResource jdbc: jdbcResourceMap.values()) {
+            for (JdbcResource jdbc : jdbcResourceMap.values()) {
                 ConnectionPool pool = connectionPoolMap.get(jdbc.getPoolName());
-                if(pool != null) {
+                if (pool != null) {
                     pool.normalize();
 
                     // add to sun datasource list
-                    String url = pool.getProperty("URL");
-                    String username = pool.getProperty("User");
-                    String password = pool.getProperty("Password");
-                    String driverClassName = pool.getProperty("driverClass");
-                    dataSources.add(new SunDatasource(jdbc.getJndiName(), url, username, 
-                            password, driverClassName, resourcesDir));
+                    String url = pool.getProperty("URL"); //NOI18N
+                    if ((url != null) && (!url.equals(""))) { //NOI18N
+                        String username = pool.getProperty("User"); //NOI18N
+                        String password = pool.getProperty("Password"); //NOI18N
+                        String driverClassName = pool.getProperty("driverClass"); //NOI18N
+                        dataSources.add(new SunDatasource(jdbc.getJndiName(), url, username,
+                                password, driverClassName, resourcesDir));
+                    }
                 }
             }
         }
