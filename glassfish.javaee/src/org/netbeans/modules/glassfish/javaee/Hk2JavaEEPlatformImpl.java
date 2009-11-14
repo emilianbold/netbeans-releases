@@ -341,9 +341,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
      * @return 
      */
     public LibraryImplementation[] getLibraries() {
-        synchronized (libraries) {
-            return libraries.clone();
-        }
+        return libraries.clone();
     }
     
     /**
@@ -387,15 +385,9 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
     }
     
     private void initLibraries() {
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                synchronized (libraries) {
-                    lib.setName(pf.getLibraryName());
-                    lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH, dm.getProperties().getClasses());
-                    lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC, dm.getProperties().getJavadocs());
-                }
-            }
-        });
+        lib.setName(pf.getLibraryName());
+        lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH, dm.getProperties().getClasses());
+        lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC, dm.getProperties().getJavadocs());
     }
     
     @Override

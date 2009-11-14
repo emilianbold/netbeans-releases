@@ -111,23 +111,12 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
                 String username = props.get(InstanceProperties.USERNAME_ATTR);
                 String password = props.get(InstanceProperties.PASSWORD_ATTR);
                 String displayName = props.get(InstanceProperties.DISPLAY_NAME_ATTR);
-                int fail = 0;
-                while (null == ip && fail < 20) {
                     try {
                         ip = InstanceProperties.createInstancePropertiesWithoutUI(
                                 url, username, password, displayName, props);
                     } catch (InstanceCreationException ex) {
-                        fail++;
-                        if (fail >= 20) {
                             Logger.getLogger("glassfish-javaee").log(Level.WARNING, null, ex); // NOI18N
-                        }
-                        try {
-                            Thread.sleep(100);
-                        } catch (InterruptedException ie) {
-                            Logger.getLogger("glassfish-javaee").log(Level.INFO, null, ie); // NOI18N
-                        }
                     }
-                }
 
                 if(ip == null) {
                     Logger.getLogger("glassfish-javaee").log(Level.INFO,
