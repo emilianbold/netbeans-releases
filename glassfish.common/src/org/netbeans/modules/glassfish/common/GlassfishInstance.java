@@ -113,8 +113,8 @@ public class GlassfishInstance implements ServerInstanceImplementation, LookupLi
     private transient CommonServerSupport commonSupport;
     private transient InstanceContent ic;
     private transient Lookup lookup;
-    private transient Lookup.Result<GlassfishModuleFactory> lookupResult;
-    private transient Collection<? extends GlassfishModuleFactory> currentFactories;
+    final private transient Lookup.Result<GlassfishModuleFactory> lookupResult = Lookups.forPath(Util.GF_LOOKUP_PATH).lookupResult(GlassfishModuleFactory.class);;
+    private transient Collection<? extends GlassfishModuleFactory> currentFactories = Collections.emptyList();
     
     // api instance
     private ServerInstance commonInstance;
@@ -172,16 +172,20 @@ public class GlassfishInstance implements ServerInstanceImplementation, LookupLi
         }
         Set<GlassfishModuleFactory> added = new HashSet<GlassfishModuleFactory>();
         //Set<GlassfishModuleFactory> removed = new HashSet<GlassfishModuleFactory>();
-        added.addAll(lookupResult.allInstances());
-        added.removeAll(currentFactories);
-        currentFactories = lookupResult.allInstances();
-        for (GlassfishModuleFactory moduleFactory : added) {
-            if(moduleFactory.isModuleSupported(homeFolder, asenvProps)) {
-                Object t = moduleFactory.createModule(lookup);
-                if (null == t) {
-                    Logger.getLogger("glassfish").log(Level.WARNING, moduleFactory+" created a null module"); // NOI18N
-                } else {
-                    ic.add(t);
+        synchronized (lookupResult) {
+            Collection<? extends GlassfishModuleFactory> factories = lookupResult.allInstances();
+            added.addAll(factories);
+            added.removeAll(currentFactories);
+            currentFactories = factories;
+        
+            for (GlassfishModuleFactory moduleFactory : added) {
+                if(moduleFactory.isModuleSupported(homeFolder, asenvProps)) {
+                    Object t = moduleFactory.createModule(lookup);
+                    if (null == t) {
+                        Logger.getLogger("glassfish").log(Level.WARNING, moduleFactory+" created a null module"); // NOI18N
+                    } else {
+                        ic.add(t);
+                    }
                 }
             }
         }
@@ -190,8 +194,6 @@ public class GlassfishInstance implements ServerInstanceImplementation, LookupLi
     private void updateModuleSupport() {
         // Find all modules that have NetBeans support, add them to lookup if server
         // supports them.
-        currentFactories = Collections.emptyList();
-        lookupResult = Lookups.forPath(Util.GF_LOOKUP_PATH).lookupResult(GlassfishModuleFactory.class);
         updateFactories();
         lookupResult.addLookupListener(this);
     }

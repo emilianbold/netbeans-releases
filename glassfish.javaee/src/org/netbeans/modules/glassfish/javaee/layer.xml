@@ -26,6 +26,7 @@
     </folder>
 
     <!-- j2eeserver api support -->
+    <!--
     <folder name="J2EE">
         <folder name="DeploymentPlugins">
             <folder name="gfv3">
@@ -102,6 +103,7 @@
             
         </folder>
     </folder>
+    -->
 
     <folder name="Plugins">
       <!-- Register XML module catalog plugin -->

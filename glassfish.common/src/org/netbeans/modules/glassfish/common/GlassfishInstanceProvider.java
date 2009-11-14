@@ -132,6 +132,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                     return new ServerCommand.SetPropertyCommand(name, value, "DEFAULT={0}={1}"); // NOI18N
                 }
             });
+            ee6Provider.init();
         }
         return ee6Provider;
     }
@@ -162,6 +163,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                             return new ServerCommand.SetPropertyCommand(name, value, "target={0}&value={1}"); // NOI18N
                         }
                     });
+            preludeProvider.init();
         }
         return preludeProvider;
     }
@@ -215,7 +217,6 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
             noPasswordOptions.addAll(Arrays.asList(noPasswordOptionsArray));
         }
         this.cf = cf;
-        init();
     }
 
     public static synchronized boolean initialized() {
@@ -434,7 +435,6 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                 try {
                     loadServerInstances();
                     registerDefaultInstance();
-                    loadServerInstances();
                 } catch (RuntimeException ex) {
                     getLogger().log(Level.INFO, null, ex);
                 }
@@ -691,6 +691,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
         if (needToRegisterDefaultServer) {
             try {
                 //String candidate = System.getProperty(installRootPropName); //NOI18N
+                NbPreferences.forModule(this.getClass()).put(ServerUtilities.PROP_FIRST_RUN+getInstallRootKey(), new File(candidate).getAbsolutePath());
 
                 if (null != candidate) {
                     File f = new File(candidate);
@@ -712,7 +713,6 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                                     File.separator + "domains"); // NOI18N
                             ip.put(GlassfishModule.DOMAIN_NAME_ATTR, "domain1"); // NOI18N
                             GlassfishInstance gi = GlassfishInstance.create(ip,this);
-                            NbPreferences.forModule(this.getClass()).put(ServerUtilities.PROP_FIRST_RUN+getInstallRootKey(), new File(candidate).getAbsolutePath());
                         } else {
                             ip.put(GlassfishModule.DISPLAY_NAME_ATTR, defaultPersonalDomainName);
                             String domainsFolderValue = System.getProperty("netbeans.user"); // NOI18N
@@ -726,6 +726,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                     }
                 }
             } catch (IOException ex) {
+                NbPreferences.forModule(this.getClass()).put(ServerUtilities.PROP_FIRST_RUN+getInstallRootKey(), "false");
                 getLogger().log(Level.INFO, ex.getLocalizedMessage(), ex);
             }
         }
