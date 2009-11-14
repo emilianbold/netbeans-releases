@@ -112,6 +112,20 @@ public class ContainerItemSetupPanelVisual extends javax.swing.JPanel implements
                 fireChange();
             }
         });
+        containerUriTextField.getDocument().addDocumentListener(new DocumentListener() {
+            public void changedUpdate(DocumentEvent e) {
+                containerUriOveridden = true;
+                fireChange();
+            }
+            public void insertUpdate(DocumentEvent e) {
+                containerUriOveridden = true;
+                fireChange();
+            }
+            public void removeUpdate(DocumentEvent e) {
+                containerUriOveridden = true;
+                fireChange();
+            }
+        });
         medaTypeComboBox.setModel(new DefaultComboBoxModel(GenericResourceBean.getSupportedMimeTypes()));
     }
     
@@ -237,12 +251,6 @@ public class ContainerItemSetupPanelVisual extends javax.swing.JPanel implements
 
         containerUriLabel.setLabelFor(containerUriTextField);
         org.openide.awt.Mnemonics.setLocalizedText(containerUriLabel, org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "LBL_ContainerUriTemplate")); // NOI18N
-
-        containerUriTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent evt) {
-                containerUriChanged(evt);
-            }
-        });
 
         contentClassLabel1.setLabelFor(containerRepresentationClassTextField);
         org.openide.awt.Mnemonics.setLocalizedText(contentClassLabel1, org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "LBL_ContainerRepresentationClass")); // NOI18N
@@ -458,12 +466,6 @@ private void containerTextFieldActionPerformed(java.awt.event.ActionEvent evt) {
     // TODO add your handling code here:
 }//GEN-LAST:event_containerTextFieldActionPerformed
 
-private void containerUriChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_containerUriChanged
-    containerUriOveridden = true;
-    fireChange();
-    
-}//GEN-LAST:event_containerUriChanged
-
 private void containerClassNameChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_containerClassNameChanged
     containerClassNameOveridden = true;
     fireChange();
@@ -584,6 +586,9 @@ private void representationClassChanged(java.awt.event.KeyEvent evt) {//GEN-FIRS
             return false;
         } else if (containerUriTextField.getText().trim().length() == 0) {
             AbstractPanel.setErrorMessage(wizard, "MSG_EmptyContainerUriTemplate");
+            return false;
+        } else if (!isValidUri(containerUriTextField.getText().trim())) {
+            AbstractPanel.setErrorMessage(wizard, "MSG_IncorrectUriTemplate");
             return false;
         } else if (! Util.isValidPackageName(packageName)) {
             AbstractPanel.setErrorMessage(wizard, "MSG_InvalidPackageName");
