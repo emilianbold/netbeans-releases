@@ -826,7 +826,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
                                 }    
                                 url = url + "/" + dbName ; //NOI18N
                             }
-                        }else if(url.equals("")) { //NOI18N
+                        } else { 
                             String urlPrefix = DatabaseUtils.getUrlPrefix(dsClass, resType);
                             String vName = getDatabaseVendorName(urlPrefix, null);
                             if(serverName != null){
@@ -849,30 +849,33 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
                         }    
                     }
                     
-                    if(driverClass == null || driverClass.equals("")){ //NOI18N
-                        DatabaseConnection databaseConnection = ResourceUtils.getDatabaseConnection(url);
-                        if(databaseConnection != null) {
-                            driverClass = databaseConnection.getDriverClass();
-                        }else{
-                            //Fix Issue 78212 - NB required driver classname
-                            String drivername = DatabaseUtils.getDriverName(url);
-                            if(drivername != null) {
-                                driverClass = drivername;
-                            }    
+                    if (url == null || url.equals("")) { //NOI18N
+                        if (driverClass == null || driverClass.equals("")) { //NOI18N
+                            DatabaseConnection databaseConnection = ResourceUtils.getDatabaseConnection(url);
+                            if (databaseConnection != null) {
+                                driverClass = databaseConnection.getDriverClass();
+                            } else {
+                                //Fix Issue 78212 - NB required driver classname
+                                String drivername = DatabaseUtils.getDriverName(url);
+                                if (drivername != null) {
+                                    driverClass = drivername;
+                                }
+                            }
                         }
+
+                        SunDatasource sunResource = new SunDatasource(datasourceBean.getJndiName(), url, username, password, driverClass);
+                        sunResource.setResourceDir(resourceDir);
+                        dsources.add(sunResource);
                     }
-                    SunDatasource sunResource = new SunDatasource(datasourceBean.getJndiName(), url, username, password, driverClass);
-                    sunResource.setResourceDir(resourceDir);
-                    dsources.add(sunResource);
                 }else{
                     //Get Pool From Server
                     HashMap poolValues = ResourceUtils.getConnPoolValues(resourceDir, poolName);
                     if(! poolValues.isEmpty()){
-                        username = (String)poolValues.get(WizardConstants.__User);
-                        password = (String)poolValues.get(WizardConstants.__Password);
                         url = (String)poolValues.get(WizardConstants.__Url);
-                        driverClass = (String)poolValues.get(WizardConstants.__DriverClass);
                         if((url != null) && (! url.equals (""))) { //NOI18N
+                            username = (String)poolValues.get(WizardConstants.__User);
+                            password = (String)poolValues.get(WizardConstants.__Password);
+                            driverClass = (String)poolValues.get(WizardConstants.__DriverClass);
                             SunDatasource sunResource = new SunDatasource (datasourceBean.getJndiName (), url, username, password, driverClass);
                             sunResource.setResourceDir (resourceDir);
                             dsources.add (sunResource);
