@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.makeproject.api;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.AbstractAction;
@@ -58,8 +57,6 @@ import org.netbeans.modules.cnd.api.remote.CommandProvider;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteFile;
-import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
-import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.BuildAction;
@@ -67,7 +64,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DebuggerChooserConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
@@ -322,6 +318,11 @@ public class ProjectActionSupport {
 
             final ProjectActionEvent pae = paes[currentAction];
 
+            if (!checkProject(pae)) {
+                progressHandle.finish();
+                return;
+            }
+
             // Validate executable
             switch (pae.getType()) {
                 case RUN:
@@ -426,6 +427,23 @@ public class ProjectActionSupport {
                     }
                 });
             }
+        }
+
+        /** checks whether the project is ok (not deleted) */
+        private boolean checkProject(ProjectActionEvent pae) {
+            Project project = pae.getProject();
+            if (project != null) { // paranoidal null checks are better than latent NPE :)
+                FileObject projectDirectory = project.getProjectDirectory();
+                if (projectDirectory != null) {
+                    FileObject nbproject = projectDirectory.getFileObject("nbproject");
+                    if (nbproject != null) {
+                        // I'm more sure in java.io.File.exists() - practice shows that FileObjects might be sometimes cached...
+                        File file = FileUtil.toFile(nbproject);
+                        return file != null && file.exists();
+                    }
+                }
+            }
+            return false;
         }
 
         private boolean checkExecutable(ProjectActionEvent pae) {

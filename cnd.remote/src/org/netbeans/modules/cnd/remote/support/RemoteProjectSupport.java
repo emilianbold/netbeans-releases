@@ -65,6 +65,12 @@ public class RemoteProjectSupport {
         return null;
     }
 
+    public static boolean projectExists(Project project) {
+        File baseDir = FileUtil.toFile(project.getProjectDirectory()).getAbsoluteFile();
+        File nbproject = new File(baseDir, "nbproject"); //NOI18N
+        return nbproject.exists();
+    }
+
     public static File getPrivateStorage(Project project) {
         File baseDir = FileUtil.toFile(project.getProjectDirectory()).getAbsoluteFile();
         final File privProjectStorage = new File(new File(baseDir, "nbproject"), "private"); //NOI18N

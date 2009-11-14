@@ -42,9 +42,11 @@ package org.netbeans.modules.cnd.ui.options;
 
 import java.awt.Dimension;
 import java.io.File;
+import java.io.IOException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.List;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javax.swing.JFileChooser;
@@ -56,7 +58,10 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.utils.FileChooser;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.openide.DialogDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -144,6 +149,14 @@ import org.openide.util.NbBundle;
             }
             final String path = tfBaseDirectory.getText().trim();
             if (path.length() > 0) {
+                tfBaseDirectory.setEnabled(false);
+                btBaseDirectory.setEnabled(false);
+                final Runnable enabler = new Runnable() {
+                    public void run() {
+                        tfBaseDirectory.setEnabled(true);
+                        btBaseDirectory.setEnabled(true);
+                    }
+                };
                 //go to non UI thread
                 synchronized (remoteCompilerCheckExecutorLock) {
                     if (remoteCompilerCheckExecutor != null) {
@@ -160,6 +173,10 @@ import org.openide.util.NbBundle;
                 remoteCompilerCheckExecutor.submit(new Runnable() {
 
                     public void run() {
+                        if (!checkConnection()) {
+                            SwingUtilities.invokeLater(enabler);
+                            return;
+                        }
                         final List<CompilerSet> css = csm.findRemoteCompilerSets(path);
                         //check if we are not shutdowned already
                         try {
@@ -169,10 +186,10 @@ import org.openide.util.NbBundle;
                         if (Thread.interrupted()) {
                             return;
                         }
-                        if (css.size() > 0) {
-                            SwingUtilities.invokeLater(new Runnable() {
-
-                                public void run() {
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                enabler.run();
+                                if (css.size() > 0) {
                                     cbFamily.setSelectedItem(css.get(0).getCompilerFlavor());
                                     synchronized (AddCompilerSetPanel.this.lock) {
                                         lastFoundRemoteCompilerSet = css.get(0);
@@ -182,14 +199,30 @@ import org.openide.util.NbBundle;
                                         tfName.setText("");
                                     }
                                 }
-                            });
-                        }
+                            }
+                        });
                     }
                 });
 
             }
         }
 
+    }
+
+    private boolean checkConnection() {
+        if (ConnectionManager.getInstance().isConnectedTo(csm.getExecutionEnvironment())) {
+            return true;
+        } else {
+            try {
+                ConnectionManager.getInstance().connectTo(csm.getExecutionEnvironment());
+                return true;
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+                return false;
+            } catch (CancellationException ex) {
+                return false;
+            }
+        }
     }
 
     private void updateDataFamily() {
