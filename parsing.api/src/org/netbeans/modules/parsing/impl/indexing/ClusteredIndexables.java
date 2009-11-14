@@ -59,14 +59,14 @@ public final class ClusteredIndexables {
     // -----------------------------------------------------------------------
 
     public ClusteredIndexables(Collection<IndexableImpl> indexables) {
-        Parameters.notNull("indexables", indexables);
+        Parameters.notNull("indexables", indexables); //NOI18N  
         this.indexables = new LinkedList<IndexableImpl>(indexables);
     }
 
     public Iterable<Indexable> getIndexablesFor(String mimeType) {
         synchronized (mimeTypeClusters) {
             if (mimeType == null) {
-                mimeType = ALL_MIME_TYPES; //NOI18N
+                mimeType = ALL_MIME_TYPES;
             }
             
             List<Indexable> cluster = mimeTypeClusters.get(mimeType);

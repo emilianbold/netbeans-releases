@@ -124,7 +124,9 @@ public class TreeTaggingTest extends GeneratorTestMDRCompat {
         //lenghth of added statement has to be the same as the length of span
         assertEquals(delta, new String("System.err.println(true);").length());
         //absolute position of span beginning
-        assertEquals(119, span[0]);
+        assertEquals(115, span[0]);
+
+        assertEquals("System.err.println(true);", diff.getResultingSource(FileUtil.toFileObject(testFile)).substring(span[0], span[1]));
     }
 
     /**
@@ -190,7 +192,9 @@ public class TreeTaggingTest extends GeneratorTestMDRCompat {
         //lenghth of added statement has to be the same as the length of span
         assertEquals(delta, new String("System.err.println(true);").length());
         //absolute position of span beginning
-        assertEquals(165, span[0]);
+        assertEquals(142, span[0]);
+
+        assertEquals("System.err.println(true);", diff.getResultingSource(FileUtil.toFileObject(testFile)).substring(span[0], span[1]));
     }
 
     /**
@@ -260,7 +264,9 @@ public class TreeTaggingTest extends GeneratorTestMDRCompat {
         //lenghth of added statement has to be the same as the length of span
         assertEquals(delta, new String("System.err.println(true);").length());
         //absolute position of span beginning
-        assertEquals(241, span[0]);
+        assertEquals(182, span[0]);
+
+        assertEquals("System.err.println(true);", diff.getResultingSource(FileUtil.toFileObject(testFile)).substring(span[0], span[1]));
     }
 
 
@@ -271,7 +277,7 @@ public class TreeTaggingTest extends GeneratorTestMDRCompat {
 
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile,
-            "/**/" +    
+            "/**/" +
             "package hierbas.del.litoral;\n\n" +
             "import java.io.*;\n\n" +
             "public class Test {\n" +
@@ -311,7 +317,9 @@ public class TreeTaggingTest extends GeneratorTestMDRCompat {
         //lenghth of added statement has to be the same as the length of span
         assertEquals(delta, new String("return super.print();").length());
         //absolute position of span beginning
-        assertEquals(123, span[0]);
+        assertEquals(119, span[0]);
+
+        assertEquals("return super.print();", diff.getResultingSource(FileUtil.toFileObject(testFile)).substring(span[0], span[1]));
     }
 
     public void testAnnotationTagging() throws Exception {

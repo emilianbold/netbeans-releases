@@ -203,7 +203,7 @@ public final class Indexable {
         @Override
         public IndexFactoryImpl getIndexFactory(Context ctx) {
             assert ctx != null;
-            return ctx.factory;
+            return ctx.getIndexFactory();
         }
 
         @Override

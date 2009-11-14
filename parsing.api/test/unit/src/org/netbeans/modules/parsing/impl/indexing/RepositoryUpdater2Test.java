@@ -782,6 +782,53 @@ public class RepositoryUpdater2Test extends NbTestCase {
         assertEquals("Wring file indexed", file2.getURL(), indexer.indexed.get(0).second.get(0).getURL());
     }
 
+    public void testMarkingIndexesDirty() throws Exception {
+        FileUtil.setMIMEType("txt", "text/plain");
+        final FileObject root = workDir.createFolder("root");
+        final FileObject file1 = root.createData("file1.txt");
+
+        final RepositoryUpdaterTest.MutableClassPathImplementation mcpi = new RepositoryUpdaterTest.MutableClassPathImplementation();
+        mcpi.addResource(root);
+        ClassPath cp = ClassPathFactory.createClassPath(mcpi);
+
+        Map<FileObject, Map<String, ClassPath>> allDeps = new HashMap<FileObject, Map<String, ClassPath>>();
+        allDeps.put(root, Collections.singletonMap(testRootsWorkCancelling_PathRecognizer.SOURCEPATH, cp));
+
+        final FixedClassPathProvider cpProvider = new FixedClassPathProvider(allDeps);
+        MockLookup.setInstances(cpProvider, new testRootsWorkCancelling_PathRecognizer());
+
+        final TestCustomIndexer indexer = new TestCustomIndexer();
+        MockMimeLookup.setInstances(MimePath.parse("text/plain"), new FixedCustomIndexerFactory(indexer), new FixedParserFactory(new EmptyParser()));
+        Util.allMimeTypes = Collections.singleton("text/plain");
+
+        assertEquals("No roots should be indexed yet", 0, indexer.indexed.size());
+
+        ruSync.reset(RepositoryUpdaterTest.TestHandler.Type.BATCH);
+        globalPathRegistry_register(testRootsWorkCancelling_PathRecognizer.SOURCEPATH, new ClassPath[] { cp });
+        ruSync.await();
+
+        assertEquals("Wrong number of roots", 1, indexer.indexed.size());
+
+        // the indexer does not store any data and so physically there is no lucene index on the disk
+        // therefore we have to forcibly create one
+        Context ctx = indexer.indexed.get(0).first;
+        IndexImpl ii = SPIAccessor.getInstance().getIndexFactory(ctx).createIndex(ctx);
+        ii.fileModified("file1.txt"); // marks index as dirty and adds file1.txt among stale files
+        assertEquals("Wrong number of stale files", 1, ii.getStaleFiles().size());
+        assertEquals("file1.txt should be a stale file", "file1.txt", ii.getStaleFiles().iterator().next());
+
+        indexer.indexed.clear();
+        ruSync.reset(RepositoryUpdaterTest.TestHandler.Type.FILELIST, 1);
+        RepositoryUpdater.getDefault().addIndexingJob(root.getURL(), Collections.singleton(file1.getURL()), false, false, true, true, true);
+        ruSync.await();
+
+        assertEquals("Wrong number of roots", 1, indexer.indexed.size());
+        assertEquals("Expecting root", root.getURL(), indexer.indexed.get(0).first.getRootURI());
+        assertEquals("Wrong number of files under root", 1, indexer.indexed.get(0).second.size());
+        assertEquals("Wrong file indexed", file1.getURL(), indexer.indexed.get(0).second.get(0).getURL());
+        assertEquals("Expecting no stale files", 0, ii.getStaleFiles().size());
+    }
+
     private static final class TestCustomIndexer extends CustomIndexer {
 
         public final List<Pair<Context, List<Indexable>>> indexed = new ArrayList<Pair<Context, List<Indexable>>>();
