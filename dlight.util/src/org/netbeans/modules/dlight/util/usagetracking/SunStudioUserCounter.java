@@ -41,6 +41,7 @@ package org.netbeans.modules.dlight.util.usagetracking;
 
 import java.io.IOException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.openide.util.RequestProcessor;
@@ -96,7 +97,10 @@ public final class SunStudioUserCounter {
         return appType;
     }
 
-    private static String getSunStudioBinDir() {
+    private static String getSunStudioBinDir(ExecutionEnvironment env) {
+        if (env != null && env.isRemote()) {
+            return null;
+        }
         String ssBin = System.getProperty("spro.bin");// NOI18N
         if (ssBin == null) {
             ssBin = System.getProperty("spro.home");// NOI18N
@@ -112,16 +116,16 @@ public final class SunStudioUserCounter {
         return ssBin;
     }
 
-    public static String getCheckUpdatePath(String ssBinPath) {
+    private static String getCheckUpdatePath(String ssBinPath, ExecutionEnvironment env) {
         String checkUpdatePath = System.getProperty("spro.check_update");// NOI18N
-        if (checkUpdatePath == null) {
-            ssBinPath = ssBinPath == null ? getSunStudioBinDir() : ssBinPath;
+        if (checkUpdatePath == null || (ssBinPath != null && env.isRemote())) {
+            ssBinPath = ssBinPath == null ? getSunStudioBinDir(env) : ssBinPath;
             if (ssBinPath != null) {
                 if (!ssBinPath.endsWith("/") && !ssBinPath.endsWith("\\")) { // NOI18N
                     ssBinPath += "/"; // NOI18N
                 }
+                checkUpdatePath = ssBinPath + "../prod/bin/check_update"; // NOI18N
             }
-            checkUpdatePath = ssBinPath + "../prod/bin/check_update"; // NOI18N
         }
         return checkUpdatePath;
     }
@@ -131,17 +135,29 @@ public final class SunStudioUserCounter {
      * @param execEnv execution environment
      */
     public static void countIDE(final String ssBaseDir, final ExecutionEnvironment execEnv) {
-        countTool(getCheckUpdatePath(ssBaseDir), execEnv, getIDEType().getTag());
+        countTool(getCheckUpdatePath(ssBaseDir, execEnv), execEnv, getIDEType().getTag());
     }
 
     public static void countDLight(final ExecutionEnvironment execEnv) {
+        if (SUNW_NO_UPDATE_NOTIFY) {
+            return;
+        }
         String tool;
         if (SunStudioUserCounter.getIDEType() == SunStudioUserCounter.IDEType.DLIGHTTOOL) {
             tool = "dlight"; // NOI18N
         } else {
             tool = "dlightss"; // NOI18N
         }
-        countTool(getCheckUpdatePath(null), execEnv, tool);
+        if (!execEnv.isLocal()) {
+            final ExecutionEnvironment localEnv = ExecutionEnvironmentFactory.getLocal();
+            final String localCheckUpdatePath = getCheckUpdatePath(null, localEnv);
+            if (localCheckUpdatePath != null) {
+                // register localy
+                countTool(localCheckUpdatePath, localEnv, tool);
+                return;
+            }
+        }
+        countTool(getCheckUpdatePath(null, execEnv), execEnv, tool);
     }
 
     public static void countGizmo(final String sprohome, final ExecutionEnvironment execEnv) {
@@ -153,7 +169,7 @@ public final class SunStudioUserCounter {
                 ssBin = sprohome + "bin/";// NOI18N
             }
         }
-        countTool(getCheckUpdatePath(ssBin), execEnv, "gizmo"); // NOI18N
+        countTool(getCheckUpdatePath(ssBin, execEnv), execEnv, "gizmo"); // NOI18N
     }
     /**
      * count active user of the tool
