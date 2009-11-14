@@ -406,6 +406,8 @@ public class PkgConfigImpl implements PkgConfig {
 
     private void readConfig(File file, PackageConfigurationImpl pc, boolean isWindows) {
         try {
+            String rootName = null;
+            String rootValue = null;
             Map<String, String> vars = new HashMap<String, String>();
             vars.put("pcfiledir", file.getParent()); // NOI18N
             BufferedReader in = new BufferedReader(RemoteFile.createReader(file));
@@ -454,8 +456,25 @@ public class PkgConfigImpl implements PkgConfig {
                         String v = st.nextToken();
                         if (v.startsWith("-I")){ // NOI18N
                             v = v.substring(2);
-                            if (drivePrefix != null) {
-                                v = drivePrefix+v;
+                            if (isWindows) {
+                                if (v.length()>2 && v.charAt(1) == ':') {
+                                    if (rootName != null && v.startsWith(rootName)) {
+                                        if (rootValue != null) {
+                                            v = rootValue+v.substring(rootName.length());
+                                        } else if (drivePrefix != null) {
+                                            v = drivePrefix+v.substring(rootName.length());
+                                        }
+                                    }
+                                } else {
+                                    if (v.startsWith("/usr/lib/")) { // NOI18N
+                                        v = v.substring(4);
+                                    }
+                                    if (rootValue != null) {
+                                        v = rootValue+v;
+                                    } else if (drivePrefix != null) {
+                                        v = drivePrefix+v;
+                                    }
+                                }
                             }
                             pc.paths.add(v);
                         } else if (v.startsWith("-D")){ // NOI18N
@@ -466,8 +485,9 @@ public class PkgConfigImpl implements PkgConfig {
                     int i = line.indexOf("="); // NOI18N
                     String name = line.substring(0, i).trim();
                     String value = line.substring(i+1).trim();
-                    if (isWindows) {
-                        value = fixPrefixPath(name, value, file);
+                    if (isWindows && name.equals("prefix")) {
+                        rootName = value;
+                        rootValue = fixPrefixPath(value, file);
                     }
                     vars.put(name, expandMacros(value, vars));
                 }
@@ -480,59 +500,57 @@ public class PkgConfigImpl implements PkgConfig {
         }
     }
 
-    private String fixPrefixPath(String name, String value, File file){
+    private String fixPrefixPath(String value, File file){
         //prefix=c:/devel/target/e1cabcfbab6c7ee30ed3ffc781169bba
-        if (name.equals("prefix")){ // NOI18N
-            StringTokenizer st = new StringTokenizer(value, "\\/"); // NOI18N
-            while(st.hasMoreTokens()){
-                String s = st.nextToken();
-                if (s.length() == 32) {
-                    boolean isHashCode = true;
-                    for(int i = 0; i < 32; i++){
-                        char c = s.charAt(i);
-                        switch(c){
-                            case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9': // NOI18N
-                            case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': // NOI18N
-                            case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': // NOI18N
-                                continue;
-                            default:
-                                isHashCode = false;
-                                break;
-                        }
+        StringTokenizer st = new StringTokenizer(value, "\\/"); // NOI18N
+        while(st.hasMoreTokens()){
+            String s = st.nextToken();
+            if (s.length() == 32) {
+                boolean isHashCode = true;
+                for(int i = 0; i < 32; i++){
+                    char c = s.charAt(i);
+                    switch(c){
+                        case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9': // NOI18N
+                        case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': // NOI18N
+                        case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': // NOI18N
+                            continue;
+                        default:
+                            isHashCode = false;
+                            break;
                     }
-                    if (isHashCode) {
+                }
+                if (isHashCode) {
+                    file = file.getParentFile();
+                    if (file != null) {
                         file = file.getParentFile();
-                        if (file != null) {
-                            file = file.getParentFile();
-                        }
-                        if (file != null) {
-                            file = file.getParentFile();
-                        }
-                        if (file != null) {
-                            return file.getAbsolutePath();
-                        }
                     }
-                }
-            }
-            if (value.startsWith("/")) { // NOI18N
-                int i = value.indexOf('/', 1); // NOI18N
-                file = file.getParentFile();
-                if (file != null) {
-                    file = file.getParentFile();
-                }
-                if (file != null) {
-                    file = file.getParentFile();
-                }
-                if (file != null) {
-                    if (i > 0) {
-                        return file.getAbsolutePath()+value.substring(i);
-                    } else {
+                    if (file != null) {
+                        file = file.getParentFile();
+                    }
+                    if (file != null) {
                         return file.getAbsolutePath();
                     }
                 }
             }
         }
-        return value;
+        if (value.startsWith("/")) { // NOI18N
+            int i = value.indexOf('/', 1); // NOI18N
+            file = file.getParentFile();
+            if (file != null) {
+                file = file.getParentFile();
+            }
+            if (file != null) {
+                file = file.getParentFile();
+            }
+            if (file != null) {
+                if (i > 0) {
+                    return file.getAbsolutePath()+value.substring(i);
+                } else {
+                    return file.getAbsolutePath();
+                }
+            }
+        }
+        return null;
     }
 
     private String expandMacros(String value, Map<String, String> vars){
