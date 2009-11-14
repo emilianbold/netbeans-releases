@@ -476,6 +476,9 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                 }
             }
         }
+        for (GlassfishInstance gi : instanceMap.values()) {
+            gi.updateModuleSupport();
+        }
     }
 
     private GlassfishInstance readInstanceFromFile(FileObject instanceFO, String uriFragment) throws IOException {
@@ -500,7 +503,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                 ip.put(name, value);
             }
             ip.put(INSTANCE_FO_ATTR, instanceFO.getName());
-            instance = GlassfishInstance.create(ip,this);
+            instance = GlassfishInstance.create(ip,this,false);
         } else {
             getLogger().finer("GlassFish folder " + instanceFO.getPath() + " is not a valid install."); // NOI18N
             instanceFO.delete();
