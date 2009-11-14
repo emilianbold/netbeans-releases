@@ -56,6 +56,7 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -92,6 +93,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.PropertySupport;
 import javax.swing.UIManager;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableColumn;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.core.stack.spi.AnnotatedSourceSupport;
 import org.netbeans.modules.dlight.management.api.DLightSession.SessionState;
@@ -99,6 +101,7 @@ import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.visualizers.api.ColumnsUIMapping;
+import org.netbeans.swing.etable.ETableColumn;
 import org.netbeans.swing.etable.ETableColumnModel;
 import org.netbeans.swing.outline.Outline;
 import org.openide.explorer.ExplorerManager;
@@ -300,6 +303,15 @@ public class FunctionsListViewVisualizer extends JPanel implements
             }
         });
 
+        ETableColumnModel colModel = (ETableColumnModel) outline.getColumnModel();
+        TableColumn firstColumn = colModel.getColumn(0);
+        ETableColumn col = (ETableColumn) firstColumn;
+        col.setNestedComparator(new Comparator<FunctionCallNode>() {
+
+            public int compare(FunctionCallNode o1, FunctionCallNode o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+        });
     }
 
     @Override
@@ -770,6 +782,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
             String suffix = name.substring(idx1 + funcName.length());
 
             prefix = toHtml(prefix);
+            funcName = toHtml(funcName);
             suffix = toHtml(suffix);
             funcName = "<b>" + funcName + "</b>"; // NOI18N
 
