@@ -485,7 +485,7 @@ public class PkgConfigImpl implements PkgConfig {
                     int i = line.indexOf("="); // NOI18N
                     String name = line.substring(0, i).trim();
                     String value = line.substring(i+1).trim();
-                    if (isWindows && name.equals("prefix")) {
+                    if (isWindows && name.equals("prefix")) { // NOI18N
                         rootName = value;
                         rootValue = fixPrefixPath(value, file);
                     }
