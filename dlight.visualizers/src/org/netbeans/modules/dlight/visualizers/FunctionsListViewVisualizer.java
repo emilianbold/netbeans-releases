@@ -895,13 +895,21 @@ public class FunctionsListViewVisualizer extends JPanel implements
 
     private class ExtendedTableCellRendererForNode extends DefaultTableCellRenderer {
 
+        private int strLen = 0;
+
+        public ExtendedTableCellRendererForNode() {
+            super();
+            setVerticalAlignment(javax.swing.SwingConstants.TOP);
+        }
+
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            final DefaultTableCellRenderer renderer = (DefaultTableCellRenderer) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            // Even when this renderer is set as default for any object,
+            // we need to call super, as it sets bacgrounds and does some other
+            // things... 
+            Component renderer = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
-            renderer.setVerticalAlignment(javax.swing.SwingConstants.TOP);
-
-            if (column != 0 || value == null) {
+            if (renderer != this) {
                 return renderer;
             }
 
@@ -909,11 +917,24 @@ public class FunctionsListViewVisualizer extends JPanel implements
 
             if (node != null && node instanceof FunctionCallNode) {
                 Action goToSourceAction = ((FunctionCallNode) node).getGoToSourceAction();
-                renderer.setEnabled(goToSourceAction != null && goToSourceAction.isEnabled());
-                renderer.setToolTipText(node.getHtmlDisplayName());
+                String displayText = node.getHtmlDisplayName();
+                strLen = displayText.length();
+                setEnabled(goToSourceAction != null && goToSourceAction.isEnabled());
+                setToolTipText(displayText);
             }
 
-            return renderer;
+            return this;
+        }
+
+        /**
+         * see IZ#176678 do not wrap lines in TreeCellRenderer if it's html
+         * To make html renderer not to wrap the line - just extend width
+         * to be lagre enough to fit all the text...
+         *
+         */
+        @Override
+        public void setBounds(int x, int y, int width, int height) {
+            super.setBounds(x, y, strLen * 10, height);
         }
     }
 
