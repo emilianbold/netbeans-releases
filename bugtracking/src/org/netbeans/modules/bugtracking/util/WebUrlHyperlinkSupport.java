@@ -755,7 +755,9 @@ public class WebUrlHyperlinkSupport {
 
             if (wasValidUri) {
                 assert (start != -1);
-                checkAndStoreResult(start, length, bracketsDepth);
+                if (authorityStart != -1) {
+                    checkAndStoreResult(start, length, bracketsDepth);
+                }
             }
 
             return result;
@@ -766,16 +768,13 @@ public class WebUrlHyperlinkSupport {
         }
 
         private void checkAndStoreResult(int start, int end, int bracketsDepth) {
-            if (bracketsDepth < 0) {
-                char lastChar = text.charAt(end - 1);
-                if (lastChar == ')') {
-                    end--;
-                } else if ((lastChar == '.') || (lastChar == ',') || (lastChar == ';')) {
-                    char beforeLastChar = text.charAt(end - 2);
-                    if (beforeLastChar == ')') {
-                        end -= 2;
-                    }
-                }
+            char lastChar = text.charAt(end - 1);
+            if ((lastChar == '.') || (lastChar == ',')
+                    || (lastChar == ':') || (lastChar == ';')) {
+                lastChar = text.charAt(--end - 1);
+            }
+            if ((bracketsDepth < 0) && (lastChar == ')')) {
+                lastChar = text.charAt(--end - 1);
             }
 
             if (checkUrl(start, end)) {
