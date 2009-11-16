@@ -1054,7 +1054,11 @@ public class QueryController extends BugtrackingController implements DocumentLi
         if(values != null) {
             projects = new Project[values.length];
             for (int i = 0; i < values.length; i++) {
-                projects[i] = (Project) values[i];
+                if(values[i] instanceof Project) {
+                    projects[i] = (Project) values[i];
+                } else {
+                    Jira.LOG.warning("project list item [" + values[i] + " has wrong type [" + values[i].getClass() + "]. Try to reload attributes." );
+                }
             }
         }
         populateProjectDetails(projects);
