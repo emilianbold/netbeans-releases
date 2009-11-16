@@ -233,7 +233,7 @@ public class CppSymbolDemanglerImpl implements CppSymbolDemangler {
     }
 
     private static String stripModuleAndOffset(String functionName) {
-        int plusPos = functionName.indexOf('+'); // NOI18N
+        int plusPos = functionName.indexOf("+0x"); // NOI18N
         if (0 <= plusPos) {
             functionName = functionName.substring(0, plusPos);
         }
