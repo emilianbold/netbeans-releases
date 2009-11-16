@@ -73,11 +73,6 @@ public class PersistenceScopeImpl implements PersistenceScopeImplementation
         this.locationProvider  = locProvider;
         cpProvider = imp;
         modelHelper = createEntityMappingsHelper();
-
-        FileObject persistenceFo = getPersistenceXml();
-        if (persistenceFo != null) {
-            modelHelper.changePersistenceXml(FileUtil.toFile(persistenceFo));
-        }
     }
     
     /**
@@ -118,7 +113,15 @@ public class PersistenceScopeImpl implements PersistenceScopeImplementation
     
 
     public MetadataModel<EntityMappingsMetadata> getEntityMappingsModel(String persistenceUnitName) {
-        return modelHelper.getEntityMappingsModel(persistenceUnitName);
+        MetadataModel<EntityMappingsMetadata> metadataModel = modelHelper.getEntityMappingsModel(persistenceUnitName);
+        if (metadataModel == null) {
+            FileObject puFo = getPersistenceXml();
+            if (puFo != null) {
+                modelHelper.changePersistenceXml(FileUtil.toFile(puFo));
+                metadataModel = modelHelper.getEntityMappingsModel(persistenceUnitName);
+            }
+        }
+        return metadataModel;
     }
     
     private EntityMappingsMetadataModelHelper createEntityMappingsHelper() {
