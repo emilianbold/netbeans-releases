@@ -66,16 +66,18 @@ public final class JavacardDeviceKeyNames {
     public static final String DEVICE_CARDMANAGERURL = "javacard.device.cardmanagerurl"; //NOI18N
     //The device id / display name.  It must always be a valid file name.
     public static final String DEVICE_DISPLAY_NAME = "javacard.device.name";  //NOI18N
-    public static final String DEVICE_DONT_SUSPEND_THREADS_ON_STARTUP = "javacard.device.nosuspend";  //NOI18N
+    public static final String DEVICE_SUSPEND_THREADS_ON_STARTUP = "javacard.device.suspend";  //NOI18N
     public static final String DEVICE_IS_REMOTE = "javacard.device.is.remotehost"; //NOI18N
     public static final String DEVICE_JAVACARD_VERSION = "javacard.device.version"; //NOI18N
     public static final String DEVICE_HOST= "javacard.device.host"; //NOI18N
+
     public static final String DEVICE_DEBUG_PROXY_COMMAND_LINE = "javacard.device.debugger.cmdline"; //NOI18N
     public static final String DEVICE_RUN_COMMAND_LINE = "javacard.device.run.cmdline"; //NOI18N
-    public static final String DEVICE_RUN_COMMAND_LINE_NOSUSPEND = "javacard.device.run.cmdline.nosuspend"; //NOI18N
+    //public static final String DEVICE_RUN_COMMAND_LINE_NOSUSPEND = "javacard.device.run.cmdline.nosuspend"; //NOI18N
     public static final String DEVICE_RUN_COMMAND_LINE_DEBUG = "javacard.device.run.cmdline.debug"; //NOI18N
-    public static final String DEVICE_RUN_COMMAND_LINE_DEBUG_NOSUSPEND = "javacard.device.run.cmdline.debug.nosuspend"; //NOI18N
+    //public static final String DEVICE_RUN_COMMAND_LINE_DEBUG_NOSUSPEND = "javacard.device.run.cmdline.debug.nosuspend"; //NOI18N
     public static final String DEVICE_RESUME_COMMAND_LINE = "javacard.device.resume.cmdline"; //NOI18N
+    public static final String DEVICE_RESUME_COMMAND_LINE_DEBUG = "javacard.device.resume.cmdline.debug"; //NOI18N
     public static final String DEVICE_CAPABILITIES = "javacard.device.capabilities"; //NOI18N
     public static final String DEVICE_EPROM_FILE = "javacard.device.eprom.file"; //NOI18N
     public static final String DEVICE_EPROM_FOLDER = "javacard.device.eeprom.folder"; //NOI18N

@@ -203,9 +203,8 @@ public class RICard extends BaseCard<CardProperties> { //non-final only for unit
         CardProperties p = getCapability(CardProperties.class);
         assert p != null;
         boolean forDebug = mode == RunMode.DEBUG;
-        boolean noSuspend = p.isNoSuspend();
         Properties props = getPlatform().toProperties();
-        return p.getRunCommandLine(props, noSuspend, forDebug);
+        return p.getRunCommandLine(props, forDebug, 0);
     }
 
     private String[] getResumeCommandLine() {

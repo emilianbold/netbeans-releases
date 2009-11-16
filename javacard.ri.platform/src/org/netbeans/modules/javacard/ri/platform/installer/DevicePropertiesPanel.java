@@ -315,7 +315,7 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
         s.put(DEVICE_SERVERURL, getServerUrl());
         s.put(DEVICE_CARDMANAGERURL, getCardManagerUrl());
         s.put(DEVICE_IS_REMOTE, remoteCheckbox.isSelected() + ""); //NOI18N
-        s.put(DEVICE_DONT_SUSPEND_THREADS_ON_STARTUP, !suspendCheckBox.isSelected() + ""); //NOI18N
+        s.put(DEVICE_SUSPEND_THREADS_ON_STARTUP, suspendCheckBox.isSelected() + ""); //NOI18N
     }
 
     public void read(KeysAndValues<?> s) {
@@ -374,7 +374,10 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
             if (val != null) {
                 cardManagerUrlField.setText(val);
             }
-            val = s.get(DEVICE_DONT_SUSPEND_THREADS_ON_STARTUP);
+            val = s.get(DEVICE_SUSPEND_THREADS_ON_STARTUP);
+            if(val == null) {
+                val = "true";
+            }
             if (val != null) {
                 suspendCheckBox.setSelected(Boolean.valueOf(val));
             }
@@ -551,6 +554,7 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
         proxy2cjcrePortTextField.setToolTipText(org.openide.util.NbBundle.getBundle(DevicePropertiesPanel.class).getString("tip_ide_port")); // NOI18N
         proxy2cjcrePortTextField.setName("Debug CJCRE Port"); // NOI18N
 
+        suspendCheckBox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(suspendCheckBox, "Suspend Threads on startup");
 
         contactedPortTextField.setText("9025");
