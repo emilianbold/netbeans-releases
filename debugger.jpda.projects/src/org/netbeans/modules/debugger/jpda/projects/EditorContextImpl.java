@@ -695,6 +695,8 @@ public class EditorContextImpl extends EditorContext {
         final String className,
         final String fieldName
     ) {
+        JavaSource js = JavaSource.forFileObject(fo);
+        if (js == null) return -1;
         final int[] result = new int[] {-1};
         final StyledDocument doc = findDocument(fo);
         if (doc == null) {
@@ -705,9 +707,9 @@ public class EditorContextImpl extends EditorContext {
             ParserManager.parse(Collections.singleton(Source.create(doc)), new UserTask() {
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
-                    Result res = resultIterator.getParserResult();
-                    CompilationController ci = CompilationController.get(res);
-                    if (ci == null || ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {//TODO: ELEMENTS_RESOLVED may be sufficient
+                    CompilationController ci = retrieveController(resultIterator, doc);
+                    if (ci == null) return;
+                    if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {//TODO: ELEMENTS_RESOLVED may be sufficient
                         ErrorManager.getDefault().log(ErrorManager.WARNING,
                                 "Unable to resolve "+ci.getFileObject()+" to phase "+Phase.RESOLVED+", current phase = "+ci.getPhase()+
                                 "\nDiagnostics = "+ci.getDiagnostics()+
@@ -824,6 +826,8 @@ public class EditorContextImpl extends EditorContext {
         final String methodName,
         final String methodSignature
     ) {
+        JavaSource js = JavaSource.forFileObject(fo);
+        if (js == null) return new int[] {};
         final List<Integer> result = new ArrayList<Integer>();
         final StyledDocument doc = findDocument(fo);
         if (doc == null) return new int[] {};
@@ -831,8 +835,8 @@ public class EditorContextImpl extends EditorContext {
             ParserManager.parse(Collections.singleton(Source.create(doc)), new UserTask() {
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
-                    Result res = resultIterator.getParserResult();
-                    CompilationController ci = CompilationController.get(res);
+                    CompilationController ci = retrieveController(resultIterator, doc);
+                    if (ci == null) return;
                     if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {//TODO: ELEMENTS_RESOLVED may be sufficient
                         ErrorManager.getDefault().log(ErrorManager.WARNING,
                                 "Unable to resolve "+ci.getFileObject()+" to phase "+Phase.RESOLVED+", current phase = "+ci.getPhase()+
@@ -1091,9 +1095,9 @@ public class EditorContextImpl extends EditorContext {
     ) {
         DataObject dataObject = getDataObject (url);
         if (dataObject == null) return null;
-//        JavaSource js = JavaSource.forFileObject(dataObject.getPrimaryFile());
-//        if (js == null) return "";
-        StyledDocument doc = findDocument(dataObject);
+        JavaSource js = JavaSource.forFileObject(dataObject.getPrimaryFile());
+        if (js == null) return "";
+        final StyledDocument doc = findDocument(dataObject);
         if (doc == null) {
             return "";
         }
@@ -1103,8 +1107,8 @@ public class EditorContextImpl extends EditorContext {
             ParserManager.parse(Collections.singleton(Source.create(doc)), new UserTask() {
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
-                    Result res = resultIterator.getParserResult();
-                    CompilationController ci = CompilationController.get(res);
+                    CompilationController ci = retrieveController(resultIterator, doc);
+                    if (ci == null) return;
                     if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {//TODO: ELEMENTS_RESOLVED may be sufficient
                         ErrorManager.getDefault().log(ErrorManager.WARNING,
                                 "Unable to resolve "+ci.getFileObject()+" to phase "+Phase.RESOLVED+", current phase = "+ci.getPhase()+
@@ -1219,8 +1223,8 @@ public class EditorContextImpl extends EditorContext {
                 ParserManager.parse(Collections.singleton(Source.create(doc)), new UserTask() {
                     @Override
                     public void run(ResultIterator resultIterator) throws Exception {
-                        Result res = resultIterator.getParserResult();
-                        CompilationController ci = CompilationController.get(res);
+                        CompilationController ci = retrieveController(resultIterator, doc);
+                        if (ci == null) return;
                         result[0] = computeOperations(ci, offset, lineNumber, bytecodeProvider);
                     }
                 });
@@ -1348,8 +1352,8 @@ public class EditorContextImpl extends EditorContext {
     public MethodArgument[] getArguments(String url, final Operation operation) {
         DataObject dataObject = getDataObject (url);
         if (dataObject == null) return null;
-//        JavaSource js = JavaSource.forFileObject(dataObject.getPrimaryFile());
-//        if (js == null) return null;
+        JavaSource js = JavaSource.forFileObject(dataObject.getPrimaryFile());
+        if (js == null) return null;
         final StyledDocument doc = findDocument(dataObject);
         if (doc == null) return null;
         final MethodArgument args[][] = new MethodArgument[1][];
@@ -1357,8 +1361,8 @@ public class EditorContextImpl extends EditorContext {
             ParserManager.parse(Collections.singleton(Source.create(doc)), new UserTask() {
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
-                    Result res = resultIterator.getParserResult();
-                    CompilationController ci = CompilationController.get(res);
+                    CompilationController ci = retrieveController(resultIterator, doc);
+                    if (ci == null) return;
                     if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
                         ErrorManager.getDefault().log(ErrorManager.WARNING,
                                 "Unable to resolve "+ci.getFileObject()+" to phase "+Phase.RESOLVED+", current phase = "+ci.getPhase()+
@@ -1392,6 +1396,8 @@ public class EditorContextImpl extends EditorContext {
     public MethodArgument[] getArguments(String url, final int methodLineNumber) {
         DataObject dataObject = getDataObject (url);
         if (dataObject == null) return null;
+        JavaSource js = JavaSource.forFileObject(dataObject.getPrimaryFile());
+        if (js == null) return null;
         final StyledDocument doc = findDocument(dataObject);
         if (doc == null) {
             return null;
@@ -1402,8 +1408,8 @@ public class EditorContextImpl extends EditorContext {
             ParserManager.parse(Collections.singleton(Source.create(doc)), new UserTask() {
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
-                    Result res = resultIterator.getParserResult();
-                    CompilationController ci = CompilationController.get(res);
+                    CompilationController ci = retrieveController(resultIterator, doc);
+                    if (ci == null) return;
                     if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
                         ErrorManager.getDefault().log(ErrorManager.WARNING,
                                 "Unable to resolve "+ci.getFileObject()+" to phase "+Phase.RESOLVED+", current phase = "+ci.getPhase()+
@@ -1444,6 +1450,8 @@ public class EditorContextImpl extends EditorContext {
     ) {
         DataObject dataObject = getDataObject (url);
         if (dataObject == null) return new String [0];
+        JavaSource js = JavaSource.forFileObject(dataObject.getPrimaryFile());
+        if (js == null) return new String [0];
         final StyledDocument doc = findDocument(dataObject);
         if (doc == null) {
             return null;
@@ -1454,8 +1462,8 @@ public class EditorContextImpl extends EditorContext {
             ParserManager.parse(Collections.singleton(Source.create(doc)), new UserTask() {
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
-                    Result res = resultIterator.getParserResult();
-                    CompilationController ci = CompilationController.get(res);
+                    CompilationController ci = retrieveController(resultIterator, doc);
+                    if (ci == null) return;
                     if (ci.toPhase(Phase.PARSED).compareTo(Phase.PARSED) < 0) {
                         ErrorManager.getDefault().log(ErrorManager.WARNING,
                                 "Unable to resolve "+ci.getFileObject()+" to phase "+Phase.RESOLVED+", current phase = "+ci.getPhase()+
@@ -1544,9 +1552,10 @@ public class EditorContextImpl extends EditorContext {
                     ParserManager.parse(Collections.singleton(Source.create(doc)), new UserTask() {
                         @Override
                         public void run(ResultIterator resultIterator) throws Exception {
-                            Result res = resultIterator.getParserResult();
-                            CompilationController ci = CompilationController.get(res);
-                            task.run(ci);
+                            CompilationController ci = retrieveController(resultIterator, doc);
+                            if (ci != null) {
+                                task.run(ci);
+                            }
                         }
                     });
                 } catch (ParseException pex) {
@@ -2002,6 +2011,16 @@ public class EditorContextImpl extends EditorContext {
             return null;
         }
         return doc;
+    }
+
+    private static CompilationController retrieveController(ResultIterator resIt, StyledDocument doc) throws ParseException {
+        Result res = resIt.getParserResult();
+        CompilationController ci = res != null ? CompilationController.get(res) : null;
+        if (ci == null) {
+            ErrorManager.getDefault().log(ErrorManager.WARNING,
+                    "Unable to get compilation controller " + doc);
+        }
+        return ci;
     }
 
     private Operation[] computeOperations(CompilationController ci, int offset, int lineNumber, BytecodeProvider bytecodeProvider) throws IOException {
