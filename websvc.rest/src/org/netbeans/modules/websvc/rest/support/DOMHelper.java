@@ -42,7 +42,8 @@ import java.io.IOException;
 
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -62,6 +63,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 /**
  *
@@ -85,6 +87,7 @@ public class DOMHelper {
             DocumentBuilder builder = getDocumentBuilder();
 
             if (builder == null) {
+                Logger.getLogger(DOMHelper.class.getName()).log(Level.INFO, "Cannot get XML parser for "+fobj);
                 return null;
             }
             FileLock lock = null;
@@ -94,10 +97,12 @@ public class DOMHelper {
                 lock = fobj.lock();
                 is = fobj.getInputStream();
                 document = builder.parse(is);
+            } catch (SAXParseException ex) {
+                Logger.getLogger(DOMHelper.class.getName()).log(Level.INFO, "Cannot parse "+fobj, ex);
             } catch (SAXException ex) {
-                Exceptions.printStackTrace(ex);
+                Logger.getLogger(DOMHelper.class.getName()).log(Level.INFO, "Cannot parse "+fobj, ex);
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                Logger.getLogger(DOMHelper.class.getName()).log(Level.INFO, "Cannot parse "+fobj, ex);
             } finally {
                 if (is != null) {
                     try {
@@ -116,51 +121,68 @@ public class DOMHelper {
     }
 
     public Element findElement(String tag, String value) {
-        NodeList nodeList = document.getElementsByTagName(tag);
-        int len = nodeList.getLength();
+        if (document != null) {
+            NodeList nodeList = document.getElementsByTagName(tag);
+            int len = nodeList.getLength();
 
-        for (int i = 0; i < len; i++) {
-            Element element = (Element) nodeList.item(i);
+            for (int i = 0; i < len; i++) {
+                Element element = (Element) nodeList.item(i);
 
-            if (containsValue(element, value)) {
-                return element;
+                if (containsValue(element, value)) {
+                    return element;
+                }
             }
         }
-
         return null;
     }
 
     public Element findElement(String tag) {
-        NodeList nodeList = document.getElementsByTagName(tag);
+        if (document != null) {
+            NodeList nodeList = document.getElementsByTagName(tag);
 
-        if (nodeList.getLength() > 0) {
-            return (Element) nodeList.item(0);
+            if (nodeList.getLength() > 0) {
+                return (Element) nodeList.item(0);
+            }
         }
-
         return null;
     }
     
     public NodeList findElements(String tag) {
-        return document.getElementsByTagName(tag);
+        if (document != null) {
+            return document.getElementsByTagName(tag);
+        }
+        return null;
     }
 
     public Element findElementById(String id) {
-        return document.getElementById(id);
+        if (document != null) {
+            return document.getElementById(id);
+        }
+        return null;
     }
+
     public void appendChild(Element child) {
-        document.getDocumentElement().appendChild(child);
+        if (document != null) {
+            document.getDocumentElement().appendChild(child);
+        }
     }
 
     public Element createElement(String tag) {
-        return document.createElement(tag);
+        if (document != null) {
+            return document.createElement(tag);
+        }
+        return null;
     }
 
     public Element createElement(String tag, String value) {
-        Element element = document.createElement(tag);
-        Text text = document.createTextNode(value);
-        element.appendChild(text);
+        if (document != null) {
+            Element element = document.createElement(tag);
+            Text text = document.createTextNode(value);
+            element.appendChild(text);
 
-        return element;
+            return element;
+        }
+        return null;
     }
 
     public boolean containsValue(Element element, String value) {
@@ -192,7 +214,6 @@ public class DOMHelper {
     }
 
     public void save() {
-        //beautify();
         RequestProcessor.getDefault().post(new Runnable() {
 
             public void run() {
@@ -255,32 +276,4 @@ public class DOMHelper {
         return builder;
     }
 
-    private void beautify() {
-        beautify(document.getDocumentElement(), "\n");   //NOI18N
-
-    }
-
-    private void beautify(Node node, String indent) {
-        NodeList children = node.getChildNodes();
-        int length = children.getLength();
-        ArrayList<Node> list = new ArrayList<Node>();
-
-        for (int i = 0; i < length; i++) {
-            list.add(children.item(i));
-        }
-
-        for (int i = 0; i < length; i++) {
-            Node child = list.get(i);
-
-            if (child instanceof Text) {
-                continue;
-            }
-            node.insertBefore(document.createTextNode(indent + IDENT), child);
-            beautify(child, indent + IDENT);
-
-            if (i + 1 == length) {
-                node.appendChild(document.createTextNode(indent));
-            }
-        }
-    }
 }

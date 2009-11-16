@@ -42,17 +42,13 @@ package org.netbeans.modules.websvc.rest.wizard.fromdb;
 
 import java.awt.Component;
 import java.io.IOException;
-import java.lang.annotation.Annotation;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
@@ -78,7 +74,9 @@ import org.netbeans.modules.j2ee.persistence.wizard.fromdb.ProgressPanel;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.RelatedCMPHelper;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.RelatedCMPWizard;
 import org.netbeans.modules.websvc.api.support.LogUtils;
+import org.netbeans.modules.websvc.api.support.java.SourceUtils;
 import org.netbeans.modules.websvc.rest.RestUtils;
+import org.netbeans.modules.websvc.rest.codegen.Constants;
 import org.netbeans.modules.websvc.rest.codegen.EntityResourcesGenerator;
 import org.netbeans.modules.websvc.rest.codegen.EntityResourcesGeneratorFactory;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBeanModel;
@@ -89,7 +87,6 @@ import org.netbeans.modules.websvc.rest.support.PersistenceHelper;
 import org.netbeans.modules.websvc.rest.support.PersistenceHelper.PersistenceUnit;
 import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
 import org.netbeans.modules.websvc.rest.wizard.EntityResourcesIterator;
-import org.netbeans.modules.websvc.rest.wizard.Util;
 import org.netbeans.modules.websvc.rest.wizard.WizardProperties;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.DialogDisplayer;
@@ -376,58 +373,34 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
         return panels;
     }
 
-    private TypeElement getPublicTopLevelElement(CompilationController controller) {
-        Parameters.notNull("controller", controller); // NOI18N
-
-        FileObject mainFileObject = controller.getFileObject();
-        if (mainFileObject == null) {
-            throw new IllegalStateException();
-        }
-        String mainElementName = mainFileObject.getName();
-        List<? extends TypeElement> elements = controller.getTopLevelElements();
-        if (elements != null) {
-            for (TypeElement element : elements) {
-                if (element.getModifiers().contains(Modifier.PUBLIC) && element.getSimpleName().contentEquals(mainElementName)) {
-                    return element;
-                }
-            }
-        }
-        return null;
-    }
-
     private Set<Entity> getEntities(Project project, Set<FileObject> files) throws IOException {
-        final List<TypeElement> typeElements = new ArrayList<TypeElement>();
-        Set<Entity> entities = new HashSet<Entity>();
+        final Set<Entity> entities = new HashSet<Entity>();
         for (FileObject file : files) {
             JavaSource source = JavaSource.forFileObject(file);
             source.runUserActionTask(new Task<CompilationController>() {
 
                 public void run(CompilationController controller) throws Exception {
                     controller.toPhase(Phase.ELEMENTS_RESOLVED);
-                    TypeElement typeElement = getPublicTopLevelElement(controller);
-                    typeElements.add(typeElement);
+                    TypeElement classElement = SourceUtils.getPublicTopLevelElement(controller);
+                    if (classElement != null) {
+                        String entityName = null;
+                        TypeElement annotationElement = controller.getElements().getTypeElement(Constants.PERSISTENCE_TABLE);
+                        if (annotationElement != null) {
+                            entityName = TypeUtil.getAnnotationValueName(controller, classElement, annotationElement);
+                            if (entityName == null) {
+                                annotationElement =  controller.getElements().getTypeElement(Constants.PERSISTENCE_ENTITY);
+                                if (annotationElement != null) {
+                                    entityName = TypeUtil.getAnnotationValueName(controller, classElement, annotationElement);
+                                }
+                            }
+                        }
+                        if (entityName != null) {
+                            entities.add(new RuntimeJpaEntity(classElement, entityName));
+                        }
+                    }
                 }
             }, true);
         }
-        for (TypeElement te : typeElements) {
-            String entityName = null;
-            Class entityClass = Util.getType(project, te.getQualifiedName().toString());
-            if (entityClass != null) {
-                Annotation annotation = TypeUtil.getJpaTableAnnotation(entityClass);
-                if (annotation != null) {
-                    entityName = TypeUtil.getAnnotationValueName(annotation);
-                }
-                if (entityName == null) {
-                    annotation = TypeUtil.getJpaEntityAnnotation(entityClass);
-                    entityName = TypeUtil.getAnnotationValueName(annotation);
-                }
-            }
-            if (entityName == null) {
-                entityName = te.getSimpleName().toString();
-            }
-            entities.add(new RuntimeJpaEntity(te, entityName));
-        }
-
         return entities;
     }
 
