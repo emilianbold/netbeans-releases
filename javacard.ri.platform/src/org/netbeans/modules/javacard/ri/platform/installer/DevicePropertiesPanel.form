@@ -245,6 +245,7 @@
     </Component>
     <Component class="javax.swing.JCheckBox" name="suspendCheckBox">
       <Properties>
+        <Property name="selected" type="boolean" value="true"/>
         <Property name="text" type="java.lang.String" value="Suspend Threads on startup"/>
         <Property name="toolTipText" type="java.lang.String" value="&lt;html&gt;Check this checkbox if you want to start&lt;br&gt;stepping through code in the debugger&lt;br&gt;as soon as the card is started"/>
         <Property name="horizontalTextPosition" type="int" value="10"/>

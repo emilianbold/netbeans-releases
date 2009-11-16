@@ -93,7 +93,7 @@ public final class JavacardPlatformKeyNames {
     public static final String PLATFORM_IS_RI_WRAPPER = "javacard.wrap.ri"; //NOI18N
     public static final String PLATFORM_DEVICE_FILE_NOT_REQUIRED = "javacard.build.no.device.file"; //NOI18N
     public static final String PLATFORM_JAVACARD_SPECIFICATION_VERSION = "javacard.specification.version"; //NOI18N
-    public static final String PLATFORM_JAVACARD_VERSION = "javacard.version"; //NOI18N
+    //public static final String PLATFORM_JAVACARD_VERSION = "javacard.version"; //NOI18N
 
     /**
      * Get the list of property names that need to be absolutized

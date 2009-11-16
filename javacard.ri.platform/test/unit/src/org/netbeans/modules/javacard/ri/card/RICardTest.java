@@ -355,7 +355,7 @@ public class RICardTest {
                 try {
                     return new FakeDob(fo);
                 } catch (Exception ex) {
-                    throw new IOException(ex);
+                    throw new IOException(ex.getLocalizedMessage());
                 }
             }
             return null;
