@@ -109,6 +109,10 @@ public class J2SELibraryClassPathProvider implements ClassPathProvider {
 
     private static FileObject getOwnerRoot (final FileObject fo, final List<? extends URL> roots) {
         final URL foURL = URLMapper.findURL(fo, URLMapper.EXTERNAL);
+        if (foURL == null) {
+            //template or other nbfs
+            return null;
+        }
         final URL archiveFileURL = FileUtil.getArchiveFile(foURL);
         final boolean isInArchive = archiveFileURL != null;
         final FileObject ownerFo = isInArchive ? URLMapper.findFileObject(archiveFileURL) : null;
