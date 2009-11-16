@@ -42,6 +42,9 @@ import org.netbeans.modules.dlight.spi.SourceSupportProvider;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.dnd.DnDConstants;
 import java.awt.event.ActionEvent;
@@ -50,6 +53,7 @@ import java.awt.event.ComponentListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.security.AccessController;
@@ -104,6 +108,7 @@ import org.netbeans.modules.dlight.visualizers.api.ColumnsUIMapping;
 import org.netbeans.swing.etable.ETableColumn;
 import org.netbeans.swing.etable.ETableColumnModel;
 import org.netbeans.swing.outline.Outline;
+import org.openide.awt.HtmlRenderer;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
@@ -122,9 +127,9 @@ public class FunctionsListViewVisualizer extends JPanel implements
     private final static long MIN_REFRESH_MILLIS = 500;
     private final static Logger log = DLightLogger.getLogger(FunctionsListViewVisualizer.class);
     private Future<Boolean> task;
-    private Future<Boolean> detailedTask;
+//    private Future<Boolean> detailedTask;
     private final QueryLock queryLock = new QueryLock();
-    private final DetailsQueryLock detailsQueryLock = new DetailsQueryLock();
+//    private final DetailsQueryLock detailsQueryLock = new DetailsQueryLock();
     private final SourcePrefetchExecutorLock sourcePrefetchExecutorLock = new SourcePrefetchExecutorLock();
     private final UILock uiLock = new UILock();
     private JButton refresh;
@@ -185,6 +190,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
         final Outline outline = outlineView.getOutline();
         outline.getTableHeader().setReorderingAllowed(false);
         outline.setRootVisible(false);
+        outline.putClientProperty("ComputingTooltip", Boolean.TRUE); // NOI18N
         outline.setDefaultRenderer(Object.class, new ExtendedTableCellRendererForNode());
         outline.setDefaultRenderer(Node.Property.class, new FunctionsListSheetCell.OutlineSheetCell(outlineView.getOutline(), metrics));
         outline.addMouseListener(new MouseAdapter() {
@@ -895,7 +901,11 @@ public class FunctionsListViewVisualizer extends JPanel implements
 
     private class ExtendedTableCellRendererForNode extends DefaultTableCellRenderer {
 
-        private int strLen = 0;
+        private final String dots = " ... "; // NOI18N
+        private final Graphics2D scratchGraphics = new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB).createGraphics();
+        private String string;
+        private int cellwidth;
+        private int cellheight;
 
         public ExtendedTableCellRendererForNode() {
             super();
@@ -903,26 +913,17 @@ public class FunctionsListViewVisualizer extends JPanel implements
         }
 
         @Override
+        public String getToolTipText() {
+            return string;
+        }
+
+        @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             // Even when this renderer is set as default for any object,
             // we need to call super, as it sets bacgrounds and does some other
             // things... 
-            Component renderer = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-
-            if (renderer != this) {
-                return renderer;
-            }
-
-            Node node = currentChildren.getNodeAt(row);
-
-            if (node != null && node instanceof FunctionCallNode) {
-                Action goToSourceAction = ((FunctionCallNode) node).getGoToSourceAction();
-                String displayText = node.getHtmlDisplayName();
-                strLen = displayText.length();
-                setEnabled(goToSourceAction != null && goToSourceAction.isEnabled());
-                setToolTipText(displayText);
-            }
-
+            super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            string = value.toString();
             return this;
         }
 
@@ -934,7 +935,35 @@ public class FunctionsListViewVisualizer extends JPanel implements
          */
         @Override
         public void setBounds(int x, int y, int width, int height) {
-            super.setBounds(x, y, strLen * 10, height);
+            int strw = 0;
+            if (width > 0 && height > 0) {
+                cellwidth = width;
+                cellheight = height;
+                // Avoid html wrapping - make sure that string fits
+                strw = (int) HtmlRenderer.renderHTML(string + ' ',
+                        scratchGraphics,
+                        x, y, width, height, getFont(),
+                        Color.black, HtmlRenderer.STYLE_CLIP, false);
+            }
+            super.setBounds(x, y, Math.max(width, strw) + 10, height);
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+
+            FontMetrics fm = g.getFontMetrics();
+            int strw = (int) HtmlRenderer.renderHTML(string + ' ',
+                    scratchGraphics, 0, 0, cellwidth, 0,
+                    getFont(), Color.black, HtmlRenderer.STYLE_CLIP, false);
+
+            if (cellwidth < strw) {
+                int dotsw = (int) g.getFontMetrics().getStringBounds(dots, g).getMaxX();
+                ((Graphics2D) g).setBackground(getBackground());
+                g.clearRect(cellwidth - dotsw, 0, dotsw, cellheight);
+                g.drawString(dots, cellwidth - dotsw,
+                        fm.getHeight() + fm.getLeading() - fm.getDescent());
+            }
         }
     }
 
