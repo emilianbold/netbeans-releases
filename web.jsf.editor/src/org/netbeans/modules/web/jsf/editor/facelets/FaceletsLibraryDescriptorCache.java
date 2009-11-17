@@ -66,6 +66,9 @@ public class FaceletsLibraryDescriptorCache {
             if(file != null) {
                 lib = FaceletsLibraryDescriptor.create(file);
                 LIBRARIES.put(namespace, lib);
+            } else {
+                //try to get the library descriptor from the bundled jsf-impl.jar
+                return DefaultFaceletLibraries.getInstance().getLibrariesDescriptors().get(namespace);
             }
         }
         return lib;

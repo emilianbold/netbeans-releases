@@ -108,6 +108,7 @@ public class JsfSupport {
     private FaceletsLibrarySupport faceletsLibrarySupport;
     private WebModule wm;
     private ClassPath classpath;
+    private JsfIndex index;
 
     private JsfSupport(WebModule wm) {
         assert wm != null;
@@ -120,6 +121,13 @@ public class JsfSupport {
         this.faceletsDescriptorsCache = new FaceletsLibraryDescriptorCache(this);
 
         this.faceletsLibrarySupport = new FaceletsLibrarySupport(this);
+
+        try {
+            this.index = JsfIndex.create(wm);
+        } catch (IOException ex) {
+            Logger.global.log(Level.SEVERE, "Cannot create index for jsf support!", ex); //NOI18N
+        }
+
         //register html extension
         //TODO this should be done declaratively via layer
         JsfHtmlExtension.activate();
@@ -171,12 +179,7 @@ public class JsfSupport {
     }
 
     public JsfIndex getIndex() {
-        try {
-            return JsfIndex.get(wm);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return null;
+        return index;
     }
 
 }
