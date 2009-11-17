@@ -46,6 +46,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.xml.services.UserCatalog;
+import org.netbeans.modules.web.jsf.editor.facelets.DefaultFaceletLibraries;
 import org.openide.filesystems.FileObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -111,7 +112,7 @@ public class TldLibrary extends LibraryDescriptor {
             displayName = getTextContent(tagLib, "display-name"); //NOI18N
             if(displayName == null) {
                 //no display-name specified in the TLD, lets try to get the displayname from names registry
-                displayName = TldUtils.getLibraryDisplayName(uri);
+                displayName = DefaultFaceletLibraries.getLibraryDisplayName(uri);
                 if(displayName == null) {
                     //no entry even here, use TLD file name
                     displayName = getDefinitionFile().getNameExt();
