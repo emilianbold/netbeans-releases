@@ -39,8 +39,6 @@
     <mapID target="apisupport_create_code_generators" url="create_plugin/filelevel_create/create_code_generator.html"/>
     <mapID target="apisupport_about_quick_search_providers" url="create_plugin/filelevel_create/about_quick_search_providers.html"/>
     <mapID target="apisupport_create_quick_search_providers" url="create_plugin/filelevel_create/create_quick_search_provider.html"/>
-    <mapID target="apisupport_about_language_support" url="create_plugin/filelevel_create/about_language_support.html"/>
-    <mapID target="apisupport_create_language_support" url="create_plugin/filelevel_create/create_language_support.html"/>
     <mapID target="apisupport_create_javahelp" url="create_plugin/filelevel_create/create_javahelp.html"/>
     <mapID target="apisupport_about_file_types" url="create_plugin/filelevel_create/about_file_types.html"/>
     <mapID target="apisupport_create_file_type" url="create_plugin/filelevel_create/create_file_type.html"/>
@@ -117,9 +115,6 @@
     <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.codegenerator.CodeGeneratorPanel" url="csh/CodeGeneratorPanel.html"/>
     <!-- Quick search provider template -->
     <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.quicksearch.QuickSearchPanel" url="csh/QuickSearchPanel.html"/>
-    <!-- Language support template -->
-    <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.glf.GLFTemplateWizardPanel2" url="csh/GLFTemplateWizardPanel.html"/>
-    <mapID target="org.netbeans.modules.apisupport.project.ui.customizer.AddModulePanel" url="csh/AddModulePanel.html"/>
 
      <mapID target="org.netbeans.modules.apisupport.project.ui.customizer.AddFriendPanel" url="csh/AddNewFriendModule.html"/>
 

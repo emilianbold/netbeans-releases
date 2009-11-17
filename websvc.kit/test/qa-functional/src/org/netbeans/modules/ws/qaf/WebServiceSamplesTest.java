@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.ws.qaf;
 
@@ -106,23 +106,12 @@ public class WebServiceSamplesTest extends WebServicesTestBase {
             undeployProject("SecureCalculatorClientApp"); //NOI18N
         }
     }
-    
-    public static Test suite() {
-        return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(WebServiceSamplesTest.class), "testCalculatorApp", "testSecureCalculatorApp", "testUndeployAll").enableModules(".*").clusters(".*"));
-    }
 
-    /** Creates suite from particular test cases. You can define order of testcases here. */
-//    public static TestSuite suite() {
-//        TestSuite suite = new NbTestSuite(); 
-//        suite.addTest(new WebServiceSamplesTest("testCalculatorApp"));
-//        suite.addTest(new WebServiceSamplesTest("testSecureCalculatorApp"));
-//        suite.addTest(new WebServiceSamplesTest("testUndeployAll"));
-//        return suite;
-//    }
-//
-//    /* Method allowing test execution directly from the IDE. */
-//    public static void main(java.lang.String[] args) {
-//        // run whole suite
-//        TestRunner.run(suite());
-//    }
+    public static Test suite() {
+        return NbModuleSuite.create(addServerTests(Server.GLASSFISH_V3,
+                NbModuleSuite.createConfiguration(WebServiceSamplesTest.class),
+                "testCalculatorApp",
+                "testSecureCalculatorApp",
+                "testUndeployAll").enableModules(".*").clusters(".*"));
+    }
 }

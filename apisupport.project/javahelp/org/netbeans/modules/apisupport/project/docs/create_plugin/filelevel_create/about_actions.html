@@ -35,42 +35,6 @@
     a window, node, or data object.</p>
 
 
-    <p>The Actions API provides two types of action:
-    <ul>
-        <li><object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-            <param name="content" value="http://bits.netbeans.org/dev/javadoc/org-openide-util/org/openide/util/actions/CallableSystemAction.html">
-            <param name="text" value="<html><u>Class CallableSystemAction</u></html>">
-            <param name="textFontSize" value="medium">
-            <param name="textColor" value="blue">
-        </object><p>An action that can be called programmatically throughout the IDE,
-        regardless of context, be it from a menu item in the main menu bar,
-        a toolbar button in the main toolbar, or a keyboard shortcut. For example, in the IDE, the action that
-        defines Tools &gt; Options subclasses <tt>CallableSystemAction</tt>.
-        
-    <ul class="note"><li>From NetBeans IDE 6.5 onwards, the New Action wizard
-    generates an <tt>ActionListener</tt> class that delegates to a <tt>CallableSystemAction</tt>
-    via a registration entry in the <tt>layer.xml</tt> file.</ul> 
-
- 
-        <li><object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-        <param name="content" value="http://bits.netbeans.org/dev/javadoc/org-openide-nodes/org/openide/util/actions/CookieAction.html">
-        <param name="text" value="<html><u>Class CookieAction</u></html>">
-        <param name="textFontSize" value="medium">
-        <param name="textColor" value="blue">
-        </object><p>An action that is context aware. Whether it can be called depends on
-            the cookies of the selected nodes. Cookies are a design 
-            pattern used to add behaviors to existing data objects and nodes, or to separate 
-            an implementation from the main object. The Datasystems API describes how to use cookies in 
-            conjunction with data objects, including creating new cookie interfaces, creating new
-            cookie support implementations, and reusing existing supports. The Nodes API also permits 
-            use of cookies to add behavior to nodes. 
-
-        </p>
-    </ul>
-
-    <p>Both types of action can be created with the <a href="../../csh/ActionTypePanel.html">New Action wizard</a>. The wizard
-    automatically registers actions in the <a href="../../about/about-xml-layers.html"><tt>layer.xml</tt> file</a>.
-
    
     <dl>
         <dt><a name="seealso">See Also</a></dt>
