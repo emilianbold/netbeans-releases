@@ -92,7 +92,7 @@ public final class JavacardPlatformKeyNames {
     public static final String PLATFORM_TOOLS_CLASSPATH = "javacard.toolClassPath"; //NOI18N
     public static final String PLATFORM_IS_RI_WRAPPER = "javacard.wrap.ri"; //NOI18N
     public static final String PLATFORM_DEVICE_FILE_NOT_REQUIRED = "javacard.build.no.device.file"; //NOI18N
-    public static final String PLATFORM_JAVACARD_SPECIFICATION_VERSION = "javacard.specification.version"; //NOI18N
+    //public static final String PLATFORM_JAVACARD_SPECIFICATION_VERSION = "javacard.specification.version"; //NOI18N
     public static final String PLATFORM_JAVACARD_VERSION = "javacard.version"; //NOI18N
 
     /**
@@ -135,7 +135,7 @@ public final class JavacardPlatformKeyNames {
             PLATFORM_TOOLS_CLASSPATH,
             PLATFORM_VENDOR,
             PLATFORM_NAME,
-            PLATFORM_JAVACARD_SPECIFICATION_VERSION
+            PLATFORM_JAVACARD_VERSION
         ));
     }
 

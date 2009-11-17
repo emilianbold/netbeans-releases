@@ -411,7 +411,7 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
         s.put(DEVICE_LOGGERLEVEL, getLoggerLevel());
         s.put(DEVICE_SECUREMODE, getSecureMode());
         s.put(DEVICE_IS_REMOTE, remoteCheckbox.isSelected() + ""); //NOI18N
-        s.put(DEVICE_DONT_SUSPEND_THREADS_ON_STARTUP, !suspendCheckBox.isSelected() + ""); //NOI18N
+        s.put(DEVICE_SUSPEND_THREADS_ON_STARTUP, suspendCheckBox.isSelected() + ""); //NOI18N
         String host = hostComboBox.getSelectedItem().toString();
         s.put(DEVICE_HOST, host);
         NbPreferences.forModule(DevicePropertiesPanel.class).put("knownHosts",  //NOI18N
@@ -568,10 +568,12 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
             if (val != null) {
                 cardManagerUrlField.setText(val);
             }
-            val = s.get(DEVICE_DONT_SUSPEND_THREADS_ON_STARTUP);
-            if (val != null) {
-                suspendCheckBox.setSelected(Boolean.valueOf(val));
+            val = s.get(DEVICE_SUSPEND_THREADS_ON_STARTUP);
+            if (val == null) {
+                val = "true";
             }
+            suspendCheckBox.setSelected(Boolean.valueOf(val));
+            
             val = s.get(DEVICE_IS_REMOTE);
             if (val != null) {
                 remoteCheckbox.setSelected(Boolean.valueOf(val));
