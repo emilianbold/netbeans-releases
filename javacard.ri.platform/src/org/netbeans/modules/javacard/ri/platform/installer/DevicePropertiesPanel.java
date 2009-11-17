@@ -113,9 +113,9 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
         GuiUtils.filterNonNumericKeys(proxy2cjcrePortTextField);
 
         ramSpinner.setValue("1M"); //NOI18N
-        e2pSpinner.setValue("4M"); //NOI18N
+        e2pSpinner.setValue("6M"); //NOI18N
         corSpinner.setValue("4K"); //NOI18N
-        loggerLevelComboBox.setSelectedItem(org.openide.util.NbBundle.getBundle(DevicePropertiesPanel.class).getString("debug"));
+        loggerLevelComboBox.setSelectedItem(org.openide.util.NbBundle.getBundle(DevicePropertiesPanel.class).getString("info"));
         contactedProtocolComboBox.setSelectedItem("T=1"); //NOI18N
         Set<Integer> ports = allPortsInUse();
 
