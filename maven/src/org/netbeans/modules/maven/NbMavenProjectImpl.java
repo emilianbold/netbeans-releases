@@ -603,6 +603,7 @@ public final class NbMavenProjectImpl implements Project {
         put("ear", "org/netbeans/modules/maven/resources/earicon.gif"); //NOI18N
         put("pom", "org/netbeans/modules/maven/resources/Maven2Icon.gif"); //NOI18N
         put("nbm", "org/netbeans/modules/maven/resources/nbmicon.png"); //NOI18N
+        put("nbm-application", "org/netbeans/modules/maven/resources/suiteicon.png"); //NOI18N
     }};
 
     public static Image getIcon (MavenProject mPrj) {
