@@ -168,7 +168,7 @@ public abstract class Query implements Comparable<Query> {
     }
 
     /**
-     * Returns true if the issue doesn't belong to the query
+     * Returns true if the issue does belong to the query
      * @param issue
      * @return
      */
