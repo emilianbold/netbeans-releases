@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.web.jsf.editor.tld;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.web.jsf.editor.JsfSupport;
@@ -53,24 +52,30 @@ public class TldLibrariesCache {
 
     //uri -> library map
     private final Map<String, TldLibrary> LIBRARIES = new HashMap<String, TldLibrary>();
-    private static Collection<TldLibrary> DEFAULT_LIBRARIES;
     private JsfSupport support;
 
     public TldLibrariesCache(JsfSupport support) {
         this.support = support;
     }
 
-    public synchronized TldLibrary getLibrary(String namespace) throws LibraryDescriptorException {
-        TldLibrary lib = LIBRARIES.get(namespace);
-        if(lib == null) {
-            FileObject file = support.getIndex().getTldFile(namespace);
-            if(file != null) {
-                lib = TldLibrary.create(file);
-                LIBRARIES.put(namespace, lib);
-            }
+   public void clearCache() {
+        synchronized (LIBRARIES) {
+            LIBRARIES.clear();
         }
-        return lib;
-        
+    }
+
+    public synchronized TldLibrary getLibrary(String namespace) throws LibraryDescriptorException {
+        synchronized (LIBRARIES) {
+            TldLibrary lib = LIBRARIES.get(namespace);
+            if (lib == null) {
+                FileObject file = support.getIndex().getTldFile(namespace);
+                if (file != null) {
+                    lib = TldLibrary.create(file);
+                    LIBRARIES.put(namespace, lib);
+                }
+            }
+            return lib;
+        }
     }
 
     private void dumpLibs() {
