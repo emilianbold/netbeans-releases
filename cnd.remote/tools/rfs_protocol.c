@@ -63,7 +63,7 @@ static int do_send(int sd, const char* buffer, int size) {
     return true;
 }
 
-enum sr_result pkg_send(int sd, enum pkg_kind kind, const char* buf) {
+enum sr_result pkg_send(int sd, enum kind kind, const char* buf) {
     unsigned int size = strlen(buf) + 1;
     unsigned char header[3];
     header[0] = (char) kind;
@@ -88,7 +88,7 @@ enum sr_result pkg_recv(int sd, struct package* p, short max_data_size) {
     if (received != 3) {
         return (received == 0) ? sr_reset : sr_failure;
     }
-    p->kind = (enum pkg_kind) header[0];
+    p->kind = (enum kind) header[0];
     int size =  ((0x0FF & header[1])) * 256 + ((0x0FF & header[2]));
     if (size > max_data_size) {
         //trace("pkg_recv: packet too large: %d\n", size);

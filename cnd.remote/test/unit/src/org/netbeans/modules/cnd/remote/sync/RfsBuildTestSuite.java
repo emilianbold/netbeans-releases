@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,40 +34,61 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-#include <stdio.h>
-#include <unistd.h>
-#include <limits.h>
+package org.netbeans.modules.cnd.remote.sync;
 
-typedef int bool;
+import java.util.Collection;
+import junit.framework.Test;
+import junit.framework.TestSuite;
+import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
-enum {
-    true = 1,
-    false = 0
-};
+/**
+ *
+ * @author Sergey Grinev
+ */
+public class RfsBuildTestSuite extends CndBaseTestSuite {
 
-void report_error(const char *format, ...);
+    public static final String PLATFORMS_SECTION = "remote.platforms";
+    public static final String DEFAULT_SECTION = "remote";
 
-static void report_unresolved_path(const char* path) {
-    char pwd[PATH_MAX];
-    getcwd(pwd, sizeof pwd);
-    report_error("Can not resolve path: %s  cwd: %s\n", path, pwd);
-}
-
-#if TRACE
-    void trace(const char *format, ...);
-    void trace_startup(const char* prefix, const char* env_var, const char* binary);
-    void trace_shutdown();
-    static void trace_unresolved_path(const char* path) {
-        char pwd[PATH_MAX];
-        getcwd(pwd, sizeof pwd);
-        trace("Can not resolve path: %s  pwd: %s: %s\n", path, pwd);
+    public RfsBuildTestSuite(Class testClass) {
+        this(testClass.getName(), testClass);
     }
-#else
-    #define trace_startup(...)
-    #define trace(...)
-    #define trace_shutdown()
-    #define trace_unresolved_path(...)
-#endif
+
+    // Why are tests just Test, not NativeExecutionBaseTestCase?
+    // to allow add warnings (TestSuite.warning() returns test stub with warning)
+    public RfsBuildTestSuite(String name, Test... tests) {
+        setName(name);
+        for (Test test : tests) {
+            addTest(test);
+        }
+    }
+
+    // Why are tests just Test, not NativeExecutionBaseTestCase?
+    // to allow add warnings (TestSuite.warning() returns test stub with warning)
+    public RfsBuildTestSuite(String name, Collection<Test> tests) {
+        setName(name);
+        for (Test test : tests) {
+            addTest(test);
+        }
+    }
+
+    public RfsBuildTestSuite() {
+        this("Remote Development", // NOI18N
+             //HostSetupTestCase.class,
+             RfsGnuRemoteBuildTestCase.class,
+             RfsSunStudioRemoteBuildTestCase.class);
+    }
+
+
+    private RfsBuildTestSuite(String name, Class... testClasses) {
+        super(name, PLATFORMS_SECTION, testClasses);
+    }
+
+    public static Test suite() {
+        TestSuite suite = new RfsBuildTestSuite();
+        return suite;
+    }
+}

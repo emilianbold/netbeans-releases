@@ -36,6 +36,11 @@ class RfsLocalController implements Runnable {
     private final FileData fileData;
     private final Set<String> processedFiles = new HashSet<String>();
 
+    private static enum RequestKind {
+        REQUEST,
+        WRITTEN
+    }
+
     public RfsLocalController(ExecutionEnvironment executionEnvironment, File[] files, String remoteDir,
             InputStream requestStream, OutputStream responseStream, PrintWriter err,
             FileData fileData) {
@@ -72,17 +77,30 @@ class RfsLocalController implements Runnable {
 //        return out;
 //    }
 
+    private RequestKind getRequestKind(String request) {
+        if (request.charAt(1) != ' ') {
+            throw new IllegalArgumentException("Protocol error: " + request);
+        }
+        switch (request.charAt(0)) {
+            case 'r':   return RequestKind.REQUEST;
+            case 'w':   return RequestKind.WRITTEN;
+            default:
+                throw new IllegalArgumentException("Protocol error: " + request);
+        }
+    }
+
     public void run() {
         long totalCopyingTime = 0;
         RemotePathMap mapper = RemotePathMap.getPathMap(execEnv);
         while (true) {
             try {
                 String request = requestReader.readLine();
-                String remoteFile = request;
                 RemoteUtil.LOGGER.finest("LC: REQ " + request);
                 if (request == null) {
                     break;
                 }
+                String remoteFile = request.substring(2);
+                RequestKind kind = getRequestKind(request);
                 if (processedFiles.contains(remoteFile)) {
                     RemoteUtil.LOGGER.info("RC asks for file " + remoteFile + " again?!");
                     respond_ok();
@@ -93,38 +111,44 @@ class RfsLocalController implements Runnable {
                 String localFilePath = mapper.getLocalPath(remoteFile);
                 if (localFilePath != null) {
                     File localFile = new File(localFilePath);
-                    if (localFile.exists() && !localFile.isDirectory()) {
-                        FileState state = fileData.getState(localFile);
-                        if (needsCopying(localFile)) {
-                            RemoteUtil.LOGGER.finest("LC: uploading " + localFile + " to " + remoteFile + " started");
-                            long fileTime = System.currentTimeMillis();
-                            Future<Integer> task = CommonTasksSupport.uploadFile(localFile.getAbsolutePath(), execEnv, remoteFile, 511, err);
-                            try {
-                                int rc = task.get();
-                                fileTime = System.currentTimeMillis() - fileTime;
-                                totalCopyingTime += fileTime;
-                                System.err.printf("LC: uploading %s to %s finished; rc=%d time =%d total time = %d ms \n", localFile, remoteFile, rc, fileTime, totalCopyingTime);
-                                if (rc == 0) {
-                                    fileData.setState(localFile, FileState.COPIED);
-                                    respond_ok();
-                                } else {
-                                    respond_err("1"); // NOI18N
+                    if (kind == RequestKind.WRITTEN) {
+                        fileData.setState(localFile, FileState.UNCONTROLLED);
+                        RemoteUtil.LOGGER.finest("LC: uncontrolled " + localFile);
+                    } else {
+                        CndUtils.assertTrue(kind == RequestKind.REQUEST, "kind should be RequestKind.REQUEST, but is " + kind);
+                        if (localFile.exists() && !localFile.isDirectory()) {
+                            //FileState state = fileData.getState(localFile);
+                            if (needsCopying(localFile)) {
+                                RemoteUtil.LOGGER.finest("LC: uploading " + localFile + " to " + remoteFile + " started");
+                                long fileTime = System.currentTimeMillis();
+                                Future<Integer> task = CommonTasksSupport.uploadFile(localFile.getAbsolutePath(), execEnv, remoteFile, 0777, err);
+                                try {
+                                    int rc = task.get();
+                                    fileTime = System.currentTimeMillis() - fileTime;
+                                    totalCopyingTime += fileTime;
+                                    System.err.printf("LC: uploading %s to %s finished; rc=%d time =%d total time = %d ms \n", localFile, remoteFile, rc, fileTime, totalCopyingTime);
+                                    if (rc == 0) {
+                                        fileData.setState(localFile, FileState.COPIED);
+                                        respond_ok();
+                                    } else {
+                                        respond_err("1"); // NOI18N
+                                    }
+                                } catch (InterruptedException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                    break;
+                                } catch (ExecutionException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                    respond_err("2 execution exception\n"); // NOI18N
+                                } finally {
+                                    responseStream.flush();
                                 }
-                            } catch (InterruptedException ex) {
-                                Exceptions.printStackTrace(ex);
-                                break;
-                            } catch (ExecutionException ex) {
-                                Exceptions.printStackTrace(ex);
-                                respond_err("2 execution exception\n"); // NOI18N
-                            } finally {
-                                responseStream.flush();
+                            } else {
+                                RemoteUtil.LOGGER.finest("LC: file " + localFile + " not accepted");
+                                respond_ok();
                             }
                         } else {
-                            RemoteUtil.LOGGER.finest("LC: file " + localFile + " not accepted");
                             respond_ok();
                         }
-                    } else {
-                        respond_ok();
                     }
                 } else {
                     respond_ok();
@@ -183,6 +207,7 @@ class RfsLocalController implements Runnable {
     void feedFiles(OutputStream rcOutputStream, SharabilityFilter filter) {
         PrintWriter writer = new PrintWriter(rcOutputStream);
         List<FileGatheringInfo> filesToFeed = new ArrayList<FileGatheringInfo>(512);
+        Set<File> externalDirs = new HashSet<File>();
         RemotePathMap mapper = RemotePathMap.getPathMap(execEnv);
         for (File file : files) {
             file = CndFileUtils.normalizeFile(file);
@@ -195,7 +220,13 @@ class RfsLocalController implements Runnable {
                     }
                 }
             } else {
-                String toRemoteFilePathName = mapper.getRemotePath(file.getAbsoluteFile().getParent());
+                final File parentFile = file.getAbsoluteFile().getParentFile();
+                String toRemoteFilePathName = mapper.getRemotePath(parentFile.getAbsolutePath());
+                if (!externalDirs.contains(parentFile)) {
+                    // add parent folder for external file
+                    externalDirs.add(parentFile);
+                    addFileGatheringInfo(filesToFeed, parentFile, toRemoteFilePathName);
+                }
                 gatherFiles(file, toRemoteFilePathName, filter, filesToFeed);
             }
         }
@@ -258,7 +289,7 @@ class RfsLocalController implements Runnable {
     private static void gatherFiles(File file, String base, FileFilter filter, List<FileGatheringInfo> files) {
         // it is assumed that the file itself was already filtered
         String fileName = isEmpty(base) ? file.getName() : base + '/' + file.getName();
-        files.add(new FileGatheringInfo(file, fileName));
+        addFileGatheringInfo(files, file, fileName);
         if (file.isDirectory()) {
             File[] children = file.listFiles(filter);
             for (File child : children) {
@@ -267,6 +298,13 @@ class RfsLocalController implements Runnable {
             }
         }
     }
+
+    private static void addFileGatheringInfo(List<FileGatheringInfo> filesToFeed, final File file, String remoteFilePathName) {
+        if (file.exists()) {
+            filesToFeed.add(new FileGatheringInfo(file, remoteFilePathName));
+        }
+    }
+
 
     private static boolean isEmpty(String s) {
         return s == null || s.length() == 0;
