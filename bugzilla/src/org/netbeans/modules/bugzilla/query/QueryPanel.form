@@ -414,7 +414,7 @@
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Component id="tmTypeLabel" alignment="0" min="-2" max="-2" attributes="1"/>
-                      <Component id="issueTypeScrollPane1" alignment="0" min="-2" max="-2" attributes="1"/>
+                      <Component id="tmScrollPane" alignment="0" min="-2" max="-2" attributes="1"/>
                   </Group>
                   <EmptySpace max="32767" attributes="0"/>
               </Group>
@@ -428,7 +428,7 @@
                       <Group type="102" alignment="0" attributes="0">
                           <Component id="tmTypeLabel" min="-2" max="-2" attributes="0"/>
                           <EmptySpace min="-2" max="-2" attributes="0"/>
-                          <Component id="issueTypeScrollPane1" pref="99" max="32767" attributes="1"/>
+                          <Component id="tmScrollPane" pref="99" max="32767" attributes="1"/>
                       </Group>
                       <Group type="102" alignment="0" attributes="0">
                           <Component id="issueTypeLabel" min="-2" max="-2" attributes="0"/>
@@ -873,7 +873,7 @@
             <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
           </AuxValues>
         </Component>
-        <Container class="javax.swing.JScrollPane" name="issueTypeScrollPane1">
+        <Container class="javax.swing.JScrollPane" name="tmScrollPane">
           <Properties>
             <Property name="horizontalScrollBarPolicy" type="int" value="31"/>
           </Properties>
