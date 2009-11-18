@@ -79,13 +79,13 @@ class RfsLocalController implements Runnable {
 
     private RequestKind getRequestKind(String request) {
         if (request.charAt(1) != ' ') {
-            throw new IllegalArgumentException("Protocol error: " + request);
+            throw new IllegalArgumentException("Protocol error: " + request); // NOI18N
         }
         switch (request.charAt(0)) {
             case 'r':   return RequestKind.REQUEST;
             case 'w':   return RequestKind.WRITTEN;
             default:
-                throw new IllegalArgumentException("Protocol error: " + request);
+                throw new IllegalArgumentException("Protocol error: " + request); // NOI18N
         }
     }
 
