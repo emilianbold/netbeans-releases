@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.apisupport.project.ui.wizard;
 
+import org.netbeans.modules.apisupport.project.ui.wizard.NewNbModuleWizardIterator.Type;
 import org.openide.WizardDescriptor;
 
 /**
@@ -56,6 +57,7 @@ final class NewModuleProjectData {
 
     private boolean netBeansOrg;
     private boolean standalone = true; // standalone is default
+    private boolean osgi;
     private String projectName;
     private String projectLocation;
     private String projectFolder;
@@ -73,7 +75,12 @@ final class NewModuleProjectData {
      * @param wizardType
      */
     NewModuleProjectData(NewNbModuleWizardIterator.Type wizardType) {
-        this.wizardType = wizardType;
+        this(wizardType, false);
+    }
+
+    NewModuleProjectData(Type type, boolean osgi) {
+        this.wizardType = type;
+        this.osgi = osgi;
     }
     
     void setSettings(WizardDescriptor settings) {
@@ -99,6 +106,10 @@ final class NewModuleProjectData {
     
     boolean isStandalone() {
         return standalone;
+    }
+    
+    boolean isOSGi() {
+        return osgi;
     }
     
     boolean isSuiteComponent() {
