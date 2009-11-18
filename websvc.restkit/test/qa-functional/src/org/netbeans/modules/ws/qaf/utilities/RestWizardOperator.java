@@ -37,34 +37,42 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.jsf.editor.tld;
+package org.netbeans.modules.ws.qaf.utilities;
 
-import java.util.HashMap;
-import java.util.Map;
+import javax.swing.JDialog;
+import org.netbeans.jellytools.WizardOperator;
+import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JDialogOperator;
 
 /**
  *
- * @author marekfukala
+ * @author lukas
  */
-public class TldUtils {
+public class RestWizardOperator extends WizardOperator {
 
-    private static Map<String, String> JSF_LIBRARY_DISPLAY_NAMES;
-
-
-    /** A workaround for missing <display-name> entry in jsf libraries. */
-    public static synchronized String getLibraryDisplayName(String libraryUri) {
-        if(JSF_LIBRARY_DISPLAY_NAMES == null) {
-            JSF_LIBRARY_DISPLAY_NAMES = new HashMap<String, String>();
-            
-            JSF_LIBRARY_DISPLAY_NAMES.put("http://java.sun.com/jsf/facelets", "Facelets"); //NOI18N
-            JSF_LIBRARY_DISPLAY_NAMES.put("http://mojarra.dev.java.net/mojarra_ext", "Mojarra Extensions"); //NOI18N
-            JSF_LIBRARY_DISPLAY_NAMES.put("http://java.sun.com/jsf/composite", "Composite Components"); //NOI18N
-            JSF_LIBRARY_DISPLAY_NAMES.put("http://java.sun.com/jsf/html", "Html Basic"); //NOI18N
-            JSF_LIBRARY_DISPLAY_NAMES.put("http://java.sun.com/jsf/core", "Jsf Core"); //NOI18N
-            JSF_LIBRARY_DISPLAY_NAMES.put("http://java.sun.com/jsp/jstl/core", "Jstl Core"); //NOI18N
-        }
-        
-        return JSF_LIBRARY_DISPLAY_NAMES.get(libraryUri);
+    public RestWizardOperator(String title) {
+        super(title);
     }
+
+    public RestWizardOperator(JDialog dialog) {
+        super(dialog);
+    }
+
+    @Override
+    public void finish() {
+        btFinish().requestFocus();
+        btFinish().pushNoBlock();
+        try {
+            Thread.sleep(1500);
+        } catch (InterruptedException ex) {
+            //ignore
+        }
+        String dlgLbl = "REST Resources Configuration";
+        if (null != JDialogOperator.findJDialog(dlgLbl, true, true)) {
+            new JButtonOperator(new JDialogOperator(dlgLbl), "OK").push();
+        }
+    }
+
+
 
 }

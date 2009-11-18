@@ -198,7 +198,7 @@ public class JsfBinaryIndexer extends BinaryIndexer {
 
     }
 
-    private Collection<FileObject> findLibraryDescriptors(FileObject classpathRoot, String suffix) {
+    public static Collection<FileObject> findLibraryDescriptors(FileObject classpathRoot, String suffix) {
         Collection<FileObject> files = new ArrayList<FileObject>();
 //        Enumeration<? extends FileObject> fos = classpathRoot.getFolders(false);
         Enumeration<? extends FileObject> fos = classpathRoot.getFolders(true);

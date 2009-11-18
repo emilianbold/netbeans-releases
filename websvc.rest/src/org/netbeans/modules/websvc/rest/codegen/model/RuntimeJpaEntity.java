@@ -38,8 +38,18 @@
  */
 package org.netbeans.modules.websvc.rest.codegen.model;
 
-import java.lang.annotation.Annotation;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashSet;
+import javax.lang.model.element.AnnotationMirror;
+import org.netbeans.api.java.source.ClassIndex;
+import org.netbeans.api.java.source.ClassIndex.NameKind;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.websvc.rest.support.*;
 import java.util.List;
 import java.util.Set;
@@ -72,7 +82,8 @@ import org.netbeans.modules.j2ee.persistence.api.metadata.orm.SqlResultSetMappin
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Table;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.TableGenerator;
 import org.netbeans.modules.websvc.rest.codegen.Constants;
-import org.netbeans.modules.websvc.rest.wizard.Util;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -567,34 +578,68 @@ public class RuntimeJpaEntity implements Entity {
     public static Set<Entity> getEntityFromClasspath(Project project) {
         SourceGroup[] sgs = SourceGroupSupport.getJavaSourceGroups(project);
         
-        Set<Entity> result = new HashSet<Entity>();
+        final Set<Entity> result = new HashSet<Entity>();
         if (sgs == null || sgs.length < 1) {
             return result;
         }
         
-        ClasspathInfo cpi = ClasspathInfo.create(sgs[0].getRootFolder());
-        List<TypeElement> entityElements = TypeUtil.getAnnotatedTypeElementsFromClasspath(
-                cpi, 
-                Constants.PERSISTENCE_ENTITY);
-        
-        for (TypeElement te : entityElements) {
-            String entityName = null;
-            Class entityClass = Util.getType(project, te.getQualifiedName().toString());
-            if (entityClass != null) {
-                Annotation annotation = TypeUtil.getJpaTableAnnotation(entityClass);
-                if (annotation != null) {
-                    entityName = TypeUtil.getAnnotationValueName(annotation);
+        final ClasspathInfo cpi = ClasspathInfo.create(sgs[0].getRootFolder());
+
+        JavaSource source = JavaSource.create(cpi, new FileObject[0]);
+        try {
+            source.runUserActionTask(new Task<CompilationController>() {
+
+                public void run(CompilationController controller) throws Exception {
+                    controller.toPhase(Phase.ELEMENTS_RESOLVED);
+                    List<TypeElement> entityElements = new ArrayList<TypeElement>();
+                    Set<ElementHandle<TypeElement>> handle = 
+                            cpi.getClassIndex().getDeclaredTypes("\\w*", //NOI18N
+                                NameKind.REGEXP, EnumSet.of(ClassIndex.SearchScope.DEPENDENCIES));
+                    if (handle != null) {
+                        for (ElementHandle<TypeElement> h : handle) {
+                            String qn = h.getQualifiedName();
+                            if (qn.startsWith("java.") || //NOI18N
+                                h.getQualifiedName().startsWith("javax.") || //NOI18N
+                                h.getQualifiedName().startsWith("sun.") || //NOI18N
+                                h.getQualifiedName().startsWith("com.sun.") || //NOI18N
+                                h.getQualifiedName().startsWith("org.apache.") || //NOI18N
+                                h.getQualifiedName().startsWith("org.netbeans.")) { //NOI18N
+                                continue;
+                            }
+                            TypeElement te = h.resolve(controller);
+                            if (te == null) {
+                                continue;
+                            }
+                            for (AnnotationMirror am : te.getAnnotationMirrors()) {
+                                if (am.getAnnotationType().toString().equals(Constants.PERSISTENCE_ENTITY)) {
+                                    entityElements.add(te);
+                                }
+                            }
+                        }
+                    }
+                    for (TypeElement classElement : entityElements) {
+                        String entityName = null;
+                        TypeElement annotationElement = controller.getElements().getTypeElement(Constants.PERSISTENCE_TABLE);
+                        if (annotationElement != null) {
+                            entityName = TypeUtil.getAnnotationValueName(controller, classElement, annotationElement);
+                            if (entityName == null) {
+                                annotationElement =  controller.getElements().getTypeElement(Constants.PERSISTENCE_ENTITY);
+                                if (annotationElement != null) {
+                                    entityName = TypeUtil.getAnnotationValueName(controller, classElement, annotationElement);
+                                }
+                            }
+                        }
+                        if (entityName != null) {
+                            result.add(new RuntimeJpaEntity(classElement, entityName));
+                        }
+                    }
+
                 }
-                if (entityName == null) {
-                    annotation = TypeUtil.getJpaEntityAnnotation(entityClass);
-                    entityName = TypeUtil.getAnnotationValueName(annotation);
-                }
-            }
-            if (entityName == null) {
-                entityName = te.getSimpleName().toString();
-            }
-            result.add(new RuntimeJpaEntity(te, entityName));
+            },true);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
+
         return result;
     }
 

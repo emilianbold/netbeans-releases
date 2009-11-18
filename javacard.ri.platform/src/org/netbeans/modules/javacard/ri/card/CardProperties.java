@@ -104,24 +104,13 @@ final class CardProperties implements ICardCapability, CapabilitiesProvider {
             "-contactedport ${" + JavacardDeviceKeyNames.DEVICE_CONTACTEDPORT +"} " + //NOI18N
             "-contactedprotocol ${" + JavacardDeviceKeyNames.DEVICE_CONTACTEDPROTOCOL + "} " + //NOI18N
             "-contactlessport ${" + JavacardDeviceKeyNames.DEVICE_CONTACTLESSPORT + "}"; //NOI18N
-    static final String DEFAULT_RUN_COMMAND_LINE_NOSUSPEND =
-            "${" + JavacardPlatformKeyNames.PLATFORM_EMULATOR_PATH +"} " + //NOI18N
-            "-ramsize ${" + JavacardDeviceKeyNames.DEVICE_RAMSIZE + "} " + //NOI18N
-            "-e2psize ${" + JavacardDeviceKeyNames.DEVICE_E2PSIZE + "} " + //NOI18N
-            "-corsize ${" + JavacardDeviceKeyNames.DEVICE_CORSIZE + "} " + //NOI18N
-            "-e2pfile " + E2P_FILE_DEF + " " + //NOI18N
-            "-loggerlevel ${" + JavacardDeviceKeyNames.DEVICE_LOGGERLEVEL + "} " + //NOI18N
-            "-httpport ${" + JavacardDeviceKeyNames.DEVICE_HTTPPORT + "} " + //NOI18N
-            "-contactedport ${" + JavacardDeviceKeyNames.DEVICE_CONTACTEDPORT +"} " + //NOI18N
-            "-contactedprotocol ${" + JavacardDeviceKeyNames.DEVICE_CONTACTEDPROTOCOL + "} " + //NOI18N
-            "-contactlessport ${" + JavacardDeviceKeyNames.DEVICE_CONTACTLESSPORT + "} " + //NOI18N
-            "-nosuspend"; //NOI18N
     static final String DEFAULT_RUN_COMMAND_LINE_DEBUG =
             "${" + JavacardPlatformKeyNames.PLATFORM_EMULATOR_PATH +"} " + //NOI18N
             "-ramsize ${" + JavacardDeviceKeyNames.DEVICE_RAMSIZE + "} " + //NOI18N
             "-e2psize ${" + JavacardDeviceKeyNames.DEVICE_E2PSIZE + "} " + //NOI18N
             "-corsize ${" + JavacardDeviceKeyNames.DEVICE_CORSIZE + "} " + //NOI18N
-            "-debugger " + //NOI18N
+            "-debug true" + //NOI18N
+            "-suspend ${" + JavacardDeviceKeyNames.DEVICE_SUSPEND_THREADS_ON_STARTUP + "} " + //NOI18N
             "-debugport ${" + JavacardDeviceKeyNames.DEVICE_PROXY2CJCREPORT + "} " + //NOI18N
             "-e2pfile " + E2P_FILE_DEF + " " + //NOI18N
             "-loggerlevel ${" + JavacardDeviceKeyNames.DEVICE_LOGGERLEVEL + "} " + //NOI18N
@@ -130,23 +119,16 @@ final class CardProperties implements ICardCapability, CapabilitiesProvider {
             "-contactedprotocol ${" + JavacardDeviceKeyNames.DEVICE_CONTACTEDPROTOCOL + "} " + //NOI18N
             "-contactlessport ${" + JavacardDeviceKeyNames.DEVICE_CONTACTLESSPORT + "}"; //NOI18N
 
-    static final String DEFAULT_RUN_COMMAND_LINE_DEBUG_NOSUSPEND =
-            "${" + JavacardPlatformKeyNames.PLATFORM_EMULATOR_PATH +"} " + //NOI18N
-            "-ramsize ${" + JavacardDeviceKeyNames.DEVICE_RAMSIZE + "} " + //NOI18N
-            "-e2psize ${" + JavacardDeviceKeyNames.DEVICE_E2PSIZE + "} " + //NOI18N
-            "-corsize ${" + JavacardDeviceKeyNames.DEVICE_CORSIZE + "} " + //NOI18N
-            "-debugger " + //NOI18N
-            "-debugport ${" + JavacardDeviceKeyNames.DEVICE_PROXY2CJCREPORT + "} " + //NOI18N
-            "-e2pfile " + E2P_FILE_DEF + " " + //NOI18N
-            "-loggerlevel ${" + JavacardDeviceKeyNames.DEVICE_LOGGERLEVEL + "} " + //NOI18N
-            "-httpport ${" + JavacardDeviceKeyNames.DEVICE_HTTPPORT + "} " + //NOI18N
-            "-contactedport ${" + JavacardDeviceKeyNames.DEVICE_CONTACTEDPORT +"} " + //NOI18N
-            "-contactedprotocol ${" + JavacardDeviceKeyNames.DEVICE_CONTACTEDPROTOCOL + "} " + //NOI18N
-            "-contactlessport ${" + JavacardDeviceKeyNames.DEVICE_CONTACTLESSPORT + "} " + //NOI18N
-            "-nosuspend"; //NOI18N
     static final String DEFAULT_RESUME_COMMAND_LINE = "${javacard.emulator} " + //NOI18N
             "-resume " + //NOI18N
             "-e2pfile " + E2P_FILE_DEF; //NOI18N
+    static final String DEFAULT_RESUME_COMMAND_LINE_DEBUG = "${javacard.emulator} " + //NOI18N
+            "-resume " + //NOI18N
+            "-e2pfile " + E2P_FILE_DEF + " " + //NOI18N
+            "-debug yes" + //NOI18N
+            "-suspend ${" + JavacardDeviceKeyNames.DEVICE_SUSPEND_THREADS_ON_STARTUP + "} " + //NOI18N
+            "-debugport ${" + JavacardDeviceKeyNames.DEVICE_PROXY2CJCREPORT + "} "; //NOI18N
+    
     private PropertiesAdapter props;
     private static final Logger LOGGER = Logger.getLogger(CardProperties.class.getPackage().getName());
     CardProperties(PropertiesAdapter props) {
@@ -213,13 +195,13 @@ final class CardProperties implements ICardCapability, CapabilitiesProvider {
         setProp(JavacardDeviceKeyNames.DEVICE_LOGGERLEVEL, loggerLevel);
     }
 
-    public boolean isNoSuspend() {
-        String val = getProp(JavacardDeviceKeyNames.DEVICE_DONT_SUSPEND_THREADS_ON_STARTUP, "true"); //NOI18N
-        return val == null ? true : Boolean.parseBoolean(val);
+    public boolean isSuspend() {
+        String val = getProp(JavacardDeviceKeyNames.DEVICE_SUSPEND_THREADS_ON_STARTUP, "false"); //NOI18N
+        return val == null ? false : Boolean.parseBoolean(val);
     }
 
-    public void setNoSuspend(boolean noSuspend) {
-        setProp (JavacardDeviceKeyNames.DEVICE_DONT_SUSPEND_THREADS_ON_STARTUP, "" + noSuspend); //NOI18N
+    public void setSuspend(boolean suspend) {
+        setProp (JavacardDeviceKeyNames.DEVICE_SUSPEND_THREADS_ON_STARTUP, "" + suspend); //NOI18N
     }
 
     public String getProxy2cjcrePort() {
@@ -328,23 +310,28 @@ final class CardProperties implements ICardCapability, CapabilitiesProvider {
                 DEFAULT_DEBUG_PROXY_COMMAND_LINE));
     }
 
-    public String[] getRunCommandLine(Properties platformProps, boolean noSuspend, boolean forDebug) {
+    // ANKI-------
+    public String[] getRunCommandLine(Properties platformProps, boolean forDebug, int resume) {
         Map<String,String> platform = prepPlatformProps(platformProps, true);
         //XXX if debug false, nosuspend should be suppressed?
-        String key;
-        String def;
-        if (!forDebug && !noSuspend) {
-            key = JavacardDeviceKeyNames.DEVICE_RUN_COMMAND_LINE;
-            def = DEFAULT_RUN_COMMAND_LINE;
-        } else if (forDebug && !noSuspend) {
-            key = JavacardDeviceKeyNames.DEVICE_RUN_COMMAND_LINE_DEBUG;
-            def = DEFAULT_RUN_COMMAND_LINE_DEBUG;
-        } else if (forDebug && noSuspend) {
-            key = JavacardDeviceKeyNames.DEVICE_RUN_COMMAND_LINE_DEBUG_NOSUSPEND;
-            def = DEFAULT_RUN_COMMAND_LINE_DEBUG_NOSUSPEND;
-        } else {
-            key = JavacardDeviceKeyNames.DEVICE_RUN_COMMAND_LINE_NOSUSPEND;
-            def = DEFAULT_RUN_COMMAND_LINE_NOSUSPEND;
+        String key = "";
+        String def = "";
+        if(resume == 0) { //run
+            if (forDebug) {
+                key = JavacardDeviceKeyNames.DEVICE_RUN_COMMAND_LINE_DEBUG;
+                def = DEFAULT_RUN_COMMAND_LINE_DEBUG;
+            } else {
+                key = JavacardDeviceKeyNames.DEVICE_RUN_COMMAND_LINE;
+                def = DEFAULT_RUN_COMMAND_LINE;
+            }
+        } else { // resume
+            if (forDebug) {
+                key = JavacardDeviceKeyNames.DEVICE_RESUME_COMMAND_LINE_DEBUG;
+                def = DEFAULT_RESUME_COMMAND_LINE_DEBUG;
+            } else {
+                key = JavacardDeviceKeyNames.DEVICE_RESUME_COMMAND_LINE;
+                def = DEFAULT_RESUME_COMMAND_LINE;
+            }
         }
         String[] result = shellSplit(evaluated (platform, key, def));
         return result;

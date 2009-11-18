@@ -56,7 +56,7 @@ import org.openide.util.RequestProcessor;
 
 public class Installer extends ModuleInstall implements Runnable {
     private static final String ATTR = "isRiBundle"; //NOI18N
-    private static final String PLATFORM_DIRECTORY_NAME = "JCDK3.0.1_ConnectedEdition"; //NOI18N
+    private static final String PLATFORM_DIRECTORY_NAME = "JCDK3.0.2_ConnectedEdition"; //NOI18N
 
     @Override
     public void restored() {

@@ -211,7 +211,7 @@ abstract class PlatformValidator implements Runnable {
         if (!RIPlatformFactory.canInstall(props)) {
             throw new IOException (NbBundle.getMessage(RIPlatformFactory.class,
                     "ERR_TOO_OLD", //NOI18N
-                    props.get(JavacardPlatformKeyNames.PLATFORM_JAVACARD_SPECIFICATION_VERSION),
+                    props.get(JavacardPlatformKeyNames.PLATFORM_JAVACARD_VERSION),
                     RIPlatformFactory.MINIMUM_SUPPORTED_VERSION)); //NOI18N
         }
 

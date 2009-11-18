@@ -126,7 +126,7 @@ public abstract class RestTestBase extends WebServicesTestBase {
         super.setUp();
         //XXX - avoid doubled start/restart of the server
         //because of JDBC driver deployment (IZ #106586)
-        workaroundIZ106586();
+//        workaroundIZ106586();
         try {
             Class.forName(JDBC_DRIVER);
             connection = DriverManager.getConnection(JDBC_URL, DB_USERNAME, DB_PASSWORD);

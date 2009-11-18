@@ -18,7 +18,7 @@ Effective Date: The date Licensee receives the Technology.
 
 Technology: Java Card Development Kit.
 
-Version: 3.0.1 Early Access.
+Version: 3.0.2 Early Access.
 
 The Technology is Pre-Release Technology.
 
