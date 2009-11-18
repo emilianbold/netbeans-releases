@@ -103,32 +103,87 @@ static inline void print_dlsym() {
 }
 #endif
 
+static bool is_writing(int flags) {
+    return flags & (O_TRUNC |  O_WRONLY | O_RDWR | O_CREAT);
+}
+
+static void post_open(const char *path, int flags) {
+    if (inside_open != 1) {
+        trace("post open: %s inside_open == %d   returning\n", path, inside_open);
+        return; // recursive call to open
+    }
+    static int __thread inside = 0;
+    if (inside) {
+        trace("post open: %s recursive post open - returning\n", path);
+        return; // recursive!
+    }
+    if (!is_writing(flags)) {
+        trace("post open: %s not writing - returning\n", path);
+        return;
+    }
+    if (my_dir == 0) { // isn't yet initialized?
+        trace("post open: %s not yet initialized - returning\n", path);
+        return;
+    }
+    inside = 1;
+
+    if (path[0] != '/') {
+        static __thread char real_path[PATH_MAX];
+        if ( realpath(path, real_path)) {
+            path = real_path;
+        } else {
+            trace_unresolved_path(path);
+            inside = 0;
+            return;
+        }
+    }
+
+    if (strncmp(my_dir, path, my_dir_len) != 0) {
+        trace("post open: %s is not mine\n", path);
+        inside = 0;
+        return;
+    }
+    int sd = get_socket(true);
+    if (sd == -1) {
+        trace("post open: %s: sd == -1\n", path);
+    } else {
+        trace_sd("post open: sending request");
+        trace("post open: sending %s \"%s\" to sd=%d\n", pkg_kind_to_string(pkg_written),  path, sd);
+        enum sr_result send_res = pkg_send(sd, pkg_written, path);
+        if (send_res == sr_failure) {
+            perror("send");
+        } else if (send_res == sr_reset) {
+            perror("Connection reset by peer when sending request");
+        }
+    }
+    inside = 0;
+}
 /**
  * Called upon opening a file; returns "boolean" success
  * @return true means "ok" (either file is in already sync,
  * or it has been just synched, or or the path isn't under control;
  * false means that the file is ourm, but can't be synched
  */
-static int on_open(const char *path, int flags) {
+static bool pre_open(const char *path, int flags) {
     if (test_env) {
         fprintf(stdout, "RFS_TEST_PRELOAD %s\n", path);
         return true;
     }
     if (inside_open != 1) {
-        trace("%s inside_open == %d   returning\n", path, inside_open);
+        trace("pre open: %s inside_open == %d   returning\n", path, inside_open);
         return true; // recursive call to open
     }
     static int __thread inside = 0;
     if (inside) {
-        trace("%s recursive - returning\n", path);
+        trace("pre open: %s recursive - returning\n", path);
         return true; // recursive!
     }
-    if (flags & (O_TRUNC |  O_WRONLY | O_RDWR | O_CREAT)) { // don't need existent content
-        trace("%s O_TRUNC |  O_WRONLY | O_RDWR | O_CREAT - returning\n", path);
+    if (is_writing(flags)) { // don't need existent content
+        trace("pre open: %s is writing - returning\n", path);
         return true;
     }
     if (my_dir == 0) { // isn't yet initialized?
-        trace("%s not yet initialized - returning\n", path);
+        trace("pre open: %s not yet initialized - returning\n", path);
         return true;
     }
     inside = 1;
@@ -145,18 +200,17 @@ static int on_open(const char *path, int flags) {
     }
 
     if (strncmp(my_dir, path, my_dir_len) != 0) {
-        trace("%s is not mine\n", path);
+        trace("pre open: %s is not mine\n", path);
         inside = 0;
         return true;
     }
-    int result = false;
+    bool result = false;
     int sd = get_socket(true);
     if (sd == -1) {
         trace("On open %s: sd == -1\n", path);
     } else {
-        //struct rfs_request;
         trace_sd("sending request");
-        trace("Sending \"%s\" to sd=%d\n", path, sd);
+        trace("Sending %s \"%s\" to sd=%d\n", pkg_kind_to_string(pkg_request),  path, sd);
         enum sr_result send_res = pkg_send(sd, pkg_request, path);
         if (send_res == sr_failure) {
             perror("send");
@@ -382,13 +436,14 @@ int pthread_create(void *newthread,
     mode = va_arg(ap, mode_t); \
     va_end(ap); \
     int result = -1; \
-    if (on_open(path, flags)) { \
+    if (pre_open(path, flags)) { \
         static int (*prev)(const char *, int, ...); \
         if (!prev) { \
             prev = (int (*)(const char *, int, ...)) get_real_addr(function_name); \
         } \
         if (prev) {\
             result = prev(path, flags, mode); \
+            post_open(path, flags); \
         } else { \
             trace("Could not find original \"%s\" function\n", #function_name); \
             errno = EFAULT; \
@@ -404,13 +459,14 @@ int pthread_create(void *newthread,
     trace("%s %s %s\n", #function, path, mode); \
     FILE* result = NULL; \
     int int_mode = (strchr(mode, 'w') || strchr(mode, '+'))  ? O_WRONLY : O_RDONLY; \
-    if (on_open(path, int_mode)) { \
+    if (pre_open(path, int_mode)) { \
         static FILE* (*prev)(const char *, const char *); \
         if (!prev) { \
             prev = (FILE* (*)(const char *, const char *)) get_real_addr(function); \
         } \
         if (prev) { \
             result = prev(path, mode); \
+            post_open(path, int_mode); \
         } else { \
             trace("Could not find original \"%s\" function\n", #function); \
             errno = EFAULT; \
@@ -466,13 +522,14 @@ FILE *fopen64(const char * filename, const char * mode) {
     trace("%s %s %s\n", #function, path, mode); \
     FILE* result = NULL; \
     int int_mode = (strchr(mode, 'w') || strchr(mode, '+'))  ? O_WRONLY : O_RDONLY; \
-    if (on_open(path, int_mode)) { \
+    if (pre_open(path, int_mode)) { \
         static FILE* (*prev)(const char *, const char *, FILE *); \
         if (!prev) { \
             prev = (FILE* (*)(const char *, const char *, FILE *)) get_real_addr(function); \
         } \
         if (prev) { \
             result = prev(path, mode, stream); \
+            post_open(path, int_mode); \
         } else { \
             trace("Could not find original \"%s\" function\n", #function); \
             errno = EFAULT; \
