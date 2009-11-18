@@ -104,7 +104,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
         this.processOutput = new ByteArrayInputStream(
                 (loc("TerminalLocalNativeProcess.ProcessStarted.text") + '\n').getBytes()); // NOI18N
 
-        osFamily = hostInfo == null? OSFamily.UNKNOWN : hostInfo.getOSFamily();
+        osFamily = hostInfo == null ? OSFamily.UNKNOWN : hostInfo.getOSFamily();
     }
 
     protected void create() throws Throwable {
@@ -240,6 +240,10 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             creation_ts = System.nanoTime();
 
             waitPID(terminalProcess, pidFileFile);
+            if (isInterrupted()) {
+                cancel();
+                throw new IOException(loc("TerminalLocalNativeProcess.terminalRunCancelled.text")); // NOI18N
+            }
         } catch (Throwable ex) {
             String msg = (ex.getMessage() == null ? ex.toString() : ex.getMessage()) + "\n"; // NOI18N
             processError = new ByteArrayInputStream(msg.getBytes());
@@ -364,8 +368,6 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
     }
 
     private void waitPID(Process termProcess, File pidFile) throws IOException {
-        int count = 10;
-
         while (!isInterrupted()) {
             /**
              * The following sleep appears after an attempt to support konsole
@@ -385,7 +387,8 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             try {
                 Thread.sleep(500);
             } catch (InterruptedException ex) {
-                continue;
+                Thread.currentThread().interrupt();
+                break;
             }
 
             if (pidFile.exists() && pidFile.length() > 0) {
@@ -399,13 +402,6 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                     }
                 }
                 break;
-            }
-
-            if (count-- == 0) {
-                // PID is not available after limit attempts
-                // Wrapping everything up...
-                termProcess.destroy();
-                throw new IOException(loc("TerminalLocalNativeProcess.terminalRunFailed.text")); // NOI18N
             }
 
             try {
