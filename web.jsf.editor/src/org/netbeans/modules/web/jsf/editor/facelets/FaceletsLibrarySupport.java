@@ -235,6 +235,29 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
         List<ConfigurationResourceProvider> faceletTaglibProviders =
                 new ArrayList<ConfigurationResourceProvider>();
 
+        //1. first add provider which looks for libraries defined in web-inf.xml
+        //WEB-INF/web.xml <param-name>javax.faces.FACELETS_LIBRARIES</param-name> context param provider
+        faceletTaglibProviders.add(new WebFaceletTaglibResourceProvider(getJsfSupport().getWebModule()));
+
+        //searches in classpath jars for .taglib.xml files
+//        faceletTaglibProviders.add(new MetaInfFaceletTaglibraryConfigProvider());
+
+        //2. second add provider which looks for libs in the jars on the project classpath
+        //we already identified the library descriptors during indexing, no need
+        //to scan again, just use the files from index
+        final Collection<URL> urls = new ArrayList<URL>();
+        for (FileObject file : getJsfSupport().getIndex().getAllFaceletsLibraryDescriptors()) {
+            urls.add(URLMapper.findURL(file, URLMapper.EXTERNAL));
+        }
+        faceletTaglibProviders.add(new ConfigurationResourceProvider() {
+
+            public Collection<URL> getResources(ServletContext sc) {
+                return urls;
+            }
+        });
+
+        //3. last add a provider for default jsf libs
+        //
         //Add a facelet taglib provider which provides the libraries from
         //netbeans jsf2.0 library
         //
@@ -243,7 +266,7 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
         //on the compile classpath and we still want the features like code
         //completion work. This happens for example in Maven web projects.
         //
-        //The provider is first in the list so the provided libraries will
+        //The provider is last in the list so the provided libraries will
         //be overridden if the descriptors are found in any of the jars
         //on compile classpath.
         Collection<FileObject> libraryDescriptorFiles = DefaultFaceletLibraries.getInstance().getLibrariesDescriptorsFiles();
@@ -260,26 +283,6 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
                 return libraryURLs;
             }
         });
-
-
-        //searches in classpath jars for .taglib.xml files
-//        faceletTaglibProviders.add(new MetaInfFaceletTaglibraryConfigProvider());
-
-        //we already identified the library descriptors during indexing, no need
-        //to scan again, just use the files from index
-        final Collection<URL> urls = new ArrayList<URL>();
-        for (FileObject file : getJsfSupport().getIndex().getAllFaceletsLibraryDescriptors()) {
-            urls.add(URLMapper.findURL(file, URLMapper.EXTERNAL));
-        }
-        faceletTaglibProviders.add(new ConfigurationResourceProvider() {
-
-            public Collection<URL> getResources(ServletContext sc) {
-                return urls;
-            }
-        });
-
-        //WEB-INF/web.xml <param-name>javax.faces.FACELETS_LIBRARIES</param-name> context param provider
-        faceletTaglibProviders.add(new WebFaceletTaglibResourceProvider(getJsfSupport().getWebModule()));
 
         //parse the libraries
         DocumentInfo[] documents = ConfigManager.getConfigDocuments(null, faceletTaglibProviders, null, true);
@@ -318,6 +321,10 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
 
         private Collection<FaceletsLibrary> libraries = new HashSet<FaceletsLibrary>();
 
+        //FaceletsTaglibConfigProcessor puts the libraries here and since the
+        //equals on the libraries is defined by comparing the namespaces,
+        //the first library with a namespace will be preserved, the other
+        //will be ignored
         public void addTagLibrary(FaceletsLibrary lib) {
             libraries.add(lib);
         }
