@@ -23,9 +23,7 @@ import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
-import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.openide.util.Exceptions;
-import org.openide.util.Utilities;
 
 class RfsLocalController implements Runnable {
 
@@ -53,28 +51,26 @@ class RfsLocalController implements Runnable {
 
     private void respond_ok() {
         responseStream.printf("1\n"); // NOI18N
-        // NOI18N
         responseStream.flush();
     }
 
     private void respond_err(String tail) {
         responseStream.printf("0 %s\n", tail); // NOI18N
-        // NOI18N
         responseStream.flush();
     }
 
-    private String toRemoteFilePathName(String localAbsFilePath) {
-        String out = localAbsFilePath;
-        if (Utilities.isWindows()) {
-            out = WindowsSupport.getInstance().convertToMSysPath(localAbsFilePath);
-        }
-        if (out.charAt(0) == '/') {
-            out = out.substring(1);
-        } else {
-            RemoteUtil.LOGGER.warning("Path must start with /: " + out + "\n");
-        }
-        return out;
-    }
+//    private String toRemoteFilePathName(String localAbsFilePath) {
+//        String out = localAbsFilePath;
+//        if (Utilities.isWindows()) {
+//            out = WindowsSupport.getInstance().convertToMSysPath(localAbsFilePath);
+//        }
+//        if (out.charAt(0) == '/') {
+//            out = out.substring(1);
+//        } else {
+//            RemoteUtil.LOGGER.warning("Path must start with /: " + out + "\n");
+//        }
+//        return out;
+//    }
 
     public void run() {
         long totalCopyingTime = 0;
