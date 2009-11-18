@@ -160,6 +160,7 @@ public abstract class Query implements Comparable<Query> {
      * Returns issue given by the last refresh
      * @return
      */
+    // XXX used only by kenai - move out from spi
     public abstract Issue[] getIssues(int includeStatus);
 
     public Issue[] getIssues() {
@@ -199,6 +200,7 @@ public abstract class Query implements Comparable<Query> {
         return lastRefresh;
     }
 
+    // XXX used only by issue table - move out from spi
     public abstract int getIssueStatus(Issue issue);
 
     /*********
