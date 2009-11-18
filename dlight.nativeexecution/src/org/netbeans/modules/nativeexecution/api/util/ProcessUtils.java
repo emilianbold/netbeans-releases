@@ -43,11 +43,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Writer;
+import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.NativeProcess;
 
 public final class ProcessUtils {
 
@@ -146,5 +150,64 @@ public final class ProcessUtils {
         for (String line : err) {
             error.write(line);
         }
+    }
+
+    /**
+     * This method tries to destroy the process in two attempts. First attempt
+     * is simply calling process' destroy() method. But in some cases this could
+     * fail to terminate the process - so in case first attempt fails, send
+     * SIGKILL to the process.
+     *
+     * @param process - process to terminate (not necessarily NativeProcess)
+     */
+    public static void destroy(Process process) {
+        // First attempt is just call destroy() on the process
+        process.destroy();
+
+        // But in case the process is in system call (sleep, read, for example)
+        // this will not have a desired effect - in this case
+        // will send SIGTERM signal..
+
+        try {
+            int rc = process.exitValue();
+            // No exception means successful termination
+            return;
+        } catch (java.lang.IllegalThreadStateException ex) {
+        }
+
+        ExecutionEnvironment execEnv;
+
+        if (process instanceof NativeProcess) {
+            execEnv = ((NativeProcess) process).getExecutionEnvironment();
+        } else {
+            execEnv = ExecutionEnvironmentFactory.getLocal();
+        }
+
+        int pid = getPID(process);
+
+        if (pid > 0) {
+            CommonTasksSupport.sendSignal(execEnv, pid, Signal.SIGKILL, null);
+        }
+    }
+
+    private static int getPID(Process process) {
+        int pid = -1;
+
+        try {
+            if (process instanceof NativeProcess) {
+                pid = ((NativeProcess) process).getPID();
+            } else {
+                String className = process.getClass().getName();
+                // TODO: windows?...
+                if ("java.lang.UNIXProcess".equals(className)) { // NOI18N
+                    Field f = process.getClass().getDeclaredField("pid"); // NOI18N
+                    f.setAccessible(true);
+                    pid = f.getInt(process);
+                }
+            }
+        } catch (Throwable e) {
+        }
+
+        return pid;
     }
 }
