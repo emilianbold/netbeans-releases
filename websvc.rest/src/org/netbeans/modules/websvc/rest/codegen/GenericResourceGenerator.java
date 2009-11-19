@@ -143,6 +143,9 @@ public class GenericResourceGenerator extends AbstractGenerator {
                 paramList.append("String "+param); //NOI18N
                 assignmentList.append("this."+param+"="+param+";"); //NOI18N
             }
+            if (fieldList.length() > 0) {
+                fieldList.append(";");  //NOI18N
+            }
             params.put(FIELD_LIST, fieldList.toString());
             params.put(PARAM_LIST, paramList.toString());
             params.put(ASSIGNMENT_LIST, assignmentList.toString());
