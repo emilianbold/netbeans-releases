@@ -47,6 +47,7 @@ import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -186,7 +187,11 @@ public final class ProcessUtils {
         int pid = getPID(process);
 
         if (pid > 0) {
-            CommonTasksSupport.sendSignal(execEnv, pid, Signal.SIGKILL, null);
+            try {
+                CommonTasksSupport.sendSignal(execEnv, pid, Signal.SIGKILL, null).get();
+            } catch (InterruptedException ex) {
+            } catch (ExecutionException ex) {
+            }
         }
     }
 
