@@ -40,7 +40,6 @@ package org.netbeans.modules.nativeexecution.api.util;
 
 import java.io.PrintStream;
 import java.io.Serializable;
-import org.netbeans.modules.nativeexecution.support.*;
 import java.text.ParseException;
 import java.util.Comparator;
 import java.util.Map;
@@ -50,6 +49,7 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
+import org.netbeans.modules.nativeexecution.support.Logger;
 import org.openide.util.Utilities;
 
 /**
@@ -64,9 +64,9 @@ public class MacroMap implements Cloneable {
     private final TreeMap<String, String> map;
     private final boolean isWindows;
 
-    private MacroMap(final ExecutionEnvironment execEnv) {
+    private MacroMap(final ExecutionEnvironment execEnv, final MacroExpander macroExpander) {
         this.execEnv = execEnv;
-        this.macroExpander = MacroExpanderFactory.getExpander(execEnv);
+        this.macroExpander = macroExpander;
         this.isWindows = execEnv.isLocal() && Utilities.isWindows();
 
         if (isWindows) {
@@ -77,14 +77,14 @@ public class MacroMap implements Cloneable {
     }
 
     public final static MacroMap forExecEnv(final ExecutionEnvironment execEnv) {
-        return new MacroMap(execEnv);
+        return new MacroMap(execEnv, MacroExpanderFactory.getExpander(execEnv));
     }
 
     public final void putAll(final MacroMap envVariables) {
         if (envVariables == null) {
             return;
         }
-        
+
         putAll(envVariables.map);
     }
 
@@ -102,7 +102,7 @@ public class MacroMap implements Cloneable {
         if (env == null) {
             return;
         }
-        
+
         for (String envString : env) {
             put(EnvUtils.getKey(envString), EnvUtils.getValue(envString));
         }
@@ -112,13 +112,13 @@ public class MacroMap implements Cloneable {
         if (key == null) {
             throw new NullPointerException();
         }
-        
+
         if (value == null) {
             log.log(Level.INFO, "Attempt to set env variable '%s' with null value", key); // NOI18N
         }
 
         String result = value;
-        
+
         TreeMap<String, String> oneElementMap = isWindows ? new TreeMap<String, String>(new CaseInsensitiveComparator()) : new TreeMap<String, String>();
 
         String val = map.get(key);
@@ -169,7 +169,7 @@ public class MacroMap implements Cloneable {
 
     @Override
     public MacroMap clone() {
-        MacroMap clone = new MacroMap(execEnv);
+        MacroMap clone = new MacroMap(execEnv, macroExpander);
         clone.map.putAll(map);
         return clone;
     }
@@ -188,7 +188,7 @@ public class MacroMap implements Cloneable {
         if (path == null) {
             return;
         }
-        
+
         String oldpath = get(name);
         String newPath = (oldpath == null ? "" : oldpath + (isWindows ? ';' : ':')) + path;
         put(name, newPath);
