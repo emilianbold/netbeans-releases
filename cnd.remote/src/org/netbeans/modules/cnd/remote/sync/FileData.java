@@ -81,6 +81,12 @@ public final class FileData {
             this.state = mode;
             this.timestamp = timestamp;
         }
+
+        @Override
+        public String toString() {
+            return state.toString() + timestamp;
+        }
+
     }
 
     public FileData(File privProjectStorageDir, ExecutionEnvironment executionEnvironment) {

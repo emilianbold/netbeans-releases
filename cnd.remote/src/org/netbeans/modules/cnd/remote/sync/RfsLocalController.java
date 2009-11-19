@@ -4,10 +4,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,7 +24,7 @@ import org.openide.util.Exceptions;
 class RfsLocalController implements Runnable {
 
     private final BufferedReader requestReader;
-    private final PrintStream responseStream;
+    private final PrintWriter responseStream;
     private final String remoteDir;
     private final File[] files;
     private final ExecutionEnvironment execEnv;
@@ -42,14 +38,14 @@ class RfsLocalController implements Runnable {
     }
 
     public RfsLocalController(ExecutionEnvironment executionEnvironment, File[] files, String remoteDir,
-            InputStream requestStream, OutputStream responseStream, PrintWriter err,
+            BufferedReader requestStreamReader, PrintWriter responseStreamWriter, PrintWriter err,
             FileData fileData) {
         super();
         this.execEnv = executionEnvironment;
         this.files = files;
         this.remoteDir = remoteDir;
-        this.requestReader = new BufferedReader(new InputStreamReader(requestStream));
-        this.responseStream = new PrintStream(responseStream);
+        this.requestReader = requestStreamReader;
+        this.responseStream = responseStreamWriter;
         this.err = err;
         this.fileData = fileData;
     }
@@ -202,10 +198,8 @@ class RfsLocalController implements Runnable {
 
     /**
      * Feeds remote controller with the list of files and their lengths
-     * @param rcOutputStream
      */
-    void feedFiles(OutputStream rcOutputStream, SharabilityFilter filter) {
-        PrintWriter writer = new PrintWriter(rcOutputStream);
+    void feedFiles(SharabilityFilter filter) {
         List<FileGatheringInfo> filesToFeed = new ArrayList<FileGatheringInfo>(512);
         Set<File> externalDirs = new HashSet<File>();
         RemotePathMap mapper = RemotePathMap.getPathMap(execEnv);
@@ -245,17 +239,17 @@ class RfsLocalController implements Runnable {
             }
         });
         for (FileGatheringInfo info : filesToFeed) {
-            sendFileInitRequest(writer, info.file, info.relPath);
+            sendFileInitRequest(info.file, info.relPath);
         }
-        writer.printf("\n"); // NOI18N
-        writer.flush();
+        responseStream.printf("\n"); // NOI18N
+        responseStream.flush();
         fileData.store();
     }
 
-    private void sendFileInitRequest(PrintWriter writer, File file, String relPath) {
+    private void sendFileInitRequest(File file, String relPath) {
         if (file.isDirectory()) {
-            writer.printf("D %s\n", relPath); //NOI18N
-            writer.flush(); //TODO: remove?
+            responseStream.printf("D %s\n", relPath); //NOI18N
+            responseStream.flush(); //TODO: remove?
         } else {
             FileData.FileInfo info = fileData.getFileInfo(file);
             FileState newState;
@@ -280,8 +274,8 @@ class RfsLocalController implements Runnable {
             }
             CndUtils.assertTrue(newState == FileState.INITIAL || newState == FileState.COPIED || newState == FileState.TOUCHED,
                     "State shouldn't be " + newState); //NOI18N
-            writer.printf("%c %d %s\n", newState.id, file.length(), relPath); // NOI18N
-            writer.flush(); //TODO: remove?
+            responseStream.printf("%c %d %s\n", newState.id, file.length(), relPath); // NOI18N
+            responseStream.flush(); //TODO: remove?
             fileData.setState(file, newState);
         }
     }
