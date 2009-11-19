@@ -205,10 +205,12 @@ public class JsfCompletionItem {
     private static String getLibraryHelpHeader(FaceletsLibrary library) {
         StringBuffer sb = new StringBuffer();
         sb.append("<div><b>Library:</b> "); //NOI18N
-        sb.append(library.getDisplayName());
-        sb.append(" ("); //NOI18N
         sb.append(library.getNamespace());
-        sb.append(")</div>"); //NOI18N
+        if(library.getDisplayName() != null) {
+            sb.append(" ("); //NOI18N
+            sb.append(library.getDisplayName());
+            sb.append(")</div>"); //NOI18N
+        }
         return sb.toString();
 
     }
