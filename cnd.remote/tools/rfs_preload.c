@@ -188,36 +188,40 @@ static bool pre_open(const char *path, int flags) {
     }
     inside = 1;
 
+    const char* real_path;
     if (path[0] != '/') {
-        static __thread char real_path[PATH_MAX];
-        if ( realpath(path, real_path)) {
-            path = real_path;
+        static __thread char real_path_buffer[PATH_MAX];
+        if ( realpath(path, real_path_buffer)) {
+            //path = real_path;
+            real_path = real_path_buffer;
         } else {
             trace_unresolved_path(path);
             inside = 0;
             return false;
         }
+    } else {
+        real_path = path;
     }
 
-    if (strncmp(my_dir, path, my_dir_len) != 0) {
-        trace("pre open: %s is not mine\n", path);
+    if (strncmp(my_dir, real_path, my_dir_len) != 0) {
+        trace("pre open: %s is not mine\n", real_path);
         inside = 0;
         return true;
     }
     bool result = false;
     int sd = get_socket(true);
     if (sd == -1) {
-        trace("On open %s: sd == -1\n", path);
+        trace("On open %s: sd == -1\n", real_path);
     } else {
         trace_sd("sending request");
-        trace("Sending %s \"%s\" to sd=%d\n", pkg_kind_to_string(pkg_request),  path, sd);
-        enum sr_result send_res = pkg_send(sd, pkg_request, path);
+        trace("Sending %s \"%s\" to sd=%d\n", pkg_kind_to_string(pkg_request),  real_path, sd);
+        enum sr_result send_res = pkg_send(sd, pkg_request, real_path);
         if (send_res == sr_failure) {
             perror("send");
         } else if (send_res == sr_reset) {
             perror("Connection reset by peer when sending request");
         } else { // success
-            trace("Request for \"%s\" sent to sd=%d\n", path, sd);
+            trace("Request for \"%s\" sent to sd=%d\n", real_path, sd);
             const int maxsize = 256;
             char buffer[maxsize + sizeof(int)];
             struct package *pkg = (struct package *) &buffer;
@@ -228,7 +232,7 @@ static bool pre_open(const char *path, int flags) {
                 perror("Connection reset by peer when receiving response");
             } else { // success
                 if (pkg->kind == pkg_reply) {
-                    trace("Got %s for %s, flags=%d, sd=%d\n", pkg->data, path, flags, sd);
+                    trace("Got %s for %s, flags=%d, sd=%d\n", pkg->data, real_path, flags, sd);
                     if (pkg->data[0] == response_ok) {
                         result = true;
                     } else if (pkg->data[0] == response_failure) {
