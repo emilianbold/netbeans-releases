@@ -392,7 +392,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
         // From JViewport
         boolean hide = true;
         JTextComponent component = getActiveComponent();
-        Container parent = component.getParent();
+        Container parent = component != null ? component.getParent() : null;
         if (parent instanceof JViewport) {
             JViewport viewport = (JViewport) parent;
             Point viewPosition = viewport.getViewPosition();
