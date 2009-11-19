@@ -89,12 +89,17 @@ public class MockServices {
      */
     public static void setServices(Class<?>... services) throws IllegalArgumentException {
         try {
-            Class<?> mainLookup = forName("org.netbeans.core.startup.MainLookup");
-            ClassLoader l = new ServiceClassLoader(services, Thread.currentThread().getContextClassLoader(), false);
-            Method sClsLoaderChanged = mainLookup.getDeclaredMethod("systemClassLoaderChanged", ClassLoader.class);
-            sClsLoaderChanged.setAccessible(true);
-            sClsLoaderChanged.invoke(null, l);
-            return;
+            if (
+                System.getProperty("netbeans.home") != null &&
+                System.getProperty("netbeans.user") != null
+            ) {
+                Class<?> mainLookup = forName("org.netbeans.core.startup.MainLookup");
+                ClassLoader l = new ServiceClassLoader(services, Thread.currentThread().getContextClassLoader(), false);
+                Method sClsLoaderChanged = mainLookup.getDeclaredMethod("systemClassLoaderChanged", ClassLoader.class);
+                sClsLoaderChanged.setAccessible(true);
+                sClsLoaderChanged.invoke(null, l);
+                return;
+            }
         } catch (ClassNotFoundException ex) {
             // Fine, not using core.jar.
         } catch (Exception exc) {
@@ -122,10 +127,21 @@ public class MockServices {
                 continue;
             }
         }
-        
+
         // Need to also reset global lookup since it caches the singleton and we need to change it.
         try {
-            Class<?> lookup = forName("org.openide.util.Lookup");
+            Class mainLookup = Class.forName("org.netbeans.core.startup.MainLookup");
+            Method sClsLoaderChanged = mainLookup.getDeclaredMethod("systemClassLoaderChanged",ClassLoader.class);
+            sClsLoaderChanged.setAccessible(true);
+            sClsLoaderChanged.invoke(null,l);
+        } catch (ClassNotFoundException x) {
+            // Fine, not using core.jar.
+        } catch(Exception exc) {
+            LOG.log(Level.WARNING, "MainLookup couldn't be notified about the context class loader change", exc);
+        }
+
+        try {
+            Class lookup = Class.forName("org.openide.util.Lookup");
             Method defaultLookup = lookup.getDeclaredMethod("resetDefaultLookup");
             defaultLookup.setAccessible(true);
             defaultLookup.invoke(null);
