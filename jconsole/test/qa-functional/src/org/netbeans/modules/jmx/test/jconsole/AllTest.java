@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 2004-2005 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,33 +31,31 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.jmx.test.jconsole;
 
-import java.io.IOException;
-import static org.netbeans.modules.jmx.test.helpers.JellyConstants.*;
+import junit.framework.Test;
+import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.jmx.test.configwizard.ManagementConfigurationWizard;
+
 
 /**
- * Creates Anagram Game managed with JMX project.
- * This project will be used by J2SEProject, J2SEProjectOptions and 
- * J2SEProjectProperties tests.
+ *
+ * @author Tomas Hurka
  */
-public class CreateAnagramProject extends JConsoleTestCase {
-
-
-    /** Creates a new instance of BundleKeys */
-    public CreateAnagramProject(String name) {
-        super(name);
-    }
-
-    public void testCreateSampleProject() throws IOException {
-
-        System.out.println("============  createSampleProject  ============");
-        
-        System.out.println("Create project for J2SEProject tests");
-        newProject(PROJECT_CATEGORY_SAMPLES_JMX, 
-                PROJECT_TYPE_ANAGRAM_GAME, 
-                PROJECT_NAME_J2SE_PROJECT_INTEGRATION);
+public class AllTest {
+    
+    public static Test suite() {
+        return NbModuleSuite.create(NbModuleSuite.createConfiguration(ManagementConfigurationWizard.class).
+                addTest(JConsole.class).
+		addTest(CreateAnagramProject.class).
+                addTest(J2SEProject.class).
+                enableModules(".*").clusters(".*").
+                gui(true).reuseUserDir(false));
     }
 }
