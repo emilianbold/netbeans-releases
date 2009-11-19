@@ -137,7 +137,7 @@ public class TldLibrary extends LibraryDescriptor {
                         attrs.put(aName, new Attribute(aName, aDescription, aRequired));
                     }
 
-                    tags.put(tagName, new Tag(tagName, tagDescription, attrs));
+                    tags.put(tagName, new TagImpl(tagName, tagDescription, attrs));
 
                 }
             }
