@@ -767,7 +767,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         try {
             hndl.start();
             try {
-                WagonManager wagon = (WagonManager) online.getPlexusContainer().lookup(WagonManager.class);
+                WagonManager wagon = online.getPlexusContainer().lookup(WagonManager.class);
                 wagon.setDownloadMonitor(new ProgressTransferListener());
             } catch (ComponentLookupException ex) {
                 Exceptions.printStackTrace(ex);

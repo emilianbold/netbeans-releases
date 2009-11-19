@@ -39,6 +39,7 @@
 package org.netbeans.modules.maven.embedder;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import org.apache.maven.Maven;
 import org.apache.maven.artifact.Artifact;
@@ -46,6 +47,7 @@ import org.apache.maven.artifact.InvalidRepositoryException;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
+import org.apache.maven.execution.DefaultMavenExecutionRequest;
 import org.apache.maven.execution.DefaultMavenExecutionResult;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionRequestPopulationException;
@@ -57,7 +59,6 @@ import org.apache.maven.model.io.ModelReader;
 import org.apache.maven.model.io.ModelWriter;
 import org.apache.maven.plugin.BuildPluginManager;
 import org.apache.maven.project.DefaultProjectBuilder;
-import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
@@ -65,9 +66,11 @@ import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.project.ProjectBuildingResult;
 import org.apache.maven.repository.RepositorySystem;
 import org.apache.maven.settings.MavenSettingsBuilder;
+import org.apache.maven.settings.Settings;
 import org.apache.maven.settings.validation.SettingsValidationResult;
 import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
+import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.openide.util.Exceptions;
 
 /**
@@ -150,24 +153,19 @@ public final class MavenEmbedder {
         }
     }
 
-//    public Settings getSettings() {
-//        // MUST NOT use createRequest!
-//
-//        MavenExecutionRequest request = new DefaultMavenExecutionRequest();
-//        if (mavenConfiguration.getGlobalSettingsFile() != null) {
-//            request.setGlobalSettingsFile(new File(mavenConfiguration.getGlobalSettingsFile()));
-//        }
-//        if (mavenConfiguration.getUserSettingsFile() != null) {
-//            request.setUserSettingsFile(new File(mavenConfiguration.getUserSettingsFile()));
-//        }
-//        try {
-//            return settingsBuilder.buildSettings(request);
-//        } catch (IOException ex) {
-//            Exceptions.printStackTrace(ex);
-//        } catch (XmlPullParserException ex) {
-//            Exceptions.printStackTrace(ex);
-//        }
-//    }
+    public Settings getSettings() {
+        MavenExecutionRequest req = new DefaultMavenExecutionRequest();
+        req.setGlobalSettingsFile(DEFAULT_GLOBAL_SETTINGS_FILE);
+        req.setUserSettingsFile(DEFAULT_USER_SETTINGS_FILE);
+        try {
+            return settingsBuilder.buildSettings(req);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (XmlPullParserException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return new Settings();
+    }
 
 //    public Settings buildSettings(String globalSettings, String userSettings) {
 //        MavenExecutionRequest request = createExecutionRequest(null);
@@ -182,10 +180,9 @@ public final class MavenEmbedder {
 //        }
 //    }
 
-    public SettingsValidationResult validateSettings(String settings) {
+    public SettingsValidationResult validateSettings(File settingsFile) {
         SettingsValidationResult result = new SettingsValidationResult();
-        if (settings != null) {
-            File settingsFile = new File(settings);
+        if (settingsFile != null) {
             if (settingsFile.canRead()) {
                 @SuppressWarnings("unchecked")
                 List<String> messages = settingsBuilder.validateSettings(settingsFile).getMessages();
@@ -193,7 +190,7 @@ public final class MavenEmbedder {
                     result.addMessage(message);
                 }
             } else {
-                result.addMessage("Can not read settings file " + settings);
+                result.addMessage("Can not read settings file " + settingsFile.getAbsolutePath());
             }
         }
 
@@ -217,7 +214,7 @@ public final class MavenEmbedder {
         throw new UnsupportedOperationException("Not yet implemented");
     }
 
-    public Artifact createArtifact(String groupId, String artifactId, String version, Object object, String string) {
+    public Artifact createArtifact(String groupId, String artifactId, String version, String extension, String type) {
         //what is the object?
         throw new UnsupportedOperationException("Not yet implemented");
     }

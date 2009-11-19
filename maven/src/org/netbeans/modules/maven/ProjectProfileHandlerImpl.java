@@ -55,7 +55,6 @@ import org.apache.maven.profiles.ProfilesRoot;
 import org.apache.maven.profiles.io.xpp3.ProfilesXpp3Reader;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
-import org.apache.maven.project.build.model.ModelLineage;
 import org.netbeans.modules.maven.api.ProjectProfileHandler;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenSettingsSingleton;
@@ -85,7 +84,7 @@ public class ProjectProfileHandlerImpl implements ProjectProfileHandler {
     private List<String> sharedProfiles = new ArrayList<String>();
     private AuxiliaryConfiguration ac;
     private final NbMavenProjectImpl nmp;
-    private ModelLineage lineage;
+//    private ModelLineage lineage;
     private boolean haveTried = false;
 
     ProjectProfileHandlerImpl(NbMavenProjectImpl nmp, AuxiliaryConfiguration ac) {
@@ -99,28 +98,28 @@ public class ProjectProfileHandlerImpl implements ProjectProfileHandler {
      * reset caching of the lineage, invoked from MavenProject reloads
      */
     synchronized void clearLineageCache() {
-        lineage = null;
+//        lineage = null;
         haveTried = false;
     }
 
-    /**
-     * cache the lineage for repeated use..
-     * @return
-     */
-    synchronized ModelLineage getLineage() {
-        if (lineage == null && !haveTried) {
-            try {
-                //use project embedder to save time (online embedder creation is costly)
-                // could cause some problems with cached models though..
-                // something to consider when problems actually arise
-                lineage = EmbedderFactory.createModelLineage(nmp.getPOMFile(), nmp.getEmbedder(), true);
-            } catch (ProjectBuildingException ex) {
-                Logger.getLogger(ProjectProfileHandlerImpl.class.getName()).log(Level.FINE, "Error reading model lineage", ex);//NOI18N
-                haveTried = true;
-            }
-        }
-        return lineage;
-    }
+//    /**
+//     * cache the lineage for repeated use..
+//     * @return
+//     */
+//    synchronized ModelLineage getLineage() {
+//        if (lineage == null && !haveTried) {
+//            try {
+//                //use project embedder to save time (online embedder creation is costly)
+//                // could cause some problems with cached models though..
+//                // something to consider when problems actually arise
+//                lineage = EmbedderFactory.createModelLineage(nmp.getPOMFile(), nmp.getEmbedder(), true);
+//            } catch (ProjectBuildingException ex) {
+//                Logger.getLogger(ProjectProfileHandlerImpl.class.getName()).log(Level.FINE, "Error reading model lineage", ex);//NOI18N
+//                haveTried = true;
+//            }
+//        }
+//        return lineage;
+//    }
 
     @SuppressWarnings("unchecked")
     public List<String> getAllProfiles() {
@@ -258,20 +257,20 @@ public class ProjectProfileHandlerImpl implements ProjectProfileHandler {
     
     private void extractProfilesFromModelLineage(Set<String> profileIds) {
 //        try {
-            ModelLineage lin = getLineage();
-            if (lin == null) return;
-            Iterator it = lin.modelIterator();
-            while (it.hasNext()) {
-                Model mdl = (Model) it.next();
-                List mdlProfiles = mdl.getProfiles();
-                if (mdlProfiles != null) {
-                    Iterator it2 = mdlProfiles.iterator();
-                    while (it2.hasNext()) {
-                        Profile prf = (Profile) it2.next();
-                        profileIds.add(prf.getId());
-                    }
-                }
-            }
+//            ModelLineage lin = getLineage();
+//            if (lin == null) return;
+//            Iterator it = lin.modelIterator();
+//            while (it.hasNext()) {
+//                Model mdl = (Model) it.next();
+//                List mdlProfiles = mdl.getProfiles();
+//                if (mdlProfiles != null) {
+//                    Iterator it2 = mdlProfiles.iterator();
+//                    while (it2.hasNext()) {
+//                        Profile prf = (Profile) it2.next();
+//                        profileIds.add(prf.getId());
+//                    }
+//                }
+//            }
 
 //#172526 - recursive hunt for profiles in child modules is rather expensive with little added value..
 //
