@@ -324,12 +324,14 @@ public final class ModelHandle {
      * @deprecated will not set the value, configurations are always enbled now.
      * @param bool
      */
+    @Deprecated
     public void setConfigurationsEnabled(boolean bool) {
     }
     
     /**
      * @deprecated configurations are always enbled now.
      */
+    @Deprecated
     public boolean isConfigurationsEnabled() {
         return true;
     }

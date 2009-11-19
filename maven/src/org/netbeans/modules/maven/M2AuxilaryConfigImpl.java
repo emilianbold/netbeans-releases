@@ -42,7 +42,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
-import hidden.org.codehaus.plexus.util.StringOutputStream;
+import org.codehaus.plexus.util.StringOutputStream;
 import java.awt.event.ActionEvent;
 import java.util.Date;
 import java.util.logging.Level;

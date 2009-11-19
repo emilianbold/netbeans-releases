@@ -41,10 +41,12 @@ package org.netbeans.modules.maven.actions;
 import java.util.List;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.embedder.MavenEmbedder;
+import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.MavenProjectBuilder;
+import org.apache.maven.project.DefaultProjectBuilder;
+import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.ProjectBuildingException;
+import org.apache.maven.project.ProjectBuildingResult;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.openide.util.Exceptions;
@@ -58,14 +60,17 @@ public class ActionsUtil {
     
     
     public static MavenProject readMavenProject(Artifact artifact, List<ArtifactRepository> remoteRepos) {
-        //TODO progress indication?
         MavenEmbedder embedder = EmbedderFactory.getProjectEmbedder();
         try {
-            MavenProjectBuilder bldr = (MavenProjectBuilder) embedder.getPlexusContainer().lookup(MavenProjectBuilder.ROLE);
-            return bldr.buildFromRepository(artifact, remoteRepos, embedder.getLocalRepository());
+            //TODO XXX how to setup the request fully.
+            DefaultProjectBuildingRequest dpbr = new DefaultProjectBuildingRequest();
+            dpbr.setLocalRepository(embedder.getLocalRepository());
+            dpbr.setRemoteRepositories(remoteRepos);
+            ProjectBuildingResult res =  embedder.buildProject(artifact, dpbr);
+            if (res.getProject() != null) {
+                return res.getProject();
+            }
         } catch (ProjectBuildingException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (ComponentLookupException ex) {
             Exceptions.printStackTrace(ex);
         }
         return new MavenProject();

@@ -42,20 +42,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.project.InvalidProjectModelException;
-import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.MavenProjectBuilder;
-import org.apache.maven.project.ProjectBuildingException;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
-import hidden.org.codehaus.plexus.util.IOUtil;
-import java.util.logging.Level;
+import org.codehaus.plexus.util.IOUtil;
 import java.util.logging.Logger;
-import org.apache.maven.embedder.MavenEmbedder;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.netbeans.modules.maven.embedder.MavenEmbedder;
 
 /**
  *
@@ -134,41 +127,4 @@ public final class RepositoryUtil {
         return bytes;
     }
 
-    /**
-     *
-     * @param grId
-     * @param artId
-     * @param ver
-     * @param repository
-     * @return
-     * @deprecated don't use, to be moved out of public packages.
-     */
-    public @Deprecated static MavenProject readMavenProject(String grId, String artId, String ver, ArtifactRepository repository) {
-        MavenProject mavenProject = null;
-        try {
-            // we need to use the online embedder as the project one never
-            // puts anything in the local repository, thus not resolving dependencies.
-            //mkleint: this is somewhat strange thing to do for indexing remote repositories
-            // via the maven-repo-utils CLI tool..
-            MavenEmbedder online = EmbedderFactory.getOnlineEmbedder();
-            ArtifactFactory artifactFactory = (ArtifactFactory) online.getPlexusContainer().lookup(ArtifactFactory.class);
-            Artifact projectArtifact = artifactFactory.createProjectArtifact(
-                    grId,
-                    artId,
-                    ver,
-                    null);
-
-            MavenProjectBuilder builder = (MavenProjectBuilder) online.getPlexusContainer().lookup(MavenProjectBuilder.class);
-            mavenProject = builder.buildFromRepository(projectArtifact, new ArrayList(), repository);
-
-        } catch (InvalidProjectModelException ex) {
-            //ignore nexus is falling ???
-            LOGGER.log(Level.FINE, "Failed to load project model from repository.", ex);
-        } catch (ProjectBuildingException ex) {
-            LOGGER.log(Level.FINE, "Failed to load project model from repository.", ex);
-        } catch (Exception exception) {
-            LOGGER.log(Level.FINE, "Failed to load project model from repository.", exception);
-        }
-        return mavenProject;
-    }
 }

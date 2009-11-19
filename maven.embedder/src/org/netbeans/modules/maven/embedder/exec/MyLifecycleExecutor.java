@@ -54,7 +54,7 @@ import org.apache.maven.monitor.event.EventDispatcher;
 import org.apache.maven.project.MavenProject;
 
 /**
- *
+ * TODO
  * @author mkleint
  */
 public class MyLifecycleExecutor extends DefaultLifecycleExecutor {
@@ -78,19 +78,5 @@ public class MyLifecycleExecutor extends DefaultLifecycleExecutor {
         return Collections.<File>emptyList(); 
     }
     
-    /**
-     * Execute a task. Each task may be a phase in the lifecycle or the
-     * execution of a mojo.
-     *
-     * @param session
-     * @param rm
-     * @param dispatcher
-     */
-    @Override
-    public void execute( MavenSession session, ReactorManager rm, EventDispatcher dispatcher )
-        throws BuildFailureException, LifecycleExecutionException
-    {
-        fileList.set(readAffectedProjects(rm));
-        super.execute( session, rm, dispatcher);
-    }
+
 }

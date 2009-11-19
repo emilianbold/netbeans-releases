@@ -51,7 +51,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
-import org.apache.maven.embedder.MavenEmbedderLogger;
+import org.netbeans.modules.maven.embedder.MavenEmbedderLogger;
 import org.apache.maven.monitor.event.EventMonitor;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.embedder.exec.MyLifecycleExecutor;

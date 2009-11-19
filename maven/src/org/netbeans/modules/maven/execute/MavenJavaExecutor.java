@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.maven.execute;
 
-import hidden.org.codehaus.plexus.util.cli.CommandLineUtils;
+import org.codehaus.plexus.util.cli.CommandLineUtils;
 import java.lang.reflect.Field;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -53,8 +53,8 @@ import java.util.Properties;
 import org.apache.maven.cli.CLIReportingUtils;
 import org.apache.maven.embedder.ConfigurationValidationResult;
 import org.apache.maven.embedder.DefaultConfiguration;
-import org.apache.maven.embedder.MavenEmbedder;
-import org.apache.maven.embedder.MavenEmbedderLogger;
+import org.netbeans.modules.maven.embedder.MavenEmbedder;
+import org.netbeans.modules.maven.embedder.MavenEmbedderLogger;
 import org.apache.maven.errors.DefaultCoreErrorReporter;
 import org.apache.maven.execution.DefaultMavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionRequest;

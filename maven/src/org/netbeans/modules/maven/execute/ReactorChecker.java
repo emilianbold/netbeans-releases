@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.maven.execute;
 
-import hidden.org.codehaus.plexus.util.StringUtils;
+import org.codehaus.plexus.util.StringUtils;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;

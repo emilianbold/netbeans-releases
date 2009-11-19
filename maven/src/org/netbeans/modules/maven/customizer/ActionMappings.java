@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.maven.customizer;
 
-import hidden.org.codehaus.plexus.util.StringUtils;
+import org.codehaus.plexus.util.StringUtils;
 import javax.swing.text.BadLocationException;
 import org.netbeans.modules.maven.api.customizer.support.CheckBoxUpdater;
 import java.awt.Component;

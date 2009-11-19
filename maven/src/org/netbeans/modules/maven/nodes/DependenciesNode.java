@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.maven.nodes;
 
-import hidden.org.codehaus.plexus.util.StringUtils;
+import org.codehaus.plexus.util.StringUtils;
 import java.awt.Image;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.PreferenceChangeEvent;
@@ -62,7 +62,7 @@ import javax.swing.Icon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.UIManager;
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.embedder.MavenEmbedder;
+import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.modules.maven.NbMavenProjectImpl;

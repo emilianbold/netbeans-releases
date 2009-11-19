@@ -59,7 +59,7 @@ import org.apache.maven.project.MavenProject;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.configurations.M2ConfigProvider;
 import org.netbeans.modules.maven.configurations.M2Configuration;
-import hidden.org.codehaus.plexus.util.IOUtil;
+import org.codehaus.plexus.util.IOUtil;
 import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;

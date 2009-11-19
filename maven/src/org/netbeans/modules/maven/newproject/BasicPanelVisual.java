@@ -67,7 +67,7 @@ import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
-import org.apache.maven.embedder.MavenEmbedder;
+import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.maven.indexer.api.RepositoryIndexer;
@@ -700,7 +700,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         try {
             hndl.start();
             try {
-                WagonManager wagon = (WagonManager) online.getPlexusContainer().lookup(WagonManager.class);
+                WagonManager wagon = online.getPlexusContainer().lookup(WagonManager.class);
                 wagon.setDownloadMonitor(new ProgressTransferListener());
             } catch (ComponentLookupException ex) {
                 Exceptions.printStackTrace(ex);

@@ -41,8 +41,8 @@
 
 package org.netbeans.modules.maven.model;
 
-import hidden.org.codehaus.plexus.util.IOUtil;
-import hidden.org.codehaus.plexus.util.StringInputStream;
+import org.codehaus.plexus.util.IOUtil;
+import org.codehaus.plexus.util.StringInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;

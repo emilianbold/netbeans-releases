@@ -38,7 +38,7 @@
  */
 package org.netbeans.modules.maven.indexer;
 
-import hidden.org.codehaus.plexus.util.FileUtils;
+import org.codehaus.plexus.util.FileUtils;
 import java.util.Map;
 import org.apache.lucene.document.Document;
 import org.codehaus.plexus.classworlds.realm.DuplicateRealmException;
@@ -74,12 +74,11 @@ import org.apache.maven.artifact.InvalidArtifactRTException;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.manager.WagonManager;
 import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.embedder.MavenEmbedder;
 import org.apache.maven.model.Dependency;
-import org.apache.maven.project.InvalidProjectModelException;
+import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.MavenProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
+import org.apache.maven.project.ProjectBuildingResult;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.spi.ArchetypeQueries;
@@ -98,6 +97,7 @@ import org.codehaus.plexus.PlexusContainerException;
 import org.codehaus.plexus.classworlds.ClassWorld;
 import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
+import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.netbeans.modules.maven.indexer.spi.ContextLoadedQuery;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
@@ -214,11 +214,11 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 embedder = new DefaultPlexusContainer(config);
 
                 repository = EmbedderFactory.getProjectEmbedder().getLocalRepository();
-                indexer = (NexusIndexer) embedder.lookup(NexusIndexer.class);
-                searcher = (SearchEngine) embedder.lookup(SearchEngine.class);
-                remoteIndexUpdater = (IndexUpdater) embedder.lookup(IndexUpdater.class);
-                wagonManager = (WagonManager) embedder.lookup( WagonManager.class );
-                contextProducer = (ArtifactContextProducer) embedder.lookup(ArtifactContextProducer.class);
+                indexer = embedder.lookup(NexusIndexer.class);
+                searcher = embedder.lookup(SearchEngine.class);
+                remoteIndexUpdater = embedder.lookup(IndexUpdater.class);
+                wagonManager = embedder.lookup( WagonManager.class );
+                contextProducer = embedder.lookup(ArtifactContextProducer.class);
                 inited = true;
             } catch (DuplicateRealmException ex) {
                 Exceptions.printStackTrace(ex);
@@ -1110,18 +1110,19 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
 
         private MavenProject load(ArtifactInfo ai, ArtifactRepository repository) {
             try {
-                ArtifactFactory artifactFactory = (ArtifactFactory) online.getPlexusContainer().lookup(ArtifactFactory.class);
+                ArtifactFactory artifactFactory = online.getPlexusContainer().lookup(ArtifactFactory.class);
                 Artifact projectArtifact = artifactFactory.createProjectArtifact(
                         ai.groupId,
                         ai.artifactId,
                         ai.version,
                         null);
-
-                MavenProjectBuilder builder = (MavenProjectBuilder) online.getPlexusContainer().lookup(MavenProjectBuilder.class);
-                return builder.buildFromRepository(projectArtifact, new ArrayList(), repository);
-            } catch (InvalidProjectModelException ex) {
-                //ignore nexus is falling ???
-                LOGGER.log(Level.FINE, "Failed to load project model from repository.", ex);
+                DefaultProjectBuildingRequest dpbr = new DefaultProjectBuildingRequest();
+                dpbr.setLocalRepository(online.getLocalRepository());
+                dpbr.setRemoteRepositories(Collections.<ArtifactRepository>emptyList());
+                ProjectBuildingResult res =  online.buildProject(projectArtifact, dpbr);
+                if (res.getProject() != null) {
+                    return res.getProject();
+                }
             } catch (ProjectBuildingException ex) {
                 LOGGER.log(Level.FINE, "Failed to load project model from repository.", ex);
             } catch (Exception exception) {

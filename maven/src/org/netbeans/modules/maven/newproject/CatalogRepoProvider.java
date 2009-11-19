@@ -38,7 +38,7 @@
  */
 package org.netbeans.modules.maven.newproject;
 
-import hidden.org.codehaus.plexus.util.IOUtil;
+import org.codehaus.plexus.util.IOUtil;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;

@@ -38,10 +38,10 @@
  */
 package org.netbeans.modules.maven.indexer.api;
 
-import hidden.org.codehaus.plexus.util.Base64;
-import hidden.org.codehaus.plexus.util.FileUtils;
-import hidden.org.codehaus.plexus.util.IOUtil;
-import hidden.org.codehaus.plexus.util.StringUtils;
+import org.codehaus.plexus.util.Base64;
+import org.codehaus.plexus.util.FileUtils;
+import org.codehaus.plexus.util.IOUtil;
+import org.codehaus.plexus.util.StringUtils;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
