@@ -508,6 +508,32 @@ int __open64(const char *path, int flags, ...) {
     real_open(__open64, path, flags);
 }
 
+#ifdef __sun
+int execve(const char *path, char *const argv[], char *const envp[]) {
+    inside_open++;
+    const char *function_name = "execve";
+    trace("%s %s %d\n", function_name, path);
+    int result = -1;
+    int flags = 0;
+    if (pre_open(path, flags)) {
+        static int (*prev)(const char *, char *const *, char *const *);
+        if (!prev) {
+            prev = (int (*)(const char *, char *const *, char *const *)) get_real_addr(execve);
+        }
+        if (prev) {
+            result = prev(path, argv, envp);
+            post_open(path, flags);
+        } else {
+            trace("Could not find original \"%s\" function\n", function_name);
+            errno = EFAULT;
+            result = -1;
+        }
+    }
+    trace("%s %s -> %d\n", function_name, path, result);
+    inside_open--;
+    return result;
+}
+#endif // __sun
 
 //#ifdef __linux__
 FILE *fopen(const char * filename, const char * mode) {
