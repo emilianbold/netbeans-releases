@@ -183,7 +183,8 @@ public abstract class Query implements Comparable<Query> {
      * @return
      */
     // XXX Shouldn't be called while running
-    // XXX on repository?
+    // XXX move to simple search
+
     public Issue[] getIssues(String criteria) {
         return BugtrackingUtil.getByIdOrSummary(getIssues(), criteria);
     }
