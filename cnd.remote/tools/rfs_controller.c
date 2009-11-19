@@ -135,6 +135,7 @@ static void serve_connection(void* data) {
             }
         } else { // pkg->kind == pkg_request
             char response[64];
+            response[1] = 0;
             if (fd != NULL) {
                 switch (fd->state) {
                     case TOUCHED:
