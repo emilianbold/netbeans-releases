@@ -52,7 +52,6 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
@@ -66,7 +65,8 @@ public class WebFaceletTaglibResourceProvider implements ConfigurationResourcePr
 
     private WebModule wm;
 
-    private static final String FACELETS_LIBRARIES_PROPERTY_NAME = "javax.faces.FACELETS_LIBRARIES";
+    private static final String FACELETS_LIBRARIES_OLD_PROPERTY_NAME = "facelets.LIBRARIES"; //NOI18N
+    private static final String FACELETS_LIBRARIES_PROPERTY_NAME = "javax.faces.FACELETS_LIBRARIES"; //NOI18N
 
     public WebFaceletTaglibResourceProvider(WebModule wm) {
         this.wm = wm;
@@ -84,7 +84,8 @@ public class WebFaceletTaglibResourceProvider implements ConfigurationResourcePr
                         if (ddRoot != null) {
                             InitParam[] contextParams = ddRoot.getContextParam();
                             for (InitParam param : contextParams) {
-                                if (FACELETS_LIBRARIES_PROPERTY_NAME.equals(param.getParamName())) {
+                                if (FACELETS_LIBRARIES_PROPERTY_NAME.equals(param.getParamName()) ||
+                                        FACELETS_LIBRARIES_OLD_PROPERTY_NAME.equals(param.getParamName())) {
                                     return param.getParamValue();
                                 }
                             }
