@@ -62,7 +62,6 @@ import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -243,10 +242,12 @@ public class JaxWsExplorerPanel extends JPanel implements ExplorerManager.Provid
             setName(rootNode.getDisplayName());
         }
         
+        @Override
         public Image getIcon(int type) {
             return rootNode.getIcon(type);
         }
         
+        @Override
         public Image getOpenedIcon(int type) {
             return rootNode.getOpenedIcon(type);
         }
