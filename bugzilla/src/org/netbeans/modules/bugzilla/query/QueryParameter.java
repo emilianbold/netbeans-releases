@@ -40,6 +40,7 @@
 package org.netbeans.modules.bugzilla.query;
 
 import java.awt.Component;
+import java.util.LinkedList;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
@@ -161,7 +162,7 @@ public abstract class QueryParameter {
         return parameter;
     }
     abstract ParameterValue[] getValues();
-    abstract void setValues(ParameterValue[] pvs);    
+    abstract void setValues(ParameterValue[] pvs);
     void setAlwaysDisabled(boolean bl) {
         this.alwaysDisabled = bl;
         setEnabled(false); // true or false, who cares. this is only to trigger the state change
@@ -209,7 +210,7 @@ public abstract class QueryParameter {
             assert values.length < 2;
             if(values.length == 0) return;
             ParameterValue pv = values[0];
-            
+
             // need the index as the given ParameterValue might have a different displayName
             int idx = ((DefaultComboBoxModel)combo.getModel()).getIndexOf(pv);
             if(idx != -1) {
@@ -240,7 +241,7 @@ public abstract class QueryParameter {
                 ret[i] = (ParameterValue) values[i];
             }
             return ret;
-        }        
+        }
         public void setParameterValues(List<ParameterValue> values) {
             setParameterValues(values.toArray(new ParameterValue[values.size()]));
         }
@@ -254,19 +255,25 @@ public abstract class QueryParameter {
 
         @Override
         public void setValues(ParameterValue[] values) {
-            if(values.length == 0) return;            
+            if(values.length == 0) return;                                              // should not happen        XXX do we need this?
             list.clearSelection();
-            int[] selection = new int[values.length];
+            if(values.length == 1 && "".equals(values[0].getValue().trim())) return;    // 1 empty ParameterValue stands for no selection XXX rewrite this
+            List<Integer> selectionList = new LinkedList<Integer>();
             for (int i = 0; i < values.length; i++) {
                 ListModel model = list.getModel();
                 // need case sensitive compare
                 for(int j = 0; j < model.getSize(); j++) {
                     ParameterValue pv = (ParameterValue) model.getElementAt(j);
                     if(pv.getValue().toLowerCase().equals(values[i].getValue().toLowerCase())) {
-                        selection[i] = j;
+                        selectionList.add(j);
                         break;
                     }
                 }
+            }
+            int[] selection = new int[selectionList.size()];
+            int i = 0;
+            for (int s : selectionList) {
+                selection[i++] = s;
             }
             list.setSelectedIndices(selection);
             int idx = selection.length > 0 ? selection[0] : -1;
@@ -430,7 +437,7 @@ public abstract class QueryParameter {
         void setValues(ParameterValue[] values) {
             // not interested
         }
-        
+
         @Override
         void setEnabled(boolean  b) {
             // interested

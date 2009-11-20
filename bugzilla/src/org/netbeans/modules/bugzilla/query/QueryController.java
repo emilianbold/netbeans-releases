@@ -85,6 +85,7 @@ import org.netbeans.modules.bugzilla.BugzillaConnector;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
+import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.netbeans.modules.bugzilla.query.QueryParameter.CheckBoxParameter;
 import org.netbeans.modules.bugzilla.query.QueryParameter.ComboParameter;
@@ -272,7 +273,9 @@ public class QueryController extends BugtrackingController implements DocumentLi
             refreshTask.cancel();
         }
         if(query.isSaved()) {
-            repository.stopRefreshing(query);
+            if(!(query.getRepository() instanceof KenaiRepository)) {
+                repository.stopRefreshing(query);
+            }
         }
     }
 
@@ -554,8 +557,8 @@ public class QueryController extends BugtrackingController implements DocumentLi
        Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
             public void run() {
                 Bugzilla.LOG.fine("on save start");
-                String name = query.getDisplayName();                
-                if(!query.isSaved()) {                
+                String name = query.getDisplayName();
+                if(!query.isSaved()) {
                     name = getSaveName();
                     if(name == null) {
                         return;
