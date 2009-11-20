@@ -230,7 +230,7 @@ class RfsLocalController implements Runnable {
             String localFilePath = mapper.getLocalPath(remoteFile);
             if (localFilePath != null) {
                 File localFile = new File(localFilePath);
-                fileData.setState(localFile, FileState.INITIAL);
+                fileData.setState(localFile, FileState.TOUCHED);
             } else {
                 RemoteUtil.LOGGER.finest("LC: ERROR no local file for " + remoteFile);
             }
@@ -267,6 +267,9 @@ class RfsLocalController implements Runnable {
                     "State shouldn't be " + newState); //NOI18N
             responseStream.printf("%c %d %s\n", newState.id, file.length(), relPath); // NOI18N
             responseStream.flush(); //TODO: remove?
+            if (newState == FileState.INITIAL ) {
+                newState = FileState.TOUCHED;
+            }
             fileData.setState(file, newState);
         }
     }
