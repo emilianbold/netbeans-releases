@@ -64,6 +64,8 @@ import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.Task;
 import org.xml.sax.Attributes;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
@@ -138,8 +140,11 @@ class AutoupdateCatalogParser extends DefaultHandler {
     private static final String L10N_ATTR_LOCALIZED_MODULE_DESCRIPTION = "OpenIDE-Module-Long-Description"; // NOI18N
     
     private static String GZIP_EXTENSION = ".gz"; // NOI18N
-    
-    public synchronized static Map<String, ModuleItem> getUpdateItems (URL url, URL provider) {
+
+    private static Map<String, ModuleItem> cache;
+    private static URI cacheURI;
+    synchronized static Map<String, ModuleItem> getUpdateItems (URL url, URL provider, Task task) {
+
         Map<String, ModuleItem> items = new HashMap<String, ModuleItem> ();
         URI base;
         try {
@@ -148,6 +153,11 @@ class AutoupdateCatalogParser extends DefaultHandler {
             } else {
                 base = url.toURI();
             }
+            if (cache != null && cacheURI.equals(base)) {
+                task.log("Using existing module item cache " + base, Project.MSG_INFO);
+                return cache;
+            }
+            task.log("Downloading " + base, Project.MSG_INFO);
             InputSource is = null;
             try {
                 SAXParserFactory factory = SAXParserFactory.newInstance();
@@ -155,6 +165,8 @@ class AutoupdateCatalogParser extends DefaultHandler {
                 SAXParser saxParser = factory.newSAXParser();
                 is = getInputSource(url, provider, base);
                 saxParser.parse(is, new AutoupdateCatalogParser(items, provider, base));
+                cacheURI = base;
+                cache = items;
             } catch (Exception ex) {
                 ERR.log(Level.INFO, "Failed to parse " + base, ex);
             } finally {

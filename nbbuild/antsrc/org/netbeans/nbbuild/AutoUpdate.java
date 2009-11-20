@@ -39,6 +39,7 @@
 
 package org.netbeans.nbbuild;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -53,6 +54,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
@@ -60,6 +62,7 @@ import org.apache.tools.ant.Task;
 import org.apache.tools.ant.taskdefs.Get;
 import org.netbeans.nbbuild.AutoupdateCatalogParser.ModuleItem;
 import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
@@ -96,16 +99,21 @@ public class AutoUpdate extends Task {
         Map<String,String> installed = findExistingModules(dir);
 
         // no userdir
-        Map<String, ModuleItem> units = AutoupdateCatalogParser.getUpdateItems(catalog, catalog);
+        Map<String, ModuleItem> units = AutoupdateCatalogParser.getUpdateItems(catalog, catalog, this);
         for (ModuleItem uu : units.values()) {
-            log("found module: " + uu, Project.MSG_VERBOSE);
             if (!matches(uu.getCodeName())) {
                 continue;
             }
+            log("found module: " + uu, Project.MSG_VERBOSE);
             String version = installed.get(uu.getCodeName());
             if (version != null && !uu.isNewerThan(version)) {
                 log("Version " + version + " of " + uu.getCodeName() + " is up to date", Project.MSG_VERBOSE);
                 continue;
+            }
+            if (version == null) {
+                log(uu.getCodeName() + "not present, downloading version " + uu.getSpecVersion(), Project.MSG_INFO);
+            } else {
+                log("Version " + version + " of " + uu.getCodeName() + " needs update to " + uu.getSpecVersion(), Project.MSG_INFO);
             }
 
             byte[] bytes = new byte[4096];
@@ -117,6 +125,7 @@ public class AutoUpdate extends Task {
                 get.setTaskName("get:" + uu.getCodeName());
                 get.setSrc(uu.getURL());
                 get.setDest(f);
+                get.setVerbose(true);
                 get.execute();
 
                 File cluster = new File(dir, uu.targetcluster);
@@ -126,6 +135,9 @@ public class AutoUpdate extends Task {
                 while (en.hasMoreElements()) {
                     ZipEntry zipEntry = en.nextElement();
                     if (!zipEntry.getName().startsWith("netbeans/")) {
+                        continue;
+                    }
+                    if (zipEntry.getName().endsWith("/")) {
                         continue;
                     }
                     File trgt = new File(cluster, zipEntry.getName().substring(9).replace('/', File.separatorChar));
@@ -141,6 +153,8 @@ public class AutoUpdate extends Task {
                         }
                         os.write(bytes, 0, len);
                     }
+                    is.close();
+                    os.close();
                 }
                 
             } catch (IOException ex) {
@@ -150,15 +164,16 @@ public class AutoUpdate extends Task {
     }
 
     private boolean matches(String cnb) {
+        String dash = cnb.replace('.', '-');
         for (Modules ps : modules) {
-            if (ps.pattern.matcher(cnb).matches()) {
+            if (ps.pattern.matcher(dash).matches()) {
                 return true;
             }
         }
         return false;
     }
 
-    private static Map<String,String> findExistingModules(File dir) {
+    private Map<String,String> findExistingModules(File dir) {
         Map<String,String> all = new HashMap<String, String>();
         for (File cluster : dir.listFiles()) {
             File mc = new File(new File(cluster, "config"), "Modules");
@@ -170,7 +185,7 @@ public class AutoUpdate extends Task {
                 try {
                     parseVersion(m, all);
                 } catch (Exception ex) {
-                    throw new BuildException(ex.getMessage(), ex);
+                    log("Cannot parse " + m, ex, Project.MSG_WARN);
                 }
             }
         }
@@ -209,10 +224,14 @@ public class AutoUpdate extends Task {
                 }
             }
 
+            @Override
+            public InputSource resolveEntity(String string, String string1) throws IOException, SAXException {
+                return new InputSource(new ByteArrayInputStream(new byte[0]));
+            }
         }
         P p = new P();
-        SAXParserFactory.newInstance().newSAXParser().parse(config, p);
-
+        SAXParser parser = SAXParserFactory.newInstance().newSAXParser();
+        parser.parse(config, p);
     }
 
     public static final class Modules {

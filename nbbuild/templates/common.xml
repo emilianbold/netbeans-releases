@@ -159,6 +159,17 @@ made subject to such option by the copyright holder.
         </uptodate>
     </target>
 
+    <target name="update" depends="init">
+        <property name="autoupdate.url" value="http://deadlock.netbeans.org/hudson/job/nbms-and-javadoc/lastSuccessfulBuild/artifact/nbbuild/nbms/updates.xml.gz"/>
+        <echo message="Updating: ${code.name.base.dashes}"/>
+        <autoupdate
+            updatecenter="${autoupdate.url}"
+            netbeansdestdir="${netbeans.dest.dir}"
+        >
+            <modules includes="${code.name.base.dashes}"/>
+        </autoupdate>
+    </target>
+
     <target name="compile" depends="init,up-to-date" unless="is.jar.uptodate">
         <mkdir dir="${build.classes.dir}"/>
         <depend srcdir="${src.dir}" destdir="${build.classes.dir}" cache="build/depcache">
