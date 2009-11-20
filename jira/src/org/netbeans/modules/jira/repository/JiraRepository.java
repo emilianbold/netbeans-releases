@@ -557,21 +557,23 @@ public class JiraRepository extends Repository {
         if(refreshQueryTask == null) {
             refreshQueryTask = getRefreshProcessor().create(new Runnable() {
                 public void run() {
-                    Set<JiraQuery> queries;
-                    synchronized(refreshQueryTask) {
-                        queries = new HashSet<JiraQuery>(queriesToRefresh);
+                    try {
+                        Set<JiraQuery> queries;
+                        synchronized(refreshQueryTask) {
+                            queries = new HashSet<JiraQuery>(queriesToRefresh);
+                        }
+                        if(queries.size() == 0) {
+                            Jira.LOG.log(Level.FINE, "no queries to refresh {0}", new Object[] {name}); // NOI18N
+                            return;
+                        }
+                        for (JiraQuery q : queries) {
+                            Jira.LOG.log(Level.FINER, "preparing to refresh query {0} - {1}", new Object[] {q.getDisplayName(), name}); // NOI18N
+                            QueryController qc = q.getController();
+                            qc.autoRefresh();
+                        }
+                    } finally {
+                        scheduleQueryRefresh();
                     }
-                    if(queries.size() == 0) {
-                        Jira.LOG.log(Level.FINE, "no queries to refresh {0}", new Object[] {name}); // NOI18N
-                        return;
-                    }
-                    for (JiraQuery q : queries) {
-                        Jira.LOG.log(Level.FINER, "preparing to refresh query {0} - {1}", new Object[] {q.getDisplayName(), name}); // NOI18N
-                        QueryController qc = q.getController();
-                        qc.autoRefresh();
-                    }
-
-                    scheduleQueryRefresh();
                 }
             });
             scheduleQueryRefresh();

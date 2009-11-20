@@ -537,21 +537,23 @@ public class BugzillaRepository extends Repository {
         if(refreshQueryTask == null) {
             refreshQueryTask = getRefreshProcessor().create(new Runnable() {
                 public void run() {
-                    Set<BugzillaQuery> queries;
-                    synchronized(refreshQueryTask) {
-                        queries = new HashSet<BugzillaQuery>(queriesToRefresh);
+                    try {
+                        Set<BugzillaQuery> queries;
+                        synchronized(refreshQueryTask) {
+                            queries = new HashSet<BugzillaQuery>(queriesToRefresh);
+                        }
+                        if(queries.size() == 0) {
+                            Bugzilla.LOG.log(Level.FINE, "no queries to refresh {0}", new Object[] {name}); // NOI18N
+                            return;
+                        }
+                        for (BugzillaQuery q : queries) {
+                            Bugzilla.LOG.log(Level.FINER, "preparing to refresh query {0} - {1}", new Object[] {q.getDisplayName(), name}); // NOI18N
+                            QueryController qc = q.getController();
+                            qc.autoRefresh();
+                        }
+                    } finally {
+                        scheduleQueryRefresh();
                     }
-                    if(queries.size() == 0) {
-                        Bugzilla.LOG.log(Level.FINE, "no queries to refresh {0}", new Object[] {name}); // NOI18N
-                        return;
-                    }
-                    for (BugzillaQuery q : queries) {
-                        Bugzilla.LOG.log(Level.FINER, "preparing to refresh query {0} - {1}", new Object[] {q.getDisplayName(), name}); // NOI18N
-                        QueryController qc = q.getController();
-                        qc.autoRefresh();
-                    }
-
-                    scheduleQueryRefresh();
                 }
             });
             scheduleQueryRefresh();
