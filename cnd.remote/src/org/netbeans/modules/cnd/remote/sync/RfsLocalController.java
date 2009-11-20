@@ -4,10 +4,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,30 +24,31 @@ import org.openide.util.Exceptions;
 class RfsLocalController implements Runnable {
 
     private final BufferedReader requestReader;
-    private final PrintStream responseStream;
+    private final PrintWriter responseStream;
     private final String remoteDir;
     private final File[] files;
     private final ExecutionEnvironment execEnv;
     private final PrintWriter err;
     private final FileData fileData;
-    private final Set<String> processedFiles = new HashSet<String>();
-
+    private final RemotePathMap mapper;
+    
     private static enum RequestKind {
         REQUEST,
         WRITTEN
     }
 
     public RfsLocalController(ExecutionEnvironment executionEnvironment, File[] files, String remoteDir,
-            InputStream requestStream, OutputStream responseStream, PrintWriter err,
+            BufferedReader requestStreamReader, PrintWriter responseStreamWriter, PrintWriter err,
             FileData fileData) {
         super();
         this.execEnv = executionEnvironment;
         this.files = files;
         this.remoteDir = remoteDir;
-        this.requestReader = new BufferedReader(new InputStreamReader(requestStream));
-        this.responseStream = new PrintStream(responseStream);
+        this.requestReader = requestStreamReader;
+        this.responseStream = responseStreamWriter;
         this.err = err;
         this.fileData = fileData;
+        this.mapper = RemotePathMap.getPathMap(execEnv);
     }
 
     private void respond_ok() {
@@ -91,7 +88,6 @@ class RfsLocalController implements Runnable {
 
     public void run() {
         long totalCopyingTime = 0;
-        RemotePathMap mapper = RemotePathMap.getPathMap(execEnv);
         while (true) {
             try {
                 String request = requestReader.readLine();
@@ -101,13 +97,6 @@ class RfsLocalController implements Runnable {
                 }
                 String remoteFile = request.substring(2);
                 RequestKind kind = getRequestKind(request);
-                if (processedFiles.contains(remoteFile)) {
-                    RemoteUtil.LOGGER.info("RC asks for file " + remoteFile + " again?!");
-                    respond_ok();
-                    continue;
-                } else {
-                    processedFiles.add(remoteFile);
-                }
                 String localFilePath = mapper.getLocalPath(remoteFile);
                 if (localFilePath != null) {
                     File localFile = new File(localFilePath);
@@ -118,33 +107,28 @@ class RfsLocalController implements Runnable {
                         CndUtils.assertTrue(kind == RequestKind.REQUEST, "kind should be RequestKind.REQUEST, but is " + kind);
                         if (localFile.exists() && !localFile.isDirectory()) {
                             //FileState state = fileData.getState(localFile);
-                            if (needsCopying(localFile)) {
-                                RemoteUtil.LOGGER.finest("LC: uploading " + localFile + " to " + remoteFile + " started");
-                                long fileTime = System.currentTimeMillis();
-                                Future<Integer> task = CommonTasksSupport.uploadFile(localFile.getAbsolutePath(), execEnv, remoteFile, 0777, err);
-                                try {
-                                    int rc = task.get();
-                                    fileTime = System.currentTimeMillis() - fileTime;
-                                    totalCopyingTime += fileTime;
-                                    System.err.printf("LC: uploading %s to %s finished; rc=%d time =%d total time = %d ms \n", localFile, remoteFile, rc, fileTime, totalCopyingTime);
-                                    if (rc == 0) {
-                                        fileData.setState(localFile, FileState.COPIED);
-                                        respond_ok();
-                                    } else {
-                                        respond_err("1"); // NOI18N
-                                    }
-                                } catch (InterruptedException ex) {
-                                    Exceptions.printStackTrace(ex);
-                                    break;
-                                } catch (ExecutionException ex) {
-                                    Exceptions.printStackTrace(ex);
-                                    respond_err("2 execution exception\n"); // NOI18N
-                                } finally {
-                                    responseStream.flush();
+                            RemoteUtil.LOGGER.finest("LC: uploading " + localFile + " to " + remoteFile + " started");
+                            long fileTime = System.currentTimeMillis();
+                            Future<Integer> task = CommonTasksSupport.uploadFile(localFile.getAbsolutePath(), execEnv, remoteFile, 0777, err);
+                            try {
+                                int rc = task.get();
+                                fileTime = System.currentTimeMillis() - fileTime;
+                                totalCopyingTime += fileTime;
+                                System.err.printf("LC: uploading %s to %s finished; rc=%d time =%d total time = %d ms \n", localFile, remoteFile, rc, fileTime, totalCopyingTime);
+                                if (rc == 0) {
+                                    fileData.setState(localFile, FileState.COPIED);
+                                    respond_ok();
+                                } else {
+                                    respond_err("1"); // NOI18N
                                 }
-                            } else {
-                                RemoteUtil.LOGGER.finest("LC: file " + localFile + " not accepted");
-                                respond_ok();
+                            } catch (InterruptedException ex) {
+                                Exceptions.printStackTrace(ex);
+                                break;
+                            } catch (ExecutionException ex) {
+                                Exceptions.printStackTrace(ex);
+                                respond_err("2 execution exception\n"); // NOI18N
+                            } finally {
+                                responseStream.flush();
                             }
                         } else {
                             respond_ok();
@@ -158,29 +142,6 @@ class RfsLocalController implements Runnable {
             }
         }
         fileData.store();
-    }
-
-    public boolean needsCopying(File file) {
-        FileData.FileInfo info = fileData.getFileInfo(file);
-        if (info == null) {
-            return false;
-        } else {
-            switch (info.state) {
-                case COPIED:
-                    return file.lastModified() != info.timestamp;
-                case TOUCHED:
-                    return true;
-                case INITIAL:
-                    return true;
-                case UNCONTROLLED:
-                    return false;
-                case ERROR:
-                    return true; // TODO: ???
-                default:
-                    CndUtils.assertTrue(false, "Unexpecetd state: " + info.state); //NOI18N
-                    return false;
-            }
-        }
     }
 
     void shutdown() {
@@ -202,13 +163,10 @@ class RfsLocalController implements Runnable {
 
     /**
      * Feeds remote controller with the list of files and their lengths
-     * @param rcOutputStream
      */
-    void feedFiles(OutputStream rcOutputStream, SharabilityFilter filter) {
-        PrintWriter writer = new PrintWriter(rcOutputStream);
+    void feedFiles(SharabilityFilter filter) {
         List<FileGatheringInfo> filesToFeed = new ArrayList<FileGatheringInfo>(512);
         Set<File> externalDirs = new HashSet<File>();
-        RemotePathMap mapper = RemotePathMap.getPathMap(execEnv);
         for (File file : files) {
             file = CndFileUtils.normalizeFile(file);
             if (file.isDirectory()) {
@@ -245,17 +203,44 @@ class RfsLocalController implements Runnable {
             }
         });
         for (FileGatheringInfo info : filesToFeed) {
-            sendFileInitRequest(writer, info.file, info.relPath);
+            sendFileInitRequest(info.file, info.relPath);
         }
-        writer.printf("\n"); // NOI18N
-        writer.flush();
+        responseStream.printf("\n"); // NOI18N
+        responseStream.flush();
+        try {
+            readFileInitResponse();
+        } catch (IOException ex) {
+            err.printf("%s\n", ex.getMessage());
+        }
         fileData.store();
     }
 
-    private void sendFileInitRequest(PrintWriter writer, File file, String relPath) {
+    private void readFileInitResponse() throws IOException {
+        String request;
+        while ((request = requestReader.readLine()) != null) {
+            if (request.length() == 0) {
+                break;
+            }
+            //update info about file where we thought file is copied, but it doesn't
+            // exist remotely (i.e. project directory was removed)
+            if (request.length() < 3 || !request.startsWith("t ")) {
+                throw new IllegalArgumentException("Protocol error: " + request);
+            }
+            String remoteFile = request.substring(2);
+            String localFilePath = mapper.getLocalPath(remoteFile);
+            if (localFilePath != null) {
+                File localFile = new File(localFilePath);
+                fileData.setState(localFile, FileState.INITIAL);
+            } else {
+                RemoteUtil.LOGGER.finest("LC: ERROR no local file for " + remoteFile);
+            }
+        }
+    }
+    
+    private void sendFileInitRequest(File file, String relPath) {
         if (file.isDirectory()) {
-            writer.printf("D %s\n", relPath); //NOI18N
-            writer.flush(); //TODO: remove?
+            responseStream.printf("D %s\n", relPath); //NOI18N
+            responseStream.flush(); //TODO: remove?
         } else {
             FileData.FileInfo info = fileData.getFileInfo(file);
             FileState newState;
@@ -280,8 +265,8 @@ class RfsLocalController implements Runnable {
             }
             CndUtils.assertTrue(newState == FileState.INITIAL || newState == FileState.COPIED || newState == FileState.TOUCHED,
                     "State shouldn't be " + newState); //NOI18N
-            writer.printf("%c %d %s\n", newState.id, file.length(), relPath); // NOI18N
-            writer.flush(); //TODO: remove?
+            responseStream.printf("%c %d %s\n", newState.id, file.length(), relPath); // NOI18N
+            responseStream.flush(); //TODO: remove?
             fileData.setState(file, newState);
         }
     }
