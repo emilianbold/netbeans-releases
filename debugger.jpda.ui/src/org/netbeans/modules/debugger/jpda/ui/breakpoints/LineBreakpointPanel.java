@@ -43,12 +43,12 @@ package org.netbeans.modules.debugger.jpda.ui.breakpoints;
 
 import java.awt.Dimension;
 import java.beans.PropertyChangeListener;
-import java.io.File;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
@@ -69,7 +69,6 @@ import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.NbDocument;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -84,6 +83,8 @@ import org.openide.util.NbBundle;
 public class LineBreakpointPanel extends JPanel implements ControllerProvider, org.openide.util.HelpCtx.Provider {
 // </RAVE>
     
+    private static final Logger logger = Logger.getLogger(LineBreakpointPanel.class.getName());
+
     private static final String         HELP_ID = "NetbeansDebuggerBreakpointLineJPDA"; // NOI18N
     private ConditionsPanel             conditionsPanel;
     private ActionsPanel                actionsPanel; 
@@ -91,6 +92,7 @@ public class LineBreakpointPanel extends JPanel implements ControllerProvider, o
     private boolean                     createBreakpoint = false;
     private LBController                controller = new LBController();
     private final DocumentListener      validityDocumentListener = new ValidityDocumentListener();
+    private URL                         fileURL;
     
     
     private static LineBreakpoint createBreakpoint () {
@@ -124,16 +126,26 @@ public class LineBreakpointPanel extends JPanel implements ControllerProvider, o
             tfFileName.setEditable(true);
         }
 
-        String url = b.getURL();
+        String urlStr = b.getURL();
+        logger.fine("LineBreakpointPanel("+urlStr+")");
         try {
-            URI uri = new URI(url);
-            String s = uri.getPath();
-            if (s.length() == 0) {
-                s = url;
+            URL url = new URL(urlStr);
+            String protocol = url.getProtocol();
+            String s;
+            if ("file".equalsIgnoreCase(protocol)) {    // NOI18N
+                s = url.toURI().getPath();
+                if (s.length() == 0) {
+                    s = urlStr;
+                } else {
+                    fileURL = url;
+                }
+            } else {
+                s = urlStr;
             }
+            logger.fine("Path/URL = "+s);
             tfFileName.setText(s);
         } catch (Exception e) {
-            tfFileName.setText(url);
+            tfFileName.setText(urlStr);
         }
         tfFileName.setPreferredSize(new Dimension(
             30*tfFileName.getFontMetrics(tfFileName.getFont()).charWidth('W'),
@@ -146,10 +158,10 @@ public class LineBreakpointPanel extends JPanel implements ControllerProvider, o
         conditionsPanel.setCondition(b.getCondition());
         conditionsPanel.setHitCountFilteringStyle(b.getHitCountFilteringStyle());
         conditionsPanel.setHitCount(b.getHitCountFilter());
-        cPanel.add(conditionsPanel, "Center");
+        cPanel.add(conditionsPanel, "Center");  // NOI18N
         
         actionsPanel = new ActionsPanel (b);
-        pActions.add (actionsPanel, "Center");
+        pActions.add (actionsPanel, "Center");  // NOI18N
 
         tfFileName.getDocument().addDocumentListener(validityDocumentListener);
         tfLineNumber.getDocument().addDocumentListener(validityDocumentListener);
@@ -160,14 +172,7 @@ public class LineBreakpointPanel extends JPanel implements ControllerProvider, o
         });
     }
     
-    private static int findNumLines(String url) {
-        FileObject file;
-        try {
-            file = URLMapper.findFileObject (new URL(url));
-        } catch (MalformedURLException e) {
-            return 0;
-        }
-        if (file == null) return 0;
+    private static int findNumLines(FileObject file) {
         DataObject dataObject;
         try {
             dataObject = DataObject.find (file);
@@ -331,15 +336,10 @@ public class LineBreakpointPanel extends JPanel implements ControllerProvider, o
             }
             actionsPanel.ok ();
             String path = tfFileName.getText().trim();
-            if (new File(path).exists()) {
-                try {
-                    path = new File(path).toURI().toURL().toString();
-                } catch (MalformedURLException ex) {
-                    Exceptions.printStackTrace(ex);
-                    path = "file://" + path;    // NOI18N
-                }
-            }
-            breakpoint.setURL(path);
+            logger.fine("O.K.: path = '"+path+"'");
+            URL url = getURL(path);
+            logger.fine("      => URL = '"+url+"'");
+            breakpoint.setURL((url != null) ? url.toString() : path);
             breakpoint.setLineNumber(Integer.parseInt(tfLineNumber.getText().trim()));
             breakpoint.setCondition (conditionsPanel.getCondition());
             breakpoint.setHitCountFilter(conditionsPanel.getHitCount(),
@@ -361,36 +361,21 @@ public class LineBreakpointPanel extends JPanel implements ControllerProvider, o
 
         private void checkValid() {
             String path = tfFileName.getText().trim();
+            logger.fine("checkValid: path = '"+path+"'");
             if (path.length() == 0) {
                 setErrorMessage(NbBundle.getMessage(LineBreakpointPanel.class, "MSG_No_File_Spec"));
                 setValid(false);
                 return ;
             }
-            try {
-                if (new File(path).exists()) {
-                    path = "file:"+path;
-                }
-                URL url = new URL(path);
-                try {
-                    File f = new File(url.toURI());
-                    if (!f.isFile()) {
-                        setErrorMessage(NbBundle.getMessage(LineBreakpointPanel.class, "MSG_NonExistent_File_Spec"));
-                        setValid(false);
-                        return ;
-                    }
-                } catch (IllegalArgumentException iaex) {
-                    // Ignore IllegalArgumentException (e.g. URI might not be hierarchical)
-                }
-            } catch (MalformedURLException ex) {
+            URL url = getURL(path);
+            logger.fine("  url = '"+url+"'");
+            FileObject fo = null;
+            if (url != null) {
+                fo = URLMapper.findFileObject (url);
+            }
+            logger.fine("  => FileObject = '"+fo+"'");
+            if (fo == null) {
                 setErrorMessage(NbBundle.getMessage(LineBreakpointPanel.class, "MSG_NonExistent_File_Spec"));
-                setValid(false);
-                return ;
-            } catch (URISyntaxException ex) {
-                setErrorMessage(NbBundle.getMessage(LineBreakpointPanel.class, "MSG_Malformed_File_Spec"));
-                setValid(false);
-                return ;
-            } catch (IOException ioex) {
-                setErrorMessage(NbBundle.getMessage(LineBreakpointPanel.class, "MSG_Invalid_File_Spec"));
                 setValid(false);
                 return ;
             }
@@ -407,7 +392,8 @@ public class LineBreakpointPanel extends JPanel implements ControllerProvider, o
                 setValid(false);
                 return ;
             }
-            int maxLine = findNumLines(path);
+            int maxLine = findNumLines(fo);
+            logger.fine("  => maxLine = '"+maxLine+"'");
             if (maxLine == 0) { // Not found
                 maxLine = Integer.MAX_VALUE - 1; // Not to bother the user when we did not find it
             }
@@ -419,6 +405,31 @@ public class LineBreakpointPanel extends JPanel implements ControllerProvider, o
             }
             setErrorMessage(null);
             setValid(true);
+        }
+
+        private URL getURL(String path) {
+            URL url = null;
+            if (fileURL != null) {
+                String q = fileURL.getQuery();
+                try {
+                    URI uri = new URI(fileURL.getProtocol(), null, fileURL.getHost(), fileURL.getPort(), path, q, null);
+                    try {
+                        url = uri.toURL();
+                    } catch (MalformedURLException ex) {
+                        logger.log(Level.INFO, "Malformed url protocol '"+fileURL.getProtocol()+"', from "+fileURL+", path = '"+path+"', uri = "+uri, ex);
+                    }
+                } catch (URISyntaxException ex) {
+                    logger.log(Level.INFO, "Malformed URI: scheme '"+fileURL.getProtocol()+"', from "+fileURL+", path = '"+path+"'", ex);
+                }
+            }
+            if (url == null) {
+                try {
+                    url = new URL(path);
+                } catch (MalformedURLException ex) {
+                    logger.log(Level.INFO, "Malformed url '"+path+"'", ex);
+                }
+            }
+            return url;
         }
 
         private void setValid(boolean valid) {
