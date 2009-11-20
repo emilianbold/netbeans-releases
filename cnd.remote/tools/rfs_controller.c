@@ -321,6 +321,34 @@ static int scan_line(const char* buffer, int bufsize, enum file_state *state, in
     }
 }
 
+typedef struct file_elem {
+    struct file_elem* next;
+    char filename[]; // have to be the last field
+} file_elem;
+
+/**
+ * adds info about new file to the tail of the list
+ */
+static file_elem* add_file_to_list(file_elem* tail, const char* filename) {
+     trace("File %s is added to the list to be send to LC as not yet copied files\n", filename);
+    int namelen = strlen(filename);
+    int size = sizeof(file_elem) + namelen + 1;
+    file_elem *fe = (file_elem*) malloc(size);
+    fe->next = NULL;
+    strcpy(fe->filename, filename);
+    if (tail != NULL) {
+        tail->next = fe;
+    }
+    return fe;
+}
+
+static void free_file_list(file_elem* list) {
+    while (list != NULL) {
+        file_elem* next = list->next;
+        free(list);
+        list = next;
+    }
+}
 /**
  * Reads the list of files from the host IDE runs on,
  * creates files, fills internal file table
@@ -330,6 +358,8 @@ static int init_files() {
     int bufsize = PATH_MAX + 32;
     char buffer[bufsize];
     int success = false;
+    file_elem* list = NULL;
+    file_elem* tail = NULL;
     while (1) {
         fgets(buffer, bufsize, stdin);
         if (buffer[0] == '\n') {
@@ -363,6 +393,13 @@ static int init_files() {
                 touch = true;
             } else if (state == COPIED || state == TOUCHED) {
                 touch = !file_exists(path, file_size);
+                if (state == COPIED && touch) {
+                    // inform local controller that he is not right about copied status of file
+                    tail = add_file_to_list(tail, path);
+                    if (list == NULL) {
+                        list = tail;
+                    }
+                }
             } else {
                 report_error("prodocol error: %s\n", buffer);
             }
@@ -386,6 +423,19 @@ static int init_files() {
         }
     }
     trace("Files list initialization done\n");
+    if (success) {
+        // send info about touched files which were passed as copied files
+        tail = list;
+        while (tail != NULL) {
+            fprintf(stdout, "t %s\n", tail->filename);
+            fflush(stdout);
+            tail = tail->next;
+        }
+        free_file_list(list);
+        // empty line as indication of finished files list
+        fprintf(stdout, "\n");
+        fflush(stdout);
+    }
     return success;
 }
 

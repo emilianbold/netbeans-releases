@@ -108,34 +108,34 @@ public final class FileData {
         }
     }
 
-    /**
-     * Initial filling
-     * NB: file should be absolute and NORMALIZED!
-     */
-    public void addFile(File file) {
-        CndUtils.assertNormalized(file);
-        String key = getFileKey(file);
-        FileInfo info = getFileInfo(key);
-        if (info == null) {
-            setFileInfo(file, FileState.INITIAL);
-        } else {
-            switch (info.state) {
-                case COPIED: // fall through
-                case TOUCHED:
-                    if (file.lastModified() != info.timestamp) {
-                        setFileInfo(file, FileState.INITIAL);
-                    }
-                    break;
-                case INITIAL: // fall through
-                case UNCONTROLLED:
-                    // nothing
-                    break;
-                default:
-                    CndUtils.assertTrue(false, "Unexpected state: " + info.state); //NOI18N
-                    setFileInfo(file, FileState.INITIAL);
-            }
-        }
-    }
+//    /**
+//     * Initial filling
+//     * NB: file should be absolute and NORMALIZED!
+//     */
+//    public void addFile(File file) {
+//        CndUtils.assertNormalized(file);
+//        String key = getFileKey(file);
+//        FileInfo info = getFileInfo(key);
+//        if (info == null) {
+//            setFileInfo(file, FileState.INITIAL);
+//        } else {
+//            switch (info.state) {
+//                case COPIED: // fall through
+//                case TOUCHED:
+//                    if (file.lastModified() != info.timestamp) {
+//                        setFileInfo(file, FileState.INITIAL);
+//                    }
+//                    break;
+//                case INITIAL: // fall through
+//                case UNCONTROLLED:
+//                    // nothing
+//                    break;
+//                default:
+//                    CndUtils.assertTrue(false, "Unexpected state: " + info.state); //NOI18N
+//                    setFileInfo(file, FileState.INITIAL);
+//            }
+//        }
+//    }
 
     public FileState getState(File file) {
         FileInfo info = getFileInfo(file);
