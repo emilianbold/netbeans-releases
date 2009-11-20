@@ -38,7 +38,7 @@ public class PersonResource {
     public PersonResource() {
     }
 
-    protected void setId(String id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -51,7 +51,7 @@ public class PersonResource {
     @GET
     @Produces({"application/xml", "application/json"})
     public PersonConverter get(@QueryParam("expandLevel")
-    @DefaultValue("1")
+                               @DefaultValue("1")
     int expandLevel) {
         PersistenceService persistenceSvc = PersistenceService.getInstance();
         try {
@@ -121,7 +121,7 @@ public class PersonResource {
      * @param newEntity the entity containing the new data
      * @return the updated entity
      */
-    protected Person updateEntity(Person entity, Person newEntity) {
+    private Person updateEntity(Person entity, Person newEntity) {
         EntityManager em = PersistenceService.getInstance().getEntityManager();
         entity = em.merge(newEntity);
         return entity;
@@ -132,7 +132,7 @@ public class PersonResource {
      *
      * @param entity the entity to deletle
      */
-    protected void deleteEntity(Person entity) {
+    private void deleteEntity(Person entity) {
         EntityManager em = PersistenceService.getInstance().getEntityManager();
         em.remove(entity);
     }

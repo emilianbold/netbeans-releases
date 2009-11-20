@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,37 +34,61 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.jsf.editor.tld;
+package org.netbeans.modules.cnd.remote.sync;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Collection;
+import junit.framework.Test;
+import junit.framework.TestSuite;
+import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
 /**
  *
- * @author marekfukala
+ * @author Sergey Grinev
  */
-public class TldUtils {
+public class RfsBuildTestSuite extends CndBaseTestSuite {
 
-    private static Map<String, String> JSF_LIBRARY_DISPLAY_NAMES;
+    public static final String PLATFORMS_SECTION = "remote.platforms";
+    public static final String DEFAULT_SECTION = "remote";
 
-
-    /** A workaround for missing <display-name> entry in jsf libraries. */
-    public static synchronized String getLibraryDisplayName(String libraryUri) {
-        if(JSF_LIBRARY_DISPLAY_NAMES == null) {
-            JSF_LIBRARY_DISPLAY_NAMES = new HashMap<String, String>();
-            
-            JSF_LIBRARY_DISPLAY_NAMES.put("http://java.sun.com/jsf/facelets", "Facelets"); //NOI18N
-            JSF_LIBRARY_DISPLAY_NAMES.put("http://mojarra.dev.java.net/mojarra_ext", "Mojarra Extensions"); //NOI18N
-            JSF_LIBRARY_DISPLAY_NAMES.put("http://java.sun.com/jsf/composite", "Composite Components"); //NOI18N
-            JSF_LIBRARY_DISPLAY_NAMES.put("http://java.sun.com/jsf/html", "Html Basic"); //NOI18N
-            JSF_LIBRARY_DISPLAY_NAMES.put("http://java.sun.com/jsf/core", "Jsf Core"); //NOI18N
-            JSF_LIBRARY_DISPLAY_NAMES.put("http://java.sun.com/jsp/jstl/core", "Jstl Core"); //NOI18N
-        }
-        
-        return JSF_LIBRARY_DISPLAY_NAMES.get(libraryUri);
+    public RfsBuildTestSuite(Class testClass) {
+        this(testClass.getName(), testClass);
     }
 
+    // Why are tests just Test, not NativeExecutionBaseTestCase?
+    // to allow add warnings (TestSuite.warning() returns test stub with warning)
+    public RfsBuildTestSuite(String name, Test... tests) {
+        setName(name);
+        for (Test test : tests) {
+            addTest(test);
+        }
+    }
+
+    // Why are tests just Test, not NativeExecutionBaseTestCase?
+    // to allow add warnings (TestSuite.warning() returns test stub with warning)
+    public RfsBuildTestSuite(String name, Collection<Test> tests) {
+        setName(name);
+        for (Test test : tests) {
+            addTest(test);
+        }
+    }
+
+    public RfsBuildTestSuite() {
+        this("Remote Development", // NOI18N
+             //HostSetupTestCase.class,
+             RfsGnuRemoteBuildTestCase.class,
+             RfsSunStudioRemoteBuildTestCase.class);
+    }
+
+
+    private RfsBuildTestSuite(String name, Class... testClasses) {
+        super(name, PLATFORMS_SECTION, testClasses);
+    }
+
+    public static Test suite() {
+        TestSuite suite = new RfsBuildTestSuite();
+        return suite;
+    }
 }

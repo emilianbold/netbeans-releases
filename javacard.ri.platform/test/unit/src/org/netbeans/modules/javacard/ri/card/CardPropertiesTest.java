@@ -198,10 +198,10 @@ public class CardPropertiesTest {
 
     @Test
     public void testIsNoSuspend() {
-        assertEquals (true, p.isNoSuspend());
-        p.setNoSuspend(false);
-        assertEquals(false, p.isNoSuspend());
-        opa.assertChanged(JavacardDeviceKeyNames.DEVICE_DONT_SUSPEND_THREADS_ON_STARTUP);
+        assertEquals (false, p.isSuspend());
+        p.setSuspend(false);
+        assertEquals(false, p.isSuspend());
+        opa.assertChanged(JavacardDeviceKeyNames.DEVICE_SUSPEND_THREADS_ON_STARTUP);
     }
 
     @Test
@@ -279,7 +279,7 @@ public class CardPropertiesTest {
         if (!Utilities.isWindows()) { //FIXME
             return;
         }
-        String[] got = p.getRunCommandLine(platformProps, true, true);
+        String[] got = p.getRunCommandLine(platformProps, false, 0);
         String[] expect = new String[] {
             win ? "C:\\Java Card\\JCDK3.0.2\\bin\\cjcre.exe" : "usr/local/java/jcdk3.0.2/bin/cjcre",
             "-ramsize",
@@ -288,9 +288,6 @@ public class CardPropertiesTest {
             "3M",
             "-corsize",
             "3K",
-            "-debugger",
-            "-debugport",
-            "9017",
             "-e2pfile",
             win ? "C:\\foo\\foo.eprom" : "/home/user/foo/foo.eprom",
             "-loggerlevel",
@@ -303,8 +300,7 @@ public class CardPropertiesTest {
             "T=0",
             "-contactlessport",
             "3215",
-            "-nosuspend",
-            };
+        };
         for (int i = 0; i < Math.min(expect.length, got.length); i++) {
             assertEquals("Expected '" + expect[i] + "' at " + i + " got '" + got[i] + "' :" + Arrays.asList(got), expect[i], got[i]);
         }
@@ -340,7 +336,7 @@ public class CardPropertiesTest {
                 + "-e2psize 2K "
                 + "-corsize 1K "
                 + "-e2pfile c:\\bar\\foo.eeprom "
-                + "-debug "
+                + "-debug false "
                 + "-loggerlevel SEVERE "
                 + "-httpport 8080 "
                 + "-contactedport 2650 "
@@ -348,7 +344,7 @@ public class CardPropertiesTest {
                 + "-contactlessport 2651 "
                 + "-bogus C:\\Progam Files\\foo\\bar.foo "
                 + "-debuggerport 2652 "
-                + "-nosuspend";
+                + "-suspend false ";
 
         String[] expect = new String[]{
             "cmd",
@@ -363,6 +359,7 @@ public class CardPropertiesTest {
             "-e2pfile",
             "c:\\bar\\foo.eeprom",
             "-debug",
+            "false",
             "-loggerlevel",
             "SEVERE",
             "-httpport",
@@ -377,7 +374,8 @@ public class CardPropertiesTest {
             "C:\\Progam Files\\foo\\bar.foo",
             "-debuggerport",
             "2652",
-            "-nosuspend"
+            "-suspend",
+            "false",
         };
 
         String[] got = shellSplit(cmdline);

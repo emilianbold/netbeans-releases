@@ -42,7 +42,6 @@ package org.netbeans.modules.web.core.syntax.completion.api;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -61,7 +60,6 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.swing.text.Document;
 
-import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
@@ -785,23 +783,14 @@ public class ELExpression {
                 if (lastKnownType != null) {
                     String accessorName = getAccessorName(parts[i].getPart());
                     
-                    //resolve iterable type if possible
+                    //resolved expressions (iterating components) handling
                     //this means that once the type is iterable
                     //we cannot resolve methods of the iterable type itself,
                     //just type of its items
-                    if ( controller.getTypes().isAssignable(
-                            controller.getTypes().erasure(lastKnownType),
-                                controller.getElements().getTypeElement(
-                                        Iterable.class.getCanonicalName()).asType())) {
-                        if ( lastKnownType instanceof DeclaredType ){
-                            List<? extends TypeMirror> typeArguments =
-                                ((DeclaredType)lastKnownType).getTypeArguments();
-                            if ( typeArguments.size() != 0 ){
-                                TypeMirror typeMirror = typeArguments.get(0);
-                                if ( typeMirror.getKind() == TypeKind.DECLARED){
-                                    lastFoundType = lastKnownType = typeMirror ;
-                                }
-                            }
+                    if(isResolvedExpression()) {
+                        TypeMirror typeParameter = extractTypeParameter(controller, lastKnownType, Iterable.class);
+                        if(typeParameter != null) {
+                            lastFoundType = lastKnownType = typeParameter;
                         }
                     }
 
@@ -928,7 +917,33 @@ public class ELExpression {
             if ( lastKnownType == null && lastReturnType == null && handler!= null){
                 handler.typeNotFound(parts[i-1].getIndex(), parts[i-1].getPart());
             }
+
+            //resolved expressions (iterating components) handling
+            //and finally process the found type for its type parameter
+            if(isResolvedExpression()) {
+                TypeMirror typeParam = extractTypeParameter(controller, lastFoundType, Iterable.class);
+                lastFoundType = typeParam != null ? typeParam : lastFoundType;
+            }
             return lastFoundType;
+        }
+
+        private TypeMirror extractTypeParameter(CompilationInfo controller, TypeMirror lastKnownType, Class clazz) {
+            if (controller.getTypes().isAssignable(
+                    controller.getTypes().erasure(lastKnownType),
+                    controller.getElements().getTypeElement(
+                    clazz.getCanonicalName()).asType())) {
+                if (lastKnownType instanceof DeclaredType) {
+                    List<? extends TypeMirror> typeArguments =
+                            ((DeclaredType) lastKnownType).getTypeArguments();
+                    if (typeArguments.size() != 0) {
+                        TypeMirror typeMirror = typeArguments.get(0);
+                        if (typeMirror.getKind() == TypeKind.DECLARED) {
+                            return typeMirror;
+                        }
+                    }
+                }
+            }
+            return null;
         }
 
         protected String getAccessorName(String propertyName) {
@@ -1128,6 +1143,10 @@ public class ELExpression {
 
     public String getResolvedExpression() {
         return resolvedExpression != null ? resolvedExpression : expression;
+    }
+
+    public boolean isResolvedExpression() {
+        return !getExpression().equals(getResolvedExpression());
     }
 
     public String getReplace() {

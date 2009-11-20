@@ -582,7 +582,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                         task.removeTaskListener(this);
                     }
                 });
-                
+
                 return t;
 
             case DOCUMENT_READY:
@@ -898,7 +898,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             return redirect.getDocument();
         }
         //#149717 Do not block when document is loading
-        if (documentStatus != DOCUMENT_READY) {
+        if ((documentStatus == DOCUMENT_NO) || (documentStatus == DOCUMENT_LOADING)) {
             return null;
         }
         synchronized (getLock()) {
@@ -912,7 +912,10 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                 case DOCUMENT_NO:
                     return null;
 
-                default: // ready, loading or reloading
+                case DOCUMENT_LOADING:
+                    return null;
+
+                default: // ready or reloading
 
                     if (LOCAL_LOAD_TASK.get() != null) {
                         return getDoc();

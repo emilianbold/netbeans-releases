@@ -420,6 +420,13 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
                             case SWITCH:
                                 indent = getTokenIndent(lbss) + getShiftWidth();
                                 break;
+                            case NAMESPACE:
+                                if (indentNamespace()) {
+                                    indent = getTokenIndent(lbss) + getRightIndentDeclaration();
+                                } else {
+                                    indent = getTokenIndent(lbss);
+                                }
+                                break;
                             default:
                                 indent = getTokenIndent(lbss) + getRightIndentDeclaration();
                                 break;

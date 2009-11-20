@@ -124,5 +124,7 @@ public class RestConstants {
     
     public static final String STATELESS = JavaEE5_EJB_PACKAGE + "Stateless";    //NOI18N
 
+    public static final String EJB = JavaEE5_EJB_PACKAGE + "EJB";    //NOI18N
+
     public static final String APPLICATION_PATH = REST_API_PACKAGE + "ApplicationPath"; //NOI18N
 }

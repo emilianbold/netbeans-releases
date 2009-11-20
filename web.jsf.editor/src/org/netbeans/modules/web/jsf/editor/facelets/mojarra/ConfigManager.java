@@ -628,7 +628,7 @@ public class ConfigManager {
      *  should be validated
      * @return an array of <code>DocumentInfo</code>s
      */
-    private static DocumentInfo[] getConfigDocuments(ServletContext sc,
+    public static DocumentInfo[] getConfigDocuments(ServletContext sc,
                                                  List<ConfigurationResourceProvider> providers,
                                                  ExecutorService executor,
                                                  boolean validating) {

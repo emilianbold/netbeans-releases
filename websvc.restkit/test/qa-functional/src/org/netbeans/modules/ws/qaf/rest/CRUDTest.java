@@ -57,6 +57,7 @@ import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.ws.qaf.utilities.RestWizardOperator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -64,7 +65,7 @@ import org.openide.filesystems.FileUtil;
  * Tests for New REST web services from Entity Classes wizard
  *
  * Duration of this test suite: aprox. 3min
- * 
+ *
  * @author lukas
  */
 public class CRUDTest extends RestTestBase {
@@ -111,7 +112,7 @@ public class CRUDTest extends RestTestBase {
         //RESTful Web Services from Entity Classes
         String restLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "Templates/WebServices/RestServicesFromEntities");
         createNewWSFile(getProject(), restLabel);
-        wo = new WizardOperator(restLabel);
+        wo = new RestWizardOperator(restLabel);
         //have to wait until "retrieving message dissapers (see also issue 122802)
         new EventTool().waitNoEvent(2500);
         //Add All >>
@@ -294,7 +295,7 @@ public class CRUDTest extends RestTestBase {
      * Creates suite from particular test cases. You can define order of testcases here.
      */
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(CRUDTest.class),
+        return NbModuleSuite.create(addServerTests(Server.GLASSFISH_V3, NbModuleSuite.createConfiguration(CRUDTest.class),
                 "testRfE", //NOI18N
                 "testPropAccess", //NOI18N
                 "testDeploy", //NOI18N
