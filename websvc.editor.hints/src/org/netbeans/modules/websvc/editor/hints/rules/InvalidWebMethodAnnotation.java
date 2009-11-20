@@ -27,7 +27,6 @@
  */
 package org.netbeans.modules.websvc.editor.hints.rules;
 
-import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.Tree;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -46,7 +45,7 @@ import org.netbeans.modules.websvc.editor.hints.common.Utilities;
 
 /**
  *
- * @author Ajit.Bhate@Sun.com
+ * @author Milan.Kuchtiak@Sun.com
  */
 public class InvalidWebMethodAnnotation extends Rule<ExecutableElement> implements WebServiceAnnotations {
 
