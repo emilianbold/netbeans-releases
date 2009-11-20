@@ -60,6 +60,8 @@ public interface WebServiceAnnotations {
     public static final String ANNOTATION_ATTRIBUTE_SERVICE_NAME = "serviceName";
     public static final String ANNOTATION_ATTRIBUTE_SEI = "endpointInterface";
     public static final String ANNOTATION_ATTRIBUTE_PORTNAME = "portName";
+    public static final String ANNOTATION_ATTRIBUTE_OPERATIONNAME = "operationName";
+    public static final String ANNOTATION_ATTRIBUTE_ACTION = "action";
     public static final String ANNOTATION_ATTRIBUTE_WSDLLOCATION = "wsdlLocation";
     public static final String ANNOTATION_ATTRIBUTE_MODE = "mode";
     public static final String ANNOTATION_ATTRIBUTE_NAME = "name";
