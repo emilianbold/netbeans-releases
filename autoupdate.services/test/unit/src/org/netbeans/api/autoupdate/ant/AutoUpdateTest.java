@@ -88,6 +88,145 @@ public class AutoUpdateTest extends NbTestCase {
         assertTrue("jar file created", jar.exists());
     }
 
+
+    public void testUpdateAlreadyInstalled() throws Exception {
+        clearWorkDir();
+
+        File f = new File(getWorkDir(), "org-netbeans-api-annotations-common.xml");
+        ExecuteAnt.extractResource(f, "org-netbeans-api-annotations-common.xml");
+
+        File nbm = generateNBM("org-netbeans-api-annotations-common.nbm",
+            "netbeans/config/Modules/org-netbeans-api-annotations-common.xml",
+            "netbeans/modules/org-netbeans-api-annotations-common.jar");
+
+        File target = new File(getWorkDir(), "target");
+        target.mkdirs();
+        File m = new File(
+            new File(new File(target, "platform11"), "modules"),
+            "org-netbeans-api-annotations-common.jar"
+        );
+        m.getParentFile().mkdirs();
+        m.createNewFile();
+
+        File x = new File(
+            new File(new File(new File(target, "platform11"), "config"), "Modules"),
+            "org-netbeans-api-annotations-common.xml"
+        );
+        x.getParentFile().mkdirs();
+        String txtx =
+"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+"<!DOCTYPE module PUBLIC \"-//NetBeans//DTD Module Status 1.0//EN\"\n" +
+"                        \"http://www.netbeans.org/dtds/module-status-1_0.dtd\">\n" +
+"<module name=\"org.netbeans.api.annotations.common\">\n" +
+"    <param name=\"autoload\">true</param>\n" +
+"    <param name=\"eager\">false</param>\n" +
+"    <param name=\"jar\">modules/org-netbeans-api-annotations-common.jar</param>\n" +
+"    <param name=\"release\">1</param>\n" +
+"    <param name=\"reloadable\">false</param>\n" +
+"    <param name=\"specversion\">1.3</param>\n" +
+"</module>\n";
+
+
+        FileOutputStream osx = new FileOutputStream(x);
+        osx.write(txtx.getBytes());
+        osx.close();
+
+
+        ExecuteAnt.execute(
+            "autoupdate.xml", "-verbose", "-Durl=" + f.toURI().toURL(),
+            "-Dincludes=org.netbeans.api.annotations.common",
+            "-Dtarget=" + target
+        );
+
+        File xml = new File(
+            new File(new File(new File(target, "platform11"), "config"), "Modules"),
+            "org-netbeans-api-annotations-common.xml"
+        );
+        assertTrue("xml file created", xml.exists());
+
+        File jar = new File(
+            new File(new File(target, "platform11"), "modules"),
+            "org-netbeans-api-annotations-common.jar"
+        );
+        assertTrue("jar file created", jar.exists());
+
+        if (ExecuteAnt.getStdOut().contains("Writing ")) {
+            fail("No writes, the module is already installed:\n" + ExecuteAnt.getStdOut());
+        }
+    }
+
+    public void testUpdateAlreadyInstalledAndOld() throws Exception {
+        clearWorkDir();
+
+        File f = new File(getWorkDir(), "org-netbeans-api-annotations-common.xml");
+        ExecuteAnt.extractResource(f, "org-netbeans-api-annotations-common.xml");
+
+        File nbm = generateNBM("org-netbeans-api-annotations-common.nbm",
+            "netbeans/config/Modules/org-netbeans-api-annotations-common.xml",
+            "netbeans/modules/org-netbeans-api-annotations-common.jar");
+
+        File target = new File(getWorkDir(), "target");
+        target.mkdirs();
+        File m = new File(
+            new File(new File(target, "platform11"), "modules"),
+            "org-netbeans-api-annotations-common.jar"
+        );
+        m.getParentFile().mkdirs();
+        m.createNewFile();
+
+        File x = new File(
+            new File(new File(new File(target, "platform11"), "config"), "Modules"),
+            "org-netbeans-api-annotations-common.xml"
+        );
+        x.getParentFile().mkdirs();
+        String txtx =
+"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+"<!DOCTYPE module PUBLIC \"-//NetBeans//DTD Module Status 1.0//EN\"\n" +
+"                        \"http://www.netbeans.org/dtds/module-status-1_0.dtd\">\n" +
+"<module name=\"org.netbeans.api.annotations.common\">\n" +
+"    <param name=\"autoload\">true</param>\n" +
+"    <param name=\"eager\">false</param>\n" +
+"    <param name=\"jar\">modules/org-netbeans-api-annotations-common.jar</param>\n" +
+"    <param name=\"release\">1</param>\n" +
+"    <param name=\"reloadable\">false</param>\n" +
+"    <param name=\"specversion\">1.0.3</param>\n" +
+"</module>\n";
+
+
+        FileOutputStream osx = new FileOutputStream(x);
+        osx.write(txtx.getBytes());
+        osx.close();
+
+        Thread.sleep(1000);
+        long last = x.lastModified();
+
+        ExecuteAnt.execute(
+            "autoupdate.xml", "-verbose", "-Durl=" + f.toURI().toURL(),
+            "-Dincludes=org.netbeans.api.annotations.common",
+            "-Dtarget=" + target
+        );
+
+        File xml = new File(
+            new File(new File(new File(target, "platform11"), "config"), "Modules"),
+            "org-netbeans-api-annotations-common.xml"
+        );
+        assertTrue("xml file created", xml.exists());
+
+        File jar = new File(
+            new File(new File(target, "platform11"), "modules"),
+            "org-netbeans-api-annotations-common.jar"
+        );
+        assertTrue("jar file created", jar.exists());
+
+        if (!ExecuteAnt.getStdOut().contains("Writing ")) {
+            fail("Writes should be there:\n" + ExecuteAnt.getStdOut());
+        }
+
+        if (last >= jar.lastModified()) {
+            fail("Newer timestamp for " + jar);
+        }
+    }
+
     public File generateNBM (String name, String... files) throws IOException {
         File f = new File (getWorkDir (), name);
 

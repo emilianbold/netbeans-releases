@@ -47,16 +47,21 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import javax.xml.parsers.SAXParserFactory;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.taskdefs.Get;
 import org.netbeans.api.autoupdate.ant.AutoupdateCatalogParser.ModuleItem;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
  *
@@ -88,11 +93,18 @@ public class AutoUpdate extends Task {
             throw new BuildException("netbeans.dest.dir must existing be directory: " + dir);
         }
 
+        Map<String,String> installed = findExistingModules(dir);
+
         // no userdir
         Map<String, ModuleItem> units = AutoupdateCatalogParser.getUpdateItems(catalog, catalog);
         for (ModuleItem uu : units.values()) {
             log("found module: " + uu, Project.MSG_VERBOSE);
             if (!matches(uu.getCodeName())) {
+                continue;
+            }
+            String version = installed.get(uu.getCodeName());
+            if (version != null && !uu.isNewerThan(version)) {
+                log("Version " + version + " of " + uu.getCodeName() + " is up to date", Project.MSG_VERBOSE);
                 continue;
             }
 
@@ -144,6 +156,63 @@ public class AutoUpdate extends Task {
             }
         }
         return false;
+    }
+
+    private static Map<String,String> findExistingModules(File dir) {
+        Map<String,String> all = new HashMap<String, String>();
+        for (File cluster : dir.listFiles()) {
+            File mc = new File(new File(cluster, "config"), "Modules");
+            final File[] arr = mc.listFiles();
+            if (arr == null) {
+                continue;
+            }
+            for (File m : arr) {
+                try {
+                    parseVersion(m, all);
+                } catch (Exception ex) {
+                    throw new BuildException(ex.getMessage(), ex);
+                }
+            }
+        }
+        return all;
+    }
+
+    private static void parseVersion(File config, final Map<String,String> toAdd) throws Exception {
+        class P extends DefaultHandler {
+            String name;
+            StringBuilder text;
+
+            @Override
+            public void characters(char[] chars, int indx, int len) throws SAXException {
+                if (text != null) {
+                    text.append(chars, indx, len);
+                }
+            }
+
+            @Override
+            public void endElement(String string, String string1, String string2) throws SAXException {
+                if (text != null) {
+                    toAdd.put(name, text.toString());
+                    text = null;
+                }
+            }
+
+            @Override
+            public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+                if ("module".equals(qName)) {
+                    name = attributes.getValue("name");
+                    return;
+                }
+                if ("param".equals(qName) && "specversion".equals(attributes.getValue("name"))) {
+                    text = new StringBuilder();
+                    return;
+                }
+            }
+
+        }
+        P p = new P();
+        SAXParserFactory.newInstance().newSAXParser().parse(config, p);
+
     }
 
     public static final class Modules {

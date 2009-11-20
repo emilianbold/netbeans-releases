@@ -612,5 +612,24 @@ class AutoupdateCatalogParser extends DefaultHandler {
         public String toString() {
             return "[" + moduleCodeName + "@" + specVersion + "(" + targetcluster + ") <- " + distributionURL + "]";
         }
+
+        boolean isNewerThan(String version) {
+            String[] mine = specVersion.split("\\.");
+            String[] its = version.split("\\.");
+
+            int min = Math.min(mine.length, its.length);
+            for (int i = 0; i < min; i++) {
+                int m = Integer.parseInt(mine[i]);
+                int it = Integer.parseInt(its[i]);
+
+                if (m > it) {
+                    return true;
+                }
+                if (m < it) {
+                    return false;
+                }
+            }
+            return mine.length > its.length;
+        }
     }
 }
