@@ -65,9 +65,15 @@ static void report_unresolved_path(const char* path) {
         getcwd(pwd, sizeof pwd);
         trace("Can not resolve path: %s  pwd: %s: %s\n", path, pwd);
     }
+    static void dbg_sleep(int time) {
+        trace("Sleeping %d sec...\n", time);
+        sleep(time);
+        trace("Awoke\n");
+    }
 #else
     #define trace_startup(...)
     #define trace(...)
     #define trace_shutdown()
     #define trace_unresolved_path(...)
+    #define dbg_sleep(...)
 #endif
