@@ -39,10 +39,10 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.api.autoupdate.ant;
+package org.netbeans.nbbuild;
 
 import java.io.BufferedInputStream;
-import java.io.File;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -89,33 +89,11 @@ class AutoupdateCatalogParser extends DefaultHandler {
     }
 
     private EntityResolver newEntityResolver () {
-        try {
-            Class.forName("org.netbeans.updater.XMLUtil");
-        } catch (ClassNotFoundException e) {
-            final File netbeansHomeFile = new File(System.getProperty("netbeans.home"));
-            final File userdir = new File(System.getProperty("netbeans.user"));
-
-            final String updaterPath = "modules/ext/updater.jar";
-            final String newUpdaterPath = "update/new_updater/updater.jar";
-
-            final File updaterPlatform = new File(netbeansHomeFile, updaterPath);
-            final File updaterUserdir  = new File(userdir, updaterPath);
-
-            final File newUpdaterPlatform = new File(netbeansHomeFile, newUpdaterPath);
-            final File newUpdaterUserdir  = new File(userdir, newUpdaterPath);
-
-            String message =
-                    "    org.netbeans.updater.XMLUtil is not accessible\n" +
-                    "    platform dir = " + netbeansHomeFile.getAbsolutePath() + "\n" +
-                    "    userdir  dir = " + userdir.getAbsolutePath() + "\n" +
-                    "    updater in platform exist = " + updaterPlatform.exists() + (updaterPlatform.exists() ? (", length = " + updaterPlatform.length() + " bytes") : "") + "\n" +
-                    "    updater in userdir  exist = " + updaterUserdir.exists() + (updaterUserdir.exists() ? (", length = " + updaterUserdir.length() + " bytes") : "") + "\n" +
-                    "    new updater in platform exist = " + newUpdaterPlatform.exists() + (newUpdaterPlatform.exists() ? (", length = " + newUpdaterPlatform.length() + " bytes") : "") + "\n" +
-                    "    new updater in userdir  exist = " + newUpdaterUserdir.exists() + (newUpdaterUserdir.exists() ? (", length = " + newUpdaterUserdir.length() + " bytes") : "") + "\n";
-
-            ERR.log(Level.WARNING, message);
-        }
-        return org.netbeans.updater.XMLUtil.createAUResolver ();
+        return new EntityResolver() {
+            public InputSource resolveEntity(String string, String string1) throws SAXException, IOException {
+                return new InputSource(new ByteArrayInputStream(new byte[0]));
+            }
+        };
     }
 
     

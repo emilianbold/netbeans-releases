@@ -37,7 +37,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.api.autoupdate.ant;
+package org.netbeans.nbbuild;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -60,7 +60,7 @@ public class AutoUpdateTest extends NbTestCase {
         clearWorkDir();
 
         File f = new File(getWorkDir(), "org-netbeans-api-annotations-common.xml");
-        ExecuteAnt.extractResource(f, "org-netbeans-api-annotations-common.xml");
+        PublicPackagesInProjectizedXMLTest.extractResource(f, "org-netbeans-api-annotations-common.xml");
 
         File nbm = generateNBM("org-netbeans-api-annotations-common.nbm",
             "netbeans/config/Modules/org-netbeans-api-annotations-common.xml",
@@ -69,7 +69,7 @@ public class AutoUpdateTest extends NbTestCase {
         File target = new File(getWorkDir(), "target");
         target.mkdirs();
 
-        ExecuteAnt.execute(
+        PublicPackagesInProjectizedXMLTest.execute(
             "autoupdate.xml", "-verbose", "-Durl=" + f.toURI().toURL(),
             "-Dincludes=org.netbeans.api.annotations.common",
             "-Dtarget=" + target
@@ -93,7 +93,7 @@ public class AutoUpdateTest extends NbTestCase {
         clearWorkDir();
 
         File f = new File(getWorkDir(), "org-netbeans-api-annotations-common.xml");
-        ExecuteAnt.extractResource(f, "org-netbeans-api-annotations-common.xml");
+        PublicPackagesInProjectizedXMLTest.extractResource(f, "org-netbeans-api-annotations-common.xml");
 
         File nbm = generateNBM("org-netbeans-api-annotations-common.nbm",
             "netbeans/config/Modules/org-netbeans-api-annotations-common.xml",
@@ -132,7 +132,7 @@ public class AutoUpdateTest extends NbTestCase {
         osx.close();
 
 
-        ExecuteAnt.execute(
+        PublicPackagesInProjectizedXMLTest.execute(
             "autoupdate.xml", "-verbose", "-Durl=" + f.toURI().toURL(),
             "-Dincludes=org.netbeans.api.annotations.common",
             "-Dtarget=" + target
@@ -150,8 +150,8 @@ public class AutoUpdateTest extends NbTestCase {
         );
         assertTrue("jar file created", jar.exists());
 
-        if (ExecuteAnt.getStdOut().contains("Writing ")) {
-            fail("No writes, the module is already installed:\n" + ExecuteAnt.getStdOut());
+        if (PublicPackagesInProjectizedXMLTest.getStdOut().contains("Writing ")) {
+            fail("No writes, the module is already installed:\n" + PublicPackagesInProjectizedXMLTest.getStdOut());
         }
     }
 
@@ -159,7 +159,7 @@ public class AutoUpdateTest extends NbTestCase {
         clearWorkDir();
 
         File f = new File(getWorkDir(), "org-netbeans-api-annotations-common.xml");
-        ExecuteAnt.extractResource(f, "org-netbeans-api-annotations-common.xml");
+        PublicPackagesInProjectizedXMLTest.extractResource(f, "org-netbeans-api-annotations-common.xml");
 
         File nbm = generateNBM("org-netbeans-api-annotations-common.nbm",
             "netbeans/config/Modules/org-netbeans-api-annotations-common.xml",
@@ -200,7 +200,7 @@ public class AutoUpdateTest extends NbTestCase {
         Thread.sleep(1000);
         long last = x.lastModified();
 
-        ExecuteAnt.execute(
+        PublicPackagesInProjectizedXMLTest.execute(
             "autoupdate.xml", "-verbose", "-Durl=" + f.toURI().toURL(),
             "-Dincludes=org.netbeans.api.annotations.common",
             "-Dtarget=" + target
@@ -218,8 +218,8 @@ public class AutoUpdateTest extends NbTestCase {
         );
         assertTrue("jar file created", jar.exists());
 
-        if (!ExecuteAnt.getStdOut().contains("Writing ")) {
-            fail("Writes should be there:\n" + ExecuteAnt.getStdOut());
+        if (!PublicPackagesInProjectizedXMLTest.getStdOut().contains("Writing ")) {
+            fail("Writes should be there:\n" + PublicPackagesInProjectizedXMLTest.getStdOut());
         }
 
         if (last >= jar.lastModified()) {

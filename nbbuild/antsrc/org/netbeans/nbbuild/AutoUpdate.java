@@ -37,7 +37,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.api.autoupdate.ant;
+package org.netbeans.nbbuild;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -58,7 +58,7 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.taskdefs.Get;
-import org.netbeans.api.autoupdate.ant.AutoupdateCatalogParser.ModuleItem;
+import org.netbeans.nbbuild.AutoupdateCatalogParser.ModuleItem;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;

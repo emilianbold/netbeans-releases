@@ -3,13 +3,7 @@
     <target name="all">
         <echo message="${root}"/>
 
-        <taskdef classname="org.netbeans.api.autoupdate.ant.AutoUpdate" name="autoupdate">
-            <classpath>
-                <fileset dir="${root}">
-                    <include name="platform*/**/*.jar"/>
-                </fileset>
-            </classpath>
-        </taskdef>
+        <taskdef classname="org.netbeans.nbbuild.AutoUpdate" name="autoupdate" classpath="${nb_all}/nbbuild/nbantext.jar"/>
 
         <autoupdate
             updatecenter="${url}"
