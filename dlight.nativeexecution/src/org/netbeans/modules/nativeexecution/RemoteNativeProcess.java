@@ -4,6 +4,7 @@
  */
 package org.netbeans.modules.nativeexecution;
 
+import java.io.UnsupportedEncodingException;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSchException;
@@ -20,6 +21,7 @@ import org.netbeans.modules.nativeexecution.support.EnvWriter;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.netbeans.modules.nativeexecution.api.util.UnbufferSupport;
+import org.openide.util.Exceptions;
 
 public final class RemoteNativeProcess extends AbstractNativeProcess {
 
@@ -72,7 +74,7 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
                     final String workingDirectory = info.getWorkingDirectory(true);
 
                     if (workingDirectory != null) {
-                        streams.in.write(("cd \"" + workingDirectory + "\"\n").getBytes()); // NOI18N
+                        streams.in.write(EnvWriter.getBytesWithRemoteCharset("cd \"" + workingDirectory + "\"\n")); // NOI18N
                         streams.in.flush();
                     }
 
@@ -84,7 +86,7 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
                         streams.in.write("trap 'ITS_TIME_TO_START=1' CONT\n".getBytes()); // NOI18N
                         streams.in.write("while [ -z \"$ITS_TIME_TO_START\" ]; do sleep 1; done\n".getBytes()); // NOI18N
                     }
-                    streams.in.write(("exec " + commandLine + "\n").getBytes()); // NOI18N
+                    streams.in.write(EnvWriter.getBytesWithRemoteCharset("exec " + commandLine + "\n")); // NOI18N
                     streams.in.flush();
 
                     readPID(streams.out);
