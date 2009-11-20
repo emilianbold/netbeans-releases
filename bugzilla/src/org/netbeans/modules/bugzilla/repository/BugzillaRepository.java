@@ -222,6 +222,7 @@ public class BugzillaRepository extends Repository {
 
     @Override
     protected void fireAttributesChanged(Map<String, Object> oldAttributes, Map<String, Object> newAttributes) {
+        // XXX move to spi
         LinkedList<String> equalAttributes = new LinkedList<String>();
         // find unchanged values
         for (Map.Entry<String, Object> e : newAttributes.entrySet()) {
