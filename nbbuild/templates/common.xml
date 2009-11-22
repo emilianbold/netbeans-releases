@@ -163,10 +163,12 @@ made subject to such option by the copyright holder.
     </target>
 
     <target name="update" depends="basic-init">
-        <property name="autoupdate.url" value="http://deadlock.netbeans.org/hudson/job/nbms-and-javadoc/lastSuccessfulBuild/artifact/nbbuild/nbms/updates.xml.gz"/>
-        <echo message="Updating: ${code.name.base.dashes}"/>
+        <fail
+            message="Please specify HTML of catalog to perform the update from via -Dautoupdate.catalog.url=..."
+            unless="autoupdate.catalog.url"
+        />
         <autoupdate
-            updatecenter="${autoupdate.url}"
+            updatecenter="${autoupdate.catalog.url}"
             netbeansdestdir="${netbeans.dest.dir}"
         >
             <modules includes="${code.name.base.dashes}"/>
