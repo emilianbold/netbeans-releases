@@ -120,15 +120,16 @@ public class AutoUpdate extends Task {
             }
 
             byte[] bytes = new byte[4096];
+            File tmp = null;
             try {
                 final String dash = uu.getCodeName().replace('.', '-');
-                File f = File.createTempFile(dash, ".nbm");
-                f.deleteOnExit();
+                tmp = File.createTempFile(dash, ".nbm");
+                tmp.deleteOnExit();
                 Get get = new Get();
                 get.setProject(getProject());
                 get.setTaskName("get:" + uu.getCodeName());
                 get.setSrc(uu.getURL());
-                get.setDest(f);
+                get.setDest(tmp);
                 get.setVerbose(true);
                 get.execute();
 
@@ -149,7 +150,7 @@ public class AutoUpdate extends Task {
                 config.write(("  <module_version install_time='" + System.currentTimeMillis() + "' last='true' origin='Ant'" +
                         " specification_version='" + uu.getSpecVersion() + "'>\n").getBytes("UTF-8"));
 
-                ZipFile  zf = new ZipFile(f);
+                ZipFile  zf = new ZipFile(tmp);
                 Enumeration<? extends ZipEntry> en = zf.entries();
                 while (en.hasMoreElements()) {
                     ZipEntry zipEntry = en.nextElement();
@@ -183,6 +184,10 @@ public class AutoUpdate extends Task {
                 config.close();
             } catch (IOException ex) {
                 throw new BuildException(ex);
+            } finally {
+                if (tmp != null) {
+                    tmp.delete();
+                }
             }
         }
     }
