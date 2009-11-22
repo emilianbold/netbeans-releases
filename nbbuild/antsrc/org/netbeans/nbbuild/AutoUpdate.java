@@ -39,6 +39,7 @@
 
 package org.netbeans.nbbuild;
 
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -52,6 +53,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
+import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import javax.xml.parsers.SAXParser;
@@ -118,7 +120,8 @@ public class AutoUpdate extends Task {
 
             byte[] bytes = new byte[4096];
             try {
-                File f = File.createTempFile(uu.getCodeName().replace('.', '-'), ".nbm");
+                final String dash = uu.getCodeName().replace('.', '-');
+                File f = File.createTempFile(dash, ".nbm");
                 f.deleteOnExit();
                 Get get = new Get();
                 get.setProject(getProject());
@@ -130,7 +133,15 @@ public class AutoUpdate extends Task {
 
                 File cluster = new File(dir, uu.targetcluster);
 
-                ZipFile zf = new ZipFile(f);
+                File tracking = new File(new File(cluster, "update_tracking"), dash + ".xml");
+                tracking.getParentFile().mkdirs();
+                OutputStream config = new BufferedOutputStream(new FileOutputStream(tracking));
+                config.write(("<?xml version='1.0' encoding='UTF-8'?>\n" +
+                    "<module codename='" + uu.getCodeName() + "'>\n").getBytes("UTF-8"));
+                config.write(("  <module_version install_time='" + System.currentTimeMillis() + "' last='true' origin='Ant'" +
+                        " specification_version='" + uu.getSpecVersion() + "'>\n").getBytes("UTF-8"));
+
+                ZipFile  zf = new ZipFile(f);
                 Enumeration<? extends ZipEntry> en = zf.entries();
                 while (en.hasMoreElements()) {
                     ZipEntry zipEntry = en.nextElement();
@@ -140,23 +151,28 @@ public class AutoUpdate extends Task {
                     if (zipEntry.getName().endsWith("/")) {
                         continue;
                     }
-                    File trgt = new File(cluster, zipEntry.getName().substring(9).replace('/', File.separatorChar));
+                    final String relName = zipEntry.getName().substring(9);
+                    File trgt = new File(cluster, relName.replace('/', File.separatorChar));
                     trgt.getParentFile().mkdirs();
                     log("Writing " + trgt, Project.MSG_VERBOSE);
 
                     InputStream is = zf.getInputStream(zipEntry);
                     OutputStream os = new FileOutputStream(trgt);
+                    CRC32 crc = new CRC32();
                     for (;;) {
                         int len = is.read(bytes);
                         if (len == -1) {
                             break;
                         }
+                        crc.update(bytes, 0, len);
                         os.write(bytes, 0, len);
                     }
                     is.close();
                     os.close();
+                    config.write(("<file crc='" + crc.getValue() + "' name='" + relName + "'/>\n").getBytes("UTF-8"));
                 }
-                
+                config.write("  </module_version>\n</module>\n".getBytes("UTF-8"));
+                config.close();
             } catch (IOException ex) {
                 throw new BuildException(ex);
             }
@@ -176,7 +192,7 @@ public class AutoUpdate extends Task {
     private Map<String,String> findExistingModules(File dir) {
         Map<String,String> all = new HashMap<String, String>();
         for (File cluster : dir.listFiles()) {
-            File mc = new File(new File(cluster, "config"), "Modules");
+            File mc = new File(cluster, "update_tracking");
             final File[] arr = mc.listFiles();
             if (arr == null) {
                 continue;
@@ -195,32 +211,19 @@ public class AutoUpdate extends Task {
     private void parseVersion(final File config, final Map<String,String> toAdd) throws Exception {
         class P extends DefaultHandler {
             String name;
-            StringBuilder text;
-
-            @Override
-            public void characters(char[] chars, int indx, int len) throws SAXException {
-                if (text != null) {
-                    text.append(chars, indx, len);
-                }
-            }
-
-            @Override
-            public void endElement(String uri, String localName, String qName) throws SAXException {
-                if (text != null && qName.equals("param")) {
-                    log("Found " + name + "@" + text + " in " + config, Project.MSG_DEBUG);
-                    toAdd.put(name, text.toString());
-                    text = null;
-                }
-            }
 
             @Override
             public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
                 if ("module".equals(qName)) {
-                    name = attributes.getValue("name");
+                    name = attributes.getValue("codename");
                     return;
                 }
-                if ("param".equals(qName) && "specversion".equals(attributes.getValue("name"))) {
-                    text = new StringBuilder();
+                if ("module_version".equals(qName)) {
+                    String version = attributes.getValue("specification_version");
+                    if (name == null || version == null) {
+                        throw new BuildException("Cannot find version in " + config);
+                    }
+                    toAdd.put(name, version);
                     return;
                 }
             }

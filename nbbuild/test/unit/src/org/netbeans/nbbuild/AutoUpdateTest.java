@@ -76,7 +76,7 @@ public class AutoUpdateTest extends NbTestCase {
         );
 
         File xml = new File(
-            new File(new File(new File(target, "platform11"), "config"), "Modules"),
+            new File(new File(target, "platform11"), "update_tracking"),
             "org-netbeans-api-annotations-common.xml"
         );
         assertTrue("xml file created", xml.exists());
@@ -108,22 +108,25 @@ public class AutoUpdateTest extends NbTestCase {
         m.getParentFile().mkdirs();
         m.createNewFile();
 
-        File x = new File(
+        File y = new File(
             new File(new File(new File(target, "platform11"), "config"), "Modules"),
             "org-netbeans-api-annotations-common.xml"
         );
+        y.getParentFile().mkdirs();
+        File x = new File(
+            new File(new File(target, "platform11"), "update_tracking"),
+            "org-netbeans-api-annotations-common.xml"
+        );
+        y.createNewFile();
+        
         x.getParentFile().mkdirs();
         String txtx =
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-"<!DOCTYPE module PUBLIC \"-//NetBeans//DTD Module Status 1.0//EN\"\n" +
-"                        \"http://www.netbeans.org/dtds/module-status-1_0.dtd\">\n" +
-"<module name=\"org.netbeans.api.annotations.common\">\n" +
-"    <param name=\"autoload\">true</param>\n" +
-"    <param name=\"eager\">false</param>\n" +
-"    <param name=\"jar\">modules/org-netbeans-api-annotations-common.jar</param>\n" +
-"    <param name=\"release\">1</param>\n" +
-"    <param name=\"reloadable\">false</param>\n" +
-"    <param name=\"specversion\">1.3</param>\n" +
+"<module codename=\"org.netbeans.api.annotations.common\">\n" +
+"    <module_version install_time=\"10\" specification_version=\"1.3\">\n" +
+"       <file crc=\"1\" name=\"config/Modules/org-netbeans-api-annotations-common.xml\"/>\n" +
+"       <file crc=\"2\" name=\"modules/org-netbeans-api-annotations-common.jar\"/>\n" +
+"    </module_version>\n" +
 "</module>\n";
 
 
@@ -142,7 +145,7 @@ public class AutoUpdateTest extends NbTestCase {
             new File(new File(new File(target, "platform11"), "config"), "Modules"),
             "org-netbeans-api-annotations-common.xml"
         );
-        assertTrue("xml file created", xml.exists());
+        assertTrue("xml file created:\n" + PublicPackagesInProjectizedXMLTest.getStdOut(), xml.exists());
 
         File jar = new File(
             new File(new File(target, "platform11"), "modules"),
@@ -181,15 +184,11 @@ public class AutoUpdateTest extends NbTestCase {
         x.getParentFile().mkdirs();
         String txtx =
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-"<!DOCTYPE module PUBLIC \"-//NetBeans//DTD Module Status 1.0//EN\"\n" +
-"                        \"http://www.netbeans.org/dtds/module-status-1_0.dtd\">\n" +
-"<module name=\"org.netbeans.api.annotations.common\">\n" +
-"    <param name=\"autoload\">true</param>\n" +
-"    <param name=\"eager\">false</param>\n" +
-"    <param name=\"jar\">modules/org-netbeans-api-annotations-common.jar</param>\n" +
-"    <param name=\"release\">1</param>\n" +
-"    <param name=\"reloadable\">false</param>\n" +
-"    <param name=\"specversion\">1.0.3</param>\n" +
+"<module codename=\"org.netbeans.api.annotations.common\">\n" +
+"    <module_version install_time=\"10\" specification_version=\"1.0.3\">\n" +
+"       <file crc=\"1\" name=\"config/Modules/org-netbeans-api-annotations-common.xml\"/>\n" +
+"       <file crc=\"2\" name=\"modules/org-netbeans-api-annotations-common.jar\"/>\n" +
+"    </module_version>\n" +
 "</module>\n";
 
 
