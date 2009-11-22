@@ -96,7 +96,7 @@ public class AutoUpdate extends Task {
     public void execute() throws BuildException {
         File[] arr = dir == null ? null : dir.listFiles();
         if (arr == null) {
-            throw new BuildException("netbeans.dest.dir must existing be directory: " + dir);
+            throw new BuildException("netbeans.dest.dir must be existing directory: " + dir);
         }
 
         Map<String,List<String>> installed = findExistingModules(dir);
