@@ -41,21 +41,16 @@
 package org.netbeans.modules.javacard.spi.impl;
 
 import org.netbeans.modules.javacard.common.Utils;
-import org.netbeans.modules.javacard.common.JCConstants;
 import org.netbeans.swing.layouts.SharedLayoutPanel;
 import org.openide.awt.Mnemonics;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.ChoiceView;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
 import java.awt.event.ActionEvent;
@@ -66,9 +61,12 @@ import java.beans.PropertyVetoException;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.javacard.spi.Card;
+import org.netbeans.modules.javacard.spi.Cards;
 import org.netbeans.modules.javacard.spi.JavacardPlatform;
 import org.netbeans.modules.javacard.spi.DeviceManagerDialogProvider;
 import org.netbeans.modules.javacard.spi.PlatformAndDeviceProvider;
+import org.openide.util.Mutex;
 
 /**
  *
@@ -105,9 +103,9 @@ public class DevicePanel extends SharedLayoutPanel implements ExplorerManager.Pr
                 if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
                     updateLookup();
                     Lookup b = mgr.getSelectedNodes().length > 0 ? mgr.getSelectedNodes()[0].getLookup() : Lookup.EMPTY;
-                    DataObject dob = b.lookup(DataObject.class);
-                    if (props != null && dob != null) {
-                        props.setActiveDevice(dob.getName());
+                    Card card = b.lookup(Card.class);
+                    if (DevicePanel.this.props != null && card != null) {
+                        DevicePanel.this.props.setActiveDevice(card.getSystemId());
                     }
                 }
             }
@@ -177,10 +175,10 @@ public class DevicePanel extends SharedLayoutPanel implements ExplorerManager.Pr
 
     public void actionPerformed(ActionEvent e) {
         DataObject dob = Utils.findPlatformDataObjectNamed(props.getPlatformName());
+        assert dob != null : "Button invoked w/o any selected platform"; //NOI18N
         DeviceManagerDialogProvider prov = dob.getLookup().lookup(DeviceManagerDialogProvider.class);
-        if (prov != null) {
-            prov.showManageDevicesDialog(this);
-        }
+        assert prov != null;
+        prov.showManageDevicesDialog(this);
     }
 
     private void updateLookup() {
@@ -193,65 +191,44 @@ public class DevicePanel extends SharedLayoutPanel implements ExplorerManager.Pr
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt == null || ExplorerManager.PROP_ROOT_CONTEXT.equals(evt.getPropertyName()) || ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
             Node[] sel = parentManager.getSelectedNodes();
-            if (sel.length == 1) { //always will be
-                DataObject dob = sel[0].getLookup().lookup(DataObject.class);
-                props.setPlatformName(dob.getName());
-                JavacardPlatform pform = sel[0].getLookup().lookup(JavacardPlatform.class);
-                if (pform == null || !pform.isValid()) {
-                    setRoot(invalidPlatformNode());
-                    button.setEnabled(false);
-                    choice.setEnabled(false);
-                } else {
-                    button.setEnabled(true);
-                    choice.setEnabled(true);
-                    FileObject fld = Utils.sfsFolderForDeviceConfigsForPlatformNamed(props.getPlatformName(), true);
-                    String deviceName = props.getActiveDevice();
-                    final DataFolder df = DataFolder.findFolder(fld);
-                    String toSelect = null;
-                    for (FileObject fo : fld.getChildren()) {
-                        if (JCConstants.JAVACARD_DEVICE_FILE_EXTENSION.equals(fo.getExt())) {
-                            try {
-                                if (deviceName == null) {
-                                    toSelect = DataObject.find(fo).getNodeDelegate().getName();
-                                    break;
-                                } else {
-                                    if (deviceName.equals(DataObject.find(fo).getNodeDelegate().getName())) {
-                                        toSelect = DataObject.find(fo).getNodeDelegate().getName();
-                                    }
-                                }
-                            } catch (DataObjectNotFoundException ex) {
-                                Exceptions.printStackTrace(ex);
-                            }
-                            break;
-                        }
+            final String cardName = props.getActiveDevice();
+            JavacardPlatform pform = sel == null || sel.length == 0 ? null :
+                sel[0].getLookup().lookup(JavacardPlatform.class);
+            if (pform == null || !pform.isValid()) {
+                setRoot(invalidPlatformNode());
+                button.setEnabled(false);
+                choice.setEnabled(false);
+            } else {
+                Cards cards = pform.getCards();
+                setRoot(new AbstractNode(cards.createChildren(cardName)));
+                Node selNode = null;
+                for (Node n : mgr.getRootContext().getChildren().getNodes(true)) {
+                    Card card = n.getLookup().lookup(Card.class);
+                    if (card != null && cardName.equals(card.getSystemId())) {
+                        selNode = n;
+                        break;
                     }
-                    if (toSelect != null) {
-                        final String select = toSelect;
-                        setRoot(df.getNodeDelegate());
-                        Mutex.EVENT.postReadRequest(new Runnable() {
-
-                            public void run() {
-                                df.getNodeDelegate().getChildren().getNodes(true);
-                                setSelectedNode(mgr.getRootContext().getChildren().findChild(select));
-                            }
-                        });
-                    } else {
-                        //We have an invalid device;  this will give us a
-                        //folder in a multifilesystem with a fake entry for
-                        //the invalid device
-                        FileObject file = Utils.folderForInvalidDeviceConfigsForPlatformNamed(sel[0].getLookup().lookup(DataObject.class).getName(), deviceName);
-                        final DataFolder dof = DataFolder.findFolder(file);
-                        setRoot(dof.getNodeDelegate());
-                        final String select = deviceName;
-                        Mutex.EVENT.postReadRequest(new Runnable() {
-
-                            public void run() {
-                                dof.getNodeDelegate().getChildren().getNodes(true);
-                                Node n = mgr.getRootContext().getChildren().findChild(select);
+                }
+                if (selNode != null) {
+                    Mutex.EVENT.postReadRequest(new Runnable() {
+                        public void run() {
+                            Node n = mgr.getRootContext().getChildren().findChild(cardName);
+                            if (n != null) {
                                 setSelectedNode(n);
+                                Card c = n.getLookup().lookup(Card.class);
+                                boolean enableButton = c != null && c.isValid();
+                                if (enableButton) {
+                                    enableButton = parentManager.getSelectedNodes()[0].getLookup().lookup(
+                                            DeviceManagerDialogProvider.class) != null;
+                                }
+                                button.setEnabled(enableButton);
+                                choice.setEnabled(true);
+                            } else {
+                                button.setEnabled(false);
+                                choice.setEnabled(true);
                             }
-                        });
-                    }
+                        }
+                    });
                 }
             }
         }

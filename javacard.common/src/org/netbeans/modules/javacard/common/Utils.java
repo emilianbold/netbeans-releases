@@ -236,6 +236,30 @@ public final class Utils {
         return fld;
     }
 
+    public static FileObject sfsFolderForRegisteredJavaPlatforms(String expectedName) {
+        FileObject fld = sfsFolderForRegisteredJavaPlatforms();
+        if (expectedName != null) {
+            boolean found = false;
+            for (FileObject fo : fld.getChildren()) {
+                found = expectedName.equals(fo.getName());
+                if (found) {
+                    break;
+                }
+            }
+            if (!found) {
+                FileSystem memfs = FileUtil.createMemoryFileSystem();
+                try {
+                    FileObject dummyFolder = FileUtil.createFolder(memfs.getRoot(), CommonSystemFilesystemPaths.SFS_JAVA_PLATFORMS_FOLDER);
+                    FileObject dummyPlatform = dummyFolder.createData(expectedName, JCConstants.JAVACARD_PLATFORM_FILE_EXTENSION);
+                    MultiFileSystem mfs = new MultiFileSystem(new FileSystem[] { memfs, FileUtil.getConfigRoot().getFileSystem() });
+                    fld = mfs.getRoot().getFileObject(CommonSystemFilesystemPaths.SFS_JAVA_PLATFORMS_FOLDER);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+        return fld;
+    }
     /**
      * Locates all Javacard Platform DataObjects which use the .jcard extension.
      * @return An iterable over all such files
