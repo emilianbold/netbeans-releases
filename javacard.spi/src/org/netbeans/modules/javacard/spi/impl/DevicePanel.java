@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.javacard.spi.impl;
 
+import java.awt.EventQueue;
 import org.netbeans.modules.javacard.common.Utils;
 import org.netbeans.swing.layouts.SharedLayoutPanel;
 import org.openide.awt.Mnemonics;
@@ -66,7 +67,6 @@ import org.netbeans.modules.javacard.spi.Cards;
 import org.netbeans.modules.javacard.spi.JavacardPlatform;
 import org.netbeans.modules.javacard.spi.DeviceManagerDialogProvider;
 import org.netbeans.modules.javacard.spi.PlatformAndDeviceProvider;
-import org.openide.util.Mutex;
 
 /**
  *
@@ -201,17 +201,18 @@ public class DevicePanel extends SharedLayoutPanel implements ExplorerManager.Pr
             } else {
                 Cards cards = pform.getCards();
                 setRoot(new AbstractNode(cards.createChildren(cardName)));
-                Node selNode = null;
-                for (Node n : mgr.getRootContext().getChildren().getNodes(true)) {
-                    Card card = n.getLookup().lookup(Card.class);
-                    if (card != null && cardName.equals(card.getSystemId())) {
-                        selNode = n;
-                        break;
-                    }
-                }
-                if (selNode != null) {
-                    Mutex.EVENT.postReadRequest(new Runnable() {
+                    //Get everybody's mutexes out of each other's way
+                    EventQueue.invokeLater(new Runnable() {
                         public void run() {
+                            Node selNode = null;
+                            Node[] nds = mgr.getRootContext().getChildren().getNodes(true);
+                            for (Node n : nds) {
+                                Card card = n.getLookup().lookup(Card.class);
+                                if (card != null && cardName.equals(card.getSystemId())) {
+                                    selNode = n;
+                                    break;
+                                }
+                            }
                             Node n = mgr.getRootContext().getChildren().findChild(cardName);
                             if (n != null) {
                                 setSelectedNode(n);
@@ -229,7 +230,6 @@ public class DevicePanel extends SharedLayoutPanel implements ExplorerManager.Pr
                             }
                         }
                     });
-                }
             }
         }
         updateLookup();
