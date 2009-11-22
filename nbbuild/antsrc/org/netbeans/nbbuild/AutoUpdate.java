@@ -63,7 +63,7 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.taskdefs.Get;
-import org.netbeans.nbbuild.AutoupdateCatalogParser.ModuleItem;
+import org.netbeans.nbbuild.AutoUpdateCatalogParser.ModuleItem;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -102,7 +102,7 @@ public class AutoUpdate extends Task {
         Map<String,List<String>> installed = findExistingModules(dir);
 
         // no userdir
-        Map<String, ModuleItem> units = AutoupdateCatalogParser.getUpdateItems(catalog, catalog, this);
+        Map<String, ModuleItem> units = AutoUpdateCatalogParser.getUpdateItems(catalog, catalog, this);
         for (ModuleItem uu : units.values()) {
             if (!matches(uu.getCodeName())) {
                 continue;

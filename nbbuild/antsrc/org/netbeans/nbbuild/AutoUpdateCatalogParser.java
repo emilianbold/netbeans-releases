@@ -77,13 +77,13 @@ import org.xml.sax.helpers.DefaultHandler;
  *
  * @author Jiri Rechtacek
  */
-class AutoupdateCatalogParser extends DefaultHandler {
+class AutoUpdateCatalogParser extends DefaultHandler {
     private final Map<String, ModuleItem> items;
     private final URL provider;
     private final EntityResolver entityResolver;
     private final URI baseUri;
     
-    private AutoupdateCatalogParser (Map<String, ModuleItem> items, URL provider, URI base) {
+    private AutoUpdateCatalogParser (Map<String, ModuleItem> items, URL provider, URI base) {
         this.items = items;
         this.provider = provider;
         this.entityResolver = newEntityResolver();
@@ -99,7 +99,7 @@ class AutoupdateCatalogParser extends DefaultHandler {
     }
 
     
-    private static final Logger ERR = Logger.getLogger (AutoupdateCatalogParser.class.getName ());
+    private static final Logger ERR = Logger.getLogger (AutoUpdateCatalogParser.class.getName ());
     
     private static enum ELEMENTS {
         module_updates, module_group, notification, module, description,
@@ -164,7 +164,7 @@ class AutoupdateCatalogParser extends DefaultHandler {
                 factory.setValidating(false);
                 SAXParser saxParser = factory.newSAXParser();
                 is = getInputSource(url, provider, base);
-                saxParser.parse(is, new AutoupdateCatalogParser(items, provider, base));
+                saxParser.parse(is, new AutoUpdateCatalogParser(items, provider, base));
                 cacheURI = base;
                 cache = items;
             } catch (Exception ex) {
