@@ -176,9 +176,15 @@ public class AutoUpdateTest extends NbTestCase {
         );
         m.getParentFile().mkdirs();
         m.createNewFile();
+        File e = new File(
+            new File(new File(new File(target, "platform11"), "modules"), "ext"),
+            "extra.jar"
+        );
+        e.getParentFile().mkdirs();
+        e.createNewFile();
 
         File x = new File(
-            new File(new File(new File(target, "platform11"), "config"), "Modules"),
+            new File(new File(target, "platform11"), "update_tracking"),
             "org-netbeans-api-annotations-common.xml"
         );
         x.getParentFile().mkdirs();
@@ -188,6 +194,7 @@ public class AutoUpdateTest extends NbTestCase {
 "    <module_version install_time=\"10\" specification_version=\"1.0.3\">\n" +
 "       <file crc=\"1\" name=\"config/Modules/org-netbeans-api-annotations-common.xml\"/>\n" +
 "       <file crc=\"2\" name=\"modules/org-netbeans-api-annotations-common.jar\"/>\n" +
+"       <file crc=\"3\" name=\"modules/ext/extra.jar\"/>\n" +
 "    </module_version>\n" +
 "</module>\n";
 
@@ -224,6 +231,8 @@ public class AutoUpdateTest extends NbTestCase {
         if (last >= jar.lastModified()) {
             fail("Newer timestamp for " + jar);
         }
+
+        assertFalse("extra file has been deleted", e.exists());
     }
 
     public File generateNBM (String name, String... files) throws IOException {

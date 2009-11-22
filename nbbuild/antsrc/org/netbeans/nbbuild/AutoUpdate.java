@@ -48,6 +48,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -98,7 +99,7 @@ public class AutoUpdate extends Task {
             throw new BuildException("netbeans.dest.dir must existing be directory: " + dir);
         }
 
-        Map<String,String> installed = findExistingModules(dir);
+        Map<String,List<String>> installed = findExistingModules(dir);
 
         // no userdir
         Map<String, ModuleItem> units = AutoupdateCatalogParser.getUpdateItems(catalog, catalog, this);
@@ -107,15 +108,15 @@ public class AutoUpdate extends Task {
                 continue;
             }
             log("found module: " + uu, Project.MSG_VERBOSE);
-            String version = installed.get(uu.getCodeName());
-            if (version != null && !uu.isNewerThan(version)) {
-                log("Version " + version + " of " + uu.getCodeName() + " is up to date", Project.MSG_VERBOSE);
+            List<String> info = installed.get(uu.getCodeName());
+            if (info != null && !uu.isNewerThan(info.get(0))) {
+                log("Version " + info.get(0) + " of " + uu.getCodeName() + " is up to date", Project.MSG_VERBOSE);
                 continue;
             }
-            if (version == null) {
+            if (info == null) {
                 log(uu.getCodeName() + " is not present, downloading version " + uu.getSpecVersion(), Project.MSG_INFO);
             } else {
-                log("Version " + version + " of " + uu.getCodeName() + " needs update to " + uu.getSpecVersion(), Project.MSG_INFO);
+                log("Version " + info.get(0) + " of " + uu.getCodeName() + " needs update to " + uu.getSpecVersion(), Project.MSG_INFO);
             }
 
             byte[] bytes = new byte[4096];
@@ -132,6 +133,13 @@ public class AutoUpdate extends Task {
                 get.execute();
 
                 File cluster = new File(dir, uu.targetcluster);
+
+                if (info != null) {
+                    for (int i = 1; i < info.size(); i++) {
+                        File oldFile = new File(cluster, info.get(i).replace('/', File.separatorChar));
+                        oldFile.delete();
+                    }
+                }
 
                 File tracking = new File(new File(cluster, "update_tracking"), dash + ".xml");
                 tracking.getParentFile().mkdirs();
@@ -189,8 +197,8 @@ public class AutoUpdate extends Task {
         return false;
     }
 
-    private Map<String,String> findExistingModules(File dir) {
-        Map<String,String> all = new HashMap<String, String>();
+    private Map<String,List<String>> findExistingModules(File dir) {
+        Map<String,List<String>> all = new HashMap<String, List<String>>();
         for (File cluster : dir.listFiles()) {
             File mc = new File(cluster, "update_tracking");
             final File[] arr = mc.listFiles();
@@ -208,9 +216,10 @@ public class AutoUpdate extends Task {
         return all;
     }
 
-    private void parseVersion(final File config, final Map<String,String> toAdd) throws Exception {
+    private void parseVersion(final File config, final Map<String,List<String>> toAdd) throws Exception {
         class P extends DefaultHandler {
             String name;
+            List<String> arr;
 
             @Override
             public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
@@ -223,8 +232,13 @@ public class AutoUpdate extends Task {
                     if (name == null || version == null) {
                         throw new BuildException("Cannot find version in " + config);
                     }
-                    toAdd.put(name, version);
+                    arr = new ArrayList<String>();
+                    arr.add(version);
+                    toAdd.put(name, arr);
                     return;
+                }
+                if ("file".equals(qName)) {
+                    arr.add(attributes.getValue("name"));
                 }
             }
 
