@@ -305,7 +305,6 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
     public DevicePropertiesPanel(final Properties props) {
         initializeComponent();
         read (new KeysAndValues.PropertiesAdapter(props));
-        Thread.dumpStack();
     }
 
     private void initializeComponent() {
@@ -1217,7 +1216,12 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
 
     public void fireChange() {
         if (!updating) {
-            supp.fireChange();
+            updating = true;
+            try {
+                supp.fireChange();
+            } finally {
+                updating = false;
+            }
         }
     }
 
