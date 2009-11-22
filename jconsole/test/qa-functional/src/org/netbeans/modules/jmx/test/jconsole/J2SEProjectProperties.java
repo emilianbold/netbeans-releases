@@ -43,6 +43,7 @@ package org.netbeans.modules.jmx.test.jconsole;
 
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.JTreeOperator;
@@ -113,7 +114,7 @@ public class J2SEProjectProperties extends JConsoleTestCase {
     }
 
     private void doItLocal(String action, String target, String rmiPort) {
-
+        OutputTabOperator oto;
         MainWindowOperator mainWindow = MainWindowOperator.getDefault();
         // push "Open" toolbar button in "System" toolbar
         System.out.println("Starting " + action + "...");
@@ -122,7 +123,7 @@ public class J2SEProjectProperties extends JConsoleTestCase {
         sleep(2000);
 
         checkOutputTabOperator(target, "Found manageable process, connecting JConsole to process...");
-        checkOutputTabOperator("-connect-jconsole", "jconsole  -interval=4");
-        terminateProcess("Processes|anagrams (-connect-jconsole)");
+        oto = checkOutputTabOperator("-connect-jconsole", "jconsole  -interval=4");
+        if (oto != null) terminateProcess(oto);
     }
 }
