@@ -161,7 +161,7 @@ class AutoupdateCatalogParser extends DefaultHandler {
             InputSource is = null;
             try {
                 SAXParserFactory factory = SAXParserFactory.newInstance();
-                factory.setValidating(true);
+                factory.setValidating(false);
                 SAXParser saxParser = factory.newSAXParser();
                 is = getInputSource(url, provider, base);
                 saxParser.parse(is, new AutoupdateCatalogParser(items, provider, base));
