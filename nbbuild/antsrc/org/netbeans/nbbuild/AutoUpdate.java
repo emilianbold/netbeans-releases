@@ -111,7 +111,7 @@ public class AutoUpdate extends Task {
                 continue;
             }
             if (version == null) {
-                log(uu.getCodeName() + "not present, downloading version " + uu.getSpecVersion(), Project.MSG_INFO);
+                log(uu.getCodeName() + " is not present, downloading version " + uu.getSpecVersion(), Project.MSG_INFO);
             } else {
                 log("Version " + version + " of " + uu.getCodeName() + " needs update to " + uu.getSpecVersion(), Project.MSG_INFO);
             }
@@ -192,7 +192,7 @@ public class AutoUpdate extends Task {
         return all;
     }
 
-    private static void parseVersion(File config, final Map<String,String> toAdd) throws Exception {
+    private void parseVersion(final File config, final Map<String,String> toAdd) throws Exception {
         class P extends DefaultHandler {
             String name;
             StringBuilder text;
@@ -205,8 +205,9 @@ public class AutoUpdate extends Task {
             }
 
             @Override
-            public void endElement(String string, String string1, String string2) throws SAXException {
-                if (text != null) {
+            public void endElement(String uri, String localName, String qName) throws SAXException {
+                if (text != null && qName.equals("param")) {
+                    log("Found " + name + "@" + text + " in " + config, Project.MSG_DEBUG);
                     toAdd.put(name, text.toString());
                     text = null;
                 }
