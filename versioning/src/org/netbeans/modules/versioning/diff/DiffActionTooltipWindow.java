@@ -145,8 +145,7 @@ class DiffActionTooltipWindow implements AWTEventListener, WindowFocusListener {
     }
 
     public void windowLostFocus(WindowEvent e) {
-        if (actionsWindow != null && e.getOppositeWindow() != actionsWindow && e.getOppositeWindow() != actionsWindow.getOwner()
-                && e.getOppositeWindow() != contentWindow) {
+        if (actionsWindow != null && e.getOppositeWindow() == null) {
             shutdown();
         }
     }
