@@ -4,7 +4,6 @@
  */
 package org.netbeans.modules.nativeexecution;
 
-import java.io.UnsupportedEncodingException;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSchException;
@@ -20,7 +19,6 @@ import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.UnbufferSupport;
-import org.openide.util.Exceptions;
 
 public final class RemoteNativeProcess extends AbstractNativeProcess {
 
