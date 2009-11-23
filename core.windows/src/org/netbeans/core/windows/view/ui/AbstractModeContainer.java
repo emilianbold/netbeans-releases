@@ -195,6 +195,7 @@ public abstract class AbstractModeContainer implements ModeContainer {
             }
         } else {
             // focus transfer between different windows
+            newFocusedW.toFront();
             selectedTopComponent.requestFocus();
         }
     }
