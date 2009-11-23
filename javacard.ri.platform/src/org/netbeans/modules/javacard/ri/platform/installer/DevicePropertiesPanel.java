@@ -87,7 +87,6 @@ import org.netbeans.validation.api.Validator;
 import org.netbeans.validation.api.builtin.Validators;
 import org.netbeans.validation.api.conversion.Converter;
 import org.netbeans.validation.api.ui.ValidationGroup;
-import org.netbeans.validation.api.ui.ValidationGroupProvider;
 import org.netbeans.validation.api.ui.ValidationUI;
 import org.openide.awt.HtmlRenderer;
 import org.openide.filesystems.FileObject;
@@ -95,7 +94,7 @@ import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbPreferences;
 
-public class DevicePropertiesPanel extends JPanel implements DocumentListener, FocusListener, ValidationUI, Runnable, ValidationGroupProvider {
+public class DevicePropertiesPanel extends JPanel implements DocumentListener, FocusListener, ValidationUI, Runnable {
 
     private final ChangeSupport supp = new ChangeSupport(this);
     private boolean updating;
