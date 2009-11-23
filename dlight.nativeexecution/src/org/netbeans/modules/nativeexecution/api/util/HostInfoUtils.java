@@ -35,7 +35,6 @@ public final class HostInfoUtils {
     private static final TasksCachedProcessor<ExecutionEnvironment, HostInfo> hostInfoCachedProcessor =
             new TasksCachedProcessor<ExecutionEnvironment, HostInfo>(new FetchHostInfoTask(), false);
 
-
     static {
         NetworkInterface iface = null;
         try {
@@ -187,7 +186,10 @@ public final class HostInfoUtils {
             throw new IllegalArgumentException("ExecutionEnvironment should not be null"); //NOI18N
         }
 
-        Logger.assertNonUiThread();
+        if (!isHostInfoAvailable(execEnv)) {
+            Logger.assertNonUiThread("Don't call getHostInfo() from the UI thread while info is not known. " + // NOI18N
+                    "Use quick isHostInfoAvailable() to detect whether info is available or not and go out of EDT if not"); // NOI18N
+        }
 
         try {
             HostInfo result = hostInfoCachedProcessor.compute(execEnv);
