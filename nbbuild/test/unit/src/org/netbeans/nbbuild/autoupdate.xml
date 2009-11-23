@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="changeme" default="all" basedir=".">
+    <target name="all">
+        <echo message="${root}"/>
+
+        <taskdef classname="org.netbeans.nbbuild.AutoUpdate" name="autoupdate" classpath="${nb_all}/nbbuild/nbantext.jar"/>
+
+        <autoupdate
+            updatecenter="${url}"
+            netbeansdestdir="${target}"
+        >
+            <modules includes="${includes}"/>
+        </autoupdate>
+        
+    </target>
+</project>

@@ -162,6 +162,19 @@ made subject to such option by the copyright holder.
         </uptodate>
     </target>
 
+    <target name="update" depends="basic-init">
+        <fail
+            message="Please specify HTML of catalog to perform the update from via -Dautoupdate.catalog.url=..."
+            unless="autoupdate.catalog.url"
+        />
+        <autoupdate
+            updatecenter="${autoupdate.catalog.url}"
+            netbeansdestdir="${netbeans.dest.dir}"
+        >
+            <modules includes="${code.name.base.dashes}"/>
+        </autoupdate>
+    </target>
+
     <target name="compile" depends="init,up-to-date" unless="is.jar.uptodate">
         <mkdir dir="${build.classes.dir}"/>
         <depend srcdir="${src.dir}" destdir="${build.classes.dir}" cache="build/depcache">
