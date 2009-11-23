@@ -330,6 +330,19 @@ import org.openide.util.Union2;
  * they would get &quot;John&quot; because pattern
  * &quot;bar/baz&#42;/thing&quot; does not match the path.
  *
+ * <h6>Example 5</h6>
+ *
+ * A mapping file contains the following mappings:
+ *
+ * <blockquote>
+ * <pre><code>bar = John
+ *bar/baz* = </code></pre>
+ * </blockquote>
+ *
+ * If the user asks for data assigned to path &quot;foo/bar/baz&quot;,
+ * they would get {@code null} because more specific pattern
+ * &quot;bar/baz*&quot; overrides the assignment &quot;bar = John&quot;.
+ *
  * @author Marian Petras
  */
 public abstract class NbModuleOwnerSupport {
@@ -687,14 +700,6 @@ public abstract class NbModuleOwnerSupport {
 
             String infoString = line.substring(parser.getSeparatorPosition() + 1);
             OwnerInfo info = OwnerInfo.parseSpec(infoString);
-            if (info == null) {
-                LOG.log(Level.INFO,
-                        "syntax error in mapping file {0} at line {1}"  //NOI18N
-                            + " (no Bugzilla component specified)", //NOI18N
-                        new Object[] { dataFile,
-                                       Integer.valueOf(lineNum) });
-                return;
-            }
 
             processPatternData(patternPath, info);
         }
@@ -951,7 +956,14 @@ public abstract class NbModuleOwnerSupport {
                 return null;
             }
 
-            return findInfo(relativePath, firstPartOfPath, topNode);
+            OwnerInfo ownerInfo = findInfo(relativePath,
+                                           firstPartOfPath,
+                                           topNode);
+            if (ownerInfo != null && ownerInfo != OwnerInfo.NULL_OWNER_INFO) {
+                return ownerInfo;
+            } else {
+                return null;
+            }
         }
 
         private OwnerInfo findInfo(String relativePath,
@@ -1277,7 +1289,7 @@ public abstract class NbModuleOwnerSupport {
                 this.isPrefix = isPrefixPattern(patternPart);
                 this.name = isPrefix ? getPrefixPart(patternPart)
                                      : patternPart;
-                this.info = info;
+                this.info = (info != null) ? info : OwnerInfo.NULL_OWNER_INFO;
             }
             void addChild(Node child) {
                 if (children == null) {
@@ -1314,6 +1326,8 @@ public abstract class NbModuleOwnerSupport {
      * Wrapper around a (non-empty) list of {@code String}s.
      */
     public static class OwnerInfo {
+
+        static final OwnerInfo NULL_OWNER_INFO = new OwnerInfo("");     //NOI18N
 
         private final String owner;
         private final List<String> extraData;

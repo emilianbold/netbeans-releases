@@ -257,6 +257,14 @@ public class NbModuleOwnerSupportTest extends NbTestCase {
         checkOwner("/path105", "alpha", "/beta", "gamma");
     }
 
+    public void testExcludingTreeFromAssignment() throws Exception {
+        loadCfgData("excluding_tree_from_assignment");
+
+        checkOwner("/path01", "foo");
+        checkOwner("/path01/subtree", "foo");
+        checkOwner("/path01/excluded", null);
+    }
+
     private void checkOwner(String path, String expectedOwner, String... expectedExtraData) {
         OwnerInfo expected;
         if (expectedOwner != null) {
