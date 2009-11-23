@@ -139,13 +139,16 @@ public class BugzillaAutoupdate {
                     for (UpdateElement updateElement : elements) {
                         String desc = updateElement.getDescription();
                         BugzillaVersion version = getVersion(desc);
-                        if(version != null && SUPPORTED_BUGZILLA_VERSION.compareTo(version) < 0) {
-                            return true;
-                        }
-                    }
-                    return elements.size() > 0; // looks like we weren't able to
+                        if(version != null){
+                            if(SUPPORTED_BUGZILLA_VERSION.compareTo(version) < 0){
+                                return true;
+                            }
+                        } else {
+                            return elements.size() > 0; // looks like we weren't able to
                                                 // parse the version; on the other hand ->
                                                 // there is something so lets be optimistic
+                        }
+                    }                    
                 } else {
                     return false;
                 }
