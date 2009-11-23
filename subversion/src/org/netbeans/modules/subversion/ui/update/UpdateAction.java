@@ -62,8 +62,6 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.awt.StatusDisplayer;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;
 import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
@@ -112,6 +110,10 @@ public class UpdateAction extends ContextAction {
         //   test/ (project1 but imagine it's in repository, to be updated )
         // Is there a way how to update project1 without updating project2?
         final Context ctx = getContext(nodes);
+        if (ctx.getRootFiles().length == 0) {
+            Subversion.LOG.info("UpdateAction.performUpdate: context is empty, some files may be unversioned."); //NOI18N
+            return;
+        }
         ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this, nodes) {
             public void perform() {
                 update(ctx, this, getContextDisplayName(nodes));
