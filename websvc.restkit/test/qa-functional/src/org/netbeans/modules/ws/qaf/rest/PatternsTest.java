@@ -261,16 +261,19 @@ public class PatternsTest extends RestTestBase {
             //we're not using Defs when name != null !!!
             //set resource class name
             JTextFieldOperator jtfo = new JTextFieldOperator(wo, new ClsName());
+            jtfo.clickMouse();
             jtfo.clearText();
             jtfo.typeText(name + "Cl"); //NOI18N
             //set mimeType
             if (mimeType != null) {
                 jcbo = new JComboBoxOperator(wo, new Mime());
+                jcbo.clickMouse();
                 jcbo.selectItem(mimeType.toString());
             }
             //set resource representation class
             if (MimeType.APPLICATION_JSON.equals(mimeType)) {
                 jtfo = new JTextFieldOperator(wo, new RCls());
+                jtfo.clickMouse();
                 jtfo.clearText();
                 jtfo.typeText("org.codehaus.jettison.json.JSONString"); //NOI18N
             } else if (MimeType.TEXT_PLAIN.equals(mimeType)) {
@@ -284,24 +287,29 @@ public class PatternsTest extends RestTestBase {
             if (Pattern.Singleton.equals(pattern)) {
                 //set resource Path
                 jtfo = new JTextFieldOperator(wo, new Path());
+                jtfo.clickMouse();
                 jtfo.clearText();
                 jtfo.typeText(name + "URI"); //NOI18N
             } else {
                 //set resource Path
                 jtfo = new JTextFieldOperator(wo, new Path());
+                jtfo.clickMouse();
                 jtfo.clearText();
                 jtfo.typeText("{" + name + "URI}"); //NOI18N
                 //set container resource class name
                 jtfo = new JTextFieldOperator(wo, new CClsName());
+                jtfo.clickMouse();
                 jtfo.clearText();
                 jtfo.typeText(name + "CClass"); //NOI18N
                 //set container resource Path
                 jtfo = new JTextFieldOperator(wo, new CPath());
+                jtfo.clickMouse();
                 jtfo.clearText();
                 jtfo.typeText("/" + name + "ContainerURI"); //NOI18N
                 //set container resource representation class
                 if (MimeType.APPLICATION_JSON.equals(mimeType)) {
                     jtfo = new JTextFieldOperator(wo, new CRCls());
+                    jtfo.clickMouse();
                     jtfo.clearText();
                     jtfo.typeText("org.codehaus.jettison.json.JSONObject"); //NOI18N
                 } else if (MimeType.TEXT_PLAIN.equals(mimeType)) {
