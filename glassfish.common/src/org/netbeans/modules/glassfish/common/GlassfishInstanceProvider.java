@@ -726,6 +726,18 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                             CreateDomain cd = new CreateDomain("anonymous", "", new File(f,"glassfish"), ip, this,true); // NOI18N
                             cd.start();
                         }
+
+                        FileObject serverInstanceDir = FileUtil.getConfigFile("J2EE/InstalledServers"); // NOI18N
+                        if (serverInstanceDir == null) {
+                            FileObject root = FileUtil.getConfigRoot();
+                            serverInstanceDir = FileUtil.createFolder(root, "J2EE/InstalledServers"); // NOI18N
+                        }
+
+                        if (serverInstanceDir != null) {
+                            registerServerInstanceFO(serverInstanceDir, ip);
+                        } else {
+                            Logger.getLogger("glassfish-javaee").log(Level.INFO, "Cannot register the default Tomcat server.  The //J2EE//InstalledServers folder cannot be found."); // NOI18N
+                        }
                     }
                 }
             } catch (IOException ex) {
@@ -735,6 +747,22 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
         }
     }
 
+    private static void registerServerInstanceFO(FileObject serverInstanceDir,
+            Map<String, String> props) {
+        String name = FileUtil.findFreeFileName(serverInstanceDir, "gfv3_autoregistered_instance", null); // NOI18N
+        FileObject instanceFO;
+        try {
+            instanceFO = serverInstanceDir.createData(name);
+            for (Map.Entry<String, String> entry : props.entrySet()) {
+                instanceFO.setAttribute(entry.getKey(), entry.getValue());
+            }
+            instanceFO.setAttribute("registeredWithoutUI", "true"); // NOI18N
+        } catch (IOException e) {
+            Logger.getLogger("glassfish-javaee").log(Level.INFO, "Cannot register the default Tomcat server."); // NOI18N
+            Logger.getLogger("glassfish-javaee").log(Level.INFO, null, e);
+        }
+    }
+    
     String[] getNoPasswordCreatDomainCommand(String startScript, String jarLocation, String domainDir, String portBase, String uname, String domain) {
         List<String> retVal = new ArrayList<String>();
         retVal.addAll(Arrays.asList(new String[] {startScript,
