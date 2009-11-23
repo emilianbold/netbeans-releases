@@ -265,6 +265,16 @@ public class NbModuleOwnerSupportTest extends NbTestCase {
         checkOwner("/path01/excluded", null);
     }
 
+    public void testComments() throws Exception {
+        loadCfgData("commented_lines");
+
+        checkOwner("/path01", "foo");
+        checkOwner("/path02", null);
+        checkOwner("/#path02", null);
+        checkOwner("/\\#path02", null);
+        checkOwner("/#path03", "baz");
+    }
+
     private void checkOwner(String path, String expectedOwner, String... expectedExtraData) {
         OwnerInfo expected;
         if (expectedOwner != null) {
