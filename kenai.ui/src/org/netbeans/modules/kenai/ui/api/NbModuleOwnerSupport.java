@@ -326,7 +326,9 @@ import org.openide.util.Union2;
  *bar/baz&#42;/thing = Alice</code></pre>
  * </blockquote>
  *
- * If the user asks for data assigned to path &quot;foo/bar/baz&quot;
+ * If the user asks for data assigned to path &quot;foo/bar/baz&quot;,
+ * they would get &quot;John&quot; because pattern
+ * &quot;bar/baz&#42;/thing&quot; does not match the path.
  *
  * @author Marian Petras
  */
