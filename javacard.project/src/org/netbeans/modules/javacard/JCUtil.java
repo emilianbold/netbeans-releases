@@ -39,14 +39,18 @@
 
 package org.netbeans.modules.javacard;
 
+import java.io.BufferedOutputStream;
 import org.netbeans.modules.javacard.common.Utils;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URL;
+import java.util.Properties;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javacard.common.CommonSystemFilesystemPaths;
 import org.netbeans.modules.javacard.common.JCConstants;
 import org.netbeans.modules.javacard.spi.JavacardPlatform;
+import org.netbeans.modules.javacard.spi.JavacardPlatformKeyNames;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -69,10 +73,21 @@ public final class JCUtil {
         FileSystem fs = FileUtil.createMemoryFileSystem();
         MultiFileSystem mfs;
         try {
-            mfs = new MultiFileSystem(new FileSystem[]{FileUtil.getConfigRoot().getFileSystem(), fs});
+            mfs = new MultiFileSystem(new FileSystem[]{fs, FileUtil.getConfigRoot().getFileSystem()});
             FileObject fo = FileUtil.createData(fs.getRoot(),
                     CommonSystemFilesystemPaths.SFS_JAVA_PLATFORMS_FOLDER + '/' +
                     name + '.' + JCConstants.JAVACARD_PLATFORM_FILE_EXTENSION);
+            Properties props = new Properties();
+            props.setProperty(JavacardPlatformKeyNames.PLATFORM_ID, name);
+            props.setProperty(JavacardPlatformKeyNames.PLATFORM_DISPLAYNAME, name);
+            OutputStream out = new BufferedOutputStream(fo.getOutputStream());
+            try {
+                props.store(out, "Dummy Platform");
+            } catch (IOException ioe) {
+                //do nothing
+            } finally {
+                out.close();
+            }
             fo = mfs.getRoot().getFileObject(fo.getPath());
             return DataObject.find(fo);
         } catch (IOException ex) {

@@ -44,6 +44,8 @@ import java.awt.BorderLayout;
 import javax.swing.JPanel;
 import org.netbeans.modules.javacard.api.PlatformAndDevicePanel;
 import org.netbeans.modules.javacard.project.JCProjectProperties;
+import org.netbeans.validation.api.ui.ValidationGroup;
+import org.netbeans.validation.api.ui.ValidationGroupProvider;
 
 import org.openide.util.HelpCtx;
 
@@ -51,12 +53,13 @@ import org.openide.util.HelpCtx;
  *
  * @author Anki R. Nelaturu
  */
-public class RunCustomizer extends javax.swing.JPanel {
+public class RunCustomizer extends javax.swing.JPanel implements ValidationGroupProvider {
     JCProjectProperties props;
+    PlatformAndDevicePanel pnl;
     public RunCustomizer(JCProjectProperties props) {
         this.props = props;
         initComponents();
-        PlatformAndDevicePanel pnl = new PlatformAndDevicePanel(props);
+        pnl = new PlatformAndDevicePanel(props);
         JPanel outer = new JPanel(new BorderLayout());
         outer.add (pnl, BorderLayout.NORTH);
         add (outer, BorderLayout.CENTER);
@@ -68,6 +71,10 @@ public class RunCustomizer extends javax.swing.JPanel {
 
         setLayout(new java.awt.BorderLayout());
     }// </editor-fold>//GEN-END:initComponents
+
+    public ValidationGroup getValidationGroup() {
+        return pnl.getValidationGroup();
+    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // End of variables declaration//GEN-END:variables
 }

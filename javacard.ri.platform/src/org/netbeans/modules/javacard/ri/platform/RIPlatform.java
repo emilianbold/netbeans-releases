@@ -101,7 +101,7 @@ public class RIPlatform extends JavacardPlatform {
         getDefault();
     }
     private Cards cards = new CardsImpl();
-    public RIPlatform(Properties props) {
+    public RIPlatform(Properties props) {        
         this.props = props;
         if (props instanceof ObservableProperties) {
             pcl = new PCL();
@@ -110,6 +110,10 @@ public class RIPlatform extends JavacardPlatform {
         } else {
             pcl = null;
         }
+        System.err.println("Created an RIPlatform " + props);
+        System.err.println("System name " + getSystemName());
+        Thread.dumpStack();
+
     }
 
     public RIPlatform(File root, String name, PlatformInfo info) {

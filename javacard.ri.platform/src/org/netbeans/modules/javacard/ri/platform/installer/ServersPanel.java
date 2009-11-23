@@ -72,8 +72,8 @@ import org.netbeans.modules.javacard.common.JCConstants;
 import org.netbeans.modules.javacard.spi.Card;
 import org.netbeans.modules.javacard.spi.CardCustomizer;
 import org.netbeans.modules.javacard.spi.capabilities.CardCustomizerProvider;
-import org.netbeans.modules.javacard.spi.ValidationGroupProvider;
 import org.netbeans.validation.api.ui.ValidationGroup;
+import org.netbeans.validation.api.ui.ValidationGroupProvider;
 import org.netbeans.validation.api.ui.ValidationUI;
 import org.openide.filesystems.FileObject;
 
@@ -220,6 +220,7 @@ public final class ServersPanel extends javax.swing.JPanel implements ExplorerMa
                 }
                 DataObject deviceTemplate = DataObject.find(template);
                 DataFolder fld = mgr.getRootContext().getLookup().lookup(DataFolder.class);
+                assert fld != null : "Root context not a folder: " + mgr.getRootContext();
                 String name;
                 if (fld.getChildren().length == 0) {
                     name = JCConstants.TEMPLATE_DEFAULT_DEVICE_NAME; //NOI18N
