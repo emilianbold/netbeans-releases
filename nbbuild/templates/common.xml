@@ -273,8 +273,35 @@ made subject to such option by the copyright holder.
 
     <target name="-verify-apichanges"/><!-- just for overriding -->
 
+    <target name="-validate-layers" depends="init">
+        <parsemanifest manifest="${manifest.mf}" attribute="OpenIDE-Module-Layer" property="layer.file"/>
+        <!-- DTD from sources -->
+        <available file="${nb_all}/openide.filesystems/src/org/openide/filesystems/filesystem.dtd" type="file"
+            property="dtd.cp" value="${nb_all}/openide.filesystems/src"/>
+        <!-- DTD from platform -->
+        <pathconvert property="dtd.cp">
+            <pathfileset>
+                <path refid="cluster.path.id"/>
+                <filename name="core/org-openide-filesystems.jar"/>
+            </pathfileset>
+        </pathconvert>
+
+        <xmlvalidate warn="no"> <!--  failonerror="false" -->
+            <fileset file="${src.dir}/${layer.file}"/>
+            <xmlcatalog classpath="${dtd.cp}">
+                <dtd publicId="-//NetBeans//DTD Filesystem 1.0//EN"
+                location="org/openide/filesystems/filesystem.dtd"/>
+                <dtd publicId="-//NetBeans//DTD Filesystem 1.1//EN"
+                location="org/openide/filesystems/filesystem1_1.dtd"/>
+                <dtd publicId="-//NetBeans//DTD Filesystem 1.2//EN"
+                location="org/openide/filesystems/filesystem1_2.dtd"/>
+            </xmlcatalog>
+        </xmlvalidate>
+    </target>
+
     <target name="netbeans" depends="init,jar,netbeans-extra,module-xml-regular,module-xml-autoload,
-            module-xml-eager,javahelp,module-auto-deps,release,chmod-executables,verify-class-linkage,-verify-apichanges">
+            module-xml-eager,javahelp,module-auto-deps,release,chmod-executables,verify-class-linkage,
+            -validate-layers,-verify-apichanges">
         <property name="module.files.toString" refid="module.files"/>
         <echo level="verbose">Basic matching module files: ${module.files.toString}</echo>
         <genlist outputfiledir="${cluster}" module="${module.jar}">
