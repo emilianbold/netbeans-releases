@@ -169,26 +169,26 @@ import org.openide.util.Union2;
  * =
  * </tt><span style="font-style: oblique">value</span>
  * </blockquote>
- * Each part of the mappingFileLine on the left side can be expressed as a prefix,
+ * Each part of the pattern on the left side can be expressed as a prefix,
  * e.&thinsp;g.:
  * <blockquote>
  * <span style="font-style: oblique">prefixA</span><tt>&#42;/</tt><span style="font-style: oblique">prefixB</span><tt>*
  * =
  * </tt><span style="font-style: oblique">value</span>
  * </blockquote>
- * Each part of the mappingFileLine on the left side is matched against the
+ * Each part of the pattern on the left side is matched against the
  * corresponding part of the path passed to method
  * {@link #getOwnerInfo getOwnerInfo()} or {@link #getOwner getOwner()}.
  * For example, if the mapping file is located in directory
  * <tt>/foo</tt>, it contains expression <tt>bar&#42;/baz=fred</tt> and the user
  * asks for the data assigned to directory <tt>foo/barge/baz</tt>, then
- * directory name <tt>barge</tt> is matched against mappingFileLine <tt>bar*</tt>
- * and name <tt>baz</tt> is matched against mappingFileLine <tt>baz</tt>.
+ * directory name <tt>barge</tt> is matched against pattern <tt>bar*</tt>
+ * and name <tt>baz</tt> is matched against pattern <tt>baz</tt>.
  *
- * <h5>Resolution of mappingFileLine conflicts</h5>
+ * <h5>Resolution of pattern conflicts</h5>
  *
  * If there are multiple patterns matching the corresponding part of the path,
- * then the most specific mappingFileLine part is used. The following rules are applied
+ * then the most specific pattern part is used. The following rules are applied
  * (in this order) when comparing the level of specificity:
  * <ol>
  *     <li>non-prefix patterns are more specific than prefix patterns</li>
@@ -201,16 +201,16 @@ import org.openide.util.Union2;
  * explicitly specified by the left side of the expression but also all
  * its direct and indirect children (files and subdirectories), excluding those
  * that are mapped with a more specific mapping expression. The words &quot;more
- * specific expression&quot; refer to a more specific path mappingFileLine on the left
+ * specific expression&quot; refer to a more specific path pattern on the left
  * side of the mapping expression.
  * <p>
- * Path mappingFileLine <var>A</var> is considered to be more specific than
- * path mappingFileLine <var>B</var> if the first part of mappingFileLine <var>A</var>
- * is more specific than the first part of mappingFileLine <var>B</var>.
+ * Path pattern <var>A</var> is considered to be more specific than
+ * path pattern <var>B</var> if the first part of pattern <var>A</var>
+ * is more specific than the first part of pattern <var>B</var>.
  * If first parts of the path patterns are equally specific, second parts
  * of the path patterns are compared, etc. If all the compared parts are
- * equally specific and one path mappingFileLine consists of more mappingFileLine parts than
- * the other mappingFileLine, than the path mappingFileLine consisting of more mappingFileLine parts
+ * equally specific and one path pattern consists of more pattern parts than
+ * the other pattern, than the path pattern consisting of more pattern parts
  * is considered more specific.
  *
  * <h4>Examples</h4>
@@ -268,13 +268,13 @@ import org.openide.util.Union2;
  *
  * Now, if the user asks for data assigned to file
  * &quot;/foo/bar/baz/SomeFile.txt&quot;, the answer would be &quot;Alice&quot;
- * because path mappingFileLine <tt>bar/baz</tt> is more specific than mappingFileLine
+ * because path pattern <tt>bar/baz</tt> is more specific than pattern
  * <tt>bar</tt> and the more specific mapping overrides the less specific one.
  * <p>
  * If the user asks for data assigned to file (or folder)
  * &quot;/foo/bar/Data.dat&quot;, they will get answer &quot;Lucy&quot; as
- * <tt>bar</tt> is the only matching mappingFileLine and it is not overridden by any
- * more specific matching mappingFileLine.
+ * <tt>bar</tt> is the only matching pattern and it is not overridden by any
+ * more specific matching pattern.
  *
  * <h5>Pattern conflicts</h5>
  *
@@ -1038,7 +1038,7 @@ public abstract class NbModuleOwnerSupport {
             private String patternBeingParsed;
             private int state;
 
-            /* boundaries of the sub-mappingFileLine being recognized: */
+            /* boundaries of the sub-pattern being recognized: */
             private int begin;
 
             /* storage for the result: */
@@ -1075,7 +1075,7 @@ public abstract class NbModuleOwnerSupport {
             }
 
             /**
-             * Returns position of the separator between a path mappingFileLine
+             * Returns position of the separator between a path pattern
              * and the assigned data (the equal-sign).
              */
             int getSeparatorPosition() {
@@ -1201,7 +1201,7 @@ public abstract class NbModuleOwnerSupport {
 
                 switch (state) {
                     case INIT:
-                        /* mappingFileLine ends with '/' */
+                        /* pattern ends with '/' */
                         storePatternPart("*");                          //NOI18N
                         break;
                     case NAME:
