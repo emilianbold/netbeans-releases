@@ -190,6 +190,10 @@ public final class ServersPanel extends javax.swing.JPanel implements ExplorerMa
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        performRiAddDevice();
+    }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void performRiAddDevice() {
         String title = NbBundle.getMessage(ServersPanel.class, "TTL_NEW_SERVER"); //NOI18N
         String msg = NbBundle.getMessage(ServersPanel.class, "MSG_NEW_SERVER"); //NOI18N
 
@@ -229,8 +233,7 @@ public final class ServersPanel extends javax.swing.JPanel implements ExplorerMa
                 Exceptions.printStackTrace(e);
             }
         }
-
-    }//GEN-LAST:event_jButton1ActionPerformed
+    }
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         Node[] nodes = mgr.getSelectedNodes();

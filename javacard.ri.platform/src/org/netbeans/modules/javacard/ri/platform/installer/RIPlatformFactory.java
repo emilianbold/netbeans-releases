@@ -341,12 +341,17 @@ final class RIPlatformFactory implements Mutex.ExceptionAction<FileObject> {
     }
 
     private boolean addPrototypeValues(EditableProperties deviceProps) {
+        return addPrototypeValues(deviceProps, platformProps);
+    }
+
+    static boolean addPrototypeValues(EditableProperties deviceProps, EditableProperties platformProps) {
         boolean result = false;
         for (Map.Entry<String, String> e : platformProps.entrySet()) {
             String key = e.getKey();
             if (key.startsWith(JCConstants.PLATFORM_FILE_DEVICE_PROTOTYPE_PREFIX)) {
                 result = true;
                 key = key.substring(JCConstants.PLATFORM_FILE_DEVICE_PROTOTYPE_PREFIX.length());
+                System.err.println("Use prototype value " + key);
                 deviceProps.put(key, e.getValue());
             }
         }
