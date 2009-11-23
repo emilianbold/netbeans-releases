@@ -74,6 +74,9 @@ public final class BootClassPathImpl implements ClassPathImplementation, Propert
     private boolean activePlatformValid = true;
     private JavaPlatformManager platformManager;
     private final EndorsedClassPathImpl ecpImpl;
+        //lock for this class and EndorsedCPI
+    final Object LOCK = new Object();
+
     
 
     BootClassPathImpl(NbMavenProjectImpl project, EndorsedClassPathImpl ecpImpl) {
@@ -82,23 +85,25 @@ public final class BootClassPathImpl implements ClassPathImplementation, Propert
         ecpImpl.setBCP(this);
     }
 
-    public synchronized List<? extends PathResourceImplementation> getResources() {
-        if (this.resourcesCache == null) {
-            ArrayList<PathResourceImplementation> result = new ArrayList<PathResourceImplementation> ();
-            result.addAll(ecpImpl.getResources());
-            JavaPlatform jp = findActivePlatform ();
-            if (jp != null) {
-                //TODO May also listen on CP, but from Platform it should be fixed.
-                ClassPath cp = jp.getBootstrapLibraries();
-                List entries = cp.entries();
-                for (Iterator it = entries.iterator(); it.hasNext();) {
-                    ClassPath.Entry entry = (ClassPath.Entry) it.next();
-                    result.add (ClassPathSupport.createResource(entry.getURL()));
+    public List<? extends PathResourceImplementation> getResources() {
+        synchronized (LOCK) {
+            if (this.resourcesCache == null) {
+                ArrayList<PathResourceImplementation> result = new ArrayList<PathResourceImplementation> ();
+                result.addAll(ecpImpl.getResources());
+                JavaPlatform jp = findActivePlatform ();
+                if (jp != null) {
+                    //TODO May also listen on CP, but from Platform it should be fixed.
+                    ClassPath cp = jp.getBootstrapLibraries();
+                    List entries = cp.entries();
+                    for (Iterator it = entries.iterator(); it.hasNext();) {
+                        ClassPath.Entry entry = (ClassPath.Entry) it.next();
+                        result.add (ClassPathSupport.createResource(entry.getURL()));
+                    }
                 }
+                resourcesCache = Collections.unmodifiableList (result);
             }
-            resourcesCache = Collections.unmodifiableList (result);
+            return this.resourcesCache;
         }
-        return this.resourcesCache;
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -109,29 +114,31 @@ public final class BootClassPathImpl implements ClassPathImplementation, Propert
         this.support.removePropertyChangeListener (listener);
     }
 
-    synchronized JavaPlatform findActivePlatform () {
-        activePlatformValid = true;
-        if (platformManager == null) {
-            platformManager = JavaPlatformManager.getDefault();
-            platformManager.addPropertyChangeListener(WeakListeners.propertyChange(this, platformManager));
-            NbMavenProject watch = project.getLookup().lookup(NbMavenProject.class);
-            watch.addPropertyChangeListener(this);
-        }                
-        
-        //TODO ideally we would handle this by toolchains in future.
+    JavaPlatform findActivePlatform () {
+        synchronized (LOCK) {
+            activePlatformValid = true;
+            if (platformManager == null) {
+                platformManager = JavaPlatformManager.getDefault();
+                platformManager.addPropertyChangeListener(WeakListeners.propertyChange(this, platformManager));
+                NbMavenProject watch = project.getLookup().lookup(NbMavenProject.class);
+                watch.addPropertyChangeListener(this);
+            }
 
-        //only use the default auximpl otherwise we get recursive calls problems.
-        String val = project.getAuxProps().get(Constants.HINT_JDK_PLATFORM, true);
-        lastHintValue = val;
-        JavaPlatform plat = getActivePlatform(val);
-        if (plat == null) {
-            //TODO report how?
-            Logger.getLogger(BootClassPathImpl.class.getName()).fine("Cannot find java platform with id of '" + val + "'"); //NOI18N
-            plat = platformManager.getDefaultPlatform();
-            activePlatformValid = false;
+            //TODO ideally we would handle this by toolchains in future.
+
+            //only use the default auximpl otherwise we get recursive calls problems.
+            String val = project.getAuxProps().get(Constants.HINT_JDK_PLATFORM, true);
+            lastHintValue = val;
+            JavaPlatform plat = getActivePlatform(val);
+            if (plat == null) {
+                //TODO report how?
+                Logger.getLogger(BootClassPathImpl.class.getName()).fine("Cannot find java platform with id of '" + val + "'"); //NOI18N
+                plat = platformManager.getDefaultPlatform();
+                activePlatformValid = false;
+            }
+            //Invalid platform ID or default platform
+            return plat;
         }
-        //Invalid platform ID or default platform
-        return plat;
     }
     
     /**
@@ -195,7 +202,7 @@ public final class BootClassPathImpl implements ClassPathImplementation, Propert
      * Resets the cache and firesPropertyChange
      */
     private void resetCache () {
-        synchronized (this) {
+        synchronized (LOCK) {
             resourcesCache = null;
         }
         support.firePropertyChange(PROP_RESOURCES, null, null);

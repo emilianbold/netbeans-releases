@@ -52,6 +52,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.support.EnvWriter;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.UnbufferSupport;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.netbeans.modules.nativeexecution.support.Win32APISupport;
@@ -330,9 +331,7 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
 
     @Override
     protected final synchronized void cancel() {
-        if (process != null) {
-            process.destroy();
-        }
+        ProcessUtils.destroy(this);
     }
 
     private static String loc(String key, String... params) {

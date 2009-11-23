@@ -37,31 +37,69 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.spi;
+package org.netbeans.nbbuild;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.util.jar.Manifest;
+import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.Task;
 
 /**
- * Entry point for VCS specific functionality accesed from the issuetracking modules
- * @author Tomas Stupka
+ * Task which parses given manifest file, searches for given attribute
+ * and stores it in property.
+ * 
+ * @author Richard Michalsky
  */
-public abstract class VCSSupport {
+public class ParseManifest extends Task {
 
     /**
-     *
-     * @param file
-     * @param line
+     * Path to manifest.
      */
-    public void searchHistory(File file, final int line) {
-
+    private File manifest;
+    public void setManifest(File manifest) {
+        this.manifest = manifest;
     }
-
     /**
-     *
-     * @param file
-     * @param revision
+     * Task sets attribute name to given property.
+     * If attribute is not found, property remains unset.
      */
-    public void searchHistory(File file, String revision) {
-
+    private String property;
+    public void setProperty(String property) {
+        this.property = property;
     }
+
+    private String attribute;
+    /**
+     * Name of attribute to be read from given manifest.
+     * @param attribute
+     */
+    public void setAttribute(String attribute) {
+        this.attribute = attribute;
+    }
+
+
+    @Override
+    public void execute() throws BuildException {
+        if (manifest == null) {
+            throw new BuildException("Must specify parameter 'manifest'.");
+        }
+        if (property == null) {
+            throw new BuildException("Must specify parameter 'property'.");
+        }
+        if (attribute == null) {
+            throw new BuildException("Must specify parameter 'attribute'.");
+        }
+        try {
+            Manifest mf = new Manifest(new BufferedInputStream(new FileInputStream(manifest)));
+            String attr = mf.getMainAttributes().getValue(attribute);
+            if (attr == null)
+                return;
+            getProject().setProperty(property, attr);
+        } catch (Exception x) {
+            throw new BuildException("Reading manifest " + manifest + ": " + x, x, getLocation());
+        }
+    }
+
 }

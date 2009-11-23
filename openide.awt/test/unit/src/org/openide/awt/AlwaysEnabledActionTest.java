@@ -48,6 +48,8 @@ import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.prefs.BackingStoreException;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -340,7 +342,6 @@ public class AlwaysEnabledActionTest extends NbTestCase implements PropertyChang
         assertEquals("MyNamedAction", MyAction.last.getValue(Action.NAME));
     }
 
-    @RandomlyFails
     public void testPreferencesAction() throws Exception {
 //        checkPreferencesAction("testSystemPreferences.instance", Preferences.systemRoot());
         checkPreferencesAction("testUserPreferences.instance", "user:", Preferences.userRoot());
@@ -359,29 +360,40 @@ public class AlwaysEnabledActionTest extends NbTestCase implements PropertyChang
     private void checkPreferencesAction(Action a, Preferences prefsNode) throws Exception {
         prefsNode.putBoolean("myKey", true);
         prefsNode.sync();
-        int delay = 1;
-        Thread.sleep(delay);
+        class L implements PreferenceChangeListener {
+            boolean notified;
+
+            public synchronized void preferenceChange(PreferenceChangeEvent evt) {
+                notified = true;
+                notifyAll();
+            }
+
+            public synchronized void waitFor() throws Exception {
+                while (!notified) {
+                    wait();
+                }
+                notified = false;
+            }
+        }
+        L listener = new L();
+
         // Verify value
         assertTrue("Expected true as preference value", prefsNode.getBoolean("myKey", false));
 
-//        prefsNode.addPreferenceChangeListener(new PreferenceChangeListener() {
-//            public void preferenceChange(PreferenceChangeEvent pce) {
-//                changeCount[0]++;
-//            }
-//        });
         TestCase.assertTrue("Expected to be instance of Presenter.Menu", a instanceof Presenter.Menu);
         JMenuItem item = ((Presenter.Menu) a).getMenuPresenter();
         TestCase.assertTrue("Expected to be selected", item.isSelected());
+        prefsNode.addPreferenceChangeListener(listener);
         prefsNode.putBoolean("myKey", false);
         prefsNode.sync();
-        Thread.sleep(delay);
+        listener.waitFor();
         TestCase.assertFalse("Expected to not be selected", item.isSelected());
         a.actionPerformed(null); // new ActionEvent(null, 0, ""));
-        Thread.sleep(delay);
+        listener.waitFor();
         TestCase.assertTrue("Expected to be selected", item.isSelected());
         prefsNode.putBoolean("myKey", false);
         prefsNode.sync();
-        Thread.sleep(delay);
+        listener.waitFor();
     }
 
     private static void assertPropertyPropagated(String propertyName, Object value, Action a, Action delegate) {

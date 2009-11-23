@@ -4,7 +4,6 @@
  */
 package org.netbeans.modules.nativeexecution;
 
-import java.io.UnsupportedEncodingException;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSchException;
@@ -15,13 +14,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
-import org.netbeans.modules.nativeexecution.api.util.Signal;
 import org.netbeans.modules.nativeexecution.support.EnvWriter;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.UnbufferSupport;
-import org.openide.util.Exceptions;
 
 public final class RemoteNativeProcess extends AbstractNativeProcess {
 
@@ -151,7 +148,7 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
     }
 
     @Override
-    public void cancel() {
+    public synchronized void cancel() {
         ChannelExec channel;
 
         synchronized (lock) {
@@ -162,22 +159,7 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
             }
         }
 
-        // Sometimes jsch fails to kill the remote process ...
-        // try to do force kill
-
-        int pid = -1;
-
-        try {
-            pid = getPID();
-        } catch (IOException ex) {
-        }
-
-        if (pid == -1) {
-            // This means that we are cancelling process that was not started
-            return;
-        }
-
-        CommonTasksSupport.sendSignal(info.getExecutionEnvironment(), pid, Signal.SIGKILL, null); // NOI18N
+        ProcessUtils.destroy(this);
     }
 
     private ChannelStreams execCommand(

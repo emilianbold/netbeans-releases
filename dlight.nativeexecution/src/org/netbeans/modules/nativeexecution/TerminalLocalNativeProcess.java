@@ -165,6 +165,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
             ProcessBuilder pb = new ProcessBuilder(command);
             pb.directory(workingDirectory);
+            pb.redirectErrorStream(true);
 
             LOG.log(Level.FINEST, "Command: " + command); // NOI18N
 
@@ -274,15 +275,8 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
     }
 
     @Override
-    public void cancel() {
-        int pid = getPIDNoException();
-
-        if (pid < 0) {
-            // Process even was not started ...
-            return;
-        }
-
-        CommonTasksSupport.sendSignal(info.getExecutionEnvironment(), pid, Signal.SIGTERM, null);
+    public synchronized void cancel() {
+        ProcessUtils.destroy(this);
     }
 
     @Override
