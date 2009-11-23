@@ -208,7 +208,6 @@ public class MercurialInterceptor extends VCSInterceptor {
     public void afterMove(final File from, final File to) {
         Mercurial.LOG.fine("afterMove " + from + "->" + to);
         if (from == null || to == null || !to.exists()) return;
-        if (to.isDirectory()) return;
 
         File parent = from.getParentFile();
         // There is no point in refreshing the cache for ignored files.
@@ -269,7 +268,6 @@ public class MercurialInterceptor extends VCSInterceptor {
     @Override
     public void afterCreate(final File file) {
         Mercurial.LOG.fine("afterCreate " + file);
-        if (file.isDirectory()) return;
         // There is no point in refreshing the cache for ignored files.
         if (!HgUtils.isIgnored(file, false)) {
             reScheduleRefresh(800, file);
