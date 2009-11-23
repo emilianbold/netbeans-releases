@@ -86,6 +86,9 @@ public class AutoUpdateTest extends NbTestCase {
             "org-netbeans-api-annotations-common.jar"
         );
         assertTrue("jar file created", jar.exists());
+
+        File lastM = new File(new File(target, "platform11"), ".lastModified");
+        assertTrue("Last modified file created", lastM.exists());
     }
 
 
@@ -203,8 +206,12 @@ public class AutoUpdateTest extends NbTestCase {
         osx.write(txtx.getBytes());
         osx.close();
 
+        File lastM = new File(new File(target, "platform11"), ".lastModified");
+        lastM.createNewFile();
+
         Thread.sleep(1000);
         long last = x.lastModified();
+        Thread.sleep(500);
 
         PublicPackagesInProjectizedXMLTest.execute(
             "autoupdate.xml", "-verbose", "-Durl=" + f.toURI().toURL(),
@@ -233,6 +240,10 @@ public class AutoUpdateTest extends NbTestCase {
         }
 
         assertFalse("extra file has been deleted", e.exists());
+
+        if (last >= lastM.lastModified()) {
+            fail(".lastModified file shall be touched");
+        }
     }
 
     public File generateNBM (String name, String... files) throws IOException {

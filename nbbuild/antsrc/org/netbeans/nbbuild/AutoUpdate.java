@@ -48,7 +48,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -121,6 +120,7 @@ public class AutoUpdate extends Task {
 
             byte[] bytes = new byte[4096];
             File tmp = null;
+            File lastM = null;
             try {
                 final String dash = uu.getCodeName().replace('.', '-');
                 tmp = File.createTempFile(dash, ".nbm");
@@ -134,6 +134,9 @@ public class AutoUpdate extends Task {
                 get.execute();
 
                 File cluster = new File(dir, uu.targetcluster);
+                cluster.mkdirs();
+                lastM = new File(cluster, ".lastModified");
+                lastM.createNewFile();
 
                 if (info != null) {
                     for (int i = 1; i < info.size(); i++) {
@@ -187,6 +190,9 @@ public class AutoUpdate extends Task {
             } finally {
                 if (tmp != null) {
                     tmp.delete();
+                }
+                if (lastM != null) {
+                    lastM.setLastModified(System.currentTimeMillis());
                 }
             }
         }
