@@ -19,6 +19,13 @@ public class AnnotationBarManager implements SideBarFactory {
   static AnnotationBar hideAnnotationBar(JTextComponent target) {
     AnnotationBar ab = (AnnotationBar) target.getClientProperty(BAR_KEY);
     assert ab != null : "#58828 reappeared!"; // NOI18N
+    ab.hideAnnotate();
+    return ab;
+  }
+
+  static AnnotationBar unAnnotate(JTextComponent target) {
+    AnnotationBar ab = (AnnotationBar) target.getClientProperty(BAR_KEY);
+    assert ab != null : "#58828 reappeared!"; // NOI18N
     ab.unAnnotate();
     return ab;
   }
