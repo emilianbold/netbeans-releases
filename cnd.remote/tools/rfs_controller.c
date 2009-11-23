@@ -85,7 +85,7 @@ static void serve_connection(void* data) {
     struct package *pkg = (struct package *) &buffer;
 
     int first = true;
-    char requestor_id[32];
+    char requestor_id[32] = "-1";
 
     while (1) {
         trace("Waiting for a data to arrive from %s, sd=%d...\n", requestor_id, conn_data->sd);
