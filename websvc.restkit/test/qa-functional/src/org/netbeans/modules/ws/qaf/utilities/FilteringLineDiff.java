@@ -70,7 +70,7 @@ public class FilteringLineDiff extends LineDiff {
 
     /**
      *  Lines beginning with " * Created ", " * @author " or "import " and empty
-     * lines are treated equals. One can check import statements by buildng
+     * lines are treated equals. One can check import statements by building
      * a project.
      *
      * @param l1 first line to compare
