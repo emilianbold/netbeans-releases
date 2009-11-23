@@ -488,14 +488,8 @@ public final class ServerRegistry implements java.io.Serializable {
         String displayName = (String) fo.getAttribute(InstanceProperties.DISPLAY_NAME_ATTR);
         String withoutUI = (String) fo.getAttribute(InstanceProperties.REGISTERED_WITHOUT_UI);
         boolean withoutUIFlag = withoutUI == null ? false : Boolean.valueOf(withoutUI);
-        Map<String, String> props = new HashMap<String, String>();
-        for(Enumeration<String> e = fo.getAttributes(); e.hasMoreElements();) {
-            String name = e.nextElement();
-            Object attr = fo.getAttribute(name);
-            props.put(name, attr == null ? null : attr.toString());
-        }
         try {
-            addInstanceImpl(url, username, password, displayName, withoutUIFlag, props);
+            addInstanceImpl(url, username, password, displayName, withoutUIFlag, null);
         } catch (InstanceCreationException ice) {
             // yes... we are ignoring this.. because that
         }
