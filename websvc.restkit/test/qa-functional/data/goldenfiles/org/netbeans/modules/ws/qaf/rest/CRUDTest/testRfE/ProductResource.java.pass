@@ -15,16 +15,16 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
-import com.sun.jersey.api.core.ResourceContext;
 import javax.ws.rs.WebApplicationException;
 import javax.persistence.NoResultException;
 import javax.persistence.EntityManager;
-import java.util.Collection;
 import o.n.m.ws.qaf.rest.crud.Product;
-import o.n.m.ws.qaf.rest.crud.ProductCode;
 import o.n.m.ws.qaf.rest.crud.PurchaseOrder;
 import o.n.m.ws.qaf.rest.crud.Manufacturer;
+import o.n.m.ws.qaf.rest.crud.ProductCode;
+import java.util.Collection;
 import o.n.m.ws.qaf.rest.crud.converter.ProductConverter;
+import com.sun.jersey.api.core.ResourceContext;
 
 /**
  *
@@ -33,16 +33,16 @@ import o.n.m.ws.qaf.rest.crud.converter.ProductConverter;
 
 public class ProductResource {
     @Context
-    protected UriInfo uriInfo;
-    @Context
     protected ResourceContext resourceContext;
+    @Context
+    protected UriInfo uriInfo;
     protected Integer id;
-
+  
     /** Creates a new instance of ProductResource */
     public ProductResource() {
     }
 
-    protected void setId(Integer id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -55,7 +55,7 @@ public class ProductResource {
     @GET
     @Produces({"application/xml", "application/json"})
     public ProductConverter get(@QueryParam("expandLevel")
-    @DefaultValue("1")
+                                @DefaultValue("1")
     int expandLevel) {
         PersistenceService persistenceSvc = PersistenceService.getInstance();
         try {
@@ -125,7 +125,7 @@ public class ProductResource {
      * @param newEntity the entity containing the new data
      * @return the updated entity
      */
-    protected Product updateEntity(Product entity, Product newEntity) {
+    private Product updateEntity(Product entity, Product newEntity) {
         EntityManager em = PersistenceService.getInstance().getEntityManager();
         Manufacturer manufacturerId = entity.getManufacturerId();
         Manufacturer manufacturerIdNew = newEntity.getManufacturerId();
@@ -168,7 +168,7 @@ public class ProductResource {
      *
      * @param entity the entity to deletle
      */
-    protected void deleteEntity(Product entity) {
+    private void deleteEntity(Product entity) {
         EntityManager em = PersistenceService.getInstance().getEntityManager();
         Manufacturer manufacturerId = entity.getManufacturerId();
         if (manufacturerId != null) {
@@ -192,9 +192,9 @@ public class ProductResource {
      */
     @Path("manufacturerId/")
     public ManufacturerResource getManufacturerIdResource() {
-        ManufacturerIdResourceSub resource = resourceContext.getResource(ManufacturerIdResourceSub.class);
-        resource.setParent(getEntity());
-        return resource;
+        ManufacturerIdResourceSub manufacturerIdResourceSub = resourceContext.getResource(ManufacturerIdResourceSub.class);
+        manufacturerIdResourceSub.setParent(getEntity());
+        return manufacturerIdResourceSub;
     }
 
     /**
@@ -205,9 +205,9 @@ public class ProductResource {
      */
     @Path("productCode/")
     public ProductCodeResource getProductCodeResource() {
-        ProductCodeResourceSub resource = resourceContext.getResource(ProductCodeResourceSub.class);
-        resource.setParent(getEntity());
-        return resource;
+        ProductCodeResourceSub productCodeResourceSub = resourceContext.getResource(ProductCodeResourceSub.class);
+        productCodeResourceSub.setParent(getEntity());
+        return productCodeResourceSub;
     }
 
     /**
@@ -218,16 +218,16 @@ public class ProductResource {
      */
     @Path("purchaseOrderCollection/")
     public PurchaseOrdersResource getPurchaseOrderCollectionResource() {
-        PurchaseOrderCollectionResourceSub resource = resourceContext.getResource(PurchaseOrderCollectionResourceSub.class);
-        resource.setParent(getEntity());
-        return resource;
+        PurchaseOrderCollectionResourceSub purchaseOrderCollectionResourceSub = resourceContext.getResource(PurchaseOrderCollectionResourceSub.class);
+        purchaseOrderCollectionResourceSub.setParent(getEntity());
+        return purchaseOrderCollectionResourceSub;
     }
 
     public static class ManufacturerIdResourceSub extends ManufacturerResource {
 
         private Product parent;
 
-        protected void setParent(Product parent) {
+        public void setParent(Product parent) {
             this.parent = parent;
         }
 
@@ -245,7 +245,7 @@ public class ProductResource {
 
         private Product parent;
 
-        protected void setParent(Product parent) {
+        public void setParent(Product parent) {
             this.parent = parent;
         }
 
@@ -263,7 +263,7 @@ public class ProductResource {
 
         private Product parent;
 
-        protected void setParent(Product parent) {
+        public void setParent(Product parent) {
             this.parent = parent;
         }
 

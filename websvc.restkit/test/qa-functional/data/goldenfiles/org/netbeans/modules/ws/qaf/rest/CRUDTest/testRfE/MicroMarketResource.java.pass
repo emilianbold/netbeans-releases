@@ -15,12 +15,12 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
-import com.sun.jersey.api.core.ResourceContext;
 import javax.ws.rs.WebApplicationException;
 import javax.persistence.NoResultException;
 import javax.persistence.EntityManager;
 import o.n.m.ws.qaf.rest.crud.MicroMarket;
 import o.n.m.ws.qaf.rest.crud.converter.MicroMarketConverter;
+import com.sun.jersey.api.core.ResourceContext;
 
 /**
  *
@@ -29,16 +29,16 @@ import o.n.m.ws.qaf.rest.crud.converter.MicroMarketConverter;
 
 public class MicroMarketResource {
     @Context
-    protected UriInfo uriInfo;
-    @Context
     protected ResourceContext resourceContext;
+    @Context
+    protected UriInfo uriInfo;
     protected String id;
-
+  
     /** Creates a new instance of MicroMarketResource */
     public MicroMarketResource() {
     }
 
-    protected void setId(String id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -51,7 +51,7 @@ public class MicroMarketResource {
     @GET
     @Produces({"application/xml", "application/json"})
     public MicroMarketConverter get(@QueryParam("expandLevel")
-    @DefaultValue("1")
+                                    @DefaultValue("1")
     int expandLevel) {
         PersistenceService persistenceSvc = PersistenceService.getInstance();
         try {
@@ -121,7 +121,7 @@ public class MicroMarketResource {
      * @param newEntity the entity containing the new data
      * @return the updated entity
      */
-    protected MicroMarket updateEntity(MicroMarket entity, MicroMarket newEntity) {
+    private MicroMarket updateEntity(MicroMarket entity, MicroMarket newEntity) {
         EntityManager em = PersistenceService.getInstance().getEntityManager();
         entity = em.merge(newEntity);
         return entity;
@@ -132,7 +132,7 @@ public class MicroMarketResource {
      *
      * @param entity the entity to deletle
      */
-    protected void deleteEntity(MicroMarket entity) {
+    private void deleteEntity(MicroMarket entity) {
         EntityManager em = PersistenceService.getInstance().getEntityManager();
         em.remove(entity);
     }

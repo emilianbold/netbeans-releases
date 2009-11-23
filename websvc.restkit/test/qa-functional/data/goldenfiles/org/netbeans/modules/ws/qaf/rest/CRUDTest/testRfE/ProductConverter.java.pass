@@ -298,8 +298,10 @@ public class ProductConverter {
         }
         Collection<PurchaseOrder> purchaseOrderCollection = entity.getPurchaseOrderCollection();
         Collection<PurchaseOrder> newpurchaseOrderCollection = new java.util.ArrayList<PurchaseOrder>();
-        for (PurchaseOrder item : purchaseOrderCollection) {
-            newpurchaseOrderCollection.add(em.getReference(PurchaseOrder.class, item.getOrderNum()));
+        if (purchaseOrderCollection != null) {
+            for (PurchaseOrder item : purchaseOrderCollection) {
+                newpurchaseOrderCollection.add(em.getReference(PurchaseOrder.class, item.getOrderNum()));
+            }
         }
         entity.setPurchaseOrderCollection(newpurchaseOrderCollection);
         return entity;
