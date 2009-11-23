@@ -105,6 +105,11 @@ public class FilteringLineDiff extends LineDiff {
             LOGGER.warning("skiping \"" + l1 + "\" and \"" + l2 + "\""); //NOI18N
             return true;
         }
+        //to avoid having two sets of golden files (for ant/maven based projects)
+        if (l1.contains("private static String DEFAULT_PU = ")) { //NOI18N
+            LOGGER.warning("skiping \"" + l1 + "\" and \"" + l2 + "\""); //NOI18N
+            return l2.trim().startsWith("private static String DEFAULT_PU = "); //NOI18N
+        }
         return false;
     }
 }
