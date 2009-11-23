@@ -42,6 +42,7 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -164,6 +165,11 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                     terminalArgs);
 
             ProcessBuilder pb = new ProcessBuilder(command);
+
+            if (!workingDirectory.exists()) {
+                throw new FileNotFoundException(loc("NativeProcess.noSuchDirectoryError.text", workingDirectory.getAbsolutePath())); // NOI18N
+            }
+
             pb.directory(workingDirectory);
             pb.redirectErrorStream(true);
 
@@ -341,6 +347,10 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                 } catch (IOException ex) {
                 }
             }
+        }
+
+        if (getState() == State.CANCELLED) {
+            throw new InterruptedException();
         }
 
         return exitCode;

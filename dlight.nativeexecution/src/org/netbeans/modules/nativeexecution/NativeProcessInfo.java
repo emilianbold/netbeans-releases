@@ -142,6 +142,10 @@ public final class NativeProcessInfo {
     }
 
     public List<String> getCommand() {
+        if (executable == null && commandLine == null) {
+            return null;
+        }
+
         List<String> result = new ArrayList<String>();
 
         String cmd;
@@ -191,6 +195,10 @@ public final class NativeProcessInfo {
     }
 
     public String getCommandLineForShell() {
+        if (commandLine == null && executable == null) {
+            return null;
+        }
+        
         /**
          * See IZ#168186 - Wrongly interpreted "$" symbol in arguments
          *
