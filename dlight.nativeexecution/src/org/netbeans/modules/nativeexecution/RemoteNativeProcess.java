@@ -23,6 +23,7 @@ import org.netbeans.modules.nativeexecution.api.util.UnbufferSupport;
 public final class RemoteNativeProcess extends AbstractNativeProcess {
 
     private final static java.util.logging.Logger log = Logger.getInstance();
+    private final static int startupErrorExitValue = 184;
     private final static Object lock = RemoteNativeProcess.class.getName() + "Lock"; // NOI18N
     private ChannelStreams cstreams = null;
     private Integer exitValue = null;
@@ -71,8 +72,7 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
                     final String workingDirectory = info.getWorkingDirectory(true);
 
                     if (workingDirectory != null) {
-                        streams.in.write(EnvWriter.getBytesWithRemoteCharset("cd \"" + workingDirectory + "\"\n")); // NOI18N
-                        streams.in.flush();
+                        streams.in.write(EnvWriter.getBytesWithRemoteCharset("cd \"" + workingDirectory + "\" || exit " + startupErrorExitValue + "\n")); // NOI18N
                     }
 
                     EnvWriter ew = new EnvWriter(streams.in);
@@ -139,10 +139,17 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
                 interrupt();
                 throw ex;
             }
-
         }
 
         exitValue = Integer.valueOf(cstreams.channel.getExitStatus());
+
+        if (exitValue == startupErrorExitValue) {
+            exitValue = -1;
+        }
+
+        if (getState() == State.CANCELLED) {
+            throw new InterruptedException();
+        }
 
         return exitValue.intValue();
     }
