@@ -164,7 +164,7 @@ import org.openide.util.NbBundle;
                 File parent = name.getParentFile();
                 if (parent == null) {
                     String remoteParent = mapper.getRemotePath(parent.getAbsolutePath(), true);
-                    script.append("mkdir -p \"").append(remoteParent).append("\"; ");
+                    script.append("mkdir -p \"").append(remoteParent).append("\"; "); // NOI18N
                 }
             }
             preprocessFile( name, script, remoteFile);

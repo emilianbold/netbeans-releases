@@ -223,8 +223,8 @@ class RfsLocalController implements Runnable {
             }
             //update info about file where we thought file is copied, but it doesn't
             // exist remotely (i.e. project directory was removed)
-            if (request.length() < 3 || !request.startsWith("t ")) {
-                throw new IllegalArgumentException("Protocol error: " + request);
+            if (request.length() < 3 || !request.startsWith("t ")) { // NOI18N
+                throw new IllegalArgumentException("Protocol error: " + request); // NOI18N
             }
             String remoteFile = request.substring(2);
             String localFilePath = mapper.getLocalPath(remoteFile);
