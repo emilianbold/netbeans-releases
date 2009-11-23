@@ -52,6 +52,7 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <fcntl.h>
+#include <alloca.h>
 
 #include "rfs_protocol.h"
 #include "rfs_preload_socks.h"
@@ -511,6 +512,10 @@ int __open64(const char *path, int flags, ...) {
 #ifdef __sun
 int execve(const char *path, char *const argv[], char *const envp[]) {
     inside_open++;
+    int path_size = strlen(path) + 1;
+    char *temp_path = alloca(path_size);
+    strncpy(temp_path, path, path_size);
+    path = temp_path;
     const char *function_name = "execve";
     trace("%s %s %d\n", function_name, path);
     int result = -1;
@@ -518,7 +523,7 @@ int execve(const char *path, char *const argv[], char *const envp[]) {
     if (pre_open(path, flags)) {
         static int (*prev)(const char *, char *const *, char *const *);
         if (!prev) {
-            prev = (int (*)(const char *, char *const *, char *const *)) get_real_addr(execve);
+            prev = (int (*)(const char *, char *const *, char *const *)) _get_real_addr(function_name, execve);
         }
         if (prev) {
             result = prev(path, argv, envp);
@@ -534,6 +539,34 @@ int execve(const char *path, char *const argv[], char *const envp[]) {
     return result;
 }
 #endif // __sun
+
+int rename(const char *oldpath, const char *path) {
+    inside_open++;
+    const char *function_name = "rename";
+    trace("%s %s %s\n", function_name, oldpath, path);
+    int result = -1;
+    if (pre_open(oldpath, 0)) {
+        static int (*prev)(const char *, const char *);
+        if (!prev) {
+            prev = (int (*)(const char *, const char *)) _get_real_addr(function_name, rename);
+        }
+        if (prev) {
+            result = prev(oldpath, path);
+            if (result == -1) {
+                trace("Errno=%d %s\n", errno, strerror(errno));
+                perror("RENAMING ");
+            }
+            post_open(path, O_TRUNC | O_CREAT | O_WRONLY);
+        } else {
+            trace("Could not find original \"%s\" function\n", function_name);
+            errno = EFAULT;
+            result = -1;
+        }
+    }
+    trace("%s %s %s -> %d\n", function_name, oldpath, path, result);
+    inside_open--;
+    return result;
+}
 
 //#ifdef __linux__
 FILE *fopen(const char * filename, const char * mode) {

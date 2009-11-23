@@ -37,43 +37,52 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-#include <stdio.h>
-#include <unistd.h>
-#include <limits.h>
+package org.netbeans.modules.cnd.remote.sync;
 
-typedef int bool;
+import java.io.File;
+import java.io.PrintWriter;
+import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
+import org.netbeans.modules.cnd.remote.support.RemoteUtil;
+import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
-enum {
-    true = 1,
-    false = 0
-};
+/**
+ *
+ * @author Vladimir Kvashin
+ */
+public @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory.class, position=100)
+class FtpSyncFactory extends BaseSyncFactory {
 
-void report_error(const char *format, ...);
+    /*package*/ static final boolean ENABLE_FTP = CndUtils.getBoolean("cnd.remote.scp", false);
+    /*package*/ static final String ID = "ftp"; //NOI18N
+    
+    @Override
+    public RemoteSyncWorker createNew( ExecutionEnvironment executionEnvironment,
+            PrintWriter out, PrintWriter err, File privProjectStorageDir, File... files) {
+        return new FtpSyncWorker(executionEnvironment, out, err, privProjectStorageDir, files);
+    }
 
-static void report_unresolved_path(const char* path) {
-    char pwd[PATH_MAX];
-    getcwd(pwd, sizeof pwd);
-    report_error("Can not resolve path: %s  cwd: %s\n", path, pwd);
+    @Override
+    public String getDisplayName() {
+        // That's justa  replacement for ScpSyncFactory/ScpSyncWorker - we don't need no new name
+        // return NbBundle.getMessage(getClass(), "FTP_Factory_Name");
+        return "FTP"; //NOI18N FIXUP
+    }
+
+    @Override
+    public String getDescription() {
+        // That's justa  replacement for ScpSyncFactory/ScpSyncWorker - we don't need no new name
+        //return NbBundle.getMessage(getClass(), "FTP_Factory_Description");
+        return  "Use FTP protocol for synchronization."; // NOI18N FIXUP
+    }
+
+    @Override
+    public String getID() {
+        return ID;
+    }
+
+    @Override
+    public boolean isApplicable(ExecutionEnvironment execEnv) {
+        return ENABLE_FTP && ! RemoteUtil.isForeign(execEnv);
+    }
 }
-
-#if TRACE
-    void trace(const char *format, ...);
-    void trace_startup(const char* prefix, const char* env_var, const char* binary);
-    void trace_shutdown();
-    static void trace_unresolved_path(const char* path) {
-        char pwd[PATH_MAX];
-        getcwd(pwd, sizeof pwd);
-        trace("Can not resolve path: %s  pwd: %s\n", path, pwd);
-    }
-    static void dbg_sleep(int time) {
-        trace("Sleeping %d sec...\n", time);
-        sleep(time);
-        trace("Awoke\n");
-    }
-#else
-    #define trace_startup(...)
-    #define trace(...)
-    #define trace_shutdown()
-    #define trace_unresolved_path(...)
-    #define dbg_sleep(...)
-#endif
