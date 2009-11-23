@@ -433,12 +433,12 @@ made subject to such option by the copyright holder.
                     <pathelement path="${test.@{test.type}.cp.extra}"/>
                 </path>
                 <path id="test.@{test.type}.run.cp">
+                    <pathelement path="${build.test.@{test.type}.classes.dir}"/>
                     <!-- Cannot use <path refid="cp"/> since that uses ${module.classpath} and we want ${module.run.classpath}: -->
                     <pathelement path="${test.@{test.type}.runtime.cp}"/>
                     <pathelement path="${cp.extra}"/>
                     <pathelement location="${cluster}/${module.jar}"/>
                     <path refid="test.unit.lib.cp"/>
-                    <pathelement path="${build.test.@{test.type}.classes.dir}"/>
                     <!-- for compatibility with property based classpath-->
                     <pathelement path="${module.run.classpath}"/>
                     <pathelement path="${test.@{test.type}.run.cp.extra}"/>
