@@ -55,7 +55,6 @@ import java.util.logging.Logger;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.glassfish.javaee.ide.Hk2PluginProperties;
-import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceCreationException;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.GlassfishModuleFactory;
@@ -108,20 +107,8 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
             String url = props.get(InstanceProperties.URL_ATTR);
             ip = InstanceProperties.getInstanceProperties(url);
             if(ip == null) {
-                String username = props.get(InstanceProperties.USERNAME_ATTR);
-                String password = props.get(InstanceProperties.PASSWORD_ATTR);
-                String displayName = props.get(InstanceProperties.DISPLAY_NAME_ATTR);
-                    try {
-                        ip = InstanceProperties.createInstancePropertiesWithoutUI(
-                                url, username, password, displayName, props);
-                    } catch (InstanceCreationException ex) {
-                            Logger.getLogger("glassfish-javaee").log(Level.WARNING, null, ex); // NOI18N
-                    }
-
-                if(ip == null) {
-                    Logger.getLogger("glassfish-javaee").log(Level.INFO,
-                            "Unable to create/locate J2EE InstanceProperties for " + url);
-                }
+                Logger.getLogger("glassfish-javaee").log(Level.INFO,
+                        "Unable to create/locate J2EE InstanceProperties for " + url);
             }
 
             final String glassfishRoot = commonModule.getInstanceProperties().get(
