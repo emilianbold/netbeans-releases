@@ -289,6 +289,10 @@ public class JPDAStart extends Task implements Runnable {
                 logger.fine("Listening using transport "+transport);
 
                 final Map args = lc.defaultArguments ();
+                Connector.StringArgument localAddress = (Connector.StringArgument) args.get("localAddress"); // NOI18N
+                if (localAddress != null) {
+                    localAddress.setValue("127.0.0.1"); // NOI18N
+                }
                 String address = null;
                 try {
                     address = lc.startListening (args);
@@ -341,9 +345,11 @@ public class JPDAStart extends Task implements Runnable {
                         // perform a check for the address and use "localhost"
                         // if the address can not be resolved: (see http://www.netbeans.org/issues/show_bug.cgi?id=154974)
                         String host = address.substring(0, address.indexOf (':'));
+                        logger.fine("  socket listening at " + address+", host = "+host+", port = "+port); // NOI18N
                         try {
                             InetAddress.getByName(host);
                         } catch (UnknownHostException uhex) {
+                            logger.fine(  "unknown host '"+host+"'");
                             address = "localhost:" + port; // NOI18N
                         } catch (SecurityException  se) {}
                     } catch (Exception e) {
