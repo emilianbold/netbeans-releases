@@ -92,7 +92,7 @@ import org.openide.util.WeakListeners;
  * @version 1.00
  */
 
-final class AbbrevDetection implements DocumentListener, PropertyChangeListener, KeyListener, CaretListener, PreferenceChangeListener {
+public final class AbbrevDetection implements DocumentListener, PropertyChangeListener, KeyListener, CaretListener, PreferenceChangeListener {
 
     private static final Logger LOG = Logger.getLogger(AbbrevDetection.class.getName());
     
@@ -206,14 +206,8 @@ final class AbbrevDetection implements DocumentListener, PropertyChangeListener,
     
     public void preferenceChange(PreferenceChangeEvent evt) {
         String settingName = evt == null ? null : evt.getKey();
-        if (settingName == null || "abbrev-reset-acceptor".equals(settingName)) {
-            if (prefs != null) {
-                resetAcceptor = (Acceptor) callFactory(prefs, mimePath, "abbrev-reset-acceptor", null); //NOI18N
-            }
-            
-            if (resetAcceptor == null) {
-                resetAcceptor = AcceptorFactory.WHITESPACE;
-            }
+        if (settingName == null || "abbrev-reset-acceptor".equals(settingName)) { //NOI18N
+            resetAcceptor = getResetAcceptor(prefs, mimePath);
         }
     }
     
@@ -454,6 +448,10 @@ final class AbbrevDetection implements DocumentListener, PropertyChangeListener,
             errorDescription = null;
             HintsController.setErrors(doc, SURROUND_WITH, Collections.<ErrorDescription>emptySet());
         }
+    }
+
+    public static Acceptor getResetAcceptor(Preferences prefs, MimePath mimePath) {
+        return prefs != null ? (Acceptor) callFactory(prefs, mimePath, "abbrev-reset-acceptor", AcceptorFactory.WHITESPACE) : AcceptorFactory.WHITESPACE; //NOI18N
     }
 
     // copied from org.netbeans.modules.editor.lib.SettingsConversions
