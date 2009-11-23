@@ -52,6 +52,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
@@ -70,6 +71,8 @@ import org.openide.util.lookup.Lookups;
  * @since org.netbeans.modules.projectuiapi/1 1.18
  */
 public class NodeFactorySupport {
+
+    private static RequestProcessor RP = new RequestProcessor(NodeFactorySupport.class.getName());
     
     private NodeFactorySupport() {
     }
@@ -185,7 +188,7 @@ public class NodeFactorySupport {
         protected @Override void addNotify() {
             super.addNotify();
             setKeys(Collections.singleton(LOADING_KEY));
-            task = RequestProcessor.getDefault().post(new Runnable() {
+            task = RP.post(new Runnable() {
                 public void run() {
                     synchronized (DelegateChildren.this) {
                         result = createLookup().lookupResult(NodeFactory.class);
@@ -249,15 +252,28 @@ public class NodeFactorySupport {
             }
         }
         
-        public void stateChanged(ChangeEvent e) {
-            NodeList list = (NodeList) e.getSource();
-            List objects = list.keys();
-            synchronized (keys) {
-                removeKeys(list);
-                addKeys(list, objects);
+        public void stateChanged(final ChangeEvent e) {
+            final Runnable action = new Runnable() {
+                public void run() {
+                    NodeList list = (NodeList) e.getSource();
+                    List objects = list.keys();
+                    synchronized (keys) {
+                        removeKeys(list);
+                        addKeys(list, objects);
+                    }
+                    final Collection<NodeListKeyWrapper> ks = createKeys();
+                    NodeFactorySupport.createWaitNode();
+                    EventQueue.invokeLater(new RunnableImpl(DelegateChildren.this, ks));
+                }
+            };
+            if (ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess()) {
+                //having lock (non blocking)
+                action.run();
             }
-            final Collection<NodeListKeyWrapper> ks = createKeys();
-            EventQueue.invokeLater(new RunnableImpl(this, ks));
+            else {
+                //may block for > 10s when waiting on project save
+                RP.post(action);
+            }
         }
         
         //to be called under lock.
