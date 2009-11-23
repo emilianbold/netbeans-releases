@@ -42,7 +42,6 @@
  *
  * Created on Nov 23, 2009, 8:02:16 AM
  */
-
 package org.netbeans.modules.javacard.ri.platform.installer;
 
 import java.awt.BorderLayout;
@@ -86,10 +85,12 @@ import org.openide.windows.WindowManager;
  * @author Tim Boudreau
  */
 public class ServersPanel extends javax.swing.JPanel implements ExplorerManager.Provider, PropertyChangeListener, AddCardHandler.CardCreatedCallback, Lookup.Provider {
+
     private final ExplorerManager mgr = new ExplorerManager();
     private final JavacardPlatform pform;
     private final ValidationGroup grp = ValidationGroup.create();
     private Lookup lkp;
+
     public ServersPanel(JavacardPlatform pform) {
         this.pform = pform;
         mgr.setRootContext(new AbstractNode(pform.getCards().createChildren(), Lookups.fixed(pform)));
@@ -201,10 +202,7 @@ public class ServersPanel extends javax.swing.JPanel implements ExplorerManager.
     }//GEN-LAST:event_onAdd
 
     private void onRemove(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onRemove
-        
     }//GEN-LAST:event_onRemove
-
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
     private javax.swing.JPanel customizerPanel;
@@ -264,8 +262,8 @@ public class ServersPanel extends javax.swing.JPanel implements ExplorerManager.
         }
         cache.clear();
     }
-
     private Map<Node, CardCustomizer> cache = new HashMap<Node, CardCustomizer>();
+
     private CardCustomizer findCustomizer(Node n, Card card) {
         //Okay, we've got way too many ways to do this...
         CardCustomizer result = cache.get(n);
@@ -275,8 +273,8 @@ public class ServersPanel extends javax.swing.JPanel implements ExplorerManager.
                 prov = n.getLookup().lookup(CardCustomizerProvider.class);
             }
             if (prov == null) {
-                prov = Lookups.forPath(CommonSystemFilesystemPaths.SFS_ADD_HANDLER_REGISTRATION_ROOT +
-                        pform.getPlatformKind()).lookup(CardCustomizerProvider.class);
+                prov = Lookups.forPath(CommonSystemFilesystemPaths.SFS_ADD_HANDLER_REGISTRATION_ROOT
+                        + pform.getPlatformKind()).lookup(CardCustomizerProvider.class);
             }
             if (prov != null) {
                 result = prov.getCardCustomizer(card);
@@ -311,13 +309,18 @@ public class ServersPanel extends javax.swing.JPanel implements ExplorerManager.
         EventQueue.invokeLater(new Runnable() {
 
             public void run() {
-                for (Node nd : mgr.getRootContext().getChildren().getNodes(true)) {
+                for (final Node nd : mgr.getRootContext().getChildren().getNodes(true)) {
                     if (card.equals(nd.getLookup().lookup(Card.class))) {
-                        try {
-                            mgr.setSelectedNodes(new Node[]{nd});
-                        } catch (PropertyVetoException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
+                        EventQueue.invokeLater(new Runnable() {
+
+                            public void run() {
+                                try {
+                                    mgr.setSelectedNodes(new Node[]{nd});
+                                } catch (PropertyVetoException ex) {
+                                    //do nothing
+                                }
+                            }
+                        });
                         return;
                     }
                 }
@@ -328,5 +331,4 @@ public class ServersPanel extends javax.swing.JPanel implements ExplorerManager.
     public Lookup getLookup() {
         return lkp;
     }
-
 }
