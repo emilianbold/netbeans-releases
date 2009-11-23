@@ -268,25 +268,18 @@ public class ServersPanel extends javax.swing.JPanel implements ExplorerManager.
     private Map<Node, CardCustomizer> cache = new HashMap<Node, CardCustomizer>();
     private CardCustomizer findCustomizer(Node n, Card card) {
         //Okay, we've got way too many ways to do this...
-        System.err.println("Find customizer for " + n + " card " + card);
         CardCustomizer result = cache.get(n);
         if (result == null) {
             CardCustomizerProvider prov = card.getCapability(CardCustomizerProvider.class);
-            System.err.println("Not in cache.  From card capability? " + prov);
             if (prov == null) {
                 prov = n.getLookup().lookup(CardCustomizerProvider.class);
-                System.err.println("  no capability?  From node's lookup? " + prov);
             }
             if (prov == null) {
                 prov = Lookups.forPath(CommonSystemFilesystemPaths.SFS_ADD_HANDLER_REGISTRATION_ROOT +
                         pform.getPlatformKind()).lookup(CardCustomizerProvider.class);
-                System.err.println("  not in node.  How about by layer? " +CommonSystemFilesystemPaths.SFS_ADD_HANDLER_REGISTRATION_ROOT +
-                        pform.getPlatformKind() +":"+ prov);
             }
-            System.err.println("Got prov "+ prov);
             if (prov != null) {
                 result = prov.getCardCustomizer(card);
-                System.err.println("Okay, maybe got a customizer " + result);
                 if (result != null) {
                     cache.put(n, result);
                 }
