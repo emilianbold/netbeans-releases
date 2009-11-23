@@ -358,7 +358,7 @@ public final class ServerRegistry implements java.io.Serializable {
 
         checkInstanceAlreadyExists(url);
         try {
-            addInstanceImpl(url, username, password, displayName, withoutUI, initialproperties);
+            addInstanceImpl(url, username, password, displayName, withoutUI, initialproperties,true);
         } catch (InstanceCreationException ice) {
             InstanceCreationException e = new InstanceCreationException(NbBundle.getMessage(ServerRegistry.class, "MSG_FailedToCreateInstance", displayName));
             e.initCause(ice);
@@ -415,7 +415,8 @@ public final class ServerRegistry implements java.io.Serializable {
      *             <code>false</code> otherwise.
      */
     private synchronized void addInstanceImpl(String url, String username,
-            String password, String displayName, boolean withoutUI, Map<String, String> initialProperties) throws InstanceCreationException {
+            String password, String displayName, boolean withoutUI, 
+            Map<String, String> initialProperties, boolean loadPlugins) throws InstanceCreationException {
         if (instancesMap().containsKey(url)) {
             throw new InstanceCreationException("already exists");
         }
@@ -464,6 +465,21 @@ public final class ServerRegistry implements java.io.Serializable {
                 LOGGER.log(Level.INFO, null, e);
             }
         }
+
+        if (loadPlugins) {
+                // don't wait for FS event, try to load the plugin now
+                FileObject dir = FileUtil.getConfigFile(DIR_JSR88_PLUGINS);
+                if (dir != null) {
+                    for (FileObject fo : dir.getChildren()) {
+                        // if it is already registered this is noop
+                        addPlugin(fo);
+                    }
+                }
+
+                addInstanceImpl(url, username, password, displayName, withoutUI, initialProperties, false);
+                return;
+        }
+
         throw new InstanceCreationException(serversMap.size()+" handlers registered, no handlers for "+url);
     }
 
@@ -489,7 +505,7 @@ public final class ServerRegistry implements java.io.Serializable {
         String withoutUI = (String) fo.getAttribute(InstanceProperties.REGISTERED_WITHOUT_UI);
         boolean withoutUIFlag = withoutUI == null ? false : Boolean.valueOf(withoutUI);
         try {
-            addInstanceImpl(url, username, password, displayName, withoutUIFlag, null);
+            addInstanceImpl(url, username, password, displayName, withoutUIFlag, null, false);
         } catch (InstanceCreationException ice) {
             // yes... we are ignoring this.. because that
         }
