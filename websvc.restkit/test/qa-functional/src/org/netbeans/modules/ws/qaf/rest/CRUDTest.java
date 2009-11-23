@@ -128,7 +128,7 @@ public class CRUDTest extends RestTestBase {
         jcbo.clearText();
         jcbo.typeText(getRestPackage() + ".converter"); //NOI18N
         wo.finish();
-        waitGorGenerationProgress();
+        waitForGenerationProgress();
         Set<File> files = getFiles(getRestPackage() + ".service"); //NOI18N
         files.addAll(getFiles(getRestPackage() + ".converter")); //NOI18N
         assertEquals("Some files were not generated", 30, files.size()); //NOI18N
@@ -193,7 +193,7 @@ public class CRUDTest extends RestTestBase {
         assertEquals("add in available", 7, availableEntities.getModel().getSize()); //NOI18N
         wo.next();
         wo.finish();
-        waitGorGenerationProgress();
+        waitForGenerationProgress();
         try {
             Thread.sleep(1500);
         } catch (InterruptedException ex) {
@@ -283,7 +283,7 @@ public class CRUDTest extends RestTestBase {
         return files;
     }
 
-    protected void waitGorGenerationProgress() {
+    protected void waitForGenerationProgress() {
         //Generating RESTful Web Services from Entity Classes
         String restGenTitle = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_RestSevicicesFromEntitiesProgress");
         waitDialogClosed(restGenTitle);
