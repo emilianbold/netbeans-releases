@@ -101,7 +101,7 @@ public class StackTraceSupport {
         for (StackTracePosition stp : st) {
             StackTraceElement ste = stp.getStackTraceElements()[0];
             String path = getPath(ste);
-            open(path, ste.getLineNumber());
+            open(path, ste.getLineNumber() - 1);
             break;
         }
     }
