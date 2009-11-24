@@ -248,6 +248,7 @@ public class FileSet implements java.io.Serializable {
         packaged = true;
     }
 
+    @Override
     public String toString ()
     {
         return
@@ -256,9 +257,9 @@ public class FileSet implements java.io.Serializable {
                 "-" +
                 (isPackaged () ? "Packaged" : "Flat") +
             ") [" +
-                hidden.org.codehaus.plexus.util.StringUtils.join ( getIncludes ().iterator (), ", " ) +
+                org.codehaus.plexus.util.StringUtils.join ( getIncludes ().iterator (), ", " ) +
                 " -- " +
-                hidden.org.codehaus.plexus.util.StringUtils.join ( getExcludes ().iterator (), ", " ) +
+                org.codehaus.plexus.util.StringUtils.join ( getExcludes ().iterator (), ", " ) +
             "]";
 
     }

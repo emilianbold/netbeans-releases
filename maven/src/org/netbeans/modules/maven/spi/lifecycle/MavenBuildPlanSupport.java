@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.maven.spi.lifecycle;
 
-import org.apache.maven.embedder.MavenEmbedder;
+import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.apache.maven.project.MavenProject;
 
 /**

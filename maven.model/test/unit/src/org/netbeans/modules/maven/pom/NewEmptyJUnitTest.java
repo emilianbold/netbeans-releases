@@ -38,8 +38,8 @@
  */
 package org.netbeans.modules.maven.pom;
 
-import hidden.org.codehaus.plexus.util.IOUtil;
-import hidden.org.codehaus.plexus.util.StringOutputStream;
+import org.codehaus.plexus.util.IOUtil;
+import org.codehaus.plexus.util.StringOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;

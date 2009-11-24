@@ -47,7 +47,7 @@ import org.apache.maven.profiles.ProfilesRoot;
 import org.apache.maven.profiles.io.xpp3.ProfilesXpp3Reader;
 import org.apache.maven.settings.Settings;
 import org.apache.maven.settings.io.xpp3.SettingsXpp3Reader;
-import hidden.org.codehaus.plexus.util.IOUtil;
+import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;

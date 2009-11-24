@@ -38,8 +38,8 @@
  */
 package org.netbeans.modules.maven.cos;
 
-import hidden.org.codehaus.plexus.util.DirectoryScanner;
-import hidden.org.codehaus.plexus.util.cli.CommandLineUtils;
+import org.codehaus.plexus.util.DirectoryScanner;
+import org.codehaus.plexus.util.cli.CommandLineUtils;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;

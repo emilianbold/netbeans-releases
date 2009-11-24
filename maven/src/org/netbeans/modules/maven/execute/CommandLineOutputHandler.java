@@ -46,7 +46,7 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.maven.embedder.MavenEmbedderLogger;
+import org.netbeans.modules.maven.embedder.MavenEmbedderLogger;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;

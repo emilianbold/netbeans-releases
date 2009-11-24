@@ -129,14 +129,23 @@ public class NbWagonManager extends DefaultWagonManager {
 
     @Override
     public void getArtifact(Artifact artifact, ArtifactRepository repository) throws TransferFailedException, ResourceDoesNotExistException {
-        this.getArtifact(artifact, repository, true);
+        boolean cont;
+        synchronized (letGoes) {
+            cont = letGoes2.contains(artifact.getGroupId() + ":" + artifact.getArtifactId()) || letGoes.contains(artifact);
+        }
+        if (cont) {
+            LOG.fine("               downloading2=" + artifact);
+            super.getArtifact(artifact, repository);
+            //#163919 - is called from getArtifact(Artifact, List, boolean)
+            // if parent pom looked up in multiple repos, we shall not remove the letgo..
+//            synchronized (letGoes) {
+//                letGoes.remove(artifact);
+//            }
+        } else {
+            artifact.setResolved(true);
+        }
     }
 
-    @Override
-    public void putArtifact(File source, Artifact artifact, ArtifactRepository deploymentRepository) throws TransferFailedException {
-//        System.out.println("putArtifact=" + source);
-//        original.putArtifact(source, artifact, deploymentRepository);
-    }
 
     @Override
     public void putArtifactMetadata(File source, ArtifactMetadata artifactMetadata, ArtifactRepository repository) throws TransferFailedException {
@@ -157,66 +166,6 @@ public class NbWagonManager extends DefaultWagonManager {
         }
 //        System.out.println("getartifact metadata=" + metadata);
 //        original.getArtifactMetadata(metadata, remoteRepository, destination, checksumPolicy);
-    }
-
-    @Override
-    public void getArtifact(Artifact artifact,
-            ArtifactRepository repository,
-            boolean forceUpdateCheck) throws TransferFailedException, ResourceDoesNotExistException 
-    {
-        boolean cont;
-        synchronized (letGoes) {
-            cont = letGoes2.contains(artifact.getGroupId() + ":" + artifact.getArtifactId()) || letGoes.contains(artifact);
-        }
-        if (cont) {
-            LOG.fine("               downloading2=" + artifact);
-            super.getArtifact(artifact, repository, forceUpdateCheck);
-            //#163919 - is called from getArtifact(Artifact, List, boolean)
-            // if parent pom looked up in multiple repos, we shall not remove the letgo..
-//            synchronized (letGoes) {
-//                letGoes.remove(artifact);
-//            }
-        } else {
-            artifact.setResolved(true);
-        }
-    }
-
-    @Override
-    public void getArtifact(Artifact artifact,
-            List remoteRepositories,
-            boolean forceUpdateCheck)
-            throws TransferFailedException, ResourceDoesNotExistException 
-    {
-        boolean cont;
-        synchronized (letGoes) {
-           cont = letGoes2.contains(artifact.getGroupId() + ":" + artifact.getArtifactId())
-                    || letGoes.contains(artifact);
-        }
-        if (cont) {
-            LOG.fine("               downloading3=" + artifact);
-            try {
-                super.getArtifact(artifact, remoteRepositories, forceUpdateCheck);
-            } catch (TransferFailedException exc) {
-                if (NbArtifactResolver.isParentPomArtifact(artifact)) { //#163919
-                    throw exc;
-                }
-                //ignore, we will just pretend it didn't happen.
-                artifact.setResolved(true);
-            } catch (ResourceDoesNotExistException exc) {
-                if (NbArtifactResolver.isParentPomArtifact(artifact)) { //#163919
-                    throw exc;
-                }
-                //ignore, we will just pretend it didn't happen.
-                artifact.setResolved(true);
-            } finally {
-                synchronized (letGoes) {
-                    letGoes.remove(artifact);
-                }
-            }
-        } else {
-            artifact.setResolved(true);
-        }
-
     }
 
 }

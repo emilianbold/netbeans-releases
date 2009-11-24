@@ -116,10 +116,6 @@ made subject to such option by the copyright holder.
                 <subpackages>hidden</subpackages>
             </public-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/maven-embedder-2.1-20080623-patched.jar</runtime-relative-path>
-                <binary-origin>external/maven-embedder-2.1-20080623-patched.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
                 <runtime-relative-path>ext/maven-dependency-tree-1.2.jar</runtime-relative-path>
                 <binary-origin>external/maven-dependency-tree-1.2.jar</binary-origin>
             </class-path-extension>
@@ -127,6 +123,103 @@ made subject to such option by the copyright holder.
                 <runtime-relative-path>ext/jdom-1.0.jar</runtime-relative-path>
                 <binary-origin>external/jdom-1.0.jar</binary-origin>
             </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/plexus-classworlds-2.2.2.jar</runtime-relative-path>
+                <binary-origin>external/plexus-classworlds-2.2.2.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/commons-cli-1.2.jar</runtime-relative-path>
+                <binary-origin>external/commons-cli-1.2.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/google-collect-snapshot-20080530.jar</runtime-relative-path>
+                <binary-origin>external/google-collect-snapshot-20080530.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/maven-artifact-3.0-alpha-4.jar</runtime-relative-path>
+                <binary-origin>external/maven-artifact-3.0-alpha-4.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/maven-compat-3.0-alpha-4.jar</runtime-relative-path>
+                <binary-origin>external/maven-compat-3.0-alpha-4.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/maven-core-3.0-alpha-4.jar</runtime-relative-path>
+                <binary-origin>external/maven-core-3.0-alpha-4.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/maven-embedder-3.0-alpha-4.jar</runtime-relative-path>
+                <binary-origin>external/maven-embedder-3.0-alpha-4.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/maven-model-3.0-alpha-4.jar</runtime-relative-path>
+                <binary-origin>external/maven-model-3.0-alpha-4.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/maven-model-builder-3.0-alpha-4.jar</runtime-relative-path>
+                <binary-origin>external/maven-model-builder-3.0-alpha-4.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/maven-plugin-api-3.0-alpha-4.jar</runtime-relative-path>
+                <binary-origin>external/maven-plugin-api-3.0-alpha-4.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/maven-settings-3.0-alpha-4.jar</runtime-relative-path>
+                <binary-origin>external/maven-settings-3.0-alpha-4.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/nekohtml-1.9.6.2.jar</runtime-relative-path>
+                <binary-origin>external/nekohtml-1.9.6.2.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/plexus-cipher-1.4.jar</runtime-relative-path>
+                <binary-origin>external/plexus-cipher-1.4.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/plexus-component-annotations-1.5.1.jar</runtime-relative-path>
+                <binary-origin>external/plexus-component-annotations-1.5.1.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/plexus-container-default-1.5.1.jar</runtime-relative-path>
+                <binary-origin>external/plexus-container-default-1.5.1.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/plexus-interpolation-1.11.jar</runtime-relative-path>
+                <binary-origin>external/plexus-interpolation-1.11.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/plexus-sec-dispatcher-1.3.jar</runtime-relative-path>
+                <binary-origin>external/plexus-sec-dispatcher-1.3.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/plexus-utils-2.0.1.jar</runtime-relative-path>
+                <binary-origin>external/plexus-utils-2.0.1.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/wagon-file-1.0-beta-6.jar</runtime-relative-path>
+                <binary-origin>external/wagon-file-1.0-beta-6.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/wagon-http-lightweight-1.0-beta-6.jar</runtime-relative-path>
+                <binary-origin>external/wagon-http-lightweight-1.0-beta-6.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/wagon-http-shared-1.0-beta-6.jar</runtime-relative-path>
+                <binary-origin>external/wagon-http-shared-1.0-beta-6.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/wagon-provider-api-1.0-beta-6.jar</runtime-relative-path>
+                <binary-origin>external/wagon-provider-api-1.0-beta-6.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/xbean-reflect-3.4.jar</runtime-relative-path>
+                <binary-origin>external/xbean-reflect-3.4.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/xercesMinimal-1.9.6.2.jar</runtime-relative-path>
+                <binary-origin>external/xercesMinimal-1.9.6.2.jar</binary-origin>
+            </class-path-extension>
+
         </data>
     </configuration>
 </project>

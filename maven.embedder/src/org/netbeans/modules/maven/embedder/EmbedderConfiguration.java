@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,65 +34,37 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.maven.embedder;
 
-import java.util.List;
-import junit.framework.TestCase;
-import org.apache.maven.execution.MavenExecutionRequest;
-import org.apache.maven.extension.ExtensionManager;
-import org.apache.maven.extension.ExtensionManagerException;
-import org.apache.maven.model.Extension;
-import org.apache.maven.model.Model;
-import org.apache.maven.model.Plugin;
-import org.apache.maven.project.MavenProject;
+import java.io.File;
+import java.util.Properties;
+import org.codehaus.plexus.DefaultPlexusContainer;
+import org.codehaus.plexus.PlexusContainer;
 
 /**
  *
  * @author mkleint
  */
-public class NbExtensionManagerTest extends TestCase {
-    
-    public NbExtensionManagerTest(String testName) {
-        super(testName);
-    }            
+class EmbedderConfiguration {
+    private DefaultPlexusContainer cont;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    void setLocalRepository(File file) {
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
+    void setSystemProperties(Properties fillEnvVars) {
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 
-    /**
-     */
-    public void testExtensionManagerMethod() throws Exception {
-        new Ext();
+    PlexusContainer getContainer() {
+        return cont;
     }
-    
-    private class Ext implements ExtensionManager {
 
-        public void addExtension(Extension arg0, MavenProject arg1, MavenExecutionRequest arg2) throws ExtensionManagerException {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        public void registerWagons() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        public void addExtension(Extension arg0, Model arg1, List arg2, MavenExecutionRequest arg3) throws ExtensionManagerException {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        public void addPluginAsExtension(Plugin arg0, Model arg1, List arg2, MavenExecutionRequest arg3) throws ExtensionManagerException {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-        
+    void setContainer(DefaultPlexusContainer dpc) {
+        cont = dpc;
     }
 
 }

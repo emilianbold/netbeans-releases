@@ -11,7 +11,7 @@ package org.netbeans.modules.maven.execute.model.io.xpp3;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
-import hidden.org.codehaus.plexus.util.ReaderFactory;
+import org.codehaus.plexus.util.ReaderFactory;
 import org.codehaus.plexus.util.xml.pull.MXParser;
 import org.codehaus.plexus.util.xml.pull.XmlPullParser;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
