@@ -125,6 +125,7 @@ public final class Utils {
      * @param invalidDeviceName The device name
      * @return
      */
+    /*
     public static FileObject folderForInvalidDeviceConfigsForPlatformNamed(String platformName, String invalidDeviceName) {
         FileSystem fs = FileUtil.createMemoryFileSystem();
         try {
@@ -140,6 +141,7 @@ public final class Utils {
             throw new IllegalStateException(ex);
         }
     }
+     */
 
     /**
      * Get the system filesystem folder for files that define Card objects,

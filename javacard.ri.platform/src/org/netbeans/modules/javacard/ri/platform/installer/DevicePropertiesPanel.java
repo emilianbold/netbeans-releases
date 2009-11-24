@@ -81,7 +81,6 @@ import org.netbeans.modules.javacard.common.JCConstants;
 import org.netbeans.modules.javacard.common.Utils;
 import org.netbeans.modules.javacard.spi.Card;
 import org.netbeans.modules.javacard.spi.JavacardPlatform;
-import org.netbeans.modules.javacard.spi.ValidationGroupProvider;
 import org.netbeans.modules.javacard.spi.capabilities.PortProvider;
 import org.netbeans.validation.api.Severity;
 import org.netbeans.validation.api.Validator;
@@ -95,7 +94,7 @@ import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbPreferences;
 
-public class DevicePropertiesPanel extends JPanel implements DocumentListener, FocusListener, ValidationUI, Runnable, ValidationGroupProvider {
+public class DevicePropertiesPanel extends JPanel implements DocumentListener, FocusListener, ValidationUI, Runnable {
 
     private final ChangeSupport supp = new ChangeSupport(this);
     private boolean updating;

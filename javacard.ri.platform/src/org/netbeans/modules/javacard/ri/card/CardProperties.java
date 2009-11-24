@@ -81,8 +81,11 @@ final class CardProperties implements ICardCapability, CapabilitiesProvider {
     private static final String DEFAULT_CONTACTED_PROTOCOL = "T=1"; //NOI18N
     private static final String DEFAULT_CONTACTLESS_PORT = "9026"; //NOI18N
     private static final String DEFAULT_HOST = "127.0.0.1"; //NOI18N
-    private static final String DEFAULT_CAPABILITIES = "DEBUG,START,STOP,RESUME";
-    private static final String E2P_FILE_DEF = "${javacard.device.eeprom.folder}${file.separator}${javacard.device.name}.eprom";
+    private static final String DEFAULT_CAPABILITIES = "START,STOP,RESUME," + //NOI18N
+            "DEBUG,EPROM_FILE,CLEAR_EPROM,CONTENTS,CUSTOMIZER,INTERCEPTOR," + //NOI18N
+            "PORTS,APDU_SUPPORT,DELETE"; //NOI18N
+    private static final String E2P_FILE_DEF = "${javacard.device.eeprom.folder}" + //NOI18N
+            "${file.separator}${javacard.device.name}.eprom"; //NOI18N
     static final String DEFAULT_DEBUG_PROXY_COMMAND_LINE = Utilities.isWindows() ?
         "cmd /c ${debug.proxy.binary} " + //NOI18N
         "--listen ${proxy.to.ide.port} " + //NOI18N
