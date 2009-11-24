@@ -139,7 +139,7 @@ public class FileStatusCacheTest extends AbstractHgTest {
     private void attachCacheLogHandler(NestedReposLogHandler handler) throws Exception {
         Field f = null;
         try {
-            f = FileStatusCacheNewGeneration.class.getDeclaredField("LOG");
+            f = FileStatusCache.class.getDeclaredField("LOG");
         } catch (Exception ex) {
             throw ex;
         }
