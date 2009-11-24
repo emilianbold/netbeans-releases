@@ -46,8 +46,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.logging.Logger;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
@@ -368,6 +371,17 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
      */
     protected ProjectRootNode getProjectRootNode() {
         return ProjectsTabOperator.invoke().getProjectRootNode(getProjectName());
+    }
+
+    /**
+     * Get <code>FileObject</code> representing default project source root
+     *
+     * @return default project source root
+     */
+    protected FileObject getProjectSourceRoot() {
+        Sources s = getProject().getLookup().lookup(Sources.class);
+        SourceGroup[] sg = s.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        return sg[0].getRootFolder();
     }
 
     /**
