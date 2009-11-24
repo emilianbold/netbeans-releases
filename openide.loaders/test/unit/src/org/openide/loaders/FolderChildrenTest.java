@@ -88,10 +88,10 @@ public class FolderChildrenTest extends NbTestCase {
         super(testName);
     }
 
-    @Override
-    protected int timeOut() {
-        return 65000;
-    }
+//    @Override
+//    protected int timeOut() {
+//        return 65000;
+//    }
 
     @Override
     protected Level logLevel() {
@@ -186,7 +186,7 @@ public class FolderChildrenTest extends NbTestCase {
         r.run ();
         assertNotNull ("But running without mutexs works better - children filled", r.children);
         assertEquals ("One child", 1, r.children.length);
-        DataObject obj = (DataObject)r.children[0].getCookie (DataObject.class);
+        DataObject obj = r.children[0].getCookie(DataObject.class);
         assertNotNull ("There is data object", obj);
         assertEquals ("It belongs to our file", a, obj.getPrimaryFile ());
     }
@@ -314,7 +314,7 @@ public class FolderChildrenTest extends NbTestCase {
         assertEquals("Accepts only Ahoj", 1, arr.length);
         LOG.info("The one node" + arr[0]);
 
-        WeakReference ref = new WeakReference(ch);
+        WeakReference<Children> ref = new WeakReference<Children>(ch);
         ch = null;
         arr = null;
 
@@ -334,7 +334,7 @@ public class FolderChildrenTest extends NbTestCase {
 	Node[] arr = n.getChildren().getNodes(true);
 	assertEquals("Both are visible", 2, arr.length);
 
-	WeakReference ref = new WeakReference(arr[0]);
+	WeakReference<Node> ref = new WeakReference<Node>(arr[0]);
 	arr = null;
 	assertGC("Nodes can disappear", ref);
 
@@ -393,9 +393,9 @@ public class FolderChildrenTest extends NbTestCase {
         }
 
         @Override
-        public Node.Cookie getCookie (Class c) {
-            if (c == getClass ()) {
-                return this;
+        public <T extends Node.Cookie> T getCookie(Class<T> type) {
+            if (type == getClass()) {
+                return type.cast(this);
             }
             return null;
         }
@@ -478,11 +478,9 @@ public class FolderChildrenTest extends NbTestCase {
 
 
 
-        LocalFileSystem fs = new LocalFileSystem();
-        fs.setRootDirectory(getWorkDir());
-        Repository.getDefault().addFileSystem(fs);
-        final FileObject workDir = FileUtil.createFolder (FileUtil.getConfigRoot(), "workFolder");
-        final FileObject sibling = FileUtil.createFolder (FileUtil.getConfigRoot(), "unimportantSibling");
+        FileObject rootFO = FileUtil.toFileObject(getWorkDir());
+        final FileObject workDir = FileUtil.createFolder(rootFO, "workFolder");
+        final FileObject sibling = FileUtil.createFolder(rootFO, "unimportantSibling");
 
         workDir.addFileChangeListener(fcl);
 
@@ -500,44 +498,20 @@ public class FolderChildrenTest extends NbTestCase {
         } else {
             newFile = new File(FileUtil.toFile(workDir), FILE_NAME);
             new FileOutputStream(newFile).close();
+            workDir.refresh();
         }
-
-        // first or second run (second run is after caling workDir.refresh())
-        boolean firstRun = true;
 
         synchronized (waitObj) {
 
-            for(;;) {
-                // wait for create notification
-                if (!fcl.created)
-                    waitObj.wait(5000);
-
-                if (!fcl.created) {
-                    System.out.println("Not received file create notification, can't test.");
-                    if (firstRun) {
-                        // didn't get a notification, we should get one by calling refresh()
-                        firstRun = false;
-                        workDir.refresh();
-                        continue;
-                    }
-                    else {
-                        // didn't get a notification even after second run
-                        // FolderChildren probably didn't get a notification neither
-                        // so it doesn't know anything about the new file => nothing to test
-                        return;
-                    }
-                } else {
-                    break;
-                }
+            // wait for create notification
+            if (!fcl.created) {
+                waitObj.wait(1000);
             }
 
             // wait for FolderChildren to receive and process the create notification
             int cnt = 10;
             while (cnt-- > 0 && fc.getNodes ().length < 1) {
-                try {
-                    Thread.sleep(300);
-                }
-                catch (InterruptedException e) {}
+                Thread.sleep(100);
             }
 
             assertEquals("FolderChildren doesn't contain " + newFile, 1, fc.getNodes().length);
@@ -554,7 +528,6 @@ public class FolderChildrenTest extends NbTestCase {
         };
 
         FileSystem lfs = TestUtilHid.createLocalFileSystem(getWorkDir(), fsstruct);
-        Repository.getDefault().addFileSystem(lfs);
 
         FileObject fo = lfs.findResource("AA/a.test");
         assertNotNull("file not found", fo);
@@ -581,14 +554,7 @@ public class FolderChildrenTest extends NbTestCase {
     }
 
     public void testRefreshInvalidDO() throws Exception {
-        String fsstruct [] = new String [] {
-            "AA/a.test"
-        };
-
-        FileSystem lfs = TestUtilHid.createLocalFileSystem(getWorkDir(), fsstruct);
-        Repository.getDefault().addFileSystem(lfs);
-
-        FileObject fo = lfs.findResource("AA/a.test");
+        FileObject fo = FileUtil.createData(new File(getWorkDir(), "AA/a.test"));
         assertNotNull("file not found", fo);
         DataObject obj = DataObject.find(fo);
 
