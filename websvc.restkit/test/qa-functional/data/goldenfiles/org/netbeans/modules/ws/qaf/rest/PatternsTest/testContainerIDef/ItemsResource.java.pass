@@ -8,11 +8,12 @@ package o.n.m.ws.qaf.rest.patterns;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.POST;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.Path;
 import javax.ws.rs.GET;
 import javax.ws.rs.Produces;
-import javax.ws.rs.POST;
-import javax.ws.rs.Consumes;
 
 /**
  * REST Web Service
@@ -41,7 +42,7 @@ public class ItemsResource {
     }
 
     /**
-     * POST method for creating an instance of ItemsResource
+     * POST method for creating an instance of ItemResource
      * @param content representation for the new resource
      * @return an HTTP response with content of the created resource
      */
@@ -54,10 +55,11 @@ public class ItemsResource {
     }
 
     /**
-     * Sub-resource locator method for  {id}
+     * Sub-resource locator method for {id}
      */
     @Path("{id}")
-    public ItemResource getItemResource() {
-        return new ItemResource();
+    public ItemResource getItemResource(@PathParam("id")
+    String id) {
+        return ItemResource.getInstance(id);
     }
 }

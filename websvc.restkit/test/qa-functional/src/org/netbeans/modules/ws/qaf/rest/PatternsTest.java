@@ -257,6 +257,20 @@ public class PatternsTest extends RestTestBase {
         jcbo.clickMouse();
         jcbo.clearText();
         jcbo.typeText(getRestPackage());
+
+        if (!getProjectType().isAntBasedProject() && Pattern.CcContainerItem.equals(pattern)) {
+            //set resource class name
+            JTextFieldOperator jtfo = new JTextFieldOperator(wo, new ClsName());
+            jtfo.clickMouse();
+            jtfo.clearText();
+            jtfo.typeText("ItemResource_1"); //NOI18N
+            //set container resource class name
+            jtfo = new JTextFieldOperator(wo, new CClsName());
+            jtfo.clickMouse();
+            jtfo.clearText();
+            jtfo.typeText("ItemsResource_1"); //NOI18N
+        }
+
         if (name != null) {
             //we're not using Defs when name != null !!!
             //set resource class name
@@ -359,7 +373,7 @@ public class PatternsTest extends RestTestBase {
     }
 
     private File getFileFromProject(String fileName) {
-        FileObject fo = getProject().getProjectDirectory().getFileObject("src/java"); //NOI18N
+        FileObject fo = getProjectSourceRoot();
         String location = getRestPackage().replace('.', '/') + "/" + fileName + ".java"; //NOI18N
         FileObject file = fo.getFileObject(location);
         assertNotNull(fileName + " not found at " + FileUtil.toFile(fo).getAbsolutePath() + File.separator + location, file); //NOI18N
