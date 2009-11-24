@@ -147,6 +147,14 @@ public class InstancePropertiesTest extends ServerRegistryTestBase {
         expected.put(InstanceProperties.PASSWORD_ATTR, TEST_PASSWORD);
         expected.put(InstanceProperties.DISPLAY_NAME_ATTR, "unknown");
 
+        try {
+            InstanceProperties.createInstanceProperties(
+                    url, TEST_USERNAME, TEST_PASSWORD, TEST_DISPLAY_NAME);
+            fail("the unknow serverplugin should be unknown at this point"); // NOI18N
+        } catch (InstanceCreationException ex) {
+            // expected
+        }
+        
         FileUtil.runAtomicAction(new AtomicAction() {
 
           public void run() throws IOException {
