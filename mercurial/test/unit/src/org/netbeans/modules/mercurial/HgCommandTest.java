@@ -74,7 +74,7 @@ public class HgCommandTest extends AbstractHgTest {
         handler.assertResults(1);
         
         handler.reset();
-        getCache().refreshAll(newRepo);
+        getCache().refreshCached(newRepo);
         handler.assertResults(0);
 
         FileObject fileFO;

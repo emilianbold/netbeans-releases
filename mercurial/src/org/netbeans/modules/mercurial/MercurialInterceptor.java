@@ -308,25 +308,15 @@ public class MercurialInterceptor extends VCSInterceptor {
     }
 
     private void reScheduleRefresh(int delayMillis, File fileToRefresh) {
-        if (!"false".equals(System.getProperty("mercurial.onEventRefreshRoot"))) { //NOI18N
-            // refresh all at once
-            Mercurial.STATUS_LOG.fine("reScheduleRefresh: adding " + fileToRefresh.getAbsolutePath());
-            if (HgUtils.isPartOfMercurialMetadata(fileToRefresh)) {
-                if ("dirstate".equals(fileToRefresh.getName())) {
-                    // XXX handle dirstate events
-                    Mercurial.STATUS_LOG.fine("special FS event handling for " + fileToRefresh.getAbsolutePath());
-                }
-            } else {
-                filesToRefresh.add(fileToRefresh);
+        // refresh all at once
+        Mercurial.STATUS_LOG.fine("reScheduleRefresh: adding " + fileToRefresh.getAbsolutePath());
+        if (HgUtils.isPartOfMercurialMetadata(fileToRefresh)) {
+            if ("dirstate".equals(fileToRefresh.getName())) {
+                // XXX handle dirstate events
+                Mercurial.STATUS_LOG.fine("special FS event handling for " + fileToRefresh.getAbsolutePath());
             }
         } else {
-            // refresh one by one
-            File parent = fileToRefresh.getParentFile();
-            if (!filesToRefresh.contains(parent)) {
-                if (!filesToRefresh.offer(parent)) {
-                    Mercurial.LOG.log(Level.FINE, "reScheduleRefresh failed to add to filesToRefresh queue {0}", fileToRefresh);
-                }
-            }
+            filesToRefresh.add(fileToRefresh);
         }
         refreshTask.schedule(delayMillis);
     }
@@ -370,23 +360,13 @@ public class MercurialInterceptor extends VCSInterceptor {
             if (DelayScanRegistry.getInstance().isDelayed(refreshTask, Mercurial.STATUS_LOG, "MercurialInterceptor.refreshTask")) { //NOI18N
                 return;
             }
-            File fileToRefresh;
-            if (!"false".equals(System.getProperty("mercurial.onEventRefreshRoot"))) { //NOI18N
-                // fill a fileset with all the modified files
-                HashSet<File> files = new HashSet<File>(filesToRefresh.size());
-                File file;
-                while ((file = filesToRefresh.poll()) != null) {
-                    files.add(file);
-                }
-                refreshAll(files);
-            } else if ((fileToRefresh = filesToRefresh.poll()) != null) {
-                Mercurial.LOG.log(Level.INFO, "RefreshTask called refreshAll {0}", fileToRefresh);
-                cache.refreshAll(fileToRefresh);
-                fileToRefresh = filesToRefresh.peek();
-                if (fileToRefresh != null) {
-                    refreshTask.schedule(0);
-                }
+            // fill a fileset with all the modified files
+            HashSet<File> files = new HashSet<File>(filesToRefresh.size());
+            File file;
+            while ((file = filesToRefresh.poll()) != null) {
+                files.add(file);
             }
+            refreshAll(files);
         }
     }
 

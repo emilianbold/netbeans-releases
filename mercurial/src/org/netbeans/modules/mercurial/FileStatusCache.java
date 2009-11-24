@@ -658,11 +658,6 @@ public class FileStatusCache {
         return listedFiles;
     }
 
-    // XXX delete eventually
-    public void refreshAll(File root) {
-        // nothing
-    }
-
     /**
      * Refreshes status of the specified file or all files inside the
      * specified directory.
