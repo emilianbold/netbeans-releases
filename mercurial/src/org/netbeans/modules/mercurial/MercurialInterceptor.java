@@ -55,7 +55,6 @@ import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import org.netbeans.modules.mercurial.ui.status.StatusAction;
 import org.netbeans.modules.versioning.util.DelayScanRegistry;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -208,7 +207,6 @@ public class MercurialInterceptor extends VCSInterceptor {
     public void afterMove(final File from, final File to) {
         Mercurial.LOG.fine("afterMove " + from + "->" + to);
         if (from == null || to == null || !to.exists()) return;
-        if (to.isDirectory()) return;
 
         File parent = from.getParentFile();
         // There is no point in refreshing the cache for ignored files.
@@ -269,7 +267,6 @@ public class MercurialInterceptor extends VCSInterceptor {
     @Override
     public void afterCreate(final File file) {
         Mercurial.LOG.fine("afterCreate " + file);
-        if (file.isDirectory()) return;
         // There is no point in refreshing the cache for ignored files.
         if (!HgUtils.isIgnored(file, false)) {
             reScheduleRefresh(800, file);
@@ -293,18 +290,8 @@ public class MercurialInterceptor extends VCSInterceptor {
         } else if("ProvidedExtensions.Refresh".equals(attrName)) {
             return new Runnable() {
                 public void run() {
-                    try {
-                        File repository = Mercurial.getInstance().getRepositoryRoot(file);
-                        if (repository == null) {
-                            return;
-                        }
-                        FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
-                        cache.refreshCached(file);
-                        StatusAction.refreshFile(file, repository, null, cache);
-                    } catch (HgException ex) {
-                        ExceptionHandler eh = new ExceptionHandler(ex);
-                        eh.notifyException();
-                    }
+                    FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
+                    cache.refreshCached(file);
                 }
             };
         } else {
