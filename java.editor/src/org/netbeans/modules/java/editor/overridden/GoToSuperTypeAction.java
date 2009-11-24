@@ -117,7 +117,7 @@ public class GoToSuperTypeAction extends BaseAction {
                     
                     ExecutableElement ee = (ExecutableElement) resolved;
                     
-                    type[0] = IsOverriddenAnnotationHandler.detectOverrides(parameter, (TypeElement) ee.getEnclosingElement(), ee, result);
+                    type[0] = ComputeOverriding.detectOverrides(parameter, (TypeElement) ee.getEnclosingElement(), ee, result);
                 }
                 
             }, true);
