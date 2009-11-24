@@ -46,9 +46,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import junit.framework.Test;
-import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.WizardOperator;
@@ -164,10 +161,7 @@ public class CRUDTest extends RestTestBase {
     public void testPropAccess() throws IOException {
         //copy entity class into a project
         FileObject fo = FileUtil.toFileObject(new File(getRestDataDir(), "Person.java.gf")); //NOI18N
-        Sources s = getProject().getLookup().lookup(Sources.class);
-        SourceGroup[] sg = s.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        FileObject targetDir = sg[0].getRootFolder();
-        fo.copy(targetDir.createFolder("entity"), "Person", "java"); //NOI18N
+        fo.copy(getProjectSourceRoot().createFolder("entity"), "Person", "java"); //NOI18N
         try {
             Thread.sleep(1500);
         } catch (InterruptedException ex) {
@@ -308,9 +302,7 @@ public class CRUDTest extends RestTestBase {
 
     protected Set<File> getFiles(String pkg) {
         Set<File> files = new HashSet<File>();
-        Sources s = getProject().getLookup().lookup(Sources.class);
-        SourceGroup[] sg = s.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        FileObject fo = sg[0].getRootFolder().getFileObject(pkg.replace('.', '/') + "/"); //NOI18N
+        FileObject fo = getProjectSourceRoot().getFileObject(pkg.replace('.', '/') + "/"); //NOI18N
         File pkgRoot = FileUtil.toFile(fo);
         if (pkgRoot.listFiles() != null) {
             files.addAll(Arrays.asList(pkgRoot.listFiles()));
