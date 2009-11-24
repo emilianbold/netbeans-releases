@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,44 +31,40 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javacard.project.customizer;
 
-import java.awt.BorderLayout;
-import javax.swing.JPanel;
-import org.netbeans.modules.javacard.api.PlatformAndDevicePanel;
-import org.netbeans.modules.javacard.project.JCProjectProperties;
-import org.netbeans.validation.api.ui.ValidationGroup;
-import org.netbeans.validation.api.ui.ValidationGroupProvider;
+package org.netbeans.modules.javacard.spi.actions;
 
-import org.openide.util.HelpCtx;
+import java.io.IOException;
+import java.util.Collection;
+import org.netbeans.modules.javacard.spi.capabilities.DeleteCapability;
+import org.netbeans.spi.actions.ContextAction;
+import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
- * @author Anki R. Nelaturu
+ * @author tim
  */
-public class RunCustomizer extends javax.swing.JPanel implements ValidationGroupProvider {
-    JCProjectProperties props;
-    PlatformAndDevicePanel pnl;
-    public RunCustomizer(JCProjectProperties props) {
-        this.props = props;
-        initComponents();
-        pnl = new PlatformAndDevicePanel(props);
-        JPanel outer = new JPanel(new BorderLayout());
-        outer.add (pnl, BorderLayout.NORTH);
-        add (outer, BorderLayout.CENTER);
-        HelpCtx.setHelpIDString(this, "org.netbeans.modules.javacard.RunPanel"); //NOI18N
+final class DeleteCardAction extends ContextAction<DeleteCapability> {
+    public DeleteCardAction() {
+        super (DeleteCapability.class, NbBundle.getMessage(DeleteCardAction.class, 
+                "ACTION_DELETE"), null); //NOI18N
     }
 
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-    private void initComponents() {
-
-        setLayout(new java.awt.BorderLayout());
-    }// </editor-fold>//GEN-END:initComponents
-
-    public ValidationGroup getValidationGroup() {
-        return pnl.getValidationGroup();
+    @Override
+    protected void actionPerformed(Collection<? extends DeleteCapability> targets) {
+        for (DeleteCapability d : targets) {
+            try {
+                d.delete();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
     }
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    // End of variables declaration//GEN-END:variables
+
 }

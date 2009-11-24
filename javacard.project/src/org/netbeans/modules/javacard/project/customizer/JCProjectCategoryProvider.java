@@ -42,14 +42,15 @@ package org.netbeans.modules.javacard.project.customizer;
 
 import javax.swing.JComponent;
 import org.netbeans.modules.javacard.project.JCProjectProperties;
-import org.netbeans.modules.javacard.project.ui.*;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
+import org.netbeans.validation.api.Problem;
 import org.openide.util.Lookup;
 
 import org.netbeans.modules.javacard.project.JCProject;
 import org.netbeans.modules.javacard.project.deps.ui.DependenciesPanel;
 import org.netbeans.modules.javacard.spi.ProjectKind;
+import org.netbeans.validation.api.ui.ValidationUI;
 import org.openide.filesystems.FileObject;
 
 public class JCProjectCategoryProvider implements ProjectCustomizer.CompositeCategoryProvider {
@@ -87,7 +88,9 @@ public class JCProjectCategoryProvider implements ProjectCustomizer.CompositeCat
                         return new WebProjectCustomizerRun ((WebProjectProperties) uiProps);
                     case EXTENSION_LIBRARY :
                     case CLASSIC_LIBRARY :
-                        return new RunCustomizer (uiProps);
+                        RunCustomizer result = new RunCustomizer (uiProps);
+                        result.getValidationGroup().addUI(new CategoryValidationUI(category));
+                        return result;
                     default :
                         throw new AssertionError();
                 }
@@ -105,5 +108,22 @@ public class JCProjectCategoryProvider implements ProjectCustomizer.CompositeCat
     public static JCProjectCategoryProvider create(FileObject fo) {
         CustomizerIDs id = CustomizerIDs.forFileName(fo.getName());
         return new JCProjectCategoryProvider (id);
+    }
+
+    private static class CategoryValidationUI implements ValidationUI {
+        private final Category category;
+        public CategoryValidationUI(Category category) {
+            this.category = category;
+        }
+
+        public void clearProblem() {
+            category.setValid(true);
+        }
+
+        public void setProblem(Problem prblm) {
+            category.setValid(prblm.isFatal());
+            category.setErrorMessage(prblm.getMessage());
+        }
+
     }
 }

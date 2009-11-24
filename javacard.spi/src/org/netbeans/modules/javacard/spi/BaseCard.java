@@ -57,6 +57,7 @@ import org.netbeans.modules.javacard.spi.capabilities.CardCustomizerProvider;
 import org.netbeans.modules.javacard.spi.capabilities.CardInfo;
 import org.netbeans.modules.javacard.spi.capabilities.ClearEpromCapability;
 import org.netbeans.modules.javacard.spi.capabilities.DebugCapability;
+import org.netbeans.modules.javacard.spi.capabilities.DeleteCapability;
 import org.netbeans.modules.javacard.spi.capabilities.EpromFileCapability;
 import org.netbeans.modules.javacard.spi.capabilities.PortProvider;
 import org.netbeans.modules.javacard.spi.capabilities.ProfileCapability;
@@ -167,6 +168,10 @@ public abstract class BaseCard<T extends CapabilitiesProvider> extends AbstractC
         return null;
     }
 
+    public DeleteCapability createDeleteCapability(T t) {
+        return null;
+    }
+
     protected void log(String toLog) {
         log(Level.FINE, toLog);
     }
@@ -251,6 +256,9 @@ public abstract class BaseCard<T extends CapabilitiesProvider> extends AbstractC
         }
         if (state.isNotRunning() && declaredCapabilities.contains(CardCustomizerProvider.class)) {
             maybeAddCapability(createCardCustomizerProvidert(props));
+        }
+        if (declaredCapabilities.contains(DeleteCapability.class)) {
+            maybeAddCapability(createDeleteCapability(props));
         }
         maybeAddEpromCapabilities();
         log("calling subclass initLookup()"); //NOI18N
