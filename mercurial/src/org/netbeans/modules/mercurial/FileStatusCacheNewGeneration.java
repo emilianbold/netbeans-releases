@@ -358,6 +358,9 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
     public void refreshAllRoots (Map<File, Set<File>> rootFiles) {
         for (Map.Entry<File, Set<File>> refreshEntry : rootFiles.entrySet()) {
             File repository = refreshEntry.getKey();
+            if (repository == null) {
+                continue;
+            }
             if (LOG.isLoggable(Level.FINE)) {
                 LOG.log(Level.FINE, "refreshAllRoots() roots: {0}, repositoryRoot: {1} ", new Object[] {refreshEntry.getValue(), repository.getAbsolutePath()}); // NOI18N
             }

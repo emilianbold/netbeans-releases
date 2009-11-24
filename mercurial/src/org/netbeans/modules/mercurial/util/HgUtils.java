@@ -1122,29 +1122,8 @@ itor tabs #66700).
      */
     public static void forceStatusRefresh(File file) {
         if (isAdministrative(file)) return;
-        try {
-            FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
-
-            cache.refreshCached(file);
-            File repository = Mercurial.getInstance().getRepositoryRoot(file);
-            if (repository == null) {
-                return;
-            }
-            // XXX Why in the hell is this still here? cache.refreshCached(file) should be enough
-            if (file.isDirectory()) {
-                Map<File, FileInformation> interestingFiles;
-                interestingFiles = HgCommand.getInterestingStatus(repository, Collections.singletonList(file));
-                if (!interestingFiles.isEmpty()){
-                    Collection<File> files = interestingFiles.keySet();
-                    for (File aFile : files) {
-                        FileInformation fi = interestingFiles.get(aFile);
-                        cache.refreshFileStatus(aFile, fi, null);
-                    }
-                }
-            }
-
-        } catch (HgException ex) {
-        }
+        FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
+        cache.refreshCached(file);
     }
 
     /**
