@@ -348,6 +348,9 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
                     java.lang.reflect.Method evaluateMethod = ov.getClass().getMethod("evaluate", String.class);
                     evaluateMethod.setAccessible(true);
                     Variable ret = (Variable) evaluateMethod.invoke(ov, code);
+                    if (ret == null) {
+                        return null;
+                    }
                     return getValueAt(original, ret, columnID, formatters);
                 } catch (java.lang.reflect.InvocationTargetException itex) {
                     Throwable t = itex.getTargetException();
