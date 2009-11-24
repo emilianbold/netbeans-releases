@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.java.editor.overridden;
 
+import java.awt.Image;
 import java.util.Collection;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -57,6 +58,7 @@ import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.ui.ElementIcons;
 import org.netbeans.modules.editor.java.Utilities;
 import org.openide.filesystems.FileObject;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -71,13 +73,15 @@ public class ElementDescription {
     private ElementHandle<TypeElement> outtermostElement;
     private Collection<Modifier> modifiers;
     private String displayName;
-    
-    public ElementDescription(CompilationInfo info, Element element) {
+    private final boolean overriddenFlag;
+
+    public ElementDescription(CompilationInfo info, Element element, boolean overriddenFlag) {
         this.originalCPInfo = info.getClasspathInfo();
         this.handle = ElementHandle.create(element);
         this.outtermostElement = ElementHandle.create(SourceUtils.getOutermostEnclosingTypeElement(element));
         this.modifiers = element.getModifiers();
         this.displayName = element.accept(new ElementNameVisitor(), true);
+        this.overriddenFlag = overriddenFlag;
     }
 
     public FileObject getSourceFile() {
@@ -93,9 +97,19 @@ public class ElementDescription {
     }
 
     public Icon getIcon() {
-        return ElementIcons.getElementIcon(handle.getKind(), modifiers);
+        Image badge;
+
+        if (overriddenFlag) {
+            badge = ImageUtilities.loadImage("org/netbeans/modules/java/editor/resources/is-overridden-badge.png");
+        } else {
+            badge = ImageUtilities.loadImage("org/netbeans/modules/java/editor/resources/overrides-badge.png");
+        }
+
+        Image icon = ImageUtilities.icon2Image(ElementIcons.getElementIcon(handle.getKind(), modifiers));
+
+        return ImageUtilities.image2Icon(ImageUtilities.mergeImages(icon, badge, 16, 0));
     }
-    
+
     public String getDisplayName() {
         return displayName;
     }
