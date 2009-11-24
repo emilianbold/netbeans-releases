@@ -735,7 +735,7 @@ public final class OpenProjectList {
         boolean someClosed = false;
         List<Project> oldprjs = new ArrayList<Project>();
         List<Project> newprjs = new ArrayList<Project>();
-        List<Project> notifyList = new ArrayList<Project>();
+        final List<Project> notifyList = new ArrayList<Project>();
         synchronized ( this ) {
             oldprjs.addAll(openProjects);
             for( int i = 0; i < projects.length; i++ ) {
@@ -777,9 +777,13 @@ public final class OpenProjectList {
             }
         }
         //#125750 not necessary to call notifyClosed() under synchronized lock.
-        for (Project closed : notifyList) {
-            notifyClosed( closed );
-        }
+        OPENING_RP.post(new Runnable() { // #177427 - this can be slow, better to do asynch
+            public void run() {
+                for (Project closed : notifyList) {
+                    notifyClosed(closed);
+                }
+            }
+        });
         logProjects("close(): openProjects == ", openProjects.toArray(new Project[0])); // NOI18N
         if ( someClosed ) {
             pchSupport.firePropertyChange( PROPERTY_OPEN_PROJECTS, 

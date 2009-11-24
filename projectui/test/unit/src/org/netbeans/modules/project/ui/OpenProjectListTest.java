@@ -277,6 +277,7 @@ public class OpenProjectListTest extends NbTestCase {
         OpenProjectList.getDefault().close(new Project[] {project1}, false);
         
         assertEquals("both open hooks were called", 2, TestProjectOpenedHookImpl.opened);
+        OpenProjectList.OPENING_RP.post(new Runnable() {public void run() {}}).waitFinished(); // flush running tasks
         assertEquals("both close hooks were called", 2, TestProjectOpenedHookImpl.closed);
     }
     

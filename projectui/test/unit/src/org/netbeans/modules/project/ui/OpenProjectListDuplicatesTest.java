@@ -136,6 +136,7 @@ public class OpenProjectListDuplicatesTest extends NbTestCase {
         assertFalse("No project is opened", OpenProjects.getDefault().isProjectOpen(p));
         assertFalse("No project is opened", OpenProjects.getDefault().isProjectOpen(f));
 
+        OpenProjectList.OPENING_RP.post(new Runnable() {public void run() {}}).waitFinished(); // flush running tasks
         assertEquals("Close hook called", 1, TestProjectOpenedHookImpl.closed);
     }
     
