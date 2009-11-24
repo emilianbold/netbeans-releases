@@ -261,6 +261,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
         AstPath path = new AstPath();
         path.descend(root);
         ContextKnowledge knowledge = new ContextKnowledge(index, root, result);
+        knowledge.setAnalyzedMethods(methods);
         this.typeInferencer = RubyTypeInferencer.create(knowledge);
         // TODO: I should pass in a "default" context here to stash methods etc. outside of modules and classes
         scan(root, path, null, null, null);
@@ -1105,6 +1106,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
             }
             this.result = result;
             scan = scan(result);
+            result.setStructure(scan);
             cacheAnalysis(result, scan);
             return scan;
         } finally {
