@@ -60,7 +60,6 @@ import java.text.MessageFormat;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.lang.reflect.Field;
 import org.netbeans.modules.mercurial.ui.annotate.AnnotateAction;
 import org.netbeans.modules.mercurial.ui.commit.CommitAction;
@@ -137,12 +136,6 @@ public class MercurialAnnotator extends VCSAnnotator {
     private FileStatusCache cache;
     private MessageFormat format;
     private String emptyFormat;
-    private File folderToScan;
-    private ConcurrentLinkedQueue<File> dirsToScan = new ConcurrentLinkedQueue<File>();
-    private Map<File, FileInformation> modifiedFiles = null;
-    private RequestProcessor.Task scanTask;
-    private final RequestProcessor.Task modifiedFilesRPScanTask;
-    private final ModifiedFilesScanTask modifiedFilesScanTask;
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
     private static final RequestProcessor rp = new RequestProcessor("MercurialAnnotateScan", 1, true); // NOI18N
 
@@ -157,8 +150,6 @@ public class MercurialAnnotator extends VCSAnnotator {
 
     public MercurialAnnotator() {
         cache = Mercurial.getInstance().getFileStatusCache();
-        scanTask = rp.create(new ScanTask());
-        modifiedFilesRPScanTask = rp.create(modifiedFilesScanTask = new ModifiedFilesScanTask());
         initDefaults();
     }
     
@@ -225,15 +216,6 @@ public class MercurialAnnotator extends VCSAnnotator {
                 
         for (final File file : context.getRootFiles()) {
             FileInformation info = cache.getCachedStatus(file);
-            if (info == null) {
-                File parentFile = file.getParentFile();
-                Mercurial.LOG.log(Level.FINE, "null cached status for: {0} {1} {2}", new Object[] {file, folderToScan, parentFile});
-                if (!Mercurial.getInstance().isRefreshScheduled(parentFile)) {
-                    folderToScan = parentFile;
-                    reScheduleScan(1000);
-                }
-                info = new FileInformation(FileInformation.STATUS_VERSIONED_UPTODATE, false);
-            }
             int status = info.getStatus();
             if ((status & STATUS_IS_IMPORTANT) == 0) continue;
             
@@ -279,15 +261,6 @@ public class MercurialAnnotator extends VCSAnnotator {
         FileInformation mostImportantInfo = null;
         for (final File file : context.getRootFiles()) {
             FileInformation info = cache.getCachedStatus(file);
-            if (info == null) {
-                File parentFile = file.getParentFile();
-                Mercurial.LOG.log(Level.FINE, "null cached status for: {0} {1} {2}", new Object[]{file, folderToScan, parentFile});
-                if (!Mercurial.getInstance().isRefreshScheduled(parentFile)) {
-                    folderToScan = parentFile;
-                    reScheduleScan(1000);
-                }
-                info = new FileInformation(FileInformation.STATUS_VERSIONED_UPTODATE, false);
-            }
             int status = info.getStatus();
             if ((status & STATUS_IS_IMPORTANT) == 0) {
                 continue;
@@ -341,62 +314,18 @@ public class MercurialAnnotator extends VCSAnnotator {
         if (!isVersioned) {
             return null;
         }
-        if (!"false".equals(System.getProperty("mercurial.newGenerationCache", "true"))) { //NOI18N
-            Image badge = null;
-            if (cache.containsFileOfStatus(context, FileInformation.STATUS_VERSIONED_CONFLICT, true, true)) {
-                badge = ImageUtilities.assignToolTipToImage(
-                        ImageUtilities.loadImage(badgeConflicts, true), toolTipConflict);
-            } else if (cache.containsFileOfStatus(context, FileInformation.STATUS_LOCAL_CHANGE, true, true)) {
-                badge = ImageUtilities.assignToolTipToImage(
-                        ImageUtilities.loadImage(badgeModified, true), toolTipModified);
-            }
-            if (badge != null) {
-                return ImageUtilities.mergeImages(icon, badge, 16, 9);
-            } else {
-                return icon;
-            }
-        } else {
-            IconSelector sc = new IconSelector(context.getRootFiles(), icon);
-            // return the icon as soon as possible and schedule a complete scan if needed
-            sc.scanFilesLazy();
-            return sc.getBadge();
+        Image badge = null;
+        if (cache.containsFileOfStatus(context, FileInformation.STATUS_VERSIONED_CONFLICT, true)) {
+            badge = ImageUtilities.assignToolTipToImage(
+                    ImageUtilities.loadImage(badgeConflicts, true), toolTipConflict);
+        } else if (cache.containsFileOfStatus(context, FileInformation.STATUS_LOCAL_CHANGE, true)) {
+            badge = ImageUtilities.assignToolTipToImage(
+                    ImageUtilities.loadImage(badgeModified, true), toolTipModified);
         }
-    }
-
-    /**
-     * Returns modified files from tha cache.
-     * @param changed if not null, returns cached modified files and changed[0] denotes if the returned values are outdated.
-     * If null, performs the complete scan which may access I/O
-     * @return
-     */
-    private Map<File, FileInformation> getLocallyChangedFiles (final boolean changed[]) {
-        Map<File, FileInformation> map;
-        if (changed != null) {
-            // return cached values
-            map = cache.getAllModifiedFilesCached(changed);
+        if (badge != null) {
+            return ImageUtilities.mergeImages(icon, badge, 16, 9);
         } else {
-            // perform complete scan if needed
-            map = cache.getAllModifiedFiles();
-        }
-        Map<File, FileInformation> m = null;
-        synchronized (allModifiedFiles) {
-            for (Map<File, FileInformation> sm : allModifiedFiles) {
-                m = sm;
-                break;
-            }
-            if (modifiedFiles == null || map != m) {
-                allModifiedFiles.clear();
-                allModifiedFiles.add(map);
-                modifiedFiles = new HashMap<File, FileInformation>();
-                for (Iterator i = map.keySet().iterator(); i.hasNext();) {
-                    File file = (File) i.next();
-                    FileInformation info = map.get(file);
-                    if ((info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) {
-                        modifiedFiles.put(file, info);
-                    }
-                }
-            }
-            return modifiedFiles;
+            return icon;
         }
     }
 
@@ -747,199 +676,5 @@ public class MercurialAnnotator extends VCSAnnotator {
             }
         }
         return true;
-    }
-
-    private void reScheduleScan(int delayMillis) {
-        if (!dirsToScan.contains(folderToScan)) {
-            if (!dirsToScan.offer(folderToScan)) {
-                Mercurial.LOG.log(Level.FINE, "reScheduleScan failed to add to dirsToScan queue: {0} ", folderToScan);
-            }
-        }
-        scanTask.schedule(delayMillis);
-    }
-
-    private class ScanTask implements Runnable {
-        public void run() {
-            Thread.interrupted();
-            File dirToScan = dirsToScan.poll();
-            if (dirToScan != null) {
-                cache.getScannedFiles(dirToScan, null);
-                dirToScan = dirsToScan.peek();
-                if (dirToScan != null) {
-                    scanTask.schedule(1000);
-                }
-            }
-        }
-    }
-
-    /**
-     * A task which performs a complete modified files scan, reevaluates all registered icon selectors
-     * and fires events if a wrong folder badge should be repainted
-     */
-    private class ModifiedFilesScanTask implements Runnable {
-        private final LinkedList<IconSelector> scanners;
-
-        public ModifiedFilesScanTask() {
-            scanners = new LinkedList<IconSelector>();
-        }
-
-        public void run() {
-            LinkedList<IconSelector> toScan;
-            synchronized (scanners) {
-                toScan = new LinkedList<IconSelector>(scanners);
-                scanners.clear();
-            }
-            // complete modified files scan
-            Map<File, FileInformation> modifiedFiles = getLocallyChangedFiles(null);
-            Set<File> filesToRefresh = new HashSet<File>();
-            for (IconSelector scanner : toScan) {
-                // all registered iconn selectors are re-evaluated
-                scanner.scanFiles(modifiedFiles);
-                filesToRefresh.addAll(scanner.getFilesToRefresh());
-            }
-            // fire an event if needed
-            if (filesToRefresh.size() > 0) {
-                support.firePropertyChange(PROP_ICON_BADGE_CHANGED, null, filesToRefresh);
-            }
-        }
-
-        /**
-         * Registers a given badge selector and reschedules this task
-         * @param scanner
-         */
-        public void schedule (IconSelector scanner) {
-            synchronized (scanners) {
-                scanners.add(scanner);
-                modifiedFilesRPScanTask.schedule(1000);
-            }
-        }
-    }
-
-    /**
-     * Evaluates root files' status and return their common badge. It tries to evaluate as fast as possible so it can return a fake badge.
-     *
-     * If cached all modified files, which it uses in the evaluation, are outdated, it schedules a complete scan of those files (which may access I/O)
-     * With these freshly scanned files it recalculates the icon and if that differs from the one returned after the first scan,
-     * the instance method getFilesToRefresh returns a non-empty set of responsible files which should be refreshed.
-     */
-    private final class IconSelector {
-        private Set<File> rootFiles;
-        private final Image initialIcon;
-        private Image badge = null;
-        private String badgePath;
-        private String originalBadgePath;
-        private final Set<File> responsibleFiles;
-
-        boolean allExcluded;
-        boolean modified;
-
-        public IconSelector (Set<File> rootFiles, Image initialIcon) {
-            this.rootFiles = rootFiles;
-            this.initialIcon = initialIcon;
-            this.responsibleFiles = new HashSet<File>();
-        }
-
-        void scanFilesLazy () {
-            boolean changed[] = new boolean[1];
-            Map<File, FileInformation> locallyChangedFiles = getLocallyChangedFiles(changed);
-            scanFiles(locallyChangedFiles);
-            if (changed[0]) {
-                // schedule a scan
-                scheduleDeepScan();
-            }
-        }
-
-        /**
-         * Computes the badge for given root files.
-         * Iterates through all root files and check if any of its children is by any chance included in a map of modified files.
-         * If it finds any such child, it sets the badge to modified (or conflicted if any of rootfile's children is in conflict).
-         * @param locallyChangedFiles
-         */
-        private void scanFiles(Map<File, FileInformation> locallyChangedFiles) {
-            allExcluded = true;
-            modified = false;
-            HgModuleConfig config = HgModuleConfig.getDefault();
-            responsibleFiles.clear();
-            for (File file : rootFiles) {
-                for (Map.Entry<File, FileInformation> entry : locallyChangedFiles.entrySet()) {
-                    File mf = entry.getKey();
-                    FileInformation info = entry.getValue();
-                    int status = info.getStatus();
-                    if (VersioningSupport.isFlat(file)) {
-                        if (mf.getParentFile().equals(file)) {
-                            if (info.isDirectory()) {
-                                continue;
-                            }
-                            if (checkConflictAndUpdateFlags(mf, config, status)) {
-                                return;
-                            }
-                        }
-                    } else {
-                        if (Utils.isAncestorOrEqual(file, mf)) {
-                            if ((status == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY || status == FileInformation.STATUS_VERSIONED_ADDEDLOCALLY) && file.equals(mf)) {
-                                continue;
-                            }
-                            if (checkConflictAndUpdateFlags(mf, config, status)) {
-                                return;
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (modified && !allExcluded) {
-                badge = ImageUtilities.assignToolTipToImage(
-                        ImageUtilities.loadImage(badgePath = badgeModified, true), toolTipModified);
-                badge = ImageUtilities.mergeImages(initialIcon, badge, 16, 9);
-            } else {
-                badge = null;
-                badgePath = "";
-                responsibleFiles.addAll(rootFiles);
-            }
-        }
-
-        /**
-         *
-         * @param modifiedFile
-         * @param config
-         * @param status
-         * @return true if the badge should be 'CONFLICT', false otherwise
-         */
-        private boolean checkConflictAndUpdateFlags (File modifiedFile, HgModuleConfig config, int status) {
-            responsibleFiles.add(modifiedFile);
-            // conflict - this status has the highest weight
-            if (status == FileInformation.STATUS_VERSIONED_CONFLICT) {
-                badge = ImageUtilities.assignToolTipToImage(
-                        ImageUtilities.loadImage(badgePath = badgeConflicts, true), toolTipConflict);
-                badge = ImageUtilities.mergeImages(initialIcon, badge, 16, 9);
-                return true;
-            }
-            modified = true;
-            allExcluded = allExcluded && config.isExcludedFromCommit(modifiedFile.getAbsolutePath());
-            return false;
-        }
-
-        Image getBadge () {
-            return badge;
-        }
-
-        private void scheduleDeepScan () {
-            originalBadgePath = badgePath; // save the badge path for later comparison
-            modifiedFilesScanTask.schedule(this);
-        }
-
-        /**
-         * Returns files which are responsible for a badge being changed and whose refresh should result in badge repainting.
-         * @return
-         */
-        public Set<File> getFilesToRefresh () {
-            assert originalBadgePath != null; // scan has been already run
-            if (!badgePath.equals(originalBadgePath)) {
-                // badge has changed
-                return responsibleFiles;
-            } else {
-                return Collections.EMPTY_SET;
-            }
-        }
     }
 }

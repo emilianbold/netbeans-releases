@@ -75,7 +75,7 @@ public class StatusTest extends AbstractHgTest {
         File file3 = createFile(folder, "file3");
         
         commit(folder);
-        getCache().refreshAll(folder); // force refresh
+        getCache().refreshCached(folder); // force refresh
         
         // assert status given from cli
         assertStatus(folder, FileInformation.STATUS_VERSIONED_UPTODATE);
