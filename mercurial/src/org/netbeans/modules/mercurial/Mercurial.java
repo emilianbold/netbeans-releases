@@ -382,6 +382,13 @@ public class Mercurial {
                      "  cached access count     = " + cachedAccesCount + "\n" +                     // NOI18N
                      "  not cached access count = " + (accesCount - cachedAccesCount) + "\n");      // NOI18N
         }
+
+        synchronized void clear () {
+            order.clear();
+            files.clear();
+            cachedAccesCount = 0;
+            accesCount = 0;
+        }
     }
 
    /**
@@ -409,6 +416,7 @@ public class Mercurial {
     }
 
     public void versionedFilesChanged() {
+        rootsToFile.clear();
         support.firePropertyChange(PROP_VERSIONED_FILES_CHANGED, null, null);
     }
 

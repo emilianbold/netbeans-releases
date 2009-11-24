@@ -84,6 +84,7 @@ public class FileStatusCacheTest extends AbstractHgTest {
         NestedReposLogHandler handler = new NestedReposLogHandler(repo2);
         attachCacheLogHandler(handler);
         HgCommand.doCreate(repo2, OutputLogger.getLogger(null));
+        Mercurial.getInstance().versionedFilesChanged();
         File folder2 = createFolder(repo2, "folder2");
         File f3 = createFile(repo2, "file3");
         File f4 = createFile(folder2, "file4");
