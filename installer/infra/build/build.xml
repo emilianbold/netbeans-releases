@@ -422,7 +422,7 @@
 		<set property="glassfish.ml.appendix" value="-ml"/>
 		<set property="sjsas.ml.appendix"     value="-ml"/>
 	</if>
-	
+	<!--
         <get
             src="${glassfish.builds.host}/java/re/glassfish/10.0/promoted/fcs/latest/archive/bundles"
             dest="${temp.file}"/>
@@ -432,18 +432,18 @@
         <glassfish-buildnumber 
             file="${temp.file}" 
             prefix="glassfish-mod-sun"/>
+        -->
+        
+	<set property="glassfish-mod-sun.milestone.number"      value="73"/>
+	<set property="glassfish-mod-sun.milestone.number.real" value="73"/>
+	<set property="glassfish-mod-sun.build.type"            value=""/>
+	<set property="glassfish-mod-sun.build.number"          value="0"/>
 
-        <!--
-	<set property="glassfish-mod-sun.milestone.number"      value="28"/>
-	<set property="glassfish-mod-sun.milestone.number.real" value="28e"/>
-	<set property="glassfish-mod-sun.build.type"            value="prelude"/>
-	<set property="glassfish-mod-sun.build.number"          value="20090610"/>
-
-	<set property="glassfish-mod.milestone.number"      value="28"/>
-	<set property="glassfish-mod.milestone.number.real" value="28c"/>
-	<set property="glassfish-mod.build.type"            value="prelude"/>
-	<set property="glassfish-mod.build.number"          value="20081022"/>
-	-->
+	<set property="glassfish-mod.milestone.number"      value="73"/>
+	<set property="glassfish-mod.milestone.number.real" value="73"/>
+	<set property="glassfish-mod.build.type"            value=""/>
+	<set property="glassfish-mod.build.number"          value="0"/>
+	
 
         <!--
         -->
@@ -451,13 +451,14 @@
         <set property="openesb.build.number" value="2008012302"/>                       
         <set property="openesb.build.number.real" value="080123_2"/>
 	-->
+	<!--
         <get
             src="${openesb.builds.host}/kits/ojc/openesb_as9_ur2/latest/solsparc/ojc/version.txt"
             dest="${temp.file}"/>
         <openesb-buildnumber 
             file="${temp.file}" 
             prefix="openesb"/>
-
+        -->
         <if property="do.build.jtb">
 	    <!--
             <get
@@ -575,14 +576,18 @@ sjsas.milestone.number.real=${sjsas.milestone.number.real}
 sjsas.build.type=${sjsas.build.type}
 sjsas.build.number=${sjsas.build.number}
 
-openesb.build.number=${openesb.build.number}
-openesb.build.number.real=${openesb.build.number.real}
-
 nb.full.version=${nb.full.version}
 nb.build.suffix=${nb.build.suffix}
 nb.zip.files.prefix=${nb.zip.files.prefix}
 nb.bundle.files.prefix=${nb.bundle.files.prefix}
 	</echo>
+
+	<!--
+	<echo file="${environment.properties}" append="true">
+openesb.build.number=${openesb.build.number}
+openesb.build.number.real=${openesb.build.number.real}
+	</echo>
+	-->
 
         <if property="do.build.jtb">
 	<!-- SJSAM properties -->

@@ -191,22 +191,17 @@ public class MercurialInterceptor extends VCSInterceptor {
         Mercurial.LOG.log(Level.FINE, "hgMoveImplementation(): File: {0} {1}", new Object[] {srcFile, dstFile}); // NOI18N
 
         srcFile.renameTo(dstFile);
-        Runnable moveImpl = new Runnable() {
-            public void run() {
-                OutputLogger logger = OutputLogger.getLogger(root.getAbsolutePath());
-                try {
-                    if (root.equals(dstRoot)) {
-                        HgCommand.doRenameAfter(root, srcFile, dstFile, logger);
-                    }
-                } catch (HgException e) {
-                    Mercurial.LOG.log(Level.FINE, "Mercurial failed to rename: File: {0} {1}", new Object[] {srcFile.getAbsolutePath(), dstFile.getAbsolutePath()}); // NOI18N
-                } finally {
-                    logger.closeLog();
-                }
-            }
-        };
-
-        rp.post(moveImpl);
+        // no need to do rename after in a background thread, code requiring the bg thread (see #125673) no more exists
+        OutputLogger logger = OutputLogger.getLogger(root.getAbsolutePath());
+        try {
+            if (root.equals(dstRoot)) {
+                HgCommand.doRenameAfter(root, srcFile, dstFile, logger);
+             }
+        } catch (HgException e) {
+            Mercurial.LOG.log(Level.FINE, "Mercurial failed to rename: File: {0} {1}", new Object[]{srcFile.getAbsolutePath(), dstFile.getAbsolutePath()}); // NOI18N
+        } finally {
+            logger.closeLog();
+        }
     }
 
     @Override

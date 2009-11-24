@@ -52,10 +52,9 @@ import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JRadioButtonOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.junit.NbModuleSuite;
-import org.openide.cookies.EditCookie;
+import org.netbeans.modules.ws.qaf.utilities.RestWizardOperator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 
 /**
  * Tests for New REST from Patterns wizard
@@ -252,7 +251,7 @@ public class PatternsTest extends RestTestBase {
         WizardOperator wo = new WizardOperator(patternsTypeName);
         new JRadioButtonOperator(wo, pattern.ordinal()).clickMouse();
         wo.next();
-        wo = new WizardOperator(patternsTypeName);
+        wo = new RestWizardOperator(patternsTypeName);
         //set resource package
         JComboBoxOperator jcbo = new JComboBoxOperator(wo, new Pkg());
         jcbo.clickMouse();
@@ -262,16 +261,19 @@ public class PatternsTest extends RestTestBase {
             //we're not using Defs when name != null !!!
             //set resource class name
             JTextFieldOperator jtfo = new JTextFieldOperator(wo, new ClsName());
+            jtfo.clickMouse();
             jtfo.clearText();
             jtfo.typeText(name + "Cl"); //NOI18N
             //set mimeType
             if (mimeType != null) {
                 jcbo = new JComboBoxOperator(wo, new Mime());
+                jcbo.clickMouse();
                 jcbo.selectItem(mimeType.toString());
             }
             //set resource representation class
             if (MimeType.APPLICATION_JSON.equals(mimeType)) {
                 jtfo = new JTextFieldOperator(wo, new RCls());
+                jtfo.clickMouse();
                 jtfo.clearText();
                 jtfo.typeText("org.codehaus.jettison.json.JSONString"); //NOI18N
             } else if (MimeType.TEXT_PLAIN.equals(mimeType)) {
@@ -285,24 +287,29 @@ public class PatternsTest extends RestTestBase {
             if (Pattern.Singleton.equals(pattern)) {
                 //set resource Path
                 jtfo = new JTextFieldOperator(wo, new Path());
+                jtfo.clickMouse();
                 jtfo.clearText();
                 jtfo.typeText(name + "URI"); //NOI18N
             } else {
                 //set resource Path
                 jtfo = new JTextFieldOperator(wo, new Path());
+                jtfo.clickMouse();
                 jtfo.clearText();
                 jtfo.typeText("{" + name + "URI}"); //NOI18N
                 //set container resource class name
                 jtfo = new JTextFieldOperator(wo, new CClsName());
+                jtfo.clickMouse();
                 jtfo.clearText();
                 jtfo.typeText(name + "CClass"); //NOI18N
                 //set container resource Path
                 jtfo = new JTextFieldOperator(wo, new CPath());
+                jtfo.clickMouse();
                 jtfo.clearText();
                 jtfo.typeText("/" + name + "ContainerURI"); //NOI18N
                 //set container resource representation class
                 if (MimeType.APPLICATION_JSON.equals(mimeType)) {
                     jtfo = new JTextFieldOperator(wo, new CRCls());
+                    jtfo.clickMouse();
                     jtfo.clearText();
                     jtfo.typeText("org.codehaus.jettison.json.JSONObject"); //NOI18N
                 } else if (MimeType.TEXT_PLAIN.equals(mimeType)) {
@@ -370,7 +377,7 @@ public class PatternsTest extends RestTestBase {
      * Creates suite from particular test cases. You can define order of testcases here.
      */
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(PatternsTest.class),
+        return NbModuleSuite.create(addServerTests(Server.GLASSFISH_V3, NbModuleSuite.createConfiguration(PatternsTest.class),
                 "testSingletonDef", //NOI18N
                 "testContainerIDef", //NOI18N
                 "testCcContainerIDef", //NOI18N

@@ -67,7 +67,7 @@ public class RfsSunStudioRemoteBuildTestCase extends RfsBaseRemoteBuildTestCase 
         setupHost("rfs");
     }
 
-    @ForAllEnvironments(section="remote.platforms.smart.secure.copy")
+    @ForAllEnvironments
     public void testBuildRfsSampleArgsSunStudio() throws Exception {
         setDefaultCompilerSet("SunStudio");
         FileObject projectDirFO = prepareSampleProject("Arguments", "Args_SunStudio_01");

@@ -81,20 +81,22 @@ public final class EndorsedClassPathImpl implements ClassPathImplementation {
         this.project = project;
     }
 
-    public synchronized List<? extends PathResourceImplementation> getResources() {
+    public List<? extends PathResourceImplementation> getResources() {
         assert bcp != null;
-        if (this.resourcesCache == null) {
-            ArrayList<PathResourceImplementation> result = new ArrayList<PathResourceImplementation> ();
-            String[] boot = getBootClasspath();
-            if (boot != null) {
-                for (URL u :  stripDefaultJavaPlatform(boot)) {
-                    result.add (ClassPathSupport.createResource(u));
+        synchronized (bcp.LOCK) {
+            if (this.resourcesCache == null) {
+                ArrayList<PathResourceImplementation> result = new ArrayList<PathResourceImplementation> ();
+                String[] boot = getBootClasspath();
+                if (boot != null) {
+                    for (URL u :  stripDefaultJavaPlatform(boot)) {
+                        result.add (ClassPathSupport.createResource(u));
+                    }
                 }
+                current = boot;
+                resourcesCache = Collections.unmodifiableList (result);
             }
-            current = boot;
-            resourcesCache = Collections.unmodifiableList (result);
+            return this.resourcesCache;
         }
-        return this.resourcesCache;
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -126,7 +128,8 @@ public final class EndorsedClassPathImpl implements ClassPathImplementation {
     boolean resetCache () {
         String[] newones = getBootClasspath();
         boolean fire = false;
-        synchronized (this) {
+        assert bcp != null;
+        synchronized (bcp.LOCK) {
             if (!Arrays.equals(newones, current)) {
                 resourcesCache = null;
                 fire = true;

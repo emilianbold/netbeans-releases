@@ -51,6 +51,7 @@ import org.netbeans.modules.nativeexecution.LocalNativeProcess;
 import org.netbeans.modules.nativeexecution.NativeProcessInfo;
 import org.netbeans.modules.nativeexecution.RemoteNativeProcess;
 import org.netbeans.modules.nativeexecution.TerminalLocalNativeProcess;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminalProvider;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
@@ -153,6 +154,16 @@ public final class NativeProcessBuilder implements Callable<Process> {
      */
     public NativeProcess call() throws IOException {
         AbstractNativeProcess process = null;
+
+        ExecutionEnvironment execEnv = info.getExecutionEnvironment();
+
+        if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
+            throw new IllegalStateException("No connection to " + execEnv.getDisplayName()); // NOI18N
+        }
+
+        if (info.getCommand() == null) {
+            throw new IllegalStateException("No executable nor command line is specified"); // NOI18N
+        }
 
         if (info.getExecutionEnvironment().isRemote()) {
             process = new RemoteNativeProcess(info);

@@ -237,7 +237,7 @@ class TooltipWindow implements AWTEventListener, MouseMotionListener, MouseListe
     }
 
     public void windowLostFocus(WindowEvent e) {
-        if (contentWindow != null && e.getOppositeWindow() != contentWindow && e.getOppositeWindow() != contentWindow.getOwner()) {
+        if (contentWindow != null && e.getOppositeWindow() == null) {
             shutdown();
         }
     }

@@ -43,6 +43,7 @@ package org.netbeans.modules.javacard.ri.platform.loader;
 import java.awt.event.ActionListener;
 import org.netbeans.modules.javacard.common.Utils;
 import org.netbeans.modules.javacard.ri.platform.installer.ServersPanel;
+import org.netbeans.modules.javacard.spi.JavacardPlatform;
 import org.openide.awt.Mnemonics;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.ListView;
@@ -132,7 +133,8 @@ public class DevicesForm extends javax.swing.JPanel implements ExplorerManager.P
         try {
             FileObject fo = Utils.sfsFolderForDeviceConfigsForPlatformNamed(dob.getName(), true);
             DataObject ob = DataObject.find(fo);
-            new ServersPanel(ob.getNodeDelegate()).showDialog();
+            new ServersPanel(dob.getNodeDelegate().getLookup().lookup(JavacardPlatform.class)).showDialog();
+//            new ServersPanel(ob.getNodeDelegate()).showDialog();
         } catch (DataObjectNotFoundException ex) {
             Exceptions.printStackTrace(ex);
         }

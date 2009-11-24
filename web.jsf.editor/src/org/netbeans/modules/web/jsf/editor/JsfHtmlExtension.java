@@ -85,7 +85,6 @@ import org.netbeans.modules.web.jsf.editor.completion.JsfCompletionItem;
 import org.netbeans.modules.web.jsf.editor.facelets.CompositeComponentLibrary;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
 import org.netbeans.modules.web.jsf.editor.hints.HintsRegistry;
-import org.netbeans.modules.web.jsf.editor.tld.LibraryDescriptor;
 import org.netbeans.modules.web.jsf.editor.tld.TldLibrary;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.lexer.MutableTextInput;
@@ -346,28 +345,26 @@ public class JsfHtmlExtension extends HtmlExtension {
             throw new IllegalStateException(msg.toString());
             //<<< end of issue debug
         }
-        LibraryDescriptor lib = flib.getLibraryDescriptor();
+        
+        TldLibrary.Tag tag = flib.getTag(tagName);
+        if (tag != null) {
+            Collection<TldLibrary.Attribute> attrs = tag.getAttributes();
+            //TODO resolve help
+            Collection<String> existingAttrNames = queriedNode.getAttributeKeys();
 
-        if (lib != null) {
-            TldLibrary.Tag tag = lib.getTags().get(tagName);
-            if (tag != null) {
-                Collection<TldLibrary.Attribute> attrs = tag.getAttributes();
-                //TODO resolve help
-                Collection<String> existingAttrNames = queriedNode.getAttributeKeys();
-
-                for (TldLibrary.Attribute a : attrs) {
-                    String attrName = a.getName();
-                    if (!existingAttrNames.contains(attrName) ||
-                            existingAttrNames.contains(context.getItemText())) {
-                        //show only unused attributes except the one where the caret currently stays
-                        //this is because of we need to show the item in the completion since
-                        //use might want to see javadoc of already used attribute
-                        items.add(JsfCompletionItem.createAttribute(attrName, context.getCCItemStartOffset(), flib, tag, a));
-                    }
+            for (TldLibrary.Attribute a : attrs) {
+                String attrName = a.getName();
+                if (!existingAttrNames.contains(attrName) ||
+                        existingAttrNames.contains(context.getItemText())) {
+                    //show only unused attributes except the one where the caret currently stays
+                    //this is because of we need to show the item in the completion since
+                    //use might want to see javadoc of already used attribute
+                    items.add(JsfCompletionItem.createAttribute(attrName, context.getCCItemStartOffset(), flib, tag, a));
                 }
-
             }
+
         }
+
 
         if (context.getPrefix().length() > 0) {
             //filter the items according to the prefix

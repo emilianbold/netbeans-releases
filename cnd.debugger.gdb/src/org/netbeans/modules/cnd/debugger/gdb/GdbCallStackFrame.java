@@ -83,6 +83,11 @@ public class GdbCallStackFrame extends CallStackFrame {
     private AbstractVariable[] cachedLocalVariables = null;
     private AbstractVariable[] cachedAutos = null;
 
+    private final String LOCALS_LOCK = new String("Locals lock"); //NOI18N
+    private final String AUTOS_LOCK = new String("Autos lock"); //NOI18N
+
+    private boolean destroyed = false;
+
     private Collection<GdbVariable> arguments = null;
     private StyledDocument document = null;
     private int offset = -1;
@@ -247,41 +252,57 @@ public class GdbCallStackFrame extends CallStackFrame {
         assert !(Thread.currentThread().getName().equals("GdbReaderRP"));
         assert !(SwingUtilities.isEventDispatchThread()); 
 
-        if (cachedLocalVariables == null) {
-            List<GdbVariable> list = debugger.getLocalVariables();
-            int n = list.size();
-
-            AbstractVariable[] locals = new AbstractVariable[n];
-            for (int i = 0; i < n; i++) {
-                locals[i] = new GdbLocalVariable(debugger, list.get(i));
+        synchronized (LOCALS_LOCK) {
+            if (destroyed) {
+                return new AbstractVariable[0];
             }
-            cachedLocalVariables = locals;
-        } 
-        return cachedLocalVariables;
+            if (cachedLocalVariables == null) {
+                List<GdbVariable> list = debugger.getLocalVariables();
+                int n = list.size();
+
+                AbstractVariable[] locals = new AbstractVariable[n];
+                for (int i = 0; i < n; i++) {
+                    locals[i] = new GdbLocalVariable(debugger, list.get(i));
+                }
+                cachedLocalVariables = locals;
+            }
+            return cachedLocalVariables;
+        }
     }
 
     public AbstractVariable[] getAutos() {
-        if (cachedAutos == null) {
-            Set<String> res = Autos.get(getDocument(), lineNumber-1);
-            cachedAutos = new AbstractVariable[res.size()];
-            int i = 0;
-            for (String name : res) {
-                cachedAutos[i++] = new GdbLocalVariable(debugger, name);
+        synchronized (AUTOS_LOCK) {
+            if (destroyed) {
+                return new AbstractVariable[0];
             }
+            if (cachedAutos == null) {
+                Set<String> res = Autos.get(getDocument(), lineNumber-1);
+                AbstractVariable[] autos = new AbstractVariable[res.size()];
+                int i = 0;
+                for (String name : res) {
+                    autos[i++] = new GdbLocalVariable(debugger, name);
+                }
+                cachedAutos = autos;
+            }
+            return cachedAutos;
         }
-        return cachedAutos;
     }
 
     public void destroy() {
-        if (cachedLocalVariables != null) {
-            for (AbstractVariable var : cachedLocalVariables) {
-                var.destroy();
+        synchronized (LOCALS_LOCK) {
+            destroyed = true;
+            if (cachedLocalVariables != null) {
+                for (AbstractVariable var : cachedLocalVariables) {
+                    var.destroy();
+                }
             }
         }
 
-        if (cachedAutos != null) {
-            for (AbstractVariable var : cachedAutos) {
-                var.destroy();
+        synchronized (AUTOS_LOCK) {
+            if (cachedAutos != null) {
+                for (AbstractVariable var : cachedAutos) {
+                    var.destroy();
+                }
             }
         }
     }

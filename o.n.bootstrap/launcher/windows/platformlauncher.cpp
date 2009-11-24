@@ -595,7 +595,9 @@ string & PlatformLauncher::constructClassPath(bool runUpdater) {
     addToClassPath((jdkhome + "\\lib\\dt.jar").c_str(), true);
     addToClassPath((jdkhome + "\\lib\\tools.jar").c_str(), true);
 
-    classPath += cpAfter;
+    if (!cpAfter.empty()) {
+        addToClassPath(cpAfter.c_str(), false);
+    }
     logMsg("ClassPath: %s", classPath.c_str());
     return classPath;
 }

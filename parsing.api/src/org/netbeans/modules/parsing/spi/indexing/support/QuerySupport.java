@@ -48,6 +48,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -336,7 +337,7 @@ public final class QuerySupport {
     private QuerySupport (final String indexerName, int indexerVersion, final URL... roots) throws IOException {
         this.indexerIdentification = indexerName + "/" + indexerVersion; //NOI18N
         this.spiFactory = new LuceneIndexFactory();
-        this.indexes = new HashMap<URL, IndexImpl>();
+        this.indexes = new LinkedHashMap<URL, IndexImpl>();
         final String indexerFolder = findIndexerFolder(indexerName, indexerVersion);
         if (indexerFolder != null) {
             for (URL root : roots) {

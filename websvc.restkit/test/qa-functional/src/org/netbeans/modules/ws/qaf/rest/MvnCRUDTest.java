@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,57 +31,56 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javacard.common;
+package org.netbeans.modules.ws.qaf.rest;
 
-import org.openide.WizardDescriptor;
-
-import javax.swing.event.ChangeListener;
+import java.util.logging.Logger;
+import junit.framework.Test;
+import org.netbeans.jellytools.modules.j2ee.J2eeTestCase.Server;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
- * Interface to something that disables a dialog and
- * provides user feedback when something is wrong.
- * <p>
- * Allows us to provide one adapter for setting the problem in a
- * wizard descriptor, and our own problem-displaying component.
- * This way PlatformPropertiesPanel can be used both in a wizard
- * and as the customizer for a JavacardPlatformDataObject's node.
+ * Tests for New REST web services from Entity Classes wizard
  *
- * XXX this class is a relic of pre Validation API code.  Delete.
+ * Duration of this test suite: aprox. 3min
  *
- * @deprecated
- * @author Tim Boudreau
+ * @author lukas
  */
-@Deprecated
-public interface ProblemHandler {
+public class MvnCRUDTest extends CRUDTest {
+
+    private static final Logger LOGGER = Logger.getLogger(MvnCRUDTest.class.getName());
+
+    /** Default constructor.
+     * @param testName name of particular test case
+     */
+    public MvnCRUDTest(String name) {
+        super(name);
+    }
+
+    @Override
+    protected ProjectType getProjectType() {
+        return ProjectType.MAVEN_WEB;
+    }
+
+    @Override
+    protected String getProjectName() {
+        return "MvnFromEntities"; //NOI18N
+    }
 
     /**
-     * Interfaces to be implemented by node customizers who want to
-     * control the parent dialog's OK button state.
+     * Creates suite from particular test cases. You can define order of testcases here.
      */
-    public static interface UI {
-        void setProblemHandler (ProblemHandler handler);
-        void addChangeListener (ChangeListener cl);
-        void removeChangeListener (ChangeListener cl);
-        String getProblem();
-    }
-    
-    public void setProblem (String problem);
-    public boolean isProblem();
-
-    public static final class WizardAdapter implements ProblemHandler {
-        private final WizardDescriptor wiz;
-        public WizardAdapter (WizardDescriptor wiz) {
-            this.wiz = wiz;
-        }
-
-        public void setProblem(String problem) {
-            wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, problem); //NOI18N
-        }
-
-        public boolean isProblem() {
-            String s = (String) wiz.getProperty(WizardDescriptor.PROP_ERROR_MESSAGE);
-            return s != null && s.trim().length() > 0;
-        }
+    public static Test suite() {
+        return NbModuleSuite.create(addServerTests(Server.GLASSFISH_V3, NbModuleSuite.createConfiguration(MvnCRUDTest.class),
+                "testRfE", //NOI18N
+                "testPropAccess", //NOI18N
+                "testRun", //NOI18N
+                "testCreateRestClient", //NOI18N
+                "testUndeploy" //NOI18N
+                ).enableModules(".*").clusters(".*")); //NOI18N
     }
 }

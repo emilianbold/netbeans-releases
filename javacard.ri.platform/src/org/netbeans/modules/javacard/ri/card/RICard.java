@@ -78,6 +78,7 @@ import org.netbeans.modules.javacard.spi.JavacardPlatform;
 import org.netbeans.modules.javacard.spi.capabilities.AntTarget;
 import org.netbeans.modules.javacard.spi.capabilities.CardCustomizerProvider;
 import org.netbeans.modules.javacard.spi.capabilities.ContactedProtocol;
+import org.netbeans.modules.javacard.spi.capabilities.DeleteCapability;
 import org.netbeans.modules.javacard.spi.capabilities.PortKind;
 import org.netbeans.modules.javacard.spi.capabilities.PortProvider;
 import org.netbeans.modules.javacard.spi.capabilities.ProfileCapability;
@@ -127,6 +128,11 @@ public class RICard extends BaseCard<CardProperties> { //non-final only for unit
         CardProperties props = new CardProperties(adap);
         log("Init props " + props); //NOI18N
         return props;
+    }
+
+    @Override
+    public DeleteCapability createDeleteCapability(CardProperties t) {
+        return new Delete();
     }
 
     @Override
@@ -213,9 +219,8 @@ public class RICard extends BaseCard<CardProperties> { //non-final only for unit
         CardProperties p = getCapability(CardProperties.class);
         assert p != null;
         boolean forDebug = mode == RunMode.DEBUG;
-        boolean noSuspend = p.isNoSuspend();
         Properties props = getPlatform().toProperties();
-        return p.getRunCommandLine(props, noSuspend, forDebug);
+        return p.getRunCommandLine(props, forDebug, 0);
     }
 
     private String[] getResumeCommandLine() {
@@ -752,5 +757,11 @@ public class RICard extends BaseCard<CardProperties> { //non-final only for unit
     }
 
     private static final class Profile implements ProfileCapability {
+    }
+
+    private final class Delete implements DeleteCapability {
+        public void delete() throws IOException {
+            dob.delete();
+        }
     }
 }
