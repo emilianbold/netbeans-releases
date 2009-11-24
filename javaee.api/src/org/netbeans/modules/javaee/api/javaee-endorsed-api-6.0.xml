@@ -48,9 +48,9 @@ made subject to such option by the copyright holder.
     <localizing-bundle>org/netbeans/modules/javaee/api/Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst://org.netbeans.modules.javaee.api/modules/ext/javax.annotation.jar!</resource>
-        <resource>jar:nbinst://org.netbeans.modules.javaee.api/modules/ext/jaxb-api-osgi.jar!</resource>
-        <resource>jar:nbinst://org.netbeans.modules.javaee.api/modules/ext/webservices-api-osgi.jar!</resource>
+        <resource>jar:nbinst://org.netbeans.modules.javaee.api/modules/ext/javaee6-endorsed/javax.annotation.jar!</resource>
+        <resource>jar:nbinst://org.netbeans.modules.javaee.api/modules/ext/javaee6-endorsed/jaxb-api-osgi.jar!</resource>
+        <resource>jar:nbinst://org.netbeans.modules.javaee.api/modules/ext/javaee6-endorsed/webservices-api-osgi.jar!</resource>
     </volume>
     <volume>
         <type>javadoc</type>
