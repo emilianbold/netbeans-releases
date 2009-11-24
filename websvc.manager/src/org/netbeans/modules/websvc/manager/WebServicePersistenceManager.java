@@ -151,20 +151,20 @@ public class WebServicePersistenceManager implements ExceptionListener {
                 decoder.close();
 
                 for (WebServiceData wsData : wsDatas) {
-                    if (imported) { // we don't need to import generated artifacts
-                        try {
-                            WsdlModel wsdlModel = WebServiceManager.getInstance().getWsdlModel(wsData);
-                            wsData.setWsdlService(wsdlModel.getServiceByName(wsData.getName()));
-                        } catch (IOException ex) {
-                            Logger.global.log(Level.INFO, ex.getLocalizedMessage(), ex);
-                        }
-                        
+                    if (imported) { // we don't need to import generated artifacts 
                         if (wsData.getJaxRpcDescriptorPath() != null) {
                             wsData.setJaxRpcDescriptor(loadDescriptorFile(websvcDir + File.separator + wsData.getJaxRpcDescriptorPath()));
                         }
 
                         if (wsData.getJaxWsDescriptorPath() != null) {
                             wsData.setJaxWsDescriptor(loadDescriptorFile(websvcDir + File.separator + wsData.getJaxWsDescriptorPath()));
+                        }
+
+                        try {
+                            WsdlModel wsdlModel = WebServiceManager.getInstance().getWsdlModel(wsData);
+                            wsData.setWsdlService(wsdlModel.getServiceByName(wsData.getName()));
+                        } catch (IOException ex) {
+                            Logger.global.log(Level.INFO, ex.getLocalizedMessage(), ex);
                         }
                     } else {
                         wsData.reset();
