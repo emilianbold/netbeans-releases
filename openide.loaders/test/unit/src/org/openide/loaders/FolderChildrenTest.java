@@ -90,10 +90,10 @@ public class FolderChildrenTest extends NbTestCase {
         super(testName);
     }
 
-//    @Override
-//    protected int timeOut() {
-//        return 65000;
-//    }
+    @Override
+    protected int timeOut() {
+        return 65000;
+    }
 
     @Override
     protected Level logLevel() {
