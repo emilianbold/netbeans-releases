@@ -221,20 +221,26 @@ public final class WebServiceManager {
             }
         }
         WsdlModel wsdlModel = null;
+        Throwable exc = null;
+
         if (wsdlModelProvider != null) {
             String packageName = wsData.getPackageName();
             if(packageName == null || packageName.trim().length() == 0)
                 packageName = wsdlModelProvider.getEffectivePackageName();
             File catalogFile = new File(wsData.getCatalog());
             URL catalogUrl = catalogFile.toURI().toURL();
-            wsdlModel = wsdlModelProvider.getWsdlModel(wsdlUrl, packageName, catalogUrl);
+
+            try {
+                wsdlModel = wsdlModelProvider.getWsdlModel(wsdlUrl, packageName, catalogUrl);
+            } catch (Exception ex) {
+                exc = ex.getCause();
+            }
         }
        
         if (wsdlModel == null) {
             wsData.setResolved(false);
             removeWebService(wsData, true, false);
-
-            Throwable exc = wsdlModelProvider.getCreationException();//wsdlModeler.getCreationException();
+            
             String message = NbBundle.getMessage(WebServiceManager.class, "WS_MODELER_ERROR");
             if (exc != null) {
                 String cause = exc.getLocalizedMessage();
