@@ -199,9 +199,8 @@ public class AutoUpdate extends Task {
     }
 
     private boolean matches(String cnb) {
-        String dash = cnb.replace('.', '-');
         for (Modules ps : modules) {
-            if (ps.pattern.matcher(dash).matches()) {
+            if (ps.pattern.matcher(cnb).matches()) {
                 return true;
             }
         }
