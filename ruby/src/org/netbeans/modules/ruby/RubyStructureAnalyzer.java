@@ -1106,6 +1106,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
             }
             this.result = result;
             scan = scan(result);
+            result.setStructure(scan);
             cacheAnalysis(result, scan);
             return scan;
         } finally {
