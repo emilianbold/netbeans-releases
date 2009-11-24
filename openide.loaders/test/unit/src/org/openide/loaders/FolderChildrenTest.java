@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.util.*;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
@@ -68,6 +69,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
+import org.openide.nodes.NodeAdapter;
 import org.openide.nodes.NodeEvent;
 import org.openide.nodes.NodeListener;
 import org.openide.nodes.NodeMemberEvent;
@@ -763,6 +765,50 @@ public class FolderChildrenTest extends NbTestCase {
         fo1.setAttribute("position", 100);
         testNode.getChildren().getNodes(true);
         assertNotNull("Node " + childNode + " has a parent.", childNode.getParentNode());
+    }
+
+    /** #175220 - Tests that children keys are not changed when node and underlying
+     * data object are garbage collected. It caused collapsing of tree.
+     */
+    public void testNodeKeysNotChanged() throws Exception {
+        FileObject rootFolder = FileUtil.createMemoryFileSystem().getRoot();
+        FileObject fo1 = rootFolder.createData("file1.java");
+        assertNotNull(fo1);
+        FileObject fo2 = rootFolder.createData("file2.java");
+        DataObject do2 = DataObject.find(fo2);
+        assertNotNull(fo2);
+        Node folderNode = DataFolder.findFolder(rootFolder).getNodeDelegate();
+        final AtomicInteger removedEventCount = new AtomicInteger(0);
+        folderNode.addNodeListener(new NodeAdapter() {
+
+            @Override
+            public void childrenRemoved(NodeMemberEvent ev) {
+                removedEventCount.incrementAndGet();
+            }
+        });
+        // refresh children
+        folderNode.getChildren().getNodes(true);
+        Node childNode1 = folderNode.getChildren().getNodeAt(0);
+        assertNotNull(childNode1);
+        Node childNode2 = folderNode.getChildren().getNodeAt(1);
+        assertNotNull(childNode2);
+
+        // GC node 2
+        WeakReference<Node> ref = new WeakReference<Node>(childNode2);
+        childNode2 = null;
+        assertGC(null, ref);
+        // GC data object 2
+        WeakReference<DataObject> refDO = new WeakReference<DataObject>(do2);
+        do2 = null;
+        assertGC(null, refDO);
+
+        // add new data object
+        FileObject fo3 = rootFolder.createData("file3.java");
+        assertNotNull(fo3);
+        // refresh children
+        folderNode.getChildren().getNodes(true);
+        assertNotSame("Node 2 should not be the same when GC'd before.", childNode2, folderNode.getChildren().getNodeAt(1));
+        assertEquals("No node should be removed.", 0, removedEventCount.intValue());
     }
 
     public static final class VisQ implements VisibilityQueryImplementation, DataFilter.FileBased {

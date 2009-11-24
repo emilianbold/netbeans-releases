@@ -186,6 +186,7 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
         DataObjectPool.Item i = item;
         
         if (i != null) {
+            DataObjectPool.getPOOL().countRegistration(i.primaryFile);
             i.deregister (true);
             i.setDataObject(null);
             firePropertyChange (PROP_VALID, Boolean.TRUE, Boolean.FALSE);
@@ -620,6 +621,7 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
         invokeAtomicAction (getPrimaryFile (), new FileSystem.AtomicAction () {
                 public void run () throws IOException {
                     handleDelete ();
+                    DataObjectPool.getPOOL().countRegistration(item.primaryFile);
                     item.deregister(false);
                     item.setDataObject(null);
                 }
