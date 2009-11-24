@@ -7,10 +7,24 @@
 
         <autoupdate
             updatecenter="${url}"
-            netbeansdestdir="${target}"
+            installdir="${target}"
         >
             <modules includes="${includes}"/>
         </autoupdate>
         
+    </target>
+
+    <target name="cluster">
+        <echo message="${root}"/>
+
+        <taskdef classname="org.netbeans.nbbuild.AutoUpdate" name="autoupdate" classpath="${nb_all}/nbbuild/nbantext.jar"/>
+
+        <autoupdate
+            updatecenter="${url}"
+            todir="${target}"
+        >
+            <modules includes="${includes}"/>
+        </autoupdate>
+
     </target>
 </project>

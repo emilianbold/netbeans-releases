@@ -173,7 +173,7 @@ made subject to such option by the copyright holder.
         />
         <autoupdate
             updatecenter="${autoupdate.catalog.url}"
-            netbeansdestdir="${netbeans.dest.dir}"
+            todir="${cluster}"
         >
             <modules includes="${code.name.base}"/>
         </autoupdate>

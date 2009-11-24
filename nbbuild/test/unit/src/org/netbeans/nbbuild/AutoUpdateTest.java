@@ -105,19 +105,19 @@ public class AutoUpdateTest extends NbTestCase {
         File target = new File(getWorkDir(), "target");
         target.mkdirs();
         File m = new File(
-            new File(new File(target, "platform11"), "modules"),
+            new File(new File(target, "platformXY"), "modules"),
             "org-netbeans-api-annotations-common.jar"
         );
         m.getParentFile().mkdirs();
         m.createNewFile();
 
         File y = new File(
-            new File(new File(new File(target, "platform11"), "config"), "Modules"),
+            new File(new File(new File(target, "platformXY"), "config"), "Modules"),
             "org-netbeans-api-annotations-common.xml"
         );
         y.getParentFile().mkdirs();
         File x = new File(
-            new File(new File(target, "platform11"), "update_tracking"),
+            new File(new File(target, "platformXY"), "update_tracking"),
             "org-netbeans-api-annotations-common.xml"
         );
         y.createNewFile();
@@ -141,17 +141,17 @@ public class AutoUpdateTest extends NbTestCase {
         PublicPackagesInProjectizedXMLTest.execute(
             "autoupdate.xml", "-verbose", "-Durl=" + f.toURI().toURL(),
             "-Dincludes=org.netbeans.api.annotations.common",
-            "-Dtarget=" + target
+            "-Dtarget=" + target + File.separator + "platformXY", "cluster"
         );
 
         File xml = new File(
-            new File(new File(new File(target, "platform11"), "config"), "Modules"),
+            new File(new File(new File(target, "platformXY"), "config"), "Modules"),
             "org-netbeans-api-annotations-common.xml"
         );
         assertTrue("xml file created:\n" + PublicPackagesInProjectizedXMLTest.getStdOut(), xml.exists());
 
         File jar = new File(
-            new File(new File(target, "platform11"), "modules"),
+            new File(new File(target, "platformXY"), "modules"),
             "org-netbeans-api-annotations-common.jar"
         );
         assertTrue("jar file created", jar.exists());

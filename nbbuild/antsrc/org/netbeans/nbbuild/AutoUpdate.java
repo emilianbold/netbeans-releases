@@ -75,14 +75,19 @@ import org.xml.sax.helpers.DefaultHandler;
 public class AutoUpdate extends Task {
     private List<Modules> modules = new ArrayList<Modules>();
     private File dir;
+    private File cluster;
     private URL catalog;
 
     public void setUpdateCenter(URL u) {
         catalog = u;
     }
 
-    public void setNetBeansDestDir(File dir) {
+    public void setInstallDir(File dir) {
         this.dir = dir;
+    }
+
+    public void setToDir(File dir) {
+        this.cluster = dir;
     }
 
     public Modules createModules() {
@@ -93,12 +98,21 @@ public class AutoUpdate extends Task {
 
     @Override
     public void execute() throws BuildException {
-        File[] arr = dir == null ? null : dir.listFiles();
-        if (arr == null) {
-            throw new BuildException("netbeans.dest.dir must be existing directory: " + dir);
+        if ((dir != null) == (cluster != null)) {
+            throw new BuildException("Specify either todir or installdir");
         }
 
-        Map<String,List<String>> installed = findExistingModules(dir);
+        Map<String,List<String>> installed;
+        if (dir != null) {
+            File[] arr = dir.listFiles();
+            if (arr == null) {
+                throw new BuildException("installdir must be existing directory: " + dir);
+            }
+            installed = findExistingModules(arr);
+        } else {
+            installed = findExistingModules(cluster);
+        }
+
 
         // no userdir
         Map<String, ModuleItem> units = AutoUpdateCatalogParser.getUpdateItems(catalog, catalog, this);
@@ -133,19 +147,19 @@ public class AutoUpdate extends Task {
                 get.setVerbose(true);
                 get.execute();
 
-                File cluster = new File(dir, uu.targetcluster);
-                cluster.mkdirs();
-                lastM = new File(cluster, ".lastModified");
+                File whereTo = dir != null ? new File(dir, uu.targetcluster) : cluster;
+                whereTo.mkdirs();
+                lastM = new File(whereTo, ".lastModified");
                 lastM.createNewFile();
 
                 if (info != null) {
                     for (int i = 1; i < info.size(); i++) {
-                        File oldFile = new File(cluster, info.get(i).replace('/', File.separatorChar));
+                        File oldFile = new File(whereTo, info.get(i).replace('/', File.separatorChar));
                         oldFile.delete();
                     }
                 }
 
-                File tracking = new File(new File(cluster, "update_tracking"), dash + ".xml");
+                File tracking = new File(new File(whereTo, "update_tracking"), dash + ".xml");
                 tracking.getParentFile().mkdirs();
                 OutputStream config = new BufferedOutputStream(new FileOutputStream(tracking));
                 config.write(("<?xml version='1.0' encoding='UTF-8'?>\n" +
@@ -164,7 +178,7 @@ public class AutoUpdate extends Task {
                         continue;
                     }
                     final String relName = zipEntry.getName().substring(9);
-                    File trgt = new File(cluster, relName.replace('/', File.separatorChar));
+                    File trgt = new File(whereTo, relName.replace('/', File.separatorChar));
                     trgt.getParentFile().mkdirs();
                     log("Writing " + trgt, Project.MSG_VERBOSE);
 
@@ -207,10 +221,10 @@ public class AutoUpdate extends Task {
         return false;
     }
 
-    private Map<String,List<String>> findExistingModules(File dir) {
+    private Map<String,List<String>> findExistingModules(File... clusters) {
         Map<String,List<String>> all = new HashMap<String, List<String>>();
-        for (File cluster : dir.listFiles()) {
-            File mc = new File(cluster, "update_tracking");
+        for (File c : clusters) {
+            File mc = new File(c, "update_tracking");
             final File[] arr = mc.listFiles();
             if (arr == null) {
                 continue;
