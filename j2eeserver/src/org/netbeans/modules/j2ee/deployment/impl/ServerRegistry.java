@@ -414,73 +414,76 @@ public final class ServerRegistry implements java.io.Serializable {
      * @return <code>true</code> if the server instance was created successfully,
      *             <code>false</code> otherwise.
      */
-    private synchronized void addInstanceImpl(String url, String username,
-            String password, String displayName, boolean withoutUI, 
+    private void addInstanceImpl(String url, String username,
+            String password, String displayName, boolean withoutUI,
             Map<String, String> initialProperties, boolean loadPlugins) throws InstanceCreationException {
-        if (instancesMap().containsKey(url)) {
-            throw new InstanceCreationException("already exists");
-        }
 
-        LOGGER.log(Level.FINE, "Registering instance {0}", url);
+        synchronized (this) {
+            if (instancesMap().containsKey(url)) {
+                throw new InstanceCreationException("already exists");
+            }
 
-        Map<String, String> properties = cleanInitialProperties(initialProperties);
+            LOGGER.log(Level.FINE, "Registering instance {0}", url);
 
-        Collection serversMap = serversMap().values();
-        for (Iterator i = serversMap.iterator(); i.hasNext();) {
-            Server server = (Server) i.next();
-            try {
-                if(server.handlesUri(url)) {
-                    ServerInstance tmp = new ServerInstance(server,url);
-                    // PENDING persist url/password in ServerString as well
-                    instancesMap().put(url,tmp);
-                    // try to create a disconnected deployment manager to see
-                    // whether the instance is not corrupted - see #46929
-                    writeInstanceToFile(url,username,password);
-                    tmp.getInstanceProperties().setProperty(
-                            InstanceProperties.REGISTERED_WITHOUT_UI, Boolean.toString(withoutUI));
-                    if (displayName != null) {
+            Map<String, String> properties = cleanInitialProperties(initialProperties);
+
+            Collection serversMap = serversMap().values();
+            for (Iterator i = serversMap.iterator(); i.hasNext();) {
+                Server server = (Server) i.next();
+                try {
+                    if (server.handlesUri(url)) {
+                        ServerInstance tmp = new ServerInstance(server, url);
+                        // PENDING persist url/password in ServerString as well
+                        instancesMap().put(url, tmp);
+                        // try to create a disconnected deployment manager to see
+                        // whether the instance is not corrupted - see #46929
+                        writeInstanceToFile(url, username, password);
                         tmp.getInstanceProperties().setProperty(
-                           InstanceProperties.DISPLAY_NAME_ATTR, displayName);
-                    }
+                                InstanceProperties.REGISTERED_WITHOUT_UI, Boolean.toString(withoutUI));
+                        if (displayName != null) {
+                            tmp.getInstanceProperties().setProperty(
+                                    InstanceProperties.DISPLAY_NAME_ATTR, displayName);
+                        }
 
-                    for (Map.Entry<String, String> entry : properties.entrySet()) {
-                        tmp.getInstanceProperties().setProperty(entry.getKey(), entry.getValue());
-                    }
+                        for (Map.Entry<String, String> entry : properties.entrySet()) {
+                            tmp.getInstanceProperties().setProperty(entry.getKey(), entry.getValue());
+                        }
 
-                    DeploymentManager manager = server.getDisconnectedDeploymentManager(url);
-                    // FIXME this shouldn't be called in synchronized block
-                    if (manager != null) {
-                        fireInstanceListeners(url, true);
-                        return; //  true;
-                    } else {
+                        DeploymentManager manager = server.getDisconnectedDeploymentManager(url);
+                        // FIXME this shouldn't be called in synchronized block
+                        if (manager != null) {
+                            fireInstanceListeners(url, true);
+                            return; //  true;
+                        } else {
+                            removeInstanceFromFile(url);
+                            instancesMap().remove(url);
+                        }
+                    }
+                } catch (Exception e) {
+                    if (instancesMap().containsKey(url)) {
                         removeInstanceFromFile(url);
                         instancesMap().remove(url);
                     }
+                    LOGGER.log(Level.INFO, null, e);
                 }
-            } catch (Exception e) {
-                if (instancesMap().containsKey(url)) {
-                    removeInstanceFromFile(url);
-                    instancesMap().remove(url);
-                }
-                LOGGER.log(Level.INFO, null, e);
             }
         }
 
         if (loadPlugins) {
-                // don't wait for FS event, try to load the plugin now
-                FileObject dir = FileUtil.getConfigFile(DIR_JSR88_PLUGINS);
-                if (dir != null) {
-                    for (FileObject fo : dir.getChildren()) {
-                        // if it is already registered this is noop
-                        addPlugin(fo);
-                    }
+            // don't wait for FS event, try to load the plugin now
+            FileObject dir = FileUtil.getConfigFile(DIR_JSR88_PLUGINS);
+            if (dir != null) {
+                for (FileObject fo : dir.getChildren()) {
+                    // if it is already registered this is noop
+                    addPlugin(fo);
                 }
+            }
 
-                addInstanceImpl(url, username, password, displayName, withoutUI, initialProperties, false);
-                return;
+            addInstanceImpl(url, username, password, displayName, withoutUI, initialProperties, false);
+            return;
         }
 
-        throw new InstanceCreationException(serversMap.size()+" handlers registered, no handlers for "+url);
+        throw new InstanceCreationException("No handlers for " + url);
     }
 
     private Map<String, String> cleanInitialProperties(Map<String, String> initialProperties) {
