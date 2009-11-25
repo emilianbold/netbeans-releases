@@ -270,9 +270,9 @@ public final class NbMavenProjectImpl implements Project {
                 return res.getProject();
             } else {
                 @SuppressWarnings("unchecked")
-                List<Exception> exc = res.getExceptions();
+                List<Throwable> exc = res.getExceptions();
                 //TODO how to report to the user?
-                for (Exception ex : exc) {
+                for (Throwable ex : exc) {
                     Logger.getLogger(NbMavenProjectImpl.class.getName()).log(Level.INFO, "Exception thrown while loading maven project at " + getProjectDirectory(), ex); //NOI18N
                 }
             }
