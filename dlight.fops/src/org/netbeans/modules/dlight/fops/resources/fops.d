@@ -1,4 +1,4 @@
-#!/usr/sbin/dtrace -sC
+#!/usr/sbin/dtrace -Cs
 #pragma D option quiet
 #pragma D option aggrate=200ms
 
