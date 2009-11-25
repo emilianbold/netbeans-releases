@@ -40,9 +40,9 @@
 package org.netbeans.modules.maven.embedder.exec;
 
 import java.util.Stack;
-import org.apache.maven.wagon.events.TransferEvent;
-import org.apache.maven.wagon.events.TransferListener;
-import org.apache.maven.wagon.resource.Resource;
+import org.apache.maven.repository.ArtifactTransferEvent;
+import org.apache.maven.repository.ArtifactTransferListener;
+import org.apache.maven.repository.ArtifactTransferResource;
 import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
 import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
@@ -52,7 +52,7 @@ import org.openide.util.NbBundle;
  *
  * @author mkleint
  */
-public class ProgressTransferListener implements TransferListener {
+public class ProgressTransferListener implements ArtifactTransferListener {
     
     private static ThreadLocal<Integer> lengthRef = new ThreadLocal<Integer>();
     private static ThreadLocal<Integer> countRef = new ThreadLocal<Integer>();
@@ -84,12 +84,12 @@ public class ProgressTransferListener implements TransferListener {
         pomCountRef.remove();
     }
 
-    private String getResourceName(Resource res) {
+    private String getResourceName(ArtifactTransferResource res) {
         int lastSlash = res.getName().lastIndexOf("/"); //NOI18N
         return lastSlash > -1 ? res.getName().substring(lastSlash + 1) : res.getName();
     }
     
-    public void transferInitiated(TransferEvent transferEvent) {
+    public void transferInitiated(ArtifactTransferEvent ate) {
         if (handleRef.get() == null || contribStackRef.get() == null) {
             //maybe log?
             return;
@@ -97,13 +97,13 @@ public class ProgressTransferListener implements TransferListener {
         assert handleRef.get() != null;
         assert contribStackRef.get() != null;
         
-        Resource res = transferEvent.getResource();
+        ArtifactTransferResource res = ate.getResource();
         String resName = getResourceName(res);
         if (!resName.endsWith(".pom")) { //NOI18N
             Stack<ProgressContributor> stack = contribStackRef.get();
             ProgressContributor pc = stack != null && !stack.empty() ? stack.pop() : null;
             if (pc == null) {
-                String name = (transferEvent.getRequestType() == TransferEvent.REQUEST_GET
+                String name = (ate.getRequestType() == ArtifactTransferEvent.REQUEST_GET
                         ? NbBundle.getMessage(ProgressTransferListener.class, "TXT_Download", resName)
                         : NbBundle.getMessage(ProgressTransferListener.class, "TXT_Uploading", resName));
                 pc = AggregateProgressFactory.createProgressContributor(name);
@@ -111,7 +111,7 @@ public class ProgressTransferListener implements TransferListener {
             }
             contribRef.set(pc);
         } else {
-            String name = (transferEvent.getRequestType() == TransferEvent.REQUEST_GET
+            String name = (ate.getRequestType() == ArtifactTransferEvent.REQUEST_GET
                     ? NbBundle.getMessage(ProgressTransferListener.class, "TXT_Download", resName)
                     : NbBundle.getMessage(ProgressTransferListener.class, "TXT_Uploading", resName));
             ProgressContributor pc = AggregateProgressFactory.createProgressContributor(name);
@@ -128,14 +128,14 @@ public class ProgressTransferListener implements TransferListener {
         }
     }
     
-    public void transferStarted(TransferEvent transferEvent) {
+    public void transferStarted(ArtifactTransferEvent ate) {
 //        String smer = transferEvent.getRequestType() == TransferEvent.REQUEST_GET ?
 //                              "Downloading: " : "Uploading: "; //NOI18N - ends up in the maven output.
 //        System.out.println(smer + transferEvent.getWagon().getRepository().getUrl() + "/" + transferEvent.getResource().getName()); //NOI18N
         if (contribRef.get() == null || handleRef.get() == null) {
             return;
         }
-        Resource res = transferEvent.getResource();
+        ArtifactTransferResource res = ate.getResource();
         int total = (int)Math.min((long)Integer.MAX_VALUE, res.getContentLength());
         if (total < 0) {
             contribRef.get().start(0);
@@ -147,25 +147,25 @@ public class ProgressTransferListener implements TransferListener {
         contribRef.get().progress(NbBundle.getMessage(ProgressTransferListener.class, "TXT_Started", getResourceName(res)));
     }
     
-    public void transferProgress(TransferEvent transferEvent, byte[] b, int i) {
+    public void transferProgress(ArtifactTransferEvent ate) {
         if (contribRef.get() == null) {
             return;
         }
         long cnt = (long)countRef.get();
-        if (i > 0) {
-            cnt = cnt + i;
+        if (ate.getDataLength() > 0) {
+            cnt = cnt + ate.getDataLength();
         }
         cnt = Math.min((long)Integer.MAX_VALUE, cnt);
         if (lengthRef.get() < 0) {
-            contribRef.get().progress(NbBundle.getMessage(ProgressTransferListener.class, "TXT_Transferring", getResourceName(transferEvent.getResource())));
+            contribRef.get().progress(NbBundle.getMessage(ProgressTransferListener.class, "TXT_Transferring", getResourceName(ate.getResource())));
         } else {
             cnt = Math.min(cnt, (long)lengthRef.get());
-            contribRef.get().progress(NbBundle.getMessage(ProgressTransferListener.class, "TXT_Transferred", getResourceName(transferEvent.getResource()), cnt), (int)cnt);
+            contribRef.get().progress(NbBundle.getMessage(ProgressTransferListener.class, "TXT_Transferred", getResourceName(ate.getResource()), cnt), (int)cnt);
         }
         countRef.set((int)cnt);
     }
     
-    public void transferCompleted(TransferEvent transferEvent) {
+    public void transferCompleted(ArtifactTransferEvent ate) {
         if (contribRef.get() == null) {
             return;
         }
@@ -173,12 +173,12 @@ public class ProgressTransferListener implements TransferListener {
         contribRef.remove();
     }
     
-    public void transferError(TransferEvent transferEvent) {
-        transferCompleted(transferEvent);
-        //TODO some reporting??
+    public boolean isShowChecksumEvents() {
+        return false;
     }
-    
-    public void debug(String string) {
+
+    public void setShowChecksumEvents(boolean bln) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
-    
+
 }
