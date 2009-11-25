@@ -164,7 +164,7 @@ public abstract class XmlMultiViewDataSynchronizer {
                         return;
                     } 
                 }
-                updateTask.schedule(dataObject.isModified() ? updateDelay : 1);
+                updateTask.schedule(updateDelay);
             }
         }
     }
