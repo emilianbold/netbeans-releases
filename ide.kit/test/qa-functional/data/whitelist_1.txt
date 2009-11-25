@@ -5487,4 +5487,8 @@ org.netbeans.core.nativeaccess.transparency.unix.X11$Xrender
 org.netbeans.core.nativeaccess.transparency.unix.X11$Xrender$PictFormat
 org.netbeans.core.nativeaccess.transparency.unix.X11$Xrender$XRenderDirectFormat
 org.netbeans.core.nativeaccess.transparency.unix.X11$Xrender$XRenderPictFormat
+org.netbeans.modules.maven.ModInstall
+org.netbeans.modules.maven.ModInstall$OpenProjectsListener
+org.netbeans.modules.maven.cos.CopyResourcesOnSave
+org.netbeans.modules.maven.indexer.Installer
 
