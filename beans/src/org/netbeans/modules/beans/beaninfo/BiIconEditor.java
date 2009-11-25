@@ -172,7 +172,7 @@ final class BiIconEditor extends PropertyEditorSupport implements ExPropertyEdit
     @Override
     public String getAsText() {
         Object val = getValue();        
-        return textFromIcon((BiImageIcon) val);
+        return String.valueOf(textFromIcon((BiImageIcon) val));
     }
     
     /**
@@ -199,10 +199,11 @@ final class BiIconEditor extends PropertyEditorSupport implements ExPropertyEdit
             // For now choosing doing nothing
         }
     }
-    
+
+    /** translates icon object to text representation; null in case of undefined icon */
     String textFromIcon(BiImageIcon icon) {
         return icon == null
-                ? "null" // NOI18N
+                ? null
                 : icon.getName();
     }
     
