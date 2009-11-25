@@ -699,12 +699,13 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         ProgressTransferListener.setAggregateHandle(hndl);
         try {
             hndl.start();
-            try {
-                WagonManager wagon = online.getPlexusContainer().lookup(WagonManager.class);
-                wagon.setDownloadMonitor(new ProgressTransferListener());
-            } catch (ComponentLookupException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+//TODO how to rewrite to track progress?
+//            try {
+//                WagonManager wagon = online.getPlexusContainer().lookup(WagonManager.class);
+//                wagon.setDownloadMonitor(new ProgressTransferListener());
+//            } catch (ComponentLookupException ex) {
+//                Exceptions.printStackTrace(ex);
+//            }
             online.resolve(pom, repos, online.getLocalRepository());
             online.resolve(art, repos, online.getLocalRepository());
         } finally {
