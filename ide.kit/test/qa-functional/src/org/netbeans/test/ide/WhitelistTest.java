@@ -44,6 +44,8 @@ package org.netbeans.test.ide;
 import java.awt.EventQueue;
 import java.io.File;
 import java.lang.reflect.Method;
+import java.net.URISyntaxException;
+import java.net.URL;
 import junit.framework.Test;
 //import org.netbeans.api.java.source.ui.ScanDialog;
 import org.netbeans.api.project.Project;
@@ -88,8 +90,18 @@ public class WhitelistTest extends JellyTestCase {
         super(name);
     }
     
-    public static Test suite() {
-        
+    public static Test suite() throws URISyntaxException {
+       URL u = WhitelistTest.class.getProtectionDomain().getCodeSource().getLocation();
+        File f = new File(u.toURI());
+        while (f != null) {
+            File hg = new File(f, ".hg");
+            if (hg.isDirectory()) {
+                System.setProperty("versioning.unversionedFolders", f.getPath());
+                System.err.println("ignoring Hg folder: " + f);
+                break;
+            }
+            f = f.getParentFile();
+        }
         stage = Integer.getInteger("test.whitelist.stage", 1);
         
         initBlacklistedClassesHandler();
