@@ -778,6 +778,7 @@ javax.swing.plaf.basic.BasicPanelUI
 javax.swing.plaf.basic.BasicPopupMenuUI
 javax.swing.plaf.basic.BasicRadioButtonMenuItemUI
 javax.swing.plaf.basic.BasicScrollPaneUI
+javax.swing.plaf.basic.BasicTextAreaUI
 javax.swing.plaf.basic.BasicTextUI
 javax.swing.plaf.basic.BasicToolBarSeparatorUI
 javax.swing.plaf.basic.BasicViewportUI
@@ -1098,6 +1099,9 @@ org.netbeans.api.project.ui.OpenProjects
 org.netbeans.api.project.ui.OpenProjectsListener
 org.netbeans.api.queries.FileBuiltQuery$Status
 org.netbeans.api.queries.SharabilityQuery
+org.netbeans.api.queries.VisibilityQuery
+org.netbeans.api.queries.VisibilityQuery$ResultListener
+org.netbeans.api.queries.VisibilityQuery$VqiChangedListener
 org.netbeans.api.ruby.platform.RubyInstallation
 org.netbeans.api.sendopts.CommandException
 org.netbeans.api.sendopts.CommandLine
@@ -2206,6 +2210,8 @@ org.netbeans.lib.profiler.ui.monitor.SurvivingGenerationsXYChartModel
 org.netbeans.lib.profiler.ui.monitor.ThreadsXYChartModel
 org.netbeans.lib.profiler.ui.monitor.VMTelemetryXYChartModel
 org.netbeans.lib.profiler.utils.Bundle
+org.netbeans.lib.profiler.utils.Bundle_cs
+org.netbeans.lib.profiler.utils.Bundle_cs_CZ
 org.netbeans.lib.profiler.utils.Bundle_en
 org.netbeans.lib.profiler.utils.Bundle_en_US
 org.netbeans.lib.profiler.utils.Bundle_es
@@ -2681,6 +2687,7 @@ org.netbeans.modules.editor.lib.NavigationHistory$Waypoint
 org.netbeans.modules.editor.lib.SettingsConversions
 org.netbeans.modules.editor.lib2.DocUtils
 org.netbeans.modules.editor.lib2.EditorApiPackageAccessor
+org.netbeans.modules.editor.lib2.actions.SearchableEditorKit
 org.netbeans.modules.editor.lib2.codegen.ContextProviderClass2LayerFolder
 org.netbeans.modules.editor.lib2.codegen.GeneratorFactoryClass2LayerFolder
 org.netbeans.modules.editor.lib2.highlighting.AbstractOffsetGapList
@@ -3222,6 +3229,7 @@ org.netbeans.modules.localhistory.LocalHistorySettings
 org.netbeans.modules.localhistory.LocalHistoryVCS
 org.netbeans.modules.localhistory.LocalHistoryVCSAnnotator
 org.netbeans.modules.localhistory.LocalHistoryVCSInterceptor
+org.netbeans.modules.localhistory.LocalHistory$OpenedFilesListener
 org.netbeans.modules.localhistory.ModuleLifecycleManager
 org.netbeans.modules.localhistory.store.LocalHistoryStore
 org.netbeans.modules.localhistory.store.LocalHistoryStoreFactory
@@ -3544,6 +3552,7 @@ org.netbeans.modules.project.libraries.LibraryDeclarationHandlerImpl
 org.netbeans.modules.project.libraries.LibraryDeclarationParser
 org.netbeans.modules.project.libraries.LibraryTypeRegistry
 org.netbeans.modules.project.libraries.WritableLibraryProvider
+org.netbeans.modules.project.libraries.ui.LibrariesCustomizer
 org.netbeans.modules.project.libraries.ui.LibrariesCustomizerAction
 org.netbeans.modules.project.ui.Hacks
 org.netbeans.modules.project.ui.NewFileWizard
@@ -5437,5 +5446,16 @@ org.netbeans.modules.uihandler.SlownessData
 org.netbeans.modules.uihandler.SlownessReporter
 org.netbeans.modules.openide.text.Installer
 org.netbeans.modules.openide.util.ProxyURLStreamHandlerFactory
-
+org.netbeans.modules.parsing.impl.indexing.BinaryPathNotifier
+org.netbeans.modules.parsing.impl.indexing.BinaryPathNotifier$FL
+org.netbeans.modules.parsing.impl.indexing.FileEventLog
+org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater$FSRefreshInterceptor
+org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater$LexicographicComparator
+org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingActivityInterceptor
+org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingActivityInterceptor$Authorization
+com.sun.jna.Structure$ByReference
+org.netbeans.core.nativeaccess.transparency.unix.X11$Xrender
+org.netbeans.core.nativeaccess.transparency.unix.X11$Xrender$PictFormat
+org.netbeans.core.nativeaccess.transparency.unix.X11$Xrender$XRenderDirectFormat
+org.netbeans.core.nativeaccess.transparency.unix.X11$Xrender$XRenderPictFormat
 
