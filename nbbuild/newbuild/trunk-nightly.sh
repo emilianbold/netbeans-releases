@@ -19,7 +19,7 @@ if [ ! -z $WORKSPACE ]; then
         #Clone also javafx sources - XXX needs to be parametrized
         cd $NB_ALL
         hg clone http://hg.netbeans.org/javafx
-        hg up -C -r release68
+        hg up -C -r release68 -R $NB_ALL/javafx
     fi
 fi
 
