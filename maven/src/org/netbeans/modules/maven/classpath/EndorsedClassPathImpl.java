@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.maven.classpath;
 
-import hidden.org.codehaus.plexus.util.StringUtils;
+import org.codehaus.plexus.util.StringUtils;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
