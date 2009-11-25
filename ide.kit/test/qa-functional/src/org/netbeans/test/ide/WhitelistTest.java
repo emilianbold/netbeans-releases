@@ -108,7 +108,8 @@ public class WhitelistTest extends JellyTestCase {
         
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(
             WhitelistTest.class
-        ).clusters(".*").enableModules(".*").reuseUserDir(stage > 1);
+        ).clusters(".*").honorAutoloadEager(true).
+        enableModules(".*").reuseUserDir(stage > 1);
         
         conf = conf.addTest("testWhitelist" + stage);
         
