@@ -52,6 +52,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyEditorSupport;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -83,6 +84,7 @@ import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -211,21 +213,37 @@ final class BiIconEditor extends PropertyEditorSupport implements ExPropertyEdit
                 ii = null;
             }
             else {
-                ClassPath cp = ClassPath.getClassPath( sourceFileObject, ClassPath.SOURCE );                
-                string = string.charAt(0) != '/' ? string : string.substring(1);
-                FileObject res = cp.findResource(string);
-                if (res == null) {
-                    ii = new BiImageIcon(null, string);
-                } else {
-                    URL url = res.getURL();
-                    ii = new BiImageIcon(url, string);
-                }
+                URL res = resolveIconPath(string, sourceFileObject);
+                ii = new BiImageIcon(res, string);
             }
-        } catch (Throwable e) {
-            if (Boolean.getBoolean("netbeans.debug.exceptions")) e.printStackTrace(); // NOI18N
-            throw new IllegalArgumentException(e);
+        } catch (IOException ex) {
+            ii = new BiImageIcon(null, string);
         }
         return ii;
+    }
+
+    /**
+     * translates resource path defined in {@link java.beans.BeanInfo}'s subclass
+     * that complies with {@link Class#getResource(java.lang.String) Class.getResource} format
+     * to format complying with {@link ClassPath#getResourceName(org.openide.filesystems.FileObject) ClassPath.getResourceName}
+     * @param resourcePath absolute path or path relative to package of BeanInfo's subclass
+     * @param beanInfo BeanInfo's subclass
+     * @return path as URL
+     * @throws FileStateInvalidException invalid FileObject
+     * @throws FileNotFoundException resource cannot be found
+     */
+    private static URL resolveIconPath(String resourcePath, FileObject beanInfo)
+            throws FileStateInvalidException, FileNotFoundException {
+        ClassPath cp = ClassPath.getClassPath(beanInfo, ClassPath.SOURCE);
+        String path = resourcePath.charAt(0) != '/'
+                ? '/' + cp.getResourceName(beanInfo.getParent()) + '/' + resourcePath
+                : resourcePath;
+        FileObject res = cp.findResource(path);
+        if (res != null && res.canRead() && res.isData()) {
+            return res.getURL();
+        } else {
+            throw new FileNotFoundException(path);
+        }
     }
     
     /**
@@ -497,16 +515,17 @@ final class BiIconEditor extends PropertyEditorSupport implements ExPropertyEdit
         private Object getPropertyValue(PropertyChangeEvent evt) throws PropertyVetoException {
             BiImageIcon ii = null;
             String s = tfName.getText().trim();
-            if (rbClasspath.isSelected() && s.length() != 0 ) {                    
-                ClassPath cp = ClassPath.getClassPath( editor.sourceFileObject, ClassPath.SOURCE );
-                String path = s.charAt(0) != '/' ? s : s.substring(1);
-                FileObject f = cp.findResource( path );
+            if (rbClasspath.isSelected() && s.length() != 0) {
                 try{
-                    ii = new BiImageIcon(f.getURL(), path);
-                }
-                catch(java.lang.Throwable t){
+                    URL res = resolveIconPath(s, editor.sourceFileObject);
+                    ii = new BiImageIcon(res, s);
+                } catch (FileStateInvalidException ex) {
                     throw new PropertyVetoException(
-                            NbBundle.getMessage(IconPanel.class, "CTL_Icon_not_exists", s), //NOI18N
+                            NbBundle.getMessage(IconPanel.class, "CTL_Icon_not_exists", ex.getFileSystemName()), //NOI18N
+                            evt);
+                } catch (FileNotFoundException ex) {
+                    throw new PropertyVetoException(
+                            NbBundle.getMessage(IconPanel.class, "CTL_Icon_not_exists", ex.getMessage()), //NOI18N
                             evt);
                 }
             }
