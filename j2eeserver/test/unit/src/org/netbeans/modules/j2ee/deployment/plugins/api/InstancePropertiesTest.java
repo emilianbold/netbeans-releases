@@ -139,7 +139,7 @@ public class InstancePropertiesTest extends ServerRegistryTestBase {
         }
     }
 
-    public void testCreateInstanceWithoutFSEvents() throws InstanceCreationException, IOException {
+    public void testCreatePropertiesWithoutFSEvents() throws InstanceCreationException, IOException {
         final String url = "unknown:CreateInstanceWithoutUI";
         final Map<String, String> expected = new HashMap<String, String>();
         expected.put(InstanceProperties.URL_ATTR, url);
@@ -154,13 +154,16 @@ public class InstancePropertiesTest extends ServerRegistryTestBase {
         } catch (InstanceCreationException ex) {
             // expected
         }
-        
+
         FileUtil.runAtomicAction(new AtomicAction() {
 
           public void run() throws IOException {
-                    FileObject folder = FileUtil.createFolder(FileUtil.getConfigFile(ServerRegistry.DIR_JSR88_PLUGINS), "Unknown");
+                    FileObject folder = FileUtil.createFolder(
+                            FileUtil.getConfigFile(ServerRegistry.DIR_JSR88_PLUGINS), "Unknown");
                     FileObject fo = folder.createData("Descriptor");
-                    InputStream is = new ByteArrayInputStream("<?xml version=\"1.0\"?><netbeans-deployment></netbeans-deployment>".getBytes());
+                    InputStream is = new ByteArrayInputStream(
+                            ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+                            + "<netbeans-deployment></netbeans-deployment>").getBytes("UTF-8"));
                     try {
                         OutputStream os = fo.getOutputStream();
                         try {
@@ -171,33 +174,32 @@ public class InstancePropertiesTest extends ServerRegistryTestBase {
                     } finally {
                         is.close();
                     }
-                    
+
                     fo = folder.createData("Factory", "instance");
-                    //   <attr name="instanceClass" stringvalue="org.netbeans.tests.j2eeserver.plugin.jsr88.TestDeploymentFactory"/>
-                    fo.setAttribute("instanceClass", "org.netbeans.modules.j2ee.deployment.plugins.api.InstancepropertiesTest.MockDF");
-                    fo.setAttribute("instanceOf", "import javax.enterprise.deploy.spi.factories.DeploymentFactory");
-                    fo.setAttribute("instanceCreate", new MockDF());
+                    fo.setAttribute("instanceClass",
+                            "org.netbeans.modules.j2ee.deployment.plugins.api.InstancepropertiesTest.MockDF");
+                    fo.setAttribute("instanceOf",
+                            "import javax.enterprise.deploy.spi.factories.DeploymentFactory");
+                    fo.setAttribute("instanceCreate",
+                            new MockDF());
 
                     InstanceProperties props = InstanceProperties.createInstancePropertiesWithoutUI(
-                            url, TEST_USERNAME, TEST_PASSWORD, TEST_DISPLAY_NAME,expected);
-
+                            url, TEST_USERNAME, TEST_PASSWORD, TEST_DISPLAY_NAME, expected);
             }
-
         });
-    }
-
-    static class MockDF extends org.netbeans.tests.j2eeserver.plugin.jsr88.TestDeploymentFactory {
-
-        @Override
-        public boolean handlesURI(String arg0) {
-            return arg0.startsWith("unknown:");
-        }
-
     }
 
     private static void assertPropertiesEquals(Map<String, String> expected, InstanceProperties props) {
         for (Map.Entry<String, String> entry : expected.entrySet()) {
             assertEquals(entry.getValue(), props.getProperty(entry.getKey()));
+        }
+    }
+
+    private static class MockDF extends org.netbeans.tests.j2eeserver.plugin.jsr88.TestDeploymentFactory {
+
+        @Override
+        public boolean handlesURI(String arg0) {
+            return arg0.startsWith("unknown:");
         }
     }
 
