@@ -44,6 +44,8 @@ package org.netbeans.test.ide;
 import java.awt.EventQueue;
 import java.io.File;
 import java.lang.reflect.Method;
+import java.net.URISyntaxException;
+import java.net.URL;
 import junit.framework.Test;
 //import org.netbeans.api.java.source.ui.ScanDialog;
 import org.netbeans.api.project.Project;
@@ -88,15 +90,26 @@ public class WhitelistTest extends JellyTestCase {
         super(name);
     }
     
-    public static Test suite() {
-        
+    public static Test suite() throws URISyntaxException {
+       URL u = WhitelistTest.class.getProtectionDomain().getCodeSource().getLocation();
+        File f = new File(u.toURI());
+        while (f != null) {
+            File hg = new File(f, ".hg");
+            if (hg.isDirectory()) {
+                System.setProperty("versioning.unversionedFolders", f.getPath());
+                System.err.println("ignoring Hg folder: " + f);
+                break;
+            }
+            f = f.getParentFile();
+        }
         stage = Integer.getInteger("test.whitelist.stage", 1);
         
         initBlacklistedClassesHandler();
         
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(
             WhitelistTest.class
-        ).clusters(".*").enableModules(".*").reuseUserDir(stage > 1);
+        ).clusters(".*").honorAutoloadEager(true).
+        enableModules(".*").reuseUserDir(stage > 1);
         
         conf = conf.addTest("testWhitelist" + stage);
         
@@ -144,7 +157,19 @@ public class WhitelistTest extends JellyTestCase {
         try {
             bcHandler.listViolations(getLog("whitelist_violators_" + stage + ".txt"), false);
             bcHandler.listViolations(getLog("report_" + stage + ".txt"), false, true);
-            assertTrue(bcHandler.reportViolations(getLog("violations_" + stage + ".xml")), bcHandler.noViolations());
+
+            int allowed = Integer.getInteger("allowed.violations", 0);
+            int number = bcHandler.getNumberOfViolations();
+            String txt = null;
+            if (number > 0) {
+                txt = bcHandler.reportViolations(getLog("violations_" + stage + ".xml"));
+            }
+            if (number > allowed) {
+                fail(
+                    "Too many violations. Allowed only " + allowed + ":\n" +
+                    txt
+                );
+            }
         } finally {
             bcHandler.unregister();
         }
