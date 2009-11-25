@@ -378,8 +378,7 @@ public final class OpenProjectList {
             URL mainProjectURL = OpenProjectListSettings.getInstance().getMainProjectURL();
             int max;
             synchronized (toOpenProjects) {
-                for( Iterator it = toOpenProjects.iterator(); it.hasNext(); ) {
-                    Project p = (Project)it.next();
+                for (Project p : toOpenProjects) {
                     INSTANCE.addModuleInfo(p);
                     // Set main project
                     try {
@@ -736,7 +735,7 @@ public final class OpenProjectList {
         boolean someClosed = false;
         List<Project> oldprjs = new ArrayList<Project>();
         List<Project> newprjs = new ArrayList<Project>();
-        List<Project> notifyList = new ArrayList<Project>();
+        final List<Project> notifyList = new ArrayList<Project>();
         synchronized ( this ) {
             oldprjs.addAll(openProjects);
             for( int i = 0; i < projects.length; i++ ) {
@@ -778,9 +777,13 @@ public final class OpenProjectList {
             }
         }
         //#125750 not necessary to call notifyClosed() under synchronized lock.
-        for (Project closed : notifyList) {
-            notifyClosed( closed );
-        }
+        OPENING_RP.post(new Runnable() { // #177427 - this can be slow, better to do asynch
+            public void run() {
+                for (Project closed : notifyList) {
+                    notifyClosed(closed);
+                }
+            }
+        });
         logProjects("close(): openProjects == ", openProjects.toArray(new Project[0])); // NOI18N
         if ( someClosed ) {
             pchSupport.firePropertyChange( PROPERTY_OPEN_PROJECTS, 
@@ -822,8 +825,7 @@ public final class OpenProjectList {
     
     public synchronized boolean isOpen( Project p ) {
         // XXX shouldn't this just use openProjects.contains(p)?
-        for( Iterator it = openProjects.iterator(); it.hasNext(); ) {
-            Project cp = (Project)it.next();
+        for(Project cp : openProjects) {
             if ( p.getProjectDirectory().equals( cp.getProjectDirectory() ) ) { 
                 return true;
             }
@@ -980,9 +982,7 @@ public final class OpenProjectList {
     // Used from ProjectUiModule
     static void shutdown() {
         if (INSTANCE != null) {
-            Iterator it = INSTANCE.openProjects.iterator();
-            while (it.hasNext()) {
-                Project p = (Project)it.next();
+            for (Project p : INSTANCE.openProjects) {
                 notifyClosed(p);
             }
         }
@@ -1062,9 +1062,7 @@ public final class OpenProjectList {
     
     private static boolean notifyOpened(Project p) {
         boolean ok = true;
-        for (Iterator i = p.getLookup().lookupAll(ProjectOpenedHook.class).iterator(); i.hasNext(); ) {
-            ProjectOpenedHook hook = (ProjectOpenedHook) i.next();
-            
+        for (ProjectOpenedHook hook : p.getLookup().lookupAll(ProjectOpenedHook.class)) {
             try {
                 ProjectOpenedTrampoline.DEFAULT.projectOpened(hook);
             } catch (RuntimeException e) {
@@ -1084,9 +1082,7 @@ public final class OpenProjectList {
     }
     
     private static void notifyClosed(Project p) {
-        for (Iterator i = p.getLookup().lookupAll(ProjectOpenedHook.class).iterator(); i.hasNext(); ) {
-            ProjectOpenedHook hook = (ProjectOpenedHook) i.next();
-            
+        for (ProjectOpenedHook hook : p.getLookup().lookupAll(ProjectOpenedHook.class)) {
             try {
                 ProjectOpenedTrampoline.DEFAULT.projectClosed(hook);
             } catch (RuntimeException e) {
@@ -1156,8 +1152,8 @@ public final class OpenProjectList {
         OpenProjectListSettings.getInstance().setOpenProjectsURLs( URLs );
         List<String> names = new ArrayList<String>();
         List<ExtIcon> icons = new ArrayList<ExtIcon>();
-        for (Iterator<Project> it = projects.iterator(); it.hasNext(); ) {
-            ProjectInformation prjInfo = ProjectUtils.getInformation(it.next());
+        for (Project p : projects) {
+            ProjectInformation prjInfo = ProjectUtils.getInformation(p);
             names.add(prjInfo.getDisplayName());
             ExtIcon extIcon = new ExtIcon();
             extIcon.setIcon(prjInfo.getIcon());
@@ -1236,10 +1232,8 @@ public final class OpenProjectList {
         Object o = primaryFile.getAttribute ("templateCategory"); // NOI18N
         if (o != null) {
             assert o instanceof String : primaryFile + " attr templateCategory = " + o;
-            Iterator categoriesIt = getCategories ((String)o).iterator ();
             boolean ok = false;
-            while (categoriesIt.hasNext ()) {
-                String category = (String)categoriesIt.next ();
+            for (String category : getCategories((String) o)) {
                 if (Arrays.asList (getRecommendedTypes (p)).contains (category)) {
                     ok = true;
                     break;
@@ -1398,8 +1392,7 @@ public final class OpenProjectList {
             List<Project> result = new ArrayList<Project>( recentProjects.size() );
             // Copy the list
             List<ProjectReference> references = new ArrayList<ProjectReference>( recentProjects );
-            for ( Iterator<ProjectReference> it = references.iterator(); it.hasNext(); ) {
-                ProjectReference pRef = it.next(); 
+            for (ProjectReference pRef : references) {
                 Project p = pRef.getProject();
                 if ( p == null || !p.getProjectDirectory().isValid() ) {
                     remove( p );        // Folder does not exist any more => remove from
@@ -1433,15 +1426,17 @@ public final class OpenProjectList {
                 log(Level.FINE, "recent project list load: " + URLs);
             }
             recentProjects.clear();
-            for ( Iterator it = URLs.iterator(); it.hasNext(); ) {
-                recentProjects.add( new ProjectReference( (URL)it.next() ) );
+            for (URL url : URLs) {
+                recentProjects.add(new ProjectReference(url));
             }
             recentProjectsInfos.clear();
-            for (Iterator iterNames = names.iterator(), iterURLs = URLs.iterator(), iterIcons = icons.iterator(); 
-                    (iterNames.hasNext() && iterURLs.hasNext() && iterIcons.hasNext()); ) {
-                String name = (String) iterNames.next();
-                URL url = (URL) iterURLs.next();
-                Icon icon = ((ExtIcon) iterIcons.next()).getIcon();
+            Iterator<String> iterNames = names.iterator();
+            Iterator<URL> iterURLs = URLs.iterator();
+            Iterator<ExtIcon> iterIcons = icons.iterator();
+            while (iterNames.hasNext() && iterURLs.hasNext() && iterIcons.hasNext()) {
+                String name = iterNames.next();
+                URL url = iterURLs.next();
+                Icon icon = iterIcons.next().getIcon();
                 recentProjectsInfos.add(ProjectInfoAccessor.DEFAULT.getProjectInfo(name, icon, url));
             }
             // if following is true then there was either some problem with serialization
@@ -1476,8 +1471,7 @@ public final class OpenProjectList {
             int listSize = recentProjectsInfos.size();
             List<String> names = new ArrayList<String>(listSize);
             List<ExtIcon> icons = new ArrayList<ExtIcon>(listSize);
-            for (Iterator it = recentProjectsInfos.iterator(); it.hasNext(); ) {
-                UnloadedProjectInformation prjInfo = (UnloadedProjectInformation) it.next();
+            for (UnloadedProjectInformation prjInfo : recentProjectsInfos) {
                 names.add(prjInfo.getDisplayName());
                 ExtIcon extIcon = new ExtIcon();
                 extIcon.setIcon(prjInfo.getIcon());
@@ -1502,8 +1496,8 @@ public final class OpenProjectList {
             
             int i = 0;
             
-            for( Iterator it = recentProjects.iterator(); it.hasNext(); i++) {
-                URL p2URL = ((ProjectReference)it.next()).getURL();
+            for (ProjectReference pRef : recentProjects) {
+                URL p2URL = pRef.getURL();
                 if ( pURL.equals( p2URL ) ) {
                     return i;
                 }
