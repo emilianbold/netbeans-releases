@@ -32,6 +32,8 @@ org.netbeans.modules.cnd.debugger.common.EditorContext
 org.netbeans.modules.cnd.debugger.common.EditorContextBridge
 org.netbeans.modules.cnd.debugger.common.EditorContextImpl
 org.netbeans.modules.cnd.debugger.common.breakpoints.ToggleBreakpointActionProvider
+org.netbeans.modules.debugger.jpda.projects.EditorContextImpl$SessionsListener
+org.netbeans.modules.debugger.jpda.projects.EditorContextImpl$SessionsListenerRemoval
 
 com.sun.java.swing.plaf.windows.WindowsButtonUI
 com.sun.java.swing.plaf.windows.WindowsCheckBoxMenuItemUI
