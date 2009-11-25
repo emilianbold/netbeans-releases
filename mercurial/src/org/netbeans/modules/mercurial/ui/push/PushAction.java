@@ -71,8 +71,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.FileObject;
 import static org.netbeans.modules.mercurial.util.HgUtils.isNullOrEmpty;
 
 /**
@@ -112,6 +110,7 @@ public class PushAction extends ContextAction {
         }
         push(context, repository);
     }
+    @Override
     public boolean isEnabled() {
         Set<File> ctxFiles = context != null? context.getRootFiles(): null;
         if(!HgUtils.isFromHgRepository(context) || ctxFiles == null || ctxFiles.size() == 0)
