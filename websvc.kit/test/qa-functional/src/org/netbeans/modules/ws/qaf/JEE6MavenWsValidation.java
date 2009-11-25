@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,76 +34,48 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.ws.qaf;
 
-import java.io.IOException;
 import junit.framework.Test;
-import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.modules.ws.qaf.WebServicesTestBase.ProjectType;
 
 /**
  *
- * @author jp154641
+ * @author lukas
  */
-public class AppClientWsValidation extends EjbWsValidation {
+public class JEE6MavenWsValidation extends MavenWsValidation {
 
-    public AppClientWsValidation(String name) {
+    public JEE6MavenWsValidation(String name) {
         super(name);
     }
 
     @Override
-    public void setUp() throws Exception {
-        super.setUp();
-        assertServerRunning();
-    }
-
-    @Override
-    protected ProjectType getProjectType() {
-        return ProjectType.APPCLIENT;
-    }
-
-    @Override
-    protected String getWsClientProjectName() {
-        return "WsClientInAppClient"; //NOI18N
+    protected JavaEEVersion getJavaEEversion() {
+        return JavaEEVersion.JAVAEE6;
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(AppClientWsValidation.class),
+        return NbModuleSuite.create(addServerTests(Server.GLASSFISH_V3, NbModuleSuite.createConfiguration(JEE6MavenWsValidation.class),
+                "testCreateNewWs",
+                "testAddOperation",
+                "testSetSOAP",
+                "testStartServer",
+                "testWsHandlers",
+                "testRunWsProject",
+                "testTestWS",
+// IZ# 175975              "testGenerateWrapper",
+// IZ# 175974              "testGenerateWSDL",
+//                "testRunWsProject",
                 "testCreateWsClient",
-                "testCallWsOperationInJavaMainClass",
+                "testCallWsOperationInServlet",
+                "testCallWsOperationInJSP",
                 "testCallWsOperationInJavaClass",
+                "testRefreshClient",
                 "testWsClientHandlers",
                 "testRunWsClientProject",
-                "testUndeployClientProject").enableModules(".*").clusters(".*"));
-    }
-
-    /**
-     * Tests Call Web Service Operation action in a servlet
-     */
-    public void testCallWsOperationInJavaMainClass() {
-        final EditorOperator eo = new EditorOperator("Main.java"); //NOI18N
-        eo.select("// TODO code application logic here"); //NOI18N
-        callWsOperation(eo, "myIntMethod", 18); //NOI18N
-        assertTrue("@WebServiceRef has not been found", eo.contains("@WebServiceRef")); //NOI18N
-        assertFalse("Lookup found", eo.contains(getWsClientLookupCall())); //NOI18N
-    }
-
-    /**
-     * Run project
-     * @throws java.io.IOException
-     */
-    public void testRunWsClientProject() throws IOException {
-        runProject(getProjectName());
-        OutputTabOperator oto = new OutputTabOperator(getProjectName());
-        assertTrue(oto.getText().indexOf("Result = []") > -1); //NOI18N
-        assertTrue(oto.getText().indexOf("BUILD SUCCESSFUL") > -1); //NOI18N
-    }
-
-    public void testUndeployClientProject() throws IOException {
-        undeployProject(getProjectName());
+                "testUndeployProjects",
+                "testStopServer").enableModules(".*").clusters(".*"));
     }
 }

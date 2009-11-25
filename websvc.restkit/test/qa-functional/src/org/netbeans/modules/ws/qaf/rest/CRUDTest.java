@@ -94,19 +94,12 @@ public class CRUDTest extends RestTestBase {
      * and deploy the project
      */
     public void testRfE() {
-        //Persistence
-        String persistenceLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.ui.resources.Bundle", "Templates/Persistence");
         if (!getProjectType().isAntBasedProject()) {
-            //Persistence Unit
-            String puLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.wizard.unit.Bundle", "Templates/Persistence/PersistenceUnit");
-            createNewFile(getProject(), persistenceLabel, puLabel);
-            WizardOperator wo = new WizardOperator(puLabel);
-            new JComboBoxOperator(wo, 1).selectItem(0);
-            wo.finish();
-            new Node(getProjectRootNode(), "Other Sources|src/main/resources|META-INF").expand();
-            new EventTool().waitNoEvent(2500);
+            createPU();
         }
         copyDBSchema();
+        //Persistence
+        String persistenceLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.ui.resources.Bundle", "Templates/Persistence");
         //Entity Classes from Database
         String fromDbLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.wizard.fromdb.Bundle", "Templates/Persistence/RelatedCMP");
         createNewFile(getProject(), persistenceLabel, fromDbLabel);
@@ -243,6 +236,22 @@ public class CRUDTest extends RestTestBase {
         String testRestActionName = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.projects.Bundle", "LBL_TestRestBeansAction_Name");
         Node n = getProjectType().isAntBasedProject() ? getProjectRootNode() : getRestNode();
         n.performPopupAction(testRestActionName);
+    }
+
+    protected void createPU() {
+        //Persistence
+        String category = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.ui.resources.Bundle", "Templates/Persistence");
+        //Persistence Unit
+        String puLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.wizard.unit.Bundle", "Templates/Persistence/PersistenceUnit");
+        createNewFile(getProject(), category, puLabel);
+        String title = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.unit.Bundle", "LBL_NewPersistenceUnit");
+        WizardOperator wo = new WizardOperator(title);
+        new JComboBoxOperator(wo, 1).selectItem(0); //NOI18N
+        wo.finish();
+        if (!getProjectType().isAntBasedProject()) {
+            new Node(getProjectRootNode(), "Other Sources|src/main/resources|META-INF").expand();
+            new EventTool().waitNoEvent(2500);
+        }
     }
 
     protected void copyDBSchema() {

@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,79 +37,52 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.ws.qaf;
 
-import java.io.IOException;
 import junit.framework.Test;
-import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.modules.ws.qaf.WebServicesTestBase.ProjectType;
 
 /**
+ *  Basic validation suite for web services support in the IDE
  *
- * @author jp154641
+ *  Duration of this test suite: aprox. 8min
+ *
+ * @author lukas.jungmann@sun.com
  */
-public class AppClientWsValidation extends EjbWsValidation {
+public class JEE6WsValidation extends WsValidation {
 
-    public AppClientWsValidation(String name) {
+    /** Creates a new instance of WsValidation */
+    public JEE6WsValidation(String name) {
         super(name);
     }
 
     @Override
-    public void setUp() throws Exception {
-        super.setUp();
-        assertServerRunning();
-    }
-
-    @Override
-    protected ProjectType getProjectType() {
-        return ProjectType.APPCLIENT;
-    }
-
-    @Override
-    protected String getWsClientProjectName() {
-        return "WsClientInAppClient"; //NOI18N
+    protected JavaEEVersion getJavaEEversion() {
+        return JavaEEVersion.JAVAEE6;
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(AppClientWsValidation.class),
+        return NbModuleSuite.create(addServerTests(Server.GLASSFISH_V3, NbModuleSuite.createConfiguration(JEE6WsValidation.class),
+                "testCreateNewWs",
+                "testAddOperation",
+                "testSetSOAP",
+                "testStartServer",
+                "testWsHandlers",
+                "testDeployWsProject",
+                "testTestWS",
+                "testGenerateWrapper",
+                "testGenerateWSDL",
+                "testDeployWsProject",
                 "testCreateWsClient",
-                "testCallWsOperationInJavaMainClass",
+                "testCallWsOperationInServlet",
+                "testCallWsOperationInJSP",
                 "testCallWsOperationInJavaClass",
+                "testRefreshClient",
                 "testWsClientHandlers",
-                "testRunWsClientProject",
-                "testUndeployClientProject").enableModules(".*").clusters(".*"));
+                "testDeployWsClientProject",
+                "testUndeployProjects",
+                "testStopServer").enableModules(".*").clusters(".*"));
     }
 
-    /**
-     * Tests Call Web Service Operation action in a servlet
-     */
-    public void testCallWsOperationInJavaMainClass() {
-        final EditorOperator eo = new EditorOperator("Main.java"); //NOI18N
-        eo.select("// TODO code application logic here"); //NOI18N
-        callWsOperation(eo, "myIntMethod", 18); //NOI18N
-        assertTrue("@WebServiceRef has not been found", eo.contains("@WebServiceRef")); //NOI18N
-        assertFalse("Lookup found", eo.contains(getWsClientLookupCall())); //NOI18N
-    }
-
-    /**
-     * Run project
-     * @throws java.io.IOException
-     */
-    public void testRunWsClientProject() throws IOException {
-        runProject(getProjectName());
-        OutputTabOperator oto = new OutputTabOperator(getProjectName());
-        assertTrue(oto.getText().indexOf("Result = []") > -1); //NOI18N
-        assertTrue(oto.getText().indexOf("BUILD SUCCESSFUL") > -1); //NOI18N
-    }
-
-    public void testUndeployClientProject() throws IOException {
-        undeployProject(getProjectName());
-    }
 }

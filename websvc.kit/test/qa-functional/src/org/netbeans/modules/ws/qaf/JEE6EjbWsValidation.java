@@ -38,72 +38,50 @@
  */
 package org.netbeans.modules.ws.qaf;
 
-import java.io.IOException;
 import junit.framework.Test;
-import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.modules.ws.qaf.WebServicesTestBase.ProjectType;
 
 /**
+ *  Basic validation suite for web services support in the IDE
  *
- * @author jp154641
+ *  Duration of this test suite: aprox. 7min
+ *
+ * @author lukas.jungmann@sun.com
  */
-public class AppClientWsValidation extends EjbWsValidation {
+public class JEE6EjbWsValidation extends EjbWsValidation {
 
-    public AppClientWsValidation(String name) {
+    /** Default constructor.
+     * @param testName name of particular test case
+     */
+    public JEE6EjbWsValidation(String name) {
         super(name);
     }
 
     @Override
-    public void setUp() throws Exception {
-        super.setUp();
-        assertServerRunning();
-    }
-
-    @Override
-    protected ProjectType getProjectType() {
-        return ProjectType.APPCLIENT;
-    }
-
-    @Override
-    protected String getWsClientProjectName() {
-        return "WsClientInAppClient"; //NOI18N
+    protected JavaEEVersion getJavaEEversion() {
+        return JavaEEVersion.JAVAEE6;
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(AppClientWsValidation.class),
+        return NbModuleSuite.create(addServerTests(Server.GLASSFISH_V3,
+                NbModuleSuite.createConfiguration(JEE6EjbWsValidation.class),
+                "testCreateNewWs",
+                "testAddOperation",
+                "testSetSOAP",
+                "testGenerateWSDL",
+                "testStartServer",
+                "testWsHandlers",
+                "testDeployWsProject",
+                "testTestWS",
                 "testCreateWsClient",
-                "testCallWsOperationInJavaMainClass",
+                "testRefreshClientAndReplaceWSDL",
+                "testCallWsOperationInSessionEJB",
                 "testCallWsOperationInJavaClass",
+                "testWsFromEJBinClientProject",
                 "testWsClientHandlers",
-                "testRunWsClientProject",
-                "testUndeployClientProject").enableModules(".*").clusters(".*"));
+                "testDeployWsClientProject",
+                "testUndeployProjects",
+                "testStopServer").enableModules(".*").clusters(".*"));
     }
 
-    /**
-     * Tests Call Web Service Operation action in a servlet
-     */
-    public void testCallWsOperationInJavaMainClass() {
-        final EditorOperator eo = new EditorOperator("Main.java"); //NOI18N
-        eo.select("// TODO code application logic here"); //NOI18N
-        callWsOperation(eo, "myIntMethod", 18); //NOI18N
-        assertTrue("@WebServiceRef has not been found", eo.contains("@WebServiceRef")); //NOI18N
-        assertFalse("Lookup found", eo.contains(getWsClientLookupCall())); //NOI18N
-    }
-
-    /**
-     * Run project
-     * @throws java.io.IOException
-     */
-    public void testRunWsClientProject() throws IOException {
-        runProject(getProjectName());
-        OutputTabOperator oto = new OutputTabOperator(getProjectName());
-        assertTrue(oto.getText().indexOf("Result = []") > -1); //NOI18N
-        assertTrue(oto.getText().indexOf("BUILD SUCCESSFUL") > -1); //NOI18N
-    }
-
-    public void testUndeployClientProject() throws IOException {
-        undeployProject(getProjectName());
-    }
 }

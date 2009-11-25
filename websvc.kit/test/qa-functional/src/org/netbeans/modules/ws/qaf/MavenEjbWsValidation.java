@@ -46,9 +46,9 @@ import org.netbeans.junit.NbModuleSuite;
  *
  * @author lukas
  */
-public class MavenEJBWsValidation extends EjbWsValidation {
+public class MavenEjbWsValidation extends EjbWsValidation {
 
-    public MavenEJBWsValidation(String name) {
+    public MavenEjbWsValidation(String name) {
         super(name);
     }
 
@@ -64,7 +64,7 @@ public class MavenEJBWsValidation extends EjbWsValidation {
 
     public static Test suite() {
         return NbModuleSuite.create(addServerTests(Server.GLASSFISH,
-                NbModuleSuite.createConfiguration(MavenEJBWsValidation.class),
+                NbModuleSuite.createConfiguration(MavenEjbWsValidation.class),
                 "testCreateNewWs",
                 "testAddOperation",
                 "testSetSOAP",

@@ -38,72 +38,31 @@
  */
 package org.netbeans.modules.ws.qaf;
 
-import java.io.IOException;
 import junit.framework.Test;
-import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.modules.ws.qaf.WebServicesTestBase.ProjectType;
 
 /**
  *
  * @author jp154641
  */
-public class AppClientWsValidation extends EjbWsValidation {
+public class JEE6AppClientWsValidation extends AppClientWsValidation {
 
-    public AppClientWsValidation(String name) {
+    public JEE6AppClientWsValidation(String name) {
         super(name);
     }
 
     @Override
-    public void setUp() throws Exception {
-        super.setUp();
-        assertServerRunning();
-    }
-
-    @Override
-    protected ProjectType getProjectType() {
-        return ProjectType.APPCLIENT;
-    }
-
-    @Override
-    protected String getWsClientProjectName() {
-        return "WsClientInAppClient"; //NOI18N
+    protected JavaEEVersion getJavaEEversion() {
+        return JavaEEVersion.JAVAEE6;
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(AppClientWsValidation.class),
+        return NbModuleSuite.create(addServerTests(Server.GLASSFISH_V3, NbModuleSuite.createConfiguration(JEE6AppClientWsValidation.class),
                 "testCreateWsClient",
                 "testCallWsOperationInJavaMainClass",
                 "testCallWsOperationInJavaClass",
                 "testWsClientHandlers",
                 "testRunWsClientProject",
                 "testUndeployClientProject").enableModules(".*").clusters(".*"));
-    }
-
-    /**
-     * Tests Call Web Service Operation action in a servlet
-     */
-    public void testCallWsOperationInJavaMainClass() {
-        final EditorOperator eo = new EditorOperator("Main.java"); //NOI18N
-        eo.select("// TODO code application logic here"); //NOI18N
-        callWsOperation(eo, "myIntMethod", 18); //NOI18N
-        assertTrue("@WebServiceRef has not been found", eo.contains("@WebServiceRef")); //NOI18N
-        assertFalse("Lookup found", eo.contains(getWsClientLookupCall())); //NOI18N
-    }
-
-    /**
-     * Run project
-     * @throws java.io.IOException
-     */
-    public void testRunWsClientProject() throws IOException {
-        runProject(getProjectName());
-        OutputTabOperator oto = new OutputTabOperator(getProjectName());
-        assertTrue(oto.getText().indexOf("Result = []") > -1); //NOI18N
-        assertTrue(oto.getText().indexOf("BUILD SUCCESSFUL") > -1); //NOI18N
-    }
-
-    public void testUndeployClientProject() throws IOException {
-        undeployProject(getProjectName());
     }
 }
