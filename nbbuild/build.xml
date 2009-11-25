@@ -1654,8 +1654,8 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
          classname="org.netbeans.nbbuild.MakeUpdateDesc"
          classpath="${nb_all}/nbbuild/nbantext.jar"/>
       <property name="nbms.location" location="nbms"/>
-      <property name="catalog.file" location="catalog.xml"/>
-      <property name="catalog.base.url" value="http://bits.netbeans.org/"/>
+      <property name="catalog.file" location="${nbms.location}/updates.xml"/>
+      <property name="catalog.base.url" value="."/>
       <property name="use.license.url.in.catalog" value="true"/>
       <property name="catalog.notification.message" value=""/>
       <property name="catalog.notification.url"     value=""/>
@@ -1665,8 +1665,26 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
           <fileset dir="${nbms.location}">
               <include name="**/*.nbm"/>
           </fileset>
+          <updaterjar>
+              <fileset dir="netbeans" includes="platform*/modules/ext/updater.jar"/>
+          </updaterjar>
       </makeupdatedesc>
       <gzip src="${catalog.file}" destfile="${catalog.file}.gz"/>
+  </target>
+
+  <target name="verify-update-descriptor" depends="init">
+      <taskdef name="vuc" classname="org.netbeans.nbbuild.VerifyUpdateCenter" classpath="nbantext.jar"/>
+      <echo>Checking synchronic and diachronic consistency of NBMs; see http://wiki.netbeans.org/DevFaqImplementationDependency</echo>
+      <property name="old.updates" value=""/>
+      <property name="nbms.location" location="nbms"/>
+      <vuc updates="${nbms.location}/updates.xml" oldupdatesurl="${old.updates}" report="${nbms.location}/vuc-report.xml">
+          <classpath>
+              <fileset dir="netbeans">
+                  <include name="platform*/lib/*.jar"/>
+                  <include name="platform*/core/*.jar"/>
+              </fileset>
+          </classpath>
+      </vuc>
   </target>
 
     <!-- #42157 - Scans all xml layers for OptionsExport folder and creates
