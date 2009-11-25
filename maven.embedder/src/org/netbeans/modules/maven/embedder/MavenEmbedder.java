@@ -40,6 +40,7 @@ package org.netbeans.modules.maven.embedder;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import org.apache.maven.Maven;
 import org.apache.maven.artifact.Artifact;
@@ -234,6 +235,16 @@ public final class MavenEmbedder {
 //            Exceptions.printStackTrace(ex);
             throw new ProjectBuildingException(art.getId(), "Component lookup failed", ex);
         }
+    }
+
+    public List<String> getLifecyclePhases() {
+        ///TODO
+        return Arrays.asList(new String[] {
+            "phase1",
+            "phase2",
+            "phasefoo",
+            "changeme"
+        });
     }
     
 
