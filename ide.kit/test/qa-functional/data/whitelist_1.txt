@@ -35,6 +35,15 @@ org.netbeans.modules.cnd.debugger.common.breakpoints.ToggleBreakpointActionProvi
 org.netbeans.modules.debugger.jpda.projects.EditorContextImpl$SessionsListener
 org.netbeans.modules.debugger.jpda.projects.EditorContextImpl$SessionsListenerRemoval
 
+#177562
+org.netbeans.modules.glassfish.common.GlassfishInstanceProvider
+org.netbeans.modules.glassfish.javaee.RunTimeDDCatalog
+org.netbeans.modules.glassfish.javaee.ide.RegisteredDDCatalogImpl
+org.netbeans.modules.glassfish.spi.CommandFactory
+org.netbeans.modules.glassfish.spi.RegisteredDDCatalog
+org.netbeans.modules.xml.api.model.GrammarQueryManager
+
+
 com.sun.java.swing.plaf.windows.WindowsButtonUI
 com.sun.java.swing.plaf.windows.WindowsCheckBoxMenuItemUI
 com.sun.java.swing.plaf.windows.WindowsCheckBoxUI
