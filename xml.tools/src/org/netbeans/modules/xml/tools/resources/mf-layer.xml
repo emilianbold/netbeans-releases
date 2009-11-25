@@ -126,12 +126,14 @@ made subject to such option by the copyright holder.
             </file>
 
             <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDTDAction.instance">
+<!--
                 <attr name="instanceCreate"
                       methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="displayName"
                       bundlevalue="org.netbeans.modules.xml.tools.generator.Bundle#PROP_GenerateDTD"/>
                 <attr name="delegate"
                       methodvalue="org.netbeans.modules.xml.tools.generator.XMLGenerateAction$GenerateDTDAction.getInstance"/>
+-->
             </file>
         </folder>
     </folder>
