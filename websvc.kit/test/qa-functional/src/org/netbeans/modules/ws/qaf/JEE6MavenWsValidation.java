@@ -70,7 +70,7 @@ public class JEE6MavenWsValidation extends MavenWsValidation {
 //                "testRunWsProject",
                 "testCreateWsClient",
                 "testCallWsOperationInServlet",
-// IZ# 175976              "testCallWsOperationInJSP",
+                "testCallWsOperationInJSP",
                 "testCallWsOperationInJavaClass",
                 "testRefreshClient",
                 "testWsClientHandlers",
