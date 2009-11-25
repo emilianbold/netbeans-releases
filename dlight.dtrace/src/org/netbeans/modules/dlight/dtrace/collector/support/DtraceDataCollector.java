@@ -90,6 +90,7 @@ import org.netbeans.modules.nativeexecution.api.util.AsynchronousAction;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.SolarisPrivilegesSupport;
 import org.netbeans.modules.nativeexecution.api.util.SolarisPrivilegesSupportProvider;
 import org.openide.util.Exceptions;
@@ -391,44 +392,11 @@ public final class DtraceDataCollector
         DLightLogger.assertNonUiThread();
 
         final ExecutionEnvironment execEnv = target.getExecEnv();
+        final ConnectionManager mgr = ConnectionManager.getInstance();
 
-        ValidationStatus result = null;
-        boolean fileExists = false;
-        boolean connected = true;
-        String error = ""; // NOI18N
+        boolean isConnected = mgr.isConnectedTo(execEnv);
 
-        HostInfo hostInfo = null;
-
-        try {
-            hostInfo = HostInfoUtils.getHostInfo(execEnv);
-        } catch (IOException ex) {
-        } catch (CancellationException ex) {
-        }
-
-        if (hostInfo == null || hostInfo.getOSFamily() != HostInfo.OSFamily.SUNOS) {
-            return ValidationStatus.invalidStatus(
-                    NbBundle.getMessage(DtraceDataCollector.class,
-                    "DtraceDataCollector.DtraceIsSupportedOnSunOSOnly")); // NOI18N
-        }
-
-        try {
-            fileExists = HostInfoUtils.fileExists(execEnv, command);
-        } catch (IOException ex) {
-            error = ex.getMessage();
-            connected = false;
-        }
-
-        if (connected) {
-            if (fileExists) {
-                result = ValidationStatus.validStatus();
-            } else {
-                result = ValidationStatus.invalidStatus(
-                        loc("ValidationStatus.CommandNotFound", // NOI18N
-                        command));
-            }
-        } else {
-            ConnectionManager mgr = ConnectionManager.getInstance();
-
+        if (!isConnected) {
             Runnable doOnConnect = new Runnable() {
 
                 public void run() {
@@ -438,13 +406,36 @@ public final class DtraceDataCollector
 
             AsynchronousAction connectAction = mgr.getConnectToAction(execEnv, doOnConnect);
 
-            result = ValidationStatus.unknownStatus(
-                    loc("ValidationStatus.ErrorWhileValidation", error), // NOI18N
+            return ValidationStatus.unknownStatus(loc("ValidationStatus.HostNotConnected"), // NOI18N
                     connectAction);
         }
 
-        if (!result.isValid()) {
-            return result;
+        try {
+            HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
+
+            if (hostInfo == null || hostInfo.getOSFamily() != HostInfo.OSFamily.SUNOS) {
+                return ValidationStatus.invalidStatus(
+                        NbBundle.getMessage(DtraceDataCollector.class,
+                        "DtraceDataCollector.DtraceIsSupportedOnSunOSOnly")); // NOI18N
+            }
+
+            if (!HostInfoUtils.fileExists(execEnv, command)) {
+                return ValidationStatus.invalidStatus(
+                        loc("ValidationStatus.CommandNotFound", // NOI18N
+                        command));
+            }
+        } catch (Exception ex) {
+            return ValidationStatus.invalidStatus(
+                    loc("ValidationStatus.ErrorWhileValidation", // NOI18N
+                    ex.getMessage()));
+        }
+
+        ProcessUtils.ExitStatus zonenameResult = ProcessUtils.execute(execEnv, "/sbin/zonename"); // NOI18N
+
+        if (!zonenameResult.isOK() || !"global".equals(zonenameResult.output)) { // NOI18N
+            return ValidationStatus.invalidStatus(
+                    loc("ValidationStatus.NotGlobalZone", // NOI18N
+                    command));
         }
 
         // /usr/sbin/dtrace exists...
@@ -478,12 +469,12 @@ public final class DtraceDataCollector
             AsynchronousAction requestPrivilegesAction = sps.getRequestPrivilegesAction(
                     requiredPrivilegesSet, onPrivilegesGranted);
 
-            result = result.merge(ValidationStatus.unknownStatus(
+            return ValidationStatus.unknownStatus(
                     loc("DTraceDataCollector_Status_NotEnoughPrivileges"), // NOI18N
-                    requestPrivilegesAction));
+                    requestPrivilegesAction);
         }
 
-        return result;
+        return ValidationStatus.validStatus();
     }
 
     public ValidationStatus validate(final DLightTarget target) {
