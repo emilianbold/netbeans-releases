@@ -40,7 +40,6 @@ package org.netbeans.modules.maven.embedder;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -48,45 +47,24 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Logger;
 import org.apache.maven.artifact.UnknownRepositoryLayoutException;
-import org.apache.maven.artifact.factory.ArtifactFactory;
-import org.apache.maven.artifact.manager.WagonManager;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.repository.ArtifactRepositoryFactory;
 import org.apache.maven.artifact.repository.ArtifactRepositoryPolicy;
-import org.apache.maven.artifact.resolver.ArtifactResolver;
-import org.apache.maven.lifecycle.LifecycleExecutor;
-import org.apache.maven.profiles.DefaultProfileManager;
-import org.apache.maven.profiles.ProfileManager;
-import org.apache.maven.project.DefaultProjectBuilderConfiguration;
-import org.apache.maven.project.ProjectBuildingException;
-import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.PlexusContainerException;
 import org.codehaus.plexus.classworlds.ClassWorld;
 import org.codehaus.plexus.classworlds.realm.ClassRealm;
-import org.codehaus.plexus.classworlds.realm.DuplicateRealmException;
-import org.codehaus.plexus.classworlds.realm.NoSuchRealmException;
-import org.codehaus.plexus.component.repository.ComponentDescriptor;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
-import org.codehaus.plexus.configuration.PlexusConfiguration;
 import org.codehaus.plexus.configuration.PlexusConfigurationException;
-import org.codehaus.plexus.configuration.xml.XmlPlexusConfiguration;
 import java.util.prefs.Preferences;
-import org.apache.maven.classrealm.ClassRealmManagerDelegate;
-import org.apache.maven.execution.MavenExecutionRequest;
-import org.apache.maven.plugin.MavenPluginManager;
-import org.apache.maven.project.artifact.MavenMetadataCache;
 import org.codehaus.plexus.ContainerConfiguration;
 import org.codehaus.plexus.DefaultContainerConfiguration;
 import org.codehaus.plexus.DefaultPlexusContainer;
 import org.codehaus.plexus.component.discovery.ComponentDiscoverer;
 import org.codehaus.plexus.component.discovery.ComponentDiscoveryEvent;
 import org.codehaus.plexus.component.discovery.ComponentDiscoveryListener;
-import org.codehaus.plexus.component.repository.ComponentRequirement;
 import org.codehaus.plexus.component.repository.ComponentSetDescriptor;
 import org.codehaus.plexus.context.Context;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
-import org.netbeans.modules.maven.embedder.exec.MyLifecycleExecutor;
-import org.netbeans.modules.maven.embedder.exec.ProgressTransferListener;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
@@ -94,7 +72,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
 
 /**
@@ -109,6 +86,10 @@ public final class EmbedderFactory {
     private static MavenEmbedder online;
     private static SettingsFileListener fileListener = new SettingsFileListener();
     private static Logger LOG = Logger.getLogger(EmbedderFactory.class.getName());
+
+    public static MavenEmbedder createExecuteEmbedder() {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
 
 
     /** Creates a new instance of EmbedderFactory */

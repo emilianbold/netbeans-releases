@@ -50,12 +50,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
-import org.apache.maven.cli.CLIReportingUtils;
-import org.apache.maven.embedder.ConfigurationValidationResult;
-import org.apache.maven.embedder.DefaultConfiguration;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
-import org.netbeans.modules.maven.embedder.MavenEmbedderLogger;
-import org.apache.maven.errors.DefaultCoreErrorReporter;
 import org.apache.maven.execution.DefaultMavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionResult;
@@ -79,7 +74,6 @@ import org.netbeans.spi.project.ui.support.BuildExecutionSupport;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -181,26 +175,27 @@ public class MavenJavaExecutor extends AbstractMavenExecutor {
             req.setTransferListener(new ProgressTransferListener());
             out = new JavaOutputHandler(ioput, clonedConfig.getProject(), handle, clonedConfig);
             IOBridge.pushSystemInOutErr(out);
+
+//TODO validate user settings
+//            File userSettingsPath = MavenEmbedder.DEFAULT_USER_SETTINGS_FILE;
+//            File globalSettingsPath = InstalledFileLocator.getDefault().locate("maven2/settings.xml", null, false);//NOI18N
+//            DefaultConfiguration settConfig = new DefaultConfiguration();
+//            settConfig.setGlobalSettingsFile(globalSettingsPath);
+//            if (userSettingsPath.exists()) {
+//                settConfig.setUserSettingsFile(userSettingsPath);
+//            }
+//            ConfigurationValidationResult setres = MavenEmbedder.validateConfiguration(settConfig);
+//            if (!setres.isValid()) {
+//                if (setres.getUserSettingsException() != null) {
+//                    CLIReportingUtils.showError("Error reading user settings: ", setres.getUserSettingsException(), req.isShowErrors(), new DefaultCoreErrorReporter(), out);//NOI18N - part of maven output
+//                }
+//                if (setres.getUserSettingsException() != null) {
+//                    CLIReportingUtils.showError("Error reading global settings: ", setres.getGlobalSettingsException(), req.isShowErrors(), new DefaultCoreErrorReporter(), out);//NOI18N - part of maven output
+//                }
+//                return;
+//            }
             
-            File userSettingsPath = MavenEmbedder.DEFAULT_USER_SETTINGS_FILE;
-            File globalSettingsPath = InstalledFileLocator.getDefault().locate("maven2/settings.xml", null, false);//NOI18N
-            DefaultConfiguration settConfig = new DefaultConfiguration();
-            settConfig.setGlobalSettingsFile(globalSettingsPath);
-            if (userSettingsPath.exists()) {
-                settConfig.setUserSettingsFile(userSettingsPath);
-            }
-            ConfigurationValidationResult setres = MavenEmbedder.validateConfiguration(settConfig);
-            if (!setres.isValid()) {
-                if (setres.getUserSettingsException() != null) {
-                    CLIReportingUtils.showError("Error reading user settings: ", setres.getUserSettingsException(), req.isShowErrors(), new DefaultCoreErrorReporter(), out);//NOI18N - part of maven output
-                }
-                if (setres.getUserSettingsException() != null) {
-                    CLIReportingUtils.showError("Error reading global settings: ", setres.getGlobalSettingsException(), req.isShowErrors(), new DefaultCoreErrorReporter(), out);//NOI18N - part of maven output
-                }
-                return;
-            }
-            
-            embedder = EmbedderFactory.createExecuteEmbedder(out);
+            embedder = EmbedderFactory.createExecuteEmbedder();
             super.buildPlan.setEmbedder(embedder);
             
             req.addActiveProfiles(clonedConfig.getActivatedProfiles());
@@ -266,10 +261,10 @@ public class MavenJavaExecutor extends AbstractMavenExecutor {
             req.setShowErrors(debug || errors);
             if (debug) {
                 req.setLoggingLevel(MavenExecutionRequest.LOGGING_LEVEL_DEBUG);
-                out.setThreshold(MavenEmbedderLogger.LEVEL_DEBUG);
+//TODO                out.setThreshold(MavenEmbedderLogger.LEVEL_DEBUG);
             } else {
                 req.setLoggingLevel(MavenExecutionRequest.LOGGING_LEVEL_INFO);
-                out.setThreshold(MavenEmbedderLogger.LEVEL_INFO);
+//TODO                out.setThreshold(MavenEmbedderLogger.LEVEL_INFO);
             }
             
             //            req.activateDefaultEventMonitor();
@@ -283,16 +278,19 @@ public class MavenJavaExecutor extends AbstractMavenExecutor {
             Properties props = new Properties();
             EmbedderFactory.fillEnvVars(props);
             props.putAll(excludeNetBeansProperties(System.getProperties()));
+            req.setSystemProperties(props);
+
+            props = new Properties();
             props.putAll(clonedConfig.getProperties());
             props.setProperty("netbeans.execution", "true");//NOI18N
+            req.setUserProperties(props);
             
-            req.setProperties(props);
             req.setBaseDirectory(clonedConfig.getExecutionDirectory());
             File pom = new File(clonedConfig.getExecutionDirectory(), "pom.xml");//NOI18N
             if (pom.exists()) {
-                req.setPomFile(pom.getAbsolutePath());
+                req.setPom(pom);
             }
-            req.addEventMonitor(out);
+            req.setExecutionListener(out);
             req.setTransferListener(new ProgressTransferListener());
             //            req.setReactorActive(true);
             if (reactorFailure != null) {
@@ -305,7 +303,7 @@ public class MavenJavaExecutor extends AbstractMavenExecutor {
             req.setUpdateSnapshots(updateSnapshots);
             req.setRecursive(clonedConfig.isRecursive());
             MavenExecutionResult res = embedder.execute(req);
-            CLIReportingUtils.logResult(req, res, out);
+//TODO?            CLIReportingUtils.logResult(req, res, out);
             if (res.hasExceptions()) {
                 //TODO something?
                 executionResult = -1;
@@ -317,12 +315,12 @@ public class MavenJavaExecutor extends AbstractMavenExecutor {
 //        } catch (SettingsConfigurationException ex) {
 //            LOGGER.log(Level.FINE, ex.getMessage(), ex);
         } catch (RuntimeException re) {
-            CLIReportingUtils.showError("Runtime Exception thrown during execution", re, req.isShowErrors(), req.getErrorReporter(), out);//NOI18N - part of maven output
+//TODO            CLIReportingUtils.showError("Runtime Exception thrown during execution", re, req.isShowErrors(), req.getErrorReporter(), out);//NOI18N - part of maven output
             LOGGER.log(Level.FINE, re.getMessage(), re);
             executionResult = -2;
         } catch (ThreadDeath death) {
 //            cancel();
-            CLIReportingUtils.showError("Killed.", new Exception(""), false, req.getErrorReporter(), out); //NOI18N - part of maven output
+//TODO            CLIReportingUtils.showError("Killed.", new Exception(""), false, req.getErrorReporter(), out); //NOI18N - part of maven output
             shutdownOutput(ioput);
             ioput = null;
             executionResult = ExecutionContext.EXECUTION_ABORTED;

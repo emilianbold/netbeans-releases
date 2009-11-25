@@ -246,6 +246,10 @@ public final class MavenEmbedder {
             "changeme"
         });
     }
+
+    public MavenExecutionResult execute(MavenExecutionRequest req) {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
     
 
 }
