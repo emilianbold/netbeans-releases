@@ -490,47 +490,6 @@ the ${netbeans.dest}/bin/ directory.
     </zip>
   </target>
 
-  <target name="zipclusters" depends="init">
-    <mkdir dir="${netbeans.build.dir}/zips"/>
-    <repeat target="zip-one-cluster" name="one.cluster.name" values="${clusters.list}" /> 
-
-    <!-- package the misc files -->
-    <zip destfile="${netbeans.build.dir}/zips/${clusters.prefix}-misc-${buildnum}.zip" update="true" duplicate="preserve">
-      <zipfileset dir="${netbeans.dest.dir}" filemode="755">
-         <include name="bin/netbeans"/>
-      </zipfileset>
-      <zipfileset dir="${netbeans.dest.dir}">
-        <include name="bin/**"/>
-        <include name="etc/**/"/>
-      </zipfileset>
-    </zip>
-  </target>
-
-  <target name="zip-one-cluster">
-    <taskdef name="setclusterpatternset" classname="org.netbeans.nbbuild.SetClusterPatternSet" classpath="nbantext.jar"/>
-    <taskdef name="setcluster" classname="org.netbeans.nbbuild.SetCluster" classpath="nbantext.jar"/>
-    <loadproperties srcFile="${clusters.list.file}" />
-    <loadproperties srcFile="cluster-description.properties" />
-    <setcluster cluster="${one.cluster.name}" name="one.cluster.dir" />
-    
-    <setclusterpatternset cluster="${one.cluster.name}" name="${one.cluster.name}.files" trackingpath="${netbeans.dest.dir}" clusterdir="${one.cluster.dir}"/>
-    
-    <resolve name="zipcluster.file" value="${one.cluster.name}.pkg.filename"/>
-    <zip destfile="${netbeans.build.dir}/zips/${clusters.prefix}-${zipcluster.file}-${buildnum}.zip" update="true" duplicate="preserve">
-      <zipfileset dir="${netbeans.dest.dir}" filemode="755">
-        <include name="${one.cluster.dir}/lib/nbexec"/>
-      </zipfileset>
-      <zipfileset dir="${netbeans.dest.dir}" filemode="755">
-        <include name="${one.cluster.dir}/ant/bin/*"/>
-        <exclude name="${one.cluster.dir}/ant/bin/*.bat"/>
-        <exclude name="${one.cluster.dir}/ant/bin/*.cmd"/>
-      </zipfileset>
-      <zipfileset dir="${netbeans.dest.dir}">
-        <patternset refID="${one.cluster.name}.files"/>
-      </zipfileset>
-    </zip>
-  </target>
-
   <target name="build-nozip-ml" depends="bootstrap" description="Build the Multilanguage IDE but do not create a final ZIP file.">
     <taskdef name="resolvelist" classname="org.netbeans.nbbuild.ResolveList" classpath="nbantext.jar"/>
     <resolvelist name="modules.for.mlbuild.list" list="${nb.clusters.list}"/>
