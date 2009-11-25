@@ -9,9 +9,6 @@
       <ResourceString bundle="org/netbeans/modules/php/project/ui/customizer/Bundle.properties" key="CustomizerSources.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
     </Property>
   </AccessibilityProperties>
-  <SyntheticProperties>
-    <SyntheticProperty name="designerSize" type="java.awt.Dimension" value="-84,-19,0,5,115,114,0,18,106,97,118,97,46,97,119,116,46,68,105,109,101,110,115,105,111,110,65,-114,-39,-41,-84,95,68,20,2,0,2,73,0,6,104,101,105,103,104,116,73,0,5,119,105,100,116,104,120,112,0,0,0,-9,0,0,1,124"/>
-  </SyntheticProperties>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
@@ -41,11 +38,15 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="projectFolderTextField" alignment="0" pref="280" max="32767" attributes="0"/>
                           <Component id="sourceFolderTextField" alignment="0" pref="280" max="32767" attributes="0"/>
-                          <Component id="testFolderTextField" alignment="0" pref="280" max="32767" attributes="0"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="testFolderTextField" pref="185" max="32767" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="testFolderButton" linkSize="1" min="-2" max="-2" attributes="0"/>
+                          </Group>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="webRootTextField" pref="185" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="webRootButton" min="-2" max="-2" attributes="0"/>
+                              <Component id="webRootButton" linkSize="1" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Component id="encodingComboBox" alignment="0" pref="280" max="32767" attributes="0"/>
                           <Component id="phpVersionComboBox" alignment="0" pref="280" max="32767" attributes="0"/>
@@ -86,6 +87,7 @@
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="testFolderLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="testFolderTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="testFolderButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
@@ -208,6 +210,16 @@
           <ResourceString bundle="org/netbeans/modules/php/project/ui/customizer/Bundle.properties" key="CustomizerSources.testFolderTextField.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
+    </Component>
+    <Component class="javax.swing.JButton" name="testFolderButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/customizer/Bundle.properties" key="CustomizerSources.testFolderButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="testFolderButtonActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="webRootLabel">
       <Properties>
