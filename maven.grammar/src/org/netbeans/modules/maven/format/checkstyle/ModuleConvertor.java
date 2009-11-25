@@ -39,8 +39,8 @@
 
 package org.netbeans.modules.maven.format.checkstyle;
 
-import hidden.org.codehaus.plexus.util.IOUtil;
-import hidden.org.codehaus.plexus.util.StringUtils;
+import org.codehaus.plexus.util.IOUtil;
+import org.codehaus.plexus.util.StringUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
