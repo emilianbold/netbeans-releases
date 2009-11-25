@@ -54,6 +54,7 @@ public abstract class XMLGenerateAction extends CookieAction {
     /** Stream serialVersionUID as of Build1099j. */
     protected static final long serialVersionUID = -6614874187800576344L;
 
+/**********
     public static synchronized XMLGenerateAction _getInstance() {
         XMLGenerateAction actionInstance = null;
         String thisClassName = XMLGenerateAction.class.getName();
@@ -65,6 +66,7 @@ public abstract class XMLGenerateAction extends CookieAction {
         }
         return actionInstance;
     }
+**********/
     
     /* @return the mode of action. */
     protected int mode() {
@@ -115,6 +117,7 @@ public abstract class XMLGenerateAction extends CookieAction {
         /** generated Serialized Version UID */
         private static final long serialVersionUID = 8532990650127561962L;
 
+/**********
         public static synchronized GenerateDTDAction getInstance() {
             GenerateDTDAction actionInstance = null;
             String thisClassName = GenerateDTDAction.class.getName();
@@ -126,6 +129,7 @@ public abstract class XMLGenerateAction extends CookieAction {
             }
             return actionInstance;
         }
+**********/
 
         /* Human presentable name of the action. This should be
          * presented as an item in a menu.
