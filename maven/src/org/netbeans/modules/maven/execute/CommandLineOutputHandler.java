@@ -46,7 +46,6 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.netbeans.modules.maven.embedder.MavenEmbedderLogger;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
@@ -71,7 +70,7 @@ class CommandLineOutputHandler extends AbstractOutputHandler {
     //    private ProgressHandle handle;
     private String currentTag;
     Task outTask;
-    private MavenEmbedderLogger logger;
+//    private MavenEmbedderLogger logger;
     private Input inp;
     private ProgressHandle handle;
 
@@ -84,7 +83,7 @@ class CommandLineOutputHandler extends AbstractOutputHandler {
         this(hand);
         inputOutput = io;
         stdOut = inputOutput.getOut();
-        logger = new Logger();
+//        logger = new Logger();
         initProcessorList(proj, config);
     }
 
@@ -279,84 +278,84 @@ class CommandLineOutputHandler extends AbstractOutputHandler {
         }
     }
 
-    @Override
-    MavenEmbedderLogger getLogger() {
-        return logger;
-    }
+//    @Override
+//    MavenEmbedderLogger getLogger() {
+//        return logger;
+//    }
 
-    private class Logger implements MavenEmbedderLogger {
-
-        private Logger() {
-        }
-
-        public void debug(String arg0) {
-            inputOutput.getOut().println(arg0);
-        }
-
-        public void debug(String arg0, Throwable arg1) {
-            inputOutput.getOut().println(arg0);
-        }
-
-        public boolean isDebugEnabled() {
-            return true;
-        }
-
-        public void info(String arg0) {
-            inputOutput.getOut().println(arg0);
-        }
-
-        public void info(String arg0, Throwable arg1) {
-            inputOutput.getOut().println(arg0);
-        }
-
-        public boolean isInfoEnabled() {
-            return true;
-        }
-
-        public void warn(String arg0) {
-            inputOutput.getOut().println(arg0);
-        }
-
-        public void warn(String arg0, Throwable arg1) {
-            inputOutput.getOut().println(arg0);
-        }
-
-        public boolean isWarnEnabled() {
-            return true;
-        }
-
-        public void error(String arg0) {
-            inputOutput.getErr().println(arg0);
-        }
-
-        public void error(String arg0, Throwable arg1) {
-            inputOutput.getErr().println(arg0);
-        }
-
-        public boolean isErrorEnabled() {
-            return true;
-        }
-
-        public void fatalError(String arg0) {
-            inputOutput.getErr().println(arg0);
-        }
-
-        public void fatalError(String arg0, Throwable arg1) {
-            inputOutput.getErr().println(arg0);
-        }
-
-        public boolean isFatalErrorEnabled() {
-            return true;
-        }
-
-        public void setThreshold(int arg0) {
-        }
-
-        public int getThreshold() {
-            return MavenEmbedderLogger.LEVEL_DEBUG;
-        }
-
-        public void close() {
-        }
-    }
+//    private class Logger implements MavenEmbedderLogger {
+//
+//        private Logger() {
+//        }
+//
+//        public void debug(String arg0) {
+//            inputOutput.getOut().println(arg0);
+//        }
+//
+//        public void debug(String arg0, Throwable arg1) {
+//            inputOutput.getOut().println(arg0);
+//        }
+//
+//        public boolean isDebugEnabled() {
+//            return true;
+//        }
+//
+//        public void info(String arg0) {
+//            inputOutput.getOut().println(arg0);
+//        }
+//
+//        public void info(String arg0, Throwable arg1) {
+//            inputOutput.getOut().println(arg0);
+//        }
+//
+//        public boolean isInfoEnabled() {
+//            return true;
+//        }
+//
+//        public void warn(String arg0) {
+//            inputOutput.getOut().println(arg0);
+//        }
+//
+//        public void warn(String arg0, Throwable arg1) {
+//            inputOutput.getOut().println(arg0);
+//        }
+//
+//        public boolean isWarnEnabled() {
+//            return true;
+//        }
+//
+//        public void error(String arg0) {
+//            inputOutput.getErr().println(arg0);
+//        }
+//
+//        public void error(String arg0, Throwable arg1) {
+//            inputOutput.getErr().println(arg0);
+//        }
+//
+//        public boolean isErrorEnabled() {
+//            return true;
+//        }
+//
+//        public void fatalError(String arg0) {
+//            inputOutput.getErr().println(arg0);
+//        }
+//
+//        public void fatalError(String arg0, Throwable arg1) {
+//            inputOutput.getErr().println(arg0);
+//        }
+//
+//        public boolean isFatalErrorEnabled() {
+//            return true;
+//        }
+//
+//        public void setThreshold(int arg0) {
+//        }
+//
+//        public int getThreshold() {
+//            return MavenEmbedderLogger.LEVEL_DEBUG;
+//        }
+//
+//        public void close() {
+//        }
+//    }
 }

@@ -46,6 +46,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.PlexusContainerException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
@@ -154,8 +155,11 @@ public class BeanRunConfig implements RunConfig {
             if (getProperties() != null) {
                 props.putAll(getProperties());
             }
-            //#168036 use it's own embedder to prevent caching
-            mp = impl.loadMavenProject(EmbedderFactory.createProjectLikeEmbedder(), profiles, props);
+            try {
+                mp = impl.loadMavenProject(EmbedderFactory.createProjectLikeEmbedder(), profiles, props);
+            } catch (PlexusContainerException ex) {
+                throw new IllegalStateException();
+            }
         }
         return mp;
      }

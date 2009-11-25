@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.maven.execute;
 
-import java.awt.Color;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -47,7 +46,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import org.netbeans.modules.maven.embedder.MavenEmbedderLogger;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
 import org.netbeans.modules.maven.api.execute.RunConfig;
@@ -121,7 +119,7 @@ public abstract class AbstractOutputHandler {
         }
     }
     
-    abstract MavenEmbedderLogger getLogger();
+//TODO - replacement?    abstract MavenEmbedderLogger getLogger();
 
     protected final String getEventId(String eventName, String target) {
         if (PRJ_EXECUTE.equals(eventName)) {

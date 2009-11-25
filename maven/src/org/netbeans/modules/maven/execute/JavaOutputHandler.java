@@ -51,7 +51,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
-import org.netbeans.modules.maven.embedder.MavenEmbedderLogger;
 import org.apache.maven.monitor.event.EventMonitor;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.embedder.exec.MyLifecycleExecutor;
@@ -71,7 +70,7 @@ import org.openide.windows.OutputWriter;
  * handling of output coming from maven builds.
  * @author Milos Kleint 
  */
-class JavaOutputHandler extends AbstractOutputHandler implements EventMonitor, MavenEmbedderLogger {
+class JavaOutputHandler extends AbstractOutputHandler implements EventMonitor {//, MavenEmbedderLogger {
     private static final String SEC_MOJO_EXEC = "mojo-execute";//NOI18N
     private static final String SEC_PRJ_EXEC = "project-execute";//NOI18N
     private static final String SEC_REAC_EXEC = "reactor-execute";//NOI18N
@@ -84,7 +83,7 @@ class JavaOutputHandler extends AbstractOutputHandler implements EventMonitor, M
     
     private InputStream in;
     
-    private int threshold = MavenEmbedderLogger.LEVEL_INFO;
+//    private int threshold = MavenEmbedderLogger.LEVEL_INFO;
     
 
     private AggregateProgressHandle handle;
@@ -194,7 +193,8 @@ class JavaOutputHandler extends AbstractOutputHandler implements EventMonitor, M
     }
     
     public boolean isDebugEnabled()    {
-        return threshold == MavenEmbedderLogger.LEVEL_DEBUG;
+        return false;
+//TODO        return threshold == MavenEmbedderLogger.LEVEL_DEBUG;
     }
     
     public void info(String string)    {
@@ -263,13 +263,13 @@ class JavaOutputHandler extends AbstractOutputHandler implements EventMonitor, M
         return true;
     }
     
-    public void setThreshold(int i)    {
-        threshold = i;
-    }
-    
-    public int getThreshold()    {
-        return threshold;
-    }
+//    public void setThreshold(int i)    {
+//        threshold = i;
+//    }
+//
+//    public int getThreshold()    {
+//        return threshold;
+//    }
  
     
     PrintStream getErr() {
@@ -487,10 +487,10 @@ class JavaOutputHandler extends AbstractOutputHandler implements EventMonitor, M
 
     }
 
-    @Override
-    MavenEmbedderLogger getLogger() {
-        return this;
-    }
+//    @Override
+//    MavenEmbedderLogger getLogger() {
+//        return this;
+//    }
 
     public void close() {
     }
