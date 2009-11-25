@@ -637,6 +637,7 @@ public class FileUtilTest extends NbTestCase {
     /** Tests recursive FileChangeListener on File.
      * @see FileUtil#addRecursiveListener(org.openide.filesystems.FileChangeListener, java.io.File)
      */
+    @RandomlyFails // NB-Core-Build #3632: Wrong number of events when file was modified. expected:<1> but was:<0>
     public void testAddRecursiveListenerToFile() throws IOException, InterruptedException {
         clearWorkDir();
         File rootF = getWorkDir();

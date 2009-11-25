@@ -2389,6 +2389,8 @@ public class ChildrenKeysTest extends NbTestCase {
         if (thread1.isAlive()) {
             fail("Possible deadlock detected");
         }
+        thread1.stop();
+        thread2.stop();
     }
 
     public void testSetChildrenDoNotCallAddNotify() {
