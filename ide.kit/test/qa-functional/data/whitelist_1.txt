@@ -19,6 +19,12 @@ org.netbeans.modules.cnd.api.model.CsmProgressAdapter
 org.netbeans.modules.cnd.api.model.CsmProgressListener
 org.netbeans.modules.cnd.api.model.CsmProject
 org.netbeans.modules.cnd.api.model.CsmValidable
+org.netbeans.modules.cnd.apt.debug.APTTraceFlags
+org.netbeans.modules.cnd.modelimpl.Installer
+org.netbeans.modules.cnd.modelimpl.debug.TraceFlags
+org.netbeans.modules.cnd.modelimpl.platform.ModelSupport
+org.netbeans.modules.cnd.modelimpl.platform.ModelSupport$ModifiedObjectsChangeListener
+org.netbeans.modules.cnd.utils.CndUtils
 
 #177559
 org.netbeans.modules.css.visual.ui.preview.CssTCController
