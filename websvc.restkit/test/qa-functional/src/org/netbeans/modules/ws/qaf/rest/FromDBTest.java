@@ -45,8 +45,6 @@ import javax.swing.JDialog;
 import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.WizardOperator;
-import org.netbeans.jellytools.actions.ActionNoBlock;
-import org.netbeans.jellytools.actions.OutputWindowViewAction;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
@@ -76,12 +74,8 @@ public class FromDBTest extends CRUDTest {
     }
 
     public void testFromDB() throws IOException {
-         // closing Tasks tab
-        new OutputWindowViewAction().performMenu();
-        new ActionNoBlock("Window|Tasks", null).performMenu();
-        new ActionNoBlock("Window|Close Window", null).performMenu();
-        copyDBSchema();
         createPU();
+        copyDBSchema();
         //RESTful Web Services from Database
         String restLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "Templates/WebServices/RestServicesFromDatabase");
         createNewWSFile(getProject(), restLabel);
@@ -120,18 +114,6 @@ public class FromDBTest extends CRUDTest {
         assertEquals("Some files were not generated", 30, files.size()); //NOI18N
         //make sure all REST services nodes are visible in project log. view
         assertEquals("missing nodes?", 14, getRestNode().getChildren().length);
-    }
-
-    private void createPU() {
-        //Persistence
-        String category = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.ui.resources.Bundle", "Templates/Persistence");
-        //Persistence Unit
-        String puLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.wizard.unit.Bundle", "Templates/Persistence/PersistenceUnit");
-        createNewFile(getProject(), category, puLabel);
-        String title = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.unit.Bundle", "LBL_NewPersistenceUnit");
-        WizardOperator wo = new WizardOperator(title);
-        new JComboBoxOperator(wo, 1).selectItem("jdbc/sample"); //NOI18N
-        wo.finish();
     }
 
     /**
