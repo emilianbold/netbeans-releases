@@ -41,6 +41,7 @@ package org.netbeans.modules.maven.embedder;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -50,12 +51,18 @@ import org.apache.maven.artifact.UnknownRepositoryLayoutException;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.repository.ArtifactRepositoryFactory;
 import org.apache.maven.artifact.repository.ArtifactRepositoryPolicy;
+import org.apache.maven.model.building.ModelBuildingException;
 import org.codehaus.plexus.PlexusContainerException;
 import org.codehaus.plexus.classworlds.ClassWorld;
 import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.codehaus.plexus.configuration.PlexusConfigurationException;
 import java.util.prefs.Preferences;
+import org.apache.maven.model.Model;
+import org.apache.maven.model.building.DefaultModelBuildingRequest;
+import org.apache.maven.model.building.ModelBuilder;
+import org.apache.maven.model.building.ModelBuildingRequest;
+import org.apache.maven.model.building.ModelBuildingResult;
 import org.codehaus.plexus.ContainerConfiguration;
 import org.codehaus.plexus.DefaultContainerConfiguration;
 import org.codehaus.plexus.DefaultPlexusContainer;
@@ -439,6 +446,27 @@ public final class EmbedderFactory {
         }
         return null;
     }
+
+    public static List<Model> createModelLineage(File pom, MavenEmbedder embedder) throws ModelBuildingException {
+        //TODO
+        ModelBuilder mb;
+        try {
+            mb = embedder.getPlexusContainer().lookup(ModelBuilder.class);
+        } catch (ComponentLookupException ex) {
+            Exceptions.printStackTrace(ex);
+            return Collections.<Model>emptyList();
+        }
+        ModelBuildingRequest req = new DefaultModelBuildingRequest();
+        req.setPomFile(pom);
+        req.setProcessPlugins(false);
+        ModelBuildingResult res = mb.build(req);
+        List<Model> toRet = new ArrayList<Model>();
+        for (String id : res.getModelIds()) {
+            toRet.add(res.getRawModel(id));
+        }
+        return toRet;
+    }
+
 
 //    /**
 //     * creates model lineage for the given pom file.

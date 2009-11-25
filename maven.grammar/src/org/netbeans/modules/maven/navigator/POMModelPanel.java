@@ -70,8 +70,8 @@ import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.text.JTextComponent;
 import javax.xml.namespace.QName;
-import org.apache.maven.project.ProjectBuildingException;
-import org.apache.maven.project.build.model.ModelLineage;
+import org.apache.maven.model.Model;
+import org.apache.maven.model.building.ModelBuildingException;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.model.pom.ModelList;
@@ -291,14 +291,15 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
             // can be null for stuff in jars?
             if (file != null) {
                 try {
-                    ModelLineage lin = EmbedderFactory.createModelLineage(file, EmbedderFactory.getOnlineEmbedder(), false);
+                    List<Model> lin = EmbedderFactory.createModelLineage(file, EmbedderFactory.getOnlineEmbedder());
                     @SuppressWarnings("unchecked")
-                    Iterator<File> it = lin.fileIterator();
+                    Iterator<Model> it = lin.iterator();
                     List<Project> prjs = new ArrayList<Project>();
                     List<POMModel> mdls = new ArrayList<POMModel>();
                     POMQNames names = null;
                     while (it.hasNext()) {
-                        File pom = it.next();
+                        Model m = it.next();
+                        File pom = m.getPomFile();
                         //#163933 just say no to null values..
                         if (pom == null) continue;
                         pom = FileUtil.normalizeFile(pom);
@@ -328,7 +329,7 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                            explorerManager.setRootContext(hold.createNode());
                         } 
                     });
-                } catch (ProjectBuildingException ex) {
+                } catch (ModelBuildingException ex) {
                     Logger.getLogger(getClass().getName()).log(Level.FINE, "Error reading model lineage", ex);
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
