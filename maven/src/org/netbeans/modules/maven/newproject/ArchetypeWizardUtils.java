@@ -114,9 +114,8 @@ public class ArchetypeWizardUtils {
 
         Archetype arch = new Archetype();
         arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.0-SNAPSHOT"); //NOI18N
+        arch.setVersion("1.0.1"); //NOI18N
         arch.setArtifactId("webapp-javaee6"); //NOI18N
-        arch.setRepository("http://snapshots.repository.codehaus.org");
         WEB_APP_ARCHS[0] = arch;
 
         arch = new Archetype();
@@ -134,9 +133,8 @@ public class ArchetypeWizardUtils {
         EJB_ARCHS = new Archetype[3];
         arch = new Archetype();
         arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.0-SNAPSHOT"); //NOI18N
+        arch.setVersion("1.0.1"); //NOI18N
         arch.setArtifactId("ejb-javaee6"); //NOI18N
-        arch.setRepository("http://snapshots.repository.codehaus.org");
         EJB_ARCHS[0] = arch;
 
         arch = new Archetype();
@@ -154,9 +152,8 @@ public class ArchetypeWizardUtils {
         EAR_ARCHS = new Archetype[3];
         arch = new Archetype();
         arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.0-SNAPSHOT"); //NOI18N
+        arch.setVersion("1.0"); //NOI18N
         arch.setArtifactId("ear-javaee6"); //NOI18N
-        arch.setRepository("http://snapshots.repository.codehaus.org");
         EAR_ARCHS[0] = arch;
 
         arch = new Archetype();
