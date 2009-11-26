@@ -138,8 +138,6 @@ public class FileInformation implements Serializable {
      */ 
     public static final int STATUS_VERSIONED_ADDEDLOCALLY       = 4096;
 
-    public static final int STATUS_VERSIONED_ADDEDLOCALLY1       = 8182;
-
     /**
      * The file has an active lock against it.
      */
