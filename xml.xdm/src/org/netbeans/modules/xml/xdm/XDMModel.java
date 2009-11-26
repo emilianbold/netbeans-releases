@@ -563,10 +563,6 @@ public class XDMModel {
                         throw new IndexOutOfBoundsException();
                     newElement.addAttribute((Attribute)newNode,offset);
                 } else {
-                    //reset id, since adding root element
-                    if(newParent instanceof Document && newNode instanceof Element)
-                        resetIdMeter();
-                    
                     if (offset>newParent.getChildNodes().getLength())
                         throw new IndexOutOfBoundsException();
                     if(offset<newParent.getChildNodes().getLength()) {
@@ -613,9 +609,6 @@ public class XDMModel {
     public synchronized List<Node> append(Node parent, Node node) {
         Updater appender = new Updater() {
             public void update(Node parent, Node oldNode, Node newNode) {
-                //reset id, since adding root element
-                if(parent instanceof Document && newNode instanceof Element)
-                    resetIdMeter();
                 parent.appendChild(newNode);
             }
         };
@@ -1000,13 +993,6 @@ public class XDMModel {
         int nodeId = nodeCount;
         nodeCount++;
         return nodeId;
-    }
-    
-    /**
-     * resets id meter
-     */
-    private void resetIdMeter() {
-        nodeCount = 1;
     }
     
     private boolean isPretty() {
