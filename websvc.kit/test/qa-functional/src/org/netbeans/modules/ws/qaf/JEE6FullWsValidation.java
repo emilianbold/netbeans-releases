@@ -89,7 +89,6 @@ public class JEE6FullWsValidation extends J2eeTestCase {
                     "testAddOperation",
                     "testSetSOAP",
                     "testGenerateWSDL",
-                    "testStartServer",
                     "testWsHandlers",
                     "testDeployWsProject",
                     "testTestWS",
