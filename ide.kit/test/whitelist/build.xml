@@ -86,7 +86,7 @@ made subject to such option by the copyright holder.
     
     <target name="download-project" depends="init-download-project" if="do-download-project">
         <mkdir dir="${temp_dir}"/>
-        <get src="http://hg.netbeans.org/binaries/26E4A68F5D4D8D3AACEC6FB44B11314A0389807C-lime6.zip"
+        <get src="http://hg.netbeans.org/binaries/0FB47E1F630A4074F493055291439BC18B025A95-lime6.zip"
             dest="${temp_dir}/lime6.zip"/>
     </target>
     
