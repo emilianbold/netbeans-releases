@@ -378,6 +378,10 @@ public class LineBreakpointPanel extends JPanel implements ControllerProvider, o
                 setErrorMessage(NbBundle.getMessage(LineBreakpointPanel.class, "MSG_NonExistent_File_Spec"));
                 setValid(false);
                 return ;
+            } else if (!"text/x-java".equals(fo.getMIMEType())) {
+                setErrorMessage(NbBundle.getMessage(LineBreakpointPanel.class, "MSG_NonJava_File_Spec"));
+                setValid(false);
+                return ;
             }
             int line;
             try {
