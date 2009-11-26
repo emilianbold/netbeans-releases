@@ -465,7 +465,8 @@ final public class WebProjectProperties {
             
             Profile j2eeProfile = project.getAPIWebModule().getJ2eeProfile();
             FileObject webInf = project.getAPIWebModule().getWebInf();
-            if (shouldCreateWebXml() && webInf != null) {
+            FileObject ddFo = project.getAPIWebModule().getDeploymentDescriptor();
+            if (ddFo == null && shouldCreateWebXml() && webInf != null) {
                 DDHelper.createWebXml(j2eeProfile, webInf);
             }
 
