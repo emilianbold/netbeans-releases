@@ -117,7 +117,7 @@ public final class RubyIndexerHelper {
             if (isRubyStubs(fo)) {
                 rdocs = getCallSeq(child, parserResult.getSnapshot());
             } else if (TypeInferenceSettings.getDefault().getRdocTypeInference()) {
-                rdocs = AstUtilities.gatherDocumentation(parserResult.getSnapshot(), root);
+                rdocs = AstUtilities.gatherDocumentation(parserResult.getSnapshot(), child.getNode());
             }
 
             // See if the method takes blocks
