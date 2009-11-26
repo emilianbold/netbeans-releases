@@ -74,6 +74,14 @@ public final class ImportUtils {
     }
 
     public static List<String> parseEnvironment(String s) {
+        return parse(s, true);
+    }
+
+    public static List<String> parseArgs(String s) {
+        return parse(s, false);
+    }
+
+    private static List<String> parse(String s, boolean onlyEnv) {
         List<String> res = new ArrayList<String>();
         if (s == null) {
             return res;
@@ -93,6 +101,9 @@ public final class ImportUtils {
                         i++;
                         continue;
                     }
+                    if (!onlyEnv) {
+                        key.append(c);
+                    }
                     i++;
                     int q = 0;
                     for(;i < s.length(); i++){
@@ -106,6 +117,9 @@ public final class ImportUtils {
                         }
                         if (q == 0 && s.charAt(i) == ' '){ //NOI18N
                             break;
+                        }
+                        if (!onlyEnv) {
+                            key.append(c);
                         }
                     }
                     continue;
@@ -122,7 +136,12 @@ public final class ImportUtils {
                             res.add(key+"="+value); //NOI18N
                         }
                         inValue = false;
+                    } else if (!onlyEnv){
+                        if (key.length() > 0) {
+                            res.add(key.toString());
+                        }
                     }
+
                     key.setLength(0);
                     value.setLength(0);
                     i++;
@@ -164,6 +183,10 @@ public final class ImportUtils {
         if (inValue) {
             if (key.length() > 0) {
                 res.add(key+"="+value); //NOI18N
+            }
+        } else if (!onlyEnv){
+            if (key.length() > 0) {
+                res.add(key.toString());
             }
         }
         return res;
