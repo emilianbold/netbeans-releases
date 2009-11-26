@@ -41,8 +41,10 @@ package org.netbeans.modules.cnd.remote.project;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Future;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
@@ -54,9 +56,14 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.ui.wizards.MakeSampleProjectIterator;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.netbeans.modules.cnd.remote.support.RemoteTestBase;
+import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
+import org.netbeans.modules.nativeexecution.test.RcFile;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -76,6 +83,16 @@ public class RemoteBuildTestBase extends RemoteTestBase {
 
     public RemoteBuildTestBase(String testName) {
         super(testName);
+    }
+
+    protected int getSampleBuildTimeout() throws Exception {
+        int result = 60;
+        RcFile rcFile = NativeExecutionTestSupport.getRcFile();
+        String timeout = rcFile.get("remote", "sample.build.timeout");
+        if (timeout != null) {
+            result = Integer.parseInt(timeout);
+        }
+        return result;
     }
 
     protected static void instantiateSample(String name, File destdir) throws IOException {
@@ -104,7 +121,7 @@ public class RemoteBuildTestBase extends RemoteTestBase {
         return list;
     }
 
-    protected void setupHost() {
+    protected void setupHost() throws Exception {
         setupHost((String) null);
     }
 
@@ -116,7 +133,7 @@ public class RemoteBuildTestBase extends RemoteTestBase {
         ((RemoteServerRecord) record).setSyncFactory(syncFactory);
     }
 
-    protected void setupHost(String remoteSyncFactoryID) {
+    protected void setupHost(String remoteSyncFactoryID) throws Exception {
         ExecutionEnvironment env = getTestExecutionEnvironment();
         setupHost(env);
         RemoteSyncFactory syncFactory = null;
@@ -129,6 +146,11 @@ public class RemoteBuildTestBase extends RemoteTestBase {
         RemoteServerRecord rec = (RemoteServerRecord) ServerList.addServer(env, env.getDisplayName(), syncFactory, true, true);
         rec.setSyncFactory(syncFactory);
         assertNotNull("Null ServerRecord for " + env, rec);
+        String home = RemoteUtil.getHomeDirectory(env);
+        String root = home + "/netbeans/.remote";
+        Future<Integer> rmDirTask = CommonTasksSupport.rmDir(env, root, true, new PrintWriter(System.err));
+        rmDirTask.get();
+        assertFalse(HostInfoUtils.fileExists(env, root));
     }
 
     protected FileObject prepareSampleProject(String sampleName, String projectDirShortName) throws IOException {

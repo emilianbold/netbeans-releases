@@ -77,7 +77,7 @@ public class RemoteBuildSamplesTestCase extends RemoteBuildTestBase {
 
         FileObject projectDirFO = prepareSampleProject(projectName, "Args_01");
         MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
-        buildProject(makeProject, 60, TimeUnit.SECONDS);
+        buildProject(makeProject, getSampleBuildTimeout(), TimeUnit.SECONDS);
     }
 
     @ForAllEnvironments
@@ -94,11 +94,11 @@ public class RemoteBuildSamplesTestCase extends RemoteBuildTestBase {
         FileObject projectDirFO = prepareSampleProject("Arguments", "Args_02");
         MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
         System.err.printf("BUILDING FIRST TIME\n");
-        buildProject(makeProject, 60, TimeUnit.SECONDS);
+        buildProject(makeProject, getSampleBuildTimeout(), TimeUnit.SECONDS);
         System.err.printf("BUILDING SECOND TIME\n");
-        buildProject(makeProject, 30, TimeUnit.SECONDS);
+        buildProject(makeProject, getSampleBuildTimeout()/2, TimeUnit.SECONDS);
         System.err.printf("BUILDING THIRD TIME\n");
-        buildProject(makeProject, 30, TimeUnit.SECONDS);
+        buildProject(makeProject, getSampleBuildTimeout()/2, TimeUnit.SECONDS);
     }
 
     public static Test suite() {
