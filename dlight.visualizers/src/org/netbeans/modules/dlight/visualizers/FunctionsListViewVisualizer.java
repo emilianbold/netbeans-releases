@@ -899,9 +899,9 @@ public class FunctionsListViewVisualizer extends JPanel implements
         }
     }
 
-    private class ExtendedTableCellRendererForNode extends DefaultTableCellRenderer {
+    private static class ExtendedTableCellRendererForNode extends DefaultTableCellRenderer {
 
-        private final String dots = " ... "; // NOI18N
+        private final static String dots = " ... "; // NOI18N
         private final Graphics2D scratchGraphics = new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB).createGraphics();
         private String string;
         private int cellwidth;
