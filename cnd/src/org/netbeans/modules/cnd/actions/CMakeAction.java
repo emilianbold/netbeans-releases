@@ -152,6 +152,9 @@ public class CMakeAction extends AbstractExecutorRunAction {
         .addNativeProcessListener(processChangeListener);
         npb.redirectError();
         List<String> list = ImportUtils.parseArgs(argsFlat.toString());
+        if (PlatformInfo.getDefault(execEnv).isWindows()) {
+            list = ImportUtils.toUnixPath(list);
+        }
         npb.setExecutable(executable);
         npb.setArguments(list.toArray(new String[list.size()]));
 

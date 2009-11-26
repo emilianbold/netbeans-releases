@@ -49,7 +49,6 @@ import java.util.Map;
 import java.util.concurrent.Future;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.ExecutionDescriptor.LineConvertorFactory;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
@@ -191,6 +190,9 @@ public class ShellRunAction extends AbstractExecutorRunAction {
         npb.getEnvironment().putAll(envMap);
         npb.redirectError();
         List<String> list = ImportUtils.parseArgs(argsFlat.toString());
+        if (PlatformInfo.getDefault(execEnv).isWindows()) {
+            list = ImportUtils.toUnixPath(list);
+        }
         npb.setExecutable(shellCommand);
         npb.setArguments(list.toArray(new String[list.size()]));
 
