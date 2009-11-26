@@ -1197,7 +1197,7 @@ exists or setup the property manually. For example like this:
             </target>
             
             <target name="dist-ear">
-                <xsl:attribute name="depends">init,-init-cos,compile,-pre-dist,do-ear-dist,-post-dist</xsl:attribute>
+                <xsl:attribute name="depends">init,-clean-webinf-lib,-init-cos,compile,-pre-dist,do-ear-dist,-post-dist</xsl:attribute>
                 <xsl:attribute name="description">Build distribution (WAR) to be packaged into an EAR.</xsl:attribute>
             </target>
             
