@@ -63,7 +63,7 @@ import java.util.*;
 final class GlobalFolderRegistry {
     
     private static final String FILE_SYSTEM_FOLDER_NAME = "/inspectorfolders";  // NOI18N
-    private static final HashMap<String, WeakReference<GlobalFolderRegistry>> registries = new HashMap<String, WeakReference<GlobalFolderRegistry>>();
+    private static final Map<String, WeakReference<GlobalFolderRegistry>> registries = new HashMap<String, WeakReference<GlobalFolderRegistry>>();
     
     static GlobalFolderRegistry getGlobalFolderRegistry(String projectType) {
         assert Debug.isFriend(FolderRegistry.class);

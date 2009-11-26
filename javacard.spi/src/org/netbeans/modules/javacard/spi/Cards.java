@@ -52,6 +52,7 @@ import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  * The set of Card objects owned by a JavacardPlatform, which can be
@@ -163,11 +164,39 @@ public abstract class Cards {
     }
 
     /**
+     * Create a Children object which, if necessary, will contain a fake
+     * card with the given system id
+     * @param expectedCardSystemId The system ID for a card that is expected to
+     * exist
+     * @return
+     */
+    public Children createChildren(String expectedCardSystemId) {
+        return Children.create(new CF(expectedCardSystemId), true);
+    }
+
+    /**
      * Fire a change, indicating to any listener that the set of cards
      * has changed.
      */
     protected final void fireChange() {
         supp.fireChange();
+    }
+
+    /**
+     * Find a card with the given system ID (usually DataObject name).
+     * @param systemId The system ID, unique per platform
+     * @param <code>returnDummyCard</code> If true, never return null, but return a card
+     * with the requested name which returns false from isValid().
+     * @return A card or null if no card with that ID exists and
+     * <code>returnDummyCard</code> is false
+     */
+    public final Card find (String systemId, boolean returnDummyCard) {
+        for (Card c : getCards(false)) {
+            if (systemId.equals(c.getSystemId())) {
+                return c;
+            }
+        }
+        return returnDummyCard ? AbstractCard.createBrokenCard(systemId) : null;
     }
 
     private Card findCard(Lookup.Provider prov) {
@@ -188,6 +217,14 @@ public abstract class Cards {
     }
 
     private class CF extends ChildFactory.Detachable<Lookup.Provider> implements ChangeListener {
+        private final String brokenCardName;
+        CF(String brokenCardName) {
+            this.brokenCardName = brokenCardName;
+        }
+
+        CF() {
+            this(null);
+        }
 
         @Override
         protected void addNotify() {
@@ -204,6 +241,19 @@ public abstract class Cards {
         @Override
         protected boolean createKeys(List<Lookup.Provider> toPopulate) {
             toPopulate.addAll(getCardSources());
+            if (brokenCardName != null) {
+                boolean found = false;
+                for (Lookup.Provider lp : toPopulate) {
+                    Card card = lp.getLookup().lookup(Card.class);
+                    found = card != null && brokenCardName.equals(card.getSystemId());
+                    if (found) {
+                        break;
+                    }
+                }
+                if (!found) {
+                    toPopulate.add(new DummyProvider(brokenCardName));
+                }
+            }
             return true;
         }
 
@@ -264,6 +314,38 @@ public abstract class Cards {
         @Override
         public Image getOpenedIcon(int type) {
             return getIcon(type);
+        }
+    }
+
+    private static final class DummyProvider implements Lookup.Provider {
+        private final Card dummyCard;
+        DummyProvider(String s) {
+            dummyCard = AbstractCard.createBrokenCard(s);
+        }
+
+        public Lookup getLookup() {
+            return Lookups.singleton(dummyCard);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final DummyProvider other = (DummyProvider) obj;
+            if (this.dummyCard != other.dummyCard && (this.dummyCard == null ||
+                    !this.dummyCard.equals(other.dummyCard))) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            return dummyCard.getSystemId().hashCode();
         }
     }
 }

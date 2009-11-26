@@ -85,6 +85,7 @@ import org.netbeans.modules.bugzilla.BugzillaConnector;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
+import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.netbeans.modules.bugzilla.query.QueryParameter.CheckBoxParameter;
 import org.netbeans.modules.bugzilla.query.QueryParameter.ComboParameter;
@@ -125,6 +126,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     private final ListParameter changedFieldsParameter;
     private final ListParameter severityParameter;
     private final ListParameter issueTypeParameter;
+    private final ListParameter tmParameter;
 
     private final Map<String, QueryParameter> parameters;
 
@@ -181,6 +183,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         panel.severityList.addKeyListener(this);
         panel.priorityList.addKeyListener(this);
         panel.changedList.addKeyListener(this);
+        panel.tmList.addKeyListener(this);
 
         panel.summaryTextField.addActionListener(this);
         panel.commentTextField.addActionListener(this);
@@ -207,10 +210,13 @@ public class QueryController extends BugtrackingController implements DocumentLi
         changedFieldsParameter = createQueryParameter(ListParameter.class, panel.changedList, "chfield");           // NOI18N
         if(isNetbeans) {
             issueTypeParameter = createQueryParameter(ListParameter.class, panel.issueTypeList, "cf_bug_type");     // NOI18N
+            tmParameter = createQueryParameter(ListParameter.class, panel.tmList, "target_milestone");       // NOI18N
             severityParameter = null;
+
         } else {
             severityParameter = createQueryParameter(ListParameter.class, panel.severityList, "bug_severity");      // NOI18N
             issueTypeParameter = null;
+            tmParameter = null;
         }
 
         createQueryParameter(TextFieldParameter.class, panel.summaryTextField, "short_desc");                       // NOI18N
@@ -267,7 +273,9 @@ public class QueryController extends BugtrackingController implements DocumentLi
             refreshTask.cancel();
         }
         if(query.isSaved()) {
-            repository.stopRefreshing(query);
+            if(!(query.getRepository() instanceof KenaiRepository)) {
+                repository.stopRefreshing(query);
+            }
         }
     }
 
@@ -549,8 +557,8 @@ public class QueryController extends BugtrackingController implements DocumentLi
        Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
             public void run() {
                 Bugzilla.LOG.fine("on save start");
-                String name = query.getDisplayName();                
-                if(!query.isSaved()) {                
+                String name = query.getDisplayName();
+                if(!query.isSaved()) {
                     name = getSaveName();
                     if(name == null) {
                         return;
@@ -834,6 +842,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
         List<String> newComponents = new ArrayList<String>();
         List<String> newVersions = new ArrayList<String>();
+        List<String> newTargetMilestone = new ArrayList<String>();
         for (String p : products) {
             List<String> productComponents = bc.getComponents(p);
             for (String c : productComponents) {
@@ -847,10 +856,21 @@ public class QueryController extends BugtrackingController implements DocumentLi
                     newVersions.add(c);
                 }
             }
+            if(isNetbeans) {
+                List<String> targetMilestone = bc.getTargetMilestones(p);
+                for (String c : targetMilestone) {
+                    if(!newTargetMilestone.contains(c)) {
+                        newTargetMilestone.add(c);
+                    }
+                }
+            }
         }
 
         componentParameter.setParameterValues(toParameterValues(newComponents));
         versionParameter.setParameterValues(toParameterValues(newVersions));
+        if(isNetbeans) {
+            tmParameter.setParameterValues(toParameterValues(newTargetMilestone));
+        }
     }
 
     private List<ParameterValue> toParameterValues(List<String> values) {

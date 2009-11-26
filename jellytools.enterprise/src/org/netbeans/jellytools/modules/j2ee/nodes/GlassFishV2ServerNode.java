@@ -57,8 +57,8 @@ import org.netbeans.jemmy.operators.JTreeOperator;
 public class GlassFishV2ServerNode extends J2eeServerNode {
 
     public GlassFishV2ServerNode() {
-        super(Bundle.getString("org.netbeans.modules.j2ee.sun.ide.Bundle",
-                "LBL_GlassFishV2"));
+        super(Bundle.getString("org.netbeans.modules.j2ee.sun.ide.j2ee.Bundle",
+                "LBL_GLASSFISH_V2"));
     }
     
     public static GlassFishV2ServerNode invoke() {

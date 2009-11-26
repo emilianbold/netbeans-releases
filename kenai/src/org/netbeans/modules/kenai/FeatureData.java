@@ -55,4 +55,5 @@ public class FeatureData {
     public String web_url;
     public String created_at;
     public String updated_at;
+    public String issue_tracker_type;
 }

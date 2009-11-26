@@ -58,7 +58,6 @@ import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
@@ -66,6 +65,7 @@ import org.netbeans.modules.cnd.remote.ui.wizard.HostValidatorImpl;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.netbeans.modules.cnd.test.CndTestIOProvider;
 import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
 import org.netbeans.modules.nativeexecution.test.RcFile;
@@ -81,12 +81,36 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
 
     protected static final Logger log = RemoteUtil.LOGGER;
 
+    public static enum Sync {
+        FTP("ftp"),
+        RFS("rfs"),
+        ZIP("scp");
+        public final String ID;
+        Sync(String id) {
+            this.ID = id;
+        }
+    }
+
+    public static enum Toolchain {
+        GNU("GNU"),
+        SUN("SunStudio");
+        public final String ID;
+        Toolchain(String id) {
+            this.ID = id;
+        }
+    }
+
     private final static String successLine = "BUILD SUCCESSFUL";
     private final static String failureLine = "BUILD FAILED";
     private final static String[] errorLines = new String[] {
             "Error copying project files",
             "CLEAN FAILED"
         };
+
+    static {
+        System.setProperty("jsch.connection.timeout", "30000");
+        System.setProperty("socket.connection.timeout", "30000");
+    }
 
     static {
         log.addHandler(new Handler() {

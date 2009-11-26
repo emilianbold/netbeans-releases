@@ -84,13 +84,13 @@
                         <specification-version>1.13</specification-version>
                     </run-dependency>
                 </dependency>
-                <dependency>
+                <!--dependency>
                     <code-name-base>org.netbeans.modules.web.beans</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.0</specification-version>
                     </run-dependency>
-                </dependency>
+                </dependency-->
                 <dependency>
                     <code-name-base>org.netbeans.modules.web.client.javascript.debugger.ant</code-name-base>
                     <run-dependency>

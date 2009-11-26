@@ -55,7 +55,6 @@ import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import org.netbeans.modules.mercurial.ui.status.StatusAction;
 import org.netbeans.modules.versioning.util.DelayScanRegistry;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -191,29 +190,23 @@ public class MercurialInterceptor extends VCSInterceptor {
         Mercurial.LOG.log(Level.FINE, "hgMoveImplementation(): File: {0} {1}", new Object[] {srcFile, dstFile}); // NOI18N
 
         srcFile.renameTo(dstFile);
-        Runnable moveImpl = new Runnable() {
-            public void run() {
-                OutputLogger logger = OutputLogger.getLogger(root.getAbsolutePath());
-                try {
-                    if (root.equals(dstRoot)) {
-                        HgCommand.doRenameAfter(root, srcFile, dstFile, logger);
-                    }
-                } catch (HgException e) {
-                    Mercurial.LOG.log(Level.FINE, "Mercurial failed to rename: File: {0} {1}", new Object[] {srcFile.getAbsolutePath(), dstFile.getAbsolutePath()}); // NOI18N
-                } finally {
-                    logger.closeLog();
-                }
-            }
-        };
-
-        rp.post(moveImpl);
+        // no need to do rename after in a background thread, code requiring the bg thread (see #125673) no more exists
+        OutputLogger logger = OutputLogger.getLogger(root.getAbsolutePath());
+        try {
+            if (root.equals(dstRoot)) {
+                HgCommand.doRenameAfter(root, srcFile, dstFile, logger);
+             }
+        } catch (HgException e) {
+            Mercurial.LOG.log(Level.FINE, "Mercurial failed to rename: File: {0} {1}", new Object[]{srcFile.getAbsolutePath(), dstFile.getAbsolutePath()}); // NOI18N
+        } finally {
+            logger.closeLog();
+        }
     }
 
     @Override
     public void afterMove(final File from, final File to) {
         Mercurial.LOG.fine("afterMove " + from + "->" + to);
         if (from == null || to == null || !to.exists()) return;
-        if (to.isDirectory()) return;
 
         File parent = from.getParentFile();
         // There is no point in refreshing the cache for ignored files.
@@ -274,7 +267,6 @@ public class MercurialInterceptor extends VCSInterceptor {
     @Override
     public void afterCreate(final File file) {
         Mercurial.LOG.fine("afterCreate " + file);
-        if (file.isDirectory()) return;
         // There is no point in refreshing the cache for ignored files.
         if (!HgUtils.isIgnored(file, false)) {
             reScheduleRefresh(800, file);
@@ -298,18 +290,8 @@ public class MercurialInterceptor extends VCSInterceptor {
         } else if("ProvidedExtensions.Refresh".equals(attrName)) {
             return new Runnable() {
                 public void run() {
-                    try {
-                        File repository = Mercurial.getInstance().getRepositoryRoot(file);
-                        if (repository == null) {
-                            return;
-                        }
-                        FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
-                        cache.refreshCached(file);
-                        StatusAction.refreshFile(file, repository, null, cache);
-                    } catch (HgException ex) {
-                        ExceptionHandler eh = new ExceptionHandler(ex);
-                        eh.notifyException();
-                    }
+                    FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
+                    cache.refreshCached(file);
                 }
             };
         } else {
@@ -326,25 +308,15 @@ public class MercurialInterceptor extends VCSInterceptor {
     }
 
     private void reScheduleRefresh(int delayMillis, File fileToRefresh) {
-        if (!"false".equals(System.getProperty("mercurial.onEventRefreshRoot"))) { //NOI18N
-            // refresh all at once
-            Mercurial.STATUS_LOG.fine("reScheduleRefresh: adding " + fileToRefresh.getAbsolutePath());
-            if (HgUtils.isPartOfMercurialMetadata(fileToRefresh)) {
-                if ("dirstate".equals(fileToRefresh.getName())) {
-                    // XXX handle dirstate events
-                    Mercurial.STATUS_LOG.fine("special FS event handling for " + fileToRefresh.getAbsolutePath());
-                }
-            } else {
-                filesToRefresh.add(fileToRefresh);
+        // refresh all at once
+        Mercurial.STATUS_LOG.fine("reScheduleRefresh: adding " + fileToRefresh.getAbsolutePath());
+        if (HgUtils.isPartOfMercurialMetadata(fileToRefresh)) {
+            if ("dirstate".equals(fileToRefresh.getName())) {
+                // XXX handle dirstate events
+                Mercurial.STATUS_LOG.fine("special FS event handling for " + fileToRefresh.getAbsolutePath());
             }
         } else {
-            // refresh one by one
-            File parent = fileToRefresh.getParentFile();
-            if (!filesToRefresh.contains(parent)) {
-                if (!filesToRefresh.offer(parent)) {
-                    Mercurial.LOG.log(Level.FINE, "reScheduleRefresh failed to add to filesToRefresh queue {0}", fileToRefresh);
-                }
-            }
+            filesToRefresh.add(fileToRefresh);
         }
         refreshTask.schedule(delayMillis);
     }
@@ -388,23 +360,13 @@ public class MercurialInterceptor extends VCSInterceptor {
             if (DelayScanRegistry.getInstance().isDelayed(refreshTask, Mercurial.STATUS_LOG, "MercurialInterceptor.refreshTask")) { //NOI18N
                 return;
             }
-            File fileToRefresh;
-            if (!"false".equals(System.getProperty("mercurial.onEventRefreshRoot"))) { //NOI18N
-                // fill a fileset with all the modified files
-                HashSet<File> files = new HashSet<File>(filesToRefresh.size());
-                File file;
-                while ((file = filesToRefresh.poll()) != null) {
-                    files.add(file);
-                }
-                refreshAll(files);
-            } else if ((fileToRefresh = filesToRefresh.poll()) != null) {
-                Mercurial.LOG.log(Level.INFO, "RefreshTask called refreshAll {0}", fileToRefresh);
-                cache.refreshAll(fileToRefresh);
-                fileToRefresh = filesToRefresh.peek();
-                if (fileToRefresh != null) {
-                    refreshTask.schedule(0);
-                }
+            // fill a fileset with all the modified files
+            HashSet<File> files = new HashSet<File>(filesToRefresh.size());
+            File file;
+            while ((file = filesToRefresh.poll()) != null) {
+                files.add(file);
             }
+            refreshAll(files);
         }
     }
 

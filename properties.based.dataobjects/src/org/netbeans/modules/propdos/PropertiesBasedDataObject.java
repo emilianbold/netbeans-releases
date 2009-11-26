@@ -289,6 +289,12 @@ public abstract class PropertiesBasedDataObject<T> extends MultiDataObject {
             return propsAdapter.asProperties().getProperty(getName());
         }
 
+        @Override
+        public String getShortDescription() {
+            //Often will not fit in visible area
+            return propsAdapter.asProperties().getProperty(getName());
+        }
+
         S s;
         @Override
         public PropertyEditor getPropertyEditor() {

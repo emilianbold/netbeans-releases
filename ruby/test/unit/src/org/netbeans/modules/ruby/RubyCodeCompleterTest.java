@@ -431,6 +431,14 @@ public class RubyCodeCompleterTest extends RubyCodeCompleterTestBase {
         checkCompletion("testfiles/alias_method.rb", "Close.new.so_^so_close");
     }
 
+    public void testDefineMethod() throws Exception {
+        checkCompletion("testfiles/define_method.rb", "Calcutec.new.lau^nder");
+    }
+
+    public void testDefineMethod2() throws Exception {
+        checkCompletion("testfiles/define_method.rb", "Calcutec.new.shuffle_dat^a");
+    }
+
     // TODO uncomment when reindexed
 //    public void testIndexedConstantMethods() throws Exception {
 //        checkCompletion("testfiles/constants.rb", "REXML::COPYRIGHT.ls^");

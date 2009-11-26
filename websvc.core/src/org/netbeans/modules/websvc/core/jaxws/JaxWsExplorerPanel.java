@@ -43,7 +43,6 @@ package org.netbeans.modules.websvc.core.jaxws;
 
 import java.awt.Image;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import javax.swing.JPanel;
 import java.beans.PropertyChangeEvent;
@@ -143,42 +142,48 @@ public class JaxWsExplorerPanel extends JPanel implements ExplorerManager.Provid
         AbstractNode explorerClientRoot = new AbstractNode(rootChildren);
         List<Node> projectNodeList = new ArrayList<Node>();
         for (Project prj : projects) {
-            LogicalViewProvider logicalProvider = (LogicalViewProvider)prj.getLookup().lookup(LogicalViewProvider.class);
-            if (logicalProvider!=null) {
-                Node rootNode = logicalProvider.createLogicalView();
-                WebServiceData wsData = WebServiceData.getWebServiceData(prj);
-                if (wsData != null && wsData.getServiceProviders().size() > 0) {
-                    List<WebService> webServices = wsData.getServiceProviders();
-                    if (webServices.size() > 0) {
-                        Children children = new Children.Array();
-                        List<Node> serviceNodes = new ArrayList<Node>();
-                        int i = 0;
-                        for (WebService service : webServices) {
-                            Node n = service.createNode();
-                            if (n != null) {
-                                serviceNodes.add(new ServiceNode(n));
-                            }
+            WebServiceData wsData = WebServiceData.getWebServiceData(prj);
+            if (wsData != null) {
+                List<WebService> webServices = wsData.getServiceProviders();
+                if (webServices.size() > 0) {
+                    Children children = new Children.Array();
+                    List<Node> serviceNodes = new ArrayList<Node>();
+                    int i = 0;
+                    for (WebService service : webServices) {
+                        Node n = service.createNode();
+                        if (n != null) {
+                            serviceNodes.add(new ServiceNode(n));
                         }
+                    }
+                    LogicalViewProvider logicalProvider = (LogicalViewProvider)prj.getLookup().lookup(LogicalViewProvider.class);
+                    if (logicalProvider!=null) {
                         children.add(serviceNodes.toArray(new Node[serviceNodes.size()]));
+                        Node rootNode = logicalProvider.createLogicalView();
                         projectNodeList.add(new ProjectNode(children, rootNode));
                     }
                 }
-                // this is a hook for other services (Axis) to be accessible
-                Children projectChildren = rootNode.getChildren();
-                if (projectChildren.getNodesCount() > 0) {
-                    Node[] projectSubnodes = projectChildren.getNodes();
-                    for (Node n:projectSubnodes) {
-                        if (n.getValue("is_web_service_root") != null) { //NOI18N
-                            Children children = new Children.Array();
-                            Children originalServiceChildren = n.getChildren();
-                            if (originalServiceChildren.getNodesCount() > 0) {
-                                Node[] otherServiceNodes = originalServiceChildren.getNodes();
-                                Node[] serviceNodes = new Node[otherServiceNodes.length];
-                                for (int j = 0;j < otherServiceNodes.length; j++) {
-                                    serviceNodes[j] = new ServiceNode(otherServiceNodes[j]);
+            } else {
+                LogicalViewProvider logicalProvider = (LogicalViewProvider)prj.getLookup().lookup(LogicalViewProvider.class);
+                if (logicalProvider!=null) {
+                    Node rootNode = logicalProvider.createLogicalView();
+                    // this is a hook for other services (Axis) to be accessible
+                    Children projectChildren = rootNode.getChildren();
+                    if (projectChildren.getNodesCount() > 0) {
+                        Node[] projectSubnodes = projectChildren.getNodes();
+                        for (Node n:projectSubnodes) {
+                            if (n.getValue("is_web_service_root") != null) { //NOI18N
+                                Children children = new Children.Array();
+                                Children originalServiceChildren = n.getChildren();
+                                if (originalServiceChildren.getNodesCount() > 0) {
+                                    Node[] otherServiceNodes = originalServiceChildren.getNodes();
+                                    Node[] serviceNodes = new Node[otherServiceNodes.length];
+                                    for (int j = 0;j < otherServiceNodes.length; j++) {
+                                        serviceNodes[j] = new ServiceNode(otherServiceNodes[j]);
+                                    }
+                                    children.add(serviceNodes);
+                                    projectNodeList.add(new ProjectNode(children, rootNode));
                                 }
-                                children.add(serviceNodes);
-                                projectNodeList.add(new ProjectNode(children, rootNode));
+                                break;
                             }
                         }
                     }
@@ -237,10 +242,12 @@ public class JaxWsExplorerPanel extends JPanel implements ExplorerManager.Provid
             setName(rootNode.getDisplayName());
         }
         
+        @Override
         public Image getIcon(int type) {
             return rootNode.getIcon(type);
         }
         
+        @Override
         public Image getOpenedIcon(int type) {
             return rootNode.getOpenedIcon(type);
         }

@@ -44,7 +44,7 @@ made subject to such option by the copyright holder.
                  "-//NetBeans//DTD annotation type 1.0//EN"
                  "http://www.netbeans.org/dtds/annotation-type-1_0.dtd">
        <type name="org-netbeans-modules-editor-java-has_implementations"
-             description_key="LAB_IsOverridenAnnotation"
-             localizing_bundle="org.netbeans.modules.java.Bundle"
+             description_key="LAB_HasImplementationsAnnotation"
+             localizing_bundle="org.netbeans.modules.java.editor.overridden.Bundle"
              visible="true"
              glyph="nbresloc:/org/netbeans/modules/java/editor/resources/has-implementations.png"/>

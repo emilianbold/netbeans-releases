@@ -70,12 +70,12 @@ public final class InspectorWrapperTree implements FolderRegistry.Listener {
     private FolderRegistry registry;
     private DesignDocument document;
     private InspectorFolderWrapper rootFolderWrapper;
-    private WeakSet<DesignComponent> componentsToDelete;
-    private WeakSet<DesignComponent> componentsToAdd;
-    private WeakSet<DesignComponent> componentsToUndo;
-    private WeakSet<InspectorFolderWrapper> foldersToUpdate;
-    private WeakSet<DesignComponent> deletedComponentsCash;
-    private WeakSet<InspectorFolderWrapper> foldersToExtend;
+    private Collection<DesignComponent> componentsToDelete;
+    private Collection<DesignComponent> componentsToAdd;
+    private Collection<DesignComponent> componentsToUndo;
+    private Collection<InspectorFolderWrapper> foldersToUpdate;
+    private Collection<DesignComponent> deletedComponentsCash;
+    private Collection<InspectorFolderWrapper> foldersToExtend;
     private boolean lock = true;
     private InspectorUI ui;
 
@@ -168,7 +168,7 @@ public final class InspectorWrapperTree implements FolderRegistry.Listener {
         }
 
         if (wrapperChildren != null) {
-            WeakSet<InspectorFolderWrapper> wrappersToDelete = null;
+            Collection<InspectorFolderWrapper> wrappersToDelete = null;
             for (InspectorFolderWrapper folder : wrapperChildren) {
                 if (componentsToDelete != null && folder != null && folder.getFolder() != null && folder.getFolder().getComponentID() != null) {
                     for (DesignComponent component : componentsToDelete) {

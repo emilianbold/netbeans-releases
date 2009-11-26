@@ -332,8 +332,10 @@ public class ManufacturerConverter {
     public Manufacturer resolveEntity(EntityManager em) {
         Collection<Product> productCollection = entity.getProductCollection();
         Collection<Product> newproductCollection = new java.util.ArrayList<Product>();
-        for (Product item : productCollection) {
-            newproductCollection.add(em.getReference(Product.class, item.getProductId()));
+        if (productCollection != null) {
+            for (Product item : productCollection) {
+                newproductCollection.add(em.getReference(Product.class, item.getProductId()));
+            }
         }
         entity.setProductCollection(newproductCollection);
         return entity;

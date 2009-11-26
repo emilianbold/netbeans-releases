@@ -126,7 +126,7 @@ public abstract class RestTestBase extends WebServicesTestBase {
         super.setUp();
         //XXX - avoid doubled start/restart of the server
         //because of JDBC driver deployment (IZ #106586)
-        workaroundIZ106586();
+//        workaroundIZ106586();
         try {
             Class.forName(JDBC_DRIVER);
             connection = DriverManager.getConnection(JDBC_URL, DB_USERNAME, DB_PASSWORD);
@@ -151,6 +151,10 @@ public abstract class RestTestBase extends WebServicesTestBase {
      */
     public void testDeploy() throws IOException {
         deployProject(getProjectName());
+    }
+
+    public void testRun() throws IOException {
+        runProject(getProjectName());
     }
 
     /**
@@ -328,6 +332,17 @@ public abstract class RestTestBase extends WebServicesTestBase {
         } else {
             createGoldenFiles(newFiles);
         }
+    }
+
+    @Override
+    public File getGoldenFile(String filename) {
+        String fullClassName = this.getClass().getName().replace("Mvn", "");
+        String goldenFileName = fullClassName.replace('.', '/')+"/"+filename;
+        // golden files are in ${xtest.data}/goldenfiles/${classname}/...
+        File goldenFile = new File(getDataDir()+"/goldenfiles/"+goldenFileName);
+        assertTrue("Golden file not found in the following locations:\n  " + goldenFile,
+                goldenFile.exists());
+        return goldenFile;
     }
 
     private void createGoldenFiles(Set<File> from) {

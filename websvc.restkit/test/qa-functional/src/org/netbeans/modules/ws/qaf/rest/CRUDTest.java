@@ -49,6 +49,7 @@ import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.WizardOperator;
+import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
@@ -57,6 +58,7 @@ import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.ws.qaf.utilities.RestWizardOperator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -64,7 +66,7 @@ import org.openide.filesystems.FileUtil;
  * Tests for New REST web services from Entity Classes wizard
  *
  * Duration of this test suite: aprox. 3min
- * 
+ *
  * @author lukas
  */
 public class CRUDTest extends RestTestBase {
@@ -92,13 +94,16 @@ public class CRUDTest extends RestTestBase {
      * and deploy the project
      */
     public void testRfE() {
+        if (!getProjectType().isAntBasedProject()) {
+            createPU();
+        }
         copyDBSchema();
         //Persistence
         String persistenceLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.ui.resources.Bundle", "Templates/Persistence");
         //Entity Classes from Database
         String fromDbLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.wizard.fromdb.Bundle", "Templates/Persistence/RelatedCMP");
         createNewFile(getProject(), persistenceLabel, fromDbLabel);
-        WizardOperator wo = prepareEntityClasses(new WizardOperator(fromDbLabel), true);
+        WizardOperator wo = prepareEntityClasses(new WizardOperator(fromDbLabel), getProjectType().isAntBasedProject());
         //Finish
         //new JButtonOperator(wo, 7).pushNoBlock();
         //only finish the wizard
@@ -111,7 +116,7 @@ public class CRUDTest extends RestTestBase {
         //RESTful Web Services from Entity Classes
         String restLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "Templates/WebServices/RestServicesFromEntities");
         createNewWSFile(getProject(), restLabel);
-        wo = new WizardOperator(restLabel);
+        wo = new RestWizardOperator(restLabel);
         //have to wait until "retrieving message dissapers (see also issue 122802)
         new EventTool().waitNoEvent(2500);
         //Add All >>
@@ -127,10 +132,14 @@ public class CRUDTest extends RestTestBase {
         jcbo.clearText();
         jcbo.typeText(getRestPackage() + ".converter"); //NOI18N
         wo.finish();
-        waitGorGenerationProgress();
+        waitForGenerationProgress();
         Set<File> files = getFiles(getRestPackage() + ".service"); //NOI18N
         files.addAll(getFiles(getRestPackage() + ".converter")); //NOI18N
-        assertEquals("Some files were not generated", 30, files.size()); //NOI18N
+        if (JavaEEVersion.JAVAEE6.equals(getJavaEEversion())) {
+            assertEquals("Some files were not generated", 29, files.size()); //NOI18N
+        } else {
+            assertEquals("Some files were not generated", 30, files.size()); //NOI18N
+        }
         checkFiles(files);
         //make sure all REST services nodes are visible in project log. view
         assertEquals("missing nodes?", 14, getRestNode().getChildren().length);
@@ -145,8 +154,7 @@ public class CRUDTest extends RestTestBase {
     public void testPropAccess() throws IOException {
         //copy entity class into a project
         FileObject fo = FileUtil.toFileObject(new File(getRestDataDir(), "Person.java.gf")); //NOI18N
-        FileObject targetDir = getProject().getProjectDirectory().getFileObject("src/java"); //NOI18N
-        fo.copy(targetDir.createFolder("entity"), "Person", "java"); //NOI18N
+        fo.copy(getProjectSourceRoot().createFolder("entity"), "Person", "java"); //NOI18N
         try {
             Thread.sleep(1500);
         } catch (InterruptedException ex) {
@@ -192,14 +200,18 @@ public class CRUDTest extends RestTestBase {
         assertEquals("add in available", 7, availableEntities.getModel().getSize()); //NOI18N
         wo.next();
         wo.finish();
-        waitGorGenerationProgress();
+        waitForGenerationProgress();
         try {
             Thread.sleep(1500);
         } catch (InterruptedException ex) {
         }
         Set<File> files = getFiles("service"); //NOI18N
         files.addAll(getFiles("converter")); //NOI18N
-        assertEquals("Some files were not generated", 6, files.size()); //NOI18N
+        if (JavaEEVersion.JAVAEE6.equals(getJavaEEversion())) {
+            assertEquals("Some files were not generated", 5, files.size()); //NOI18N
+        } else {
+            assertEquals("Some files were not generated", 6, files.size()); //NOI18N
+        }
         checkFiles(files);
         //make sure all REST services nodes are visible in project log. view
         assertEquals("missing nodes?", 16, getRestNode().getChildren().length); //NOI18N
@@ -208,7 +220,10 @@ public class CRUDTest extends RestTestBase {
     public void testCreateRestClient() throws IOException {
         // not display browser on run
         // open project properties
-        getProjectRootNode().properties();
+        //Properties
+        String propLabel = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.Bundle", "LBL_Properties_Action");
+        new ActionNoBlock(null, propLabel).performPopup(getProjectRootNode());
+        new EventTool().waitEvent(2000);
         // "Project Properties"
         String projectPropertiesTitle = Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.customizer.Bundle", "LBL_Customizer_Title");
         NbDialogOperator propertiesDialogOper = new NbDialogOperator(projectPropertiesTitle);
@@ -219,13 +234,35 @@ public class CRUDTest extends RestTestBase {
         // confirm properties dialog
         propertiesDialogOper.ok();
         String testRestActionName = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.projects.Bundle", "LBL_TestRestBeansAction_Name");
-        getProjectRootNode().performPopupAction(testRestActionName);
+        Node n = getProjectType().isAntBasedProject() ? getProjectRootNode() : getRestNode();
+        n.performPopupAction(testRestActionName);
+    }
+
+    protected void createPU() {
+        //Persistence
+        String category = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.ui.resources.Bundle", "Templates/Persistence");
+        //Persistence Unit
+        String puLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.wizard.unit.Bundle", "Templates/Persistence/PersistenceUnit");
+        createNewFile(getProject(), category, puLabel);
+        String title = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.unit.Bundle", "LBL_NewPersistenceUnit");
+        WizardOperator wo = new WizardOperator(title);
+        new JComboBoxOperator(wo, 1).selectItem(0); //NOI18N
+        wo.finish();
+        if (!getProjectType().isAntBasedProject()) {
+            new Node(getProjectRootNode(), "Other Sources|src/main/resources|META-INF").expand();
+            new EventTool().waitNoEvent(2500);
+        }
     }
 
     protected void copyDBSchema() {
         //copy dbschema file to the project
         FileObject fo = FileUtil.toFileObject(new File(getRestDataDir(), "sampleDB.dbschema")); //NOI18N
-        FileObject targetDir = getProject().getProjectDirectory().getFileObject("src/conf"); //NOI18N
+        FileObject targetDir = getProject().getProjectDirectory().getFileObject("src");
+        if (getProjectType().isAntBasedProject()) {
+            targetDir = targetDir.getFileObject("conf"); //NOI18N
+        } else {
+            targetDir = targetDir.getFileObject("main/resources/META-INF"); //NOI18N
+        }
         try {
             fo.copy(targetDir, fo.getName(), fo.getExt());
         } catch (IOException ex) {
@@ -274,18 +311,19 @@ public class CRUDTest extends RestTestBase {
 
     protected Set<File> getFiles(String pkg) {
         Set<File> files = new HashSet<File>();
-        File fo = FileUtil.toFile(getProject().getProjectDirectory());
-        File pkgRoot = new File(fo, "src/java/" + pkg.replace('.', '/') + "/"); //NOI18N
+        FileObject fo = getProjectSourceRoot().getFileObject(pkg.replace('.', '/') + "/"); //NOI18N
+        File pkgRoot = FileUtil.toFile(fo);
         if (pkgRoot.listFiles() != null) {
             files.addAll(Arrays.asList(pkgRoot.listFiles()));
         }
         return files;
     }
 
-    protected void waitGorGenerationProgress() {
+    protected void waitForGenerationProgress() {
         //Generating RESTful Web Services from Entity Classes
         String restGenTitle = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_RestSevicicesFromEntitiesProgress");
         waitDialogClosed(restGenTitle);
+        new EventTool().waitNoEvent(1000);
         // wait classpath scanning finished
         waitScanFinished();
     }
@@ -294,7 +332,7 @@ public class CRUDTest extends RestTestBase {
      * Creates suite from particular test cases. You can define order of testcases here.
      */
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(CRUDTest.class),
+        return NbModuleSuite.create(addServerTests(Server.GLASSFISH_V3, NbModuleSuite.createConfiguration(CRUDTest.class),
                 "testRfE", //NOI18N
                 "testPropAccess", //NOI18N
                 "testDeploy", //NOI18N

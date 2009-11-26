@@ -99,7 +99,9 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.queries.SharabilityQuery;
+import org.netbeans.modules.mercurial.HgFileNode;
 import org.netbeans.modules.mercurial.OutputLogger;
+import org.netbeans.modules.mercurial.ui.commit.CommitOptions;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.versioning.util.FileSelector;
 import org.openide.util.HelpCtx;
@@ -964,10 +966,20 @@ itor tabs #66700).
      */
     public static Set<File> getRepositoryRoots(VCSContext context) {
         Set<File> rootsSet = context.getRootFiles();
+        return getRepositoryRoots(rootsSet);
+    }
+
+    /**
+     * Returns repository roots for all root files from context
+     *
+     * @param roots root files
+     * @return repository roots
+     */
+    public static Set<File> getRepositoryRoots (Set<File> roots) {
         Set<File> ret = new HashSet<File>();
 
         // filter managed roots
-        for (File file : rootsSet) {
+        for (File file : roots) {
             if(Mercurial.getInstance().isManaged(file)) {
                 File repoRoot = Mercurial.getInstance().getRepositoryRoot(file);
                 if(repoRoot != null) {
@@ -1049,6 +1061,33 @@ itor tabs #66700).
         return files;
     }
 
+    /**
+     * Returns root files sorted per their repository roots
+     * @param ctx
+     * @param rootFiles
+     * @return
+     */
+    public static Map<File, Set<File>> sortUnderRepository (final VCSContext ctx, boolean rootFiles) {
+        Set<File> files = null;
+        if(ctx != null) {
+            files = rootFiles ? ctx.getRootFiles() : ctx.getFiles();
+        }
+        Map<File, Set<File>> sortedRoots = null;
+        if (files != null) {
+            sortedRoots = new HashMap<File, Set<File>>();
+            for (File file : files) {
+                File r = Mercurial.getInstance().getRepositoryRoot(file);
+                Set<File> repositoryRoots = sortedRoots.get(r);
+                if (repositoryRoots == null) {
+                    repositoryRoots = new HashSet<File>();
+                    sortedRoots.put(r, repositoryRoots);
+                }
+                repositoryRoots.add(file);
+            }
+        }
+        return sortedRoots == null ? Collections.<File, Set<File>>emptyMap() : sortedRoots;
+    }
+
    /**
      * Returns File object for Project Directory
      *
@@ -1122,29 +1161,8 @@ itor tabs #66700).
      */
     public static void forceStatusRefresh(File file) {
         if (isAdministrative(file)) return;
-        try {
-            FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
-
-            cache.refreshCached(file);
-            File repository = Mercurial.getInstance().getRepositoryRoot(file);
-            if (repository == null) {
-                return;
-            }
-            // XXX Why in the hell is this still here? cache.refreshCached(file) should be enough
-            if (file.isDirectory()) {
-                Map<File, FileInformation> interestingFiles;
-                interestingFiles = HgCommand.getInterestingStatus(repository, Collections.singletonList(file));
-                if (!interestingFiles.isEmpty()){
-                    Collection<File> files = interestingFiles.keySet();
-                    for (File aFile : files) {
-                        FileInformation fi = interestingFiles.get(aFile);
-                        cache.refreshFileStatus(aFile, fi, null);
-                    }
-                }
-            }
-
-        } catch (HgException ex) {
-        }
+        FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
+        cache.refreshCached(file);
     }
 
     /**
@@ -1561,5 +1579,26 @@ itor tabs #66700).
 
     public static boolean hgExistsFor(File file) {
         return new File(file, ".hg").exists();
+    }
+
+    public static CommitOptions[] createDefaultCommitOptions (HgFileNode[] nodes) {
+        CommitOptions[] commitOptions = new CommitOptions[nodes.length];
+        for (int i = 0; i < nodes.length; i++) {
+            HgFileNode node = nodes[i];
+            File file = node.getFile();
+            if (HgModuleConfig.getDefault().isExcludedFromCommit(file.getAbsolutePath())) {
+                commitOptions[i] = CommitOptions.EXCLUDE;
+            } else {
+                switch (node.getInformation().getStatus()) {
+                case FileInformation.STATUS_VERSIONED_DELETEDLOCALLY:
+                case FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY:
+                    commitOptions[i] = CommitOptions.COMMIT_REMOVE;
+                    break;
+                default:
+                    commitOptions[i] = CommitOptions.COMMIT;
+                }
+            }
+        }
+        return commitOptions;
     }
 }

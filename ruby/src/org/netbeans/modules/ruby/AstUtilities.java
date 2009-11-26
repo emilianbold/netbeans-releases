@@ -1098,7 +1098,7 @@ public class AstUtilities {
 
         case FCALLNODE:
             if (isAttr(node) || isNamedScope(node)
-                    || isActiveRecordAssociation(node) || isNodeNameIn(node, "alias_method")) { //NOI18N
+                    || isActiveRecordAssociation(node) || isNodeNameIn(node, RubyStructureAnalyzer.DYNAMIC_METHODS)) { //NOI18N
                 List<Node> values = getChildValues(node);
                 for (Node each : values) {
                     if (name.equals(getNameOrValue(each))) {
@@ -2321,9 +2321,13 @@ public class AstUtilities {
     public static void findExitPoints(final MethodDefNode defNode, final Collection<? super Node> exits) {
         Node body = defNode.getBodyNode();
         if (body != null) { // method with empty body
-            findNonLastExitPoints(body, exits);
-            findLastNodes(body, exits);
+            findExitPoints(body, exits);
         }
+    }
+
+    static void findExitPoints(final Node body, final Collection<? super Node> exits) {
+        findNonLastExitPoints(body, exits);
+        findLastNodes(body, exits);
     }
 
     private static void findLastNodes(final Node node, Collection<? super Node> result) {

@@ -63,7 +63,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.jar.Attributes.Name;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
@@ -100,10 +99,10 @@ import org.netbeans.modules.javacard.project.deps.ResolvedDependencies;
 import org.netbeans.modules.javacard.project.deps.ResolvedDependency;
 import org.netbeans.modules.javacard.api.BadPlatformOrDevicePanel;
 import org.netbeans.modules.javacard.common.GuiUtils;
-import org.netbeans.modules.javacard.project.ui.ProblemPanel;
 import org.netbeans.modules.javacard.project.ui.UnsupportedEncodingDialog;
 import org.netbeans.modules.javacard.spi.Card;
 import org.netbeans.modules.javacard.spi.JavacardPlatform;
+import org.netbeans.modules.javacard.spi.PlatformAndDeviceProvider;
 import org.netbeans.modules.javacard.spi.ProjectKind;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -128,8 +127,6 @@ import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
@@ -1013,81 +1010,61 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
     }
 
     private void showSelectPlatformAndDeviceDialog(String platform, String device, boolean cbox) {
-        if (platform == null) {
-            platform = ""; //NOI18N
-        }
-        if (device == null) {
-            device = ""; //NOI18N
-        }
-        final BadPlatformOrDevicePanel pnl = new BadPlatformOrDevicePanel(platform, device, cbox);
-        ProblemPanel problemPanel = new ProblemPanel();
-        problemPanel.setInnerComponent(pnl);
-        pnl.setProblemHandler(problemPanel);
-        String name = getLookup().lookup(ProjectInformation.class).getDisplayName();
-        final DialogDescriptor dd = new DialogDescriptor(problemPanel,
-                NbBundle.getMessage(
-                JCProject.class, "TTL_BAD_PLATFORM_OR_DEVICE", name)); //NOI18N
-        dd.setValid(false);
-        ChangeListener cl = new ChangeListener() {
-
-            public void stateChanged(ChangeEvent e) {
-                dd.setValid(pnl.getProblem() == null);
+        PlatformAndDeviceProvider prov = BadPlatformOrDevicePanel.showDialog(platform, device, cbox);
+        if (prov != null) {
+            final String newPlatform = prov.getPlatformName();
+            final String newDevice = prov.getActiveDevice();
+            if (platform.equals(newPlatform) && device.equals(newDevice)) {
+                return;
             }
-        };
-        pnl.addChangeListener(cl);
-        if (DialogDisplayer.getDefault().notify(dd) == DialogDescriptor.OK_OPTION) {
-            final String newPlatform = pnl.getPlatform();
-            final String newDevice = pnl.getDevice();
             final ProgressHandle progress = ProgressHandleFactory.createHandle(NbBundle.getMessage(
-                    JCProject.class, "MSG_SAVING_PROPERTIES")); //NOI18N
-            if (!platform.equals(newPlatform) || !device.equals(newDevice)) {
-                Runnable r = new Runnable() {
+                JCProject.class, "MSG_SAVING_PROPERTIES")); //NOI18N
+            Runnable r = new Runnable() {
 
-                    boolean first = true;
+                boolean first = true;
 
-                    public void run() {
-                        if (!EventQueue.isDispatchThread()) {
-                            if (first) {
-                                progress.start(6);
-                                first = false;
-                                progress.progress(1);
-                                ProjectManager.mutex().writeAccess(this);
-                            } else {
-                                progress.progress(2);
-                                EditableProperties props = antHelper.getProperties(
-                                        AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                                progress.progress(3);
-                                props.setProperty(
-                                        ProjectPropertyNames.PROJECT_PROP_ACTIVE_PLATFORM,
-                                        newPlatform);
-                                props.setProperty(
-                                        ProjectPropertyNames.PROJECT_PROP_ACTIVE_DEVICE,
-                                        newDevice);
-                                progress.progress(4);
-                                antHelper.putProperties(
-                                        AntProjectHelper.PROJECT_PROPERTIES_PATH,
-                                        props);
-                                progress.progress(5);
-                                try {
-                                    ProjectManager.getDefault().saveProject(JCProject.this);
-                                } catch (IOException ex) {
-                                    Exceptions.printStackTrace(ex);
-                                } catch (IllegalArgumentException ex) {
-                                    Exceptions.printStackTrace(ex);
-                                } finally {
-                                    EventQueue.invokeLater(this);
-                                }
-                            }
+                public void run() {
+                    if (!EventQueue.isDispatchThread()) {
+                        if (first) {
+                            progress.start(6);
+                            first = false;
+                            progress.progress(1);
+                            ProjectManager.mutex().writeAccess(this);
                         } else {
-                            synchronized (JCProject.this) {
-                                cachedBadProjectOrCard = null;
+                            progress.progress(2);
+                            EditableProperties props = antHelper.getProperties(
+                                    AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                            progress.progress(3);
+                            props.setProperty(
+                                    ProjectPropertyNames.PROJECT_PROP_ACTIVE_PLATFORM,
+                                    newPlatform);
+                            props.setProperty(
+                                    ProjectPropertyNames.PROJECT_PROP_ACTIVE_DEVICE,
+                                    newDevice);
+                            progress.progress(4);
+                            antHelper.putProperties(
+                                    AntProjectHelper.PROJECT_PROPERTIES_PATH,
+                                    props);
+                            progress.progress(5);
+                            try {
+                                ProjectManager.getDefault().saveProject(JCProject.this);
+                            } catch (IOException ex) {
+                                Exceptions.printStackTrace(ex);
+                            } catch (IllegalArgumentException ex) {
+                                Exceptions.printStackTrace(ex);
+                            } finally {
+                                EventQueue.invokeLater(this);
                             }
-                            supp.fireChange();
                         }
+                    } else {
+                        synchronized (JCProject.this) {
+                            cachedBadProjectOrCard = null;
+                        }
+                        supp.fireChange();
                     }
-                };
-                GuiUtils.showProgressDialogAndRun(progress, r, false);
-            }
+                }
+            };
+            GuiUtils.showProgressDialogAndRun(progress, r, false);
         }
     }
 

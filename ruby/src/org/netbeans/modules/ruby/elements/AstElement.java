@@ -206,6 +206,7 @@ public abstract class AstElement extends RubyElement {
         this.type = type;
     }
 
+    @Override
     public RubyType getType() {
         return type;
     }

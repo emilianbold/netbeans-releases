@@ -43,6 +43,7 @@ import org.netbeans.modules.javacard.spi.Cards;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -101,7 +102,7 @@ public class RIPlatform extends JavacardPlatform {
         getDefault();
     }
     private Cards cards = new CardsImpl();
-    public RIPlatform(Properties props) {
+    public RIPlatform(Properties props) {        
         this.props = props;
         if (props instanceof ObservableProperties) {
             pcl = new PCL();
@@ -119,6 +120,18 @@ public class RIPlatform extends JavacardPlatform {
         //created from the written file which will be able to track changes
         //in the platform properties
         this (props(root, name, info));
+    }
+
+    @Override
+    public void onDelete() throws IOException {
+        FileObject fo = Utils.sfsFolderForDeviceConfigsForPlatformNamed(getSystemName(), false);
+        if (fo != null) {
+            fo.delete();
+        }
+        fo = Utils.sfsFolderForDeviceEepromsForPlatformNamed(getSystemName(), false);
+        if (fo != null) {
+            fo.delete();
+        }
     }
 
     @Override

@@ -40,6 +40,9 @@
  */
 package org.netbeans.modules.versioning.util;
 
+import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
 import java.awt.Rectangle;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
@@ -93,7 +96,7 @@ public class DialogBoundsPreserver implements WindowListener {
     }    
 
     private boolean checkBounds(Rectangle r) {
-        Rectangle screen = Utilities.getUsableScreenBounds();
+        Rectangle screen = getScreenBounds();
         return r.getX() >= 0 && r.getX() < screen.getWidth() && 
                r.getY() >= 0 && r.getY() < screen.getHeight() &&
                r.getWidth() <= screen.getWidth() - r.getX() && 
@@ -124,6 +127,16 @@ public class DialogBoundsPreserver implements WindowListener {
             return r;
         }
         return null;                
-    }        
+    }
+
+    private Rectangle getScreenBounds() {
+        Rectangle screen = new Rectangle();
+        GraphicsDevice[] gds = GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices();
+        for (GraphicsDevice gd : gds) {
+            GraphicsConfiguration gc = gd.getDefaultConfiguration();
+            screen = screen.union(Utilities.getUsableScreenBounds(gc));
+        }
+        return screen;
+    }
     
 }

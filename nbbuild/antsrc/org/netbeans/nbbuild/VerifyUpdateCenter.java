@@ -99,7 +99,7 @@ public final class VerifyUpdateCenter extends Task {
         if (f.isFile()) {
             oldUpdates = f.toURI();
         } else {
-            log("No such file: " + f, Project.MSG_WARN);
+            throw new BuildException("No such file: " + f, getLocation());
         }
     }
     public void setOldUpdatesURL(URI u) {

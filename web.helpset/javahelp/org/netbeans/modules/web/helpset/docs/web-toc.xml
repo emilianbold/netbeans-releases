@@ -119,7 +119,7 @@
                 <tocitem text="Working with JSF Components in the Palette" target="framework_jsf_palette" />
                 <tocitem text="Creating a JSF Form for Entity Data" target="framework_jsf_form_entity" />
                 <tocitem text="Creating a JSF Data Table for Entity Data" target="framework_jsf_datatable_entity" />
-                <tocitem text="About CRUD Applications" target="framework_jsf_crud" />
+                <tocitem text="About JSF CRUD Applications" target="framework_jsf_crud" />
                 <tocitem text="Generating JSF Pages from Entity Classes" target="framework_jsf_generate_pages" />
             </tocitem>
             <tocitem text="Grails">

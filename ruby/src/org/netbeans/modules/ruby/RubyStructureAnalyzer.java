@@ -136,6 +136,11 @@ public class RubyStructureAnalyzer implements StructureScanner {
 
     private static final String RUBY_KEYWORD = "org/netbeans/modules/ruby/jruby.png"; //NOI18N
     private static ImageIcon keywordIcon;
+
+    private static final String ALIAS_METHOD = "alias_method"; //NOI18N
+    private static final String DEFINE_METHOD = "define_method"; //NOI18N
+
+    static final String[] DYNAMIC_METHODS = {ALIAS_METHOD, DEFINE_METHOD};
     
     public RubyStructureAnalyzer() {
     }
@@ -261,6 +266,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
         AstPath path = new AstPath();
         path.descend(root);
         ContextKnowledge knowledge = new ContextKnowledge(index, root, result);
+        knowledge.setAnalyzedMethods(methods);
         this.typeInferencer = RubyTypeInferencer.create(knowledge);
         // TODO: I should pass in a "default" context here to stash methods etc. outside of modules and classes
         scan(root, path, null, null, null);
@@ -748,7 +754,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
                         }
                     }
                 }
-            } else if ("alias_method".equals(name)) {
+            } else if (ALIAS_METHOD.equals(name)) {
                 List<Node> values = AstUtilities.getChildValues(node);
                 if (values.size() == 2) {
                     Node newMethod = values.get(0);
@@ -767,6 +773,30 @@ public class RubyStructureAnalyzer implements StructureScanner {
                             } else {
                                 structure.add(co);
                             }
+                        }
+                    }
+                }
+            } else if (DEFINE_METHOD.equals(name)) {
+                List<Node> values = AstUtilities.getChildValues(node);
+                if (!values.isEmpty()) {
+                    Node newMethod = values.get(0);
+                    String newMethodName = AstUtilities.getNameOrValue(newMethod);
+                    if (newMethodName != null) {
+                        AstDynamicMethodElement co = new AstDynamicMethodElement(result, newMethod);
+                        co.setIn(in);
+                        // try inferring type only if define_method(sym, method)
+                        // was invoked w/o the method param
+                        if (values.size() == 1) {
+                            Node iter = ((FCallNode) node).getIterNode();
+                            if (iter != null) {
+                                co.setType(typeInferencer.inferType(iter));
+                            }
+                        }
+                        co.setHidden(true);
+                        if (parent != null) {
+                            parent.addChild(co);
+                        } else {
+                            structure.add(co);
                         }
                     }
                 }
@@ -1105,6 +1135,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
             }
             this.result = result;
             scan = scan(result);
+            result.setStructure(scan);
             cacheAnalysis(result, scan);
             return scan;
         } finally {

@@ -113,7 +113,11 @@ made subject to such option by the copyright holder.
          classpath="${nb_all}/nbbuild/nbantext.jar"/>
     <typedef name="pathfileset" classname="org.netbeans.nbbuild.PathFileSet"
          classpath="${nb_all}/nbbuild/nbantext.jar"/>
+    <taskdef name="parsemanifest" classname="org.netbeans.nbbuild.ParseManifest"
+         classpath="${nb_all}/nbbuild/nbantext.jar"/>
     <taskdef name="subant-junit" classname="org.netbeans.nbbuild.SubAntJUnitReport" classpath="${nb_all}/nbbuild/nbantext.jar"/>
+    <taskdef name="resolvelist" classname="org.netbeans.nbbuild.ResolveList" classpath="${nb_all}/nbbuild/nbantext.jar"/>
+    <taskdef name="checkmoduleconfigs" classname="org.netbeans.nbbuild.CheckModuleConfigs" classpath="${nb_all}/nbbuild/nbantext.jar"/>
     <property name="tasks-already-set" value="true"/>
   </target>
   
