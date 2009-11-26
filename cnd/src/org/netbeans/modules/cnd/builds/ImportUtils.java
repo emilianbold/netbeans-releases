@@ -89,6 +89,7 @@ public final class ImportUtils {
         StringBuilder key = new StringBuilder();
         StringBuilder value = new StringBuilder();
         int inQuote = 0;
+        int q = 0;
         boolean inValue = false;
         for(int i = 0; i < s.length(); ) {
             char c = s.charAt(i);
@@ -105,17 +106,17 @@ public final class ImportUtils {
                         key.append(c);
                     }
                     i++;
-                    int q = 0;
+                    q = 0;
                     for(;i < s.length(); i++){
                         c = s.charAt(i);
-                        if (s.charAt(i) == '"' || s.charAt(i) == '\''){ //NOI18N
+                        if (c == '"' || c == '\''){ //NOI18N
                             if (q == 0) {
                                 q = c;
                             } else if (q == c) {
                                 q = 0;
                             }
                         }
-                        if (q == 0 && s.charAt(i) == ' '){ //NOI18N
+                        if (q == 0 && c == ' '){ //NOI18N
                             break;
                         }
                         if (!onlyEnv) {
@@ -149,6 +150,26 @@ public final class ImportUtils {
                 case '\'': //NOI18N
                 case '"': //NOI18N
                     if (inQuote == 0) {
+                        if (!onlyEnv && !inValue){
+                            q = 0;
+                            for(;i < s.length(); i++){
+                                c = s.charAt(i);
+                                if (c == '"' || c == '\''){ //NOI18N
+                                    if (q == 0) {
+                                        q = c;
+                                        continue;
+                                    } else if (q == c) {
+                                        q = 0;
+                                        continue;
+                                    }
+                                }
+                                if (q == 0 && c == ' '){ //NOI18N
+                                    break;
+                                }
+                                key.append(c);
+                            }
+                            continue;
+                        }
                         inQuote = c;
                     } else if (inQuote == c) {
                         inQuote = 0;
@@ -166,6 +187,8 @@ public final class ImportUtils {
                     } else {
                         if (inValue) {
                             value.append(c);
+                        } else if (!onlyEnv){
+                            key.append(c);
                         }
                     }
                     i++;
