@@ -163,12 +163,13 @@ public abstract class BreakpointImpl<B extends CndBreakpoint> implements Propert
                 }
                 command.send();
             }
+            // Should be done before updating validity! (See IZ 176780)
+            debugger.getBreakpointList().put(breakpointNumber, this);
             
             breakpoint.setValid();
             //validity is session specific but we use global PROP_VALIDITY for update notifications
             breakpoint.validityChanged();
             
-            debugger.getBreakpointList().put(breakpointNumber, this);
             setRunWhenValidated(false);
         } else {
 	    if (alternateSourceRootAvailable()) {
