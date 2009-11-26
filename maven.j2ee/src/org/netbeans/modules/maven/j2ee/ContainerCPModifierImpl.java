@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.maven.j2ee;
 
-import hidden.org.codehaus.plexus.util.StringUtils;
+import org.codehaus.plexus.util.StringUtils;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
