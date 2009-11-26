@@ -76,6 +76,7 @@ import org.jrubyparser.ast.StrNode;
 import org.jrubyparser.ast.SymbolNode;
 import org.jrubyparser.ast.INameNode;
 import org.jrubyparser.SourcePosition;
+import org.jrubyparser.ast.AliasNode;
 import org.jrubyparser.ast.MultipleAsgnNode;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -730,6 +731,11 @@ public class RubyStructureAnalyzer implements StructureScanner {
             
             break;
         }
+        case ALIASNODE: {
+            AliasNode aliasNode = (AliasNode) node;
+            addAliasedMethod(aliasNode.getOldName(), aliasNode, parent, in);
+            break;
+        }
         case FCALLNODE: {
             String name = AstUtilities.getName(node);
 
@@ -758,23 +764,8 @@ public class RubyStructureAnalyzer implements StructureScanner {
                 List<Node> values = AstUtilities.getChildValues(node);
                 if (values.size() == 2) {
                     Node newMethod = values.get(0);
-                    String newMethodName = AstUtilities.getNameOrValue(values.get(1));
-                    if (newMethodName != null) {
-                        AstMethodElement aliased = findExistingMethod(newMethodName);
-                        if (aliased != null) {
-                            AstDynamicMethodElement co = new AstDynamicMethodElement(result, newMethod);
-                            co.setModifiers(aliased.getModifiers());
-                            co.setParameters(aliased.getParameters());
-                            co.setIn(in);
-                            co.setType(aliased.getType());
-                            co.setHidden(true);
-                            if (parent != null) {
-                                parent.addChild(co);
-                            } else {
-                                structure.add(co);
-                            }
-                        }
-                    }
+                    String aliasedMethodName = AstUtilities.getNameOrValue(values.get(1));
+                    addAliasedMethod(aliasedMethodName, newMethod, parent, in);
                 }
             } else if (DEFINE_METHOD.equals(name)) {
                 List<Node> values = AstUtilities.getChildValues(node);
@@ -1013,6 +1004,25 @@ public class RubyStructureAnalyzer implements StructureScanner {
     }
 
 
+    private void addAliasedMethod(String aliasedMethodName, Node newMethod, AstElement parent, String in) {
+        if (aliasedMethodName != null && aliasedMethodName.trim().length() > 0) {
+            AstMethodElement aliased = findExistingMethod(aliasedMethodName);
+            if (aliased != null) {
+                AstDynamicMethodElement co = new AstDynamicMethodElement(result, newMethod);
+                co.setModifiers(aliased.getModifiers());
+                co.setParameters(aliased.getParameters());
+                co.setIn(in);
+                co.setType(aliased.getType());
+                co.setHidden(true);
+                if (parent != null) {
+                    parent.addChild(co);
+                } else {
+                    structure.add(co);
+                }
+            }
+        }
+
+    }
     private AstElement findExistingVariable(String name) {
         for (AstElement child : structure) {
             if (child.getKind() == ElementKind.VARIABLE && name.equals(child.getName())) {

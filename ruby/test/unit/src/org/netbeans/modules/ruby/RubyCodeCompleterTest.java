@@ -431,6 +431,10 @@ public class RubyCodeCompleterTest extends RubyCodeCompleterTestBase {
         checkCompletion("testfiles/alias_method.rb", "Close.new.so_^so_close");
     }
 
+    public void testAliasMethodKeyword() throws Exception {
+        checkCompletion("testfiles/alias_method.rb", "Here.new.right_^there");
+    }
+
     public void testDefineMethod() throws Exception {
         checkCompletion("testfiles/define_method.rb", "Calcutec.new.lau^nder");
     }

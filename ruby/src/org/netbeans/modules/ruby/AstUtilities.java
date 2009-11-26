@@ -1107,6 +1107,12 @@ public class AstUtilities {
                 }
             }
             break;
+        case ALIASNODE:
+            AliasNode aliasNode = (AliasNode) node;
+            if (name.equals(aliasNode.getNewName()) || name.equals(aliasNode.getOldName())) {
+                return aliasNode;
+            }
+            break;
         case CONSTDECLNODE:
             if (name.equals(getName(node))) {
                 return node;
