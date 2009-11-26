@@ -50,6 +50,7 @@ import org.apache.tools.ant.module.loader.AntProjectDataLoader;
 import org.apache.tools.ant.module.loader.AntProjectDataObject;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
@@ -86,6 +87,7 @@ public class AntProjectSupportTest extends NbTestCase {
         MockServices.setServices(AntProjectDataLoader.class);
     }
 
+    @RandomlyFails // NB-Core-Build #3638
     public void testInitiallyInvalidScript() throws Exception {
         final FileObject fo = scratch.createData("build.xml");
         assertEquals("it is an APDO", AntProjectDataObject.class, DataObject.find(fo).getClass());
