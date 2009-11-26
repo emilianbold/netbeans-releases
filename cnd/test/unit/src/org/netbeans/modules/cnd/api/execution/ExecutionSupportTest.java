@@ -114,7 +114,7 @@ public class ExecutionSupportTest extends NbTestCase {
     }
 
     public void testExecutionSupport() throws Exception {
-        String source = "./configure -DM=\"CPU = 6\" CPPFLAGS=-g3 CFLAGS=\'-g3 -gdwarf-2\' -DH --help -DM=\"'6\" CXXFLAGS=\"-g3 -gdwarf-2\"";
+        String source = "./configure -DM=\"CPU = 6\" CPPFLAGS=-g3 CFLAGS=\'-g3 -gdwarf-2\' -DH --help -DM=\"'6\" CXXFLAGS=\"-g3 -gdwarf-2\" -G \"Unix Makefiles\" -DCMAKE_BUILD_TYPE=Debug";
         List<String> res = ImportUtils.parseEnvironment(source);
         assert res.size() == 3;
         for(int i = 0; i < res.size(); i++){
@@ -145,7 +145,7 @@ public class ExecutionSupportTest extends NbTestCase {
             }
         }
         res = ImportUtils.parseArgs(source);
-        assert res.size() == 8;
+        assert res.size() == 11;
         for(int i = 0; i < res.size(); i++){
             String p = res.get(i);
             if (TRACE) {
@@ -167,6 +167,12 @@ public class ExecutionSupportTest extends NbTestCase {
                 assert "-DM=\"'6\"".equals(p);
             } else if (i == 7) {
                 assert "CXXFLAGS=-g3 -gdwarf-2".equals(p);
+            } else if (i == 8) {
+                assert "-G".equals(p);
+            } else if (i == 9) {
+                assert "Unix Makefiles".equals(p);
+            } else if (i == 10) {
+                assert "-DCMAKE_BUILD_TYPE=Debug".equals(p);
             }
         }
     }

@@ -157,6 +157,7 @@ public class QMakeAction extends AbstractExecutorRunAction {
         npb.getEnvironment().putAll(envMap);
         npb.redirectError();
         List<String> list = ImportUtils.parseArgs(argsFlat.toString());
+        list = ImportUtils.normalizeParameters(list);
         npb.setExecutable(executable);
         npb.setArguments(list.toArray(new String[list.size()]));
 
