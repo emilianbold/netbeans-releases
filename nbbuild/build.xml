@@ -160,6 +160,25 @@ made subject to such option by the copyright holder.
   
   <target name="all-installer" description="Dummy target for build system compatibility"/>
 
+  <target name="update" depends="init" description="Downloads binaries from an update center">
+      <taskdef name="resolvelist" classname="org.netbeans.nbbuild.ResolveList" classpath="nbantext.jar"/>
+      <resolvelist name="modules.for.update.list" list="${nb.clusters.list}"/>
+      <pathconvert property="modules.fullpath" >
+          <path>
+              <dirset dir="${nb_all}" includes="${modules.for.update.list}" />
+          </path>
+          <mapper type="identity" />
+      </pathconvert>
+      
+      <sortsuitemodules unsortedmodules="${modules.fullpath}" sortedmodulesproperty="modules.sorted"/>
+
+      <subant-junit target="update" failonerror="true">
+          <buildpath path="${modules.sorted}"/>
+      </subant-junit>
+
+      <antcall target="finish-build"/>
+  </target>
+
   <!-- build NBMs for selected modules -->
   <target name="build-nbms" depends="init" description="Build all NBMs, all modules have to be built before proceed">
       <mkdir dir="nbms" />
