@@ -687,7 +687,11 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
                 break;
             case EJB:
             case MAVEN_EJB:
-                appsNode = new Node(serverNode, applicationsLabel + "|" + ejbLabel);
+                if (ServerType.GLASSFISH_V3.equals(REGISTERED_SERVER)) {
+                    appsNode = new Node(serverNode, applicationsLabel);
+                } else {
+                    appsNode = new Node(serverNode, applicationsLabel + "|" + ejbLabel);
+                }
                 break;
             case APPCLIENT:
                 appsNode = new Node(serverNode, applicationsLabel + "|" + appclientLabel);
