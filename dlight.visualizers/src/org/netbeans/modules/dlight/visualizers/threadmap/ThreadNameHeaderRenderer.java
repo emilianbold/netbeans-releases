@@ -70,6 +70,7 @@ public class ThreadNameHeaderRenderer extends JPanel implements TableCellRendere
         setLayout(new BorderLayout());
         label = new JLabel(ThreadsPanel.THREAD_NAME_ID);
         add(label, BorderLayout.CENTER);
+        shiftRect = null;
         if (CHANGE_BUTTON) {
             shift = new JLabel(" > "); //NOI18N
             shift.setForeground(Color.blue);
