@@ -73,15 +73,17 @@ public final class ImportUtils {
         return res;
     }
 
-    public static List<String> toUnixPath(List<String> list){
+    public static List<String> normalizeParameters(List<String> list){
         List<String> res = new ArrayList<String>();
         for (String s : list){
-            if (s.indexOf('=') > 0 && s.indexOf('\\') > 0){
-                String rest = s.replace('\\', '/');
-                res.add(rest);
-            } else {
-                res.add(s);
+            if (s.indexOf('=')>0){
+                if(s.indexOf('\\') > 0){
+                    s = s.replace('\\', '/');
+                } else if(s.indexOf('"')>0) {
+                    s = s.replace("\"", ""); // NOI18N
+                }
             }
+            res.add(s);
         }
         return res;
     }
