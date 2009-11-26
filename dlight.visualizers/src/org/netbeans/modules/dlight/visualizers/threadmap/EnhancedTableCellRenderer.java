@@ -77,6 +77,7 @@ public abstract class EnhancedTableCellRenderer extends JPanel implements TableC
         horizontalAlignment = SwingConstants.LEADING;
         unselectedBackground = UIUtils.getProfilerResultsBackground();
         darkerUnselectedBackground = UIUtils.getDarker(unselectedBackground);
+        unselectedForeground = null;
     }
 
     @Override
