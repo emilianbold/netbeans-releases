@@ -1546,11 +1546,14 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <incrspecvers nbroot=".." modules="${allmodules}" branch="${branch}"/>
   </target>
 
-  <target name="build-test-dist" depends="init" description="Build test distribution">
+  <target name="init-test-dist" depends="init">
+      <sortsuitemodules unsortedmodules="${modules.fullpath}" sortedmodulesproperty="test.modules.sorted" sorttests="true"/>
+  </target>
+  <target name="build-test-dist" depends="init-test-dist" description="Build test distribution">
       <!-- if is 'false' it will ignore compilation error in subant  -->
      <property name= "test.fail.on.error" value="true"/>
       <mkdir dir="build"/>
-      <subant-junit buildpath="${modules.sorted}" target="test-build" failonerror="${test.fail.on.error}" report="build/build-all-tests.xml"/>
+      <subant-junit buildpath="${test.modules.sorted}" target="test-build" failonerror="${test.fail.on.error}" report="build/build-all-tests.xml"/>
       <!-- adding performance tests to BTD -->
       <subant-junit buildpath="${nb_all}${file.separator}performance" target="test-build" failonerror="${test.fail.on.error}" report="build/build-performance-tests.xml"/>
       <!-- copy templates -->
