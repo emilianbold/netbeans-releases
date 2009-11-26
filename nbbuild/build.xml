@@ -1378,13 +1378,13 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     </echo>
   </target>
 
-    <target name="verify-libs-and-licenses" depends="bootstrap" description="Verify the contents of third-party libraries and licenses.">
+    <target name="verify-libs-and-licenses" depends="bootstrap,download-all-extbins" description="Verify the contents of third-party libraries and licenses.">
         <taskdef name="verifylibsandlicenses" classname="org.netbeans.nbbuild.extlibs.VerifyLibsAndLicenses" classpath="nbantext.jar"/>
         <mkdir dir="build"/>
         <verifylibsandlicenses report="build/verifylibsandlicenses.xml" nball=".."/>
     </target>
 
-    <target name="create-license-summary" depends="bootstrap" description="Create a summary of the licenses used by libraries in the build.">
+    <target name="create-license-summary" depends="bootstrap,download-all-extbins" description="Create a summary of the licenses used by libraries in the build.">
         <taskdef name="createlicensesummary" classname="org.netbeans.nbbuild.extlibs.CreateLicenseSummary" classpath="nbantext.jar"/>
         <mkdir dir="build"/>
         <createlicensesummary report="build/createlicensesummary.xml" nball=".." build="${netbeans.dest.dir}" summary="${netbeans.dest.dir}/THIRDPARTYLICENSE-generated.txt"/>
