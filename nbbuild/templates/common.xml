@@ -168,7 +168,7 @@ made subject to such option by the copyright holder.
 
     <target name="update" depends="basic-init">
         <fail
-            message="Please specify HTML of catalog to perform the update from via -Dautoupdate.catalog.url=..."
+            message="Please specify URL of catalog to perform the update from via -Dautoupdate.catalog.url=..."
             unless="autoupdate.catalog.url"
         />
         <autoupdate
