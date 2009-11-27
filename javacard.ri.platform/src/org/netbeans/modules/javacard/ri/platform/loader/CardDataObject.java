@@ -113,7 +113,11 @@ public class CardDataObject extends PropertiesBasedDataObject<Card> implements C
         return result;
     }
 
+    private boolean deleting;
     public void refreshNode() {
+        if (deleting || !isValid()) {
+            return;
+        }
         CardDataNode nd = nodeRef == null ? null : nodeRef.get();
         if (nd != null) {
             nd.updateChildren();
@@ -127,20 +131,25 @@ public class CardDataObject extends PropertiesBasedDataObject<Card> implements C
 
     @Override
     protected void onDelete(FileObject parentFolder) throws Exception {
-        Card card = getLookup().lookup(Card.class);
-        if (card != null && card.getState().isRunning()) {
-            StopCapability c = card.getCapability(StopCapability.class);
-            if (c != null) {
-                c.stop();
+        deleting = true;
+        try {
+            Card card = getLookup().lookup(Card.class);
+            if (card != null && card.getState().isRunning()) {
+                StopCapability c = card.getCapability(StopCapability.class);
+                if (c != null) {
+                    c.stop();
+                }
             }
-        }
-        File eepromfile = Utils.eepromFileForDevice(platformName, myName, false);
-        if (eepromfile != null) {
-            //Use FileObject so any views will be notified
-            FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(eepromfile));
-            if (fo != null) {
-                fo.delete();
+            File eepromfile = Utils.eepromFileForDevice(platformName, myName, false);
+            if (eepromfile != null) {
+                //Use FileObject so any views will be notified
+                FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(eepromfile));
+                if (fo != null) {
+                    fo.delete();
+                }
             }
+        } finally {
+            deleting = false;
         }
     }
 
