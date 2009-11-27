@@ -67,7 +67,11 @@ made subject to such option by the copyright holder.
         <property file="nbproject/project.properties"/>
         <!-- Do not try to set module.classpath here, in particular: -->
         <!-- during a clean, the ${foo/bar.dir} properties may not be set. -->
-        <parseprojectxml project="." codenamebasedashesproperty="code.name.base.dashes" codenamebaseslashesproperty="code.name.base.slashes"/>
+        <parseprojectxml project="." 
+            codenamebaseproperty="code.name.base"
+            codenamebasedashesproperty="code.name.base.dashes" 
+            codenamebaseslashesproperty="code.name.base.slashes"
+        />
         <property name="module.jar.dir" value="modules"/>
         <property name="module.jar.basename" value="${code.name.base.dashes}.jar"/>
         <property name="module.jar" value="${module.jar.dir}/${module.jar.basename}"/>
@@ -160,6 +164,19 @@ made subject to such option by the copyright holder.
                 <path refid="cp"/>
             </srcresources>
         </uptodate>
+    </target>
+
+    <target name="update" depends="basic-init">
+        <fail
+            message="Please specify URL of catalog to perform the update from via -Dautoupdate.catalog.url=..."
+            unless="autoupdate.catalog.url"
+        />
+        <autoupdate
+            updatecenter="${autoupdate.catalog.url}"
+            todir="${cluster}"
+        >
+            <modules includes="${code.name.base}"/>
+        </autoupdate>
     </target>
 
     <target name="compile" depends="init,up-to-date" unless="is.jar.uptodate">

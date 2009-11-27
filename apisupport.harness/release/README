@@ -622,6 +622,8 @@ in platform.properties); similarly, for standalone modules, it defaults to
 "${basedir}/build/cluster". Available in project.properties for netbeans.org
 modules only.
 
+code.name.base - your code name base as org.netbeans.modules.foo
+
 code.name.base.dashes - your code name base as org-netbeans-modules-foo
 
 code.name.base.slashes - ditto, as org/netbeans/modules/foo
@@ -752,6 +754,9 @@ time) without restarting the IDE.
 
 nbm.target.cluster [since 5.0u2] - allow to declare a target cluster where
 install if NBM install globally.
+
+autoupdate.catalog.url - if you want to use module's or suite's update target
+during build, you need to specify the URL of your NBMs catalog.
 
 nbplatform.active - optional name of a NB platform to build and run against. See
 discussion above for details of how this is used.
