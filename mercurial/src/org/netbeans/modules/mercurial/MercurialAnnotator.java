@@ -91,6 +91,7 @@ public class MercurialAnnotator extends VCSAnnotator {
     private static MessageFormat uptodateFormat = getFormat("uptodateFormat");  // NOI18N
     private static MessageFormat newLocallyFormat = getFormat("newLocallyFormat");  // NOI18N
     private static MessageFormat addedLocallyFormat = getFormat("addedLocallyFormat"); // NOI18N
+    private static MessageFormat copiedLocallyFormat = getFormat("copiedLocallyFormat"); // NOI18N
     private static MessageFormat modifiedLocallyFormat = getFormat("modifiedLocallyFormat"); // NOI18N
     private static MessageFormat removedLocallyFormat = getFormat("removedLocallyFormat"); // NOI18N
     private static MessageFormat deletedLocallyFormat = getFormat("deletedLocallyFormat"); // NOI18N
@@ -99,6 +100,7 @@ public class MercurialAnnotator extends VCSAnnotator {
 
     private static MessageFormat newLocallyTooltipFormat = getFormat("newLocallyTooltipFormat");  // NOI18N
     private static MessageFormat addedLocallyTooltipFormat = getFormat("addedLocallyTooltipFormat"); // NOI18N
+    private static MessageFormat copiedLocallyTooltipFormat = getFormat("copiedLocallyTooltipFormat"); // NOI18N
     private static MessageFormat modifiedLocallyTooltipFormat = getFormat("modifiedLocallyTooltipFormat"); // NOI18N
     private static MessageFormat removedLocallyTooltipFormat = getFormat("removedLocallyTooltipFormat"); // NOI18N
     private static MessageFormat deletedLocallyTooltipFormat = getFormat("deletedLocallyTooltipFormat"); // NOI18N
@@ -191,16 +193,22 @@ public class MercurialAnnotator extends VCSAnnotator {
      *
      * @param name name of the color to change. Can be one of:
      * newLocally, addedLocally, modifiedLocally, removedLocally, deletedLocally, newInRepository, modifiedInRepository,
-     * removedInRepository, conflict, mergeable, excluded.
+     * removedInRepository, conflict, mergeable, excluded, copiedLocally.
      * @param colorString new color in the format: 4455AA (RGB hexadecimal)
      */
     private void setAnnotationColor(String name, String colorString) {
         try {
+            if (!colorString.startsWith("#")) {                         //NOI18N
+                colorString = "#" + colorString;                        //NOI18N
+            }
             Field field = MercurialAnnotator.class.getDeclaredField(name + "Format");  // NOI18N
             MessageFormat format = new MessageFormat("<font color=\"" + colorString + "\">{0}</font><font color=\"#999999\">{1}</font>");  // NOI18N
             field.set(null, format);
+            field = MercurialAnnotator.class.getDeclaredField(name + "TooltipFormat");  // NOI18N
+            format = new MessageFormat("<font color=\"" + colorString + "\">{0}</font>");  // NOI18N
+            field.set(null, format);
         } catch (Exception e) {
-            throw new IllegalArgumentException("Invalid color name");  // NOI18N
+            Mercurial.LOG.log(Level.WARNING, "Invalid color name {0}", name); //NOI18N
         }
     }
 
@@ -259,6 +267,7 @@ public class MercurialAnnotator extends VCSAnnotator {
 
     private Image annotateFileIcon(VCSContext context, Image icon) throws IllegalArgumentException {
         FileInformation mostImportantInfo = null;
+        File mostImportantFile = null;
         for (final File file : context.getRootFiles()) {
             FileInformation info = cache.getCachedStatus(file);
             int status = info.getStatus();
@@ -267,6 +276,7 @@ public class MercurialAnnotator extends VCSAnnotator {
             }
             if (isMoreImportant(info, mostImportantInfo)) {
                 mostImportantInfo = info;
+                mostImportantFile = file;
             }
         }
         if(mostImportantInfo == null) return null; 
@@ -281,7 +291,12 @@ public class MercurialAnnotator extends VCSAnnotator {
         } else if (0 != (status & FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY)) {
             statusText = newLocallyTooltipFormat.format(new Object[]{mostImportantInfo.getStatusText()});
         } else if (0 != (status & FileInformation.STATUS_VERSIONED_ADDEDLOCALLY)) {
-            statusText = addedLocallyTooltipFormat.format(new Object[]{mostImportantInfo.getStatusText()});
+            FileStatus fileStatus = mostImportantInfo.getStatus(mostImportantFile);
+            if (fileStatus != null && fileStatus.isCopied()) {
+                statusText = copiedLocallyTooltipFormat.format(new Object[]{mostImportantInfo.getStatusText()});
+            } else {
+                statusText = addedLocallyTooltipFormat.format(new Object[]{mostImportantInfo.getStatusText()});
+            }
         } else if (0 != (status & FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY)) {
             statusText = modifiedLocallyTooltipFormat.format(new Object[]{mostImportantInfo.getStatusText()});
         } else if (0 != (status & FileInformation.STATUS_VERSIONED_UPTODATE)) {
@@ -510,7 +525,12 @@ public class MercurialAnnotator extends VCSAnnotator {
         } else if (0 != (status & FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY)) {
             return newLocallyFormat.format(new Object [] { name, textAnnotation });
         } else if (0 != (status & FileInformation.STATUS_VERSIONED_ADDEDLOCALLY)) {
-            return addedLocallyFormat.format(new Object [] { name, textAnnotation });
+            FileStatus fileStatus = mostImportantInfo.getStatus(mostImportantFile);
+            if (fileStatus != null && fileStatus.isCopied()) {
+                return copiedLocallyFormat.format(new Object [] { name, textAnnotation });
+            } else {
+                return addedLocallyFormat.format(new Object [] { name, textAnnotation });
+            }
         } else if (0 != (status & FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY)) {
             return modifiedLocallyFormat.format(new Object [] { name, textAnnotation });
         } else if (0 != (status & FileInformation.STATUS_VERSIONED_UPTODATE)) {
