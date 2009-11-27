@@ -72,14 +72,15 @@ import org.netbeans.spi.editor.completion.support.CompletionUtilities;
  */
 public class LazyTypeCompletionItem extends JavaCompletionItem implements LazyCompletionItem {
     
-    public static final LazyTypeCompletionItem create(ElementHandle<TypeElement> handle, EnumSet<ElementKind> kinds, int substitutionOffset, Source source, boolean insideNew, boolean afterExtends) {
-        return new LazyTypeCompletionItem(handle, kinds, substitutionOffset, source, insideNew, afterExtends);
+    public static final LazyTypeCompletionItem create(ElementHandle<TypeElement> handle, EnumSet<ElementKind> kinds, int substitutionOffset, Source source, boolean insideNew, boolean addTypeVars, boolean afterExtends) {
+        return new LazyTypeCompletionItem(handle, kinds, substitutionOffset, source, insideNew, addTypeVars, afterExtends);
     }
     
     private ElementHandle<TypeElement> handle;
     private EnumSet<ElementKind> kinds;
     private Source source;
     private boolean insideNew;
+    private boolean addTypeVars;
     private boolean afterExtends;
     private String name;
     private String simpleName;
@@ -88,12 +89,13 @@ public class LazyTypeCompletionItem extends JavaCompletionItem implements LazyCo
     private CharSequence sortText;
     private int prefWidth = -1;
     
-    private LazyTypeCompletionItem(ElementHandle<TypeElement> handle, EnumSet<ElementKind> kinds, int substitutionOffset, Source source, boolean insideNew, boolean afterExtends) {
+    private LazyTypeCompletionItem(ElementHandle<TypeElement> handle, EnumSet<ElementKind> kinds, int substitutionOffset, Source source, boolean insideNew, boolean addTypeVars, boolean afterExtends) {
         super(substitutionOffset);
         this.handle = handle;
         this.kinds = kinds;
         this.source = source;
         this.insideNew = insideNew;
+        this.addTypeVars = addTypeVars;
         this.afterExtends = afterExtends;
         this.name = handle.getQualifiedName();
         int idx = name.lastIndexOf('.'); //NOI18N
@@ -115,7 +117,7 @@ public class LazyTypeCompletionItem extends JavaCompletionItem implements LazyCo
                         Elements elements = controller.getElements();
                         if (e != null && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) && controller.getTrees().isAccessible(scope, e)) {
                             if (isOfKind(e, kinds) && (!afterExtends || !e.getModifiers().contains(Modifier.FINAL)) && (!isInDefaultPackage(e) || isInDefaultPackage(scope.getEnclosingClass())) && !Utilities.isExcluded(e.getQualifiedName()))
-                                delegate = JavaCompletionItem.createTypeItem(e, (DeclaredType)e.asType(), substitutionOffset, true, controller.getElements().isDeprecated(e), insideNew, false);
+                                delegate = JavaCompletionItem.createTypeItem(e, (DeclaredType)e.asType(), substitutionOffset, true, controller.getElements().isDeprecated(e), insideNew, addTypeVars, false);
                         }
                     }
                 });
