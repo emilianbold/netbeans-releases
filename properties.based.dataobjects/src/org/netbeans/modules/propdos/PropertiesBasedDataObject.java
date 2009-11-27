@@ -137,7 +137,6 @@ public abstract class PropertiesBasedDataObject<T> extends MultiDataObject {
     @Override
     protected final void handleDelete() throws IOException {
         final FileObject parent = getPrimaryFile().getParent();
-        super.handleDelete();
         try {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
 
@@ -155,6 +154,7 @@ public abstract class PropertiesBasedDataObject<T> extends MultiDataObject {
                 throw ioe;
             }
         }
+        super.handleDelete();
     }
 
     /**
