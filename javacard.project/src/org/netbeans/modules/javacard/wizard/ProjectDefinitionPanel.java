@@ -41,6 +41,7 @@
 package org.netbeans.modules.javacard.wizard;
 
 import com.sun.javacard.AID;
+import java.awt.Component;
 import java.awt.event.ActionListener;
 import org.netbeans.modules.javacard.common.Utils;
 import org.netbeans.modules.javacard.common.JCConstants;
@@ -53,25 +54,31 @@ import org.openide.WizardValidationException;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.util.*;
 
-import javax.swing.*;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import java.awt.*;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.io.File;
 import java.util.Collection;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
+import javax.swing.JFileChooser;
+import javax.swing.JPanel;
 import org.netbeans.modules.javacard.spi.Card;
 import org.netbeans.modules.javacard.spi.JavacardPlatform;
-import org.netbeans.modules.javacard.spi.capabilities.CardInfo;
 import org.netbeans.modules.javacard.spi.ProjectKind;
+import org.openide.util.ChangeSupport;
+import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
+import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
+import org.openide.util.Utilities;
 
 public class ProjectDefinitionPanel extends JPanel implements DocumentListener, FocusListener, LookupListener, ActionListener {
 
@@ -384,7 +391,8 @@ public class ProjectDefinitionPanel extends JPanel implements DocumentListener, 
                 isWebContextPathValid(wizardDescriptor) &&
                 isSrcTgzURLValid(wizardDescriptor) &&
                 isServletMappingValid(wizardDescriptor) &&
-                isAppletAIDValid(wizardDescriptor);
+                isAppletAIDValid(wizardDescriptor) && 
+                isTargetFolderValid(wizardDescriptor);
     }
 
     private boolean isAppletAIDValid (WizardDescriptor wizardDescriptor) {
@@ -524,6 +532,17 @@ public class ProjectDefinitionPanel extends JPanel implements DocumentListener, 
             }
         }
         return true;
+    }
+
+    private boolean isTargetFolderValid(WizardDescriptor wizardDescriptor) {
+        boolean result = new File (projectLocationTextField.getText()).exists();
+        if (!result) {
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                    NbBundle.getMessage(ProjectDefinitionPanel.class,
+                    "ERR_BAD_LOCATION", projectLocationTextField.getText())); //NOI18N
+
+        }
+        return result;
     }
 
     private boolean isSrcTgzURLValid(WizardDescriptor wizardDescriptor) {
