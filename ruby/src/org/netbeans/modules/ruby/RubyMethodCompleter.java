@@ -323,6 +323,9 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
         // this method tries to find the real target based on the lhs.
         String name = AstUtilities.getCallName(target);
         String lhs = call.getLhs();
+        if (lhs == null) {
+            return target;
+        }
         if (lhs.equals(name)) {
             return target;
         }
