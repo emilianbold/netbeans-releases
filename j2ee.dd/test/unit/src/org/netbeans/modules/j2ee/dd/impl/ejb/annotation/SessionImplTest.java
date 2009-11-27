@@ -137,8 +137,8 @@ public class SessionImplTest extends CommonTestCase {
                 assertEquals(1, session.getBusinessLocal().length);
                 assertEquals("foo.EmployerLocal", session.getBusinessLocal()[0]);
                 assertEquals(2, session.getBusinessRemote().length);
-                assertEquals("foo.EmployerRemote", session.getBusinessRemote()[0]);
-                assertEquals("foo.EmployerRemoteAdvanced", session.getBusinessRemote()[1]);
+                assertEquals("foo.EmployerRemote", session.getBusinessRemote()[1]);
+                assertEquals("foo.EmployerRemoteAdvanced", session.getBusinessRemote()[0]);
                 return null;
             }
         });
