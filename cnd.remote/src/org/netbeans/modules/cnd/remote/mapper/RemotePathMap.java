@@ -466,11 +466,20 @@ public abstract class RemotePathMap extends PathMap {
 
         private void initRemoteBase(boolean addMapping) {
             if (remoteBase == null) {
-                remoteBase = getRemoteSyncRoot(super.execEnv);
+                remoteBase = getDefaultRemoteSyncRoot(super.execEnv);
                 if (addMapping && remoteBase != null) {
                     addMappingImpl("/", remoteBase); // NOI18N
                 }
             }
+        }
+
+        private void setRemoteBase(String newBase) {
+            remoteBase = newBase;
+        }
+
+        private String getRemoteBase() {
+            initRemoteBase(false);
+            return (remoteBase == null) ? getDefaultRemoteSyncRoot(execEnv) : remoteBase;
         }
 
         @Override
@@ -484,7 +493,23 @@ public abstract class RemotePathMap extends PathMap {
         }
     }
 
+    public static void setRemoteSyncRoot(ExecutionEnvironment executionEnvironment, String syncRoot) {
+        PathMap pathMap = getPathMap(executionEnvironment);
+        if (pathMap instanceof FixedRemotePathMap) {
+            ((FixedRemotePathMap) pathMap).setRemoteBase(syncRoot);
+        }
+    }
+
     public static String getRemoteSyncRoot(ExecutionEnvironment executionEnvironment) {
+        String result = null;
+        PathMap pathMap = getPathMap(executionEnvironment);
+        if (pathMap instanceof FixedRemotePathMap) {
+            result = ((FixedRemotePathMap) pathMap).getRemoteBase();
+        }
+        return (result != null) ? result : getDefaultRemoteSyncRoot(executionEnvironment);
+    }
+
+    private static String getDefaultRemoteSyncRoot(ExecutionEnvironment executionEnvironment) {
         String root;
         root = System.getProperty("cnd.remote.sync.root." + executionEnvironment.getHost()); //NOI18N
         if (root != null) {

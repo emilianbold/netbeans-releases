@@ -48,18 +48,18 @@ import org.netbeans.modules.cnd.test.CndBaseTestSuite;
  *
  * @author Sergey Grinev
  */
-public class ZipBuildTestSuite extends CndBaseTestSuite {
+public class BuildTestSuite extends CndBaseTestSuite {
 
     public static final String PLATFORMS_SECTION = "remote.platforms";
     public static final String DEFAULT_SECTION = "remote";
 
-    public ZipBuildTestSuite(Class testClass) {
+    public BuildTestSuite(Class testClass) {
         this(testClass.getName(), testClass);
     }
 
     // Why are tests just Test, not NativeExecutionBaseTestCase?
     // to allow add warnings (TestSuite.warning() returns test stub with warning)
-    public ZipBuildTestSuite(String name, Test... tests) {
+    public BuildTestSuite(String name, Test... tests) {
         setName(name);
         for (Test test : tests) {
             addTest(test);
@@ -68,26 +68,26 @@ public class ZipBuildTestSuite extends CndBaseTestSuite {
 
     // Why are tests just Test, not NativeExecutionBaseTestCase?
     // to allow add warnings (TestSuite.warning() returns test stub with warning)
-    public ZipBuildTestSuite(String name, Collection<Test> tests) {
+    public BuildTestSuite(String name, Collection<Test> tests) {
         setName(name);
         for (Test test : tests) {
             addTest(test);
         }
     }
 
-    public ZipBuildTestSuite() {
+    public BuildTestSuite() {
         this("Remote Development", // NOI18N
              RemoteBuildSamplesTestCase.class,
              RemoteBuildMakefileTestCase.class);
     }
 
 
-    private ZipBuildTestSuite(String name, Class... testClasses) {
+    private BuildTestSuite(String name, Class... testClasses) {
         super(name, PLATFORMS_SECTION, testClasses);
     }
 
     public static Test suite() {
-        TestSuite suite = new ZipBuildTestSuite();
+        TestSuite suite = new BuildTestSuite();
         return suite;
     }
 }
