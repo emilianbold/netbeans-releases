@@ -64,6 +64,7 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import javax.swing.JDialog;
 import org.netbeans.modules.javacard.spi.JavacardPlatform;
@@ -340,10 +341,22 @@ final class JavacardPlatformWizardIterator implements ProgressInstantiatingItera
             if (prototypeValues != null) {
                 AntStyleResolvingProperties a = new AntStyleResolvingProperties(true);
                 a.putAll(prototypeValues);
-                System.err.println("Reading prototype values into wizard panel");
                 comp.read(new KeysAndValues.PropertiesAdapter(a));
             }
-            comp.read(new KeysAndValues.WizardDescriptorAdapter(wiz));
+            //#177744 resolve urls like http://${javacard.device.host} which
+            //the UI validation in the panel will not like.  Only happens
+            //if the user backs up and returns to the step, in which
+            //case the properties are loaded from the WizardDescriptor which
+            //does not understand Ant-style syntax
+            AntStyleResolvingProperties a = new AntStyleResolvingProperties(true);
+            for (Map.Entry<String,Object> e : wiz.getProperties().entrySet()) {
+                //Properties does not handle nulls;  anything that is a
+                //null, we're not interested in anyway
+                if (e.getKey() != null && e.getValue() != null) {
+                    a.put(e.getKey(), e.getValue());
+                }
+            }
+            comp.read(new KeysAndValues.PropertiesAdapter(a));
         }
 
         public void storeSettings(WizardDescriptor wiz) {
