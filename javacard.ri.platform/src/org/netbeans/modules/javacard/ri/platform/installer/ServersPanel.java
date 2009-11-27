@@ -76,6 +76,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.WindowManager;
 
@@ -104,6 +105,7 @@ public class ServersPanel extends javax.swing.JPanel implements ExplorerManager.
 
     public void showDialog() {
         DialogBuilder b = new DialogBuilder(ServersPanel.class).setModal(true).
+                setTitle(NbBundle.getMessage(ServersPanel.class, "TTL_MANAGE_DEVICES", pform.getDisplayName())). //NOI18N
                 setContent(this).setValidationGroup(grp);
         if (b.showDialog(DialogDescriptor.OK_OPTION)) {
             save();
