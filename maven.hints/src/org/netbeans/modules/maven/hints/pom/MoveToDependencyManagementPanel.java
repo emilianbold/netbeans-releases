@@ -50,9 +50,7 @@ import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import javax.swing.tree.TreeSelectionModel;
 import org.apache.maven.model.Model;
-import org.apache.maven.project.ProjectBuildingException;
-import org.apache.maven.project.build.model.ModelLineage;
-import org.apache.maven.project.build.model.ModelLineageIterator;
+import org.apache.maven.model.building.ModelBuildingException;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
@@ -114,7 +112,7 @@ public class MoveToDependencyManagementPanel extends javax.swing.JPanel implemen
 
     public void run() {
                 try {
-                    ModelLineage lin = EmbedderFactory.createModelLineage(current, EmbedderFactory.getOnlineEmbedder(), false);
+                    List<Model> lin = EmbedderFactory.createModelLineage(current, EmbedderFactory.getOnlineEmbedder());
                     final Children ch = new PomChildren(lin);
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
@@ -129,7 +127,7 @@ public class MoveToDependencyManagementPanel extends javax.swing.JPanel implemen
                             }
                         }
                     });
-                } catch (ProjectBuildingException ex) {
+                } catch (ModelBuildingException ex) {
                     Logger.getLogger(getClass().getName()).log(Level.FINE, "Error reading model lineage", ex);
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
@@ -151,20 +149,17 @@ public class MoveToDependencyManagementPanel extends javax.swing.JPanel implemen
         return an;
     }
 
-    private static class PomChildren extends Children.Keys<ModelLineage> {
+    private static class PomChildren extends Children.Keys<List<Model>> {
 
-        public PomChildren(ModelLineage lineage) {
-            setKeys(new ModelLineage[] {lineage});
+        public PomChildren(List<Model> lineage) {
+            setKeys(new List[] {lineage});
         }
 
         @Override
-        protected Node[] createNodes(ModelLineage key) {
-            ModelLineageIterator it = key.lineageIterator();
+        protected Node[] createNodes(List<Model> key) {
             List<POMNode> nds = new ArrayList<POMNode>();
-            while (it.hasNext()) {
-                it.next();
-                Model mdl = it.getModel();
-                File fl = FileUtil.normalizeFile(it.getPOMFile());
+            for (Model mdl : key) {
+                File fl = FileUtil.normalizeFile(mdl.getPomFile());
                 FileObject fo = FileUtil.toFileObject(fl);
                 Lookup lookup;
                 if (fo != null && !"pom".equals(fo.getExt())) { //NOI18N
