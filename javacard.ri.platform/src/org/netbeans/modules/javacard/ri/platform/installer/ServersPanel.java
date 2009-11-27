@@ -84,7 +84,7 @@ import org.openide.windows.WindowManager;
  *
  * @author Tim Boudreau
  */
-public class ServersPanel extends javax.swing.JPanel implements ExplorerManager.Provider, PropertyChangeListener, AddCardHandler.CardCreatedCallback, Lookup.Provider {
+public class ServersPanel extends javax.swing.JPanel implements ExplorerManager.Provider, PropertyChangeListener, AddCardHandler.CardCreatedCallback, Lookup.Provider, Runnable {
 
     private final ExplorerManager mgr = new ExplorerManager();
     private final JavacardPlatform pform;
@@ -115,7 +115,11 @@ public class ServersPanel extends javax.swing.JPanel implements ExplorerManager.
     @Override
     public void addNotify() {
         super.addNotify();
-        final Node[] n = mgr.getRootContext().getChildren().getNodes();
+        EventQueue.invokeLater(this);
+    }
+
+    public void run() {
+        final Node[] n = mgr.getRootContext().getChildren().getNodes(true);
         if (n != null && n.length > 0) {
             try {
                 mgr.setSelectedNodes(new Node[]{n[0]});
