@@ -509,12 +509,6 @@ public class ComputeOverriders {
         return null;
     }
 
-    static void performGoToAction(List<ElementDescription> declarations, Point position) {
-        String caption = NbBundle.getMessage(GoToImplementation.class, "LBL_ImplementorsOverriders");
-
-        PopupUtil.showPopup(new IsOverriddenPopup(caption, declarations), caption, position.x, position.y, true, 0);
-    }
-
     static Map<URL, List<URL>> dependenciesOverride;
     
     private static Map<URL, List<URL>> getDependencies(boolean binary) {

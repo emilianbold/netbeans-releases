@@ -121,7 +121,7 @@ public final class GoToImplementation extends BaseAction {
 
                     SwingUtilities.convertPointToScreen(p, c);
                     
-                    performGoToAction(overridingMethods, p);
+                    performGoToAction(overridingMethods, p, method != null);
                 }
             }, true);
         } catch (IOException ex) {
@@ -129,8 +129,8 @@ public final class GoToImplementation extends BaseAction {
         }
     }
 
-    static void performGoToAction(List<ElementDescription> declarations, Point position) {
-        String caption = NbBundle.getMessage(GoToImplementation.class, "LBL_ImplementorsOverriders");
+    static void performGoToAction(List<ElementDescription> declarations, Point position, boolean method) {
+        String caption = NbBundle.getMessage(GoToImplementation.class, method ? "LBL_ImplementorsOverridersMethod" : "LBL_ImplementorsOverridersClass");
         
         PopupUtil.showPopup(new IsOverriddenPopup(caption, declarations), caption, position.x, position.y, true, 0);
     }
