@@ -111,7 +111,11 @@ public class FromDBTest extends CRUDTest {
         waitScanFinished();
         Set<File> files = getFiles(getRestPackage() + ".service"); //NOI18N
         files.addAll(getFiles(getRestPackage() + ".converter")); //NOI18N
-        assertEquals("Some files were not generated", 30, files.size()); //NOI18N
+        if (JavaEEVersion.JAVAEE6.equals(getJavaEEversion())) {
+            assertEquals("Some files were not generated", 29, files.size()); //NOI18N
+        } else {
+            assertEquals("Some files were not generated", 30, files.size()); //NOI18N
+        }
         //make sure all REST services nodes are visible in project log. view
         assertEquals("missing nodes?", 14, getRestNode().getChildren().length);
     }
@@ -120,7 +124,7 @@ public class FromDBTest extends CRUDTest {
      * Creates suite from particular test cases. You can define order of testcases here.
      */
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(Server.GLASSFISH_V3, NbModuleSuite.createConfiguration(FromDBTest.class),
+        return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(FromDBTest.class),
                 "testFromDB", //NOI18N
                 "testDeploy", //NOI18N
                 "testUndeploy").enableModules(".*").clusters(".*")); //NOI18N

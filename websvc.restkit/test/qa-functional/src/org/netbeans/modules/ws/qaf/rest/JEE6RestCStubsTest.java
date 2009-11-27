@@ -34,51 +34,59 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.ws.qaf.rest;
 
-import java.util.logging.Logger;
+import java.io.File;
+import java.io.IOException;
+import javax.swing.JButton;
+import javax.swing.ListModel;
 import junit.framework.Test;
-import org.netbeans.jellytools.modules.j2ee.J2eeTestCase.Server;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.WizardOperator;
+import org.netbeans.jellytools.nodes.ProjectRootNode;
+import org.netbeans.jemmy.EventTool;
+import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JCheckBoxOperator;
+import org.netbeans.jemmy.operators.JListOperator;
+import org.netbeans.jemmy.operators.JRadioButtonOperator;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.project.ui.OpenProjectList;
+import org.openide.filesystems.FileUtil;
+import org.openide.nodes.Node;
 
 /**
- * Tests for New REST web services from Entity Classes wizard
- *
- * Duration of this test suite: aprox. 3min
+ * Tests for New REST service client stub wizard
  *
  * @author lukas
  */
-public class MvnCRUDTest extends CRUDTest {
+public class JEE6RestCStubsTest extends RestCStubsTest {
 
-    /** Default constructor.
-     * @param testName name of particular test case
-     */
-    public MvnCRUDTest(String name) {
+    public JEE6RestCStubsTest(String name) {
         super(name);
     }
 
     @Override
-    protected ProjectType getProjectType() {
-        return ProjectType.MAVEN_WEB;
-    }
-
-    @Override
-    protected String getProjectName() {
-        return "MvnFromEntities"; //NOI18N
+    protected JavaEEVersion getJavaEEversion() {
+        return JavaEEVersion.JAVAEE6;
     }
 
     /**
      * Creates suite from particular test cases. You can define order of testcases here.
      */
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(MvnCRUDTest.class),
-                "testRfE", //NOI18N
-                "testPropAccess", //NOI18N
-                "testRun", //NOI18N
-                "testCreateRestClient", //NOI18N
-                "testUndeploy" //NOI18N
+        return NbModuleSuite.create(addServerTests(Server.GLASSFISH_V3, NbModuleSuite.createConfiguration(JEE6RestCStubsTest.class),
+                "testWizard", //NOI18N
+                "testCreateSimpleStubs", //NOI18N
+                "testFromWADL", //NOI18N
+                "testCloseProject" //NOI18N
                 ).enableModules(".*").clusters(".*")); //NOI18N
     }
 }
