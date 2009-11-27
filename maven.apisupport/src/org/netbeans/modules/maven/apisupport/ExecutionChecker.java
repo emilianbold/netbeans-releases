@@ -38,7 +38,7 @@
  */
 package org.netbeans.modules.maven.apisupport;
 
-import hidden.org.codehaus.plexus.util.DirectoryScanner;
+import org.codehaus.plexus.util.DirectoryScanner;
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;

@@ -47,7 +47,7 @@ import java.util.StringTokenizer;
 import java.util.jar.Manifest;
 import java.util.regex.Pattern;
 import org.netbeans.modules.maven.api.NbMavenProject;
-import hidden.org.codehaus.plexus.util.IOUtil;
+import org.codehaus.plexus.util.IOUtil;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.spi.java.queries.AccessibilityQueryImplementation;
