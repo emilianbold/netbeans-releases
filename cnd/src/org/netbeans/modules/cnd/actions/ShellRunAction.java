@@ -148,6 +148,10 @@ public class ShellRunAction extends AbstractExecutorRunAction {
             if (i >= 0) {
                 shellCommand = shellCommand.substring(i+1);
             }
+            File sc = new File(shellCommand);
+            if (!sc.exists()) {
+                shellCommand = PlatformInfo.getDefault(execEnv).findCommand(shellCommand);
+            }
         }
         
         StringBuilder argsFlat = new StringBuilder();
