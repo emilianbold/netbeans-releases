@@ -174,7 +174,7 @@ public final class ProcessUtils {
         // will send SIGTERM signal..
 
         try {
-            int rc = process.exitValue();
+            process.exitValue();
             // No exception means successful termination
             return;
         } catch (java.lang.IllegalThreadStateException ex) {

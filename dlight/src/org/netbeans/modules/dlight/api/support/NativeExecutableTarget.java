@@ -88,7 +88,7 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
     private String[] args;
     private String cmd;
     private boolean x11forwarding;
-    private volatile Future<Integer> targetFutureResult;
+    private Future<Integer> targetFutureResult;
     private volatile int pid = -1;
     private volatile Integer status = null;
     private final StateLock stateLock = new StateLock();
@@ -299,7 +299,15 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
             descr = descr.postExecution(new Runnable() {
 
                 public void run() {
-                    notifyListeners(new DLightTargetChangeEvent(NativeExecutableTarget.this, state, status));
+                    final State stateToNotify;
+                    final Integer statusToNotify;
+                    
+                    synchronized (NativeExecutableTarget.this) {
+                        stateToNotify = state == null ? State.FAILED : state;
+                        statusToNotify = status == null ? Integer.MIN_VALUE : status;
+                    }
+                    
+                    notifyListeners(new DLightTargetChangeEvent(NativeExecutableTarget.this, stateToNotify, statusToNotify));
                 }
             });
 
@@ -345,7 +353,7 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
             return target.io;
         }
 
-        public synchronized void terminate(NativeExecutableTarget target) {
+        public void terminate(NativeExecutableTarget target) {
             target.terminate();
         }
     }

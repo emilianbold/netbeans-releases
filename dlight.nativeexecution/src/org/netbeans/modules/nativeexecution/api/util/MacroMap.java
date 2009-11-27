@@ -56,7 +56,7 @@ import org.openide.util.Utilities;
  * This map is a wrapper of Map&lt;String, String&gt; that expangs
  * macros on insertion...
  */
-public class MacroMap implements Cloneable {
+public final class MacroMap implements Cloneable {
 
     private final static java.util.logging.Logger log = Logger.getInstance();
     private final ExecutionEnvironment execEnv;
