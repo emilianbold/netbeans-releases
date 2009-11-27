@@ -38,46 +38,50 @@
  */
 package org.netbeans.modules.ws.qaf.rest;
 
-import java.util.logging.Logger;
 import junit.framework.Test;
 import org.netbeans.jellytools.modules.j2ee.J2eeTestCase.Server;
 import org.netbeans.junit.NbModuleSuite;
 
 /**
- * Tests for New REST web services from Entity Classes wizard
- *
- * Duration of this test suite: aprox. 3min
+ * Tests for New REST from Patterns wizard
  *
  * @author lukas
  */
-public class MvnCRUDTest extends CRUDTest {
+public class JEE6MvnPatternsTest extends MvnPatternsTest {
 
-    /** Default constructor.
+    /**
+     * Def constructor.
+     *
      * @param testName name of particular test case
      */
-    public MvnCRUDTest(String name) {
+    public JEE6MvnPatternsTest(String name) {
         super(name);
     }
 
     @Override
-    protected ProjectType getProjectType() {
-        return ProjectType.MAVEN_WEB;
-    }
-
-    @Override
-    protected String getProjectName() {
-        return "MvnFromEntities"; //NOI18N
+    protected JavaEEVersion getJavaEEversion() {
+        return JavaEEVersion.JAVAEE6;
     }
 
     /**
      * Creates suite from particular test cases. You can define order of testcases here.
      */
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(MvnCRUDTest.class),
-                "testRfE", //NOI18N
-                "testPropAccess", //NOI18N
+        return NbModuleSuite.create(addServerTests(Server.GLASSFISH_V3, NbModuleSuite.createConfiguration(JEE6MvnPatternsTest.class),
+                "testSingletonDef", //NOI18N
+                "testContainerIDef", //NOI18N
+                "testCcContainerIDef", //NOI18N
+                "testSingleton1", //NOI18N
+                "testCcContainerI1", //NOI18N
+                "testSingleton2", //NOI18N
+                "testContainerI1", //NOI18N
+                "testContainerI2", //NOI18N
+                "testSingleton3", //NOI18N
+                "testContainerI3", //NOI18N
+                "testCcContainerI2", //NOI18N
+                "testCcContainerI3", //NOI18N
+                "testNodes", //NOI18N
                 "testRun", //NOI18N
-                "testCreateRestClient", //NOI18N
                 "testUndeploy" //NOI18N
                 ).enableModules(".*").clusters(".*")); //NOI18N
     }
