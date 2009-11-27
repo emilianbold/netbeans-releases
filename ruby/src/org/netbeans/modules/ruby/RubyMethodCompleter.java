@@ -113,7 +113,7 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
 
         final String prefix = request.prefix;
         final int lexOffset = request.lexOffset;
-        final TokenHierarchy<?> th = request.th;
+        final TokenHierarchy<Document> th = request.th;
         final AstPath path = request.path;
         final QuerySupport.Kind kind = request.kind;
         final Node target = request.target != null ? AstUtilities.findNextNonNewLineNode(request.target) : null;
