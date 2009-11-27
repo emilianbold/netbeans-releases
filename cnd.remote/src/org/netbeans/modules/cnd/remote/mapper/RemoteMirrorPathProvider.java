@@ -53,7 +53,11 @@ import org.openide.util.Exceptions;
  * @author Vladimir Kvashin
  */
 @org.openide.util.lookup.ServiceProvider(service=MirrorPathProvider.class, position=100)
-/*package*/ class RemoteMirrorPathProvider implements MirrorPathProvider {
+public class RemoteMirrorPathProvider implements MirrorPathProvider {
+
+    /** Service provider contract */
+    public RemoteMirrorPathProvider() {
+    }
 
     @Override
     public String getLocalMirror(ExecutionEnvironment executionEnvironment) {
