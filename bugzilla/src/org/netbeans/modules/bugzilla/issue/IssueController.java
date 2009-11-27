@@ -52,7 +52,8 @@ import org.openide.util.HelpCtx;
  * @author Tomas Stupka, Jan Stola
  */
 public class IssueController extends BugtrackingController {
-    private JComponent issuePanel;
+    private JComponent component;
+    private IssuePanel issuePanel;
 
     public IssueController(BugzillaIssue issue) {
         IssuePanel panel = new IssuePanel();
@@ -67,12 +68,31 @@ public class IssueController extends BugtrackingController {
             scrollPane.getVerticalScrollBar().setUnitIncrement(size);
         }
         BugtrackingUtil.keepFocusedComponentVisible(scrollPane);
-        issuePanel = scrollPane;
+        issuePanel = panel;
+        component = scrollPane;
     }
 
     @Override
     public JComponent getComponent() {
-        return issuePanel;
+        return component;
+    }
+
+    @Override
+    public void opened() {
+        BugzillaIssue issue = issuePanel.getIssue();
+        if (issue != null) {
+            // Hack - reset any previous modifications when the issue window is reopened
+            issuePanel.reloadForm(true);
+            issue.opened();
+        }
+    }
+
+    @Override
+    public void closed() {
+        BugzillaIssue issue = issuePanel.getIssue();
+        if (issue != null) {
+            issue.closed();
+        }
     }
 
     @Override
