@@ -51,7 +51,12 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetUtils;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
+import org.netbeans.modules.cnd.api.execution.LinkSupport;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
@@ -144,14 +149,8 @@ public class ShellRunAction extends AbstractExecutorRunAction {
         // doesn't work here, so extract the 'sh' part and use that instead. 
         // FIXUP: This is not entirely correct though.
         if (PlatformInfo.getDefault(execEnv).isWindows() && shellCommand.length() > 0) {
-            int i = shellCommand.lastIndexOf("/"); // UNIX PATH // NOI18N
-            if (i >= 0) {
-                shellCommand = shellCommand.substring(i+1);
-            }
-            File sc = new File(shellCommand);
-            if (!sc.exists()) {
-                shellCommand = PlatformInfo.getDefault(execEnv).findCommand(shellCommand);
-            }
+            shellCommand = findWindowsShell(shellCommand, execEnv);
+            LinkSupport.resolveWindowsLink(shellCommand);
         }
         
         StringBuilder argsFlat = new StringBuilder();
@@ -212,5 +211,61 @@ public class ShellRunAction extends AbstractExecutorRunAction {
         // Execute the shellfile
         ExecutionService es = ExecutionService.newService(npb, descr, "Run"); // NOI18N
         return es.run();
+    }
+
+    private static String findWindowsShell(String shellCommand, ExecutionEnvironment execEnv) {
+        int i = shellCommand.lastIndexOf("/"); // UNIX PATH // NOI18N
+        if (i >= 0) {
+            shellCommand = shellCommand.substring(i + 1);
+        }
+        File sc = new File(shellCommand);
+        if (sc.exists()) {
+            return shellCommand;
+        }
+        PlatformInfo pi = PlatformInfo.getDefault(execEnv);
+        String newShellCommand = pi.findCommand(shellCommand);
+        if (newShellCommand != null) {
+            return newShellCommand;
+        }
+        CompilerSetManager csm = CompilerSetManager.getDefault(execEnv);
+        String folder;
+        if (csm != null) {
+            {
+                CompilerSet set = csm.getDefaultCompilerSet();
+                if (set != null) {
+                    folder = set.getCompilerFlavor().getCommandFolder(PlatformTypes.PLATFORM_WINDOWS);
+                    if (folder != null) {
+                        newShellCommand = pi.findCommand(folder, shellCommand);
+                        if (newShellCommand != null) {
+                            return newShellCommand;
+                        }
+                    }
+                }
+            }
+            for (CompilerSet set : csm.getCompilerSets()) {
+                folder = set.getCompilerFlavor().getCommandFolder(PlatformTypes.PLATFORM_WINDOWS);
+                if (folder != null) {
+                    newShellCommand = pi.findCommand(folder, shellCommand);
+                    if (newShellCommand != null) {
+                        return newShellCommand;
+                    }
+                }
+            }
+        }
+        folder = CompilerSetUtils.getCygwinBase();
+        if (folder != null) {
+            newShellCommand = pi.findCommand(folder, shellCommand);
+            if (newShellCommand != null) {
+                return newShellCommand;
+            }
+        }
+        folder = CompilerSetUtils.getMSysBase();
+        if (folder != null) {
+            newShellCommand = pi.findCommand(folder, shellCommand);
+            if (newShellCommand != null) {
+                return newShellCommand;
+            }
+        }
+        return shellCommand;
     }
 }
