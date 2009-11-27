@@ -78,6 +78,7 @@ public final class CSSStyleAction extends CookieAction implements CollectDTDActi
     /** Creates new CSSStyleAction */
     public CSSStyleAction() {}
 
+/***********
     public static synchronized CSSStyleAction getInstance() {
         CSSStyleAction actionInstance = null;
         String thisClassName = CSSStyleAction.class.getName();
@@ -89,7 +90,8 @@ public final class CSSStyleAction extends CookieAction implements CollectDTDActi
         }
         return actionInstance;
     }
-
+***********/
+    
     public Class[] cookieClasses() {
         return new Class[] { DTDDataObject.class };
     }
