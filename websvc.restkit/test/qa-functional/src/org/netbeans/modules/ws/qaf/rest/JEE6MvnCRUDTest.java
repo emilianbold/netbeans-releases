@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.ws.qaf.rest;
 
-import java.util.logging.Logger;
 import junit.framework.Test;
 import org.netbeans.jellytools.modules.j2ee.J2eeTestCase.Server;
 import org.netbeans.junit.NbModuleSuite;
@@ -50,30 +49,25 @@ import org.netbeans.junit.NbModuleSuite;
  *
  * @author lukas
  */
-public class MvnCRUDTest extends CRUDTest {
+public class JEE6MvnCRUDTest extends MvnCRUDTest {
 
     /** Default constructor.
      * @param testName name of particular test case
      */
-    public MvnCRUDTest(String name) {
+    public JEE6MvnCRUDTest(String name) {
         super(name);
     }
 
     @Override
-    protected ProjectType getProjectType() {
-        return ProjectType.MAVEN_WEB;
-    }
-
-    @Override
-    protected String getProjectName() {
-        return "MvnFromEntities"; //NOI18N
+    protected JavaEEVersion getJavaEEversion() {
+        return JavaEEVersion.JAVAEE6;
     }
 
     /**
      * Creates suite from particular test cases. You can define order of testcases here.
      */
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(MvnCRUDTest.class),
+        return NbModuleSuite.create(addServerTests(Server.GLASSFISH_V3, NbModuleSuite.createConfiguration(JEE6MvnCRUDTest.class),
                 "testRfE", //NOI18N
                 "testPropAccess", //NOI18N
                 "testRun", //NOI18N

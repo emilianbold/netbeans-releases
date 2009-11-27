@@ -336,7 +336,7 @@ public abstract class RestTestBase extends WebServicesTestBase {
 
     @Override
     public File getGoldenFile(String filename) {
-        String fullClassName = this.getClass().getName().replace("Mvn", "");
+        String fullClassName = this.getClass().getName().replace("Mvn", "").replace("JEE6", "");
         String goldenFileName = fullClassName.replace('.', '/')+"/"+filename;
         // golden files are in ${xtest.data}/goldenfiles/${classname}/...
         File goldenFile = new File(getDataDir()+"/goldenfiles/"+goldenFileName);

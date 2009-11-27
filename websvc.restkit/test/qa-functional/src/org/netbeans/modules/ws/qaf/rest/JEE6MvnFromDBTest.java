@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -38,47 +38,31 @@
  */
 package org.netbeans.modules.ws.qaf.rest;
 
-import java.util.logging.Logger;
 import junit.framework.Test;
-import org.netbeans.jellytools.modules.j2ee.J2eeTestCase.Server;
 import org.netbeans.junit.NbModuleSuite;
 
 /**
- * Tests for New REST web services from Entity Classes wizard
- *
- * Duration of this test suite: aprox. 3min
  *
  * @author lukas
  */
-public class MvnCRUDTest extends CRUDTest {
+public class JEE6MvnFromDBTest extends MvnFromDBTest {
 
-    /** Default constructor.
-     * @param testName name of particular test case
-     */
-    public MvnCRUDTest(String name) {
+    public JEE6MvnFromDBTest(String name) {
         super(name);
     }
 
     @Override
-    protected ProjectType getProjectType() {
-        return ProjectType.MAVEN_WEB;
-    }
-
-    @Override
-    protected String getProjectName() {
-        return "MvnFromEntities"; //NOI18N
+    protected JavaEEVersion getJavaEEversion() {
+        return JavaEEVersion.JAVAEE6;
     }
 
     /**
      * Creates suite from particular test cases. You can define order of testcases here.
      */
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(MvnCRUDTest.class),
-                "testRfE", //NOI18N
-                "testPropAccess", //NOI18N
+        return NbModuleSuite.create(addServerTests(Server.GLASSFISH_V3, NbModuleSuite.createConfiguration(JEE6MvnFromDBTest.class),
+                "testFromDB", //NOI18N
                 "testRun", //NOI18N
-                "testCreateRestClient", //NOI18N
-                "testUndeploy" //NOI18N
-                ).enableModules(".*").clusters(".*")); //NOI18N
+                "testUndeploy").enableModules(".*").clusters(".*")); //NOI18N
     }
 }

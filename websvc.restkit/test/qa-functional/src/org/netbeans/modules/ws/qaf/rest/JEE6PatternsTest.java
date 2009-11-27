@@ -39,7 +39,7 @@
 package org.netbeans.modules.ws.qaf.rest;
 
 import junit.framework.Test;
-import org.netbeans.jellytools.modules.j2ee.J2eeTestCase.Server;
+import org.netbeans.jellytools.Bundle;
 import org.netbeans.junit.NbModuleSuite;
 
 /**
@@ -47,32 +47,27 @@ import org.netbeans.junit.NbModuleSuite;
  *
  * @author lukas
  */
-public class MvnPatternsTest extends PatternsTest {
+public class JEE6PatternsTest extends PatternsTest {
 
     /**
      * Def constructor.
      *
      * @param testName name of particular test case
      */
-    public MvnPatternsTest(String name) {
+    public JEE6PatternsTest(String name) {
         super(name);
     }
 
     @Override
-    protected ProjectType getProjectType() {
-        return ProjectType.MAVEN_WEB;
-    }
-
-    @Override
-    public String getProjectName() {
-        return "MvnFromPatterns"; //NOI18N
+    protected JavaEEVersion getJavaEEversion() {
+        return JavaEEVersion.JAVAEE6;
     }
 
     /**
      * Creates suite from particular test cases. You can define order of testcases here.
      */
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(MvnPatternsTest.class),
+        return NbModuleSuite.create(addServerTests(Server.GLASSFISH_V3, NbModuleSuite.createConfiguration(JEE6PatternsTest.class),
                 "testSingletonDef", //NOI18N
                 "testContainerIDef", //NOI18N
                 "testCcContainerIDef", //NOI18N
@@ -86,8 +81,80 @@ public class MvnPatternsTest extends PatternsTest {
                 "testCcContainerI2", //NOI18N
                 "testCcContainerI3", //NOI18N
                 "testNodes", //NOI18N
-                "testRun", //NOI18N
+                "testDeploy", //NOI18N
                 "testUndeploy" //NOI18N
                 ).enableModules(".*").clusters(".*")); //NOI18N
+    }
+
+    static class Pkg extends JComponentByLabelFinder {
+
+        public Pkg() {
+            //Resource Package:
+            super(Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_Package"));
+        }
+    }
+
+    static class ClsName extends JComponentByLabelFinder {
+
+        public ClsName() {
+            //Class Name:
+            super(Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_ClassName"));
+        }
+    }
+
+    static class Mime extends JComponentByLabelFinder {
+
+        public Mime() {
+            //MIME Type:
+            super(Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_MimeType"));
+        }
+    }
+
+    static class RCls extends JComponentByLabelFinder {
+
+        public RCls() {
+            //Representation Class:
+            super(Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_RepresentationClass"));
+        }
+    }
+
+    static class Path extends JComponentByLabelFinder {
+
+        public Path() {
+            //Path:
+            super(Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_UriTemplate"));
+        }
+    }
+
+    static class CClsName extends JComponentByLabelFinder {
+
+        public CClsName() {
+            //Container Class Name:
+            super(Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_ContainerClass"));
+        }
+    }
+
+    static class CPath extends JComponentByLabelFinder {
+
+        public CPath() {
+            //Container Path:
+            super(Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_ContainerUriTemplate"));
+        }
+    }
+
+    static class CRCls extends JComponentByLabelFinder {
+
+        public CRCls() {
+            //Container Representation Class:
+            super(Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_ContainerRepresentationClass"));
+        }
+    }
+
+    static class Loc extends JComponentByLabelFinder {
+
+        public Loc() {
+            //Location:
+            super(Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_SrcLocation"));
+        }
     }
 }
