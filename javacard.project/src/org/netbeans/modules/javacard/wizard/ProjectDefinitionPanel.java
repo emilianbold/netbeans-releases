@@ -577,22 +577,22 @@ public class ProjectDefinitionPanel extends JPanel implements DocumentListener, 
         if (!platformColl.isEmpty()) {
             JavacardPlatform platform = platformColl.iterator().next();
             invalidPlatform = !platform.isValid();
-            //XXX find cleaner way to do this
-            for (DataObject dob : platformAndDevicePanel1.getLookup().lookupAll(DataObject.class)) {
-                if (dob.getLookup().lookup(JavacardPlatform.class) != null) {
-                    d.putProperty(ProjectPropertyNames.PROJECT_PROP_ACTIVE_PLATFORM, dob.getName());
-                    break;
-                }
-            }
+            d.putProperty(ProjectPropertyNames.PROJECT_PROP_ACTIVE_PLATFORM, platform.getSystemName());
+            d.putProperty("activeplatform", platform.getSystemName()); //NOI18N //XXX constant?
         } else {
             invalidPlatform = true;
+            d.putProperty(ProjectPropertyNames.PROJECT_PROP_ACTIVE_PLATFORM, JCConstants.DEFAULT_JAVACARD_PLATFORM_FILE_NAME);
+            d.putProperty("activeplatform", JCConstants.DEFAULT_JAVACARD_PLATFORM_FILE_NAME); //NOI18N //XXX constant?
         }
-
         if (!invalidPlatform) {
             Collection<? extends Card> cards = serverRes.allInstances();
             if (!cards.isEmpty()) {
                 d.putProperty(ProjectPropertyNames.PROJECT_PROP_ACTIVE_DEVICE, cards.iterator().next().getSystemId());
+                d.putProperty("activedevice", cards.iterator().next().getSystemId()); //NOI18N //XXX locate constant
             }
+        } else {
+                d.putProperty(ProjectPropertyNames.PROJECT_PROP_ACTIVE_DEVICE, "Default Device"); //XXX locate constant
+                d.putProperty("activedevice", "Default Device"); //NOI18N //XXX locate constant
         }
         d.putProperty("projdir", new File(folder)); //NOI18N
         d.putProperty(ProjectWizardKeys.WIZARD_PROP_PROJECT_NAME, name);

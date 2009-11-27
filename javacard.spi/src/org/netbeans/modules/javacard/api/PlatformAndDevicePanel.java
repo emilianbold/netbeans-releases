@@ -105,7 +105,6 @@ import org.openide.util.lookup.InstanceContent;
  *
  * @author Tim Boudreau
  */
-//public class PlatformAndDevicePanel extends SharedLayoutParentPanel implements ExplorerManager.Provider {
 public final class PlatformAndDevicePanel extends JPanel implements ActionListener, ValidationGroupProvider, Lookup.Provider {
     private final JComboBox platforms;
     private final JComboBox devices;
@@ -238,14 +237,19 @@ public final class PlatformAndDevicePanel extends JPanel implements ActionListen
     public void addNotify() {
         super.addNotify();
         grp.validateAll();
+        updateLookup();
     }
 
     private void updateLookup() {
-        JavacardPlatform pform = platforms.getSelectedItem() instanceof JavacardPlatform ? (JavacardPlatform) platforms.getSelectedItem() : null;
         Set<Object> stuff = new HashSet<Object>();
+        JavacardPlatform pform = platforms.getSelectedItem() instanceof JavacardPlatform ? (JavacardPlatform) platforms.getSelectedItem() : null;
+        if (pform != null) {
+            stuff.add(pform);
+        }
         if (devices.getSelectedItem() instanceof Card) {
             stuff.add (devices.getSelectedItem());
         }
+        System.err.println("Update Lookup with " + stuff);
         content.set(stuff, null);
     }
 
@@ -289,12 +293,12 @@ public final class PlatformAndDevicePanel extends JPanel implements ActionListen
             tempProps.setPlatformName(activePlatform);
         }
         setPlatformAndCard(tempProps);
+        updateLookup();
     }
 
     private static class PlatformValidator implements Validator<ComboBoxModel> {
 
         public boolean validate(Problems prblms, String string, ComboBoxModel t) {
-            System.err.println("pform validate " + t.getSelectedItem());
             if (t.getSelectedItem() == null || !(t.getSelectedItem() instanceof JavacardPlatform)) {
                 prblms.add(NbBundle.getMessage(PlatformValidator.class, "LBL_NO_PLATFORM_SELECTED")); //NOI18N
                 return false;
@@ -315,7 +319,6 @@ public final class PlatformAndDevicePanel extends JPanel implements ActionListen
     private static class CardValidator implements Validator<ComboBoxModel> {
 
         public boolean validate(Problems prblms, String string, ComboBoxModel t) {
-            System.err.println("Card validate " + t.getSelectedItem());
             if (t.getSelectedItem() == null || !(t.getSelectedItem() instanceof Card)) {
                 prblms.add(NbBundle.getMessage(PlatformValidator.class, "LBL_NO_CARD_SELECTED")); //NOI18N
                 return false;
@@ -323,7 +326,6 @@ public final class PlatformAndDevicePanel extends JPanel implements ActionListen
             if (t.getSelectedItem() instanceof Card) {
                 Card c = (Card) t.getSelectedItem();
                 if (!c.isValid()) {
-                    System.err.println("Invalid, bad card");
                     prblms.add(NbBundle.getMessage(PlatformValidator.class, "MSG_BAD_CARD")); //NOI18N
                     return false;
                 }
@@ -426,7 +428,6 @@ public final class PlatformAndDevicePanel extends JPanel implements ActionListen
         }
 
         public void setSelectedItem(Object anItem) {
-            System.err.println("platforms set selected item to " + anItem);
             if (anItem == null && list.size() > 0) {
                 anItem = list.get(0);
             }
@@ -442,6 +443,7 @@ public final class PlatformAndDevicePanel extends JPanel implements ActionListen
                     l.contentsChanged(new ListDataEvent(this, ListDataEvent.CONTENTS_CHANGED, -1, -1));
                 }
             }
+            updateLookup();
         }
 
         public Object getSelectedItem() {
@@ -530,11 +532,11 @@ public final class PlatformAndDevicePanel extends JPanel implements ActionListen
         }
 
         public void setSelectedItem(Object anItem) {
-            System.err.println("cards set selected item to " + anItem);
             if (anItem == null && list.size() > 0) {
                 anItem = list.get(0);
             }
             sel = (Card) anItem;
+            updateLookup();
         }
 
         public Object getSelectedItem() {

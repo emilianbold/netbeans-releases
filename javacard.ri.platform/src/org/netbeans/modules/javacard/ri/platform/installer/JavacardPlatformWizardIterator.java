@@ -182,11 +182,11 @@ final class JavacardPlatformWizardIterator implements ProgressInstantiatingItera
     }
 
     public void nextPanel() {
-        ix++;
+        ix = 1;
     }
 
     public void previousPanel() {
-        ix--;
+        ix = 0;
     }
     private final ChangeSupport supp = new ChangeSupport(this);
 
