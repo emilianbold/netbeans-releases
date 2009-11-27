@@ -87,6 +87,9 @@ made subject to such option by the copyright holder.
     <taskdef name="arch"
          classname="org.netbeans.nbbuild.Arch"
          classpath="${nb_all}/nbbuild/nbantext.jar"/>
+    <taskdef name="autoupdate"
+         classname="org.netbeans.nbbuild.AutoUpdate"
+         classpath="${nb_all}/nbbuild/nbantext.jar"/>
     <taskdef name="fixdependencies"
          classname="org.netbeans.nbbuild.FixDependencies"
          classpath="${nb_all}/nbbuild/nbantext.jar"/>
