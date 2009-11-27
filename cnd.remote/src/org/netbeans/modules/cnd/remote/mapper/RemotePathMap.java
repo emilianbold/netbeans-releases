@@ -44,7 +44,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.text.ParseException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -53,15 +52,13 @@ import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
-import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.remote.ui.EditPathMapDialog;
+import org.netbeans.modules.cnd.spi.remote.setup.MirrorPathProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
-import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
-import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
 
@@ -466,20 +463,11 @@ public abstract class RemotePathMap extends PathMap {
 
         private void initRemoteBase(boolean addMapping) {
             if (remoteBase == null) {
-                remoteBase = getDefaultRemoteSyncRoot(super.execEnv);
+                remoteBase = getRemoteSyncRoot(super.execEnv);
                 if (addMapping && remoteBase != null) {
                     addMappingImpl("/", remoteBase); // NOI18N
                 }
             }
-        }
-
-        private void setRemoteBase(String newBase) {
-            remoteBase = newBase;
-        }
-
-        private String getRemoteBase() {
-            initRemoteBase(false);
-            return (remoteBase == null) ? getDefaultRemoteSyncRoot(execEnv) : remoteBase;
         }
 
         @Override
@@ -493,43 +481,14 @@ public abstract class RemotePathMap extends PathMap {
         }
     }
 
-    public static void setRemoteSyncRoot(ExecutionEnvironment executionEnvironment, String syncRoot) {
-        PathMap pathMap = getPathMap(executionEnvironment);
-        if (pathMap instanceof FixedRemotePathMap) {
-            ((FixedRemotePathMap) pathMap).setRemoteBase(syncRoot);
-        }
-    }
-
     public static String getRemoteSyncRoot(ExecutionEnvironment executionEnvironment) {
-        String result = null;
-        PathMap pathMap = getPathMap(executionEnvironment);
-        if (pathMap instanceof FixedRemotePathMap) {
-            result = ((FixedRemotePathMap) pathMap).getRemoteBase();
+        for (MirrorPathProvider mpp : Lookup.getDefault().lookupAll(MirrorPathProvider.class)) {
+            String result = mpp.getRemoteMirror(executionEnvironment);
+            if (result != null) {
+                return result;
+            }
         }
-        return (result != null) ? result : getDefaultRemoteSyncRoot(executionEnvironment);
-    }
-
-    private static String getDefaultRemoteSyncRoot(ExecutionEnvironment executionEnvironment) {
-        String root;
-        root = System.getProperty("cnd.remote.sync.root." + executionEnvironment.getHost()); //NOI18N
-        if (root != null) {
-            return root;
-        }
-        root = System.getProperty("cnd.remote.sync.root"); //NOI18N
-        if (root != null) {
-            return root;
-        }
-        String home = RemoteUtil.getHomeDirectory(executionEnvironment);
-        final ExecutionEnvironment local = ExecutionEnvironmentFactory.getLocal();
-        MacroExpander expander = MacroExpanderFactory.getExpander(local);
-        String localHostID = local.getHost();
-        try {
-            localHostID = expander.expandPredefinedMacros("${hostname}-${osname}-${platform}${_isa}"); // NOI18N
-        } catch (ParseException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        // each local host maps into own remote folder to prevent collisions on path mapping level
-        return (home == null) ? null : home + "/.netbeans/remote/" + localHostID; // NOI18N
+        return null;
     }
 }
 
