@@ -65,6 +65,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
@@ -756,8 +757,12 @@ public class JsfElExpression extends ELExpression {
                                     continue;
                                 }
                                 addedItems.add(methodName);
+                                TypeMirror methodType = controller.getTypes().asMemberOf(
+                                        (DeclaredType)bean.asType(), method);
+                                String retType = ((ExecutableType)methodType).
+                                    getReturnType().toString();
                                 CompletionItem item = new JsfElCompletionItem.JsfMethod(
-                                    methodName, anchor, method.getReturnType().toString());
+                                    methodName, anchor, retType);
 
                             completionItems.add(item);
                         }

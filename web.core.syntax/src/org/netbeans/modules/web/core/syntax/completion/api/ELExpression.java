@@ -50,11 +50,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
@@ -66,6 +68,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.UiUtils;
+import org.netbeans.api.java.source.ElementUtilities.ElementAcceptor;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.Token;
@@ -737,7 +740,13 @@ public class ELExpression {
             if ( mirror == null ){
                 return null;
             }
-            return (TypeElement) controller.getTypes().asElement( mirror);
+            Element result = controller.getTypes().asElement( mirror);
+            if ( result instanceof TypeElement ){
+                return (TypeElement)result ;
+            }
+            else {
+                return null;
+            }
         }
 
         protected TypeMirror getTypeMirrorPreceedingCaret(CompilationInfo controller,
@@ -777,7 +786,6 @@ public class ELExpression {
                     if ( handler != null ){
                         handler.typeNotFound(parts[i-1].getIndex(), parts[i-1].getPart());
                     }
-
                     return null;
                 }
                 if (lastKnownType != null) {
@@ -797,6 +805,7 @@ public class ELExpression {
                     //get all methods of the type
                     Element el= controller.getTypes().asElement(
                             lastKnownType);
+                    
                     List<ExecutableElement> allMethods;
                     if ( el instanceof TypeElement ){
                         allMethods= ElementFilter.methodsIn(
@@ -807,13 +816,17 @@ public class ELExpression {
                         allMethods = Collections.emptyList();
                     }
 
+                    TypeMirror type = lastKnownType;
                     lastKnownType = null;
 
                     for (ExecutableElement method : allMethods) {
                         if (accessorName.equals(method.getSimpleName()
                                 .toString()))
                         {
-                            TypeMirror returnType = method.getReturnType();
+                            ExecutableType methodType = (ExecutableType) 
+                                controller.getTypes().asMemberOf(
+                                        (DeclaredType)type, method);
+                            TypeMirror returnType = methodType.getReturnType();
                             lastReturnType = returnType;
 
                             if (returnType.getKind() == TypeKind.ARRAY) {
@@ -1091,7 +1104,15 @@ public class ELExpression {
 
                     if (propertyName != null && propertyName.startsWith(prefix)) {
                         boolean isMethod = propertyName.equals(method.getSimpleName().toString());
-                        String type = isMethod ? "" : method.getReturnType().toString(); //NOI18N
+                        String type ;
+                        if ( isMethod ){
+                            TypeMirror methodType = controller.getTypes().asMemberOf( 
+                                    (DeclaredType)bean.asType(), method);
+                            type = ((ExecutableType)methodType).getReturnType().toString();
+                        }
+                        else {
+                            type ="";
+                        }
                         CompletionItem item = ElCompletionItem.createELProperty(
                                 propertyName, getInsert( propertyName , firstChar), 
                                 anchorOffset, type);
