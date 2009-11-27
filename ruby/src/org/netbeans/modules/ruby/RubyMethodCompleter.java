@@ -44,6 +44,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import org.jrubyparser.ast.CallNode;
 import org.jrubyparser.ast.ClassNode;
 import org.jrubyparser.ast.FCallNode;
@@ -112,7 +113,7 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
 
         final String prefix = request.prefix;
         final int lexOffset = request.lexOffset;
-        final TokenHierarchy<?> th = request.th;
+        final TokenHierarchy<Document> th = request.th;
         final AstPath path = request.path;
         final QuerySupport.Kind kind = request.kind;
         final Node target = request.target != null ? AstUtilities.findNextNonNewLineNode(request.target) : null;
