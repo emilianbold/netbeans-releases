@@ -114,7 +114,7 @@
         </subant>
     </target>
 
-    <target name="-init-one-cluster-propeties">
+    <target name="-init-one-cluster-properties">
         <pathconvert property="cluster.name">
             <path location="."/>
             <mapper type="regexp" from=".*[/\\]([a-z]*)[0-9\.]*" to="\1"/>
@@ -125,7 +125,7 @@
     </target>
     <target 
         name="-proxy-one-cluster"
-        depends="-init-clusters,-init-one-cluster-propeties"
+        depends="-init-clusters,-init-one-cluster-properties"
     >
         <taskdef name="extractlayer"
              classname="org.netbeans.modules.ide.ergonomics.ant.ExtractLayer"
