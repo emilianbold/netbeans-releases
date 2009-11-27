@@ -2221,6 +2221,10 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
 
     @Override
     public Mirror visitNewClass(NewClassTree arg0, EvaluationContext evaluationContext) {
+        ClassTree ct = arg0.getClassBody();
+        if (ct != null) {
+            Assert.error(arg0, "noNewClassWithBody");
+        }
         TreePath currentPath = getCurrentPath();
         TypeMirror cType;
         if (currentPath != null) {
