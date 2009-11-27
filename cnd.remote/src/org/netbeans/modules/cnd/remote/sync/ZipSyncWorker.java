@@ -165,7 +165,7 @@ import org.openide.util.NbBundle;
         for (int i = 0; i < files.length; i++) {
             String remoteFile = RemotePathMap.getPathMap(executionEnvironment).getRemotePath(files[i].getAbsolutePath(), true);
             if (files[i].isDirectory()) {
-                script.append(String.format("test -d %s  || echo D %s; ", remoteFile, remoteFile)); // echo all inexistent directories // NOI18N
+                script.append(String.format("test -d %s  || echo %s; ", remoteFile, remoteFile)); // echo all inexistent directories // NOI18N
             }
         }
         script.append("\""); // NOI18N
