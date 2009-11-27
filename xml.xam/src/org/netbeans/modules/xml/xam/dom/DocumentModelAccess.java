@@ -140,7 +140,7 @@ public abstract class DocumentModelAccess extends ModelAccess {
         Node next = element.getNextSibling();
         try {
             javax.swing.text.Document doc = getModel().getBaseDocument();
-            StringBuilder sb = new StringBuilder(doc.getText(0, doc.getLength()-1));
+            StringBuilder sb = new StringBuilder(doc.getText(0, doc.getLength()));
             if (parent instanceof Document) {
                 assert ((Document)parent).getDocumentElement() == element;
                 end = sb.lastIndexOf(">") + 1;

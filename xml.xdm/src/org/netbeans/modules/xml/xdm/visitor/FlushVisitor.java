@@ -60,7 +60,9 @@ public class FlushVisitor extends ChildVisitor {
     public String flushModel(org.netbeans.modules.xml.xdm.nodes.Document root) {
         buffer = new StringBuilder();
         root.accept(this);
-        return buffer.toString();
+        String result = buffer.substring(0, buffer.length() - 1);
+        return result;
+        // return buffer.toString();
     }
 
     public String flush(NodeList children) {
