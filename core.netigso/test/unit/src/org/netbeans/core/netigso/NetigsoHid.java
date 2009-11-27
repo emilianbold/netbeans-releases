@@ -101,6 +101,10 @@ public class NetigsoHid extends SetupHid {
     
     protected final File changeManifest(File orig, String manifest) throws IOException {
         File f = new File(getWorkDir(), orig.getName());
+        int i = 0;
+        while (f.exists()) {
+            f = new File(f.getParentFile(), f.getName() + i++);
+        }
         Manifest mf = new Manifest(new ByteArrayInputStream(manifest.getBytes("utf-8")));
         mf.getMainAttributes().putValue("Manifest-Version", "1.0");
         JarOutputStream os = new JarOutputStream(new FileOutputStream(f), mf);

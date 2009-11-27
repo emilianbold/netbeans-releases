@@ -51,9 +51,9 @@ import org.netbeans.ModuleManager;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class NetigsoOSGiCanRequestTest extends NetigsoHid {
+public class NetigsoOSGiCanRequestNoMajorTest extends NetigsoHid {
 
-    public NetigsoOSGiCanRequestTest(String name) {
+    public NetigsoOSGiCanRequestNoMajorTest(String name) {
         super(name);
     }
 
@@ -64,14 +64,19 @@ public class NetigsoOSGiCanRequestTest extends NetigsoHid {
         mgr.mutexPrivileged().enterWriteAccess();
         HashSet<Module> both = null;
         try {
+            String mfModule = "Manifest-Version: 1.0\n" +
+                    "OpenIDE-Module: org.foo\n" +
+                    "OpenIDE-Module-Name: Foo test module\n" +
+                    "OpenIDE-Module-Specification-Version: 1.2\n\n\n";
+
             String mfBar = "Bundle-SymbolicName: org.bar\n" +
                 "Bundle-Version: 1.1.0\n" +
                 "Bundle-ManifestVersion: 2\n" +
                 "Export-Package: org.bar\n" +
-                "Require-Bundle: org.foo;bundle-version=\"[100.0,102.0)\"\n" +
+                "Require-Bundle: org.foo;bundle-version=\"[1.0,2.0)\"\n" +
                 "\n\n";
 
-            File j1 = new File(jars, "simple-module.jar");
+            File j1 = changeManifest(new File(jars, "simple-module.jar"), mfModule);
             File j2 = changeManifest(new File(jars, "depends-on-simple-module.jar"), mfBar);
             Module m1 = mgr.create(j1, null, false, false, false);
             Module m2 = mgr.create(j2, null, false, false, false);

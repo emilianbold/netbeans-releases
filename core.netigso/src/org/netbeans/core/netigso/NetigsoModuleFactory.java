@@ -203,10 +203,10 @@ implements Stamps.Updater {
         Manifest man = new Manifest();
         man.getMainAttributes().putValue("Manifest-Version", "1.0"); // workaround for JDK bug
         man.getMainAttributes().putValue("Bundle-ManifestVersion", "2"); // NOI18N
-        man.getMainAttributes().putValue("Bundle-SymbolicName", m.getCodeName()); // NOI18N
+        man.getMainAttributes().putValue("Bundle-SymbolicName", m.getCodeNameBase()); // NOI18N
 
         if (m.getSpecificationVersion() != null) {
-            String spec = just3Dots(m.getSpecificationVersion().toString());
+            String spec = threeDotsWithMajor(m.getSpecificationVersion().toString(), m.getCodeName());
             man.getMainAttributes().putValue("Bundle-Version", spec.toString()); // NOI18N
         }
         if (exp != null) {
@@ -219,11 +219,16 @@ implements Stamps.Updater {
         return new ByteArrayInputStream(os.toByteArray());
     }
 
-    private static String just3Dots(String version) {
-        int first = version.indexOf('.');
-        int second = first >= 0 ? version.indexOf('.', first + 1) : -1;
-        int third = second >= 0 ? version.indexOf('.', second + 1) : -1;
-        return (third >= 0) ? version.substring(0, third) : version;
+    private static String threeDotsWithMajor(String version, String withMajor) {
+        int indx = withMajor.indexOf('/');
+        int major = 0;
+        if (indx > 0) {
+            major = Integer.parseInt(withMajor.substring(indx + 1));
+        }
+        String[] segments = (version + ".0.0.0").split("\\.");
+        assert segments.length >= 3 && segments[0].length() > 0;
+
+        return (Integer.parseInt(segments[0]) + major * 100) + "."  + segments[1] + "." + segments[2];
     }
 
     private void registerBundle(Module m) throws IOException {
