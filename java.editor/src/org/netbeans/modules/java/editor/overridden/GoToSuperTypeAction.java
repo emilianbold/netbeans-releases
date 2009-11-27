@@ -57,6 +57,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.editor.BaseAction;
@@ -91,31 +92,23 @@ public class GoToSuperTypeAction extends BaseAction {
         
         final List<ElementDescription> result = new ArrayList<ElementDescription>();
         final AnnotationType[] type  = new AnnotationType[1];
+        final int caretPos = target.getCaretPosition();
         
         try {
             js.runUserActionTask(new Task<CompilationController>() {
                 public void run(CompilationController parameter) throws Exception {
                     parameter.toPhase(Phase.RESOLVED); //!!!
                     
-                    TreePath path = parameter.getTreeUtilities().pathFor(target.getCaretPosition());
-                    
-                    while (path != null && path.getLeaf().getKind() != Kind.METHOD) {
-                        path = path.getParentPath();
+                    ExecutableElement ee = resolveMethodElement(parameter, caretPos);
+
+                    if (ee == null) {
+                        ee = resolveMethodElement(parameter, caretPos + 1);
                     }
-                    
-                    if (path == null) {
+
+                    if (ee == null) {
                         Toolkit.getDefaultToolkit().beep();
                         return ;
                     }
-                    
-                    Element resolved = parameter.getTrees().getElement(path);
-                    
-                    if (resolved == null || resolved.getKind() != ElementKind.METHOD) {
-                        Toolkit.getDefaultToolkit().beep();
-                        return ;
-                    }
-                    
-                    ExecutableElement ee = (ExecutableElement) resolved;
                     
                     type[0] = ComputeOverriding.detectOverrides(parameter, (TypeElement) ee.getEnclosingElement(), ee, result);
                 }
@@ -137,6 +130,26 @@ public class GoToSuperTypeAction extends BaseAction {
         } catch (BadLocationException e) {
             Exceptions.printStackTrace(e);
         }
+    }
+
+    private static ExecutableElement resolveMethodElement(CompilationInfo info, int caret) {
+        TreePath path = info.getTreeUtilities().pathFor(caret);
+
+        while (path != null && path.getLeaf().getKind() != Kind.METHOD) {
+            path = path.getParentPath();
+        }
+
+        if (path == null) {
+            return null;
+        }
+
+        Element resolved = info.getTrees().getElement(path);
+
+        if (resolved == null || resolved.getKind() != ElementKind.METHOD) {
+            return null;
+        }
+
+        return (ExecutableElement) resolved;
     }
 
 }
