@@ -192,6 +192,10 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         }
     };
 
+    BugzillaIssue getIssue() {
+        return issue;
+    }
+
     public void setIssue(BugzillaIssue issue) {
         if (this.issue == null) {
             issue.addPropertyChangeListener(new PropertyChangeListener() {
@@ -320,7 +324,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }
 
     private int oldCommentCount;
-    private void reloadForm(boolean force) {
+    void reloadForm(boolean force) {
         if (skipReload) {
             return;
         }
@@ -942,26 +946,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         String icon = issue.getTaskData().isNew() ? "org/netbeans/modules/bugzilla/resources/info.png" : "org/netbeans/modules/bugzilla/resources/error.gif"; // NOI18N
         messageLabel.setIcon(new ImageIcon(ImageUtilities.loadImage(icon)));
         messagePanel.add(messageLabel);
-    }
-
-    @Override
-    public void addNotify() {
-        super.addNotify();
-        if (issue != null) {
-            // Hack - reset any previous modifications when the issue window is reopened
-            // XXX any chance to get rid of the hack?
-            reloadForm(true);
-
-            issue.opened();
-        }
-    }
-
-    @Override
-    public void removeNotify() {
-        super.removeNotify();
-        if(issue != null) {
-            issue.closed();
-        }
     }
 
     private Map<Component, Boolean> enableMap = new HashMap<Component, Boolean>();

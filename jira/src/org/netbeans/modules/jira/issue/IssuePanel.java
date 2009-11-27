@@ -177,20 +177,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         attachHideStatusListener();
     }
 
-    @Override
-    public void addNotify() {
-        super.addNotify();
-        if (issue != null) {
-            issue.opened();
-        }
-    }
-
-    @Override
-    public void removeNotify() {
-        super.removeNotify();
-        if(issue != null) {
-            issue.closed();
-        }
+    NbJiraIssue getIssue() {
+        return issue;
     }
 
     void setIssue(NbJiraIssue issue) {
@@ -423,7 +411,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         });
     }
 
-    private void reloadForm(boolean force) {
+    void reloadForm(boolean force) {
         if (skipReload) {
             return;
         }
