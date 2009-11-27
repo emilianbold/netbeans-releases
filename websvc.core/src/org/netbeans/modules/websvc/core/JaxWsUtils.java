@@ -576,9 +576,19 @@ public class JaxWsUtils {
                 if (antArtifactProvider != null) {
                     AntArtifact jarArtifact = getJarArtifact(antArtifactProvider);
                     if (jarArtifact != null) {
+                        FileObject targetFo = targetFile;
+                        if (!"java".equals(targetFile.getExt())) { //NOI18N
+                            SourceGroup[] srcGroups =
+                                    ProjectUtils.getSources(targetProject).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+                            if (srcGroups != null && srcGroups.length >0) {
+                                targetFo = srcGroups[0].getRootFolder();
+                            } else {
+                                return false;
+                            }
+                        }
                         AntArtifact[] jarArtifacts = new AntArtifact[]{jarArtifact};
                         URI[] artifactsUri = jarArtifact.getArtifactLocations();
-                        ProjectClassPathModifier.addAntArtifacts(jarArtifacts, artifactsUri, targetFile, ClassPath.COMPILE);
+                        ProjectClassPathModifier.addAntArtifacts(jarArtifacts, artifactsUri, targetFo, ClassPath.COMPILE);
                         return true;
                     }
                 }
