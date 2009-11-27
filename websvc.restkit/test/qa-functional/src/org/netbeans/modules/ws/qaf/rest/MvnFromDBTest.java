@@ -65,7 +65,7 @@ public class MvnFromDBTest extends FromDBTest {
      * Creates suite from particular test cases. You can define order of testcases here.
      */
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(Server.GLASSFISH_V3, NbModuleSuite.createConfiguration(MvnFromDBTest.class),
+        return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(MvnFromDBTest.class),
                 "testFromDB", //NOI18N
                 "testRun", //NOI18N
                 "testUndeploy").enableModules(".*").clusters(".*")); //NOI18N
