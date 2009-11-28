@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.actions;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
@@ -149,8 +150,8 @@ public class ShellRunAction extends AbstractExecutorRunAction {
         // doesn't work here, so extract the 'sh' part and use that instead. 
         // FIXUP: This is not entirely correct though.
         if (PlatformInfo.getDefault(execEnv).isWindows() && shellCommand.length() > 0) {
-            shellCommand = findWindowsShell(shellCommand, execEnv);
-            LinkSupport.resolveWindowsLink(shellCommand);
+            shellCommand = findWindowsShell(shellCommand, execEnv, node);
+            shellCommand = LinkSupport.resolveWindowsLink(shellCommand);
         }
         
         StringBuilder argsFlat = new StringBuilder();
@@ -160,7 +161,11 @@ public class ShellRunAction extends AbstractExecutorRunAction {
                 argsFlat.append(shellCommandAndArgs[i]);
             }
         }
-        argsFlat.append(shellFilePath);
+        if (shellCommand.length() == 0) {
+            shellCommand = shellFile.getAbsolutePath();
+        } else {
+            argsFlat.append(shellFilePath);
+        }
         for (int i = 0; i < args.length; i++) {
             argsFlat.append(" "); // NOI18N
             argsFlat.append(args[i]);
@@ -213,7 +218,7 @@ public class ShellRunAction extends AbstractExecutorRunAction {
         return es.run();
     }
 
-    private static String findWindowsShell(String shellCommand, ExecutionEnvironment execEnv) {
+    private static String findWindowsShell(String shellCommand, ExecutionEnvironment execEnv, Node node) {
         int i = shellCommand.lastIndexOf("/"); // UNIX PATH // NOI18N
         if (i >= 0) {
             shellCommand = shellCommand.substring(i + 1);
@@ -227,23 +232,33 @@ public class ShellRunAction extends AbstractExecutorRunAction {
         if (newShellCommand != null) {
             return newShellCommand;
         }
+        List<CompilerSet> list = new ArrayList<CompilerSet>();
+        CompilerSet set = getCompilerSet(node);
+        if (set != null) {
+            list.add(set);
+        }
         CompilerSetManager csm = CompilerSetManager.getDefault(execEnv);
-        String folder;
         if (csm != null) {
-            {
-                CompilerSet set = csm.getDefaultCompilerSet();
-                if (set != null) {
-                    folder = set.getCompilerFlavor().getCommandFolder(PlatformTypes.PLATFORM_WINDOWS);
-                    if (folder != null) {
-                        newShellCommand = pi.findCommand(folder, shellCommand);
-                        if (newShellCommand != null) {
-                            return newShellCommand;
-                        }
-                    }
+            set = csm.getDefaultCompilerSet();
+            if (set != null && !list.contains(set)) {
+                list.add(set);
+            }
+            for (CompilerSet aSet : csm.getCompilerSets()) {
+                if (aSet != null && !list.contains(aSet)) {
+                    list.add(aSet);
                 }
             }
-            for (CompilerSet set : csm.getCompilerSets()) {
-                folder = set.getCompilerFlavor().getCommandFolder(PlatformTypes.PLATFORM_WINDOWS);
+        }
+        String folder;
+        for (CompilerSet aSet : list) {
+            folder = aSet.getCompilerFlavor().getCommandFolder(PlatformTypes.PLATFORM_WINDOWS);
+            if (folder != null) {
+                newShellCommand = pi.findCommand(folder, shellCommand);
+                if (newShellCommand != null) {
+                    return newShellCommand;
+                }
+            } else {
+                folder = aSet.getDirectory();
                 if (folder != null) {
                     newShellCommand = pi.findCommand(folder, shellCommand);
                     if (newShellCommand != null) {
