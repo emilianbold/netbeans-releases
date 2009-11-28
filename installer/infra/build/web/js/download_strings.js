@@ -49,7 +49,7 @@ var JDK_NOTE_ALL      = "Java 6 or Java 5 is required for installing and running
 //var JDK_NOTE_MACOSX   = "JDK 5.0 is required for installing and running the NetBeans IDE.";
 var JDK_NOTE_MACOSX   = "";
 
-var FREE_SIZE_MESSAGE  = "Free,&nbsp;{0}&nbsp;MB";
+var FREE_SIZE_MESSAGE  = "Free, {0}&nbsp;MB";
 var NOT_AVAILABLE_SIZE = "--";
 
 var NOTE_PREFIX    = "Note: ";
