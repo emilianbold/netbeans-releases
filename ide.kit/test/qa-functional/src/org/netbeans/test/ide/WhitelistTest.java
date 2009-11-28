@@ -108,7 +108,8 @@ public class WhitelistTest extends JellyTestCase {
         
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(
             WhitelistTest.class
-        ).clusters(".*").enableModules(".*").reuseUserDir(stage > 1);
+        ).clusters(".*").honorAutoloadEager(true).
+        enableModules(".*").reuseUserDir(stage > 1);
         
         conf = conf.addTest("testWhitelist" + stage);
         
@@ -156,7 +157,19 @@ public class WhitelistTest extends JellyTestCase {
         try {
             bcHandler.listViolations(getLog("whitelist_violators_" + stage + ".txt"), false);
             bcHandler.listViolations(getLog("report_" + stage + ".txt"), false, true);
-            assertTrue(bcHandler.reportViolations(getLog("violations_" + stage + ".xml")), bcHandler.noViolations());
+
+            int allowed = Integer.getInteger("allowed.violations", 0);
+            int number = bcHandler.getNumberOfViolations();
+            String txt = null;
+            if (number > 0) {
+                txt = bcHandler.reportViolations(getLog("violations_" + stage + ".xml"));
+            }
+            if (number > allowed) {
+                fail(
+                    "Too many violations. Allowed only " + allowed + ":\n" +
+                    txt
+                );
+            }
         } finally {
             bcHandler.unregister();
         }
