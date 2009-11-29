@@ -54,6 +54,7 @@ made subject to such option by the copyright holder.
     <condition property="ant.executable" value="ant.bat" else="ant">
         <os family="windows"/>
     </condition>
+    <property name="allowed.violations" value="0"/>
 
     <target name="help">
         <echo>
@@ -85,7 +86,7 @@ made subject to such option by the copyright holder.
     
     <target name="download-project" depends="init-download-project" if="do-download-project">
         <mkdir dir="${temp_dir}"/>
-        <get src="http://hg.netbeans.org/binaries/26E4A68F5D4D8D3AACEC6FB44B11314A0389807C-lime6.zip"
+        <get src="http://hg.netbeans.org/binaries/0FB47E1F630A4074F493055291439BC18B025A95-lime6.zip"
             dest="${temp_dir}/lime6.zip"/>
     </target>
     
@@ -141,6 +142,7 @@ made subject to such option by the copyright holder.
             <arg value="-Dtest.includes=**/WhitelistTest.class"/>
             <arg value="-Dpermit.jdk6.builds=true"/>
             <arg value="-Dtest.run.args=-ea -XX:PermSize=64m -XX:MaxPermSize=400m -Xmx512m -Xverify:none -Dtest.whitelist.stage=1 -Dorg.netbeans.core.TimeableEventQueue.quantum=60000"/>
+            <arg value="-Dtest-qa-functional-sys-prop.allowed.violations=${allowed.violations}"/>
         </exec>
     </target>
 
@@ -152,10 +154,10 @@ made subject to such option by the copyright holder.
         </echo>
         <exec executable="${ant.executable}" dir="${whitelist-test.basedir}/../..">
             <arg value="test-qa-functional"/>
-            <arg value="-Dtest.includes=**/WhitelistTest*"/>
-            <arg value="-Dtest.excludes=**/WhitelistTest$1R*"/>
+            <arg value="-Dtest.includes=**/WhitelistTest.class"/>
             <arg value="-Dpermit.jdk6.builds=true"/>
             <arg value="-Dtest.run.args=-ea -XX:PermSize=64m -XX:MaxPermSize=400m -Xmx512m -Xverify:none -Dtest.whitelist.stage=2 -Dorg.netbeans.core.TimeableEventQueue.quantum=60000"/>
+            <arg value="-Dtest-qa-functional-sys-prop.allowed.violations=${allowed.violations}"/>
         </exec>
     </target>
 
@@ -167,10 +169,10 @@ made subject to such option by the copyright holder.
         </echo>
         <exec executable="${ant.executable}" dir="${whitelist-test.basedir}/../..">
             <arg value="test-qa-functional"/>
-            <arg value="-Dtest.includes=**/WhitelistTest*"/>
-            <arg value="-Dtest.excludes=**/WhitelistTest$1R*"/>
+            <arg value="-Dtest.includes=**/WhitelistTest.class"/>
             <arg value="-Dpermit.jdk6.builds=true"/>
             <arg value="-Dtest.run.args=-ea -XX:PermSize=64m -XX:MaxPermSize=400m -Xmx512m -Xverify:none -Dtest.whitelist.stage=3 -Dorg.netbeans.core.TimeableEventQueue.quantum=60000"/>
+            <arg value="-Dtest-qa-functional-sys-prop.allowed.violations=${allowed.violations}"/>
         </exec>
     </target>
 
