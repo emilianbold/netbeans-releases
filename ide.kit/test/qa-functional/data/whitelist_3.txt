@@ -880,6 +880,7 @@ org.netbeans.api.java.platform.JavaPlatform
 org.netbeans.api.java.platform.JavaPlatformManager
 org.netbeans.api.java.platform.Specification
 org.netbeans.api.java.queries.BinaryForSourceQuery
+org.netbeans.api.java.queries.BinaryForSourceQuery$DefaultResult
 org.netbeans.api.java.queries.BinaryForSourceQuery$Result
 org.netbeans.api.java.queries.SourceForBinaryQuery
 org.netbeans.api.java.queries.SourceForBinaryQuery$EmptyResult
@@ -1667,6 +1668,7 @@ org.netbeans.modules.apisupport.project.ui.customizer.CustomizerProviderImpl
 org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo$Provider
 org.netbeans.modules.apisupport.project.universe.ModuleList
 org.netbeans.modules.apisupport.project.universe.NbPlatform
+org.netbeans.modules.apisupport.project.universe.NbPlatform$1Init
 org.netbeans.modules.apisupport.project.universe.TestEntry
 org.netbeans.modules.asm.core.assistance.CodeHighlightFactory
 org.netbeans.modules.autoupdate.pluginimporter.Installer
@@ -1936,6 +1938,7 @@ org.netbeans.modules.editor.settings.storage.spi.TypedValue
 org.netbeans.modules.editor.settings.storage.spi.support.StorageSupport
 org.netbeans.modules.editor.structure.DocumentModelProviderClass2Layer
 org.netbeans.modules.editor.structure.spi.DocumentModelProvider
+org.netbeans.modules.editor.url.HighlightURLs$FactoryImpl
 org.netbeans.modules.favorites.Actions
 org.netbeans.modules.favorites.Actions$Select
 org.netbeans.modules.form.CreationDescriptor
@@ -2091,6 +2094,7 @@ org.netbeans.modules.java.debug.HighlightsLayerFactoryImpl
 org.netbeans.modules.java.debug.SourceForBinaryQueryImpl
 org.netbeans.modules.java.debug.TreeNavigatorJavaSourceFactory
 org.netbeans.modules.java.editor.fold.JavaElementFoldManagerTaskFactory
+org.netbeans.modules.java.editor.overridden.ComputeAnnotations$FactoryImpl
 org.netbeans.modules.java.editor.overridden.IsOverriddenAnnotationHandlerFactory
 org.netbeans.modules.java.editor.semantic.HighlightsLayerFactoryImpl
 org.netbeans.modules.java.editor.semantic.MarkOccurrencesHighlighterFactory
@@ -2204,6 +2208,9 @@ org.netbeans.modules.java.source.classpath.GlobalSourcePath$SourcePathImplementa
 org.netbeans.modules.java.source.classpath.GlobalSourcePath$UnknownSourcePathImplementation
 org.netbeans.modules.java.source.classpath.SourcePath
 org.netbeans.modules.java.source.classpath.SourcePath$FR
+org.netbeans.modules.java.source.indexing.JavaParsingContext
+org.netbeans.modules.java.source.indexing.JavaCustomIndexer$CompileTuple
+org.netbeans.modules.java.source.indexing.CheckSums
 org.netbeans.modules.java.source.parsing.Archive
 org.netbeans.modules.java.source.parsing.CachingArchive
 org.netbeans.modules.java.source.parsing.CachingArchive$Folder
@@ -2248,9 +2255,11 @@ org.netbeans.modules.java.source.tasklist.IncorrectErrorBadges$FactoryImpl
 org.netbeans.modules.java.source.tasklist.JavaTaskProvider
 org.netbeans.modules.java.source.tasklist.JavaTaskProvider$Work
 org.netbeans.modules.java.source.tasklist.TaskCache
+org.netbeans.modules.java.source.tasklist.TaskCache$TransactionContext
 org.netbeans.modules.java.source.tasklist.TasklistSettings
 org.netbeans.modules.java.source.ui.JavaTypeProvider
 org.netbeans.modules.java.source.usages.BinaryAnalyser
+org.netbeans.modules.java.source.usages.BinaryAnalyser$DeletedContinuation
 org.netbeans.modules.java.source.usages.BinaryAnalyser$Result
 org.netbeans.modules.java.source.usages.ClassFileUtil
 org.netbeans.modules.java.source.usages.ClassIndexFactory
@@ -2459,6 +2468,7 @@ org.netbeans.modules.palette.ui.PalettePanel$PaletteLayoutManager
 org.netbeans.modules.parsing.api.Snapshot
 org.netbeans.modules.parsing.impl.TaskProcessor$CurrentRequestReference$CRRLock
 org.netbeans.modules.parsing.impl.indexing.CancelRequest
+org.netbeans.modules.parsing.impl.indexing.ClusteredIndexables
 org.netbeans.modules.parsing.impl.indexing.Crawler
 org.netbeans.modules.parsing.impl.indexing.EventKind
 org.netbeans.modules.parsing.impl.indexing.FileObjectCrawler
@@ -5443,6 +5453,7 @@ org.netbeans.modules.derby.spi.support.DerbySupport
 org.netbeans.modules.derby.StartAction
 org.netbeans.modules.derby.StopAction
 org.netbeans.modules.derby.Util
+org.netbeans.modules.diff.DiffFileEncodingQueryImplementation
 org.netbeans.modules.diff.builtin.SingleDiffPanel
 org.netbeans.modules.diff.builtin.visualizer.editable.DiffMarkProviderCreator
 org.netbeans.modules.diff.DiffAction
@@ -6763,10 +6774,9 @@ org.netbeans.modules.classfile.Field
 org.netbeans.modules.classfile.Method
 org.netbeans.modules.classfile.Variable
 
-
-
-
-
+# File Indexer
+org.netbeans.modules.jumpto.file.FileIndexer
+org.netbeans.modules.jumpto.file.FileIndexer$Factory
 
 # new lucene classes loaded
 org.apache.lucene.index.BufferedDeletes
@@ -6835,3 +6845,5 @@ org.apache.lucene.store.SimpleFSLock
 org.apache.lucene.util.ArrayUtil
 org.apache.lucene.util.Constants
 
+com.sun.org.apache.xml.internal.dtm.ref.DTMManagerDefault
+javax.xml.xpath.XPathExpression
