@@ -43,6 +43,7 @@ package org.netbeans.nbbuild;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -272,12 +273,7 @@ public class MakeListOfNBM extends Task {
         for( int j=0; j < include.length; j++ ){
             try {
                 File inFile = new File( ds.getBasedir(), include[j] );
-                FileInputStream inFileStream = new FileInputStream( inFile );
-                byte array[] = new byte[ (int) inFile.length() ];
-                CRC32 crc = new CRC32();
-                inFileStream.read( array );
-                inFileStream.close();
-                crc.update( array );
+                CRC32 crc = UpdateTracking.crcForFile(inFile);
                 String abs = inFile.getAbsolutePath();
                 String prefix = ds.getBasedir().getAbsolutePath() + File.separatorChar;
                 if (! abs.startsWith(prefix)) throw new IllegalStateException(abs);

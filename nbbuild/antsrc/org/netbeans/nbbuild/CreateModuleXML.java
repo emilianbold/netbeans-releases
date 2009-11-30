@@ -100,6 +100,14 @@ public class CreateModuleXML extends Task {
         xmldir = f;
     }
 
+    private File trackingdir;
+    /** Directory where to generate the update tracking file. Does not need
+     * to be specified.
+     */
+    public void setUpdateTrackingRoot(File f) {
+        trackingdir = f;
+    }
+
     private boolean failOnMissingManifest = true;
     /** By default true. Set to false if JAR files without proper manifest
      * shall be ignored.
@@ -192,7 +200,23 @@ public class CreateModuleXML extends Task {
         }
     }
 
-    private void scanOneModule(File module, String kid, boolean isEnabled,boolean isAutoload, boolean isEager, boolean isHidden, List<String> names) throws BuildException {
+    private void scanOneModule(
+        File module, String kid, boolean isEnabled,
+        boolean isAutoload, boolean isEager,
+        boolean isHidden, List<String> names
+    ) throws BuildException {
+        UpdateTracking ut = null;
+        if (trackingdir != null) {
+            ut = new UpdateTracking(trackingdir.getAbsolutePath());
+        }
+
+        processModule(module, kid, isEnabled, isAutoload, isEager, isHidden, names, ut);
+    }
+    private void processModule(
+        File module, String kid, boolean isEnabled,boolean isAutoload,
+        boolean isEager, boolean isHidden,
+        List<String> names, UpdateTracking ut
+    ) throws BuildException {
         if (!module.exists()) {
             throw new BuildException("Module file does not exist: " + module, getLocation());
         }
@@ -276,6 +300,11 @@ public class CreateModuleXML extends Task {
                 }
                 names.add(displayname);
                 String spec = attr.getValue("OpenIDE-Module-Specification-Version");
+                UpdateTracking.Version v = null;
+                if (ut != null) {
+                    v = ut.addNewModuleVersion(codename, spec);
+                    v.addFileForRoot(module);
+                }
                 if (isHidden) {
                     File h = new File(xml.getParentFile(), xml.getName() + "_hidden");
                     h.createNewFile();
@@ -308,9 +337,15 @@ public class CreateModuleXML extends Task {
                     } finally {
                         os.close();
                     }
+                    if (v != null) {
+                        v.addFileForRoot(xml);
+                    }
                 }
             } finally {
                 jar.close();
+            }
+            if (ut != null) {
+                ut.write();
             }
         } catch (IOException ioe) {
             throw new BuildException("Caught while processing " + module + ": " + ioe, ioe, getLocation());
