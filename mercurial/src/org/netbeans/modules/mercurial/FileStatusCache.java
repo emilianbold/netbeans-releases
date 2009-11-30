@@ -668,12 +668,6 @@ public class FileStatusCache {
         }
     }
 
-    public void addToCache(Set<File> files) {
-        if (files.size() > 0) {
-            hg.getMercurialInterceptor().pingRepositoryRootFor(files.iterator().next());
-        }
-    }
-
     public void notifyFileChanged(File file) {
         fireFileStatusChanged(file, null, FILE_INFORMATION_UPTODATE);
     }
