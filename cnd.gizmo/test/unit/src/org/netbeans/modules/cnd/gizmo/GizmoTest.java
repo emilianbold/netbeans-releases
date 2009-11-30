@@ -45,14 +45,14 @@ import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
  *
  * @author Alexey Vladykin
  */
-public class GizmoTestSuite extends NativeExecutionBaseTestSuite {
+public class GizmoTest extends NativeExecutionBaseTestSuite {
 
-    public GizmoTestSuite() {
+    public GizmoTest() {
         super("Gizmo Test Suite");
-        addTest(CppSymbolDemanglerImplTest.class);
+        addTest(CppSymbolDemanglerImplTestCase.class);
     }
 
     public static Test suite() {
-        return new GizmoTestSuite();
+        return new GizmoTest();
     }
 }
