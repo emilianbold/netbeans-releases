@@ -398,24 +398,24 @@ public class FileStatusCache {
     }
 
     /**
-     * Refreshes the status of the file given the repository status. Repository status is filled
-     * in when this method is called while processing server output.
-     * @param file
+     * Refreshes the status of the root and all files under the root
+     * @param root
+     * @return status of the root itself
      */
-    public FileInformation refresh(File file) {
-        File repositoryRoot = hg.getRepositoryRoot(file);
+    public FileInformation refresh (File root) {
+        File repositoryRoot = hg.getRepositoryRoot(root);
         FileInformation fi;
         if (repositoryRoot == null) {
-            if (file.isDirectory()) {
+            if (root.isDirectory()) {
                 fi = FILE_INFORMATION_NOTMANAGED_DIRECTORY;
             } else {
                 fi = FILE_INFORMATION_NOTMANAGED;
             }
         } else {
             // start the recursive refresh
-            refreshAllRoots(Collections.singletonMap(repositoryRoot, Collections.singleton(file)));
+            refreshAllRoots(Collections.singletonMap(repositoryRoot, Collections.singleton(root)));
             // and return scanned value
-            fi = getCachedStatus(file);
+            fi = getCachedStatus(root);
         }
         return fi;
     }
@@ -658,23 +658,13 @@ public class FileStatusCache {
     }
 
     /**
-     * Refreshes status of the specified file or all files inside the
-     * specified directory.
-     *
-     * @param file
-     */
-    public void refreshCached(File root) {
-        refreshAllRoots(Collections.singletonMap(hg.getRepositoryRoot(root), Collections.singleton(root)));
-    }
-
-    /**
      * Refreshes status of all files inside given context.
      *
      * @param ctx context to refresh
      */
     public void refreshCached(VCSContext ctx) {
         for (File root : ctx.getRootFiles()) {
-            refreshCached(root);
+            refresh(root);
         }
     }
 

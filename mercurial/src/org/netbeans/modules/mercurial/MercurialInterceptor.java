@@ -291,7 +291,7 @@ public class MercurialInterceptor extends VCSInterceptor {
             return new Runnable() {
                 public void run() {
                     FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
-                    cache.refreshCached(file);
+                    cache.refresh(file);
                 }
             };
         } else {

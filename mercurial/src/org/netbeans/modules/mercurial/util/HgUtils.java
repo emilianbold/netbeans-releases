@@ -1111,7 +1111,7 @@ itor tabs #66700).
     public static void forceStatusRefresh(File file) {
         if (isAdministrative(file)) return;
         FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
-        cache.refreshCached(file);
+        cache.refresh(file);
     }
 
     /**
