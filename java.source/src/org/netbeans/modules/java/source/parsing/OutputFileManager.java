@@ -211,7 +211,7 @@ public class OutputFileManager extends CachingFileManager {
         try {
             for (int i = 0; it.hasNext(); i++) {
                 URL rootUrl = it.next().getURL();
-                if (isParentOf(rootUrl, file.toUri().toURL())) {
+                if (FileObjects.isParentOf(rootUrl, file.toUri().toURL())) {
                     return i;
                 }
             }
@@ -223,10 +223,7 @@ public class OutputFileManager extends CachingFileManager {
         return -2;
     }
     
-    private boolean isParentOf (URL folder, final URL file) throws IOException {
-        assert folder != null && file != null;
-        return file.toExternalForm().startsWith(folder.toExternalForm());
-    }
+    
     
     private int getActiveRoot (String baseName) {
         List<ClassPath.Entry> entries = this.scp.entries();
