@@ -1,3 +1,29 @@
+# Bug 177851
+# persistence loaded for the j2se project loaded
+org.netbeans.modules.j2ee.persistence.api.EntityClassScope
+org.netbeans.modules.j2ee.persistence.api.PersistenceScope
+org.netbeans.modules.j2ee.persistence.api.PersistenceScopes
+org.netbeans.modules.j2ee.persistence.spi.EntityClassScopeFactory
+org.netbeans.modules.j2ee.persistence.spi.EntityClassScopeImplementation
+org.netbeans.modules.j2ee.persistence.spi.EntityClassScopeProvider
+org.netbeans.modules.j2ee.persistence.spi.PersistenceLocationProvider
+org.netbeans.modules.j2ee.persistence.spi.PersistenceScopeFactory
+org.netbeans.modules.j2ee.persistence.spi.PersistenceScopeImplementation
+org.netbeans.modules.j2ee.persistence.spi.PersistenceScopeProvider
+org.netbeans.modules.j2ee.persistence.spi.PersistenceScopesFactory
+org.netbeans.modules.j2ee.persistence.spi.PersistenceScopesImplementation
+org.netbeans.modules.j2ee.persistence.spi.PersistenceScopesProvider
+org.netbeans.modules.j2ee.persistence.spi.support.EntityMappingsMetadataModelHelper
+org.netbeans.modules.j2ee.persistence.spi.support.PersistenceScopesHelper
+org.netbeans.modules.j2ee.persistence.spi.support.PersistenceScopesHelper$FileListener
+org.netbeans.modules.j2ee.persistence.spi.support.PersistenceScopesHelper$PersistenceScopesImpl
+org.netbeans.modules.j2ee.persistenceapi.EntityClassScopeAccessor
+org.netbeans.modules.j2ee.persistenceapi.FileChangeSupport
+org.netbeans.modules.j2ee.persistenceapi.FileChangeSupport$Holder
+org.netbeans.modules.j2ee.persistenceapi.FileChangeSupportListener
+org.netbeans.modules.j2ee.persistenceapi.PersistenceScopeAccessor
+org.netbeans.modules.j2ee.persistenceapi.PersistenceScopesAccessor
+
 # Bug 177841
 # j2ee deployment plugins loaded even when j2se project and no server installed
 javax.enterprise.deploy.shared.factories.DeploymentFactoryManager
