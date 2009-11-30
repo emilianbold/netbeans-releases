@@ -51,6 +51,12 @@ org.netbeans.modules.j2ee.sun.share.SecurityMasterListModel
 org.netbeans.modules.j2ee.weblogic9.WLBaseDeploymentManager
 org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory
 org.netbeans.modules.j2ee.weblogic9.optional.WLOptionalDeploymentManagerFactory
+org.netbeans.modules.tomcat5.TomcatManager$TomcatVersion
+org.netbeans.modules.tomcat5.ide.OptionalFactory
+org.netbeans.modules.glassfish.javaee.Hk2OptionalFactory
+org.netbeans.modules.glassfish.javaee.Hk2DeploymentFactory
+org.netbeans.modules.glassfish.javaee.Hk2OptionalFactory
+org.netbeans.modules.tomcat5.TomcatFactory
 
 #IZ 177644
 org.netbeans.modules.schema2beans.AttrProp
