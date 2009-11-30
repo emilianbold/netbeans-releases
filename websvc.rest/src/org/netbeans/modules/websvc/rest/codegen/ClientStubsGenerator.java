@@ -62,8 +62,6 @@ import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
-import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.ProjectUtils;
@@ -297,13 +295,8 @@ public class ClientStubsGenerator extends AbstractGenerator {
             String proxyUrl2 = findBaseUrl(targetPrj);
             if(proxyUrl2 == null)
                 proxyUrl2 = url;
-            WebRestSupport restSupport = (WebRestSupport)p.getLookup().lookup(RestSupport.class);
-            ServletMapping servletMap = restSupport.getRestServletMapping(restSupport.getWebApp());
-            String path = "/resources";
-            if(servletMap != null)
-                path = servletMap.getUrlPattern();
-            if(path.endsWith("/*"))
-                path = path.substring(0, path.length()-2);
+            RestSupport restSupport = p.getLookup().lookup(RestSupport.class);
+            String path = restSupport.getApplicationPath();
             setBaseUrl((url.endsWith("/")?url:url+"/") + findAppContext(getProject()) + (path.startsWith("/")?path:"/"+path));
             setProxyUrl((proxyUrl2.endsWith("/")?proxyUrl2:proxyUrl2+"/") + findAppContext(targetPrj) + PROXY_URL);
         } else if(wadl != null) {
