@@ -6933,3 +6933,7 @@ org.apache.lucene.util.Constants
 
 com.sun.org.apache.xml.internal.dtm.ref.DTMManagerDefault
 javax.xml.xpath.XPathExpression
+
+# Bundles loaded - broken references?
+org/netbeans/modules/java/project/Bundle_en
+org/netbeans/modules/java/project/Bundle_en_US
