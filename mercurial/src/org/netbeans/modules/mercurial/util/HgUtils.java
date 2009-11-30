@@ -1115,18 +1115,6 @@ itor tabs #66700).
     }
 
     /**
-     * Forces refresh of Status for the specfied context.
-     *
-     * @param VCSContext context to be updated.
-     * @return void
-     */
-    public static void forceStatusRefresh(VCSContext context) {
-        for (File root :  context.getRootFiles()) {
-            forceStatusRefresh(root);
-        }
-    }
-
-    /**
      * Forces refresh of Status for the project of the specified context
      *
      * @param VCSContext ctx whose project is be updated.
