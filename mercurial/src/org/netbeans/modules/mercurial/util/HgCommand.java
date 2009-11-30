@@ -78,7 +78,6 @@ import org.netbeans.modules.mercurial.FileStatus;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
-import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.mercurial.kenai.HgKenaiSupport;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.config.HgConfigFiles;
@@ -120,7 +119,6 @@ public class HgCommand {
     private static final String HG_STATUS_FLAG_TIP_CMD = "tip"; // NOI18N
     private static final String HG_STATUS_FLAG_REM_DEL_CMD = "-rd"; // NOI18N
     private static final String HG_STATUS_FLAG_INTERESTING_CMD = "-marduC"; // NOI18N
-    private static final String HG_STATUS_FLAG_UNKNOWN_CMD = "-u"; // NOI18N
     private static final String HG_HEAD_STR = "HEAD"; // NOI18N
     private static final String HG_FLAG_DATE_CMD = "--date"; // NOI18N
 
@@ -2214,27 +2212,6 @@ public class HgCommand {
      */
     public static Map<File, FileInformation> getInterestingStatus(File repository, List<File> dirs)  throws HgException{
         return getDirStatusWithFlags(repository, dirs, HG_STATUS_FLAG_INTERESTING_CMD, true);
-    }
-
-    /**
-     * Returns the unknown files in a specified directory under a mercurial repository root
-     *
-     * @param File of the mercurial repository's root directory
-     * @param File of the directory whose files are required
-     * @return Map of files and status for all files under the repository root, map contains normalized files as keys
-     * @throws org.netbeans.modules.mercurial.HgException
-     */
-    public static Map<File, FileInformation> getUnknownStatus(File repository, File dir)  throws HgException{
-        Map<File, FileInformation> files = getDirStatusWithFlags(repository, Collections.singletonList(dir), HG_STATUS_FLAG_UNKNOWN_CMD, false);
-        int share = SharabilityQuery.getSharability(dir == null ? repository : dir);
-        for (Iterator i = files.keySet().iterator(); i.hasNext();) {
-            File file = (File) i.next();
-            if((share == SharabilityQuery.MIXED && SharabilityQuery.getSharability(file) == SharabilityQuery.NOT_SHARABLE) ||
-               (share == SharabilityQuery.NOT_SHARABLE)) {
-                i.remove();
-             }
-        }
-        return files;
     }
 
     /**
