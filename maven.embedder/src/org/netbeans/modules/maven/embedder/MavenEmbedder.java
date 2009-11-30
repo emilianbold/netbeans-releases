@@ -39,7 +39,6 @@
 package org.netbeans.modules.maven.embedder;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import org.apache.maven.Maven;
@@ -66,12 +65,14 @@ import org.apache.maven.project.ProjectBuildingException;
 import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.project.ProjectBuildingResult;
 import org.apache.maven.repository.RepositorySystem;
-import org.apache.maven.settings.MavenSettingsBuilder;
 import org.apache.maven.settings.Settings;
+import org.apache.maven.settings.building.DefaultSettingsBuildingRequest;
+import org.apache.maven.settings.building.SettingsBuilder;
+import org.apache.maven.settings.building.SettingsBuildingException;
+import org.apache.maven.settings.building.SettingsBuildingRequest;
 import org.apache.maven.settings.validation.SettingsValidationResult;
 import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
-import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.openide.util.Exceptions;
 
 /**
@@ -95,7 +96,7 @@ public final class MavenEmbedder {
     private final ModelWriter modelWriter;
     private final RepositorySystem repositorySystem;
     private final MavenExecutionRequestPopulator populator;
-    private final MavenSettingsBuilder settingsBuilder;
+    private final SettingsBuilder settingsBuilder;
     private final LifecycleExecutor lifecycleExecutor;
     private final BuildPluginManager pluginManager;
     private final EmbedderConfiguration request;
@@ -108,7 +109,7 @@ public final class MavenEmbedder {
         this.modelReader = plexus.lookup(ModelReader.class);
         this.modelWriter = plexus.lookup(ModelWriter.class);
         this.repositorySystem = plexus.lookup(RepositorySystem.class);
-        this.settingsBuilder = plexus.lookup(MavenSettingsBuilder.class);
+        this.settingsBuilder = plexus.lookup(SettingsBuilder.class);
         this.populator = plexus.lookup(MavenExecutionRequestPopulator.class);
         this.pluginManager = plexus.lookup(BuildPluginManager.class);
         this.lifecycleExecutor = plexus.lookup(LifecycleExecutor.class);
@@ -137,8 +138,10 @@ public final class MavenEmbedder {
     }
 
     private String getLocalRepositoryPath() {
-        throw new IllegalStateException("not yet implemented");
-//        return getSettings().getLocalRepository();
+        if (request.getLocalRepository() != null) {
+            return request.getLocalRepository().getAbsolutePath();
+        }
+        return getSettings().getLocalRepository();
     }
 
     public ArtifactRepository getLocalRepository() {
@@ -154,57 +157,72 @@ public final class MavenEmbedder {
         }
     }
 
-    public Settings getSettings() {
-        MavenExecutionRequest req = new DefaultMavenExecutionRequest();
-        req.setGlobalSettingsFile(DEFAULT_GLOBAL_SETTINGS_FILE);
-        req.setUserSettingsFile(DEFAULT_USER_SETTINGS_FILE);
-        try {
-            return settingsBuilder.buildSettings(req);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (XmlPullParserException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+  public Settings getSettings() {
+    SettingsBuildingRequest req = new DefaultSettingsBuildingRequest();
+    req.setGlobalSettingsFile(DEFAULT_GLOBAL_SETTINGS_FILE);
+    req.setUserSettingsFile(DEFAULT_USER_SETTINGS_FILE);
+    req.setSystemProperties(request.getSystemProperties());
+    try {
+      return settingsBuilder.build(req).getEffectiveSettings();
+    } catch(SettingsBuildingException ex) {
+        Exceptions.printStackTrace(ex);
         return new Settings();
     }
+  }
 
-//    public Settings buildSettings(String globalSettings, String userSettings) {
-//        MavenExecutionRequest request = createExecutionRequest(null);
-//        request.setGlobalSettingsFile(globalSettings != null ? new File(globalSettings) : null);
-//        request.setUserSettingsFile(userSettings != null ? new File(userSettings) : null);
-//        try {
-//            return settingsBuilder.buildSettings(request);
-//        } catch (IOException ex) {
-//            Exceptions.printStackTrace(ex);
-//        } catch (XmlPullParserException ex) {
-//            Exceptions.printStackTrace(ex);
+// Can this be removed?
+//    public SettingsValidationResult validateSettings(File settingsFile) {
+//        SettingsValidationResult result = new SettingsValidationResult();
+//        if (settingsFile != null) {
+//            if (settingsFile.canRead()) {
+//                @SuppressWarnings("unchecked")
+//                List<String> messages = settingsBuilder.validateSettings(settingsFile).getMessages();
+//                for (String message : messages) {
+//                    result.addMessage(message);
+//                }
+//            } else {
+//                result.addMessage("Can not read settings file " + settingsFile.getAbsolutePath());
+//            }
 //        }
+//
+//        return result;
 //    }
 
-    public SettingsValidationResult validateSettings(File settingsFile) {
-        SettingsValidationResult result = new SettingsValidationResult();
-        if (settingsFile != null) {
-            if (settingsFile.canRead()) {
-                @SuppressWarnings("unchecked")
-                List<String> messages = settingsBuilder.validateSettings(settingsFile).getMessages();
-                for (String message : messages) {
-                    result.addMessage(message);
-                }
-            } else {
-                result.addMessage("Can not read settings file " + settingsFile.getAbsolutePath());
-            }
-        }
-
-        return result;
-    }
-
     public MavenExecutionResult readProjectWithDependencies(MavenExecutionRequest req) {
-        throw new UnsupportedOperationException("Not yet implemented");
+        File pomFile = req.getPom();
+        MavenExecutionResult result = new DefaultMavenExecutionResult();
+        try {
+            populator.populateDefaults(req);
+            ProjectBuildingRequest configuration = req.getProjectBuildingRequest();
+            configuration.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
+            ProjectBuildingResult projectBuildingResult = projectBuilder.build(pomFile, configuration);
+            result.setProject(projectBuildingResult.getProject());
+            result.setArtifactResolutionResult(projectBuildingResult.getArtifactResolutionResult());
+        } catch (ProjectBuildingException ex) {
+            //don't add the exception here. this should come out as a build marker, not fill
+            //the error logs with msgs
+            return result.addException(ex);
+        } catch (MavenExecutionRequestPopulationException ex) {
+            return result.addException(ex);
+        }
+        return result;
     }
 
     //TODO maybe remove in favour of the Request one
     public MavenProject readProject(File fallback) {
-        throw new UnsupportedOperationException("Not yet implemented");
+        try {
+          MavenExecutionRequest req = new DefaultMavenExecutionRequest();
+          populator.populateDefaults(req);
+          ProjectBuildingRequest configuration = req.getProjectBuildingRequest();
+          configuration.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
+          return projectBuilder.build(fallback, configuration).getProject();
+        } catch(ProjectBuildingException ex) {
+            Exceptions.printStackTrace(ex);
+            return new MavenProject();
+        } catch(MavenExecutionRequestPopulationException ex) {
+            Exceptions.printStackTrace(ex);
+            return new MavenProject();
+        }
     }
 
     public Artifact createArtifactWithClassifier(String groupId, String artifactId, String version, String type, String classifier) {

@@ -50,13 +50,23 @@ import org.codehaus.plexus.PlexusContainer;
  */
 class EmbedderConfiguration {
     private DefaultPlexusContainer cont;
+    private File local;
+    private Properties props;
 
     void setLocalRepository(File file) {
-        throw new UnsupportedOperationException("Not yet implemented");
+        local = file;
+    }
+
+    File getLocalRepository() {
+        return local;
     }
 
     void setSystemProperties(Properties fillEnvVars) {
-        throw new UnsupportedOperationException("Not yet implemented");
+        props = fillEnvVars;
+    }
+
+    Properties getSystemProperties() {
+        return props;
     }
 
     PlexusContainer getContainer() {
