@@ -42,7 +42,6 @@ package org.netbeans.modules.mercurial;
 
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
-import org.netbeans.modules.versioning.util.Utils;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.modules.mercurial.util.HgCommand;
@@ -50,9 +49,7 @@ import org.openide.util.RequestProcessor;
 import java.util.logging.Level;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Set;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import org.netbeans.modules.versioning.util.DelayScanRegistry;
@@ -77,7 +74,6 @@ public class MercurialInterceptor extends VCSInterceptor {
     private final RequestProcessor parallelRP = new RequestProcessor("Mercurial FS handler", 50);
     private final HashSet<FileObject> dirStates = new HashSet<FileObject>(5);
     private static final boolean AUTOMATIC_REFRESH_ENABLED = !"true".equals(System.getProperty("versioning.mercurial.autoRefreshDisabled", "false")); //NOI18N
-    private static final boolean FULL_REPO_SCAN_ENABLED = "true".equals(System.getProperty("versioning.mercurial.fullRepoScanEnabled", "false")); //NOI18N
 
     public MercurialInterceptor() {
         cache = Mercurial.getInstance().getFileStatusCache();
@@ -366,93 +362,7 @@ public class MercurialInterceptor extends VCSInterceptor {
             while ((file = filesToRefresh.poll()) != null) {
                 files.add(file);
             }
-            refreshAll(files);
-        }
-    }
-
-    /**
-     * Prepares refresh candidates and calls the cache refresh
-     * @param files
-     */
-    private void refreshAll (final Set<File> files) {
-        long startTime = 0;
-        if (Mercurial.STATUS_LOG.isLoggable(Level.FINE)) {
-            startTime = System.currentTimeMillis();
-            Mercurial.STATUS_LOG.fine("refreshAll: starting for " + files.size() + " files.");
-        }
-        if (files.isEmpty()) {
-            return;
-        }
-        HashMap<File, Set<File>> rootFiles = new HashMap<File, Set<File>>(5);
-        
-        for (File file : files) {
-            // go through all files and sort them under repository roots
-            file = FileUtil.normalizeFile(file);
-            File repository = Mercurial.getInstance().getRepositoryRoot(file);
-            assert repository != null;
-            Set<File> filesUnderRoot = rootFiles.get(repository);
-            if (filesUnderRoot == null) {
-                filesUnderRoot = new HashSet<File>();
-                rootFiles.put(repository, filesUnderRoot);
-            }
-            boolean added = false;
-            for (File fileUnderRoot : filesUnderRoot) {
-                // try to find a common parent for planned files
-                File childCandidate = file;
-                File ancestorCandidate = fileUnderRoot;
-                added = true;
-                if (childCandidate.equals(ancestorCandidate) || ancestorCandidate.equals(repository)) {
-                    // file has already been inserted or scan is planned for the whole repository root
-                    break;
-                }
-                if (childCandidate.equals(repository)) {
-                    // plan the scan for the whole repository root
-                    ancestorCandidate = childCandidate;
-                } else {
-                    if (file.getAbsolutePath().length() < fileUnderRoot.getAbsolutePath().length()) {
-                        // ancestor's path is too short to be the child's parent
-                        ancestorCandidate = file;
-                        childCandidate = fileUnderRoot;
-                    }
-                    if (!Utils.isAncestorOrEqual(ancestorCandidate, childCandidate)) {
-                        ancestorCandidate = Utils.getCommonParent(childCandidate, ancestorCandidate);
-                    }
-                }
-                if (ancestorCandidate == fileUnderRoot) {
-                    // already added
-                    break;
-                } else if (!FULL_REPO_SCAN_ENABLED && ancestorCandidate != childCandidate && ancestorCandidate.equals(repository)) {
-                    // common ancestor is the repo root and neither one of the candidates was originally the repo root
-                    // do not scan the whole clone, it might be a performance killer
-                    added = false;
-                } else if (ancestorCandidate != null) {
-                    // file is under the repository root
-                    if (ancestorCandidate.equals(repository)) {
-                        // adding the repository, there's no need to leave all other files
-                        filesUnderRoot.clear();
-                    } else {
-                        filesUnderRoot.remove(fileUnderRoot);
-                    }
-                    filesUnderRoot.add(ancestorCandidate);
-                    break;
-                } else {
-                    added = false;
-                }
-            }
-            if (!added) {
-                // not added yet
-                filesUnderRoot.add(file);
-            }
-        }
-        if (Mercurial.STATUS_LOG.isLoggable(Level.FINE)) {
-            Mercurial.STATUS_LOG.fine("refreshAll: starting status scan for " + rootFiles.values() + " after " + (System.currentTimeMillis() - startTime));
-            startTime = System.currentTimeMillis();
-        }
-        if (!rootFiles.isEmpty()) {
-            cache.refreshAllRoots(rootFiles);
-        }
-        if (Mercurial.STATUS_LOG.isLoggable(Level.FINE)) {
-            Mercurial.STATUS_LOG.fine("refreshAll: finishes status scan after " + (System.currentTimeMillis() - startTime));
+            cache.refreshAllRoots(files);
         }
     }
 }

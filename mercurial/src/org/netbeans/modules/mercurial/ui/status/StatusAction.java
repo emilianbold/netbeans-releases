@@ -100,7 +100,7 @@ public class StatusAction extends ContextAction {
 
         FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
         Calendar start = Calendar.getInstance();
-        cache.refreshCached(context);
+        cache.refreshAllRoots(context.getRootFiles());
         Calendar end = Calendar.getInstance();
         Mercurial.STATUS_LOG.log(Level.FINE, "executeStatus: refreshCached took {0} millisecs", end.getTimeInMillis() - start.getTimeInMillis()); // NOI18N
     }
