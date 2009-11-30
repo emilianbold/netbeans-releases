@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -40,12 +40,17 @@
  */
 package org.netbeans.modules.java.hints;
 
+import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.Collections;
@@ -63,6 +68,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
 import javax.swing.text.Position.Bias;
+import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
@@ -73,6 +79,7 @@ import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
 import org.netbeans.spi.editor.hints.ChangeInfo;
@@ -95,14 +102,33 @@ public class AssignResultToVariable extends AbstractHint {
     }
     
     public Set<Kind> getTreeKinds() {
-        return EnumSet.of(Kind.METHOD_INVOCATION, Kind.NEW_CLASS);
+        return EnumSet.of(Kind.METHOD_INVOCATION, Kind.NEW_CLASS, Kind.BLOCK);
     }
 
     public List<ErrorDescription> run(CompilationInfo info, TreePath treePath) {
         try {
+            int offset = CaretAwareJavaSourceTaskFactory.getLastPosition(info.getFileObject());
+            boolean verifyOffset = true;
+            if (treePath.getLeaf().getKind() == Kind.BLOCK) {
+                StatementTree found = findStatementForgiving(info, (BlockTree) treePath.getLeaf(), offset);
+
+                if (found == null || found.getKind() != Kind.EXPRESSION_STATEMENT)
+                    return null;
+
+                ExpressionStatementTree est = (ExpressionStatementTree) found;
+                Kind innerKind = est.getExpression().getKind();
+
+                if (innerKind != Kind.METHOD_INVOCATION && innerKind != Kind.NEW_CLASS) {
+                    return null;
+                }
+
+                treePath = new TreePath(new TreePath(treePath, found), est.getExpression());
+                verifyOffset = false;
+            }
+            
             if (treePath.getParentPath().getLeaf().getKind() != Kind.EXPRESSION_STATEMENT)
                 return null;
-            
+
             Tree tree = treePath.getLeaf();
             Tree exprTree = null;
             Kind kind = tree.getKind();
@@ -111,12 +137,11 @@ public class AssignResultToVariable extends AbstractHint {
             } else if (kind == Kind.NEW_CLASS) {
                 exprTree = tree;
             }
-            
+
             long start = info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), exprTree);
             long end   = info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), exprTree);
-            int offset = CaretAwareJavaSourceTaskFactory.getLastPosition(info.getFileObject());
-            
-            if (start == (-1) || end == (-1) || offset < start || offset > end) {
+
+            if (verifyOffset && (start == (-1) || end == (-1) || offset < start || offset > end)) {
                 return null;
             }
             
@@ -140,6 +165,107 @@ public class AssignResultToVariable extends AbstractHint {
             Exceptions.printStackTrace(e);
             return null;
         }
+    }
+
+    private static final Set<JavaTokenId> TO_IGNORE = EnumSet.of(JavaTokenId.BLOCK_COMMENT, JavaTokenId.JAVADOC_COMMENT, JavaTokenId.LINE_COMMENT, JavaTokenId.WHITESPACE);
+    
+    private int findFirstNonWhitespace(CompilationInfo info, int offset, boolean previous) {
+        TokenSequence<JavaTokenId> ts = info.getTokenHierarchy().tokenSequence(JavaTokenId.language());
+        ts.move(offset);
+
+        if (!ts.moveNext()) {
+            return -1;
+        }
+
+        do {
+            JavaTokenId id = ts.token().id();
+            if (TO_IGNORE.contains(id)) {
+                CharSequence text = ts.token().text();
+                int start = Math.max(0, previous ? 0 : offset - ts.offset());
+                int end = Math.min(text.length(), previous ? offset - ts.offset() : /*TODO: not tested*/Integer.MAX_VALUE);
+
+                for (int c = start; c < end; c++) {
+                    if (text.charAt(c) == '\n') {
+                        return -1;
+                    }
+                }
+                continue;
+            }
+            offset = ts.offset() + (previous ? ts.token().length() : 0);
+            break;
+        } while (previous ? ts.movePrevious() : ts.moveNext());
+
+        return offset;
+    }
+
+    private StatementTree findExactStatement(CompilationInfo info, BlockTree block, int offset, boolean start) {
+        if (offset == (-1)) return null;
+        
+        SourcePositions sp = info.getTrees().getSourcePositions();
+        CompilationUnitTree cut = info.getCompilationUnit();
+        
+        for (StatementTree t : block.getStatements()) {
+            long pos = start ? sp.getStartPosition(info.getCompilationUnit(), t) : sp.getEndPosition( cut, t);
+
+            if (offset == pos) {
+                return t;
+            }
+        }
+
+        return null;
+    }
+
+    private StatementTree findMatchingMethodInvocation(CompilationInfo info, BlockTree block, int offset) {
+        for (StatementTree t : block.getStatements()) {
+            if (t.getKind() != Kind.EXPRESSION_STATEMENT) continue;
+
+            long statementStart = info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), t);
+
+            if (offset < statementStart) return null;
+
+            ExpressionStatementTree est = (ExpressionStatementTree) t;
+            long statementEnd = info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), t);
+            long expressionEnd = info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), est.getExpression());
+
+            if (expressionEnd <= offset && offset < statementEnd) {
+                return t;
+            }
+        }
+
+        return null;
+    }
+
+    private StatementTree findStatementForgiving(CompilationInfo info, BlockTree block, int offset) {
+        //<method-call>()|;
+        StatementTree found = findMatchingMethodInvocation(info, block, offset);
+
+        if (found != null) return found;
+
+        //<method-call>();| or |<method-call>();
+        StatementTree left = findExactStatement(info, block, offset, false);
+        StatementTree right = findExactStatement(info, block, offset, true);
+
+        if (left != null && right != null) {
+            //cannot decide which one, stop
+            return null;
+        }
+
+        if (left != null) return left;
+        if (right != null) return right;
+
+        //<method-call>;   | or |  <method-call>();
+        int leftOffset = findFirstNonWhitespace(info, offset, true);
+        int rightOffset = findFirstNonWhitespace(info, offset, false);
+        
+        left = findExactStatement(info, block, leftOffset, false);
+        right = findExactStatement(info, block, rightOffset, true);
+
+        if (left != null && right != null) {
+            //cannot decide which one, stop
+            return null;
+        }
+
+        return left != null ? left : right;
     }
 
     public void cancel() {
