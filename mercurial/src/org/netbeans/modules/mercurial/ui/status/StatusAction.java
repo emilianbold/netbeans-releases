@@ -41,19 +41,14 @@
 package org.netbeans.modules.mercurial.ui.status;
 
 import java.io.File;
-import java.util.Map;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.logging.Level;
-import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.FileStatusCache;
-import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
-import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
