@@ -73,6 +73,7 @@ public final class JavaIndex {
     public static final int VERSION = 14;
     static final Logger LOG = Logger.getLogger(JavaIndex.class.getName());
     private static final String CLASSES = "classes"; //NOI18N
+    private static final String APT_SOURCES = "sources";    //NOI18N
     private static final String ATTR_FILE_NAME = "attributes.properties"; //NOI18N
 
     public static File getIndex(Context c) {
@@ -104,6 +105,14 @@ public final class JavaIndex {
 
     public static File getClassFolder(URL url, boolean onlyIfExists) throws IOException {
         return processCandidate(new File(getIndex(url), CLASSES), onlyIfExists);
+    }
+
+    public static File getAptFolder(final URL sourceRoot, final boolean create) throws IOException {
+        final File aptSources = new File (getIndex(sourceRoot), APT_SOURCES);
+        if (create) {
+            aptSources.mkdirs();
+        }
+        return aptSources;
     }
 
     public static URL getSourceRootForClassFolder(URL binaryRoot) {
