@@ -50,7 +50,7 @@ import static org.junit.Assert.*;
 /**
  * @author Alexey Vladykin
  */
-public class CppSymbolDemanglerImplTest extends NativeExecutionBaseTestCase {
+public class CppSymbolDemanglerImplTestCase extends NativeExecutionBaseTestCase {
 
     private static final List<String> UNMANGLED_NAMES = Arrays.asList(
             "_start",
@@ -72,11 +72,11 @@ public class CppSymbolDemanglerImplTest extends NativeExecutionBaseTestCase {
             "__1cIwallTime6F_d_", "double wallTime()",
             "__1cKMandelbrot6F_v_", "void Mandelbrot()");
 
-    public CppSymbolDemanglerImplTest(String name) {
+    public CppSymbolDemanglerImplTestCase(String name) {
         super(name);
     }
 
-    public CppSymbolDemanglerImplTest(String name, ExecutionEnvironment execEnv) {
+    public CppSymbolDemanglerImplTestCase(String name, ExecutionEnvironment execEnv) {
         super(name, execEnv);
     }
 
