@@ -42,6 +42,7 @@ package org.netbeans.modules.mercurial;
 import java.util.Map;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -61,7 +62,8 @@ public class StatusTest extends AbstractHgTest {
 
     @Override
     protected void setUp() throws Exception {
-        super.setUp();        
+        System.setProperty("netbeans.user", "/tmp/" + System.currentTimeMillis());
+        super.setUp();
         
         // create
         FileObject fo = FileUtil.toFileObject(getWorkDir());
@@ -79,22 +81,19 @@ public class StatusTest extends AbstractHgTest {
         
         // assert status given from cli
         assertStatus(folder, FileInformation.STATUS_VERSIONED_UPTODATE);
-        Map<File, FileInformation> m = HgCommand.getAllStatus(getWorkDir(), folder);
-        assertEquals(3, m.keySet().size());
-        for (File file : m.keySet()) {
-            assertStatus(file, FileInformation.STATUS_VERSIONED_UPTODATE);    
-        }                        
+        Map<File, FileInformation> m = HgCommand.getInterestingStatus(getWorkDir(), Collections.singletonList(folder));
+        assertEquals(0, m.keySet().size());
                 
         // hg move the folder
         File folderenamed = new File(getWorkDir(), "folderenamed");
         HgCommand.doRename(getWorkDir(), folder, folderenamed, null);
 
-        m = HgCommand.getAllStatus(getWorkDir(), folder);
+        m = HgCommand.getInterestingStatus(getWorkDir(), Collections.singletonList(folder));
         assertEquals(3, m.keySet().size());
         for (File file : m.keySet()) {
             assertStatus(file, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY);    
         }        
-        m = HgCommand.getAllStatus(getWorkDir(), folderenamed);
+        m = HgCommand.getInterestingStatus(getWorkDir(), Collections.singletonList(folderenamed));
         assertEquals(3, m.keySet().size());        
         for (File file : m.keySet()) {
             assertStatus(file, FileInformation.STATUS_VERSIONED_ADDEDLOCALLY);    

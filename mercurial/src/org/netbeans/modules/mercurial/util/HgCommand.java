@@ -116,7 +116,6 @@ public class HgCommand {
     private static final String HG_OPT_USERNAME = "--user"; // NOI18N
 
     private static final String HG_OPT_FOLLOW = "--follow"; // NOI18N
-    private static final String HG_STATUS_FLAG_ALL_CMD = "-marduicC"; // NOI18N
     private static final String HG_FLAG_REV_CMD = "--rev"; // NOI18N
     private static final String HG_STATUS_FLAG_TIP_CMD = "tip"; // NOI18N
     private static final String HG_STATUS_FLAG_REM_DEL_CMD = "-rd"; // NOI18N
@@ -2205,75 +2204,6 @@ public class HgCommand {
 
 
     /**
-     * Returns the mercurial status for a given file
-     *
-     * @param File repository of the mercurial repository's root directory
-     * @param cwd current working directory containing file to be checked
-     * @param filename name of file whose status is to be checked
-     * @return FileInformation for the given filename
-     * @throws org.netbeans.modules.mercurial.HgException
-     */
-    public static FileInformation getSingleStatus(File repository, String cwd, String filename)  throws HgException{
-        FileInformation info = null;
-        long startTime = 0;
-        if (Mercurial.STATUS_LOG.isLoggable(Level.FINER)) {
-            Mercurial.STATUS_LOG.finer("getSingleStatus: starting for " + filename); //NOI18N
-            startTime = System.currentTimeMillis();
-        }
-        List<String> list = doSingleStatusCmd(repository, cwd, filename);
-        if(list == null || list.isEmpty())
-            return new FileInformation(FileInformation.STATUS_UNKNOWN,null, false);
-
-        info =  getFileInformationFromStatusLine(list.get(0));
-        // Handles Copy status
-        // Could save copy source in FileStatus but for now we don't need it.
-        // FileStatus used in Fileinformation.java:getStatusText() and getShortStatusText() to check if
-        // file is Locally Copied when it's status is Locally Added
-        if(list.size() == 2) {
-            if (list.get(1).length() > 0){
-                if (list.get(1).charAt(0) == ' '){
-
-                    info =  new FileInformation(FileInformation.STATUS_VERSIONED_ADDEDLOCALLY,
-                            new FileStatus(new File(new File(cwd), filename), true), false);
-                    Mercurial.LOG.log(Level.FINE, "getSingleStatus() - Copied: Locally Added {0}, Copy Source {1}", // NOI18N
-                            new Object[] {list.get(0), list.get(1)} );
-                }
-            } else {
-                Mercurial.LOG.log(Level.FINE, "getSingleStatus() - Second line empty: first line: {0}", list.get(0)); // NOI18N
-            }
-        }
-
-        // Handle Conflict Status
-        // TODO: remove this if Hg status supports Conflict marker
-        if(existsConflictFile(cwd + File.separator + filename)){
-            info =  new FileInformation(FileInformation.STATUS_VERSIONED_CONFLICT, null, false);
-            Mercurial.LOG.log(Level.FINE, "getSingleStatus(): CONFLICT StatusLine: {0} Status: {1}  {2} RepoPath:{3} cwd:{4} CONFLICT {5}", // NOI18N
-                new Object[] {list.get(0), info.getStatus(), filename, repository.getAbsolutePath(), cwd,
-                cwd + File.separator + filename + HgCommand.HG_STR_CONFLICT_EXT} );
-        }
-
-        Mercurial.LOG.log(Level.FINE, "getSingleStatus(): StatusLine: {0} Status: {1}  {2} RepoPath:{3} cwd:{4}", // NOI18N
-                new Object[] {list.get(0), info.getStatus(), filename, repository.getAbsolutePath(), cwd} );
-        if (Mercurial.STATUS_LOG.isLoggable(Level.FINER)) {
-            Mercurial.STATUS_LOG.finer("getSingleStatus for " + filename + " lasted " + (System.currentTimeMillis() - startTime));
-        }
-        return info;
-    }
-
-    /**
-     * Returns the mercurial status for all files in a given  subdirectory of
-     * a repository
-     *
-     * @param File repository of the mercurial repository's root directory
-     * @param File dir of the subdirectoy of interest.
-     * @return Map of files and status for all files in the specified subdirectory, map contains normalized files as keys
-     * @throws org.netbeans.modules.mercurial.HgException
-     */
-    public static Map<File, FileInformation> getAllStatus(File repository, File dir)  throws HgException{
-        return getDirStatusWithFlags(repository, Collections.singletonList(dir), HG_STATUS_FLAG_ALL_CMD, true);
-    }
-
-    /**
      * Returns the mercurial status for only files of interest to us in a given directory in a repository
      * that is modified, locally added, locally removed, locally deleted, locally new and ignored.
      *
@@ -2616,35 +2546,6 @@ public class HgCommand {
         }
 
         return info;
-    }
-
-    /**
-     * Gets hg status command output line for a given file
-     */
-    private static List<String> doSingleStatusCmd(File repository, String cwd, String filename)  throws HgException{
-        List<String> command = new ArrayList<String>();
-        
-        command.add(getHgCommand());
-        command.add(HG_STATUS_CMD);
-        command.add(HG_STATUS_FLAG_ALL_CMD);
-        command.add(HG_OPT_REPOSITORY);
-        command.add(repository.getAbsolutePath());
-        command.add(HG_OPT_CWD_CMD);
-        command.add(repository.getAbsolutePath());
-
-        // In 0.9.3 hg status does not give back copy information unless we
-        // use relative paths from repository. This is fixed in 0.9.4.
-        // See http://www.selenic.com/mercurial/bts/issue545.
-        String filePath = new File(cwd, filename).getAbsolutePath();
-        String repoPath = repository.getAbsolutePath();
-        if(repoPath.length() >= filePath.length()) {
-            Mercurial.LOG.log(Level.WARNING, "Please report! Wrong repository path: {0}, {1}, {2}", new Object[] {repository, cwd, filename});
-            command.add(filePath);
-        } else {
-            command.add(filePath.substring(repoPath.length() + 1));
-        }
-
-        return exec(command);
     }
 
     /**
