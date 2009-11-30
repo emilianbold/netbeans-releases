@@ -5533,4 +5533,6 @@ org.netbeans.modules.maven.ModInstall
 org.netbeans.modules.maven.ModInstall$OpenProjectsListener
 org.netbeans.modules.maven.cos.CopyResourcesOnSave
 org.netbeans.modules.maven.indexer.Installer
+org.netbeans.editor.BaseKit$SearchableKit
+org.netbeans.modules.bugzilla.ModuleLifecycleManager
 
