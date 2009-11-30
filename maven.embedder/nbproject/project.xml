@@ -136,36 +136,36 @@ made subject to such option by the copyright holder.
                 <binary-origin>external/google-collect-snapshot-20080530.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/maven-artifact-3.0-alpha-4.jar</runtime-relative-path>
-                <binary-origin>external/maven-artifact-3.0-alpha-4.jar</binary-origin>
+                <runtime-relative-path>ext/maven-artifact-3.0-alpha-5.jar</runtime-relative-path>
+                <binary-origin>external/maven-artifact-3.0-alpha-5.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/maven-compat-3.0-alpha-4.jar</runtime-relative-path>
-                <binary-origin>external/maven-compat-3.0-alpha-4.jar</binary-origin>
+                <runtime-relative-path>ext/maven-compat-3.0-alpha-5.jar</runtime-relative-path>
+                <binary-origin>external/maven-compat-3.0-alpha-5.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/maven-core-3.0-alpha-4.jar</runtime-relative-path>
-                <binary-origin>external/maven-core-3.0-alpha-4.jar</binary-origin>
+                <runtime-relative-path>ext/maven-core-3.0-alpha-5.jar</runtime-relative-path>
+                <binary-origin>external/maven-core-3.0-alpha-5.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/maven-embedder-3.0-alpha-4.jar</runtime-relative-path>
-                <binary-origin>external/maven-embedder-3.0-alpha-4.jar</binary-origin>
+                <runtime-relative-path>ext/maven-embedder-3.0-alpha-5.jar</runtime-relative-path>
+                <binary-origin>external/maven-embedder-3.0-alpha-5.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/maven-model-3.0-alpha-4.jar</runtime-relative-path>
-                <binary-origin>external/maven-model-3.0-alpha-4.jar</binary-origin>
+                <runtime-relative-path>ext/maven-model-3.0-alpha-5.jar</runtime-relative-path>
+                <binary-origin>external/maven-model-3.0-alpha-5.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/maven-model-builder-3.0-alpha-4.jar</runtime-relative-path>
-                <binary-origin>external/maven-model-builder-3.0-alpha-4.jar</binary-origin>
+                <runtime-relative-path>ext/maven-model-builder-3.0-alpha-5.jar</runtime-relative-path>
+                <binary-origin>external/maven-model-builder-3.0-alpha-5.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/maven-plugin-api-3.0-alpha-4.jar</runtime-relative-path>
-                <binary-origin>external/maven-plugin-api-3.0-alpha-4.jar</binary-origin>
+                <runtime-relative-path>ext/maven-plugin-api-3.0-alpha-5.jar</runtime-relative-path>
+                <binary-origin>external/maven-plugin-api-3.0-alpha-5.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/maven-settings-3.0-alpha-4.jar</runtime-relative-path>
-                <binary-origin>external/maven-settings-3.0-alpha-4.jar</binary-origin>
+                <runtime-relative-path>ext/maven-settings-3.0-alpha-5.jar</runtime-relative-path>
+                <binary-origin>external/maven-settings-3.0-alpha-5.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/nekohtml-1.9.6.2.jar</runtime-relative-path>
