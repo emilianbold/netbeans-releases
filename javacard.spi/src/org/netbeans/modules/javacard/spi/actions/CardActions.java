@@ -57,6 +57,11 @@ import org.openide.nodes.Node;
 public final class CardActions {
     private CardActions(){}
 
+    public static ContextAction<?> createDeleteAction() {
+        return LookupProviderAction.createIndirectAction(Node.class,
+                LookupProviderAction.createIndirectAction(Card.class, new DeleteCardAction()));
+    }
+
     public static ContextAction<?> createStartAction() {
         //sensitive to StartCapability in lookup of Card in lookup of Node in Global Selection Lookup
         ContextAction<?> a = LookupProviderAction.createIndirectAction(Node.class,

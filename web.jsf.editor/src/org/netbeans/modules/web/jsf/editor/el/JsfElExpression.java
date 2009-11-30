@@ -65,6 +65,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
@@ -337,32 +338,12 @@ public class JsfElExpression extends ELExpression {
                     }
                 }
 
-                TypeMirror erasedType = controller.getTypes().erasure(type);
-                TypeMirror iterable = controller.getTypes().erasure( controller.getElements().
-                        getTypeElement(Iterable.class.getCanonicalName()).asType());
                 if ( type.getKind() == TypeKind.ARRAY){
                     TypeMirror typeMirror = ((ArrayType)type).
                         getComponentType();
                     if ( typeMirror.getKind() == TypeKind.DECLARED){
                         result[0] = ((TypeElement)controller.getTypes().asElement(
                                 typeMirror)).getQualifiedName().toString();
-                    }
-                }
-                else if ( controller.getTypes().isAssignable( erasedType, iterable)){
-                    List<? extends TypeMirror> typeArguments = 
-                        ((DeclaredType)type).getTypeArguments();
-                    if ( typeArguments.size() != 0 ){
-                        TypeMirror typeMirror = typeArguments.get(0);
-                        if ( typeMirror.getKind() == TypeKind.DECLARED){
-                            Element element = controller.getTypes().asElement(
-                                    typeMirror);
-                            if ( element instanceof TypeElement){
-                                result[0] = ((TypeElement)element).getQualifiedName().toString();
-                            }
-                        }
-                    }
-                    if ( result[0] == null ){
-                        result[0] = Object.class.getCanonicalName();
                     }
                 }
             }
@@ -776,8 +757,12 @@ public class JsfElExpression extends ELExpression {
                                     continue;
                                 }
                                 addedItems.add(methodName);
+                                TypeMirror methodType = controller.getTypes().asMemberOf(
+                                        (DeclaredType)bean.asType(), method);
+                                String retType = ((ExecutableType)methodType).
+                                    getReturnType().toString();
                                 CompletionItem item = new JsfElCompletionItem.JsfMethod(
-                                    methodName, anchor, method.getReturnType().toString());
+                                    methodName, anchor, retType);
 
                             completionItems.add(item);
                         }

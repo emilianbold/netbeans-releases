@@ -401,6 +401,7 @@ public final class NbErrorManagerTest extends NbTestCase {
     }
     
     // Noticed as part of analysis of #59807 stack trace: Throwable.initCause tricky!
+    @RandomlyFails // had empty log in NB-Core-Build #3621
     public void testCatchMarker() throws Exception {
         try {
             m1();

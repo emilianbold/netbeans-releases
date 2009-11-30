@@ -95,6 +95,13 @@ public class CreateFieldTest extends ErrorHintsTestBase {
                 "CreateFieldFix:ii:test.Test:int:[private]",
                 "package test;public enum Test {A(0), B(1); private int ii; private Test(int value) { this.ii = value; }}");
     }
+
+    public void test177201() throws Exception {
+        performFixTest("test/Test.java",
+                "package test;import javax.swing.JFrame;import javax.swing.JOptionPane;public class Test {public boolean isOk() {JFrame frame = null;JOptionPane.showMessageDialog(frame,X.whan|tAutoGenerateThisVariableInXClass,\"Error\",JOptionPane.ERROR_MESSAGE );return true;}} class X {}",
+                "CreateFieldFix:whantAutoGenerateThisVariableInXClass:test.X:java.lang.Object:[static]",
+                "package test;import javax.swing.JFrame;import javax.swing.JOptionPane;public class Test {public boolean isOk() {JFrame frame = null;JOptionPane.showMessageDialog(frame,X.whantAutoGenerateThisVariableInXClass,\"Error\",JOptionPane.ERROR_MESSAGE );return true;}} class X { static Object whantAutoGenerateThisVariableInXClass; }");
+    }
     
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws IOException {
         List<Fix> fixes = CreateElement.analyze(info, pos);

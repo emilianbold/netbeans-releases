@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.vmd.api.inspector.common;
 
 import java.awt.event.ActionEvent;
@@ -59,39 +58,40 @@ import org.openide.util.actions.SystemAction;
  *
  * @author Karol Harezlak
  */
-
 /**
  * This class provides GUI to change DesignComponent display name and DesignComponent's 
  * property which keeps information about DesignCompoent name. It needs to be attache to the DesignComponent
  * through ActionsPresenter.
- */ 
+ */
 public final class RenameAction extends SystemAction implements ActionContext {
-    
+
     public static final String DISPLAY_NAME = NbBundle.getMessage(RenameAction.class, "NAME_RenameAction"); //NOI18N
-    
     private NotifyDescriptor.InputLine descriptor;
     private boolean canRename;
     private WeakReference<DesignComponent> component;
-    
-    
-    public  void actionPerformed(ActionEvent e) {
-        if (component == null)
-            return;
-        
+
+    public void actionPerformed(ActionEvent e) {
         SwingUtilities.invokeLater(new Runnable() {
+
             public void run() {
-                if (component == null || component.get() == null)
-                    throw new IllegalArgumentException("No DesignComponent attached to RenameAction"); //NOI18N
-                component.get().getDocument().getTransactionManager().writeAccess(new Runnable() {
+                if (component == null) {
+                    return;
+                }
+                final DesignComponent c = component.get();
+                if (c == null) {
+                    return;
+                }
+                c.getDocument().getTransactionManager().writeAccess(new Runnable() {
+
                     public void run() {
-                        InfoPresenter presenter = component.get().getPresenter(InfoPresenter.class);
+                        InfoPresenter presenter = c.getPresenter(InfoPresenter.class);
                         if (presenter == null) {
-                            Debug.warning("No necessary presenter for this operation - component: "+ component); //NOI18N
+                            Debug.warning("No necessary presenter for this operation - component: " + c); //NOI18N
                             return;
                         }
-                        getDialogDescriptor().setInputText( presenter.getEditableName() );
+                        getDialogDescriptor().setInputText(presenter.getEditableName());
                         DialogDisplayer.getDefault().notify(getDialogDescriptor());
-                        if (((Integer) descriptor.getValue()) == 0 && descriptor.getInputText().trim().length() > 0 ){
+                        if (((Integer) descriptor.getValue()) == 0 && descriptor.getInputText().trim().length() > 0) {
                             presenter.setEditableName(descriptor.getInputText().trim());
                         }
                     }
@@ -99,48 +99,54 @@ public final class RenameAction extends SystemAction implements ActionContext {
             }
         });
     }
-    
-    private NotifyDescriptor.InputLine getDialogDescriptor(){
-        if (descriptor != null)
+
+    private NotifyDescriptor.InputLine getDialogDescriptor() {
+        if (descriptor != null) {
             return descriptor;
-        
-        descriptor = new NotifyDescriptor.InputLine(NbBundle.getMessage(RenameAction.class,"TITLE_RenameQuestion"), NbBundle.getMessage(RenameAction.class,"TITLE_RenameDialog")); //NOI18N
-        
+        }
+
+        descriptor = new NotifyDescriptor.InputLine(NbBundle.getMessage(RenameAction.class, "TITLE_RenameQuestion"), NbBundle.getMessage(RenameAction.class, "TITLE_RenameDialog")); //NOI18N
+
         return descriptor;
     }
-    
+
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
-    
+
     @Override
     public boolean isEnabled() {
-        if (component == null)
+        if (component == null) {
             return false;
-        
-        component.get().getDocument().getTransactionManager().readAccess(new Runnable() {
+        }
+        final DesignComponent c = component.get();
+        if (c == null) {
+            return false;
+        }
+        c.getDocument().getTransactionManager().readAccess(new Runnable() {
+
             public void run() {
-                if (component.get().getDocument().getSelectedComponents().size() > 1) {
+                if (c.getDocument().getSelectedComponents().size() > 1) {
                     canRename = false;
                     return;
                 }
-                InspectorFolderPresenter presenter = component.get().getPresenter(InspectorFolderPresenter.class);
-                if (presenter != null)
+                InspectorFolderPresenter presenter = c.getPresenter(InspectorFolderPresenter.class);
+                if (presenter != null) {
                     canRename = presenter.getFolder().canRename();
-                else
+                } else {
                     canRename = false;
+                }
             }
         });
-        
+
         return canRename;
     }
-    
+
     public String getName() {
         return DISPLAY_NAME;
     }
-    
+
     public void setComponent(DesignComponent component) {
         this.component = new WeakReference<DesignComponent>(component);
     }
-    
 }

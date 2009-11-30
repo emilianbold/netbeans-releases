@@ -150,11 +150,12 @@ final class BinaryFS extends FileSystem {
         // fill the modifications array
         int stop = buff.getInt() + 8 + MAGIC.length;
         urls = new ArrayList<String>();
-        modifications = new ArrayList<Long>();
+        List<Long> _modifications = new ArrayList<Long>();
         while (buff.position() < stop) {
             urls.add(getString(buff));
-            modifications.add(null);
+            _modifications.add(null);
         }
+        modifications = Collections.synchronizedList(_modifications);
 
 
         // prepare the content buffer and root
@@ -806,7 +807,6 @@ final class BinaryFS extends FileSystem {
         @Override
         public Date lastModified() {
             initialize();
-            synchronized (modifications) {
                 if (lastModified >= 0) {
                     return new Date(lastModified);
                 }
@@ -848,7 +848,6 @@ final class BinaryFS extends FileSystem {
                 } catch (Exception e) {
                     LOG.log(Level.WARNING, null, e);
                 }
-            }
             return super.lastModified ();
         }
     }

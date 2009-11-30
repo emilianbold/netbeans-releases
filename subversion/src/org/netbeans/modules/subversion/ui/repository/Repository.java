@@ -575,7 +575,7 @@ public class Repository implements ActionListener, DocumentListener, ItemListene
         dialog.setVisible(true);
     }
 
-    private boolean isSet(int flag) {
+    boolean isSet(int flag) {
         return (modeMask & flag) != 0;
     }
     

@@ -73,7 +73,30 @@ public final class ImportUtils {
         return res;
     }
 
+    public static List<String> normalizeParameters(List<String> list){
+        List<String> res = new ArrayList<String>();
+        for (String s : list){
+            if (s.indexOf('=')>0){
+                if(s.indexOf('\\') > 0){
+                    s = s.replace('\\', '/');
+                } else if(s.indexOf('"')>0) {
+                    s = s.replace("\"", ""); // NOI18N
+                }
+            }
+            res.add(s);
+        }
+        return res;
+    }
+
     public static List<String> parseEnvironment(String s) {
+        return parse(s, true);
+    }
+
+    public static List<String> parseArgs(String s) {
+        return parse(s, false);
+    }
+
+    private static List<String> parse(String s, boolean onlyEnv) {
         List<String> res = new ArrayList<String>();
         if (s == null) {
             return res;
@@ -81,6 +104,7 @@ public final class ImportUtils {
         StringBuilder key = new StringBuilder();
         StringBuilder value = new StringBuilder();
         int inQuote = 0;
+        int q = 0;
         boolean inValue = false;
         for(int i = 0; i < s.length(); ) {
             char c = s.charAt(i);
@@ -93,19 +117,25 @@ public final class ImportUtils {
                         i++;
                         continue;
                     }
+                    if (!onlyEnv) {
+                        key.append(c);
+                    }
                     i++;
-                    int q = 0;
+                    q = 0;
                     for(;i < s.length(); i++){
                         c = s.charAt(i);
-                        if (s.charAt(i) == '"' || s.charAt(i) == '\''){ //NOI18N
+                        if (c == '"' || c == '\''){ //NOI18N
                             if (q == 0) {
                                 q = c;
                             } else if (q == c) {
                                 q = 0;
                             }
                         }
-                        if (q == 0 && s.charAt(i) == ' '){ //NOI18N
+                        if (q == 0 && c == ' '){ //NOI18N
                             break;
+                        }
+                        if (!onlyEnv) {
+                            key.append(c);
                         }
                     }
                     continue;
@@ -122,7 +152,12 @@ public final class ImportUtils {
                             res.add(key+"="+value); //NOI18N
                         }
                         inValue = false;
+                    } else if (!onlyEnv){
+                        if (key.length() > 0) {
+                            res.add(key.toString());
+                        }
                     }
+
                     key.setLength(0);
                     value.setLength(0);
                     i++;
@@ -130,6 +165,26 @@ public final class ImportUtils {
                 case '\'': //NOI18N
                 case '"': //NOI18N
                     if (inQuote == 0) {
+                        if (!onlyEnv && !inValue){
+                            q = 0;
+                            for(;i < s.length(); i++){
+                                c = s.charAt(i);
+                                if (c == '"' || c == '\''){ //NOI18N
+                                    if (q == 0) {
+                                        q = c;
+                                        continue;
+                                    } else if (q == c) {
+                                        q = 0;
+                                        continue;
+                                    }
+                                }
+                                if (q == 0 && c == ' '){ //NOI18N
+                                    break;
+                                }
+                                key.append(c);
+                            }
+                            continue;
+                        }
                         inQuote = c;
                     } else if (inQuote == c) {
                         inQuote = 0;
@@ -147,6 +202,8 @@ public final class ImportUtils {
                     } else {
                         if (inValue) {
                             value.append(c);
+                        } else if (!onlyEnv){
+                            key.append(c);
                         }
                     }
                     i++;
@@ -164,6 +221,10 @@ public final class ImportUtils {
         if (inValue) {
             if (key.length() > 0) {
                 res.add(key+"="+value); //NOI18N
+            }
+        } else if (!onlyEnv){
+            if (key.length() > 0) {
+                res.add(key.toString());
             }
         }
         return res;

@@ -73,7 +73,7 @@ import org.openide.util.WeakSet;
 public final class InspectorRegistry {
 
     private static WeakHashMap<DesignDocument, InspectorRegistry> registryMap;
-    private WeakSet<DesignComponent> components = new WeakSet<DesignComponent>();
+    private Collection<DesignComponent> components = new WeakSet<DesignComponent>();
     
     /**
      * Returns instance of InspectorRegistry for given DesignDocument.

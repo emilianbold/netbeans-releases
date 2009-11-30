@@ -167,17 +167,25 @@ public class FormJavaSource {
         return kind;
     }
 
-    private List<String> findMethodsByReturnType(CompilationController controller, TypeElement celem, Class returnType) {
-        List<String> methods = new ArrayList<String>();
+    private TypeMirror clazzToTypeMirror(CompilationController controller, Class clazz) {
         TypeMirror type;
-        if (returnType.isPrimitive()) {
-            TypeKind kind = primitiveClassToTypeKind(returnType);
+        if (clazz.isPrimitive()) {
+            TypeKind kind = primitiveClassToTypeKind(clazz);
             type = controller.getTypes().getPrimitiveType(kind);
+        } else if (clazz.isArray()) {
+            type = clazzToTypeMirror(controller, clazz.getComponentType());
+            type = controller.getTypes().getArrayType(type);
         } else {
-            String returnTypeName = returnType.getCanonicalName();
+            String returnTypeName = clazz.getCanonicalName();
             TypeElement returnTypeElm = controller.getElements().getTypeElement(returnTypeName);
             type = returnTypeElm.asType();
         }
+        return type;
+    }
+
+    private List<String> findMethodsByReturnType(CompilationController controller, TypeElement celem, Class returnType) {
+        List<String> methods = new ArrayList<String>();
+        TypeMirror type = clazzToTypeMirror(controller, returnType);
         for (Element el: celem.getEnclosedElements()) {
             if (el.getKind() == ElementKind.METHOD) {
                 ExecutableElement method = (ExecutableElement) el;

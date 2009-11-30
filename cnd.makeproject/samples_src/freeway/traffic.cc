@@ -1046,10 +1046,14 @@ traffic_do_load(char *filename) {
     }
 
     traffic_reset();
-    if (traffic_current_file) {
-        free(traffic_current_file);
+
+    if (filename != traffic_current_file) {
+        if (traffic_current_file) {
+            free(traffic_current_file);
+        }
+        traffic_current_file = strdup(filename);
     }
-    traffic_current_file = strdup(filename);
+
     ifstream mystream(filename, ios::in);
 
     // Get application state...
@@ -1115,10 +1119,13 @@ traffic_do_save(char *filename) {
     if (!filename) {
         return;
     }
-    if (traffic_current_file) {
-        free(traffic_current_file);
+
+    if (filename != traffic_current_file) {
+        if (traffic_current_file) {
+            free(traffic_current_file);
+        }
+        traffic_current_file = strdup(filename);
     }
-    traffic_current_file = strdup(filename);
 
     ofstream mystream(traffic_current_file, ios::out);
 

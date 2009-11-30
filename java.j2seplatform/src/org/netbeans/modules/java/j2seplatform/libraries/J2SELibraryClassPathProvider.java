@@ -43,7 +43,9 @@ package org.netbeans.modules.java.j2seplatform.libraries;
 
 import java.lang.reflect.Field;
 import java.net.URL;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -52,6 +54,7 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.classpath.ClassPathProvider.class, position=150)
@@ -76,16 +79,17 @@ public class J2SELibraryClassPathProvider implements ClassPathProvider {
             return null;
         }
     }
+
+    
     private ClassPath[] findClassPathOrNull(FileObject file, String type, Library lib) {
         if (lib.getType().equals(J2SELibraryTypeProvider.LIBRARY_TYPE)) {
             List<URL> resources = lib.getContent(J2SELibraryTypeProvider.VOLUME_TYPE_SRC);
-            try {
-                ClassPath sourcePath = ClassPathSupport.createClassPath(resources.toArray(new URL[resources.size()]));
-                FileObject root = sourcePath.findOwnerRoot(file);
+            try {                
+                FileObject root = getOwnerRoot(file,resources);
                 if (root != null) {
                     setLastUsedLibrary(root, lib);
                     if (ClassPath.SOURCE.equals(type)) {
-                        return new ClassPath[] {sourcePath};
+                        return new ClassPath[] {ClassPathSupport.createClassPath(resources.toArray(new URL[resources.size()]))};
                     } else if (ClassPath.COMPILE.equals(type)) {
                         resources = lib.getContent(J2SELibraryTypeProvider.VOLUME_TYPE_CLASSPATH);
                         return new ClassPath[] {ClassPathSupport.createClassPath(resources.toArray(new URL[resources.size()]))};
@@ -98,6 +102,53 @@ public class J2SELibraryClassPathProvider implements ClassPathProvider {
             } catch (final IllegalArgumentException e) {
                 final IllegalArgumentException ne = new IllegalArgumentException("LibraryImplementation:["+getImplClassName(lib)+"] returned wrong root:" + e.getMessage());
                 Exceptions.printStackTrace(ne.initCause(e));
+            }
+        }
+        return null;
+    }
+
+    private static FileObject getOwnerRoot (final FileObject fo, final List<? extends URL> roots) {
+        final URL foURL = URLMapper.findURL(fo, URLMapper.EXTERNAL);
+        if (foURL == null) {
+            //template or other nbfs
+            return null;
+        }
+        final URL archiveFileURL = FileUtil.getArchiveFile(foURL);
+        final boolean isInArchive = archiveFileURL != null;
+        final FileObject ownerFo = isInArchive ? URLMapper.findFileObject(archiveFileURL) : null;
+        final Set<FileObject> candidates = new HashSet<FileObject>();
+        for (URL root : roots) {
+            if ("jar".equals(root.getProtocol())) {  //NOI18N
+                if (isInArchive && ownerFo != null) {
+                    final URL rootFileUrl = FileUtil.getArchiveFile(root);
+                    if (rootFileUrl != null) {  //May be null in case of broken url
+                        final FileObject rootFileFo = URLMapper.findFileObject(rootFileUrl);
+                        if (ownerFo.equals(rootFileFo)) {
+                            final FileObject rootFo = URLMapper.findFileObject(root);
+                            if (rootFo != null) {
+                                candidates.add(rootFo);
+                                //possibly break, but in general single archive may have more roots
+                            }
+                        }
+                    }
+                }
+            }
+            else {
+                if (!isInArchive) {
+                    final FileObject rootFo = URLMapper.findFileObject(root);
+                    if (rootFo != null) {
+                        candidates.add(rootFo);
+                    }
+                }
+            }
+        }
+        return candidates.isEmpty() ? null : findOwnerRoot(fo,candidates);
+    }
+
+    private static FileObject findOwnerRoot (final FileObject resource, final Set<? extends FileObject> roots) {
+        for (FileObject f = resource; f != null; f = f.getParent()) {
+            if (roots.contains(f)) {
+                return f;
             }
         }
         return null;

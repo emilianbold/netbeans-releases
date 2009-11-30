@@ -85,7 +85,7 @@ static void serve_connection(void* data) {
     struct package *pkg = (struct package *) &buffer;
 
     int first = true;
-    char requestor_id[32];
+    char requestor_id[32] = "-1";
 
     while (1) {
         trace("Waiting for a data to arrive from %s, sd=%d...\n", requestor_id, conn_data->sd);
@@ -102,9 +102,8 @@ static void serve_connection(void* data) {
         }
 
         trace("Request (%s): %s sd=%d\n", pkg_kind_to_string(pkg->kind), pkg->data, conn_data->sd);
-        enum pkg_kind expected_kind = first ? pkg_handshake : pkg_request;
-        if (pkg->kind != expected_kind) {
-            fprintf(stderr, "prodocol error: got %s instead of %s from %s sd=%d\n", pkg_kind_to_string(pkg->kind), pkg_kind_to_string(expected_kind), requestor_id, conn_data->sd);
+        if (first ? (pkg->kind != pkg_handshake) : (pkg->kind != pkg_request && pkg->kind != pkg_written)) {
+            fprintf(stderr, "prodocol error: unexpected %s from %s sd=%d\n", pkg_kind_to_string(pkg->kind), requestor_id, conn_data->sd);
             break;
         }
 
@@ -114,61 +113,81 @@ static void serve_connection(void* data) {
             continue;
         }
 
-        char response[64];
         const char* filename = pkg->data;
         file_data *fd = find_file_data(filename);
 
-        if (fd != NULL) {
-            switch (fd->state) {
-                case TOUCHED:
-                    trace("File %s state %c - requesting LC\n", filename, (char) fd->state);
-                    /* TODO: this is a very primitive sync!  */
-                    pthread_mutex_lock(&mutex);
+        const char LC_PROTOCOL_REQUEST = 'r';
+        const char LC_PROTOCOL_WRITTEN = 'w';
 
-                    fprintf(stdout, "%s\n", filename);
-                    fflush(stdout);
-
-                    #if TRACE
-                        if (emulate) {
-                            response[0] = response_ok;
-                        } else
-                    #endif
-                    fgets(response, sizeof response, stdin);
-                    fd->state = (response[0] == response_ok) ? COPIED : ERROR;
-                    pthread_mutex_unlock(&mutex);
-                    trace("File %s state %c - got from LC %s, replying %s\n", filename, (char) fd->state, response, response);
-                    break;
-                case COPIED:    // fall through
-                case UNCONTROLLED:
-                    response[0] = response_ok;
-                    trace("File %s state %c - uncontrolled, replying %s\n", filename, (char) fd->state, response);
-                    break;
-                case ERROR:
-                    response[0] = response_failure;
-                    trace("File %s state %c - old error, replying %s\n", filename, (char) fd->state, response);
-                    break;
-                case INITIAL:   // fall through
-                case DIRECTORY: // fall through
-                case PENDING:   // fall through
-                default:
-                    response[0] = response_failure;
-                    trace("File %s state %c - unexpected state, replying %s\n", filename, (char) fd->state, response);
-                    break;
+        if (pkg->kind == pkg_written) {
+            if (fd == NULL) {
+                trace("File %s is unknown - nothing to uncontrol\n", filename);
+            } else if (fd->state == UNCONTROLLED) {
+                trace("File %s already uncontrolled\n", filename);
+            } else {
+                fd->state = UNCONTROLLED;
+                trace("File %s sending uncontrol request to LC\n", filename);
+                // TODO: this is a very primitive sync!
+                pthread_mutex_lock(&mutex);
+                fprintf(stdout, "%c %s\n", LC_PROTOCOL_WRITTEN, filename);
+                fflush(stdout);
+                pthread_mutex_unlock(&mutex);
             }
-        } else {
-            response[0] = response_ok;
-            trace("File %s: state n/a, replying: %s\n", filename, response);
-        }
+        } else { // pkg->kind == pkg_request
+            char response[64];
+            response[1] = 0;
+            if (fd != NULL) {
+                switch (fd->state) {
+                    case TOUCHED:
+                        trace("File %s state %c - requesting LC\n", filename, (char) fd->state);
+                        /* TODO: this is a very primitive sync!  */
+                        pthread_mutex_lock(&mutex);
 
-        response[1] = 0;
-        enum sr_result send_res = pkg_send(conn_data->sd, pkg_reply, response);
-        if (send_res == sr_failure) {
-            perror("send");
-        } else if (send_res == sr_reset) {
-            perror("send");
-        } else { // success
-            trace("reply for %s sent to %s sd=%d\n", filename, requestor_id, conn_data->sd);
-        }        
+                        fprintf(stdout, "%c %s\n", LC_PROTOCOL_REQUEST, filename);
+                        fflush(stdout);
+
+                        #if TRACE
+                            if (emulate) {
+                                response[0] = response_ok;
+                            } else
+                        #endif
+                        fgets(response, sizeof response, stdin);
+                        fd->state = (response[0] == response_ok) ? COPIED : ERROR;
+                        pthread_mutex_unlock(&mutex);
+                        trace("File %s state %c - got from LC %s, replying %s\n", filename, (char) fd->state, response, response);
+                        break;
+                    case COPIED:    // fall through
+                    case UNCONTROLLED:
+                        response[0] = response_ok;
+                        trace("File %s state %c - uncontrolled/copied, replying %s\n", filename, (char) fd->state,  response);
+                        break;
+                    case ERROR:
+                        response[0] = response_failure;
+                        trace("File %s state %c - old error, replying %s\n", filename, (char) fd->state, response);
+                        break;
+                    case INITIAL:   // fall through
+                    case DIRECTORY: // fall through
+                    case PENDING:   // fall through
+                    default:
+                        response[0] = response_failure;
+                        trace("File %s state %c - unexpected state, replying %s\n", filename, (char) fd->state, response);
+                        break;
+                }
+            } else {
+                response[0] = response_ok;
+                trace("File %s: state n/a, replying: %s\n", filename, response);
+            }
+
+            response[1] = 0;
+            enum sr_result send_res = pkg_send(conn_data->sd, pkg_reply, response);
+            if (send_res == sr_failure) {
+                perror("send");
+            } else if (send_res == sr_reset) {
+                perror("send");
+            } else { // success
+                trace("reply for %s sent to %s sd=%d\n", filename, requestor_id, conn_data->sd);
+            }
+        }
     }
     close(conn_data->sd);
     trace("Connection to %s:%d (%s) closed sd=%d\n", inet_ntoa(conn_data->pin.sin_addr), ntohs(conn_data->pin.sin_port), requestor_id, conn_data->sd);
@@ -303,6 +322,34 @@ static int scan_line(const char* buffer, int bufsize, enum file_state *state, in
     }
 }
 
+typedef struct file_elem {
+    struct file_elem* next;
+    char filename[]; // have to be the last field
+} file_elem;
+
+/**
+ * adds info about new file to the tail of the list
+ */
+static file_elem* add_file_to_list(file_elem* tail, const char* filename) {
+     trace("File %s is added to the list to be send to LC as not yet copied files\n", filename);
+    int namelen = strlen(filename);
+    int size = sizeof(file_elem) + namelen + 1;
+    file_elem *fe = (file_elem*) malloc(size);
+    fe->next = NULL;
+    strcpy(fe->filename, filename);
+    if (tail != NULL) {
+        tail->next = fe;
+    }
+    return fe;
+}
+
+static void free_file_list(file_elem* list) {
+    while (list != NULL) {
+        file_elem* next = list->next;
+        free(list);
+        list = next;
+    }
+}
 /**
  * Reads the list of files from the host IDE runs on,
  * creates files, fills internal file table
@@ -312,6 +359,8 @@ static int init_files() {
     int bufsize = PATH_MAX + 32;
     char buffer[bufsize];
     int success = false;
+    file_elem* list = NULL;
+    file_elem* tail = NULL;
     while (1) {
         fgets(buffer, bufsize, stdin);
         if (buffer[0] == '\n') {
@@ -345,6 +394,13 @@ static int init_files() {
                 touch = true;
             } else if (state == COPIED || state == TOUCHED) {
                 touch = !file_exists(path, file_size);
+                if (state == COPIED && touch) {
+                    // inform local controller that he is not right about copied status of file
+                    tail = add_file_to_list(tail, path);
+                    if (list == NULL) {
+                        list = tail;
+                    }
+                }
             } else {
                 report_error("prodocol error: %s\n", buffer);
             }
@@ -368,6 +424,19 @@ static int init_files() {
         }
     }
     trace("Files list initialization done\n");
+    if (success) {
+        // send info about touched files which were passed as copied files
+        tail = list;
+        while (tail != NULL) {
+            fprintf(stdout, "t %s\n", tail->filename);
+            fflush(stdout);
+            tail = tail->next;
+        }
+        free_file_list(list);
+        // empty line as indication of finished files list
+        fprintf(stdout, "\n");
+        fflush(stdout);
+    }
     return success;
 }
 

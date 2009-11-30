@@ -66,7 +66,7 @@ public class JCProjectType {
     public static final String MINIMUM_ANT_VERSION = "1.6"; //NOI18N
 
     @AntBasedProjectRegistration(type = JCProjectType.JC_PROJECT_TYPE,
-    iconResource = "org/netbeans/modules/javacard/resources/extlibproject.png", // NOI18N
+    iconResource = "org/netbeans/modules/javacard/spi/resources/extlibproject.png", // NOI18N
     sharedName = PROJECT_CONFIGURATION_NAME,
     sharedNamespace = PROJECT_CONFIGURATION_NAMESPACE,
     privateName = PRIVATE_CONFIGURATION_NAME,

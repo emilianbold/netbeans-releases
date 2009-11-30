@@ -72,7 +72,7 @@ public class AppClientWsValidation extends EjbWsValidation {
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(AppClientWsValidation.class),
+        return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(AppClientWsValidation.class),
                 "testCreateWsClient",
                 "testCallWsOperationInJavaMainClass",
                 "testCallWsOperationInJavaClass",

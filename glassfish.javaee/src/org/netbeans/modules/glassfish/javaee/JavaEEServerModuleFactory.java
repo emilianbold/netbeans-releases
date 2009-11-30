@@ -55,12 +55,12 @@ import java.util.logging.Logger;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.glassfish.javaee.ide.Hk2PluginProperties;
-import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceCreationException;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.GlassfishModuleFactory;
 import org.netbeans.modules.glassfish.spi.RegisteredDerbyServer;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceCreationException;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.filesystems.FileUtil;
@@ -107,7 +107,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
             Map<String, String> props = commonModule.getInstanceProperties();
             String url = props.get(InstanceProperties.URL_ATTR);
             ip = InstanceProperties.getInstanceProperties(url);
-            if(ip == null) {
+            if (ip == null) {
                 String username = props.get(InstanceProperties.USERNAME_ATTR);
                 String password = props.get(InstanceProperties.PASSWORD_ATTR);
                 String displayName = props.get(InstanceProperties.DISPLAY_NAME_ATTR);

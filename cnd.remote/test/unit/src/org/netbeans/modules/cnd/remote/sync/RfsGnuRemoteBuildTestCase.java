@@ -68,29 +68,27 @@ public class RfsGnuRemoteBuildTestCase extends RfsBaseRemoteBuildTestCase {
         setupHost("rfs");        
     }
 
-    @Conditional(section="remote.platforms.smart.secure.copy.options", key="test.gnu.single")
-    @ForAllEnvironments(section="remote.platforms.smart.secure.copy")
+    @ForAllEnvironments
     public void testBuildRfsSampleArgsGNU_Single() throws Exception {
         setDefaultCompilerSet("GNU");
         FileObject projectDirFO = prepareSampleProject("Arguments", "Args_rfs_gnu_single");
         MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
         removeRemoteHome();
-        buildProject(makeProject, 60, TimeUnit.SECONDS);
+        buildProject(makeProject, getSampleBuildTimeout(), TimeUnit.SECONDS);
     }
 
-    @Conditional(section="remote.platforms.smart.secure.copy.options", key="gnu.multy")
-    @ForAllEnvironments(section="remote.platforms.smart.secure.copy")
+    @ForAllEnvironments
     public void testBuildRfsSampleArgsGNU_Multy() throws Exception {
         setDefaultCompilerSet("GNU");
         FileObject projectDirFO = prepareSampleProject("Arguments", "Args_rfs_gnu_multy");
         removeRemoteHome();
         MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
         System.err.printf("BUILDING FIRST TIME\n");
-        buildProject(makeProject, 60, TimeUnit.SECONDS);
+        buildProject(makeProject, getSampleBuildTimeout(), TimeUnit.SECONDS);
         System.err.printf("BUILDING SECOND TIME\n");
-        buildProject(makeProject, 60, TimeUnit.SECONDS);
+        buildProject(makeProject, getSampleBuildTimeout(), TimeUnit.SECONDS);
         System.err.printf("BUILDING THIRD TIME\n");
-        buildProject(makeProject, 60, TimeUnit.SECONDS);
+        buildProject(makeProject, getSampleBuildTimeout(), TimeUnit.SECONDS);
     }
 
     public static Test suite() {

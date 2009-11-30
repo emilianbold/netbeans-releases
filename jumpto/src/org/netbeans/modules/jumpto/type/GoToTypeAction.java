@@ -56,6 +56,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -63,9 +65,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.ListCellRenderer;
@@ -90,6 +94,7 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -389,40 +394,48 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             this.text = text;
             this.createTime = System.currentTimeMillis();
             LOGGER.fine( "Worker for " + text + " - created after " + ( System.currentTimeMillis() - panel.time ) + " ms."  );                
-       }
-        
+        }
+
         public void run() {
-            
-            LOGGER.fine( "Worker for " + text + " - started " + ( System.currentTimeMillis() - createTime ) + " ms."  );                
-            
-            final List<? extends TypeDescriptor> types = getTypeNames( text );
-            if ( isCanceled ) {
-                LOGGER.fine( "Worker for " + text + " exited after cancel " + ( System.currentTimeMillis() - createTime ) + " ms."  );                                
-                return;
-            }
-            ListModel model = Models.fromList(types);
-            if (typeFilter != null) {
-                model = LazyListModel.create(model, GoToTypeAction.this, 0.1, "Not computed yet");
-            }
-            final ListModel fmodel = model;
-            if ( isCanceled ) {            
-                LOGGER.fine( "Worker for " + text + " exited after cancel " + ( System.currentTimeMillis() - createTime ) + " ms."  );                                
-                return;
-            }
-            
-            if ( !isCanceled && fmodel != null ) {                
-                LOGGER.fine( "Worker for text " + text + " finished after " + ( System.currentTimeMillis() - createTime ) + " ms."  );                
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        panel.setModel(fmodel);
-                        if (okButton != null && !types.isEmpty()) {
-                            okButton.setEnabled (true);
+            Profile profile = initializeProfiling();
+            try {
+                LOGGER.fine( "Worker for " + text + " - started " + ( System.currentTimeMillis() - createTime ) + " ms."  );
+
+                final List<? extends TypeDescriptor> types = getTypeNames( text );
+                if ( isCanceled ) {
+                    LOGGER.fine( "Worker for " + text + " exited after cancel " + ( System.currentTimeMillis() - createTime ) + " ms."  );
+                    return;
+                }
+                ListModel model = Models.fromList(types);
+                if (typeFilter != null) {
+                    model = LazyListModel.create(model, GoToTypeAction.this, 0.1, "Not computed yet");
+                }
+                final ListModel fmodel = model;
+                if ( isCanceled ) {
+                    LOGGER.fine( "Worker for " + text + " exited after cancel " + ( System.currentTimeMillis() - createTime ) + " ms."  );
+                    return;
+                }
+
+                if ( !isCanceled && fmodel != null ) {
+                    LOGGER.fine( "Worker for text " + text + " finished after " + ( System.currentTimeMillis() - createTime ) + " ms."  );
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            panel.setModel(fmodel);
+                            if (okButton != null && !types.isEmpty()) {
+                                okButton.setEnabled (true);
+                            }
                         }
+                    });
+                }
+            } finally {
+                if (profile != null) {
+                    try {
+                        profile.stop();
+                    } catch (Exception ex) {
+                        LOGGER.log(Level.INFO, "Cannot stop profiling", ex);
                     }
-                });
+                }
             }
-            
-            
         }
         
         public void cancel() {
@@ -716,5 +729,61 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         return s1.compareTo( s2 );
     }
     
+    private Profile initializeProfiling() {
+        FileObject fo = FileUtil.getConfigFile("Actions/Profile/org-netbeans-modules-profiler-actions-SelfSamplerAction.instance");
+        if (fo == null) {
+            return null;
+        }
+        Action a = (Action)fo.getAttribute("delegate"); // NOI18N
+        if (a == null) {
+            return null;
+        }
+        return new Profile(a.getValue("logger-jumpto")); // NOI18N
+    }
+
+    private class Profile implements Runnable {
+        Object profiler;
+        boolean profiling;
+        private final long time;
+
+        public Profile(Object profiler) {
+            time = System.currentTimeMillis();
+            this.profiler = profiler;
+            RequestProcessor.getDefault().post(this, 3000); // 3s
+        }
+
+        public synchronized void run() {
+            profiling = true;
+            if (profiler instanceof Runnable) {
+                Runnable r = (Runnable)profiler;
+                r.run();
+            }
+        }
+
+        private synchronized void stop() throws Exception {
+            long delta = System.currentTimeMillis() - time;
+
+            ActionListener ss = (ActionListener)profiler;
+            profiler = null;
+            if (!profiling) {
+                return;
+            }
+            try {
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                DataOutputStream dos = new DataOutputStream(out);
+                ss.actionPerformed(new ActionEvent(dos, 0, "write")); // NOI18N
+                dos.close();
+                if (dos.size() > 0) {
+                    Object[] params = new Object[]{out.toByteArray(), delta };
+                    Logger.getLogger("org.netbeans.ui.performance").log(Level.CONFIG, "Slowness detected", params);
+                } else {
+                    LOGGER.log(Level.WARNING, "no snapshot taken"); // NOI18N
+                }
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+    }
 
 }

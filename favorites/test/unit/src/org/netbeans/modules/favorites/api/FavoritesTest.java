@@ -213,6 +213,7 @@ public class FavoritesTest extends NbTestCase {
         });
     }
 
+    @RandomlyFails // got empty list of nodes in NB-Core-Build #3603
     public void testSelectWithAdditionExisting() throws Exception {
         RootsTest.clearBareFavoritesTabInstance();
         TopComponent win = RootsTest.getBareFavoritesTabInstance();
