@@ -79,6 +79,7 @@ public final class DocletAction extends CookieAction implements CollectDTDAction
     public DocletAction() {
     }
 
+/**********
     public static synchronized DocletAction getInstance() {
         DocletAction actionInstance = null;
         String thisClassName = DocletAction.class.getName();
@@ -90,7 +91,8 @@ public final class DocletAction extends CookieAction implements CollectDTDAction
         }
         return actionInstance;
     }
-
+**********/
+    
     public Class[] cookieClasses() {
         return new Class[] { DTDDataObject.class };
     }
