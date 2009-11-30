@@ -678,7 +678,7 @@ final class BinaryFS extends FileSystem {
                 } else {
                     return Class.forName (tname, true, c);
                 }
-            } catch (NoClassDefFoundError err) {
+            } catch (LinkageError err) {
                 throw new ClassNotFoundException ("Cannot read " + name, err);
             }
         }
