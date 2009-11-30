@@ -919,9 +919,8 @@ tools.jar [since 5.0u1] - set to location of tools.jar in active JDK. Useful in
 case your module needs to compile against JDK-only classes. Meaningless on Mac
 OS X.
 
-To support builds of JNLP based applications (described at
-http://installer.netbeans.org/docs/jnlpInstaller3.html) additional properties
-may be used or redefined in JNLP-related targets:
+To support builds of JNLP-based applications additional properties may be used
+or redefined in JNLP-related targets:
 
 jnlp.servlet.jar - must point to jnlp-servlet.jar as provided by JDK 5 in
   the directory sample/jnlp/servlet/jnlp-servlet.jar if one wants to build 
