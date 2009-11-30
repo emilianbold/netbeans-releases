@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.mercurial.util;
 
+import java.awt.EventQueue;
 import java.io.BufferedWriter;
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -1399,6 +1400,47 @@ itor tabs #66700).
             }
         }
         return remotePath;
+    }
+
+    public static void openInRevision (final File originalFile, final String revision, boolean showAnnotations) throws IOException {
+        File file = org.netbeans.modules.mercurial.VersionsCache.getInstance().getFileRevision(originalFile, revision);
+
+        if (file == null) { // can be null if the file does not exist or is empty in the given revision
+            file = File.createTempFile("tmp", "-" + originalFile.getName()); //NOI18N
+            file.deleteOnExit();
+        }
+
+        final FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+        EditorCookie ec = null;
+        org.openide.cookies.OpenCookie oc = null;
+        try {
+            DataObject dobj = DataObject.find(fo);
+            ec = dobj.getCookie(EditorCookie.class);
+            oc = dobj.getCookie(org.openide.cookies.OpenCookie.class);
+        } catch (DataObjectNotFoundException ex) {
+            Mercurial.LOG.log(Level.FINE, null, ex);
+        }
+        org.openide.text.CloneableEditorSupport ces = null;
+        if (ec == null && oc != null) {
+            oc.open();
+        } else {
+            ces = org.netbeans.modules.versioning.util.Utils.openFile(fo, revision);
+        }
+        if (showAnnotations) {
+            if (ces == null) {
+                return;
+            } else {
+                final org.openide.text.CloneableEditorSupport support = ces;
+                EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        javax.swing.JEditorPane[] panes = support.getOpenedPanes();
+                        if (panes != null) {
+                            org.netbeans.modules.mercurial.ui.annotate.AnnotateAction.showAnnotations(panes[0], originalFile, revision);
+                        }
+                    }
+                });
+            }
+        }
     }
 
     /**

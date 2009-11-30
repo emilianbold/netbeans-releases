@@ -128,47 +128,60 @@ public class AnnotateAction extends ContextAction {
             JEditorPane[] panes = ec.getOpenedPanes();
             if (panes == null) {
                 ec.open();
+                panes = ec.getOpenedPanes();
             }
 
-            panes = ec.getOpenedPanes();
             if (panes == null) {
                 return;
             }
             final JEditorPane currentPane = panes[0];
-            final TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class,  currentPane);
-            tc.requestActive();
-
-            final AnnotationBar ab = AnnotationBarManager.showAnnotationBar(currentPane);
-            ab.setAnnotationMessage(NbBundle.getMessage(AnnotateAction.class, "CTL_AnnotationSubstitute")); // NOI18N;
-
-            final File repository  = HgUtils.getRootFile(context);
-            if (repository == null) return;
-
-            RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
-            HgProgressSupport support = new HgProgressSupport() {
-                public void perform() {
-                    OutputLogger logger = getLogger();
-                    logger.outputInRed(
-                            NbBundle.getMessage(AnnotateAction.class,
-                            "MSG_ANNOTATE_TITLE")); // NOI18N
-                    logger.outputInRed(
-                            NbBundle.getMessage(AnnotateAction.class,
-                            "MSG_ANNOTATE_TITLE_SEP")); // NOI18N
-                    computeAnnotations(repository, file, this, ab);
-                    logger.output("\t" + file.getAbsolutePath()); // NOI18N
-                    logger.outputInRed(
-                            NbBundle.getMessage(AnnotateAction.class,
-                            "MSG_ANNOTATE_DONE")); // NOI18N
-                }
-            };
-            support.start(rp, repository, NbBundle.getMessage(AnnotateAction.class, "MSG_Annotation_Progress")); // NOI18N
+            showAnnotations(currentPane, file, null);
         }
     }
 
-    private void computeAnnotations(File repository, File file, HgProgressSupport progress, AnnotationBar ab) {
+    public static void showAnnotations(JEditorPane currentPane, final File file, final String revision) {
+        if (currentPane == null || file == null) {
+            return;
+        }
+        TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class, currentPane);
+        tc.requestActive();
+
+        final AnnotationBar ab = AnnotationBarManager.showAnnotationBar(currentPane);
+        ab.setAnnotationMessage(NbBundle.getMessage(AnnotateAction.class, "CTL_AnnotationSubstitute")); // NOI18N;
+        if (revision != null) {
+            // showing annotations from past, the referenced file differs from the one being displayed
+            ab.setReferencedFile(file);
+        }
+
+        final File repository = Mercurial.getInstance().getRepositoryRoot(file);
+        if (repository == null) {
+            return;
+        }
+
+        RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
+        HgProgressSupport support = new HgProgressSupport() {
+            public void perform() {
+                OutputLogger logger = getLogger();
+                logger.outputInRed(
+                        NbBundle.getMessage(AnnotateAction.class,
+                        "MSG_ANNOTATE_TITLE")); // NOI18N
+                logger.outputInRed(
+                        NbBundle.getMessage(AnnotateAction.class,
+                        "MSG_ANNOTATE_TITLE_SEP")); // NOI18N
+                computeAnnotations(repository, file, this, ab, revision);
+                logger.output("\t" + file.getAbsolutePath()); // NOI18N
+                logger.outputInRed(
+                        NbBundle.getMessage(AnnotateAction.class,
+                        "MSG_ANNOTATE_DONE")); // NOI18N
+            }
+        };
+        support.start(rp, repository, NbBundle.getMessage(AnnotateAction.class, "MSG_Annotation_Progress")); // NOI18N
+    }
+
+    private static void computeAnnotations(File repository, File file, HgProgressSupport progress, AnnotationBar ab, String revision) {
         List<String> list = null;
         try {
-             list = HgCommand.doAnnotate(repository, file, progress.getLogger());
+             list = HgCommand.doAnnotate(repository, file, revision, progress.getLogger());
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
             DialogDisplayer.getDefault().notifyLater(e);
