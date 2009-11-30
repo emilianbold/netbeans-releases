@@ -116,4 +116,46 @@ public final class ErrorDescription {
             throw (IllegalStateException) new IllegalStateException().initCause(ex);
         }
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final ErrorDescription other = (ErrorDescription) obj;
+        if ((this.description == null) ? (other.description != null) : !this.description.equals(other.description)) {
+            return false;
+        }
+        if (this.severity != other.severity && (this.severity == null || !this.severity.equals(other.severity))) {
+            return false;
+        }
+        if (this.span.getBegin().getOffset() != other.span.getBegin().getOffset()) {
+            return false;
+        }
+        if (this.span.getEnd().getOffset() != other.span.getEnd().getOffset()) {
+            return false;
+        }
+        if (this.file != other.file && (this.file == null || !this.file.equals(other.file))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 17 * hash + (this.description != null ? this.description.hashCode() : 0);
+        hash = 17 * hash + (this.severity != null ? this.severity.hashCode() : 0);
+        hash = 17 * hash + this.span.getBegin().getOffset();
+        hash = 17 * hash + this.span.getEnd().getOffset();
+        hash = 17 * hash + (this.file != null ? this.file.hashCode() : 0);
+        return hash;
+    }
+
+
+
+
 }
