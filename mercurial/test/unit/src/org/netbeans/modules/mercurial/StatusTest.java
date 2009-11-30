@@ -81,19 +81,19 @@ public class StatusTest extends AbstractHgTest {
         
         // assert status given from cli
         assertStatus(folder, FileInformation.STATUS_VERSIONED_UPTODATE);
-        Map<File, FileInformation> m = HgCommand.getInterestingStatus(getWorkDir(), Collections.singletonList(folder));
+        Map<File, FileInformation> m = HgCommand.getStatus(getWorkDir(), Collections.singletonList(folder));
         assertEquals(0, m.keySet().size());
                 
         // hg move the folder
         File folderenamed = new File(getWorkDir(), "folderenamed");
         HgCommand.doRename(getWorkDir(), folder, folderenamed, null);
 
-        m = HgCommand.getInterestingStatus(getWorkDir(), Collections.singletonList(folder));
+        m = HgCommand.getStatus(getWorkDir(), Collections.singletonList(folder));
         assertEquals(3, m.keySet().size());
         for (File file : m.keySet()) {
             assertStatus(file, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY);    
         }        
-        m = HgCommand.getInterestingStatus(getWorkDir(), Collections.singletonList(folderenamed));
+        m = HgCommand.getStatus(getWorkDir(), Collections.singletonList(folderenamed));
         assertEquals(3, m.keySet().size());        
         for (File file : m.keySet()) {
             assertStatus(file, FileInformation.STATUS_VERSIONED_ADDEDLOCALLY);    

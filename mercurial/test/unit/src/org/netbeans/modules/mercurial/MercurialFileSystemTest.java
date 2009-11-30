@@ -148,7 +148,7 @@ public class MercurialFileSystemTest extends FileSystemFactoryHid {
         
         List<File> filesToAdd = new ArrayList<File>();
         for (File file : files) {
-            if(findStatus(HgCommand.getInterestingStatus(getWorkDir(), Collections.singletonList(file)),
+            if(findStatus(HgCommand.getStatus(getWorkDir(), Collections.singletonList(file)),
                     FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY)) {
                 filesToAdd.add(file);
             }
