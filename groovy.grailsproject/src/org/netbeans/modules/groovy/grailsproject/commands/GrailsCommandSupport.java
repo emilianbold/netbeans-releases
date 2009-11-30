@@ -64,6 +64,8 @@ import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.LineProcessor;
+import org.netbeans.api.extexecution.input.LineProcessors;
+import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grails.api.GrailsPlatform;
@@ -71,6 +73,7 @@ import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.modules.groovy.grailsproject.GrailsServerState;
 import org.netbeans.modules.groovy.grailsproject.actions.RefreshProjectRunnable;
 import org.netbeans.modules.groovy.grailsproject.config.BuildConfig;
+import org.netbeans.modules.groovy.grailsproject.debug.GrailsDebugger;
 import org.netbeans.modules.groovy.support.api.GroovySettings;
 import org.netbeans.modules.web.client.tools.api.JSToNbJSLocationMapper;
 import org.netbeans.modules.web.client.tools.api.LocationMappersFactory;
@@ -85,6 +88,7 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
@@ -126,12 +130,16 @@ public final class GrailsCommandSupport {
         return commands;
     }
 
-    public ExecutionDescriptor getRunDescriptor() {
-        return getDescriptor(GrailsPlatform.IDE_RUN_COMMAND);
+    public ExecutionDescriptor getRunDescriptor(boolean debug) {
+        return getDescriptor(GrailsPlatform.IDE_RUN_COMMAND, debug);
     }
 
     public ExecutionDescriptor getDescriptor(String command) {
-        return getDescriptor(command, null, false);
+        return getDescriptor(command, false);
+    }
+
+    public ExecutionDescriptor getDescriptor(String command, boolean debug) {
+        return getDescriptor(command, null, debug);
     }
 
     public ExecutionDescriptor getDescriptor(String command, InputProcessorFactory outFactory) {
@@ -144,36 +152,67 @@ public final class GrailsCommandSupport {
             ExecutionDescriptor descriptor = RUN_DESCRIPTOR;
             InputProcessorFactory urlFactory = new InputProcessorFactory() {
                 public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+                    LineProcessor lineProcessor = null;
+                    if (debug) {
+                        lineProcessor = LineProcessors.proxy(
+                                new ServerOutputProcessor(project, debug),
+                                new DebugOutputProcessor(project));
+                    } else {
+                        lineProcessor = new ServerOutputProcessor(project, debug);
+                    }
+
                     return InputProcessors.proxy(defaultProcessor,
-                            InputProcessors.bridge(new ServerURLProcessor(project, debug)));
+                            InputProcessors.bridge(lineProcessor));
                 }
             };
 
-            if (outFactory != null) {
-                descriptor = descriptor.outProcessorFactory(new ProxyInputProcessorFactory(urlFactory, outFactory));
-            } else {
-                descriptor = descriptor.outProcessorFactory(urlFactory);
-            }
+            descriptor = descriptor.outProcessorFactory(
+                    createInputProcessorFactory(urlFactory, outFactory));
             return descriptor;
-        } else if ("shell".equals(command)) { // NOI18N
+        }
+
+        InputProcessorFactory debugFactory = null;
+        if (debug) {
+            debugFactory = new InputProcessorFactory() {
+
+                public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+                    return InputProcessors.proxy(defaultProcessor,
+                            InputProcessors.bridge(new DebugOutputProcessor(project)));
+                }
+            };
+        }
+
+        if ("shell".equals(command)) { // NOI18N
             ExecutionDescriptor descriptor = RUN_DESCRIPTOR.postExecution(new RefreshProjectRunnable(project))
                     .errProcessorFactory(ANSI_STRIPPING);
-            if (outFactory != null) {
-                descriptor = descriptor.outProcessorFactory(new ProxyInputProcessorFactory(ANSI_STRIPPING, outFactory));
-            } else {
-                descriptor = descriptor.outProcessorFactory(ANSI_STRIPPING);
-            }
+
+            descriptor = descriptor.outProcessorFactory(
+                    createInputProcessorFactory(ANSI_STRIPPING, outFactory, debugFactory));
             return descriptor;
         } else {
             ExecutionDescriptor descriptor = GRAILS_DESCRIPTOR.postExecution(new RefreshProjectRunnable(project))
                     .errProcessorFactory(ANSI_STRIPPING);
-            if (outFactory != null) {
-                descriptor = descriptor.outProcessorFactory(new ProxyInputProcessorFactory(ANSI_STRIPPING, outFactory));
-            } else {
-                descriptor = descriptor.outProcessorFactory(ANSI_STRIPPING);
-            }
+
+            descriptor = descriptor.outProcessorFactory(
+                    createInputProcessorFactory(ANSI_STRIPPING, outFactory, debugFactory));
             return descriptor;
         }
+    }
+
+    private InputProcessorFactory createInputProcessorFactory(InputProcessorFactory... factories) {
+        List<InputProcessorFactory> real = new ArrayList<InputProcessorFactory>(3);
+        for (InputProcessorFactory factory : factories) {
+            if (factory != null) {
+                real.add(factory);
+            }
+        }
+        if (real.isEmpty()) {
+            return null;
+        }
+        if (real.size() == 1) {
+            return real.get(0);
+        }
+        return new ProxyInputProcessorFactory(real.toArray(new InputProcessorFactory[real.size()]));
     }
 
     public void refreshGrailsCommands() {
@@ -335,14 +374,53 @@ public final class GrailsCommandSupport {
         }
     }
 
-    private static class ServerURLProcessor implements LineProcessor {
+    private static class DebugOutputProcessor implements LineProcessor {
+
+        private static final Pattern DEBUGGER_PATTERN =
+                Pattern.compile("Listening\\s+for\\s+transport\\s+(\\w+)\\s+at\\s+address:\\s+([0-9]+).*");
+
+        private final GrailsProject project;
+
+        private boolean debugging;
+
+        public DebugOutputProcessor(GrailsProject project) {
+            this.project = project;
+        }
+
+        public void processLine(String line) {
+            Matcher matcher = DEBUGGER_PATTERN.matcher(line);
+            if (!debugging && matcher.matches()) {
+                debugging = true;
+
+                try {
+                    String name = project.getLookup().lookup(ProjectInformation.class).getDisplayName();
+                    GrailsDebugger debuger = project.getLookup().lookup(GrailsDebugger.class);
+                    if (debuger != null) {
+                        debuger.attachDebugger(name, matcher.group(1), "localhost", matcher.group(2)); // NOI18N
+                    }
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+
+        public void reset() {
+            // noop
+        }
+
+        public void close() {
+            // noop
+        }
+    }
+
+    private static class ServerOutputProcessor implements LineProcessor {
 
         private final GrailsProject project;
         private final boolean debug;
 
         private boolean running;
 
-        public ServerURLProcessor(GrailsProject project, boolean debug) {
+        public ServerOutputProcessor(GrailsProject project, boolean debug) {
             this.project = project;
             this.debug = debug;
         }
