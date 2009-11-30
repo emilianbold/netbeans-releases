@@ -55,7 +55,7 @@
     <property name="glassfish.v3.sun.build.type"      value="fcs"/>
     <property name="glassfish.v3.sun.location.prefix" value="${gf_builds_host}/java/re/glassfish/10.0/promoted"/>
     
-    <property name="glassfish.v3.sun.build.number"    value="73"/>
+    <property name="glassfish.v3.sun.build.number"    value="74"/>
     
     <!--
     <loadresource property="glassfish.v3.sun.build.number">
@@ -83,7 +83,7 @@
     <property name="glassfish.v3.build.type"      value="fcs"/>
     <property name="glassfish.v3.location.prefix" value="${gf_builds_host}/java/re/glassfish/10.0/promoted"/>
     
-    <property name="glassfish.v3.build.number"    value="73"/>
+    <property name="glassfish.v3.build.number"    value="74"/>
     
     <!--
     <loadresource property="glassfish.v3.build.number">
