@@ -211,6 +211,8 @@ public class EvaluationException extends RuntimeException {
             msgParams = new String [] {  };
         } else if (reason.equals("notABoolean")) {
             msgParams = new String [] { params[0].toString(), params[1].toString(), params[2].toString() };
+        } else if (reason.equals("noNewClassWithBody")) {
+            msgParams = new String [] { };
         }
         else {
             msgParams = new String [] { reason };
