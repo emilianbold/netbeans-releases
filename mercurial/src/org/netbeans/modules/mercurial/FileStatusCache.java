@@ -245,7 +245,7 @@ public class FileStatusCache {
             } else if (!isDirectory && HgUtils.isIgnored(file)) { // ignored file
                 fi = FILE_INFORMATION_EXCLUDED;
             } else if (isDirectory) { // is a dir and not in cache - do refresh in here
-                fi = refresh(file, REPOSITORY_STATUS_UNKNOWN);
+                fi = refresh(file);
             } else { // exists, is a file and is not ignored and is not in cache - so is probably up to date
                 fi = FILE_INFORMATION_UPTODATE;
             }
@@ -401,9 +401,8 @@ public class FileStatusCache {
      * Refreshes the status of the file given the repository status. Repository status is filled
      * in when this method is called while processing server output.
      * @param file
-     * @param repositoryStatus
      */
-    public FileInformation refresh(File file, FileStatus repositoryStatus) {
+    public FileInformation refresh(File file) {
         File repositoryRoot = hg.getRepositoryRoot(file);
         FileInformation fi;
         if (repositoryRoot == null) {

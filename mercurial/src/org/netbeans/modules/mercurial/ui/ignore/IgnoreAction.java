@@ -165,7 +165,7 @@ public class IgnoreAction extends ContextAction {
                     Mercurial.LOG.log(Level.FINE, "IgnoreAction(): File {0} - {1}", new Object[]{repository.getAbsolutePath(), ex.toString()});
                 }
                 for (File file : files) {
-                    Mercurial.getInstance().getFileStatusCache().refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+                    Mercurial.getInstance().getFileStatusCache().refresh(file);
                     logger.output("\t" + file.getAbsolutePath());
                 }
                 if (mActionStatus == IGNORING) {

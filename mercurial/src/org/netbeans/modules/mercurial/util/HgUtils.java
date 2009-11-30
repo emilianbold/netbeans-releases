@@ -528,7 +528,7 @@ public class HgUtils {
         }finally {
             try {
                 if(fileWriter != null) fileWriter.close();
-                hg.getFileStatusCache().refresh(ignore, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+                hg.getFileStatusCache().refresh(ignore);
             } catch (IOException ex) {
                 Mercurial.LOG.log(Level.FINE, "createIgnored(): File {0} - {1}",  // NOI18N
                         new Object[] {ignore.getAbsolutePath(), ex.toString()});

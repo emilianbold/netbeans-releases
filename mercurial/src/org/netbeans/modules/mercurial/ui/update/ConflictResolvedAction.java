@@ -129,7 +129,7 @@ public class ConflictResolvedAction extends ContextAction {
         HgCommand.deleteConflictFile(file.getAbsolutePath());
         Mercurial.LOG.log(Level.FINE, "ConflictResolvedAction.perform(): DELETE CONFLICT File: {0}", // NOI18N
                 new Object[] {file.getAbsolutePath() + HgCommand.HG_STR_CONFLICT_EXT} );
-        cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+        cache.refresh(file);
     }
     
     public static void resolved(final File file) {
