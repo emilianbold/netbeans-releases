@@ -125,7 +125,7 @@ public class AutoUpdateTest extends NbTestCase {
         x.getParentFile().mkdirs();
         String txtx =
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-"<module codename=\"org.netbeans.api.annotations.common\">\n" +
+"<module codename=\"org.netbeans.api.annotations.common/1\">\n" +
 "    <module_version install_time=\"10\" specification_version=\"1.3\">\n" +
 "       <file crc=\"1\" name=\"config/Modules/org-netbeans-api-annotations-common.xml\"/>\n" +
 "       <file crc=\"2\" name=\"modules/org-netbeans-api-annotations-common.jar\"/>\n" +

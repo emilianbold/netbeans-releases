@@ -249,6 +249,10 @@ public class AutoUpdate extends Task {
             public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
                 if ("module".equals(qName)) {
                     name = attributes.getValue("codename");
+                    int slash = name.indexOf('/');
+                    if (slash > 0) {
+                        name = name.substring(0, slash);
+                    }
                     return;
                 }
                 if ("module_version".equals(qName)) {
