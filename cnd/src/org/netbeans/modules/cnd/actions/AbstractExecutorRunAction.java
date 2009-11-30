@@ -212,7 +212,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         return set.isSunCompiler();
     }
 
-    private static CompilerSet getCompilerSet(Node node ){
+    protected static CompilerSet getCompilerSet(Node node ){
         Project project;
         DataObject dataObject = node.getCookie(DataObject.class);
         FileObject fileObject = dataObject.getPrimaryFile();
