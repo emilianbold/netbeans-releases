@@ -431,7 +431,11 @@ public class FileObjects {
     public static String convertFolder2Package( String packageName, char folderSeparator ) {
         return packageName.replace( folderSeparator, '.' );
     }
-    
+
+    public static boolean isParentOf (final URL folder, final URL file) {
+        assert folder != null && file != null;
+        return file.toExternalForm().startsWith(folder.toExternalForm());
+    }
     
     public static String getRelativePath (final String packageName, final String relativeName) {
         StringBuilder relativePath = new StringBuilder ();
