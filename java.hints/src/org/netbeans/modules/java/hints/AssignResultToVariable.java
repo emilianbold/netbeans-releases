@@ -59,6 +59,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
@@ -80,6 +82,8 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
 import org.netbeans.spi.editor.hints.ChangeInfo;
@@ -284,6 +288,8 @@ public class AssignResultToVariable extends AbstractHint {
         return NbBundle.getMessage(AssignResultToVariable.class, "DESC_AssignResultToVariable");
     }
 
+    private static final String VAR_TYPE_TAG = "varType";
+
     static final class FixImpl implements Fix {
         
         private FileObject file;
@@ -304,7 +310,6 @@ public class AssignResultToVariable extends AbstractHint {
             try {
                 final String[] name = new String[1];
                 ModificationResult result = JavaSource.forFileObject(file).runModificationTask(new Task<WorkingCopy>() {
-                    
                     public void run(WorkingCopy copy) throws Exception {
                         copy.toPhase(Phase.RESOLVED);
                         
@@ -337,67 +342,39 @@ public class AssignResultToVariable extends AbstractHint {
                         
                         name[0] = Utilities.guessName(copy, tp);
 
-                        VariableTree var = make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), name[0], isAnonymous ? identifier : make.Type(type), (ExpressionTree) tp.getLeaf());
+                        Tree varType = isAnonymous ? identifier : make.Type(type);
+                        VariableTree var = make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), name[0], varType, (ExpressionTree) tp.getLeaf());
                         
                         var = Utilities.copyComments(copy, tp.getLeaf(), var);
+                        copy.tag(varType, VAR_TYPE_TAG);
                         
                         copy.rewrite(tp.getParentPath().getLeaf(), var);
                     }
                 });
-                
-                List<? extends Difference> differences = result.getDifferences(file);
-                
-                if (differences == null) {
-                    Logger.getLogger(AssignResultToVariable.class.getName()).log(Level.INFO, "No differences."); // NOI18N
-                    return null;
-                }
-                
-                //should look like this, bug the code generator actually creates more that one difference:
-//                if (differences.size() != 1) {
-//                    Logger.getLogger(AssignResultToVariable.class.getName()).log(Level.INFO, "Cannot find the difference: {0}", differences);
-//                    result.commit();
-//                    return null;
-//                }
-                
-                Difference found = null;
-                
-                for (Difference d : differences) {
-                    if (d.getNewText() != null && d.getNewText().contains(name[0])) {
-                        if (found == null) {
-                            found = d;
-                        } else {
-                            //more than one difference is containing the name...
-                            found = null;
-                            break;
-                        }
-                    }
-                }
-                
-                if (found == null) {
-                    Logger.getLogger(AssignResultToVariable.class.getName()).log(Level.INFO, "Cannot find the difference: {0}", differences); // NOI18N
-                    result.commit();
-                    return null;
-                }
-                
-                final Position start = NbDocument.createPosition(doc, found.getStartPosition().getOffset(), Bias.Backward);
-                final int length = found.getNewText().length();
-                
+
                 result.commit();
+
+                final int[] varTypeSpan = result.getSpan(VAR_TYPE_TAG);
+
+                if (varTypeSpan == null) {
+                    Logger.getLogger(AssignResultToVariable.class.getName()).log(Level.INFO, "Cannot resolve variable type span."); // NOI18N
+                    return null;
+                }
                 
                 final ChangeInfo[] info = new ChangeInfo[1];
                 
                 doc.render(new Runnable() {
                     public void run() {
                         try {
-                            String text = doc.getText(start.getOffset(), length);
-                            Logger.getLogger(AssignResultToVariable.class.getName()).log(Level.FINE, "text after commit: {0}", text); // NOI18N
-                            int    relPos = text.lastIndexOf(name[0]);
-                            
-                            Logger.getLogger(AssignResultToVariable.class.getName()).log(Level.FINE, "relPos: {0}", relPos); // NOI18N
-                            if (relPos != (-1)) {
-                                int startPos = start.getOffset() + relPos;
-                                
+                            CharSequence text = DocumentUtilities.getText(doc, varTypeSpan[1], doc.getLength() - varTypeSpan[1]);
+                            Pattern p = Pattern.compile(Pattern.quote(name[0]));
+                            Matcher m = p.matcher(text);
+
+                            if (m.find()) {
+                                int startPos = varTypeSpan[1] + m.start();
                                 info[0] = new ChangeInfo(doc.createPosition(startPos), doc.createPosition(startPos + name[0].length()));
+                            } else {
+                                Logger.getLogger(AssignResultToVariable.class.getName()).log(Level.INFO, "Cannot find the name in: {0}", text.toString()); // NOI18N
                             }
                         } catch (BadLocationException e) {
                             Exceptions.printStackTrace(e);
@@ -406,8 +383,6 @@ public class AssignResultToVariable extends AbstractHint {
                 });
                 
                 return info[0];
-            } catch (BadLocationException e) {
-                Exceptions.printStackTrace(e);
             } catch (IOException e) {
                 Exceptions.printStackTrace(e);
             }
