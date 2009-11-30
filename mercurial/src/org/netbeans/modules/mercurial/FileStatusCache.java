@@ -70,6 +70,7 @@ public class FileStatusCache {
      */
     public static final String PROP_FILE_STATUS_CHANGED = "status.changed"; // NOI18N
     public static final FileStatus REPOSITORY_STATUS_UNKNOWN  = null;
+    public static final boolean FULL_REPO_SCAN_ENABLED = "true".equals(System.getProperty("versioning.mercurial.fullRepoScanEnabled", "false")); //NOI18N
 
     private static final FileInformation FILE_INFORMATION_EXCLUDED = new FileInformation(FileInformation.STATUS_NOTVERSIONED_EXCLUDED, false);
     private static final FileInformation FILE_INFORMATION_UPTODATE = new FileInformation(FileInformation.STATUS_VERSIONED_UPTODATE, false);
@@ -245,7 +246,7 @@ public class FileStatusCache {
             } else if (!isDirectory && HgUtils.isIgnored(file)) { // ignored file
                 fi = FILE_INFORMATION_EXCLUDED;
             } else if (isDirectory) { // is a dir and not in cache - do refresh in here
-                fi = refresh(file, REPOSITORY_STATUS_UNKNOWN);
+                fi = refresh(file);
             } else { // exists, is a file and is not ignored and is not in cache - so is probably up to date
                 fi = FILE_INFORMATION_UPTODATE;
             }
@@ -356,7 +357,7 @@ public class FileStatusCache {
             Map<File, FileInformation> interestingFiles;
             try {
                 // find all files with not up-to-date or ignored status
-                interestingFiles = HgCommand.getInterestingStatus(repository, new LinkedList<File>(refreshEntry.getValue()));
+                interestingFiles = HgCommand.getStatus(repository, new LinkedList<File>(refreshEntry.getValue()));
                 for (Map.Entry<File, FileInformation> interestingEntry : interestingFiles.entrySet()) {
                     // put the file's FI into the cache
                     File file = interestingEntry.getKey();
@@ -398,25 +399,113 @@ public class FileStatusCache {
     }
 
     /**
-     * Refreshes the status of the file given the repository status. Repository status is filled
-     * in when this method is called while processing server output.
-     * @param file
-     * @param repositoryStatus
+     * Prepares refresh candidates, sorts them under their repository roots and eventually calls the cache refresh
+     * @param files roots to refresh
      */
-    public FileInformation refresh(File file, FileStatus repositoryStatus) {
-        File repositoryRoot = hg.getRepositoryRoot(file);
+    public void refreshAllRoots (final Set<File> files) {
+        long startTime = 0;
+        if (Mercurial.STATUS_LOG.isLoggable(Level.FINE)) {
+            startTime = System.currentTimeMillis();
+            Mercurial.STATUS_LOG.fine("refreshAll: starting for " + files.size() + " files."); //NOI18N
+        }
+        if (files.isEmpty()) {
+            return;
+        }
+        HashMap<File, Set<File>> rootFiles = new HashMap<File, Set<File>>(5);
+
+        for (File file : files) {
+            // go through all files and sort them under repository roots
+            file = FileUtil.normalizeFile(file);
+            File repository = Mercurial.getInstance().getRepositoryRoot(file);
+            if (repository == null) {
+                // we have an unversioned root, maybe the whole subtree should be removed from cache (VCS owners might have changed)
+                continue;
+            }
+            Set<File> filesUnderRoot = rootFiles.get(repository);
+            if (filesUnderRoot == null) {
+                filesUnderRoot = new HashSet<File>();
+                rootFiles.put(repository, filesUnderRoot);
+            }
+            boolean added = false;
+            for (File fileUnderRoot : filesUnderRoot) {
+                // try to find a common parent for planned files
+                File childCandidate = file;
+                File ancestorCandidate = fileUnderRoot;
+                added = true;
+                if (childCandidate.equals(ancestorCandidate) || ancestorCandidate.equals(repository)) {
+                    // file has already been inserted or scan is planned for the whole repository root
+                    break;
+                }
+                if (childCandidate.equals(repository)) {
+                    // plan the scan for the whole repository root
+                    ancestorCandidate = childCandidate;
+                } else {
+                    if (file.getAbsolutePath().length() < fileUnderRoot.getAbsolutePath().length()) {
+                        // ancestor's path is too short to be the child's parent
+                        ancestorCandidate = file;
+                        childCandidate = fileUnderRoot;
+                    }
+                    if (!Utils.isAncestorOrEqual(ancestorCandidate, childCandidate)) {
+                        ancestorCandidate = Utils.getCommonParent(childCandidate, ancestorCandidate);
+                    }
+                }
+                if (ancestorCandidate == fileUnderRoot) {
+                    // already added
+                    break;
+                } else if (!FULL_REPO_SCAN_ENABLED && ancestorCandidate != childCandidate && ancestorCandidate.equals(repository)) {
+                    // common ancestor is the repo root and neither one of the candidates was originally the repo root
+                    // do not scan the whole clone, it might be a performance killer
+                    added = false;
+                } else if (ancestorCandidate != null) {
+                    // file is under the repository root
+                    if (ancestorCandidate.equals(repository)) {
+                        // adding the repository, there's no need to leave all other files
+                        filesUnderRoot.clear();
+                    } else {
+                        filesUnderRoot.remove(fileUnderRoot);
+                    }
+                    filesUnderRoot.add(ancestorCandidate);
+                    break;
+                } else {
+                    added = false;
+                }
+            }
+            if (!added) {
+                // not added yet
+                filesUnderRoot.add(file);
+            }
+        }
+        if (Mercurial.STATUS_LOG.isLoggable(Level.FINE)) {
+            Mercurial.STATUS_LOG.fine("refreshAll: starting status scan for " + rootFiles.values() + " after " + (System.currentTimeMillis() - startTime)); //NOI18N
+            startTime = System.currentTimeMillis();
+        }
+        if (!rootFiles.isEmpty()) {
+            refreshAllRoots(rootFiles);
+        }
+        if (Mercurial.STATUS_LOG.isLoggable(Level.FINE)) {
+            Mercurial.STATUS_LOG.fine("refreshAll: finishes status scan after " + (System.currentTimeMillis() - startTime)); //NOI18N
+        }
+    }
+
+    /**
+     * Refreshes the status of the root and all files under the root
+     * @param root
+     * @return status of the root itself
+     */
+    public FileInformation refresh (File root) {
+        File repositoryRoot = hg.getRepositoryRoot(root);
         FileInformation fi;
         if (repositoryRoot == null) {
-            if (file.isDirectory()) {
+            if (root.isDirectory()) {
                 fi = FILE_INFORMATION_NOTMANAGED_DIRECTORY;
             } else {
                 fi = FILE_INFORMATION_NOTMANAGED;
             }
         } else {
             // start the recursive refresh
-            refreshAllRoots(Collections.singletonMap(repositoryRoot, Collections.singleton(file)));
+            refreshAllRoots(Collections.singletonMap(repositoryRoot, Collections.singleton(root)));
             // and return scanned value
-            fi = getCachedStatus(file);
+            fi = getCachedStatus(root);
         }
         return fi;
     }
@@ -656,33 +745,6 @@ public class FileStatusCache {
             }
         }
         return listedFiles;
-    }
-
-    /**
-     * Refreshes status of the specified file or all files inside the
-     * specified directory.
-     *
-     * @param file
-     */
-    public void refreshCached(File root) {
-        refreshAllRoots(Collections.singletonMap(hg.getRepositoryRoot(root), Collections.singleton(root)));
-    }
-
-    /**
-     * Refreshes status of all files inside given context.
-     *
-     * @param ctx context to refresh
-     */
-    public void refreshCached(VCSContext ctx) {
-        for (File root : ctx.getRootFiles()) {
-            refreshCached(root);
-        }
-    }
-
-    public void addToCache(Set<File> files) {
-        if (files.size() > 0) {
-            hg.getMercurialInterceptor().pingRepositoryRootFor(files.iterator().next());
-        }
     }
 
     public void notifyFileChanged(File file) {

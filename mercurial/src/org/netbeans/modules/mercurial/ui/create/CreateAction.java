@@ -52,8 +52,7 @@ import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Collections;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.mercurial.FileInformation;
@@ -80,7 +79,6 @@ import org.openide.util.HelpCtx;
 public class CreateAction extends ContextAction {
     
     private final VCSContext context;
-    Map<File, FileInformation> repositoryFiles = new HashMap<File, FileInformation>();
 
     public CreateAction(String name, VCSContext context) {
         this.context = context;
@@ -177,30 +175,24 @@ public class CreateAction extends ContextAction {
             public void perform() {
                 OutputLogger logger = getLogger();
                 try {
+                    File[] repositoryFiles;
                     FileStatusCache cache = hg.getFileStatusCache();
                     Calendar start = Calendar.getInstance();
-                    // XXX Why so complex? cache.refreshAllRoots should do the work and there would be only one entry point for hg status call
-                    repositoryFiles = HgCommand.getUnknownStatus(rootToManage, rootToManage);
+                    cache.refreshAllRoots(Collections.singletonMap(rootToManage, Collections.singleton(rootToManage)));
                     Calendar end = Calendar.getInstance();
-                    Mercurial.LOG.log(Level.FINE, "getUnknownStatus took {0} millisecs", end.getTimeInMillis() - start.getTimeInMillis()); // NOI18N
+                    Mercurial.LOG.log(Level.FINE, "cache refresh took {0} millisecs", end.getTimeInMillis() - start.getTimeInMillis()); // NOI18N
+                    repositoryFiles = cache.listFiles(new File[] {rootToManage}, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);
                     logger.output(
                             NbBundle.getMessage(CreateAction.class,
-                            "MSG_CREATE_ADD", repositoryFiles.keySet().size())); // NOI18N
-                    start = Calendar.getInstance();
-                    cache.addToCache(repositoryFiles.keySet());
-                    end = Calendar.getInstance();
-                    Mercurial.LOG.log(Level.FINE, "addUnknownsToCache took {0} millisecs", end.getTimeInMillis() - start.getTimeInMillis()); // NOI18N
-                    if (repositoryFiles.keySet().size() < OutputLogger.MAX_LINES_TO_PRINT) {
-                        for (File f : repositoryFiles.keySet()) {
+                            "MSG_CREATE_ADD", repositoryFiles.length)); // NOI18N
+                    if (repositoryFiles.length < OutputLogger.MAX_LINES_TO_PRINT) {
+                        for (File f : repositoryFiles) {
                             logger.output("\t" + f.getAbsolutePath());  //NOI18N
                         }
                     }
                     HgUtils.createIgnored(rootToManage);
                     logger.output(""); // NOI18N
                     logger.outputInRed(NbBundle.getMessage(CreateAction.class, "MSG_CREATE_DONE_WARNING")); // NOI18N
-                } catch (HgException ex) {
-                    NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
-                    DialogDisplayer.getDefault().notifyLater(e);
                 } finally {
                     logger.outputInRed(NbBundle.getMessage(CreateAction.class, "MSG_CREATE_DONE")); // NOI18N
                     logger.output(""); // NOI18N
