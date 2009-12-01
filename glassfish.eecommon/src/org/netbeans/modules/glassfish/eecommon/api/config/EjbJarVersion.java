@@ -69,6 +69,12 @@ public final class EjbJarVersion extends J2EEBaseVersion {
         "5.0", 5000    // NOI18N
         );
 
+    /** Represents ejbjar version 3.0
+     */
+    public static final EjbJarVersion EJBJAR_3_1 = new EjbJarVersion(
+        "3.1", 3100,	// NOI18N
+        "6.0", 6000    // NOI18N
+        );
     /** -----------------------------------------------------------------------
      *  Implementation
      */
@@ -100,6 +106,8 @@ public final class EjbJarVersion extends J2EEBaseVersion {
             result = EJBJAR_2_1;
         } else if(EJBJAR_3_0.toString().equals(version)) {
             result = EJBJAR_3_0;
+        } else if(EJBJAR_3_1.toString().equals(version)) {
+            result = EJBJAR_3_1;
         }
 
         return result;

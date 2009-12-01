@@ -135,6 +135,11 @@ public final class DTDRegistry {
     public static final String SUN_APPLICATION_50_DTD_SYSTEM_ID =
         "http://www.sun.com/software/appserver/dtds/sun-application_5_0-0.dtd";
     
+    public static final String SUN_APPLICATION_60_DTD_PUBLIC_ID =
+        "-//Sun Microsystems, Inc.//DTD GlassFish Application Server 3.0 Java EE Application 6.0//EN";
+    public static final String SUN_APPLICATION_60_DTD_SYSTEM_ID =
+        "http://www.sun.com/software/appserver/dtds/sun-application_6_0-0.dtd";
+
     /**
      * EJB: Sun ONE App Server specific dtd info.
      */
@@ -170,6 +175,11 @@ public final class DTDRegistry {
     public static final String SUN_EJBJAR_301_DTD_SYSTEM_ID =
         "http://www.sun.com/software/appserver/dtds/sun-ejb-jar_3_0-1.dtd";
     
+    public static final String SUN_EJBJAR_310_DTD_PUBLIC_ID =
+        "-//Sun Microsystems, Inc.//DTD GlassFish Application Server 3.0 EJB 3.1//EN";
+    public static final String SUN_EJBJAR_310_DTD_SYSTEM_ID =
+        "http://www.sun.com/software/appserver/dtds/sun-ejb-jar_3_1-0.dtd";
+
     /**
      * Application Client: Sun ONE App Server specific dtd info.
      */
@@ -193,6 +203,10 @@ public final class DTDRegistry {
         "-//Sun Microsystems, Inc.//DTD Application Server 9.0 Application Client 5.0//EN";
     public static final String SUN_APPCLIENT_50_DTD_SYSTEM_ID =
         "http://www.sun.com/software/appserver/dtds/sun-application-client_5_0-0.dtd";    
+    public static final String SUN_APPCLIENT_60_DTD_PUBLIC_ID =
+        "-//Sun Microsystems, Inc.//DTD GlassFish Application Server 3.0 Application Client 6.0//EN";
+    public static final String SUN_APPCLIENT_60_DTD_SYSTEM_ID =
+        "http://www.sun.com/software/appserver/dtds/sun-application-client_6_0-0.dtd";
     
     /**
      * Connectors: Sun ONE App Server specific dtd info.
