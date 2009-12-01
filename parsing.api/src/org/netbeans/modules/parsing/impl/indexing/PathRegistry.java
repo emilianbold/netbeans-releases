@@ -44,7 +44,6 @@ import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -189,7 +188,13 @@ public final class PathRegistry implements Runnable {
                     null,
                     Collections.singleton(owner)));
         }
-        LOGGER.log(Level.FINE, "registerUnknownSourceRoots: " + Arrays.asList(roots)); // NOI18N
+        if (LOGGER.isLoggable(Level.FINE)) {
+            List<URL> l = new LinkedList<URL>();
+            for(URL r : roots) {
+                l.add(r);
+            }
+            LOGGER.log(Level.FINE, "registerUnknownSourceRoots: {0}", l); // NOI18N
+        }
         firerTask.schedule(0);
     }
 
@@ -788,7 +793,7 @@ public final class PathRegistry implements Runnable {
                 ids = PathRecognizerRegistry.getDefault().getBinaryLibraryIds();
                 break;
             default:
-                LOGGER.warning("Not expecting PathKind of " + kind); //NOI18N
+                LOGGER.log(Level.WARNING, "Not expecting PathKind of {0}", kind); //NOI18N
                 return Collections.<TaggedClassPath>emptySet();
         }
 

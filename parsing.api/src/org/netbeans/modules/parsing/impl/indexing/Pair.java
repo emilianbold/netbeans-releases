@@ -43,7 +43,7 @@ package org.netbeans.modules.parsing.impl.indexing;
  *
  * @author Tomas Zezula
  */
-final class Pair<P,K> {
+public final class Pair<P,K> {
 
     public final P first;
     public final K second;

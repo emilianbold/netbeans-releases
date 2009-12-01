@@ -64,6 +64,7 @@ public class LuceneDocument implements IndexDocumentImpl {
     }
 
     public void addPair(final String key, final String value, final boolean searchable, final boolean stored) {
+        @SuppressWarnings("deprecation") //NOI18N
         final Field field = new Field (key, value,
                 stored ? Field.Store.YES : Field.Store.NO,
                 searchable ? Field.Index.NO_NORMS : Field.Index.NO);
