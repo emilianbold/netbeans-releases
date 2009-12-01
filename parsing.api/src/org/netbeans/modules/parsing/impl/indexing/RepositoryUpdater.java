@@ -3689,7 +3689,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
     } // End of Controller class
 
-    private static final class URLCache {
+    public static final class URLCache {
 
         public static synchronized URLCache getInstance() {
             if (instance == null) {
