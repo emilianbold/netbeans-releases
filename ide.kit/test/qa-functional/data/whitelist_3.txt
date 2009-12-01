@@ -1,3 +1,37 @@
+# Bug 169991
+# Don't load classes until language is used & use @annotation to generate layer
+org.netbeans.modules.csl.api.DataLoadersBridge
+org.netbeans.modules.csl.api.GsfLanguage
+org.netbeans.modules.csl.spi.DefaultDataLoadersBridge
+org.netbeans.modules.csl.spi.DefaultLanguageConfig
+org.netbeans.modules.css.gsf.CssLanguage
+org.netbeans.modules.css.gsf.CssLanguage
+org.netbeans.modules.groovy.editor.api.GroovyIndexer$Factory
+org.netbeans.modules.groovy.editor.api.parser.GroovyLanguage
+org.netbeans.modules.groovy.editor.api.parser.GroovyVirtualSourceProvider
+org.netbeans.modules.groovy.gsp.EmbeddedSectionsHighlighting$Factory
+org.netbeans.modules.groovy.gsp.GspIndentTaskFactory
+org.netbeans.modules.groovy.gsp.editor.embedding.HtmlEmbeddingProvider$Factory
+org.netbeans.modules.groovy.support.GroovyActionProvider
+org.netbeans.modules.groovy.support.GroovyLookupProvider
+org.netbeans.modules.groovy.support.GroovyLookupProvider$J2seProjectOpenedHook
+org.netbeans.modules.groovy.support.GroovyProjectExtender
+org.netbeans.modules.groovy.support.GsfClasspathHook
+org.netbeans.modules.groovy.support.LookupMergerSupport
+org.netbeans.modules.groovy.support.LookupMergerSupport$ActionProviderMerger
+org.netbeans.modules.groovy.support.LookupMergerSupport$MergedActionProvider
+org.netbeans.modules.groovy.support.spi.GroovyFeature
+org.netbeans.modules.javascript.editing.JsIndexer$Factory
+org.netbeans.modules.javascript.editing.JsLanguage
+org.netbeans.modules.javascript.editing.JsonLanguage
+org.netbeans.modules.languages.yaml.EmbeddedSectionsHighlighting$Factory
+org.netbeans.modules.languages.yaml.YamlLanguage
+org.netbeans.modules.php.api.util.FileUtils
+org.netbeans.modules.php.editor.PHPLanguage
+org.netbeans.modules.php.editor.PhpEmbeddingProvider$Factory
+org.netbeans.modules.php.editor.index.PHPIndexer$Factory
+org.netbeans.modules.php.project.classpath.IncludePathClassPathProvider
+
 # Bug 177851
 # persistence loaded for the j2se project loaded
 org.netbeans.modules.j2ee.persistence.api.EntityClassScope
