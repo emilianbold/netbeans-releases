@@ -613,6 +613,23 @@ public final class LayerBuilder {
                 file = (org.w3c.dom.Element) e.appendChild(doc.createElement("file"));
             }
             file.setAttribute("name", piece);
+            if (originatingElement != null) {
+                // Embed comment in generated-layer.xml for easy navigation back to the annotation.
+                String name;
+                switch (originatingElement.getKind()) {
+                case CONSTRUCTOR:
+                case ENUM_CONSTANT:
+                case FIELD:
+                case INSTANCE_INIT:
+                case METHOD:
+                case STATIC_INIT:
+                    name = originatingElement.getEnclosingElement() + "." + originatingElement;
+                    break;
+                default:
+                    name = originatingElement.toString();
+                }
+                file.appendChild(doc.createComment(name));
+            }
             for (Map.Entry<String,String[]> entry : attrs.entrySet()) {
                 org.w3c.dom.Element former = find(file, entry.getKey(), "attr");
                 if (former != null) {
