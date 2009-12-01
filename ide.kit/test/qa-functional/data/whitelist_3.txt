@@ -177,6 +177,7 @@ com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl
 com.sun.org.apache.xerces.internal.impl.dv.dtd.DTDDVFactoryImpl
 com.sun.org.apache.xerces.internal.impl.dv.xs.SchemaDVFactoryImpl
 com.sun.org.apache.xerces.internal.jaxp.validation.xs.SchemaFactoryImpl
+com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl
 com.sun.rave.designtime.Customizer2
 com.sun.rave.designtime.DesignContext
 com.sun.rave.designtime.DisplayItem
