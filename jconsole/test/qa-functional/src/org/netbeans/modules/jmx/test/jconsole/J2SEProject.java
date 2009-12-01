@@ -102,7 +102,7 @@ public class J2SEProject extends JConsoleTestCase {
         assertTmpDir();
         String ctxt = preLocalConnection();
         selectNode(PROJECT_NAME_J2SE_PROJECT_INTEGRATION);
-        doItLocal("Run Main Project With Monitoring and Management", "run-management");
+        doItLocal("Run Main Project With Monitoring and Management", "anagrams (run-management)");
         postLocalConnection(ctxt);
     }
 
@@ -113,7 +113,7 @@ public class J2SEProject extends JConsoleTestCase {
         assertTmpDir();
         String ctxt = preLocalConnection();
         selectNode(PROJECT_NAME_J2SE_PROJECT_INTEGRATION);
-        doItLocal("Debug Main Project With Monitoring and Management", "debug-management");
+        doItLocal("Debug Main Project With Monitoring and Management", "anagrams (debug-management)");
         postLocalConnection(ctxt);
     }
 
@@ -122,7 +122,7 @@ public class J2SEProject extends JConsoleTestCase {
         System.out.println("============  runWithRemoteManagement  ============");
         
         selectNode(PROJECT_NAME_J2SE_PROJECT_INTEGRATION);
-        doItRemote("Run Main Project with Remote Management...", "run-management");
+        doItRemote("Run Main Project with Remote Management...", "anagrams (run-management)");
     }
 
     public void testDebugWithRemoteManagement() {
@@ -130,7 +130,7 @@ public class J2SEProject extends JConsoleTestCase {
         System.out.println("============  debugWithRemoteManagement  ============");
         
         selectNode(PROJECT_NAME_J2SE_PROJECT_INTEGRATION);
-        doItRemote("Debug Main Project with Remote Management...", "debug-management");
+        doItRemote("Debug Main Project with Remote Management...", "anagrams (debug-management)");
     }
 
 
@@ -144,7 +144,7 @@ public class J2SEProject extends JConsoleTestCase {
         sleep(2000);
         
         checkOutputTabOperator(target, "Found manageable process, connecting JConsole to process...");
-        oto = checkOutputTabOperator("-connect-jconsole", "jconsole  -interval=4");
+        oto = checkOutputTabOperator("anagrams (-connect-jconsole)", "jconsole  -interval=4");
         if (oto != null) terminateProcess(oto);
     }
 
@@ -186,7 +186,7 @@ public class J2SEProject extends JConsoleTestCase {
         sleep(2000);
         
         checkOutputTabOperator(target, "Found manageable process, connecting JConsole to process...");
-        oto = checkOutputTabOperator("-connect-jconsole", "jconsole  -interval=4");
+        oto = checkOutputTabOperator("anagrams (-connect-jconsole)", "jconsole  -interval=4");
         if (oto != null) terminateProcess(oto);
     }
 
