@@ -43,6 +43,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
@@ -57,17 +60,28 @@ public final class AptCacheForSourceQuery {
     private AptCacheForSourceQuery() {}
 
 
-    public static URL getAptFolder (final URL sourceRoot) {
+    public static URL getAptFolder (@NonNull final URL sourceRoot) {
         Parameters.notNull("sourceRoot", sourceRoot);
         //Currently no SPI as single impl exists
-        return getDefaultFolder (sourceRoot);
+        return getDefaultAptFolder (sourceRoot);
     }
 
+    public static URL getClassFolder (@NonNull final URL aptFolder) {
+        Parameters.notNull("aptFolder", aptFolder);
+        //Currently no SPI as single impl exists
+        return getDefaultCacheFolder (aptFolder);
+    }
 
-    private static URL getDefaultFolder( final URL sourceRoot) {
+    // Default implementation
+    private static Map<URL,URL> emittedAptFolders = new HashMap<URL,URL>(); //todo: clean up if needed (should be small)
+
+
+    private static URL getDefaultAptFolder (final URL sourceRoot) {
         try {
             final File aptFolder = JavaIndex.getAptFolder(sourceRoot, true);
-            return aptFolder.toURI().toURL();
+            final URL result = aptFolder.toURI().toURL();
+            emittedAptFolders.put(result,sourceRoot);
+            return result;
         } catch (MalformedURLException e) {
             Exceptions.printStackTrace(e);
             return null;
@@ -75,6 +89,19 @@ public final class AptCacheForSourceQuery {
             Exceptions.printStackTrace(e);
             return null;
         }
+    }
+
+    private static URL getDefaultCacheFolder (final URL aptFolder) {
+        final URL sourceRoot = emittedAptFolders.get(aptFolder);
+        if (sourceRoot != null) {
+            try {
+                final File result = JavaIndex.getClassFolder(sourceRoot);
+                return result.toURI().toURL();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return null;
     }
 
 }

@@ -204,6 +204,7 @@ public final class PathRegistry implements Runnable {
             if (this.sourcePaths != null) {
                 return this.sourcePaths;
             }
+            LOGGER.fine("Computing data due to getSources"); //NOI18N
             request = new Request (
                 getTimeStamp(),
                 getSourcePaths(),
@@ -247,6 +248,7 @@ public final class PathRegistry implements Runnable {
             if (this.libraryPath != null) {
                 return this.libraryPath;
             }
+            LOGGER.fine("Computing data due to getLibraries"); //NOI18N
             request = new Request (
                 this.getTimeStamp(),
                 getSourcePaths(),
@@ -290,6 +292,7 @@ public final class PathRegistry implements Runnable {
             if (this.binaryLibraryPath != null) {
                 return this.binaryLibraryPath;
             }
+            LOGGER.fine("Computing data due to getBinaryLibraries"); //NOI18N
             request = new Request (
                 this.getTimeStamp(),
                 getSourcePaths(),
@@ -333,6 +336,7 @@ public final class PathRegistry implements Runnable {
             if (this.unknownSourcePath != null) {
                 return unknownSourcePath;
             }
+            LOGGER.fine("Computing data due to getUnknownRoots"); //NOI18N
             request = new Request (
                 getTimeStamp(),
                 getSourcePaths(),
@@ -463,6 +467,7 @@ public final class PathRegistry implements Runnable {
             if (this.rootPathIds != null) {
                 return rootPathIds;
             }
+            LOGGER.fine("Computing data due to getRootPathIds"); //NOI18N
             request = new Request (
                 getTimeStamp(),
                 getSourcePaths(),
@@ -506,6 +511,7 @@ public final class PathRegistry implements Runnable {
             if (this.pathIdToRoots != null) {
                 return pathIdToRoots;
             }
+            LOGGER.fine("Computing data due to getPathIdToRoots"); //NOI18N
             request = new Request (
                 getTimeStamp(),
                 getSourcePaths(),
