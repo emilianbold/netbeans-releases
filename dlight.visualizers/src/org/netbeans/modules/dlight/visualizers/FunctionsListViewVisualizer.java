@@ -862,7 +862,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
                         setEnabled(true);
                     }
 
-                    synchronized (this) {
+                    synchronized (GoToSourceAction.this) {
                         sourceInfo = result;
                     }
 
