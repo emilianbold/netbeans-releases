@@ -41,8 +41,10 @@
 
 package org.netbeans.modules.jmx.test.jconsole;
 
+import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.OutputTabOperator;
+import org.netbeans.jellytools.actions.Action;
 
 /**
  * Start a JConsole process and check it appears in the Runtime processes.
@@ -54,6 +56,14 @@ public class JConsole extends JConsoleTestCase {
         super(name);
     }
 
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        String windowMenu = Bundle.getStringTrimmed("org.netbeans.core.windows.resources.Bundle", "Menu/Window");
+        String outputSubmenu = Bundle.getStringTrimmed("org.netbeans.core.io.ui.Bundle", "Menu/Window/Output");
+        String output = Bundle.getStringTrimmed("org.netbeans.core.io.ui.Bundle", "IOWindow");
+        new Action(windowMenu+"|"+outputSubmenu+"|"+output,null).perform();
+    }
 
     public void testStartJConsole() {
         OutputTabOperator oto;
