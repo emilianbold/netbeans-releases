@@ -53,7 +53,6 @@ import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
