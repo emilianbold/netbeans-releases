@@ -74,6 +74,7 @@ import org.netbeans.spi.actions.Single;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.NewTemplateAction;
+import org.openide.actions.PasteAction;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileUtil;
@@ -217,6 +218,7 @@ public class JCProjectSourceNodeFactory implements NodeFactory {
             disableDelegation(DELEGATE_SET_NAME);
             disableDelegation(DELEGATE_SET_SHORT_DESCRIPTION);
             disableDelegation(DELEGATE_SET_DISPLAY_NAME);
+            setName (n.getName());
             String key = project.kind().isApplet() ? "SCRIPTS_NODE_NAME" : "WEB_PAGES_NODE_NAME"; //NOI18N
             setDisplayName(NbBundle.getMessage(ScriptsNode.class, key));
         }
@@ -225,7 +227,8 @@ public class JCProjectSourceNodeFactory implements NodeFactory {
         public Action[] getActions(boolean context) {
             JCProject p = getLookup().lookup(JCProject.class);
             return new Action[]{new AddTemplateAction(p.kind() == ProjectKind.WEB),
-                        SystemAction.get(NewTemplateAction.class)};
+                        SystemAction.get(NewTemplateAction.class),
+                        SystemAction.get(PasteAction.class)};
         }
 
         @Override

@@ -568,7 +568,7 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
             }
             val = s.get(DEVICE_SUSPEND_THREADS_ON_STARTUP);
             if (val == null) {
-                val = "true";
+                val = "false";
             }
             suspendCheckBox.setSelected(Boolean.valueOf(val));
             
@@ -844,7 +844,7 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
 
         org.openide.awt.Mnemonics.setLocalizedText(suspendCheckBox, "Suspend Threads on startup");
         suspendCheckBox.setToolTipText("<html>Check this checkbox if you want to start<br>stepping through code in the debugger<br>as soon as the card is started");
-        suspendCheckBox.setHorizontalTextPosition(10);
+        suspendCheckBox.setHorizontalTextPosition(javax.swing.SwingConstants.LEADING);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 18;
@@ -1018,7 +1018,7 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
 
         org.openide.awt.Mnemonics.setLocalizedText(remoteCheckbox, "Card Manager is on a remote computer");
         remoteCheckbox.setToolTipText("<html>If true, this card is not running on the same computer<br>as the IDE is");
-        remoteCheckbox.setHorizontalTextPosition(10);
+        remoteCheckbox.setHorizontalTextPosition(javax.swing.SwingConstants.LEADING);
         remoteCheckbox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 onRemoteCheckboxChanged(evt);
