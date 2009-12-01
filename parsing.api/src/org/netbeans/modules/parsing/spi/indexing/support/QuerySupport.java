@@ -67,12 +67,12 @@ import org.netbeans.modules.parsing.impl.indexing.IndexImpl;
 import org.netbeans.modules.parsing.impl.indexing.Pair;
 import org.netbeans.modules.parsing.impl.indexing.PathRecognizerRegistry;
 import org.netbeans.modules.parsing.impl.indexing.PathRegistry;
+import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
 import org.netbeans.modules.parsing.impl.indexing.Util;
 import org.netbeans.modules.parsing.impl.indexing.lucene.LuceneIndexFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.URLMapper;
 import org.openide.util.Parameters;
 
 /**
@@ -367,7 +367,7 @@ public final class QuerySupport {
                     if (srcRoots != null) {
                         LOG.log(Level.FINE, "Translating {0} -> {1}", new Object [] { binRootUrl, srcRoots }); //NOI18N
                         for(URL srcRootUrl : srcRoots) {
-                            FileObject srcRoot = URLMapper.findFileObject(srcRootUrl);
+                            FileObject srcRoot = RepositoryUpdater.URLCache.getInstance().findFileObject(srcRootUrl);
                             if (srcRoot != null) {
                                 roots.add(srcRoot);
                             }
@@ -395,7 +395,7 @@ public final class QuerySupport {
             roots = new HashSet<FileObject>();
             Set<URL> urls = PathRegistry.getDefault().getRootsMarkedAs(classpathId);
             for(URL url : urls) {
-                FileObject f = URLMapper.findFileObject(url);
+                FileObject f = RepositoryUpdater.URLCache.getInstance().findFileObject(url);
                 if (f != null) {
                     roots.add(f);
                 }
