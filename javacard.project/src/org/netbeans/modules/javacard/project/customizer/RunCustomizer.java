@@ -43,6 +43,7 @@ package org.netbeans.modules.javacard.project.customizer;
 import java.awt.BorderLayout;
 import javax.swing.JPanel;
 import org.netbeans.modules.javacard.api.PlatformAndDevicePanel;
+import org.netbeans.modules.javacard.common.GuiUtils;
 import org.netbeans.modules.javacard.project.JCProjectProperties;
 import org.netbeans.validation.api.ui.ValidationGroup;
 import org.netbeans.validation.api.ui.ValidationGroupProvider;
@@ -59,6 +60,7 @@ public class RunCustomizer extends javax.swing.JPanel implements ValidationGroup
     public RunCustomizer(JCProjectProperties props) {
         this.props = props;
         initComponents();
+        GuiUtils.prepareContainer(this);
         pnl = new PlatformAndDevicePanel(props);
         JPanel outer = new JPanel(new BorderLayout());
         outer.add (pnl, BorderLayout.NORTH);
