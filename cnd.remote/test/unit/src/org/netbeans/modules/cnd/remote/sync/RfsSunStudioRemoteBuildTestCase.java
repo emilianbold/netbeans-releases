@@ -73,7 +73,7 @@ public class RfsSunStudioRemoteBuildTestCase extends RfsBaseRemoteBuildTestCase 
         FileObject projectDirFO = prepareSampleProject("Arguments", "Args_SunStudio_01");
         removeRemoteHome();
         MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
-        buildProject(makeProject, 60, TimeUnit.SECONDS);
+        buildProject(makeProject, getSampleBuildTimeout(), TimeUnit.SECONDS);
     }
 
     public static Test suite() {

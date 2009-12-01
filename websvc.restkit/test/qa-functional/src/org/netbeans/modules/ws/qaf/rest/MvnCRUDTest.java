@@ -52,8 +52,6 @@ import org.netbeans.junit.NbModuleSuite;
  */
 public class MvnCRUDTest extends CRUDTest {
 
-    private static final Logger LOGGER = Logger.getLogger(MvnCRUDTest.class.getName());
-
     /** Default constructor.
      * @param testName name of particular test case
      */
@@ -75,7 +73,7 @@ public class MvnCRUDTest extends CRUDTest {
      * Creates suite from particular test cases. You can define order of testcases here.
      */
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(Server.GLASSFISH_V3, NbModuleSuite.createConfiguration(MvnCRUDTest.class),
+        return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(MvnCRUDTest.class),
                 "testRfE", //NOI18N
                 "testPropAccess", //NOI18N
                 "testRun", //NOI18N

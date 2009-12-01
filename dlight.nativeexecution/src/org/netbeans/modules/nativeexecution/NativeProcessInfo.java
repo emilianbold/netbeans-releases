@@ -98,7 +98,29 @@ public final class NativeProcessInfo {
     }
 
     public void setCommandLine(String commandLine) {
-        this.commandLine = commandLine;
+        if (isWindows) {
+            // Until we use java ProcessBuilder on Windows,
+            // we cannot pass a single line to it [IZ#170748]
+            String[] cmdAndArgs = Utilities.parseParameters(commandLine);
+            if (cmdAndArgs.length == 0) {
+                return;
+            }
+
+            String execFile = cmdAndArgs[0];
+            setExecutable(execFile);
+            if (cmdAndArgs.length == 1) {
+                return;
+            }
+
+            List<String> args = new ArrayList<String>(cmdAndArgs.length - 1);
+            for (int i = 1; i < cmdAndArgs.length; i++) {
+                args.add(cmdAndArgs[i]);
+            }
+
+            setArguments(args.toArray(new String[0]));
+        } else {
+            this.commandLine = commandLine;
+        }
     }
 
     public void setWorkingDirectory(String workingDirectory) {
@@ -198,7 +220,7 @@ public final class NativeProcessInfo {
         if (commandLine == null && executable == null) {
             return null;
         }
-        
+
         /**
          * See IZ#168186 - Wrongly interpreted "$" symbol in arguments
          *

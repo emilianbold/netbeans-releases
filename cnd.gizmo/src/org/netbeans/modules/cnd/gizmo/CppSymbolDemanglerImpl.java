@@ -62,9 +62,11 @@ import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.openide.util.Exceptions;
 
 /**
  * @author mt154047
@@ -155,6 +157,7 @@ public class CppSymbolDemanglerImpl implements CppSymbolDemangler {
         }
         env = ExecutionEnvironmentFactory.getLocal();
     }
+
 
     public String demangle(String symbolName) {
         String mangledName = stripModuleAndOffset(symbolName);
@@ -332,10 +335,19 @@ public class CppSymbolDemanglerImpl implements CppSymbolDemangler {
 
     private synchronized void checkDemanglerIfNeeded() {
         if (!demanglerChecked) {
-            String absPath = HostInfoUtils.searchFile(env, searchPaths, demanglerTool, true);
+            String exeSuffix = ""; // NOI18N
+            try {
+                HostInfo hostinfo = HostInfoUtils.getHostInfo(env);
+                if (hostinfo.getOSFamily() == HostInfo.OSFamily.WINDOWS) {
+                    exeSuffix = ".exe"; // NOI18N
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+
+            String absPath = HostInfoUtils.searchFile(env, searchPaths, demanglerTool + exeSuffix, true);
             if (absPath == null) {
-                String fallbackDemangler = CPPFILT;
-                absPath = HostInfoUtils.searchFile(env, searchPaths, fallbackDemangler, true);
+                absPath = HostInfoUtils.searchFile(env, searchPaths, CPPFILT + exeSuffix, true);
                 if (absPath == null) {
                     demanglerTool = null;
                 } else {

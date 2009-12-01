@@ -41,7 +41,9 @@ package org.netbeans.modules.ruby.elements;
 
 import java.util.Collections;
 import java.util.List;
+import org.jrubyparser.ast.AliasNode;
 import org.jrubyparser.ast.Node;
+import org.jrubyparser.ast.NodeType;
 import org.jrubyparser.ast.SymbolNode;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.spi.ParserResult;
@@ -64,6 +66,9 @@ public final class AstDynamicMethodElement extends AstMethodElement {
 
     @Override
     public String getName() {
+        if (methodNode.getNodeType() == NodeType.ALIASNODE) {
+            return ((AliasNode) methodNode).getNewName();   
+        }
         String result = AstUtilities.getNameOrValue(methodNode);
         return result == null ? "" : result;
     }

@@ -342,6 +342,7 @@ public class AlwaysEnabledActionTest extends NbTestCase implements PropertyChang
         assertEquals("MyNamedAction", MyAction.last.getValue(Action.NAME));
     }
 
+    @RandomlyFails // NB-Core-Build #3634: Expected to be selected (#2) from testNbPreferences.instance
     public void testPreferencesAction() throws Exception {
 //        checkPreferencesAction("testSystemPreferences.instance", Preferences.systemRoot());
         checkPreferencesAction("testUserPreferences.instance", "user:", Preferences.userRoot());

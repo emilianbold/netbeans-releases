@@ -43,9 +43,6 @@ import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
-import org.netbeans.modules.vmd.api.model.DesignDocument;
-import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
-import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 
 import javax.swing.*;
 import java.awt.*;

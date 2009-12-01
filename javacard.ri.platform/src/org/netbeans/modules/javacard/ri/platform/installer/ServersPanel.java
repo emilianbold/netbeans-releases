@@ -76,6 +76,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.WindowManager;
 
@@ -83,7 +84,7 @@ import org.openide.windows.WindowManager;
  *
  * @author Tim Boudreau
  */
-public class ServersPanel extends javax.swing.JPanel implements ExplorerManager.Provider, PropertyChangeListener, AddCardHandler.CardCreatedCallback, Lookup.Provider {
+public class ServersPanel extends javax.swing.JPanel implements ExplorerManager.Provider, PropertyChangeListener, AddCardHandler.CardCreatedCallback, Lookup.Provider, Runnable {
 
     private final ExplorerManager mgr = new ExplorerManager();
     private final JavacardPlatform pform;
@@ -104,6 +105,7 @@ public class ServersPanel extends javax.swing.JPanel implements ExplorerManager.
 
     public void showDialog() {
         DialogBuilder b = new DialogBuilder(ServersPanel.class).setModal(true).
+                setTitle(NbBundle.getMessage(ServersPanel.class, "TTL_MANAGE_DEVICES", pform.getDisplayName())). //NOI18N
                 setContent(this).setValidationGroup(grp);
         if (b.showDialog(DialogDescriptor.OK_OPTION)) {
             save();
@@ -113,7 +115,11 @@ public class ServersPanel extends javax.swing.JPanel implements ExplorerManager.
     @Override
     public void addNotify() {
         super.addNotify();
-        final Node[] n = mgr.getRootContext().getChildren().getNodes();
+        EventQueue.invokeLater(this);
+    }
+
+    public void run() {
+        final Node[] n = mgr.getRootContext().getChildren().getNodes(true);
         if (n != null && n.length > 0) {
             try {
                 mgr.setSelectedNodes(new Node[]{n[0]});

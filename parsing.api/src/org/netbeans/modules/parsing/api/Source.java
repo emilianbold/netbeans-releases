@@ -91,7 +91,7 @@ import org.openide.util.UserQuestionException;
  *
  * <p class="nonnormative">Please note that the infrastructure does not keep
  * <code>Source</code> instances forever and they can and will be garbage collected
- * if nobody refrences them. This also means that two successive <code>Source.create</code>
+ * if nobody references them. This also means that two successive <code>Source.create</code>
  * calls for the same file or document will return two different <code>Source</code>
  * instances if the first instance is garbage collected prior the second call.
  *
@@ -202,7 +202,7 @@ public final class Source {
 
     /**
      * Gets this <code>Source</code>'s mime type. It's the mime type of the <code>Document</code>
-     * represented by this sourece. If the document has not yet been loaded it's
+     * represented by this source. If the document has not yet been loaded it's
      * the mime type of the <code>FileObject</code>.
      * 
      * @return The mime type.
@@ -213,7 +213,7 @@ public final class Source {
     
     /**
      * Gets the <code>Document</code> represented by this source. This method
-     * returns either the document, wich was used to obtain this <code>Source</code>
+     * returns either the document, which was used to obtain this <code>Source</code>
      * instance in {@link #create(javax.swing.text.Document)} or the document that
      * has been loaded from the <code>FileObject</code> used in {@link #create(org.openide.filesystems.FileObject)}.
      *
@@ -224,8 +224,6 @@ public final class Source {
      * @return The <code>Document</code> represented by this <code>Source</code>
      *   or <code>null</code> if no document has been loaded yet.
      */
-    // XXX: maybe we should add 'boolean forceOpen' parameter and call
-    // editorCookie.openDocument() if neccessary
     public Document getDocument (boolean forceOpen) {
         if (document != null) return document;
         EditorCookie ec = null;
@@ -257,7 +255,7 @@ public final class Source {
     
     /**
      * Gets the <code>FileObject</code> represented by this source. This method
-     * returns either the file, wich was used to obtain this <code>Source</code>
+     * returns either the file, which was used to obtain this <code>Source</code>
      * instance in {@link #create(org.openide.filesystems.FileObject)} or the file that
      * the document represented by this <code>Source</code> was loaded from.
      *

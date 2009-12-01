@@ -94,19 +94,12 @@ public class CRUDTest extends RestTestBase {
      * and deploy the project
      */
     public void testRfE() {
-        //Persistence
-        String persistenceLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.ui.resources.Bundle", "Templates/Persistence");
         if (!getProjectType().isAntBasedProject()) {
-            //Persistence Unit
-            String puLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.wizard.unit.Bundle", "Templates/Persistence/PersistenceUnit");
-            createNewFile(getProject(), persistenceLabel, puLabel);
-            WizardOperator wo = new WizardOperator(puLabel);
-            new JComboBoxOperator(wo, 1).selectItem(0);
-            wo.finish();
-            new Node(getProjectRootNode(), "Other Sources|src/main/resources|META-INF").expand();
-            new EventTool().waitNoEvent(2500);
+            createPU();
         }
         copyDBSchema();
+        //Persistence
+        String persistenceLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.ui.resources.Bundle", "Templates/Persistence");
         //Entity Classes from Database
         String fromDbLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.wizard.fromdb.Bundle", "Templates/Persistence/RelatedCMP");
         createNewFile(getProject(), persistenceLabel, fromDbLabel);
@@ -245,6 +238,22 @@ public class CRUDTest extends RestTestBase {
         n.performPopupAction(testRestActionName);
     }
 
+    protected void createPU() {
+        //Persistence
+        String category = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.ui.resources.Bundle", "Templates/Persistence");
+        //Persistence Unit
+        String puLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.wizard.unit.Bundle", "Templates/Persistence/PersistenceUnit");
+        createNewFile(getProject(), category, puLabel);
+        String title = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.unit.Bundle", "LBL_NewPersistenceUnit");
+        WizardOperator wo = new WizardOperator(title);
+        new JComboBoxOperator(wo, 1).selectItem(0); //NOI18N
+        wo.finish();
+        if (!getProjectType().isAntBasedProject()) {
+            new Node(getProjectRootNode(), "Other Sources|src/main/resources|META-INF").expand();
+            new EventTool().waitNoEvent(2500);
+        }
+    }
+
     protected void copyDBSchema() {
         //copy dbschema file to the project
         FileObject fo = FileUtil.toFileObject(new File(getRestDataDir(), "sampleDB.dbschema")); //NOI18N
@@ -323,7 +332,7 @@ public class CRUDTest extends RestTestBase {
      * Creates suite from particular test cases. You can define order of testcases here.
      */
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(Server.GLASSFISH_V3, NbModuleSuite.createConfiguration(CRUDTest.class),
+        return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(CRUDTest.class),
                 "testRfE", //NOI18N
                 "testPropAccess", //NOI18N
                 "testDeploy", //NOI18N

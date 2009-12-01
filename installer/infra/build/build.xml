@@ -434,13 +434,13 @@
             prefix="glassfish-mod-sun"/>
         -->
         
-	<set property="glassfish-mod-sun.milestone.number"      value="73"/>
-	<set property="glassfish-mod-sun.milestone.number.real" value="73"/>
+	<set property="glassfish-mod-sun.milestone.number"      value="74"/>
+	<set property="glassfish-mod-sun.milestone.number.real" value="74"/>
 	<set property="glassfish-mod-sun.build.type"            value=""/>
 	<set property="glassfish-mod-sun.build.number"          value="0"/>
 
-	<set property="glassfish-mod.milestone.number"      value="73"/>
-	<set property="glassfish-mod.milestone.number.real" value="73"/>
+	<set property="glassfish-mod.milestone.number"      value="74"/>
+	<set property="glassfish-mod.milestone.number.real" value="74"/>
 	<set property="glassfish-mod.build.type"            value=""/>
 	<set property="glassfish-mod.build.number"          value="0"/>
 	
@@ -813,7 +813,7 @@ jarsigner.storepass=${jarsigner.storepass}
 
 
     <target name="generate-netbeans-bundles" if="do.build.netbeans">
-        <for-each list="javase java ruby cpp php javafx javafx-full" separator=" " property="bundle.type">
+        <for-each list="javase java ruby cpp php javafx full javafx-full" separator=" " property="bundle.type">
 	     <antcall target="generate-netbeans-${bundle.type}-bundles"/>
         </for-each>
     </target>
@@ -1738,7 +1738,7 @@ jarsigner.storepass=${jarsigner.storepass}
 
     <target name="generate-netbeans-javafx-full-bundle">
 	<property name="bundle.prefix" 
-             value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-${bundle.platform}"/>
+             value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-javafx-full-${bundle.platform}"/>
 
         <condition property="is.mac.platform" value="true" else="false">
             <contains string="${bundle.platform}" substring="macosx"/>

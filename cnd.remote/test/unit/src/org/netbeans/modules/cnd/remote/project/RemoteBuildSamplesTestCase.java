@@ -45,6 +45,8 @@ import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 /**
@@ -61,14 +63,29 @@ public class RemoteBuildSamplesTestCase extends RemoteBuildTestBase {
         super(testName, execEnv);       
     }
 
-    @ForAllEnvironments
-    public void testBuildSampleArgumentsOnce() throws Exception {
+    public void buildOnce(Sync sync, Toolchain toolchain, String projectName, String projectDir) throws Exception {
+
         setupHost();
-        setSyncFactory("scp");
-        FileObject projectDirFO = prepareSampleProject("Arguments", "Args_01");
+        setSyncFactory(sync.ID);
+
+        assertEquals("Wrong sybc factory:", sync.ID,
+                ServerList.get(getTestExecutionEnvironment()).getSyncFactory().getID());
+
+        setDefaultCompilerSet(toolchain.ID);
+        assertEquals("Wrong tools collection", toolchain.ID,
+                CompilerSetManager.getDefault(getTestExecutionEnvironment()).getDefaultCompilerSet().getName());
+
+        FileObject projectDirFO = prepareSampleProject(projectName, "Args_01");
         MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
-        buildProject(makeProject, 60, TimeUnit.SECONDS);
+        buildProject(makeProject, getSampleBuildTimeout(), TimeUnit.SECONDS);
     }
+
+    @ForAllEnvironments
+    public void testBuildSample_Rfs_Gnu_Arguments_Once() throws Exception {
+        buildOnce(Sync.RFS, Toolchain.GNU, "Arguments", "Args_01");
+    }
+
+
 
     @ForAllEnvironments
     public void testBuildSampleArgumentsTwice() throws Exception {
@@ -77,11 +94,11 @@ public class RemoteBuildSamplesTestCase extends RemoteBuildTestBase {
         FileObject projectDirFO = prepareSampleProject("Arguments", "Args_02");
         MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
         System.err.printf("BUILDING FIRST TIME\n");
-        buildProject(makeProject, 60, TimeUnit.SECONDS);
+        buildProject(makeProject, getSampleBuildTimeout(), TimeUnit.SECONDS);
         System.err.printf("BUILDING SECOND TIME\n");
-        buildProject(makeProject, 30, TimeUnit.SECONDS);
+        buildProject(makeProject, getSampleBuildTimeout()/2, TimeUnit.SECONDS);
         System.err.printf("BUILDING THIRD TIME\n");
-        buildProject(makeProject, 30, TimeUnit.SECONDS);
+        buildProject(makeProject, getSampleBuildTimeout()/2, TimeUnit.SECONDS);
     }
 
     public static Test suite() {

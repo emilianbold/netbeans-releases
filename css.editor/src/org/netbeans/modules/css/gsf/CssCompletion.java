@@ -597,38 +597,39 @@ public class CssCompletion implements CodeCompletionHandler {
     @Override
     public QueryType getAutoQuery(JTextComponent component, String typedText) {
         int offset = component.getCaretPosition();
-        TokenSequence<CssTokenId> ts = LexerUtils.getJoinedTokenSequence(component.getDocument(), offset);
-        int diff = ts.move(offset);
-        TokenId currentTokenId = null;
-        if(ts != null) {
-            if(diff == 0 && ts.movePrevious() || ts.moveNext()) {
-                currentTokenId = ts.token().id();
-            }
-        }
-        
-        if(currentTokenId == CssTokenId.IDENT) {
-            return QueryType.COMPLETION;
-        }
-
         if (typedText == null || typedText.length() == 0) {
             return QueryType.NONE;
         }
-
         char c = typedText.charAt(typedText.length() - 1);
 
-        //#177306  Eager CSS CC
-        //
-        //open completion when a space is pressed, but only
-        //if typed by user by pressing the spacebar.
-        //
-        //1) filters out tabs which are converted to spaces
-        //   before being put into the document
-        //2) filters out newline keystrokes which causes the indentation
-        //   to put some spaces on the newline
-        //3) filters out typing spaces in comments
-        //
-        if(typedText.length() == 1 && c == ' ' && currentTokenId != CssTokenId.COMMENT) {
-            return QueryType.COMPLETION;
+        TokenSequence<CssTokenId> ts = LexerUtils.getJoinedTokenSequence(component.getDocument(), offset);
+        if (ts != null) {
+            int diff = ts.move(offset);
+            TokenId currentTokenId = null;
+            if (ts != null) {
+                if (diff == 0 && ts.movePrevious() || ts.moveNext()) {
+                    currentTokenId = ts.token().id();
+                }
+            }
+
+            if (currentTokenId == CssTokenId.IDENT) {
+                return QueryType.COMPLETION;
+            }
+
+            //#177306  Eager CSS CC
+            //
+            //open completion when a space is pressed, but only
+            //if typed by user by pressing the spacebar.
+            //
+            //1) filters out tabs which are converted to spaces
+            //   before being put into the document
+            //2) filters out newline keystrokes which causes the indentation
+            //   to put some spaces on the newline
+            //3) filters out typing spaces in comments
+            //
+            if (typedText.length() == 1 && c == ' ' && currentTokenId != CssTokenId.COMMENT) {
+                return QueryType.COMPLETION;
+            }
         }
 
         switch (c) {

@@ -1014,7 +1014,12 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
                         //get errors for this layer, all lines
                         Set<ErrorDescription> errorsForLayer = new HashSet<ErrorDescription>(getErrorsForLayer(e.getKey()));
                         errorsForLayer.removeAll(errsForCurrentLine); //remove all for current line
-                        e.getValue().addAll(errorsForLayer); //add the rest to those provided by refresher
+                        
+                        Set<ErrorDescription> toSet = new HashSet<ErrorDescription>();
+                        toSet.addAll(e.getValue());
+                        toSet.addAll(errorsForLayer);
+                        e.getValue().clear();
+                        e.getValue().addAll(toSet); //add the rest to those provided by refresher
                     }
                 } catch (BadLocationException ex) {
                     Exceptions.printStackTrace(ex);
