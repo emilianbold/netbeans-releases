@@ -53,75 +53,34 @@ import org.openide.util.Lookup;
  *
  * @author Martin Roskanin, Vita Stejskal
  */
-public class MimeLookupMemoryTest extends NbTestCase {
+public class MimeLookupMemoryGCTest extends NbTestCase {
 
-    public MimeLookupMemoryTest(String testName) {
+    public MimeLookupMemoryGCTest(String testName) {
         super(testName);
     }
 
-    protected void setUp() throws java.lang.Exception {
-        // Set up the default lookup, repository, etc.
-        EditorTestLookup.setLookup(
-            new String[] {
-                "Services/org-netbeans-modules-editor-mimelookup-DummyMimeDataProvider.instance"
-            },
-            getWorkDir(),
-            new Object[] {},
-            getClass().getClassLoader()
-        );
-    }
-    
-    public void testSimple1() {
-        MimePath path = MimePath.get("text/x-java");
-        Lookup lookupA = MimeLookup.getLookup(path);
-        Lookup lookupB = MimeLookup.getLookup(path);
-        assertSame("Lookups are not reused", lookupA, lookupB);
-    }
-
-    public void testSimple2() {
-        MimePath path = MimePath.get("text/x-java");
-        int idA = System.identityHashCode(MimeLookup.getLookup(path));
-        
-        TestUtilities.consumeAllMemory();
-        TestUtilities.gc();
-        
-        int idB = System.identityHashCode(MimeLookup.getLookup(path));
-        assertEquals("Lookup instance was lost", idA, idB);
-    }
-
-    public void testSimple3() {
+    public void testLookupsRelease() {
         int idA = System.identityHashCode(MimeLookup.getLookup(MimePath.get("text/x-java")));
-        
+
         TestUtilities.consumeAllMemory();
         TestUtilities.gc();
-        
-        int idB = System.identityHashCode(MimeLookup.getLookup(MimePath.get("text/x-java")));
+
+        MimePath mp = MimePath.get("text/x-java");
+        Object obj = MimeLookup.getLookup(mp);
+        int idB = System.identityHashCode(obj);
         assertEquals("Lookup instance was lost", idA, idB);
-    }
-  
-    public void testLookupResultHoldsTheLookup() {
-        MimePath path = MimePath.get("text/x-java");
-        Lookup lookup = MimeLookup.getLookup(path);
-        Lookup.Result lr = lookup.lookupResult(Object.class);
-        
-        int pathIdA = System.identityHashCode(path);
-        int lookupIdA = System.identityHashCode(lookup);
-        
-        path = null;
-        lookup = null;
         
         // Force the MimePath instance to be dropped from the list of recently used
         for (int i = 0; i < MimePath.MAX_LRU_SIZE; i++) {
             MimePath.get("text/x-nonsense-" + i);
         }
-        
-        TestUtilities.consumeAllMemory();
-        TestUtilities.gc();
 
-        int pathIdB = System.identityHashCode(MimePath.get("text/x-java"));
-        int lookupIdB = System.identityHashCode(MimeLookup.getLookup(MimePath.get("text/x-java")));
+        Reference<Object> ref = new WeakReference<Object>(obj);
+        obj = null;
+        mp = null;
+        assertGC("Can disappear", ref);
         
-        assertEquals("MimePath instance was lost", pathIdA, pathIdB);
-        assertEquals("Lookup instance was lost", lookupIdA, lookupIdB);
+        int idC = System.identityHashCode(MimeLookup.getLookup(MimePath.get("text/x-java")));
+        assertTrue("Lookup instance was not released", idA != idC);
     }
 }
