@@ -253,15 +253,14 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
      */
     @SuppressWarnings("unchecked")
     public String getPrefix(ParserResult info, int lexOffset, boolean upToOffset) {
+        try {
         BaseDocument doc = RubyUtils.getDocument(info);
         if (doc == null) {
             return null;
         }
 
-        TokenHierarchy<?> th = info.getSnapshot().getTokenHierarchy();
-        if (th == null) { // for unit tests
-            th = TokenHierarchy.get((Document)doc);
-        }
+            TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
+            doc.readLock(); // Read-lock due to token hierarchy use
         try {
             int requireStart = LexUtilities.getRequireStringOffset(lexOffset, th);
 
@@ -331,7 +330,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                 } else if (doubleQuotedOffset < lexOffset) {
                     String text = doc.getText(doubleQuotedOffset, lexOffset - doubleQuotedOffset);
                     TokenHierarchy hi =
-                            TokenHierarchy.create(text, RubyStringTokenId.languageDouble());
+                        TokenHierarchy.create(text, RubyStringTokenId.languageDouble());
 
                     TokenSequence seq = hi.tokenSequence();
 
@@ -369,7 +368,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                 } else if (singleQuotedOffset < lexOffset) {
                     String text = doc.getText(singleQuotedOffset, lexOffset - singleQuotedOffset);
                     TokenHierarchy hi =
-                            TokenHierarchy.create(text, RubyStringTokenId.languageSingle());
+                        TokenHierarchy.create(text, RubyStringTokenId.languageSingle());
 
                     TokenSequence seq = hi.tokenSequence();
 
@@ -437,7 +436,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                         }
                     }
                 }
-
+                
                 // Find identifier end
                 String prefix;
                 if (upToOffset) {
@@ -460,7 +459,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                         prefix = line.substring(start, end);
                     }
                 }
-
+                
                 if (prefix.length() > 0) {
                     if (prefix.endsWith("::")) {
                         return "";
@@ -476,7 +475,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                     if (q != -1) {
                         prefix = prefix.substring(q + 2);
                     }
-
+                    
                     // The identifier chars identified by RubyLanguage are a bit too permissive;
                     // they include things like "=", "!" and even "&" such that double-clicks will
                     // pick up the whole "token" the user is after. But "=" is only allowed at the
@@ -501,6 +500,9 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                     return prefix;
                 }
             }
+            } finally {
+                doc.readUnlock();
+            }
             // Else: normal identifier: just return null and let the machinery do the rest
         } catch (BadLocationException ble) {
             // do nothing - see #154991;
@@ -518,7 +520,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         RubyIndex index = request.index;
         String prefix = request.prefix;
         int lexOffset = request.lexOffset;
-        TokenHierarchy<?> th = request.th;
+        TokenHierarchy<Document> th = request.th;
         QuerySupport.Kind kind = request.kind;
         
         TokenSequence<?extends RubyTokenId> ts = LexUtilities.getRubyTokenSequence(th, lexOffset);
@@ -1110,10 +1112,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         lexOffset = AstUtilities.boundCaretOffset(ir, lexOffset);
 
         // Discover whether we're in a require statement, and if so, use special completion
-        TokenHierarchy<?> th = ir.getSnapshot().getTokenHierarchy();
-        if (th == null) { // for unit tests
-            th = TokenHierarchy.get(document);
-        }
+        final TokenHierarchy<Document> th = TokenHierarchy.get(document);
         final BaseDocument doc = (BaseDocument)document;
         final FileObject fileObject = RubyUtils.getFileObject(ir);
         
@@ -1122,6 +1121,8 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         boolean showSymbols = false;
         char first = 0;
 
+        doc.readLock(); // Read-lock due to Token hierarchy use
+        try {
         if (prefix.length() > 0) {
             first = prefix.charAt(0);
 
@@ -1147,14 +1148,14 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                 }
             }
         }
-
+        
         // Carry completion context around since this logic is split across lots of methods
         // and I don't want to pass dozens of parameters from method to method; just pass
         // a request context with supporting parserResult needed by the various completion helpers.
         CompletionRequest request = new CompletionRequest(
                 completionResult, th, ir, lexOffset, astOffset,
                 doc, prefix, index, kind, queryType, fileObject);
-
+        
         // See if we're inside a string or regular expression and if so,
         // do completions applicable to strings - require-completion,
         // escape codes for quoted strings and regular expressions, etc.
@@ -1162,7 +1163,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
             completionResult.setFilterable(false);
             return completionResult;
         }
-
+        
         Call call = Call.getCallType(doc, th, lexOffset);
 
         // Fields
@@ -1205,7 +1206,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                 for (Node block : applicableBlocks) {
                     addDynamic(block, variables);
                 }
-
+                
                 Node method = AstUtilities.findLocalScope(closest, path);
 
                 List<Node> list2 = method.childNodes();
@@ -1229,13 +1230,13 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
 
                 // TODO - if fqn has multiple ::'s, try various combinations? or is 
                 // add inherited already doing that?
-
+                
                 Set<IndexedField> f;
                 if (RubyUtils.isRhtmlFile(fileObject) || RubyUtils.isMarkabyFile(fileObject)) {
                     f = new HashSet<IndexedField>();
                     addActionViewFields(f, fileObject, index, prefix, kind);
                 } else {
-                    //strip out ':' when querying fields for cases like 'attr_reader :^'
+                     //strip out ':' when querying fields for cases like 'attr_reader :^'
                     if (inAttrCall && first == ':' && prefix.length() == 1) {
                         f = index.getInheritedFields(fqn, "", kind, false);
                     } else {
@@ -1285,7 +1286,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
             }
             return completionResult;
         }
-
+        
         // If we're in a call, add in some parserResult and help for the code completion call
         boolean inCall = addParameters(proposals, request);
 
@@ -1314,7 +1315,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                     // Complete inherited methods or local methods only (plus keywords) since there
                     // is no receiver so it must be a local or inherited method call
                     Set<IndexedMethod> inheritedMethods =
-                            index.getInheritedMethods(fqn, prefix, kind);
+                        index.getInheritedMethods(fqn, prefix, kind);
 
                     inheritedMethods = RubyDynamicFindersCompleter.proposeDynamicMethods(inheritedMethods, proposals, request, anchor);
                     // Handle action view completion for RHTML and Markaby files
@@ -1322,30 +1323,30 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                         addActionViewMethods(inheritedMethods, fileObject, index, prefix, kind);
                     } else if (fileObject.getName().endsWith("_spec")) { // NOI18N
                         // RSpec
-
+                        
                         /* My spec object had the following extras methods over a plain Object:
-                        x = self.class.methods
-                        x.each {|c|
-                        puts c
-                        }
-                        > args_and_options
-                        > context
-                        > copy_instance_variables_from
-                        > describe
-                        > gem
-                        > metaclass
-                        > require
-                        > require_gem
-                        > respond_to
-                        > should
-                        > should_not
+                                x = self.class.methods
+                                x.each {|c|
+                                      puts c
+                                }
+                            > args_and_options
+                            > context
+                            > copy_instance_variables_from
+                            > describe
+                            > gem
+                            > metaclass
+                            > require
+                            > require_gem
+                            > respond_to
+                            > should
+                            > should_not
                          */
-                        String includes[] = {
+                        String includes[] = { 
                             // "describe" should be in Kernel already, from spec/runner/extensions/kernel.rb
                             "Spec::Matchers",
                             // This one shouldn't be necessary since there's a
                             // "class Object; include xxx::ObjectExpectations; end" in rspec's object.rb
-                            "Spec::Expectations::ObjectExpectations",
+                            "Spec::Expectations::ObjectExpectations", 
                             "Spec::DSL::BehaviourEval::InstanceMethods"}; // NOI18N
                         for (String fqns : includes) {
                             Set<IndexedMethod> helper = index.getInheritedMethods(fqns, prefix, kind);
@@ -1362,7 +1363,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                         if (method.isNoDoc()) {
                             continue;
                         }
-
+                        
                         // If a method is an "initialize" method I should do something special so that
                         // it shows up as a "constructor" (in a new() statement) but not as a directly
                         // callable initialize method (it should already be culled because it's private)
@@ -1393,7 +1394,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
             }
         }
         assert (kind == QuerySupport.Kind.PREFIX) || (kind == QuerySupport.Kind.CASE_INSENSITIVE_PREFIX) ||
-                (kind == QuerySupport.Kind.EXACT);
+        (kind == QuerySupport.Kind.EXACT);
 
         // TODO
         // Remove fields and variables whose names are already taken, e.g. do a fields.removeAll(variables) etc.
@@ -1461,7 +1462,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                 proposals.add(item);
             }
         }
-
+        
         // TODO - model globals and constants using different icons / etc.
         for (String variable : constants.keySet()) {
             if (((kind == QuerySupport.Kind.EXACT) && prefix.equals(variable)) ||
@@ -1504,6 +1505,10 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
             proposals = filterDocumentation(proposals, root, doc, ir, astOffset, lexOffset, prefix, path,
                     index);
         }
+        } finally {
+            doc.readUnlock();
+        }
+
         return completionResult;
     }
         
