@@ -63,6 +63,7 @@ public class LibrariesNodeTest extends TestBase {
         assertNotNull("have a LogicalViewProvider", lvp);
         Node root = lvp.createLogicalView();
         Node libraries = root.getChildren().findChild(LibrariesNode.LIBRARIES_NAME);
+        assertNotNull(libraries);
         TestBase.assertAsynchronouslyUpdatedChildrenNodes(libraries, 1);
         Util.addDependency(p, "org.netbeans.modules.java.project");
         ProjectManager.getDefault().saveProject(p);
@@ -74,6 +75,7 @@ public class LibrariesNodeTest extends TestBase {
         LogicalViewProvider lvp = p.getLookup().lookup(LogicalViewProvider.class);
         Node root = lvp.createLogicalView();
         Node libraries = root.getChildren().findChild(LibrariesNode.LIBRARIES_NAME);
+        assertNotNull(libraries);
         Util.addDependency(p, "org.netbeans.modules.java.project");
         ProjectManager.getDefault().saveProject(p);
         TestBase.assertAsynchronouslyUpdatedChildrenNodes(libraries, 2);
