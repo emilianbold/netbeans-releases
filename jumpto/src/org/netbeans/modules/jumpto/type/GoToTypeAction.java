@@ -774,7 +774,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                 ss.actionPerformed(new ActionEvent(dos, 0, "write")); // NOI18N
                 dos.close();
                 if (dos.size() > 0) {
-                    Object[] params = new Object[]{out.toByteArray(), delta };
+                    Object[] params = new Object[]{out.toByteArray(), delta, "GoToType" };
                     Logger.getLogger("org.netbeans.ui.performance").log(Level.CONFIG, "Slowness detected", params);
                 } else {
                     LOGGER.log(Level.WARNING, "no snapshot taken"); // NOI18N
