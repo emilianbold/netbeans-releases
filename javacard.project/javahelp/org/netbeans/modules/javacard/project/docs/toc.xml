@@ -213,7 +213,7 @@
     <tocitem target="org.netbeans.modules.javacard.SettingUpSecurityForWebApplication" text="Setting Up Security for Your Project" expand="false">
         <tocitem target="org.netbeans.modules.javacard.AcceptingUntrustedCertificates" text="Accepting Untrusted Certificates" expand="false"></tocitem>
     </tocitem>
- </tocitem>
+
 
  <tocitem target="org.netbeans.modules.javacard.CustomizingJavaCardPlatform" text="Customizing a Java Card Platform" expand="true">
     <tocitem target="org.netbeans.modules.javacard.BuildingCustomJavaCardPlatformRI" text="Building a Custom Java Card Platform RI" expand="false"></tocitem>
@@ -230,5 +230,5 @@
     <tocitem target="org.netbeans.modules.javacard.UnableRunSamples" text="Unable to Run Samples" expand="false"></tocitem>
  </tocitem>
  
- <tocitem target="org.netbeans.modules.javacard.Glossary" text="Glossary" expand="false"></tocitem>
+ <tocitem target="org.netbeans.modules.javacard.Glossary" text="Java Card 3 Glossary" expand="false"></tocitem>
 </toc>
