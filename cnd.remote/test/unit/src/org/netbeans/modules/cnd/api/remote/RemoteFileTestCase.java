@@ -47,7 +47,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import junit.framework.Test;
 import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
-import org.netbeans.modules.cnd.test.CndBaseTestCase;
+import org.netbeans.modules.cnd.remote.support.RemoteTestBase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
@@ -58,7 +58,7 @@ import org.openide.util.Lookup;
  *
  * @author Sergey Grinev
  */
-public class RemoteFileTestCase extends CndBaseTestCase {
+public class RemoteFileTestCase extends RemoteTestBase {
 
     public RemoteFileTestCase(String name, ExecutionEnvironment testExecutionEnvironment) {
         super(name, testExecutionEnvironment);
