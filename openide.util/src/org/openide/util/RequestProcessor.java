@@ -513,28 +513,29 @@ public final class RequestProcessor implements Executor {
     void enqueue(Item item) {
         Logger em = logger();
         boolean loggable = em.isLoggable(Level.FINE);
+        boolean wasNull;
         
         synchronized (processorLock) {
-            if (item.getTask() == null) {
-                if (loggable) {
-                    em.fine("Null task for item " + item); // NOI18N
+            wasNull = item.getTask() == null;
+            if (!wasNull) {
+                prioritizedEnqueue(item);
+
+                if (running < throughput) {
+                    running++;
+
+                    Processor proc = Processor.get();
+                    processors.add(proc);
+                    proc.setName(name);
+                    proc.attachTo(this);
                 }
-                return;
-            }
-
-            prioritizedEnqueue(item);
-
-            if (running < throughput) {
-                running++;
-
-                Processor proc = Processor.get();
-                processors.add(proc);
-                proc.setName(name);
-                proc.attachTo(this);
             }
         }
         if (loggable) {
-            em.fine("Item enqueued: " + item.action + " status: " + item.enqueued); // NOI18N
+            if (wasNull) {
+                em.fine("Null task for item " + item); // NOI18N
+            } else {
+                em.fine("Item enqueued: " + item.action + " status: " + item.enqueued); // NOI18N
+            }
         }
     }
 
