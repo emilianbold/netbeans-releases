@@ -178,6 +178,20 @@ public class AID {
                     throw new IllegalArgumentException(Portability.getString(
                             "BAD_PIX_HEX", PIX), nfe); //NOI18N
                 }
+                for (char c : RID.toCharArray()) {
+                    if (Character.isLowerCase(c)) {
+                        String s = new String(new char[] { c });
+                        throw new IllegalArgumentException(Portability.getString(
+                                "LOWER_CASE_IN_RID", s)); //NOI18N
+                    }
+                }
+                for (char c : PIX.toCharArray()) {
+                    if (Character.isLowerCase(c)) {
+                        String s = new String(new char[] { c });
+                        throw new IllegalArgumentException(Portability.getString(
+                                "LOWER_CASE_IN_PIX", s)); //NOI18N
+                    }
+                }
                 return new AID(rid, pix);
             } else if (m.groupCount() == 1) {
                 //0 length PIX is legal
@@ -191,6 +205,13 @@ public class AID {
                     throw new IllegalArgumentException(
                             Portability.getString(
                             "RID_is_not_5_bytes_long")); //NOI18N
+                }
+                for (char c : RID.toCharArray()) {
+                    if (Character.isLowerCase(c)) {
+                        String s = new String(new char[] { c });
+                        throw new IllegalArgumentException(Portability.getString(
+                                "LOWER_CASE_IN_RID", s)); //NOI18N
+                    }
                 }
                 byte[] b = new byte[RID.length() / 2];
                 try {
