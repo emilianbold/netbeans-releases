@@ -52,10 +52,6 @@ import org.netbeans.modules.profiler.heapwalk.HeapFragmentWalker;
 import org.netbeans.modules.profiler.heapwalk.OverviewController;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.io.File;
 import java.io.StringWriter;
 import java.lang.Thread.State;
@@ -74,13 +70,11 @@ import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
 import org.netbeans.lib.profiler.heap.GCRoot;
 import org.netbeans.lib.profiler.heap.PrimitiveArrayInstance;
 import org.netbeans.lib.profiler.heap.ThreadObjectGCRoot;
 import org.netbeans.lib.profiler.ui.UIUtils;
-import org.netbeans.modules.profiler.utils.GoToSourceHelper;
 import org.netbeans.modules.profiler.utils.JavaSourceLocation;
 import org.openide.util.ImageUtilities;
 
@@ -375,19 +369,19 @@ public class OverviewControllerUI extends JTitledPanel {
                                 String stackElHref;
                                 StackTraceElement stackElement = stack[i];
                                 
-                                if (heapFragmentWalker.getHeapDumpProject() != null) {
-                                    String className = stackElement.getClassName();
-                                    String method = stackElement.getMethodName();
-                                    int lineNo = stackElement.getLineNumber();
-                                    String stackUrl = OPEN_THREADS_URL+className+"|"+method+"|"+lineNo; // NOI18N
-                                    
-                                    // --- Use this to enable VisualVM color scheme for threads dumps: ---
-                                    // stackElHref = "&nbsp;&nbsp;<a style=\"color: #CC3300;\" href=\""+stackUrl+"\">"+stackElement+"</a>"; // NOI18N
-                                    stackElHref = "<a href=\""+stackUrl+"\">"+stackElement+"</a>";    // NOI18N
-                                    // -------------------------------------------------------------------
-                                } else {
-                                    stackElHref = stackElement.toString();
-                                }
+//                                if (heapFragmentWalker.getHeapDumpProject() != null) {
+//                                    String className = stackElement.getClassName();
+//                                    String method = stackElement.getMethodName();
+//                                    int lineNo = stackElement.getLineNumber();
+//                                    String stackUrl = OPEN_THREADS_URL+className+"|"+method+"|"+lineNo; // NOI18N
+//
+//                                    // --- Use this to enable VisualVM color scheme for threads dumps: ---
+//                                    // stackElHref = "&nbsp;&nbsp;<a style=\"color: #CC3300;\" href=\""+stackUrl+"\">"+stackElement+"</a>"; // NOI18N
+//                                    stackElHref = "<a href=\""+stackUrl+"\">"+stackElement+"</a>";    // NOI18N
+//                                    // -------------------------------------------------------------------
+//                                } else {
+                                stackElHref = stackElement.toString();
+//                                }
                                 sw.append("\tat "+stackElHref+"<br>");  // NOI18N
                             }
                         }
@@ -476,8 +470,6 @@ public class OverviewControllerUI extends JTitledPanel {
                     String className = parts[0];
                     String method = parts[1];
                     int linenumber = Integer.parseInt(parts[2]);
-                    GoToSourceHelper.openSource(heapFragmentWalker.getHeapDumpProject(),
-                            new JavaSourceLocation(className, method, linenumber));
                 }
                 refreshSummary();
             }

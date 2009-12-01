@@ -149,9 +149,9 @@ public final class ProfilerIDESettings implements GlobalProfilingSettings {
     private final int CPU_TASK_DEFAULT = CPU_ENTIRE_APP;
     private final int OOME_DETECTION_MODE_DEFAULT = OOME_DETECTION_PROJECTDIR;
     private final int PORT_NO_DEFAULT = 5140;
-    private final int TO_BEHAVIOR_DEFAULT = OPEN_MONITORING;
+    private final int TO_BEHAVIOR_DEFAULT = OPEN_NEVER;
     private final int TRACK_EVERY_DEFAULT = 10;
-    private final int TV_BEHAVIOR_DEFAULT = OPEN_ALWAYS;
+    private final int TV_BEHAVIOR_DEFAULT = OPEN_NEVER;
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
