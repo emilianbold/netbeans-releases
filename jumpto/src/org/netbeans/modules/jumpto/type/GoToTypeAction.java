@@ -738,7 +738,11 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         if (a == null) {
             return null;
         }
-        return new Profile(a.getValue("logger-jumpto")); // NOI18N
+        Object profiler = a.getValue("logger-jumpto"); //NOI18N
+        if (profiler == null) {
+            return null;
+        }
+        return new Profile(profiler);
     }
 
     private class Profile implements Runnable {
