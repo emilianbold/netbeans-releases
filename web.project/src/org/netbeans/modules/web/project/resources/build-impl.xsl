@@ -1139,7 +1139,7 @@ exists or setup the property manually. For example like this:
                 </xsl:for-each>
                 
                 <mkdir dir="${{build.web.dir}}/META-INF"/>
-                <manifest file="${{build.web.dir}}/META-INF/MANIFEST.MF"/>
+                <manifest file="${{build.web.dir}}/META-INF/MANIFEST.MF" mode="update"/>
 <!--                <manifest file="${{build.web.dir}}/META-INF/MANIFEST.MF" mode="update">
                     <xsl:if test="//webproject3:web-module-libraries/webproject3:library[webproject3:path-in-war]">
                         <attribute>
