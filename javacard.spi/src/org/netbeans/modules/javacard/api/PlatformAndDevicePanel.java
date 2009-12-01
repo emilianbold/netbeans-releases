@@ -219,18 +219,23 @@ public final class PlatformAndDevicePanel extends JPanel implements ActionListen
             return;
         }
         JavacardPlatform pform = platforms.getSelectedItem() instanceof JavacardPlatform ? (JavacardPlatform) platforms.getSelectedItem() : null;
-        if (pform != null) {
-            devices.setModel(new CardsModel(pform));
-            props.setPlatformName(pform.getSystemName());
-        } else {
-            devices.setModel(new CardsModel(JavacardPlatform.createBrokenJavacardPlatform("null")));
-        }
+        updateCardsModel();
         devices.setEnabled(pform != null && pform.isValid());
         DataObject dob = Utils.findPlatformDataObjectNamed(props.getPlatformName());
         DeviceManagerDialogProvider prov = dob == null ? null : dob.getLookup().lookup(DeviceManagerDialogProvider.class);
         manageCardsButton.setEnabled(pform != null && pform.isValid() && prov != null);
         grp.validateAll();
         updateLookup();
+    }
+
+    private void updateCardsModel() {
+        JavacardPlatform pform = platforms.getSelectedItem() instanceof JavacardPlatform ? (JavacardPlatform) platforms.getSelectedItem() : null;
+        if (pform != null) {
+            devices.setModel(new CardsModel(pform));
+            props.setPlatformName(pform.getSystemName());
+        } else {
+            devices.setModel(new CardsModel(JavacardPlatform.createBrokenJavacardPlatform("null")));
+        }
     }
 
     @Override
@@ -249,7 +254,6 @@ public final class PlatformAndDevicePanel extends JPanel implements ActionListen
         if (devices.getSelectedItem() instanceof Card) {
             stuff.add (devices.getSelectedItem());
         }
-        System.err.println("Update Lookup with " + stuff);
         content.set(stuff, null);
     }
 
@@ -273,6 +277,7 @@ public final class PlatformAndDevicePanel extends JPanel implements ActionListen
         DeviceManagerDialogProvider prov = dob.getLookup().lookup(DeviceManagerDialogProvider.class);
         assert prov != null;
         prov.showManageDevicesDialog(this);
+        updateCardsModel();
     }
 
     public ValidationGroup getValidationGroup() {
