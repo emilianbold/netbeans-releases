@@ -47,6 +47,8 @@ import org.apache.maven.artifact.InvalidRepositoryException;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
+import org.apache.maven.artifact.resolver.ArtifactResolutionRequest;
+import org.apache.maven.artifact.resolver.ArtifactResolutionResult;
 import org.apache.maven.execution.DefaultMavenExecutionRequest;
 import org.apache.maven.execution.DefaultMavenExecutionResult;
 import org.apache.maven.execution.MavenExecutionRequest;
@@ -226,17 +228,27 @@ public final class MavenEmbedder {
     }
 
     public Artifact createArtifactWithClassifier(String groupId, String artifactId, String version, String type, String classifier) {
-        throw new UnsupportedOperationException("Not yet implemented");
+        return repositorySystem.createArtifactWithClassifier(groupId, artifactId, version, type, classifier);
     }
-
-    public void resolve(Artifact sources, List<ArtifactRepository> remoteArtifactRepositories, ArtifactRepository localRepository) throws ArtifactResolutionException, ArtifactNotFoundException{
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
-
+    
     public Artifact createArtifact(String groupId, String artifactId, String version, String extension, String type) {
-        //what is the object?
-        throw new UnsupportedOperationException("Not yet implemented");
+        return repositorySystem.createArtifact(groupId, artifactId, version, type);
     }
+
+    public void resolve(Artifact sources, List<ArtifactRepository> remoteRepositories, ArtifactRepository localRepository) throws ArtifactResolutionException, ArtifactNotFoundException{
+
+        ArtifactResolutionRequest req = new ArtifactResolutionRequest();
+        req.setLocalRepository(localRepository);
+        req.setRemoteRepositories(remoteRepositories);
+        req.setArtifact(sources);
+        //TODO
+//        req.setTransferListener(createArtifactTransferListener(monitor));
+
+        ArtifactResolutionResult result = repositorySystem.resolve(req);
+
+//        setLastUpdated(localRepository, req.getRemoteRepositories(), sources);
+    }
+
 
     //TODO possibly rename.. build sounds like something else..
     public ProjectBuildingResult buildProject(Artifact art, ProjectBuildingRequest req) throws ProjectBuildingException {
