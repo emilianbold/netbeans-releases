@@ -92,6 +92,8 @@ var PLUGIN_MANAGER_LABEL     = "You can add or remove packs later using the IDE'
 var JAVATOOLSBUNDLE_LABEL    = "You can also download the NetBeans IDE as part of the <a href=\"http://java.sun.com/javaee/downloads/index.jsp\">Java EE 5 Tools Bundle</a> or <a href=\"http://download.netbeans.org/netbeans/6.1/mysql_bundle/\">MySQL GlassFish Bundle</a>.";
 var SOURCE_BINARY_LABEL      = "NetBeans source code and binary builds without bundled runtimes are also available in <a id=\"zip_link\" href=\"{0}\">zip file format</a>.";
 var BUILD_WIKI_LABEL         = "See also <a href=\"http://wiki.netbeans.org/wiki/view/WorkingWithNetBeansSources\">instructions on how to build the IDE from sources</a> or <a href=\"{0}\">installation instructions</a>.";
+var PLATFORM_DEV_LABEL       = "You can start developing applications based on the NetBeans Platform using the NetBeans IDE for Java SE. Learn more about the <a href=\"{0}\">NetBeans Platform</a>.";
+var PLATFORM_INFO_LINK       = "http://platform.netbeans.org/platform-get.html";
 
 var ARCHIVE_BUILDS_LINK      = "http://www.netbeans.info/downloads/dev.php";
 var DEVELOPMENT_BUILDS_LINK  = "http://bits.netbeans.org/download/trunk/nightly/latest/";
