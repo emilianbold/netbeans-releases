@@ -154,10 +154,6 @@ public final class VeryPretty extends JCTree.Visitor {
         this(cInfo, cs, null, null, null);
     }
 
-    public VeryPretty(Context context, CodeStyle cs) {
-        this(context, cs, null, null, null);
-    }
-
     public VeryPretty(CompilationInfo cInfo, CodeStyle cs, Map<Tree, ?> tree2Tag, Map<?, int[]> tag2Span, String origText) {
         this(JavaSourceAccessor.getINSTANCE().getJavacTask(cInfo).getContext(), cs, tree2Tag, tag2Span, origText);
         this.cInfo = cInfo;
@@ -167,10 +163,6 @@ public final class VeryPretty extends JCTree.Visitor {
     public VeryPretty(CompilationInfo cInfo, CodeStyle cs, Map<Tree, ?> tree2Tag, Map<?, int[]> tag2Span, String origText, int initialOffset) {
         this(cInfo, cs, tree2Tag, tag2Span, origText);
         this.initialOffset = initialOffset; //provide intial offset of this priter
-    }
-
-    public VeryPretty(Context context) {
-        this(context, getCodeStyle(null), null, null, null);
     }
 
     private VeryPretty(Context context, CodeStyle cs, Map<Tree, ?> tree2Tag, Map<?, int[]> tag2Span, String origText) {
