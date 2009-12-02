@@ -69,6 +69,7 @@ import org.netbeans.modules.java.source.classpath.SourcePath;
 import org.netbeans.modules.java.source.parsing.AptSourceFileManager;
 import org.netbeans.modules.java.source.parsing.FileObjects.InferableJavaFileObject;
 import org.netbeans.modules.java.source.parsing.MemoryFileManager;
+import org.netbeans.modules.java.source.parsing.NullWriteAptSourceFileManager;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
@@ -359,7 +360,8 @@ public final class ClasspathInfo {
                 new CachingFileManager (this.archiveProvider, this.cachedCompileClassPath, false, true),
                 hasSources ? (backgroundCompilation ? new CachingFileManager (this.archiveProvider, this.cachedSrcClassPath, filter, false, ignoreExcludes)
                     : new SourceFileManager (this.cachedUserSrcClassPath, ignoreExcludes)) : null,
-                cachedAptSrcClassPath != null ? new AptSourceFileManager(this.cachedUserSrcClassPath, this.cachedAptSrcClassPath, true): null,
+                cachedAptSrcClassPath != null ? (backgroundCompilation ? new AptSourceFileManager(this.cachedUserSrcClassPath, this.cachedAptSrcClassPath, true)
+                    : new NullWriteAptSourceFileManager(this.cachedAptSrcClassPath, true)) : null,
                 hasSources ? outFileManager = new OutputFileManager (this.archiveProvider, this.outputClassPath, this.cachedUserSrcClassPath, this.cachedAptSrcClassPath) : null
             , this.memoryFileManager);
         }
