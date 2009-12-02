@@ -2,7 +2,7 @@ Name: JavaEE API 6.0
 Version: 6.0
 License: CDDL+GPL
 Description: JavaEE API 6.0
-Origin: http://download.java.net/maven/2/javax/javaee-api/6.0-RC2/
+Origin: http://download.java.net/maven/2/javax/javaee-api/6.0/
 
 COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.0
 
