@@ -166,7 +166,7 @@ public class WhitelistTest extends JellyTestCase {
             }
             if (number > allowed) {
                 fail(
-                    "Too many violations. Allowed only " + allowed + ":\n" +
+                    "Too many violations. Allowed only " + allowed + " but was: " + number + ":\n" +
                     txt
                 );
             }
