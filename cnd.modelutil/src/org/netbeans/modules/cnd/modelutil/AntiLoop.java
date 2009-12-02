@@ -42,6 +42,7 @@ package org.netbeans.modules.cnd.modelutil;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 
 /**
@@ -51,7 +52,9 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 public class AntiLoop {
     
     private Set<Object> set;
-    
+
+    private static final int MAX_INHERITANCE_DEPTH = 20;
+
     public AntiLoop() {
         set = new HashSet<Object>();
     }
@@ -62,19 +65,22 @@ public class AntiLoop {
     
     
     public boolean add(CsmClassifier cls) {
-        if(CsmKindUtilities.isInstantiation(cls)) {
-            return set.add(cls.getQualifiedName());
-        } else {
-            return set.add(cls);
-        }
+        return set.add(cls);
     }
 
     public boolean contains(CsmClassifier cls) {
         if(CsmKindUtilities.isInstantiation(cls)) {
-            return set.contains(cls.getQualifiedName());
-        } else {
-            return set.contains(cls);
+            int instLevel = MAX_INHERITANCE_DEPTH;
+            CsmInstantiation inst = (CsmInstantiation) cls;
+            while(instLevel > 0 && CsmKindUtilities.isInstantiation(inst.getTemplateDeclaration())) {
+                inst = (CsmInstantiation) inst.getTemplateDeclaration();
+                instLevel--;
+            }
+            if(instLevel <= 0) {
+                return true;
+            }
         }
+        return set.contains(cls);
     }
 
     @Override
