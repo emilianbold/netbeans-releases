@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.mercurial.ui.rollback;
 
+import java.awt.event.ActionEvent;
 import org.netbeans.modules.versioning.spi.VCSContext;
 
 import java.io.File;
@@ -113,6 +114,7 @@ public class VerifyAction extends ContextAction {
                                 NbBundle.getMessage(VerifyAction.class,
                                 "MSG_VERIFY_DONE")); // NOI18N
                     logger.output(""); // NOI18N
+                    logger.getOpenOutputAction().actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "")); //NOI18N
                 }
             }
         };
