@@ -145,7 +145,7 @@ public class SwingLayoutUtils {
 
     public static Map<Integer,List<String>> createLinkSizeGroups(LayoutComponent layoutComponent, int dimension) {
         
-        Map<Integer,List<String>> linkSizeGroup = new HashMap<Integer,List<String>>();
+        Map<Integer,List<String>> linkSizeGroup = new TreeMap<Integer,List<String>>();
         
         if (layoutComponent.isLayoutContainer()) {
             for (LayoutComponent lc : layoutComponent.getSubcomponents()) {
