@@ -71,8 +71,8 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.editor.codegen.GeneratorUtils;
 import org.netbeans.modules.java.editor.overridden.AnnotationType;
+import org.netbeans.modules.java.editor.overridden.ComputeOverriding;
 import org.netbeans.modules.java.editor.overridden.ElementDescription;
-import org.netbeans.modules.java.editor.overridden.IsOverriddenAnnotationHandler;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -109,7 +109,7 @@ public class AddOverrideAnnotation extends AbstractHint {
             ExecutableElement ee = (ExecutableElement) e;
             List<ElementDescription> result = new ArrayList<ElementDescription>();
 
-            AnnotationType type = IsOverriddenAnnotationHandler.detectOverrides(compilationInfo, (TypeElement) ee.getEnclosingElement(), ee, result);
+            AnnotationType type = ComputeOverriding.detectOverrides(compilationInfo, (TypeElement) ee.getEnclosingElement(), ee, result);
 
             boolean hasOverriddenAnnotation = false;
 

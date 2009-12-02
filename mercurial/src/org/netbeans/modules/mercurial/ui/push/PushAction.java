@@ -47,7 +47,6 @@ import org.netbeans.modules.versioning.spi.VCSContext;
 
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -71,8 +70,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.FileObject;
+import org.openide.nodes.Node;
 import static org.netbeans.modules.mercurial.util.HgUtils.isNullOrEmpty;
 
 /**
@@ -83,14 +81,22 @@ import static org.netbeans.modules.mercurial.util.HgUtils.isNullOrEmpty;
  */
 public class PushAction extends ContextAction {
 
-    private final VCSContext context;
-
-    public PushAction(String name, VCSContext context) {
-        this.context = context;
-        putValue(Action.NAME, name);
+    @Override
+    protected boolean enable(Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
+        Set<File> ctxFiles = context != null? context.getRootFiles(): null;
+        if(!HgUtils.isFromHgRepository(context) || ctxFiles == null || ctxFiles.size() == 0)
+            return false;
+        return true; // #121293: Speed up menu display, warn user if not set when Push selected
     }
 
-    public void performAction(ActionEvent e) {
+    protected String getBaseName(Node[] nodes) {
+        return "CTL_MenuItem_PushLocal";                                //NOI18N
+    }
+
+    @Override
+    protected void performContextAction(Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
         final File roots[] = HgUtils.getActionRoots(context);
         final File repository =
                 roots != null && roots.length > 0 ?
@@ -112,18 +118,12 @@ public class PushAction extends ContextAction {
         }
         push(context, repository);
     }
-    public boolean isEnabled() {
-        Set<File> ctxFiles = context != null? context.getRootFiles(): null;
-        if(!HgUtils.isFromHgRepository(context) || ctxFiles == null || ctxFiles.size() == 0)
-            return false;
-        return true; // #121293: Speed up menu display, warn user if not set when Push selected
-    }
 
     private static void push(final VCSContext ctx, final File repository){
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
         HgProgressSupport support = new HgProgressSupport() {
             public void perform() { 
-                getDefaultAndPerformPush(ctx, repository, this.getLogger());
+                getDefaultAndPerformPush(repository, this.getLogger());
             }
         };
         support.start(rp, repository, org.openide.util.NbBundle.getMessage(PushAction.class, "MSG_PUSH_PROGRESS")); // NOI18N
@@ -144,7 +144,7 @@ public class PushAction extends ContextAction {
         }
     }
 
-    static void getDefaultAndPerformPush(VCSContext ctx, File root, OutputLogger logger) {
+    public static void getDefaultAndPerformPush(File root, OutputLogger logger) {
         // If the repository has no default push path then inform user
         String tmpPushPath = HgRepositoryContextCache.getInstance().getPushDefault(root);
         if (isNullOrEmpty(tmpPushPath)) {

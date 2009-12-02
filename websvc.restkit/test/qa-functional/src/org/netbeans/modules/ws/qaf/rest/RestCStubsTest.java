@@ -50,6 +50,7 @@ import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.WizardOperator;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JListOperator;
@@ -78,14 +79,16 @@ public class RestCStubsTest extends RestTestBase {
     public void setUp() throws Exception {
         super.setUp();
         if (!haveProjects) {
-            File f = new File(getProjectsRootDir(), "FromEntities"); //NOI18N
+            File f = new File(getProjectsRootDir(), getProjectType().isAntBasedProject() ? 
+                "FromEntities" : "MvnFromEntities"); //NOI18N
             assertTrue("dependent project not found", f.exists() && f.isDirectory());
             Project p = ProjectManager.getDefault().findProject(FileUtil.toFileObject(f));
             assertNotNull(p);
             if (!OpenProjectList.getDefault().isOpen(p)) {
                 openProjects(f.getAbsolutePath());
             }
-            f = new File(getProjectsRootDir(), "FromPatterns"); //NOI18N
+            f = new File(getProjectsRootDir(), getProjectType().isAntBasedProject() ?
+                "FromPatterns" : "MvnFromPatterns"); //NOI18N
             assertTrue("dependent project not found", f.exists() && f.isDirectory());
             p = ProjectManager.getDefault().findProject(FileUtil.toFileObject(f));
             assertNotNull(p);
@@ -134,12 +137,13 @@ public class RestCStubsTest extends RestTestBase {
         assertEquals("browse selection not propagated", "WEB-INF", new JTextFieldOperator(wo, 2).getText().trim()); //NOI18N
         //add project
         addProject(wo, path);
-        JListOperator jlo = new JListOperator(wo, 1);
-        ListModel lm = jlo.getModel();
+        new EventTool().waitEvent(2000);
         try {
             Thread.sleep(1000);
         } catch (InterruptedException ie) {
         }
+        JListOperator jlo = new JListOperator(wo, 1);
+        ListModel lm = jlo.getModel();
         assertEquals(1, lm.getSize());
         //add second project
         addProject(wo, path2);
@@ -232,16 +236,19 @@ public class RestCStubsTest extends RestTestBase {
         jtfo.clearText();
         jtfo.typeText(path);
         //Open
-        JButton jb = JButtonOperator.findJButton(ndo.getContentPane(), "Open", false, false); //NOI18N
+        JButton jb = JButtonOperator.findJButton(ndo.getContentPane(), "OK", false, false); //NOI18N
         if (jb != null) {
             JButtonOperator jbo = new JButtonOperator(jb);
-            jbo.pushNoBlock();
+            jbo.push();
         } else {
             fail("Open button not found...."); //NOI18N
         }
     }
 
     private Project getProject(String name) {
+        if (!getProjectType().isAntBasedProject()) {
+            name = "Mvn" + name;
+        }
         ProjectRootNode n = ProjectsTabOperator.invoke().getProjectRootNode(name);
         return ((Node) n.getOpenideNode()).getLookup().lookup(Project.class);
     }

@@ -223,6 +223,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     syncTable.setTableModel(new SyncFileNode[0]);
+                    btnCommit.setEnabled(false);
 //                    File root = HgUtils.getRootFile(HgUtils.getCurrentContext(null));
                     /* #126311: Optimize UI for Large repos
                      if (root != null) {
@@ -289,6 +290,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
                         setVersioningComponent(noContentComponent);
                     }
                     syncTable.setTableModel(nodes);
+                    btnCommit.setEnabled(nodes.length > 0);
                     // finally section, it's enqueued after this request
                 }
             });

@@ -135,6 +135,10 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
      * when called from loadDocument. */
     private static final ThreadLocal<Boolean> LOCAL_LOAD_TASK = new ThreadLocal<Boolean>();
 
+    /** Used to avoid calling updateTitles from notifyUnmodified when called
+     * from doCloseDocument */
+    private static final ThreadLocal<Boolean> LOCAL_CLOSE_DOCUMENT = new ThreadLocal<Boolean>();
+
     /** error manager for CloneableEditorSupport logging and error reporting */
     private static final Logger ERR = Logger.getLogger("org.openide.text.CloneableEditorSupport"); // NOI18N
 
@@ -582,7 +586,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                         task.removeTaskListener(this);
                     }
                 });
-                
+
                 return t;
 
             case DOCUMENT_READY:
@@ -898,7 +902,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             return redirect.getDocument();
         }
         //#149717 Do not block when document is loading
-        if (documentStatus != DOCUMENT_READY) {
+        if ((documentStatus == DOCUMENT_NO) || (documentStatus == DOCUMENT_LOADING)) {
             return null;
         }
         synchronized (getLock()) {
@@ -912,7 +916,10 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                 case DOCUMENT_NO:
                     return null;
 
-                default: // ready, loading or reloading
+                case DOCUMENT_LOADING:
+                    return null;
+
+                default: // ready or reloading
 
                     if (LOCAL_LOAD_TASK.get() != null) {
                         return getDoc();
@@ -1860,9 +1867,11 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     */
     protected void notifyUnmodified() {
         env.unmarkModified();
-        updateTitles();
+        if (!Boolean.TRUE.equals(LOCAL_CLOSE_DOCUMENT.get())) {
+            updateTitles();
+        }
     }
-
+    
     /** Conditionally calls notifyModified
      * @return true if the modification was allowed, false if it should be prohibited
      */
@@ -2205,7 +2214,12 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
         // notifies the support that 
         cesEnv().removePropertyChangeListener(getListener());
-        callNotifyUnmodified();
+        try {
+            LOCAL_CLOSE_DOCUMENT.set(Boolean.TRUE);
+            callNotifyUnmodified();
+        } finally {
+            LOCAL_CLOSE_DOCUMENT.set(Boolean.FALSE);
+        }
 
         StyledDocument d = getDoc();
         if (d != null) {

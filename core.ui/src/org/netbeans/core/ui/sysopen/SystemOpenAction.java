@@ -60,6 +60,7 @@ import org.openide.loaders.DataObject;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.actions.Presenter;
 
@@ -139,14 +140,18 @@ public final class SystemOpenAction extends AbstractAction implements ContextAwa
             if (performer == null) {
                 return;
             }
-            for (File f : files) {
-                try {
-                    performer.open(f);
-                } catch (IOException x) {
-                    Logger.getLogger(SystemOpenAction.class.getName()).log(Level.INFO, null, x);
-                    // XXX or perhaps notify user of problem
+            RequestProcessor.getDefault().post(new Runnable() { // #176879: asynch
+                public void run() {
+                    for (File f : files) {
+                        try {
+                            performer.open(f);
+                        } catch (IOException x) {
+                            Logger.getLogger(SystemOpenAction.class.getName()).log(Level.INFO, null, x);
+                            // XXX or perhaps notify user of problem
+                        }
+                    }
                 }
-            }
+            });
         }
 
         public JMenuItem getPopupPresenter() {

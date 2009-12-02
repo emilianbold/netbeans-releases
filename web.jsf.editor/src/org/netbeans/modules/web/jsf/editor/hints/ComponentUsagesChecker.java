@@ -55,6 +55,7 @@ import org.netbeans.modules.web.jsf.editor.JsfSupport;
 import org.netbeans.modules.web.jsf.editor.JsfUtils;
 import org.netbeans.modules.web.jsf.editor.facelets.CompositeComponentLibrary.CompositeComponent;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
+import org.netbeans.modules.web.jsf.editor.tld.LibraryDescriptor.Tag;
 import org.netbeans.modules.web.jsf.editor.tld.TldLibrary;
 import org.openide.util.NbBundle;
 
@@ -123,17 +124,17 @@ public class ComponentUsagesChecker extends HintsProvider {
                                     Collections.EMPTY_LIST, DEFAULT_ERROR_HINT_PRIORITY);
                             hints.add(hint);
                         } else {
-                            //#Bug 176807 fix -  Composite component w/o interface and implementation is ignored
-                            //do not do any check on a composite component w/o any interface attributes
-                            if(component instanceof CompositeComponent) {
-                                if(!component.getTag().hasNonGenenericAttributes()) {
-                                    return ;
-                                }
-                            }
-
                             //check the component attributes
                             TldLibrary.Tag tag = component.getTag();
                             if (tag != null) {
+                                //#Bug 176807 fix -  Composite component w/o interface and implementation is ignored
+                                //do not do any check on a composite component w/o any interface attributes
+                                if(component instanceof CompositeComponent) {
+                                    if(!tag.hasNonGenenericAttributes()) {
+                                        return ;
+                                    }
+                                }
+
                                 //1. check required attributes
                                 Collection<TldLibrary.Attribute> attrs = tag.getAttributes();
                                 for (TldLibrary.Attribute attr : attrs) {

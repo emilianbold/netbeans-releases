@@ -467,7 +467,18 @@ public final class ModuleManager {
         }
 
         protected @Override boolean shouldDelegateResource(String pkg, ClassLoader parent) {
-            if ((parent == null || parent instanceof MainImpl.BootClassLoader) && !installer.shouldDelegateClasspathResource(pkg)) {
+            ClassLoader trueParent = getParent();
+            boolean parentIsJRE;
+            if (trueParent != null && trueParent.getClass().getName().equals("com.sun.jnlp.JNLPClassLoader")) { // #177120 NOI18N
+                parentIsJRE = false;
+            } else if (parent == null) {
+                parentIsJRE = true;
+            } else if (parent instanceof MainImpl.BootClassLoader) {
+                parentIsJRE = true;
+            } else {
+                parentIsJRE = false;
+            }
+            if (parentIsJRE && !installer.shouldDelegateClasspathResource(pkg)) {
                 return false;
             }
             return super.shouldDelegateResource(pkg, parent);

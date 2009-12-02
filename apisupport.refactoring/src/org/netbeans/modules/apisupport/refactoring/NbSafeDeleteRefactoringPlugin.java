@@ -50,8 +50,8 @@ import java.util.logging.Logger;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.apisupport.project.EditableManifest;
-import org.netbeans.modules.apisupport.project.layers.LayerUtils;
+import org.netbeans.modules.apisupport.project.api.EditableManifest;
+import org.netbeans.modules.apisupport.project.api.LayerHandle;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
@@ -145,7 +145,7 @@ public class NbSafeDeleteRefactoringPlugin extends AbstractRefactoringPlugin {
     }
     
     protected RefactoringElementImplementation createConstructorLayerRefactoring(String constructor, String fqname,
-            LayerUtils.LayerHandle handle,
+            LayerHandle handle,
             FileObject layerFileObject,
             String layerAttribute) {
         return new LayerSafeDeleteRefactoringElement(constructor, handle, layerFileObject);
@@ -153,7 +153,7 @@ public class NbSafeDeleteRefactoringPlugin extends AbstractRefactoringPlugin {
     }
 
     protected RefactoringElementImplementation createLayerRefactoring(String fqname,
-            LayerUtils.LayerHandle handle,
+            LayerHandle handle,
             FileObject layerFileObject,
             String layerAttribute) {
         return new LayerSafeDeleteRefactoringElement(fqname, handle, layerFileObject, layerAttribute);
@@ -161,7 +161,7 @@ public class NbSafeDeleteRefactoringPlugin extends AbstractRefactoringPlugin {
     }
 
     protected RefactoringElementImplementation createMethodLayerRefactoring(String method, String fqname,
-            LayerUtils.LayerHandle handle,
+            LayerHandle handle,
             FileObject layerFileObject,
             String layerAttribute) {
         return new LayerSafeDeleteRefactoringElement(method, handle, layerFileObject);
@@ -252,18 +252,18 @@ public class NbSafeDeleteRefactoringPlugin extends AbstractRefactoringPlugin {
     public final class LayerSafeDeleteRefactoringElement extends AbstractRefactoringElement  {
         
         private FileObject layerFO;
-        private LayerUtils.LayerHandle handle;
+        private LayerHandle handle;
 
         private String attribute;
         /**
          * Creates a new instance of LayerRenameRefactoringElement
          */
-        public LayerSafeDeleteRefactoringElement(String name, LayerUtils.LayerHandle handle, FileObject layerFO, String attr) {
+        public LayerSafeDeleteRefactoringElement(String name, LayerHandle handle, FileObject layerFO, String attr) {
             this(name, handle, layerFO);
             attribute = attr;
         }
         
-        public LayerSafeDeleteRefactoringElement(String name, LayerUtils.LayerHandle handle, FileObject layerFO) {
+        public LayerSafeDeleteRefactoringElement(String name, LayerHandle handle, FileObject layerFO) {
             this.name = name;
             this.handle = handle;
             parentFile = handle.getLayerFile();

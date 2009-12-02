@@ -32,6 +32,8 @@ import com.sun.source.tree.Tree;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -56,19 +58,55 @@ public class InvalidExcludeAttribute extends Rule<ExecutableElement> implements 
         AnnotationMirror methodAnn = Utilities.findAnnotation(subject, ANNOTATION_WEBMETHOD);
         AnnotationValue val = Utilities.getAnnotationAttrValue
                 (methodAnn, ANNOTATION_ATTRIBUTE_EXCLUDE);
+        Element classEl = subject.getEnclosingElement();
         if (val != null && val.getValue() == Boolean.TRUE) {
-            String label = NbBundle.getMessage(InvalidExcludeAttribute.class, 
-                    "MSG_WebMethod_ExcludeNotAllowed");
-            Fix fix = new RemoveAnnotationArgument(ctx.getFileObject(), 
-                    subject, methodAnn, ANNOTATION_ATTRIBUTE_EXCLUDE);
-            AnnotationTree annotationTree = (AnnotationTree) ctx.getCompilationInfo().
-                        getTrees().getTree(subject, methodAnn);
-            Tree problemTree = Utilities.getAnnotationArgumentTree(annotationTree,
-                    ANNOTATION_ATTRIBUTE_EXCLUDE);
-            ctx.setElementToAnnotate(problemTree);
-            ErrorDescription problem = createProblem(subject, ctx, label, fix);
-            ctx.setElementToAnnotate(null);
-            return new ErrorDescription[]{problem};
+            if (classEl != null && classEl.getKind() == ElementKind.INTERFACE) {
+                String label = NbBundle.getMessage(InvalidExcludeAttribute.class,
+                        "MSG_WebMethod_ExcludeNotAllowed");
+                Fix fix = new RemoveAnnotationArgument(ctx.getFileObject(),
+                        subject, methodAnn, ANNOTATION_ATTRIBUTE_EXCLUDE);
+                AnnotationTree annotationTree = (AnnotationTree) ctx.getCompilationInfo().
+                            getTrees().getTree(subject, methodAnn);
+                Tree problemTree = Utilities.getAnnotationArgumentTree(annotationTree,
+                        ANNOTATION_ATTRIBUTE_EXCLUDE);
+                ctx.setElementToAnnotate(problemTree);
+                ErrorDescription problem = createProblem(subject, ctx, label, fix);
+                ctx.setElementToAnnotate(null);
+                return new ErrorDescription[]{problem};
+            } else if (classEl != null && classEl.getKind() == ElementKind.CLASS) {
+                AnnotationValue opNameAttr = Utilities.getAnnotationAttrValue
+                        (methodAnn, ANNOTATION_ATTRIBUTE_OPERATIONNAME);
+                if (opNameAttr != null) {
+                    String label = NbBundle.getMessage(InvalidExcludeAttribute.class,
+                            "MSG_WebMethod_OperationNameNotAllowed");
+                    Fix fix = new RemoveAnnotationArgument(ctx.getFileObject(),
+                            subject, methodAnn, ANNOTATION_ATTRIBUTE_OPERATIONNAME);
+                    AnnotationTree annotationTree = (AnnotationTree) ctx.getCompilationInfo().
+                                getTrees().getTree(subject, methodAnn);
+                    Tree problemTree = Utilities.getAnnotationArgumentTree(annotationTree,
+                            ANNOTATION_ATTRIBUTE_OPERATIONNAME);
+                    ctx.setElementToAnnotate(problemTree);
+                    ErrorDescription problem = createProblem(subject, ctx, label, fix);
+                    ctx.setElementToAnnotate(null);
+                    return new ErrorDescription[]{problem};
+                }
+                AnnotationValue actionAttr = Utilities.getAnnotationAttrValue
+                        (methodAnn, ANNOTATION_ATTRIBUTE_ACTION);
+                if (actionAttr != null) {
+                    String label = NbBundle.getMessage(InvalidExcludeAttribute.class,
+                            "MSG_WebMethod_ActionNotAllowed");
+                    Fix fix = new RemoveAnnotationArgument(ctx.getFileObject(),
+                            subject, methodAnn, ANNOTATION_ATTRIBUTE_ACTION);
+                    AnnotationTree annotationTree = (AnnotationTree) ctx.getCompilationInfo().
+                                getTrees().getTree(subject, methodAnn);
+                    Tree problemTree = Utilities.getAnnotationArgumentTree(annotationTree,
+                            ANNOTATION_ATTRIBUTE_ACTION);
+                    ctx.setElementToAnnotate(problemTree);
+                    ErrorDescription problem = createProblem(subject, ctx, label, fix);
+                    ctx.setElementToAnnotate(null);
+                    return new ErrorDescription[]{problem};
+                }
+            }
         }
         return null;
     }

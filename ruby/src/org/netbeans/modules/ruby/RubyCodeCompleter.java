@@ -253,16 +253,15 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
      */
     @SuppressWarnings("unchecked")
     public String getPrefix(ParserResult info, int lexOffset, boolean upToOffset) {
-        BaseDocument doc = RubyUtils.getDocument(info);
-        if (doc == null) {
-            return null;
-        }
-
-        TokenHierarchy<?> th = info.getSnapshot().getTokenHierarchy();
-        if (th == null) { // for unit tests
-            th = TokenHierarchy.get((Document)doc);
-        }
         try {
+            BaseDocument doc = RubyUtils.getDocument(info);
+            if (doc == null) {
+                return null;
+            }
+
+            TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
+            doc.readLock(); // Read-lock due to token hierarchy use
+            try {
             int requireStart = LexUtilities.getRequireStringOffset(lexOffset, th);
 
             if (requireStart != -1) {
@@ -501,6 +500,9 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                     return prefix;
                 }
             }
+            } finally {
+                doc.readUnlock();
+            }
             // Else: normal identifier: just return null and let the machinery do the rest
         } catch (BadLocationException ble) {
             // do nothing - see #154991;
@@ -518,7 +520,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         RubyIndex index = request.index;
         String prefix = request.prefix;
         int lexOffset = request.lexOffset;
-        TokenHierarchy<?> th = request.th;
+        TokenHierarchy<Document> th = request.th;
         QuerySupport.Kind kind = request.kind;
         
         TokenSequence<?extends RubyTokenId> ts = LexUtilities.getRubyTokenSequence(th, lexOffset);
@@ -1110,10 +1112,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         lexOffset = AstUtilities.boundCaretOffset(ir, lexOffset);
 
         // Discover whether we're in a require statement, and if so, use special completion
-        TokenHierarchy<?> th = ir.getSnapshot().getTokenHierarchy();
-        if (th == null) { // for unit tests
-            th = TokenHierarchy.get(document);
-        }
+        final TokenHierarchy<Document> th = TokenHierarchy.get(document);
         final BaseDocument doc = (BaseDocument)document;
         final FileObject fileObject = RubyUtils.getFileObject(ir);
         
@@ -1122,6 +1121,8 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         boolean showSymbols = false;
         char first = 0;
 
+        doc.readLock(); // Read-lock due to Token hierarchy use
+        try {
         if (prefix.length() > 0) {
             first = prefix.charAt(0);
 
@@ -1504,6 +1505,10 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
             proposals = filterDocumentation(proposals, root, doc, ir, astOffset, lexOffset, prefix, path,
                     index);
         }
+        } finally {
+            doc.readUnlock();
+        }
+
         return completionResult;
     }
         

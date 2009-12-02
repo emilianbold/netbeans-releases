@@ -48,7 +48,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -91,7 +90,7 @@ public class NativeExecutionBaseTestSuite extends NbTestSuite {
     public NativeExecutionBaseTestSuite(Class<? extends NativeExecutionBaseTestCase>... testClasses) {
         super();
         this.defaultSection = null;
-        for (Class testClass : testClasses) {
+        for (Class<? extends NativeExecutionBaseTestCase> testClass : testClasses) {
             addTest(testClass);
         }
     }
@@ -119,7 +118,7 @@ public class NativeExecutionBaseTestSuite extends NbTestSuite {
             Class<? extends NativeExecutionBaseTestCase>... testClasses) {
 
         this(name, defaultSection);
-        for (Class testClass : testClasses) {
+        for (Class<? extends NativeExecutionBaseTestCase> testClass : testClasses) {
             addTest(testClass);
         }
     }
@@ -318,7 +317,7 @@ public class NativeExecutionBaseTestSuite extends NbTestSuite {
      * @param testClass class to search methods in
      * @return an array of method names
      */
-    private TestClassData findTestData(Class testClass) {
+    private TestClassData findTestData(Class<?> testClass) {
 
         TestClassData result = new TestClassData();
 

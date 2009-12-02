@@ -69,6 +69,13 @@ public final class ApplicationVersion extends J2EEBaseVersion {
         "5.0", 5000	// NOI18N
         );
 
+    /** Represents application version 6.0
+     */
+    public static final ApplicationVersion APPLICATION_6_0 = new ApplicationVersion(
+        "6.0", 6000,	// NOI18N
+        "6.0", 6000	// NOI18N
+        );
+
     /** -----------------------------------------------------------------------
      *  Implementation
      */
@@ -100,6 +107,8 @@ public final class ApplicationVersion extends J2EEBaseVersion {
             result = APPLICATION_1_4;
         } else if(APPLICATION_5_0.toString().equals(version)) {
             result = APPLICATION_5_0;
+        } else if(APPLICATION_6_0.toString().equals(version)) {
+            result = APPLICATION_6_0;
         }
 
         return result;

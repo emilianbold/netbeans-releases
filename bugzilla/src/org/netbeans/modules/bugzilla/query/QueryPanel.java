@@ -147,6 +147,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         resolutionList.setCellRenderer(new ParameterValueCellRenderer());
         priorityList.setCellRenderer(new QueryParameter.PriorityRenderer());
         changedList.setCellRenderer(new ParameterValueCellRenderer());
+        tmList.setCellRenderer(new ParameterValueCellRenderer());
 
         saveErrorLabel.setForeground(ERROR_COLOR);
         Image img = ImageUtilities.loadImage("org/netbeans/modules/bugzilla/resources/error.gif"); //NOI18N
@@ -522,6 +523,20 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         issueTypeList.setMinimumSize(new java.awt.Dimension(100, 2));
         issueTypeScrollPane.setViewportView(issueTypeList);
 
+        tmLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
+        tmLabel.setLabelFor(severityList);
+        org.openide.awt.Mnemonics.setLocalizedText(tmLabel, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.tmLabel.text")); // NOI18N
+
+        tmScrollPane.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+
+        tmList.setModel(new javax.swing.AbstractListModel() {
+            String[] strings = { "" };
+            public int getSize() { return strings.length; }
+            public Object getElementAt(int i) { return strings[i]; }
+        });
+        tmList.setMinimumSize(new java.awt.Dimension(100, 2));
+        tmScrollPane.setViewportView(tmList);
+
         org.jdesktop.layout.GroupLayout byDetailsPanelLayout = new org.jdesktop.layout.GroupLayout(byDetailsPanel);
         byDetailsPanel.setLayout(byDetailsPanelLayout);
         byDetailsPanelLayout.setHorizontalGroup(
@@ -559,13 +574,21 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                 .add(byDetailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(issueTypeLabel)
                     .add(issueTypeScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(99, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(byDetailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(tmLabel)
+                    .add(tmScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         byDetailsPanelLayout.setVerticalGroup(
             byDetailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(byDetailsPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(byDetailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(byDetailsPanelLayout.createSequentialGroup()
+                        .add(tmLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(tmScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE))
                     .add(byDetailsPanelLayout.createSequentialGroup()
                         .add(issueTypeLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -1337,6 +1360,9 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
     private javax.swing.JPanel tableHeaderPanel;
     final javax.swing.JPanel tablePanel = new javax.swing.JPanel();
     final javax.swing.JLabel tableSummaryLabel = new javax.swing.JLabel();
+    final javax.swing.JLabel tmLabel = new javax.swing.JLabel();
+    final javax.swing.JList tmList = new javax.swing.JList();
+    final javax.swing.JScrollPane tmScrollPane = new HackedScrollPane();
     final javax.swing.JPanel urlPanel = new javax.swing.JPanel();
     final javax.swing.JTextField urlTextField = new javax.swing.JTextField();
     final org.netbeans.modules.bugtracking.util.LinkButton urlToggleButton = new org.netbeans.modules.bugtracking.util.LinkButton();
@@ -1377,6 +1403,8 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         resolutionLabel.setEnabled(enable);
 //        resolutionList.setEnabled(enable);
         priorityLabel.setEnabled(enable);
+        tmLabel.setEnabled(enable);
+        issueTypeLabel.setEnabled(enable);
 //        priorityList.setEnabled(enable);
 
         peopleLabel.setEnabled(enable);
@@ -1497,6 +1525,10 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         severityLabel.setVisible(!visible);
         severityList.setVisible(!visible);
         severityScrollPane.setVisible(!visible);
+        
+        tmLabel.setVisible(visible);
+        tmList.setVisible(visible);
+        tmScrollPane.setVisible(visible);
     }
 
     public void focusGained(FocusEvent e) {

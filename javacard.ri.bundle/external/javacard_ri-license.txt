@@ -1,6 +1,6 @@
-Name:  Java Card 3.0.1 Reference Implementation
+Name:  Java Card 3.0.2 Reference Implementation
 Version: 1.0
-License: License Agreement for Java Card Development Kit 3.0.1 Revenue Release
+License: License Agreement for Java Card Development Kit 3.0.2 Revenue Release
 OSR: 11316
 Origin: http://java.sun.com/javacard/
 Files: javacard_ri.zip
@@ -20,7 +20,7 @@ Effective Date: Date of delivery of the Software to You.
 
 
 
-Software: Java Card Development Kit 3.0.1.
+Software: Java Card Development Kit 3.0.2.
 
 
 

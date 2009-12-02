@@ -47,6 +47,7 @@ import java.net.URISyntaxException;
 import java.util.Set;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
+import org.netbeans.modules.apisupport.project.api.LayerHandle;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.WizardDescriptor;
@@ -157,7 +158,7 @@ final class NewLibraryDescriptor extends BasicWizardIterator {
         
         boolean libraryAlreadyExists() {
             FileSystem layerFs = null;
-            LayerUtils.LayerHandle handle  = LayerUtils.layerForProject(getProject());
+            LayerHandle handle  = LayerHandle.forProject(getProject());
             layerFs = handle.layer(false);
             return (layerFs != null) ? (layerFs.findResource(CreatedModifiedFilesProvider.getLibraryDescriptorEntryPath(getLibraryName())) != null) : false;
         }

@@ -53,6 +53,7 @@ import org.netbeans.modules.javacard.spi.capabilities.AntTargetInterceptor;
 import org.netbeans.modules.javacard.spi.capabilities.ApduSupport;
 import org.netbeans.modules.javacard.spi.capabilities.CardContentsProvider;
 import org.netbeans.modules.javacard.spi.capabilities.CardCustomizerProvider;
+import org.netbeans.modules.javacard.spi.capabilities.DeleteCapability;
 import org.netbeans.modules.javacard.spi.capabilities.PortProvider;
 
 /**
@@ -75,6 +76,7 @@ public enum DeclarableCapabilities {
     PORTS,
     CUSTOMIZER,
     INTERCEPTOR,
+    DELETE,
     ;
     /**
      * Parse a string (for example, from a .jcard file) into a set of
@@ -158,6 +160,8 @@ public enum DeclarableCapabilities {
                 return CardCustomizerProvider.class;
             case INTERCEPTOR :
                 return AntTargetInterceptor.class;
+            case DELETE :
+                return DeleteCapability.class;
             default :
                 throw new AssertionError("" + this); //NOI18N
         }

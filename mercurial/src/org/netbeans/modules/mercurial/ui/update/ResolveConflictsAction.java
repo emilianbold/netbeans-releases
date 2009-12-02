@@ -42,9 +42,6 @@
 package org.netbeans.modules.mercurial.ui.update;
 
 import java.io.File;
-import java.util.*;
-import javax.swing.*;
-import java.awt.event.ActionEvent;
 import org.netbeans.modules.mercurial.FileStatusCache;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.mercurial.Mercurial;
@@ -52,6 +49,8 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
+import org.netbeans.modules.mercurial.util.HgUtils;
+import org.openide.nodes.Node;
 
 /**
  * Show basic conflict resolver UI (provided by the diff module).
@@ -60,14 +59,20 @@ import org.netbeans.modules.mercurial.ui.actions.ContextAction;
  */
 public class ResolveConflictsAction extends ContextAction {
 
-    private final VCSContext context;
- 
-    public ResolveConflictsAction(String name, VCSContext context) {        
-        this.context =  context;
-        putValue(Action.NAME, name);
+    @Override
+    protected boolean enable(Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
+        FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
+        return cache.containsFileOfStatus(context, FileInformation.STATUS_VERSIONED_CONFLICT, false);
     }
 
-    public void performAction(ActionEvent e) {
+    protected String getBaseName(Node[] nodes) {
+        return "CTL_MenuItem_Resolve";                                  //NOI18N
+    }
+
+    @Override
+    protected void performContextAction(Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
         resolve(context);
     }
 
@@ -78,11 +83,6 @@ public class ResolveConflictsAction extends ContextAction {
         resolveConflicts(files);
 
         return;
-    }
-
-    public boolean isEnabled() {
-        FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();                
-        return cache.containsFileOfStatus(context, FileInformation.STATUS_VERSIONED_CONFLICT, false, true);
     }
 
     static void resolveConflicts(File[] files) {

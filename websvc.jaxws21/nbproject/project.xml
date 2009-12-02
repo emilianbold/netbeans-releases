@@ -160,40 +160,40 @@ made subject to such option by the copyright holder.
                 <package>com.sun.xml.ws.util.xml</package>
             </friend-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/jaxws21/FastInfoset.jar</runtime-relative-path>
+                <runtime-relative-path>ext/jaxws22/FastInfoset.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/jaxws21/gmbal.jar</runtime-relative-path>
+                <runtime-relative-path>ext/jaxws22/gmbal-api-only.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/jaxws21/http.jar</runtime-relative-path>
+                <runtime-relative-path>ext/jaxws22/http.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/jaxws21/jaxws-rt.jar</runtime-relative-path>
+                <runtime-relative-path>ext/jaxws22/jaxws-rt.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/jaxws21/jaxws-tools.jar</runtime-relative-path>
+                <runtime-relative-path>ext/jaxws22/jaxws-tools.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/jaxws21/mimepull.jar</runtime-relative-path>
+                <runtime-relative-path>ext/jaxws22/management-api.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/jaxws21/policy.jar</runtime-relative-path>
+                <runtime-relative-path>ext/jaxws22/mimepull.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/jaxws21/saaj-impl.jar</runtime-relative-path>
+                <runtime-relative-path>ext/jaxws22/policy.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/jaxws21/sjsxp.jar</runtime-relative-path>
+                <runtime-relative-path>ext/jaxws22/saaj-impl.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/jaxws21/stax-ex.jar</runtime-relative-path>
+                <runtime-relative-path>ext/jaxws22/stax-ex.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/jaxws21/streambuffer.jar</runtime-relative-path>
+                <runtime-relative-path>ext/jaxws22/streambuffer.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/jaxws21/woodstox.jar</runtime-relative-path>
+                <runtime-relative-path>ext/jaxws22/woodstox.jar</runtime-relative-path>
             </class-path-extension>
         </data>
     </configuration>

@@ -165,6 +165,14 @@ public final class ParseProjectXml extends Task {
         moduleDependenciesProperty = s;
     }
 
+    private String codeNameBaseProperty;
+    /**
+     * Set the property to set the module code name base (separated by
+     * dashes not dots) to.
+     */
+    public void setCodeNameBaseProperty(String s) {
+        codeNameBaseProperty = s;
+    }
     private String codeNameBaseDashesProperty;
     /**
      * Set the property to set the module code name base (separated by
@@ -456,6 +464,10 @@ public final class ParseProjectXml extends Task {
                         define(moduleDependenciesProperty, b.toString());
                     }
                 }
+            }
+            if (codeNameBaseProperty != null) {
+                String cnb = getCodeNameBase(pDoc);
+                define(codeNameBaseProperty, cnb);
             }
             if (codeNameBaseDashesProperty != null) {
                 String cnb = getCodeNameBase(pDoc);

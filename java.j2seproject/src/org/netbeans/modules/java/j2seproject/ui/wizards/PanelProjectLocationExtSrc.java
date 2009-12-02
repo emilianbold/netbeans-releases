@@ -430,6 +430,10 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
         String path = this.projectLocation.getText();
         if (path.length() > 0) {
             File f = new File (path);
+            File owner = f.getParentFile();
+            if (owner.exists()) {
+                chooser.setCurrentDirectory(owner);
+            }
             if (f.exists()) {
                 chooser.setSelectedFile (f);
             }

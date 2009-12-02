@@ -40,11 +40,8 @@
  */
 package org.netbeans.modules.mercurial.ui.remove;
 
-import org.netbeans.modules.versioning.spi.VCSContext;
-
-import javax.swing.*;
-import java.awt.event.ActionEvent;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
+import org.openide.nodes.Node;
 
 /**
  * Remove action for mercurial: 
@@ -54,18 +51,17 @@ import org.netbeans.modules.mercurial.ui.actions.ContextAction;
  */
 public class RemoveAction extends ContextAction {
     
-    private final VCSContext context;
+    @Override
+    protected boolean enable(Node[] nodes) {
+        return false;
+    }
 
-    public RemoveAction(String name, VCSContext context) {
-        this.context = context;
-        putValue(Action.NAME, name);
+    protected String getBaseName(Node[] nodes) {
+        return "CTL_MenuItem_Remove";                                   //NOI18N
     }
-    
-    public void performAction(ActionEvent e) {
-        // TODO: Remove action 
+
+    @Override
+    protected void performContextAction(Node[] nodes) {
+        // TODO: Remove action
     }
-    
-    public boolean isEnabled() {
-	return false;
-    } 
 }

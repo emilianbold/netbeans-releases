@@ -43,6 +43,7 @@ import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JMenuItem;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.discovery.projectimport.ReconfigureProject.CompilerOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
@@ -140,6 +141,10 @@ public class ReconfigureAction extends NodeAction {
         }
         CompilerSet2Configuration set = configuration.getCompilerSet();
         if (set == null) {
+            return false;
+        }
+        CompilerSet cs = set.getCompilerSet();
+        if (cs == null) {
             return false;
         }
         return true;
