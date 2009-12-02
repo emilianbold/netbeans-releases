@@ -292,7 +292,7 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
 
         //process the found documents
         FaceletsTaglibConfigProcessor processor = new FaceletsTaglibConfigProcessor(this);
-        processor.process(documents);
+        processor.process(null, documents);
 
         Map<String, FaceletsLibrary> libsMap = new HashMap<String, FaceletsLibrary>();
         for (FaceletsLibrary lib : processor.compiler.libraries) {
