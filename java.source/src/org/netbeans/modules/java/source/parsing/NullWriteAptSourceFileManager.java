@@ -104,7 +104,7 @@ public class NullWriteAptSourceFileManager extends SourceFileManager {
         }
 
         public Kind getKind() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            return kind;
         }
 
         public boolean isNameCompatible(String simpleName, Kind kind) {
