@@ -117,21 +117,23 @@ public class J2SEProject extends JConsoleTestCase {
         postLocalConnection(ctxt);
     }
 
-    public void testRunWithRemoteManagement() {
-        
-        System.out.println("============  runWithRemoteManagement  ============");
-        
-        selectNode(PROJECT_NAME_J2SE_PROJECT_INTEGRATION);
-        doItRemote("Run Main Project with Remote Management...", "anagrams (run-management)");
-    }
-
-    public void testDebugWithRemoteManagement() {
-        
-        System.out.println("============  debugWithRemoteManagement  ============");
-        
-        selectNode(PROJECT_NAME_J2SE_PROJECT_INTEGRATION);
-        doItRemote("Debug Main Project with Remote Management...", "anagrams (debug-management)");
-    }
+//    runWithRemoteManagement was disabled in NB 6.0, rev. a9229cc3351b
+//    public void testRunWithRemoteManagement() {
+//
+//        System.out.println("============  runWithRemoteManagement  ============");
+//
+//        selectNode(PROJECT_NAME_J2SE_PROJECT_INTEGRATION);
+//        doItRemote("Run Main Project with Remote Management...", "anagrams (run-management)");
+//    }
+//
+//    debugWithRemoteManagement was disabled in NB 6.0, rev. a9229cc3351b
+//    public void testDebugWithRemoteManagement() {
+//
+//        System.out.println("============  debugWithRemoteManagement  ============");
+//
+//        selectNode(PROJECT_NAME_J2SE_PROJECT_INTEGRATION);
+//        doItRemote("Debug Main Project with Remote Management...", "anagrams (debug-management)");
+//    }
 
 
     private void doItLocal(String action, String target) {
