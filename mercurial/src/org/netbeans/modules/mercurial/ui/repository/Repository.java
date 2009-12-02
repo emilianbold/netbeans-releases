@@ -408,6 +408,7 @@ public class Repository implements ActionListener, FocusListener, ItemListener {
         boolean authFields = false;
         boolean proxyFields = false;
         boolean sshFields = false;
+        repositoryPanel.chooseFolderButton.setVisible(false);
         if(selectedUrlString.startsWith("http:")) {                             // NOI18N
             repositoryPanel.tipLabel.setText(HTTP_URL_HELP);
             authFields = true;
@@ -425,6 +426,7 @@ public class Repository implements ActionListener, FocusListener, ItemListener {
             sshFields = true;
         } else if(selectedUrlString.startsWith("file:")) {                      // NOI18N
             repositoryPanel.tipLabel.setText(LOCAL_URL_HELP);
+            repositoryPanel.chooseFolderButton.setVisible(true);
         } else {
             repositoryPanel.tipLabel.setText(NbBundle.getMessage(Repository.class, "MSG_Repository_Url_Help", new Object [] { // NOI18N
                 LOCAL_URL_HELP, HTTP_URL_HELP, HTTPS_URL_HELP, STATIC_HTTP_URL_HELP, SSH_URL_HELP
