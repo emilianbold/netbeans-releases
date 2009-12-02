@@ -936,11 +936,11 @@ public class SourcePathProviderImpl extends SourcePathProvider {
         }
         if (!removedOriginalRoots.isEmpty()) {
             sourcePathOriginal.removeAll(removedOriginalRoots);
-            unorderedSourcePathOriginal.removeAll(removedOriginalRoots);
         }
         if (!newOriginalRoots.isEmpty() || !removedOriginalRoots.isEmpty()) {
             for (FileObject fo : removedOriginalRoots) {
                 int index = unorderedSourcePathOriginal.indexOf(fo);
+                unorderedSourcePathOriginal.remove(index);
                 int pi = sourcePathPermutation[index];
                 for (int i = 0; i < sourcePathPermutation.length; i++) {
                     if (sourcePathPermutation[i] > pi) {

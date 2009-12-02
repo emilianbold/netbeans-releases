@@ -704,6 +704,9 @@ NodeActionsProvider {
                             sortedOriginalSourceRoots = sortedSR.toArray(new String[] {});
                         }
                     }
+                    
+                    sourcePathPermutation = resize(sourcePathPermutation, -k);
+
                     saveAdditionalSourceRoots();
                     saveDisabledSourceRoots();
                     SourcePathProviderImpl.storeSourceRootsOrder(projectRoot, unorderedOriginalSourceRoots, sourcePathPermutation);

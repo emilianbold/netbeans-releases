@@ -597,10 +597,14 @@ NodeActionsProvider {
                         sourcePath.setSourceRoots(newSourceRoots);
                     }
                      */
-                    saveAdditionalSourceRoots();
-                    saveDisabledSourceRoots();
-                    SourcePathProviderImpl.storeSourceRootsOrder(null, unorderedOriginalSourceRoots, sourcePathPermutation);
                 }
+
+                sourcePathPermutation = resize(sourcePathPermutation, -k);
+
+                saveAdditionalSourceRoots();
+                saveDisabledSourceRoots();
+                SourcePathProviderImpl.storeSourceRootsOrder(null, unorderedOriginalSourceRoots, sourcePathPermutation);
+                
                 fireTreeChanged ();
             }
         },
