@@ -60,20 +60,16 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Set;
-import java.util.WeakHashMap;
-import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.apisupport.project.EditableManifest;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
-import org.netbeans.modules.apisupport.project.NbModuleProjectGenerator;
 import org.netbeans.modules.apisupport.project.Util;
+import org.netbeans.modules.apisupport.project.api.LayerHandle;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.SingleModuleProperties;
@@ -101,7 +97,6 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.XMLFileSystem;
 import org.openide.util.Task;
 import org.xml.sax.InputSource;
@@ -226,21 +221,6 @@ public class LayerUtils {
         }
     }
     
-    // XXX needs to hold a strong ref only when modified, probably?
-    private static final Map<Project,LayerHandle> layerHandleCache = new WeakHashMap<Project,LayerHandle>();
-    
-    /**
-     * Gets a handle for one project's XML layer.
-     */
-    public static LayerHandle layerForProject(Project project) {
-        LayerHandle handle = layerHandleCache.get(project);
-        if (handle == null) {
-            handle = new LayerHandle(project, null);
-            layerHandleCache.put(project, handle);
-        }
-        return handle;
-    }
-
     private static final Set<String> XML_LIKE_TYPES = new HashSet<String>();
     static {
         XML_LIKE_TYPES.add(".settings"); // NOI18N
@@ -288,7 +268,7 @@ public class LayerUtils {
     /**
      * Representation of in-memory TAX tree which can be saved upon request.
      */
-    interface SavableTreeEditorCookie extends TreeEditorCookie {
+    public interface SavableTreeEditorCookie extends TreeEditorCookie {
         
         /** property change fired when dirty flag changes */
         String PROP_DIRTY = "dirty"; // NOI18N
@@ -426,174 +406,8 @@ public class LayerUtils {
         }
     }
     
-    static SavableTreeEditorCookie cookieForFile(FileObject f) {
+    public static SavableTreeEditorCookie cookieForFile(FileObject f) {
         return new CookieImpl(f);
-    }
-    
-    /**
-     * Manages one project's XML layer.
-     */
-    public static final class LayerHandle {
-        
-        private final Project project;
-        private final FileObject layerXML;
-        private FileSystem fs;
-        private SavableTreeEditorCookie cookie;
-        private boolean autosave;
-        
-        LayerHandle(Project project, FileObject layerXML) {
-            //System.err.println("new LayerHandle for " + project);
-            this.project = project;
-            this.layerXML = layerXML;
-        }
-        
-        /**
-         * Get the layer as a structured filesystem.
-         * You can make whatever Filesystems API calls you like to it.
-         * Just call {@link #save} when you are done so the modified XML document is saved
-         * (or the user can save it explicitly if you don't).
-         * @param create if true, and there is no layer yet, create it now; if false, just return null
-         */
-        public FileSystem layer(boolean create) {
-            return layer(create, null);
-        }
-
-        /**
-         * Get the layer as a structured filesystem.
-         * See {@link #layer(boolean)} for details.
-         * @param create see {@link #layer(boolean)} for details
-         * @param cp optional classpath to search for resources specified with <code>nbres:</code>
-         *  or <code>nbresloc:</code> parameter; default is <code>null</code>
-         */
-        public synchronized FileSystem layer(boolean create, ClassPath cp) {
-            if (fs == null) {
-                FileObject xml = getLayerFile();
-                if (xml == null) {
-                    if (!create) {
-                        return null;
-                    }
-                    try {
-                        NbModuleProvider module = project.getLookup().lookup(NbModuleProvider.class);
-                        FileObject manifest = module.getManifestFile();
-                        if (manifest != null) { // #121056
-                            // Check to see if the manifest entry is already specified.
-                            String layerSrcPath = ManifestManager.getInstance(Util.getManifest(manifest), false).getLayer();
-                            if (layerSrcPath == null) {
-                                layerSrcPath = newLayerPath();
-                                EditableManifest m = Util.loadManifest(manifest);
-                                m.setAttribute(ManifestManager.OPENIDE_MODULE_LAYER, layerSrcPath, null);
-                                Util.storeManifest(manifest, m);
-                            }
-                        }
-                        xml = NbModuleProjectGenerator.createLayer(project.getProjectDirectory(), module.getResourceDirectoryPath(false) + '/' + newLayerPath());
-                    } catch (IOException e) {
-                        Util.err.notify(ErrorManager.INFORMATIONAL, e);
-                        return fs = FileUtil.createMemoryFileSystem();
-                    }
-                }
-                try {
-                    fs = new WritableXMLFileSystem(xml.getURL(), cookie = cookieForFile(xml), cp);
-                } catch (FileStateInvalidException e) {
-                    throw new AssertionError(e);
-                }
-                cookie.addPropertyChangeListener(new PropertyChangeListener() {
-                    public void propertyChange(PropertyChangeEvent evt) {
-                        //System.err.println("changed in mem");
-                        if (autosave && SavableTreeEditorCookie.PROP_DIRTY.equals(evt.getPropertyName())) {
-                            //System.err.println("  will save...");
-                            try {
-                                save();
-                            } catch (IOException e) {
-                                Util.err.notify(ErrorManager.INFORMATIONAL, e);
-                            }
-                        }
-                    }
-                });
-            }
-            return fs;
-        }
-        
-        /**
-         * Save the layer, if it was in fact modified.
-         * Note that nonempty layer entries you created will already be on disk.
-         */
-        public void save() throws IOException {
-            if (cookie == null) {
-                throw new IOException("Cannot save a nonexistent layer"); // NOI18N
-            }
-            cookie.save();
-        }
-        
-        /**
-         * Find the XML layer file for this project, if it exists.
-         * @return the layer, or null
-         */
-        public FileObject getLayerFile() {
-            if (layerXML != null) {
-                return layerXML;
-            }
-            NbModuleProvider module = project.getLookup().lookup(NbModuleProvider.class);
-            if (module == null) { // #126939: other project type
-                return null;
-            }
-            Manifest mf = Util.getManifest(module.getManifestFile());
-            if (mf == null) {
-                return null;
-            }
-            String path = ManifestManager.getInstance(mf, false).getLayer();
-            if (path == null) {
-                return null;
-            }
-            FileObject ret = Util.getResourceDirectory(project);
-            return ret == null ? null : ret.getFileObject(path);
-        }
-        
-        /**
-         * Set whether to automatically save changes to disk.
-         * @param true to save changes immediately, false to save only upon request
-         */
-        public void setAutosave(boolean autosave) {
-            this.autosave = autosave;
-            if (autosave && cookie != null) {
-                try {
-                    cookie.save();
-                } catch (IOException e) {
-                    Util.err.notify(ErrorManager.INFORMATIONAL, e);
-                }
-            }
-        }
-        
-        /**
-         * Check whether this handle is currently in autosave mode.
-         */
-        public boolean isAutosave() {
-            return autosave;
-        }
-        
-        /**
-         * Resource path in which to make a new XML layer.
-         */
-        private String newLayerPath() {
-            NbModuleProvider module = project.getLookup().lookup(NbModuleProvider.class);
-            FileObject manifest = module.getManifestFile();
-            if (manifest != null) {
-                String bundlePath = ManifestManager.getInstance(Util.getManifest(manifest), false).getLocalizingBundle();
-                if (bundlePath != null) {
-                    return bundlePath.replaceFirst("/[^/]+$", "/layer.xml"); // NOI18N
-                }
-            }
-            return module.getCodeNameBase().replace('.', '/') + "/layer.xml"; // NOI18N
-        }
-
-        public @Override String toString() {
-            FileObject layer = getLayerFile();
-            if (layer != null) {
-                return FileUtil.getFileDisplayName(layer);
-            } else {
-                return FileUtil.getFileDisplayName(project.getProjectDirectory());
-            }
-        }
-        
     }
     
     /**
@@ -629,7 +443,7 @@ public class LayerUtils {
     public static FileSystem getEffectiveSystemFilesystem(Project p) throws IOException {
         
             NbModuleProvider.NbModuleType type = Util.getModuleType(p);
-            FileSystem projectLayer = layerForProject(p).layer(false);
+            FileSystem projectLayer = LayerHandle.forProject(p).layer(false);
 
             if (type == NbModuleProvider.STANDALONE) {
                 Set<File> jars = 
@@ -649,7 +463,7 @@ public class LayerUtils {
                     if (sister == p) {
                         continue;
                     }
-                    LayerHandle handle = layerForProject(sister);
+                    LayerHandle handle = LayerHandle.forProject(sister);
                     FileSystem roLayer = handle.layer(false);
                     if (roLayer != null) {
                         readOnlyLayers.add(roLayer);

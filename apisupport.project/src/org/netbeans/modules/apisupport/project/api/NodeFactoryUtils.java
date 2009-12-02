@@ -39,9 +39,10 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.apisupport.project.spi;
+package org.netbeans.modules.apisupport.project.api;
 
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.ui.ImportantFilesNodeFactory;
 import org.openide.nodes.Node;
 
