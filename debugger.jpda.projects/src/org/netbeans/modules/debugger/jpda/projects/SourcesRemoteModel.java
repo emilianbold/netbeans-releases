@@ -456,7 +456,7 @@ NodeActionsProvider {
     private static String[] resize(String[] array, int by) {
         int n = array.length + by;
         String[] newArray = new String[n];
-        n = Math.max(n, array.length);
+        n = Math.min(n, array.length);
         System.arraycopy(array, 0, newArray, 0, n);
         return newArray;
     }
