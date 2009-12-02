@@ -60,6 +60,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -305,8 +307,8 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
      */
     protected abstract EventRequest createEventRequest(EventRequest oldRequest) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper;
 
-    private Variable processedReturnVariable;
-    private Throwable conditionException;
+    private final Map<Event, Variable> processedReturnVariable = new HashMap<Event, Variable>();
+    private final Map<Event, Throwable> conditionException = new HashMap<Event, Throwable>();
 
     public boolean processCondition(
             Event event,
@@ -354,6 +356,7 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
                     // No frame in case of Thread and "Main" class breakpoints, PATCH 56540
                 }
                 success = evaluateCondition (
+                        event,
                         condition,
                         threadReference
                     );
@@ -363,7 +366,7 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
                 success = true;
             }
             if (success) { // perform() will be called, store the data
-                processedReturnVariable = variable;
+                processedReturnVariable.put(event, variable);
             }
             return success;
         } catch (InternalExceptionWrapper iex) {
@@ -384,13 +387,13 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
         //S ystem.out.println("BreakpointImpl.perform");
         boolean resume;
         
-        Variable variable = processedReturnVariable;
-        processedReturnVariable = null;
+        Variable variable = processedReturnVariable.remove(event);
         if (variable == null) {
             variable = debugger.getVariable(value);
         }
         JPDABreakpointEvent e;
-        if (conditionException == null) {
+        Throwable cEx = conditionException.remove(event);
+        if (cEx == null) {
             e = new JPDABreakpointEvent (
                 getBreakpoint (),
                 debugger,
@@ -403,12 +406,11 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
             e = new JPDABreakpointEvent (
                 getBreakpoint (),
                 debugger,
-                conditionException,
+                cEx,
                 debugger.getThread (threadReference),
                 referenceType,
                 variable
             );
-            conditionException = null;
         }
         getDebugger ().fireBreakpointEvent (
             getBreakpoint (),
@@ -598,6 +600,7 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
      */
     
     private boolean evaluateCondition (
+        Event event,
         String condition,
         ThreadReference thread
     ) {
@@ -617,7 +620,7 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
                 logger.fine("BreakpointImpl: perform breakpoint (condition = " + success + "): " + this + " resume: " + (!success));
                 return success;
             } catch (InvalidExpressionException ex) {
-                conditionException = ex;
+                conditionException.put(event, ex);
                 logger.fine("BreakpointImpl: perform breakpoint (bad condition): '" + condition + "', got " + ex.getMessage());
                 return true; // Act as if the condition was satisfied when it's invalid
             }
