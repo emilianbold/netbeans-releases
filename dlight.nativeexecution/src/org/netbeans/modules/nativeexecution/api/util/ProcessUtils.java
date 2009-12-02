@@ -137,9 +137,14 @@ public final class ProcessUtils {
 
         try {
             String line;
+            boolean first = true;
 
             while ((line = br.readLine()) != null) {
+                if (!first) {
+                    result.append('\n');
+                }
                 result.append(line);
+                first = false;
             }
         } finally {
             if (br != null) {
@@ -174,7 +179,7 @@ public final class ProcessUtils {
         // will send SIGTERM signal..
 
         try {
-            int rc = process.exitValue();
+            process.exitValue();
             // No exception means successful termination
             return;
         } catch (java.lang.IllegalThreadStateException ex) {
@@ -222,6 +227,10 @@ public final class ProcessUtils {
 
     public static ExitStatus execute(final ExecutionEnvironment execEnv, final String executable, final String... args) {
         return execute(NativeProcessBuilder.newProcessBuilder(execEnv).setExecutable(executable).setArguments(args));
+    }
+
+    public static ExitStatus executeInDir(final String workingDir, final ExecutionEnvironment execEnv,  final String executable, final String... args) {
+        return execute(NativeProcessBuilder.newProcessBuilder(execEnv).setExecutable(executable).setArguments(args).setWorkingDirectory(workingDir));
     }
 
     /**

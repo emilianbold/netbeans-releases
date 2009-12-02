@@ -76,10 +76,10 @@ public class SourcePathTest extends NbTestCase {
             r2.toURI().toURL(),
         });
         
-        final ClassPath sp1 = SourcePath.create(base, true);
+        final ClassPath sp1 = SourcePath.sources(base, true);
         assertEquals (base,sp1); 
         
-        final ClassPath sp2 = SourcePath.create(base, false);
+        final ClassPath sp2 = SourcePath.sources(base, false);
         assertTrue (sp2.entries().isEmpty());
         
         ClassIndexManager.getDefault().writeLock(new ClassIndexManager.ExceptionAction<Void>() {
@@ -98,7 +98,7 @@ public class SourcePathTest extends NbTestCase {
         });
         assertEquals (base,sp2);
         
-        final ClassPath sp3 = SourcePath.create(base, false);
+        final ClassPath sp3 = SourcePath.sources(base, false);
         assertEquals (base,sp3);
     }
     

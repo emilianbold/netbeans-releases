@@ -37,18 +37,19 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.parsing.impl.indexing;
+package org.netbeans.modules.parsing.spi.indexing.support;
 
 import java.io.File;
-import java.lang.reflect.Constructor;
+import java.io.IOException;
 import java.util.Collection;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
+import org.netbeans.modules.parsing.impl.indexing.FileObjectIndexable;
+import org.netbeans.modules.parsing.impl.indexing.IndexImpl;
+import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
+import org.netbeans.modules.parsing.impl.indexing.lucene.LuceneIndexFactory;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
-import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
-import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
-import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
-import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -120,9 +121,7 @@ public class IndexingSupportTest extends NbTestCase {
         SPIAccessor.getInstance().getIndexFactory(ctx).getIndex(ctx.getIndexFolder()).store(true, null);
 
         // query
-        Constructor<QuerySupport> c = QuerySupport.class.getDeclaredConstructor(FileObject.class, String.class, Integer.TYPE);
-        c.setAccessible(true);
-        QuerySupport qs = c.newInstance(root,"fooIndexer",1);
+        QuerySupport qs = QuerySupport.forRoots("fooIndexer", 1, root);
         Collection<? extends IndexResult> result = qs.query("class", "String", QuerySupport.Kind.EXACT, "class", "package");
         assertEquals(1, result.size());
         assertEquals("String", result.iterator().next().getValue("class"));
@@ -153,4 +152,44 @@ public class IndexingSupportTest extends NbTestCase {
         assertEquals(0, result.size());
     }
 
+    public void testQuerySupportCaching() throws Exception {
+        // index
+        final Context ctx = SPIAccessor.getInstance().createContext(CacheFolder.getDataFolder(root.getURL()), root.getURL(), "fooIndexer", 1, null, false, false, false, null);
+        assertNotNull(ctx);
+        final Indexable i1 = SPIAccessor.getInstance().create(new FileObjectIndexable(root, f1));
+        final IndexingSupport is = IndexingSupport.getInstance(ctx);
+        assertNotNull(is);
+        IndexDocument doc1 = is.createDocument(i1);
+        assertNotNull(doc1);
+        doc1.addPair("class", "String", true, true);
+        doc1.addPair("package", "java.lang", true, true);
+        is.addDocument(doc1);
+        final Indexable i2 = SPIAccessor.getInstance().create(new FileObjectIndexable(root, f2));
+        IndexDocument doc2 = is.createDocument(i2);
+        assertNotNull(doc2);
+        doc2.addPair("class", "Object", true, true);
+        doc2.addPair("package", "java.lang", true, true);
+        is.addDocument(doc2);
+        SPIAccessor.getInstance().getIndexFactory(ctx).getIndex(ctx.getIndexFolder()).store(true, null);
+
+        class LIF extends LuceneIndexFactory {
+            boolean getIndexCalled = false;
+
+            @Override
+            public IndexImpl getIndex(FileObject indexFolder) throws IOException {
+                getIndexCalled = true;
+                return super.getIndex(indexFolder);
+            }
+        }
+        final LIF lif = new LIF();
+        QuerySupport.IndexerQuery.indexFactory = lif;
+
+        QuerySupport qs1 = QuerySupport.forRoots("fooIndexer", 1, root);
+        assertTrue("Expecting getIndex not called", lif.getIndexCalled);
+
+        lif.getIndexCalled = false;
+
+        QuerySupport qs2 = QuerySupport.forRoots("fooIndexer", 1, root);
+        assertFalse("Expecting getIndex not called", lif.getIndexCalled);
+    }
 }

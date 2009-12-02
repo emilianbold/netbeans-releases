@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,35 +31,41 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.apisupport.project.spi;
+package org.netbeans.modules.groovy.support.debug;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.apisupport.project.ui.ImportantFilesNodeFactory;
-import org.openide.nodes.Node;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.api.debugger.jpda.InvalidExpressionException;
+import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.spi.debugger.ContextProvider;
+import org.netbeans.spi.debugger.jpda.Evaluator;
 
 /**
- * Utility class for exposing creation of layer, services or other 
- * special purpose nodes.
- * @author mkleint
+ *
+ * @author Petr Hejl
  */
-public final class NodeFactoryUtils {
-    
-    /** Creates a new instance of NodeFactoryUtils */
-    private NodeFactoryUtils() { }
-    
-    /**
-     * creates a Node for displaying the layer content.
-     * @param project 
-     * @return node or null.
-     */
-    public static Node createLayersNode(Project project) {
-        NbModuleProvider prv = project.getLookup().lookup(NbModuleProvider.class);
-        if (prv != null && prv.getManifestFile() != null) {
-            return ImportantFilesNodeFactory.createLayerNode(project);
-        }
-        return null;
+// Not yet finished
+//@Evaluator.Registration(language="GROOVY")
+public class GroovyEvaluator implements Evaluator<GroovyExpression> {
+
+    private static final Logger LOGGER = Logger.getLogger(GroovyEvaluator.class.getName());
+
+    private final JPDADebugger debugger;
+
+    public GroovyEvaluator (ContextProvider lookupProvider) {
+        debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
     }
-    
+
+    public Result evaluate(Expression<GroovyExpression> expression, final Context context) throws InvalidExpressionException {
+        LOGGER.log(Level.FINE, "Groovy evaulator evaluating {0}", expression.getExpression());
+
+        return new Result(context.getContextVariable());
+    }
+
 }

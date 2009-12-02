@@ -51,6 +51,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.apisupport.project.api.LayerHandle;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -134,10 +135,10 @@ public final class CreatedModifiedFiles {
     
     // For use from CreatedModifiedFilesFactory.LayerModifications; XXX would be better to have an operation context or similar
     // (so that multiple operations could group pre- and post-actions)
-    private LayerUtils.LayerHandle layerHandle;
-    LayerUtils.LayerHandle getLayerHandle() {
+    private LayerHandle layerHandle;
+    LayerHandle getLayerHandle() {
         if (layerHandle == null) {
-            layerHandle = LayerUtils.layerForProject(project);
+            layerHandle = LayerHandle.forProject(project);
         }
         return layerHandle;
     }

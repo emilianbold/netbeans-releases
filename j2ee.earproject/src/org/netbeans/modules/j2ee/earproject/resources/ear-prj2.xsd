@@ -58,8 +58,8 @@ made subject to such option by the copyright holder.
                         </xsd:restriction>
                     </xsd:simpleType>
                 </xsd:element>
-                <xsd:element name="use-manifest" minOccurs="0"/>
-                <xsd:element name="explicit-platform" minOccurs="0"/>
+                <xsd:element name="use-manifest" minOccurs="0"><xsd:complexType/></xsd:element>
+                <xsd:element name="explicit-platform" minOccurs="0"><xsd:complexType/></xsd:element>
                 <xsd:element name="web-module-libraries" type="ejbModuleLibrariesType"/>
                 <xsd:element name="web-module-additional-libraries" type="ejbModuleAdditionalLibrariesType"/>
             </xsd:sequence>

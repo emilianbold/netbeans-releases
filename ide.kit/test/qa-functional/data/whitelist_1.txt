@@ -73,6 +73,11 @@ org.netbeans.modules.csl.core.GsfModuleInstaller
 org.netbeans.modules.xml.tools.generator.XMLGenerateAction
 org.netbeans.modules.xml.tools.generator.XMLGenerateAction$GenerateDTDAction
 org.netbeans.modules.xsl.actions.TransformAction
+org.netbeans.modules.xml.actions.CollectDTDAction$DTDAction
+org.netbeans.modules.xml.tools.actions.CheckDTDAction
+org.netbeans.modules.xml.tools.doclet.DocletAction
+org.netbeans.modules.xml.tools.java.actions.GenerateDOMScannerAction
+org.netbeans.modules.xml.tools.java.actions.GenerateDocumentHandlerAction
 
 #177561
 org.netbeans.modules.cnd.debug.DebugUtils
@@ -5533,4 +5538,6 @@ org.netbeans.modules.maven.ModInstall
 org.netbeans.modules.maven.ModInstall$OpenProjectsListener
 org.netbeans.modules.maven.cos.CopyResourcesOnSave
 org.netbeans.modules.maven.indexer.Installer
+org.netbeans.editor.BaseKit$SearchableKit
+org.netbeans.modules.bugzilla.ModuleLifecycleManager
 

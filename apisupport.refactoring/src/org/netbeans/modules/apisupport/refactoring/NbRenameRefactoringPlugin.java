@@ -49,7 +49,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.apisupport.project.layers.LayerUtils;
+import org.netbeans.modules.apisupport.project.api.LayerHandle;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
@@ -163,7 +163,7 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
     }
     
     protected RefactoringElementImplementation createConstructorLayerRefactoring(String constructor, String fqname,
-            LayerUtils.LayerHandle handle,
+            LayerHandle handle,
             FileObject layerFileObject,
             String layerAttribute) {
         // cannot rename a constructor.. is always a class rename
@@ -171,14 +171,14 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
     }
     
     protected RefactoringElementImplementation createLayerRefactoring(String fqname,
-            LayerUtils.LayerHandle handle,
+            LayerHandle handle,
             FileObject layerFileObject,
             String layerAttribute) {
         return new LayerClassRefactoringElement(fqname, handle, layerFileObject,layerAttribute);
     }
     
     protected RefactoringElementImplementation createMethodLayerRefactoring(String method, String fqname,
-            LayerUtils.LayerHandle handle,
+            LayerHandle handle,
             FileObject layerFileObject,
             String layerAttribute) {
         return new LayerMethodRefactoringElement(method, handle, layerFileObject, layerAttribute);
@@ -187,14 +187,14 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
     public abstract class LayerAbstractRefactoringElement extends AbstractRefactoringElement {
         
         protected FileObject layerFile;
-        protected LayerUtils.LayerHandle handle;
+        protected LayerHandle handle;
         protected String oldFileName;
         protected String oldAttrName;
         protected String oldAttrValue;
         protected String valueType;
         
         public LayerAbstractRefactoringElement(
-                LayerUtils.LayerHandle handle,
+                LayerHandle handle,
                 FileObject layerFile,
                 String attributeName) {
             this.layerFile = layerFile;
@@ -286,7 +286,7 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
         private String method;
         
         public LayerMethodRefactoringElement(String method,
-                LayerUtils.LayerHandle handle,
+                LayerHandle handle,
                 FileObject layerFile,
                 String attributeName) {
             super(handle, layerFile, attributeName);
@@ -322,7 +322,7 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
         private String newFileName;
         
         public LayerClassRefactoringElement(String fqname,
-                LayerUtils.LayerHandle handle,
+                LayerHandle handle,
                 FileObject layerFile,
                 String attributeName) {
             super(handle, layerFile, attributeName);

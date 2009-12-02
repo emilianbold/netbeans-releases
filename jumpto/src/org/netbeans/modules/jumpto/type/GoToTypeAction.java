@@ -738,7 +738,11 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         if (a == null) {
             return null;
         }
-        return new Profile(a.getValue("logger-jumpto")); // NOI18N
+        Object profiler = a.getValue("logger-jumpto"); //NOI18N
+        if (profiler == null) {
+            return null;
+        }
+        return new Profile(profiler);
     }
 
     private class Profile implements Runnable {
@@ -774,7 +778,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                 ss.actionPerformed(new ActionEvent(dos, 0, "write")); // NOI18N
                 dos.close();
                 if (dos.size() > 0) {
-                    Object[] params = new Object[]{out.toByteArray(), delta };
+                    Object[] params = new Object[]{out.toByteArray(), delta, "GoToType" };
                     Logger.getLogger("org.netbeans.ui.performance").log(Level.CONFIG, "Slowness detected", params);
                 } else {
                     LOGGER.log(Level.WARNING, "no snapshot taken"); // NOI18N

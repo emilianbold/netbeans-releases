@@ -57,6 +57,7 @@ import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -65,7 +66,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JEditorPane;
@@ -187,7 +187,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
     }
 
     private synchronized void init() {
-        errors2Lines = new HashMap<ErrorDescription, List<Position>>();
+        errors2Lines = new IdentityHashMap<ErrorDescription, List<Position>>();
         line2Errors = new HashMap<Position, List<ErrorDescription>>();
         line2Annotations = new HashMap<Position, ParseErrorAnnotation>();
         layer2Errors = new HashMap<String, List<ErrorDescription>>();
@@ -1000,14 +1000,6 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
         return new ArrayList<Annotation>(line2Annotations.values());
     }
 
-    private static final Comparator<ErrorDescription> COMPARATOR = new Comparator<ErrorDescription>() {
-
-        public int compare(ErrorDescription arg0,
-                ErrorDescription arg1) {
-            return arg0.toString().equals(arg1.toString()) ? 0 : 1;
-        }
-    };
-
     public void setErrorsForLine(final int offset, final Map<String, List<ErrorDescription>> errs) {
 
         doc.render(new Runnable() {
@@ -1024,7 +1016,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
                         Set<ErrorDescription> errorsForLayer = new HashSet<ErrorDescription>(getErrorsForLayer(e.getKey()));
                         errorsForLayer.removeAll(errsForCurrentLine); //remove all for current line
                         
-                        Set<ErrorDescription> toSet = new TreeSet<ErrorDescription>(COMPARATOR);
+                        Set<ErrorDescription> toSet = new HashSet<ErrorDescription>();
                         toSet.addAll(e.getValue());
                         toSet.addAll(errorsForLayer);
                         e.getValue().clear();

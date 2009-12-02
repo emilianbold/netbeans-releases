@@ -55,7 +55,6 @@ import java.text.MessageFormat;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
@@ -67,7 +66,6 @@ import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.FileStatusCache;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.HgModuleConfig;
-import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.ui.status.SyncFileNode;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.versioning.util.Utils;
@@ -376,22 +374,6 @@ public class HgUtils {
         return tmpFile;
     }
 
-    /**
-     * isLocallyAdded - checks to see if this file has been Locally Added to Hg
-     *
-     * @param file to check
-     * @return boolean true - ignore, false - not ignored
-     */
-    public static boolean isLocallyAdded(File file){
-        if (file == null) return false;
-        Mercurial hg = Mercurial.getInstance();        
-
-        if ((hg.getFileStatusCache().getStatus(file).getStatus() & FileInformation.STATUS_VERSIONED_ADDEDLOCALLY) !=0)
-            return true;
-        else
-            return false;
-    }
-    
     private static void resetIgnorePatterns(File file) {
         if (ignorePatterns == null) {
             return;
@@ -546,7 +528,7 @@ public class HgUtils {
         }finally {
             try {
                 if(fileWriter != null) fileWriter.close();
-                hg.getFileStatusCache().refresh(ignore, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+                hg.getFileStatusCache().refresh(ignore);
             } catch (IOException ex) {
                 Mercurial.LOG.log(Level.FINE, "createIgnored(): File {0} - {1}",  // NOI18N
                         new Object[] {ignore.getAbsolutePath(), ex.toString()});
@@ -842,40 +824,6 @@ public class HgUtils {
     }
 
     /**
-     * Returns a Map keyed by Directory, containing a single File/FileInformation Map for each Directories file contents.
-     *
-     * @param Map of <File, FileInformation> interestingFiles to be processed and divided up into Files in Directory
-     * @param Collection of <File> files to be processed against the interestingFiles
-     * @return Map of Dirs containing Map of files and status for all files in each directory
-     * @throws org.netbeans.modules.mercurial.HgException
-     */
-    public static Map<File, Map<File, FileInformation>> getInterestingDirs(Map<File, FileInformation> interestingFiles, Collection<File> files) {
-        Map<File, Map<File, FileInformation>> interestingDirs = new HashMap<File, Map<File, FileInformation>>();
-
-        Calendar start = Calendar.getInstance();
-        for (File file : files) {
-            if (file.isDirectory()) {
-                if (interestingDirs.get(file) == null) {
-                    interestingDirs.put(file, new HashMap<File, FileInformation>());
-                }
-            } else {
-                File par = file.getParentFile();
-                if (par != null) {
-                    if (interestingDirs.get(par) == null) {
-                        interestingDirs.put(par, new HashMap<File, FileInformation>());
-                    }
-                    FileInformation fi = interestingFiles.get(file);
-                    interestingDirs.get(par).put(file, fi);
-                }
-            }
-        }
-        Calendar end = Calendar.getInstance();
-        Mercurial.LOG.log(Level.FINE, "getInterestingDirs: process interesting Dirs took {0} millisecs",  // NOI18N
-                end.getTimeInMillis() - start.getTimeInMillis());
-        return interestingDirs;
-    }
-
-    /**
      * Semantics is similar to {@link org.openide.windows.TopComponent#getActivatedNodes()} except that this
      * method returns File objects instead of Nodes. Every node is examined for Files it represents. File and Folder
      * nodes represent their underlying files or folders. Project nodes are represented by their source groups. Other
@@ -1163,19 +1111,7 @@ itor tabs #66700).
     public static void forceStatusRefresh(File file) {
         if (isAdministrative(file)) return;
         FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
-        cache.refreshCached(file);
-    }
-
-    /**
-     * Forces refresh of Status for the specfied context.
-     *
-     * @param VCSContext context to be updated.
-     * @return void
-     */
-    public static void forceStatusRefresh(VCSContext context) {
-        for (File root :  context.getRootFiles()) {
-            forceStatusRefresh(root);
-        }
+        cache.refresh(file);
     }
 
     /**
@@ -1490,14 +1426,6 @@ itor tabs #66700).
         } else {
             throw new IllegalArgumentException("Uncomparable status: " + status); // NOI18N
         }
-    }
-
-    protected static int getFileEnabledStatus() {
-        return ~0;
-    }
-
-    protected static int getDirectoryEnabledStatus() {
-        return FileInformation.STATUS_MANAGED & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED;
     }
 
     /**

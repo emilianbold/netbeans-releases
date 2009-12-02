@@ -69,7 +69,7 @@ made subject to such option by the copyright holder.
                         </xsd:attribute>
                     </xsd:complexType>
                 </xsd:element>
-                <xsd:element name="use-manifest" minOccurs="0"/>
+                <xsd:element name="use-manifest" minOccurs="0"><xsd:complexType/></xsd:element>
                 <xsd:element name="web-module-libraries" type="webModuleLibrariesType"/>
                 <xsd:element name="web-module-additional-libraries" type="webModuleAdditionalLibrariesType"/>
                 <xsd:element name="web-services" minOccurs="0" maxOccurs="1" type="webServicesType"/>
@@ -147,7 +147,7 @@ made subject to such option by the copyright holder.
    <xsd:complexType name="webServiceType">
      <xsd:sequence>
         <xsd:element name="web-service-name" type="xsd:string"/>
-        <xsd:element name="from-wsdl" minOccurs="0"/>
+        <xsd:element name="from-wsdl" minOccurs="0"><xsd:complexType/></xsd:element>
      </xsd:sequence>
    </xsd:complexType>
    

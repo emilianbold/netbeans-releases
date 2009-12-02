@@ -115,6 +115,9 @@ public interface BlacklistedClassesHandler {
      */
     boolean noViolations();
 
+    /** @rreturn the number of violations */
+    int getNumberOfViolations();
+
     /**
      * 
      * @param listViolations if true outputs list of all violations to the System.out

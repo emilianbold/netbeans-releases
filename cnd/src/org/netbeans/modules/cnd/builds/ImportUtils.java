@@ -79,7 +79,8 @@ public final class ImportUtils {
             if (s.indexOf('=')>0){
                 if(s.indexOf('\\') > 0){
                     s = s.replace('\\', '/');
-                } else if(s.indexOf('"')>0) {
+                }
+                if(s.indexOf('"')>0) {
                     s = s.replace("\"", ""); // NOI18N
                 }
             }

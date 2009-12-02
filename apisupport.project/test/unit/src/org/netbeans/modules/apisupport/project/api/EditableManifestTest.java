@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.apisupport.project;
+package org.netbeans.modules.apisupport.project.api;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

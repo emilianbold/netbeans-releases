@@ -287,9 +287,11 @@ public class LogViewer extends Thread {
                 while (!stop && !inOut.isClosed()) {
                     Process process = tomcatManager.getTomcatProcess();
                     try {
-                        process.exitValue();
-                        // finished
-                        break;
+                        if (process != null) {
+                            process.exitValue();
+                            // finished
+                            break;
+                        }
                     } catch (IllegalThreadStateException ex) {
                         //ok running
                     }
