@@ -65,10 +65,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.windows.IOProvider;
-import org.openide.windows.InputOutput;
-import org.openide.windows.OutputWriter;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.openide.DialogDescriptor;
 import org.openide.nodes.Node;
@@ -175,22 +171,16 @@ public class PullAction extends ContextAction {
     }
 
 
-    static void annotateChangeSets(List<String> list, Class bundleLocation, String title) {
-        InputOutput io = IOProvider.getDefault().getIO(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE, false);
-        io.select();
-        OutputWriter out = io.getOut();
-        OutputWriter outRed = io.getErr();
-        outRed.println(NbBundle.getMessage(bundleLocation, title));
+    static void annotateChangeSets(List<String> list, Class bundleLocation, String title, OutputLogger logger) {
+        logger.outputInRed(NbBundle.getMessage(bundleLocation, title));
         for (String s : list) {
             if (s.indexOf(Mercurial.CHANGESET_STR) == 0) {
-                outRed.println(s);
+                logger.outputInRed(s);
             } else if (!s.equals("")) {
-                out.println(s);
+                logger.output(s);
             }
         }
-        out.println("");
-        out.close();
-        outRed.close();
+        logger.output("");
     }
 
     static void getDefaultAndPerformPull(VCSContext ctx, File root, OutputLogger logger) {
@@ -314,7 +304,7 @@ public class PullAction extends ContextAction {
             if (list != null && !list.isEmpty()) {
 
                 if (!bNoChanges) {
-                    annotateChangeSets(HgUtils.replaceHttpPassword(listIncoming), PullAction.class, "MSG_CHANGESETS_TO_PULL"); // NOI18N
+                    annotateChangeSets(HgUtils.replaceHttpPassword(listIncoming), PullAction.class, "MSG_CHANGESETS_TO_PULL", logger); // NOI18N
                 }
 
                 logger.output(HgUtils.replaceHttpPassword(list));
