@@ -1172,17 +1172,19 @@ public class ResourceUtils implements WizardConstants{
                     ObjectName objName = resourceObjects[i];
                     //Get Required values from JDBC Resource
                     String dsJndiName = (String)mejb.getAttribute(objName, "jndi-name"); //NOI18N
-                    if(! systemDS.contains(dsJndiName)){
-                        String poolName = (String)mejb.getAttribute(objName, "pool-name"); //NOI18N
+                    if (!systemDS.contains(dsJndiName)) {
+                        String poolName = (String) mejb.getAttribute(objName, "pool-name"); //NOI18N
                         HashMap poolValues = fillInPoolValues(eightDM, configObjName, poolName);
-                        if(! poolValues.isEmpty()){
-                            String username = (String)poolValues.get(__User);
-                            String password = (String)poolValues.get(__Password);
-                            String url = (String)poolValues.get(__Url);
-                            String driverClassName = (String)poolValues.get(__DriverClass);
-                            
-                            SunDatasource ds = new SunDatasource(dsJndiName, url, username, password, driverClassName);
-                            datasources.add(ds);
+                        if (!poolValues.isEmpty()) {
+                            String url = (String) poolValues.get(__Url);
+                            if ((url != null) && (!url.equals(""))) { //NOI18N
+                                String username = (String) poolValues.get(__User);
+                                String password = (String) poolValues.get(__Password);
+                                String driverClassName = (String) poolValues.get(__DriverClass);
+
+                                SunDatasource ds = new SunDatasource(dsJndiName, url, username, password, driverClassName);
+                                datasources.add(ds);
+                            }
                         }
                     }
                 } // for - each JDBC Resource
@@ -1308,7 +1310,7 @@ public class ResourceUtils implements WizardConstants{
                             url = url + derbyConnAttr;
                         }
                     }
-                } else if (url.equals("")) { //NOI18N
+                } else { 
                     String urlPrefix = DatabaseUtils.getUrlPrefix(dsClassName, resType);
                     String vName = ResourceConfigurator.getDatabaseVendorName(urlPrefix, null);
                     if (serverName != null) {
@@ -1339,22 +1341,25 @@ public class ResourceUtils implements WizardConstants{
                 }
             }
 
-            if ((!eightDM.isLocal()) && (url.indexOf("localhost") != -1)) { //NOI18N
-                String hostName = eightDM.getHost();
-                url = url.replaceFirst("localhost", hostName); //NOI18N
-            }
-            DatabaseConnection databaseConnection = getDatabaseConnection(url);
-            if (driverClass == null || driverClass.equals("")) {
-                if (databaseConnection != null) {
-                    driverClass = databaseConnection.getDriverClass();
-                } else {
-                    //Fix Issue 78212 - NB required driver classname
-                    String drivername = DatabaseUtils.getDriverName(url);
-                    if (drivername != null) {
-                        driverClass = drivername;
+            if (url != null && (!url.equals(""))) { //NOI18N
+                if ((!eightDM.isLocal()) && (url.indexOf("localhost") != -1)) { //NOI18N
+                    String hostName = eightDM.getHost();
+                    url = url.replaceFirst("localhost", hostName); //NOI18N
+                }
+                DatabaseConnection databaseConnection = getDatabaseConnection(url);
+                if (driverClass == null || driverClass.equals("")) { //NOI18N
+                    if (databaseConnection != null) {
+                        driverClass = databaseConnection.getDriverClass();
+                    } else {
+                        //Fix Issue 78212 - NB required driver classname
+                        String drivername = DatabaseUtils.getDriverName(url);
+                        if (drivername != null) {
+                            driverClass = drivername;
+                        }
                     }
                 }
             }
+
             connPoolAttrs.put(__User, username);
             connPoolAttrs.put(__Password, password);
             connPoolAttrs.put(__Url, url);
@@ -1509,11 +1514,7 @@ public class ResourceUtils implements WizardConstants{
                         }
                     }
                 } else {
-                    String in_url = getStringVal(poolValues.get(__Url));
-                    if (in_url != null) {
-                        url = in_url;
-                    }
-                    if (url.equals("")) {  //NOI18N
+                    if (url == null || url.equals("")) {  //NOI18N
                         String urlPrefix = DatabaseUtils.getUrlPrefix(driverClassName, resType);
                         String vName = ResourceConfigurator.getDatabaseVendorName(urlPrefix, null);
                         if (serverName != null) {
@@ -1539,15 +1540,17 @@ public class ResourceUtils implements WizardConstants{
                 url = urlValue;
             }
         }
-        if(driverClass == null || driverClass.equals("")) { //NOI18N
-            DatabaseConnection databaseConnection = getDatabaseConnection(url);
-            if (databaseConnection != null) {
-                driverClass = databaseConnection.getDriverClass();
-            } else {
-                //Fix Issue 78212 - NB required driver classname
-                String drivername = DatabaseUtils.getDriverName(url);
-                if (drivername != null) {
-                    driverClass = drivername;
+        if (url != null && (!url.equals(""))) { //NOI18N
+            if (driverClass == null || driverClass.equals("")) { //NOI18N
+                DatabaseConnection databaseConnection = getDatabaseConnection(url);
+                if (databaseConnection != null) {
+                    driverClass = databaseConnection.getDriverClass();
+                } else {
+                    //Fix Issue 78212 - NB required driver classname
+                    String drivername = DatabaseUtils.getDriverName(url);
+                    if (drivername != null) {
+                        driverClass = drivername;
+                    }
                 }
             }
         }

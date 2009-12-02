@@ -47,7 +47,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
-import static javax.lang.model.util.ElementFilter.*;
 
 /**
  * This action shows the members of the types in the selected file in a pop up window.

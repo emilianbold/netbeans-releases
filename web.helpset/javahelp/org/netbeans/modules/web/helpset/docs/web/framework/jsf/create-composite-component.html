@@ -1,0 +1,75 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<!--
+ *     	  Copyright © 2009 Sun Microsystems, Inc. All rights reserved.
+ *	  Use is subject to license terms.
+-->
+
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <title>Creating Composite Components</title>
+        <link href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css"
+            rel="stylesheet" type="text/css">
+    </head>
+
+    <body>
+        <h2>Creating Composite Components</h2>
+
+        <p><small><a href="#seealso">See Also</a></small></p>
+
+        <p>JSF 2.0 has simplified the process of creating composite user interface (UI)
+            components, which can be reused in web pages. You can use the IDE's Composite
+            Component wizard to generate a Facelets template for a JSF composite component.</p>
+
+        <p>You can access the Composite Component wizard from the JavaServer Faces category
+            in the IDE's File wizard (Ctrl-N). However, a more intuitive way to prompt the
+            wizard is by highlighting the code snippet from a Facelets page in the editor,
+            then choosing Convert to Composite Component from the right-click menu.</p>
+
+        <h4>To create a new composite component:</h4>
+
+        <ol>
+            <li>Open a Facelets page contained in your project. (In the Projects window,
+                double-click any Facelets Page node to open it in the editor.)</li>
+
+            <li>In the editor, highlight the snippet you want to create a component from.</li>
+            
+            <li>Right-click the highlighted snippet and choose Convert to Composite
+                Component. The Composite Component wizard opens, containing the selected
+                snippet in its Implementation Section panel.</li>
+
+            <li>In the <strong>File Name</strong> field, type in a name for the composite
+                component.</li>
+
+            <li>In <strong>Location</strong>, specify the top-level location for the file.
+                ('Web Pages' is the default option, and places the file in the project's
+                web root.</li>
+
+            <li>In <strong>Folder</strong>, specify a folder that will contain the composite
+                component. The <code>resources/ezcomp</code> folder is provided by default.
+                If the folder does not already exist, the wizard creates it.
+
+                <br><br>
+                The <strong>Created File</strong> field provides a read-only path to the new
+                location for the component.</li>
+
+            <li>Click Finish. The new composite component source file is generated in the
+                specified location, and a new component tag is inserted into the location
+                in the editor where you highlighted the snippet. The namespace for the
+                component is also automatically added to the page's <code>&lt;html&gt;</code>
+                tag.</li>
+        </ol>
+
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="create-page.html">Creating JSF Pages</a></dd>
+            <dd><a href="edit.html">Editing JSF Pages</a></dd>
+            <dd><a href="create-managed-bean.html">Creating Managed Beans</a></dd>
+            <dd><a href="about.html">About JavaServer Faces Framework Support</a></dd>
+        </dl>
+
+        <hr><small><a href="../../../credits.html">Legal Notices</a></small>
+        <table cellpadding="20" border="0"><tr><td>&nbsp;</td></tr></table>
+    </body>
+</html>

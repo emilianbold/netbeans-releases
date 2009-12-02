@@ -47,6 +47,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.impl.TargetModule;
 import java.io.File;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ResourceChangeReporter;
 
 /**
  *
@@ -57,6 +58,8 @@ public interface DeploymentTarget {
     public J2eeModule getModule ();
 
     public ModuleChangeReporter getModuleChangeReporter ();
+
+    public ResourceChangeReporter getResourceChangeReporter();
 
     public ServerString getServer();
     

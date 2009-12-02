@@ -42,6 +42,9 @@ import org.netbeans.modules.dlight.spi.SourceSupportProvider;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.dnd.DnDConstants;
 import java.awt.event.ActionEvent;
@@ -50,14 +53,14 @@ import java.awt.event.ComponentListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.beans.PropertyEditor;
-import java.beans.PropertyEditorManager;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -94,14 +97,18 @@ import org.openide.nodes.Children;
 import org.openide.nodes.PropertySupport;
 import javax.swing.UIManager;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableColumn;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.core.stack.spi.AnnotatedSourceSupport;
 import org.netbeans.modules.dlight.management.api.DLightSession.SessionState;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
+import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.visualizers.api.ColumnsUIMapping;
+import org.netbeans.swing.etable.ETableColumn;
 import org.netbeans.swing.etable.ETableColumnModel;
 import org.netbeans.swing.outline.Outline;
+import org.openide.awt.HtmlRenderer;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
@@ -117,11 +124,12 @@ import org.openide.util.NbBundle;
 public class FunctionsListViewVisualizer extends JPanel implements
         Visualizer<FunctionsListViewVisualizerConfiguration>, OnTimerTask, ComponentListener, ExplorerManager.Provider {
 
-    private static final long MIN_REFRESH_MILLIS = 500;
+    private final static long MIN_REFRESH_MILLIS = 500;
+    private final static Logger log = DLightLogger.getLogger(FunctionsListViewVisualizer.class);
     private Future<Boolean> task;
-    private Future<Boolean> detailedTask;
+//    private Future<Boolean> detailedTask;
     private final QueryLock queryLock = new QueryLock();
-    private final DetailsQueryLock detailsQueryLock = new DetailsQueryLock();
+//    private final DetailsQueryLock detailsQueryLock = new DetailsQueryLock();
     private final SourcePrefetchExecutorLock sourcePrefetchExecutorLock = new SourcePrefetchExecutorLock();
     private final UILock uiLock = new UILock();
     private JButton refresh;
@@ -141,10 +149,24 @@ public class FunctionsListViewVisualizer extends JPanel implements
     private ExecutorService sourcePrefetchExecutor;
     private static final boolean isMacLaf = "Aqua".equals(UIManager.getLookAndFeel().getID()); // NOI18N
     private static final Color macBackground = UIManager.getColor("NbExplorerView.background"); // NOI18N
+    private static final boolean useHtmlFormat;
+    private static final String htmlDisabledColorFormat;
 //    private final FocusTraversalPolicy focusPolicy = new FocusTraversalPolicyImpl() ;
-    private JComponent lastFocusedComponent = null;
     private Map<Integer, Boolean> ascColumnValues = new HashMap<Integer, Boolean>();
     private final SourceSupportProvider sourceSupportProvider;
+
+    static {
+        String property = System.getProperty("FunctionsListViewVisualizer.usehtml", "true"); // NOI18N
+        useHtmlFormat = "true".equalsIgnoreCase(property); // NOI18N
+
+        Color dlc = UIManager.getDefaults().getColor("Label.disabledForeground"); // NOI18N
+
+        if (dlc == null) {
+            dlc = Color.GRAY;
+        }
+
+        htmlDisabledColorFormat = String.format("<font color='#%02x%02x%02x'>", dlc.getRed(), dlc.getGreen(), dlc.getBlue()) + "%s</font>"; // NOI18N
+    }
 
     public FunctionsListViewVisualizer(FunctionsListDataProvider dataProvider, FunctionsListViewVisualizerConfiguration configuration) {
         super(new BorderLayout());
@@ -168,36 +190,34 @@ public class FunctionsListViewVisualizer extends JPanel implements
         final Outline outline = outlineView.getOutline();
         outline.getTableHeader().setReorderingAllowed(false);
         outline.setRootVisible(false);
+        outline.putClientProperty("ComputingTooltip", Boolean.TRUE); // NOI18N
         outline.setDefaultRenderer(Object.class, new ExtendedTableCellRendererForNode());
         outline.setDefaultRenderer(Node.Property.class, new FunctionsListSheetCell.OutlineSheetCell(outlineView.getOutline(), metrics));
         outline.addMouseListener(new MouseAdapter() {
 
             @Override
             public void mouseClicked(MouseEvent e) {
-                int selRow = outline.rowAtPoint(e.getPoint());
-                if ((selRow != -1) && SwingUtilities.isLeftMouseButton(e) && MouseUtils.isDoubleClick(e)) {
-                    // Default action.
-                    if (outline.getSelectedColumn() == 0) {
-                        FunctionCallNode node = findNodeByName("" + outline.getValueAt(selRow, 0));//NOI18N
-                        if (node != null) {
-                            Action a = node.getGoToSourceAction();
-                            if (a != null) {
-                                if (a.isEnabled()) {
-                                    a.actionPerformed(new ActionEvent(node, ActionEvent.ACTION_PERFORMED, "")); // NOI18N
-                                } else {
-                                    Logger.getLogger(OutlineView.class.getName()).info("Action " + a + " on node " + node + " is disabled");//NOI18N
-                                }
-
-                                e.consume();
-                                return;
+                if (SwingUtilities.isLeftMouseButton(e) && MouseUtils.isDoubleClick(e)) {
+                    Node[] nodes = explorerManager.getSelectedNodes();
+                    if (nodes != null && nodes.length > 0 && nodes[0] instanceof FunctionCallNode) {
+                        FunctionCallNode node = (FunctionCallNode) nodes[0];
+                        Action a = node.getGoToSourceAction();
+                        if (a != null) {
+                            if (a.isEnabled()) {
+                                a.actionPerformed(new ActionEvent(node, ActionEvent.ACTION_PERFORMED, "")); // NOI18N
+                            } else {
+                                Logger.getLogger(OutlineView.class.getName()).info("Action " + a + " on node " + node + " is disabled"); // NOI18N
                             }
+                            e.consume();
+                            return;
                         }
-
                     }
                 }
+
                 super.mouseClicked(e);
             }
         });
+
         List<Property<?>> result = new ArrayList<Property<?>>();
         for (Column c : metrics) {
             String displayedName = columnsUIMapping == null || columnsUIMapping.getDisplayedName(c.getColumnName()) == null ? c.getColumnUName() : columnsUIMapping.getDisplayedName(c.getColumnName());
@@ -260,7 +280,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
 //            });
         }
         outline.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        outlineView.setProperties(result.toArray(new Property[0]));
+        outlineView.setProperties(result.toArray(new Property<?>[0]));
         VisualizerTopComponentTopComponent.findInstance().addComponentListener(this);
 
         KeyStroke returnKey = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, true);
@@ -274,22 +294,30 @@ public class FunctionsListViewVisualizer extends JPanel implements
 
         KeyStroke enterKey = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, true);
         outlineView.getOutline().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(enterKey, "enter"); // NOI18N
-        outlineView.getOutline().getActionMap().put("enter", new AbstractAction() {// NOI18N
+        outlineView.getOutline().getActionMap().put("enter", new AbstractAction() { // NOI18N
 
             public void actionPerformed(ActionEvent e) {
-                int selectedRow = outline.getSelectedRow();
-                if (selectedRow < 0) {
-                    return;//nothing to do with this
+                Node[] nodes = explorerManager.getSelectedNodes();
+
+                if (nodes != null && nodes.length > 0 && nodes[0] instanceof FunctionCallNode) {
+                    FunctionCallNode callNode = (FunctionCallNode) nodes[0];
+                    Action goToSourceAction = callNode.getGoToSourceAction();
+                    if (goToSourceAction != null) {
+                        goToSourceAction.actionPerformed(null);
+                    }
                 }
-                //find
-                FunctionCallNode callNode = findNodeByName("" + outline.getValueAt(selectedRow, 0));
-                if (callNode == null) {
-                    return;
-                }
-                callNode.getGoToSourceAction().actionPerformed(null);
             }
         });
 
+        ETableColumnModel colModel = (ETableColumnModel) outline.getColumnModel();
+        TableColumn firstColumn = colModel.getColumn(0);
+        ETableColumn col = (ETableColumn) firstColumn;
+        col.setNestedComparator(new Comparator<FunctionCallNode>() {
+
+            public int compare(FunctionCallNode o1, FunctionCallNode o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+        });
     }
 
     @Override
@@ -367,38 +395,37 @@ public class FunctionsListViewVisualizer extends JPanel implements
         }
     }
 
-    private void asyncNotifyAnnotedSourceProviders(boolean cancelIfNotDone) {
-        synchronized (detailsQueryLock) {
-            if (detailedTask != null && !detailedTask.isDone()) {
-                if (cancelIfNotDone) {
-                    detailedTask.cancel(true);
-                } else {
-                    return;
-                }
-            }
-
-            detailedTask = DLightExecutorService.submit(new Callable<Boolean>() {
-
-                public Boolean call() {
-                    List<FunctionCallWithMetric> detailedCallsList =
-                            dataProvider.getDetailedFunctionsList(metadata, functionDatatableDescription, metrics);
-                    List<FunctionCallWithMetric> functionsList = Collections.<FunctionCallWithMetric>emptyList();
-                    if (!dataProvider.hasTheSameDetails(metadata, functionDatatableDescription, metrics)) {
-                        functionsList =
-                                (explorerManager.getRootContext() != null &&
-                                explorerManager.getRootContext().getChildren() != null &&
-                                explorerManager.getRootContext().getChildren() instanceof FunctionCallChildren) ? ((FunctionCallChildren) explorerManager.getRootContext().getChildren()).list : Collections.<FunctionCallWithMetric>emptyList();
-                    }
-
-                    asyncNotifyAnnotedSourceProviders(functionsList, detailedCallsList);
-                    return Boolean.TRUE;
-                }
-            }, "FunctionsListViewVisualizer Async Detailed data load for " + // NOI18N
-                    configuration.getID() + " from main table " + // NOI18N
-                    configuration.getMetadata().getName());
-        }
-    }
-
+//    private void asyncNotifyAnnotedSourceProviders(boolean cancelIfNotDone) {
+//        synchronized (detailsQueryLock) {
+//            if (detailedTask != null && !detailedTask.isDone()) {
+//                if (cancelIfNotDone) {
+//                    detailedTask.cancel(true);
+//                } else {
+//                    return;
+//                }
+//            }
+//
+//            detailedTask = DLightExecutorService.submit(new Callable<Boolean>() {
+//
+//                public Boolean call() {
+//                    List<FunctionCallWithMetric> detailedCallsList =
+//                            dataProvider.getDetailedFunctionsList(metadata, functionDatatableDescription, metrics);
+//                    List<FunctionCallWithMetric> functionsList = Collections.<FunctionCallWithMetric>emptyList();
+//                    if (!dataProvider.hasTheSameDetails(metadata, functionDatatableDescription, metrics)) {
+//                        functionsList =
+//                                (explorerManager.getRootContext() != null &&
+//                                explorerManager.getRootContext().getChildren() != null &&
+//                                explorerManager.getRootContext().getChildren() instanceof FunctionCallChildren) ? ((FunctionCallChildren) explorerManager.getRootContext().getChildren()).list : Collections.<FunctionCallWithMetric>emptyList();
+//                    }
+//
+//                    asyncNotifyAnnotedSourceProviders(functionsList, detailedCallsList);
+//                    return Boolean.TRUE;
+//                }
+//            }, "FunctionsListViewVisualizer Async Detailed data load for " + // NOI18N
+//                    configuration.getID() + " from main table " + // NOI18N
+//                    configuration.getMetadata().getName());
+//        }
+//    }
     private void asyncNotifyAnnotedSourceProviders(final List<FunctionCallWithMetric> functionsList, final List<FunctionCallWithMetric> list) {
         if (Thread.currentThread().isInterrupted()) {
             return;
@@ -614,20 +641,19 @@ public class FunctionsListViewVisualizer extends JPanel implements
         return explorerManager;
     }
 
-    private final FunctionCallNode findNodeByName(String name) {
-        if (currentChildren == null) {
-            return null;
-        }
-        for (Node node : currentChildren.getNodes()) {
-            FunctionCallNode currentNode = (FunctionCallNode) node;
-            String displayName = currentNode.getDisplayName();
-            if (displayName != null && displayName.equals(name)) {
-                return currentNode;
-            }
-        }
-        return null;
-    }
-
+//    private final FunctionCallNode findNodeByName(String name) {
+//        if (currentChildren == null) {
+//            return null;
+//        }
+//        for (Node node : currentChildren.getNodes()) {
+//            FunctionCallNode currentNode = (FunctionCallNode) node;
+//            String displayName = currentNode.getDisplayName();
+//            if (displayName != null && displayName.equals(name)) {
+//                return currentNode;
+//            }
+//        }
+//        return null;
+//    }
     public void updateVisualizerConfiguration(FunctionsListViewVisualizerConfiguration configuration) {
     }
 
@@ -654,7 +680,10 @@ public class FunctionsListViewVisualizer extends JPanel implements
         private final FunctionCallWithMetric functionCall;
         private PropertySet propertySet;
         private final Action[] actions;
-        private final Action goToSourceAction;
+        private final GoToSourceAction goToSourceAction;
+        private String plainDisplayName = null;
+        private String htmlDisplayName = null;
+        private String functionName = null;
 
         FunctionCallNode(FunctionCallWithMetric row) {
             super(Children.LEAF);
@@ -674,9 +703,8 @@ public class FunctionsListViewVisualizer extends JPanel implements
 
                             @Override
                             public Object getValue() throws IllegalAccessException, InvocationTargetException {
-                                return !functionCall.hasMetric(metric.getColumnName()) ?
-                                    getMessage("NotDefined")
-                                    :functionCall.getMetricValue(metric.getColumnName());
+                                return !functionCall.hasMetric(metric.getColumnName()) ? getMessage("NotDefined") // NOI18N
+                                        : functionCall.getMetricValue(metric.getColumnName());
                             }
 
                             @Override
@@ -685,11 +713,16 @@ public class FunctionsListViewVisualizer extends JPanel implements
                         };
                         result.add(property);
                     }
+
                     return result.toArray(new Property[0]);
-
-
                 }
             };
+            updateNames();
+        }
+
+        @Override
+        public synchronized String getName() {
+            return functionName;
         }
 
         public FunctionCallWithMetric getFunctionCall() {
@@ -711,12 +744,13 @@ public class FunctionsListViewVisualizer extends JPanel implements
             return null;
         }
 
-        Action getGoToSourceAction() {
+        GoToSourceAction getGoToSourceAction() {
             return goToSourceAction;
         }
 
         private void fire() {
-            fireDisplayNameChange(getDisplayName() + "_", getDisplayName()); // NOI18N
+            updateNames();
+            fireDisplayNameChange(null, getDisplayName());
         }
 
         @Override
@@ -726,13 +760,79 @@ public class FunctionsListViewVisualizer extends JPanel implements
         }
 
         @Override
-        public String getDisplayName() {
-            return functionCall.getDisplayedName();//functionCall.getFunction().getName() + (functionCall.hasOffset() ? ("+0x" + functionCall.getOffset()) : "");//NOI18N
+        public synchronized String getDisplayName() {
+            return useHtmlFormat ? htmlDisplayName : plainDisplayName;
+        }
+
+        @Override
+        public synchronized String getHtmlDisplayName() {
+            return htmlDisplayName;
+        }
+
+        private synchronized void updateNames() {
+            plainDisplayName = functionCall.getDisplayedName();
+
+            String name = functionCall.getFunction().getName();
+            String funcName = functionCall.getFunction().getQuilifiedName();
+            int idx1 = name.indexOf(funcName);
+
+            int idx2 = funcName.lastIndexOf(':');
+            if (idx2 > 0) {
+                idx1 += idx2 + 1;
+                funcName = funcName.substring(idx2 + 1);
+            }
+
+            this.functionName = funcName;
+
+            String prefix = name.substring(0, idx1);
+            String suffix = name.substring(idx1 + funcName.length());
+
+            prefix = toHtml(prefix);
+            funcName = toHtml(funcName);
+            suffix = toHtml(suffix);
+            funcName = "<b>" + funcName + "</b>"; // NOI18N
+
+            String dispName = prefix + funcName + suffix + "&nbsp;"; // NOI18N
+
+            final GoToSourceAction action = getGoToSourceAction();
+            StringBuilder result = new StringBuilder("<html>"); // NOI18N
+
+            String infoSuffix = null;
+
+            if (action.isEnabled()) {
+                result.append(dispName);
+
+                SourceFileInfo sourceInfo = action.getSource();
+                if (sourceInfo != null && sourceInfo.isSourceKnown()) {
+                    String fname = new File(sourceInfo.getFileName()).getName();
+                    int line = sourceInfo.getLine();
+                    String infoPrefix = line > 0
+                            ? getMessage("FunctionCallNode.prefix.withLine") // NOI18N
+                            : getMessage("FunctionCallNode.prefix.withoutLine"); // NOI18N
+
+                    infoSuffix = infoPrefix + "&nbsp;" + fname + (line > 0 ? ":" + line : ""); // NOI18N
+                    result.append(String.format(htmlDisabledColorFormat, infoSuffix));
+                }
+            } else {
+                result.append(String.format(htmlDisabledColorFormat, dispName));
+            }
+
+            result.append("</html>"); // NOI18N
+
+            htmlDisplayName = result.toString();
         }
 
         @Override
         public PropertySet[] getPropertySets() {
             return new PropertySet[]{propertySet};
+        }
+
+        private String toHtml(String plain) {
+            plain = plain.replace("&", "&amp;"); // NOI18N
+            plain = plain.replace("<", "&lt;"); // NOI18N
+            plain = plain.replace(">", "&gt;"); // NOI18N
+            plain = plain.replace(" ", "&nbsp;"); // NOI18N
+            return plain;
         }
     }
 
@@ -745,88 +845,125 @@ public class FunctionsListViewVisualizer extends JPanel implements
         public GoToSourceAction(FunctionCallNode funcCallNode) {
             super(NbBundle.getMessage(FunctionsListViewVisualizer.class, "GoToSourceActionName"));//NOI18N
             this.functionCallNode = funcCallNode;
+
             synchronized (sourcePrefetchExecutorLock) {
                 if (sourcePrefetchExecutor == null) {
                     sourcePrefetchExecutor = Executors.newFixedThreadPool(2);
                 }
             }
+
             sourcePrefetchExecutor.submit(new Runnable() {
 
                 public void run() {
-                    getSource();
+                    FunctionCallWithMetric functionCall = functionCallNode.getFunctionCall();
+                    SourceFileInfo result = dataProvider.getSourceFileInfo(functionCall);
+
+                    if (result != null && result.isSourceKnown()) {
+                        setEnabled(true);
+                    }
+
+                    synchronized (GoToSourceAction.this) {
+                        sourceInfo = result;
+                    }
+
+                    functionCallNode.fire();
                 }
             });
+
+            setEnabled(false);
         }
 
         public synchronized void actionPerformed(ActionEvent e) {
-            if (goToSourceTask == null || goToSourceTask.isDone()) {
-                goToSourceTask = DLightExecutorService.submit(new Callable<Boolean>() {
-
-                    public Boolean call() {
-                        boolean result = goToSource();
-                        return result;
-                    }
-                }, "GoToSource from Functions List View"); // NOI18N
+            if (goToSourceTask != null && !goToSourceTask.isDone()) {
+                // Already in progress...
+                return;
             }
+
+            goToSourceTask = DLightExecutorService.submit(new Callable<Boolean>() {
+
+                public Boolean call() {
+                    SourceFileInfo source = getSource();
+
+                    if (source == null || !source.isSourceKnown()) {
+                        return false;
+                    }
+
+                    sourceSupportProvider.showSource(source);
+                    return true;
+                }
+            }, "GoToSource from Functions List View"); // NOI18N
         }
 
-        private boolean goToSource() {
-            SourceFileInfo source = getSource();
-            if (source != null && source.isSourceKnown()) {
-                sourceSupportProvider.showSource(source);
-
-                return true;
-            } else {
-                return false;
-            }
-        }
-
-        private SourceFileInfo getSource() {
-            synchronized (this) {
-                if (sourceInfo != null) {
-                    return sourceInfo;
-                }
-            }
-            FunctionCallWithMetric functionCall = functionCallNode.getFunctionCall();
-            SourceFileInfo result = dataProvider.getSourceFileInfo(functionCall);
-            if (result != null && result.isSourceKnown()) {
-                synchronized (this) {
-                    if (sourceInfo == null) {
-                        sourceInfo = result;
-                    }
-                }
-                return result;
-            } else {
-                setEnabled(false);
-                functionCallNode.fire();
-                return null;
-            }
+        private synchronized SourceFileInfo getSource() {
+            return sourceInfo;
         }
     }
 
-    private class ExtendedTableCellRendererForNode extends DefaultTableCellRenderer {
+    private static class ExtendedTableCellRendererForNode extends DefaultTableCellRenderer {
+
+        private final static String dots = " ... "; // NOI18N
+        private final Graphics2D scratchGraphics = new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB).createGraphics();
+        private String string;
+        private int cellwidth;
+        private int cellheight;
+
+        public ExtendedTableCellRendererForNode() {
+            super();
+            setVerticalAlignment(javax.swing.SwingConstants.TOP);
+        }
+
+        @Override
+        public String getToolTipText() {
+            return string;
+        }
 
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            if (column != 0) {//we have
-                return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            }
-            //get function call
-            PropertyEditor editor = PropertyEditorManager.findEditor(metadata.getColumnByName(functionDatatableDescription.getNameColumn()).getColumnClass());
-            FunctionCallNode node = null;
-            synchronized (FunctionsListViewVisualizer.this.uiLock) {
-                node = findNodeByName(value + "");//NOI18N
-            }
+            // Even when this renderer is set as default for any object,
+            // we need to call super, as it sets bacgrounds and does some other
+            // things... 
+            super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            string = value.toString();
+            return this;
+        }
 
-            //get node object
-            if (editor != null && value != null && !(value + "").trim().equals("")) {//NOI18N
-                editor.setValue(value);
-                DefaultTableCellRenderer c = (DefaultTableCellRenderer) super.getTableCellRendererComponent(table, editor.getAsText(), isSelected, hasFocus, row, column);
-                c.setEnabled(node != null && node.getGoToSourceAction().isEnabled());
-                return c;
+        /**
+         * see IZ#176678 do not wrap lines in TreeCellRenderer if it's html
+         * To make html renderer not to wrap the line - just extend width
+         * to be lagre enough to fit all the text...
+         *
+         */
+        @Override
+        public void setBounds(int x, int y, int width, int height) {
+            int strw = 0;
+            if (width > 0 && height > 0) {
+                cellwidth = width;
+                cellheight = height;
+                // Avoid html wrapping - make sure that string fits
+                strw = (int) HtmlRenderer.renderHTML(string + ' ',
+                        scratchGraphics,
+                        x, y, width, height, getFont(),
+                        Color.black, HtmlRenderer.STYLE_CLIP, false);
             }
+            super.setBounds(x, y, Math.max(width, strw) + 10, height);
+        }
 
-            return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+
+            FontMetrics fm = g.getFontMetrics();
+            int strw = (int) HtmlRenderer.renderHTML(string + ' ',
+                    scratchGraphics, 0, 0, cellwidth, 0,
+                    getFont(), Color.black, HtmlRenderer.STYLE_CLIP, false);
+
+            if (cellwidth < strw) {
+                int dotsw = (int) g.getFontMetrics().getStringBounds(dots, g).getMaxX();
+                ((Graphics2D) g).setBackground(getBackground());
+                g.clearRect(cellwidth - dotsw, 0, dotsw, cellheight);
+                g.drawString(dots, cellwidth - dotsw,
+                        fm.getHeight() + fm.getLeading() - fm.getDescent());
+            }
         }
     }
 

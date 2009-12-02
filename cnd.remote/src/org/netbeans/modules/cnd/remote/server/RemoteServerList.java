@@ -120,11 +120,11 @@ public class RemoteServerList implements ServerListImplementation {
                 if (env.isRemote()) {
                     RemoteServerRecord record = addServer(env, displayName, syncFactory, false, RemoteServerRecord.State.OFFLINE);
                     if (arr.length > 3) {
-                        record.setX11forwardingPossible(Boolean.parseBoolean(arr[3]));
+                        record.setX11Forwarding(Boolean.parseBoolean(arr[3]));
                     }
-                    if (arr.length > 4) {
-                        record.setX11Forwarding(Boolean.parseBoolean(arr[4]));
-                    }
+//                    if (arr.length > 4) {
+//                        record.setX11forwardingPossible(Boolean.parseBoolean(arr[4]));
+//                    }
                 }
             }
         }
@@ -265,7 +265,7 @@ public class RemoteServerList implements ServerListImplementation {
         String preferencesKey = hostKey + SERVER_RECORD_SEPARATOR +
                 ((displayName == null) ? "" : displayName) + SERVER_RECORD_SEPARATOR +
                 record.getSyncFactory().getID()  + SERVER_RECORD_SEPARATOR +
-                record.isX11forwardingPossible() + SERVER_RECORD_SEPARATOR +
+//                record.isX11forwardingPossible() + SERVER_RECORD_SEPARATOR +
                 record.getX11Forwarding();
 
         if (slist == null) {

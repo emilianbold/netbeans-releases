@@ -78,6 +78,9 @@ import org.netbeans.modules.bugzilla.query.QueryController;
 import org.netbeans.modules.bugzilla.query.QueryParameter;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
+import org.netbeans.modules.kenai.ui.api.NbModuleOwnerSupport;
+import org.netbeans.modules.kenai.ui.api.NbModuleOwnerSupport.OwnerInfo;
+import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
@@ -219,6 +222,7 @@ public class BugzillaRepository extends Repository {
 
     @Override
     protected void fireAttributesChanged(Map<String, Object> oldAttributes, Map<String, Object> newAttributes) {
+        // XXX move to spi
         LinkedList<String> equalAttributes = new LinkedList<String>();
         // find unchanged values
         for (Map.Entry<String, Object> e : newAttributes.entrySet()) {
@@ -469,6 +473,21 @@ public class BugzillaRepository extends Repository {
         return Collections.emptyList();
     }
 
+    public OwnerInfo getOwnerInfo(Node[] nodes) {
+        if(nodes == null || nodes.length == 0) {
+            return null;
+        }
+        if(BugzillaUtil.isNbRepository(this)) {
+            if(nodes != null && nodes.length > 0) {
+                OwnerInfo ownerInfo = NbModuleOwnerSupport.getInstance().getOwnerInfo(nodes[0]);
+                if(ownerInfo != null /*&& ownerInfo.getOwner().equals(product)*/ ) {
+                    return ownerInfo;
+                }
+            }
+        }
+        return null;
+    }
+
     /**
      * Returns the bugzilla configuration or null if not available
      * 
@@ -518,21 +537,23 @@ public class BugzillaRepository extends Repository {
         if(refreshQueryTask == null) {
             refreshQueryTask = getRefreshProcessor().create(new Runnable() {
                 public void run() {
-                    Set<BugzillaQuery> queries;
-                    synchronized(refreshQueryTask) {
-                        queries = new HashSet<BugzillaQuery>(queriesToRefresh);
+                    try {
+                        Set<BugzillaQuery> queries;
+                        synchronized(refreshQueryTask) {
+                            queries = new HashSet<BugzillaQuery>(queriesToRefresh);
+                        }
+                        if(queries.size() == 0) {
+                            Bugzilla.LOG.log(Level.FINE, "no queries to refresh {0}", new Object[] {name}); // NOI18N
+                            return;
+                        }
+                        for (BugzillaQuery q : queries) {
+                            Bugzilla.LOG.log(Level.FINER, "preparing to refresh query {0} - {1}", new Object[] {q.getDisplayName(), name}); // NOI18N
+                            QueryController qc = q.getController();
+                            qc.autoRefresh();
+                        }
+                    } finally {
+                        scheduleQueryRefresh();
                     }
-                    if(queries.size() == 0) {
-                        Bugzilla.LOG.log(Level.FINE, "no queries to refresh {0}", new Object[] {name}); // NOI18N
-                        return;
-                    }
-                    for (BugzillaQuery q : queries) {
-                        Bugzilla.LOG.log(Level.FINER, "preparing to refresh query {0} - {1}", new Object[] {q.getDisplayName(), name}); // NOI18N
-                        QueryController qc = q.getController();
-                        qc.autoRefresh();
-                    }
-
-                    scheduleQueryRefresh();
                 }
             });
             scheduleQueryRefresh();

@@ -38,6 +38,9 @@ package org.netbeans.modules.web.jsf.editor.facelets;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.Collection;
+import org.netbeans.modules.web.jsf.editor.tld.LibraryDescriptor;
+import org.netbeans.modules.web.jsf.editor.tld.LibraryDescriptor.Attribute;
+import org.netbeans.modules.web.jsf.editor.tld.LibraryDescriptor.Tag;
 import org.netbeans.modules.web.jsf.editor.tld.TldLibrary;
 
 public abstract class FaceletsLibrary {
@@ -52,7 +55,28 @@ public abstract class FaceletsLibrary {
 
     public abstract Collection<NamedComponent> getComponents();
 
-    public abstract TldLibrary getAssociatedTLDLibrary();
+    public abstract LibraryDescriptor getLibraryDescriptor();
+
+     public Tag getTag(String name) {
+        FaceletsLibraryDescriptor fld = support.getJsfSupport().getFaceletsLibraryDescriptor(getNamespace());
+        Tag faceletsTag = getTag(fld, name);
+        TldLibrary tld = support.getJsfSupport().getTldLibrary(getNamespace());
+        Tag tldTag = getTag(tld, name);
+
+        if(faceletsTag == null) {
+            return tldTag;
+        } else {
+            return new ProxyTag(faceletsTag, tldTag);
+        }
+    }
+
+    private Tag getTag(LibraryDescriptor ld, String tagName) {
+        if(ld == null) {
+            return null;
+        } else {
+            return ld.getTags().get(tagName);
+        }
+    }
 
     public String getNamespace() {
         return namespace;
@@ -69,18 +93,28 @@ public abstract class FaceletsLibrary {
     }
 
     public String getDefaultPrefix() {
-        return getAssociatedTLDLibrary() != null ? getAssociatedTLDLibrary().getDefaultPrefix() : null;
+        //returns either facelets or tld library
+        String prefixFromTheLibrary = getLibraryDescriptor() != null ? getLibraryDescriptor().getDefaultPrefix() : null;
+        if(prefixFromTheLibrary == null && namespace != null) {
+            //workaround - the facelets libraries (.taglib.xml) files don't declare the default prefix for the library
+            //so workarounding by using corrsponding .tld file if found
+            TldLibrary tldl = support.getJsfSupport().getTldLibrary(namespace);
+            return tldl != null ? tldl.getDefaultPrefix() : null;
+        } else {
+            return prefixFromTheLibrary;
+        }
+
     }
 
     public String getDisplayName() {
-        return getAssociatedTLDLibrary() != null ? getAssociatedTLDLibrary().getDisplayName() : getNamespace();
+        return getLibraryDescriptor() != null ? getLibraryDescriptor().getDisplayName() : getNamespace();
     }
 
     @Override
     public String toString() {
         return "FaceletsLibrary(namespace=" + getNamespace() +
                 ", default prefix= " + getDefaultPrefix() +
-                ", tld library= " + getAssociatedTLDLibrary(); //NOI18N
+                ", tld library= " + getLibraryDescriptor(); //NOI18N
     }
 
 
@@ -123,13 +157,7 @@ public abstract class FaceletsLibrary {
         }
 
         public TldLibrary.Tag getTag() {
-            TldLibrary tldLib = getAssociatedTLDLibrary();
-            if(tldLib != null) {
-                return tldLib.getTags().get(getName());
-            } else {
-                return null;
-            }
-
+            return FaceletsLibrary.this.getTag(getName());
         }
 
         public FaceletsLibrary getLibrary() {
@@ -323,6 +351,41 @@ public abstract class FaceletsLibrary {
             return merge(super.getDescription(), myDescr);
         }
 
+
+    }
+
+    private static final class ProxyTag implements Tag {
+
+        private Tag tag1, tag2;
+
+        public ProxyTag(Tag tag1, Tag tag2) {
+            this.tag1 = tag1;
+            this.tag2 = tag2;
+
+            assert tag1 != null;
+        }
+
+        public String getName() {
+            return tag1.getName() == null && tag2 != null ? tag2.getName() : tag1.getName();
+        }
+
+        public String getDescription() {
+            return tag1.getDescription() == null && tag2 != null ? tag2.getDescription() : tag1.getDescription();
+        }
+
+        public boolean hasNonGenenericAttributes() {
+            return !tag1.hasNonGenenericAttributes() && tag2 != null ? tag2.hasNonGenenericAttributes() : tag1.hasNonGenenericAttributes();
+        }
+
+        public Collection<Attribute> getAttributes() {
+            return !tag1.hasNonGenenericAttributes() && tag2 != null ? tag2.getAttributes() : tag1.getAttributes();
+        }
+
+        public Attribute getAttribute(String name) {
+            return tag1.getAttribute(name) == null && tag2 != null ? tag2.getAttribute(name) : tag1.getAttribute(name);
+        }
+
+        
 
     }
 }

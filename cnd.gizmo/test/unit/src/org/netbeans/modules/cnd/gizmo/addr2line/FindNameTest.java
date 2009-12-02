@@ -43,6 +43,7 @@ import org.netbeans.modules.cnd.gizmo.addr2line.dwarf2line.Dwarf2NameFinder;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.ByteOrder;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -143,7 +144,7 @@ public class FindNameTest extends NbTestCase {
             Map<String, String> serviceInfo = new HashMap<String, String>();
             serviceInfo.put(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE, executable);
             serviceInfo.put(ServiceInfoDataStorage.EXECUTION_ENV_KEY, ExecutionEnvironmentFactory.toUniqueID(ExecutionEnvironmentFactory.getLocal()));
-            fileInfo = provider.fileName(function, -1, shift, serviceInfo);
+            fileInfo = provider.getSourceFileInfo(function, -1, shift, serviceInfo);
             if (full) {
                 Dwarf dwarf = new Dwarf(executable);
                 try {
@@ -211,12 +212,14 @@ public class FindNameTest extends NbTestCase {
             System.err.println("Dwarf Provider:\t" + fileInfo.getFileName() + ":" + fileInfo.getLine());
         }
         if (full) {
-            Dwarf2NameFinder source = getDwarfSource(executable);
-            source.lookup(base + shift);
-            System.err.println("Dwarf Finder:\t" + source.getSourceFile() + ":" + source.getLineNumber());
+            if (ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN){
+                Dwarf2NameFinder source = getDwarfSource(executable);
+                source.lookup(base + shift);
+                System.err.println("Dwarf Finder:\t" + source.getSourceFile() + ":" + source.getLineNumber());
+                assertEquals(number.line, source.getLineNumber());
+            }
             assertNotNull(fileInfo);
             assertNotNull(number);
-            assertEquals(number.line, source.getLineNumber());
             assertNotNull(candidate);
             assertEquals(number.line, candidate.line);
         } else {

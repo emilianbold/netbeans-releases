@@ -43,6 +43,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Insets;
@@ -84,6 +85,7 @@ import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.bugtracking.util.RepositoryComboSupport;
 import org.netbeans.modules.kenai.api.Kenai;
+import org.openide.nodes.Node;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -112,6 +114,7 @@ public final class QueryTopComponent extends TopComponent
     private RequestProcessor rp = new RequestProcessor("Bugtracking query", 1, true); // NOI18N
     private Task prepareTask;
     private RepositoryComboSupport rs;
+    private Node[] context;
 
     QueryTopComponent() {
         RepositoriesSupport.getInstance().addPropertyChangeListener(this);
@@ -133,8 +136,10 @@ public final class QueryTopComponent extends TopComponent
         return query;
     }
 
-    void init(Query query, Repository defaultRepository, boolean suggestedSelectionOnly) {
+    void init(Query query, Repository defaultRepository, Node[] context, boolean suggestedSelectionOnly) {
         this.query = query;
+        this.context = context;
+
         setNameAndTooltip();
 
         if(suggestedSelectionOnly) {
@@ -553,6 +558,8 @@ public final class QueryTopComponent extends TopComponent
                     if (query == null) {
                         return;
                     }
+                    
+                    QueryAccessor.getInstance().setSelection(query, context);
                     query.addPropertyChangeListener(QueryTopComponent.this);
                     query.addNotifyListener(QueryTopComponent.this);
 
@@ -630,7 +637,7 @@ public final class QueryTopComponent extends TopComponent
         });        
     }
 
-    private void updateSavedQueriesIntern(Repository repo) {
+    private void updateSavedQueriesIntern(final Repository repo) {
         if(repo == null) {
             return;
         }
@@ -643,41 +650,48 @@ public final class QueryTopComponent extends TopComponent
             }
         }
         Query[] queries = repo.getQueries();
+        final Query[] finQueries;
         synchronized (LOCK) {
             savedQueries = queries;
-            if(savedQueries == null || savedQueries.length == 0) {
-                queriesPanel.setVisible(false);
-                BugtrackingManager.LOG.log(Level.FINE, "updateSavedQueries for {0} finnished. No queries.", new Object[] {repo.getDisplayName()} );
-                return;
-            }
-            queriesPanel.setVisible(true);
-            Component[] componenets = queriesPanel.getComponents();
-            for (Component c : componenets) {
-                if(c instanceof QueryButton || c instanceof JSeparator) {
-                    queriesPanel.remove(c);
-                }
-            }
-            queriesPanel.setLayout(new GroupieFlowLayout(GroupieFlowLayout.LEFT));
-            QueryButton ql = null;
             Arrays.sort(savedQueries);
-            for (int i = 0; i < savedQueries.length; i++) {
-                Query q = savedQueries[i];
-                q.addPropertyChangeListener(this);
-                ql = new QueryButton(repo, q);
-                ql.addFocusListener(this);
-                ql.setText(q.getDisplayName());
-                queriesPanel.add(ql);
-                if(i < savedQueries.length - 1) {
-                    JSeparator s = new JSeparator();
-                    s.setOrientation(javax.swing.SwingConstants.VERTICAL);
-                    s.setPreferredSize(new Dimension(2, ql.getPreferredSize().height));
-                    s.setBorder(new LineBorder(Color.BLACK, 1));
-                    queriesPanel.add(s);
-                }
-            }
-            updateSavedQueriesPanel();
-            BugtrackingManager.LOG.log(Level.FINE, "updateSavedQueries for {0} finnished. {1} saved queries.", new Object[] {repo.getDisplayName(), savedQueries.length} );
+            finQueries = savedQueries;
         }
+
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                if(finQueries == null || finQueries.length == 0) {
+                    queriesPanel.setVisible(false);
+                    BugtrackingManager.LOG.log(Level.FINE, "updateSavedQueries for {0} finnished. No queries.", new Object[] {repo.getDisplayName()} );
+                    return;
+                }
+                queriesPanel.setVisible(true);
+                Component[] componenets = queriesPanel.getComponents();
+                for (Component c : componenets) {
+                    if(c instanceof QueryButton || c instanceof JSeparator) {
+                        queriesPanel.remove(c);
+                    }
+                }
+                queriesPanel.setLayout(new GroupieFlowLayout(GroupieFlowLayout.LEFT));
+                QueryButton ql = null;
+                for (int i = 0; i < finQueries.length; i++) {
+                    Query q = finQueries[i];
+                    q.addPropertyChangeListener(QueryTopComponent.this);
+                    ql = new QueryButton(repo, q);
+                    ql.addFocusListener(QueryTopComponent.this);
+                    ql.setText(q.getDisplayName());
+                    queriesPanel.add(ql);
+                    if(i < finQueries.length - 1) {
+                        JSeparator s = new JSeparator();
+                        s.setOrientation(javax.swing.SwingConstants.VERTICAL);
+                        s.setPreferredSize(new Dimension(2, ql.getPreferredSize().height));
+                        s.setBorder(new LineBorder(Color.BLACK, 1));
+                        queriesPanel.add(s);
+                    }
+                }
+                updateSavedQueriesPanel();
+                BugtrackingManager.LOG.log(Level.FINE, "updateSavedQueries for {0} finnished. {1} saved queries.", new Object[] {repo.getDisplayName(), savedQueries.length} );
+            }
+        });
     }
 
     private void updateSavedQueriesPanel() {

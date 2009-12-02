@@ -45,7 +45,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import javax.swing.event.ChangeEvent;
@@ -60,6 +62,7 @@ import org.netbeans.modules.nativeexecution.api.ProcessInfoProviderFactory;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.spi.ProcessInfoProvider;
 import org.netbeans.modules.nativeexecution.support.Logger;
+import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -82,7 +85,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
     private volatile Integer exitValue = null;
     private volatile boolean isInterrupted;
     private boolean cancelled = false;
-    private ProcessInfoProvider infoProvider;
+    private Future<ProcessInfoProvider> infoProviderSearchTask;
 
     public AbstractNativeProcess(NativeProcessInfo info) {
         this.info = info;
@@ -128,7 +131,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
             setState(State.RUNNING);
             findInfoProvider();
         } catch (Throwable ex) {
-            LOG.log(Level.INFO, loc("NativeProcess.exceptionOccured.text"), ex);
+            LOG.log(Level.INFO, loc("NativeProcess.exceptionOccured.text"), ex.toString());
             setState(State.ERROR);
         }
 
@@ -289,11 +292,12 @@ public abstract class AbstractNativeProcess extends NativeProcess {
                 return;
             }
 
+            this.exitValue = Integer.valueOf(exitValue);
+
             if (state == State.CANCELLED || state == State.ERROR) {
                 return;
             }
 
-            this.exitValue = Integer.valueOf(exitValue);
             setState(State.FINISHED);
         }
     }
@@ -368,12 +372,20 @@ public abstract class AbstractNativeProcess extends NativeProcess {
 
     @Override
     public ProcessInfo getProcessInfo() {
-        return infoProvider == null ? new ProcessInfo() {
+        ProcessInfoProvider provider = null;
+
+        try {
+            provider = infoProviderSearchTask.get();
+        } catch (Throwable ex) {
+            LOG.finest(ex.getMessage());
+        }
+
+        return provider == null ? new ProcessInfo() {
 
             public long getCreationTimestamp(TimeUnit unit) {
                 return unit.convert(creation_ts, TimeUnit.NANOSECONDS);
             }
-        } : infoProvider.getProcessInfo();
+        } : provider.getProcessInfo();
     }
 
     private static String loc(String key, String... params) {
@@ -381,18 +393,25 @@ public abstract class AbstractNativeProcess extends NativeProcess {
     }
 
     private void findInfoProvider() {
-        final Collection<? extends ProcessInfoProviderFactory> factories =
-                Lookup.getDefault().lookupAll(ProcessInfoProviderFactory.class);
+        Callable<ProcessInfoProvider> callable = new Callable<ProcessInfoProvider>() {
 
-        ProcessInfoProvider pip = null;
+            public ProcessInfoProvider call() throws Exception {
+                final Collection<? extends ProcessInfoProviderFactory> factories =
+                        Lookup.getDefault().lookupAll(ProcessInfoProviderFactory.class);
 
-        for (ProcessInfoProviderFactory factory : factories) {
-            pip = factory.getProvider(execEnv, pid);
-            if (pip != null) {
-                break;
+                ProcessInfoProvider pip = null;
+
+                for (ProcessInfoProviderFactory factory : factories) {
+                    pip = factory.getProvider(execEnv, pid);
+                    if (pip != null) {
+                        break;
+                    }
+                }
+                return pip;
             }
-        }
+        };
 
-        infoProvider = pip;
+        infoProviderSearchTask = NativeTaskExecutorService.submit(callable,
+                "get info provider for process " + pid); // NOI18N
     }
 }

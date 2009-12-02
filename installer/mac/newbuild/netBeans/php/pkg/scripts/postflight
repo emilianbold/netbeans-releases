@@ -19,17 +19,14 @@
 
 set -e
 
-script_dir=`dirname "$0"`
+dirname=`dirname "$0"`
+
+. "$dirname"/env.sh
 
 #add Product ID
-"$script_dir"/addproduct_id.sh "PHP"
+"$dirname"/addproduct_id.sh "PHP"
 
-if [ -d "/Library/Receipts/php.pkg" ] ; then
-    rm -rf "/Library/Receipts/php.pkg"
-fi
+#clean receipts
+"$dirname"/clean_receipts.sh "php-$NB_ID" "org.netbeans.ide.php"
 
-if [ -d "/private/var/db/receipts" ] ; then
-    rm -rf "/private/var/db/receipts/org.netbeans.ide.php.plist"
-    rm -rf "/private/var/db/receipts/org.netbeans.ide.php.bom"
-fi
 

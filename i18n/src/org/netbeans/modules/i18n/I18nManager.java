@@ -48,6 +48,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -71,6 +73,8 @@ import org.openide.cookies.SaveCookie;
  * @author   Peter Zavadsky
  */
 public class I18nManager {
+
+    static final Logger LOG = Logger.getLogger(I18nManager.class.getName());
     
     /** Singleton instance of I18nManager. */
     private static I18nManager manager;
@@ -110,6 +114,12 @@ public class I18nManager {
         I18nSupport.Factory factory = FactoryRegistry.getFactory(sourceDataObject.getClass());
         
         support = factory.create(sourceDataObject);
+
+        if(support == null && LOG.isLoggable(Level.SEVERE)) {
+                LOG.logp(Level.SEVERE, getClass().getName(),
+                        "initSupport(DataObject)",
+                        "I18nSupport is null for " + sourceDataObject);// NOI18N
+        }
     }
     
     /** The 'heart' method called by <code>I18nAction</code>. */
@@ -219,6 +229,15 @@ public class I18nManager {
         // It has to work this way, at this time the strong reference in top component have to exist.
         I18nPanel i18nPanel = i18nPanelWRef.get();
 
+        if(support == null) {
+            if(LOG.isLoggable(Level.SEVERE)) {
+                LOG.logp(Level.SEVERE, getClass().getName(),
+                        "fillDialogValues()",
+                        "I18nSupport is null"); // NOI18N
+            }
+            return;
+        }
+
         i18nPanel.setI18nString(support.getDefaultI18nString(hcString));
         
         showDialog();
@@ -306,6 +325,11 @@ public class I18nManager {
         replaceCount = 0;
         // No memory leaks.
         support = null;
+
+        if(LOG.isLoggable(Level.FINEST)) {
+            LOG.logp(Level.FINEST, getClass().getName(), "cancel()",
+                     "Sets the I18nSupport to  null"); // NOI18N
+        }
         
         closeDialog();
     }

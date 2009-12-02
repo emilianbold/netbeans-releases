@@ -59,7 +59,9 @@ import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugzilla.commands.GetMultiTaskDataCommand;
 import org.netbeans.modules.bugzilla.commands.PerformQueryCommand;
+import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
+import org.openide.nodes.Node;
 
 /**
  *
@@ -76,7 +78,7 @@ public class BugzillaQuery extends Query {
     // XXX its not clear how the urlParam is used between query and controller
     protected String urlParameters;
     private boolean initialUrlDef;
-    
+
     private boolean firstRun = true;
     private ColumnDescriptor[] columnDescriptors;
 
@@ -93,6 +95,12 @@ public class BugzillaQuery extends Query {
         this.setLastRefresh(repository.getIssueCache().getQueryTimestamp(getStoredQueryName()));
         if(initControler) {
             controller = createControler(repository, this, urlParameters);
+        }
+        if(repository instanceof KenaiRepository) {
+            boolean autoRefresh = BugzillaConfig.getInstance().getQueryAutoRefresh(getDisplayName());
+            if(autoRefresh) {
+                getRepository().scheduleForRefresh(this);
+            }
         }
     }
 
@@ -145,12 +153,12 @@ public class BugzillaQuery extends Query {
             public void run() {
                 Bugzilla.LOG.log(Level.FINE, "refresh start - {0} [{1}]", new String[] {name, urlParameters}); // NOI18N
                 try {
-                    
+
                     // keeps all issues we will retrieve from the server
                     // - those matching the query criteria
                     // - and the obsolete ones
                     Set<String> queryIssues = new HashSet<String>();
-                    
+
                     issues.clear();
                     archivedIssues.clear();
                     if(isSaved()) {
@@ -224,7 +232,7 @@ public class BugzillaQuery extends Query {
     }
 
     void remove() {
-        repository.removeQuery(this);        
+        repository.removeQuery(this);
         fireQueryRemoved();
     }
 
@@ -237,6 +245,11 @@ public class BugzillaQuery extends Query {
     @Override
     public boolean contains(Issue issue) {
         return issues.contains(issue.getID());
+    }
+
+    @Override
+    public Node[] getSelection() {
+        return super.getSelection();
     }
 
     public int getIssueStatus(String id) {

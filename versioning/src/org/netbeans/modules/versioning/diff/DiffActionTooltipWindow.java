@@ -46,11 +46,13 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.AWTEventListener;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowFocusListener;
 
 /**
  * @author Maros Sandor
  */
-class DiffActionTooltipWindow implements AWTEventListener {
+class DiffActionTooltipWindow implements AWTEventListener, WindowFocusListener {
 
     private static final int SCREEN_BORDER = 20;
     
@@ -114,8 +116,10 @@ class DiffActionTooltipWindow implements AWTEventListener {
         }
 
         actionsWindow.setVisible(true);
-        
+
         Toolkit.getDefaultToolkit().addAWTEventListener(this, AWTEvent.MOUSE_EVENT_MASK);
+        actionsWindow.addWindowFocusListener(this);
+        actionsWindow.getOwner().addWindowFocusListener(this);
     }
 
     public void eventDispatched(AWTEvent event) {
@@ -136,8 +140,20 @@ class DiffActionTooltipWindow implements AWTEventListener {
         if (w != actionsWindow && (contentWindow == null || w != contentWindow)) shutdown();
     }
 
+    public void windowGainedFocus(WindowEvent e) {
+        //
+    }
+
+    public void windowLostFocus(WindowEvent e) {
+        if (actionsWindow != null && e.getOppositeWindow() == null) {
+            shutdown();
+        }
+    }
+
     void shutdown() {
         Toolkit.getDefaultToolkit().removeAWTEventListener(this);
+        actionsWindow.getOwner().removeWindowFocusListener(this);
+        actionsWindow.removeWindowFocusListener(this);
         actionsWindow.dispose();
         if (contentWindow != null) contentWindow.dispose();
     }

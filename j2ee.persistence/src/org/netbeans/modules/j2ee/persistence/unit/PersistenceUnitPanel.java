@@ -291,7 +291,7 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
                 new Object[]{ProjectUtils.getInformation(project).getDisplayName()}));
     }
     
-    private void initEntityList(){
+    void initEntityList(){
         initEntityListControls();
         DefaultListModel listedClassesModel = new DefaultListModel();
         for (String elem : persistenceUnit.getClass2()) {

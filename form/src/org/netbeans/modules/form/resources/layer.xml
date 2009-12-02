@@ -40,14 +40,20 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
 
     <folder name="org-netbeans-api-project-libraries">
         <folder name="Libraries">
-            <file name="swing-layout.xml" url="swing-layout.xml"/>
-            <file name="absolutelayout.xml" url="absolutelayout.xml"/>
-            <file name="beans_binding.xml" url="beans_binding.xml"/>
+            <file name="swing-layout.xml" url="swing-layout.xml">
+                <attr name="displayName" bundlevalue="org.netbeans.modules.form.resources.Bundle#swing-layout"/>
+            </file>
+            <file name="absolutelayout.xml" url="absolutelayout.xml">
+                <attr name="displayName" bundlevalue="org.netbeans.modules.form.resources.Bundle#absolutelayout"/>
+            </file>
+            <file name="beans_binding.xml" url="beans_binding.xml">
+                <attr name="displayName" bundlevalue="org.netbeans.modules.form.resources.Bundle#beans-binding"/>
+            </file>
         </folder>
     </folder>
   <folder name="Loaders">

@@ -338,8 +338,8 @@ public class LibrariesModel implements PropertyChangeListener {
 
     private static class LibrariesComparator implements Comparator<LibraryImplementation> {
         public int compare(LibraryImplementation lib1, LibraryImplementation lib2) {
-            String name1 = LibrariesCustomizer.getLocalizedString(lib1.getLocalizingBundle(), lib1.getName());
-            String name2 = LibrariesCustomizer.getLocalizedString(lib2.getLocalizingBundle(), lib2.getName());
+            String name1 = LibrariesCustomizer.getLocalizedName(lib1);
+            String name2 = LibrariesCustomizer.getLocalizedName(lib2);
             int r = name1.compareToIgnoreCase(name2);
             return r != 0 ? r : System.identityHashCode(lib1) - System.identityHashCode(lib2);
         }

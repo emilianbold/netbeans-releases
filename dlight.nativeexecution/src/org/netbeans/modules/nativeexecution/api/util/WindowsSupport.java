@@ -211,6 +211,47 @@ public final class WindowsSupport {
         return candidate;
     }
 
+    public int getWinPID(int shellPID) {
+        ProcessBuilder pb = null;
+        File psFile = new File(getActiveShell().bindir, "ps.exe"); // NOI18N
+        
+        if (!psFile.exists()) {
+            return shellPID;
+        }
+
+        String psCommand = psFile.getAbsolutePath();
+
+        switch (getActiveShell().type) {
+            case CYGWIN:
+                pb = new ProcessBuilder(psCommand, "-W", "-p", Integer.toString(shellPID)); // NOI18N
+                break;
+            case MSYS:
+                pb = new ProcessBuilder(psCommand, "-W"); // NOI18N
+                break;
+            default:
+                return shellPID;
+        }
+        
+        try {
+            Process p = pb.start();
+            List<String> output = ProcessUtils.readProcessOutput(p);
+            Pattern pat = Pattern.compile("[I]*[\t ]*([0-9]+)[\t ]*([0-9]+)[\t ]*([0-9]+)[\t ]*([0-9]+).*"); // NOI18N
+            for (String s : output) {
+                Matcher m = pat.matcher(s);
+                if (m.matches()) {
+                    Integer pid = Integer.parseInt(m.group(1));
+                    if (pid == shellPID) {
+                        return Integer.parseInt(m.group(4));
+                    }
+                }
+            }
+        } catch (IOException ex) {
+            return shellPID;
+        }
+
+        return shellPID;
+    }
+
     private String queryWindowsRegistry(String key, String param, String regExpr) {
         try {
             ProcessBuilder pb = new ProcessBuilder(
@@ -408,7 +449,7 @@ public final class WindowsSupport {
             return this.srcType == that.srcType &&
                     this.trgType == that.trgType &&
                     this.isSinglePath == that.isSinglePath &&
-                    this.path.equals(that.path);
+                    ((this.path == null) ? (that.path == null) : this.path.equals(that.path));
         }
 
         @Override

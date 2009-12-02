@@ -38,26 +38,27 @@
  */
 package org.netbeans.modules.nativeexecution.api;
 
-import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
 import java.io.IOException;
-import org.netbeans.modules.nativeexecution.LocalNativeProcess;
 import java.util.concurrent.Callable;
 import javax.swing.event.ChangeListener;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.modules.nativeexecution.AbstractNativeProcess;
+import org.netbeans.modules.nativeexecution.LocalNativeProcess;
 import org.netbeans.modules.nativeexecution.NativeProcessInfo;
 import org.netbeans.modules.nativeexecution.RemoteNativeProcess;
 import org.netbeans.modules.nativeexecution.TerminalLocalNativeProcess;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminalProvider;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.netbeans.modules.nativeexecution.api.util.Shell;
 import org.netbeans.modules.nativeexecution.api.util.ShellValidationSupport;
 import org.netbeans.modules.nativeexecution.api.util.ShellValidationSupport.ShellValidationStatus;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  * Utility class for the {@link NativeProcess external native process} creation.
@@ -153,7 +154,17 @@ public final class NativeProcessBuilder implements Callable<Process> {
      */
     public NativeProcess call() throws IOException {
         AbstractNativeProcess process = null;
-        
+
+        ExecutionEnvironment execEnv = info.getExecutionEnvironment();
+
+        if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
+            throw new IllegalStateException("No connection to " + execEnv.getDisplayName()); // NOI18N
+        }
+
+        if (info.getCommand() == null) {
+            throw new IllegalStateException("No executable nor command line is specified"); // NOI18N
+        }
+
         if (info.getExecutionEnvironment().isRemote()) {
             process = new RemoteNativeProcess(info);
         } else {

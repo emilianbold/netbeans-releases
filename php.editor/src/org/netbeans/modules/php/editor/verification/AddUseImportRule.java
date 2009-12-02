@@ -304,19 +304,22 @@ public class AddUseImportRule extends AbstractRule {
 
         private int getOffset() {
             try {
-                ModelElement offsetElement = null;
-                Collection<? extends UseElement> declaredUses = scope.getDeclaredUses();
-                if (!declaredUses.isEmpty()) {
-                    offsetElement = declaredUses.iterator().next();
-                }
-                if (offsetElement == null) {
-                    offsetElement = scope;
-                }
-                return Utilities.getRowEnd(doc, offsetElement.getOffset());
+                return Utilities.getRowEnd(doc, getReferenceElement().getOffset());
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);
             }
             return 0;
+        }
+
+        private ModelElement getReferenceElement() {
+            ModelElement offsetElement = null;
+            Collection<? extends UseElement> declaredUses = scope.getDeclaredUses();
+            for (UseElement useElement : declaredUses) {
+                if (offsetElement == null || offsetElement.getOffset() < useElement.getOffset()) {
+                    offsetElement = useElement;
+                }
+            }
+            return (offsetElement != null) ? offsetElement : scope;
         }
     }
 

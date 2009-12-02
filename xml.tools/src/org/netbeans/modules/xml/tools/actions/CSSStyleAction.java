@@ -72,14 +72,26 @@ import org.netbeans.modules.xml.tax.cookies.TreeEditorCookie;
  * @version 1.0
  */
 public final class CSSStyleAction extends CookieAction implements CollectDTDAction.DTDAction {
-
     /** Serial Version UID */
     private static final long serialVersionUID = 7867855746468L;
     
     /** Creates new CSSStyleAction */
-    public CSSStyleAction() {
-    }
+    public CSSStyleAction() {}
 
+/***********
+    public static synchronized CSSStyleAction getInstance() {
+        CSSStyleAction actionInstance = null;
+        String thisClassName = CSSStyleAction.class.getName();
+        try {
+            Class actionInstanceClass = Class.forName(thisClassName);
+            actionInstance = (CSSStyleAction) actionInstanceClass.newInstance();
+        } catch(Exception e) {
+            Logger.getLogger(thisClassName).log(Level.SEVERE, "", e);
+        }
+        return actionInstance;
+    }
+***********/
+    
     public Class[] cookieClasses() {
         return new Class[] { DTDDataObject.class };
     }

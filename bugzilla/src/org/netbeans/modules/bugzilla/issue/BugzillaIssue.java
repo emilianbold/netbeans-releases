@@ -82,6 +82,7 @@ import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
 /**
@@ -270,7 +271,7 @@ public class BugzillaIssue extends Issue {
             new ColumnDescriptor<String>(LABEL_NAME_ID, String.class,
                                               loc.getString("CTL_Issue_ID_Title"),                // NOI18N
                                               loc.getString("CTL_Issue_ID_Desc"),                 // NOI18N
-                                              BugtrackingUtil.getColumnWidthInPixels(7, t)),
+                                              BugtrackingUtil.getColumnWidthInPixels(6, t)),
             new ColumnDescriptor<String>(LABEL_NAME_SUMMARY, String.class,
                                               loc.getString("CTL_Issue_Summary_Title"),           // NOI18N
                                               loc.getString("CTL_Issue_Summary_Desc")),           // NOI18N
@@ -324,6 +325,11 @@ public class BugzillaIssue extends Issue {
             node = createNode();
         }
         return node;
+    }
+
+    @Override
+    public Node[] getSelection() {
+        return super.getSelection();
     }
 
     @Override
@@ -744,10 +750,11 @@ public class BugzillaIssue extends Issue {
         return attachments.toArray(new Attachment[attachments.size()]);
     }
 
-    void addAttachment(final File file, final String comment, final String desc, String contentType, final boolean patch) {
+    void addAttachment(File file, final String comment, final String desc, String contentType, final boolean patch) {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
         final FileTaskAttachmentSource attachmentSource = new FileTaskAttachmentSource(file);
         if (contentType == null) {
+            file = FileUtil.normalizeFile(file);
             String ct = FileUtil.getMIMEType(FileUtil.toFileObject(file));
             if ((ct != null) && (!"content/unknown".equals(ct))) { // NOI18N
                 contentType = ct;

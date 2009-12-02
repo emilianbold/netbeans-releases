@@ -51,7 +51,7 @@ import org.netbeans.modules.bugzilla.query.QueryController;
  * @author Tomas Stupka
  */
 public class KenaiQuery extends BugzillaQuery {
-    private String product;
+    private final String product;
     private boolean predefinedQuery = false;
 
     public KenaiQuery(String name, BugzillaRepository repository, String urlParameters, String product, boolean saved, boolean predefined) {
@@ -70,6 +70,10 @@ public class KenaiQuery extends BugzillaQuery {
     protected QueryController createControler(BugzillaRepository r, BugzillaQuery q, String parameters) {
         KenaiQueryController c = new KenaiQueryController(r, q, parameters, product, predefinedQuery);
         return c;
+    }
+
+    void setUrlParameters(String urlParameters) {
+        super.urlParameters = urlParameters;
     }
 
     @Override

@@ -66,7 +66,7 @@ public class RemoteRepoProvider implements ArchetypeProvider {
                 continue;
             }
             for (NBVersionInfo art : archs) {
-                Archetype arch = new Archetype();
+                Archetype arch = new Archetype(false);
                 arch.setArtifactId(art.getArtifactId());
                 arch.setGroupId(art.getGroupId());
                 arch.setVersion(art.getVersion());

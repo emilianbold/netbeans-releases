@@ -181,11 +181,15 @@ public class RemoteServerSetup {
         }
     }
 
-    private String getMd5command(List<String> paths2check) throws NoSuchAlgorithmException, IOException {
+    private String getMd5command(List<String> paths2check) 
+            throws NoSuchAlgorithmException, IOException, CheckSumException {
 
         StringBuilder sb;
 
         HostInfo hostIinfo = HostInfoUtils.getHostInfo(executionEnvironment);
+        if (hostIinfo == null) {
+            throw new CheckSumException("Can not get HostInfo for " + executionEnvironment); // NOI18N
+        }
         final OSFamily oSFamily = hostIinfo.getOSFamily();
         switch (oSFamily) {
             case LINUX:
@@ -223,7 +227,8 @@ public class RemoteServerSetup {
         support.run();
         RemoteUtil.LOGGER.fine("RSS.getBinaryUpdatesByChecksum: RC " + support.getExitStatus());
         if (support.isFailed() || support.getExitStatus() != 0) {
-            throw new NoSuchAlgorithmException("Running " + cmd + " failed on remote host: " + support.getFailureReason()); //NOI18N
+            RemoteUtil.LOGGER.fine("Running " + cmd + " failed on remote host: " + support.getFailureReason()); //NOI18N
+            return new ArrayList<String>(paths2check);
         }
 
         if (support.isCancelled()) {

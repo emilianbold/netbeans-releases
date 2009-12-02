@@ -58,7 +58,6 @@ import com.sun.jdi.connect.ListeningConnector;
 import com.sun.jdi.connect.Transport;
 import com.sun.jdi.connect.Connector;
 
-import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -67,6 +66,7 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import java.util.regex.Pattern;
 import org.apache.tools.ant.BuildEvent;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.BuildListener;
@@ -116,6 +116,11 @@ public class JPDAStart extends Task implements Runnable {
 
     private static final String SOCKET_TRANSPORT = "dt_socket"; // NOI18N
     private static final String SHMEM_TRANSPORT = "dt_shmem"; // NOI18N
+
+    private static final Pattern[] BOOT_CLASSPATH_WARNING_FILTER = new Pattern[] {
+        Pattern.compile(".*jre.lib.sunrsasign\\.jar$"),
+        Pattern.compile(".*jre.classes$"),
+    };
     
     /** Name of the property to which the JPDA address will be set.
      * Target VM should use this address and connect to it
@@ -129,11 +134,13 @@ public class JPDAStart extends Task implements Runnable {
     private String                  name;
     /** Explicit sourcepath of the debugged process. */
     private Sourcepath              sourcepath = null;
+    private Path                    plainSourcepath = null;
+    private boolean                 isSourcePathExclusive;
     /** Explicit classpath of the debugged process. */
     private Path                    classpath = null;
     /** Explicit bootclasspath of the debugged process. */
     private Path                    bootclasspath = null;
-    private Object []               lock = null; 
+    private final Object []         lock = new Object[2];
     /** The class debugger should stop in, or null. */
     private String                  stopClassName = null;
     private String                  listeningCP = null;
@@ -216,10 +223,15 @@ public class JPDAStart extends Task implements Runnable {
     
     // main methods ............................................................
 
+    @Override
     public void execute () throws BuildException {
         verifyPaths(getProject(), classpath);
         //verifyPaths(getProject(), bootclasspath); Do not check the paths on bootclasspath (see issue #70930).
-        verifyPaths(getProject(), sourcepath.getPlainPath());
+        if (sourcepath != null) {
+            isSourcePathExclusive = sourcepath.isExclusive();
+            plainSourcepath = sourcepath.getPlainPath();
+        }
+        verifyPaths(getProject(), plainSourcepath);
         try {
             logger.fine("JPDAStart.execute()"); // NOI18N
             debug ("Execute started"); // NOI18N
@@ -230,7 +242,7 @@ public class JPDAStart extends Task implements Runnable {
             if (transport == null)
                 transport = SOCKET_TRANSPORT;
             debug ("Entering synch lock"); // NOI18N
-            lock = new Object [2];
+            lock[0] = lock[1] = null;
             synchronized (lock) {
                 debug ("Entered synch lock"); // NOI18N
                 RequestProcessor.getDefault ().post (this);
@@ -283,6 +295,10 @@ public class JPDAStart extends Task implements Runnable {
                 logger.fine("Listening using transport "+transport);
 
                 final Map args = lc.defaultArguments ();
+                Connector.StringArgument localAddress = (Connector.StringArgument) args.get("localAddress"); // NOI18N
+                if (localAddress != null) {
+                    localAddress.setValue("127.0.0.1"); // NOI18N
+                }
                 String address = null;
                 try {
                     address = lc.startListening (args);
@@ -335,9 +351,11 @@ public class JPDAStart extends Task implements Runnable {
                         // perform a check for the address and use "localhost"
                         // if the address can not be resolved: (see http://www.netbeans.org/issues/show_bug.cgi?id=154974)
                         String host = address.substring(0, address.indexOf (':'));
+                        logger.fine("  socket listening at " + address+", host = "+host+", port = "+port); // NOI18N
                         try {
                             InetAddress.getByName(host);
                         } catch (UnknownHostException uhex) {
+                            logger.fine(  "unknown host '"+host+"'");
                             address = "localhost:" + port; // NOI18N
                         } catch (SecurityException  se) {}
                     } catch (Exception e) {
@@ -358,7 +376,8 @@ public class JPDAStart extends Task implements Runnable {
                 ClassPath sourcePath = createSourcePath (
                     getProject (),
                     classpath, 
-                    sourcepath
+                    plainSourcepath,
+                    isSourcePathExclusive
                 );
                 ClassPath jdkSourcePath = createJDKSourcePath (
                     getProject (),
@@ -367,7 +386,7 @@ public class JPDAStart extends Task implements Runnable {
                 if (logger.isLoggable(Level.FINE)) {
                     logger.fine("Create sourcepath:"); // NOI18N
                     logger.fine("    classpath : " + classpath); // NOI18N
-                    logger.fine("    sourcepath : " + sourcepath.getPlainPath()); // NOI18N
+                    logger.fine("    sourcepath : " + plainSourcepath); // NOI18N
                     logger.fine("    bootclasspath : " + bootclasspath); // NOI18N
                     logger.fine("    >> sourcePath : " + sourcePath); // NOI18N
                     logger.fine("    >> jdkSourcePath : " + jdkSourcePath); // NOI18N
@@ -548,13 +567,14 @@ public class JPDAStart extends Task implements Runnable {
     static ClassPath createSourcePath (
         Project project, 
         Path classpath,
-        Sourcepath sourcepath
+        Path sourcepath,
+        boolean isSourcePathExclusive
     ) {
-        if (sourcepath != null && sourcepath.isExclusive()) {
-            return convertToClassPath (project, sourcepath.getPlainPath());
+        if (sourcepath != null && isSourcePathExclusive) {
+            return convertToClassPath (project, sourcepath);
         }
-        ClassPath cp = convertToSourcePath (project, classpath);
-        ClassPath sp = convertToClassPath (project, sourcepath.getPlainPath());
+        ClassPath cp = convertToSourcePath (project, classpath, null);
+        ClassPath sp = convertToClassPath (project, sourcepath);
         
         ClassPath sourcePath = ClassPathSupport.createProxyClassPath (
             new ClassPath[] {cp, sp}
@@ -575,7 +595,7 @@ public class JPDAStart extends Task implements Runnable {
                 return ClassPathSupport.createClassPath(java.util.Collections.EMPTY_LIST);
             }
         } else {
-            return convertToSourcePath (project, bootclasspath);
+            return convertToSourcePath (project, bootclasspath, BOOT_CLASSPATH_WARNING_FILTER);
         }
     }
     
@@ -587,7 +607,7 @@ public class JPDAStart extends Task implements Runnable {
             String pathName = project.replaceProperties(paths[i]);
             File f = FileUtil.normalizeFile (project.resolveFile (pathName));
             if (!isValid (f, project)) continue;
-            URL url = fileToURL (f, project);
+            URL url = fileToURL (f, project, null);
             if (url == null) continue;
             l.add (url);
         }
@@ -601,7 +621,7 @@ public class JPDAStart extends Task implements Runnable {
      * the sources were not found are omitted.
      *
      */
-    private static ClassPath convertToSourcePath (Project project, Path path) {
+    private static ClassPath convertToSourcePath (Project project, Path path, Pattern[] warningFilters) {
         String[] paths = path == null ? new String [0] : path.list ();
         List l = new ArrayList ();
         Set exist = new HashSet ();
@@ -611,7 +631,7 @@ public class JPDAStart extends Task implements Runnable {
             File file = FileUtil.normalizeFile 
                 (project.resolveFile (pathName));
             if (!isValid (file, project)) continue;
-            URL url = fileToURL (file, project);
+            URL url = fileToURL (file, project, warningFilters);
             if (url == null) continue;
             logger.fine("convertToSourcePath - class: " + url); // NOI18N
             try {
@@ -653,11 +673,23 @@ public class JPDAStart extends Task implements Runnable {
     }
 
 
-    private static URL fileToURL (File file, Project project) {
+    private static URL fileToURL (File file, Project project, Pattern[] warningFilters) {
         try {
             FileObject fileObject = FileUtil.toFileObject (file);
             if (fileObject == null) {
-                project.log("Have no FileObject for "+file.getAbsolutePath(), Project.MSG_WARN);
+                String path = file.getAbsolutePath();
+                boolean filtered = false;
+                if (warningFilters != null) {
+                    for (Pattern p : warningFilters) {
+                        if (p.matcher(path).matches()) {
+                            filtered = true;
+                            break;
+                        }
+                    }
+                }
+                if (!filtered) {
+                    project.log("Have no file for "+path, Project.MSG_WARN);
+                }
                 return null;
             }
             if (FileUtil.isArchiveFile (fileObject)) {
@@ -720,20 +752,22 @@ public class JPDAStart extends Task implements Runnable {
 
         public Path getPlainPath() {
             if (plainPath == null) {
-                Path pp;
-                if (path != null) {
-                    pp = new Path(getProject(), path);
-                } else {
-                    pp = new Path(getProject());
-                }
-                pp.setLocation(getLocation());
-                pp.setDescription(getDescription());
                 if (getRefid() != null) {
+                    Path pp;
+                    if (path != null) {
+                        pp = new Path(getProject(), path);
+                    } else {
+                        pp = new Path(getProject());
+                    }
+                    pp.setLocation(getLocation());
+                    pp.setDescription(getDescription());
                     pp.setRefid(getRefid());
+                    //pp.setChecked(isChecked());
+                    //pp.union = union == null ? union : (Union) union.clone();
+                    plainPath = pp;
+                } else {
+                    plainPath = this;
                 }
-                //pp.setChecked(isChecked());
-                //pp.union = union == null ? union : (Union) union.clone();
-                plainPath = pp;
             }
             return plainPath;
         }
@@ -802,6 +836,7 @@ public class JPDAStart extends Task implements Runnable {
             });
         }
         
+        @Override
         public void engineAdded (DebuggerEngine engine) {
             // Consider only engines from the started session.
             Session s;
@@ -830,6 +865,7 @@ public class JPDAStart extends Task implements Runnable {
             debuggers.add (debugger);
         }
         
+        @Override
         public void engineRemoved (DebuggerEngine engine) {
             JPDADebugger debugger = engine.lookupFirst(null, JPDADebugger.class);
             if (debugger == null) return;

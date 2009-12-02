@@ -50,53 +50,24 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.openide.util.actions.SystemAction;
 
-/**
- *
- * @author ak119685
- */
-public class AnnotationBar extends JComponent implements Accessible, 
+public class AnnotationBar extends JComponent implements Accessible,
         PropertyChangeListener, DocumentListener, ChangeListener,
         ActionListener, ComponentListener, MouseMotionListener {
 
-    //TestAnnotationsPanel mainPanel = new TestAnnotationsPanel();
-    /**
-     * Target text component for which the annotation bar is aiming.
-     */
     private FileAnnotationInfo fileAnnotationInfo;
     private final JTextComponent textComponent;
-    /**
-     * User interface related to the target text component.
-     */
     private final EditorUI editorUI;
-    /**
-     * Fold hierarchy of the text component user interface.
-     */
     private final FoldHierarchy foldHierarchy;
-    /**
-     * Document related to the target text component.
-     */
     private final BaseDocument doc;
-    /**
-     * Caret of the target text component.
-     */
     private final Caret caret;
-    /**
-     * Controls annotation bar visibility.
-     */
     private boolean annotated;
     private Color backgroundColor = Color.WHITE;
     private Color foregroundColor = Color.BLACK;
-//    private Color BOX_COLOR = new Color(200, 200, 200);
     private Color metricsFG = null;
     private Color metricsBG = null;
     private Color navigationBarFG = null;
     private Color navigationBarBG = null;
-    // Bar font
     private Font barFont = null;
-    /**
-     * Most recent status message.
-     */
-    //private String recentStatusMessage = "";
 
     public AnnotationBar(JTextComponent target) {
         this.textComponent = target;
@@ -105,19 +76,18 @@ public class AnnotationBar extends JComponent implements Accessible,
         this.doc = editorUI.getDocument();
         this.caret = textComponent.getCaret();
         setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
-//    this.setLayout(new BorderLayout());
-//    this.add(mainPanel, BorderLayout.CENTER);
         addMouseListener(new PopupMenuListener());
     }
 
     /**
      * @return the fileAnnotationInfo
      */
-    protected FileAnnotationInfo getFileAnnotationInfo() {
+    private FileAnnotationInfo getFileAnnotationInfo() {
         return fileAnnotationInfo;
     }
 
     private static class PopupMenuListener extends MouseAdapter implements MouseListener {
+
         private JPopupMenu pm;
         JCheckBoxMenuItem checkBoxMenuItem;
 
@@ -291,8 +261,12 @@ public class AnnotationBar extends JComponent implements Accessible,
         revalidate();  // resize the component
     }
 
-    public void unAnnotate() {
+    public void hideAnnotate() {
         annotated = false;
+
+        if (getFileAnnotationInfo() == null || getFileAnnotationInfo().getLineAnnotationInfo() == null) { // IZ 175761 
+            return;
+        }
 
         for (LineAnnotationInfo lineAnnotationInfo : getFileAnnotationInfo().getLineAnnotationInfo()) {
             setHighlight((StyledDocument) doc, lineAnnotationInfo.getLine(), lineAnnotationInfo.getLine(), new Color(255, 255, 255), null);
@@ -312,6 +286,15 @@ public class AnnotationBar extends JComponent implements Accessible,
 
         revalidate();  // resize the component
 
+    }
+
+    public void unAnnotate() {
+        hideAnnotate();
+        fileAnnotationInfo = null;
+    }
+
+    public boolean hasAnnotations() {
+        return fileAnnotationInfo != null;
     }
 
     private void setHighlight(StyledDocument doc, int line1, int line2, Color bgColor, Color fgColor) {
@@ -422,12 +405,12 @@ public class AnnotationBar extends JComponent implements Accessible,
             // paint line annotation
             Rectangle clip = g.getClipBounds();
             int x1 = clip.x;
-            int x2 = clip.width-1;
+            int x2 = clip.width - 1;
             int y1 = yBase;
             int y2 = editorUI.getLineHeight();
             // paint background
             g.setColor(backgroundColor());
-            g.fillRect(x1, y1+1, x2, y2-1);
+            g.fillRect(x1, y1 + 1, x2, y2 - 1);
             // paint text
             String annotation = lineAnnotationInfo.getAnnotation();
             g.setFont(getBarFont());
@@ -440,12 +423,12 @@ public class AnnotationBar extends JComponent implements Accessible,
             // paint block annotation
             Rectangle clip = g.getClipBounds();
             int x1 = clip.x;
-            int x2 = clip.width-1;
+            int x2 = clip.width - 1;
             int y1 = yBase;
             int y2 = editorUI.getLineHeight();
             // paint background
             g.setColor(backgroundColor());
-            g.fillRect(x1, y1+1, x2, y2-2);
+            g.fillRect(x1, y1 + 1, x2, y2 - 2);
             // paint text
             String annotation = lineAnnotationInfo.getAnnotation();
             g.setFont(getBarBoldFont());
@@ -454,7 +437,7 @@ public class AnnotationBar extends JComponent implements Accessible,
             lineAnnotationInfo.setY(yBase, yBase + editorUI.getLineHeight());
         }
     }
-   
+
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt == null) {
             return;
@@ -474,7 +457,7 @@ public class AnnotationBar extends JComponent implements Accessible,
                 navigationBarBG = null;
 
                 if (annotated) {
-                    unAnnotate();
+                    hideAnnotate();
                     annotate(getFileAnnotationInfo());
                 }
             }
@@ -561,6 +544,4 @@ public class AnnotationBar extends JComponent implements Accessible,
 
     public void mouseDragged(MouseEvent e) {
     }
-
-
 }

@@ -14,16 +14,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
-import org.netbeans.modules.nativeexecution.api.util.Signal;
 import org.netbeans.modules.nativeexecution.support.EnvWriter;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.UnbufferSupport;
 
 public final class RemoteNativeProcess extends AbstractNativeProcess {
 
     private final static java.util.logging.Logger log = Logger.getInstance();
+    private final static int startupErrorExitValue = 184;
     private final static Object lock = RemoteNativeProcess.class.getName() + "Lock"; // NOI18N
     private ChannelStreams cstreams = null;
     private Integer exitValue = null;
@@ -36,11 +36,11 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
         Throwable exception = null;
         ChannelStreams streams = null;
 
-        if (isInterrupted()) {
-            throw new InterruptedException();
-        }
-
         try {
+            if (isInterrupted()) {
+                throw new InterruptedException();
+            }
+
             final String commandLine = info.getCommandLineForShell();
             final ConnectionManager mgr = ConnectionManager.getInstance();
             final ExecutionEnvironment execEnv = info.getExecutionEnvironment();
@@ -72,8 +72,7 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
                     final String workingDirectory = info.getWorkingDirectory(true);
 
                     if (workingDirectory != null) {
-                        streams.in.write(("cd \"" + workingDirectory + "\"\n").getBytes()); // NOI18N
-                        streams.in.flush();
+                        streams.in.write(EnvWriter.getBytesWithRemoteCharset("cd \"" + workingDirectory + "\" || exit " + startupErrorExitValue + "\n")); // NOI18N
                     }
 
                     EnvWriter ew = new EnvWriter(streams.in);
@@ -84,7 +83,7 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
                         streams.in.write("trap 'ITS_TIME_TO_START=1' CONT\n".getBytes()); // NOI18N
                         streams.in.write("while [ -z \"$ITS_TIME_TO_START\" ]; do sleep 1; done\n".getBytes()); // NOI18N
                     }
-                    streams.in.write(("exec " + commandLine + "\n").getBytes()); // NOI18N
+                    streams.in.write(EnvWriter.getBytesWithRemoteCharset("exec " + commandLine + "\n")); // NOI18N
                     streams.in.flush();
 
                     readPID(streams.out);
@@ -140,16 +139,23 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
                 interrupt();
                 throw ex;
             }
-
         }
 
         exitValue = Integer.valueOf(cstreams.channel.getExitStatus());
+
+        if (exitValue == startupErrorExitValue) {
+            exitValue = -1;
+        }
+
+        if (getState() == State.CANCELLED) {
+            throw new InterruptedException();
+        }
 
         return exitValue.intValue();
     }
 
     @Override
-    public void cancel() {
+    public synchronized void cancel() {
         ChannelExec channel;
 
         synchronized (lock) {
@@ -160,22 +166,7 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
             }
         }
 
-        // Sometimes jsch fails to kill the remote process ...
-        // try to do force kill
-
-        int pid = -1;
-
-        try {
-            pid = getPID();
-        } catch (IOException ex) {
-        }
-
-        if (pid == -1) {
-            // This means that we are cancelling process that was not started
-            return;
-        }
-
-        CommonTasksSupport.sendSignal(info.getExecutionEnvironment(), pid, Signal.SIGKILL, null); // NOI18N
+        ProcessUtils.destroy(this);
     }
 
     private ChannelStreams execCommand(

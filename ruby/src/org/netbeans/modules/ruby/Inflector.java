@@ -133,6 +133,34 @@ final class Inflector {
         return word;
     }
 
+    /**
+     * Similar to Rails' Inflector tableize method: converts a name
+     * to a corresponding table name:
+     *
+     * @param word
+     * @return
+     */
+    public String tableize(String word) {
+        return pluralize(RubyUtils.camelToUnderlinedName(word));
+    }
+
+
+    /**
+     * Gets the class name part from the given <code>classNameInModule</code>, i.e.
+     * removes the module part from it. E.g. for <code>"Foo::Bar::Baz"</code> returns
+     * <code>"Baz"</code>.
+     * 
+     * @param classNameInModule
+     * @return
+     */
+    public String demodulize(String classNameInModule) {
+        int last = classNameInModule.lastIndexOf("::"); //NOI18N
+        if (last == -1) {
+            return classNameInModule;
+        }
+        return classNameInModule.substring(last + 2, classNameInModule.length());
+    }
+
     private boolean isEmpty(String str) {
         return str == null || "".equals(str.trim());
     }

@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.jmx.test.jconsole;
 
-import org.netbeans.junit.NbTestSuite;
+import java.io.IOException;
 import static org.netbeans.modules.jmx.test.helpers.JellyConstants.*;
 
 /**
@@ -57,20 +57,7 @@ public class CreateAnagramProject extends JConsoleTestCase {
         super(name);
     }
 
-    /** Use for execution inside IDE */
-    public static void main(java.lang.String[] args) {
-        // run whole suite
-        junit.textui.TestRunner.run(suite());
-    }
-
-    public static NbTestSuite suite() {
-
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new CreateAnagramProject("createSampleProject"));
-        return suite;
-    }
-
-    public void createSampleProject() {
+    public void testCreateSampleProject() throws IOException {
 
         System.out.println("============  createSampleProject  ============");
         

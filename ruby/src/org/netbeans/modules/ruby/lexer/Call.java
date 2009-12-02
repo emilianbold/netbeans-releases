@@ -56,7 +56,6 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.ruby.RubyPredefinedVariable;
 import org.netbeans.modules.ruby.RubyType;
 import org.netbeans.modules.ruby.RubyUtils;
-import org.openide.util.Exceptions;
 
 /**
  * Class which represents a Call in the source
@@ -418,7 +417,9 @@ public class Call {
                         RubyType type = RubyPredefinedVariable.getType(lhs);
                          // predefined vars are instances
                         // also if it was a call to a constructor, the call is not static
-                        boolean isStatic = (type == null && !containsCallToNew(lhs)) || constantExpected;
+                        boolean isStatic = 
+                                (type == null && !containsCallToNew(lhs) && !isChainedCall(lhs))
+                                || constantExpected;
 
                         boolean isLHSConstant = RubyUtils.isValidConstantFQN(lhs);
                         if (type == null /* not predef. var */ && isLHSConstant) {
@@ -465,6 +466,10 @@ public class Call {
 
     private static boolean containsCallToNew(String lhs) {
         return CALL_TO_NEW_IN_CHAIN.matcher(lhs).matches();
+    }
+
+    private static boolean isChainedCall(String lhs) {
+        return lhs.indexOf('.') > 0; //NOI18N
     }
 
     private static Call tryLiteral(final TokenId id, final boolean methodExpected, final String tokenText) {

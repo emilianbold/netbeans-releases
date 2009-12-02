@@ -1,4 +1,4 @@
-// $ANTLR 2.7.3rc3: "org.netbeans.modules.cnd.antlr.g" -> "ANTLRParser.java"$
+// $ANTLR 2.7.3rc3: "antlr.g" -> "ANTLRParser.java"$
 
 package org.netbeans.modules.cnd.antlr;
 

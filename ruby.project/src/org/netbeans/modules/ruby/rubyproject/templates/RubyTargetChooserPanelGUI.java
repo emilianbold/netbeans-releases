@@ -722,9 +722,11 @@ public class RubyTargetChooserPanelGUI extends JPanel implements ActionListener,
         
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            SourceGroup g = (SourceGroup) value;
-            super.getListCellRendererComponent(list, g.getDisplayName(), index, isSelected, cellHasFocus);
-            setIcon(g.getIcon(false));
+            if (value != null) { // apple jdk bug
+                SourceGroup g = (SourceGroup) value;
+                super.getListCellRendererComponent(list, g.getDisplayName(), index, isSelected, cellHasFocus);
+                setIcon(g.getIcon(false));
+            }
             return this;
         }
         

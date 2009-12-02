@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.web.jsf.editor;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -49,11 +51,14 @@ import org.netbeans.modules.csl.api.DataLoadersBridge;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
+import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibraryDescriptor;
+import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibraryDescriptorCache;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrarySupport;
 import org.netbeans.modules.web.jsf.editor.index.JsfIndex;
+import org.netbeans.modules.web.jsf.editor.tld.LibraryDescriptor;
 import org.netbeans.modules.web.jsf.editor.tld.TldLibrariesCache;
 import org.netbeans.modules.web.jsf.editor.tld.TldLibrary;
-import org.netbeans.modules.web.jsf.editor.tld.TldLibraryException;
+import org.netbeans.modules.web.jsf.editor.tld.LibraryDescriptorException;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -101,9 +106,11 @@ public class JsfSupport {
 
     }
     private TldLibrariesCache tldLibrariesCache;
+    private FaceletsLibraryDescriptorCache faceletsDescriptorsCache;
     private FaceletsLibrarySupport faceletsLibrarySupport;
     private WebModule wm;
     private ClassPath classpath;
+    private JsfIndex index;
 
     private JsfSupport(WebModule wm) {
         assert wm != null;
@@ -111,10 +118,23 @@ public class JsfSupport {
         this.wm = wm;
 
         this.classpath = ClassPath.getClassPath(wm.getDocumentBase(), ClassPath.COMPILE);
+        
         //create classpath support
         this.tldLibrariesCache = new TldLibrariesCache(this);
-
+        this.faceletsDescriptorsCache = new FaceletsLibraryDescriptorCache(this);
         this.faceletsLibrarySupport = new FaceletsLibrarySupport(this);
+
+        //adds a classpath listener which invalidates the index instance after classpath change
+        //and also invalidates the facelets library descriptors and tld caches
+        this.classpath.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                synchronized (JsfSupport.this) {
+                    index = null;
+                }
+                tldLibrariesCache.clearCache();
+                faceletsDescriptorsCache.clearCache();
+            }
+        });
         //register html extension
         //TODO this should be done declaratively via layer
         JsfHtmlExtension.activate();
@@ -137,10 +157,27 @@ public class JsfSupport {
     public TldLibrary getTldLibrary(String namespace) {
         try {
             return tldLibrariesCache.getLibrary(namespace);
-        } catch (TldLibraryException e) {
+        } catch (LibraryDescriptorException e) {
             Exceptions.printStackTrace(e);
         }
         return null;
+    }
+
+    public FaceletsLibraryDescriptor getFaceletsLibraryDescriptor(String namespace) {
+        try {
+            return faceletsDescriptorsCache.getLibrary(namespace);
+        } catch (LibraryDescriptorException e) {
+            Exceptions.printStackTrace(e);
+        }
+        return null;
+    }
+
+    /** Returns a library descriptor for facelets library. If there is a .taglib.xml
+     *  file returns the data from it otherwise tries to find corresponding .tld file.
+     */
+    public LibraryDescriptor getLibraryDescriptor(String namespace) {
+        FaceletsLibraryDescriptor fld = getFaceletsLibraryDescriptor(namespace);
+        return fld != null ? fld : getTldLibrary(namespace);
     }
 
     /** Library's uri to library map */
@@ -148,13 +185,15 @@ public class JsfSupport {
         return faceletsLibrarySupport.getLibraries();
     }
 
-    public JsfIndex getIndex() {
-        try {
-            return JsfIndex.get(wm);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+    public synchronized JsfIndex getIndex() {
+        if(index == null) {
+            try {
+                this.index = JsfIndex.create(wm);
+            } catch (IOException ex) {
+                Logger.global.log(Level.SEVERE, "Cannot create index for jsf support!", ex); //NOI18N
+            }
         }
-        return null;
+        return this.index;
     }
 
 }

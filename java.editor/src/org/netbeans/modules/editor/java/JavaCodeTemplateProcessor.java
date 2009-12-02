@@ -72,6 +72,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
     public static final String ARRAY = "array"; //NOI18N
     public static final String ITERABLE = "iterable"; //NOI18N
     public static final String TYPE = "type"; //NOI18N
+    public static final String TYPE_VAR = "typeVar"; //NOI18N
     public static final String ITERABLE_ELEMENT_TYPE = "iterableElementType"; //NOI18N
     public static final String LEFT_SIDE_TYPE = "leftSideType"; //NOI18N
     public static final String RIGHT_SIDE_TYPE = "rightSideType"; //NOI18N
@@ -93,7 +94,8 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
     private TreePath treePath = null;
     private Scope scope = null;
     private TypeElement enclClass = null;
-    private Iterable<? extends Element> locals = null;
+    private List<Element> locals = null;
+    private List<Element> typeVars = null;
     private Map<CodeTemplateParameter, String> param2hints = new HashMap<CodeTemplateParameter, String>();
     private Map<CodeTemplateParameter, TypeMirror> param2types = new HashMap<CodeTemplateParameter, TypeMirror>();
     private ErrChecker errChecker = new ErrChecker();
@@ -344,6 +346,11 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
             } else if (TYPE.equals(entry.getKey())) {
                 TypeMirror tm = type((String)entry.getValue());
                 if (tm != null && tm.getKind() != TypeKind.ERROR) {
+                    if (name != null) {
+                        TypeParameterElement tpe = typeVar(tm, name);
+                        if (tpe != null)
+                            return tpe.getSimpleName().toString();
+                    }
                     if (tm.getKind() == TypeKind.TYPEVAR)
                         tm = ((TypeVariable)tm).getUpperBound();
                     String value = Utilities.getTypeName(tm, true).toString();
@@ -354,6 +361,8 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                         return value;
                     }
                 }
+            } else if (TYPE_VAR.equals(entry.getKey())) {
+                name = (String) entry.getValue();
             } else if (ITERABLE_ELEMENT_TYPE.equals(entry.getKey())) {
                 TypeMirror tm = iterableElementType(param.getInsertTextOffset() + 1);
                 if (tm != null && tm.getKind() != TypeKind.ERROR) {
@@ -490,6 +499,32 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                             if (d < distance) {
                                 distance = d;
                                 closest = (VariableElement)ee;
+                            }
+                        }
+                    }
+                }
+                return closest;
+            }
+        } catch (Exception e) {
+        }
+        return null;
+    }
+
+    private TypeParameterElement typeVar(TypeMirror type, String name) {
+        try {
+            if (initParsing()) {
+                TypeParameterElement closest = null;
+                int distance = Integer.MAX_VALUE;
+                if (type != null) {
+                    Types types = cInfo.getTypes();
+                    for (Element e : typeVars) {
+                        if (e instanceof TypeParameterElement && !ERROR.contentEquals(e.getSimpleName()) && types.isAssignable(e.asType(), type)) {
+                            int d = ElementHeaders.getDistance(e.getSimpleName().toString(), name);
+                            if (types.isSameType(e.asType(), type))
+                                d -= 1000;
+                            if (d < distance) {
+                                distance = d;
+                                closest = (TypeParameterElement)e;
                             }
                         }
                     }
@@ -769,6 +804,8 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                             ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
                                 public boolean accept(Element e, TypeMirror t) {
                                     switch (e.getKind()) {
+                                    case TYPE_PARAMETER:
+                                        return true;
                                     case LOCAL_VARIABLE:
                                     case EXCEPTION_PARAMETER:
                                     case PARAMETER:
@@ -786,7 +823,17 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                                     }
                                 }
                             };
-                            locals = cInfo.getElementUtilities().getLocalMembersAndVars(scope, acceptor);
+                            locals = new ArrayList<Element>();
+                            typeVars = new ArrayList<Element>();
+                            for (Element element : cInfo.getElementUtilities().getLocalMembersAndVars(scope, acceptor)) {
+                                switch(element.getKind()) {
+                                    case TYPE_PARAMETER:
+                                        typeVars.add(element);
+                                        break;
+                                    default:
+                                        locals.add(element);
+                                }
+                            }
                         }
                     },true);
                     if (!initTask.isDone())

@@ -91,6 +91,9 @@ public final class JavacardPlatformKeyNames {
     public static final String PLATFORM_TASKS_CLASSPATH = "javacard.nbtasksClassPath"; //NOI18N
     public static final String PLATFORM_TOOLS_CLASSPATH = "javacard.toolClassPath"; //NOI18N
     public static final String PLATFORM_IS_RI_WRAPPER = "javacard.wrap.ri"; //NOI18N
+    public static final String PLATFORM_DEVICE_FILE_NOT_REQUIRED = "javacard.build.no.device.file"; //NOI18N
+    //public static final String PLATFORM_JAVACARD_SPECIFICATION_VERSION = "javacard.specification.version"; //NOI18N
+    public static final String PLATFORM_JAVACARD_VERSION = "javacard.version"; //NOI18N
 
     /**
      * Get the list of property names that need to be absolutized
@@ -103,13 +106,9 @@ public final class JavacardPlatformKeyNames {
         String pathVal = props.get(PLATFORM_PATH_PROPERTIES);
         Set<String> result = new HashSet<String>();
         if (pathVal == null) {
-            for (String p : getPathPropertyNames()) {
-                if (props.containsKey(p)) {
-                    result.add (p);
-                }
-            }
+            return getPathPropertyNames();
         } else {
-            String[] p = pathVal.split(",");
+            String[] p = pathVal.split(","); //NOI18N
             if (p != null) {
                 for (String s : p) {
                     result.add(s.trim());
@@ -134,9 +133,9 @@ public final class JavacardPlatformKeyNames {
             PLATFORM_CLASSIC_BOOT_CLASSPATH,
             PLATFORM_TASKS_CLASSPATH,
             PLATFORM_TOOLS_CLASSPATH,
-            PLATFORM_HOME,
             PLATFORM_VENDOR,
-            PLATFORM_NAME
+            PLATFORM_NAME,
+            PLATFORM_JAVACARD_VERSION
         ));
     }
 
@@ -145,11 +144,13 @@ public final class JavacardPlatformKeyNames {
             PLATFORM_CLASSPATH,
             PLATFORM_BOOT_CLASSPATH,
             PLATFORM_CLASSIC_BOOT_CLASSPATH,
-            PLATFORM_SRC_PATH, PLATFORM_JAVADOC_PATH,
+            PLATFORM_SRC_PATH,
+            PLATFORM_JAVADOC_PATH,
             PLATFORM_EMULATOR_PATH,
             PLATFORM_TASKS_CLASSPATH,
             PLATFORM_TOOLS_CLASSPATH,
-            PLATFORM_HOME
+            PLATFORM_HOME,
+            RI_HOME
         ));
     }
 

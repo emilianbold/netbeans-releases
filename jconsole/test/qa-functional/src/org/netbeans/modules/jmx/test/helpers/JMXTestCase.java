@@ -66,6 +66,7 @@ import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
+import org.netbeans.jellytools.NewJavaProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.Action;
@@ -125,14 +126,15 @@ public abstract class JMXTestCase extends JellyTestCase {
     public NewProjectWizardOperator newProject(
             String category,
             String type,
-            String name) {
+            String name) throws IOException {
         NewProjectWizardOperator project = NewProjectWizardOperator.invoke();
         project.selectCategory(category);
         project.selectProject(type);
         project.next();
-        NewJavaFileNameLocationStepOperator projectName =
-                new NewJavaFileNameLocationStepOperator();
-        projectName.setObjectName(name);
+        NewJavaProjectNameLocationStepOperator projectName =
+                new NewJavaProjectNameLocationStepOperator();
+        projectName.txtProjectName().setText(name);
+        projectName.txtProjectLocation().setText(getWorkDir().getAbsolutePath());
         project.finish();
         setWaitFocusTimeout(project, 10000);
         return project;

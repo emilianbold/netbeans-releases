@@ -210,6 +210,10 @@ implements FileNameMapper, URIResolver, EntityResolver {
                         if (modname == null) {
                             continue;
                         }
+                        String skip = mf.getMainAttributes().getValue("FeaturesOnDemand-Proxy-Layer");
+                        if ("false".equals(skip)) {
+                            continue;
+                        }
                         String show = mf.getMainAttributes().getValue("AutoUpdate-Show-In-Client");
                         String base = modname.replaceFirst("/[0-9]+$", "");
                         if (!"false".equals(show)) {
@@ -284,7 +288,7 @@ implements FileNameMapper, URIResolver, EntityResolver {
             }
             linePattern.setPattern("(" + sb + ") *=");
         } catch (Exception ex) {
-            throw new BuildException("Cannot parse layers", ex);
+            throw new BuildException("Cannot parse layers: " + ex.getMessage(), ex);
         }
         Map<String,ResArray> bundles = new HashMap<String,ResArray>();
         bundles.put("", new ResArray());

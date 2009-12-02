@@ -19,11 +19,9 @@
 
 set -e
 
-if [ -d "/Library/Receipts/openesb.pkg" ] ; then
-    rm -rf "/Library/Receipts/openesb.pkg"
-fi
+script_dir=`dirname "$0"`
 
-if [ -d "/private/var/db/receipts" ] ; then
-    rm -rf "/private/var/db/receipts/openesb.plist"
-    rm -rf "/private/var/db/receipts/openesb.bom"
-fi
+. "$script_dir"/env.sh
+
+#clean receipts
+"$script_dir"/clean_receipts.sh "openesb-$OPENESB_ID" "openesb"

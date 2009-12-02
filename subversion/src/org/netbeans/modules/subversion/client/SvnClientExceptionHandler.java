@@ -64,6 +64,7 @@ import java.util.logging.Level;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
@@ -245,7 +246,7 @@ public class SvnClientExceptionHandler {
         // otherwise try to retrieve the certificate from the server ...                                             
         SSLSocket socket;
         try {
-            socket = getSSLSocket(hostString, url.getPort());
+            socket = getSSLSocket(hostString, url.getPort(), null);
         } catch (Exception e) {
             Subversion.LOG.log(Level.SEVERE, null, e);
             return false;
@@ -349,7 +350,7 @@ public class SvnClientExceptionHandler {
         return null;
     }  
     
-    private SSLSocket getSSLSocket(String host, int port) throws Exception {
+    private SSLSocket getSSLSocket(String host, int port, String[] protocols) throws Exception {
         TrustManager[] trust = new TrustManager[] {
             new X509TrustManager() {
                 public X509Certificate[] getAcceptedIssuers() { return null; }
@@ -390,7 +391,18 @@ public class SvnClientExceptionHandler {
         context.init(getKeyManagers(), trust, null);
         SSLSocketFactory factory = context.getSocketFactory();
         SSLSocket socket = (SSLSocket) factory.createSocket(proxySocket, host, port, true);
-        socket.startHandshake();    
+        if (protocols != null) {
+            socket.setEnabledProtocols(protocols);
+        }
+        try {
+            socket.startHandshake();
+        } catch (SSLException ex) {
+            if (protocols == null && isBadRecordMac(ex.getMessage())) {
+                return getSSLSocket(host, port, new String[] {"SSLv3", "SSLv2Hello"}); //NOI18N
+            } else {
+                throw ex;
+            }
+        }
         return socket;
     }
     
@@ -498,13 +510,14 @@ public class SvnClientExceptionHandler {
 
     private String getCertMessage(X509Certificate cert, String host) { 
         CertificateFailure[] certFailures = getCertFailures();
-        Object[] param = new Object[6];
+        Object[] param = new Object[7];
         param[0] = host;
-        param[1] = cert.getNotBefore();
-        param[2] = cert.getNotAfter();
-        param[3] = cert.getIssuerDN().getName();
-        param[4] = getFingerprint(cert, "SHA1");      // NOI18N
-        param[5] = getFingerprint(cert, "MD5");       // NOI18N
+        param[1] = cert.getSubjectDN().getName();
+        param[2] = cert.getNotBefore();
+        param[3] = cert.getNotAfter();
+        param[4] = cert.getIssuerDN().getName();
+        param[5] = getFingerprint(cert, "SHA1");      // NOI18N
+        param[6] = getFingerprint(cert, "MD5");       // NOI18N
 
         String message = NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_BadCertificate", param); // NOI18N
         for (int i = 0; i < certFailures.length; i++) {
@@ -865,5 +878,10 @@ public class SvnClientExceptionHandler {
         String msg = NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_InvalidKeyException"); // NOI18N
         annotate(msg);
     }
-        
+
+    private boolean isBadRecordMac (String message) {
+        message = message.toLowerCase();
+        return message.contains("received fatal alert")                 //NOI18N
+                && message.contains("bad_record_mac");                  //NOI18N
+    }
 }

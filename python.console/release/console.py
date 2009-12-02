@@ -4,7 +4,7 @@ parser.add_option("-p", "--plain",
                   action="store_true", dest="plain", default=False,
                   help="don't Use IPython for Interactive console")
 (options, args)= parser.parse_args()
-print "NbPython console"
+print( "NbPython console")
 use_plain = options.plain
 try:
     if use_plain:

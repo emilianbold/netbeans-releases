@@ -55,12 +55,12 @@ import java.util.logging.Logger;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.glassfish.javaee.ide.Hk2PluginProperties;
-import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceCreationException;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.GlassfishModuleFactory;
 import org.netbeans.modules.glassfish.spi.RegisteredDerbyServer;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceCreationException;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.filesystems.FileUtil;
@@ -107,27 +107,16 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
             Map<String, String> props = commonModule.getInstanceProperties();
             String url = props.get(InstanceProperties.URL_ATTR);
             ip = InstanceProperties.getInstanceProperties(url);
-            if(ip == null) {
+            if (ip == null) {
                 String username = props.get(InstanceProperties.USERNAME_ATTR);
                 String password = props.get(InstanceProperties.PASSWORD_ATTR);
                 String displayName = props.get(InstanceProperties.DISPLAY_NAME_ATTR);
-                int fail = 0;
-                while (null == ip && fail < 20) {
                     try {
                         ip = InstanceProperties.createInstancePropertiesWithoutUI(
                                 url, username, password, displayName, props);
                     } catch (InstanceCreationException ex) {
-                        fail++;
-                        if (fail >= 20) {
                             Logger.getLogger("glassfish-javaee").log(Level.WARNING, null, ex); // NOI18N
-                        }
-                        try {
-                            Thread.sleep(100);
-                        } catch (InterruptedException ie) {
-                            Logger.getLogger("glassfish-javaee").log(Level.INFO, null, ie); // NOI18N
-                        }
                     }
-                }
 
                 if(ip == null) {
                     Logger.getLogger("glassfish-javaee").log(Level.INFO,
@@ -250,7 +239,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
     }
 
     private static final String[] JAXRS_LIBRARIES =
-             {"asm-all-repackaged", "jackson-asl", "jersey-bundle", "jersey-gf-bundle", "jersey-multipart", "jettison", "jsr311-api"}; //NOI18N
+             {"asm-all-repackaged", "jackson-asl", "jackson-core-asl", "jersey-bundle", "jersey-gf-bundle", "jersey-multipart", "jettison", "jsr311-api"}; //NOI18N
     private static final String PRELUDE_RESTLIB = "restlib_gfv3"; // NOI18N
     private static final String V3_RESTLIB = "restlib_gfv3ee6"; // NOI18N
 
@@ -274,11 +263,11 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
         // javadoc
         List<URL> javadocList = new ArrayList<URL>();
         try {
-            File javadocFile = InstalledFileLocator.getDefault().locate("docs/jsr311-api-doc.zip", null, false); //NOI18N
+            File javadocFile = InstalledFileLocator.getDefault().locate("docs/jsr311-api-1.1.1-javadoc.zip", null, false); //NOI18N
             if (javadocFile != null && javadocFile.exists()) {
                     javadocList.add(FileUtil.getArchiveRoot(javadocFile.toURI().toURL()));
             }
-            javadocFile = InstalledFileLocator.getDefault().locate("docs/jersey-api-doc.zip", null, false); //NOI18N
+            javadocFile = InstalledFileLocator.getDefault().locate("docs/jersey-1.1.4-javadoc.zip", null, false); //NOI18N
             if (javadocFile != null && javadocFile.exists()) {
                     javadocList.add(FileUtil.getArchiveRoot(javadocFile.toURI().toURL()));
             }

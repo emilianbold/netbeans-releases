@@ -39,24 +39,50 @@
 
 package org.netbeans.modules.javacard.spi.actions;
 
+import java.awt.Toolkit;
+import org.netbeans.api.validation.adapters.DialogBuilder;
+import org.netbeans.modules.javacard.spi.Card;
+import org.netbeans.modules.javacard.spi.CardCustomizer;
 import org.netbeans.modules.javacard.spi.capabilities.CardCustomizerProvider;
+import org.netbeans.modules.javacard.spi.capabilities.CardInfo;
 import org.netbeans.spi.actions.Single;
+import org.openide.DialogDescriptor;
 import org.openide.util.NbBundle;
 
 /**
  *
- * @author Tim
+ * @author Tim Boudreau
  */
-final class CustomizeCardAction extends Single<CardCustomizerProvider> {
-
+final class CustomizeCardAction extends Single<Card> {
     CustomizeCardAction() {
-        super (CardCustomizerProvider.class, NbBundle.getMessage(CustomizeCardAction.class,
+        super (Card.class, NbBundle.getMessage(CustomizeCardAction.class,
                 "ACTION_CUSTOMIZE"), null); //NOI18N
     }
 
     @Override
-    protected void actionPerformed(CardCustomizerProvider target) {
+    protected void actionPerformed(Card target) {
+        CardCustomizerProvider ccp = target.getCapability(CardCustomizerProvider.class);
+        if (ccp != null) {
+            CardCustomizer cc = ccp.getCardCustomizer(target);
+            if (cc != null) {
+                String name = target.getCapability(CardInfo.class) == null ?
+                    target.getSystemId() : target.getCapability(CardInfo.class).getDisplayName();
+                DialogBuilder db = new DialogBuilder(CustomizeCardAction.class).setValidationGroup(cc.getValidationGroup()).setTitle(
+                        NbBundle.getMessage(CustomizeCardAction.class, "TTL_CUSTOMIZE_CARD", name)).  //NOI18N
+                        setContent(cc.getComponent()).setModal(true).setButtonSet(DialogBuilder.ButtonSet.OK_CANCEL);
+                if (db.showDialog(DialogDescriptor.OK_OPTION)) {
+                    cc.save();
+                }
+                return;
+            }
+        }
+        Toolkit.getDefaultToolkit().beep();
         
     }
 
+    @Override
+    public boolean isEnabled(Card target) {
+        return target.getCapability(CardCustomizerProvider.class) != null  &&
+                target.getCapability(CardCustomizerProvider.class).getCardCustomizer(target) != null;
+    }
 }

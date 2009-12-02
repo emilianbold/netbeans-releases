@@ -49,6 +49,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Set;
 
+import java.util.logging.Logger;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.Session;
@@ -73,9 +74,8 @@ import org.openide.util.Cancellable;
 public class StartActionProvider extends ActionsProvider implements Cancellable {
 //    private static transient String []        stopMethodNames = 
 //        {"main", "start", "init", "<init>"}; // NOI18N
-    
-    private static final boolean startVerbose = 
-        System.getProperty ("netbeans.debugger.start") != null;
+
+    private static final Logger logger = Logger.getLogger(StartActionProvider.class.getName());
     private static int jdiTrace;
     static { 
         if (System.getProperty ("netbeans.debugger.jditrace") != null) {
@@ -106,31 +106,24 @@ public class StartActionProvider extends ActionsProvider implements Cancellable 
     }
     
     public void doAction (Object action) {
-        if (startVerbose)
-            System.out.println ("\nS StartActionProvider.doAction ()");
+        logger.fine("S StartActionProvider.doAction ()");
         JPDADebuggerImpl debugger = (JPDADebuggerImpl) lookupProvider.
             lookupFirst (null, JPDADebugger.class);
         if ( debugger != null && 
              debugger.getVirtualMachine () != null
         ) return;
-        
-        
+                
+        logger.fine("S StartActionProvider." +
+                    "doAction () setStarting");
         debuggerImpl.setStarting ();
         final AbstractDICookie cookie = lookupProvider.lookupFirst(null, AbstractDICookie.class);
         doStartDebugger(cookie);
-        if (startVerbose)
-            System.out.println ("\nS StartActionProvider." +
-                "doAction () setStarting"
-            );
-        if (startVerbose)
-            System.out.println ("\nS StartActionProvider." +
-                "doAction () end"
-            );
+        logger.fine("S StartActionProvider." +
+                    "doAction () end");
     }
     
     public void postAction(Object action, final Runnable actionPerformedNotifier) {
-        if (startVerbose)
-            System.out.println ("\nS StartActionProvider.postAction ()");
+        logger.fine("S StartActionProvider.postAction ()");
         JPDADebuggerImpl debugger = (JPDADebuggerImpl) lookupProvider.
             lookupFirst (null, JPDADebugger.class);
         if ( debugger != null && 
@@ -143,15 +136,13 @@ public class StartActionProvider extends ActionsProvider implements Cancellable 
         
         final AbstractDICookie cookie = lookupProvider.lookupFirst(null, AbstractDICookie.class);
         
-        if (startVerbose)
-            System.out.println ("\nS StartActionProvider." +
-                "postAction () setStarting"
-            );
+        logger.fine("S StartActionProvider." +
+                    "postAction () setStarting");
+
         debuggerImpl.setStarting ();  // JS
-        if (startVerbose)
-            System.out.println ("\nS StartActionProvider." +
-                "postAction () setStarting end"
-            );
+        
+        logger.fine("S StartActionProvider." +
+                    "postAction () setStarting end");
         
         debuggerImpl.getRequestProcessor().post(new Runnable() {
             public void run() {
@@ -177,10 +168,8 @@ public class StartActionProvider extends ActionsProvider implements Cancellable 
     }
     
     private void doStartDebugger(AbstractDICookie cookie) {
-        if (startVerbose)
-            System.out.println ("\nS StartActionProvider." +
-                "doAction ().thread"
-            );
+        logger.fine("S StartActionProvider." +
+                    "doStartDebugger");
         Exception exception = null;
         try {
             debuggerImpl.setAttaching(cookie);
@@ -191,10 +180,8 @@ public class StartActionProvider extends ActionsProvider implements Cancellable 
             final Object startLock = new Object();
             Operator o = createOperator (virtualMachine, startLock);
             synchronized (startLock) {
-                if (startVerbose) System.out.println (
-                        "\nS StartActionProvider.doAction () - " +
-                        "starting operator thread"
-                    );
+                logger.fine("S StartActionProvider.doAction () - " +
+                            "starting operator thread");
                 o.start ();
                 if (cookie instanceof ListeningDICookie) 
                     startLock.wait(1500);
@@ -214,10 +201,8 @@ public class StartActionProvider extends ActionsProvider implements Cancellable 
 //            }
             // PATCHEND Hanz
 
-            if (startVerbose)
-                System.out.println ("\nS StartActionProvider." +
-                    "doAction ().thread end: success"
-                );
+            logger.fine("S StartActionProvider." +
+                        "doStartDebugger end: success");
         } catch (InterruptedException iex) {
             exception = iex;
         } catch (IOException ioex) {
@@ -228,10 +213,8 @@ public class StartActionProvider extends ActionsProvider implements Cancellable 
             ErrorManager.getDefault().notify(ex);
         }
         if (exception != null) {
-            if (startVerbose)
-                System.out.println ("\nS StartActionProvider." +
-                    "doAction ().thread end: exception " + exception
-                );
+            logger.fine("S StartActionProvider." +
+                        "doAction ().thread end: exception " + exception);
             debuggerImpl.setException (exception);
             // kill the session that did not start properly
             final Session session = lookupProvider.lookupFirst(null, Session.class);

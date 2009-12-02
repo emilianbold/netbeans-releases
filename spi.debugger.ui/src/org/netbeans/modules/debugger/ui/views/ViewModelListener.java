@@ -460,7 +460,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         // );
         // ====
 
-        final boolean haveModels = treeModels.size() > 0 || nodeModels.size() > 0 || tableModels.size() > 0;
+        final boolean haveModels = treeModels.size() > 0 || nodeModels.size() > 0 || tableModels.size() > 0 || hyperModels != null;
         final Models.CompoundModel newModel;
         if (hyperModels != null) {
             newModel = Models.createCompoundModel (hyperModels, propertiesHelpID);

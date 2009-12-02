@@ -101,6 +101,9 @@ import org.openide.text.Line;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.windows.Mode;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 import static org.netbeans.modules.kenai.collab.chat.ChatTopComponent.*;
 
 /**
@@ -209,7 +212,34 @@ public class ChatPanel extends javax.swing.JPanel {
     }
     private void insertLinkToEditor() {
         if (EditorRegistry.lastFocusedComponent() != null) {
-            new InsertLinkAction(EditorRegistry.lastFocusedComponent(), outbox, true).actionPerformed(null);
+            new InsertLinkAction(EditorRegistry.lastFocusedComponent(), outbox, true, false).actionPerformed(null);
+        }
+    }
+
+    private TopComponent selectedEditorComponent() {
+        Mode editor = WindowManager.getDefault().findMode("editor");//NOI18N
+        TopComponent tc = editor.getSelectedTopComponent();
+        TopComponent topComponent = getTopComponent(EditorRegistry.lastFocusedComponent());
+        if (topComponent == tc) {
+            return tc;
+        }
+        return null;
+    }
+
+    private void insertLinkToIssue() {
+        IssueHandle[] issues;
+        if (muc==null) {
+            issues = KenaiIssueAccessor.getDefault().getRecentIssues();
+        } else {
+            try {
+                issues = KenaiIssueAccessor.getDefault().getRecentIssues(Kenai.getDefault().getProject(StringUtils.parseName(muc.getRoom())));
+            } catch (KenaiException ex) {
+                issues = new IssueHandle[0];
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        if (issues.length >0) {
+            new InsertLinkAction(issues[0], outbox, false).actionPerformed(null);
         }
     }
     private void selectIssueReport(Matcher m) {
@@ -828,7 +858,7 @@ public class ChatPanel extends javax.swing.JPanel {
             }
             return;
         }
-        if (evt.isControlDown() || evt.isAltDown() || evt.isShiftDown()) {
+        if (evt.isControlDown() || evt.isAltDown()) {
             if (evt.getKeyCode() == KeyEvent.VK_UP) {
                 if (history.isOnStart()) {
                     history.setEditedMessage(outbox.getText());
@@ -848,8 +878,12 @@ public class ChatPanel extends javax.swing.JPanel {
             }
         }
         if (evt.isControlDown() && evt.getKeyCode() == KeyEvent.VK_L) {
-                if (EditorRegistry.lastFocusedComponent() != null) {
+            Mode editor = WindowManager.getDefault().findMode("editor");//NOI18N
+            TopComponent tc = editor.getSelectedTopComponent();
+                if (getTopComponent(EditorRegistry.lastFocusedComponent()) == tc) {
                     insertLinkToEditor();
+                } else if (tc!=null && isIssueRelated(tc)) {
+                    insertLinkToIssue();
                 } else {
                    Point magicCaretPosition = outbox.getCaret().getMagicCaretPosition();
                    if (magicCaretPosition==null) {
@@ -859,6 +893,39 @@ public class ChatPanel extends javax.swing.JPanel {
                 }
             }
     }//GEN-LAST:event_outboxKeyPressed
+
+    private boolean isIssueRelated(TopComponent tc) {
+        IssueHandle[] issues;
+        if (muc==null) {
+            issues = KenaiIssueAccessor.getDefault().getRecentIssues();
+            if (issues.length<1) {
+                return false;
+            }
+            return issues[0].isShowing();
+        } else {
+            try {
+                issues = KenaiIssueAccessor.getDefault().getRecentIssues(Kenai.getDefault().getProject(StringUtils.parseName(muc.getRoom())));
+                IssueHandle[] allIssues = KenaiIssueAccessor.getDefault().getRecentIssues();
+                if (issues.length<1) {
+                    return false;
+                }
+                if (issues[0].getID().equals(allIssues[0].getID())) {
+                    return issues[0].isShowing();
+                }
+            } catch (KenaiException ex) {
+                Exceptions.printStackTrace(ex);
+                return false;
+            }
+        }
+        return false;
+    }
+
+    private TopComponent getTopComponent(Component comp) {
+        while (comp!=null && ! (comp instanceof TopComponent)) {
+            comp = comp.getParent();
+        }
+        return (TopComponent) comp;
+    }
 
     private void sendButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendButtonActionPerformed
         KeyEvent e = new KeyEvent((Component) evt.getSource(),evt.getID(), evt.getWhen(), evt.getModifiers(), KeyEvent.VK_ENTER, '\n');
@@ -887,12 +954,12 @@ public class ChatPanel extends javax.swing.JPanel {
         
         JTextComponent lastFocused = EditorRegistry.lastFocusedComponent();
         if (lastFocused!=null) {
-            dropDownMenu.add(new InsertLinkAction(lastFocused, outbox, true));
+            dropDownMenu.add(new InsertLinkAction(lastFocused, outbox, true, selectedEditorComponent()!=null));
             dropDownMenu.add(new JSeparator());
         }
         
         for (JTextComponent comp:EditorRegistry.componentList()) {
-            dropDownMenu.add(new InsertLinkAction(comp, outbox, false));
+            dropDownMenu.add(new InsertLinkAction(comp, outbox, false, false));
         }
         if (lastFocused!=null) {
             dropDownMenu.add(new JSeparator());
@@ -912,7 +979,9 @@ public class ChatPanel extends javax.swing.JPanel {
 
 
         for (int i=0;issues!=null&& i<3 && i< issues.length;i++) {
-            dropDownMenu.add(new InsertLinkAction(issues[i], outbox));
+            Mode editor = WindowManager.getDefault().findMode("editor");//NOI18N
+            TopComponent tc = editor.getSelectedTopComponent();
+            dropDownMenu.add(new InsertLinkAction(issues[i], outbox, isIssueRelated(tc)));
         }
         if (issues.length>0) {
             dropDownMenu.add(new JSeparator());

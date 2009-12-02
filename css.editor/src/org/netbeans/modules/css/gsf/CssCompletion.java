@@ -52,6 +52,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -504,8 +506,8 @@ public class CssCompletion implements CodeCompletionHandler {
 
     @Override
     public ElementHandle resolveLink(String link, ElementHandle elementHandle) {
-        return CssHelpResolver.getHelpZIPURL() == null ? null : 
-            new ElementHandle.UrlHandle(CssHelpResolver.getHelpZIPURL() + 
+        return CssHelpResolver.getHelpZIPURLasString() == null ? null :
+            new ElementHandle.UrlHandle(CssHelpResolver.getHelpZIPURLasString() +
                     normalizeLink( elementHandle, link));
     }
 
@@ -531,13 +533,14 @@ public class CssCompletion implements CodeCompletionHandler {
         int index = link.lastIndexOf('#');
         if ( index !=-1 ){
             if ( index ==0 || link.charAt(index-1) =='/'){
+                String helpZipUrl = CssHelpResolver.getHelpZIPURL().getPath();
                 if ( handle instanceof CssPropertyElement ){
                     String name = ((CssPropertyElement)handle).property().name();
                     URL propertyHelpURL = CssHelpResolver.instance().
                         getPropertyHelpURL(name);
                     String path = propertyHelpURL.getPath();
-                    if ( path.startsWith( CssHelpResolver.getHelpZIPURL())){
-                        path = path.substring(CssHelpResolver.getHelpZIPURL().length());
+                    if ( path.startsWith( helpZipUrl )){
+                        path = path.substring(helpZipUrl.length());
                     }
                     return path+link.substring( index );
                 }
@@ -547,8 +550,16 @@ public class CssCompletion implements CodeCompletionHandler {
                     if ( anchorIndex!= -1 ){
                         url = url.substring( 0, anchorIndex);
                     }
-                    if ( url.startsWith( CssHelpResolver.getHelpZIPURL())){
-                        url = url.substring(CssHelpResolver.getHelpZIPURL().length());
+                    //"normalize" the URL - use just the "path" part
+                    try {
+                        URL _url = new URL(url);
+                        url = _url.getPath();
+                    } catch(MalformedURLException mue) {
+                        Logger.getLogger("global").log(Level.INFO, null, mue);
+                    }
+
+                    if ( url.startsWith( helpZipUrl)){
+                        url = url.substring(helpZipUrl.length());
                     }
                     return url+link.substring( index );
                 }
@@ -586,20 +597,41 @@ public class CssCompletion implements CodeCompletionHandler {
     @Override
     public QueryType getAutoQuery(JTextComponent component, String typedText) {
         int offset = component.getCaretPosition();
-        TokenSequence<CssTokenId> ts = LexerUtils.getJoinedTokenSequence(component.getDocument(), offset);
-        if(ts != null) {
-            if(ts.movePrevious() || ts.moveNext()) {
-                TokenId tid = ts.token().id();
-                if(tid == CssTokenId.IDENT) {
-                    return QueryType.COMPLETION;
-                }
-            }
-        }
-
         if (typedText == null || typedText.length() == 0) {
             return QueryType.NONE;
         }
         char c = typedText.charAt(typedText.length() - 1);
+
+        TokenSequence<CssTokenId> ts = LexerUtils.getJoinedTokenSequence(component.getDocument(), offset);
+        if (ts != null) {
+            int diff = ts.move(offset);
+            TokenId currentTokenId = null;
+            if (ts != null) {
+                if (diff == 0 && ts.movePrevious() || ts.moveNext()) {
+                    currentTokenId = ts.token().id();
+                }
+            }
+
+            if (currentTokenId == CssTokenId.IDENT) {
+                return QueryType.COMPLETION;
+            }
+
+            //#177306  Eager CSS CC
+            //
+            //open completion when a space is pressed, but only
+            //if typed by user by pressing the spacebar.
+            //
+            //1) filters out tabs which are converted to spaces
+            //   before being put into the document
+            //2) filters out newline keystrokes which causes the indentation
+            //   to put some spaces on the newline
+            //3) filters out typing spaces in comments
+            //
+            if (typedText.length() == 1 && c == ' ' && currentTokenId != CssTokenId.COMMENT) {
+                return QueryType.COMPLETION;
+            }
+        }
+
         switch (c) {
             case '\n':
             case '}':
@@ -607,7 +639,6 @@ public class CssCompletion implements CodeCompletionHandler {
                 return QueryType.STOP;
             }
             case ':':
-            case ' ':
             case ',': {
                 return QueryType.COMPLETION;
             }

@@ -578,8 +578,13 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         }
     }
 
+    public void saveAndClose() {
+        save();
+        closed();
+    }
+
     public boolean save() {
-        return save(null);
+        return save(NbBundle.getMessage(MakeProject.class, "ProjectNotSaved")); // FIXUP: move message into Bundle for this class after UI freeze
     }
 
     public boolean save(final String extraMessage) {

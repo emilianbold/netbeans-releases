@@ -82,15 +82,20 @@ final class DatabasePropertiesIndexer {
 
     private void addDatabaseProperties() {
         // Query index for database related properties
-        if (classFqn.indexOf("::") != -1) {
-            // Don't know how to handle this scenario
-            return;
+        String tableName = null;
+        Collection<? extends IndexResult> classes = index.query(RubyIndexer.FIELD_FQN_NAME, classFqn, QuerySupport.Kind.EXACT);
+        for (IndexResult result : classes) {
+            tableName = result.getValue(RubyIndexer.FIELD_EXPLICIT_DB_TABLE);
+            if (tableName != null) { // just use the first found
+                break;
+            }
+        }
+        if (tableName == null) {
+            Inflector inflector = Inflector.getDefault();
+            tableName = inflector.tableize(inflector.demodulize(classFqn));
         }
 
-        String tableName = RubyUtils.tableize(classFqn);
-
-        String searchField = RubyIndexer.FIELD_DB_TABLE;
-        Collection<? extends IndexResult> result = index.query(searchField, tableName, QuerySupport.Kind.EXACT);
+        Collection<? extends IndexResult> result = index.query(RubyIndexer.FIELD_DB_TABLE, tableName, QuerySupport.Kind.EXACT);
 
         List<TableDefinition> tableDefs = new ArrayList<TableDefinition>();
         TableDefinition schema = null;
@@ -242,6 +247,7 @@ final class DatabasePropertiesIndexer {
                 IndexedMethod method =
                         IndexedMethod.create(index, signature, fqn, clz, fileUrl, require, attributes, flags, index.getContext());
                 method.setMethodType(IndexedMethod.MethodType.DBCOLUMN);
+                method.setType(RailsMigrationTypeMapper.getMappedType(type));
                 method.setSmart(true);
                 methods.add(method);
             }

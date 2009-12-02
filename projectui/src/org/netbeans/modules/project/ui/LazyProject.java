@@ -51,6 +51,7 @@ import javax.swing.Icon;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
+import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -72,7 +73,8 @@ import org.openidex.search.SearchInfo;
  *
  * @author Tim Boudreau, Jaroslav Tulach
  */
-final class LazyProject implements Project, ProjectInformation, SearchInfo, LogicalViewProvider {
+final class LazyProject implements
+Project, ProjectInformation, SearchInfo, LogicalViewProvider, RecommendedTemplates {
     URL url;
     String displayName;
     ExtIcon icon;
@@ -133,6 +135,10 @@ final class LazyProject implements Project, ProjectInformation, SearchInfo, Logi
 
     public Node findPath(Node root, Object target) {
         return null;
+    }
+
+    public String[] getRecommendedTypes() {
+        return new String[] { "simple-files" }; // NOI18N
     }
     
     

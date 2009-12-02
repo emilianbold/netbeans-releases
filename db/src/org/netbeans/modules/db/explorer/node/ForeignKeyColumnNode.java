@@ -103,7 +103,7 @@ public class ForeignKeyColumnNode extends BaseNode {
                     }
                 );
             } catch (MetadataModelException e) {
-                Exceptions.printStackTrace(e);
+                NodeRegistry.handleMetadataModelException(this.getClass(), connection, e, true);
             }
         }
     }
@@ -143,7 +143,7 @@ public class ForeignKeyColumnNode extends BaseNode {
                 }
             );
         } catch (MetadataModelException e) {
-            Exceptions.printStackTrace(e);
+            NodeRegistry.handleMetadataModelException(this.getClass(), connection, e, true);
         }
 
         return array[0];

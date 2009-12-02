@@ -107,23 +107,14 @@ public class PHPCodeTemplateFilter extends UserTask implements CodeTemplateFilte
         }
         if (mimeType.equals(FileUtils.PHP_MIME_TYPE)) {
             parameter = (ParserResult) resultIterator.getParserResult();
-            BaseDocument document = parameter != null ? (BaseDocument) parameter.getSnapshot().getSource().getDocument(false) : null;
-            if (document != null) {
-                document.readLock();
-
-                try {
-                    context = CompletionContextFinder.findCompletionContext(parameter, caretOffset);
-                    switch (context) {
-                        case EXPRESSION:
-                            accept = true;
-                            break;
-                        case CLASS_CONTEXT_KEYWORDS:
-                            accept = true;
-                            break;
-                    }
-                } finally {
-                    document.readUnlock();
-                }
+            context = CompletionContextFinder.findCompletionContext(parameter, caretOffset);
+            switch (context) {
+                case EXPRESSION:
+                    accept = true;
+                    break;
+                case CLASS_CONTEXT_KEYWORDS:
+                    accept = true;
+                    break;
             }
         }
     }

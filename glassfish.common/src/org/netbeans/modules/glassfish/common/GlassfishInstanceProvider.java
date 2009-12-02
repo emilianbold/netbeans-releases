@@ -132,6 +132,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                     return new ServerCommand.SetPropertyCommand(name, value, "DEFAULT={0}={1}"); // NOI18N
                 }
             });
+            ee6Provider.init();
         }
         return ee6Provider;
     }
@@ -162,6 +163,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                             return new ServerCommand.SetPropertyCommand(name, value, "target={0}&value={1}"); // NOI18N
                         }
                     });
+            preludeProvider.init();
         }
         return preludeProvider;
     }
@@ -215,7 +217,6 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
             noPasswordOptions.addAll(Arrays.asList(noPasswordOptionsArray));
         }
         this.cf = cf;
-        init();
     }
 
     public static synchronized boolean initialized() {
@@ -434,7 +435,6 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                 try {
                     loadServerInstances();
                     registerDefaultInstance();
-                    loadServerInstances();
                 } catch (RuntimeException ex) {
                     getLogger().log(Level.INFO, null, ex);
                 }
@@ -476,6 +476,9 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                 }
             }
         }
+        for (GlassfishInstance gi : instanceMap.values()) {
+            gi.updateModuleSupport();
+        }
     }
 
     private GlassfishInstance readInstanceFromFile(FileObject instanceFO, String uriFragment) throws IOException {
@@ -500,7 +503,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                 ip.put(name, value);
             }
             ip.put(INSTANCE_FO_ATTR, instanceFO.getName());
-            instance = GlassfishInstance.create(ip,this);
+            instance = GlassfishInstance.create(ip,this,false);
         } else {
             getLogger().finer("GlassFish folder " + instanceFO.getPath() + " is not a valid install."); // NOI18N
             instanceFO.delete();
@@ -598,6 +601,8 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
             File f = new File(folderName);
             // !PW FIXME better heuristics to identify a valid V3 install
             result = f.exists();
+            result = result && f.isDirectory();
+            result = result && f.canRead();
         }
         return result;    
     }
@@ -608,6 +613,8 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
             File f = new File(folderName);
             // !PW FIXME better heuristics to identify a valid V3 install
             result = f.exists();
+            result = result && f.isDirectory();
+            result = result && f.canRead();
         }
         return result;    
     }
@@ -647,6 +654,29 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
             return;
         }
         candidate = new File(candidate).getAbsolutePath();
+
+        // sanity check the installRoot value.  Try to correct it
+        // if the most common mistake is made
+        //  (gfroot instead of installroot is the value given)
+        //
+        if (isValidHomeFolder(candidate)) {
+            String gfCandidate = candidate + File.separator + "glassfish";
+            if (!isValidGlassfishFolder(gfCandidate)) {
+                gfCandidate = candidate;
+                candidate = new File(gfCandidate).getParentFile().getAbsolutePath();
+                if (!isValidHomeFolder(candidate) || !isValidGlassfishFolder(gfCandidate)) {
+                    getLogger().log(Level.INFO, "Invalid value set for installRoot: " + System.getProperty(installRootPropName));
+                    return;
+                } else {
+                    getLogger().log(Level.INFO, "Fixed incorrect value set for installRoot: " + System.getProperty(installRootPropName));
+                }
+            } else {
+                // candidate and gfCandidate is valid
+            }
+        } else {
+            getLogger().log(Level.INFO, "Invalid installRoot: " + System.getProperty(installRootPropName));
+            return;
+        }
         
         String firstRunValue = NbPreferences.forModule(this.getClass()).get(ServerUtilities.PROP_FIRST_RUN+getInstallRootKey(), "false"); // NOI18N
         
@@ -664,6 +694,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
         if (needToRegisterDefaultServer) {
             try {
                 //String candidate = System.getProperty(installRootPropName); //NOI18N
+                NbPreferences.forModule(this.getClass()).put(ServerUtilities.PROP_FIRST_RUN+getInstallRootKey(), new File(candidate).getAbsolutePath());
 
                 if (null != candidate) {
                     File f = new File(candidate);
@@ -685,7 +716,6 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                                     File.separator + "domains"); // NOI18N
                             ip.put(GlassfishModule.DOMAIN_NAME_ATTR, "domain1"); // NOI18N
                             GlassfishInstance gi = GlassfishInstance.create(ip,this);
-                            NbPreferences.forModule(this.getClass()).put(ServerUtilities.PROP_FIRST_RUN+getInstallRootKey(), new File(candidate).getAbsolutePath());
                         } else {
                             ip.put(GlassfishModule.DISPLAY_NAME_ATTR, defaultPersonalDomainName);
                             String domainsFolderValue = System.getProperty("netbeans.user"); // NOI18N
@@ -696,9 +726,11 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                             CreateDomain cd = new CreateDomain("anonymous", "", new File(f,"glassfish"), ip, this,true); // NOI18N
                             cd.start();
                         }
+
                     }
                 }
             } catch (IOException ex) {
+                NbPreferences.forModule(this.getClass()).put(ServerUtilities.PROP_FIRST_RUN+getInstallRootKey(), "false");
                 getLogger().log(Level.INFO, ex.getLocalizedMessage(), ex);
             }
         }

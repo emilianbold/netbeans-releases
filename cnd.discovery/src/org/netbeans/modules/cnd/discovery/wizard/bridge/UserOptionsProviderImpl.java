@@ -64,7 +64,7 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
     public List<String> getItemUserIncludePaths(List<String> includes, AllOptionsProvider compilerOptions, BasicCompiler compiler, MakeConfiguration makeConfiguration) {
         List<String> res =new ArrayList<String>(includes);
         if (makeConfiguration.getConfigurationType().getValue() != MakeConfiguration.TYPE_MAKEFILE){
-            for(PackageConfiguration pc : getPackages(compilerOptions.getAllOptions(compiler))) {
+            for(PackageConfiguration pc : getPackages(compilerOptions.getAllOptions(compiler), makeConfiguration)) {
                 res.addAll(pc.getIncludePaths());
             }
         }
@@ -78,7 +78,7 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
         List<String> res =new ArrayList<String>(macros);
         if (makeConfiguration.getConfigurationType().getValue() != MakeConfiguration.TYPE_MAKEFILE){
             String options = compilerOptions.getAllOptions(compiler);
-            for(PackageConfiguration pc : getPackages(options)) {
+            for(PackageConfiguration pc : getPackages(options, makeConfiguration)) {
                 res.addAll(pc.getMacros());
             }
             if (options.indexOf("-fopenmp") >= 0) { // NOI18N
@@ -94,7 +94,7 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
         return res;
     }
     
-    private List<PackageConfiguration> getPackages(String s){
+    private List<PackageConfiguration> getPackages(String s, MakeConfiguration conf){
         List<PackageConfiguration> res = new ArrayList<PackageConfiguration>();
         while(true){
             int i = s.indexOf("`pkg-config "); // NOI18N
@@ -120,7 +120,7 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
                         findPkg = aPkg;
                     }
                     if (readFlags && findPkg != null) {
-                        PkgConfig configs = PkgConfigManager.getDefault().getPkgConfig(null);
+                        PkgConfig configs = PkgConfigManager.getDefault().getPkgConfig(conf);
                         PackageConfiguration config = configs.getPkgConfig(findPkg);
                         if (config != null){
                             res.add(config);

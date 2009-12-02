@@ -69,7 +69,6 @@ public class PlatformPanel extends javax.swing.JPanel implements FocusListener, 
     private final PlatformValidator validator;
     private FileObject baseDir;
 
-    /** Creates new form PlatformPanel */
     public PlatformPanel(FileObject fo) {
         this.baseDir = fo;
         validator = new PlatformValidatorImpl(fo);
@@ -80,6 +79,7 @@ public class PlatformPanel extends javax.swing.JPanel implements FocusListener, 
         displayNameField.getDocument().addDocumentListener(this);
         locationField.setText(baseDir == null ? "" : baseDir.getPath()); //NOI18N
         HelpCtx.setHelpIDString(this, "org.netbeans.modules.javacard.SettingUpJavaCardPlatform"); //NOI18N
+        infoField.getCaret().setVisible(false);
     }
 
     @Override
@@ -138,6 +138,11 @@ public class PlatformPanel extends javax.swing.JPanel implements FocusListener, 
         String key = null;
         String name = displayNameField.getText().trim();
         if (validator.failed()) {
+            String msg = validator.failMessage();
+            if (msg != null) {
+                setProblem(msg);
+                return;
+            }
             key = "MSG_BAD_PLATFORM"; //NOI18N
         } else if (validator.isRunning()) {
             key = "MSG_LOADING"; //NOI18N
@@ -361,6 +366,7 @@ public class PlatformPanel extends javax.swing.JPanel implements FocusListener, 
             assert EventQueue.isDispatchThread();
             infoField.setText(getStandardOutput() + "\n" + getErrorOutput()); //NOI18N
             setProblem(e.getMessage());
+            failMessage = e.getLocalizedMessage();
             e.printStackTrace();
         }
 

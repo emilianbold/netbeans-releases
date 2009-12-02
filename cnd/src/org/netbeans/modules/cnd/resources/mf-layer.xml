@@ -224,10 +224,11 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="1910"/>
             </file>
             <!-- SunStudio on Update Center -->
-            <file name="SunStudioLite.xml" url="toolchain/SunStudioLite.xml">
+            <!-- Ready  but commented because dbx does not supported yet -->
+            <!-- file name="SunStudioLite.xml" url="toolchain/SunStudioLite.xml">
                 <attr name="position" intvalue="1920"/>
                 <attr name="extends" stringvalue="SunStudio_12"/>
-            </file>
+            </file -->
             <!-- Windows -->
             <file name="Cygwin_4.x.xml" url="toolchain/Cygwin_4.x.xml">
                 <attr name="position" intvalue="3010"/>

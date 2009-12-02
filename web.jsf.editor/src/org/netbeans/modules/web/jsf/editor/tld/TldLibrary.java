@@ -38,170 +38,55 @@
  */
 package org.netbeans.modules.web.jsf.editor.tld;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.api.xml.services.UserCatalog;
+import org.netbeans.modules.web.jsf.editor.facelets.DefaultFaceletLibraries;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.util.Exceptions;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
 
 /**
  *
  * @author marekfukala
  */
 
-public class TldLibrary {
+public class TldLibrary extends LibraryDescriptor {
 
-    private FileObject definitionFile;
-    private String prefix;
-    private String uri;
-    private String displayName;
-    private Map<String, Tag> tags = new HashMap<String, Tag>();
-
-    static TldLibrary create(FileObject definitionFile) throws TldLibraryException {
+    static TldLibrary create(FileObject definitionFile) throws LibraryDescriptorException {
         return new TldLibrary(definitionFile);
     }
 
-    static TldLibrary create(InputStream content) throws TldLibraryException {
+    static TldLibrary create(InputStream content) throws LibraryDescriptorException {
         return new TldLibrary(content);
     }
 
-    protected TldLibrary() {
+    public TldLibrary() {
     }
 
-    private TldLibrary(FileObject definitionFile) throws TldLibraryException {
-        this.definitionFile = definitionFile;
+    private TldLibrary(FileObject definitionFile) throws LibraryDescriptorException {
+        super(definitionFile);
         parseLibrary();
     }
 
-    private TldLibrary(InputStream content) throws TldLibraryException {
-        this.definitionFile = null;
+    private TldLibrary(InputStream content) throws LibraryDescriptorException {
+        super(content);
         parseLibrary(content);
     }
 
-    @Override
-    public String toString() {
-        try {
-            StringBuffer sb = new StringBuffer();
-            sb.append(getDefinitionFile() != null ? getDefinitionFile().getFileSystem().getRoot().getURL().toString() + ";" + getDefinitionFile().getPath() : ""); //NOI18N
-            sb.append("; defaultPrefix = " + getDefaultPrefix() + "; uri = " + getURI() + "; tags={"); //NOI18N
-            for(Tag t : getTags().values()) {
-                sb.append(t.toString());
-            }
-            sb.append("}]"); //NOI18N
-            return sb.toString();
-        } catch (FileStateInvalidException ex) {
-            return null;
-        }
+    public  static String parseNamespace(InputStream content) {
+        return parseNamespace(content, "taglib", "uri"); //NOI18N
     }
 
-    FileObject getDefinitionFile() {
-        return definitionFile;
-    }
-
-    public String getURI() {
-        return uri;
-    }
-
-    public String getDefaultPrefix() {
-        return prefix;
-    }
-
-    public String getDisplayName() {
-        return this.displayName;
-    }
-
-    public Map<String, Tag> getTags() {
-        return tags;
-    }
-
-    //--------------- private -------------------
-    private void parseLibrary() throws TldLibraryException {
-        try {
-            parseLibrary(getDefinitionFile().getInputStream());
-        } catch (FileNotFoundException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-
-    private static final String STOP_PARSING_MGS = "regularly_stopped"; //NOI18N
-
-    public static  String parseNamespace(InputStream content) {
-        final String[] ns = new String[1];
-        try {
-            SAXParserFactory factory = SAXParserFactory.newInstance();
-            factory.setValidating(false);
-            SAXParser parser = factory.newSAXParser();
-
-            class Handler extends DefaultHandler {
-
-                private boolean inTaglib = false;
-                private boolean inURI = false;
-
-                @Override
-                public void startElement(String uri, String localname, String qname, Attributes attr) throws SAXException {
-                    String tagName = qname.toLowerCase();
-                    if ("taglib".equals(tagName)) { //NOI18N
-                        inTaglib = true;
-                    }
-                    if (inTaglib) {
-                        if ("uri".equals(tagName)) { //NOI18N
-                            inURI = true;
-                        }
-
-                    }
-                }
-
-                @Override
-                public void characters(char[] ch, int start, int length) throws SAXException {
-                    if(inURI) {
-                        ns[0] = new String(ch, start, length).trim();
-                        //stop parsing
-                        throw new SAXException(STOP_PARSING_MGS);
-                    }
-                }
-
-                @Override
-                public InputSource resolveEntity(String publicId, String systemId) {
-                    return new InputSource(new StringReader("")); //prevent the parser to use catalog entity resolver // NOI18N
-                }
-            }
-            
-            
-            parser.parse(content, new Handler());
-
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (ParserConfigurationException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (SAXException ex) {
-            if(!STOP_PARSING_MGS.equals(ex.getMessage())) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-
-        return ns[0];
-    }
-
-    private void parseLibrary(InputStream content) throws TldLibraryException {
+    protected void parseLibrary(InputStream content) throws LibraryDescriptorException {
         try {
             DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
@@ -212,7 +97,7 @@ public class TldLibrary {
 
             //usually the default taglib prefix
             Node tagLib = getNodeByName(doc, "taglib"); //NOI18N
-
+ 
             prefix = getTextContent(tagLib, "short-name"); //NOI18N
             if(prefix == null) {
                 //no default prefix
@@ -221,13 +106,13 @@ public class TldLibrary {
 
             uri = getTextContent(tagLib, "uri"); //NOI18N
             if(uri == null) {
-                throw new TldLibraryException("Missing uri entry in " + getDefinitionFile().getPath() + " library.", null);
+                throw new LibraryDescriptorException("Missing uri entry in " + getDefinitionFile().getPath() + " library.", null);
             }
 
             displayName = getTextContent(tagLib, "display-name"); //NOI18N
             if(displayName == null) {
                 //no display-name specified in the TLD, lets try to get the displayname from names registry
-                displayName = TldUtils.getLibraryDisplayName(uri);
+                displayName = DefaultFaceletLibraries.getLibraryDisplayName(uri);
                 if(displayName == null) {
                     //no entry even here, use TLD file name
                     displayName = getDefinitionFile().getNameExt();
@@ -252,126 +137,20 @@ public class TldLibrary {
                         attrs.put(aName, new Attribute(aName, aDescription, aRequired));
                     }
 
-                    tags.put(tagName, new Tag(tagName, tagDescription, attrs));
+                    tags.put(tagName, new TagImpl(tagName, tagDescription, attrs));
 
                 }
             }
 
         } catch (ParserConfigurationException ex) {
-            throw new TldLibraryException("Error parsing TLD library: ", ex); //NOI18N
+            throw new LibraryDescriptorException("Error parsing TLD library: ", ex); //NOI18N
         } catch (SAXException ex) {
-            throw new TldLibraryException("Error parsing TLD library: ", ex); //NOI18N
+            throw new LibraryDescriptorException("Error parsing TLD library: ", ex); //NOI18N
         } catch (IOException ex) {
-            throw new TldLibraryException("Error parsing TLD library: ", ex); //NOI18N
+            throw new LibraryDescriptorException("Error parsing TLD library: ", ex); //NOI18N
         }
 
 
     }
 
-    private static String getTextContent(Node parent, String childName) {
-        Node found = getNodeByName(parent, childName);
-        return found == null ? null : found.getTextContent().trim();
-    }
-
-    private static Node getNodeByName(Node parent, String childName) {
-        Collection<Node> found = getNodesByName(parent, childName);
-        if(!found.isEmpty()) {
-            return found.iterator().next();
-        } else {
-            return null;
-        }
-    }
-
-    private static Collection<Node> getNodesByName(Node parent, String childName) {
-        Collection<Node> nodes = new ArrayList<Node>();
-        NodeList nl = parent.getChildNodes();
-        for (int i = 0; i < nl.getLength(); i++) {
-            Node n = nl.item(i);
-            if (n.getNodeType() == Node.ELEMENT_NODE && n.getNodeName().equals(childName)) {
-                nodes.add(n);
-            }
-        }
-        return nodes;
-    }
-
-    public class Tag {
-
-        private static final String ID_ATTR_NAME = "id"; //NOI18N
-
-        private String name;
-        private String description;
-        private Map<String, Attribute> attrs;
-
-        public Tag(String name, String description, Map<String, Attribute> attrs) {
-            this.name = name;
-            this.description = description;
-            this.attrs = attrs;
-
-            //add the default ID attribute
-            if(getAttribute(ID_ATTR_NAME) == null) {
-                attrs.put(ID_ATTR_NAME, new Attribute(ID_ATTR_NAME, "", false));
-            }
-        }
-
-        public String getName() {
-            return name;
-        }
-        
-        public String getDescription() {
-            return description;
-        }
-
-        public Collection<Attribute> getAttributes() {
-            return attrs.values();
-        }
-
-        public Attribute getAttribute(String name) {
-            return attrs.get(name);
-        }
-
-        @Override
-        public String toString() {
-            StringBuffer sb = new StringBuffer();
-            sb.append("Tag[name=" + getName() + /*", description=" + getDescription() +*/ ", attributes={"); //NOI18N
-            for(Attribute attr : getAttributes()) {
-                sb.append(attr.toString() + ",");
-            }
-            sb.append("}]");
-            return sb.toString();
-        }
-
-    }
-
-    public class Attribute {
-        
-        private String name;
-        private String description;
-        private boolean required;
-
-        public Attribute(String name, String description, boolean required) {
-            this.name = name;
-            this.description = description;
-            this.required = required;
-        }
-
-        public String getDescription() {
-            return description;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public boolean isRequired() {
-            return required;
-        }
-
-        @Override
-        public String toString() {
-            return "Attribute[name=" + getName() + /*", description=" + getDescription() + */ ", required=" + isRequired() + "]"; //NOI18N
-        }
-
-
-
-    }
 }

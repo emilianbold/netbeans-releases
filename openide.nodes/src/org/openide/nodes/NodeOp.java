@@ -92,6 +92,7 @@ import org.openide.util.lookup.ProxyLookup;
  * @author Jaroslav Tulach, Petr Hamernik, Dafe Simonek
  */
 public final class NodeOp extends Object {
+    private static final Logger LOG = Logger.getLogger(NodeOp.class.getName());
     /** default node actions */
     private static SystemAction[] defaultActions;
 
@@ -504,7 +505,7 @@ public final class NodeOp extends Object {
                 Class<? extends SystemAction> c = Class.forName(name, true, l).asSubclass(SystemAction.class);
                 ll.add(SystemAction.get(c));
             } catch (ClassNotFoundException ex) {
-                Logger.getAnonymousLogger().log(Level.WARNING, "NodeOp.java: Missing class " + name, ex); // NOI18N
+                warning(ex); // NOI18N
 
                 // otherwise it is probably ok, that the class is missing
             }
@@ -517,13 +518,13 @@ public final class NodeOp extends Object {
      * @param ex exception to notify
      */
     static void exception(Throwable ex) {
-        Logger.getLogger(NodeOp.class.getName()).log(Level.WARNING, null, ex);
+        warning(ex); // XXX delete & replace all usages
     }
 
     /** Notifies an exception to error manager or prints its it to stderr.
      * @param ex exception to notify
      */
     static void warning(Throwable ex) {
-        Logger.getLogger(NodeOp.class.getName()).log(Level.WARNING, null, ex);
+        LOG.log(Level.WARNING, null, ex);
     }
 }

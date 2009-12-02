@@ -56,9 +56,9 @@ import javax.swing.text.Document;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.editor.java.RunOffAWT;
 import org.netbeans.spi.editor.hints.Context;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.LazyFixList;
@@ -90,7 +90,7 @@ public class JavaHintsPositionRefresher implements PositionRefresher {
             }
         };
         
-        RunOffAWT.runOffAWT(r, NbBundle.getMessage(JavaHintsPositionRefresher.class, "Refresh_hints"), context.getCancel()); // NOI18N
+        ProgressUtils.runOffEventDispatchThread(r, NbBundle.getMessage(JavaHintsPositionRefresher.class, "Refresh_hints"), context.getCancel(), false); // NOI18N
 
         return eds;
     }
@@ -129,18 +129,14 @@ public class JavaHintsPositionRefresher implements PositionRefresher {
             //HintsTask
             int rowStart = Utilities.getRowStart((BaseDocument) doc, position);
             int rowEnd = Utilities.getRowEnd((BaseDocument) doc, position);
-            Set<ErrorDescription> errs = new TreeSet<ErrorDescription>(new Comparator<ErrorDescription>() {
-                public int compare(ErrorDescription arg0, ErrorDescription arg1) {
-                    return arg0.toString().equals(arg1.toString()) ? 0 : 1;
-                }
-            });
+            Set<ErrorDescription> errs = new HashSet<ErrorDescription>();
 
             Set<Tree> encounteredLeafs = new HashSet<Tree>();
             HintsTask task = new HintsTask();
             for (int i = rowStart; i <= rowEnd; i++) {
                 TreePath path = controller.getTreeUtilities().pathFor(i);
                 Tree leaf = path.getLeaf();
-                if (leaf.getKind() != Tree.Kind.BLOCK && !encounteredLeafs.contains(leaf)) {
+                if (!encounteredLeafs.contains(leaf)) {
                     List<ErrorDescription> leafHints = task.computeHints(controller, path);
 
                     if (LOG.isLoggable(Level.FINE) && leafHints.size() != 0) {
@@ -167,6 +163,6 @@ public class JavaHintsPositionRefresher implements PositionRefresher {
             }
             eds.put(ErrorHintsProvider.class.getName(), errors);
         }
-
+        
     }
 }

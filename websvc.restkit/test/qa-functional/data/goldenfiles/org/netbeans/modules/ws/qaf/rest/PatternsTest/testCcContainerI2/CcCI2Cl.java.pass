@@ -6,14 +6,12 @@
 package o.n.m.ws.qaf.rest.patterns;
 
 import java.util.logging.Level;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.UriInfo;
-import javax.ws.rs.GET;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.PUT;
+import javax.ws.rs.GET;
 import javax.ws.rs.Produces;
 import javax.ws.rs.DELETE;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Consumes;
+
 
 /**
  * REST Web Service
@@ -22,44 +20,44 @@ import javax.ws.rs.Consumes;
  */
 
 public class CcCI2Cl {
-    @Context
-    private UriInfo context;
-
+    private String CcCI2URI;
     /** Creates a new instance of CcCI2Cl */
-    public CcCI2Cl() {
+    private CcCI2Cl(String CcCI2URI) {
+        this.CcCI2URI=CcCI2URI;
+    }
+
+    /** Get instance of the CcCI2Cl */
+    public static CcCI2Cl getInstance(String CcCI2URI) {
+        // The user may use some kind of persistence mechanism
+        // to store and restore instances of CcCI2Cl class.
+        return new CcCI2Cl(CcCI2URI);
     }
 
     /**
      * Retrieves representation of an instance of o.n.m.ws.qaf.rest.patterns.CcCI2Cl
-     * @param CcCI2URI resource URI parameter
      * @return an instance of java.util.logging.Level
      */
     @GET
     @Produces("text/plain")
-    public Level getText(@PathParam("CcCI2URI")
-    String CcCI2URI) {
+    public Level getText() {
         //TODO return proper representation object
         throw new UnsupportedOperationException();
     }
 
     /**
      * PUT method for updating or creating an instance of CcCI2Cl
-     * @param CcCI2URI resource URI parameter
      * @param content representation for the resource
      * @return an HTTP response with content of the updated or created resource.
      */
     @PUT
     @Consumes("text/plain")
-    public void putText(@PathParam("CcCI2URI")
-    String CcCI2URI, Level content) {
+    public void putText(Level content) {
     }
 
     /**
      * DELETE method for resource CcCI2Cl
-     * @param CcCI2URI resource URI parameter
      */
     @DELETE
-    public void delete(@PathParam("CcCI2URI")
-    String CcCI2URI) {
+    public void delete() {
     }
 }

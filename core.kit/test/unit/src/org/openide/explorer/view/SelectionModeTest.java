@@ -63,6 +63,38 @@ import org.openide.nodes.Node;
  * @author Jiri Rechtacek
  * @see "#11928"
  */
+@RandomlyFails /* NB-Core-Build #3569 & #3577 timed out in:
+Thread AWT-EventQueue-0
+	at sun.awt.X11.XlibWrapper.XGetWindowProperty(XlibWrapper.java:-2)
+	at sun.awt.X11.WindowPropertyGetter.execute(WindowPropertyGetter.java:70)
+	at sun.awt.X11.WindowPropertyGetter.execute(WindowPropertyGetter.java:53)
+	at sun.awt.X11.XAtom.getAtomListProperty(XAtom.java:615)
+	at sun.awt.X11.XAtom.getAtomListPropertyList(XAtom.java:644)
+	at sun.awt.X11.XProtocol.checkProtocol(XProtocol.java:37)
+	at sun.awt.X11.XNETProtocol.doStateProtocol(XNETProtocol.java:273)
+	at sun.awt.X11.XNETProtocol.supportsState(XNETProtocol.java:25)
+	at sun.awt.X11.XWM.setExtendedState(XWM.java:1109)
+	at sun.awt.X11.XFramePeer.setExtendedState(XFramePeer.java:332)
+	at sun.awt.X11.XFramePeer.setupState(XFramePeer.java:128)
+	at sun.awt.X11.XFramePeer.postInit(XFramePeer.java:77)
+	at sun.awt.X11.XBaseWindow.init(XBaseWindow.java:117)
+	at sun.awt.X11.XBaseWindow.<init>(XBaseWindow.java:150)
+	at sun.awt.X11.XWindow.<init>(XWindow.java:88)
+	at sun.awt.X11.XComponentPeer.<init>(XComponentPeer.java:101)
+	at sun.awt.X11.XCanvasPeer.<init>(XCanvasPeer.java:22)
+	at sun.awt.X11.XPanelPeer.<init>(XPanelPeer.java:27)
+	at sun.awt.X11.XWindowPeer.<init>(XWindowPeer.java:53)
+	at sun.awt.X11.XDecoratedPeer.<init>(XDecoratedPeer.java:36)
+	at sun.awt.X11.XFramePeer.<init>(XFramePeer.java:41)
+	at sun.awt.X11.XToolkit.createFrame(XToolkit.java:349)
+	at java.awt.Frame.addNotify(Frame.java:491)
+	at java.awt.Window.pack(Window.java:485)
+	at org.openide.windows.DummyWindowManager.topComponentOpen(DummyWindowManager.java:338)
+	at org.openide.windows.TopComponent.open(TopComponent.java:434)
+	at org.openide.explorer.ExplorerPanel.open(ExplorerPanel.java:196)
+	at org.openide.explorer.ExplorerPanel.open(ExplorerPanel.java:189)
+	at org.openide.explorer.view.SelectionModeTest.setUp(SelectionModeTest.java:112)
+ */
 public class SelectionModeTest extends NbTestCase {
     
     ExplorerManager mgr;
@@ -76,6 +108,10 @@ public class SelectionModeTest extends NbTestCase {
     @Override
     protected boolean runInEQ() {
         return true;
+    }
+
+    protected @Override int timeOut() {
+        return 500000;
     }
     
     /** Create tree and a selection of nodes for test.
@@ -234,7 +270,6 @@ public class SelectionModeTest extends NbTestCase {
     public void testDiscontigousSelection () throws Exception {
         // try setSelectionMode; if not present then fail
         setSelectionMode (tree, TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
-        PropertyVetoException exp = null;
         
         // single
         try {

@@ -113,14 +113,14 @@ public class GlassfishInstance implements ServerInstanceImplementation, LookupLi
     private transient CommonServerSupport commonSupport;
     private transient InstanceContent ic;
     private transient Lookup lookup;
-    private transient Lookup.Result<GlassfishModuleFactory> lookupResult;
-    private transient Collection<? extends GlassfishModuleFactory> currentFactories;
+    final private transient Lookup.Result<GlassfishModuleFactory> lookupResult = Lookups.forPath(Util.GF_LOOKUP_PATH).lookupResult(GlassfishModuleFactory.class);;
+    private transient Collection<? extends GlassfishModuleFactory> currentFactories = Collections.emptyList();
     
     // api instance
     private ServerInstance commonInstance;
     private GlassfishInstanceProvider instanceProvider;
     
-    private GlassfishInstance(Map<String, String> ip, GlassfishInstanceProvider instanceProvider) {
+    private GlassfishInstance(Map<String, String> ip, GlassfishInstanceProvider instanceProvider, boolean updateNow) {
         String deployerUri = null;
         try {
             ic = new InstanceContent();
@@ -136,7 +136,9 @@ public class GlassfishInstance implements ServerInstanceImplementation, LookupLi
             GlassfishInstanceProvider.activeRegistrationSet.add(deployerUri);
 
             commonInstance = ServerInstanceFactory.createServerInstance(this);
-            updateModuleSupport();
+            if (updateNow) {
+                updateModuleSupport();
+            }
             
             // make this instance publicly accessible
             instanceProvider.addServerInstance(this);
@@ -172,26 +174,28 @@ public class GlassfishInstance implements ServerInstanceImplementation, LookupLi
         }
         Set<GlassfishModuleFactory> added = new HashSet<GlassfishModuleFactory>();
         //Set<GlassfishModuleFactory> removed = new HashSet<GlassfishModuleFactory>();
-        added.addAll(lookupResult.allInstances());
-        added.removeAll(currentFactories);
-        currentFactories = lookupResult.allInstances();
-        for (GlassfishModuleFactory moduleFactory : added) {
-            if(moduleFactory.isModuleSupported(homeFolder, asenvProps)) {
-                Object t = moduleFactory.createModule(lookup);
-                if (null == t) {
-                    Logger.getLogger("glassfish").log(Level.WARNING, moduleFactory+" created a null module"); // NOI18N
-                } else {
-                    ic.add(t);
+        synchronized (lookupResult) {
+            Collection<? extends GlassfishModuleFactory> factories = lookupResult.allInstances();
+            added.addAll(factories);
+            added.removeAll(currentFactories);
+            currentFactories = factories;
+        
+            for (GlassfishModuleFactory moduleFactory : added) {
+                if(moduleFactory.isModuleSupported(homeFolder, asenvProps)) {
+                    Object t = moduleFactory.createModule(lookup);
+                    if (null == t) {
+                        Logger.getLogger("glassfish").log(Level.WARNING, moduleFactory+" created a null module"); // NOI18N
+                    } else {
+                        ic.add(t);
+                    }
                 }
             }
         }
     }
     
-    private void updateModuleSupport() {
+    void updateModuleSupport() {
         // Find all modules that have NetBeans support, add them to lookup if server
         // supports them.
-        currentFactories = Collections.emptyList();
-        lookupResult = Lookups.forPath(Util.GF_LOOKUP_PATH).lookupResult(GlassfishModuleFactory.class);
         updateFactories();
         lookupResult.addLookupListener(this);
     }
@@ -231,12 +235,16 @@ public class GlassfishInstance implements ServerInstanceImplementation, LookupLi
                 ip.put(GlassfishModule.HOSTNAME_ATTR, urlParts[2]);
             }
         }
-        GlassfishInstance result = new GlassfishInstance(ip, gip);
+        GlassfishInstance result = new GlassfishInstance(ip, gip, true);
         return result;
     }
     
+    public static GlassfishInstance create(Map<String, String> ip,GlassfishInstanceProvider gip, boolean updateNow) {
+        return new GlassfishInstance(ip, gip, updateNow);
+    }
+
     public static GlassfishInstance create(Map<String, String> ip,GlassfishInstanceProvider gip) {
-        GlassfishInstance result = new GlassfishInstance(ip, gip);
+        GlassfishInstance result = new GlassfishInstance(ip, gip, true);
         return result;
     }
     

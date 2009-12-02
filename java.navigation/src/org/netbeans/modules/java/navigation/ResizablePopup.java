@@ -49,8 +49,11 @@ import java.awt.Window;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.JDialog;
+import org.openide.filesystems.FileObject;
 
 /**
  * A simple singleton factory for a popup dialog for
@@ -75,15 +78,6 @@ final class ResizablePopup {
             cleanup(windowEvent.getWindow());
         }
 
-        private void cleanup(Window window) {
-            window.setVisible(false);
-            if (window instanceof RootPaneContainer) {
-                ((RootPaneContainer) window).setContentPane(new JPanel());
-            }
-            window.removeWindowListener(this);
-            window.dispose();
-        }
-        
         private boolean aboutToShowHelp(Window window) {
             if (window instanceof RootPaneContainer) {
                 JComponent rootPane = ((RootPaneContainer) window).getRootPane();
@@ -96,7 +90,7 @@ final class ResizablePopup {
         }
     };
 
-    static JDialog getDialog() {
+    static JDialog getDialog(FileObject file) {
         JDialog dialog = new JDialog(WindowManager.getDefault().getMainWindow(), "", false) {
                     public void setVisible(boolean visible) {
                         boolean wasVisible = isVisible();
@@ -109,7 +103,20 @@ final class ResizablePopup {
         //dialog.setUndecorated(true);
         dialog.setBounds(JavaMembersAndHierarchyOptions.getLastBounds());
         dialog.addWindowListener(windowListener);
-        dialog.setDefaultCloseOperation(JDialog.HIDE_ON_CLOSE);
+        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+
+        Logger.getLogger("TIMER").log(Level.FINE, "Java Navigation Dialogs", new Object[] {file, dialog});
+        
         return dialog;
     }
+
+    static void cleanup(Window window) {
+        window.setVisible(false);
+        if (window instanceof RootPaneContainer) {
+            ((RootPaneContainer) window).setContentPane(new JPanel());
+        }
+        window.removeWindowListener(windowListener);
+        window.dispose();
+    }
+
 }

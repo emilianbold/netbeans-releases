@@ -44,15 +44,23 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.api.db.explorer.node.NodeProviderFactory;
+import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -169,5 +177,29 @@ public class NodeRegistry implements ChangeListener {
 
     public void stateChanged(ChangeEvent evt) {
         changeSupport.fireChange();
+    }
+
+    public static synchronized void handleMetadataModelException(Class<?> clazz, DatabaseConnection connection, MetadataModelException e, boolean closeConnectionIfBroken) {
+        Logger.getLogger(clazz.getName()).log(Level.FINE, e.getLocalizedMessage(), e);
+        if (connection == null) {
+            return;
+        }
+        if (! DatabaseConnection.isVitalConnection(connection.getConnection(), connection)) {
+            try {
+                if (! connection.getConnector().isDisconnected() && closeConnectionIfBroken) {
+                    String msg = e.getCause().getLocalizedMessage();
+                    if (msg.length() > 280) {
+                        msg = msg.substring(0, 280) + NbBundle.getMessage(NodeRegistry.class, "NodeRegistry_CloseBrokenConnectionMore"); // NOI18N
+                    }
+                    DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(
+                            NbBundle.getMessage(NodeRegistry.class, "NodeRegistry_CloseBrokenConnection", // NOI18N
+                            connection.getName(),
+                            msg)));
+                    connection.disconnect();
+                }
+            } catch (DatabaseException ex) {
+                Logger.getLogger(clazz.getName()).log(Level.INFO, "While disconnecting a broken connection: " + connection + " was thrown " + ex.getLocalizedMessage(), ex);
+            }
+        }
     }
 }

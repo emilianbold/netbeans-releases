@@ -46,6 +46,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 
+import java.util.Map;
 import org.netbeans.modules.vmd.api.inspector.InspectorFolder;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.openide.util.Mutex;
@@ -56,7 +57,7 @@ import org.openide.util.Mutex;
  */
 final class FolderRegistry {
 
-    private static final HashMap<String, WeakReference<FolderRegistry>> registries = new HashMap<String, WeakReference<FolderRegistry>> ();
+    private static final Map<String, WeakReference<FolderRegistry>> registries = new HashMap<String, WeakReference<FolderRegistry>> ();
 
     private Mutex mutex = new Mutex();
     private HashMap<TypeID, InspectorFolder> folders = new HashMap<TypeID, InspectorFolder>();

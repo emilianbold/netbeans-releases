@@ -640,7 +640,7 @@ made subject to such option by the copyright holder.
                 </path>
             </target>
             <target name="-do-test-run" if="netbeans.home+have.tests" depends="init,-pre-test-run">
-                <junit showoutput="true" fork="yes" dir="${{basedir}}" failureproperty="tests.failed" errorproperty="tests.failed">
+                <junit showoutput="true" fork="yes" dir="${{basedir}}" tempdir="${{java.io.tmpdir}}" failureproperty="tests.failed" errorproperty="tests.failed">
                     <classpath refid="unit.test.classpath"/>
                     <sysproperty key="NetBeansUserDir" value="${{netbeans.user}}"/>
                     <sysproperty key="org.netbeans.modules.compapp.catd.context" value="${{org.netbeans.modules.compapp.catd.context}}"/>
@@ -664,7 +664,7 @@ made subject to such option by the copyright holder.
                 </junit>
             </target>
             <target name="-do-single-test-run" if="netbeans.home+have.tests" depends="init,-pre-test-run">
-                <junit showoutput="true" fork="yes" dir="${{basedir}}" failureproperty="tests.failed" errorproperty="tests.failed">
+                <junit showoutput="true" fork="yes" dir="${{basedir}}" tempdir="${{java.io.tmpdir}}" failureproperty="tests.failed" errorproperty="tests.failed">
                     <classpath refid="unit.test.classpath"/>
                     <sysproperty key="NetBeansUserDir" value="${{netbeans.user}}"/>
                     <sysproperty key="inDebug" value="${{inDebug}}"/>

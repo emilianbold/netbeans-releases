@@ -97,7 +97,7 @@ public class ValidateHgConfiguration extends Task {
                 log("======== WARNING ========\n" +
                     "You need to guard against committing carriage returns into Mercurial\n" +
                     "if you intend to push changes to NetBeans repositories.\n" +
-                    "Format (in ~/.hgrc or Mercurial.ini, Hg 1.0+ required):\n" +
+                    "Format (in ~/.hgrc or Mercurial.ini):\n" +
                     "[hooks]\n" +
                     "pretxncommit.crlf = python:hgext.win32text.forbidcrlf\n" +
                     "=========================", Project.MSG_WARN);

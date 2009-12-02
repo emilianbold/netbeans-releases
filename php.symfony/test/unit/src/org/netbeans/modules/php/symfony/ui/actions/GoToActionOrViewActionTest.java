@@ -52,6 +52,10 @@ public class GoToActionOrViewActionTest extends NbTestCase {
         assertEquals("executeIndex", GoToActionAction.getActionMethodName("indexSuccess"));
         assertEquals("executeNew", GoToActionAction.getActionMethodName("newSuccess"));
         assertEquals("executeNew", GoToActionAction.getActionMethodName("newError"));
+        assertEquals("executeIndexDemo", GoToActionAction.getActionMethodName("indexDemoSuccess"));
+        assertEquals("executeIndexDemoUglyBug", GoToActionAction.getActionMethodName("indexDemoUglyBugSuccess"));
+        assertEquals("executeIndex2Demo3", GoToActionAction.getActionMethodName("index2Demo3Success"));
+        assertEquals("executeIndex_Demo", GoToActionAction.getActionMethodName("index_DemoSuccess"));
 
         assertEquals("execute_admin", GoToActionAction.getActionMethodName("_adminInc"));
         assertNull(GoToActionAction.getActionMethodName("_admin"));

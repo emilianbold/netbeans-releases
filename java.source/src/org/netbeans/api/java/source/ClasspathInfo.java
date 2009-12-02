@@ -66,6 +66,7 @@ import org.netbeans.modules.java.source.parsing.ProxyFileManager;
 import org.netbeans.modules.java.source.parsing.SourceFileManager;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.netbeans.modules.java.source.classpath.SourcePath;
+import org.netbeans.modules.java.source.parsing.AptSourceFileManager;
 import org.netbeans.modules.java.source.parsing.FileObjects.InferableJavaFileObject;
 import org.netbeans.modules.java.source.parsing.MemoryFileManager;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
@@ -101,7 +102,9 @@ public final class ClasspathInfo {
     private final ClassPath srcClassPath;
     private final ClassPath bootClassPath;
     private final ClassPath compileClassPath;
-    private final ClassPath cachedSrcClassPath;
+    private final ClassPath cachedUserSrcClassPath;
+    private final ClassPath cachedAptSrcClassPath;
+    private final ClassPath cachedSrcClassPath; // = cachedUserSrcClassPath + cachedAptSrcClassPath
     private final ClassPath cachedBootClassPath;
     private final ClassPath cachedCompileClassPath;
     private ClassPath outputClassPath;
@@ -133,12 +136,16 @@ public final class ClasspathInfo {
 	this.cachedBootClassPath.addPropertyChangeListener(WeakListeners.propertyChange(this.cpListener,this.cachedBootClassPath));
 	this.cachedCompileClassPath.addPropertyChangeListener(WeakListeners.propertyChange(this.cpListener,this.cachedCompileClassPath));
         if (srcCp == null) {
-            this.cachedSrcClassPath = this.srcClassPath = EMPTY_PATH;
+            this.cachedAptSrcClassPath = null;
+            this.cachedSrcClassPath = this.srcClassPath = this.cachedUserSrcClassPath = EMPTY_PATH;
             this.outputClassPath = EMPTY_PATH;
         }
         else {
             this.srcClassPath = srcCp;
-            this.cachedSrcClassPath = SourcePath.create(srcCp, backgroundCompilation);
+            final boolean allowAptRoots = false; //todo: Set by PROCESSOR_PATH != null
+            this.cachedUserSrcClassPath = SourcePath.sources(srcCp, backgroundCompilation);
+            this.cachedAptSrcClassPath = allowAptRoots ? SourcePath.apt(srcCp, backgroundCompilation) : null;
+            this.cachedSrcClassPath =    allowAptRoots ? ClassPathSupport.createProxyClassPath(this.cachedUserSrcClassPath,this.cachedAptSrcClassPath) : this.cachedUserSrcClassPath;
             this.outputClassPath = CacheClassPath.forSourcePath (this.cachedSrcClassPath);
 	    this.cachedSrcClassPath.addPropertyChangeListener(WeakListeners.propertyChange(this.cpListener,this.cachedSrcClassPath));
         }
@@ -351,8 +358,9 @@ public final class ClasspathInfo {
                 new CachingFileManager (this.archiveProvider, this.cachedBootClassPath, true, true),
                 new CachingFileManager (this.archiveProvider, this.cachedCompileClassPath, false, true),
                 hasSources ? (backgroundCompilation ? new CachingFileManager (this.archiveProvider, this.cachedSrcClassPath, filter, false, ignoreExcludes)
-                    : new SourceFileManager (this.cachedSrcClassPath, ignoreExcludes)) : null,
-                hasSources ? outFileManager = new OutputFileManager (this.archiveProvider, this.outputClassPath, this.cachedSrcClassPath) : null
+                    : new SourceFileManager (this.cachedUserSrcClassPath, ignoreExcludes)) : null,
+                cachedAptSrcClassPath != null ? new AptSourceFileManager(this.cachedUserSrcClassPath, this.cachedAptSrcClassPath, true): null,
+                hasSources ? outFileManager = new OutputFileManager (this.archiveProvider, this.outputClassPath, this.cachedUserSrcClassPath, this.cachedAptSrcClassPath) : null
             , this.memoryFileManager);
         }
         return this.fileManager;

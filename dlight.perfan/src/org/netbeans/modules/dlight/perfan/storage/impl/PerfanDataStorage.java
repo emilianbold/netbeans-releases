@@ -52,10 +52,9 @@ import org.netbeans.module.dlight.threads.api.Datarace;
 import org.netbeans.module.dlight.threads.api.Deadlock;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
-import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.modules.dlight.perfan.spi.datafilter.SunStudioFiltersProvider;
+import org.netbeans.modules.dlight.perfan.stack.impl.FunctionCallImpl;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
@@ -120,12 +119,10 @@ public final class PerfanDataStorage implements DataStorage {
     public void init(ExecutionEnvironment execEnv, String sproHome,
             String experimentDirectory, SunStudioFiltersProvider dataFiltersProvider) {
         synchronized (this) {
-
             if (er_print != null) {
                 er_print.close();
             }
             er_print = ErprintSession.createNew(execEnv, sproHome, experimentDirectory, dataFiltersProvider);
-
         }
     }
 
@@ -165,7 +162,10 @@ public final class PerfanDataStorage implements DataStorage {
         } catch (IOException ex) {
             log.log(Level.FINEST, "getMetrics: " + ex.toString()); // NOI18N
         }
-        return Metrics.constructFrom(Arrays.asList(SunStudioDCConfiguration.c_name), Arrays.asList(SunStudioDCConfiguration.c_name));
+
+        return Metrics.constructFrom(
+                Arrays.asList(SunStudioDCConfiguration.c_name),
+                Arrays.asList(SunStudioDCConfiguration.c_name));
     }
 
     public String[] getTopFunctions(ErprintCommand command, Metrics metrics, int limit) throws InterruptedException {
@@ -197,7 +197,7 @@ public final class PerfanDataStorage implements DataStorage {
         return result;
     }
 
-    public FunctionStatistic getFunctionStatistic(FunctionCall functionCall) {
+    public FunctionStatistic getFunctionStatistic(FunctionCallImpl functionCall) {
         FunctionStatistic result = null;
 
         try {

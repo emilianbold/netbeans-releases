@@ -272,6 +272,7 @@
                 <friend>org.netbeans.modules.bugzilla</friend>
                 <friend>org.netbeans.modules.hudson.kenai</friend>
                 <friend>org.netbeans.modules.jira</friend>
+                <package>org.netbeans.modules.kenai.ui.api</package>
                 <package>org.netbeans.modules.kenai.ui.spi</package>
             </friend-packages>
         </data>

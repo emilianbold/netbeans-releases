@@ -40,13 +40,16 @@
 package org.netbeans.modules.cnd.remote.support;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.remote.sync.SharabilityFilter;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileUtil;
 
@@ -62,6 +65,12 @@ public class RemoteProjectSupport {
             return mk.getDevelopmentHost().getExecutionEnvironment();
         }
         return null;
+    }
+
+    public static boolean projectExists(Project project) {
+        File baseDir = FileUtil.toFile(project.getProjectDirectory()).getAbsoluteFile();
+        File nbproject = new File(baseDir, "nbproject"); //NOI18N
+        return nbproject.exists();
     }
 
     public static File getPrivateStorage(Project project) {
@@ -86,32 +95,60 @@ public class RemoteProjectSupport {
             return new File[] { baseDir };
         }
         // the project itself
-        Set<File> extraSourceRoots = new HashSet<File>();
+        Set<File> sourceFilesAndDirs = new HashSet<File>();
+        sourceFilesAndDirs.add(baseDir);
+
         MakeConfigurationDescriptor mcs = MakeConfigurationDescriptor.getMakeConfigurationDescriptor(project);
         for(String soorceRoot : mcs.getSourceRoots()) {
             String path = IpeUtils.toAbsolutePath(baseDir.getAbsolutePath(), soorceRoot);
             File file = new File(path); // or canonical?
-            extraSourceRoots.add(file);
+            sourceFilesAndDirs.add(file);
         }
+        addExtraFiles(mcs, sourceFilesAndDirs);
         // Make sure 1st level subprojects are visible remotely
         // First, remembr all subproject locations
         for (String subprojectDir : conf.getSubProjectLocations()) {
             subprojectDir = IpeUtils.toAbsolutePath(baseDir.getAbsolutePath(), subprojectDir);
-            extraSourceRoots.add(new File(subprojectDir));
+            sourceFilesAndDirs.add(new File(subprojectDir));
         }
         // Then go trough open subprojects and add their external source roots
         for (Project subProject : conf.getSubProjects()) {
-            File subProjectDir = FileUtil.toFile(subProject.getProjectDirectory());
             MakeConfigurationDescriptor subMcs =
                     MakeConfigurationDescriptor.getMakeConfigurationDescriptor(subProject);
             for(String soorceRoot : mcs.getSourceRoots()) {
                 File file = new File(soorceRoot).getAbsoluteFile(); // or canonical?
-                extraSourceRoots.add(file);
+                sourceFilesAndDirs.add(file);
+            }
+            addExtraFiles(subMcs, sourceFilesAndDirs);
+        }
+        return sourceFilesAndDirs.toArray(new File[sourceFilesAndDirs.size()]);
+    }
+
+    private static void addExtraFiles(MakeConfigurationDescriptor subMcs, Set<File> filesToSync) {
+        FileFilter filter = new SharabilityFilter();
+        for (Item item : subMcs.getProjectItems()) {
+            File normFile = item.getNormalizedFile();
+            if (!filter.accept(normFile)) {
+                // user explicitely added file -> copy it even
+                filesToSync.add(normFile);
+                File parentFile = normFile.getParentFile();
+            } else if (!isContained(normFile, filesToSync)) {
+                // directory containing file is not yet added => copy it
+                filesToSync.add(normFile);
             }
         }
-        Set<File> allFiles = new HashSet<File>(extraSourceRoots.size() + 1);
-        allFiles.add(baseDir);
-        allFiles.addAll(extraSourceRoots);
-        return allFiles.toArray(new File[allFiles.size()]);
+    }
+
+    private static boolean isContained(File normFile, Set<File> files) {
+        String itemAbsPath = normFile.getAbsolutePath();
+        for (File dir : files) {
+            if (dir.isDirectory()) {
+                String alreadyAddedPath = dir.getAbsolutePath() + File.separatorChar;
+                if (itemAbsPath.startsWith(alreadyAddedPath)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

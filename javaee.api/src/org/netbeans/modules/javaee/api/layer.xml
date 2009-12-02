@@ -41,13 +41,19 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
   <folder name="org-netbeans-api-project-libraries">
     <folder name="Libraries">
-      <file name="javaee-api-6.0.xml" url="javaee-api-6.0.xml"/>
-      <file name="javaee-web-api-6.0.xml" url="javaee-web-api-6.0.xml"/>
-      <file name="javaee-endorsed-api-6.0.xml" url="javaee-endorsed-api-6.0.xml"/>
+      <file name="javaee-api-6.0.xml" url="javaee-api-6.0.xml">
+        <attr name="displayName" bundlevalue="org/netbeans/modules/javaee/api/Bundle#javaee-api-6.0"/>
+      </file>
+      <file name="javaee-web-api-6.0.xml" url="javaee-web-api-6.0.xml">
+        <attr name="displayName" bundlevalue="org/netbeans/modules/javaee/api/Bundle#javaee-web-api-6.0"/>
+      </file>
+      <file name="javaee-endorsed-api-6.0.xml" url="javaee-endorsed-api-6.0.xml">
+        <attr name="displayName" bundlevalue="org/netbeans/modules/javaee/api/Bundle#javaee-endorsed-api-6.0"/>
+      </file>
     </folder>
   </folder>
 </filesystem>

@@ -50,8 +50,11 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.ui.selectors.RepositorySelectorBuilder;
+import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiProject;
+import org.netbeans.modules.kenai.ui.api.NbModuleOwnerSupport;
+import org.netbeans.modules.kenai.ui.api.NbModuleOwnerSupport.OwnerInfo;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -394,7 +397,22 @@ public abstract class BugtrackingOwnerSupport {
             Object attValue = fileObject.getAttribute(
                                        "ProvidedExtensions.RemoteLocation");//NOI18N
             if (attValue instanceof String) {
-                Repository repository;
+                Repository repository = null;
+                if(BugtrackingUtil.isNbRepository((String)attValue)) {
+                    File file = FileUtil.toFile(fileObject);
+                    if(file != null) {
+                        OwnerInfo ownerInfo = NbModuleOwnerSupport.getInstance().getOwnerInfo(NbModuleOwnerSupport.NB_BUGZILLA_CONFIG, file);
+                        if(ownerInfo != null) {
+                            KenaiProject kp = Kenai.getDefault().getProject(ownerInfo.getOwner());
+                            repository = (kp != null)
+                                   ? KenaiUtil.getKenaiBugtrackingRepository(kp)
+                                   : null;        //not a Kenai project repository
+                        }
+                    }
+                }
+                if(repository != null) {
+                    return repository;
+                }
                 try {
                     repository = getKenaiBugtrackingRepository((String) attValue);
                     if (repository != null) {

@@ -45,6 +45,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
+import org.apache.tools.ant.module.bridge.AntBridge;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.openide.modules.InstalledFileLocator;
@@ -66,6 +67,7 @@ public class IntrospectedInfoTest extends NbTestCase {
 
     @Override
     protected void setUp() throws Exception {
+        AntBridge.NO_MODULE_SYSTEM = true;
         MockServices.setServices(IFL.class);
         ii = IntrospectedInfo.getDefaults();
     }

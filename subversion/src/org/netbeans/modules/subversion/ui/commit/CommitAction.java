@@ -270,6 +270,10 @@ public class CommitAction extends ContextAction {
     private static void startCommitTask(final CommitPanel panel, final CommitTable data, final Context ctx, final List<SvnHook> hooks) {
         final Map<SvnFileNode, CommitOptions> commitFiles = data.getCommitFiles();
         final String message = panel.getCommitMessage();
+        if (!panel.isHooksPanelInitialized()) {
+            // pass hooks only if the hooks panel was displayed and initialized
+            hooks.clear();
+        }
         org.netbeans.modules.versioning.util.Utils.insert(SvnModuleConfig.getDefault().getPreferences(), RECENT_COMMIT_MESSAGES, message.trim(), 20);
 
         SVNUrl repository = null;

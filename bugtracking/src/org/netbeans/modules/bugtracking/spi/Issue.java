@@ -46,9 +46,9 @@ import java.util.Map;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import static java.lang.Character.isSpaceChar;
@@ -61,6 +61,7 @@ import static java.lang.Character.isSpaceChar;
 public abstract class Issue {
 
     private static final int SHORT_DISP_NAME_LENGTH = 15;
+
     private final PropertyChangeSupport support;
 
     /**
@@ -71,6 +72,11 @@ public abstract class Issue {
     private Repository repository;
 
     private static final RequestProcessor rp = new RequestProcessor("Bugtracking Issue"); // NOI18N
+
+    static {
+        IssueAccessorImpl.create();
+    }
+    private Node[] selection;
 
     /**
      * Creates an issue
@@ -216,7 +222,6 @@ public abstract class Issue {
                                 });
                                 IssueCacheUtils.setSeen(issue[0], true);
                             }
-                            BugtrackingManager.getInstance().addRecentIssue(repository, issue[0]);
                         } finally {
                             if(handle != null) handle.finish();
                         }
@@ -249,7 +254,6 @@ public abstract class Issue {
                         ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(Issue.class, "LBL_REFRESING_ISSUE", new Object[]{getID()}));
                         try {
                             handle.start();
-                            BugtrackingManager.getInstance().addRecentIssue(repository, Issue.this);
                             if (refresh && !Issue.this.refresh()) {
                                 return;
                             }
@@ -267,6 +271,7 @@ public abstract class Issue {
      * Returns a Node representing this issue
      * @return
      */
+    // XXX used only by issue table 
     public abstract IssueNode getNode();
 
     /**
@@ -285,6 +290,7 @@ public abstract class Issue {
      * Returns this issues attributes. 
      * @return
      */
+    // XXX used only by cache - move out from the spi
     public abstract Map<String, String> getAttributes();
 
     public void removePropertyChangeListener(PropertyChangeListener listener) {
@@ -302,4 +308,11 @@ public abstract class Issue {
         support.firePropertyChange(EVENT_ISSUE_DATA_CHANGED, null, null);
     }
 
+    void setSelection(Node[] nodes) {
+        this.selection = nodes;
+}
+
+    protected Node[] getSelection() {
+        return selection;
+    }
 }

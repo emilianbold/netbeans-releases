@@ -43,6 +43,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.modules.bugtracking.spi.IssueFinder;
+import org.openide.ErrorManager;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
 
@@ -71,7 +72,12 @@ public class BugzillaIssueFinder extends IssueFinder {
     }
 
     private static int[] findBoundaries(CharSequence str) {
-        return getImpl().findBoundaries(str);
+        try {
+            return getImpl().findBoundaries(str);
+        } catch (Exception ex) {
+            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+            return null;
+        }
     }
 
     private static Impl getImpl() {
@@ -111,7 +117,7 @@ public class BugzillaIssueFinder extends IssueFinder {
         private static final String BUG_NUMBER_PREFIX = "duplicate of"; //NOI18N
         private static final String[] BUGNUM_PREFIX_PARTS;
 
-        private static final String PUNCT_CHARS = ",:;()[]{}";          //NOI18N
+        private static final String PUNCT_CHARS = ".,:;()[]{}";         //NOI18N
 
         private static final int LOWER_A = 'a';     //automatic conversion to int
         private static final int LOWER_Z = 'z';     //automatic conversion to int

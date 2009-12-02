@@ -80,7 +80,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.editor.java.RunOffAWT;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.modules.java.editor.codegen.ui.DelegatePanel;
 import org.netbeans.modules.java.editor.codegen.ui.ElementNode;
@@ -179,7 +179,7 @@ public class DelegateMethodGenerator implements CodeGenerator {
                 final int caretOffset = component.getCaretPosition();
                 final ElementNode.Description[] description = new ElementNode.Description[1];
                 final AtomicBoolean cancel = new AtomicBoolean();
-                RunOffAWT.runOffAWT(new Runnable() {
+                ProgressUtils.runOffEventDispatchThread(new Runnable() {
 
                     public void run() {
                         try {
@@ -205,7 +205,7 @@ public class DelegateMethodGenerator implements CodeGenerator {
                             Exceptions.printStackTrace(ioe);
                         }
                     }
-                }, NbBundle.getMessage(DelegateMethodGenerator.class, "LBL_Get_Available_Methods"), cancel);
+                }, NbBundle.getMessage(DelegateMethodGenerator.class, "LBL_Get_Available_Methods"), cancel, false);
                 return description[0];
             }
         }

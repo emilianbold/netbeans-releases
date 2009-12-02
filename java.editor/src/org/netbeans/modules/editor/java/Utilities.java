@@ -838,7 +838,7 @@ public final class Utilities {
                     TypeMirror currentFormal = formal.next();
                     TypeMirror currentActual = actual.next();
 
-                    if (!info.getTypes().isAssignable(currentActual, currentFormal)) {
+                    if (!info.getTypes().isAssignable(currentActual, currentFormal) || currentActual.getKind() == TypeKind.ERROR) {
                         if (mismatchFound) {
                             //only one mismatch supported:
                             continue OUTER;

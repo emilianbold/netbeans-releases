@@ -123,7 +123,7 @@ public class RemoteProcReader extends ProcReaderImpl {
             }
 
             InputStream is = p.getInputStream();
-            MultyFilesStream ss = new MultyFilesStream(is, 256);
+            MultyFilesStream ss = new MultyFilesStream(is, LWPUsage.FILESIZE);
 
             try {
                 while (ss.available() > 0) {

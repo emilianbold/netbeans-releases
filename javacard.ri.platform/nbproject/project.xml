@@ -223,7 +223,7 @@
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.javacard.ri.bundle</friend>
-                <package>org.netbeans.modules.javacard.ri.platform.installer</package>
+                <package>org.netbeans.modules.javacard.ri.spi</package>
             </friend-packages>
         </data>
     </configuration>

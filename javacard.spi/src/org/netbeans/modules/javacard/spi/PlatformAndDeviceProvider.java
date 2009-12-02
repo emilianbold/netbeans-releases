@@ -47,28 +47,6 @@ package org.netbeans.modules.javacard.spi;
  * @author Tim Boudreau
  */
 public interface PlatformAndDeviceProvider {
-
-    public static final class Temp implements PlatformAndDeviceProvider {
-        private String activeDevice;
-        private String platformName;
-
-        public String getActiveDevice() {
-            return activeDevice;
-        }
-
-        public String getPlatformName() {
-            return platformName;
-        }
-
-        public void setActiveDevice(String deviceName) {
-            this.activeDevice = deviceName;
-        }
-
-        public void setPlatformName(String platformName) {
-            this.platformName = platformName;
-        }
-    }
-    
     public String getActiveDevice();
     public String getPlatformName();
     public void setActiveDevice(String deviceName);

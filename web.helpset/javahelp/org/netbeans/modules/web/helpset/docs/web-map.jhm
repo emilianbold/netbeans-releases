@@ -9,7 +9,7 @@
 	<mapID target="about_debug" url="web/debug/about_debug.html"/>
 	<mapID target="about_deploy" url="web/deploy/about_deploy.html"/>
 	<mapID target="about_filter" url="web/create/filter/about_filter.html"/>
-	<mapID target="about_framework" url="web/create/tag/framework/about_framework.html"/>
+	<mapID target="about_framework" url="web/framework/about_framework.html"/>
 	<mapID target="about_jsp_edit" url="web/create/jsp/about_jsp_edit.html"/>
 	<mapID target="about_jsp_encoding" url="web/create/jsp/about_jsp_encoding.html"/>
 	<mapID target="about_jsp_syntax" url="web/create/jsp/about_jsp_syntax.html"/>
@@ -58,22 +58,29 @@
 	<mapID target="filter_addtodd" url="web/create/filter/filter_addtodd.html"/>
 	<mapID target="filter_create" url="web/create/filter/filter_create.html"/>
 	<mapID target="filter_run" url="web/create/filter/filter_run.html"/>
-	<mapID target="framework_jsf_about" url="web/create/tag/framework/jsf/about_jsf_support.html"/>
-	<mapID target="framework_jsf_add" url="web/create/tag/framework/framework_jsf_add.html"/>
-	<mapID target="framework_jsf_create" url="web/create/tag/framework/framework_jsf_create.html"/>
-	<mapID target="framework_jsf_datatable" url="web/create/tag/framework/framework_jsf_datatable.html"/>
-	<mapID target="framework_jsf_form" url="web/create/tag/framework/framework_jsf_form.html"/>
-	<mapID target="framework_jsf_crud" url="web/create/tag/framework/framework_jsf_aboutcrud.html"/>
-	<mapID target="framework_jsf_fromentity" url="web/create/tag/framework/framework_jsf_fromentity.html"/>
-	<mapID target="framework_struts_add" url="web/create/tag/framework/framework_struts_add.html"/>
-	<mapID target="framework_struts_create" url="web/create/tag/framework/framework_struts_create.html"/>
-        <mapID target="framework_spring_about" url="web/create/tag/framework/spring/about.html"/>
-	<mapID target="framework_spring_create" url="web/create/tag/framework/spring/create.html"/>
-	<mapID target="framework_spring_add" url="web/create/tag/framework/spring/add.html"/>
-        <mapID target="framework_grails_about" url="web/create/tag/framework/grails/about.html"/>
-        <mapID target="framework_grails_create" url="web/create/tag/framework/grails/create.html"/>
-        <mapID target="framework_grails_install" url="web/create/tag/framework/grails/install.html"/>
-        <mapID target="framework_hibernate_create" url="web/create/tag/framework/hibernate/hibernate-createweb.html"/>
+	<mapID target="framework_jsf_about" url="web/framework/jsf/about.html"/>
+	<mapID target="framework_jsf_add" url="web/framework/jsf/add.html"/>
+	<mapID target="framework_jsf_create" url="web/framework/jsf/create.html"/>
+	<mapID target="framework_jsf_create_page" url="web/framework/jsf/create-page.html"/>
+	<mapID target="framework_jsf_create_managed_bean" url="web/framework/jsf/create-managed-bean.html"/>
+	<mapID target="framework_jsf_edit" url="web/framework/jsf/edit.html"/>
+	<mapID target="framework_jsf_facelets_template" url="web/framework/jsf/create-facelets-template.html"/>
+	<mapID target="framework_jsf_composite" url="web/framework/jsf/create-composite-component.html"/>
+	<mapID target="framework_jsf_palette" url="web/framework/jsf/palette.html"/>
+	<mapID target="framework_jsf_form_entity" url="web/framework/jsf/form-from-entity.html"/>
+	<mapID target="framework_jsf_datatable_entity" url="web/framework/jsf/datatable-from-entity.html"/>
+	<mapID target="framework_jsf_crud" url="web/framework/jsf/about-crud.html"/>
+	<mapID target="framework_jsf_generate_pages" url="web/framework/jsf/pages-from-entities.html"/>
+	<mapID target="framework_struts_about" url="web/framework/struts/about.html"/>
+	<mapID target="framework_struts_add" url="web/framework/struts/add.html"/>
+	<mapID target="framework_struts_create" url="web/framework/struts/create.html"/>
+        <mapID target="framework_spring_about" url="web/framework/spring/about.html"/>
+	<mapID target="framework_spring_create" url="web/framework/spring/create.html"/>
+	<mapID target="framework_spring_add" url="web/framework/spring/add.html"/>
+        <mapID target="framework_grails_about" url="web/framework/grails/about.html"/>
+        <mapID target="framework_grails_create" url="web/framework/grails/create.html"/>
+        <mapID target="framework_grails_install" url="web/framework/grails/install.html"/>
+        <mapID target="framework_hibernate_create" url="web/framework/hibernate/hibernate-createweb.html"/>
         <mapID target="framework_hibernate_addsupport" url="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/hibernate/hibernate_addsupport.html"/>
         <mapID target="html_create" url="web/create/html/html_create.html"/>
 	<mapID target="jsp_compile" url="web/create/jsp/jsp_compile.html"/>
@@ -96,12 +103,14 @@
 	<mapID target="org.netbeans.modules.web.freeform.ui.WebClasspathWizardPanel" url="web/csh/projwiz_freeform/WebClasspathWizardPanel.html"/>
 	<mapID target="org.netbeans.modules.web.freeform.ui.WebLocationsPanel" url="web/csh/dbox_projprops_freeform/WebLocationsPanel.html"/>
 	<mapID target="org.netbeans.modules.web.freeform.ui.WebLocationsWizardPanel" url="web/csh/projwiz_freeform/WebLocationsWizardPanel.html"/>
-	<mapID target="org.netbeans.modules.web.jsf.dialogs.AddManagedBeanDialog" url="web/create/tag/framework/jsf/AddManagedBeanDialog.html"/>
-	<mapID target="org.netbeans.modules.web.jsf.dialogs.AddNavigationCaseDialog" url="web/create/tag/framework/jsf/AddNavigationCaseDialog.html"/>
-	<mapID target="org.netbeans.modules.web.jsf.dialogs.AddNavigationRuleDialog" url="web/create/tag/framework/jsf/AddNavigationRuleDialog.html"/>
+	<mapID target="org.netbeans.modules.web.jsf.dialogs.AddManagedBeanDialog" url="web/framework/jsf/csh/AddManagedBeanDialog.html"/>
+	<mapID target="org.netbeans.modules.web.jsf.dialogs.AddNavigationCaseDialog" url="web/framework/jsf/csh/AddNavigationCaseDialog.html"/>
+	<mapID target="org.netbeans.modules.web.jsf.dialogs.AddNavigationRuleDialog" url="web/framework/jsf/csh/AddNavigationRuleDialog.html"/>
 	<mapID target="org.netbeans.modules.web.jsf.wizards.JSFConfigurationPanelVisual" url="web/csh/projwiz_standard/PanelSupportedFrameworks.html"/>
-	<mapID target="org.netbeans.modules.web.jsf.wizards.ManagedBeanPanel" url="web/create/tag/framework/jsf/file_ManagedBeanPanel.html"/>
-        <mapID target="org.netbeans.modules.web.jsf.wizards.PersistenceClientIterator$PersistenceClientEntitySelection" url="web/create/tag/framework/jsf/file_jsffromentity_panel1.html"/>
+	<mapID target="org.netbeans.modules.web.jsf.wizards.ManagedBeanPanel" url="web/framework/jsf/csh/file_ManagedBeanPanel.html"/>
+	<mapID target="org.netbeans.modules.web.jsf.wizards.TemplatePanel" url="web/framework/jsf/create-facelets-template.html"/>
+    <!-- See Issue 176788 for below target (13/11/2009) -->
+	<mapID target="framework_jsf_fromentity" url="web/framework/jsf/pages-from-entities.html"/>
 	<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerCompile" url="web/csh/dbox_projprops/WebCustomizerCompile.html"/>
 	<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerFrameworks" url="web/csh/dbox_projprops/CustomizerFrameworks.html"/>
 	<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerJavadoc" url="web/csh/dbox_projprops/WebCustomizerJavadoc.html"/>
@@ -120,22 +129,22 @@
         <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectServerWizardPanel_WAR_IMPORT" url="web/csh/projwiz_standard/PanelConfigureProject_servers.html"/>
 	<mapID target="org.netbeans.modules.web.project.ui.wizards.PanelSourceFolders" url="web/csh/projwiz_standard/SecondPanel.html"/>
 	<mapID target="org.netbeans.modules.web.project.ui.wizards.PanelSupportedFrameworks" url="web/csh/projwiz_standard/PanelSupportedFrameworks.html"/>
-	<mapID target="org.netbeans.modules.web.struts.dialogs.AddActionPanel" url="web/create/tag/framework/struts/AddActionPanel.html"/>
-	<mapID target="org.netbeans.modules.web.struts.dialogs.AddExceptionDialogPanel" url="web/create/tag/framework/struts/AddException.html"/>
-	<mapID target="org.netbeans.modules.web.struts.dialogs.AddFIActionPanel" url="web/create/tag/framework/struts/AddForwardIncludePanel.html"/>
-	<mapID target="org.netbeans.modules.web.struts.dialogs.AddFormBeanPanel" url="web/create/tag/framework/struts/AddFormBean.html"/>
-	<mapID target="org.netbeans.modules.web.struts.dialogs.AddFormPropertyPanel" url="web/create/tag/framework/struts/AddFormProperty.html"/>
-	<mapID target="org.netbeans.modules.web.struts.dialogs.AddForwardDialogPanel" url="web/create/tag/framework/struts/AddForward.html"/>
+	<mapID target="org.netbeans.modules.web.struts.dialogs.AddActionPanel" url="web/framework/struts/csh/AddActionPanel.html"/>
+	<mapID target="org.netbeans.modules.web.struts.dialogs.AddExceptionDialogPanel" url="web/framework/struts/csh/AddException.html"/>
+	<mapID target="org.netbeans.modules.web.struts.dialogs.AddFIActionPanel" url="web/framework/struts/csh/AddForwardIncludePanel.html"/>
+	<mapID target="org.netbeans.modules.web.struts.dialogs.AddFormBeanPanel" url="web/framework/struts/csh/AddFormBean.html"/>
+	<mapID target="org.netbeans.modules.web.struts.dialogs.AddFormPropertyPanel" url="web/framework/struts/csh/AddFormProperty.html"/>
+	<mapID target="org.netbeans.modules.web.struts.dialogs.AddForwardDialogPanel" url="web/framework/struts/csh/AddForward.html"/>
 	<mapID target="org.netbeans.modules.web.struts.ui.StrutsConfigurationPanelVisual" url="web/csh/projwiz_standard/PanelSupportedFrameworks.html"/>
-	<mapID target="org.netbeans.modules.web.struts.wizards.ActionPanel" url="web/create/tag/framework/struts/file_ActionPanel.html"/>
-	<mapID target="org.netbeans.modules.web.struts.wizards.ActionPanel1" url="web/create/tag/framework/struts/file_ActionPanel1.html"/>
-	<mapID target="org.netbeans.modules.web.struts.wizards.FormBeanNewPanel" url="web/create/tag/framework/struts/file_FormBeanNewPanel.html"/>
-	<mapID target="org.netbeans.modules.groovy.grailsproject.ui.wizards.GetProjectLocationStep" url="web/create/tag/framework/grails/NewGrailsProjectWizard.html"/>
-	<mapID target="org.netbeans.modules.groovy.grailsproject.ui.wizards.GetArtifactNameStep.create-controller" url="web/create/tag/framework/grails/NewGrailsArtifact.html"/>
-	<mapID target="org.netbeans.modules.groovy.grailsproject.ui.wizards.GetArtifactNameStep.create-domain-class" url="web/create/tag/framework/grails/NewGrailsArtifact.html"/>
-	<mapID target="org.netbeans.modules.groovy.grailsproject.ui.wizards.GetArtifactNameStep.create-script" url="web/create/tag/framework/grails/NewGrailsArtifact.html"/>
-	<mapID target="org.netbeans.modules.groovy.grailsproject.ui.wizards.GetArtifactNameStep.create-service" url="web/create/tag/framework/grails/NewGrailsArtifact.html"/>
-	<mapID target="org.netbeans.modules.groovy.grailsproject.ui.wizards.GetArtifactNameStep.create-unit-test" url="web/create/tag/framework/grails/NewGrailsArtifact.html"/>
+	<mapID target="org.netbeans.modules.web.struts.wizards.ActionPanel" url="web/framework/struts/csh/file_ActionPanel.html"/>
+	<mapID target="org.netbeans.modules.web.struts.wizards.ActionPanel1" url="web/framework/struts/csh/file_ActionPanel1.html"/>
+	<mapID target="org.netbeans.modules.web.struts.wizards.FormBeanNewPanel" url="web/framework/struts/csh/file_FormBeanNewPanel.html"/>
+	<mapID target="org.netbeans.modules.groovy.grailsproject.ui.wizards.GetProjectLocationStep" url="web/framework/grails/NewGrailsProjectWizard.html"/>
+	<mapID target="org.netbeans.modules.groovy.grailsproject.ui.wizards.GetArtifactNameStep.create-controller" url="web/framework/grails/NewGrailsArtifact.html"/>
+	<mapID target="org.netbeans.modules.groovy.grailsproject.ui.wizards.GetArtifactNameStep.create-domain-class" url="web/framework/grails/NewGrailsArtifact.html"/>
+	<mapID target="org.netbeans.modules.groovy.grailsproject.ui.wizards.GetArtifactNameStep.create-script" url="web/framework/grails/NewGrailsArtifact.html"/>
+	<mapID target="org.netbeans.modules.groovy.grailsproject.ui.wizards.GetArtifactNameStep.create-service" url="web/framework/grails/NewGrailsArtifact.html"/>
+	<mapID target="org.netbeans.modules.groovy.grailsproject.ui.wizards.GetArtifactNameStep.create-unit-test" url="web/framework/grails/NewGrailsArtifact.html"/>
 	<mapID target="propfiles.prop" url="ui_elements/editors/about_properties_editor.html"/>
 	<mapID target="servlet_create" url="web/create/servlet/servlet_create.html"/>
 	<mapID target="servlet_edit" url="web/create/servlet/servlet_edit.html"/>

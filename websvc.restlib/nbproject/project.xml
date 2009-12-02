@@ -73,76 +73,34 @@ made subject to such option by the copyright holder.
                 <package>com.sun.jersey.spi.service</package>
                 <package>com.sun.jersey.spi.template</package>
                 <package>com.sun.jersey.spi.uri.rules</package>
-                <package>com.sun.grizzly</package>
-                <package>com.sun.grizzly.arp</package>
-                <package>com.sun.grizzly.async</package>
-                <package>com.sun.grizzly.connectioncache.client</package>
-                <package>com.sun.grizzly.connectioncache.server</package>
-                <package>com.sun.grizzly.connectioncache.spi.concurrent</package>
-                <package>com.sun.grizzly.connectioncache.spi.transport</package>
-                <package>com.sun.grizzly.filter</package>
-                <package>com.sun.grizzly.http</package>
-                <package>com.sun.grizzly.http.algorithms</package>
-                <package>com.sun.grizzly.http.portunif</package>
-                <package>com.sun.grizzly.http.servlet</package>
-                <package>com.sun.grizzly.ssl</package>
-                <package>com.sun.grizzly.standalone</package>
-                <package>com.sun.grizzly.standalone.servlet</package>
-                <package>com.sun.grizzly.suspendable</package>
-                <package>com.sun.grizzly.tcp</package>
-                <package>com.sun.grizzly.tcp.http11</package>
-                <package>com.sun.grizzly.tcp.http11.filters</package>
-                <package>com.sun.grizzly.util.buf</package>
-                <package>com.sun.grizzly.util.collections</package>
-                <package>com.sun.grizzly.util.http</package>
-                <package>com.sun.grizzly.util.http.mapper</package>
-                <package>com.sun.grizzly.util.net</package>
-                <package>com.sun.grizzly.util.net.jsse</package>
             </public-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/rest/jsr311-api.jar</runtime-relative-path>
+                <runtime-relative-path>ext/rest/jsr311-api-1.1.1.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/rest/asm-3.1.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/rest/grizzly-servlet-webserver-1.9.9.jar</runtime-relative-path>
-            </class-path-extension>
-            <class-path-extension>
                 <runtime-relative-path>ext/rest/jackson-core-asl-1.1.1.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/rest/jersey-client-1.1.2-ea.jar</runtime-relative-path>
+                <runtime-relative-path>ext/rest/jersey-client-1.1.4.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/rest/jersey-core-1.1.2-ea.jar</runtime-relative-path>
+                <runtime-relative-path>ext/rest/jersey-core-1.1.4.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/rest/jersey-json-1.1.2-ea.jar</runtime-relative-path>
+                <runtime-relative-path>ext/rest/jersey-json-1.1.4.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/rest/jersey-server-1.1.2-ea.jar</runtime-relative-path>
+                <runtime-relative-path>ext/rest/jersey-server-1.1.4.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/rest/jersey-spring-1.1.2-ea.jar</runtime-relative-path>
+                <runtime-relative-path>ext/rest/jersey-spring-1.1.4.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/rest/jettison-1.1.jar/</runtime-relative-path>
             </class-path-extension>
-
-            <!--
-            <class-path-extension>
-                <runtime-relative-path>ext/rest/http.jar</runtime-relative-path>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/rest/rome-0.9.jar</runtime-relative-path>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/rest/jdom-1.0.jar</runtime-relative-path>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/rest/wadl2java.jar</runtime-relative-path>
-            </class-path-extension>-->
         </data>
     </configuration>
 </project>

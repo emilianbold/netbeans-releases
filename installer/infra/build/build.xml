@@ -388,18 +388,18 @@
 	<set property="tomcat.full.version" value="${tomcat.version}.0.0"/>
 
 
-	<set property="glassfish.milestone.number" value="60"/>
-	<set property="glassfish.milestone.number.real" value="60e"/>
+	<set property="glassfish.milestone.number" value="31"/>
+	<set property="glassfish.milestone.number.real" value="31g"/>
 	<set property="glassfish.build.type" value="fcs"/>
-       	<set property="glassfish.build.number" value="20090114"/>
-    <set property="glassfish.version" value="2.1"/>
+       	<set property="glassfish.build.number" value="20091019"/>
+        <set property="glassfish.version" value="2.1.1"/>
 
 	
-	<set property="sjsas.milestone.number" value="60"/>
-	<set property="sjsas.milestone.number.real" value="60e"/>
+	<set property="sjsas.milestone.number" value="31"/>
+	<set property="sjsas.milestone.number.real" value="31g"/>
 	<set property="sjsas.build.type" value="fcs"/>
-	<set property="sjsas.build.number" value="20090309"/>
-	<set property="sjsas.version" value="2.1"/>
+	<set property="sjsas.build.number" value="20091019"/>
+	<set property="sjsas.version" value="2.1.1"/>
 
 	   
         <condition property="server.milestone.number" value="${sjsas.milestone.number}" else="${glassfish.milestone.number}">
@@ -422,7 +422,7 @@
 		<set property="glassfish.ml.appendix" value="-ml"/>
 		<set property="sjsas.ml.appendix"     value="-ml"/>
 	</if>
-	
+	<!--
         <get
             src="${glassfish.builds.host}/java/re/glassfish/10.0/promoted/fcs/latest/archive/bundles"
             dest="${temp.file}"/>
@@ -432,18 +432,18 @@
         <glassfish-buildnumber 
             file="${temp.file}" 
             prefix="glassfish-mod-sun"/>
+        -->
+        
+	<set property="glassfish-mod-sun.milestone.number"      value="74"/>
+	<set property="glassfish-mod-sun.milestone.number.real" value="74"/>
+	<set property="glassfish-mod-sun.build.type"            value=""/>
+	<set property="glassfish-mod-sun.build.number"          value="0"/>
 
-        <!--
-	<set property="glassfish-mod-sun.milestone.number"      value="28"/>
-	<set property="glassfish-mod-sun.milestone.number.real" value="28e"/>
-	<set property="glassfish-mod-sun.build.type"            value="prelude"/>
-	<set property="glassfish-mod-sun.build.number"          value="20090610"/>
-
-	<set property="glassfish-mod.milestone.number"      value="28"/>
-	<set property="glassfish-mod.milestone.number.real" value="28c"/>
-	<set property="glassfish-mod.build.type"            value="prelude"/>
-	<set property="glassfish-mod.build.number"          value="20081022"/>
-	-->
+	<set property="glassfish-mod.milestone.number"      value="74"/>
+	<set property="glassfish-mod.milestone.number.real" value="74"/>
+	<set property="glassfish-mod.build.type"            value=""/>
+	<set property="glassfish-mod.build.number"          value="0"/>
+	
 
         <!--
         -->
@@ -451,13 +451,14 @@
         <set property="openesb.build.number" value="2008012302"/>                       
         <set property="openesb.build.number.real" value="080123_2"/>
 	-->
+	<!--
         <get
             src="${openesb.builds.host}/kits/ojc/openesb_as9_ur2/latest/solsparc/ojc/version.txt"
             dest="${temp.file}"/>
         <openesb-buildnumber 
             file="${temp.file}" 
             prefix="openesb"/>
-
+        -->
         <if property="do.build.jtb">
 	    <!--
             <get
@@ -575,14 +576,18 @@ sjsas.milestone.number.real=${sjsas.milestone.number.real}
 sjsas.build.type=${sjsas.build.type}
 sjsas.build.number=${sjsas.build.number}
 
-openesb.build.number=${openesb.build.number}
-openesb.build.number.real=${openesb.build.number.real}
-
 nb.full.version=${nb.full.version}
 nb.build.suffix=${nb.build.suffix}
 nb.zip.files.prefix=${nb.zip.files.prefix}
 nb.bundle.files.prefix=${nb.bundle.files.prefix}
 	</echo>
+
+	<!--
+	<echo file="${environment.properties}" append="true">
+openesb.build.number=${openesb.build.number}
+openesb.build.number.real=${openesb.build.number.real}
+	</echo>
+	-->
 
         <if property="do.build.jtb">
 	<!-- SJSAM properties -->
@@ -808,7 +813,7 @@ jarsigner.storepass=${jarsigner.storepass}
 
 
     <target name="generate-netbeans-bundles" if="do.build.netbeans">
-        <for-each list="javase java ruby cpp php javafx javafx-full" separator=" " property="bundle.type">
+        <for-each list="javase java ruby cpp php javafx full javafx-full" separator=" " property="bundle.type">
 	     <antcall target="generate-netbeans-${bundle.type}-bundles"/>
         </for-each>
     </target>
@@ -1733,7 +1738,7 @@ jarsigner.storepass=${jarsigner.storepass}
 
     <target name="generate-netbeans-javafx-full-bundle">
 	<property name="bundle.prefix" 
-             value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-${bundle.platform}"/>
+             value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-javafx-full-${bundle.platform}"/>
 
         <condition property="is.mac.platform" value="true" else="false">
             <contains string="${bundle.platform}" substring="macosx"/>
@@ -1884,7 +1889,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-groovy"             version="${nb.full.version}"/>
             <component uid="nb-soa"                version="${nb.full.version}"/>
             <component uid="nb-portalpack"         version="3.0.0.0.${portalpack.build.number}"/>
-            <component uid="sjsas"                 version="2.1.${sjsas.milestone.number}.${sjsas.build.number}"/>
+            <component uid="sjsas"                 version="2.1.1.${sjsas.milestone.number}.${sjsas.build.number}"/>
             <component uid="openesb"               version="5.0.7.${server.milestone.number}.${openesb.build.number}"/>
             <component uid="sjsam"                 version="5.0.7.${sjsas.milestone.number}.${sjsam.build.number}"/>
 	    <component uid="javaeesdk-samples"     version="1.0.${javaeesdk-samples.update.number}.${javaeesdk-samples.milestone.number}.${javaeesdk-samples.build.number}"/>
@@ -1948,7 +1953,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <!--<component uid="nb-webcommon"    version="${nb.full.version}"/>-->
             <component uid="nb-javaee"       version="${nb.full.version}"/>
             <component uid="nb-ruby"         version="${nb.full.version}"/>
-            <component uid="glassfish"       version="2.1.${glassfish.milestone.number}.${glassfish.build.number}"/>
+            <component uid="glassfish"       version="2.1.1.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="mysql"           version="5.0.67.0.0"/>
             <component uid="mysql-connector" version="5.1.6.0.0"/>
 	    <bundleProperty name="${welcome.type}" value="mysql"/>

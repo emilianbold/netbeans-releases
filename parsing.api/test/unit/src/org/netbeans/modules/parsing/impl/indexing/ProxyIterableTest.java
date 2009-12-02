@@ -57,7 +57,7 @@ public class ProxyIterableTest extends NbTestCase {
         super(name);
     }
 
-    public void testEmpty() throws Exception {
+    public void testEmpty() {
         ProxyIterable<Integer> pi = new ProxyIterable<Integer>(Collections.<Collection<? extends Integer>>emptySet());
         assertFalse(pi.iterator().hasNext());
         try {
@@ -66,7 +66,7 @@ public class ProxyIterableTest extends NbTestCase {
         } catch (NoSuchElementException e) {}
     }
     
-    public void testSingleList() throws Exception {
+    public void testSingleList() {
         List<Integer> l1 = new LinkedList<Integer>();
         l1.add(1);
         l1.add(2);
@@ -81,16 +81,16 @@ public class ProxyIterableTest extends NbTestCase {
         assertFalse(it.hasNext());
     }
     
-    public void testMultipleLists() throws Exception {
+    public void testMultipleLists() {
         List<Integer> l1 = new LinkedList<Integer>();
         l1.add(1);
         l1.add(2);
         List<Integer> l2 = new LinkedList<Integer>();
-        l1.add(3);
-        l1.add(4);
+        l2.add(3);
+        l2.add(4);
         List<Integer> l3 = new LinkedList<Integer>();
-        l1.add(5);
-        l1.add(6);
+        l3.add(5);
+        l3.add(6);
         List<List<? extends Integer>> toAdd = new LinkedList<List<? extends Integer>>();
         toAdd.add(l1);
         toAdd.add(l2);
@@ -112,14 +112,14 @@ public class ProxyIterableTest extends NbTestCase {
         assertFalse(it.hasNext());
     }
 
-    public void testEmptyList() throws Exception {
+    public void testEmptyList() {
         List<Integer> l1 = new LinkedList<Integer>();
         l1.add(1);
         l1.add(2);
         List<Integer> l2 = new LinkedList<Integer>();
         List<Integer> l3 = new LinkedList<Integer>();
-        l1.add(5);
-        l1.add(6);
+        l3.add(5);
+        l3.add(6);
         List<List<? extends Integer>> toAdd = new LinkedList<List<? extends Integer>>();
         toAdd.add(l1);
         toAdd.add(l2);
@@ -137,4 +137,111 @@ public class ProxyIterableTest extends NbTestCase {
         assertFalse(it.hasNext());
     }
 
+    public void testDuplicates() {
+        List<Integer> l1 = new LinkedList<Integer>();
+        l1.add(1);
+        l1.add(2);
+        List<Integer> l2 = new LinkedList<Integer>();
+        l2.add(1);
+        l2.add(2);
+        List<Integer> l3 = new LinkedList<Integer>();
+        l3.add(1);
+        l3.add(2);
+        List<List<? extends Integer>> toAdd = new LinkedList<List<? extends Integer>>();
+        toAdd.add(l1);
+        toAdd.add(l2);
+        toAdd.add(l3);
+        ProxyIterable<Integer> pi = new ProxyIterable<Integer>(toAdd);
+        Iterator<? extends Integer> it = pi.iterator();
+        assertTrue(it.hasNext());
+        assertEquals(Integer.valueOf(1), it.next());
+        assertTrue(it.hasNext());
+        assertEquals(Integer.valueOf(2), it.next());
+        assertTrue(it.hasNext());
+        assertEquals(Integer.valueOf(1), it.next());
+        assertTrue(it.hasNext());
+        assertEquals(Integer.valueOf(2), it.next());
+        assertTrue(it.hasNext());
+        assertEquals(Integer.valueOf(1), it.next());
+        assertTrue(it.hasNext());
+        assertEquals(Integer.valueOf(2), it.next());
+        assertFalse(it.hasNext());
+    }
+
+    public void testNoDuplicates() {
+        List<Integer> l1 = new LinkedList<Integer>();
+        l1.add(1);
+        l1.add(2);
+        List<Integer> l2 = new LinkedList<Integer>();
+        l2.add(1);
+        l2.add(2);
+        List<Integer> l3 = new LinkedList<Integer>();
+        l3.add(1);
+        l3.add(2);
+        List<List<? extends Integer>> toAdd = new LinkedList<List<? extends Integer>>();
+        toAdd.add(l1);
+        toAdd.add(l2);
+        toAdd.add(l3);
+        ProxyIterable<Integer> pi = new ProxyIterable<Integer>(toAdd, false);
+        Iterator<? extends Integer> it = pi.iterator();
+        assertTrue(it.hasNext());
+        assertEquals(Integer.valueOf(1), it.next());
+        assertTrue(it.hasNext());
+        assertEquals(Integer.valueOf(2), it.next());
+        assertFalse(it.hasNext());
+    }
+
+    public void testUnusual() {
+        List<Integer> l1 = new LinkedList<Integer>();
+        l1.add(1);
+        l1.add(2);
+        List<Integer> l2 = new LinkedList<Integer>();
+        l2.add(3);
+        l2.add(4);
+        List<Integer> l3 = new LinkedList<Integer>();
+        l3.add(2);
+        l3.add(3);
+        List<List<? extends Integer>> toAdd = new LinkedList<List<? extends Integer>>();
+        toAdd.add(l1);
+        toAdd.add(l2);
+        toAdd.add(l3);
+        ProxyIterable<Integer> pi = new ProxyIterable<Integer>(toAdd);
+        Iterator<? extends Integer> it = pi.iterator();
+        for(int i = 0; i < 20; i++) {
+            assertTrue("i=" + i, it.hasNext());
+        }
+        assertEquals(Integer.valueOf(1), it.next());
+        assertEquals(Integer.valueOf(2), it.next());
+        assertEquals(Integer.valueOf(3), it.next());
+        assertEquals(Integer.valueOf(4), it.next());
+        assertEquals(Integer.valueOf(2), it.next());
+        assertEquals(Integer.valueOf(3), it.next());
+        assertFalse(it.hasNext());
+    }
+
+    public void testUnusualNoDuplicates() {
+        List<Integer> l1 = new LinkedList<Integer>();
+        l1.add(1);
+        l1.add(2);
+        List<Integer> l2 = new LinkedList<Integer>();
+        l2.add(3);
+        l2.add(4);
+        List<Integer> l3 = new LinkedList<Integer>();
+        l3.add(2);
+        l3.add(3);
+        List<List<? extends Integer>> toAdd = new LinkedList<List<? extends Integer>>();
+        toAdd.add(l1);
+        toAdd.add(l2);
+        toAdd.add(l3);
+        ProxyIterable<Integer> pi = new ProxyIterable<Integer>(toAdd, false);
+        Iterator<? extends Integer> it = pi.iterator();
+        for(int i = 0; i < 20; i++) {
+            assertTrue("i=" + i, it.hasNext());
+        }
+        assertEquals(Integer.valueOf(1), it.next());
+        assertEquals(Integer.valueOf(2), it.next());
+        assertEquals(Integer.valueOf(3), it.next());
+        assertEquals(Integer.valueOf(4), it.next());
+        assertFalse(it.hasNext());
+    }
 }

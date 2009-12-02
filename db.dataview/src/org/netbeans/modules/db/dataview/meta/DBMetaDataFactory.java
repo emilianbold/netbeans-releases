@@ -76,6 +76,7 @@ public final class DBMetaDataFactory {
     public static final int DERBY = 6;
     public static final int SYBASE = 7;
     public static final int AXION = 8;
+    public static final int POINTBASE = 9;
     private Connection dbconn;
     private int dbType = -1;
     private DatabaseMetaData dbmeta;
@@ -130,6 +131,8 @@ public final class DBMetaDataFactory {
             dbtype = PostgreSQL;
         } else if (url.indexOf("mysql") > -1) { // NOI18N
             dbtype = MYSQL;
+        } else if (url.contains("pointbase")) { // NOI18N
+            dbtype = POINTBASE;
         } else {
             dbtype = JDBC;
         }
@@ -280,7 +283,9 @@ public final class DBMetaDataFactory {
             checkPrimaryKeys(tbl);
             checkForeignKeys(tbl);
             dbModel.addTable(tbl);
-            populateDefaults(tbl);
+            if (getDBType() != POINTBASE) {  //#173798 - dbmeta.getColumns invalidates rs ResultsSet
+                populateDefaults(tbl);
+            }
         }
 
         return tables.values();

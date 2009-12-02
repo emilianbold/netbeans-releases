@@ -38,13 +38,13 @@
  */
 package org.netbeans.modules.web.jsf.editor.completion;
 
-import java.awt.Color;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 import org.netbeans.modules.web.jsf.editor.JsfUtils;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
 import org.netbeans.modules.web.jsf.editor.tld.TldLibrary;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -52,6 +52,9 @@ import org.openide.util.NbBundle;
  * @author marekfukala
  */
 public class JsfCompletionItem {
+
+    //html items priority varies from 10 to 20
+    private static final int JSF_DEFAULT_SORT_PRIORITY = 5;
 
     //----------- Factory methods --------------
     public static JsfTag createTag(int substitutionOffset, FaceletsLibrary.NamedComponent component, String declaredPrefix, boolean autoimport) {
@@ -111,7 +114,7 @@ public class JsfCompletionItem {
 
         @Override
         public int getSortPriority() {
-            return DEFAULT_SORT_PRIORITY - 5;
+            return JSF_DEFAULT_SORT_PRIORITY; //jsf tags are more important than html content
         }
 
         @Override
@@ -121,6 +124,13 @@ public class JsfCompletionItem {
             sb.append("<h1>"); //NOI18N
             sb.append(component.getName());
             sb.append("</h1>"); //NOI18N
+
+            if(Boolean.getBoolean("show-facelets-libraries-locations")) {
+                sb.append("<div style=\"font-size: smaller; color: gray;\">");
+                sb.append("Source: ");
+                sb.append(FileUtil.getFileDisplayName(component.getLibrary().getLibraryDescriptor().getDefinitionFile()));
+                sb.append("</div>");
+            }
 
             TldLibrary.Tag tag = component.getTag();
             if (tag != null) {
@@ -195,10 +205,12 @@ public class JsfCompletionItem {
     private static String getLibraryHelpHeader(FaceletsLibrary library) {
         StringBuffer sb = new StringBuffer();
         sb.append("<div><b>Library:</b> "); //NOI18N
-        sb.append(library.getDisplayName());
-        sb.append(" ("); //NOI18N
         sb.append(library.getNamespace());
-        sb.append(")</div>"); //NOI18N
+        if(library.getDisplayName() != null) {
+            sb.append(" ("); //NOI18N
+            sb.append(library.getDisplayName());
+            sb.append(")</div>"); //NOI18N
+        }
         return sb.toString();
 
     }

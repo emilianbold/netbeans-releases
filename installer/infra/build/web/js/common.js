@@ -61,17 +61,17 @@ PLATFORM_IDS         [5] = "macosx-ppc";
 */
 
 BUNDLE_IDS [0] = "javase";
-BUNDLE_IDS [1] = "javafx";
-BUNDLE_IDS [2] = "java";
-BUNDLE_IDS [3] = "ruby";
-BUNDLE_IDS [4] = "cpp";
-BUNDLE_IDS [5] = "php";
-BUNDLE_IDS [6] = "all";
+//BUNDLE_IDS [1] = "javafx";
+BUNDLE_IDS [1] = "java";
+BUNDLE_IDS [2] = "ruby";
+BUNDLE_IDS [3] = "cpp";
+BUNDLE_IDS [4] = "php";
+BUNDLE_IDS [5] = "all";
 
 var DEFAULT_LANGUAGE = "DEFAULT";
 var PAGELANG_SEP = "pagelang=";
 
-var OMNITURE_CODE_JS = "http://www.netbeans.org/images/js/s_code_remote.js";
+var OMNITURE_CODE_JS = "http://www.netbeans.org/images_www/js/s_code_remote.js";
 var GOOGLE_ANALYTICS_JS = "http://www.google-analytics.com/ga.js";
 
 function getNameById(id,ids,names) {

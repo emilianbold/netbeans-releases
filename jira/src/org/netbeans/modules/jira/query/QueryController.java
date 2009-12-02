@@ -109,7 +109,7 @@ import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.JiraConnector;
 import org.netbeans.modules.jira.commands.JiraCommand;
-import org.netbeans.modules.jira.issue.NbJiraIssue;
+import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.jira.util.JiraUtils;
@@ -582,7 +582,9 @@ public class QueryController extends BugtrackingController implements DocumentLi
             refreshTask.cancel();
         }
         if(query.isSaved()) {
-            repository.stopRefreshing(query);
+            if(!(query.getRepository() instanceof KenaiRepository)) {
+                repository.stopRefreshing(query);
+            }
         }
     }
 
@@ -676,7 +678,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         } else if (e.getSource() == panel.searchButton) {
             onRefresh();
         } else if (e.getSource() == panel.saveChangesButton) {
-            onSave();
+            onSave(true);   // invoke refresh after save
         } else if (e.getSource() == panel.cancelChangesButton) {
             onCancelChanges();
         } else if (e.getSource() == panel.gotoIssueButton) {
@@ -684,7 +686,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         } else if (e.getSource() == panel.webButton) {
             onWeb();
         } else if (e.getSource() == panel.saveButton) {
-            onSave();
+            onSave(false); // do not refresh
         } else if (e.getSource() == panel.refreshButton) {
             onRefresh();
         } else if (e.getSource() == panel.modifyButton) {
@@ -736,7 +738,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         query.setFilter(filter);
     }
 
-    private void onSave() {
+    private void onSave(final boolean refresh) {
        Jira.getInstance().getRequestProcessor().post(new Runnable() {
             public void run() {
                 String name = query.getDisplayName();
@@ -751,6 +753,10 @@ public class QueryController extends BugtrackingController implements DocumentLi
                 }
                 assert name != null;
                 save(name, firstTime);
+
+                if(refresh) {
+                    onRefresh();
+                }
             }
        });
     }
@@ -1050,7 +1056,11 @@ public class QueryController extends BugtrackingController implements DocumentLi
         if(values != null) {
             projects = new Project[values.length];
             for (int i = 0; i < values.length; i++) {
-                projects[i] = (Project) values[i];
+                if(values[i] instanceof Project) {
+                    projects[i] = (Project) values[i];
+                } else {
+                    Jira.LOG.warning("project list item [" + values[i] + " has wrong type [" + values[i].getClass() + "]. Try to reload attributes." );
+                }
             }
         }
         populateProjectDetails(projects);

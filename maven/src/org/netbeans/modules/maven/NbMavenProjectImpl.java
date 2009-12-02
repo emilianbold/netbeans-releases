@@ -56,8 +56,10 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
@@ -100,6 +102,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.VisibilityQuery;
+import org.netbeans.modules.maven.api.execute.ActiveJ2SEPlatformProvider;
 import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
@@ -154,7 +157,7 @@ public final class NbMavenProjectImpl implements Project {
 
     private FileObject fileObject;
     private FileObject folderFileObject;
-    private File projectFile;
+    private final File projectFile;
     private Image icon;
     private final Lookup lookup;
     private Updater updater1;
@@ -242,7 +245,7 @@ public final class NbMavenProjectImpl implements Project {
      * @param properties
      * @return
      */
-    public synchronized MavenProject loadMavenProject(MavenEmbedder embedder, List<String> activeProfiles, Properties properties) {
+    public MavenProject loadMavenProject(MavenEmbedder embedder, List<String> activeProfiles, Properties properties) {
 //        AggregateProgressHandle hndl = createDownloadHandle();
         try {
 //            ProgressTransferListener.setAggregateHandle(hndl);
@@ -302,15 +305,38 @@ public final class NbMavenProjectImpl implements Project {
         return toRet;
     }
 
+    private static final Properties statics = new Properties();
+
+    private static Properties cloneStaticProps() {
+        synchronized (statics) {
+            if (statics.size() == 0) {
+                //not initialized
+                statics.setProperty("netbeans.execution", "true"); //NOI18N
+                EmbedderFactory.fillEnvVars(statics);
+                statics.putAll(AbstractMavenExecutor.excludeNetBeansProperties(System.getProperties()));
+            }
+            Properties toRet = new Properties();
+            toRet.putAll(statics);
+            return toRet;
+        }
+    }
+
     //#158700
     private Properties createSystemPropsForProjectLoading() {
-        Properties props = new Properties();
-        props.setProperty("netbeans.execution", "true"); //NOI18N
-        EmbedderFactory.fillEnvVars(props);
-        props.putAll(AbstractMavenExecutor.excludeNetBeansProperties(System.getProperties()));
+        Properties props = cloneStaticProps();
         props.putAll(configProvider.getActiveConfiguration().getProperties());
         //TODO the properties for java.home and maybe others shall be relevant to the project setup not ide setup.
         // we got a chicken-egg situation here, the jdk used in project can be defined in the pom.xml file.
+        return props;
+    }
+
+    //#172952 for property expression resolution we need this to include
+    // the properties of the platform to properly resolve stuff like com.sun.boot.class.path
+    public Properties createSystemPropsForPropertyExpressions() {
+        Properties props = cloneStaticProps();
+        ActiveJ2SEPlatformProvider prov = getLookup().lookup(ActiveJ2SEPlatformProvider.class);
+        props.putAll(prov.getJavaPlatform().getSystemProperties());
+        props.putAll(configProvider.getActiveConfiguration().getProperties());
         return props;
     }
 
@@ -570,12 +596,22 @@ public final class NbMavenProjectImpl implements Project {
         return updater2;
     }
 
+    private static Map<String, String> pkg2Icon = new HashMap<String, String>() {{
+        put("jar", "org/netbeans/modules/maven/resources/jaricon.png"); //NOI18N
+        put("war", "org/netbeans/modules/maven/resources/webicon.gif"); //NOI18N
+        put("ejb", "org/netbeans/modules/maven/resources/ejbicon.gif"); //NOI18N
+        put("ear", "org/netbeans/modules/maven/resources/earicon.gif"); //NOI18N
+        put("pom", "org/netbeans/modules/maven/resources/Maven2Icon.gif"); //NOI18N
+        put("nbm", "org/netbeans/modules/maven/resources/nbmicon.png"); //NOI18N
+        put("nbm-application", "org/netbeans/modules/maven/resources/suiteicon.png"); //NOI18N
+    }};
 
-    private Image getIcon() {
-        if (icon == null) {
-            icon = ImageUtilities.loadImage("org/netbeans/modules/maven/Maven2Icon.gif");//NOI18N
+    public static Image getIcon (MavenProject mPrj) {
+        String iconPath = pkg2Icon.get(mPrj.getPackaging().toLowerCase());
+        if (iconPath == null) {
+            iconPath = "org/netbeans/modules/maven/resources/Maven2Icon.gif"; //NOI18N
         }
-        return icon;
+        return ImageUtilities.loadImage(iconPath);
     }
 
     public String getName() {
@@ -981,13 +1017,17 @@ public final class NbMavenProjectImpl implements Project {
                     toReturn = NbBundle.getMessage(NbMavenProjectImpl.class, "TXT_Maven_project_at", NbMavenProjectImpl.this.getProjectDirectory().getPath());
                 }
             }
-            toReturn = toReturn + " (" + pr.getPackaging() + ")"; //NOI18N
+            String pckg = pr.getPackaging().toLowerCase();
+            if (pkg2Icon.get(pckg) == null) {
+                toReturn = toReturn + " (" + pckg + ")"; // NOI18N
+            }
 
             return toReturn;
         }
 
         public Icon getIcon() {
-            return ImageUtilities.image2Icon(NbMavenProjectImpl.this.getIcon());
+            MavenProject pr = NbMavenProjectImpl.this.getOriginalMavenProject();
+            return ImageUtilities.image2Icon(NbMavenProjectImpl.getIcon(pr));
         }
 
         public Project getProject() {

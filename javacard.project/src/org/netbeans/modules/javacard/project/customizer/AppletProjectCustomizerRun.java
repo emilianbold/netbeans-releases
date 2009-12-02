@@ -48,6 +48,7 @@ import java.util.Map;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.javacard.common.GuiUtils;
 import org.openide.util.HelpCtx;
 
 public final class AppletProjectCustomizerRun extends javax.swing.JPanel implements ActionListener, ItemListener, ChangeListener {
@@ -58,7 +59,8 @@ public final class AppletProjectCustomizerRun extends javax.swing.JPanel impleme
 
     public AppletProjectCustomizerRun(AppletProjectProperties props) {
         initComponents();
-        platformAndDevicePanel21.setProperties(props);
+        GuiUtils.prepareContainer(this);
+        platformAndDevicePanel21.setPlatformAndCard(props);
         servletComboBox.setModel(props.SCRIPTS);
         servletComboBox.setRenderer(new CRen());
         launchBrowserCheckBox.setModel(props.SEND_SCRIPT);

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
@@ -44,7 +44,9 @@ made subject to such option by the copyright holder.
 <filesystem>
     <folder name="org-netbeans-api-project-libraries">
         <folder name="Libraries">
-	    <file name="netbeans_midp_wma.xml" url="netbeans_midp_wma.xml"/>
+	    <file name="netbeans_midp_wma.xml" url="netbeans_midp_wma.xml">
+                <attr name="displayName" bundlevalue="org.netbeans.modules.vmd.components.midp.wma.resources.Bundle#NetBeansMIDPComponentsWMA"/>
+            </file>
         </folder>
     </folder>
 </filesystem>

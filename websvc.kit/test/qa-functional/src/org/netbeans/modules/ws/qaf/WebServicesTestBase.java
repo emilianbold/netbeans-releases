@@ -46,8 +46,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.logging.Logger;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
@@ -57,7 +60,9 @@ import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.Action;
+import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.CleanJavaProjectAction;
+import org.netbeans.jellytools.actions.OutputWindowViewAction;
 import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.jellytools.nodes.Node;
@@ -92,7 +97,9 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
 
     static {
         //First found server will be used by tests
-        if (ServerType.GLASSFISH.isAutoRegistered()) {
+        if (ServerType.GLASSFISH_V3.isAutoRegistered()) {
+            REGISTERED_SERVER = ServerType.GLASSFISH_V3;
+        } else if (ServerType.GLASSFISH.isAutoRegistered()) {
             REGISTERED_SERVER = ServerType.GLASSFISH;
         } else if (ServerType.TOMCAT.isAutoRegistered()) {
             REGISTERED_SERVER = ServerType.TOMCAT;
@@ -297,7 +304,9 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
             switch (this) {
                 case SJSAS:
                 case GLASSFISH:
-                    return System.getProperty("glassfish.home") != null; //NOI18N
+                    return System.getProperty("com.sun.aas.installRoot") != null; //NOI18N
+                case GLASSFISH_V3:
+                    return System.getProperty("org.glassfish.v3ee6.installRoot") != null; //NOI18N
                 case TOMCAT:
                     return System.getProperty("tomcat.home") != null; //NOI18N
                 case JBOSS:
@@ -320,11 +329,11 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
     }
 
     public void assertServerRunning() {
-        if (!REGISTERED_SERVER.equals(ServerType.GLASSFISH)) {
+        if (!(REGISTERED_SERVER.equals(ServerType.GLASSFISH) || REGISTERED_SERVER.equals(ServerType.GLASSFISH_V3))) {
             LOGGER.info("not yet supported for server: " + REGISTERED_SERVER.toString());
             return;
         }
-        J2eeServerNode gf = J2eeServerNode.invoke("GlassFish v2");
+        J2eeServerNode gf = getServerNode();
         gf.refresh();
         if (gf.isCollapsed()) {
             gf.expand();
@@ -364,6 +373,17 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
      */
     protected ProjectRootNode getProjectRootNode() {
         return ProjectsTabOperator.invoke().getProjectRootNode(getProjectName());
+    }
+
+    /**
+     * Get <code>FileObject</code> representing default project source root
+     *
+     * @return default project source root
+     */
+    protected FileObject getProjectSourceRoot() {
+        Sources s = getProject().getLookup().lookup(Sources.class);
+        SourceGroup[] sg = s.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        return sg[0].getRootFolder();
     }
 
     /**
@@ -426,6 +446,25 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
                 LOGGER.info("Using project in: " + projectRoot.getAbsolutePath()); //NOI18N
                 if (!projectRoot.exists()) {
                     project = createProject(projectName, getProjectType(), getJavaEEversion());
+                    // closing Tasks tab
+                    new OutputWindowViewAction().performMenu();
+                    new ActionNoBlock("Window|Tasks", null).performMenu();
+                    new ActionNoBlock("Window|Close Window", null).performMenu();
+                    //set server for maven projects
+                    if (ProjectType.MAVEN_WEB.equals(getProjectType()) || ProjectType.MAVEN_EJB.equals(getProjectType())) {
+                        //Properties
+                        String propLabel = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.Bundle", "LBL_Properties_Action");
+                        new ActionNoBlock(null, propLabel).performPopup(getProjectRootNode());
+                        new EventTool().waitEvent(2000);
+                        // "Project Properties"
+                        String projectPropertiesTitle = Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.customizer.Bundle", "LBL_Customizer_Title");
+                        NbDialogOperator propertiesDialogOper = new NbDialogOperator(projectPropertiesTitle);
+                        // select "Run" category
+                        new Node(new JTreeOperator(propertiesDialogOper), "Run").select();
+                        new JComboBoxOperator(propertiesDialogOper).selectItem(REGISTERED_SERVER.toString());
+                        // confirm properties dialog
+                        propertiesDialogOper.ok();
+                    }
                 } else {
                     openProjects(projectRoot.getAbsolutePath());
                     FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(projectRoot));
@@ -446,6 +485,10 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
         //save IDE log in workdir
         FileObject ud = FileUtil.toFileObject(new File(System.getProperty("netbeans.user"))); //NOI18N
         FileObject log = ud.getFileObject("var/log/messages.log"); //NOI18N
+        File f = new File(getWorkDir(), "messages.log"); //NOI18N
+        if (f.exists()) {
+            f.delete();
+        }
         FileObject copy = FileUtil.toFileObject(getWorkDir()).createData("messages", "log"); //NOI18N
         InputStream is = log.getInputStream();
         FileLock lock = copy.lock();
@@ -463,7 +506,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
      * Start a server
      */
     public void testStartServer() throws IOException {
-        J2eeServerNode serverNode = J2eeServerNode.invoke(REGISTERED_SERVER.toString());
+        J2eeServerNode serverNode = getServerNode();
         serverNode.start();
         dumpOutput();
     }
@@ -472,7 +515,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
      * Stop a server
      */
     public void testStopServer() throws IOException {
-        J2eeServerNode serverNode = J2eeServerNode.invoke(REGISTERED_SERVER.toString());
+        J2eeServerNode serverNode = getServerNode();
         serverNode.stop();
         new EventTool().waitNoEvent(2000);
         dumpOutput();
@@ -615,7 +658,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
      */
     protected void undeployProject(String projectName) throws IOException {
         assertServerRunning();
-        J2eeServerNode serverNode = J2eeServerNode.invoke(REGISTERED_SERVER.toString());
+        J2eeServerNode serverNode = getServerNode();
         serverNode.expand();
         //Applications
         String applicationsLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.nodes.Bundle", "LBL_Applications");
@@ -636,13 +679,19 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
             case MAVEN_WEB:
                 if (ServerType.TOMCAT.equals(REGISTERED_SERVER)) {
                     appsNode = new Node(serverNode, webLabel);
+                } else if (ServerType.GLASSFISH_V3.equals(REGISTERED_SERVER)) {
+                    appsNode = new Node(serverNode, applicationsLabel);
                 } else {
                     appsNode = new Node(serverNode, applicationsLabel + "|" + webLabel);
                 }
                 break;
             case EJB:
             case MAVEN_EJB:
-                appsNode = new Node(serverNode, applicationsLabel + "|" + ejbLabel);
+                if (ServerType.GLASSFISH_V3.equals(REGISTERED_SERVER)) {
+                    appsNode = new Node(serverNode, applicationsLabel);
+                } else {
+                    appsNode = new Node(serverNode, applicationsLabel + "|" + ejbLabel);
+                }
                 break;
             case APPCLIENT:
                 appsNode = new Node(serverNode, applicationsLabel + "|" + appclientLabel);
@@ -715,17 +764,10 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
     private void performProjectAction(String projectName, String actionName) throws IOException {
         ProjectRootNode node = new ProjectsTabOperator().getProjectRootNode(projectName);
         node.performPopupAction(actionName);
-        if (!getProjectType().isAntBasedProject()) {
-            //Select deployment server
-            String title = Bundle.getStringTrimmed("org.netbeans.modules.maven.j2ee.Bundle", "TIT_Select");
-            JDialogOperator ndo = new JDialogOperator(title);
-            new JComboBoxOperator(ndo, 0).selectItem(1);
-            new JButtonOperator(ndo, "OK").push();
-        }
         OutputTabOperator oto = new OutputTabOperator(projectName);
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", 600000); //NOI18N
         if (!getProjectType().isAntBasedProject()) {
-            oto.waitText("All operations"); //NOI18N
+            oto.waitText("Total time:"); //NOI18N
             dumpOutput();
             assertTrue("Build failed", oto.getText().indexOf("BUILD SUCCESSFUL") > -1); //NOI18N
             assertTrue("Deploy failed", oto.getText().indexOf("[ERROR]") < 0); //NOI18N
@@ -735,8 +777,8 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
             dumpOutput();
             assertTrue("Build failed", oto.getText().indexOf("BUILD SUCCESSFUL") > -1); //NOI18N
         }
-        
-        
+
+
     }
 
     private void setProjectName(String projectName) {
@@ -820,5 +862,19 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
             return new File(System.getProperty("java.io.tmpdir"));
         }
         return f;
+    }
+
+    protected J2eeServerNode getServerNode() {
+        switch (REGISTERED_SERVER) {
+            case GLASSFISH:
+                return getServerNode(Server.GLASSFISH);
+            case GLASSFISH_V3:
+                return getServerNode(Server.GLASSFISH_V3);
+            case JBOSS:
+                return getServerNode(Server.JBOSS);
+            case TOMCAT:
+                return getServerNode(Server.TOMCAT);
+        }
+        return getServerNode(Server.ANY);
     }
 }

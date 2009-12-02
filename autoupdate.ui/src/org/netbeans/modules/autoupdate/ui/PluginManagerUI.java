@@ -83,6 +83,7 @@ public class PluginManagerUI extends javax.swing.JPanel  {
     private UnitTable localTable;
     private JButton closeButton;
     public final RequestProcessor.Task initTask;
+    private final Object initLock = new Object();
     private Object helpInstance = null;
     
     private static RequestProcessor.Task runningTask;
@@ -249,7 +250,7 @@ public class PluginManagerUI extends javax.swing.JPanel  {
                 initTask.waitFinished ();
                 AutoupdateCheckScheduler.runCheckAvailableUpdates (0);
                 //ensure exclusivity between this uninitialization code and refreshUnits (which can run even after this dialog is disposed)
-                synchronized(initTask) {
+                synchronized(initLock) {
                     units = null;
                     installedTable = null;
                     availableTable = null;
@@ -571,7 +572,7 @@ private void bHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:e
     
     private void refreshUnits () {
         //ensure exclusivity between this refreshUnits code(which can run even after this dialog is disposed) and uninitialization code
-        synchronized(initTask) {
+        synchronized(initLock) {
             //return immediatelly if uninialization(after removeNotify) was alredy called
             if (units == null) return;
             //TODO: REVIEW THIS CODE - problem is that is called from called from AWT thread

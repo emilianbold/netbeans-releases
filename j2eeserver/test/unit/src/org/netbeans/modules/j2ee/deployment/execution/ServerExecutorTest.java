@@ -42,6 +42,7 @@
 package org.netbeans.modules.j2ee.deployment.execution;
 
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ResourceChangeReporter;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleFactory;
 import org.netbeans.tests.j2eeserver.devmodule.*;
 import org.netbeans.modules.j2ee.deployment.impl.*;
@@ -166,6 +167,10 @@ public class ServerExecutorTest extends NbTestCase {
         
         public org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider.ConfigSupport getConfigSupport() {
             return null;
+        }
+
+        public ResourceChangeReporter getResourceChangeReporter() {
+            throw null;
         }
         
     }

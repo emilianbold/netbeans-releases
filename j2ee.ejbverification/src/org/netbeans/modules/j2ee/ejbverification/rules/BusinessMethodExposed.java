@@ -42,8 +42,8 @@ package org.netbeans.modules.j2ee.ejbverification.rules;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -113,6 +113,7 @@ public class BusinessMethodExposed extends EJBVerificationRule {
             
             // ----
             
+            Collection<ErrorDescription> problemsFound = new LinkedList<ErrorDescription>();
             for (ExecutableElement method : ElementFilter.methodsIn(ctx.getClazz().getEnclosedElements())){
                 if (isEligibleMethod(method)){
                     ExecutableElement potentialMatch = definedMethodsByName.get(method.getSimpleName().toString());
@@ -148,9 +149,10 @@ public class BusinessMethodExposed extends EJBVerificationRule {
                             NbBundle.getMessage(BusinessMethodExposed.class, "MSG_BusinessMethodExposed"),
                             Severity.HINT, fixes);
                     
-                    return Collections.singletonList(err);
+                    problemsFound.add(err);
                 }
             }
+            return problemsFound;
         }
 
         return null;

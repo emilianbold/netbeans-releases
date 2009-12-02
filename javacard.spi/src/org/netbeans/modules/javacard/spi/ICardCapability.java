@@ -42,8 +42,7 @@ package org.netbeans.modules.javacard.spi;
 
 /**
  * Marker interface for use with Card objects - implemented by objects
- * available via Card.getCapability() (or Card.getLookup().lookup()) for
- * ease of searching.
+ * available via Card.getCapability() (or Card.getLookup().lookup()).
  *
  * @author Tim Boudreau
  */

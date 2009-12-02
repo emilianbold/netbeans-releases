@@ -103,8 +103,6 @@ import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
 import org.netbeans.modules.websvc.wsstack.jaxws.JaxWsStackProvider;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
-import org.netbeans.spi.project.ui.templates.support.Templates;
-import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
@@ -123,8 +121,8 @@ import javax.swing.SwingUtilities;
 import javax.xml.namespace.QName;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
-import org.netbeans.modules.websvc.core.dev.wizard.WizardProperties;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.wsdl.model.Binding;
@@ -578,9 +576,19 @@ public class JaxWsUtils {
                 if (antArtifactProvider != null) {
                     AntArtifact jarArtifact = getJarArtifact(antArtifactProvider);
                     if (jarArtifact != null) {
+                        FileObject targetFo = targetFile;
+                        if (!"java".equals(targetFile.getExt())) { //NOI18N
+                            SourceGroup[] srcGroups =
+                                    ProjectUtils.getSources(targetProject).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+                            if (srcGroups != null && srcGroups.length >0) {
+                                targetFo = srcGroups[0].getRootFolder();
+                            } else {
+                                return false;
+                            }
+                        }
                         AntArtifact[] jarArtifacts = new AntArtifact[]{jarArtifact};
                         URI[] artifactsUri = jarArtifact.getArtifactLocations();
-                        ProjectClassPathModifier.addAntArtifacts(jarArtifacts, artifactsUri, targetFile, ClassPath.COMPILE);
+                        ProjectClassPathModifier.addAntArtifacts(jarArtifacts, artifactsUri, targetFo, ClassPath.COMPILE);
                         return true;
                     }
                 }
@@ -720,8 +728,8 @@ public class JaxWsUtils {
     public static boolean isEjbJavaEE5orHigher(ProjectInfo projectInfo) {
         int projType = projectInfo.getProjectType();
         if (projType == ProjectInfo.EJB_PROJECT_TYPE) {
-            FileObject ddFolder = JAXWSSupport.getJAXWSSupport(projectInfo.getProject().getProjectDirectory()).getDeploymentDescriptorFolder();
-            if (ddFolder == null || ddFolder.getFileObject("ejb-jar.xml") == null) { //NOI18N
+            EjbJar ejbModule = EjbJar.getEjbJar(projectInfo.getProject().getProjectDirectory());
+            if (ejbModule != null && ejbModule.getDeploymentDescriptor() == null) {
                 return true;
             }
         }
@@ -1442,5 +1450,24 @@ public class JaxWsUtils {
             return provider.getJ2eeModule();
         }
         return null;
+    }
+
+    public static String getModuleType(Project prj) {
+        J2eeModuleProvider provider = (J2eeModuleProvider) prj.getLookup().lookup(J2eeModuleProvider.class);
+        if (provider != null) {
+            J2eeModule.Type moduleType = provider.getJ2eeModule().getType();
+            if (J2eeModule.Type.EJB.equals(moduleType)) {
+                return "EJB"; //NOI18N
+            } else if (J2eeModule.Type.WAR.equals(moduleType)) {
+                return "WAR"; //NOI18N
+            } else if (J2eeModule.Type.CAR.equals(moduleType)) {
+                return "CAR"; //NOI18N
+            } else {
+                return "UNKNOWN"; //NOI18N
+            }
+        } else {
+            return "J2SE"; //NOI18N
+        }
+
     }
 }

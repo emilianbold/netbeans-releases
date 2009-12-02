@@ -44,18 +44,25 @@ package org.netbeans.modules.cnd.actions;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetUtils;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
-import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.api.execution.LinkSupport;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
+import org.netbeans.modules.cnd.builds.ImportUtils;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
 import org.netbeans.modules.cnd.loaders.ShellDataObject;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -123,34 +130,28 @@ public class ShellRunAction extends AbstractExecutorRunAction {
         File shellFile = FileUtil.toFile(fileObject);
         // Build directory
         String bdir = bes.getRunDirectory();
-        File buildDir = getAbsoluteBuildDir(bdir, shellFile);
+        String buildDir = getAbsoluteBuildDir(bdir, shellFile).getAbsolutePath();
         
         String[] shellCommandAndArgs = bes.getShellCommandAndArgs(fileObject); // from inside shell file or properties
         String shellCommand = shellCommandAndArgs[0];
-        String shellFilePath = IpeUtils.toRelativePath(buildDir.getPath(), shellFile.getPath()); // Absolute path to shell file
+        String shellFilePath = IpeUtils.toRelativePath(buildDir, shellFile.getPath()); // Absolute path to shell file
         if (shellFilePath.equals(shellFile.getName())) {
             shellFilePath = "."+File.separatorChar+shellFilePath; //NOI18N
         }
         String[] args = bes.getArguments(); // from properties
 
         ExecutionEnvironment execEnv = getExecutionEnvironment(fileObject, project);
-        if (!checkConnection(execEnv)) {
+        buildDir = convertToRemoteIfNeeded(execEnv, buildDir);
+        if (buildDir == null) {
             return null;
         }
-        if (execEnv.isRemote()) {
-            String s = HostInfoProvider.getMapper(execEnv).getRemotePath(buildDir.getAbsolutePath());
-            if (s != null) {
-                buildDir = new File(s);
-            }
-        }
+        shellFilePath = convertToRemoveSeparatorsIfNeeded(execEnv, shellFilePath);
         // Windows: The command is usually of the from "/bin/sh", but this
         // doesn't work here, so extract the 'sh' part and use that instead. 
         // FIXUP: This is not entirely correct though.
         if (PlatformInfo.getDefault(execEnv).isWindows() && shellCommand.length() > 0) {
-            int i = shellCommand.lastIndexOf("/"); // UNIX PATH // NOI18N
-            if (i >= 0) {
-                shellCommand = shellCommand.substring(i+1);
-            }
+            shellCommand = findWindowsShell(shellCommand, execEnv, node);
+            shellCommand = LinkSupport.resolveWindowsLink(shellCommand);
         }
         
         StringBuilder argsFlat = new StringBuilder();
@@ -160,7 +161,11 @@ public class ShellRunAction extends AbstractExecutorRunAction {
                 argsFlat.append(shellCommandAndArgs[i]);
             }
         }
-        argsFlat.append(shellFilePath);
+        if (shellCommand.length() == 0) {
+            shellCommand = shellFile.getAbsolutePath();
+        } else {
+            argsFlat.append(shellFilePath);
+        }
         for (int i = 0; i < args.length; i++) {
             argsFlat.append(" "); // NOI18N
             argsFlat.append(args[i]);
@@ -185,14 +190,17 @@ public class ShellRunAction extends AbstractExecutorRunAction {
                 return null;
             }
         }
-        ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, inputOutput, "Run", syncWorker); // NOI18N
+        ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, outputListener, null, inputOutput, "Run", syncWorker); // NOI18N
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv)
-        .setWorkingDirectory(buildDir.getPath())
-        .setCommandLine(quoteExecutable(shellCommand)+" "+argsFlat.toString()) // NOI18N
+        .setWorkingDirectory(buildDir)
         .unbufferOutput(false)
         .addNativeProcessListener(processChangeListener);
         npb.getEnvironment().putAll(envMap);
         npb.redirectError();
+        List<String> list = ImportUtils.parseArgs(argsFlat.toString());
+        list = ImportUtils.normalizeParameters(list);
+        npb.setExecutable(shellCommand);
+        npb.setArguments(list.toArray(new String[list.size()]));
 
         ExecutionDescriptor descr = new ExecutionDescriptor()
         .controllable(true)
@@ -202,9 +210,77 @@ public class ShellRunAction extends AbstractExecutorRunAction {
         .outLineBased(true)
         .showProgress(true)
         .postExecution(processChangeListener)
-        .outConvertorFactory(new ProcessLineConvertorFactory(outputListener, null));
+        .errConvertorFactory(processChangeListener)
+        .outConvertorFactory(processChangeListener);
+
         // Execute the shellfile
         ExecutionService es = ExecutionService.newService(npb, descr, "Run"); // NOI18N
         return es.run();
+    }
+
+    private static String findWindowsShell(String shellCommand, ExecutionEnvironment execEnv, Node node) {
+        int i = shellCommand.lastIndexOf("/"); // UNIX PATH // NOI18N
+        if (i >= 0) {
+            shellCommand = shellCommand.substring(i + 1);
+        }
+        File sc = new File(shellCommand);
+        if (sc.exists()) {
+            return shellCommand;
+        }
+        PlatformInfo pi = PlatformInfo.getDefault(execEnv);
+        String newShellCommand = pi.findCommand(shellCommand);
+        if (newShellCommand != null) {
+            return newShellCommand;
+        }
+        List<CompilerSet> list = new ArrayList<CompilerSet>();
+        CompilerSet set = getCompilerSet(node);
+        if (set != null) {
+            list.add(set);
+        }
+        CompilerSetManager csm = CompilerSetManager.getDefault(execEnv);
+        if (csm != null) {
+            set = csm.getDefaultCompilerSet();
+            if (set != null && !list.contains(set)) {
+                list.add(set);
+            }
+            for (CompilerSet aSet : csm.getCompilerSets()) {
+                if (aSet != null && !list.contains(aSet)) {
+                    list.add(aSet);
+                }
+            }
+        }
+        String folder;
+        for (CompilerSet aSet : list) {
+            folder = aSet.getCompilerFlavor().getCommandFolder(PlatformTypes.PLATFORM_WINDOWS);
+            if (folder != null) {
+                newShellCommand = pi.findCommand(folder, shellCommand);
+                if (newShellCommand != null) {
+                    return newShellCommand;
+                }
+            } else {
+                folder = aSet.getDirectory();
+                if (folder != null) {
+                    newShellCommand = pi.findCommand(folder, shellCommand);
+                    if (newShellCommand != null) {
+                        return newShellCommand;
+                    }
+                }
+            }
+        }
+        folder = CompilerSetUtils.getCygwinBase();
+        if (folder != null) {
+            newShellCommand = pi.findCommand(folder, shellCommand);
+            if (newShellCommand != null) {
+                return newShellCommand;
+            }
+        }
+        folder = CompilerSetUtils.getMSysBase();
+        if (folder != null) {
+            newShellCommand = pi.findCommand(folder, shellCommand);
+            if (newShellCommand != null) {
+                return newShellCommand;
+            }
+        }
+        return shellCommand;
     }
 }

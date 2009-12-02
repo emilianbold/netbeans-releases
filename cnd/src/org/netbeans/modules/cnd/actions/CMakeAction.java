@@ -39,9 +39,9 @@
 
 package org.netbeans.modules.cnd.actions;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
 import javax.swing.SwingUtilities;
@@ -52,6 +52,8 @@ import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
+import org.netbeans.modules.cnd.api.utils.PlatformInfo;
+import org.netbeans.modules.cnd.builds.ImportUtils;
 import org.netbeans.modules.cnd.loaders.CMakeDataObject;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -107,14 +109,15 @@ public class CMakeAction extends AbstractExecutorRunAction {
         DataObject dataObject = node.getCookie(DataObject.class);
         FileObject fileObject = dataObject.getPrimaryFile();
         // Build directory
-        File buildDir = getBuildDirectory(node,Tool.CMakeTool);
+        String buildDir = getBuildDirectory(node,Tool.CMakeTool);
         // Executable
         String executable = getCommand(node, project, Tool.CMakeTool, "cmake"); // NOI18N
         // Arguments
         //String arguments = proFile.getName();
         String[] arguments =  getArguments(node, Tool.CMakeTool); // NOI18N
         ExecutionEnvironment execEnv = getExecutionEnvironment(fileObject, project);
-        if (!checkConnection(execEnv)) {
+        buildDir = convertToRemoteIfNeeded(execEnv, buildDir);
+        if (buildDir == null) {
             return null;
         }
         Map<String, String> envMap = getEnv(execEnv, node, null);
@@ -142,13 +145,16 @@ public class CMakeAction extends AbstractExecutorRunAction {
                 return null;
             }
         }
-        ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, inputOutput, "CMake", syncWorker); // NOI18N
+        ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, outputListener, null, inputOutput, "CMake", syncWorker); // NOI18N
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv)
-        .setWorkingDirectory(buildDir.getPath())
-        .setCommandLine(quoteExecutable(executable)+" "+argsFlat.toString()) // NOI18N
+        .setWorkingDirectory(buildDir)
         .unbufferOutput(false)
         .addNativeProcessListener(processChangeListener);
         npb.redirectError();
+        List<String> list = ImportUtils.parseArgs(argsFlat.toString());
+        list = ImportUtils.normalizeParameters(list);
+        npb.setExecutable(executable);
+        npb.setArguments(list.toArray(new String[list.size()]));
 
         ExecutionDescriptor descr = new ExecutionDescriptor()
         .controllable(true)
@@ -157,7 +163,7 @@ public class CMakeAction extends AbstractExecutorRunAction {
         .inputOutput(inputOutput)
         .showProgress(true)
         .postExecution(processChangeListener)
-        .outConvertorFactory(new ProcessLineConvertorFactory(outputListener, null));
+        .outConvertorFactory(processChangeListener);
         // Execute the makefile
         ExecutionService es = ExecutionService.newService(npb, descr, "cmake"); // NOI18N
         return es.run();

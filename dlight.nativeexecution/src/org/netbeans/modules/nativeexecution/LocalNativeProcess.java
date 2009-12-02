@@ -42,6 +42,7 @@ import com.sun.jna.Pointer;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -52,8 +53,8 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.support.EnvWriter;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.UnbufferSupport;
-import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.netbeans.modules.nativeexecution.support.Win32APISupport;
 import org.openide.util.NbBundle;
 
@@ -101,10 +102,11 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
         String workingDirectory = info.getWorkingDirectory(true);
 
         if (workingDirectory != null) {
-            File dirFile = new File(workingDirectory);
-            if (dirFile.exists()) {
-                pb.directory(dirFile);
+            File wd = new File(workingDirectory);
+            if (!wd.exists()) {
+                throw new FileNotFoundException(loc("NativeProcess.noSuchDirectoryError.text", wd.getAbsolutePath())); // NOI18N
             }
+            pb.directory(wd);
         }
 
         if (isInterrupted()) {
@@ -127,52 +129,6 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
             processInput.write("ITS_TIME_TO_START=\n".getBytes()); // NOI18N
             processInput.write("trap 'ITS_TIME_TO_START=1' CONT\n".getBytes()); // NOI18N
             processInput.write("while [ -z \"$ITS_TIME_TO_START\" ]; do sleep 1; done\n".getBytes()); // NOI18N
-        }
-
-        processInput.write(("exec " + info.getCommandLineForShell() + "\n").getBytes()); // NOI18N
-        processInput.flush();
-
-        creation_ts = System.nanoTime();
-
-        readPID(processOutput);
-    }
-
-    private void createWinUsingShell() throws IOException, InterruptedException {
-        // Get working directory ....
-        String workingDirectory = info.getWorkingDirectory(true);
-
-        if (workingDirectory != null) {
-            workingDirectory = new File(workingDirectory).getAbsolutePath();
-        }
-
-        final MacroMap env = info.getEnvironment().clone();
-
-        if (info.isUnbuffer()) {
-            UnbufferSupport.initUnbuffer(info.getExecutionEnvironment(), env);
-        }
-
-        env.put("PATH", "/bin:" + WindowsSupport.getInstance().convertToAllShellPaths(env.get("PATH"))); // NOI18N
-
-        final ProcessBuilder pb = new ProcessBuilder(hostInfo.getShell(), "-s"); // NOI18N
-
-        if (isInterrupted()) {
-            throw new InterruptedException();
-        }
-
-        process = pb.start();
-
-        processInput = process.getOutputStream();
-        processError = process.getErrorStream();
-        processOutput = process.getInputStream();
-
-        processInput.write("echo $$\n".getBytes()); // NOI18N
-        processInput.flush();
-
-        EnvWriter ew = new EnvWriter(processInput);
-        ew.write(env);
-
-        if (workingDirectory != null) {
-            processInput.write(("cd \"" + WindowsSupport.getInstance().convertToShellPath(workingDirectory) + "\"\n").getBytes()); // NOI18N
         }
 
         processInput.write(("exec " + info.getCommandLineForShell() + "\n").getBytes()); // NOI18N
@@ -228,7 +184,7 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
         if (wdir != null) {
             File wd = new File(wdir);
             if (!wd.exists()) {
-                throw new IOException(loc("NativeProcess.noSuchDirectoryError.text", wd.getAbsolutePath())); // NOI18N
+                throw new FileNotFoundException(loc("NativeProcess.noSuchDirectoryError.text", wd.getAbsolutePath())); // NOI18N
             }
             pb.directory(wd);
             if (LOG.isLoggable(Level.FINEST)) {
@@ -284,7 +240,7 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
     @Override
     public final int waitResult() throws InterruptedException {
         if (process == null) {
-            throw new InterruptedException();
+            return -1;
         }
 
         /*
@@ -325,14 +281,16 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
         }
 //        }
 
+        if (getState() == State.CANCELLED) {
+            throw new InterruptedException();
+        }
+
         return result;
     }
 
     @Override
     protected final synchronized void cancel() {
-        if (process != null) {
-            process.destroy();
-        }
+        ProcessUtils.destroy(this);
     }
 
     private static String loc(String key, String... params) {

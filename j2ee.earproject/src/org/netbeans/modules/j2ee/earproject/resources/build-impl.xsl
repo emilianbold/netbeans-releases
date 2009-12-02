@@ -793,9 +793,15 @@ to simulate
             <xsl:attribute name="unless">j2ee.clientName</xsl:attribute>
             <property name="client.jar" value="${{dist.dir}}/{$name}Client.jar"/>
             <sleep seconds="3"/>
-            <copy file="${{wa.copy.client.jar.from}}/{$name}/{$name}Client.jar" todir="${{dist.dir}}"/>                
+            <copy file="${{wa.copy.client.jar.from}}/{$name}/{$name}Client.jar" todir="${{dist.dir}}" failonerror="false"/>                
+            <copy todir="${{dist.dir}}/" flatten="true" failonerror="false">
+                <fileset dir="${{wa.copy.client.jar.from}}/{$name}" includes="**/{$name}Client.jar"/>
+            </copy>
             <copy todir="${{dist.dir}}/{$name}Client" flatten="true">
                 <fileset dir="${{wa.copy.client.jar.from}}/{$name}" includes="**/*.*ar"/>
+            </copy>
+            <copy todir="${{dist.dir}}/{$name}Client" flatten="false">
+                <fileset dir="${{dist.dir}}/gfdeploy/{$name}" includes="**/*.jar"/>
             </copy>
         </target>
     </xsl:template>

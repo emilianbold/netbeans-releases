@@ -42,6 +42,7 @@ package org.netbeans.modules.css.formatting.api.support;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Set;
 import java.util.Stack;
 import javax.swing.text.BadLocationException;
@@ -312,7 +313,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
                 // when line 1 is processed there will be MarkupItem for sometag
                 // but INDENT command for such MarkupItem should be processed
                 // after inOpeningTagAttributes is false, that is on line 2.
-                assert item.openingTag;
+                assert item.openingTag : dumpMoreDiagnosticToResolveIssue162700(fileStack);
                 break;
             }
             if (!item.empty) {
@@ -339,6 +340,20 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
         if (updateState) {
             removeFullyProcessedTags();
         }
+    }
+
+    private String dumpMoreDiagnosticToResolveIssue162700(Stack<MarkupItem> fileStack) {
+        int index = fileStack.size() - 6;
+        if (index < 0) {
+            index = 0;
+        }
+        StringBuilder sb = new StringBuilder("diagnostic dump: ");
+        ListIterator<MarkupItem> it = fileStack.listIterator(index);
+        while (it.hasNext()) {
+            MarkupItem im = it.next();
+            sb.append(im.toString()+" ");
+        }
+        return sb.toString();
     }
 
     private boolean addIndentationCommand(List<IndentCommand> iis, IndentCommand ic, MarkupItem item, List<MarkupItem> prevItems) {
@@ -504,7 +519,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
                                     context.getLineStartOffset()));
                                 item.processed = true;
                             } else {
-                                if (closingTag && item.tagName.equalsIgnoreCase(tokenName)) {
+                                if (closingTag && item.tagName.equalsIgnoreCase(tokenName) && context.isIndentThisLine()) {
                                     iis.add(new IndentCommand(IndentCommand.Type.RETURN,
                                         context.getLineStartOffset()));
                                     item.processed = true;

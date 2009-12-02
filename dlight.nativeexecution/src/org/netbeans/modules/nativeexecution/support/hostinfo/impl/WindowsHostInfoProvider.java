@@ -45,7 +45,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.HostInfo.CpuFamily;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
-import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.hostinfo.HostInfoProvider;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
@@ -53,16 +52,15 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = org.netbeans.modules.nativeexecution.support.hostinfo.HostInfoProvider.class, position = 90)
 public class WindowsHostInfoProvider implements HostInfoProvider {
 
-    private static final java.util.logging.Logger log = Logger.getInstance();
-
     public HostInfo getHostInfo(ExecutionEnvironment execEnv) throws IOException {
         // Windows is supported for localhosts only.
-
         if (!execEnv.isLocal() || !Utilities.isWindows()) {
             return null;
         }
 
-        return new HostInfoImpl();
+        HostInfoImpl info = new HostInfoImpl();
+        info.initTmpDirs();
+        return info;
     }
 
     private static class HostInfoImpl implements HostInfo {
@@ -76,9 +74,9 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
         private final int cpuNum;
         private final String hostname;
         private final String shell;
-        private final File tmpDirFile;
-        private final String tmpDir;
         private final String path;
+        private File tmpDirFile;
+        private String tmpDir;
 
         public HostInfoImpl() {
             Map<String, String> env = WindowsSupport.getInstance().getEnv();
@@ -101,34 +99,7 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
             cpuNum = _cpuNum;
             hostname = env.get("COMPUTERNAME"); // NOI18N
             shell = WindowsSupport.getInstance().getShell();
-
-            File _tmpDirFile = null;
-            String _tmpDir = null;
-            String _path = "";
-
-            String ioTmpDir = System.getProperty("java.io.tmpdir"); // NOI18N
-
-            _tmpDirFile = new File(ioTmpDir, "dlight_" + env.get("USERNAME")); // NOI18N
-
-            // create the directory if absent (IZ#174327)
-            _tmpDirFile.mkdirs();
-
-            _tmpDir = _tmpDirFile.getAbsolutePath();
-
-            try {
-                _tmpDirFile = _tmpDirFile.getCanonicalFile();
-                _tmpDir = _tmpDirFile.getCanonicalPath();
-            } catch (IOException ex) {
-            }
-
-            if (shell != null) {
-                _tmpDir = WindowsSupport.getInstance().convertToShellPath(_tmpDir);
-                _path = env.get("PATH") + ';' + new File(shell).getParent(); // NOI18N
-            }
-
-            tmpDirFile = _tmpDirFile;
-            tmpDir = _tmpDir;
-            path = _path;
+            path = env.get("PATH") + ';' + new File(shell).getParent(); // NOI18N
 
             os = new OS() {
 
@@ -148,6 +119,29 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
                     return osBitness;
                 }
             };
+        }
+
+        public void initTmpDirs() throws IOException {
+            File _tmpDirFile = null;
+            String _tmpDir = null;
+            String ioTmpDir = System.getProperty("java.io.tmpdir"); // NOI18N
+            Map<String, String> env = WindowsSupport.getInstance().getEnv();
+
+            _tmpDirFile = new File(ioTmpDir, "dlight_" + env.get("USERNAME")); // NOI18N
+            _tmpDirFile = new File(_tmpDirFile, HostInfoFactory.getNBKey());
+            _tmpDir = _tmpDirFile.getAbsolutePath();
+
+            if (shell != null) {
+                _tmpDir = WindowsSupport.getInstance().convertToShellPath(_tmpDir);
+            }
+
+            // create the directory if absent (IZ#174327)
+            if (!_tmpDirFile.exists() && !_tmpDirFile.mkdirs()) {
+                throw new IOException("Unable to create tmpdir " + _tmpDirFile); // NOI18N
+            }
+
+            tmpDirFile = _tmpDirFile;
+            tmpDir = _tmpDir;
         }
 
         public OS getOS() {

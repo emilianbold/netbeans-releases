@@ -105,6 +105,9 @@ public class GoToSourceActionGroup extends EJBActionGroup {
             model.runReadAction(new MetadataModelAction<EjbJarMetadata, Void>() {
                 public Void run(EjbJarMetadata metadata) {
                     EntityAndSession ejb = (EntityAndSession) metadata.findByEjbClass(ejbClass[0]);
+                    if (ejb == null){
+                        return null;
+                    }
                     try {
                         results[EJB_CLASS] = ejb.getEjbClass() == null ? null : DataObject.find(metadata.findResource(Utils.toResourceName(ejb.getEjbClass())));
                     } catch (DataObjectNotFoundException ex) {}

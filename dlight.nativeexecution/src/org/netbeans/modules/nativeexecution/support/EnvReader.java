@@ -41,9 +41,11 @@ package org.netbeans.modules.nativeexecution.support;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import org.openide.util.Exceptions;
 
 public final class EnvReader implements Callable<Map<String, String>> {
 
@@ -52,10 +54,23 @@ public final class EnvReader implements Callable<Map<String, String>> {
     public EnvReader(final InputStream is) {
         this.is = is;
     }
+    
+    private BufferedReader getReader(final InputStream is) {
+        final String charSet = EnvWriter.getCharSet(); // NOI18N
+        // set charset
+        if (java.nio.charset.Charset.isSupported(charSet)) {
+            try {
+                return new BufferedReader(new InputStreamReader(is, charSet));
+            } catch (UnsupportedEncodingException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return new BufferedReader(new InputStreamReader(is));
+    }
 
     public Map<String, String> call() throws Exception {
         Map<String, String> result = new HashMap<String, String>();
-        BufferedReader br = new BufferedReader(new InputStreamReader(is));
+        BufferedReader br = getReader(is);
         String s = null;
         StringBuilder buffer = new StringBuilder();
 

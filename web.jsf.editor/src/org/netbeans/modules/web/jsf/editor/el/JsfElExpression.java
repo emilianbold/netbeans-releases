@@ -65,12 +65,14 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.swing.text.Document;
 
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
@@ -78,6 +80,10 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.ui.ElementOpen;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
@@ -106,6 +112,7 @@ import org.netbeans.modules.web.jsf.editor.index.JsfPageModelFactory;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.Node;
 import org.netbeans.spi.editor.completion.CompletionItem;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -331,32 +338,12 @@ public class JsfElExpression extends ELExpression {
                     }
                 }
 
-                TypeMirror erasedType = controller.getTypes().erasure(type);
-                TypeMirror iterable = controller.getTypes().erasure( controller.getElements().
-                        getTypeElement(Iterable.class.getCanonicalName()).asType());
                 if ( type.getKind() == TypeKind.ARRAY){
                     TypeMirror typeMirror = ((ArrayType)type).
                         getComponentType();
                     if ( typeMirror.getKind() == TypeKind.DECLARED){
                         result[0] = ((TypeElement)controller.getTypes().asElement(
                                 typeMirror)).getQualifiedName().toString();
-                    }
-                }
-                else if ( controller.getTypes().isAssignable( erasedType, iterable)){
-                    List<? extends TypeMirror> typeArguments = 
-                        ((DeclaredType)type).getTypeArguments();
-                    if ( typeArguments.size() != 0 ){
-                        TypeMirror typeMirror = typeArguments.get(0);
-                        if ( typeMirror.getKind() == TypeKind.DECLARED){
-                            Element element = controller.getTypes().asElement(
-                                    typeMirror);
-                            if ( element instanceof TypeElement){
-                                result[0] = ((TypeElement)element).getQualifiedName().toString();
-                            }
-                        }
-                    }
-                    if ( result[0] == null ){
-                        result[0] = Object.class.getCanonicalName();
                     }
                 }
             }
@@ -401,8 +388,10 @@ public class JsfElExpression extends ELExpression {
 
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
-                    HtmlParserResult result = (HtmlParserResult)resultIterator.
-                        getParserResult(anchor);
+                    HtmlParserResult result = (HtmlParserResult)getEmbeddedParserResult(resultIterator, "text/html"); //NOI18N
+                    if(result == null) {
+                        return ;
+                    }
                     CompositeComponentModel.Factory ccmodelFactory = 
                         (CompositeComponentModel.Factory)JsfPageModelFactory.
                         getFactory(CompositeComponentModel.Factory.class);
@@ -622,25 +611,11 @@ public class JsfElExpression extends ELExpression {
             java.util.ResourceBundle[]  bundle) 
     {
         java.util.ResourceBundle labels = null;
-        ClassPath classPath;
-        ClassLoader classLoader;
         
-        try { // try to find on the source classpath
-            classPath = ClassPath.getClassPath(getFileObject(), ClassPath.SOURCE);
-            classLoader = classPath.getClassLoader(false);
-            labels = java.util.ResourceBundle.getBundle(propertyFile, 
-                    Locale.getDefault(), classLoader);
-        }  
-        catch (MissingResourceException exception) {
-            // There is not the property on source classpath - try compile
-            try {
-                classLoader = ClassPath.getClassPath(getFileObject(), 
-                        ClassPath.COMPILE).getClassLoader(false);
-                labels = java.util.ResourceBundle.getBundle(propertyFile, 
-                        Locale.getDefault(), classLoader);
-            } catch (MissingResourceException exception2) {
-                // the propertyr file wasn't find on the compile classpath as well
-            }
+        Project project = FileOwnerQuery.getOwner(getFileObject());
+        labels = getResourceBundle(project, propertyFile, ClassPath.SOURCE);
+        if ( labels == null ){
+            labels = getResourceBundle(project, propertyFile, ClassPath.COMPILE);
         }
         
         List<String> result = new LinkedList<String>();
@@ -707,6 +682,39 @@ public class JsfElExpression extends ELExpression {
         return true;
     }
     
+    private java.util.ResourceBundle getResourceBundle( Project project, 
+            String file, String type ) 
+    {
+        ClassPathProvider provider = project.getLookup().lookup( 
+                ClassPathProvider.class);
+        if ( provider == null ){
+            return null;
+        }
+        Sources sources = project.getLookup().lookup(Sources.class);
+        if ( sources == null ){
+            return null;
+        }
+        SourceGroup[] sourceGroups = sources.getSourceGroups( 
+                JavaProjectConstants.SOURCES_TYPE_JAVA );
+        int i=0;
+        for (SourceGroup sourceGroup : sourceGroups) {
+            FileObject rootFolder = sourceGroup.getRootFolder();
+            ClassPath classPath = ClassPath.getClassPath(rootFolder, type);
+            if ( classPath == null){
+                continue;
+            }
+            ClassLoader classLoader = classPath.getClassLoader(false);
+            try {
+                return java.util.ResourceBundle.getBundle(file, 
+                    Locale.getDefault(), classLoader);
+            }
+            catch (MissingResourceException exception) {
+                continue;
+            }
+        }
+        return null;
+    }
+    
     public class JSFCompletionItemsTask extends ELExpression.BaseELTaskClass 
         implements CancellableTask<CompilationController> 
     {
@@ -749,8 +757,12 @@ public class JsfElExpression extends ELExpression {
                                     continue;
                                 }
                                 addedItems.add(methodName);
+                                TypeMirror methodType = controller.getTypes().asMemberOf(
+                                        (DeclaredType)bean.asType(), method);
+                                String retType = ((ExecutableType)methodType).
+                                    getReturnType().toString();
                                 CompletionItem item = new JsfElCompletionItem.JsfMethod(
-                                    methodName, anchor, method.getReturnType().toString());
+                                    methodName, anchor, retType);
 
                             completionItems.add(item);
                         }

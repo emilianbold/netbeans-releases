@@ -38,12 +38,15 @@
  */
 package org.netbeans.modules.cnd.discovery.projectimport;
 
+import java.io.FileNotFoundException;
 import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.cnd.builds.ImportUtils;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
@@ -124,7 +127,7 @@ import org.openide.util.RequestProcessor;
  */
 public class ImportProject implements PropertyChangeListener {
 
-    private static boolean TRACE = Boolean.getBoolean("cnd.discovery.trace.projectimport"); // NOI18N
+    private static boolean TRACE = true;//Boolean.getBoolean("cnd.discovery.trace.projectimport"); // NOI18N
     private Logger logger = Logger.getLogger("org.netbeans.modules.cnd.discovery.projectimport.ImportProject"); // NOI18N
     private File nativeProjectFolder;
     private File projectFolder;
@@ -367,7 +370,7 @@ public class ImportProject implements PropertyChangeListener {
                 postConfigure();
             } else {
                 if (runMake) {
-                    makeProject(true);
+                    makeProject(true, null);
                 } else {
                     RequestProcessor.getDefault().post(new Runnable() {
 
@@ -414,6 +417,13 @@ public class ImportProject implements PropertyChangeListener {
             if (!isProjectOpened()) {
                 isFinished = true;
                 return;
+            }
+            final File configureLog = createTempFile("configure"); // NOI18N
+            Writer outputListener = null;
+            try {
+                outputListener = new BufferedWriter(new FileWriter(configureLog));
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
             }
             FileObject configureFileObject = FileUtil.toFileObject(configureFile);
             DataObject dObj = DataObject.find(configureFileObject);
@@ -475,7 +485,7 @@ public class ImportProject implements PropertyChangeListener {
                     }
                     if (runMake && rc == 0) {
                         //parseConfigureLog(configureLog);
-                        makeProject(false);
+                        makeProject(false, configureLog);
                     } else {
                         switchModel(true);
                         postModelDiscovery(true);
@@ -486,7 +496,7 @@ public class ImportProject implements PropertyChangeListener {
                 logger.log(Level.INFO, "#" + configureFile + " " + configureArguments); // NOI18N
             }
             if (MIMENames.SHELL_MIME_TYPE.equals(mime)){
-                ShellRunAction.performAction(node, listener, null, makeProject, null);
+                ShellRunAction.performAction(node, listener, outputListener, makeProject, null);
             } else if (MIMENames.CMAKE_MIME_TYPE.equals(mime)){
                 CMakeAction.performAction(node, listener, null, makeProject, null);
             } else if (MIMENames.QTPROJECT_MIME_TYPE.equals(mime)){
@@ -505,6 +515,9 @@ public class ImportProject implements PropertyChangeListener {
                 try {
                     if (HostInfoUtils.fileExists(developmentHost, remoteFile)){
                         Future<Integer> task = CommonTasksSupport.downloadFile(remoteFile, developmentHost, file.getAbsolutePath(), null);
+                        if (TRACE) {
+                            logger.log(Level.INFO, "#download file "+file.getAbsolutePath()); // NOI18N
+                        }
                         /*int rc =*/ task.get();
                     }
                 } catch (InterruptedException ex) {
@@ -518,13 +531,46 @@ public class ImportProject implements PropertyChangeListener {
         }
     }
 
-    private void makeProject(boolean doClean) {
+    private static final String configureCteatePattern = " creating "; // NOI18N
+    private void scanConfigureLog(File logFile){
+        if (logFile != null && logFile.exists() && logFile.canRead()){
+            BufferedReader in = null;
+            try {
+                in = new BufferedReader(new FileReader(logFile));
+                while (true) {
+                    String line = in.readLine();
+                    if (line == null) {
+                        break;
+                    }
+                    int i = line.indexOf(configureCteatePattern);
+                    if (i > 0) {
+                        String f = line.substring(i+configureCteatePattern.length()).trim();
+                        if (f.endsWith(".h")) { // NOI18N
+                            downloadRemoteFile(new File(projectFolder, f)); // NOI18N
+                        }
+                    }
+                }
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            } finally {
+                try {
+                    if (in != null) {
+                        in.close();
+                    }
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
+    }
+
+    private void makeProject(boolean doClean, File logFile) {
         if (!isProjectOpened()) {
             isFinished = true;
             return;
         }
         downloadRemoteFile(makefileFile);
-        downloadRemoteFile(new File(projectFolder, "config.h")); // NOI18N
+        scanConfigureLog(logFile);
         if (makefileFile != null && makefileFile.exists()) {
             FileObject makeFileObject = FileUtil.toFileObject(makefileFile);
             DataObject dObj;

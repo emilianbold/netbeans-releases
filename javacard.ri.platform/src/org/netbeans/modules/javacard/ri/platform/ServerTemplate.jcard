@@ -1,12 +1,12 @@
 javacard.device.name=${devicename}
 javacard.device.host=localhost
 javacard.device.secureMode=true
-javacard.device.e2pSize=4M
+javacard.device.e2pSize=8M
 javacard.device.corSize=4K
 javacard.device.proxy2idePort=7020
 javacard.device.contactedPort=9025
 javacard.device.contactedProtocol=T=1
-javacard.device.apdutool.contactedProtocol=-t0
+javacard.device.apdutool.contactedProtocol=-t1
 javacard.device.ramSize=1M
 javacard.device.httpPort=8019
 javacard.device.proxy2cjcrePort=7019
@@ -25,4 +25,5 @@ javacard.device.start.cmdline.nosuspend=${javacard.emulator} -ramsize ${javacard
 javacard.device.start.cmdline.debug=${javacard.emulator} -ramsize ${javacard.device.ramSize} -e2psize ${javacard.device.e2pSize} -corsize ${javacard.device.corSize} -debugger -debugport ${javacard.device.proxy2cjcrePort} -e2pfile ${javacard.device.eprom.file} -loggerlevel ${javacard.device.loggerLevel} -httpport ${javacard.device.httpPort} -contactedport ${javacard.device.contactedPort} -contactedprotocol ${javacard.device.apdutool.contactedProtocol} -contactlessport ${javacard.device.contactlessPort}
 javacard.device.start.cmdline.debug=${javacard.emulator} -ramsize ${javacard.device.ramSize} -e2psize ${javacard.device.e2pSize} -corsize ${javacard.device.corSize} -debugger -debugport ${javacard.device.proxy2cjcrePort} -e2pfile ${javacard.device.eprom.file} -loggerlevel ${javacard.device.eeprom.folder}/${javacard.device.name}.eprom -httpport ${javacard.device.httpPort} -contactedport ${javacard.device.contactedPort} -contactedprotocol ${javacard.device.apdutool.contactedProtocol} -contactlessport ${javacard.device.contactlessPort} -nosuspend
 javacard.device.resume.cmdline=${javacard.emulator} -resume -e2pfile ${javacard.device.eprom.file}
-javacard.device.capabilities=START,STOP,RESUME,DEBUG,EPROM_FILE,CLEAR_EPROM,CONTENTS,CUSTOMIZER,INTERCEPTOR,PORTS,APDU_SUPPORT
+javacard.device.capabilities=START,STOP,RESUME,DEBUG,EPROM_FILE,CLEAR_EPROM,CONTENTS,CUSTOMIZER,INTERCEPTOR,PORTS,APDU_SUPPORT,DELETE
+javacard.device.nosuspend=true

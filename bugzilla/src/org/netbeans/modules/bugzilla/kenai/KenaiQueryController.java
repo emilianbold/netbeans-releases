@@ -39,30 +39,69 @@
 
 package org.netbeans.modules.bugzilla.kenai;
 
+import java.util.List;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.BugzillaConnector;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
 import org.netbeans.modules.bugzilla.query.QueryController;
+import org.netbeans.modules.bugzilla.util.BugzillaUtil;
+import org.netbeans.modules.kenai.ui.api.NbModuleOwnerSupport.OwnerInfo;
+import org.openide.nodes.Node;
+import org.openide.windows.WindowManager;
 
 /**
  *
  * @author Tomas Stupka
  */
 public class KenaiQueryController extends QueryController {
-    private String product;
-    private boolean predefinedQuery;
+    private final String product;
+    private final boolean predefinedQuery;
 
     public KenaiQueryController(BugzillaRepository repository, BugzillaQuery query, String urlParameters, String product, boolean predefinedQuery) {
-        super(repository, query, urlParameters);
+        super(repository, query, urlParameters, false, false);
         this.product = product;
         this.predefinedQuery = predefinedQuery;
+        postPopulate(urlParameters, false);
     }
 
     @Override
     public void populate(String urlParameters) {
-        super.populate(urlParameters);
-        disableProduct(product);
+        if(BugzillaUtil.isNbRepository(getRepository())) {
+            if(urlParameters == null) {
+                Node[] selection = query.getSelection();
+                if(selection == null) {
+                    // XXX not sure why we need this - i'm going to keep it for now,
+                    // doesn't seem to harm
+                    selection = WindowManager.getDefault().getRegistry().getActivatedNodes();
+                }
+                OwnerInfo ownerInfo = getRepository().getOwnerInfo(selection);
+                if(ownerInfo != null) {
+                    StringBuffer sb = new StringBuffer();
+                    String owner = ownerInfo.getOwner();
+                    if(owner == null || !owner.equals(product) ) {
+                        // XXX is this even possible?
+                    } else {
+                        sb.append("product=");                                  // NOI18N
+                        sb.append(owner);
+                        List<String> data = ownerInfo.getExtraData();
+                        if(data != null && data.size() > 0) {
+                            sb.append("&component=");                           // NOI18N
+                            sb.append(data.get(0));
+                        }
+                        urlParameters = sb.toString();
+                    }
+                }
+                if(urlParameters == null) {
+                    urlParameters = "product=" + product;                       // NOI18N
+                }
+            }
+
+            super.populate(urlParameters);
+        } else {
+            super.populate(urlParameters);
+            disableProduct();
+        }
     }
 
     @Override

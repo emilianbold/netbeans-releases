@@ -41,7 +41,9 @@ package org.netbeans.modules.cnd.spi.remote;
 
 import java.io.File;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
@@ -57,7 +59,7 @@ public abstract class RemoteSyncFactory {
     /**
      * Creates an instance of RemoteSyncWorker.
      *
-     * @param localDirs local directory that should be synchronized
+     * @param files local directories and files that should be synchronized
      *
      * @param executionEnvironment
      *
@@ -77,7 +79,7 @@ public abstract class RemoteSyncFactory {
      * @return new instance of the RemoteSyncWorker
      */
     public abstract RemoteSyncWorker createNew(ExecutionEnvironment executionEnvironment, 
-            PrintWriter out, PrintWriter err, File privProjectStorageDir, File... localDirs);
+            PrintWriter out, PrintWriter err, File privProjectStorageDir, File... files);
 
     /**
      * Creates an instance of RemoteSyncWorker.
@@ -147,7 +149,21 @@ public abstract class RemoteSyncFactory {
      */
     public static RemoteSyncFactory[] getFactories() {
         final Collection<? extends RemoteSyncFactory> instances = Lookup.getDefault().lookupAll(RemoteSyncFactory.class);
-        return instances.toArray(new RemoteSyncFactory[instances.size()]);
+        List<RemoteSyncFactory> result = new ArrayList<RemoteSyncFactory>(instances);
+        String defaultId = System.getProperty("cnd.remote.default.sync");
+        if (defaultId != null) {
+            for (int i = 0; i < result.size(); i++) {
+                if (defaultId.equals(result.get(i).getID())) {
+                    if (i > 0) {
+                        RemoteSyncFactory oldFirst = result.get(0);
+                        result.set(0, result.get(i));
+                        result.set(i, oldFirst);
+                    }
+                    break;
+                }
+            }
+        }
+        return result.toArray(new RemoteSyncFactory[result.size()]);
     }
 
     @Override

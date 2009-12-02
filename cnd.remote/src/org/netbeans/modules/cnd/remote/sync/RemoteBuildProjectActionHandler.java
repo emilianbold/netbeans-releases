@@ -123,6 +123,11 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
             out = io.getOut();
         }
 
+        if (!RemoteProjectSupport.projectExists(pae.getProject())) {
+            delegate.cancel();
+            return;
+        }
+
         final File privProjectStorage = RemoteProjectSupport.getPrivateStorage(pae.getProject());
         MakeConfiguration conf = pae.getConfiguration();
         File[] sourceDirs = RemoteProjectSupport.getProjectSourceDirs(pae.getProject(), conf);

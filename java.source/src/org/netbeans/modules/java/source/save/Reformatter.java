@@ -136,6 +136,10 @@ public class Reformatter implements ReformatTask {
     }
     
     public static String reformat(String text, CodeStyle style) {
+        return reformat(text, style, style.getRightMargin());
+    }
+
+    public static String reformat(String text, CodeStyle style, int rightMargin) {
         StringBuilder sb = new StringBuilder(text);
         try {
             ClassPath empty = ClassPathSupport.createClassPath(new URL[0]);
@@ -146,7 +150,7 @@ public class Reformatter implements ReformatTask {
             CompilationUnitTree tree = javacTask.parse(FileObjects.memoryFileObject("","", text)).iterator().next(); //NOI18N
             SourcePositions sp = JavacTrees.instance(ctx).getSourcePositions();
             TokenSequence<JavaTokenId> tokens = TokenHierarchy.create(text, JavaTokenId.language()).tokenSequence(JavaTokenId.language());
-            for (Diff diff : Pretty.reformat(text, tokens, new TreePath(tree), sp, style)) {
+            for (Diff diff : Pretty.reformat(text, tokens, new TreePath(tree), sp, style, rightMargin)) {
                 int start = diff.getStartOffset();
                 int end = diff.getEndOffset();
                 sb.delete(start, end);
@@ -173,7 +177,9 @@ public class Reformatter implements ReformatTask {
         if (endOffset < 0)
             return;
         int embeddingOffset = -1;
+        int firstLineIndent = 0;
         if (!"text/x-java".equals(context.mimePath())) { //NOI18N
+            firstLineIndent = context.lineIndent(context.lineStartOffset(region.getStartOffset()));
             TokenSequence<JavaTokenId> ts = controller.getTokenHierarchy().tokenSequence(JavaTokenId.language());
             if (ts != null) {
                 ts.move(startOffset);
@@ -204,7 +210,7 @@ public class Reformatter implements ReformatTask {
         TreePath path = getCommonPath(startOffset, endOffset);
         if (path == null)
             return;
-        for (Diff diff : Pretty.reformat(controller, path, cs, startOffset, endOffset, templateEdit)) {
+        for (Diff diff : Pretty.reformat(controller, path, cs, startOffset, endOffset, templateEdit, firstLineIndent)) {
             int start = diff.getStartOffset();
             int end = diff.getEndOffset();
             String text = diff.getText();
@@ -300,6 +306,7 @@ public class Reformatter implements ReformatTask {
             }
             start = controller.getSnapshot().getOriginalOffset(start);
             end = controller.getSnapshot().getOriginalOffset(end);
+            if (start == (-1) || end == (-1)) continue;
             start += shift;
             end += shift;
             doc.remove(start, end - start);
@@ -386,6 +393,7 @@ public class Reformatter implements ReformatTask {
         private CompilationUnitTree root;
         private int startOffset;
         private int endOffset;
+        private int tpLevel;
 
         private Pretty(CompilationInfo info, TreePath path, CodeStyle cs, int startOffset, int endOffset, boolean templateEdit) {
             this(info.getText(), info.getTokenHierarchy().tokenSequence(JavaTokenId.language()),
@@ -394,10 +402,14 @@ public class Reformatter implements ReformatTask {
         }
         
         private Pretty(String text, TokenSequence<JavaTokenId> tokens, TreePath path, SourcePositions sp, CodeStyle cs, int startOffset, int endOffset) {
+            this(text, tokens, path, sp, cs, startOffset, endOffset, cs.getRightMargin());
+        }
+
+        private Pretty(String text, TokenSequence<JavaTokenId> tokens, TreePath path, SourcePositions sp, CodeStyle cs, int startOffset, int endOffset, int rightMargin) {
             this.fText = text;
             this.sp = sp;
             this.cs = cs;
-            this.rightMargin = cs.getRightMargin();
+            this.rightMargin = rightMargin;
             this.tabSize = cs.getTabSize();
             this.indentSize = cs.getIndentSize();
             this.continuationIndentSize = cs.getContinuationIndentSize();
@@ -430,12 +442,15 @@ public class Reformatter implements ReformatTask {
             this.root = path.getCompilationUnit();
             this.startOffset = startOffset;
             this.endOffset = endOffset;
+            this.tpLevel = 0;
         }
 
-        public static LinkedList<Diff> reformat(CompilationInfo info, TreePath path, CodeStyle cs, int startOffset, int endOffset, boolean templateEdit) {
+        public static LinkedList<Diff> reformat(CompilationInfo info, TreePath path, CodeStyle cs, int startOffset, int endOffset, boolean templateEdit, int firstLineIndent) {
             Pretty pretty = new Pretty(info, path, cs, startOffset, endOffset, templateEdit);
-            if (pretty.indent >= 0)
+            if (pretty.indent >= 0) {
+                pretty.indent += firstLineIndent;
                 pretty.scan(path, null);
+            }
             if (path.getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT) {
                 pretty.tokens.moveEnd();
                 pretty.tokens.movePrevious();
@@ -447,8 +462,8 @@ public class Reformatter implements ReformatTask {
             return pretty.diffs;
         }
 
-        public static LinkedList<Diff> reformat(String text, TokenSequence<JavaTokenId> tokens, TreePath path, SourcePositions sp, CodeStyle cs) {
-            Pretty pretty = new Pretty(text, tokens, path, sp, cs, 0, text.length());
+        public static LinkedList<Diff> reformat(String text, TokenSequence<JavaTokenId> tokens, TreePath path, SourcePositions sp, CodeStyle cs, int rightMargin) {
+            Pretty pretty = new Pretty(text, tokens, path, sp, cs, 0, text.length(), rightMargin);
             pretty.scan(path, null);
             tokens.moveEnd();
             tokens.movePrevious();
@@ -566,7 +581,8 @@ public class Reformatter implements ReformatTask {
                     accept(IDENTIFIER);
                 List<? extends TypeParameterTree> tparams = node.getTypeParameters();
                 if (tparams != null && !tparams.isEmpty()) {
-                    accept(LT);
+                    if (LT == accept(LT))
+                        tpLevel++;
                     for (Iterator<? extends TypeParameterTree> it = tparams.iterator(); it.hasNext();) {
                         TypeParameterTree tparam = it.next();
                         scan(tparam, p);
@@ -576,7 +592,19 @@ public class Reformatter implements ReformatTask {
                             spaces(cs.spaceAfterComma() ? 1 : 0);
                         }
                     }
-                    accept(GT, GTGT, GTGTGT);
+                    if (tpLevel > 0) {
+                        switch (accept(GT, GTGT, GTGTGT)) {
+                            case GTGTGT:
+                                tpLevel -= 3;
+                                break;
+                            case GTGT:
+                                tpLevel -= 2;
+                                break;
+                            case GT:
+                                tpLevel--;
+                                break;
+                        }
+                    }
                 }
                 Tree ext = node.getExtendsClause();
                 if (ext != null) {
@@ -858,7 +886,8 @@ public class Reformatter implements ReformatTask {
             }
             List<? extends TypeParameterTree> tparams = node.getTypeParameters();
             if (tparams != null && !tparams.isEmpty()) {
-                accept(LT);
+                if (LT == accept(LT))
+                    tpLevel++;
                 if (indent == old)
                     indent += continuationIndentSize;
                 for (Iterator<? extends TypeParameterTree> it = tparams.iterator(); it.hasNext();) {
@@ -870,7 +899,19 @@ public class Reformatter implements ReformatTask {
                         spaces(cs.spaceAfterComma() ? 1 : 0);
                     }
                 }
-                accept(GT, GTGT, GTGTGT);
+                if (tpLevel > 0) {
+                    switch (accept(GT, GTGT, GTGTGT)) {
+                        case GTGTGT:
+                            tpLevel -= 3;
+                            break;
+                        case GTGT:
+                            tpLevel -= 2;
+                            break;
+                        case GT:
+                            tpLevel--;
+                            break;
+                    }
+                }
                 space();
             }
             Tree retType = node.getReturnType();
@@ -1029,7 +1070,8 @@ public class Reformatter implements ReformatTask {
             scan(node.getType(), p);
             List<? extends Tree> targs = node.getTypeArguments();
             if (targs != null && !targs.isEmpty()) {
-                accept(LT);
+                if (LT == accept(LT))
+                    tpLevel++;
                 for (Iterator<? extends Tree> it = targs.iterator(); it.hasNext();) {
                     Tree targ = it.next();
                     scan(targ, p);
@@ -1039,7 +1081,19 @@ public class Reformatter implements ReformatTask {
                         spaces(cs.spaceAfterComma() ? 1 : 0);
                     }
                 }
-                accept(GT, GTGT, GTGTGT);
+                if (tpLevel > 0) {
+                    switch (accept(GT, GTGT, GTGTGT)) {
+                        case GTGTGT:
+                            tpLevel -= 3;
+                            break;
+                        case GTGT:
+                            tpLevel -= 2;
+                            break;
+                        case GT:
+                            tpLevel--;
+                            break;
+                    }
+                }
             }
             return true;
         }
@@ -1296,7 +1350,8 @@ public class Reformatter implements ReformatTask {
                 accept(DOT);
                 List<? extends Tree> targs = node.getTypeArguments();
                 if (targs != null && !targs.isEmpty()) {
-                    accept(LT);
+                    if (LT == accept(LT))
+                        tpLevel++;
                     for (Iterator<? extends Tree> it = targs.iterator(); it.hasNext();) {
                         Tree targ = it.next();
                         scan(targ, p);
@@ -1306,7 +1361,19 @@ public class Reformatter implements ReformatTask {
                             spaces(cs.spaceAfterComma() ? 1 : 0);
                         }
                     }
-                    accept(GT, GTGT, GTGTGT);
+                    if (tpLevel > 0) {
+                        switch (accept(GT, GTGT, GTGTGT)) {
+                            case GTGTGT:
+                                tpLevel -= 3;
+                                break;
+                            case GTGT:
+                                tpLevel -= 2;
+                                break;
+                            case GT:
+                                tpLevel--;
+                                break;
+                        }
+                    }
                 }
                 CodeStyle.WrapStyle wrapStyle = cs.wrapChainedMethodCalls();
                 if(exp.getKind() == Tree.Kind.METHOD_INVOCATION) {
@@ -1360,7 +1427,8 @@ public class Reformatter implements ReformatTask {
             space();
             List<? extends Tree> targs = node.getTypeArguments();
             if (targs != null && !targs.isEmpty()) {
-                accept(LT);
+                if (LT == accept(LT))
+                    tpLevel++;
                 for (Iterator<? extends Tree> it = targs.iterator(); it.hasNext();) {
                     Tree targ = it.next();
                     scan(targ, p);
@@ -1370,7 +1438,19 @@ public class Reformatter implements ReformatTask {
                         spaces(cs.spaceAfterComma() ? 1 : 0);
                     }
                 }
-                accept(GT, GTGT, GTGTGT);
+                if (tpLevel > 0) {
+                    switch (accept(GT, GTGT, GTGTGT)) {
+                        case GTGTGT:
+                            tpLevel -= 3;
+                            break;
+                        case GTGT:
+                            tpLevel -= 2;
+                            break;
+                        case GT:
+                            tpLevel--;
+                            break;
+                    }
+                }
             }
             scan(node.getIdentifier(), p);
             spaces(cs.spaceBeforeMethodCallParen() ? 1 : 0);

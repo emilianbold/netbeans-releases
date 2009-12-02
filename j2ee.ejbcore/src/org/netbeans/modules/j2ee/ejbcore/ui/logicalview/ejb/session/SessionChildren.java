@@ -159,15 +159,18 @@ public final class SessionChildren extends Children.Keys<SessionChildren.Key> im
     }
     
     public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                try {
-                    updateKeys();
-                } catch (IOException ioe) {
-                    Exceptions.printStackTrace(ioe);
+        String prop = propertyChangeEvent.getPropertyName();
+        if (Session.BUSINESS_LOCAL.equals(prop) || Session.BUSINESS_REMOTE.equals(prop)){
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    try {
+                        updateKeys();
+                    } catch (IOException ioe) {
+                        Exceptions.printStackTrace(ioe);
+                    }
                 }
-            }
-        });
+            });
+        }
     }
     
 }

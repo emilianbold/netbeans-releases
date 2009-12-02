@@ -67,13 +67,13 @@ public class RfsSunStudioRemoteBuildTestCase extends RfsBaseRemoteBuildTestCase 
         setupHost("rfs");
     }
 
-    @ForAllEnvironments(section="remote.platforms.smart.secure.copy")
+    @ForAllEnvironments
     public void testBuildRfsSampleArgsSunStudio() throws Exception {
         setDefaultCompilerSet("SunStudio");
         FileObject projectDirFO = prepareSampleProject("Arguments", "Args_SunStudio_01");
         removeRemoteHome();
         MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
-        buildProject(makeProject, 60, TimeUnit.SECONDS);
+        buildProject(makeProject, getSampleBuildTimeout(), TimeUnit.SECONDS);
     }
 
     public static Test suite() {

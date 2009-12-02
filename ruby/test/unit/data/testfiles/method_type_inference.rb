@@ -58,5 +58,6 @@ a = A.new
 num = a.simple_int
 puts num.abs
 puts a.method_as_exit_point
-puts a.a_constant
+const = a.a_constant
+puts const
 

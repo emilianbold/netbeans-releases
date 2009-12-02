@@ -62,6 +62,7 @@ import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javacard.api.AntClasspathClosureProvider;
 import org.netbeans.modules.javacard.api.RunMode;
+import org.netbeans.modules.javacard.common.CommonSystemFilesystemPaths;
 import org.netbeans.modules.javacard.common.NodeRefresher;
 import org.netbeans.modules.javacard.ri.platform.loader.CardChildren;
 import org.netbeans.modules.javacard.spi.capabilities.AntTargetInterceptor;
@@ -75,7 +76,9 @@ import org.netbeans.modules.javacard.spi.capabilities.DebugCapability;
 import org.netbeans.modules.javacard.spi.capabilities.EpromFileCapability;
 import org.netbeans.modules.javacard.spi.JavacardPlatform;
 import org.netbeans.modules.javacard.spi.capabilities.AntTarget;
+import org.netbeans.modules.javacard.spi.capabilities.CardCustomizerProvider;
 import org.netbeans.modules.javacard.spi.capabilities.ContactedProtocol;
+import org.netbeans.modules.javacard.spi.capabilities.DeleteCapability;
 import org.netbeans.modules.javacard.spi.capabilities.PortKind;
 import org.netbeans.modules.javacard.spi.capabilities.PortProvider;
 import org.netbeans.modules.javacard.spi.capabilities.ProfileCapability;
@@ -87,7 +90,9 @@ import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 /**
  * Implementation of Card for the Java Card Reference Implementation (and
@@ -123,6 +128,11 @@ public class RICard extends BaseCard<CardProperties> { //non-final only for unit
         CardProperties props = new CardProperties(adap);
         log("Init props " + props); //NOI18N
         return props;
+    }
+
+    @Override
+    public DeleteCapability createDeleteCapability(CardProperties t) {
+        return new Delete();
     }
 
     @Override
@@ -186,6 +196,12 @@ public class RICard extends BaseCard<CardProperties> { //non-final only for unit
     }
 
     @Override
+    protected CardCustomizerProvider createCardCustomizerProvidert(CardProperties t) {
+        Lookup lkp = Lookups.forPath(CommonSystemFilesystemPaths.SFS_ADD_HANDLER_REGISTRATION_ROOT + getPlatform().getPlatformKind());
+        return lkp.lookup(CardCustomizerProvider.class);
+    }
+
+    @Override
     public boolean isValid() {
         return super.isValid() && dob.isValid();
     }
@@ -203,9 +219,8 @@ public class RICard extends BaseCard<CardProperties> { //non-final only for unit
         CardProperties p = getCapability(CardProperties.class);
         assert p != null;
         boolean forDebug = mode == RunMode.DEBUG;
-        boolean noSuspend = p.isNoSuspend();
         Properties props = getPlatform().toProperties();
-        return p.getRunCommandLine(props, noSuspend, forDebug);
+        return p.getRunCommandLine(props, forDebug, 0);
     }
 
     private String[] getResumeCommandLine() {
@@ -336,6 +351,7 @@ public class RICard extends BaseCard<CardProperties> { //non-final only for unit
                         "Problem starting " + getSystemId(), e); //NOI18N
                 killProcesses();
                 setState(NOT_RUNNING);
+                c.signalAll();
             }
         }
     }
@@ -741,5 +757,11 @@ public class RICard extends BaseCard<CardProperties> { //non-final only for unit
     }
 
     private static final class Profile implements ProfileCapability {
+    }
+
+    private final class Delete implements DeleteCapability {
+        public void delete() throws IOException {
+            dob.delete();
+        }
     }
 }

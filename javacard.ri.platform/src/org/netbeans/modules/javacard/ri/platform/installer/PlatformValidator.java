@@ -62,7 +62,6 @@ import org.netbeans.modules.javacard.common.JCConstants;
 import org.netbeans.modules.javacard.spi.JavacardPlatformKeyNames;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
-import org.openide.util.NbCollections;
 
 /**
  *
@@ -78,6 +77,12 @@ abstract class PlatformValidator implements Runnable {
     private volatile Exception failException;
     private boolean hasRun;
     private volatile boolean running = true;
+
+    static {
+        System.setProperty("javacard.installer.noexecute", Boolean.TRUE.toString());
+    }
+    //Allow setting up a platform on an unsupported OS for dev-time work
+    private boolean debugMode = Boolean.getBoolean("javacard.installer.noexecute"); //NOI18N
 
     PlatformValidator(FileObject baseDir) {
         this.file = baseDir;
@@ -104,6 +109,11 @@ abstract class PlatformValidator implements Runnable {
 
     final boolean failed() {
         return failed;
+    }
+
+    String failMessage;
+    String failMessage() {
+        return failMessage;
     }
 
     public final void run() {
@@ -203,9 +213,15 @@ abstract class PlatformValidator implements Runnable {
             throw new IOException (NbBundle.getMessage(PlatformValidator.class,
                     "ERR_MISSING_REQUIRED_PROPERTIES", fo.getPath(), sb)); //NOI18N
         }
+        if (!RIPlatformFactory.canInstall(props)) {
+            throw new IOException (NbBundle.getMessage(RIPlatformFactory.class,
+                    "ERR_TOO_OLD", //NOI18N
+                    props.get(JavacardPlatformKeyNames.PLATFORM_JAVACARD_VERSION),
+                    RIPlatformFactory.MINIMUM_SUPPORTED_VERSION)); //NOI18N
+        }
 
         String path = props.getProperty(JavacardPlatformKeyNames.PLATFORM_EMULATOR_PATH);
-        if (path != null) { //Conceivably a platform may not have an emulator
+        if (!debugMode && path != null) { //Conceivably a platform may not have an emulator
             path = RIPlatformFactory.translatePath(dir, path);
             String cmd = path + " -version"; //NOI18N
             Process proc = Runtime.getRuntime().exec(cmd);
@@ -216,53 +232,12 @@ abstract class PlatformValidator implements Runnable {
             if (proc.waitFor() > 0) {
                 String s = stdOut.toString("UTF-8") + "\n" + //NOI18N
                         stdErr.toString("UTF-8"); //NOI18N
-                throw new IOException(NbBundle.getMessage(PlatformPanel.class,
-                        s));
+                throw new IOException(NbBundle.getMessage(PlatformValidator.class,
+                        "MSG_EXECUTION_FAILED", s)); //NOI18N
             }
         }
     }
 
-//    private EditableProperties translatePaths (File dir, EditableProperties props) {
-//        EditableProperties nue = new EditableProperties (true);
-//        Set <String> translatablePaths = JavacardPlatformKeyNames.getPathPropertyNames();
-//        for (String key : NbCollections.checkedSetByFilter(props.keySet(), String.class, false)) {
-//            String val = props.getProperty(key);
-//            if (translatablePaths.contains(key)) {
-//                String xlated = translatePath(dir, val);
-//                nue.put (key, xlated);
-//            } else {
-//                nue.put (key, val);
-//            }
-//        }
-//        return nue;
-//    }
-//
-//    private String translatePath (File dir, String val) {
-//        if ("".equals(val) || val == null) { //NOI18N
-//            return ""; //NOI18N
-//        }
-//        if (val.startsWith("./")) {
-//            val = val.substring(2);
-//        }
-//        if (File.separatorChar != '/' && val.indexOf ("/") >= 0) { //NOI18N
-//            val = val.replace ('/', File.separatorChar); //NOI18N
-//        }
-//        if (val.indexOf(':') >= 0) { //NOI18N
-//            String[] paths = val.split(":"); //NOI18N
-//            StringBuilder sb = new StringBuilder();
-//            for (int i = 0; i < paths.length; i++) {
-//                String path = paths[i];
-//                if (sb.length() > 0) {
-//                    sb.append (File.pathSeparatorChar);
-//                }
-//                sb.append (translatePath (dir, path));
-//            }
-//            return sb.toString();
-//        }
-//        File nue = new File (dir, val);
-//        return nue.getAbsolutePath();
-//    }
-//
     private static class Copier implements Runnable {
         InputStream in;
         OutputStream out;

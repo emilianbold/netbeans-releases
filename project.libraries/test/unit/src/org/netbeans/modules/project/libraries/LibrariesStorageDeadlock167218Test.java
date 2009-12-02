@@ -78,7 +78,7 @@ public class LibrariesStorageDeadlock167218Test extends NbTestCase {
         Library[] arr = LibraryManager.getDefault().getLibraries();
         assertEquals("Empty", 0, arr.length);
 
-        LibrariesStorageTest.createLibraryDefinition(storageFolder,"Library1");
+        LibrariesStorageTest.createLibraryDefinition(storageFolder,"Library1", null);
 
         Library[] arr0 = LibraryManager.getDefault().getLibraries();
         assertEquals("Still Empty", 0, arr0.length);

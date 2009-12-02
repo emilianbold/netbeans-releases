@@ -72,10 +72,11 @@ public class PHPNewLineIndenter {
         this.context = context;
         indentSize = CodeStyle.get(context.document()).getIndentSize();
         continuationSize = CodeStyle.get(context.document()).getContinuationIndentSize();
+        int initialIndentSize = CodeStyle.get(context.document()).getInitialIndent();
 
         scopeDelimiters = Arrays.asList(
             new ScopeDelimiter(PHPTokenId.PHP_SEMICOLON, 0),
-            new ScopeDelimiter(PHPTokenId.PHP_OPENTAG, 0),
+            new ScopeDelimiter(PHPTokenId.PHP_OPENTAG, initialIndentSize),
             new ScopeDelimiter(PHPTokenId.PHP_CURLY_CLOSE, 0),
             new ScopeDelimiter(PHPTokenId.PHP_CURLY_OPEN, indentSize),
             new ScopeDelimiter(PHPTokenId.PHP_CASE, indentSize),
@@ -156,7 +157,7 @@ public class PHPNewLineIndenter {
                         if (stringLineStart >= caretLineStart){
                             // string starts on the same line:
                             // current line indent + continuation size
-                            newIndent = Utilities.getRowIndent(doc, stringLineStart) + continuationSize;
+                            newIndent = Utilities.getRowIndent(doc, stringLineStart) + indentSize;
                         } else {
                             // string starts before:
                             // repeat indent from the previous line
@@ -195,7 +196,7 @@ public class PHPNewLineIndenter {
                             }
                             else if (delimiter.tokenId == PHPTokenId.PHP_CURLY_OPEN && ts.movePrevious()) {
                                 int startExpression = findStartTokenOfExpression(ts);
-                                newIndent = Utilities.getRowIndent(doc, startExpression) + continuationSize * 1;
+                                newIndent = Utilities.getRowIndent(doc, startExpression) + indentSize;
                                 break;
                             }
 
@@ -224,12 +225,19 @@ public class PHPNewLineIndenter {
                                     if (startExpression != -1) {
                                         int offsetArrayDeclaration = offsetArrayDeclaration(startExpression, ts);
                                         if (offsetArrayDeclaration > -1) {
-                                            newIndent = Utilities.getRowIndent(doc, offsetArrayDeclaration) + continuationSize * 1;
+                                            newIndent = Utilities.getRowIndent(doc, offsetArrayDeclaration) + indentSize;
                                         }
                                         else {
-                                            newIndent = Utilities.getRowIndent(doc, startExpression) + continuationSize * 2;
+                                            newIndent = Utilities.getRowIndent(doc, startExpression) + continuationSize;
                                         }
                                     }
+                                    break;
+                                }
+                            }
+                            else if (ts.token().id() == PHPTokenId.PHP_OBJECT_OPERATOR) {
+                                int startExpression = findStartTokenOfExpression(ts);
+                                if (startExpression != -1) {
+                                    newIndent = Utilities.getRowIndent(doc, startExpression) + continuationSize;
                                     break;
                                 }
                             }
@@ -381,14 +389,15 @@ public class PHPNewLineIndenter {
                     }
                     if (parentBalance == 0 && ts.moveNext() && ts.offset() < origOffset) {
                         // we should have the end of condtion and we need to find next token.
-                        token = LexUtilities.findNext(ts, Arrays.asList(
-                                PHPTokenId.WHITESPACE,
-                                PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHPDOC_COMMENT_START,
-                                PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_COMMENT_START,
-                                PHPTokenId.PHP_LINE_COMMENT));
-                        if (ts.offset() < origOffset) {
-                            start = ts.offset();
-                        }
+//                        token = LexUtilities.findNext(ts, Arrays.asList(
+//                                PHPTokenId.WHITESPACE,
+//                                PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHPDOC_COMMENT_START,
+//                                PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_COMMENT_START,
+//                                PHPTokenId.PHP_LINE_COMMENT));
+//                        if (ts.offset() < origOffset) {
+                            start = offsetIf;
+                            break;
+                        //}
                     }
                     else if (parentBalance > 0) {
                         // probably we are in a function in the condition

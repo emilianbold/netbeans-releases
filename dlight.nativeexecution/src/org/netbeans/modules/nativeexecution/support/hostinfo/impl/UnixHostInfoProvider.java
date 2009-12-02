@@ -109,6 +109,7 @@ public class UnixHostInfoProvider implements HostInfoProvider {
 
             pb.environment().put("TMPBASE", tmpDirBase); // NOI18N
             pb.environment().put("PATH", pb.environment().get("PATH") + File.pathSeparator + "/bin:/usr/bin"); // NOI18N
+            pb.environment().put("NB_KEY", HostInfoFactory.getNBKey()); // NOI18N
 
             Process hostinfoProcess = pb.start();
 
@@ -164,6 +165,10 @@ public class UnixHostInfoProvider implements HostInfoProvider {
 
                 hiOutputStream = echannel.getOutputStream();
                 hiInputStream = echannel.getInputStream();
+
+                // echannel.setEnv() didn't work, so writing this directly
+                hiOutputStream.write(("NB_KEY=" + HostInfoFactory.getNBKey() + '\n').getBytes()); // NOI18N
+                hiOutputStream.flush();
 
                 BufferedReader scriptReader = new BufferedReader(new FileReader(hostinfoScript));
                 String scriptLine = scriptReader.readLine();

@@ -193,7 +193,7 @@ public class TaskCache {
         }
         if (LOG.isLoggable(Level.SEVERE))
             LOG.log(Level.SEVERE, "Url is not a file: " + url);
-        throw new IllegalStateException();
+        return null;//#172651: ignoring non-file URL, TODO: should handle these URLs?
     }
 
     public void dumpErrors(final URL root, final URL file, final List<? extends Diagnostic> errors) throws IOException {
@@ -207,6 +207,10 @@ public class TaskCache {
 
     private void dumpErrors(TransactionContext c, URL root, URL file, List<? extends Diagnostic> errors) throws IOException {
         File fileFile = urlToFile(file);
+
+        if (fileFile == null) {
+            return ;
+        }
         
         if (!fileFile.canRead()) {
             //if the file is not readable anymore, ignore the errors:
@@ -488,21 +492,19 @@ public class TaskCache {
     }
 
     private static void doRefresh(TransactionContext c) {
-        if (TasklistSettings.isTasklistEnabled()) {
-            if (TasklistSettings.isBadgesEnabled() && !c.toRefresh.isEmpty()) {
-                ErrorAnnotator an = ErrorAnnotator.getAnnotator();
+        if (TasklistSettings.isBadgesEnabled() && !c.toRefresh.isEmpty()) {
+            ErrorAnnotator an = ErrorAnnotator.getAnnotator();
 
-                if (an != null) {
-                    an.updateInError(c.toRefresh);
-                }
+            if (an != null) {
+                an.updateInError(c.toRefresh);
             }
+        }
 
-            for (URL root : c.rootsToRefresh) {
-                FileObject rootFO = URLMapper.findFileObject(root);
+        for (URL root : c.rootsToRefresh) {
+            FileObject rootFO = URLMapper.findFileObject(root);
 
-                if (rootFO != null) {
-                    JavaTaskProvider.refresh(rootFO);
-                }
+            if (rootFO != null) {
+                JavaTaskProvider.refresh(rootFO);
             }
         }
     }

@@ -57,6 +57,7 @@ import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputEvent;
@@ -209,51 +210,56 @@ public class TestOutputListenerProvider implements OutputProcessor {
         public void outputLineCleared(OutputEvent ev) {
         }
         
-        private void openLog(FileObject fo, String title, File testDir) {
+        private void openLog(final FileObject fo, String title, final File testDir) {
             try {
                 IOProvider.getDefault().getIO(title, false).getOut().reset();
             } catch (Exception exc) {
                 ErrorManager.getDefault().notify(exc);
             }
-            InputOutput io = IOProvider.getDefault().getIO(title, false);
+            final InputOutput io = IOProvider.getDefault().getIO(title, false);
             io.select();
-            BufferedReader reader = null;
-            OutputWriter writer = io.getOut();
-            String line = null;
-            try {
-                reader = new BufferedReader(new InputStreamReader(fo.getInputStream()));
-                ClassPath classPath = null;
-                while ((line = reader.readLine()) != null) {
-                    Matcher m = testNamePattern.matcher(line);
-                    if (m.matches()) {
-                        String testClassName = m.group(1).replace('.', File.separatorChar) + ".java"; //NOI18N
-                        File testClassFile = new File(testDir, testClassName);
-                        FileObject testFileObject = FileUtil.toFileObject(testClassFile);
-                        classPath = ClassPath.getClassPath(testFileObject, ClassPath.EXECUTE);
-                    }
-                    if (classPath != null) {
-                        OutputListener list = OutputUtils.matchStackTraceLine(line, classPath);
-                        if (list != null) {
-                            writer.println(line, list, true);
-                        } else {
-                            writer.println(line);
+
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    BufferedReader reader = null;
+                    OutputWriter writer = io.getOut();
+                    String line = null;
+                    try {
+                        reader = new BufferedReader(new InputStreamReader(fo.getInputStream()));
+                        ClassPath classPath = null;
+                        while ((line = reader.readLine()) != null) {
+                            Matcher m = testNamePattern.matcher(line);
+                            if (m.matches()) {
+                                String testClassName = m.group(1).replace('.', File.separatorChar) + ".java"; //NOI18N
+                                File testClassFile = new File(testDir, testClassName);
+                                FileObject testFileObject = FileUtil.toFileObject(testClassFile);
+                                classPath = ClassPath.getClassPath(testFileObject, ClassPath.EXECUTE);
+                            }
+                            if (classPath != null) {
+                                OutputListener list = OutputUtils.matchStackTraceLine(line, classPath);
+                                if (list != null) {
+                                    writer.println(line, list, true);
+                                } else {
+                                    writer.println(line);
+                                }
+                            } else {
+                                writer.println(line);
+                            }
                         }
-                    } else {
-                        writer.println(line);
+                    } catch (IOException exc) {
+                        ErrorManager.getDefault().notify(exc);
+                    } finally {
+                        writer.close();
+                        try {
+                            if (reader != null) {
+                                reader.close();
+                            }
+                        } catch (IOException ex) {
+                            ErrorManager.getDefault().notify(ex);
+                        }
                     }
                 }
-            } catch (IOException exc) {
-                ErrorManager.getDefault().notify(exc);
-            } finally {
-                writer.close();
-                try {
-                    if (reader != null) {
-                        reader.close();
-                    }
-                } catch (IOException ex) {
-                    ErrorManager.getDefault().notify(ex);
-                }
-            }
+            });
         }
     }
 }

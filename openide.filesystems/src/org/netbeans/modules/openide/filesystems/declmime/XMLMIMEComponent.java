@@ -169,7 +169,7 @@ final class XMLMIMEComponent extends DefaultParser implements MIMEComponent {
                     template.addElementAtt(s, atts.getValue(VALUE));
 
                 } else if (NS.equals(qName)) {
-                    s = atts.getValue(NAME); if (s == null) error();
+                    s = atts.getValue(NS); if (s == null) error();
                     template.addElementNS(s);
 
                 } else {

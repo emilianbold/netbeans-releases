@@ -1050,6 +1050,10 @@ public class IndentSupport {
         return getCodeStyle().indentCasesFromSwitch();
     }
 
+    protected boolean indentNamespace() {
+        return getCodeStyle().indentNamespace();
+    }
+
     protected boolean isHalfIndentNewlineBeforeBrace() {
         return getCodeStyle().getFormatNewlineBeforeBrace() == CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED;
     }

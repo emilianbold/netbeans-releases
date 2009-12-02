@@ -48,8 +48,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.InputAttributes;
@@ -188,7 +188,11 @@ public class JsfHtmlExtension extends HtmlExtension {
 
                             if (node.getNamespacePrefix() != null) {
                                 Set<ColoringAttributes> coloring = tldl == null ? ColoringAttributes.CLASS_SET : ColoringAttributes.METHOD_SET;
-                                highlight(snapshot, node, highlights, coloring);
+                                try {
+                                    highlight(snapshot, node, highlights, coloring);
+                                } catch (BadLocationException ex) {
+                                    //just ignore
+                                }
                             }
                         }
                     }
@@ -198,7 +202,7 @@ public class JsfHtmlExtension extends HtmlExtension {
 
     }
 
-    private void highlight(Snapshot s, AstNode node, Map<OffsetRange, Set<ColoringAttributes>> hls, Set<ColoringAttributes> cas) {
+    private void highlight(Snapshot s, AstNode node, Map<OffsetRange, Set<ColoringAttributes>> hls, Set<ColoringAttributes> cas) throws BadLocationException {
         // "<div" id='x'> part
         int prefixLen = node.type() == AstNode.NodeType.OPEN_TAG ? 1 : 2; //"<" open; "</" close
         hls.put(getDocumentOffsetRange(s, node.startOffset(), node.startOffset() + node.name().length() + prefixLen /* tag open symbol len */),
@@ -209,8 +213,15 @@ public class JsfHtmlExtension extends HtmlExtension {
 
     }
 
-    private OffsetRange getDocumentOffsetRange(Snapshot s, int astFrom, int astTo) {
-        return new OffsetRange(s.getOriginalOffset(astFrom), s.getOriginalOffset(astTo));
+    private OffsetRange getDocumentOffsetRange(Snapshot s, int astFrom, int astTo) throws BadLocationException {
+        int from = s.getOriginalOffset(astFrom);
+        int to = s.getOriginalOffset(astTo);
+
+        if(from == -1 || to == -1) {
+            throw new BadLocationException("Cannot convert snapshot offset to document offset", -1); //NOI18N
+        }
+
+        return new OffsetRange(from, to);
     }
 
     @Override
@@ -346,28 +357,26 @@ public class JsfHtmlExtension extends HtmlExtension {
             throw new IllegalStateException(msg.toString());
             //<<< end of issue debug
         }
-        TldLibrary lib = flib.getAssociatedTLDLibrary();
+        
+        TldLibrary.Tag tag = flib.getTag(tagName);
+        if (tag != null) {
+            Collection<TldLibrary.Attribute> attrs = tag.getAttributes();
+            //TODO resolve help
+            Collection<String> existingAttrNames = queriedNode.getAttributeKeys();
 
-        if (lib != null) {
-            TldLibrary.Tag tag = lib.getTags().get(tagName);
-            if (tag != null) {
-                Collection<TldLibrary.Attribute> attrs = tag.getAttributes();
-                //TODO resolve help
-                Collection<String> existingAttrNames = queriedNode.getAttributeKeys();
-
-                for (TldLibrary.Attribute a : attrs) {
-                    String attrName = a.getName();
-                    if (!existingAttrNames.contains(attrName) ||
-                            existingAttrNames.contains(context.getItemText())) {
-                        //show only unused attributes except the one where the caret currently stays
-                        //this is because of we need to show the item in the completion since
-                        //use might want to see javadoc of already used attribute
-                        items.add(JsfCompletionItem.createAttribute(attrName, context.getCCItemStartOffset(), flib, tag, a));
-                    }
+            for (TldLibrary.Attribute a : attrs) {
+                String attrName = a.getName();
+                if (!existingAttrNames.contains(attrName) ||
+                        existingAttrNames.contains(context.getItemText())) {
+                    //show only unused attributes except the one where the caret currently stays
+                    //this is because of we need to show the item in the completion since
+                    //use might want to see javadoc of already used attribute
+                    items.add(JsfCompletionItem.createAttribute(attrName, context.getCCItemStartOffset(), flib, tag, a));
                 }
-
             }
+
         }
+
 
         if (context.getPrefix().length() > 0) {
             //filter the items according to the prefix

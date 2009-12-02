@@ -43,6 +43,7 @@ import org.netbeans.modules.javacard.spi.Cards;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -60,7 +61,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.javacard.common.JCConstants;
 import org.netbeans.modules.javacard.common.Utils;
 import org.netbeans.modules.javacard.ri.platform.installer.PlatformInfo;
-import org.netbeans.modules.javacard.spi.BrokenJavacardPlatform;
+import org.netbeans.modules.javacard.ri.spi.CardsFactory;
 import org.netbeans.modules.javacard.spi.JavacardDeviceKeyNames;
 import org.netbeans.modules.javacard.spi.JavacardPlatform;
 import org.netbeans.modules.javacard.spi.JavacardPlatformKeyNames;
@@ -101,7 +102,7 @@ public class RIPlatform extends JavacardPlatform {
         getDefault();
     }
     private Cards cards = new CardsImpl();
-    public RIPlatform(Properties props) {
+    public RIPlatform(Properties props) {        
         this.props = props;
         if (props instanceof ObservableProperties) {
             pcl = new PCL();
@@ -122,7 +123,27 @@ public class RIPlatform extends JavacardPlatform {
     }
 
     @Override
+    public void onDelete() throws IOException {
+        FileObject fo = Utils.sfsFolderForDeviceConfigsForPlatformNamed(getSystemName(), false);
+        if (fo != null) {
+            fo.delete();
+        }
+        fo = Utils.sfsFolderForDeviceEepromsForPlatformNamed(getSystemName(), false);
+        if (fo != null) {
+            fo.delete();
+        }
+    }
+
+    @Override
     public Cards getCards() {
+        CardsFactory f = CardsFactory.find(getPlatformKind());
+        if (f != null) {
+            Cards result = f.getCards(Utils.findPlatformDataObjectNamed(
+                    getSystemName()).getPrimaryFile());
+            if (result != null) {
+                return result;
+            }
+        }
         return cards;
     }
 
@@ -146,6 +167,28 @@ public class RIPlatform extends JavacardPlatform {
         return JavacardPlatformKeyNames.PLATFORM_KIND_RI.equals(props.getProperty(
                 JavacardPlatformKeyNames.PLATFORM_KIND));
     }
+
+
+    public static DataObject findDefaultPlatform() throws DataObjectNotFoundException {
+        //Pending - always use whatever is the default, or somehow make
+        //it explicit what platform is delegated to
+        FileObject res = null;
+        for (FileObject fo : Utils.findAllRegisteredJavacardPlatformFiles()) {
+            if (JCConstants.DEFAULT_JAVACARD_PLATFORM_FILE_NAME.equals(fo.getName())) {
+                res = fo;
+                break;
+            } else {
+                DataObject ob = DataObject.find(fo);
+                JavacardPlatform p = ob.getNodeDelegate().getLookup().lookup(JavacardPlatform.class);
+                if (p != null && JavacardPlatformKeyNames.PLATFORM_KIND_RI.equals(p.getPlatformKind())) {
+                    res = fo;
+                }
+            }
+        }
+        return res == null ? null : DataObject.find(res);
+
+    }
+
 
     /**
      * Finds the default instance of JavacardPlatform.  This is defined as
@@ -198,9 +241,9 @@ public class RIPlatform extends JavacardPlatform {
         } catch (MutexException ex) {
             Exceptions.printStackTrace(ex);
         }
-        if (riProps == null) return new BrokenJavacardPlatform("none"); //NOI18N
+        if (riProps == null) return brokenPlatform(); //NOI18N
         FileObject fo = FileUtil.toFileObject(riProps);
-        if (fo == null) return new BrokenJavacardPlatform("none"); //NOI18N
+        if (fo == null) return brokenPlatform(); //NOI18N
         try {
             DataObject dob = DataObject.find(fo);
             JavacardPlatform result = dob.getNodeDelegate().getLookup().lookup(JavacardPlatform.class);
@@ -208,7 +251,11 @@ public class RIPlatform extends JavacardPlatform {
         } catch (DataObjectNotFoundException ex) {
             Exceptions.printStackTrace(ex);
         }
-        return new BrokenJavacardPlatform("none"); //NOI18N
+        return brokenPlatform(); //NOI18N
+    }
+
+    private static JavacardPlatform brokenPlatform() {
+        return JavacardPlatform.createBrokenJavacardPlatform("none"); //NOI18N
     }
 
     private List<? extends Provider> getCardProviders() {

@@ -166,7 +166,12 @@ public class CacheClassPath implements ClassPathImplementation, PropertyChangeLi
                 try {
                     File sigs = JavaIndex.getClassFolder(url);
                     URL orl = FileUtil.urlForArchiveOrDir(sigs);
-                    _cache.add (ClassPathSupport.createResource(orl));
+                    if (orl != null) {
+                        _cache.add (ClassPathSupport.createResource(orl));
+                    }
+                    else {
+                        log.warning("Invalid cache root: " + sigs.getAbsolutePath() + " exists: " + sigs.exists() +" dir: " + sigs.isDirectory() + " retry: " + FileUtil.urlForArchiveOrDir(sigs));  //NOI18N
+                    }
                 } catch (IOException ioe) {
                     Exceptions.printStackTrace(ioe);
                 }

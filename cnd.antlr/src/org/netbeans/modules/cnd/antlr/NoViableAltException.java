@@ -14,7 +14,7 @@ public class NoViableAltException extends RecognitionException {
     private BitSet expected = null;
     private String[] tokenNames;
     
-    private static final boolean hideExpected = Boolean.getBoolean("org.netbeans.modules.cnd.antlr.exceptions.hideExpectedTokens");
+    private static final boolean hideExpected = Boolean.getBoolean("antlr.exceptions.hideExpectedTokens");
     
     public NoViableAltException(AST t) {
         super("NoViableAlt", "<AST>", t.getLine(), t.getColumn());

@@ -60,6 +60,7 @@ import org.openide.util.Exceptions;
 public class UnbufferSupport {
 
     private static final java.util.logging.Logger log = Logger.getInstance();
+    private static final boolean UNBUFFER_DISABLED = Boolean.getBoolean("execution.no_unbuffer"); // NOI18N
     private static final HashMap<ExecutionEnvironment, String> cache =
             new HashMap<ExecutionEnvironment, String>();
 
@@ -67,6 +68,10 @@ public class UnbufferSupport {
     }
 
     public static void initUnbuffer(final ExecutionEnvironment execEnv, final MacroMap env) throws IOException {
+        if (UNBUFFER_DISABLED) {
+            return;
+        }
+
         final MacroExpander macroExpander = MacroExpanderFactory.getExpander(execEnv);
         // Setup LD_PRELOAD to load unbuffer library...
 

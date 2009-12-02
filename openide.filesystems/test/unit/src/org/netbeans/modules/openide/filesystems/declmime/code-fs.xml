@@ -28,6 +28,21 @@
             </MIME-resolver>]]>
         </file>
 
+        <file name="ns1.xml"><![CDATA[<?xml version="1.0"?>
+            <MIME-resolver>
+                <file>
+                    <ext name="xml"/>
+                    <resolver mime="ns1">
+                        <xml-rule>
+                            <element>
+                                <ns ns="test"/>
+                            </element>
+                        </xml-rule>
+                    </resolver>
+                </file>
+            </MIME-resolver>]]>
+        </file>
+
         <file name="pid.xml"><![CDATA[<?xml version="1.0"?>
             <MIME-resolver>
                 <file>

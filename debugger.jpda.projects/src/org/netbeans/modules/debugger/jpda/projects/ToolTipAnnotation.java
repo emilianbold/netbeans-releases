@@ -310,6 +310,7 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
                     Result res = resultIterator.getParserResult(offset);
+                    if (res == null) return;
                     CompilationController controller = CompilationController.get(res);
                     if (controller == null || controller.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
                         return;

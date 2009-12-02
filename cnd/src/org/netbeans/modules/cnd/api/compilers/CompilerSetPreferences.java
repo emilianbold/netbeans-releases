@@ -97,7 +97,7 @@ final class CompilerSetPreferences {
     }
 
     static void saveToDisk(CompilerSetManager manager) {
-        if (!manager.getCompilerSets().isEmpty() && manager.getPlatform() != PlatformTypes.PLATFORM_GENERIC) {
+        if (!manager.getCompilerSets().isEmpty()) {
             getPreferences().putDouble(CSM + VERSION, csm_version);
             String executionEnvironmentKey = ExecutionEnvironmentFactory.toUniqueID(manager.getExecutionEnvironment());
             getPreferences().putInt(CSM + executionEnvironmentKey + NO_SETS, manager.getCompilerSets().size());

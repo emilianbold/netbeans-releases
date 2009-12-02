@@ -40,6 +40,8 @@
  */
 package org.netbeans.modules.xsl.actions;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.CookieAction;
@@ -64,6 +66,21 @@ public class TransformAction extends CookieAction implements CollectXMLAction.XM
 
     private static TransformPerformer recentPerfomer;
 
+/*************
+    public static synchronized TransformAction getInstance() {
+        TransformAction actionInstance = null;
+        String thisClassName = TransformAction.class.getName();
+        try {
+            Class actionInstanceClass = Class.forName(thisClassName);
+            actionInstance = (TransformAction) actionInstanceClass.newInstance();
+        } catch(Exception e) {
+            Logger.getLogger(thisClassName).log(Level.SEVERE, "", e);
+        }
+        return actionInstance;
+    }
+***************/
+
+    @Override
     protected boolean enable(Node[] activatedNodes) {
         return super.enable(activatedNodes) && ready();
     }
@@ -102,6 +119,7 @@ public class TransformAction extends CookieAction implements CollectXMLAction.XM
     }
 
     /** Do not slow by any icon. */
+    @Override
     protected String iconResource () {
         return "org/netbeans/modules/xsl/resources/xsl_transformation.png"; // NOI18N
     }
@@ -118,6 +136,7 @@ public class TransformAction extends CookieAction implements CollectXMLAction.XM
         recentPerfomer.perform();
     }
     
+    @Override
     protected boolean asynchronous() {
         return false;
     }

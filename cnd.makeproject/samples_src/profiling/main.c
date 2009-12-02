@@ -52,6 +52,7 @@ int main(int argc, char** argv) {
     }
 
     msg_levels = msg_explain | msg_trace;
+    gettimeofday(&start_time, 0);
 
     sequential_demo(work_count, works, 10);
 

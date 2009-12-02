@@ -109,21 +109,22 @@ public final class EjbViewController {
     }
     
     public String getDisplayName() {
-        if (displayName == null) {
-            try {
-                displayName = ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, String>() {
-                    public String run(EjbJarMetadata metadata) throws IOException {
-                        Ejb ejb = metadata.findByEjbClass(ejbClass);
-                        String name = ejb.getDefaultDisplayName();
-                        if (name == null) {
-                            name = ejb.getEjbName();
-                        }
-                        return name;
+        try {
+            displayName = ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, String>() {
+                public String run(EjbJarMetadata metadata) throws IOException {
+                    Ejb ejb = metadata.findByEjbClass(ejbClass);
+                    if (ejb == null){
+                        return null;
                     }
-                });
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
-            }
+                    String name = ejb.getDefaultDisplayName();
+                    if (name == null) {
+                        name = ejb.getEjbName();
+                    }
+                    return name;
+                }
+            });
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
         }
         return displayName;
     }
@@ -261,6 +262,9 @@ public final class EjbViewController {
             result = ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, String>() {
                 public String run(EjbJarMetadata metadata) throws IOException {
                     Ejb ejb = metadata.findByEjbClass(ejbClass);
+                    if (ejb == null){
+                        return null;
+                    }
                     assert ejb instanceof EntityAndSession;
                     EntityAndSession refModel = (EntityAndSession) ejb;
                     return "\t<ejb-ref>\n" +
@@ -283,6 +287,9 @@ public final class EjbViewController {
             result = ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, String>() {
                 public String run(EjbJarMetadata metadata) throws IOException {
                     Ejb ejb = metadata.findByEjbClass(ejbClass);
+                    if (ejb == null){
+                        return null;
+                    }
                     assert ejb instanceof EntityAndSession;
                     EntityAndSession refModel = (EntityAndSession) ejb;
                     return "\t<ejb-local-ref>\n" +

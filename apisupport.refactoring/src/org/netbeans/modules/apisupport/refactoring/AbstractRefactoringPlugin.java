@@ -43,6 +43,7 @@ package org.netbeans.modules.apisupport.refactoring;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -50,6 +51,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.lang.model.element.Element;
@@ -67,8 +70,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.apisupport.project.Util;
-import org.netbeans.modules.apisupport.project.layers.LayerUtils;
+import org.netbeans.modules.apisupport.project.api.LayerHandle;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
@@ -225,6 +227,22 @@ public abstract class AbstractRefactoringPlugin implements RefactoringPlugin {
        return infoholder;
    }
 
+    private static Manifest getManifest(FileObject manifestFO) {
+        if (manifestFO != null) {
+            try {
+                InputStream is = manifestFO.getInputStream();
+                try {
+                    return new Manifest(is);
+                } finally {
+                    is.close();
+                }
+            } catch (IOException e) {
+                Logger.getLogger(AbstractRefactoringPlugin.class.getName()).log(Level.INFO, null, e);
+            }
+        }
+        return null;
+    }
+
     /**
      * 
      * @param project 
@@ -238,7 +256,7 @@ public abstract class AbstractRefactoringPlugin implements RefactoringPlugin {
             return;
         }
         String pathName = name.replace('.', '/') + ".class"; //NOI18N
-        Manifest mf = Util.getManifest(prov.getManifestFile());
+        Manifest mf = getManifest(prov.getManifestFile());
         if (mf == null) {
             return;
         }
@@ -275,7 +293,7 @@ public abstract class AbstractRefactoringPlugin implements RefactoringPlugin {
     }
     
     protected final void checkLayer(Project project, String fqname, RefactoringElementsBag refactoringElements) {
-        LayerUtils.LayerHandle handle = LayerUtils.layerForProject(project);
+        LayerHandle handle = LayerHandle.forProject(project);
         FileSystem fs = handle.layer(false);
         if (fs != null) {
             checkFileObject(fs.getRoot(), fqname, refactoringElements, handle);
@@ -283,7 +301,7 @@ public abstract class AbstractRefactoringPlugin implements RefactoringPlugin {
     }
     
     
-    private void checkFileObject(FileObject fo, String fqname, RefactoringElementsBag refactoringElements, LayerUtils.LayerHandle handle) {
+    private void checkFileObject(FileObject fo, String fqname, RefactoringElementsBag refactoringElements, LayerHandle handle) {
         if (fo.isFolder()) {
             FileObject[] childs = fo.getChildren();
             for (int i =0; i < childs.length; i++) {
@@ -368,8 +386,9 @@ public abstract class AbstractRefactoringPlugin implements RefactoringPlugin {
     
     protected final Problem checkMethodLayer(InfoHolder info, FileObject fo, RefactoringElementsBag refactoringElements) {
         Problem problem = null;
-        // do our check just on public static methods..
-        if (!info.isPublic || !info.isStatic) {
+        // do our check just on static methods
+        // #167439: o.n.core.startup.layers.BinaryFS explicitly allows for private methods
+        if (!info.isStatic) {
             return problem;
         }
         // with no parameters or with parameter of type FileObject
@@ -378,7 +397,7 @@ public abstract class AbstractRefactoringPlugin implements RefactoringPlugin {
         }
         Project project = FileOwnerQuery.getOwner(fo);
         if (project != null) {
-            LayerUtils.LayerHandle handle = LayerUtils.layerForProject(project);
+            LayerHandle handle = LayerHandle.forProject(project);
             FileSystem fs = handle.layer(false);
             if (fs != null) {
                 checkFileObject(fs.getRoot(), info.name, null, info.fullName, refactoringElements, handle);
@@ -395,7 +414,7 @@ public abstract class AbstractRefactoringPlugin implements RefactoringPlugin {
         }
         Project project = FileOwnerQuery.getOwner(fo);
         if (project != null) {
-            LayerUtils.LayerHandle handle = LayerUtils.layerForProject(project);
+            LayerHandle handle = LayerHandle.forProject(project);
             FileSystem fs = handle.layer(false);
             if (fs != null) {
                 checkFileObject(fs.getRoot(), null, info.name, info.fullName, refactoringElements, handle);
@@ -405,7 +424,7 @@ public abstract class AbstractRefactoringPlugin implements RefactoringPlugin {
     }
     
     private void checkFileObject(FileObject fo, String method, String constructor, String fqname,
-            RefactoringElementsBag refactoringElements, LayerUtils.LayerHandle handle) {
+            RefactoringElementsBag refactoringElements, LayerHandle handle) {
         if (fo.isFolder()) {
             FileObject[] childs = fo.getChildren();
             for (int i =0; i < childs.length; i++) {
@@ -469,21 +488,21 @@ public abstract class AbstractRefactoringPlugin implements RefactoringPlugin {
             String section);
     
     protected RefactoringElementImplementation createLayerRefactoring(String fqname,
-            LayerUtils.LayerHandle handle,
+            LayerHandle handle,
             FileObject layerFileObject,
             String layerAttribute) {
         throw new AssertionError("if you call checkLayer(), you need to implement this method");
     }
     
     protected RefactoringElementImplementation createMethodLayerRefactoring(String method, String fqname,
-            LayerUtils.LayerHandle handle,
+            LayerHandle handle,
             FileObject layerFileObject,
             String layerAttribute) {
         throw new AssertionError("if you call checkLayer(), you need to implement this method");
     }
     
     protected RefactoringElementImplementation createConstructorLayerRefactoring(String constructor, String fqname,
-            LayerUtils.LayerHandle handle,
+            LayerHandle handle,
             FileObject layerFileObject,
             String layerAttribute) {
         throw new AssertionError("if you call checkLayer(), you need to implement this method");

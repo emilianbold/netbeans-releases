@@ -40,6 +40,8 @@
  */
 package org.netbeans.modules.javacard.spi;
 
+import java.io.IOException;
+import java.util.Collection;
 import java.util.Properties;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -187,4 +189,20 @@ public abstract class JavacardPlatform extends JavaPlatform {
      * @return
      */
     public abstract String getPlatformKind();
+
+    /**
+     * Called when a file representing a Java Card platform is deleted.  Perform
+     * any cleanup of eprom files, device definitions, etc. here.
+     */
+    public void onDelete() throws IOException {
+        //do nothing
+    }
+
+    public static JavacardPlatform createBrokenJavacardPlatform (String name) {
+        return new BrokenJavacardPlatform(name);
+    }
+
+    public static JavacardPlatform createBrokenJavacardPlatform(String name, Collection<String> cardNames) {
+        return new BrokenJavacardPlatform(name, cardNames);
+    }
 }

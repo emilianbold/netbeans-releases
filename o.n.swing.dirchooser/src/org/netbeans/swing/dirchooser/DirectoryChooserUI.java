@@ -592,16 +592,20 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         upFolderButton.setText(null);
         // fixed bug #97049
         final boolean isMac = Utilities.isMac();
-        Icon upFolderIcon = null;
+        Icon upOneLevelIcon = null;
         if (!isMac) {
-            upFolderIcon = UIManager.getIcon("FileChooser.upFolderIcon");
+            upOneLevelIcon = UIManager.getIcon("FileChooser.upFolderIcon");
         }
         // on Mac all icons from UIManager are the same, some default, so load our own.
         // it's also fallback if icon from UIManager not found, may happen
-        if (isMac || upFolderIcon == null || jdkBug6840086Workaround() ) {
-            upFolderIcon = ImageUtilities.loadImageIcon("org/netbeans/swing/dirchooser/resources/upFolderIcon.gif", false);
+        if (isMac || upOneLevelIcon == null || jdkBug6840086Workaround() ) {
+            if (isMac) {
+                upOneLevelIcon = ImageUtilities.loadImageIcon("org/netbeans/swing/dirchooser/resources/upFolderIcon_mac.png", false);
+            } else {
+                upOneLevelIcon = ImageUtilities.loadImageIcon("org/netbeans/swing/dirchooser/resources/upFolderIcon.gif", false);
+            }
         }
-        upFolderButton.setIcon(upFolderIcon);
+        upFolderButton.setIcon(upOneLevelIcon);
         upFolderButton.setToolTipText(upFolderToolTipText);
         upFolderButton.getAccessibleContext().setAccessibleName(upFolderAccessibleName);
         upFolderButton.setAlignmentX(JComponent.RIGHT_ALIGNMENT);
@@ -622,7 +626,11 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                 homeIcon = UIManager.getIcon("FileChooser.homeFolderIcon");
             }
             if (isMac || homeIcon == null) {
-                homeIcon = ImageUtilities.loadImageIcon("org/netbeans/swing/dirchooser/resources/homeIcon.gif", false);
+                if (isMac) {
+                    homeIcon = ImageUtilities.loadImageIcon("org/netbeans/swing/dirchooser/resources/homeIcon_mac.png", false);
+                } else {
+                    homeIcon = ImageUtilities.loadImageIcon("org/netbeans/swing/dirchooser/resources/homeIcon.gif", false);
+                }
             }
             homeButton.setIcon(homeIcon);
             homeButton.setText(null);
@@ -643,16 +651,20 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         newFolderButton = new JButton(newFolderAction);
         newFolderButton.setText(null);
         // fixed bug #97049
-        Icon newFolderIcon = null;
+        Icon newFoldIcon = null;
         if (!isMac) {
-            newFolderIcon = UIManager.getIcon("FileChooser.newFolderIcon");
+            newFoldIcon = UIManager.getIcon("FileChooser.newFolderIcon");
         }
         // on Mac all icons from UIManager are the same, some default, so load our own.
         // it's also fallback if icon from UIManager not found, may happen
-        if (isMac || newFolderIcon == null || jdkBug6840086Workaround()) {
-            newFolderIcon = ImageUtilities.loadImageIcon("org/netbeans/swing/dirchooser/resources/newFolderIcon.gif", false);
+        if (isMac || newFoldIcon == null || jdkBug6840086Workaround()) {
+            if (isMac) {
+                newFoldIcon = ImageUtilities.loadImageIcon("org/netbeans/swing/dirchooser/resources/newFolderIcon_mac.png", false);
+            } else {
+                newFoldIcon = ImageUtilities.loadImageIcon("org/netbeans/swing/dirchooser/resources/newFolderIcon.gif", false);
+            }
         }
-        newFolderButton.setIcon(newFolderIcon);
+        newFolderButton.setIcon(newFoldIcon);
         newFolderButton.setToolTipText(newFolderToolTipText);
         newFolderButton.setAlignmentX(JComponent.RIGHT_ALIGNMENT);
         newFolderButton.setAlignmentY(JComponent.CENTER_ALIGNMENT);
@@ -1694,11 +1706,11 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         }
         
         public int getIconWidth() {
-            return icon != null ? icon.getIconWidth() + depth*space : null;
+            return icon != null ? icon.getIconWidth() + depth*space : 0;
         }
         
         public int getIconHeight() {
-            return icon != null ? icon.getIconHeight() : null;
+            return icon != null ? icon.getIconHeight() : 0;
         }
         
     }

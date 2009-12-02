@@ -41,6 +41,7 @@ package org.netbeans.test.ide;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.Frame;
 import java.awt.Toolkit;
@@ -160,9 +161,17 @@ public final class WatchProjects {
                 ec.close();
             }
         }
-        cleanWellKnownStaticFields();
-        System.setProperty("assertgc.paths", "5");
-        Log.assertInstances("Are all documents GCed?", "TextDocument");
+        EventQueue.invokeAndWait(new Runnable() {
+            public void run() {
+                try {
+                    cleanWellKnownStaticFields();
+                } catch (Exception ex) {
+                    throw new IllegalStateException(ex);
+                }
+                System.setProperty("assertgc.paths", "5");
+                Log.assertInstances("Are all documents GCed?", "TextDocument");
+            }
+        });
     }
     
     public static void assertProjects() throws Exception {
@@ -184,24 +193,36 @@ public final class WatchProjects {
         OpenProjects.getDefault().open(new Project[] { p }, false);
         OpenProjects.getDefault().setMainProject(p);
 
-        cleanWellKnownStaticFields();
-        if (Boolean.getBoolean("ignore.random.failures")) {
-            // remove the if we don't care about random failures
-            // reported as #
-            //removeTreeView(Frame.getFrames());
-        }
+        EventQueue.invokeAndWait(new Runnable() {
+            public void run() {
+                try {
+                    cleanWellKnownStaticFields();
+                } catch (Exception ex) {
+                    throw new IllegalStateException(ex);
+                }
+                if (Boolean.getBoolean("ignore.random.failures")) {
+                    // remove the if we don't care about random failures
+                    // reported as #
+                    //removeTreeView(Frame.getFrames());
+                }
 
-        System.setProperty("assertgc.paths", "5");
-        try {
-            Log.assertInstances("Checking if all projects are really garbage collected", "Project");
-        } catch (AssertionFailedError t) {
-            Logger.getLogger(WatchProjects.class.getName()).warning(t.getMessage());
-            if (!Boolean.getBoolean("ignore.random.failures")) {
-                throw t;
+                System.setProperty("assertgc.paths", "5");
+                try {
+                    Log.assertInstances("Checking if all projects are really garbage collected", "Project");
+                } catch (AssertionFailedError t) {
+                    Logger.getLogger(WatchProjects.class.getName()).warning(t.getMessage());
+                    if (!Boolean.getBoolean("ignore.random.failures")) {
+                        throw t;
+                    }
+                } finally {
+                    try {
+                        printTreeView(Frame.getFrames());
+                    } catch (Exception ex) {
+                        throw new IllegalStateException(ex);
+                    }
+                }
             }
-        } finally {
-            printTreeView(Frame.getFrames());
-        }
+        });
     }
     
     private static int printTreeView(Component[] arr) throws Exception {

@@ -41,19 +41,14 @@
 package org.netbeans.modules.mercurial.ui.status;
 
 import java.io.File;
-import java.util.Map;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.logging.Level;
-import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.FileStatusCache;
-import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
-import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
@@ -98,56 +93,10 @@ public class StatusAction extends ContextAction {
             return;
         }
 
-        try {
-            FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
-            Calendar start = Calendar.getInstance();
-            cache.refreshCached(context);
-            Calendar end = Calendar.getInstance();
-            Mercurial.LOG.log(Level.FINE, "executeStatus: refreshCached took {0} millisecs", end.getTimeInMillis() - start.getTimeInMillis()); // NOI18N
-
-            for (File root :  context.getRootFiles()) {
-                File repository = Mercurial.getInstance().getRepositoryRoot(root);
-                if (repository == null) {
-                    continue;
-                }
-                // XXX Why in the hell is this still here? cache.refreshCached(context) should be enough
-                // This logic seems to be pointless
-                refreshFile(root, repository, support, cache);
-                if (support.isCanceled()) {
-                    return;
-                }
-            }
-        } catch (HgException ex) {
-            support.annotate(ex);
-        }
-    }
-
-    public static void refreshFile(File root, File repository, HgProgressSupport support, FileStatusCache cache) throws HgException {
-        if (support != null && support.isCanceled()) {
-            return;
-        }
+        FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
         Calendar start = Calendar.getInstance();
+        cache.refreshAllRoots(context.getRootFiles());
         Calendar end = Calendar.getInstance();
-        if (root.isDirectory()) {
-            Map<File, FileInformation> interestingFiles;
-            // XXX Why so complex? cache.refreshAllRoots should do the work and there would be only one entry point for hg status call
-            interestingFiles = HgCommand.getInterestingStatus(repository, java.util.Collections.singletonList(root));
-            if (!interestingFiles.isEmpty()) {
-                Collection<File> files = interestingFiles.keySet();
-                Map<File, Map<File, FileInformation>> interestingDirs = HgUtils.getInterestingDirs(interestingFiles, files);
-                start = Calendar.getInstance();
-                for (File file : files) {
-                    if (support != null && support.isCanceled()) {
-                        return;
-                    }
-                    FileInformation fi = interestingFiles.get(file);
-                    cache.refreshFileStatus(file, fi, interestingDirs.get(file.isDirectory() ? file : file.getParentFile()));
-                }
-                end = Calendar.getInstance();
-                Mercurial.LOG.log(Level.FINE, "executeStatus: process interesting files took {0} millisecs", end.getTimeInMillis() - start.getTimeInMillis()); // NOI18N
-            }
-        } else {
-            cache.refresh(root, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-        }
+        Mercurial.STATUS_LOG.log(Level.FINE, "executeStatus: refreshCached took {0} millisecs", end.getTimeInMillis() - start.getTimeInMillis()); // NOI18N
     }
 }

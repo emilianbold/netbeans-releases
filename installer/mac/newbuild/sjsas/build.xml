@@ -86,6 +86,7 @@ Microsystems, Inc. All Rights Reserved.
             <filterset>
                 <filter token="INSTALLDIR" value="${sjsas.install.dir}"/>
                 <filter token="APPVERSION" value="${sjsas.version}"/>
+                <filter token="SJSAS_ID" value="${sjsas.id}"/>
             </filterset>
         </copy>
         
@@ -101,6 +102,7 @@ Microsystems, Inc. All Rights Reserved.
         
         <copy file="${basedir}/../commonfiles/unpack200.sh" tofile="${scriptsdir}/unpack200.sh"/>
         <copy file="${basedir}/../commonfiles/get_current_jdk.sh" tofile="${scriptsdir}/get_current_jdk.sh"/>
+        <copy file="${basedir}/../commonfiles/clean_receipts.sh" tofile="${scriptsdir}/clean_receipts.sh"/>
         <copy file="${basedir}/../netBeans/baseide/build/scripts/env.sh" tofile="${scriptsdir}/env.sh"/>
         <copy file="${basedir}/../netBeans/baseide/build/scripts/servicetag.jar" tofile="${scriptsdir}/servicetag.jar"/>
         <copy file="${basedir}/../netBeans/baseide/build/scripts/servicetag.sh" tofile="${scriptsdir}/servicetag.sh"/>
@@ -108,10 +110,10 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="${basedir}/../netBeans/baseide/build/scripts/add_gf.sh" tofile="${scriptsdir}/add_gf.sh"/>
         <copy file="${basedir}/../netBeans/baseide/build/scripts/perm.sh" tofile="${scriptsdir}/perm.sh"/>        
         <copy file="${basedir}/../glassfish/getport/dist/getport.jar" tofile="${scriptsdir}/getport.jar"/>
-        <echo message="Building sjsas.pkg into ${basedir}/../build/sjsas.pkg"/>
+        <echo message="Building sjsas-${sjsas.id}.pkg into ${basedir}/../build/sjsas-${sjsas.id}.pkg"/>
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value="cd ${basedir} ; /Developer/Tools/packagemaker -build -v -p ${basedir}/../build/sjsas.pkg -f ${appdir} -i ${builddir}/Info.plist -r ${scriptsdir} -d ${builddir}/Description.plist"/>
+            <arg value="cd ${basedir} ; /Developer/Tools/packagemaker -build -v -p ${basedir}/../build/sjsas-${sjsas.id}.pkg -f ${appdir} -i ${builddir}/Info.plist -r ${scriptsdir} -d ${builddir}/Description.plist"/>
         </exec>
     </target>
     

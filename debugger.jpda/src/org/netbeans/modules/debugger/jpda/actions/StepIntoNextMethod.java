@@ -47,6 +47,7 @@ import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.event.LocatableEvent;
 import com.sun.jdi.request.EventRequest;
+import com.sun.jdi.request.InvalidRequestStateException;
 import com.sun.jdi.request.StepRequest;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -147,7 +148,7 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
         }
         lock.lock();
         try {
-            if (!t.isSuspended()) {
+            if (!(t.isSuspended() || ((JPDAThreadImpl) t).isSuspendedNoFire())) {
                 // Can not step when it's not suspended.
                 if (smartLogger.isLoggable(Level.FINER)) {
                     smartLogger.finer("Can not step into next method! Thread "+t+" not suspended!");
@@ -510,7 +511,12 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
         if (stepRequest == null) return;
         int i, k = patterns.length;
         for (i = 0; i < k; i++) {
-            StepRequestWrapper.addClassExclusionFilter(stepRequest, patterns [i]);
+            try {
+                StepRequestWrapper.addClassExclusionFilter(stepRequest, patterns [i]);
+            } catch (InvalidRequestStateException irex) {
+                // The request is gone - ignore
+                return ;
+            }
             smartLogger.finer("   add pattern: "+patterns[i]);
         }
     }

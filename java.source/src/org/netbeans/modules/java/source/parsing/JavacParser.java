@@ -336,6 +336,9 @@ public class JavacParser extends Parser {
                     }
                 }
                 if (needsFullReparse) {
+                    synchronized (positions) {
+                        positions.clear();
+                    }
                     ciImpl = createCurrentInfo (this, file, root,snapshot, null);
                     LOGGER.fine("\t:created new javac");                                    //NOI18N
                 }

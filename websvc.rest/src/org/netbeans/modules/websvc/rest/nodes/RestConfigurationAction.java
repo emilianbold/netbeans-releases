@@ -42,19 +42,10 @@ package org.netbeans.modules.websvc.rest.nodes;
 
 import java.io.IOException;
 import org.apache.tools.ant.module.api.support.ActionUtils;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
-import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
-import org.netbeans.modules.websvc.rest.model.api.RestServices;
-import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
-import org.netbeans.modules.websvc.rest.model.api.RestServicesModel;
-import org.netbeans.modules.websvc.rest.projects.ApplicationConfigPanel;
-import org.netbeans.modules.websvc.rest.projects.WebProjectRestSupport;
-import org.netbeans.modules.websvc.rest.spi.RestSupport;
+import org.netbeans.modules.websvc.rest.RestUtils;
+import org.netbeans.modules.websvc.rest.spi.ApplicationConfigPanel;
 import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
-import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
 import org.netbeans.modules.websvc.rest.support.Utils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -92,7 +83,10 @@ public class RestConfigurationAction extends NodeAction  {
             String oldApplicationPath = "/resources"; //NOI18N
             try {
                 if (oldConfigType.equals( WebRestSupport.CONFIG_TYPE_DD)) {
-                    oldApplicationPath = restSupport.getApplicationPath();
+                    String oldPathFromDD = restSupport.getApplicationPathFromDD();
+                    if (oldPathFromDD != null) {
+                        oldApplicationPath = oldPathFromDD;
+                    }
                 } else if (oldConfigType.equals( WebRestSupport.CONFIG_TYPE_IDE)) {
                     String resourcesPath = restSupport.getProjectProperty(WebRestSupport.PROP_REST_RESOURCES_PATH);
                     if (resourcesPath != null && resourcesPath.length()>0) {
@@ -106,15 +100,18 @@ public class RestConfigurationAction extends NodeAction  {
                 oldApplicationPath="/"+oldApplicationPath;
             }
             try {
-                ApplicationConfigPanel configPanel = new ApplicationConfigPanel(oldConfigType, oldApplicationPath, isAnnotationConfigAvailable(project));
+                ApplicationConfigPanel configPanel = new ApplicationConfigPanel(
+                        oldConfigType,
+                        oldApplicationPath,
+                        restSupport.getAntProjectHelper() != null && RestUtils.isAnnotationConfigAvailable(project));
+
                 DialogDescriptor desc = new DialogDescriptor(configPanel,
-                    NbBundle.getMessage(WebProjectRestSupport.class, "TTL_ApplicationConfigPanel"));
+                    NbBundle.getMessage(RestConfigurationAction.class, "TTL_ApplicationConfigPanel"));
                 DialogDisplayer.getDefault().notify(desc);
                 if (NotifyDescriptor.OK_OPTION.equals(desc.getValue())) {
                     String newConfigType = configPanel.getConfigType();
                     String newApplicationPath = configPanel.getApplicationPath();
-                    boolean applPathChanged = !oldApplicationPath.equals(newApplicationPath);
-                    if (!oldConfigType.equals(newConfigType) || applPathChanged) {
+                    if (!oldConfigType.equals(newConfigType) || !oldApplicationPath.equals(newApplicationPath)) {
 
                         if (!oldConfigType.equals(newConfigType)) {
                             // set up rest.config.type property
@@ -124,7 +121,6 @@ public class RestConfigurationAction extends NodeAction  {
                                 //remove properties related to rest.config.type=ide
                                 restSupport.removeProjectProperties(new String[] {
                                     WebRestSupport.PROP_REST_RESOURCES_PATH,
-                                    WebRestSupport.PROP_REST_ROOT_RESOURCES
                                 });
                             }
                         }
@@ -135,7 +131,7 @@ public class RestConfigurationAction extends NodeAction  {
                             }
                             restSupport.setProjectProperty(WebRestSupport.PROP_REST_RESOURCES_PATH, newApplicationPath);
                             try {
-                                setRootResources(project, restSupport, applPathChanged);
+                                setRootResources(project);
                             } catch (IOException ex) {
                                 ex.printStackTrace();
                             }
@@ -155,40 +151,10 @@ public class RestConfigurationAction extends NodeAction  {
         }
     }
 
-    private void setRootResources(final Project prj, final RestSupport support, final boolean applPathChanged)
-        throws IOException {
-
-        RestServicesModel model = support.getRestServicesModel();
-        if (model != null) {
-            model.runReadAction(new MetadataModelAction<RestServicesMetadata, Void>() {
-                public Void run(RestServicesMetadata metadata) throws IOException {
-                    RestServices root = metadata.getRoot();
-                    StringBuffer buf = new StringBuffer(""); //NOI18N
-                    int i=0;
-                    String oldClasses = support.getProjectProperty(WebRestSupport.PROP_REST_ROOT_RESOURCES);
-                    for (RestServiceDescription desc : root.getRestServiceDescription()) {
-                        String resourcePath = desc.getUriTemplate();
-                        if (resourcePath != null && resourcePath.length()>0) {
-                            if (i++ > 0) {
-                                buf.append(","); //NOI18N
-                            }
-                            buf.append(desc.getClassName()+".class"); //NOI18N
-                        }
-                    }
-                    String newClasses = buf.toString();
-                    if (applPathChanged || !newClasses.equals(oldClasses)) {
-                        support.setProjectProperty(WebRestSupport.PROP_REST_ROOT_RESOURCES, newClasses);
-                        FileObject buildFo = Utils.findBuildXml(prj);
-                        if (buildFo != null) {
-                            ActionUtils.runTarget(buildFo, new String[]{WebRestSupport.REST_CONFIG_TARGET}, null);
-                        }
-                    }
-
-                    return null;
-                }
-            });
-        } else {
-            throw new IOException("Cannot get rest services model from project.");
+    private void setRootResources(Project prj) throws IOException {
+        FileObject buildFo = Utils.findBuildXml(prj);
+        if (buildFo != null) {
+            ActionUtils.runTarget(buildFo, new String[] {WebRestSupport.REST_CONFIG_TARGET}, null);
         }
     }
 
@@ -196,18 +162,6 @@ public class RestConfigurationAction extends NodeAction  {
     public boolean asynchronous() {
         return true;
     }
-
-    private boolean isAnnotationConfigAvailable(Project project) throws IOException {
-        SourceGroup[] sourceGroups = SourceGroupSupport.getJavaSourceGroups(project);
-        if (sourceGroups.length>0) {
-            ClassPath cp = ClassPath.getClassPath(sourceGroups[0].getRootFolder(), ClassPath.COMPILE);
-            if (cp.findResource("javax/ws/rs/ApplicationPath.class") != null && // NOI18N
-                cp.findResource("javax/ws/rs/core/Application.class") != null) { // NOI18N
-                return true;
-            }
-        }
-        return false;
-    }
-
+    
 }
 

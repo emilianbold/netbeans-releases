@@ -113,7 +113,9 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation {
     private static final int DEFAULT_VERSION_OF_PERSISTENCE_MECHANIZM = 0;
     private static int version = DEFAULT_VERSION_OF_PERSISTENCE_MECHANIZM;
     private final static String MASTER_INDEX_FILE_NAME = System.getProperty("netbeans.user") + //NOI18N
-            File.separator + "var" + File.separator + "cache" + File.separator + "cnd-projects-index"; //NOI18N
+            File.separator + "var" + File.separator + "cache" +  //NOI18N
+            File.separator + "cnd" + File.separator + "model" + //NOI18N
+            File.separator + "index"; //NOI18N
     private final static String PROJECT_INDEX_FILE_NAME = "project-index"; //NOI18N
 
     /** Creates a new instance of RepositoryTranslatorImpl */

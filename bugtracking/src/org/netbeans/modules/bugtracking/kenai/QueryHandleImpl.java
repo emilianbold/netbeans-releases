@@ -59,23 +59,29 @@ import org.openide.util.WeakListeners;
  *
  * @author Tomas Stupka
  */
-public class QueryHandleImpl extends QueryHandle implements ActionListener, PropertyChangeListener {
+public class QueryHandleImpl extends QueryHandle implements QueryDescriptor, ActionListener, PropertyChangeListener {
     private final Query query;
     private final PropertyChangeSupport changeSupport;
+    protected final boolean predefined;
     private Issue[] issues = new Issue[0];
     private String stringValue;
-    private boolean needsRefresh;
+    protected boolean needsRefresh;
 
-    QueryHandleImpl(Query query, boolean needsRefresh) {
+    QueryHandleImpl(Query query, boolean needsRefresh, boolean predefined) {
         this.query = query;
         this.needsRefresh = needsRefresh;
+        this.predefined = predefined;
         changeSupport = new PropertyChangeSupport(query);
         query.addPropertyChangeListener(WeakListeners.propertyChange(this, query));
         registerIssues();
     }
 
-    Query getQuery() {
+    public Query getQuery() {
         return query;
+    }
+
+    public boolean isPredefined() {
+        return predefined;
     }
 
     @Override
@@ -123,7 +129,7 @@ public class QueryHandleImpl extends QueryHandle implements ActionListener, Prop
         return ret;
     }
 
-    void refreshIfNeeded() {
+    synchronized void refreshIfNeeded() {
         if(needsRefresh) {
             needsRefresh = false;
             query.refresh();

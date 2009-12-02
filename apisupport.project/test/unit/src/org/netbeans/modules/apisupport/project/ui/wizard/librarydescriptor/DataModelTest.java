@@ -44,8 +44,9 @@ package org.netbeans.modules.apisupport.project.ui.wizard.librarydescriptor;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.TestBase;
+import org.netbeans.modules.apisupport.project.api.LayerHandle;
 import org.netbeans.modules.apisupport.project.layers.LayerTestBase;
-import org.netbeans.modules.apisupport.project.layers.LayerUtils;
+import org.netbeans.modules.apisupport.project.ui.wizard.librarydescriptor.NewLibraryDescriptor.DataModel;
 import org.netbeans.modules.project.uiapi.ProjectChooserFactory;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -72,7 +73,7 @@ public class DataModelTest extends LayerTestBase {
         NbModuleProject project = TestBase.generateStandaloneModule(getWorkDir(), "module1");
         WizardDescriptor wd = new WizardDescriptor() {};
         wd.putProperty(ProjectChooserFactory.WIZARD_KEY_PROJECT, project);
-        NewLibraryDescriptor.DataModel data = new NewLibraryDescriptor.DataModel(wd);
+        DataModel data = new DataModel(wd);
         
         assertEquals(project, data.getProject());
         
@@ -93,7 +94,7 @@ public class DataModelTest extends LayerTestBase {
         
         
         assertFalse(data.libraryAlreadyExists());
-        LayerUtils.LayerHandle h = LayerUtils.layerForProject(data.getProject());
+        LayerHandle h = LayerHandle.forProject(data.getProject());
         FileSystem fs = h.layer(true);
         FileObject fo = FileUtil.createData(fs.getRoot(),CreatedModifiedFilesProvider.getLibraryDescriptorEntryPath(data.getLibraryName()));
         assertNotNull(fo);

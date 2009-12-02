@@ -41,6 +41,7 @@ package org.netbeans.modules.parsing.impl.indexing;
 
 import java.io.IOException;
 import java.util.Collection;
+import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 
 
@@ -56,7 +57,7 @@ public interface IndexImpl {
 
     public boolean isValid() throws IOException;
 
-    public void store (boolean optimize) throws IOException;
+    public void store (boolean optimize, Iterable<Indexable> indexedIndexables) throws IOException;
 
     public Collection<? extends IndexDocumentImpl> query (String fieldName, String value, QuerySupport.Kind kind, String... fieldsToLoad) throws IOException;
 

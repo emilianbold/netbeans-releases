@@ -77,7 +77,7 @@ public class LibrariesStorageDeadlock172779Test extends NbTestCase {
         storageFolder = FileUtil.getConfigFile("org-netbeans-api-project-libraries/Libraries");
         assertNotNull("storageFolder found", storageFolder);
         LibrariesStorageTest.registerLibraryTypeProvider(TestMutexLibraryTypeProvider.class);
-        LibrariesStorageTest.createLibraryDefinition(storageFolder, "Library1");
+        LibrariesStorageTest.createLibraryDefinition(storageFolder, "Library1", null);
     }
 
     public void testDeadlock() throws Exception {        

@@ -59,6 +59,7 @@ import org.openide.util.NbBundle;
  */
 public class QueryResultHandleImpl extends QueryResultHandle implements ActionListener {
 
+
     private final Query query;
     private final String label;
     private final String tooltip;
@@ -117,28 +118,26 @@ public class QueryResultHandleImpl extends QueryResultHandle implements ActionLi
                 return new QueryResultHandleImpl(
                         query,
                         totalFormat.format(new Object[] {issueCount}, new StringBuffer(), null).toString(),
-                        totalTooltipFormat.format(new Object[] {issueCount}, new StringBuffer(), null).toString(),
+                        getTotalTooltip(issueCount),
                         Filter.getAllFilter(query),
                         ResultType.NAMED_RESULT);
 
             case IssueCache.ISSUE_STATUS_NOT_SEEN:
 
-                int notIssues = 0;
+                int unseenIssues = 0;
                 issues = query.getIssues(IssueCache.ISSUE_STATUS_NOT_SEEN);
                 if(issues == null || issues.length == 0) {
                     return null;
                 }
-                notIssues = issues.length;
+                unseenIssues = issues.length;
 
-                StringBuffer label = new StringBuffer();
-                StringBuffer tooltip = new StringBuffer();
-                unseenFormat.format(new Object[] {notIssues}, label, null);
-                unseenTooltipFormat.format(new Object[] {notIssues}, tooltip, null);
+                String label = unseenFormat.format(new Object[] {unseenIssues}, new StringBuffer(), null).toString();
+                String tooltip = getUnseenTooltip(unseenIssues);
                 
                 return new QueryResultHandleImpl(
                         query,
-                        label.toString(),
-                        tooltip.toString(),
+                        label,
+                        tooltip,
                         Filter.getNotSeenFilter(),
                         ResultType.NAMED_RESULT);
 
@@ -151,15 +150,14 @@ public class QueryResultHandleImpl extends QueryResultHandle implements ActionLi
                 }
                 newIssues = issues.length;
 
-                label = new StringBuffer();
-                tooltip = new StringBuffer();
-                newFormat.format(new Object[] {newIssues}, label, null);
-                newTooltipFormat.format(new Object[] {newIssues}, label, null);
+                tooltip = getNewTooltip(newIssues);
+                label = newFormat.format(new Object[] {newIssues}, new StringBuffer(), null).toString();
+
 
                 return new QueryResultHandleImpl(
                         query,
-                        label.toString(),
-                        tooltip.toString(),
+                        label,
+                        tooltip,
                         Filter.getNewFilter(query),
                         ResultType.NAMED_RESULT);
 
@@ -176,9 +174,34 @@ public class QueryResultHandleImpl extends QueryResultHandle implements ActionLi
         return new QueryResultHandleImpl(
                 query,
                 Integer.toString(notIssues),
-                totalTooltipFormat.format(new Object[] {notIssues}, new StringBuffer(), null).toString(),
+                getUnseenTooltip(notIssues),
                 Filter.getNotSeenFilter(),
                 ResultType.ALL_CHANGES_RESULT);
     }
+
+    private static String getTotalTooltip(int issueCount) {
+        if(issueCount == 1) {
+            return NbBundle.getMessage(QueryResultHandleImpl.class, "LBL_QueryResultTotal1Tooltip");
+        } else {
+            return totalTooltipFormat.format(new Object[]{issueCount}, new StringBuffer(), null).toString();
+        }
+    }
+
+    private static String getNewTooltip(int newIssues) {
+        if(newIssues == 1) {
+            return NbBundle.getMessage(QueryResultHandleImpl.class, "LBL_QueryResultNew1Tooltip");
+        } else {
+            return newTooltipFormat.format(new Object[] {newIssues}, new StringBuffer(), null).toString();
+        }
+    }
+
+    private static String getUnseenTooltip(int unseenIssues) {
+        if(unseenIssues == 1) {
+            return NbBundle.getMessage(QueryResultHandleImpl.class, "LBL_QueryResultUnseen1Tooltip");
+        } else {
+            return unseenTooltipFormat.format(new Object[]{unseenIssues}, new StringBuffer(), null).toString();
+        }
+    }
+
 
 }

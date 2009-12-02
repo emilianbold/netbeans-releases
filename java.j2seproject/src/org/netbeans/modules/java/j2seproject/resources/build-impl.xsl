@@ -302,6 +302,10 @@ is divided into following sections:
                 <condition property="endorsed.classpath.cmd.line.arg" value="-Xbootclasspath/p:'${{toString:endorsed.classpath.path}}'" else="">
                     <length length="0" string="${{endorsed.classpath}}" when="greater"/>
                 </condition>
+                <xsl:if test="not(/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform)">
+                    <property name="javac.fork" value="false"/>
+                </xsl:if>
+
             </target>
             
             <target name="-post-init">
@@ -406,11 +410,17 @@ is divided into following sections:
                             </xsl:if>                            
                             <xsl:attribute name="includes">@{includes}</xsl:attribute>
                             <xsl:attribute name="excludes">@{excludes}</xsl:attribute>
-                            <xsl:if test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">
-                                <xsl:attribute name="fork">yes</xsl:attribute>
-                                <xsl:attribute name="executable">${platform.javac}</xsl:attribute>
-                                <xsl:attribute name="tempdir">${java.io.tmpdir}</xsl:attribute> <!-- XXX cf. #51482, Ant #29391 -->
-                            </xsl:if>
+                            <xsl:choose>
+                                <xsl:when test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">
+                                    <xsl:attribute name="fork">yes</xsl:attribute>
+                                    <xsl:attribute name="executable">${platform.javac}</xsl:attribute>
+                                    <xsl:attribute name="tempdir">${java.io.tmpdir}</xsl:attribute> <!-- XXX cf. #51482, Ant #29391 -->
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    <xsl:attribute name="fork">${javac.fork}</xsl:attribute>
+                                    <xsl:attribute name="tempdir">${java.io.tmpdir}</xsl:attribute> <!-- XXX cf. #51482, Ant #29391 -->
+                                </xsl:otherwise>
+                            </xsl:choose>
                             <xsl:attribute name="includeantruntime">false</xsl:attribute>
                             <src>
                                 <dirset dir="@{{gensrcdir}}" erroronmissingdir="false">
@@ -1510,7 +1520,7 @@ is divided into following sections:
             <target name="-do-clean">
                 <xsl:attribute name="depends">init</xsl:attribute>
                 <delete dir="${{build.dir}}"/>
-                <delete dir="${{dist.dir}}"/>
+                <delete dir="${{dist.dir}}" followsymlinks="false" includeemptydirs="true"/> <!-- see issue 176851 -->
                 <!-- XXX explicitly delete all build.* and dist.* dirs in case they are not subdirs -->
             </target>
             

@@ -116,7 +116,7 @@ public final class JavaHierarchy {
         CompilationController compilationController) {
         if (fileObject != null) {
             StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(JavaHierarchy.class, "LBL_WaitNode"));
-            JDialog dialog = ResizablePopup.getDialog();
+            JDialog dialog = ResizablePopup.getDialog(fileObject);
             String membersOf = "";
             if (elements != null && elements.length > 0) {
                 List<? extends Element> elementsList = Arrays.<Element>asList(elements);

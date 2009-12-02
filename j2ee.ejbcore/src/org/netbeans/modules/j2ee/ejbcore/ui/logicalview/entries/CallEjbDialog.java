@@ -74,6 +74,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.FilterNode;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
+import org.openide.util.lookup.Lookups;
 
 /**
  * Handling of Call EJB dialog; used from CallEjbAction
@@ -183,7 +184,7 @@ public class CallEjbDialog {
 
     private class EjbsNode extends AbstractNode {
         public EjbsNode(Project project) {
-            super(new EJBListViewChildren(project));
+            super(new EJBListViewChildren(project), Lookups.singleton(project));
             J2eeModuleProvider module = project.getLookup().lookup(J2eeModuleProvider.class);
             if (module != null && module.getJ2eeModule().getType().equals(J2eeModule.Type.WAR)){
                 setIconBaseWithExtension( "org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif" ); // NOI18N

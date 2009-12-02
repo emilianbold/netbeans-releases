@@ -215,6 +215,8 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
             });
         }
     };
+
+    private Point lastViewPosition; // Visible view in JViewport
     
     private CompletionImpl() {
         EditorRegistry.addPropertyChangeListener(this);
@@ -387,7 +389,21 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
     }
     
     public void stateChanged(ChangeEvent e) {
-        hideAll();
+        // From JViewport
+        boolean hide = true;
+        JTextComponent component = getActiveComponent();
+        Container parent = component != null ? component.getParent() : null;
+        if (parent instanceof JViewport) {
+            JViewport viewport = (JViewport) parent;
+            Point viewPosition = viewport.getViewPosition();
+            if (lastViewPosition != null && lastViewPosition.y == viewPosition.y) {
+                hide = false;
+            }
+            lastViewPosition = viewPosition;
+        }
+        if (hide) {
+            hideAll();
+        }
     }
 
     public void hideAll() {

@@ -146,7 +146,7 @@ public class CopyFiles extends Task {
             fs = new FileSet();
             fs.setDir(f);
         }
-        fs.setIncludes("META-INF/*.tld META-INF/tlds/*.tld"); // NOI18N
+        fs.setIncludes("META-INF/**/*.tld"); // NOI18N
         DirectoryScanner ds = fs.getDirectoryScanner(getProject());
         ds.scan();
         return ds.getIncludedFilesCount() > 0;

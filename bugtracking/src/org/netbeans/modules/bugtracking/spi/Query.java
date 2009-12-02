@@ -46,6 +46,7 @@ import java.util.List;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.openide.nodes.Node;
 
 /**
  * Represents an query on a bugtracing repository.
@@ -76,6 +77,11 @@ public abstract class Query implements Comparable<Query> {
     private List<QueryNotifyListener> notifyListeners;
     protected boolean saved;
     private long lastRefresh = -1;
+
+    static {
+        QueryAccessorImpl.create();
+    }
+    private Node[] selection;
 
     /**
      * Creates a query
@@ -136,6 +142,9 @@ public abstract class Query implements Comparable<Query> {
      */
     protected void setSaved(boolean saved) {
         this.saved = saved;
+        if(saved) {
+            selection = null;
+        }
         fireQuerySaved();
     }
 
@@ -151,6 +160,7 @@ public abstract class Query implements Comparable<Query> {
      * Returns issue given by the last refresh
      * @return
      */
+    // XXX used only by kenai - move out from spi
     public abstract Issue[] getIssues(int includeStatus);
 
     public Issue[] getIssues() {
@@ -158,7 +168,7 @@ public abstract class Query implements Comparable<Query> {
     }
 
     /**
-     * Returns true if the issue doesn't belong to the query
+     * Returns true if the issue does belong to the query
      * @param issue
      * @return
      */
@@ -173,7 +183,8 @@ public abstract class Query implements Comparable<Query> {
      * @return
      */
     // XXX Shouldn't be called while running
-    // XXX on repository?
+    // XXX move to simple search
+
     public Issue[] getIssues(String criteria) {
         return BugtrackingUtil.getByIdOrSummary(getIssues(), criteria);
     }
@@ -190,6 +201,7 @@ public abstract class Query implements Comparable<Query> {
         return lastRefresh;
     }
 
+    // XXX used only by issue table - move out from spi
     public abstract int getIssueStatus(Issue issue);
 
     /*********
@@ -280,5 +292,13 @@ public abstract class Query implements Comparable<Query> {
             notifyListeners = new ArrayList<QueryNotifyListener>();
         }
         return notifyListeners;
+    }
+
+    void setSelection(Node[] nodes) {
+        this.selection = nodes;
+}
+
+    protected Node[] getSelection() {
+        return selection;
     }
 }

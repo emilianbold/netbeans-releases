@@ -42,6 +42,7 @@ package org.netbeans.api.java.source.gen;
 import java.io.File;
 import java.util.Collections;
 import com.sun.source.tree.*;
+import com.sun.source.util.SourcePositions;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
@@ -49,6 +50,7 @@ import static org.netbeans.api.java.source.JavaSource.*;
 import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -122,7 +124,9 @@ public class TreeTaggingTest extends GeneratorTestMDRCompat {
         //lenghth of added statement has to be the same as the length of span
         assertEquals(delta, new String("System.err.println(true);").length());
         //absolute position of span beginning
-        assertEquals(119, span[0]);
+        assertEquals(115, span[0]);
+
+        assertEquals("System.err.println(true);", diff.getResultingSource(FileUtil.toFileObject(testFile)).substring(span[0], span[1]));
     }
 
     /**
@@ -188,7 +192,9 @@ public class TreeTaggingTest extends GeneratorTestMDRCompat {
         //lenghth of added statement has to be the same as the length of span
         assertEquals(delta, new String("System.err.println(true);").length());
         //absolute position of span beginning
-        assertEquals(165, span[0]);
+        assertEquals(142, span[0]);
+
+        assertEquals("System.err.println(true);", diff.getResultingSource(FileUtil.toFileObject(testFile)).substring(span[0], span[1]));
     }
 
     /**
@@ -258,7 +264,9 @@ public class TreeTaggingTest extends GeneratorTestMDRCompat {
         //lenghth of added statement has to be the same as the length of span
         assertEquals(delta, new String("System.err.println(true);").length());
         //absolute position of span beginning
-        assertEquals(241, span[0]);
+        assertEquals(182, span[0]);
+
+        assertEquals("System.err.println(true);", diff.getResultingSource(FileUtil.toFileObject(testFile)).substring(span[0], span[1]));
     }
 
 
@@ -269,7 +277,7 @@ public class TreeTaggingTest extends GeneratorTestMDRCompat {
 
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile,
-            "/**/" +    
+            "/**/" +
             "package hierbas.del.litoral;\n\n" +
             "import java.io.*;\n\n" +
             "public class Test {\n" +
@@ -309,7 +317,51 @@ public class TreeTaggingTest extends GeneratorTestMDRCompat {
         //lenghth of added statement has to be the same as the length of span
         assertEquals(delta, new String("return super.print();").length());
         //absolute position of span beginning
-        assertEquals(123, span[0]);
+        assertEquals(119, span[0]);
+
+        assertEquals("return super.print();", diff.getResultingSource(FileUtil.toFileObject(testFile)).substring(span[0], span[1]));
+    }
+
+    public void testAnnotationTagging() throws Exception {
+        // the tag
+        final String tag = "tag"; //NOI18N
+
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "}\n"
+            );
+
+        FileObject testFileObject = FileUtil.toFileObject(testFile);
+        JavaSource testSource = JavaSource.forFileObject(testFileObject);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                String annotations = "@A @B({@C, @D, @E}) @F";
+                String toParse = "new Object() {" + annotations + " void test() {} }";
+                NewClassTree nct = (NewClassTree) workingCopy.getTreeUtilities().parseExpression(toParse, new SourcePositions[1]);
+                MethodTree method = ((MethodTree) nct.getClassBody().getMembers().get(0));
+
+                workingCopy.rewrite(clazz, make.addClassMember(clazz, method));
+
+                Tree toTag = ((NewArrayTree) method.getModifiers().getAnnotations().get(1).getArguments().get(0)).getInitializers().get(1);
+
+                workingCopy.tag(toTag, tag);
+            }
+
+        };
+        ModificationResult diff = testSource.runModificationTask(task);
+        diff.commit();
+
+        int[] span = diff.getSpan(tag);
+        String newCode = diff.getResultingSource(testFileObject);
+
+        assertNotNull(span);
+        assertEquals("@D", newCode.substring(span[0], span[1]));
     }
 
     @Override

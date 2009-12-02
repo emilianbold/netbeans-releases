@@ -47,6 +47,8 @@ package org.netbeans.modules.dlight.toolsui;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -94,6 +96,7 @@ public class ToolsManagerPanel extends PanelWithApply {
         // profile configuration combobox
         profileConfigurationComboBox.removeAllItems();
         dLightConfigurations = list;
+        Collections.sort(dLightConfigurations, new DLightConfigurationComparator());
         DLightConfigurationUIWrapper preferredConfiguration = null;
         for (DLightConfigurationUIWrapper dlightConfigurationWrapper : dLightConfigurations) {
             profileConfigurationComboBox.addItem(dlightConfigurationWrapper);
@@ -335,6 +338,8 @@ public class ToolsManagerPanel extends PanelWithApply {
                     oldList.clear();
                     oldList.addAll(newList);
                     initDialog(newList, null);
+                    DLightConfigurationUIWrapper dlightConfigurationUIWrapper = (DLightConfigurationUIWrapper)profileConfigurationComboBox.getSelectedItem();
+                    initConfigurationPanel(dlightConfigurationUIWrapper);
                 } else {
                     profileConfigurationComboBox.setSelectedIndex(lastSelectedIndex);
                 }
@@ -400,6 +405,12 @@ public class ToolsManagerPanel extends PanelWithApply {
             return null;
         }
 
+//        @Override
+//        public void removeAction(DLightConfigurationUIWrapper o) {
+//            super.removeAction(o);
+//            profileConfigurationComboBox.setSelectedIndex(profileConfigurationComboBox.getSelectedIndex());
+//        }
+
         @Override
         public DLightConfigurationUIWrapper copyAction(DLightConfigurationUIWrapper o) {
             String newDisplayName = makeNameUnique(getString("CopyOf", o.getDisplayName()));
@@ -450,6 +461,14 @@ public class ToolsManagerPanel extends PanelWithApply {
             getRemoveButton().setEnabled(dLightConfigurationWrapper.isCustom());
         }
     }
+
+    private static class DLightConfigurationComparator implements Comparator<DLightConfigurationUIWrapper> {
+        public int compare(DLightConfigurationUIWrapper o1, DLightConfigurationUIWrapper o2) {
+            return o1.getDisplayName().compareTo(o2.getDisplayName());
+        }
+    }
+
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextArea descriptionArea;
     private javax.swing.JLabel detailsLabel;
@@ -460,4 +479,4 @@ public class ToolsManagerPanel extends PanelWithApply {
     private javax.swing.JLabel toolsLabel;
     private javax.swing.JScrollPane toolsList;
     // End of variables declaration//GEN-END:variables
-    }
+}

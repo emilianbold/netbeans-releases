@@ -206,5 +206,10 @@ public class KenaiSupportImpl extends KenaiSupport implements PropertyChangeList
         return BugtrackingType.BUGZILLA;
     }
 
+    @Override
+    public boolean needsLogin(Query query) {
+        return query == ((KenaiRepository) query.getRepository()).getMyIssuesQuery();
+    }
+
 }
 

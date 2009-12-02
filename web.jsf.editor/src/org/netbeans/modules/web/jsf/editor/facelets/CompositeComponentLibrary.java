@@ -38,16 +38,16 @@
  */
 package org.netbeans.modules.web.jsf.editor.facelets;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.web.jsf.editor.JsfUtils;
-import org.netbeans.modules.web.jsf.editor.completion.JsfCompletionItem;
 import org.netbeans.modules.web.jsf.editor.index.CompositeComponentModel;
 import org.netbeans.modules.web.jsf.editor.index.JsfIndex;
-import org.netbeans.modules.web.jsf.editor.tld.TldLibrary;
-import org.netbeans.modules.web.jsf.editor.tld.TldLibrary.Tag;
+import org.netbeans.modules.web.jsf.editor.tld.LibraryDescriptor;
+import org.netbeans.modules.web.jsf.editor.tld.LibraryDescriptorException;
 import org.openide.util.NbBundle;
 
 /**
@@ -57,7 +57,7 @@ import org.openide.util.NbBundle;
 public class CompositeComponentLibrary extends FaceletsLibrary {
 
     private String libraryName;
-    private TldLibrary generatedDescribingLibrary;
+    private LibraryDescriptor generatedDescribingLibrary;
 
     //for undeclared libraries w/o prefix
     public CompositeComponentLibrary(FaceletsLibrarySupport support, String libraryName) {
@@ -103,18 +103,25 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
     }
 
     @Override
-    public TldLibrary getAssociatedTLDLibrary() {
-        TldLibrary tldlib = support.getJsfSupport().getTldLibrary(getNamespace());
-        if (tldlib != null) {
-            //ohh, someone made a TLD for us, nice...
-            return tldlib;
-        }
+    public LibraryDescriptor getLibraryDescriptor() {
+        LibraryDescriptor libDescriptor = support.getJsfSupport().getLibraryDescriptor(getNamespace());
+            if (libDescriptor != null) {
+                //ohh, someone made a .taglib.xml or TLD for us, nice...
+                return libDescriptor;
+            }
         //most cases, no tld, generate something so the completion and other stuff works
         //todo - implement reasonable caching
 //        if (generatedDescribingLibrary == null) {
         generatedDescribingLibrary = new CCTldLibrary();
 //        }
         return generatedDescribingLibrary;
+    }
+
+    @Override
+    public String toString() {
+        return "CompositeComponent(" + (getNamespace() == null ? //NOI18N
+            "created via indexing" :  //NOI18N
+            "created by Mojarra") + " " + super.toString(); //NOI18N
     }
 
     private JsfIndex index() {
@@ -133,12 +140,18 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
 
     }
 
-    private class CCTldLibrary extends TldLibrary {
+    private class CCTldLibrary extends LibraryDescriptor {
 
-        private Map<String, Tag> tags = new HashMap<String, Tag>();
+        private Map<String, Tag> cctags = new HashMap<String, Tag>();
 
-        public CCTldLibrary() {
+        public CCTldLibrary() { 
             init();
+        }
+
+        @Override
+        protected void parseLibrary(InputStream content) throws LibraryDescriptorException {
+            //this library type does not need to parse any content this way
+            //sure the inheritance is a mess
         }
 
         private void init() {
@@ -146,7 +159,7 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
             for (String cname : componentNames) {
                 CompositeComponentModel model = index().getCompositeComponentModel(getLibraryName(), cname);
                 Map<String, Attribute> attrs = new HashMap<String, Attribute>();
-                String msgNoTld = NbBundle.getBundle(JsfCompletionItem.class).getString("MSG_NO_TLD"); //NOI18N
+                String msgNoTld = NbBundle.getBundle(CompositeComponentLibrary.class).getString("MSG_NO_DESCRIPTOR"); //NOI18N
                 for (Map<String, String> attrsMap : model.getExistingInterfaceAttributes()) {
                     String attrname = attrsMap.get("name"); //NOI18N
                     boolean required = Boolean.parseBoolean(attrsMap.get("required")); //NOI18N
@@ -155,22 +168,29 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
                 }
 
                 StringBuffer sb = new StringBuffer();
-                sb.append("<div><b>"); //NOI18N
+                sb.append("<p><b>"); //NOI18N
                 sb.append(NbBundle.getMessage(CompositeComponentLibrary.class, "MSG_COMPOSITE_COMPONENT_SOURCE") );//NOI18N
                 sb.append("</b>");//NOI18N
+                sb.append("&nbsp;");//NOI18N
                 sb.append(model.getRelativePath());
-                sb.append("</div>");//NOI18N
+                sb.append("</p>");//NOI18N
+                sb.append("<p>");//NOI18N
                 sb.append(getAttributesDescription(model));
+                sb.append("</p>");//NOI18N
                 sb.append("<p style=\"color: red\">" + msgNoTld + "</p>"); //NOI18N
 
-                Tag t = new Tag(cname, sb.toString(), attrs);
-                tags.put(cname, t);
+                Tag t = new TagImpl(cname, sb.toString(), attrs);
+                cctags.put(cname, t);
             }
         }
 
         private String getAttributesDescription(CompositeComponentModel model) {
+            if(model.getExistingInterfaceAttributes().isEmpty()) {
+                return NbBundle.getMessage(CompositeComponentLibrary.class, "MSG_NO_TAG_ATTRS");//NOI18N
+            }
+
             StringBuffer sb = new StringBuffer();
-            sb.append("<p><b>");//NOI18N
+            sb.append("<b>");//NOI18N
             sb.append(NbBundle.getMessage(CompositeComponentLibrary.class, "MSG_TAG_ATTRS"));//NOI18N
             sb.append("</b>");//NOI18N
             sb.append("<table border=\"1\">"); //NOI18N
@@ -204,7 +224,6 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
                 sb.append("</tr>"); //NOI18N
                 }
             sb.append("</table>"); //NOI18N
-            sb.append("</p>"); //NOI18N
 
 
             return sb.toString();
@@ -212,7 +231,7 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
 
         @Override
         public Map<String, Tag> getTags() {
-            return tags;
+            return cctags;
         }
     }
 }

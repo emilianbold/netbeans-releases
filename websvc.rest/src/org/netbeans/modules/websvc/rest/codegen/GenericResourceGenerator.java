@@ -44,8 +44,10 @@ import com.sun.source.tree.ClassTree;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.Modifier;
 import org.netbeans.api.java.source.JavaSource;
@@ -73,7 +75,12 @@ import org.openide.util.NbBundle;
  */
 public class GenericResourceGenerator extends AbstractGenerator {
     public static final String RESOURCE_TEMPLATE = "Templates/WebServices/GenericResource.java"; //NOI18N
+    public static final String RESOURCE_ITEM_TEMPLATE = "Templates/WebServices/GenericItemResource.java"; //NOI18N
     public static final String COMMENT_END_OF_GET = "TODO return proper representation object";
+    private static final String FIELD_LIST="field_list"; //NOI18N
+    private static final String PARAM_LIST="param_list"; //NOI18N
+    private static final String ASSIGNMENT_LIST="assignment_list"; //NOI18N
+    private static final String ARGUMENT_LIST="argument_list"; //NOI18N
     
     private FileObject destDir;
     private GenericResourceBean bean;
@@ -82,7 +89,11 @@ public class GenericResourceGenerator extends AbstractGenerator {
     public GenericResourceGenerator(FileObject destDir, GenericResourceBean bean) {
         this.destDir = destDir;
         this.bean = bean;
-        this.template = RESOURCE_TEMPLATE;
+        if (bean.isRootResource()) {
+            this.template = RESOURCE_TEMPLATE;
+        } else {
+            this.template = RESOURCE_ITEM_TEMPLATE;
+        }
     }
     
     public FileObject getDestDir() {
@@ -106,10 +117,42 @@ public class GenericResourceGenerator extends AbstractGenerator {
         
         reportProgress(NbBundle.getMessage(GenericResourceGenerator.class,
                 "MSG_GeneratingClass", bean.getPackageName() + "." + bean.getName()));  //NOI18N
-        
-        JavaSource source = JavaSourceHelper.createJavaSource(
-                getTemplate(), getDestDir(), bean.getPackageName(), bean.getName());
-      
+        JavaSource source = null;
+        if (bean.isRootResource()) {
+            source = JavaSourceHelper.createJavaSource(
+                    getTemplate(), getDestDir(), bean.getPackageName(), bean.getName());
+        } else {
+            Map<String,String> params = new HashMap<String,String>();
+            String[] uriParams = bean.getUriParams();
+            StringBuffer fieldList = new StringBuffer();
+            StringBuffer paramList = new StringBuffer();
+            StringBuffer assignmentList = new StringBuffer();
+            StringBuffer argumentList = new StringBuffer();
+            int i=0;
+            for (String param : uriParams) {
+                if (i++>0) {
+                    fieldList.append(", "); //NOI18N
+                    paramList.append(", "); //NOI18N
+                    argumentList.append(", "); //NOI18N
+                    assignmentList.append(" "); //NOI18N
+                } else {
+                    fieldList.append("private String "); //NOI18N
+                }
+                fieldList.append(param);
+                argumentList.append(param);
+                paramList.append("String "+param); //NOI18N
+                assignmentList.append("this."+param+"="+param+";"); //NOI18N
+            }
+            if (fieldList.length() > 0) {
+                fieldList.append(";");  //NOI18N
+            }
+            params.put(FIELD_LIST, fieldList.toString());
+            params.put(PARAM_LIST, paramList.toString());
+            params.put(ASSIGNMENT_LIST, assignmentList.toString());
+            params.put(ARGUMENT_LIST, argumentList.toString());
+            source = JavaSourceHelper.createJavaSource(
+                    getTemplate(), params, getDestDir(), bean.getPackageName(), bean.getName());
+        }
         if (bean.getInputParameters().size() > 0) {
             addInputParamFields(source);
             addConstructorWithInputParams(source);
@@ -191,7 +234,7 @@ public class GenericResourceGenerator extends AbstractGenerator {
         if (rbean.isGenerateUriTemplate()) {
             result.add(RestConstants.PATH);
         }
-        if (rbean.getUriParams().length > 0) {
+        if (rbean.isRootResource()) {
             result.add(RestConstants.PATH_PARAM);
         }
         for (HttpMethodType m : rbean.getMethodTypes()) {
@@ -218,7 +261,17 @@ public class GenericResourceGenerator extends AbstractGenerator {
             tree = addGetMethod(mime, type, copy, tree);
             
             if (bean.getMethodTypes().contains(HttpMethodType.POST)) {
-                tree = addPostMethod(mime, type, copy, tree);
+                GenericResourceBean subBean = getSubresourceBean();
+                if (subBean == null) {
+                    tree = addPostMethod(mime, type, copy, tree);
+                } else {
+                    String[] subBeanTypes = subBean.getRepresentationTypes();
+                        if (subBeanTypes != null && subBeanTypes.length>0) {
+                        tree = addPostMethod(mime, subBeanTypes[0], copy, tree);
+                    } else {
+                        tree = addPostMethod(mime, "String", copy, tree); //NOI18N
+                    }
+                }
             }
             
             if (bean.getMethodTypes().contains(HttpMethodType.PUT)) {
@@ -290,8 +343,10 @@ public class GenericResourceGenerator extends AbstractGenerator {
         }
         String[] paramAnnotations = getParamAnnotations(parameters.length);
         Object[] paramAnnotationAttrs = getParamAnnotationAttributes(parameters.length);
-        
-        String comment = "POST method for creating an instance of " + bean.getName() + "\n";
+
+        GenericResourceBean subBean = getSubresourceBean();
+        String comment = "POST method for creating an instance of " +
+                (subBean == null ? bean.getName() : subBean.getName()) + "\n";
         for (int i=0; i<parameters.length-1; i++) {
             comment += "@param $PARAM$ resource URI parameter\n".replace("$PARAM$", parameters[i]);
         }
@@ -318,7 +373,7 @@ public class GenericResourceGenerator extends AbstractGenerator {
             mime.value(), mime.value() };
         Object returnType = Constants.VOID;
         String bodyText = "{ //TODO }";    //NOI18N
-        
+
         String[] parameters = getPostPutParams();
         Object[] paramTypes = getPostPutParamTypes(type);
         if (type != null) {
@@ -326,7 +381,7 @@ public class GenericResourceGenerator extends AbstractGenerator {
         }
         String[] paramAnnotations = getParamAnnotations(parameters.length);
         Object[] paramAnnotationAttrs = getParamAnnotationAttributes(parameters.length);
-        
+
         String comment = "PUT method for updating or creating an instance of " + bean.getName() + "\n";
         for (int i=0; i<parameters.length-1; i++) {
             comment += "@param $PARAM$ resource URI parameter\n".replace("$PARAM$", parameters[i]);
@@ -353,20 +408,20 @@ public class GenericResourceGenerator extends AbstractGenerator {
         Object returnType = Constants.VOID;
         String bodyText = "{ //TODO implement }";
         
-        String[] parameters = bean.getUriParams();
-        Object[] paramTypes = getUriParamTypes();
-        String[] paramAnnotations = getParamAnnotations(parameters.length);
-        Object[] paramAnnotationAttrs = getParamAnnotationAttributes(parameters.length);
+//        String[] parameters = bean.getUriParams();
+//        Object[] paramTypes = getUriParamTypes();
+//        String[] paramAnnotations = getParamAnnotations(parameters.length);
+//        Object[] paramAnnotationAttrs = getParamAnnotationAttributes(parameters.length);
         
         String comment = "DELETE method for resource " + bean.getName() + "\n";
-        for (String param : parameters) {
-            comment += "@param $PARAM$ resource URI parameter\n".replace("$PARAM$", param);
-        }
+//        for (String param : parameters) {
+//            comment += "@param $PARAM$ resource URI parameter\n".replace("$PARAM$", param);
+//        }
         
         return JavaSourceHelper.addMethod(copy, tree,
                 modifiers, annotations, annotationAttrs,
-                "delete", returnType, parameters, paramTypes, //NOI18N
-                paramAnnotations, paramAnnotationAttrs,
+                "delete", returnType, null, null, //NOI18N
+                null, null,
                 bodyText, comment);      //NOI18N
     }
     
@@ -376,19 +431,40 @@ public class GenericResourceGenerator extends AbstractGenerator {
         
         String[] annotations = new String[] {
             RestConstants.PATH_ANNOTATION
-        
         };
-        
-        Object[] annotationAttrs = new Object[] {subBean.getUriTemplate()};
+
+        String uriTemplate = subBean.getUriTemplate();
+
+        Object[] annotationAttrs = new Object[] {uriTemplate};
         Object returnType = subBean.getName();
+
+        String[] parameters = subBean.getUriParams();
+        Object[] paramTypes = null;
+        String[] paramAnnotations = null;
+        Object[] paramAnnotationAttrs = null;
+        StringBuffer params = new StringBuffer("");// NOI18N
+        if (parameters != null && parameters.length >= 1) {
+            paramTypes = getUriParamTypes(subBean);
+            
+            paramAnnotations = new String[parameters.length];
+            paramAnnotationAttrs = new Object[parameters.length];
+            for (int i=0; i<parameters.length; i++) {
+                if (i != 0) {
+                    params.append(",");
+                }
+                params.append(parameters[i]);
+                paramAnnotations[i] = RestConstants.PATH_PARAM_ANNOTATION;
+                paramAnnotationAttrs[i] = parameters[i];
+            }
+        }
+
+        String bodyText = "{ return " + returnType + ".getInstance("+params.toString()+"); }"; //NOI18N
         
-        String bodyText = "{ return new " + returnType + "(); }";
-        
-        String comment = "Sub-resource locator method for  " + subBean.getUriTemplate() + "\n";
+        String comment = "Sub-resource locator method for " + uriTemplate + "\n";
         
         return JavaSourceHelper.addMethod(copy, tree,
                 modifiers, annotations, annotationAttrs,
-                methodName, returnType, null, null, null, null,
+                methodName, returnType, parameters, paramTypes, paramAnnotations, paramAnnotationAttrs,
                 bodyText, comment);
     }
     
@@ -411,21 +487,25 @@ public class GenericResourceGenerator extends AbstractGenerator {
     
     private String[] getGetParamNames(List<ParameterInfo> queryParams) {
         ArrayList<String> params = new ArrayList<String>();
-        params.addAll(Arrays.asList(bean.getUriParams()));
+        if (bean.isRootResource()) {
+            params.addAll(Arrays.asList(bean.getUriParams()));
+        }
         params.addAll(Arrays.asList(getParamNames(queryParams)));
         return params.toArray(new String[params.size()]);
     }
     
     private String[] getGetParamTypes(List<ParameterInfo> queryParams) {
         ArrayList<String> types = new ArrayList<String>();
-        types.addAll(Arrays.asList(getUriParamTypes()));
+        if (bean.isRootResource()) {
+            types.addAll(Arrays.asList(getUriParamTypes()));
+        }
         types.addAll(Arrays.asList(getParamTypeNames(queryParams)));
         return types.toArray(new String[types.size()]);
     }
     
     private Object[] getParamAnnotationAttributes(int allParamCount) {
         String[] uriParams = bean.getUriParams();
-        int uriParamCount = uriParams.length;
+        int uriParamCount = bean.isRootResource() ? uriParams.length : 0;
         if (allParamCount < uriParamCount) {
             throw new IllegalArgumentException("allParamCount="+allParamCount);
         }
@@ -441,7 +521,7 @@ public class GenericResourceGenerator extends AbstractGenerator {
     }
     
     private String[] getParamAnnotations(int allParamCount) {
-        int uriParamCount = bean.getUriParams().length;
+        int uriParamCount = bean.isRootResource() ? bean.getUriParams().length : 0;
         if (allParamCount < uriParamCount) {
             throw new IllegalArgumentException("allParamCount="+allParamCount);
         }
@@ -457,9 +537,11 @@ public class GenericResourceGenerator extends AbstractGenerator {
    
     private String[][] getGetParamAnnotations(List<ParameterInfo> queryParams) {
         ArrayList<String[]> annos = new ArrayList<String[]>();
-     
-        for (String uriParam : bean.getUriParams()) {
-            annos.add(new String[] {RestConstants.PATH_PARAM_ANNOTATION});
+
+        if (bean.isRootResource()) {
+            for (String uriParam : bean.getUriParams()) {
+                annos.add(new String[] {RestConstants.PATH_PARAM_ANNOTATION});
+            }
         }
         
         String[] annotations = null;
@@ -480,9 +562,10 @@ public class GenericResourceGenerator extends AbstractGenerator {
     
     private Object[][] getGetParamAnnotationAttrs(List<ParameterInfo> queryParams) {
         ArrayList<Object[]> attrs = new ArrayList<Object[]>();
-        
-        for (String uriParam : bean.getUriParams()) {
-            attrs.add(new Object[] {uriParam});
+        if (bean.isRootResource()) {
+            for (String uriParam : bean.getUriParams()) {
+                attrs.add(new Object[] {uriParam});
+            }
         }
       
         Object[] annotationAttrs = null;
@@ -501,15 +584,23 @@ public class GenericResourceGenerator extends AbstractGenerator {
     }
     
     private String[] getPostPutParams() {
-        List<String> params = new ArrayList<String>(Arrays.asList(bean.getUriParams()));
-        params.add("content");  //NO18N
-        return params.toArray(new String[params.size()]);
+        if (bean.isRootResource()) {
+            List<String> params = new ArrayList<String>(Arrays.asList(bean.getUriParams()));
+            params.add("content");  // NOI18N
+            return params.toArray(new String[params.size()]);
+        } else {
+            return new String[] {"content"}; //NOI18N
+        }
     }
     
     private String[] getPostPutParamTypes(String representatinType) {
         String defaultType = String.class.getName();
-        String[] types = new String[bean.getUriParams().length + 1];
-        for (int i=0; i < types.length; i++) {
+        int typesLength = 1;
+        if (bean.isRootResource()) {
+            typesLength = bean.getUriParams().length + 1;
+        }
+        String[] types = new String[typesLength];
+        for (int i=0; i < types.length -1; i++) {
             types[i] = defaultType;
         }
         types[types.length-1] = representatinType;
@@ -563,5 +654,12 @@ public class GenericResourceGenerator extends AbstractGenerator {
         
         return results.toArray(new Object[results.size()]);
     }
-    
+
+    private GenericResourceBean getSubresourceBean() {
+        List<GenericResourceBean> subResources = bean.getSubResources();
+        if (subResources.size() > 0) {
+            return subResources.get(0);
+        }
+        return null;
+    }
 }

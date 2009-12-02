@@ -42,6 +42,7 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -58,6 +59,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.Signal;
 import org.netbeans.modules.nativeexecution.support.EnvWriter;
@@ -80,8 +82,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
     private InputStream processOutput;
     private InputStream processError;
     private File resultFile;
-    private final boolean isWindows;
-    private final boolean isMacOS;
+    private final OSFamily osFamily;
 
     static {
         InstalledFileLocator fl = InstalledFileLocatorProvider.getDefault();
@@ -104,8 +105,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
         this.processOutput = new ByteArrayInputStream(
                 (loc("TerminalLocalNativeProcess.ProcessStarted.text") + '\n').getBytes()); // NOI18N
 
-        isWindows = hostInfo != null && hostInfo.getOSFamily() == OSFamily.WINDOWS;
-        isMacOS = hostInfo != null && hostInfo.getOSFamily() == OSFamily.MACOSX;
+        osFamily = hostInfo == null ? OSFamily.UNKNOWN : hostInfo.getOSFamily();
     }
 
     protected void create() throws Throwable {
@@ -118,29 +118,29 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                 throw new IOException(loc("TerminalLocalNativeProcess.dorunNotFound.text")); // NOI18N
             }
 
-            if (isWindows && hostInfo.getShell() == null) {
+            if (osFamily == OSFamily.WINDOWS && hostInfo.getShell() == null) {
                 throw new IOException(loc("NativeProcess.shellNotFound.text")); // NOI18N
             }
 
             final String commandLine = info.getCommandLineForShell();
             final String wDir = info.getWorkingDirectory(true);
 
-            final File workingDirectory = (wDir == null)? new File(".") : new File(wDir); // NOI18N
+            final File workingDirectory = (wDir == null) ? new File(".") : new File(wDir); // NOI18N
 
-            pidFileFile = File.createTempFile("dlight", "termexec", hostInfo.getTempDirFile()); // NOI18N
-            envFileFile = new File(pidFileFile.getAbsoluteFile() + ".env"); // NOI18N
-            shFileFile = new File(pidFileFile.getAbsoluteFile() + ".sh"); // NOI18N
-            resultFile = new File(shFileFile.getAbsolutePath() + ".res"); // NOI18N
+            pidFileFile = File.createTempFile("dlight", "termexec", hostInfo.getTempDirFile()).getAbsoluteFile(); // NOI18N
+            envFileFile = new File(pidFileFile.getPath() + ".env"); // NOI18N
+            shFileFile = new File(pidFileFile.getPath() + ".sh"); // NOI18N
+            resultFile = new File(shFileFile.getPath() + ".res"); // NOI18N
 
             resultFile.deleteOnExit();
 
-            String pidFile = (isWindows) ? WindowsSupport.getInstance().convertToShellPath(pidFileFile.getAbsolutePath()) : pidFileFile.getAbsolutePath();
+            String pidFile = (osFamily == OSFamily.WINDOWS) ? WindowsSupport.getInstance().convertToShellPath(pidFileFile.getPath()) : pidFileFile.getPath();
             String envFile = pidFile + ".env"; // NOI18N
             String shFile = pidFile + ".sh"; // NOI18N
 
             FileWriter shWriter = new FileWriter(shFileFile);
             shWriter.write("echo $$ > \"" + pidFile + "\" || exit $?\n"); // NOI18N
-            shWriter.write(". \"" + envFile + "\" || exit $?\n"); // NOI18N
+            shWriter.write(". \"" + envFile + "\" 2>/dev/null\n"); // NOI18N
             shWriter.write("exec " + commandLine + "\n"); // NOI18N
             shWriter.flush();
             shWriter.close();
@@ -165,14 +165,20 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                     terminalArgs);
 
             ProcessBuilder pb = new ProcessBuilder(command);
+
+            if (!workingDirectory.exists()) {
+                throw new FileNotFoundException(loc("NativeProcess.noSuchDirectoryError.text", workingDirectory.getAbsolutePath())); // NOI18N
+            }
+
             pb.directory(workingDirectory);
-            
+            pb.redirectErrorStream(true);
+
             LOG.log(Level.FINEST, "Command: " + command); // NOI18N
 
             final MacroMap env = info.getEnvironment().clone();
 
             // setup DISPLAY variable for MacOS...
-            if (isMacOS) {
+            if (osFamily == OSFamily.MACOSX) {
                 ProcessBuilder pb1 = new ProcessBuilder("/bin/sh", "-c", "/bin/echo $DISPLAY"); // NOI18N
                 Process p1 = pb1.start();
                 int status = p1.waitFor();
@@ -196,7 +202,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                 // Do PATH normalization on Windows....
                 // Problem here is that this is done for PATH env. variable only!
 
-                if (isWindows) {
+                if (osFamily == OSFamily.WINDOWS) {
                     env.put("PATH", "/bin:/usr/bin:" + WindowsSupport.getInstance().convertToAllShellPaths(env.get("PATH"))); // NOI18N
                 }
 
@@ -204,6 +210,30 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                 EnvWriter ew = new EnvWriter(fos);
                 ew.write(env);
                 fos.close();
+
+                /**
+                 * IZ#176361: Sometimes when external terminal is used,
+                 * execution fails because env file is not found
+                 *
+                 * TODO: ???
+                 * What is it? FS caches? How to deal with this?
+                 */
+                int attempts = 10;
+                boolean exists = false;
+
+                while (attempts > 0) {
+                    exists = HostInfoUtils.fileExists(ExecutionEnvironmentFactory.getLocal(), shFileFile.getPath()) &
+                            HostInfoUtils.fileExists(ExecutionEnvironmentFactory.getLocal(), envFileFile.getPath());
+
+                    if (exists) {
+                        break;
+                    }
+
+                    LOG.warning("env or sh file is not available yet... waiting [" + attempts + "]"); // NOI18N
+                    Thread.sleep(50);
+                    attempts--;
+                }
+
 
                 if (LOG.isLoggable(Level.FINEST)) {
                     env.dump(System.err);
@@ -217,6 +247,10 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             creation_ts = System.nanoTime();
 
             waitPID(terminalProcess, pidFileFile);
+            if (isInterrupted()) {
+                cancel();
+                throw new IOException(loc("TerminalLocalNativeProcess.terminalRunCancelled.text")); // NOI18N
+            }
         } catch (Throwable ex) {
             String msg = (ex.getMessage() == null ? ex.toString() : ex.getMessage()) + "\n"; // NOI18N
             processError = new ByteArrayInputStream(msg.getBytes());
@@ -247,15 +281,8 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
     }
 
     @Override
-    public void cancel() {
-        int pid = getPIDNoException();
-
-        if (pid < 0) {
-            // Process even was not started ...
-            return;
-        }
-
-        CommonTasksSupport.sendSignal(info.getExecutionEnvironment(), pid, Signal.SIGTERM, null);
+    public synchronized void cancel() {
+        ProcessUtils.destroy(this);
     }
 
     @Override
@@ -267,7 +294,13 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             return -1;
         }
 
-        if (isWindows || isMacOS) {
+        if (osFamily == OSFamily.LINUX || osFamily == OSFamily.SUNOS) {
+            File f = new File("/proc/" + pid); // NOI18N
+
+            while (f.exists()) {
+                Thread.sleep(300);
+            }
+        } else {
             int rc = 0;
             while (rc == 0) {
                 try {
@@ -277,12 +310,6 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                     rc = -1;
                 }
 
-                Thread.sleep(300);
-            }
-        } else {
-            File f = new File("/proc/" + pid); // NOI18N
-
-            while (f.exists()) {
                 Thread.sleep(300);
             }
         }
@@ -322,6 +349,10 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             }
         }
 
+        if (getState() == State.CANCELLED) {
+            throw new InterruptedException();
+        }
+
         return exitCode;
     }
 
@@ -341,8 +372,6 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
     }
 
     private void waitPID(Process termProcess, File pidFile) throws IOException {
-        int count = 10;
-
         while (!isInterrupted()) {
             /**
              * The following sleep appears after an attempt to support konsole
@@ -362,7 +391,8 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             try {
                 Thread.sleep(500);
             } catch (InterruptedException ex) {
-                continue;
+                Thread.currentThread().interrupt();
+                break;
             }
 
             if (pidFile.exists() && pidFile.length() > 0) {
@@ -376,13 +406,6 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                     }
                 }
                 break;
-            }
-
-            if (count-- == 0) {
-                // PID is not available after limit attempts
-                // Wrapping everything up...
-                termProcess.destroy();
-                throw new IOException(loc("TerminalLocalNativeProcess.terminalRunFailed.text")); // NOI18N
             }
 
             try {

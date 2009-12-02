@@ -84,6 +84,7 @@ import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.util.DLightLogger;
+import org.netbeans.modules.dlight.util.usagetracking.SunStudioUserCounter;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -93,7 +94,6 @@ import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.windows.InputOutput;
 
 /**
@@ -299,28 +299,8 @@ public class SunStudioDataCollector
             cmd = command;
             sproHome = sprohome;
             validatedTarget = target;
-            countSSDataCollectorUsage(sprohome, execEnv);
+            SunStudioUserCounter.countGizmo(sprohome, execEnv); // NOI18N
             return validationStatus;
-        }
-    }
-
-    private static final boolean SUNW_NO_UPDATE_NOTIFY;
-    private static final RequestProcessor SS_USER_COUNT = new RequestProcessor("SunStudio check_update"); // NOI18N
-    static {
-        SUNW_NO_UPDATE_NOTIFY = true;//(System.getProperty("SUNW_NO_UPDATE_NOTIFY") != null);  // NOI18N
-    }
-    private static void countSSDataCollectorUsage(final String sproHome, final ExecutionEnvironment execEnv) {
-        if (!SUNW_NO_UPDATE_NOTIFY && ConnectionManager.getInstance().isConnectedTo(execEnv)) {
-            SS_USER_COUNT.post(new Runnable() {
-
-                public void run() {
-                    NativeProcessBuilder nb = NativeProcessBuilder.newProcessBuilder(execEnv).setExecutable(sproHome + "/../prod/bin/check_update").setArguments("dlightss"); // NOI18N
-                    try {
-                        nb.call();
-                    } catch (IOException ex) {
-                    }
-                }
-            });
         }
     }
 
@@ -607,8 +587,10 @@ public class SunStudioDataCollector
                 npb.setArguments("-P", "" + at.getPID(), "-o", config.experimentDirectory); // NOI18N
 
                 ExecutionDescriptor descr = new ExecutionDescriptor();
-                descr = descr.errProcessorFactory(new StdErrRedirectorFactory());
-                descr = descr.outProcessorFactory(new StdErrRedirectorFactory());
+                if (log.isLoggable(Level.FINEST)) {
+                    descr = descr.errProcessorFactory(new StdErrRedirectorFactory());
+                    descr = descr.outProcessorFactory(new StdErrRedirectorFactory());
+                }
                 descr = descr.inputOutput(InputOutput.NULL);
 
                 ExecutionService service = ExecutionService.newService(npb, descr, "collect"); // NOI18N

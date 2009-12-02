@@ -62,9 +62,11 @@ import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.openide.util.Exceptions;
 
 /**
  * @author mt154047
@@ -156,6 +158,7 @@ public class CppSymbolDemanglerImpl implements CppSymbolDemangler {
         env = ExecutionEnvironmentFactory.getLocal();
     }
 
+
     public String demangle(String symbolName) {
         String mangledName = stripModuleAndOffset(symbolName);
 
@@ -233,7 +236,7 @@ public class CppSymbolDemanglerImpl implements CppSymbolDemangler {
     }
 
     private static String stripModuleAndOffset(String functionName) {
-        int plusPos = functionName.indexOf('+'); // NOI18N
+        int plusPos = functionName.indexOf("+0x"); // NOI18N
         if (0 <= plusPos) {
             functionName = functionName.substring(0, plusPos);
         }
@@ -283,7 +286,7 @@ public class CppSymbolDemanglerImpl implements CppSymbolDemangler {
 
         final NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
 
-        if (GCPPFILT.equals(demanglerTool) || CPPFILT.equals(demanglerTool)) {
+        if (demanglerTool.indexOf(GCPPFILT) >= 0 || demanglerTool.indexOf(CPPFILT) >=0) {
             StringBuilder cmdline = new StringBuilder();
             cmdline.append(ECHO).append(" \""); // NOI18N
             for (String name : mangledNames) {
@@ -332,13 +335,26 @@ public class CppSymbolDemanglerImpl implements CppSymbolDemangler {
 
     private synchronized void checkDemanglerIfNeeded() {
         if (!demanglerChecked) {
-            if (HostInfoUtils.searchFile(env, searchPaths, demanglerTool, true) == null) {
-                String fallbackDemangler = CPPFILT;
-                if (HostInfoUtils.searchFile(env, searchPaths, fallbackDemangler, true) == null) {
+            String exeSuffix = ""; // NOI18N
+            try {
+                HostInfo hostinfo = HostInfoUtils.getHostInfo(env);
+                if (hostinfo.getOSFamily() == HostInfo.OSFamily.WINDOWS) {
+                    exeSuffix = ".exe"; // NOI18N
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+
+            String absPath = HostInfoUtils.searchFile(env, searchPaths, demanglerTool + exeSuffix, true);
+            if (absPath == null) {
+                absPath = HostInfoUtils.searchFile(env, searchPaths, CPPFILT + exeSuffix, true);
+                if (absPath == null) {
                     demanglerTool = null;
                 } else {
-                    demanglerTool = fallbackDemangler;
+                    demanglerTool = absPath;
                 }
+            } else {
+                demanglerTool = absPath;
             }
             demanglerChecked = true;
         }

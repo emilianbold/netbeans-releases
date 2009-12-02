@@ -66,6 +66,9 @@ import org.openide.util.Lookup;
 public class ConfigurationDescriptorProvider {
     public static final String USG_PROJECT_CONFIG_CND = "USG_PROJECT_CONFIG_CND"; // NOI18N
     public static final String USG_PROJECT_OPEN_CND = "USG_PROJECT_OPEN_CND"; // NOI18N
+    public static final String USG_PROJECT_CREATE_CND = "USG_PROJECT_CREATE_CND"; // NOI18N
+    public static final String USG_LOGGER_NAME = "org.netbeans.ui.metrics.cnd"; // NOI18N
+
     private FileObject projectDirectory;
     private volatile MakeConfigurationDescriptor projectDescriptor = null;
     private volatile boolean hasTried = false;
@@ -193,25 +196,40 @@ public class ConfigurationDescriptorProvider {
     }
 
     public static void recordMetrics(String msg, MakeConfigurationDescriptor descr) {
+        recordMetricsImpl(msg, null, descr);
+    }
+
+    public static void recordCreatedProjectMetrics(MakeConfiguration[] confs) {
+        if (confs != null && confs.length > 0) {
+            recordMetricsImpl(USG_PROJECT_CREATE_CND, confs[0], null);
+        }
+    }
+
+    private static void recordMetricsImpl(String msg, MakeConfiguration makeConfiguration, MakeConfigurationDescriptor descr) {
         if (CndUtils.isUnitTestMode()) {
             // we don't want to count own tests
             return;
         }
-        if (!(descr instanceof MakeConfigurationDescriptor)) {
+        if (!(descr instanceof MakeConfigurationDescriptor) && makeConfiguration == null) {
             return;
         }
-        Logger logger = Logger.getLogger("org.netbeans.ui.metrics.cnd"); // NOI18N
+        Logger logger = Logger.getLogger(USG_LOGGER_NAME);
         if (logger.isLoggable(Level.INFO)) {
             LogRecord rec = new LogRecord(Level.INFO, msg);
+            Item[] projectItems = null;
+            if (makeConfiguration == null) {
                 if (descr.getConfs() == null || descr.getConfs().getActive() == null){
                     return;
                 }
-                Item[] projectItems = (descr).getProjectItems();
-                if (projectItems == null || projectItems.length == 0) {
+                if (makeConfiguration == null) {
+                    makeConfiguration = descr.getActiveConfiguration();
+                }
+                projectItems = (descr).getProjectItems();
+                if (!USG_PROJECT_CREATE_CND.equals(msg) && (projectItems == null || projectItems.length == 0)) {
                     // do not track empty applications
                     return;
                 }
-                MakeConfiguration makeConfiguration = descr.getActiveConfiguration();
+            }
                 String type;
                 switch (makeConfiguration.getConfigurationType().getValue()) {
                     case MakeConfiguration.TYPE_MAKEFILE:
@@ -276,40 +294,47 @@ public class ConfigurationDescriptorProvider {
                 } else {
                     platform = "UNKNOWN_PLATFORM"; // NOI18N
                 }
-                makeConfiguration.reCountLanguages(descr);
-                int size = 0;
-                int allItems = projectItems.length;
-                boolean cLang = false;
-                boolean ccLang = false;
-                boolean fLang = false;
-                boolean aLang = false;
-                for (Item item : projectItems) {
-                    ItemConfiguration itemConfiguration = item.getItemConfiguration(makeConfiguration);
-                    if (itemConfiguration != null && !itemConfiguration.getExcluded().getValue()) {
-                        size++;
-                        switch (itemConfiguration.getTool()) {
-                            case Tool.CCompiler:
-                                cLang = true;
-                                break;
-                            case Tool.CCCompiler:
-                                ccLang = true;
-                                break;
-                            case Tool.FortranCompiler:
-                                fLang = true;
-                                break;
-                            case Tool.Assembler:
-                                aLang = true;
-                                break;
+                if (USG_PROJECT_CREATE_CND.equals(msg)) {
+                    // stop here
+                    rec.setParameters(new Object[] { type, flavor, family, host, platform, "USER_PROJECT"}); // NOI18N
+                    rec.setLoggerName(logger.getName());
+                    logger.log(rec);
+                } else if (projectItems != null) {
+                    makeConfiguration.reCountLanguages(descr);
+                    int size = 0;
+                    int allItems = projectItems.length;
+                    boolean cLang = false;
+                    boolean ccLang = false;
+                    boolean fLang = false;
+                    boolean aLang = false;
+                    for (Item item : projectItems) {
+                        ItemConfiguration itemConfiguration = item.getItemConfiguration(makeConfiguration);
+                        if (itemConfiguration != null && !itemConfiguration.getExcluded().getValue()) {
+                            size++;
+                            switch (itemConfiguration.getTool()) {
+                                case Tool.CCompiler:
+                                    cLang = true;
+                                    break;
+                                case Tool.CCCompiler:
+                                    ccLang = true;
+                                    break;
+                                case Tool.FortranCompiler:
+                                    fLang = true;
+                                    break;
+                                case Tool.Assembler:
+                                    aLang = true;
+                                    break;
+                            }
                         }
                     }
+                    String ccUsage = ccLang ? "USE_CPP" : "NO_CPP"; // NOI18N
+                    String cUsage = cLang ? "USE_C" : "NO_C"; // NOI18N
+                    String fUsage = fLang ? "USE_FORTRAN" : "NO_FORTRAN"; // NOI18N
+                    String aUsage = aLang ? "USE_ASM" : "NO_ASM"; // NOI18N
+                    rec.setParameters(new Object[] { type, flavor, family, host, platform, toSizeString(allItems), toSizeString(size), ccUsage, cUsage, fUsage, aUsage});
+                    rec.setLoggerName(logger.getName());
+                    logger.log(rec);
                 }
-                String ccUsage = ccLang ? "USE_CPP" : "NO_CPP"; // NOI18N
-                String cUsage = cLang ? "USE_C" : "NO_C"; // NOI18N
-                String fUsage = fLang ? "USE_FORTRAN" : "NO_FORTRAN"; // NOI18N
-                String aUsage = aLang ? "USE_ASM" : "NO_ASM"; // NOI18N
-                rec.setParameters(new Object[] { type, flavor, family, host, platform, toSizeString(allItems), toSizeString(size), ccUsage, cUsage, fUsage, aUsage});
-                rec.setLoggerName(logger.getName());
-                logger.log(rec);
         }
     }
 

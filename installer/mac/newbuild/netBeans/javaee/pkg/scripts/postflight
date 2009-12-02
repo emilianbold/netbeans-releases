@@ -19,16 +19,13 @@
 
 set -e
 
-script_dir=`dirname "$0"`
+dirname=`dirname "$0"`
+
+. "$dirname"/env.sh
 
 #add Product ID
-"$script_dir"/addproduct_id.sh "WEBEE"
+"$dirname"/addproduct_id.sh "WEBEE"
 
-if [ -d "/Library/Receipts/javaee.pkg" ] ; then
-    rm -rf "/Library/Receipts/javaee.pkg"
-fi
+#clean receipts
+"$dirname"/clean_receipts.sh "javaee-$NB_ID" "org.netbeans.ide.javaee"
 
-if [ -d "/private/var/db/receipts" ] ; then
-    rm -rf "/private/var/db/receipts/org.netbeans.ide.javaee.plist"
-    rm -rf "/private/var/db/receipts/org.netbeans.ide.javaee.bom"
-fi

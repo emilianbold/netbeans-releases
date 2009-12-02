@@ -43,7 +43,6 @@ import java.io.File;
 import java.io.PrintWriter;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
-import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.NbBundle;
@@ -60,8 +59,8 @@ class RfsSyncFactory extends BaseSyncFactory {
 
     @Override
     public RemoteSyncWorker createNew( ExecutionEnvironment executionEnvironment,
-            PrintWriter out, PrintWriter err, File privProjectStorageDir, File... localDirs) {
-        return new RfsSyncWorker(executionEnvironment, out, err, privProjectStorageDir, localDirs);
+            PrintWriter out, PrintWriter err, File privProjectStorageDir, File... files) {
+        return new RfsSyncWorker(executionEnvironment, out, err, privProjectStorageDir, files);
     }
 
     @Override

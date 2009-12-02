@@ -103,6 +103,10 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/line_splitting2.php");
     }
 
+    public void testHereDoc() throws Exception {
+        reformatFileContents("testfiles/formatting/heredoc.php");
+    }
+
     public void testSimpleClassDef() throws Exception {
         reformatFileContents("testfiles/formatting/simple_class_def.php");
     }
@@ -170,6 +174,10 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/issue162586.php");
     }
 
+    public void test176453() throws Exception {
+        reformatFileContents("testfiles/formatting/issue176453.php");
+    }
+
     public void test165762() throws Exception {
         reformatFileContents("testfiles/formatting/issue165762.php");
     }
@@ -208,6 +216,10 @@ public class PHPFormatterTest extends PHPTestBase {
 
     public void test172475() throws Exception {
         reformatFileContents("testfiles/formatting/issue172475.php");
+    }
+
+    public void test167791() throws Exception {
+        reformatFileContents("testfiles/formatting/issue167791.php", 5);
     }
   
     private void reformatFileContents(String file) throws Exception {
@@ -249,6 +261,8 @@ public class PHPFormatterTest extends PHPTestBase {
 
         Preferences prefs = CodeStylePreferences.get(doc).getPreferences();
         prefs.putInt(FmtOptions.initialIndent, initialIndent);
+        prefs.putInt(FmtOptions.continuationIndentSize, 4);
+
         format(doc, formatter, formatStart, formatEnd, false);
 
         String after = doc.getText(0, doc.getLength());

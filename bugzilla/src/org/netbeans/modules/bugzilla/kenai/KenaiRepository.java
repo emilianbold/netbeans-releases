@@ -40,6 +40,8 @@
 package org.netbeans.modules.bugzilla.kenai;
 
 import java.awt.Image;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.net.PasswordAuthentication;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -56,20 +58,25 @@ import org.netbeans.modules.bugzilla.query.QueryParameter;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
+import org.netbeans.modules.bugzilla.util.BugzillaUtil;
+import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiProject;
+import org.netbeans.modules.kenai.ui.api.NbModuleOwnerSupport.OwnerInfo;
+import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.windows.WindowManager;
 
 /**
  *
  * @author Tomas Stupka, Jan Stola
  */
-public class KenaiRepository extends BugzillaRepository {
+public class KenaiRepository extends BugzillaRepository implements PropertyChangeListener {
 
     static final String ICON_PATH = "org/netbeans/modules/bugtracking/ui/resources/kenai-small.png"; // NOI18N
     private String urlParam;
     private Image icon;
-    private String product;
+    private final String product;
     private KenaiQuery myIssues;
     private KenaiQuery allIssues;
     private String host;
@@ -83,6 +90,7 @@ public class KenaiRepository extends BugzillaRepository {
         this.host = host;
         assert kenaiProject != null;
         this.kenaiProject = kenaiProject;
+        Kenai.getDefault().addPropertyChangeListener(this);
     }
 
     public KenaiRepository(KenaiProject kenaiProject, String repoName, String url, String host, String urlParam, String product) {
@@ -132,6 +140,7 @@ public class KenaiRepository extends BugzillaRepository {
     }
 
     synchronized Query getAllIssuesQuery() throws MissingResourceException {
+        if(!providePredefinedQueries() || BugzillaUtil.isNbRepository(this)) return null;
         if (allIssues == null) {
             StringBuffer url = new StringBuffer();
             url = new StringBuffer();
@@ -143,19 +152,10 @@ public class KenaiRepository extends BugzillaRepository {
     }
 
     synchronized Query getMyIssuesQuery() throws MissingResourceException {
+        if(!providePredefinedQueries()) return null;
         if (myIssues == null) {
-            StringBuffer url = new StringBuffer();
-            url.append(urlParam);
-
-            // XXX escape @?
-            // XXX what if user already mail address?
-            String user = getKenaiUser();
-            if(user == null) {
-                user = "";                                                  // NOI18N
-            }
-            String userMail = user + "@"+ host;                             // NOI18N
-            url.append(MessageFormat.format(BugzillaConstants.MY_ISSUES_PARAMETERS_FORMAT, product, userMail));
-
+            
+            String url = getQueryUrl();
             myIssues =
                 new KenaiQuery(
                     NbBundle.getMessage(KenaiRepository.class, "LBL_MyIssues"), // NOI18N
@@ -166,6 +166,28 @@ public class KenaiRepository extends BugzillaRepository {
                     true);
         }
         return myIssues;
+    }
+
+    private String getQueryUrl() {
+        StringBuffer url = new StringBuffer();
+        url.append(urlParam);
+        String user = getKenaiUser();
+        if (user == null) {
+            user = ""; // NOI18N
+        }
+        
+        // XXX what if user already mail address?
+        // XXX escape @?
+        String userMail = user + "@" + host; // NOI18N
+        url.append(MessageFormat.format(BugzillaConstants.MY_ISSUES_PARAMETERS_FORMAT, product, userMail));
+        return url.toString();
+    }
+
+    @Override
+    public synchronized void refreshConfiguration() {
+        KenaiConfiguration conf = (KenaiConfiguration) getConfiguration();
+        conf.reset();
+        super.refreshConfiguration();
     }
 
     @Override
@@ -230,10 +252,21 @@ public class KenaiRepository extends BugzillaRepository {
 
     @Override
     protected QueryParameter[] getSimpleSearchParameters() {
-        return new QueryParameter[] {
-            new QueryParameter.SimpleQueryParameter("product",          //NOI18N
-                    new String[] { product } )
-        };
+        List<QueryParameter> ret = new ArrayList<QueryParameter>();
+        ret.add(new QueryParameter.SimpleQueryParameter("product", new String[] { product } ));    //NOI18N        
+
+        // XXX this relies on the fact that the user can't change the selection
+        //     while the quicksearch is oppened. Works for now, but might change in the future
+        Node[] nodes = WindowManager.getDefault().getRegistry().getActivatedNodes();
+        OwnerInfo ownerInfo = getOwnerInfo(nodes);
+        if(ownerInfo != null && ownerInfo.getOwner().equals(product)) {
+            List<String> data = ownerInfo.getExtraData();
+            if(data != null && data.size() > 0) {
+                ret.add(new QueryParameter.SimpleQueryParameter("component", new String[] { data.get(0) }));    //NOI18N
+    }
+        }
+
+        return ret.toArray(new QueryParameter[ret.size()]);
     }
 
     @Override
@@ -248,4 +281,62 @@ public class KenaiRepository extends BugzillaRepository {
     private static String getRepositoryId(String name, String url) {
         return TextUtils.encodeURL(url) + ":" + name;                           // NOI18N
     }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if(evt.getPropertyName().equals(Kenai.PROP_LOGIN)) {
+            // XXX move to spi?
+            // get kenai credentials
+            String user;
+            String psswd;
+            PasswordAuthentication pa = KenaiUtil.getPasswordAuthentication(false);
+            if(pa != null) {
+                user = pa.getUserName();
+                psswd = new String(pa.getPassword());
+            } else {
+                user = "";                                                      // NOI18N
+                psswd = "";                                                     // NOI18N
+            }
+
+            setCredentials(user, psswd);
+
+            synchronized(KenaiRepository.this) {
+                if(evt.getNewValue() != null) {
+                    if(myIssues != null) {
+                        // XXX this is a mess - setting the controller and the query
+                        KenaiQueryController c = (KenaiQueryController) myIssues.getController();
+                        String url = getQueryUrl();
+                        c.populate(url);
+                        myIssues.setUrlParameters(url);
+                    }
+                } 
+            }
+        }
+    }
+
+    @Override
+    public OwnerInfo getOwnerInfo(Node[] nodes) {
+        OwnerInfo ownerInfo = super.getOwnerInfo(nodes);
+        if(ownerInfo != null) {
+            if(ownerInfo.getOwner().equals(product)) {
+                return ownerInfo;
+            } else {
+                Bugzilla.LOG.warning(
+                        " returned owner [" +               // NOI18N
+                        ownerInfo.getOwner() +
+                        "] for " +                          // NOI18N
+                        nodes[0] +
+                        " is different then product [" +    // NOI18N
+                        product +
+                        "]");                               // NOI18N
+                return null;
+            }
+        }
+        return null;
+    }
+
+    private boolean providePredefinedQueries() {
+        String provide = System.getProperty("org.netbeans.modules.bugzilla.noPredefinedQueries");   // NOI18N
+        return !"true".equals(provide);                                                             // NOI18N
+    }
+
 }

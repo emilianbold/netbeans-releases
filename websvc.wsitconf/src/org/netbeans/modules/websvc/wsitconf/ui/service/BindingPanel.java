@@ -180,6 +180,7 @@ public class BindingPanel extends SectionInnerPanel {
         }
         if (supportedConfigVersions.isEmpty()) {
             supportedConfigVersions.add(ConfigVersion.CONFIG_1_0);
+            cfgVersionCombo.addItem(ConfigVersion.CONFIG_1_0);
         }
         inSync = false;
 
@@ -590,8 +591,8 @@ public class BindingPanel extends SectionInnerPanel {
                 boolean isSSL = ProfilesModelHelper.isSSLProfile(secProfile);
                 if (isSSL) {
                     keyStoreConfigRequired = false;
-                    trustStoreConfigRequired = false;
                 }
+                trustStoreConfigRequired = ProfilesModelHelper.isTruststoreRequired(secProfile, binding, false);
                 if (ComboConstants.PROF_KERBEROS.equals(secProfile)) {
                     keyStoreConfigRequired = false;
                     trustStoreConfigRequired = false;

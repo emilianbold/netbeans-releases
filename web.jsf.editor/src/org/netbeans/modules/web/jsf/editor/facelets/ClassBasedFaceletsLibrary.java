@@ -40,7 +40,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import org.netbeans.modules.web.jsf.editor.tld.TldLibrary;
+import org.netbeans.modules.web.jsf.editor.tld.LibraryDescriptor;
 
 public class ClassBasedFaceletsLibrary extends FaceletsLibrary {
 
@@ -59,10 +59,10 @@ public class ClassBasedFaceletsLibrary extends FaceletsLibrary {
         return Collections.unmodifiableCollection(components);
     }
 
-    public TldLibrary getAssociatedTLDLibrary() {
-        return support.getJsfSupport().getTldLibrary(getNamespace());
+    public LibraryDescriptor getLibraryDescriptor() {
+        return support.getJsfSupport().getLibraryDescriptor(getNamespace());
     }
-    
+
     public void putConverter(String name, String id) {
         components.add(new Converter(name, id, null));
     }

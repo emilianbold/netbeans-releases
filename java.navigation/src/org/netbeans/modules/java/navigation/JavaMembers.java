@@ -47,6 +47,7 @@ import java.util.List;
 import javax.lang.model.element.ElementKind;
 import javax.swing.JDialog;
 
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ElementHandle;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
@@ -67,7 +68,15 @@ public final class JavaMembers {
         if (fileObject != null) {
             JavaSource javaSource = JavaSource.forFileObject(fileObject);
             if (javaSource != null) {
-                  showDialog("", new JavaMembersPanel(fileObject)); //NOI18N
+                String name = null;
+                final ClassPath srcPath = ClassPath.getClassPath(fileObject, ClassPath.SOURCE);
+                if (srcPath != null) {
+                    name = srcPath.getResourceName(fileObject, '.', false); //NOI18N
+                }
+                if (name == null) {
+                    name = "";  //NOI18N
+                }
+                showDialog(name, new JavaMembersPanel(fileObject), fileObject);
             }
         }
     }
@@ -86,16 +95,16 @@ public final class JavaMembers {
                     membersOf = namesList.toString();
                 }
             }
-            showDialog(membersOf, new JavaMembersPanel(fileObject, elements));
+            showDialog(membersOf, new JavaMembersPanel(fileObject, elements), fileObject);
         }
     }
 
     //<editor-fold desc="Private methods">
-    private static void showDialog (final String membersOf, final JavaMembersPanel panel) {
+    private static void showDialog (final String membersOf, final JavaMembersPanel panel, FileObject file) {
         assert membersOf != null;
         assert panel != null;
         StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(JavaMembers.class, "LBL_WaitNode"));
-            JDialog dialog = ResizablePopup.getDialog();
+            JDialog dialog = ResizablePopup.getDialog(file);
 
             String title = NbBundle.getMessage(JavaMembers.class, "TITLE_Members", membersOf);
             dialog.setTitle(title); // NOI18N

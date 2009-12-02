@@ -40,7 +40,7 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
     <folder name="Databases">
         <folder name="JDBCDrivers">
@@ -50,8 +50,12 @@ made subject to such option by the copyright holder.
     </folder>
     <folder name="org-netbeans-api-project-libraries">
         <folder name="Libraries">
-            <file name="MySQLDriver.xml" url="MySQLDriver.xml"/>
-            <file name="PostgreSQLDriver.xml" url="PostgreSQLDriver.xml"/>
+            <file name="MySQLDriver.xml" url="MySQLDriver.xml">
+                <attr name="displayName" bundlevalue="org.netbeans.modules.db.drivers.Bundle#MySQLDriver"/>
+            </file>
+            <file name="PostgreSQLDriver.xml" url="PostgreSQLDriver.xml">
+                <attr name="displayName" bundlevalue="org.netbeans.modules.db.drivers.Bundle#PostgreSQLDriver"/>
+            </file>
         </folder>
     </folder>
 </filesystem>
