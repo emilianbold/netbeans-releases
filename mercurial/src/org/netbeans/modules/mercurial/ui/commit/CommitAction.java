@@ -52,7 +52,6 @@ import org.netbeans.modules.mercurial.FileStatusCache;
 import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.HgFileNode;
 import org.netbeans.modules.mercurial.HgModuleConfig;
-import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.ui.status.StatusAction;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.openide.DialogDescriptor;
@@ -68,7 +67,6 @@ import java.util.Iterator;
 import java.util.Map;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
-import java.awt.event.ActionEvent;
 import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.HashMap;
@@ -81,6 +79,7 @@ import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import org.netbeans.modules.mercurial.hooks.spi.HgHookContext;
 import org.netbeans.modules.mercurial.hooks.spi.HgHook;
+import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.versioning.util.IndexingBridge;
@@ -88,6 +87,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.nodes.Node;
 
 /**
  * Commit action for mercurial:
@@ -99,15 +99,9 @@ public class CommitAction extends ContextAction {
 
     static final String RECENT_COMMIT_MESSAGES = "recentCommitMessage"; // NOI18N
 
-    private final VCSContext context;
-
-    public CommitAction(String name, VCSContext context) {
-        this.context = context;
-        putValue(Action.NAME, name);
-    }
-
     @Override
-    public boolean isEnabled () {
+    protected boolean enable(Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
         Set<File> ctxFiles = context != null? context.getRootFiles(): null;
         if (!HgUtils.isFromHgRepository(context) || ctxFiles == null || ctxFiles.size() == 0) {
             return false;
@@ -115,7 +109,13 @@ public class CommitAction extends ContextAction {
         return true;
     }
 
-    public void performAction(ActionEvent e) {
+    protected String getBaseName(Node[] nodes) {
+        return "CTL_MenuItem_Commit"; // NOI18N
+    }
+
+    @Override
+    protected void performContextAction(Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
         final File root = HgUtils.getRootFile(context);
         if (root == null) {
             OutputLogger logger = OutputLogger.getLogger(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE);

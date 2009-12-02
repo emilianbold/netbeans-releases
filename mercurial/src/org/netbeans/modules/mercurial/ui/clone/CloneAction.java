@@ -45,13 +45,13 @@ import java.net.PasswordAuthentication;
 import java.util.MissingResourceException;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import javax.swing.*;
-import java.awt.event.ActionEvent;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -71,6 +71,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.nodes.Node;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -86,14 +87,30 @@ import static org.netbeans.modules.mercurial.ui.properties.HgProperties.HGPROPNA
  * @author John Rice
  */
 public class CloneAction extends ContextAction {
-    private final VCSContext context;
-
-    public CloneAction(String name, VCSContext context) {
-        this.context = context;
-        putValue(Action.NAME, name);
+    @Override
+    protected boolean enable(Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
+        return HgUtils.isFromHgRepository(context);
     }
-    
-    public void performAction(ActionEvent ev){
+
+    protected String getBaseName(Node[] nodes) {
+        VCSContext ctx = HgUtils.getCurrentContext(nodes);
+        Set<File> roots = HgUtils.getRepositoryRoots(ctx);
+        return roots.size() == 1 ? "CTL_MenuItem_CloneLocal" : "CTL_MenuItem_CloneRepository"; // NOI18N
+    }
+
+    @Override
+    public String getName(String role, Node[] activatedNodes) {
+        VCSContext ctx = HgUtils.getCurrentContext(activatedNodes);
+        Set<File> roots = HgUtils.getRepositoryRoots(ctx);
+        String name = getBaseName(activatedNodes);
+        return roots.size() == 1 ? NbBundle.getMessage(CloneAction.class, name, roots.iterator().next().getName())
+                : NbBundle.getMessage(CloneAction.class, name);
+    }
+
+    @Override
+    protected void performContextAction(Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
         final File roots[] = HgUtils.getActionRoots(context);
         if (roots == null || roots.length == 0) return;
         final File root = Mercurial.getInstance().getRepositoryRoot(roots[0]);
@@ -336,10 +353,6 @@ public class CloneAction extends ContextAction {
             }
         });
         return support.start(rp, source, org.openide.util.NbBundle.getMessage(CloneAction.class, "LBL_Clone_Progress", source)); // NOI18N
-    }
-
-    public boolean isEnabled() {
-        return HgUtils.isFromHgRepository(context);
     }
    
     private static final String HG_PATHS_SECTION_ENCLOSED = "[" + HgConfigFiles.HG_PATHS_SECTION + "]";// NOI18N

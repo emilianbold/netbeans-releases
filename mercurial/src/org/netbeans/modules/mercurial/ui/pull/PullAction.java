@@ -43,7 +43,6 @@ package org.netbeans.modules.mercurial.ui.pull;
 import java.net.URISyntaxException;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import javax.swing.*;
-import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -69,11 +68,10 @@ import org.openide.NotifyDescriptor;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.openide.DialogDescriptor;
+import org.openide.nodes.Node;
 import static org.netbeans.modules.mercurial.util.HgUtils.isNullOrEmpty;
 
 /**
@@ -92,14 +90,19 @@ public class PullAction extends ContextAction {
     {
     }
 
-    private final VCSContext context;
-
-    public PullAction(String name, VCSContext context) {
-        this.context = context;
-        putValue(Action.NAME, name);
+    @Override
+    protected boolean enable(Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
+        return HgUtils.isFromHgRepository(context);
     }
 
-    public void performAction(ActionEvent e) {
+    protected String getBaseName(Node[] nodes) {
+        return "CTL_MenuItem_PullLocal";                                //NOI18N
+    }
+
+    @Override
+    protected void performContextAction(Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
         final File roots[] = HgUtils.getActionRoots(context);
         final File repository =
                 roots != null && roots.length > 0 ?
@@ -196,10 +199,6 @@ public class PullAction extends ContextAction {
             }
         };
         support.start(rp, repository, org.openide.util.NbBundle.getMessage(PullAction.class, "MSG_PULL_PROGRESS")); // NOI18N
-    }
-
-    public boolean isEnabled() {
-        return HgUtils.isFromHgRepository(context);
     }
 
     static void getDefaultAndPerformPull(VCSContext ctx, File root, OutputLogger logger) {
