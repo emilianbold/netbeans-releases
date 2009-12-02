@@ -338,18 +338,6 @@ public abstract class MemoryResultsPanel extends ResultsPanel {
 
     protected abstract void performDefaultAction(int selectedClassId);
 
-    protected void showSourceForClass(int classId) {
-        if (classId < 0) {
-            return;
-        }
-
-        String className = getClassName(classId);
-        className = className.replaceAll("\\[", ""); // NOI18N
-        className = className.replaceAll("/", "."); // NOI18N
-
-        actionsHandler.showSourceForMethod(className, null, null);
-    }
-
     //----------------------------------------------------------------------------
     // Sorting results according to different criteria - used in subclasses
 

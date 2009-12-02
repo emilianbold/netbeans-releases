@@ -40,7 +40,6 @@
 
 package org.netbeans.modules.profiler.ui.stp;
 
-import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.client.ClientUtils;
 import org.netbeans.lib.profiler.common.Profiler;
 import org.netbeans.lib.profiler.common.ProfilingSettings;
@@ -161,7 +160,6 @@ public class CPUSettingsBasicPanel extends DefaultSettingsPanel implements Actio
     private JRadioButton stopwatchRadio;
     private List<SimpleFilter> preferredInstrFilters;
     private Object selectedInstrumentationFilter = SimpleFilter.NO_FILTER;
-    private Project project; // TODO: implement reset or remove!!!
     private Runnable profilingPointsDisplayer;
     private SimpleFilter quickFilter;
     private ClientUtils.SourceCodeSelection[] rootMethods = new ClientUtils.SourceCodeSelection[0];
@@ -181,11 +179,10 @@ public class CPUSettingsBasicPanel extends DefaultSettingsPanel implements Actio
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
-    public void setContext(Project project, List<SimpleFilter> preferredInstrFilters, Runnable profilingPointsDisplayer) {
-        this.project = project;
+    public void setContext(List<SimpleFilter> preferredInstrFilters, Runnable profilingPointsDisplayer) {
         this.profilingPointsDisplayer = profilingPointsDisplayer;
         this.preferredInstrFilters = preferredInstrFilters;
-        profilingPointsCheckbox.setEnabled(project != null);
+        profilingPointsCheckbox.setEnabled(false);
     }
 
     public HelpCtx getHelpCtx() {
@@ -732,7 +729,7 @@ public class CPUSettingsBasicPanel extends DefaultSettingsPanel implements Actio
     }
 
     private void performRootMethodsAction() {
-        ClientUtils.SourceCodeSelection[] roots = RootMethodsPanel.getSelectedRootMethods(rootMethods, project);
+        ClientUtils.SourceCodeSelection[] roots = RootMethodsPanel.getSelectedRootMethods(rootMethods);
 
         if (roots != null) {
             rootMethods = roots;
@@ -885,34 +882,6 @@ public class CPUSettingsBasicPanel extends DefaultSettingsPanel implements Actio
             SelectProfilingTask.getDefault().disableSubmitButton();
         }
 
-        if (project == null) {
-            // TODO: processing for Attach - External Application
-        } else if (stopwatchRadio.isSelected()) {
-            if (lastProfilingPointsState) {
-                return;
-            }
-
-            profilingPointsStateCache = profilingPointsCheckbox.isSelected();
-            profilingPointsCheckbox.setEnabled(false);
-            profilingPointsCheckbox.setSelected(true);
-            filterLabel.setEnabled(false);
-            filterCombo.setEnabled(false);
-            showFilterLink.setEnabled(false);
-            editFilterSetsLink.setEnabled(false);
-            lastProfilingPointsState = true;
-        } else {
-            if (!lastProfilingPointsState) {
-                return;
-            }
-
-            profilingPointsCheckbox.setEnabled(true);
-            profilingPointsCheckbox.setSelected(profilingPointsStateCache);
-            filterLabel.setEnabled(true);
-            filterCombo.setEnabled(true);
-            showFilterLink.setEnabled(true);
-            editFilterSetsLink.setEnabled(true);
-            lastProfilingPointsState = false;
-        }
     }
 
     private void updateEnabling() {
