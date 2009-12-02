@@ -67,7 +67,7 @@ made subject to such option by the copyright holder.
 
         <center>
             <h1>NetBeans API List</h1>
-            <h3>Current Development Version</h3>
+            <h3>Version 6.8</h3>
             <xsl:if test="$date" >
                 <xsl:value-of select="$date" />
                 <p/>
@@ -101,10 +101,11 @@ made subject to such option by the copyright holder.
         <em>NetBeans</em> one is free to choose the set of modules and their APIs 
         to satisfy one's needs.
         <p>
-        This is a list of APIs for development version, if you want to see
+        This is a list of APIs for NetBeans 6.8 version, if you want to see
         a list of APIs for a particular version, you may want to go to:
         </p>
         <ul>
+            <li><a href="http://bits.netbeans.org/dev/javadoc/" target="_top">Dev</a> - Javadoc as released for development version</li>
             <li><a href="http://bits.netbeans.org/6.7/javadoc/" target="_top">6.7</a> - Javadoc as released for NetBeans IDE 6.7</li>
             <li><a href="http://bits.netbeans.org/6.5/javadoc/" target="_top">6.5</a> - Javadoc as released for NetBeans IDE 6.5</li>
             <li><a href="http://bits.netbeans.org/6.1/javadoc/" target="_top">6.1</a> - Javadoc as released for NetBeans IDE 6.1</li>
