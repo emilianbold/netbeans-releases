@@ -72,6 +72,12 @@ public final class J2EEVersion extends J2EEBaseVersion {
             "5.0", 5000,    // NOI18N
             "5.0", 5000);   // NOI18N	
 
+    /** Represents JavaEE version 6.0
+     */
+    public static final J2EEVersion JAVAEE_6_0 = new J2EEVersion(
+            "6.0", 6000,    // NOI18N
+            "6.0", 6000);   // NOI18N
+
     /** -----------------------------------------------------------------------
      *  Implementation
      */
@@ -103,6 +109,8 @@ public final class J2EEVersion extends J2EEBaseVersion {
             result = J2EE_1_4;
         } else if(JAVAEE_5_0.toString().equals(version)) {
             result = JAVAEE_5_0;
+        } else if(JAVAEE_6_0.toString().equals(version)) {
+            result = JAVAEE_6_0;
         }
 
         return result;
