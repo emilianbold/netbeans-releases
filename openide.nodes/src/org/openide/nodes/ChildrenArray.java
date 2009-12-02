@@ -63,8 +63,7 @@ final class ChildrenArray extends NodeAdapter {
 
     private Map<Info, Collection<Node>> map;
 
-    private static final Logger LOG_NODES_FOR = Logger.getLogger(
-            "org.openide.nodes.ChildrenArray.nodesFor"); // NOI18N
+    private static final Logger LOGGER = Logger.getLogger(ChildrenArray.class.getName()); // NOI18N
 
     /** Creates new ChildrenArray */
     public ChildrenArray() {
@@ -127,9 +126,9 @@ final class ChildrenArray extends NodeAdapter {
     * @return the nodes
     */
     public synchronized Collection<Node> nodesFor(Info info, boolean hasToExist) {
-        final boolean IS_LOG = LOG_NODES_FOR.isLoggable(Level.FINE);
+        final boolean IS_LOG = LOGGER.isLoggable(Level.FINE);
         if (IS_LOG) {
-            LOG_NODES_FOR.finer("nodesFor(" +logInfo(info) + ") on " + Thread.currentThread()); // NOI18N
+            LOGGER.finer("nodesFor(" +logInfo(info) + ") on " + Thread.currentThread()); // NOI18N
         }
         if (map == null) {
             assert !hasToExist : "Should be already initialized";
@@ -138,7 +137,7 @@ final class ChildrenArray extends NodeAdapter {
         Collection<Node> nodes = map.get(info);
 
         if (IS_LOG) {
-            LOG_NODES_FOR.finer("  map size=" + map.size() + ", nodes=" + nodes); // NOI18N
+            LOGGER.finer("  map size=" + map.size() + ", nodes=" + nodes); // NOI18N
         }
 
         if (nodes == null) {
@@ -149,15 +148,19 @@ final class ChildrenArray extends NodeAdapter {
                 NodeOp.warning(ex);
                 nodes = Collections.<Node>emptyList();
             }
+            if (nodes == null) {
+                nodes = Collections.<Node>emptyList();
+                LOGGER.warning("Null returned by " + info.entry + " (" + info.entry.getClass().getName() + ")");
+            }
             info.length = nodes.size();
             map.put(info, nodes);
             if (IS_LOG) {
-                LOG_NODES_FOR.finer("  created nodes=" + nodes); // NOI18N
+                LOGGER.finer("  created nodes=" + nodes); // NOI18N
             }
         }
 
         if (IS_LOG) {
-            LOG_NODES_FOR.finer("  leaving nodesFor(" +logInfo(info) + ") on " + Thread.currentThread()); // NOI18N
+            LOGGER.finer("  leaving nodesFor(" +logInfo(info) + ") on " + Thread.currentThread()); // NOI18N
         }
         return nodes;
     }
