@@ -47,11 +47,11 @@ import org.netbeans.modules.mercurial.FileStatusCache;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.spi.VCSContext;
-import javax.swing.*;
-import java.awt.event.ActionEvent;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
+import org.openide.nodes.Node;
+import org.openide.windows.TopComponent;
 
 /**
  * Status action for mercurial: 
@@ -60,16 +60,20 @@ import org.netbeans.modules.mercurial.ui.actions.ContextAction;
  * @author John Rice
  */
 public class StatusAction extends ContextAction {
-
     
-    private final VCSContext context;
-
-    public StatusAction(String name, VCSContext context) {
-        this.context = context;
-        putValue(Action.NAME, name);
+    @Override
+    public boolean enable (Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
+        return HgUtils.isFromHgRepository(context);
     }
-    
-    public void performAction(ActionEvent ev) {
+
+    protected String getBaseName(Node[] nodes) {
+        return "CTL_MenuItem_ShowChanges"; // NOI18N
+    }
+
+    public void performContextAction (Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
+
         File [] files = context.getRootFiles().toArray(new File[context.getRootFiles().size()]);
         if (files == null || files.length == 0) return;
                 
@@ -80,10 +84,6 @@ public class StatusAction extends ContextAction {
         stc.requestActive();
         stc.performRefreshAction();
     }
-    
-    public boolean isEnabled() {
-        return HgUtils.isFromHgRepository(context);
-    } 
 
     /**
      * Connects to repository and gets recent status.

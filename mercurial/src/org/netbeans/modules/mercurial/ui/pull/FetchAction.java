@@ -51,8 +51,6 @@ import org.openide.NotifyDescriptor;
 import org.openide.util.RequestProcessor;
 
 import java.io.File;
-import javax.swing.*;
-import java.awt.event.ActionEvent;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.logging.Level;
@@ -61,7 +59,7 @@ import org.netbeans.modules.mercurial.config.HgConfigFiles;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.ui.merge.MergeAction;
 import org.netbeans.modules.mercurial.ui.repository.HgURL;
-import org.openide.filesystems.FileUtil;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
 /**
@@ -79,14 +77,19 @@ import org.openide.util.NbBundle;
  */
 public class FetchAction extends ContextAction {
     
-    private final VCSContext context;
-
-    public FetchAction(String name, VCSContext context) {
-        this.context = context;
-        putValue(Action.NAME, name);
+    @Override
+    protected boolean enable(Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
+        return HgUtils.isFromHgRepository(context);
     }
-    
-    public void performAction(ActionEvent e) {
+
+    protected String getBaseName(Node[] nodes) {
+        return "CTL_MenuItem_FetchLocal";                               //NOI18N
+    }
+
+    @Override
+    protected void performContextAction(Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
         final File roots[] = HgUtils.getActionRoots(context);
         if (roots == null || roots.length == 0) return;
         final File root = Mercurial.getInstance().getRepositoryRoot(roots[0]);
@@ -135,8 +138,4 @@ public class FetchAction extends ContextAction {
             logger.output(""); // NOI18N
         }
     }
-
-    public boolean isEnabled() {
-        return HgUtils.isFromHgRepository(context);
-    } 
 }

@@ -50,8 +50,6 @@ import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
-import javax.swing.*;
-import java.awt.event.ActionEvent;
 import java.util.Collections;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -59,12 +57,13 @@ import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.FileStatusCache;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.util.HgCommand;
-import org.netbeans.modules.mercurial.ui.actions.ContextAction;
+import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.openide.DialogDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -77,15 +76,10 @@ import org.openide.util.HelpCtx;
  * @author John Rice
  */
 public class CreateAction extends ContextAction {
-    
-    private final VCSContext context;
 
-    public CreateAction(String name, VCSContext context) {
-        this.context = context;
-        putValue(Action.NAME, name);
-    }
-
-    public boolean isEnabled() {
+    @Override
+    protected boolean enable(Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
         // If it is not a mercurial managed repository enable action
         File root = HgUtils.getRootFile(context);
         File [] files = context.getRootFiles().toArray(new File[context.getRootFiles().size()]);
@@ -96,7 +90,11 @@ public class CreateAction extends ContextAction {
             return true;
         else
             return false;
-    } 
+    }
+
+    protected String getBaseName(Node[] nodes) {
+        return "CTL_MenuItem_Create"; // NOI18N
+    }
 
     private File getCommonAncestor(File firstFile, File secondFile) {
         if (firstFile.equals(secondFile)) return firstFile;
@@ -130,18 +128,20 @@ public class CreateAction extends ContextAction {
         return f1;
     }
 
-    public void performAction(ActionEvent e) {
+    @Override
+    protected void performContextAction(Node[] nodes) {
+        final VCSContext context = HgUtils.getCurrentContext(nodes);
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-                performCreate();
+                performCreate(context);
             }
         });
     }
 
-    private void performCreate () {
+    private void performCreate (VCSContext context) {
         final Mercurial hg = Mercurial.getInstance();
 
-        final File rootToManage = selectRootToManage();
+        final File rootToManage = selectRootToManage(context);
         if (rootToManage == null) {
             return;
         }
@@ -203,8 +203,8 @@ public class CreateAction extends ContextAction {
                 org.openide.util.NbBundle.getMessage(CreateAction.class, "MSG_Create_Add_Progress")); // NOI18N
     }
 
-    private File selectRootToManage() {
-        File rootPath = getSuggestedRoot();
+    private File selectRootToManage (VCSContext context) {
+        File rootPath = getSuggestedRoot(context);
 
         final CreatePanel panel = new CreatePanel();
         panel.lblMessage.setVisible(false);
@@ -311,7 +311,7 @@ public class CreateAction extends ContextAction {
      * If these belong to a project, returns a common ancestor of all rootfiles and the project folder
      * @return
      */
-    private File getSuggestedRoot () {
+    private File getSuggestedRoot (VCSContext context) {
         final File [] files = context.getRootFiles().toArray(new File[context.getRootFiles().size()]);
         if (files == null || files.length == 0) return null;
 
