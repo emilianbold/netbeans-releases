@@ -415,7 +415,7 @@ public class Repository implements ActionListener, FocusListener, ItemListener {
             proxyFields = true;
         } else if(selectedUrlString.startsWith("https:")) {                     // NOI18N
             repositoryPanel.tipLabel.setText(HTTPS_URL_HELP);
-            //authFields = true;
+            authFields = true;
             proxyFields = true;
         } else if(selectedUrlString.startsWith("static-http:")) {                       // NOI18N
             repositoryPanel.tipLabel.setText(STATIC_HTTP_URL_HELP);
