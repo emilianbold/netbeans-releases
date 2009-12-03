@@ -42,6 +42,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -51,24 +52,36 @@ import org.apache.maven.artifact.UnknownRepositoryLayoutException;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.repository.ArtifactRepositoryFactory;
 import org.apache.maven.artifact.repository.ArtifactRepositoryPolicy;
+import org.apache.maven.model.Profile;
+import org.apache.maven.model.building.ModelBuildingEvent;
 import org.apache.maven.model.building.ModelBuildingException;
+import org.apache.maven.model.building.ModelBuildingListener;
+import org.apache.maven.model.building.ModelCache;
+import org.apache.maven.model.building.ModelSource;
+import org.apache.maven.model.resolution.ModelResolver;
 import org.codehaus.plexus.PlexusContainerException;
 import org.codehaus.plexus.classworlds.ClassWorld;
 import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.codehaus.plexus.configuration.PlexusConfigurationException;
 import java.util.prefs.Preferences;
+import org.apache.maven.execution.DefaultMavenExecutionRequest;
+import org.apache.maven.execution.MavenExecutionRequestPopulator;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.building.DefaultModelBuildingRequest;
 import org.apache.maven.model.building.ModelBuilder;
 import org.apache.maven.model.building.ModelBuildingRequest;
 import org.apache.maven.model.building.ModelBuildingResult;
+import org.apache.maven.model.building.ModelProblem;
+import org.apache.maven.project.ProjectBuildingRequest;
 import org.codehaus.plexus.ContainerConfiguration;
 import org.codehaus.plexus.DefaultContainerConfiguration;
 import org.codehaus.plexus.DefaultPlexusContainer;
 import org.codehaus.plexus.component.discovery.ComponentDiscoverer;
 import org.codehaus.plexus.component.discovery.ComponentDiscoveryEvent;
 import org.codehaus.plexus.component.discovery.ComponentDiscoveryListener;
+import org.codehaus.plexus.component.repository.ComponentDescriptor;
+import org.codehaus.plexus.component.repository.ComponentRequirement;
 import org.codehaus.plexus.component.repository.ComponentSetDescriptor;
 import org.codehaus.plexus.context.Context;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
@@ -130,14 +143,17 @@ public final class EmbedderFactory {
             .setName("mavenCore");
 
 
-        dpcreq.addComponentDiscoverer(new ComponentDiscoverer() {
+    dpcreq.addComponentDiscoverer(new ComponentDiscoverer() {
 
       public List<ComponentSetDescriptor> findComponents(Context context, ClassRealm classRealm)
           throws PlexusConfigurationException {
+
         List<ComponentSetDescriptor> componentSetDescriptors = new ArrayList<ComponentSetDescriptor>();
-//TODO        if (mavenCoreRealmId.equals(classRealm.getId())) {
-//          ComponentSetDescriptor componentSetDescriptor = new ComponentSetDescriptor();
-//
+
+        if (mavenCoreRealmId.equals(classRealm.getId())) {
+          ComponentSetDescriptor componentSetDescriptor = new ComponentSetDescriptor();
+
+//          // register EclipseClassRealmManagerDelegate
 //          ComponentDescriptor componentDescriptor = new ComponentDescriptor();
 //          componentDescriptor.setRealm(classRealm);
 //          componentDescriptor.setRole(ClassRealmManagerDelegate.class.getName());
@@ -147,29 +163,32 @@ public final class EmbedderFactory {
 //          plexusRequirement.setFieldName("plexus");
 //          componentDescriptor.addRequirement(plexusRequirement );
 //          componentSetDescriptor.addComponentDescriptor(componentDescriptor);
+
+//          componentDescriptor = new ComponentDescriptor();
+//          componentDescriptor.setRealm(classRealm);
+//          componentDescriptor.setRole(LocalRepositoryMaintainer.class.getName());
+//          componentDescriptor.setImplementationClass(EclipseLocalRepositoryMaintainer.class);
+//          componentSetDescriptor.addComponentDescriptor(componentDescriptor);
 //
 //          componentSetDescriptors.add(componentSetDescriptor);
-//        }
+        }
+
         return componentSetDescriptors;
       }
 
     });
 
-    dpcreq.addComponentDiscoveryListener(new ComponentDiscoveryListener() {
-      @SuppressWarnings("unchecked")
-      public void componentDiscovered(ComponentDiscoveryEvent event) {
-        ComponentSetDescriptor set = event.getComponentSetDescriptor();
-//        for (ComponentDescriptor desc : set.getComponents()) {
-//          if (MavenMetadataCache.class.getName().equals(desc.getRole())) {
-//            desc.setImplementationClass(EclipseMavenMetadataCache.class);
-//          } else if (BuildContext.class.getName().equals(desc.getRole())) {
-//            desc.setImplementationClass(ThreadBuildContext.class);
-//          } else if (MavenPluginManager.class.getName().equals(desc.getRole())) {
-//            desc.setImplementationClass(EclipseMavenPluginManager.class);
-//          }
-//        }
-      }
-    });
+        dpcreq.addComponentDiscoveryListener(new ComponentDiscoveryListener() {
+            @SuppressWarnings("unchecked")
+            public void componentDiscovered(ComponentDiscoveryEvent event) {
+                ComponentSetDescriptor set = event.getComponentSetDescriptor();
+                for (ComponentDescriptor desc : set.getComponents()) {
+                    if (MavenExecutionRequestPopulator.class.getName().equals(desc.getRole())) {
+                        desc.setImplementationClass(NbExecutionRequestPopulator.class);
+                    }
+                }
+            }
+        });
         DefaultPlexusContainer dpc = new DefaultPlexusContainer(dpcreq);
 
         EmbedderConfiguration req = new EmbedderConfiguration();
@@ -181,6 +200,7 @@ public final class EmbedderFactory {
         Properties props = new Properties();
         props.putAll(System.getProperties());
         req.setSystemProperties(fillEnvVars(props));
+        
         File userSettingsPath = MavenEmbedder.DEFAULT_USER_SETTINGS_FILE;
         File globalSettingsPath = InstalledFileLocator.getDefault().locate("maven2/settings.xml", null, false); //NOI18N
 
@@ -271,6 +291,52 @@ public final class EmbedderFactory {
             .setName("mavenCore");
 
 
+    dpcreq.addComponentDiscoverer(new ComponentDiscoverer() {
+
+      public List<ComponentSetDescriptor> findComponents(Context context, ClassRealm classRealm)
+          throws PlexusConfigurationException {
+
+        List<ComponentSetDescriptor> componentSetDescriptors = new ArrayList<ComponentSetDescriptor>();
+
+        if (mavenCoreRealmId.equals(classRealm.getId())) {
+          ComponentSetDescriptor componentSetDescriptor = new ComponentSetDescriptor();
+
+//          // register EclipseClassRealmManagerDelegate
+//          ComponentDescriptor componentDescriptor = new ComponentDescriptor();
+//          componentDescriptor.setRealm(classRealm);
+//          componentDescriptor.setRole(ClassRealmManagerDelegate.class.getName());
+//          componentDescriptor.setImplementationClass(EclipseClassRealmManagerDelegate.class);
+//          ComponentRequirement plexusRequirement = new ComponentRequirement();
+//          plexusRequirement.setRole("org.codehaus.plexus.PlexusContainer");
+//          plexusRequirement.setFieldName("plexus");
+//          componentDescriptor.addRequirement(plexusRequirement );
+//          componentSetDescriptor.addComponentDescriptor(componentDescriptor);
+
+//          componentDescriptor = new ComponentDescriptor();
+//          componentDescriptor.setRealm(classRealm);
+//          componentDescriptor.setRole(LocalRepositoryMaintainer.class.getName());
+//          componentDescriptor.setImplementationClass(EclipseLocalRepositoryMaintainer.class);
+//          componentSetDescriptor.addComponentDescriptor(componentDescriptor);
+//
+//          componentSetDescriptors.add(componentSetDescriptor);
+        }
+
+        return componentSetDescriptors;
+      }
+
+    });
+
+        dpcreq.addComponentDiscoveryListener(new ComponentDiscoveryListener() {
+            @SuppressWarnings("unchecked")
+            public void componentDiscovered(ComponentDiscoveryEvent event) {
+                ComponentSetDescriptor set = event.getComponentSetDescriptor();
+                for (ComponentDescriptor desc : set.getComponents()) {
+                    if (MavenExecutionRequestPopulator.class.getName().equals(desc.getRole())) {
+                        desc.setImplementationClass(NbExecutionRequestPopulator.class);
+                    }
+                }
+            }
+        });
         DefaultPlexusContainer dpc = new DefaultPlexusContainer(dpcreq);
 
         EmbedderConfiguration req = new EmbedderConfiguration();
@@ -459,11 +525,23 @@ public final class EmbedderFactory {
         ModelBuildingRequest req = new DefaultModelBuildingRequest();
         req.setPomFile(pom);
         req.setProcessPlugins(false);
+        req.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
+        //TODO
+        req.setModelResolver(null);
+
         ModelBuildingResult res = mb.build(req);
         List<Model> toRet = new ArrayList<Model>();
+
         for (String id : res.getModelIds()) {
-            toRet.add(res.getRawModel(id));
+            Model m = res.getRawModel(id);
+            toRet.add(m);
         }
+//        for (ModelProblem p : res.getProblems()) {
+//            System.out.println("problem=" + p);
+//            if (p.getException() != null) {
+//                p.getException().printStackTrace();
+//            }
+//        }
         return toRet;
     }
 
