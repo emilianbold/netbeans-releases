@@ -197,35 +197,25 @@ class AutoUpdateCatalogParser extends DefaultHandler {
     }
     
     private static InputSource getInputSource(URL toParse, URL p, URI base) throws IOException {
-        InputStream is = null;
-        try {            
-            is = toParse.openStream ();
-            if (isGzip (p)) {
-                try {
-                    is = new GZIPInputStream(is);
-                } catch (IOException e) {
-                    ERR.log (Level.INFO,
-                            "The file at " + toParse +
-                            ", corresponding to the catalog at " + p +
-                            ", does not look like the gzip file, trying to parse it as the pure xml" , e);
-                    //#150034
-                    // Sometimes the .xml.gz file is downloaded as the pure .xml file due to the strange content-encoding processing
-                    is.close();
-                    is = null;
-                    is = toParse.openStream();
-                }
-            }
-            InputSource src = new InputSource(new BufferedInputStream (is));
-            src.setSystemId(base.toString());
-            return src;
-        } finally {
-            if(is != null) {
-                try {
-                    is.close();
-                } catch (IOException e) {
-                }
+        InputStream is = toParse.openStream ();
+        if (isGzip (p)) {
+            try {
+                is = new GZIPInputStream(is);
+            } catch (IOException e) {
+                ERR.log (Level.INFO,
+                        "The file at " + toParse +
+                        ", corresponding to the catalog at " + p +
+                        ", does not look like the gzip file, trying to parse it as the pure xml" , e);
+                //#150034
+                // Sometimes the .xml.gz file is downloaded as the pure .xml file due to the strange content-encoding processing
+                is.close();
+                is = null;
+                is = toParse.openStream();
             }
         }
+        InputSource src = new InputSource(new BufferedInputStream (is));
+        src.setSystemId(base.toString());
+        return src;
     }
     
     private Stack<String> currentGroup = new Stack<String> ();
