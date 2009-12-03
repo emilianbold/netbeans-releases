@@ -482,8 +482,8 @@ public final class ClasspathInfo {
                 final File sourceFile = new File(source.toURI());
                 final File sourceRoot = getOwnerRoot(source);
                 final File classCache = JavaIndex.getClassFolder(sourceRoot);
-                final String relativePath = FileObjects.getRelativePath(sourceRoot, sourceFile);
-                final File cacheFile = new File (classCache, relativePath);
+                final String relativePath = FileObjects.stripExtension(FileObjects.getRelativePath(sourceRoot, sourceFile));
+                final File cacheFile = new File (classCache, relativePath+'.'+FileObjects.RAPT);
                 final Writer out = new OutputStreamWriter(new FileOutputStream(cacheFile),Charset.forName("UTF-8"));  //NOI18N
                 try {
                     out.write(sb.toString());

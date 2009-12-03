@@ -106,6 +106,7 @@ public class FileObjects {
     public static final String SIG   = "sig";  //NOI18N
     public static final String RS    = "rs";   //NOI18N
     public static final String RX    = "rx";   //NOI18N
+    public static final String RAPT  = "rapt"; //NOI18N
     
     
     /** Creates a new instance of FileObjects */
