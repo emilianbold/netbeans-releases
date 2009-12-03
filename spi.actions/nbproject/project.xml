@@ -34,6 +34,7 @@
             <friend-packages>
                 <friend>org.netbeans.modules.javacard.apdufile</friend>
                 <friend>org.netbeans.modules.javacard.console</friend>
+                <friend>org.netbeans.modules.javacard.oberthur</friend>
                 <friend>org.netbeans.modules.javacard.project</friend>
                 <friend>org.netbeans.modules.javacard.ri.platform</friend>
                 <friend>org.netbeans.modules.javacard.spi</friend>
