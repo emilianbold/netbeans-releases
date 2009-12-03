@@ -60,6 +60,7 @@ import javax.swing.*;
 import java.io.File;
 import java.util.*;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
+import org.openide.windows.TopComponent;
 
 /**
  *
@@ -133,7 +134,8 @@ public class BlameAction extends ContextAction {
             }                                                     
             
             ab.setSVNClienListener(new SVNClientListener(revision, repository, file, ab));
-            
+            TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class, currentPane);
+            tc.requestActive();
             computeAnnotations(repository, file, ab);                        
         }
     }
