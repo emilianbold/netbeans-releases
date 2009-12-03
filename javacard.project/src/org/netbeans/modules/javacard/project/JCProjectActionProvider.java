@@ -281,7 +281,7 @@ public class JCProjectActionProvider implements ActionProvider, PropertyChangeLi
                         CardState state = card.getState();
                         CardInfo info = card.getCapability(CardInfo.class);
                         StartCapability starter = card.getCapability(StartCapability.class);
-                        if (start && state.isNotRunning()) {
+                        if (starter != null && start && state.isNotRunning()) {
                             try {
                                 StatusDisplayer.getDefault().setStatusText(
                                     NbBundle.getMessage(JCProjectActionProvider.class,
