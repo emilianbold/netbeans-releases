@@ -764,7 +764,7 @@ public class TreeModelNode extends AbstractNode {
         }
     }
     
-    /*
+    @Override
     public Transferable drag() throws IOException {
         Transferable t;
         try {
@@ -779,7 +779,6 @@ public class TreeModelNode extends AbstractNode {
             return t;
         }
     }
-     */
     
     @Override
     public void createPasteTypes(Transferable t, List<PasteType> l) {
@@ -797,7 +796,7 @@ public class TreeModelNode extends AbstractNode {
         }
     }
     
-    /*
+    @Override
     public PasteType getDropType(Transferable t, int action, int index) {
         PasteType p;
         try {
@@ -812,7 +811,6 @@ public class TreeModelNode extends AbstractNode {
             return p;
         }
     }
-     */
     
     private final void expandIfSetToExpanded() {
         try {

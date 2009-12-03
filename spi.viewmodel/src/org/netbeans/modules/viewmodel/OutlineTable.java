@@ -43,9 +43,13 @@ package org.netbeans.modules.viewmodel;
 
 import java.awt.BorderLayout;
 import java.awt.Rectangle;
+import java.awt.datatransfer.Transferable;
+import java.awt.dnd.DnDConstants;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -71,6 +75,7 @@ import javax.swing.tree.TreePath;
 import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.ColumnModel;
 
+import org.netbeans.spi.viewmodel.DnDNodeModel;
 import org.netbeans.swing.etable.ETableColumn;
 import org.netbeans.swing.etable.ETableColumnModel;
 import org.netbeans.swing.outline.DefaultOutlineModel;
@@ -353,6 +358,10 @@ ExplorerManager.Provider, PropertyChangeListener {
         // The root node must be ready when setting the columns
         treeTable.setProperties (columnsToSet);
         updateTableColumns(columnsToSet);
+        treeTable.setAllowedDragActions(model.getAllowedDragActions());
+        treeTable.setAllowedDropActions(model.getAllowedDropActions(null));
+        treeTable.setDynamicDropActions(model);
+
         //treeTable.getTable().tableChanged(new TableModelEvent(treeTable.getOutline().getModel()));
         //getExplorerManager ().setRootContext (rootNode);
         
@@ -855,6 +864,9 @@ ExplorerManager.Provider, PropertyChangeListener {
     }
     
     private static class MyTreeTable extends OutlineView {
+
+        private Reference<DnDNodeModel> dndModelRef = new WeakReference<DnDNodeModel>(null);
+
         MyTreeTable () {
             super ();
             Outline outline = getOutline();
@@ -942,6 +954,21 @@ ExplorerManager.Provider, PropertyChangeListener {
                 return null;
             }
         }
+
+        void setDynamicDropActions(DnDNodeModel model) {
+            dndModelRef = new WeakReference<DnDNodeModel>(model);
+        }
+
+        @Override
+        protected int getAllowedDropActions(Transferable t) {
+            DnDNodeModel model = dndModelRef.get();
+            if (model != null) {
+                return model.getAllowedDropActions(t);
+            } else {
+                return super.getAllowedDropActions();
+            }
+        }
+
     }
     
     private static final class F8FilterComponentInputMap extends ComponentInputMap {
