@@ -65,7 +65,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.javacard.common.JCConstants;
 import org.netbeans.modules.javacard.common.Utils;
-import org.netbeans.modules.javacard.ri.platform.RIPlatform;
+import org.netbeans.modules.javacard.ri.platform.installer.RIPlatformFactory;
 import org.netbeans.modules.javacard.ri.platform.installer.ServersPanel;
 import org.netbeans.modules.javacard.spi.DeviceManagerDialogProvider;
 import org.netbeans.modules.javacard.spi.JavacardPlatform;
@@ -130,6 +130,7 @@ public class JavacardPlatformDataObject extends PropertiesBasedDataObject<Javaca
     protected JavacardPlatform createFrom(ObservableProperties properties) {
         String old = properties.getProperty(JavacardPlatformKeyNames.PLATFORM_ID);
         boolean idPropMatch = getName().equals(old);
+        boolean empty = properties.isEmpty();
         if (!idPropMatch) {
             if (LOGGER.isLoggable(Level.FINEST)) {
                 LOGGER.log(Level.FINEST, JavacardPlatformKeyNames.PLATFORM_ID
@@ -140,11 +141,15 @@ public class JavacardPlatformDataObject extends PropertiesBasedDataObject<Javaca
             //be looked up without having to iterate all platforms.
             properties.setProperty(JavacardPlatformKeyNames.PLATFORM_ID, getName());
         }
-        if (properties.isEmpty()) {
+        if (empty) {
             return JavacardPlatform.createBrokenJavacardPlatform(getName());
         } else {
-            JavacardPlatform result = new RIPlatform(properties);
-            return result;
+            try {
+                JavacardPlatform result = RIPlatformFactory.createPlatform(properties, this);
+                return result;
+            } catch (IOException ioe) {
+                return JavacardPlatform.createBrokenJavacardPlatform(getName());
+            }
         }
     }
 

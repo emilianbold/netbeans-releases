@@ -92,7 +92,9 @@ public final class Utils {
      * @return A DataObject which may have the requested card in its lookup (this
      * method does matching by file name and does not check if there is really
      * an instance of Card present)
+     * @deprecated Not all cards are DataObjects anymore
      */
+    @Deprecated
     public static DataObject findDeviceForPlatform(String platform, String card) {
         FileObject deviceFolder = sfsFolderForDeviceConfigsForPlatformNamed(platform, false);
         if (deviceFolder != null) {
