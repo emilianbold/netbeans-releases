@@ -133,7 +133,6 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 import org.openide.util.Cancellable;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
@@ -1014,7 +1013,7 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
     }
 
     private void showSelectPlatformAndDeviceDialog(String platform, String device, boolean cbox) {
-        PlatformAndDeviceProvider prov = BadPlatformOrDevicePanel.showDialog(platform, device, cbox);
+        PlatformAndDeviceProvider prov = BadPlatformOrDevicePanel.showDialog(platform, device, cbox, kind());
         if (prov != null) {
             final String newPlatform = prov.getPlatformName();
             final String newDevice = prov.getActiveDevice();
