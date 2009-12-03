@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.maven;
 
-import java.net.MalformedURLException;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
@@ -79,7 +78,6 @@ import org.apache.maven.execution.DefaultMavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionResult;
 import org.apache.maven.model.Resource;
-import org.apache.maven.project.InvalidProjectModelException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
 import org.netbeans.modules.maven.api.Constants;
@@ -392,9 +390,6 @@ public final class NbMavenProjectImpl implements Project {
                                 NbBundle.getMessage(NbMavenProjectImpl.class, "TXT_Artifact_Not_Found"),
                                 ((Exception) e).getMessage(), null);
                         problemReporter.addReport(report);
-                    } else if (e instanceof InvalidProjectModelException) {
-                        //validation failure..
-                        problemReporter.addValidatorReports((InvalidProjectModelException) e);
                     } else if (e instanceof ProjectBuildingException) {
                         //igonre if the problem is in the project validation codebase, we handle that later..
                         problemReporter.addReport(new ProblemReport(ProblemReport.SEVERITY_HIGH,

@@ -47,7 +47,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -56,14 +55,11 @@ import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.project.InvalidProjectModelException;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.validation.ModelValidationResult;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.problem.ProblemReporter;
 import org.netbeans.modules.maven.embedder.NbArtifact;
-import org.netbeans.modules.maven.nodes.DependenciesNode;
 import org.openide.cookies.EditCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -187,18 +183,18 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
         
     }
     
-    public void addValidatorReports(InvalidProjectModelException exc) {
-        ModelValidationResult res = exc.getValidationResult();
-        if (res == null) {
-            return;
-        }
-        List messages = exc.getValidationResult().getMessages();
-        if (messages != null && messages.size() > 0) {
-            ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
-                    NbBundle.getMessage(ProblemReporterImpl.class, "ERR_Project_validation"), exc.getValidationResult().render("\n"), new OpenPomAction(nbproject)); //NOI18N
-            addReport(report);
-        }
-    }
+//    public void addValidatorReports(InvalidProjectModelException exc) {
+//        ModelValidationResult res = exc.getValidationResult();
+//        if (res == null) {
+//            return;
+//        }
+//        List messages = exc.getValidationResult().getMessages();
+//        if (messages != null && messages.size() > 0) {
+//            ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
+//                    NbBundle.getMessage(ProblemReporterImpl.class, "ERR_Project_validation"), exc.getValidationResult().render("\n"), new OpenPomAction(nbproject)); //NOI18N
+//            addReport(report);
+//        }
+//    }
 
     private ModuleInfo findJ2eeModule() {
         Collection<? extends ModuleInfo> infos = Lookup.getDefault().lookupAll(ModuleInfo.class);
