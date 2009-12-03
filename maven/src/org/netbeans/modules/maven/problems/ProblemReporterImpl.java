@@ -262,42 +262,43 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
                 checkParent(parent);
                 parent = parent.getParent();
             }
-            List compileArts = project.getTestArtifacts();
-            if (compileArts != null) {
-                List<Artifact> missingJars = new ArrayList<Artifact>();
-                Iterator it = compileArts.iterator();
-                while (it.hasNext()) {
-                    NbArtifact art = (NbArtifact) it.next();
-                    if (art.getFile() != null && art.isFakedSystemDependency()) {
-                        //TODO create a correction action for this.
-                        ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_MEDIUM,
-                                org.openide.util.NbBundle.getMessage(ProblemReporterImpl.class, "ERR_SystemScope"),
-                                org.openide.util.NbBundle.getMessage(ProblemReporterImpl.class, "MSG_SystemScope"), 
-                                new OpenPomAction(nbproject));
-                        addReport(report);
-                    } else if (art.getFile() == null || !art.getFile().exists()) {
-                        missingJars.add(art);
-                    }
-                }
-                if (missingJars.size() > 0) {
-                    //TODO create a correction action for this.
-                    Iterator<Artifact> it2 = missingJars.iterator();
-                    String mess = ""; //NOI18N
-                    while (it2.hasNext()) {
-                        Artifact ar = it2.next();
-                        mess = mess + ar.getId() + "\n"; //NOI18N
-                    }
-                    AbstractAction act = new DependenciesNode.ResolveDepsAction(nbproject);
-                    act.putValue(Action.NAME, org.openide.util.NbBundle.getMessage(ProblemReporterImpl.class, "ACT_DownloadDeps"));
-                    
-                    ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_MEDIUM,
-                            org.openide.util.NbBundle.getMessage(ProblemReporterImpl.class, "ERR_NonLocal"),
-                            org.openide.util.NbBundle.getMessage(ProblemReporterImpl.class, "MSG_NonLocal", mess),
-                            act);
-                    addReport(report);
-                }
-                
-            }
+//TODO no NbArtifact now..
+//            List compileArts = project.getTestArtifacts();
+//            if (compileArts != null) {
+//                List<Artifact> missingJars = new ArrayList<Artifact>();
+//                Iterator it = compileArts.iterator();
+//                while (it.hasNext()) {
+//                    NbArtifact art = (NbArtifact) it.next();
+//                    if (art.getFile() != null && art.isFakedSystemDependency()) {
+//                        //TODO create a correction action for this.
+//                        ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_MEDIUM,
+//                                org.openide.util.NbBundle.getMessage(ProblemReporterImpl.class, "ERR_SystemScope"),
+//                                org.openide.util.NbBundle.getMessage(ProblemReporterImpl.class, "MSG_SystemScope"),
+//                                new OpenPomAction(nbproject));
+//                        addReport(report);
+//                    } else if (art.getFile() == null || !art.getFile().exists()) {
+//                        missingJars.add(art);
+//                    }
+//                }
+//                if (missingJars.size() > 0) {
+//                    //TODO create a correction action for this.
+//                    Iterator<Artifact> it2 = missingJars.iterator();
+//                    String mess = ""; //NOI18N
+//                    while (it2.hasNext()) {
+//                        Artifact ar = it2.next();
+//                        mess = mess + ar.getId() + "\n"; //NOI18N
+//                    }
+//                    AbstractAction act = new DependenciesNode.ResolveDepsAction(nbproject);
+//                    act.putValue(Action.NAME, org.openide.util.NbBundle.getMessage(ProblemReporterImpl.class, "ACT_DownloadDeps"));
+//
+//                    ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_MEDIUM,
+//                            org.openide.util.NbBundle.getMessage(ProblemReporterImpl.class, "ERR_NonLocal"),
+//                            org.openide.util.NbBundle.getMessage(ProblemReporterImpl.class, "MSG_NonLocal", mess),
+//                            act);
+//                    addReport(report);
+//                }
+//
+//            }
         }
     }
     
