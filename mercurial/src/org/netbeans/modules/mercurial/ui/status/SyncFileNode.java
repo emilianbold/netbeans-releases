@@ -59,6 +59,7 @@ import javax.swing.*;
 import java.lang.reflect.InvocationTargetException;
 import java.io.File;
 import java.util.logging.Level;
+import org.openide.util.actions.SystemAction;
 
 /**
  * The node that is rendered in the SyncTable view. It gets values to display from the
@@ -111,7 +112,7 @@ public class SyncFileNode extends AbstractNode {
         if (node.getInformation().getStatus() == FileInformation.STATUS_VERSIONED_CONFLICT) {
             return null; //SystemAction.get(ResolveConflictsAction.class);
         }
-        return new DiffAction(null, HgUtils.getCurrentContext(null));
+        return SystemAction.get(DiffAction.class);
     }
 
     /**

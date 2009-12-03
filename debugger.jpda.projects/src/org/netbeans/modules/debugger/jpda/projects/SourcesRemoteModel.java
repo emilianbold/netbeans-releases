@@ -456,7 +456,7 @@ NodeActionsProvider {
     private static String[] resize(String[] array, int by) {
         int n = array.length + by;
         String[] newArray = new String[n];
-        n = Math.max(n, array.length);
+        n = Math.min(n, array.length);
         System.arraycopy(array, 0, newArray, 0, n);
         return newArray;
     }
@@ -564,8 +564,8 @@ NodeActionsProvider {
                             unorderedOriginalSourceRoots = unorderedSR.toArray(new String[] {});
                             int pi = sourcePathPermutation[index];
                             for (int j = 0; j < sourcePathPermutation.length; j++) {
-                                if (sourcePathPermutation[k] > pi) {
-                                    sourcePathPermutation[k]--;
+                                if (sourcePathPermutation[j] > pi) {
+                                    sourcePathPermutation[j]--;
                                 }
                             }
                             for (int j = index; j < (sourcePathPermutation.length - 1); j++) {
@@ -597,10 +597,14 @@ NodeActionsProvider {
                         sourcePath.setSourceRoots(newSourceRoots);
                     }
                      */
-                    saveAdditionalSourceRoots();
-                    saveDisabledSourceRoots();
-                    SourcePathProviderImpl.storeSourceRootsOrder(null, unorderedOriginalSourceRoots, sourcePathPermutation);
                 }
+
+                sourcePathPermutation = resize(sourcePathPermutation, -k);
+
+                saveAdditionalSourceRoots();
+                saveDisabledSourceRoots();
+                SourcePathProviderImpl.storeSourceRootsOrder(null, unorderedOriginalSourceRoots, sourcePathPermutation);
+                
                 fireTreeChanged ();
             }
         },

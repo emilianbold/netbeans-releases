@@ -333,7 +333,7 @@ public class CardDataObject extends PropertiesBasedDataObject<Card> implements C
             Card cardLocal = cardRef == null ? null : cardRef.get();
             if (cardLocal != null && cardLocal.getState().isRunning()) {
                 Image badge = ImageUtilities.loadImage(
-                        "org/netbeans/modules/javacard/resources/running.png"); //NOI18N
+                        "org/netbeans/modules/javacard/spi/resources/running.png"); //NOI18N
                 result = ImageUtilities.mergeImages(result, badge, 11, 11);
             }
             return result;

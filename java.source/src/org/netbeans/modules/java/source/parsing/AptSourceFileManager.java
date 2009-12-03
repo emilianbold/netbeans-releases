@@ -40,9 +40,11 @@
 package org.netbeans.modules.java.source.parsing;
 
 
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Iterator;
 import java.util.List;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardLocation;
@@ -60,7 +62,10 @@ import org.openide.util.Exceptions;
  */
 public class AptSourceFileManager extends SourceFileManager {
 
+    private static final String OWNER_ROOT = "apt-origin-root";    //NOI18N
+
     private final ClassPath userRoots;
+    private URL explicitOwnerRoot;
 
     public AptSourceFileManager (final @NonNull ClassPath userRoots,
                               final @NonNull ClassPath aptRoots,
@@ -105,6 +110,31 @@ public class AptSourceFileManager extends SourceFileManager {
         return FileObjects.nbFileObject(file, aptRoot);
     }
 
+    @Override
+    public boolean handleOption(String head, Iterator<String> tail) {
+        if (OWNER_ROOT.equals(head)) {
+            if (!tail.hasNext()) {
+                throw new IllegalArgumentException("The apt-source-root requires folder.");    //NOI18N
+            }
+            final String ownerRootPath = tail.next();
+            if (ownerRootPath.length() == 0) {
+                explicitOwnerRoot = null;
+            }
+            else {
+                final File ownerRoot = new File (ownerRootPath);
+                try {
+                    explicitOwnerRoot = ownerRoot.toURI().toURL();
+                } catch (MalformedURLException ex) {
+                    throw new IllegalArgumentException("Invalid path argument: " + ownerRootPath);    //NOI18N
+                }
+            }
+            return true;
+        }
+        else {
+            return super.handleOption(head, tail);
+        }
+    }
+
     private FileObject getAptRoot (final javax.tools.FileObject sibling) {
         final URL ownerRoot = getOwnerRoot (sibling);
         if (ownerRoot == null) {
@@ -116,7 +146,8 @@ public class AptSourceFileManager extends SourceFileManager {
 
     private URL getOwnerRoot (final javax.tools.FileObject sibling) {
         try {
-            return sibling == null ? getOwnerRootNoSib() : getOwnerRootSib(sibling);
+            return explicitOwnerRoot != null ? explicitOwnerRoot : 
+                (sibling == null ? getOwnerRootNoSib() : getOwnerRootSib(sibling));
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);
             return null;

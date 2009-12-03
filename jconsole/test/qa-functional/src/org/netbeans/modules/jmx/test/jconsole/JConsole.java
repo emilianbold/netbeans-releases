@@ -43,6 +43,7 @@ package org.netbeans.modules.jmx.test.jconsole;
 
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.OutputTabOperator;
+import org.netbeans.jellytools.actions.OutputWindowViewAction;
 
 /**
  * Start a JConsole process and check it appears in the Runtime processes.
@@ -54,6 +55,11 @@ public class JConsole extends JConsoleTestCase {
         super(name);
     }
 
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        new OutputWindowViewAction().perform();
+    }
 
     public void testStartJConsole() {
         OutputTabOperator oto;

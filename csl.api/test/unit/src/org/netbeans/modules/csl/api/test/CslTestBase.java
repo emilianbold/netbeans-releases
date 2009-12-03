@@ -3756,7 +3756,7 @@ public abstract class CslTestBase extends NbTestCase {
                 assertTrue(r instanceof ParserResult);
                 ParserResult pr = (ParserResult) r;
                 
-                Document document = pr.getSnapshot().getSource().getDocument(false);
+                Document document = pr.getSnapshot().getSource().getDocument(true);
                 assert document != null : test;
 
                 // remember the original document content, we are going to destroy it

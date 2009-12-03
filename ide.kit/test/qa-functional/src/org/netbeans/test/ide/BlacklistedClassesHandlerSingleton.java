@@ -373,9 +373,9 @@ public class BlacklistedClassesHandlerSingleton extends Handler implements Black
                                 List exceptions = new ArrayList();
                                 exceptions.add(exc);
                                 whitelistViolators.put(className, exceptions);
+                                violation++;
                             }
                         }
-                        violation++;
                     } else if (generatingWhitelist) {
                         whitelist.add(className);
                     }

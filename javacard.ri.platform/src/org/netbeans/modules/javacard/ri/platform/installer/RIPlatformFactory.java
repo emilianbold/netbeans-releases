@@ -80,7 +80,7 @@ import org.openide.util.Parameters;
  *
  * @author Tim Boudreau
  */
-final class RIPlatformFactory implements Mutex.ExceptionAction<FileObject> {
+public final class RIPlatformFactory implements Mutex.ExceptionAction<FileObject> {
 
     private final EditableProperties platformProps;
     private final EditableProperties deviceSettings;
@@ -482,14 +482,37 @@ final class RIPlatformFactory implements Mutex.ExceptionAction<FileObject> {
         p.putAll(this.platformProps);
         String riWrapperProp = platformProps.getProperty(JavacardPlatformKeyNames.PLATFORM_IS_RI_WRAPPER);
         if (riWrapperProp != null && "true".equals(riWrapperProp) || "yes".equals(riWrapperProp)) { //NOI18N
-            DataObject defPlatform = RIPlatform.findDefaultPlatform();
+            DataObject defPlatform = RIPlatform.findDefaultPlatform(null);
             if (defPlatform == null) {
                 throw new IOException("No copy of the Java Card RI installed"); //NOI18N
             }
+            File defPlatformFile = FileUtil.toFile(defPlatform.getPrimaryFile());
+            RIPlatform defPform = defPlatform.getNodeDelegate().getLookup().lookup(RIPlatform.class);
+            if (defPform == null) {
+                throw new IOException ("Default Platform is not an instance of RIPlatform"); //NOI18N
+            }
+            p.put(JavacardPlatformKeyNames.PLATFORM_RI_PROPERTIES_PATH, defPlatformFile.getAbsolutePath());
+            p.put(JavacardPlatformKeyNames.PLATFORM_RI_HOME, defPform.getHome().getAbsolutePath());
+            
             PropertiesAdapter adap = defPlatform.getLookup().lookup(PropertiesAdapter.class);
             assert adap != null : "No properties adapter from default javacard platform"; //NOI18N
             p = new MergeProperties(adap.asProperties(), p);
         }
         return p;
+    }
+
+    public static RIPlatform createPlatform (ObservableProperties p, DataObject caller) throws IOException {
+//        String riWrapperProp = p.getProperty(JavacardPlatformKeyNames.PLATFORM_IS_RI_WRAPPER);
+//        if (riWrapperProp != null && "true".equals(riWrapperProp) || "yes".equals(riWrapperProp)) { //NOI18N
+//            System.err.println("Creating a wrapper platform for " + p.getProperty(JavacardPlatformKeyNames.PLATFORM_DISPLAYNAME));
+//            DataObject defPlatform = RIPlatform.findDefaultPlatform(caller);
+//            if (defPlatform == null) {
+//                throw new IOException("No copy of the Java Card RI installed"); //NOI18N
+//            }
+//            PropertiesAdapter adap = defPlatform.getLookup().lookup(PropertiesAdapter.class);
+//            assert adap != null : "No properties adapter from default javacard platform"; //NOI18N
+//            p = new MergeProperties(adap.asProperties(), p);
+//        }
+        return new RIPlatform(p);
     }
 }

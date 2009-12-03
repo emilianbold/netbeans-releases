@@ -42,10 +42,7 @@ package org.netbeans.modules.javacard.api;
 
 import java.awt.Component;
 import java.awt.EventQueue;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.Image;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.BeanInfo;
@@ -55,7 +52,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import javax.swing.BorderFactory;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
@@ -67,6 +63,9 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
+import org.jdesktop.layout.GroupLayout;
+import org.jdesktop.layout.LayoutStyle;
+import static org.jdesktop.layout.GroupLayout.*;
 import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.modules.javacard.common.GuiUtils;
 import org.netbeans.modules.javacard.common.Utils;
@@ -96,7 +95,6 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
-import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -123,7 +121,9 @@ public final class PlatformAndDevicePanel extends JPanel implements ActionListen
     }
 
     public PlatformAndDevicePanel(PlatformAndDeviceProvider props) {
-        super (new GridBagLayout());
+        GroupLayout layout = new GroupLayout(this);
+        setLayout (layout);
+
         if (props == null) {
             props = new TempPlatformAndDeviceProvider();
         }
@@ -133,45 +133,42 @@ public final class PlatformAndDevicePanel extends JPanel implements ActionListen
         platforms.setRenderer(r);
         devices.setRenderer(r);
         fullInit();
-        int gap = Utilities.isMac() ? 12 : 5;
-        setBorder (BorderFactory.createEmptyBorder (gap, gap, gap, gap));
         JLabel platformsLabel = new JLabel(NbBundle.getMessage(PlatformAndDevicePanel.class, "LBL_PLATFORMS")); //NOI18N
         platformsLabel.setLabelFor(platforms);
-        JLabel cardsLabel = new JLabel(NbBundle.getMessage(PlatformAndDevicePanel.class, "LBL_DEVICES"));
+        JLabel cardsLabel = new JLabel(NbBundle.getMessage(PlatformAndDevicePanel.class, "LBL_DEVICES")); //NOI18N
         cardsLabel.setLabelFor(devices);
-
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(0, 0, gap, gap);
-        gbc.gridwidth = 1;
-        gbc.gridheight = 1;
-        gbc.weightx = 0;
-        gbc.weighty = 1;
-        gbc.fill = GridBagConstraints.BOTH;
-        gbc.anchor = GridBagConstraints.NORTHWEST;
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        add (platformsLabel, gbc);
-        gbc.gridy = 1;
-        add (cardsLabel, gbc);
-
-        gbc.insets = new Insets(0, gap, 0, 0);
-        gbc.gridx = 2;
-        gbc.weightx = 1;
-        gbc.gridy = 0;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        add (platforms, gbc);
-        gbc.gridy = 1;
-        add (devices, gbc);
-
-        gbc.fill = GridBagConstraints.BOTH;
-        gbc.weightx = 0;
-        gbc.insets = new Insets(0, 0, gap, 0);
-        gbc.gridy = 0;
-        gbc.gridx = 3;
-        add (managePlatformsButton, gbc);
-        gbc.gridy = 1;
-        add (manageCardsButton, gbc);
-
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(LEADING)
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(layout.createParallelGroup(LEADING)
+                    .add(cardsLabel)
+                    .add(platformsLabel))
+                .addPreferredGap(LayoutStyle.UNRELATED)
+                .add(layout.createParallelGroup(LEADING)
+                    .add(platforms, 0, 190, Short.MAX_VALUE)
+                    .add(devices, 0, 190, Short.MAX_VALUE))
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(LEADING, false)
+                    .add(TRAILING, manageCardsButton, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(TRAILING, managePlatformsButton, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(LEADING)
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(layout.createParallelGroup(BASELINE)
+                    .add(platformsLabel)
+                    .add(platforms, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+                    .add(managePlatformsButton))
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(BASELINE)
+                    .add(cardsLabel)
+                    .add(devices, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+                    .add(manageCardsButton))
+                .addContainerGap(DEFAULT_SIZE, Short.MAX_VALUE))
+        );
         manageCardsButton.addActionListener(this);
         managePlatformsButton.addActionListener(this);
         platforms.addActionListener(this);

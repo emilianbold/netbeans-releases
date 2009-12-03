@@ -222,6 +222,7 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.javacard.oberthur</friend>
                 <friend>org.netbeans.modules.javacard.ri.bundle</friend>
                 <package>org.netbeans.modules.javacard.ri.spi</package>
             </friend-packages>
