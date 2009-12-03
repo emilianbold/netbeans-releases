@@ -101,6 +101,7 @@ import org.netbeans.modules.javacard.api.BadPlatformOrDevicePanel;
 import org.netbeans.modules.javacard.common.GuiUtils;
 import org.netbeans.modules.javacard.project.ui.UnsupportedEncodingDialog;
 import org.netbeans.modules.javacard.spi.Card;
+import org.netbeans.modules.javacard.spi.Cards;
 import org.netbeans.modules.javacard.spi.JavacardPlatform;
 import org.netbeans.modules.javacard.spi.PlatformAndDeviceProvider;
 import org.netbeans.modules.javacard.spi.ProjectKind;
@@ -319,8 +320,10 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
         String platform = eval.getProperty(ProjectPropertyNames.PROJECT_PROP_ACTIVE_PLATFORM);
         String device = eval.getProperty(ProjectPropertyNames.PROJECT_PROP_ACTIVE_DEVICE);
         if (platform != null && device != null) {
-            DataObject result = Utils.findDeviceForPlatform(platform, device);
-            return result == null ? null : result.getLookup().lookup(Card.class);
+            JavacardPlatform pform = getPlatform();
+            if (pform != null && pform.isValid()) {
+                return pform.getCards().find(device, true);
+            }
         }
         return null;
     }
@@ -371,14 +374,15 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
     private boolean isBadPlatformOrCard(String platform, String card) {
         boolean badPlatform = platform == null || "".equals(platform);
         boolean badCard = card == null || "".equals(card);
+        JavacardPlatform p = null;
         if (!badPlatform) {
-            JavacardPlatform p = JCUtil.findPlatformNamed(platform);
+            p = JCUtil.findPlatformNamed(platform);
             badPlatform = p == null || !p.isValid();
         }
-        if (!badCard) {
-            DataObject dob = Utils.findDeviceForPlatform(platform, card);
-            Card device = dob == null ? null : dob.getLookup().lookup(Card.class);
-            badCard = device == null || !device.isValid();
+        if (!badCard && !badPlatform) {
+            Cards cards = p.getCards();
+            Card theCard = cards.find (card, false);
+            badCard = theCard == null || !theCard.isValid();
         }
         return badPlatform || badCard;
     }

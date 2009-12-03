@@ -327,6 +327,7 @@ public class JCProjectActionProvider implements ActionProvider, PropertyChangeLi
                                 String platformName = platform.getSystemName();
                                 CardInfo info = card.getCapability(CardInfo.class);
                                 String cardName = info == null ? card.toString() : info.getSystemId();
+                                //XXX probably only needed for RI
                                 DataObject dob = Utils.findDeviceForPlatform(platformName, cardName);
                                 NodeRefresher n = dob == null ? null :
                                     dob.getLookup().lookup(NodeRefresher.class);
@@ -350,7 +351,8 @@ public class JCProjectActionProvider implements ActionProvider, PropertyChangeLi
             throw new IllegalArgumentException(
                     "Command not supported by Java Card project: " + command);
         }
-        return project.getPlatform() != null && project.getCard() != null;
+        return COMMAND_DELETE.equals(command) ||
+                project.getPlatform() != null && project.getCard() != null;
     }
 
     private void updateModifiedFiles() {

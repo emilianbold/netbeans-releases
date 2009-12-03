@@ -169,7 +169,8 @@ public class RIPlatform extends JavacardPlatform {
     }
 
 
-    public static DataObject findDefaultPlatform() throws DataObjectNotFoundException {
+    static boolean inFindDefaultPlatform;
+    public static DataObject findDefaultPlatform(DataObject caller) throws IOException {
         //Pending - always use whatever is the default, or somehow make
         //it explicit what platform is delegated to
         FileObject res = null;
@@ -179,7 +180,10 @@ public class RIPlatform extends JavacardPlatform {
                 break;
             } else {
                 DataObject ob = DataObject.find(fo);
-                JavacardPlatform p = ob.getNodeDelegate().getLookup().lookup(JavacardPlatform.class);
+                if (caller == ob) {
+                    continue;
+                }
+                JavacardPlatform p = ob.getNodeDelegate().getLookup().lookup(RIPlatform.class);
                 if (p != null && JavacardPlatformKeyNames.PLATFORM_KIND_RI.equals(p.getPlatformKind())) {
                     res = fo;
                 }
@@ -387,7 +391,12 @@ public class RIPlatform extends JavacardPlatform {
     @Override
     public boolean isValid() {
         File home = getHome();
-        return home != null && home.exists() && home.isDirectory();
+        boolean result = home != null && home.exists() && home.isDirectory();
+        if (!result) {
+            System.err.println("INVALID PLATFORM - home: " + home);
+            System.err.println("Is RI? " + this.isReferenceImplementation());
+        }
+        return result;
     }
 
     @Override
