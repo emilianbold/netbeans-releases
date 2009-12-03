@@ -52,6 +52,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.prefs.PreferenceChangeListener;
@@ -102,6 +103,16 @@ public class DependenciesNode extends AbstractNode {
     
     private NbMavenProjectImpl project;
     private int type;
+
+    static Set<String> COMPILES = new HashSet<String>();
+    static Set<String> RUNTIMES = new HashSet<String>();
+    static Set<String> TESTS = new HashSet<String>();
+    static {
+        COMPILES.add(Artifact.SCOPE_COMPILE);
+        COMPILES.add(Artifact.SCOPE_PROVIDED);
+        RUNTIMES.add(Artifact.SCOPE_RUNTIME);
+        TESTS.add(Artifact.SCOPE_TEST);
+    }
     
     DependenciesNode(DependenciesChildren childs, NbMavenProjectImpl mavproject, int type) {
         super(childs, Lookups.fixed(mavproject));
@@ -152,8 +163,8 @@ public class DependenciesNode extends AbstractNode {
         private NbMavenProjectImpl project;
         private int type;
         boolean showNonCP = false;
+        private int nonCPcount;
 
-        int nonCPcount = 0;
 
         public DependenciesChildren(NbMavenProjectImpl proj, int type) {
             super();
@@ -215,32 +226,28 @@ public class DependenciesNode extends AbstractNode {
             TreeSet<DependencyWrapper> lst = new TreeSet<DependencyWrapper>(new DependenciesComparator());
             MavenProject mp = project.getOriginalMavenProject();
             if (type == TYPE_COMPILE) {
-                lst.addAll(create(mp.getCompileDependencies(), mp.getArtifacts()));
-                if (nonCPcount > 0) {
+                Tuple t = create(mp.getDependencies(), mp.getArtifacts(), COMPILES);
+                lst.addAll(t.wrappers);
+                nonCPcount = t.nonCpCount;
+                if (t.nonCpCount > 0) {
                     lst.add(NULL);
                 }
             }
             if (type == TYPE_TEST) {
-                lst.addAll(create(mp.getTestDependencies(), mp.getArtifacts()));
-                int cnt = nonCPcount;
-                nonCPcount = 0;
-                lst.removeAll(create(mp.getCompileDependencies(), mp.getArtifacts()));
-                cnt = cnt - nonCPcount;
-                lst.removeAll(create(mp.getRuntimeDependencies(), mp.getArtifacts()));
-                nonCPcount = cnt - nonCPcount;
-                if (nonCPcount <= 0) {
+                Tuple t = create(mp.getDependencies(), mp.getArtifacts(), TESTS);
+                lst.addAll(t.wrappers);
+                nonCPcount = t.nonCpCount;
+                if (t.nonCpCount <= 0) {
                     lst.remove(NULL);
                 } else {
                     lst.add(NULL);
                 }
             }
             if (type == TYPE_RUNTIME) {
-                lst.addAll(create(mp.getRuntimeDependencies(), mp.getArtifacts()));
-                int cnt = nonCPcount;
-                nonCPcount = 0;
-                lst.removeAll(create(mp.getCompileDependencies(), mp.getArtifacts()));
-                nonCPcount = cnt - nonCPcount;
-                if (nonCPcount <= 0) {
+                Tuple t = create(mp.getDependencies(), mp.getArtifacts(), RUNTIMES);
+                lst.addAll(t.wrappers);
+                nonCPcount = t.nonCpCount;
+                if (t.nonCpCount <= 0) {
                     lst.remove(NULL);
                 } else {
                     lst.add(NULL);
@@ -250,11 +257,24 @@ public class DependenciesNode extends AbstractNode {
             return lst.size();
         }
         
-        private Set<DependencyWrapper> create(Collection<Dependency> deps, Collection<Artifact> arts) {
+        private class Tuple {
+            Set<DependencyWrapper> wrappers;
+            int nonCpCount;
+
+            private Tuple(TreeSet<DependencyWrapper> lst, int nonCPCount) {
+                wrappers = lst;
+                nonCpCount = nonCPCount;
+            }
+        }
+
+        private Tuple create(Collection<Dependency> deps, Collection<Artifact> arts, Set<String> scopes) {
             boolean nonCP = showNonClasspath() || showNonCP;
             int nonCPCount = 0;
             TreeSet<DependencyWrapper> lst = new TreeSet<DependencyWrapper>(new DependenciesComparator());
             for (Dependency d : deps) {
+                if (!scopes.contains(d.getScope())) {
+                    continue;
+                }
                 boolean added = false;
                 for (Artifact a : arts) {
                     if (a.getGroupId().equals(d.getGroupId()) &&
@@ -276,8 +296,7 @@ public class DependenciesNode extends AbstractNode {
 //            if (nonCPCount > 0) {
 //                lst.add(NULL);
 //            }
-            this.nonCPcount = nonCPCount;
-            return lst;
+            return new Tuple(lst, nonCPCount);
         }
 
         public void preferenceChange(PreferenceChangeEvent evt) {
