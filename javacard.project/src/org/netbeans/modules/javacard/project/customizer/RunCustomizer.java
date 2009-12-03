@@ -55,13 +55,14 @@ import org.openide.util.HelpCtx;
  * @author Anki R. Nelaturu
  */
 public class RunCustomizer extends javax.swing.JPanel implements ValidationGroupProvider {
-    JCProjectProperties props;
-    PlatformAndDevicePanel pnl;
+    private final JCProjectProperties props;
+    private final PlatformAndDevicePanel pnl;
     public RunCustomizer(JCProjectProperties props) {
         this.props = props;
         initComponents();
         GuiUtils.prepareContainer(this);
         pnl = new PlatformAndDevicePanel(props);
+        pnl.setProjectKind(props.getProject().kind());
         JPanel outer = new JPanel(new BorderLayout());
         outer.add (pnl, BorderLayout.NORTH);
         add (outer, BorderLayout.CENTER);

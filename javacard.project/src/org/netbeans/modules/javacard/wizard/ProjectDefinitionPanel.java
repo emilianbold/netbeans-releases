@@ -554,6 +554,7 @@ public class ProjectDefinitionPanel extends JPanel implements DocumentListener, 
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                     NbBundle.getMessage(ProjectDefinitionPanel.class,
                     "NO_SERVER_SELECTED")); //NOI18N
+            return false;
         }
         return true;
     }
@@ -564,7 +565,24 @@ public class ProjectDefinitionPanel extends JPanel implements DocumentListener, 
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                     NbBundle.getMessage(ProjectDefinitionPanel.class,
                     "NO_PLATFORM_SELECTED")); //NOI18N
+            return false;
+        } else {
+            JavacardPlatform p = platformRes.allInstances().iterator().next();
+            if (!p.isValid()) {
+                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                        NbBundle.getMessage(ProjectDefinitionPanel.class,
+                        "PLATFORM_INVALID", p.getDisplayName())); //NOI18N
+                return false;
+            }
+            if (kind != null && !p.supportedProjectKinds().contains(kind)) {
+                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                        NbBundle.getMessage(ProjectDefinitionPanel.class,
+                        "PLATFORM_DOES_NOT_SUPPORT_PROJECT_KIND", p.getDisplayName(), //NOI18N
+                        kind.getDisplayName())); //NOI18N
+                return false;
+            }
         }
+
         return true;
     }
 

@@ -53,6 +53,10 @@ import org.xml.sax.helpers.XMLReaderFactory;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -361,6 +365,43 @@ public enum ProjectKind {
             default:
                 throw new AssertionError();
         }
+    }
+
+    /**
+     * Takes a comma-delimited string (may contain whitespace) of project
+     * kinds as specified by the Java Card spec (<code>web, extended-applet,
+     * classic-applet, extension-lib, classic-lib</code>), and returns a
+     * set of corresponding ProjectKinds.
+     *
+     * @param s A string
+     * @param returnAllIfEmpty Returns a set of all possible ProjectKinds if
+     * the string is empty
+     * @return
+     */
+    public static Set<ProjectKind> kindsFor(String s, boolean returnAllIfEmpty) {
+        if (s == null || "".equals(s.trim())) { //NOI18N
+            return returnAllIfEmpty ? new HashSet<ProjectKind>(Arrays.asList(ProjectKind.values())) :
+                Collections.<ProjectKind>emptySet();
+        }
+        String[] els = s.split(","); //NOI18N
+        Set<ProjectKind> result = new HashSet<ProjectKind>(5);
+        boolean noMatch = true;
+        for (String el : els) {
+            el = el.trim();
+            for (ProjectKind k : ProjectKind.values()) {
+                if (k.getManifestApplicationType().equals(el)) {
+                    result.add(k);
+                    noMatch = false;
+                }
+            }
+            if (noMatch) {
+                Logger.getLogger(ProjectKind.class.getName()).log(Level.WARNING,
+                        "Unrecognized project kind '" + el + "' in '" + s + "'",
+                        new Exception());
+            }
+            noMatch = true;
+        }
+        return result;
     }
 
     public String getBundleFileExtension() {

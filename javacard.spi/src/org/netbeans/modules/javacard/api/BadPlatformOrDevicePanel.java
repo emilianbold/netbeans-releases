@@ -49,6 +49,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.netbeans.api.validation.adapters.DialogBuilder;
 import org.netbeans.modules.javacard.spi.PlatformAndDeviceProvider;
+import org.netbeans.modules.javacard.spi.ProjectKind;
 import org.netbeans.modules.javacard.spi.impl.TempPlatformAndDeviceProvider;
 import org.netbeans.validation.api.ui.ValidationGroup;
 import org.openide.DialogDescriptor;
@@ -68,15 +69,16 @@ public class BadPlatformOrDevicePanel extends JPanel implements ActionListener {
     private static final String PREFS_KEY_DONT_SHOW_DLG = "dontShowBrokenPlatformDialog"; //NOI18N
     private final JLabel instructions = new JLabel(NbBundle.getMessage(
             BadPlatformOrDevicePanel.class, "BadPlatformOrDevicePanel.jLabel1.text")); //NOI18N
-    public BadPlatformOrDevicePanel(String platform, String device) {
-        this (platform, device, true);
+    public BadPlatformOrDevicePanel(String platform, String device, ProjectKind kind) {
+        this (platform, device, true, kind);
     }
 
-    public BadPlatformOrDevicePanel(String platform, String device, boolean showDontShowAgainCheckbox) {
+    public BadPlatformOrDevicePanel(String platform, String device, boolean showDontShowAgainCheckbox, ProjectKind kind) {
         super (new GridBagLayout());
         provider.setActiveDevice(device);
         provider.setPlatformName(platform);
         pnl = new PlatformAndDevicePanel(provider);
+        pnl.setProjectKind(kind);
         box.setVisible(showDontShowAgainCheckbox);
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.weightx = 1;
@@ -98,11 +100,11 @@ public class BadPlatformOrDevicePanel extends JPanel implements ActionListener {
         setBorder (BorderFactory.createEmptyBorder(margin, margin, margin, margin));
     }
 
-    public static PlatformAndDeviceProvider showDialog (String platformName, String deviceName, boolean showCheckbox) {
-        BadPlatformOrDevicePanel p = new BadPlatformOrDevicePanel (platformName, deviceName, showCheckbox);
+    public static PlatformAndDeviceProvider showDialog (String platformName, String deviceName, boolean showCheckbox, ProjectKind kind) {
+        BadPlatformOrDevicePanel p = new BadPlatformOrDevicePanel (platformName, deviceName, showCheckbox, kind);
         if (new DialogBuilder(BadPlatformOrDevicePanel.class).
                 setTitle(NbBundle.getMessage(
-                BadPlatformOrDevicePanel.class, "TTL_FIX_PLATFORM")).
+                BadPlatformOrDevicePanel.class, "TTL_FIX_PLATFORM")). //NOI18N
                 setModal(true).
                 setContent(p).
                 setValidationGroup(p.getValidationGroup()).
