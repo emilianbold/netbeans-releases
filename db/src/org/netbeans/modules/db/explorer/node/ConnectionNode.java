@@ -54,6 +54,7 @@ import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.lib.ddl.adaptors.DefaultAdaptor;
 import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.modules.db.explorer.ConnectionList;
+import org.netbeans.modules.db.explorer.DatabaseConnectionAccessor;
 import org.netbeans.modules.db.explorer.DatabaseMetaDataTransferAccessor;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.MetadataModels;
@@ -96,6 +97,7 @@ public class ConnectionNode extends BaseNode {
     private ConnectionNode(NodeDataLookup lookup, NodeProvider provider) {
         super(new ChildNodeFactory(lookup), lookup, FOLDER, provider);
         connection = getLookup().lookup(DatabaseConnection.class);
+        lookup.add(DatabaseConnectionAccessor.DEFAULT.createDatabaseConnection(connection));
     }
 
     protected void initialize() {
