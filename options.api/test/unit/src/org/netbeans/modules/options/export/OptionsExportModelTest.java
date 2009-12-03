@@ -480,7 +480,7 @@ public class OptionsExportModelTest extends NbTestCase {
             actual.remove(actual.size() - 1);
         }
         assertEquals("Wrong number of files filtered.", expected.size(), actual.size());
-        Iterator<String> iter = actual.iterator();
+        Iterator<String> iter = new TreeSet<String>(actual).iterator();
         for (String file : expected) {
             assertEquals("Wrong file.", file, iter.next());
         }
