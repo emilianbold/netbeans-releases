@@ -77,6 +77,7 @@ public class AutoUpdate extends Task {
     private File dir;
     private File cluster;
     private URL catalog;
+    private boolean force;
 
     public void setUpdateCenter(URL u) {
         catalog = u;
@@ -88,6 +89,11 @@ public class AutoUpdate extends Task {
 
     public void setToDir(File dir) {
         this.cluster = dir;
+    }
+
+    /** Forces rewrite even the version of a module is not newer */
+    public void setForce(boolean force) {
+        this.force = force;
     }
 
     public Modules createModules() {
@@ -132,7 +138,9 @@ public class AutoUpdate extends Task {
             List<String> info = installed.get(uu.getCodeName());
             if (info != null && !uu.isNewerThan(info.get(0))) {
                 log("Version " + info.get(0) + " of " + uu.getCodeName() + " is up to date", Project.MSG_VERBOSE);
-                continue;
+                if (!force) {
+                    continue;
+                }
             }
             if (info == null) {
                 log(uu.getCodeName() + " is not present, downloading version " + uu.getSpecVersion(), Project.MSG_INFO);
