@@ -123,7 +123,7 @@ public class ManagementConfigurationWizard extends JMXTestCase {
         nfnlso = createManagementConfigurationFileFromMenu(objectName);
         // Check name and location wizard components
         System.out.println("Check Name And Location wizard components");
-        checkNameAndLocationWizardComponents(nfnlso, objectName);
+        checkNameAndLocationWizardComponents(nfnlso, objectName + "." + PROPERTIES_EXT);
         // Check name and location wizard default values
         System.out.println("Check Name And Location wizard values");
         checkNameAndLocationWizardValues(nfnlso, objectName, false);
