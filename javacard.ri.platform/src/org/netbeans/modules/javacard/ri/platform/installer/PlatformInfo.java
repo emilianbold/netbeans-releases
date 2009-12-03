@@ -129,7 +129,7 @@ public final class PlatformInfo {
         if (JavacardPlatformKeyNames.PLATFORM_KIND_RI.equals(kind)) {
             //XXX and the point of this is?
             String home = props.getProperty(JavacardPlatformKeyNames.PLATFORM_HOME);
-            props.setProperty(JavacardPlatformKeyNames.RI_HOME, home);
+            props.setProperty(JavacardPlatformKeyNames.PLATFORM_RI_HOME, home);
         }
         return props;
     }
