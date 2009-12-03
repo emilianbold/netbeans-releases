@@ -81,6 +81,7 @@ public final class PlatformInstaller extends ModuleInstall {
 
     @Override
     public void restored() {
+        if (false)
         new GlobalBuildPropsUpdater().launch();
     }
 

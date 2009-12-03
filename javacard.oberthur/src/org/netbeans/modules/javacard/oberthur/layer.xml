@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
+    <!--
     <folder name="oberthur">
         <file name="Oberthur301.jcplatform" url="platform.properties">
               <attr name="position" intvalue="100"/>
@@ -9,11 +10,6 @@
     <folder name="Services">
         <folder name="Platforms">
             <folder name="org-netbeans-api-java-Platform">
-                <!--
-                <file name="Oberthur301.jcplatform" url="platform.properties">
-                      <attr name="position" intvalue="100"/>
-                </file>
-                -->
             </folder>
         </folder>
     </folder>
@@ -26,6 +22,7 @@
             </folder>
         </folder>
     </folder>
+    -->
     <folder name="org-netbeans-modules-javacard-spi">
         <folder name="kinds">
             <folder name="oberthur">

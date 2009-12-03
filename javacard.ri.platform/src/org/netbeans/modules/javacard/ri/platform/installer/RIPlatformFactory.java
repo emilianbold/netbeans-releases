@@ -486,6 +486,14 @@ public final class RIPlatformFactory implements Mutex.ExceptionAction<FileObject
             if (defPlatform == null) {
                 throw new IOException("No copy of the Java Card RI installed"); //NOI18N
             }
+            File defPlatformFile = FileUtil.toFile(defPlatform.getPrimaryFile());
+            RIPlatform defPform = defPlatform.getNodeDelegate().getLookup().lookup(RIPlatform.class);
+            if (defPform == null) {
+                throw new IOException ("Default Platform is not an instance of RIPlatform"); //NOI18N
+            }
+            p.put(JavacardPlatformKeyNames.PLATFORM_RI_PROPERTIES_PATH, defPlatformFile.getAbsolutePath());
+            p.put(JavacardPlatformKeyNames.PLATFORM_RI_HOME, defPform.getHome().getAbsolutePath());
+            
             PropertiesAdapter adap = defPlatform.getLookup().lookup(PropertiesAdapter.class);
             assert adap != null : "No properties adapter from default javacard platform"; //NOI18N
             p = new MergeProperties(adap.asProperties(), p);

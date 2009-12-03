@@ -88,6 +88,7 @@ public final class ConnectionWatchdog<CardImpl extends Card> {
     private final Callback callback;
     private int POLL_FREQUENCY = 30000; //Poll every 30 seconds
     private int delayAfterActivation = 200;
+    private boolean enabled = true;
 
     /**
      * Create a new ConnectionWatchdog for the specified card, with a
@@ -142,6 +143,26 @@ public final class ConnectionWatchdog<CardImpl extends Card> {
     }
 
     /**
+     * Enable/disable polling.  Some implementations may need to
+     * disable polling during certain activities, such as while loading
+     * onto a card.
+     *
+     * @param val enabled or not
+     */
+    public void setEnabled (boolean val) {
+        enabled = val;
+    }
+
+    /**
+     * Determine whether polling is currently enabled.  The default return
+     * value is true.
+     * @return Whether or not this ConnectionWatchdog is enabled.
+     */
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    /**
      * A callback which will be invoked to update the state of a card
      * periodically.
      * @param <T> The type of the Card instance which will be passed to the
@@ -188,7 +209,9 @@ public final class ConnectionWatchdog<CardImpl extends Card> {
                     WindowManager.getDefault().getMainWindow().removeWindowListener(this);
                 }
             } else {
-                updateCardStatus();
+                if (enabled) {
+                    updateCardStatus();
+                }
             }
         }
 
