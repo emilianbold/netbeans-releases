@@ -44,6 +44,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.dnd.DnDConstants;
@@ -732,6 +733,16 @@ public class OutlineView extends JScrollPane {
     */
     public int getAllowedDropActions() {
         return allowedDropActions;
+    }
+
+    /** Actions constants from {@link java.awt.dnd.DnDConstants}.
+    * @param t The transferable for which the allowed drop actions are requested,
+    *          or <code>null</code> to get actions for the creation of DropTarget for the view.
+    * @return int representing set of actions which are allowed when dropping
+    * into the asociated component. By default it returns {@link #getAllowedDropActions()}.
+    */
+    protected int getAllowedDropActions(Transferable t) {
+        return getAllowedDropActions();
     }
 
     /** Sets allowed actions for dropping.

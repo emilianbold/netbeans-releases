@@ -161,7 +161,7 @@ final class OutlineViewDropSupport implements DropTargetListener, Runnable {
         ExplorerDnDManager.getDefault().setMaybeExternalDragAndDrop( true );
 
         int dropAction = dtde.getDropAction();
-        int allowedDropActions = view.getAllowedDropActions();
+        int allowedDropActions = view.getAllowedDropActions(dtde.getTransferable());
         dropAction = ExplorerDnDManager.getDefault().getAdjustedDropAction(
                 dropAction, allowedDropActions);
 
@@ -385,12 +385,12 @@ final class OutlineViewDropSupport implements DropTargetListener, Runnable {
         if( null == nodes )
             return;
         int dropAction = ExplorerDnDManager.getDefault().getAdjustedDropAction(
-                dtde.getDropAction(), view.getAllowedDropActions()
+                dtde.getDropAction(), view.getAllowedDropActions(dtde.getTransferable())
             );
 
         for (int i = 0; i < nodes.length; i++) {
             if (
-                ((view.getAllowedDropActions() & dropAction) == 0) ||
+                ((view.getAllowedDropActions(dtde.getTransferable()) & dropAction) == 0) ||
                     !DragDropUtilities.checkNodeForAction(nodes[i], dropAction)
             ) {
                 // this action is not supported
@@ -583,7 +583,7 @@ final class OutlineViewDropSupport implements DropTargetListener, Runnable {
         }
 
         // Test to see if the target node supports the drop action
-        if ((view.getAllowedDropActions() & dropAction) == 0) {
+        if ((view.getAllowedDropActions(dndEventTransferable) & dropAction) == 0) {
             return false;
         }
 
@@ -640,7 +640,7 @@ final class OutlineViewDropSupport implements DropTargetListener, Runnable {
 
             Node[] dragNodes = ExplorerDnDManager.getDefault().getDraggedNodes();
             int dropAction = ExplorerDnDManager.getDefault().getAdjustedDropAction(
-                    dtde.getDropAction(), view.getAllowedDropActions()
+                    dtde.getDropAction(), view.getAllowedDropActions(dtde.getTransferable())
                 );
 
             if (!canDrop(dropNode, dropAction, dtde.getTransferable())) {
