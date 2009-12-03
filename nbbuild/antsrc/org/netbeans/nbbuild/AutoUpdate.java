@@ -118,7 +118,12 @@ public class AutoUpdate extends Task {
 
 
         // no userdir
-        Map<String, ModuleItem> units = AutoUpdateCatalogParser.getUpdateItems(catalog, catalog, this);
+        Map<String, ModuleItem> units;
+        try {
+            units = AutoUpdateCatalogParser.getUpdateItems(catalog, catalog, this);
+        } catch (IOException ex) {
+            throw new BuildException(ex.getMessage(), ex);
+        }
         for (ModuleItem uu : units.values()) {
             if (!matches(uu.getCodeName())) {
                 continue;
