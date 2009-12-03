@@ -1748,10 +1748,11 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                                  }
                                              }
                                          };
-
+                                         
                                          Runnable run2 = new Runnable() {
                                              public void run() {
-                                                 if (getDoc() == null) {
+                                                 StyledDocument d = getDoc();
+                                                 if (d == null) {
                                                      return;
                                                  }
                                                  // XXX do this from AWT???
@@ -1766,17 +1767,15 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                                  updateLineSet(true);
                                                  ERR.fine("task-addUndoableEditListener");
                                                  // Add undoable listener after atomic change has finished
-                                                 getDoc().addUndoableEditListener(getUndoRedo());
+                                                 d.addUndoableEditListener(getUndoRedo());
                                              }
                                          };
-
+                                         
                                          if (getDoc() != null) {
-                                             ERR.fine("Posting the AWT runnable: " +
-                                                      run2);
+                                             ERR.fine("Posting the AWT runnable: " + run2);
                                              run1.run();
                                              SwingUtilities.invokeLater(run2);
-                                             ERR.fine("Posted in " +
-                                                      Thread.currentThread());
+                                             ERR.fine("Posted in " + Thread.currentThread());
                                          }
                                      }
                                  });
