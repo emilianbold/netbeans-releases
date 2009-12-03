@@ -43,7 +43,16 @@ package org.netbeans.api.java.source;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.Writer;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.Charset;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import javax.swing.event.ChangeListener;
@@ -66,7 +75,9 @@ import org.netbeans.modules.java.source.parsing.ProxyFileManager;
 import org.netbeans.modules.java.source.parsing.SourceFileManager;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.netbeans.modules.java.source.classpath.SourcePath;
+import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.parsing.AptSourceFileManager;
+import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.FileObjects.InferableJavaFileObject;
 import org.netbeans.modules.java.source.parsing.MemoryFileManager;
 import org.netbeans.modules.java.source.parsing.NullWriteAptSourceFileManager;
@@ -76,6 +87,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 import org.openide.util.WeakListeners;
 
@@ -360,7 +372,7 @@ public final class ClasspathInfo {
                 new CachingFileManager (this.archiveProvider, this.cachedCompileClassPath, false, true),
                 hasSources ? (backgroundCompilation ? new CachingFileManager (this.archiveProvider, this.cachedSrcClassPath, filter, false, ignoreExcludes)
                     : new SourceFileManager (this.cachedUserSrcClassPath, ignoreExcludes)) : null,
-                cachedAptSrcClassPath != null ? (backgroundCompilation ? new AptSourceFileManager(this.cachedUserSrcClassPath, this.cachedAptSrcClassPath, true)
+                cachedAptSrcClassPath != null ? (backgroundCompilation ? new AptSourceFileManager(this.cachedUserSrcClassPath, this.cachedAptSrcClassPath, new CacheMarker(this.cachedUserSrcClassPath), true)
                     : new NullWriteAptSourceFileManager(this.cachedAptSrcClassPath, true)) : null,
                 hasSources ? outFileManager = new OutputFileManager (this.archiveProvider, this.outputClassPath, this.cachedUserSrcClassPath, this.cachedAptSrcClassPath) : null
             , this.memoryFileManager);
@@ -443,5 +455,60 @@ public final class ClasspathInfo {
             }
             return cpInfo.memoryFileManager.unregister(fqn);
         }
+    }
+
+    private static class CacheMarker implements AptSourceFileManager.Marker {
+
+        private final ClassPath userRoots;
+        private final List<URL> children = new LinkedList<URL>();
+
+        public CacheMarker(final @NonNull ClassPath userRoots) {
+            assert userRoots != null;
+            this.userRoots = userRoots;
+        }
+
+
+        public void mark(@NonNull final URL source, @NonNull final URL result) {
+            children.add(result);
+        }
+
+        public void finished(@NonNull final URL source) {
+            try {
+                final StringBuilder sb = new StringBuilder();
+                for (URL url : children) {
+                    sb.append(url.toString());
+                    sb.append('\n');    //NOI18N
+                }
+                final File sourceFile = new File(source.toURI());
+                final File sourceRoot = getOwnerRoot(source);
+                final File classCache = JavaIndex.getClassFolder(sourceRoot);
+                final String relativePath = FileObjects.getRelativePath(sourceRoot, sourceFile);
+                final File cacheFile = new File (classCache, relativePath);
+                final Writer out = new OutputStreamWriter(new FileOutputStream(cacheFile),Charset.forName("UTF-8"));  //NOI18N
+                try {
+                    out.write(sb.toString());
+                } finally {
+                    out.close();
+                }
+            } catch (IOException e) {
+                Exceptions.printStackTrace(e);
+            } catch (URISyntaxException e) {
+                Exceptions.printStackTrace(e);
+            } finally {
+                children.clear();
+            }
+        }
+
+        private File getOwnerRoot (@NonNull final URL source) throws URISyntaxException {
+            assert source != null;
+            for (ClassPath.Entry entry : userRoots.entries()) {
+                final URL rootURL = entry.getURL();
+                if (FileObjects.isParentOf(rootURL, source)) {
+                    return new File (rootURL.toURI());
+                }
+            }
+            return null;
+        }
+
     }
 }
