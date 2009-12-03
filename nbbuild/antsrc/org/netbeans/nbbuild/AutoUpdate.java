@@ -101,6 +101,9 @@ public class AutoUpdate extends Task {
         if ((dir != null) == (cluster != null)) {
             throw new BuildException("Specify either todir or installdir");
         }
+        if (catalog == null) {
+            throw new BuildException("Specify updatecenter");
+        }
 
         Map<String,List<String>> installed;
         if (dir != null) {
