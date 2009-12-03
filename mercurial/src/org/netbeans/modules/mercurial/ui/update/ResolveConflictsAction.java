@@ -48,9 +48,11 @@ import org.netbeans.modules.mercurial.Mercurial;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.netbeans.modules.mercurial.FileInformation;
+import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 
 /**
  * Show basic conflict resolver UI (provided by the diff module).
@@ -85,18 +87,26 @@ public class ResolveConflictsAction extends ContextAction {
         return;
     }
 
-    static void resolveConflicts(File[] files) {
+    static void resolveConflicts(final File[] files) {
         if (files.length == 0) {
             NotifyDescriptor nd = new NotifyDescriptor.Message(
                     org.openide.util.NbBundle.getMessage(
                         ResolveConflictsAction.class, "MSG_NoConflictsFound")); // NOI18N
             DialogDisplayer.getDefault().notify(nd);
         } else {
-            for (int i = 0; i<files.length; i++) {
-                File file = files[i];
-                ResolveConflictsExecutor executor = new ResolveConflictsExecutor(file);
-                executor.exec();
-            }
+            new HgProgressSupport() {
+                @Override
+                protected void perform() {
+                    for (int i = 0; i < files.length; i++) {
+                        File file = files[i];
+                        ResolveConflictsExecutor executor = new ResolveConflictsExecutor(file);
+                        executor.exec();
+                        if (isCanceled()) {
+                            break;
+                        }
+                    }
+                }
+            }.start(Mercurial.getInstance().getRequestProcessor(), NbBundle.getMessage(ResolveConflictsAction.class, "MSG_PreparingMerge"));
         }        
     }
     
