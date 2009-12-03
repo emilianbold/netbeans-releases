@@ -203,15 +203,13 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
             DirectoryScanner ds = new DirectoryScanner();
             ds.setBasedir(dirFile);
             //includes/excludes
-            @SuppressWarnings("unchecked")
-            String[] incls = (String[]) r.getIncludes().toArray(new String[0]);
+            String[] incls = r.getIncludes().toArray(new String[0]);
             if (incls.length > 0) {
                 ds.setIncludes(incls);
             } else {
                 ds.setIncludes(DEFAULT_INCLUDES);
             }
-            @SuppressWarnings("unchecked")
-            String[] excls = (String[]) r.getExcludes().toArray(new String[0]);
+            String[] excls = r.getExcludes().toArray(new String[0]);
             if (excls.length > 0) {
                 ds.setExcludes(excls);
             }

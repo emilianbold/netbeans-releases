@@ -266,7 +266,7 @@ public class JPDAStart implements Runnable {
         
         @Override
         public void engineRemoved(DebuggerEngine engine) {
-            JPDADebugger debugger = (JPDADebugger) engine.lookupFirst
+            JPDADebugger debugger = engine.lookupFirst
                     (null, JPDADebugger.class);
             if (debugger == null) {
                 return;
