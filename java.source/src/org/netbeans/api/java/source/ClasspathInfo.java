@@ -74,6 +74,7 @@ import org.netbeans.modules.java.source.parsing.OutputFileManager;
 import org.netbeans.modules.java.source.parsing.ProxyFileManager;
 import org.netbeans.modules.java.source.parsing.SourceFileManager;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
+import org.netbeans.modules.java.source.classpath.AptCacheForSourceQuery;
 import org.netbeans.modules.java.source.classpath.SourcePath;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.parsing.AptSourceFileManager;
@@ -474,21 +475,25 @@ public final class ClasspathInfo {
 
         public void finished(@NonNull final URL source) {
             try {
-                final StringBuilder sb = new StringBuilder();
-                for (URL url : children) {
-                    sb.append(url.toString());
-                    sb.append('\n');    //NOI18N
-                }
-                final File sourceFile = new File(source.toURI());
-                final File sourceRoot = getOwnerRoot(source);
-                final File classCache = JavaIndex.getClassFolder(sourceRoot);
-                final String relativePath = FileObjects.stripExtension(FileObjects.getRelativePath(sourceRoot, sourceFile));
-                final File cacheFile = new File (classCache, relativePath+'.'+FileObjects.RAPT);
-                final Writer out = new OutputStreamWriter(new FileOutputStream(cacheFile),Charset.forName("UTF-8"));  //NOI18N
-                try {
-                    out.write(sb.toString());
-                } finally {
-                    out.close();
+                if (!children.isEmpty()) {
+                    final StringBuilder sb = new StringBuilder();
+                    final URL sourceRootURL = getOwnerRoot(source);
+                    final URL aptRootURL = AptCacheForSourceQuery.getAptFolder(sourceRootURL);
+                    for (URL url : children) {
+                        sb.append(FileObjects.getRelativePath(aptRootURL, url));
+                        sb.append('\n');    //NOI18N
+                    }
+                    final File sourceFile = new File(source.toURI());
+                    final File sourceRoot = new File (sourceRootURL.toURI());
+                    final File classCache = JavaIndex.getClassFolder(sourceRoot);
+                    final String relativePath = FileObjects.stripExtension(FileObjects.getRelativePath(sourceRoot, sourceFile));
+                    final File cacheFile = new File (classCache, relativePath+'.'+FileObjects.RAPT);
+                    final Writer out = new OutputStreamWriter(new FileOutputStream(cacheFile),Charset.forName("UTF-8"));  //NOI18N
+                    try {
+                        out.write(sb.toString());
+                    } finally {
+                        out.close();
+                    }
                 }
             } catch (IOException e) {
                 Exceptions.printStackTrace(e);
@@ -499,12 +504,12 @@ public final class ClasspathInfo {
             }
         }
 
-        private File getOwnerRoot (@NonNull final URL source) throws URISyntaxException {
+        private URL getOwnerRoot (@NonNull final URL source) throws URISyntaxException {
             assert source != null;
             for (ClassPath.Entry entry : userRoots.entries()) {
                 final URL rootURL = entry.getURL();
                 if (FileObjects.isParentOf(rootURL, source)) {
-                    return new File (rootURL.toURI());
+                    return rootURL;
                 }
             }
             return null;

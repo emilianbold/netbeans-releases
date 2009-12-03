@@ -80,6 +80,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
@@ -663,7 +664,15 @@ public class FileObjects {
             return ""; //NOI18N
         }
         return foPath.substring(index);
-    }           
+    }
+
+    public static String getRelativePath (final URL root, final URL fo) throws URISyntaxException {
+        String path = getRelativePath(new File(root.toURI()), new File(fo.toURI()));
+        if (File.separatorChar != '/') {
+            path.replace(File.separatorChar, '/');
+        }
+        return path;
+    }
     
     private static class RegularFileObject extends FileBase {
         
