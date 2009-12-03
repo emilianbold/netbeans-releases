@@ -11734,6 +11734,9 @@ Here is a relevant example:  http://dev.rubyonrails.org/changeset/3067
 
 %%The following software may be included in this product:
 JRuby
+Bytelist
+jvyamlb
+yydebug
 
 For the avoidance of doubt, except that if any license choice other 
 than GPL or LGPL is available it will apply instead, Sun elects to 
