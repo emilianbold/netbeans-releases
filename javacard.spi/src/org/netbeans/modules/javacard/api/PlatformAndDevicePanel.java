@@ -78,6 +78,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.javacard.spi.PlatformAndDeviceProvider;
+import org.netbeans.modules.javacard.spi.ProjectKind;
 import org.netbeans.modules.javacard.spi.capabilities.CardInfo;
 import org.netbeans.modules.javacard.spi.impl.TempPlatformAndDeviceProvider;
 import org.netbeans.validation.api.Problems;
@@ -100,6 +101,10 @@ import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
 /**
+ * Panel which can display combo boxes for platform and device.  Use its
+ * Lookup to detect the actual JavacardPlatform and Card instances.
+ * Use its ValidationGroup to attach to a ValidationUI to show invalid
+ * selections.
  *
  * @author Tim Boudreau
  */
@@ -107,9 +112,9 @@ public final class PlatformAndDevicePanel extends JPanel implements ActionListen
     private final JComboBox platforms;
     private final JComboBox devices;
     private final JButton manageCardsButton = new JButton(NbBundle.getMessage(PlatformAndDevicePanel.class,
-            "LBL_MANAGE_DEVICES"));
+            "LBL_MANAGE_DEVICES")); //NOI18N
     private final JButton managePlatformsButton = new JButton(NbBundle.getMessage(PlatformAndDevicePanel.class,
-            "LBL_MANAGE_PLATFORMS"));
+            "LBL_MANAGE_PLATFORMS")); //NOI18N
     private final R r = new R();
     private final ValidationGroup grp = ValidationGroup.create();
     private PlatformAndDeviceProvider props;
@@ -133,9 +138,11 @@ public final class PlatformAndDevicePanel extends JPanel implements ActionListen
         platforms.setRenderer(r);
         devices.setRenderer(r);
         fullInit();
-        JLabel platformsLabel = new JLabel(NbBundle.getMessage(PlatformAndDevicePanel.class, "LBL_PLATFORMS")); //NOI18N
+        JLabel platformsLabel = new JLabel(NbBundle.getMessage(
+                PlatformAndDevicePanel.class, "LBL_PLATFORMS")); //NOI18N
         platformsLabel.setLabelFor(platforms);
-        JLabel cardsLabel = new JLabel(NbBundle.getMessage(PlatformAndDevicePanel.class, "LBL_DEVICES")); //NOI18N
+        JLabel cardsLabel = new JLabel(NbBundle.getMessage(
+                PlatformAndDevicePanel.class, "LBL_DEVICES")); //NOI18N
         cardsLabel.setLabelFor(devices);
         layout.setHorizontalGroup(
             layout.createParallelGroup(LEADING)
@@ -177,6 +184,11 @@ public final class PlatformAndDevicePanel extends JPanel implements ActionListen
         grp.add(platforms, new PlatformValidator());
         grp.add(devices, new CardValidator());
         HelpCtx.setHelpIDString(this, "org.netbeans.modules.javacard.CustomizeDevice"); //NOI18N
+    }
+
+    private ProjectKind kind;
+    public void setProjectKind (ProjectKind kind) {
+        this.kind = kind;
     }
 
     public Lookup getLookup() {
@@ -231,7 +243,7 @@ public final class PlatformAndDevicePanel extends JPanel implements ActionListen
             devices.setModel(new CardsModel(pform));
             props.setPlatformName(pform.getSystemName());
         } else {
-            devices.setModel(new CardsModel(JavacardPlatform.createBrokenJavacardPlatform("null")));
+            devices.setModel(new CardsModel(JavacardPlatform.createBrokenJavacardPlatform("null"))); //NOI18N
         }
     }
 
@@ -298,7 +310,7 @@ public final class PlatformAndDevicePanel extends JPanel implements ActionListen
         updateLookup();
     }
 
-    private static class PlatformValidator implements Validator<ComboBoxModel> {
+    private class PlatformValidator implements Validator<ComboBoxModel> {
 
         public boolean validate(Problems prblms, String string, ComboBoxModel t) {
             if (t.getSelectedItem() == null || !(t.getSelectedItem() instanceof JavacardPlatform)) {
@@ -309,9 +321,17 @@ public final class PlatformAndDevicePanel extends JPanel implements ActionListen
                 JavacardPlatform p = (JavacardPlatform) t.getSelectedItem();
                 if (!p.isValid()) {
                     String nm = p.getDisplayName();
-                    prblms.add(NbBundle.getMessage(PlatformValidator.class, "MSG_BAD_PLATFORM",
-                            nm)); //NOI18N
+                    prblms.add(NbBundle.getMessage(PlatformValidator.class, "MSG_BAD_PLATFORM", //NOI18N
+                            nm));
                     return false;
+                }
+                if (kind != null) {
+                    if (!p.supportedProjectKinds().contains(kind)) {
+                        prblms.add(NbBundle.getMessage(PlatformAndDevicePanel.class,
+                                "MSG_UNSUPPORTED_PROJECT_TYPE", p.getDisplayName(), //NOI18N
+                                kind.getDisplayName()));
+                        return false;
+                    }
                 }
             }
             return true;
@@ -354,11 +374,11 @@ public final class PlatformAndDevicePanel extends JPanel implements ActionListen
                 value = info.getDisplayName();
                 image = info.getIcon();
                 if (!card.isValid()) {
-                    value = "<font color='!controlShadow'>" + value;
+                    value = "<font color='!controlShadow'>" + value; //NOI18N
                 }
             } else {
                 if (value == null) {
-                    value = NbBundle.getMessage(R.class, "NULL");
+                    value = NbBundle.getMessage(R.class, "NULL"); //NOI18N
                 }
             }
             ren.setHtml(true);
@@ -576,104 +596,4 @@ public final class PlatformAndDevicePanel extends JPanel implements ActionListen
             
         }
     }
-
-    /*
-
-    PlatformAndDeviceProvider props;
-    private final ExplorerManager mgr = new ExplorerManager();
-    DevicePanel devicePanel = new DevicePanel();
-    PlatformPanel platformPanel = new PlatformPanel();
-
-    public PlatformAndDevicePanel(PlatformAndDeviceProvider props) {
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        add(platformPanel);
-        add(devicePanel);
-        if (props != null) {
-            setPlatformAndCard(props);
-        }
-        HelpCtx.setHelpIDString(this, "org.netbeans.modules.javacard.CustomizeDevice"); //NOI18N
-    }
-
-    public PlatformAndDevicePanel() {
-        this(null);
-    }
-
-    public Lookup getLookup() {
-        return devicePanel.getLookup();
-    }
-
-    void setRoot(Node root) {
-        mgr.setRootContext(root);
-    }
-
-    public ExplorerManager getExplorerManager() {
-        return mgr;
-    }
-
-    public void setPlatformAndCard(String activePlatform, String activeDevice) {
-        //If we have a default device set from the ProjectDefinitionPanel's
-        //constructor, and we're being passed nulls because nothing was
-        //yet stored in the wizard descriptor, don't destroy the default
-        //value already in it
-        PlatformAndDeviceProvider tempProps = props == null ? new TempPlatformAndDeviceProvider() : props;
-
-        if (activeDevice != null) {
-            tempProps.setActiveDevice(activeDevice);
-        }
-        if (activePlatform != null) {
-            tempProps.setPlatformName(activePlatform);
-        }
-        setPlatformAndCard(tempProps);
-    }
-
-    public void setPlatformAndCard(final PlatformAndDeviceProvider props) {
-        this.props = props;
-        platformPanel.setPlatformFrom(props);
-        devicePanel.setPlatformAndDevice(props);
-        //Force children initialization with some slightly
-        //ridiculous contortions.  This call *should* block for
-        //children creation but in fact doesn't.  However, our ChildFactory
-        //will re-trigger an update when the time comes
-        mgr.getRootContext().getChildren().getNodes(true);
-        Children children = Children.create(new JavacardPlatformChildren() {
-
-            @Override
-            protected void onAllNodesCreated() {
-                assert PlatformAndDevicePanel.this.props != null;
-                String platformName = props.getPlatformName();
-                String deviceName = props.getActiveDevice();
-                updateSelectedNode(platformName, deviceName);
-            }
-        }, false);
-        AbstractNode realRoot = new AbstractNode(children);
-        realRoot.setIconBaseWithExtension("org/netbeans/modules/javacard/resources/empty.png"); //NOI18N
-        realRoot.setDisplayName(NbBundle.getMessage(PlatformAndDevicePanel.class,
-                "LBL_SELECT_SERVER")); //NOI18N
-        setRoot(realRoot);
-    }
-
-    private void setSelectedNode(Node n) {
-        try {
-            mgr.setSelectedNodes(new Node[]{n});
-        } catch (PropertyVetoException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-
-    private void updateSelectedNode(final String platformName, String deviceName) {
-        EventQueue.invokeLater(new Runnable() {
-
-            public void run() {
-                Node[] nodes = mgr.getRootContext().getChildren().getNodes(true);
-                for (Node n : nodes) {
-                    DataObject dob = n.getLookup().lookup(DataObject.class);
-                    if (dob != null && platformName.equals(dob.getName())) {
-                        setSelectedNode(n);
-                        return;
-                    }
-                }
-            }
-        });
-    }
-     */
 }

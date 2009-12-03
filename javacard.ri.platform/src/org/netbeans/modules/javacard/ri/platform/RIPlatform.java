@@ -51,9 +51,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.Profile;
 import org.netbeans.api.java.platform.Specification;
@@ -151,6 +153,16 @@ public class RIPlatform extends JavacardPlatform {
         Properties p = new Properties();
         p.putAll(toProperties(root, name, info));
         return p;
+    }
+
+    private final Set<ProjectKind> suppKinds = new HashSet<ProjectKind>(5);
+    public Set<ProjectKind> supportedProjectKinds() {
+        if (suppKinds.isEmpty()) {
+            String prop = props.getProperty(
+                    JavacardPlatformKeyNames.PLATFORM_SUPPORTED_PROJECT_KINDS);
+            suppKinds.addAll(ProjectKind.kindsFor(prop, true));
+        }
+        return suppKinds;
     }
 
     private static EditableProperties toProperties (File root, String name, PlatformInfo info) {

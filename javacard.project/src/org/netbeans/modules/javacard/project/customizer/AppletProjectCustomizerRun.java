@@ -49,9 +49,11 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.javacard.common.GuiUtils;
+import org.netbeans.validation.api.ui.ValidationGroup;
+import org.netbeans.validation.api.ui.ValidationGroupProvider;
 import org.openide.util.HelpCtx;
 
-public final class AppletProjectCustomizerRun extends javax.swing.JPanel implements ActionListener, ItemListener, ChangeListener {
+public final class AppletProjectCustomizerRun extends javax.swing.JPanel implements ActionListener, ItemListener, ChangeListener, ValidationGroupProvider {
     private Map<Object, String> selection2url;
     private static final int SELECTING_SERVLET = 1;
     private static final int SELECTING_PAGE = 2;
@@ -61,6 +63,7 @@ public final class AppletProjectCustomizerRun extends javax.swing.JPanel impleme
         initComponents();
         GuiUtils.prepareContainer(this);
         platformAndDevicePanel21.setPlatformAndCard(props);
+        platformAndDevicePanel21.setProjectKind(props.getProject().kind());
         servletComboBox.setModel(props.SCRIPTS);
         servletComboBox.setRenderer(new CRen());
         launchBrowserCheckBox.setModel(props.SEND_SCRIPT);
@@ -68,6 +71,10 @@ public final class AppletProjectCustomizerRun extends javax.swing.JPanel impleme
         selecting = SELECTING_SERVLET;
         updateSelection();
         HelpCtx.setHelpIDString(this, "org.netbeans.modules.javacard.RunPanel"); //NOI18N
+    }
+
+    public ValidationGroup getValidationGroup() {
+        return platformAndDevicePanel21.getValidationGroup();
     }
 
     private static final class CRen extends DefaultListCellRenderer {
@@ -197,6 +204,10 @@ public final class AppletProjectCustomizerRun extends javax.swing.JPanel impleme
     }
     
     private void updateUrl() {
+        if (selection2url == null) {
+            //superclass call
+            return;
+        }
         Object selectedObject = getSelectedServletOrPage();
         String url = selection2url.get(selectedObject);
         if (url == null) {
