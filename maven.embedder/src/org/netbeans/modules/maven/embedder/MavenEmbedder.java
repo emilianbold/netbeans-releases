@@ -197,6 +197,7 @@ public final class MavenEmbedder {
             populator.populateDefaults(req);
             ProjectBuildingRequest configuration = req.getProjectBuildingRequest();
             configuration.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
+            configuration.setResolveDependencies(true);
             ProjectBuildingResult projectBuildingResult = projectBuilder.build(pomFile, configuration);
             result.setProject(projectBuildingResult.getProject());
             result.setArtifactResolutionResult(projectBuildingResult.getArtifactResolutionResult());
