@@ -62,6 +62,7 @@ import org.netbeans.modules.javacard.common.JCConstants;
 import org.netbeans.modules.javacard.spi.JavacardPlatformKeyNames;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -78,11 +79,8 @@ abstract class PlatformValidator implements Runnable {
     private boolean hasRun;
     private volatile boolean running = true;
 
-    static {
-        System.setProperty("javacard.installer.noexecute", Boolean.TRUE.toString());
-    }
     //Allow setting up a platform on an unsupported OS for dev-time work
-    private boolean debugMode = Boolean.getBoolean("javacard.installer.noexecute"); //NOI18N
+    private boolean debugMode = !Utilities.isWindows(); //NOI18N
 
     PlatformValidator(FileObject baseDir) {
         this.file = baseDir;
