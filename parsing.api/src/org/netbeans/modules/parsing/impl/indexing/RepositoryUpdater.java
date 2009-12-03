@@ -165,7 +165,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 this.indexingActivityInterceptors = Lookup.getDefault().lookupResult(IndexingActivityInterceptor.class);
                 PathRegistry.getDefault().addPathRegistryListener(this);
                 BinaryPathNotifier.getDefault().addFileChangeListener(this.binaryRootsListener);
-                FileUtil.addFileChangeListener(this);
+                rootsListeners.setListener(this);
                 EditorRegistry.addPropertyChangeListener(this);
                 IndexerCache.getCifCache().addPropertyChangeListener(this);
                 IndexerCache.getEifCache().addPropertyChangeListener(this);
@@ -191,7 +191,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
                 PathRegistry.getDefault().removePathRegistryListener(this);
                 BinaryPathNotifier.getDefault().removeFileChangeListener(this.binaryRootsListener);
-                FileUtil.removeFileChangeListener(this);
+                rootsListeners.setListener(null);
                 EditorRegistry.removePropertyChangeListener(this);
 
                 cancel = true;
@@ -813,6 +813,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
     private boolean ignoreIndexerCacheEvents = false;
 
+    private final RootsListeners rootsListeners = new RootsListeners();
     private final FileChangeListener binaryRootsListener = new FileChangeAdapter() {
 
         @Override
@@ -1590,6 +1591,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 Indexers indexers,
                 Map<SourceIndexerFactory,Boolean> votes
         ) throws IOException {
+            RepositoryUpdater.getDefault().rootsListeners.add(root);
+
             final LinkedList<Context> transactionContexts = new LinkedList<Context>();
             final LinkedList<Iterable<Indexable>> allIndexblesSentToIndexers = new LinkedList<Iterable<Indexable>>();
                 try {
@@ -2917,6 +2920,9 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 for (IndexerCache.IndexerInfo<EmbeddingIndexerFactory> embeddingIndexer : embeddingIndexers) {
                     embeddingIndexer.getIndexerFactory().rootsRemoved(roots);
                 }
+                for(URL root : sources) {
+                    RepositoryUpdater.getDefault().rootsListeners.remove(root);
+                }
             }
         }
 
@@ -3792,6 +3798,64 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             return reverse ? -1 * order : order;
         }
     } // End of LexicographicComparator class
+
+    private static final class RootsListeners {
+
+        private FileChangeListener listener = null;
+        private final Set<URL> roots = new HashSet<URL>();
+        
+        public RootsListeners() {
+        }
+
+        public void setListener(FileChangeListener listener) {
+            synchronized (roots) {
+                if (listener != null) {
+                    assert this.listener == null : "Already using " + this.listener + ", can't add " + listener; //NOI18N
+                    assert roots.size() == 0 : "Expecting no roots: " + roots; //NOI18N
+                    this.listener = listener;
+                } else {
+                    assert this.listener != null : "RootsListeners are already dormant"; //NOI18N
+                    for(URL root : roots) {
+                        removeRecursiveListener(root);
+                    }
+                    roots.clear();
+                    this.listener = null;
+                }
+            }
+        }
+
+        public void add(URL root) {
+            synchronized (roots) {
+                if (listener != null && !roots.contains(root) && root.getProtocol().equals("file")) { //NOI18N
+                    try {
+                        File f = new File(root.toURI());
+                        FileUtil.addRecursiveListener(listener, f);
+                        roots.add(root);
+                    } catch (URISyntaxException use) {
+                        LOGGER.log(Level.INFO, null, use);
+                    }
+                }
+            }
+        }
+
+        public void remove(URL root) {
+            synchronized (roots) {
+                if (listener != null && roots.contains(root)) {
+                    removeRecursiveListener(root);
+                    roots.remove(root);
+                }
+            }
+        }
+
+        private void removeRecursiveListener(URL root) {
+            try {
+                File f = new File(root.toURI());
+                FileUtil.removeRecursiveListener(listener, f);
+            } catch (URISyntaxException use) {
+                LOGGER.log(Level.INFO, null, use);
+            }
+        }
+    } // End of RootsListeners class
 
     // -----------------------------------------------------------------------
     // Methods for tests
