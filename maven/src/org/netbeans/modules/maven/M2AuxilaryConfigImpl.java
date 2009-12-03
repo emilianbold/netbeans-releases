@@ -42,8 +42,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
-import org.codehaus.plexus.util.StringOutputStream;
 import java.awt.event.ActionEvent;
+import java.io.ByteArrayOutputStream;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -267,9 +267,9 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                 savingTask.schedule(SAVING_DELAY);
             } else {
                 try {
-                    StringOutputStream wr = new StringOutputStream();
+                    ByteArrayOutputStream wr = new ByteArrayOutputStream();
                     XMLUtil.write(doc, wr, "UTF-8"); //NOI18N
-                    project.getProjectDirectory().setAttribute(AUX_CONFIG, wr.toString());
+                    project.getProjectDirectory().setAttribute(AUX_CONFIG, wr.toString("UTF-"));
                 } catch (IOException ex) {
                     ex.printStackTrace();
                 }
@@ -330,9 +330,9 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                 savingTask.schedule(SAVING_DELAY);
             } else {
                 try {
-                    StringOutputStream wr = new StringOutputStream();
+                    ByteArrayOutputStream wr = new ByteArrayOutputStream();
                     XMLUtil.write(doc, wr, "UTF-8"); //NOI18N
-                    project.getProjectDirectory().setAttribute(AUX_CONFIG, wr.toString());
+                    project.getProjectDirectory().setAttribute(AUX_CONFIG, wr.toString("UTF-8"));
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }
