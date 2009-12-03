@@ -29,4 +29,17 @@
         </autoupdate>
 
     </target>
+    <target name="cluster-select">
+        <echo message="${root}"/>
+
+        <taskdef classname="org.netbeans.nbbuild.AutoUpdate" name="autoupdate" classpath="${nb_all}/nbbuild/nbantext.jar"/>
+        <autoupdate
+            updatecenter="${url}"
+            todir="${target}"
+            force="${force}"
+        >
+            <modules includes="${includes}" clusters="${cluster}"/>
+        </autoupdate>
+
+    </target>
 </project>

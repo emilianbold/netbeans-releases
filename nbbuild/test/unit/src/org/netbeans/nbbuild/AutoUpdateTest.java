@@ -161,6 +161,77 @@ public class AutoUpdateTest extends NbTestCase {
         }
     }
 
+    public void testUpdateOldButMissCluster() throws Exception {
+        clearWorkDir();
+
+        File f = new File(getWorkDir(), "org-netbeans-api-annotations-common.xml");
+        PublicPackagesInProjectizedXMLTest.extractResource(f, "org-netbeans-api-annotations-common.xml");
+
+        File nbm = generateNBM("org-netbeans-api-annotations-common.nbm",
+            "netbeans/config/Modules/org-netbeans-api-annotations-common.xml",
+            "netbeans/modules/org-netbeans-api-annotations-common.jar");
+
+        File target = new File(getWorkDir(), "target");
+        target.mkdirs();
+        File m = new File(
+            new File(new File(target, "platformXY"), "modules"),
+            "org-netbeans-api-annotations-common.jar"
+        );
+        m.getParentFile().mkdirs();
+        m.createNewFile();
+
+        File y = new File(
+            new File(new File(new File(target, "platformXY"), "config"), "Modules"),
+            "org-netbeans-api-annotations-common.xml"
+        );
+        y.getParentFile().mkdirs();
+        File x = new File(
+            new File(new File(target, "platformXY"), "update_tracking"),
+            "org-netbeans-api-annotations-common.xml"
+        );
+        y.createNewFile();
+
+        x.getParentFile().mkdirs();
+        String txtx =
+"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+"<module codename=\"org.netbeans.api.annotations.common/1\">\n" +
+"    <module_version install_time=\"10\" specification_version=\"1.0.3\">\n" +
+"       <file crc=\"1\" name=\"config/Modules/org-netbeans-api-annotations-common.xml\"/>\n" +
+"       <file crc=\"2\" name=\"modules/org-netbeans-api-annotations-common.jar\"/>\n" +
+"    </module_version>\n" +
+"</module>\n";
+
+
+        FileOutputStream osx = new FileOutputStream(x);
+        osx.write(txtx.getBytes());
+        osx.close();
+
+
+        PublicPackagesInProjectizedXMLTest.execute(
+            "autoupdate.xml", "-verbose", "-Durl=" + f.toURI().toURL(),
+            "-Dincludes=org.netbeans.api.annotations.common",
+            "-Dtarget=" + target + File.separator + "platformXY",
+            "cluster-select",
+            "-Dcluster=non.*existing"
+        );
+
+        File xml = new File(
+            new File(new File(new File(target, "platformXY"), "config"), "Modules"),
+            "org-netbeans-api-annotations-common.xml"
+        );
+        assertTrue("xml file created:\n" + PublicPackagesInProjectizedXMLTest.getStdOut(), xml.exists());
+
+        File jar = new File(
+            new File(new File(target, "platformXY"), "modules"),
+            "org-netbeans-api-annotations-common.jar"
+        );
+        assertTrue("jar file created", jar.exists());
+
+        if (PublicPackagesInProjectizedXMLTest.getStdOut().contains("Writing ")) {
+            fail("No writes, the module is already installed:\n" + PublicPackagesInProjectizedXMLTest.getStdOut());
+        }
+    }
+
     public void testUpdateAlreadyInstalledAndOld() throws Exception {
         clearWorkDir();
 
