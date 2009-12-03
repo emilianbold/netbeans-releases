@@ -114,7 +114,7 @@ public class ArchetypeWizardUtils {
 
         Archetype arch = new Archetype();
         arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.0.1"); //NOI18N
+        arch.setVersion("1.0.2"); //NOI18N
         arch.setArtifactId("webapp-javaee6"); //NOI18N
         WEB_APP_ARCHS[0] = arch;
 
@@ -133,7 +133,7 @@ public class ArchetypeWizardUtils {
         EJB_ARCHS = new Archetype[3];
         arch = new Archetype();
         arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.0.1"); //NOI18N
+        arch.setVersion("1.0.2"); //NOI18N
         arch.setArtifactId("ejb-javaee6"); //NOI18N
         EJB_ARCHS[0] = arch;
 
