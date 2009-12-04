@@ -194,6 +194,7 @@ public abstract class MakeProjectBase extends CndBaseTestCase { //extends NbTest
         def = CompilerSetManager.getDefault().getDefaultCompilerSet();
         final boolean isSUN = def != null ? def.isSunCompiler() : false;
         if (tools == null) {
+            assertTrue("Please install required tools.", false);
             System.err.println("Test did not run because required tools do not found");
             return;
         }
