@@ -51,8 +51,10 @@ import org.netbeans.modules.javacard.spi.ICardCapability;
 import org.netbeans.modules.javacard.spi.JavacardPlatform;
 import org.netbeans.modules.javacard.spi.capabilities.CapabilitiesProvider;
 import org.netbeans.modules.javacard.spi.capabilities.CardInfo;
+import org.netbeans.modules.javacard.spi.capabilities.ContactedProtocol;
 import org.netbeans.modules.javacard.spi.capabilities.PortKind;
 import org.netbeans.modules.javacard.spi.capabilities.PortProvider;
+import org.netbeans.modules.javacard.spi.capabilities.UrlCapability;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -79,7 +81,7 @@ final class CardImpl extends AbstractCard {
 
     @Override
     protected void onBeforeFirstLookup() {
-        initCapabilities(new Ports(), new Info(), new Caps());
+        initCapabilities(new Ports(), new Info(), new Caps(), new Urls());
     }
 
     @Override
@@ -149,7 +151,28 @@ final class CardImpl extends AbstractCard {
             result.add (CardInfo.class);
             result.add (PortProvider.class);
             result.add (CapabilitiesProvider.class);
+            result.add (UrlCapability.class);
             return result;
         }
+    }
+
+    private final class Urls implements UrlCapability {
+
+        public ContactedProtocol getContactedProtocol() {
+            return null;
+        }
+
+        public String getURL() {
+            return "http://smartcard/";
+        }
+
+        public String getManagerURL() {
+            return POLL_URL;
+        }
+
+        public String getListURL() {
+            return null;
+        }
+
     }
 }
