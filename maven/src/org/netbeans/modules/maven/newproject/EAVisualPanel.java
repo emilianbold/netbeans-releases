@@ -57,6 +57,7 @@ public final class EAVisualPanel extends JPanel  {
 
 
     /** Creates new form EAVisualPanel */
+    @SuppressWarnings("unchecked")
     public EAVisualPanel(EAWizardPanel panel) {
         this.panel = panel;
         initComponents();

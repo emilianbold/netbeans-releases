@@ -450,7 +450,6 @@ public class CustomizerProviderImpl implements CustomizerProvider {
                     outStr = new OutputStreamWriter(fo.getOutputStream(lock), encoding);
                     Format form = Format.getRawFormat().setEncoding(encoding);
                     form = form.setLineSeparator(System.getProperty("line.separator")); //NOI18N
-                    @SuppressWarnings("unchecked")
                     List<NetbeansActionMapping> maps = mapping.getActions();
                     //no packaging elements make sense in nbactions files.
                     for (NetbeansActionMapping m : maps) {

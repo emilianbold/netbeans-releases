@@ -91,7 +91,6 @@ public class RunGoalsPanel extends javax.swing.JPanel {
                 if (provider != null) {
                     final Set<String> strs = provider.getAvailableGoals();
                     try {
-                        @SuppressWarnings("unchecked")
                         List<String> phases = EmbedderFactory.getProjectEmbedder().getLifecyclePhases();
                         strs.addAll(phases);
                     } catch (Exception e) {

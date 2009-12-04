@@ -75,7 +75,6 @@ public class RuntimeClassPathImpl extends AbstractProjectClassPathImpl {
             fil = FileUtil.normalizeFile(fil);
             lst.add(fil.toURI());
         }
-        @SuppressWarnings("unchecked")
         List<Artifact> arts = prj.getRuntimeArtifacts();
         for (Artifact art : arts) {
             if (art.getFile() != null) {

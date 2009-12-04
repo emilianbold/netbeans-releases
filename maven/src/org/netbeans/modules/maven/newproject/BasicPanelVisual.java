@@ -62,6 +62,7 @@ import javax.swing.text.Document;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.handler.ArtifactHandler;
+import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
@@ -119,6 +120,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
     private boolean changedPackage = false;
     
     /** Creates new form PanelProjectLocationVisual */
+    @SuppressWarnings("unchecked")
     public BasicPanelVisual(BasicWizardPanel panel) {
         this.panel = panel;
 
@@ -682,12 +684,12 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
                 return false;
             }
         });
-        List repos;
+        List<ArtifactRepository> repos;
         if (arch.getRepository() == null) {
-            repos = Collections.singletonList(EmbedderFactory.createRemoteRepository(online, "http://repo1.maven.org/maven2", "central"));//NOI18N
+            repos = Collections.<ArtifactRepository>singletonList(EmbedderFactory.createRemoteRepository(online, "http://repo1.maven.org/maven2", "central"));//NOI18N
         } else {
             
-            repos = Collections.singletonList(EmbedderFactory.createRemoteRepository(online, arch.getRepository(), "custom-repo"));//NOI18N
+            repos = Collections.<ArtifactRepository>singletonList(EmbedderFactory.createRemoteRepository(online, arch.getRepository(), "custom-repo"));//NOI18N
         }
         AggregateProgressHandle hndl = AggregateProgressFactory.createHandle(NbBundle.getMessage(BasicPanelVisual.class, "Handle_Download"),
                 new ProgressContributor[] {

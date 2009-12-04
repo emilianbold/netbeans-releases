@@ -119,6 +119,7 @@ public class CreateLibraryPanel extends javax.swing.JPanel {
         setLibraryName();
     }
 
+    @SuppressWarnings("unchecked")
     void createValidations(DialogDescriptor dd) {
         line = dd.createNotificationLineSupport();
         this.dd = dd;

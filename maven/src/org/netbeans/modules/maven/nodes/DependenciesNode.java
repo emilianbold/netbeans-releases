@@ -221,7 +221,6 @@ public class DependenciesNode extends AbstractNode {
             super.removeNotify();
         }
         
-        @SuppressWarnings("unchecked") // a lot of calls to maven lists..
         int regenerateKeys() {
             TreeSet<DependencyWrapper> lst = new TreeSet<DependencyWrapper>(new DependenciesComparator());
             MavenProject mp = project.getOriginalMavenProject();
@@ -535,7 +534,6 @@ public class DependenciesNode extends AbstractNode {
     
     private static class DependenciesComparator implements Comparator<DependencyWrapper> {
 
-        @SuppressWarnings("unchecked")
         public int compare(DependencyWrapper art1, DependencyWrapper art2) {
             if (art1 == NULL && art2 == NULL) {
                 return 0;

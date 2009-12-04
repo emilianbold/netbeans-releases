@@ -115,6 +115,7 @@ public class RenameProjectPanel extends javax.swing.JPanel {
         });
     }
 
+    @SuppressWarnings("unchecked")
     void createValidations(DialogDescriptor dd) {
         nls = dd.createNotificationLineSupport();
         vg = ValidationGroup.create(new NotificationLineSupportAdapter(nls), new DialogDescriptorAdapter(dd));

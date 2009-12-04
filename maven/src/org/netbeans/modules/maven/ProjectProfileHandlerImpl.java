@@ -121,7 +121,6 @@ public class ProjectProfileHandlerImpl implements ProjectProfileHandler {
 //        return lineage;
 //    }
 
-    @SuppressWarnings("unchecked")
     public List<String> getAllProfiles() {
         Set<String> profileIds = new HashSet<String>();
         //pom+profiles.xml profiles come first
@@ -139,13 +138,11 @@ public class ProjectProfileHandlerImpl implements ProjectProfileHandler {
     public List<String> getMergedActiveProfiles(boolean shared) {
         Set<String> profileIds = new HashSet<String>();
         MavenProject mavenProject = nmp.getOriginalMavenProject();
-        @SuppressWarnings("unchecked")
         List<Profile> profiles = mavenProject.getActiveProfiles();
         for (Profile profile : profiles) {
             profileIds.add(profile.getId());
         }
         //read from Settings.xml
-        @SuppressWarnings("unchecked")
         List<String> profileStrings = MavenSettingsSingleton.getInstance().createUserSettingsModel().getActiveProfiles();
         for (String profile : profileStrings) {
             profileIds.add(profile);

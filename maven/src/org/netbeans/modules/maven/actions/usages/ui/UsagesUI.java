@@ -269,8 +269,7 @@ public class UsagesUI extends javax.swing.JPanel implements ExplorerManager.Prov
         return explorerManager;
     }
 
-    public @SuppressWarnings("unchecked")
-        List<NbMavenProjectImpl> getOpenProjects(Artifact artifact, int type) {
+    public List<NbMavenProjectImpl> getOpenProjects(Artifact artifact, int type) {
         List<NbMavenProjectImpl> mavenProjects = new ArrayList<NbMavenProjectImpl>();
         //get all open projects
 

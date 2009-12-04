@@ -57,6 +57,7 @@ import org.openide.util.NbBundle;
  *
  * @author Anuradha
  */
+@Deprecated
 public class ViewBugTrackerAction extends AbstractAction {
 
     private Artifact artifact;

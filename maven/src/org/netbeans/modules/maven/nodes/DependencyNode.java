@@ -323,7 +323,6 @@ public class DependencyNode extends AbstractNode {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public Action[] getActions(boolean context) {
         Collection<Action> acts = new ArrayList<Action>();
         if (isAddedToCP()) {

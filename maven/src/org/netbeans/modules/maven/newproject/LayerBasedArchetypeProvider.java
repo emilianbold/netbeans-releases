@@ -54,7 +54,6 @@ import org.openide.util.NbBundle;
  * when the user never used any archetypes before..
  * @author mkleint
  */
-@SuppressWarnings("deprecation")
 @org.openide.util.lookup.ServiceProvider(service=ArchetypeProvider.class)
 public class LayerBasedArchetypeProvider implements ArchetypeProvider {
     

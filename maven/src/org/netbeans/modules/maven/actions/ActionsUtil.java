@@ -55,6 +55,7 @@ import org.openide.util.Exceptions;
  * @deprecated Replaced by actions in Artifact viewer window, see #164992
  * @author Anuradha G (anuradha@codehaus.org)
  */
+@Deprecated
 public class ActionsUtil {
 
     

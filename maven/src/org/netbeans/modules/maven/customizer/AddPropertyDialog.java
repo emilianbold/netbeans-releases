@@ -234,7 +234,6 @@ public class AddPropertyDialog extends javax.swing.JPanel implements ExplorerMan
 
             Set<String> extensionsids = new HashSet<String>();
             if (project != null) {
-                @SuppressWarnings("unchecked")
                 List<Plugin> plgns = project.getOriginalMavenProject().getBuildPlugins();
                 if (plgns != null) {
                     for (Plugin plg : plgns) {
@@ -307,13 +306,11 @@ public class AddPropertyDialog extends javax.swing.JPanel implements ExplorerMan
         String key = groupId + ":" + artifactId;
         List<Plugin> plugins = new ArrayList<Plugin>();
         if (project != null) {
-            @SuppressWarnings("unchecked")
             List<Plugin> bld = project.getOriginalMavenProject().getBuildPlugins();
             if (bld != null) {
                 plugins.addAll(bld);
             }
             if (project.getOriginalMavenProject().getPluginManagement() != null) {
-                @SuppressWarnings("unchecked")
                 List<Plugin> pm = project.getOriginalMavenProject().getPluginManagement().getPlugins();
                 if (pm != null) {
                     plugins.addAll(pm);

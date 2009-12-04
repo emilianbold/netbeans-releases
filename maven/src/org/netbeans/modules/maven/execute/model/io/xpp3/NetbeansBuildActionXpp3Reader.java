@@ -190,11 +190,12 @@ public class NetbeansBuildActionXpp3Reader {
      * @throws XmlPullParserException
      * @return ActionToGoalMapping
      */
+    @SuppressWarnings("deprecation")
     private ActionToGoalMapping parseActionToGoalMapping(String tagName, XmlPullParser parser, boolean strict)
         throws IOException, XmlPullParserException
     {
         ActionToGoalMapping actionToGoalMapping = new ActionToGoalMapping();
-        java.util.Set parsed = new java.util.HashSet();
+        java.util.Set<String> parsed = new java.util.HashSet<String>();
         int eventType = parser.getEventType();
         boolean foundRoot = false;
         while ( eventType != XmlPullParser.END_DOCUMENT )
@@ -216,10 +217,10 @@ public class NetbeansBuildActionXpp3Reader {
                 }
                 else if ( parser.getName().equals( "action" ) )
                 {
-                    java.util.List actions = actionToGoalMapping.getActions();
+                    java.util.List<NetbeansActionMapping> actions = actionToGoalMapping.getActions();
                     if ( actions == null )
                     {
-                        actions = new java.util.ArrayList();
+                        actions = new java.util.ArrayList<NetbeansActionMapping>();
                         actionToGoalMapping.setActions( actions );
                     }
                     actions.add( parseNetbeansActionMapping( "action", parser, strict ) );
@@ -244,11 +245,12 @@ public class NetbeansBuildActionXpp3Reader {
      * @throws XmlPullParserException
      * @return NetbeansActionMapping
      */
+    @SuppressWarnings("unchecked")
     private NetbeansActionMapping parseNetbeansActionMapping(String tagName, XmlPullParser parser, boolean strict)
         throws IOException, XmlPullParserException
     {
         NetbeansActionMapping netbeansActionMapping = new NetbeansActionMapping();
-        java.util.Set parsed = new java.util.HashSet();
+        java.util.Set<String> parsed = new java.util.HashSet<String>();
         while ( parser.nextTag() == XmlPullParser.START_TAG )
         {
             if ( parser.getName().equals( "actionName" )  )
@@ -312,7 +314,7 @@ public class NetbeansBuildActionXpp3Reader {
                     throw new XmlPullParserException( "Duplicated tag: '" + parser.getName() + "'", parser, null );
                 }
                 parsed.add( "packagings" );
-                java.util.List packagings = new java.util.ArrayList();
+                java.util.List<String> packagings = new java.util.ArrayList<String>();
                 netbeansActionMapping.setPackagings( packagings );
                 while ( parser.nextTag() == XmlPullParser.START_TAG )
                 {
@@ -333,7 +335,7 @@ public class NetbeansBuildActionXpp3Reader {
                     throw new XmlPullParserException( "Duplicated tag: '" + parser.getName() + "'", parser, null );
                 }
                 parsed.add( "goals" );
-                java.util.List goals = new java.util.ArrayList();
+                java.util.List<String> goals = new java.util.ArrayList<String>();
                 netbeansActionMapping.setGoals( goals );
                 while ( parser.nextTag() == XmlPullParser.START_TAG )
                 {
@@ -368,7 +370,7 @@ public class NetbeansBuildActionXpp3Reader {
                     throw new XmlPullParserException( "Duplicated tag: '" + parser.getName() + "'", parser, null );
                 }
                 parsed.add( "activatedProfiles" );
-                java.util.List activatedProfiles = new java.util.ArrayList();
+                java.util.List<String> activatedProfiles = new java.util.ArrayList<String>();
                 netbeansActionMapping.setActivatedProfiles( activatedProfiles );
                 while ( parser.nextTag() == XmlPullParser.START_TAG )
                 {

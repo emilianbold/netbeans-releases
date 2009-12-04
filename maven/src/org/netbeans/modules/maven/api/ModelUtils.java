@@ -149,7 +149,6 @@ public final class ModelUtils {
             }
         }
         
-        @SuppressWarnings("unchecked")
         List<org.apache.maven.model.Repository> reps = project.getRepositories();
         org.apache.maven.model.Repository prjret = null;
         Repository ret = null;

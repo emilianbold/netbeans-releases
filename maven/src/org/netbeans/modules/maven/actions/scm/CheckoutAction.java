@@ -71,6 +71,7 @@ import org.openide.util.TaskListener;
  * @deprecated Replaced by actions in Artifact viewer window, see #164992
  * @author Anuradha G
  */
+@Deprecated
 public class CheckoutAction extends AbstractAction implements LookupListener {
 
     private Lookup lookup;

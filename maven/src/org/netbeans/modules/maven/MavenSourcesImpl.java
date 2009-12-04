@@ -495,7 +495,6 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
         private Resource resource;
         private PropertyChangeSupport support = new PropertyChangeSupport(this);
         
-        @SuppressWarnings("unchecked")
         OtherGroup(NbMavenProjectImpl p, FileObject rootFold, String nm, String displayNm, boolean test) {
             project = p;
             rootFolder = rootFold;

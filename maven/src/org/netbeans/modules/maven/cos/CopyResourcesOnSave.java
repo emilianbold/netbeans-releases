@@ -348,7 +348,6 @@ public class CopyResourcesOnSave extends FileChangeAdapter {
             if (fo != null && FileUtil.isParentOf(fo, child)) {
                 String path = FileUtil.getRelativePath(fo, child);
                 //now check includes and excludes
-                @SuppressWarnings("unchecked")
                 List<String> incls = res.getIncludes();
                 if (incls.size() == 0) {
                     incls = Arrays.asList(CosChecker.DEFAULT_INCLUDES);
@@ -363,7 +362,6 @@ public class CopyResourcesOnSave extends FileChangeAdapter {
                 if (!included) {
                     break;
                 }
-                @SuppressWarnings("unchecked")
                 List<String> excls = new ArrayList<String>(res.getExcludes());
                 excls.addAll(Arrays.asList(DirectoryScanner.DEFAULTEXCLUDES));
                 for (String excl : excls) {

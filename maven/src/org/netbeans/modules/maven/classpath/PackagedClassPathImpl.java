@@ -60,9 +60,7 @@ class PackagedClassPathImpl extends AbstractProjectClassPathImpl {
 
     public URI[] createPath() {
         List<URI> lst = new ArrayList<URI>();
-        @SuppressWarnings("unchecked")
         List<Artifact> arts = getMavenProject().getOriginalMavenProject().getCompileArtifacts();
-        @SuppressWarnings("unchecked")
         List<Dependency> deps = getMavenProject().getOriginalMavenProject().getCompileDependencies();
         List<String> packagedIds = new ArrayList<String>();
         for (Dependency dep : deps) {

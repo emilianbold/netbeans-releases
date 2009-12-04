@@ -166,7 +166,6 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
     }
 
     private boolean hasChangedFilteredResources(boolean includeTests, long stamp, RunConfig config) {
-        @SuppressWarnings("unchecked")
         List<Resource> res = config.getMavenProject().getResources();
         for (Resource r : res) {
             if (r.isFiltering()) {
@@ -338,7 +337,6 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
             if (testng == null) {
                 testng = "org.testng:testng"; //NOI18N
             }
-            @SuppressWarnings("unchecked")
             List<Dependency> deps = config.getMavenProject().getTestDependencies();
             for (Dependency d : deps) {
                 if (d.getManagementKey().startsWith(testng)) {

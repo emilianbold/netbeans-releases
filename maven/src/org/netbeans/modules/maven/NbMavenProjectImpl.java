@@ -267,7 +267,6 @@ public final class NbMavenProjectImpl implements Project {
             if (!res.hasExceptions()) {
                 return res.getProject();
             } else {
-                @SuppressWarnings("unchecked")
                 List<Throwable> exc = res.getExceptions();
                 //TODO how to report to the user?
                 for (Throwable ex : exc) {
@@ -624,7 +623,6 @@ public final class NbMavenProjectImpl implements Project {
 
     public URI[] getSourceRoots(boolean test) {
         List<String> srcs = new ArrayList<String>();
-        @SuppressWarnings("unchecked")
         List<String> s1 = test ? getOriginalMavenProject().getTestCompileSourceRoots() : getOriginalMavenProject().getCompileSourceRoots();
         srcs.addAll(s1);
         if (!test && getProjectDirectory().getFileObject("src/main/aspect") != null) { //NOI18N
@@ -731,7 +729,6 @@ public final class NbMavenProjectImpl implements Project {
 
     public URI[] getResources(boolean test) {
         List<URI> toRet = new ArrayList<URI>();
-        @SuppressWarnings("unchecked")
         List<Resource> res = test ? getOriginalMavenProject().getTestResources() : getOriginalMavenProject().getResources();
         for (Resource elem : res) {
             URI uri = FileUtilities.getDirURI(getProjectDirectory(), elem.getDirectory());

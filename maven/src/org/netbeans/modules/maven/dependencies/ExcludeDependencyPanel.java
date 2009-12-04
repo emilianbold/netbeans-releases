@@ -209,7 +209,6 @@ public class ExcludeDependencyPanel extends javax.swing.JPanel {
 
     private TreeNode createTransitiveDependenciesList() {
         DefaultMutableTreeNode root = new DefaultMutableTreeNode(null, true);
-        @SuppressWarnings("unchecked")
         Set<Artifact> artifacts = project.getArtifacts();
         Icon icn = ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/maven/TransitiveDependencyIcon.png", true)); //NOI18N
         for (Artifact a : artifacts) {

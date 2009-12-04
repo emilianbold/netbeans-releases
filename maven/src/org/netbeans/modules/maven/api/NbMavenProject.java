@@ -354,7 +354,6 @@ public final class NbMavenProject {
         NONBINARYRP.post(new Runnable() {
             public void run() {
                 MavenEmbedder online = EmbedderFactory.getOnlineEmbedder();
-                @SuppressWarnings("unchecked")
                 Set<Artifact> arts = project.getOriginalMavenProject().getArtifacts();
                 ProgressContributor[] contribs = new ProgressContributor[arts.size()];
                 for (int i = 0; i < arts.size(); i++) {
