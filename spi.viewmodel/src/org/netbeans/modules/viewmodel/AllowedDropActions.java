@@ -40,58 +40,45 @@
 package org.netbeans.modules.viewmodel;
 
 import java.awt.datatransfer.Transferable;
-import org.netbeans.spi.viewmodel.ColumnModel;
-import org.netbeans.spi.viewmodel.Model;
-import org.netbeans.spi.viewmodel.Models;
-import org.netbeans.spi.viewmodel.TreeModelFilter;
+import org.netbeans.spi.viewmodel.Models.CompoundModel;
 
 /**
+ * Interface in Node's lookup defining node's allowed drop actions.
  *
  * @author Martin Entlicher
  */
-public class HyperCompoundModel implements Model {
+interface AllowedDropActions {
 
-    private Models.CompoundModel main;
-    private Models.CompoundModel[] models;
-    private TreeModelFilter treeFilter;
+    int getAllowedDropActions(Transferable t);
 
-    public HyperCompoundModel(Models.CompoundModel main,
-                              Models.CompoundModel[] models,
-                              TreeModelFilter treeFilter) {
-        this.main = main;
-        this.models = models;
-        this.treeFilter = treeFilter;
-    }
+    final class Compound implements AllowedDropActions {
 
-    ColumnModel[] getColumns() {
-        return main.getColumns();
-    }
+        private CompoundModel model;
+        private Object node;
 
-    Models.CompoundModel getMain() {
-        return main;
-    }
-
-    Models.CompoundModel[] getModels() {
-        return models;
-    }
-
-    TreeModelFilter getTreeFilter() {
-        return treeFilter;
-    }
-
-    int getAllowedDragActions() {
-        int actions = 0;
-        for (Models.CompoundModel m : models) {
-            actions |= m.getAllowedDragActions();
+        public Compound(CompoundModel model, Object node) {
+            this.model = model;
+            this.node = node;
         }
-        return actions;
+
+        public int getAllowedDropActions(Transferable t) {
+            return model.getAllowedDropActions(node, t);
+        }
     }
 
-    int getAllowedDropActions(Object node, Transferable t) {
-        int actions = 0;
-        for (Models.CompoundModel m : models) {
-            actions |= m.getAllowedDropActions(node, t);
+    final class Hyper implements AllowedDropActions {
+
+        private HyperCompoundModel model;
+        private Object node;
+
+        public Hyper(HyperCompoundModel model, Object node) {
+            this.model = model;
+            this.node = node;
         }
-        return actions;
+
+        public int getAllowedDropActions(Transferable t) {
+            return model.getAllowedDropActions(node, t);
+        }
+        
     }
 }

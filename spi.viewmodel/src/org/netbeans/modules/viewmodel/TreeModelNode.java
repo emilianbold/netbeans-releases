@@ -80,6 +80,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -126,7 +127,6 @@ public class TreeModelNode extends AbstractNode {
         this(
             model,
             model.getColumns (),
-            createChildren (model, model.getColumns (), treeModelRoot, object),
             treeModelRoot,
             object
         );
@@ -145,6 +145,7 @@ public class TreeModelNode extends AbstractNode {
             model,
             columns,
             createChildren (model, columns, treeModelRoot, object),
+            new AllowedDropActions.Compound(model, object),
             treeModelRoot,
             object
         );
@@ -157,12 +158,13 @@ public class TreeModelNode extends AbstractNode {
         final Models.CompoundModel model,
         final ColumnModel[] columns,
         final Children children,
+        final AllowedDropActions allowedDropActions,
         final TreeModelRoot treeModelRoot,
         final Object object
     ) {
         super (
             children,
-            Lookups.fixed(object, new CheckNodeCookieImpl(model, object))
+            Lookups.fixed(object, new CheckNodeCookieImpl(model, object), allowedDropActions)
         );
         this.model = model;
         this.treeModelRoot = treeModelRoot;

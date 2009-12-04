@@ -1027,11 +1027,11 @@ public final class Models {
             }
         }
 
-        public int getAllowedDropActions(Transferable t) {
+        public int getAllowedDropActions(Object node, Transferable t) {
             if (dndfilter != null) {
-                return dndfilter.getAllowedDropActions(model, t);
+                return dndfilter.getAllowedDropActions(model, node, t);
             } else {
-                return model.getAllowedDropActions(t);
+                return model.getAllowedDropActions(node, t);
             }
         }
 
@@ -2474,11 +2474,11 @@ public final class Models {
             return DEFAULT_DRAG_DROP_ALLOWED_ACTIONS;
         }
 
-        public int getAllowedDropActions(Transferable t) {
+        public int getAllowedDropActions(Object node, Transferable t) {
             int i, k = models.length;
             for (i = 0; i < k; i++) {
                 if (models[i] instanceof DnDNodeModel) {
-                    return ((DnDNodeModel) models[i]).getAllowedDropActions(t);
+                    return ((DnDNodeModel) models[i]).getAllowedDropActions(node, t);
                 }
             }
             return DEFAULT_DRAG_DROP_ALLOWED_ACTIONS;
@@ -3671,9 +3671,9 @@ public final class Models {
             }
         }
 
-        public int getAllowedDropActions(Transferable t) {
+        public int getAllowedDropActions(Object node, Transferable t) {
             if (dndNodeModel != null) {
-                return dndNodeModel.getAllowedDropActions(t);
+                return dndNodeModel.getAllowedDropActions(node, t);
             } else {
                 return DEFAULT_DRAG_DROP_ALLOWED_ACTIONS;
             }

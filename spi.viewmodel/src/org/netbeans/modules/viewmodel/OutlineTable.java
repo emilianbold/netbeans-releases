@@ -359,8 +359,7 @@ ExplorerManager.Provider, PropertyChangeListener {
         treeTable.setProperties (columnsToSet);
         updateTableColumns(columnsToSet);
         treeTable.setAllowedDragActions(model.getAllowedDragActions());
-        treeTable.setAllowedDropActions(model.getAllowedDropActions(null));
-        treeTable.setDynamicDropActions(model);
+        treeTable.setAllowedDropActions(model.getAllowedDropActions(null, null));
 
         //treeTable.getTable().tableChanged(new TableModelEvent(treeTable.getOutline().getModel()));
         //getExplorerManager ().setRootContext (rootNode);
@@ -439,6 +438,8 @@ ExplorerManager.Provider, PropertyChangeListener {
         // The root node must be ready when setting the columns
         treeTable.setProperties (columnsToSet);
         updateTableColumns(columnsToSet);
+        treeTable.setAllowedDragActions(model.getAllowedDragActions());
+        treeTable.setAllowedDropActions(model.getAllowedDropActions(null, null));
 
         // 5) set root node for given model
         // Moved to 4), because the new root node must be ready when setting columns
@@ -865,8 +866,6 @@ ExplorerManager.Provider, PropertyChangeListener {
     
     private static class MyTreeTable extends OutlineView {
 
-        private Reference<DnDNodeModel> dndModelRef = new WeakReference<DnDNodeModel>(null);
-
         MyTreeTable () {
             super ();
             Outline outline = getOutline();
@@ -955,15 +954,11 @@ ExplorerManager.Provider, PropertyChangeListener {
             }
         }
 
-        void setDynamicDropActions(DnDNodeModel model) {
-            dndModelRef = new WeakReference<DnDNodeModel>(model);
-        }
-
         @Override
-        protected int getAllowedDropActions(Transferable t) {
-            DnDNodeModel model = dndModelRef.get();
-            if (model != null) {
-                return model.getAllowedDropActions(t);
+        protected int getAllowedDropActions(Node n, Transferable t) {
+            AllowedDropActions allowedDropActions = n.getLookup().lookup(AllowedDropActions.class);
+            if (allowedDropActions != null) {
+                return allowedDropActions.getAllowedDropActions(t);
             } else {
                 return super.getAllowedDropActions();
             }

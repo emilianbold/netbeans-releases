@@ -161,9 +161,7 @@ final class OutlineViewDropSupport implements DropTargetListener, Runnable {
         ExplorerDnDManager.getDefault().setMaybeExternalDragAndDrop( true );
 
         int dropAction = dtde.getDropAction();
-        int allowedDropActions = view.getAllowedDropActions(dtde.getTransferable());
-        dropAction = ExplorerDnDManager.getDefault().getAdjustedDropAction(
-                dropAction, allowedDropActions);
+        // Adjust later by the allowed drop actions for the drop node.
 
         // 1. test if I'm over any node
         Point p = dtde.getLocation();
@@ -177,6 +175,9 @@ final class OutlineViewDropSupport implements DropTargetListener, Runnable {
             // #64469: Can't drop into empty explorer area
             dropIndex = -1;
             dropNode = view.manager.getRootContext ();
+            int allowedDropActions = view.getAllowedDropActions(dropNode, dtde.getTransferable());
+            dropAction = ExplorerDnDManager.getDefault().getAdjustedDropAction(
+                    dropAction, allowedDropActions);
             if (canDrop(dropNode, dropAction, dtde.getTransferable())) {
                 // ok, root accept
                 dtde.acceptDrag(dropAction);
@@ -198,6 +199,9 @@ final class OutlineViewDropSupport implements DropTargetListener, Runnable {
 
             return;
         }
+        int allowedDropActions = view.getAllowedDropActions(dropNode, dtde.getTransferable());
+        dropAction = ExplorerDnDManager.getDefault().getAdjustedDropAction(
+                dropAction, allowedDropActions);
         boolean isParentNodeDrop = false;
         Rectangle nodeArea = table.getCellRect(row, column, false);
         log("nodeArea == " + nodeArea); // NOI18N
@@ -384,13 +388,14 @@ final class OutlineViewDropSupport implements DropTargetListener, Runnable {
         Node[] nodes = ExplorerDnDManager.getDefault().getDraggedNodes();
         if( null == nodes )
             return;
-        int dropAction = ExplorerDnDManager.getDefault().getAdjustedDropAction(
-                dtde.getDropAction(), view.getAllowedDropActions(dtde.getTransferable())
-            );
 
         for (int i = 0; i < nodes.length; i++) {
+            int viewDropActions = view.getAllowedDropActions(nodes[i], dtde.getTransferable());
+            int dropAction = ExplorerDnDManager.getDefault().getAdjustedDropAction(
+                    dtde.getDropAction(), viewDropActions
+                );
             if (
-                ((view.getAllowedDropActions(dtde.getTransferable()) & dropAction) == 0) ||
+                ((viewDropActions & dropAction) == 0) ||
                     !DragDropUtilities.checkNodeForAction(nodes[i], dropAction)
             ) {
                 // this action is not supported
@@ -583,7 +588,7 @@ final class OutlineViewDropSupport implements DropTargetListener, Runnable {
         }
 
         // Test to see if the target node supports the drop action
-        if ((view.getAllowedDropActions(dndEventTransferable) & dropAction) == 0) {
+        if ((view.getAllowedDropActions(n, dndEventTransferable) & dropAction) == 0) {
             return false;
         }
 
@@ -640,7 +645,7 @@ final class OutlineViewDropSupport implements DropTargetListener, Runnable {
 
             Node[] dragNodes = ExplorerDnDManager.getDefault().getDraggedNodes();
             int dropAction = ExplorerDnDManager.getDefault().getAdjustedDropAction(
-                    dtde.getDropAction(), view.getAllowedDropActions(dtde.getTransferable())
+                    dtde.getDropAction(), view.getAllowedDropActions(dropNode, dtde.getTransferable())
                 );
 
             if (!canDrop(dropNode, dropAction, dtde.getTransferable())) {
