@@ -39,59 +39,30 @@
 
 package org.netbeans.modules.cnd.remote.sync;
 
-import java.util.concurrent.TimeUnit;
+import java.io.File;
+import java.io.PrintWriter;
 import junit.framework.Test;
 import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.filesystems.FileObject;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.cnd.makeproject.MakeProject;
-import org.netbeans.modules.nativeexecution.test.If;
-import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
+
 /**
- *
+ * Test for ScpSyncWorker
  * @author Vladimir Kvashin
  */
-public class RfsGnuRemoteBuildTestCase extends RfsBaseRemoteBuildTestCase {
+public class FtpSyncWorkerTestCase extends AbstractSyncWorkerTestCase {
 
-    public RfsGnuRemoteBuildTestCase(String testName) {
-        super(testName);
-    }
-
-    public RfsGnuRemoteBuildTestCase(String testName, ExecutionEnvironment execEnv) {
+    public FtpSyncWorkerTestCase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
     }
 
     @Override
-    public void setUp() throws Exception {
-        super.setUp();
-        setupHost("rfs");        
+    BaseSyncWorker createWorker(File src, ExecutionEnvironment execEnv, 
+            PrintWriter out, PrintWriter err, File privProjectStorageDir) {
+        return new FtpSyncWorker(execEnv, out, err, privProjectStorageDir, src);
     }
 
-    @ForAllEnvironments
-    public void testBuildRfsSampleArgsGNU_Single() throws Exception {
-        setDefaultCompilerSet("GNU");
-        FileObject projectDirFO = prepareSampleProject("Arguments", "Args_rfs_gnu_single");
-        MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
-        removeRemoteHome();
-        buildProject(makeProject, getSampleBuildTimeout(), TimeUnit.SECONDS);
-    }
-
-    @ForAllEnvironments
-    public void testBuildRfsSampleArgsGNU_Multy() throws Exception {
-        setDefaultCompilerSet("GNU");
-        FileObject projectDirFO = prepareSampleProject("Arguments", "Args_rfs_gnu_multy");
-        removeRemoteHome();
-        MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
-        System.err.printf("BUILDING FIRST TIME\n");
-        buildProject(makeProject, getSampleBuildTimeout(), TimeUnit.SECONDS);
-        System.err.printf("BUILDING SECOND TIME\n");
-        buildProject(makeProject, getSampleBuildTimeout(), TimeUnit.SECONDS);
-        System.err.printf("BUILDING THIRD TIME\n");
-        buildProject(makeProject, getSampleBuildTimeout(), TimeUnit.SECONDS);
-    }
 
     public static Test suite() {
-        return new RemoteDevelopmentTest(RfsGnuRemoteBuildTestCase.class);
+        return new RemoteDevelopmentTest(FtpSyncWorkerTestCase.class);
     }
 }
