@@ -216,8 +216,8 @@ public final class ClasspathInfo {
         return false;
     }
     // Factory methods ---------------------------------------------------------
-    
-    
+
+
     /** Creates new interface to the compiler
      * @param file for which the CompilerInterface should be created
      * @return ClasspathInfo or null if the file does not exist on the
@@ -276,11 +276,13 @@ public final class ClasspathInfo {
             return null;
         }
     }
-        
-    /** Creates new interface to the compiler
-     * @param fo for which the CompilerInterface should be created
-     */
-    public static @NonNull ClasspathInfo create(@NonNull FileObject fo) {
+
+    private static ClasspathInfo create (final @NonNull FileObject fo,
+            final JavaFileFilterImplementation filter,
+            final boolean backgroundCompilation,
+            final boolean ignoreExcludes,
+            final boolean hasMemoryFileManager,
+            final boolean useModifiedFiles) {
         ClassPath bootPath = ClassPath.getClassPath(fo, ClassPath.BOOT);
         if (bootPath == null) {
             //javac requires at least java.lang
@@ -294,8 +296,15 @@ public final class ClasspathInfo {
         if (srcPath == null) {
             srcPath = EMPTY_PATH;
         }
-        return create (bootPath, compilePath, srcPath, null, false, false, false, true);
-    }            
+        return create (bootPath, compilePath, srcPath, filter, backgroundCompilation, ignoreExcludes, hasMemoryFileManager, useModifiedFiles);
+    }
+        
+    /** Creates new interface to the compiler
+     * @param fo for which the CompilerInterface should be created
+     */
+    public static @NonNull ClasspathInfo create(@NonNull FileObject fo) {
+        return create (fo, null, false, false, false, true);
+    }
     
     private static ClasspathInfo create(final @NonNull ClassPath bootPath,
             final @NonNull ClassPath classPath,
@@ -447,6 +456,16 @@ public final class ClasspathInfo {
                 final boolean hasMemoryFileManager,
                 final boolean useModifiedFiles) {
             return ClasspathInfo.create(bootPath, classPath, sourcePath, filter, backgroundCompilation, ignoreExcludes, hasMemoryFileManager, useModifiedFiles);
+        }
+
+        @Override
+        public ClasspathInfo create (final @NonNull FileObject fo,
+                final JavaFileFilterImplementation filter,
+                final boolean backgroundCompilation,
+                final boolean ignoreExcludes,
+                final boolean hasMemoryFileManager,
+                final boolean useModifiedFiles) {
+            return ClasspathInfo.create(fo, filter, backgroundCompilation, ignoreExcludes, hasMemoryFileManager, useModifiedFiles);
         }
                 
         @Override
