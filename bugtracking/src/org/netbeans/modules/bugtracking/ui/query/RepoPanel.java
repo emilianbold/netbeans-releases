@@ -113,11 +113,6 @@ class RepoPanel extends ViewportWidthAwarePanel {
     }
 
     @Override
-    public void setBounds(int x, int y, int width, int height) {
-        super.setBounds(x, y, width, height);
-    }
-
-    @Override
     public Dimension getPreferredSize() {
         if (prefSize == null) {
             Dimension repoSelectorPrefSize = repoSelectorPanel.getPreferredSize();
