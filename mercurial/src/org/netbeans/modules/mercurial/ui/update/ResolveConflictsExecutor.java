@@ -45,7 +45,9 @@ import java.io.*;
 import java.util.*;
 import java.awt.*;
 import java.nio.charset.Charset;
+import java.util.logging.Level;
 import javax.swing.*;
+import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.spi.diff.*;
 
 import org.openide.util.*;
@@ -56,6 +58,7 @@ import org.netbeans.api.diff.*;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
+import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.versioning.util.Utils;
 
 /**
@@ -87,7 +90,6 @@ public class ResolveConflictsExecutor extends HgProgressSupport {
     }
 
     public void exec() {
-        assert SwingUtilities.isEventDispatchThread();
         MergeVisualizer merge = (MergeVisualizer) Lookup.getDefault().lookup(MergeVisualizer.class);
         if (merge == null) {
             throw new IllegalStateException("No Merge engine found."); // NOI18N
@@ -141,6 +143,18 @@ public class ResolveConflictsExecutor extends HgProgressSupport {
         String originalRightFileRevision = rightFileRevision;
         if (leftFileRevision != null) leftFileRevision = leftFileRevision.trim();
         if (rightFileRevision != null) rightFileRevision = rightFileRevision.trim();
+        String[] parentRevisions = null;
+        if (leftFileRevision.equals(LOCAL)) {
+            try {
+                parentRevisions = HgCommand.getParents(Mercurial.getInstance().getRepositoryRoot(file).getAbsolutePath(), file, null);
+            } catch (HgException ex) {
+                Mercurial.LOG.log(Level.INFO, null, ex);
+            }
+            if (parentRevisions != null && parentRevisions.length > 1) {
+                leftFileRevision = parentRevisions[0];
+                rightFileRevision = parentRevisions[1];
+            }
+        }
         if (leftFileRevision == null || leftFileRevision.equals(file.getAbsolutePath() + ORIG_SUFFIX)
                 || leftFileRevision.equals(LOCAL)){
             leftFileRevision = org.openide.util.NbBundle.getMessage(ResolveConflictsExecutor.class, "Diff.titleWorkingFile"); // NOI18N
@@ -163,15 +177,18 @@ public class ResolveConflictsExecutor extends HgProgressSupport {
                                                               originalLeftFileRevision,
                                                               originalRightFileRevision,
                                                               fo, lock, encoding);
-
-        try {
-            Component c = merge.createView(diffs, s1, s2, result);
-            if (c instanceof TopComponent) {
-                ((TopComponent) c).putClientProperty(ResolveConflictsExecutor.class.getName(), Boolean.TRUE);
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                try {
+                    Component c = merge.createView(diffs, s1, s2, result);
+                    if (c instanceof TopComponent) {
+                        ((TopComponent) c).putClientProperty(ResolveConflictsExecutor.class.getName(), Boolean.TRUE);
+                    }
+                } catch (IOException ioex) {
+                    org.openide.ErrorManager.getDefault().notify(ioex);
+                }
             }
-        } catch (IOException ioex) {
-            org.openide.ErrorManager.getDefault().notify(ioex);
-        }
+        });
     }
 
     /**
@@ -375,7 +392,7 @@ public class ResolveConflictsExecutor extends HgProgressSupport {
         throw new RuntimeException("Not implemented"); // NOI18N
     }
     
-    
+
     private static class MergeResultWriterInfo extends StreamSource {
         
         private File tempf1, tempf2, tempf3, outputFile;
