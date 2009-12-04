@@ -108,9 +108,18 @@ public class NativeExecutionTestFrameworkTestCase extends NativeExecutionBaseTes
     }
 
     @If(key="inexistent", section="inexistent", defaultValue=false)
-        public void testConditionalDefault() {
+    public void testConditionalDefault() {
     }
-    
+
+    @Ifdef(section="ifdef.section", key="ifdef.key")
+    public void testIfdef() {
+    }
+
+    @Ifdef(section="ifdef.section", key="ifdef.key")
+    @If(section="ifdef.section", key="ifdef.and.if.key")
+    public void testIfdefAndIf() {
+    }
+
     public static junit.framework.Test suite() {
         Class testClass = NativeExecutionTestFrameworkTestCase.class;
         return new NativeExecutionBaseTestSuite(
