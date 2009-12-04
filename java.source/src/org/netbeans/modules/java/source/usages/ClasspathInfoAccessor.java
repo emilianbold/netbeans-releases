@@ -88,6 +88,13 @@ public abstract class ClasspathInfoAccessor {
             boolean ignoreExcludes,
             boolean hasMemoryFileManager,
             boolean useModifiedFiles);
+
+    public abstract ClasspathInfo create (FileObject fo,
+            JavaFileFilterImplementation filter,
+            boolean backgroundCompilation,
+            boolean ignoreExcludes,
+            boolean hasMemoryFileManager,
+            boolean useModifiedFiles);
     
     /**
      * Registers virtual java source into the memory {@link JavacFileManager}

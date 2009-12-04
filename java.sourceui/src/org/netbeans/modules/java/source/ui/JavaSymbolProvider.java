@@ -200,7 +200,7 @@ public class JavaSymbolProvider implements SymbolProvider {
                         impl.getDeclaredElements(ident, kind, ResultConvertor.elementHandleConvertor(),r);
                         if (!r.isEmpty()) {
                             //final ClasspathInfo cpInfo = ClasspathInfo.create(root);
-                            final ClasspathInfo cpInfo = ClasspathInfoAccessor.getINSTANCE().create(root,null,true,true,false);
+                            final ClasspathInfo cpInfo = ClasspathInfoAccessor.getINSTANCE().create(root,null,true,true,false,false);
                             final JavaSource js = JavaSource.create(cpInfo);
                             js.runUserActionTask(new Task<CompilationController>() {
                                 public void run (final CompilationController controller) {
