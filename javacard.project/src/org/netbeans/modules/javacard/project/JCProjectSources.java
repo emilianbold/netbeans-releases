@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.javacard.project;
 
-import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
@@ -62,6 +61,8 @@ import javax.swing.event.ChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.spi.project.support.ant.SourcesHelper.SourceRootConfig;
 
 /**
  * Sources of Java Card project.
@@ -182,12 +183,8 @@ public class JCProjectSources implements Sources, ChangeListener,
             String prop = propNames[i];
             String displayName = roots.getRootDisplayName(rootNames[i], prop);
             String loc = "${" + prop + "}"; // NOI18N
-//            String includes = "${" + ProjectProperties.INCLUDES + "}"; // NOI18N
-//            String excludes = "${" + ProjectProperties.EXCLUDES + "}"; // NOI18N
-            String includes = "**/*"; //#178142 - not sure why we were filtering sources based on these - this
-            String excludes = ""; //cased all .java files to be hidden just because they are not to be included in the build
-            sourcesHelper.addPrincipalSourceRoot(loc, includes, excludes, displayName, null, null); // NOI18N
-            sourcesHelper.addTypedSourceRoot(loc, includes, excludes, JavaProjectConstants.SOURCES_TYPE_JAVA, displayName, null, null); // NOI18N
+            sourcesHelper.sourceRoot(loc).displayName(displayName).type(
+                    JavaProjectConstants.SOURCES_TYPE_JAVA).add();
         }
     }
 
