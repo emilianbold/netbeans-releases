@@ -500,7 +500,20 @@ public class CardPropertiesTest {
         expect.addAll(Arrays.asList(StartCapability.class, StopCapability.class, ResumeCapability.class,
                 EpromFileCapability.class, ClearEpromCapability.class, DebugCapability.class, CardCustomizerProvider.class,
                 CardContentsProvider.class, AntTargetInterceptor.class, PortProvider.class, UrlCapability.class));
-        assertEquals (expect, got);
+        assertSetsEquals (expect, got);
+    }
+
+    private void assertSetsEquals (Set<?> expect, Set<?> got) {
+        if (!expect.equals(got)) {
+            Set expect1 = new HashSet<Object> (expect);
+            Set got1 = new HashSet<Object> (got);
+            Set expect2 = new HashSet<Object> (expect);
+            Set got2 = new HashSet<Object> (got);
+            got1.removeAll(expect1);
+            expect2.removeAll(got2);
+            assertTrue ("Unexpected objects: " + got1, got1.isEmpty());
+            assertTrue ("Missing objects: " + expect2, expect2.isEmpty());
+        }
     }
 
     @Test
