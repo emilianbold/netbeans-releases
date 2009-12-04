@@ -41,7 +41,9 @@ package org.netbeans.modules.ruby;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.csl.api.CompletionProposal;
+import org.netbeans.modules.ruby.elements.CommentElement;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
+import org.netbeans.modules.ruby.elements.RubyElement;
 import org.openide.util.NbBundle;
 
 /**
@@ -84,8 +86,9 @@ final class RubyHttpStatusCodeCompleter extends RubyBaseCompleter {
         boolean completed = false;
         for (StatusCode statusCode : STATUS_CODES) {
             if (statusCode.code.startsWith(prefix)) {
-                RubyCompletionItem.ParameterItem item = 
-                        new RubyCompletionItem.ParameterItem(target, statusCode.shortDesc, statusCode.code, statusCode.code, anchor, request);
+                RubyElement element = new CommentElement(statusCode.longDesc);
+                RubyCompletionItem.ParameterItem item =
+                        new RubyCompletionItem.ParameterItem(element, statusCode.shortDesc, statusCode.code, statusCode.code, anchor, request);
                 item.setSmart(true);
                 proposals.add(item);
                 completed = true;

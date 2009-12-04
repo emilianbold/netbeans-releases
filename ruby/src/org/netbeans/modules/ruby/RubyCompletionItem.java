@@ -308,7 +308,7 @@ class RubyCompletionItem extends DefaultCompletionProposal {
         private final String desc;
         private final String insert;
 
-        ParameterItem(IndexedMethod element, String name, String symbol, String insert, int anchorOffset, CompletionRequest request) {
+        ParameterItem(Element element, String name, String symbol, String insert, int anchorOffset, CompletionRequest request) {
             super(element, anchorOffset, request);
             this.name = name;
             this.desc = symbol;
