@@ -1412,14 +1412,6 @@ public class MakeActionProvider implements ActionProvider {
 //        return "";
 //    }
 
-    private static boolean isAbsolutePath(MakeConfiguration conf, String path) {
-        if (conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
-            return path.length() > 3 && path.charAt(1) == ':' && path.charAt(2) == '/';
-        } else {
-            return path.length() > 0 && path.charAt(0) == '/';
-        }
-    }
-
     // Private methods -----------------------------------------------------
     /** Look up i18n strings here */
     private static String getString(String s) {
