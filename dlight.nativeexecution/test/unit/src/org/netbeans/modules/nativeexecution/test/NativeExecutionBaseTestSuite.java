@@ -344,7 +344,7 @@ public class NativeExecutionBaseTestSuite extends NbTestSuite {
                             addTest(warning("Method " + testClass.getName() + '.' + method.getName() + " should have no parameters"));
                         } else {
                             if (method.getAnnotation(org.junit.Ignore.class) == null) {
-                                Conditional conditionalAnnotation = method.getAnnotation(Conditional.class);
+                                If conditionalAnnotation = method.getAnnotation(If.class);
                                 String condSection = (conditionalAnnotation == null) ? null : conditionalAnnotation.section();
                                 String condKey = (conditionalAnnotation == null) ? null : conditionalAnnotation.key();
                                 boolean condDefault = (conditionalAnnotation == null) ? false : conditionalAnnotation.defaultValue();

@@ -58,7 +58,7 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface Conditional {
+public @interface If {
     /** Gets section of .cndtestrc that contains the given flag */
     String section();
     /** Gets flag key */
