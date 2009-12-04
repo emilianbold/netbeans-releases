@@ -60,7 +60,7 @@ import org.netbeans.modules.javacard.spi.ICardCapability;
 import org.netbeans.modules.javacard.spi.JavacardDeviceKeyNames;
 import org.netbeans.modules.javacard.spi.JavacardPlatformKeyNames;
 import org.netbeans.modules.javacard.spi.capabilities.AntTargetInterceptor;
-import org.netbeans.modules.javacard.spi.capabilities.ApduSupport;
+import org.netbeans.modules.javacard.spi.capabilities.UrlCapability;
 import org.netbeans.modules.javacard.spi.capabilities.CardContentsProvider;
 import org.netbeans.modules.javacard.spi.capabilities.CardCustomizerProvider;
 import org.netbeans.modules.javacard.spi.capabilities.ClearEpromCapability;
@@ -499,7 +499,7 @@ public class CardPropertiesTest {
         Set <Class<? extends ICardCapability>> expect = new HashSet<Class<? extends ICardCapability>>();
         expect.addAll(Arrays.asList(StartCapability.class, StopCapability.class, ResumeCapability.class,
                 EpromFileCapability.class, ClearEpromCapability.class, DebugCapability.class, CardCustomizerProvider.class,
-                CardContentsProvider.class, AntTargetInterceptor.class, PortProvider.class, ApduSupport.class));
+                CardContentsProvider.class, AntTargetInterceptor.class, PortProvider.class, UrlCapability.class));
         assertEquals (expect, got);
     }
 

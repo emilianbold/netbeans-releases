@@ -19,15 +19,15 @@
           <Group type="102" alignment="1" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
-                  <Component id="unlockPanel1" alignment="0" pref="682" max="32767" attributes="0"/>
+                  <Component id="unlockPanel1" alignment="0" pref="803" max="32767" attributes="0"/>
                   <Component id="useAsDefault" alignment="1" min="-2" max="-2" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                      <Component id="displayNameField" pref="519" max="32767" attributes="0"/>
+                      <Component id="displayNameField" pref="593" max="32767" attributes="0"/>
                   </Group>
                   <Component id="listLabel" alignment="0" min="-2" pref="173" max="-2" attributes="0"/>
-                  <Component id="servletList" alignment="0" pref="682" max="32767" attributes="0"/>
+                  <Component id="servletList" alignment="0" pref="803" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="nameLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" max="-2" attributes="0"/>

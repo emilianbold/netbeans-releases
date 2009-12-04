@@ -50,7 +50,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.modules.javacard.spi.capabilities.AntTargetInterceptor;
-import org.netbeans.modules.javacard.spi.capabilities.ApduSupport;
+import org.netbeans.modules.javacard.spi.capabilities.UrlCapability;
 import org.netbeans.modules.javacard.spi.capabilities.CardContentsProvider;
 import org.netbeans.modules.javacard.spi.capabilities.CardCustomizerProvider;
 import org.netbeans.modules.javacard.spi.capabilities.DeleteCapability;
@@ -71,7 +71,7 @@ public enum DeclarableCapabilities {
     PROFILE,
     EPROM_FILE,
     CLEAR_EPROM,
-    APDU_SUPPORT,
+    URL,
     CONTENTS,
     PORTS,
     CUSTOMIZER,
@@ -150,8 +150,8 @@ public enum DeclarableCapabilities {
                 return EpromFileCapability.class;
             case CLEAR_EPROM :
                 return ClearEpromCapability.class;
-            case APDU_SUPPORT :
-                return ApduSupport.class;
+            case URL :
+                return UrlCapability.class;
             case CONTENTS :
                 return CardContentsProvider.class;
             case PORTS :

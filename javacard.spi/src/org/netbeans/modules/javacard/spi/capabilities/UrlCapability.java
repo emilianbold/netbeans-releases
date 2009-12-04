@@ -46,7 +46,7 @@ import org.netbeans.modules.javacard.spi.ICardCapability;
  *
  * @author Tim Boudreau
  */
-public interface ApduSupport extends ICardCapability {
+public interface UrlCapability extends ICardCapability {
     /**
      * The protocol the card speaks
      * @return The protocol - T=0 or T=1
