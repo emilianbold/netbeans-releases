@@ -147,7 +147,9 @@ public class JDBCCatalog extends CatalogImplementation {
                         }
                     }
                 } finally {
-                    rs.close();
+                    if (rs != null) {
+                        rs.close();
+                    }
                 }
             }
             if (newSchemas.isEmpty() && !jdbcMetadata.getDmd().supportsSchemasInTableDefinitions()) {
