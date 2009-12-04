@@ -229,7 +229,27 @@ public class JCProjectActionProvider implements ActionProvider, PropertyChangeLi
     public void invokeAction(final String command, final Lookup context)
             throws IllegalArgumentException {
         if (COMMAND_DELETE.equals(command)) {
+            FileObject dir = project.getProjectDirectory();
             DefaultProjectOperations.performDefaultDeleteOperation(project);
+            // #177993 - since we are not using source groups for scripts/html
+            // they are not deleted
+            if (dir.isValid()) {
+                try {
+                    FileObject fo = dir.getFileObject("html"); //NOI18N
+                    if (fo != null) {
+                        fo.delete();
+                    }
+                    fo = dir.getFileObject("scripts"); //NOI18N
+                    if (fo != null) {
+                        fo.delete();
+                    }
+                    if (dir.getChildren().length == 0) {
+                        dir.delete();
+                    }
+                } catch (IOException ioe) {
+                    Exceptions.printStackTrace(ioe);
+                }
+            }
             return;
         }
 
