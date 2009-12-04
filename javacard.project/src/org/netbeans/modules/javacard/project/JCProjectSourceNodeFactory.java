@@ -295,7 +295,7 @@ public class JCProjectSourceNodeFactory implements NodeFactory {
         }
 
         private DataObject getTemplate() {
-            String template = html ? "Templates/Other/html.html" : "Templates/javacard/APDUFileTemplate.scr";
+            String template = html ? "Templates/Other/html.html" : "Templates/Other/ApduTemplate.scr"; //NOI18N
             FileObject fo = FileUtil.getConfigFile(template);
             if (fo != null) {
                 try {
