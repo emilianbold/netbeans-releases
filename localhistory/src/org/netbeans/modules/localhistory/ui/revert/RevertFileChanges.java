@@ -45,6 +45,7 @@ import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.ArrayList;
 import javax.swing.JButton;
 import org.netbeans.modules.localhistory.LocalHistorySettings;
 import org.netbeans.modules.localhistory.store.StoreEntry;
@@ -67,6 +68,7 @@ public class RevertFileChanges implements PropertyChangeListener {
     private LocalHistoryFileView view;
     private DialogDescriptor dialogDescriptor;
     private JButton okButton;
+    private Node[] selectedNodes;
     
     RevertFileChanges () {
         view = new LocalHistoryFileView();                                
@@ -89,7 +91,7 @@ public class RevertFileChanges implements PropertyChangeListener {
         long ts = LocalHistorySettings.getInstance().getLastSelectedEntry(root);        
         view.refresh(new File[] {root}, ts);                
         if(show()) {            
-            StoreEntry[] entries = view.getSelectedEntries();
+            StoreEntry[] entries = getSelectedEntries();
             if(entries != null && entries.length > 0) {
                 revert(entries[0]); 
                 LocalHistorySettings.getInstance().setLastSelectedEntry(root, entries[0].getTimestamp());    
@@ -116,6 +118,9 @@ public class RevertFileChanges implements PropertyChangeListener {
     public void propertyChange(PropertyChangeEvent evt) {  
         if(ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {  
             Node[] nodes = (Node[]) evt.getNewValue();
+            if (nodes != null && nodes.length > 0) {
+                selectedNodes = nodes;
+            }
             okButton.setEnabled(isEnabled(nodes));        
         }
     }   
@@ -131,6 +136,18 @@ public class RevertFileChanges implements PropertyChangeListener {
             }            
         }
         return true; 
-    }      
+    }
+
+    private StoreEntry[] getSelectedEntries() {
+        Node[] nodes = selectedNodes;
+        if(nodes != null && nodes.length > 0) {
+            ArrayList<StoreEntry> entries = new ArrayList<StoreEntry>();
+            for(Node node : nodes) {
+                entries.add(node.getLookup().lookup(StoreEntry.class));
+            }
+            return entries.toArray(new StoreEntry[entries.size()]);
+        }
+        return new StoreEntry[0];
+    }
  
 }    
