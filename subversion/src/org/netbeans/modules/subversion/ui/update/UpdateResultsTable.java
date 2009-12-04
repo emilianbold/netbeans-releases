@@ -61,6 +61,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.EventQueue;
 import java.io.File;
 import java.util.*;
 import java.lang.reflect.InvocationTargetException;
@@ -411,9 +412,10 @@ class UpdateResultsTable implements MouseListener, ListSelectionListener, Ancest
             File changedFile = (File) event.getParams()[0];
             FileInformation newFileInfo = (FileInformation) event.getParams()[2];
             
-            List<UpdateResultNode> nodesList = new ArrayList<UpdateResultNode>();                        
+            final List<UpdateResultNode> nodesList = new ArrayList<UpdateResultNode>();
             boolean touched = false;
-            for(UpdateResultNode node : nodes) {
+            final UpdateResultNode[] currentNodes = nodes;
+            for(UpdateResultNode node : currentNodes) {
                 FileUpdateInfo fui = (FileUpdateInfo) node.getLookup().lookup(FileUpdateInfo.class);
                 if(fui != null) {                    
                     int action = fui.getAction();
@@ -434,11 +436,17 @@ class UpdateResultsTable implements MouseListener, ListSelectionListener, Ancest
                     nodesList.add(node);
                 }                                                
             }
-            
-            // XXX reschedule !!!
-            if(touched) {
-                setTableModel(nodesList.toArray(new UpdateResultNode[nodesList.size()]));
+
+            if(!touched) {
+                return;
             }
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    if (currentNodes == nodes) {
+                        setTableModel(nodesList.toArray(new UpdateResultNode[nodesList.size()]));
+                    }
+                }
+            });
         }
     }
 }
