@@ -50,7 +50,7 @@ import java.util.logging.Logger;
 import org.netbeans.modules.javacard.common.JCConstants;
 import org.netbeans.modules.javacard.common.Utils;
 import org.netbeans.modules.javacard.spi.capabilities.AntTargetInterceptor;
-import org.netbeans.modules.javacard.spi.capabilities.ApduSupport;
+import org.netbeans.modules.javacard.spi.capabilities.UrlCapability;
 import org.netbeans.modules.javacard.spi.capabilities.CapabilitiesProvider;
 import org.netbeans.modules.javacard.spi.capabilities.CardContentsProvider;
 import org.netbeans.modules.javacard.spi.capabilities.CardCustomizerProvider;
@@ -124,7 +124,7 @@ public abstract class BaseCard<T extends CapabilitiesProvider> extends AbstractC
         return null;
     }
 
-    protected ApduSupport createApduSupport(T t) {
+    protected UrlCapability createApduSupport(T t) {
         return null;
     }
 

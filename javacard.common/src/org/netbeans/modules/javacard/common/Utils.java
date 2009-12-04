@@ -591,6 +591,11 @@ public final class Utils {
         return AID.generateInstanceAid(RID, packageName, clazz);
     }
 
+    public static AID generateRandomAppletAid(String clazz) {
+        byte[] RID = getDefaultRID();
+        return AID.generateApplicationAid(RID, generateRandomPackageName(), clazz);
+    }
+
     public static String generateRandomPackageName() {
         StringBuilder sb = new StringBuilder();
         Random r = new Random (System.currentTimeMillis());

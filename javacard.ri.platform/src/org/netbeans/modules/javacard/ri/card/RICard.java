@@ -66,7 +66,7 @@ import org.netbeans.modules.javacard.common.CommonSystemFilesystemPaths;
 import org.netbeans.modules.javacard.common.NodeRefresher;
 import org.netbeans.modules.javacard.ri.platform.loader.CardChildren;
 import org.netbeans.modules.javacard.spi.capabilities.AntTargetInterceptor;
-import org.netbeans.modules.javacard.spi.capabilities.ApduSupport;
+import org.netbeans.modules.javacard.spi.capabilities.UrlCapability;
 import org.netbeans.modules.javacard.spi.capabilities.CardContentsProvider;
 import org.netbeans.modules.javacard.spi.capabilities.CardInfo;
 import org.netbeans.modules.javacard.spi.CardState;
@@ -136,7 +136,7 @@ public class RICard extends BaseCard<CardProperties> { //non-final only for unit
     }
 
     @Override
-    protected ApduSupport createApduSupport(CardProperties t) {
+    protected UrlCapability createApduSupport(CardProperties t) {
         return new Apdu();
     }
 
@@ -571,7 +571,7 @@ public class RICard extends BaseCard<CardProperties> { //non-final only for unit
         }
     }
 
-    private class Apdu implements ApduSupport {
+    private class Apdu implements UrlCapability {
 
         public ContactedProtocol getContactedProtocol() {
             String p = getCapability(CardProperties.class).getContactedProtocol();
@@ -707,7 +707,7 @@ public class RICard extends BaseCard<CardProperties> { //non-final only for unit
         public XListModel getContents() {
             assert !EventQueue.isDispatchThread() : "May not be called on event " + //NOI18N
                     "thread"; //NOI18N
-            ApduSupport apdu = getCapability(ApduSupport.class);
+            UrlCapability apdu = getCapability(UrlCapability.class);
             String url = apdu.getListURL();
             if (url != null) {
                 InputStream in = null;
