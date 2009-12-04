@@ -297,31 +297,9 @@ public abstract class BaseCard<T extends CapabilitiesProvider> extends AbstractC
         }
         boolean resumeSupported = capabilityTypes.contains(ResumeCapability.class);
         if ((resumeSupported && epromFile != null && epromSupported) || (resumeSupported && !epromSupported)) {
-            maybeAddCapability(createResumeCapability(props));
+            ResumeCapability resume = createResumeCapability(props);
+            maybeAddCapability(resume);
         }
-    }
-
-    /**
-     * XXX DELETEME
-     * @param create
-     * @return
-     */
-    protected FileObject getEpromFile(boolean create) {
-        FileObject fld = Utils.sfsFolderForDeviceEepromsForPlatformNamed(getSystemId(), create);
-        FileObject result = null;
-        if (fld != null) {
-            result = fld.getFileObject(getSystemId(), JCConstants.EEPROM_FILE_EXTENSION);
-            if (result == null && create) {
-                if (result == null) {
-                    try {
-                        result = fld.createData(getSystemId(), JCConstants.EEPROM_FILE_EXTENSION);
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-            }
-        }
-        return result;
     }
 
     /**

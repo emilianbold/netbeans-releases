@@ -63,7 +63,9 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.javacard.api.AntClasspathClosureProvider;
 import org.netbeans.modules.javacard.api.RunMode;
 import org.netbeans.modules.javacard.common.CommonSystemFilesystemPaths;
+import org.netbeans.modules.javacard.common.JCConstants;
 import org.netbeans.modules.javacard.common.NodeRefresher;
+import org.netbeans.modules.javacard.common.Utils;
 import org.netbeans.modules.javacard.ri.platform.loader.CardChildren;
 import org.netbeans.modules.javacard.spi.capabilities.AntTargetInterceptor;
 import org.netbeans.modules.javacard.spi.capabilities.UrlCapability;
@@ -636,7 +638,8 @@ public class RICard extends BaseCard<CardProperties> { //non-final only for unit
                 }
                 StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(ClearEprom.class,
                         "MSG_DELETING_EPROM_FILE", getDisplayName())); //NOI18N
-                FileObject epromFile = getEpromFile(false);
+                EpromFileCapability epromFileCap = getCapability(EpromFileCapability.class);
+                FileObject epromFile = epromFileCap.getEpromFile();
                 assert epromFile != null : "ClearEprom should not be able to " + //NOI18N
                         "be invoked if no eprom file exists"; //NOI18N
                 epromFile.delete();
@@ -698,7 +701,18 @@ public class RICard extends BaseCard<CardProperties> { //non-final only for unit
     private final class Eprom implements EpromFileCapability {
 
         public FileObject getEpromFile() {
-            return RICard.this.getEpromFile(false);
+            FileObject result = null;
+            FileObject fld = Utils.sfsFolderForDeviceEepromsForPlatformNamed(
+                    getPlatform().getSystemName(), false);
+            if (fld != null) {
+                String filename = getSystemId() + "." + JCConstants.EEPROM_FILE_EXTENSION;
+                for (FileObject kids : fld.getChildren()) {
+                    System.err.println("---" + kids.getNameExt() + " looking for " + filename);
+                }
+                result = fld.getFileObject(getSystemId(),
+                        JCConstants.EEPROM_FILE_EXTENSION);
+            }
+            return result;
         }
     }
 
