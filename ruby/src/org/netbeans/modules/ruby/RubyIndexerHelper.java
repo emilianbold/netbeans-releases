@@ -575,10 +575,10 @@ public final class RubyIndexerHelper {
                          return "options(=>anchor|only_path:bool|controller:controller|action:action|trailing_slash:bool|host|protocol),options(:back|\"http://)"; // NOI18N
                      }
                      if (sig.startsWith("render(")) { // NOI18N
-                         return "options(=>action:action|partial:partial|status|template|file:file|text:string|json|inline|nothing)"; // NOI18N
+                         return "options(=>action:action|partial:partial|status:status|template|file:file|text:string|json|inline|nothing)"; // NOI18N
                      }
                      if (sig.startsWith("render_to_string(")) { // NOI18N
-                         return "options(=>action:action|partial:partial|status|template|file:file|text:string|json|inline|nothing)"; // NOI18N
+                         return "options(=>action:action|partial:partial|status:status|template|file:file|text:string|json|inline|nothing)"; // NOI18N
                      }
                      return null;
                 }
@@ -955,10 +955,10 @@ public final class RubyIndexerHelper {
                 if ("ActionController::Streaming".equals(clz)) { // NOI18N
                      String sig = sig(method);
                      if (sig.startsWith("send_file(")) { // NOI18N
-                         return "options(=>filename|type|disposition|stream|buffer_size|status)"; // NOI18N
+                         return "options(=>filename|type|disposition|stream|buffer_size|status:status)"; // NOI18N
                      }
                      if (sig.startsWith("send_data(")) { // NOI18N
-                         return "options(=>filename|type|disposition|status)"; // NOI18N
+                         return "options(=>filename|type|disposition|status:status)"; // NOI18N
                      }
                      return null;
                 }
