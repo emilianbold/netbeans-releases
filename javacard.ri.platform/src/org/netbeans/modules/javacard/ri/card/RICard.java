@@ -705,10 +705,6 @@ public class RICard extends BaseCard<CardProperties> { //non-final only for unit
             FileObject fld = Utils.sfsFolderForDeviceEepromsForPlatformNamed(
                     getPlatform().getSystemName(), false);
             if (fld != null) {
-                String filename = getSystemId() + "." + JCConstants.EEPROM_FILE_EXTENSION;
-                for (FileObject kids : fld.getChildren()) {
-                    System.err.println("---" + kids.getNameExt() + " looking for " + filename);
-                }
                 result = fld.getFileObject(getSystemId(),
                         JCConstants.EEPROM_FILE_EXTENSION);
             }
