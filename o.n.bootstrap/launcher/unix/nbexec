@@ -199,6 +199,10 @@ fi
 jargs_without_clusters="$jargs"
 jargs="-Dnetbeans.dirs=\"${clusters}\" $jargs_without_clusters"
 
+if [ -f "${userdir}/var/cache/splash.png" ]; then
+   jargs="$jargs -splash:${userdir}/var/cache/splash.png"
+fi
+
 jdkhome=`absolutize_path "$jdkhome"`
 
 args="--userdir \"${userdir}\" $args"
