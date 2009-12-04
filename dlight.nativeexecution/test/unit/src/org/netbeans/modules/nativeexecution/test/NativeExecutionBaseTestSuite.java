@@ -164,7 +164,7 @@ public class NativeExecutionBaseTestSuite extends NbTestSuite {
         }
 
         for (TestMethodData methodData : testData.testMethods) {
-            if (!checkConditionals(methodData)) {
+            if (!checkConditionals(methodData, testClass)) {
                 continue;
             }
             if (methodData.isForAllEnvironments()) {
@@ -275,16 +275,22 @@ public class NativeExecutionBaseTestSuite extends NbTestSuite {
      * @return true in the case there are no @ignore annotation
      * and either there are no @conditional or it's condition is true
      */
-    private boolean checkConditionals(TestMethodData methodData) {
-        if (methodData.condSection == null || methodData.condSection.length() == 0) {
-            return true; // no condition
-        }
-        if (methodData.condKey == null || methodData.condKey.length() == 0) {
-            addTest(warning(methodData.name + " @condition does not specify key"));
-            return false;
-        }
+    private boolean checkConditionals(TestMethodData methodData, Class<? extends NativeExecutionBaseTestCase> testClass) {
         try {
-            RcFile rcFile = NativeExecutionTestSupport.getRcFile();
+            final RcFile rcFile = NativeExecutionTestSupport.getRcFile();
+            if (rcFile.containsKey("ignore", testClass.getName())) {
+                return false;
+            }
+            if (rcFile.containsKey("ignore", testClass.getName() + '.' + methodData.name)) {
+                return false;
+            }
+            if (methodData.condSection == null || methodData.condSection.length() == 0) {
+                return true; // no condition
+            }
+            if (methodData.condKey == null || methodData.condKey.length() == 0) {
+                addTest(warning(methodData.name + " @condition does not specify key"));
+                return false;
+            }
             String value = rcFile.get(methodData.condSection, methodData.condKey);
             if (value == null) {
                 return methodData.condDefault;
