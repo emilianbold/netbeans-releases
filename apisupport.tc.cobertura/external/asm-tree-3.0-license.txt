@@ -1,13 +1,13 @@
 Name: ASM
-Version: 2.2.1
+Version: 3.0
 Description: Library for bytecode manipulation
 License: BSD
 OSR: 10906
-Origin: http://download.forge.objectweb.org/asm/asm-2.2.1-bin.zip
-File: asm-tree-2.2.1.jar
-Comment: See issue 145107
+Origin: http://download.forge.objectweb.org/asm/asm-3.0-bin.zip
+File: asm-tree-3.0.jar
+Comment: See issue 145107, 178037
 
-Use of is ASM 2.2.1 is governed by the terms of the license below:
+Use of is ASM 3.0 is governed by the terms of the license below:
 
 [TEXT OF THE LICENSE]
 Copyright (c) 2000-2005 INRIA, France Telecom
