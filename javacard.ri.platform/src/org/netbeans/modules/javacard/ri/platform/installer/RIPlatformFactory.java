@@ -57,6 +57,7 @@ import org.netbeans.modules.javacard.common.Utils;
 import org.netbeans.modules.javacard.ri.platform.MergeProperties;
 import org.netbeans.modules.javacard.ri.platform.RIPlatform;
 import org.netbeans.modules.javacard.spi.JavacardDeviceKeyNames;
+import org.netbeans.modules.javacard.spi.JavacardPlatform;
 import org.netbeans.modules.javacard.spi.JavacardPlatformKeyNames;
 import org.netbeans.modules.propdos.AntStyleResolvingProperties;
 import org.netbeans.modules.propdos.ObservableProperties;
@@ -487,12 +488,23 @@ public final class RIPlatformFactory implements Mutex.ExceptionAction<FileObject
                 throw new IOException("No copy of the Java Card RI installed"); //NOI18N
             }
             File defPlatformFile = FileUtil.toFile(defPlatform.getPrimaryFile());
-            RIPlatform defPform = defPlatform.getNodeDelegate().getLookup().lookup(RIPlatform.class);
-            if (defPform == null) {
+            JavacardPlatform defPform = defPlatform.getLookup().lookup(RIPlatform.class);
+            if (defPform == null && !Boolean.getBoolean("PlatformDataObjectTest")) { //NOI18N
                 throw new IOException ("Default Platform is not an instance of RIPlatform"); //NOI18N
+            } else if (Boolean.getBoolean("PlatformDataObjectTest")) { //XXX get this out of here
+                Iterable<DataObject> i = Utils.findAllRegisteredJavacardPlatformDataObjects();
+                if (i.iterator().hasNext()) {
+                    for (DataObject d : i) {
+                        if (d.getLookup().lookup(JavacardPlatform.class) != null) {
+                            defPform = d.getLookup().lookup(JavacardPlatform.class);
+                        }
+                    }
+                }
             }
             p.put(JavacardPlatformKeyNames.PLATFORM_RI_PROPERTIES_PATH, defPlatformFile.getAbsolutePath());
-            p.put(JavacardPlatformKeyNames.PLATFORM_RI_HOME, defPform.getHome().getAbsolutePath());
+            if (defPform instanceof RIPlatform) {
+                p.put(JavacardPlatformKeyNames.PLATFORM_RI_HOME, ((RIPlatform) defPform).getHome().getAbsolutePath());
+            }
             
             PropertiesAdapter adap = defPlatform.getLookup().lookup(PropertiesAdapter.class);
             assert adap != null : "No properties adapter from default javacard platform"; //NOI18N

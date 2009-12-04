@@ -661,7 +661,7 @@ public final class Utils {
             if (exePart.trim().length() == 0) {
                 exePart = null;
             }
-            argsPart = "-" + m.group(2).trim();
+            argsPart = "-" + m.group(2).trim(); //NOI18N
         } else {
             m = EXE_NOARGS_SPLIT.matcher(s);
             if (m.find()) {
