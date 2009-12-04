@@ -53,6 +53,7 @@ import org.openide.util.RequestProcessor;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.config.HgConfigFiles;
@@ -89,16 +90,29 @@ public class FetchAction extends ContextAction {
 
     @Override
     protected void performContextAction(Node[] nodes) {
-        VCSContext context = HgUtils.getCurrentContext(nodes);
-        final File roots[] = HgUtils.getActionRoots(context);
-        if (roots == null || roots.length == 0) return;
-        final File root = Mercurial.getInstance().getRepositoryRoot(roots[0]);
-        
-        RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
-        HgProgressSupport support = new HgProgressSupport() {
-            public void perform() { performFetch(root, this.getLogger()); } };
-
-        support.start(rp, root, org.openide.util.NbBundle.getMessage(FetchAction.class, "MSG_FETCH_PROGRESS")); // NOI18N
+        final VCSContext context = HgUtils.getCurrentContext(nodes);
+        final Set<File> repositoryRoots = HgUtils.getRepositoryRoots(context);
+        // run the whole bulk operation in background
+        Mercurial.getInstance().getRequestProcessor().post(new Runnable() {
+            public void run() {
+                for (File repositoryRoot : repositoryRoots) {
+                    final File root = repositoryRoot;
+                    final boolean[] canceled = new boolean[1];
+                    RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
+                    // run every repository fetch in its own support with its own output window
+                    HgProgressSupport support = new HgProgressSupport() {
+                        public void perform() {
+                            performFetch(root, this.getLogger());
+                            canceled[0] = isCanceled();
+                        }
+                    };
+                    support.start(rp, root, org.openide.util.NbBundle.getMessage(FetchAction.class, "MSG_FETCH_PROGRESS")).waitFinished(); //NOI18N
+                    if (canceled[0]) {
+                        break;
+                    }
+                }
+            }
+        });
     }
 
     static void performFetch(final File root, OutputLogger logger) {

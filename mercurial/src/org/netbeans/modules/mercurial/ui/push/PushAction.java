@@ -46,7 +46,6 @@ import org.netbeans.modules.mercurial.hooks.spi.HgHook;
 import org.netbeans.modules.versioning.spi.VCSContext;
 
 
-import javax.swing.*;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -96,37 +95,29 @@ public class PushAction extends ContextAction {
 
     @Override
     protected void performContextAction(Node[] nodes) {
-        VCSContext context = HgUtils.getCurrentContext(nodes);
-        final File roots[] = HgUtils.getActionRoots(context);
-        final File repository =
-                roots != null && roots.length > 0 ?
-                 Mercurial.getInstance().getRepositoryRoot(roots[0]) :
-                    null;
-        if (repository == null) {
-            OutputLogger logger = OutputLogger.getLogger(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE);
-            logger.outputInRed( NbBundle.getMessage(PushAction.class,"MSG_PUSH_TITLE")); // NOI18N
-            logger.outputInRed( NbBundle.getMessage(PushAction.class,"MSG_PUSH_TITLE_SEP")); // NOI18N
-            logger.outputInRed(
-                    NbBundle.getMessage(PushAction.class, "MSG_PUSH_NOT_SUPPORTED_INVIEW_INFO")); // NOI18N
-            logger.output(""); // NOI18N
-            JOptionPane.showMessageDialog(null,
-                    NbBundle.getMessage(PushAction.class, "MSG_PUSH_NOT_SUPPORTED_INVIEW"),// NOI18N
-                    NbBundle.getMessage(PushAction.class, "MSG_PUSH_NOT_SUPPORTED_INVIEW_TITLE"),// NOI18N
-                    JOptionPane.INFORMATION_MESSAGE);
-            logger.closeLog();
-            return;
-        }
-        push(context, repository);
-    }
-
-    private static void push(final VCSContext ctx, final File repository){
-        RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
-        HgProgressSupport support = new HgProgressSupport() {
-            public void perform() { 
-                getDefaultAndPerformPush(repository, this.getLogger());
+        final VCSContext context = HgUtils.getCurrentContext(nodes);
+        final Set<File> repositoryRoots = HgUtils.getRepositoryRoots(context);
+        // run the whole bulk operation in background
+        Mercurial.getInstance().getRequestProcessor().post(new Runnable() {
+            public void run() {
+                for (File repositoryRoot : repositoryRoots) {
+                    final File repository = repositoryRoot;
+                    final boolean[] canceled = new boolean[1];
+                    // run every repository fetch in its own support with its own output window
+                    RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
+                    HgProgressSupport support = new HgProgressSupport() {
+                        public void perform() {
+                            getDefaultAndPerformPush(repository, this.getLogger());
+                            canceled[0] = isCanceled();
+                        }
+                    };
+                    support.start(rp, repository, org.openide.util.NbBundle.getMessage(PushAction.class, "MSG_PUSH_PROGRESS")).waitFinished(); //NOI18N
+                    if (canceled[0]) {
+                        break;
+                    }
+                }
             }
-        };
-        support.start(rp, repository, org.openide.util.NbBundle.getMessage(PushAction.class, "MSG_PUSH_PROGRESS")); // NOI18N
+        });
     }
 
     public static void notifyUpdatedFiles(File repo, List<String> list){
