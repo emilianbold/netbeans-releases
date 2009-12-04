@@ -39,18 +39,14 @@
 
 package org.netbeans.modules.cnd.remote.sync;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.Collections;
 import junit.framework.Test;
 import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.cnd.remote.support.RemoteTestBase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.NativeProcess;
-import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.openide.util.Lookup;
@@ -80,8 +76,7 @@ public abstract class AbstractSyncWorkerTestCase extends RemoteTestBase {
     public void testSyncWorker_nb_platform_lib() throws Exception {
         ExecutionEnvironment execEnv = getTestExecutionEnvironment();
         assertNotNull(execEnv);
-        File netBeansDir = getIdeUtilJar(). // should be ${NBDIST}/platform10/lib/org-openide-util.jar
-                getParentFile();  // platform10/lib
+        File netBeansDir = new File(getNetBeansPlatformDir(), "lib");
         doTest(netBeansDir, execEnv, getDestDir(execEnv));
     }
 
@@ -89,14 +84,8 @@ public abstract class AbstractSyncWorkerTestCase extends RemoteTestBase {
     public void testSyncWorker_nb_platform() throws Exception {
         ExecutionEnvironment execEnv = getTestExecutionEnvironment();
         assertNotNull(execEnv);
-        File netBeansDir = getIdeUtilJar(). // should be ${NBDIST}/platform10/lib/org-openide-util.jar
-                getParentFile().  // platform10/lib
-                getParentFile();  // platform10
+        File netBeansDir = getNetBeansPlatformDir();
         doTest(netBeansDir, execEnv, getDestDir(execEnv));
-    }
-
-    private File getIdeUtilJar() throws Exception {
-        return new File(Lookup.class.getProtectionDomain().getCodeSource().getLocation().toURI());
     }
 
     private String getDestDir(ExecutionEnvironment execEnv) {
@@ -143,48 +132,7 @@ public abstract class AbstractSyncWorkerTestCase extends RemoteTestBase {
         return src;
     }
 
-    private CharSequence runCommand(ExecutionEnvironment execEnv, String command, String... args) throws Exception {
-        NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(execEnv);
-        pb.setExecutable(command);
-
-        if (args != null) {
-            pb.setArguments(args);
-        }
-
-        NativeProcess lsProcess = pb.call();
-        BufferedReader rdr = new BufferedReader(new InputStreamReader(lsProcess.getInputStream()));
-        String line;
-        StringBuilder sb = new StringBuilder();
-        int count = 0;
-        while ((line = rdr.readLine()) != null) {
-            sb.append(line + '\n');
-            count++;
-        }
-        return sb;
-    }
-
     public static Test suite() {
         return new RemoteDevelopmentTest(AbstractSyncWorkerTestCase.class);
     }
-
-//    private CharSequence runCommand(ExecutionEnvironment execEnv, String command, String... args) throws Exception {
-//        NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(execEnv);
-//        pb.setExecutable(command);
-//
-//        if (args != null) {
-//            pb.setArguments(args);
-//        }
-//
-//        NativeProcess lsProcess = pb.call();
-//        BufferedReader rdr = new BufferedReader(new InputStreamReader(lsProcess.getInputStream()));
-//        String line;
-//        StringBuilder sb = new StringBuilder();
-//        int count = 0;
-//        while ((line = rdr.readLine()) != null) {
-//            sb.append(line + '\n');
-//            count++;
-//        }
-//        return sb;
-//    }
-
 }
