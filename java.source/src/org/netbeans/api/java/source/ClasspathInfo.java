@@ -125,6 +125,7 @@ public final class ClasspathInfo {
     
     private final ClassPathListener cpListener;
     private final boolean backgroundCompilation;
+    private final boolean useModifiedFiles;
     private final boolean ignoreExcludes;
     private final JavaFileFilterImplementation filter;
     private JavaFileManager fileManager;
@@ -135,8 +136,15 @@ public final class ClasspathInfo {
     private ClassIndex usagesQuery;
     
     /** Creates a new instance of ClasspathInfo (private use the factory methods) */
-    private ClasspathInfo(CachingArchiveProvider archiveProvider, ClassPath bootCp, ClassPath compileCp, ClassPath srcCp,
-        JavaFileFilterImplementation filter, boolean backgroundCompilation, boolean ignoreExcludes, boolean hasMemoryFileManager) {
+    private ClasspathInfo(final @NonNull CachingArchiveProvider archiveProvider,
+                          final @NonNull ClassPath bootCp,
+                          final @NonNull ClassPath compileCp,
+                          final ClassPath srcCp,
+                          final JavaFileFilterImplementation filter,
+                          final boolean backgroundCompilation,
+                          final boolean ignoreExcludes,
+                          final boolean hasMemoryFileManager,
+                          final boolean useModifiedFiles) {
         assert archiveProvider != null;
         assert bootCp != null;
         assert compileCp != null;
@@ -165,6 +173,7 @@ public final class ClasspathInfo {
         }
         this.backgroundCompilation = backgroundCompilation;
         this.ignoreExcludes = ignoreExcludes;
+        this.useModifiedFiles = useModifiedFiles;
         this.filter = filter;
         if (hasMemoryFileManager) {
             if (srcCp == null) {
@@ -267,10 +276,11 @@ public final class ClasspathInfo {
             return null;
         }
     }
-    
-    private static ClasspathInfo create (final FileObject fo, final JavaFileFilterImplementation filter,
-            final boolean backgroundCompilation, final boolean ignoreExcludes,
-            final boolean hasMemoryFileManager) {
+        
+    /** Creates new interface to the compiler
+     * @param fo for which the CompilerInterface should be created
+     */
+    public static @NonNull ClasspathInfo create(@NonNull FileObject fo) {
         ClassPath bootPath = ClassPath.getClassPath(fo, ClassPath.BOOT);
         if (bootPath == null) {
             //javac requires at least java.lang
@@ -284,26 +294,25 @@ public final class ClasspathInfo {
         if (srcPath == null) {
             srcPath = EMPTY_PATH;
         }
-        return create (bootPath, compilePath, srcPath, filter, backgroundCompilation, ignoreExcludes, hasMemoryFileManager);
-    }
-    
-    /** Creates new interface to the compiler
-     * @param fo for which the CompilerInterface should be created
-     */
-    public static @NonNull ClasspathInfo create(@NonNull FileObject fo) {
-        return create (fo, null, false, false, false);
+        return create (bootPath, compilePath, srcPath, null, false, false, false, true);
     }            
     
-    private static ClasspathInfo create(final ClassPath bootPath, final ClassPath classPath, final ClassPath sourcePath,
-            final JavaFileFilterImplementation filter, final boolean backgroundCompilation,
-            final boolean ignoreExcludes, final boolean hasMemoryFileManager) {
-        return new ClasspathInfo(CachingArchiveProvider.getDefault(), bootPath, classPath, sourcePath, filter, backgroundCompilation, ignoreExcludes, hasMemoryFileManager);
+    private static ClasspathInfo create(final @NonNull ClassPath bootPath,
+            final @NonNull ClassPath classPath,
+            final ClassPath sourcePath,
+            final JavaFileFilterImplementation filter,
+            final boolean backgroundCompilation,
+            final boolean ignoreExcludes,
+            final boolean hasMemoryFileManager,
+            final boolean useModifiedFiles) {
+        return new ClasspathInfo(CachingArchiveProvider.getDefault(), bootPath, classPath, sourcePath,
+                filter, backgroundCompilation, ignoreExcludes, hasMemoryFileManager, useModifiedFiles);
     }
     
     public static @NonNull ClasspathInfo create(@NonNull final ClassPath bootPath, @NonNull final ClassPath classPath, @NullAllowed final ClassPath sourcePath) {
         Parameters.notNull("bootPath", bootPath);       //NOI18N
         Parameters.notNull("classPath", classPath);     //NOI18N
-        return create (bootPath, classPath, sourcePath, null, false, false, false);
+        return create (bootPath, classPath, sourcePath, null, false, false, false, true);
     }
        
     // Public methods ----------------------------------------------------------
@@ -371,7 +380,7 @@ public final class ClasspathInfo {
             this.fileManager = new ProxyFileManager (
                 new CachingFileManager (this.archiveProvider, this.cachedBootClassPath, true, true),
                 new CachingFileManager (this.archiveProvider, this.cachedCompileClassPath, false, true),
-                hasSources ? (backgroundCompilation ? new CachingFileManager (this.archiveProvider, this.cachedSrcClassPath, filter, false, ignoreExcludes)
+                hasSources ? (!useModifiedFiles ? new CachingFileManager (this.archiveProvider, this.cachedSrcClassPath, filter, false, ignoreExcludes)
                     : new SourceFileManager (this.cachedUserSrcClassPath, ignoreExcludes)) : null,
                 cachedAptSrcClassPath != null ? (backgroundCompilation ? new AptSourceFileManager(this.cachedUserSrcClassPath, this.cachedAptSrcClassPath, new CacheMarker(this.cachedUserSrcClassPath), true)
                     : new NullWriteAptSourceFileManager(this.cachedAptSrcClassPath, true)) : null,
@@ -429,18 +438,17 @@ public final class ClasspathInfo {
         }                
         
         @Override
-        public ClasspathInfo create (final ClassPath bootPath, final ClassPath classPath, final ClassPath sourcePath,
-                final JavaFileFilterImplementation filter, final boolean backgroundCompilation,
-                final boolean ignoreExcludes, final boolean hasMemoryFileManager) {
-            return ClasspathInfo.create(bootPath, classPath, sourcePath, filter, backgroundCompilation, ignoreExcludes, hasMemoryFileManager);
+        public ClasspathInfo create (final ClassPath bootPath,
+                final ClassPath classPath,
+                final ClassPath sourcePath,
+                final JavaFileFilterImplementation filter,
+                final boolean backgroundCompilation,
+                final boolean ignoreExcludes,
+                final boolean hasMemoryFileManager,
+                final boolean useModifiedFiles) {
+            return ClasspathInfo.create(bootPath, classPath, sourcePath, filter, backgroundCompilation, ignoreExcludes, hasMemoryFileManager, useModifiedFiles);
         }
-        
-        @Override
-        public ClasspathInfo create (final FileObject fo, final JavaFileFilterImplementation filter,
-                final boolean backgroundCompilation, final boolean ignoreExcludes, final boolean hasMemoryFileManager) {
-            return ClasspathInfo.create(fo, filter, backgroundCompilation, ignoreExcludes, hasMemoryFileManager);
-        }
-
+                
         @Override
         public boolean registerVirtualSource(final ClasspathInfo cpInfo, final InferableJavaFileObject jfo) throws UnsupportedOperationException {
             if (cpInfo.memoryFileManager == null) {
