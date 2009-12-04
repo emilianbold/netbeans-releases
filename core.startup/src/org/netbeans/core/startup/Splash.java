@@ -54,7 +54,6 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
-import java.awt.SplashScreen;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -62,7 +61,6 @@ import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -463,7 +461,15 @@ public final class Splash implements Stamps.Updater {
                     } catch (Exception ex) {
                         ex.printStackTrace();
                     }
-                    SplashScreen.getSplashScreen().update();
+                    try {
+                        Class ssClass = Class.forName("java.awt.SplashScreen");
+                        Object ss = ssClass.getMethod("getSplashScreen").invoke(null);
+                        ss.getClass().getMethod("update").invoke(ss);
+                    } catch (ClassNotFoundException x) {
+                        // JDK 5, ignore
+                    } catch (Exception x) {
+                        Logger.getLogger(Splash.class.getName()).log(Level.INFO, null, x);
+                    }
                     next = System.currentTimeMillis() + 200;
                 }
             }
