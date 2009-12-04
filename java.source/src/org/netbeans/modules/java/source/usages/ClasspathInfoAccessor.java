@@ -79,11 +79,15 @@ public abstract class ClasspathInfoAccessor {
     public abstract JavaFileManager getFileManager(ClasspathInfo cpInfo);
     
     public abstract ClassPath getCachedClassPath (ClasspathInfo cpInfo, ClasspathInfo.PathKind kind);
-    
-    public abstract ClasspathInfo create (FileObject fo, JavaFileFilterImplementation filter, boolean backgroundCompilation, boolean ignoreExcludes, boolean hasMemoryFileManager);
-    
-    public abstract ClasspathInfo create (ClassPath bootPath, ClassPath compilePath, ClassPath sourcePath, JavaFileFilterImplementation filter,
-                                          boolean backgroundCompilation, boolean ignoreExcludes, boolean hasMemoryFileManager);
+        
+    public abstract ClasspathInfo create (ClassPath bootPath,
+            ClassPath compilePath,
+            ClassPath sourcePath,
+            JavaFileFilterImplementation filter,
+            boolean backgroundCompilation,
+            boolean ignoreExcludes,
+            boolean hasMemoryFileManager,
+            boolean useModifiedFiles);
     
     /**
      * Registers virtual java source into the memory {@link JavacFileManager}
