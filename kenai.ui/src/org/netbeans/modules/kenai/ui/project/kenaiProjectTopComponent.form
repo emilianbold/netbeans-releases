@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
 <Form version="1.5" maxVersion="1.7" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
-  <Properties>
-    <Property name="focusable" type="boolean" value="true"/>
-  </Properties>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
@@ -58,8 +55,8 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="dynamicContentsPanel" alignment="0" pref="736" max="32767" attributes="0"/>
-                          <Component id="generalDetailsPanel" alignment="0" pref="736" max="32767" attributes="0"/>
+                          <Component id="dynamicContentsPanel" alignment="0" pref="746" max="32767" attributes="0"/>
+                          <Component id="generalDetailsPanel" alignment="0" pref="746" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -71,7 +68,7 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="generalDetailsPanel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                      <Component id="dynamicContentsPanel" pref="325" max="32767" attributes="0"/>
+                      <Component id="dynamicContentsPanel" pref="329" max="32767" attributes="0"/>
                       <EmptySpace min="-2" pref="46" max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -144,7 +141,7 @@
                                       <Component id="wwwLabel" min="-2" max="-2" attributes="0"/>
                                       <Component id="downloadsLabel" min="-2" max="-2" attributes="0"/>
                                   </Group>
-                                  <EmptySpace pref="354" max="32767" attributes="0"/>
+                                  <EmptySpace pref="369" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
@@ -166,7 +163,7 @@
                                       <Component id="jLabel3" linkSize="4" alignment="3" min="-2" max="-2" attributes="0"/>
                                       <Component id="downloadsLabel" linkSize="4" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
                                   </Group>
-                                  <EmptySpace max="32767" attributes="0"/>
+                                  <EmptySpace pref="9" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
@@ -316,7 +313,7 @@
                               <Group type="102" attributes="0">
                                   <Group type="103" groupAlignment="0" attributes="0">
                                       <Component id="projectsDetailsHeader" min="-2" max="-2" attributes="0"/>
-                                      <Component id="jScrollPane1" alignment="0" pref="520" max="32767" attributes="0"/>
+                                      <Component id="jScrollPane1" alignment="0" pref="536" max="32767" attributes="0"/>
                                   </Group>
                                   <EmptySpace max="-2" attributes="0"/>
                               </Group>
@@ -328,7 +325,7 @@
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="projectsDetailsHeader" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="jScrollPane1" pref="85" max="32767" attributes="0"/>
+                                  <Component id="jScrollPane1" pref="92" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
@@ -448,7 +445,7 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="projectImage" pref="176" max="32767" attributes="0"/>
+                              <Component id="projectImage" pref="188" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                           </Group>
                       </Group>
@@ -457,7 +454,7 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="projectImage" pref="172" max="32767" attributes="0"/>
+                              <Component id="projectImage" pref="184" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                           </Group>
                       </Group>
