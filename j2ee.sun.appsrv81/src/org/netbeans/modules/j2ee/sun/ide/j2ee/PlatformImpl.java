@@ -45,7 +45,6 @@ package org.netbeans.modules.j2ee.sun.ide.j2ee;
 
 import java.awt.Image;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -54,9 +53,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
@@ -65,6 +61,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.glassfish.spi.Utils;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.support.LookupProviderSupport;
@@ -122,16 +119,14 @@ public class PlatformImpl extends J2eePlatformImpl {
     private static final String WEBSERVICES_RT_JAR = "lib/webservices-rt.jar"; //NOI18N
     private static final String WEBSERVICES_TOOLS_JAR = "lib/webservices-tools.jar"; //NOI18N
 
-    private static final String VERSIONED_JAR_MATCHER_SUFFIX = "(?:-[0-9]+(?:\\.[0-9]+(?:_[0-9]+|)|).*|).jar"; // NOI18N
-
     private static final String[] SWDP_JARS = new String[] {
-        "asm" + VERSIONED_JAR_MATCHER_SUFFIX,
-        "jackson-core-asl" + VERSIONED_JAR_MATCHER_SUFFIX,
-        "jersey-bundle" + VERSIONED_JAR_MATCHER_SUFFIX,
-        "jettison" + VERSIONED_JAR_MATCHER_SUFFIX ,
-        "jsr311-api" + VERSIONED_JAR_MATCHER_SUFFIX,
-        "jersey" + VERSIONED_JAR_MATCHER_SUFFIX,
-        "wadl2java" + VERSIONED_JAR_MATCHER_SUFFIX,
+        "asm" + Utils.VERSIONED_JAR_SUFFIX_MATCHER,
+        "jackson-core-asl" + Utils.VERSIONED_JAR_SUFFIX_MATCHER,
+        "jersey-bundle" + Utils.VERSIONED_JAR_SUFFIX_MATCHER,
+        "jettison" + Utils.VERSIONED_JAR_SUFFIX_MATCHER ,
+        "jsr311-api" + Utils.VERSIONED_JAR_SUFFIX_MATCHER,
+        "jersey" + Utils.VERSIONED_JAR_SUFFIX_MATCHER,
+        "wadl2java" + Utils.VERSIONED_JAR_SUFFIX_MATCHER,
     };
     
     private static final String[] TRUSTSTORE_LOCATION = new String[] {
@@ -356,7 +351,7 @@ public class PlatformImpl extends J2eePlatformImpl {
     private List<URL> getSwdpJarURLs(File libDir) throws MalformedURLException {
         ArrayList<URL> ret = new ArrayList<URL>();
         for (String jarName : SWDP_JARS) {
-            File jarFile = getFileFromPattern(jarName, libDir);
+            File jarFile = Utils.getFileFromPattern(jarName, libDir);
             if (jarFile != null && jarFile.isFile()) {
                 ret.add(fileToUrl(jarFile));
             }
@@ -790,58 +785,4 @@ public class PlatformImpl extends J2eePlatformImpl {
 //        return Lookups.fixed(WSStackFactory.createWSStack(metroStack));
     }
     
-    /**
-     *
-     * @param jarNamePattern the name pattern to search for
-     * @param modulesDir the place to look for the pattern
-     * @return the jar file that matches the pattern, null otherwise.
-     */
-    private static File getFileFromPattern(String jarNamePattern, File modulesDir) {
-        // if asserts are on... blame the caller
-        assert jarNamePattern != null : "jarNamePattern should not be null";
-        // if this is in production, asserts are off and we should handle this a bit more gracefully
-        if (null == jarNamePattern) {
-            // and log an error message
-            Logger.getLogger("glassfish").log(Level.INFO, "caller passed invalid jarNamePattern",
-                    new NullPointerException("jarNamePattern"));
-            return null;
-        }
-
-        // if asserts are on... blame the caller
-        assert modulesDir != null : "modulesDir  should not be null";
-        // if this is in production, asserts are off and we should handle this a bit more gracefully
-        if (null == modulesDir) {
-            // and log an error message
-            Logger.getLogger("glassfish").log(Level.INFO, "caller passed invalid param",
-                    new NullPointerException("modulesDir"));
-            return null;
-        }
-
-        int subindex = jarNamePattern.lastIndexOf("/");
-        if (subindex != -1) {
-            String subdir = jarNamePattern.substring(0, subindex);
-            jarNamePattern = jarNamePattern.substring(subindex + 1);
-            modulesDir = new File(modulesDir, subdir);
-        }
-        if (modulesDir.canRead() && modulesDir.isDirectory()) {
-            File[] candidates = modulesDir.listFiles(new VersionFilter(jarNamePattern));
-            if (candidates != null && candidates.length > 0) {
-                return candidates[0]; // the first one
-            }
-        }
-        return null;
-    }
-
-    private static class VersionFilter implements FileFilter {
-
-        private final Pattern pattern;
-
-        public VersionFilter(String namePattern) {
-            pattern = Pattern.compile(namePattern);
-        }
-
-        public boolean accept(File file) {
-            return pattern.matcher(file.getName()).matches();
-        }
-    }
 }
