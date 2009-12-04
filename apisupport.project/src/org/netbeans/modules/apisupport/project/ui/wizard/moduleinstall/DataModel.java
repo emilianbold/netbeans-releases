@@ -41,12 +41,17 @@
 
 package org.netbeans.modules.apisupport.project.ui.wizard.moduleinstall;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
+import org.netbeans.modules.apisupport.project.NbModuleProject;
+import org.netbeans.modules.apisupport.project.ProjectXMLManager;
+import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  * Data model used across the <em>New Module Installer</em>.
@@ -54,6 +59,8 @@ import org.openide.filesystems.FileObject;
 final class DataModel extends BasicWizardIterator.BasicDataModel {
 
     static final String OPENIDE_MODULE_INSTALL = "OpenIDE-Module-Install"; // NOI18N
+    static final String BUNDLE_ACTIVATOR = "Bundle-Activator"; // NOI18N
+    static final String IMPORT_PACKAGE = "Import-Package"; // NOI18N
     private static final String INSTALLER_CLASS_NAME = "Installer"; // NOI18N
     
     private CreatedModifiedFiles cmf;
@@ -71,6 +78,18 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
     
     private void regenerate() {
         cmf = new CreatedModifiedFiles(getProject());
+
+        boolean osgi = false;
+        try {
+            ProjectXMLManager pxm = new ProjectXMLManager((NbModuleProject) getProject());
+            for (ModuleDependency d : pxm.getDirectDependencies()) {
+                if (d.getModuleEntry().getCodeNameBase().equals("org.netbeans.core.netigso")) { // NOI18N
+                    osgi = true;
+                }
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
         
         // obtain unique class name
         String className = INSTALLER_CLASS_NAME;
@@ -87,15 +106,25 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         basicTokens.put("CLASS_NAME", className); // NOI18N
         // XXX use nbresloc URL protocol rather than
         // DataModel.class.getResource(...) and all such a cases below
-        FileObject template = CreatedModifiedFiles.getTemplate("moduleInstall.java"); // NOI18N
+        FileObject template;
+        if (osgi) {
+            template = CreatedModifiedFiles.getTemplate("moduleActivator.java"); // NOI18N
+        } else {
+            template = CreatedModifiedFiles.getTemplate("moduleInstall.java"); // NOI18N
+            cmf.add(cmf.addModuleDependency("org.openide.modules")); // NOI18N
+            cmf.add(cmf.addModuleDependency("org.openide.util")); // NOI18N
+        }
         cmf.add(cmf.createFileWithSubstitutions(path, template, basicTokens));
         
-        cmf.add(cmf.addModuleDependency("org.openide.modules")); // NOI18N
-        cmf.add(cmf.addModuleDependency("org.openide.util")); // NOI18N
         
         // add manifest attribute
         Map<String, String> attribs = new HashMap<String, String>();
-        attribs.put(OPENIDE_MODULE_INSTALL, getPackageName().replace('.','/') + '/' + className + ".class"); // NOI18N
+        if (osgi) {
+            attribs.put(BUNDLE_ACTIVATOR, getPackageName() + '.' + className);
+            attribs.put(IMPORT_PACKAGE, "org.osgi.framework"); // NOI18N
+        } else {
+            attribs.put(OPENIDE_MODULE_INSTALL, getPackageName().replace('.','/') + '/' + className + ".class"); // NOI18N
+        }
         cmf.add(cmf.manifestModification(null, attribs));
     }
     
