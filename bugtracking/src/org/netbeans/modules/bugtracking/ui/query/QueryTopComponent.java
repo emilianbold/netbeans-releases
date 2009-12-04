@@ -98,7 +98,7 @@ import org.openide.windows.WindowManager;
 import static javax.swing.SwingConstants.NORTH;
 import static javax.swing.SwingConstants.SOUTH;
 import static javax.swing.SwingConstants.WEST;
-import static org.jdesktop.layout.LayoutStyle.UNRELATED;
+import static org.jdesktop.layout.LayoutStyle.RELATED;
 
 /**
  * Top component which displays something.
@@ -212,7 +212,7 @@ public final class QueryTopComponent extends TopComponent
             height = layoutStyle.getContainerGap(above, SOUTH, null);
         } else {
             height = layoutStyle.getPreferredGap(above, below,
-                                                 UNRELATED, NORTH, null);
+                                                 RELATED, NORTH, null);
         }
         return Box.createVerticalStrut(height);
     }
