@@ -43,20 +43,16 @@ package org.netbeans.test.editor.suites.keybindings;
 import java.awt.event.KeyEvent;
 import java.util.Vector;
 import junit.framework.Test;
-import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.test.editor.lib.EditorTestCase.ValueResolver;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.HelpOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.NewJavaProjectNameLocationStepOperator;
-import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.modules.editor.KeyMapOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.junit.NbModuleSuite;
 
 /**
@@ -75,27 +71,6 @@ public class KeyMapTest extends JellyTestCase {
      */
     public KeyMapTest(String name) {
         super(name);
-    }
-
-    public void prepareFileInEditor() {
-        PROJECT_NAME = "keymapTestProject";
-        NewProjectWizardOperator newProjectOper = NewProjectWizardOperator.invoke();
-        newProjectOper.selectCategory("Java");
-        newProjectOper.selectProject("Java Application");
-        newProjectOper.next();
-        NewJavaProjectNameLocationStepOperator npnlso = new NewJavaProjectNameLocationStepOperator();
-        new JTextFieldOperator(npnlso, 0).setText(PROJECT_NAME); // NOI18N
-        new JTextFieldOperator(npnlso, 1).setText(getDataDir().getAbsolutePath()); // NOI18N
-        newProjectOper.finish();
-        newProjectOper.waitClosed();
-        try {
-            SourceUtils.waitScanFinished();
-        } catch (InterruptedException ex) {
-            fail("Waiting for project scanning was interupted. Other tests will fail.");
-        }
-
-        new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME).select();
-        editor = new EditorOperator("Main.java");
     }
 
     public void closeProject() {
