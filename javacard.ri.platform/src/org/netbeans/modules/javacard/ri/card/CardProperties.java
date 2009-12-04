@@ -83,7 +83,7 @@ final class CardProperties implements ICardCapability, CapabilitiesProvider {
     private static final String DEFAULT_HOST = "127.0.0.1"; //NOI18N
     private static final String DEFAULT_CAPABILITIES = "START,STOP,RESUME," + //NOI18N
             "DEBUG,EPROM_FILE,CLEAR_EPROM,CONTENTS,CUSTOMIZER,INTERCEPTOR," + //NOI18N
-            "PORTS,APDU_SUPPORT,DELETE"; //NOI18N
+            "PORTS,URL,DELETE"; //NOI18N
     private static final String E2P_FILE_DEF = "${javacard.device.eeprom.folder}" + //NOI18N
             "${file.separator}${javacard.device.name}.eprom"; //NOI18N
     static final String DEFAULT_DEBUG_PROXY_COMMAND_LINE = Utilities.isWindows() ?
