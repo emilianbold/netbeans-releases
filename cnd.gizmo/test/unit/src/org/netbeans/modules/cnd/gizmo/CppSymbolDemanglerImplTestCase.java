@@ -43,7 +43,7 @@ import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.dlight.spi.CppSymbolDemanglerFactory.CPPCompiler;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.test.Conditional;
+import org.netbeans.modules.nativeexecution.test.If;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import static org.junit.Assert.*;
 
@@ -80,28 +80,28 @@ public class CppSymbolDemanglerImplTestCase extends NativeExecutionBaseTestCase 
         super(name, execEnv);
     }
 
-    @Conditional(section = "demangler", key = "GNU", defaultValue = true)
+    @If(section = "demangler", key = "GNU", defaultValue = true)
     public void testDemangleGnu() {
         CppSymbolDemanglerImpl d = new CppSymbolDemanglerImpl(CPPCompiler.GNU);
         doTestDemangle(d, GNU_MANGLED_NAMES, true);
         doTestDemangle(d, GNU_MANGLED_NAMES, false);
     }
 
-    @Conditional(section = "demangler", key = "GNU", defaultValue = true)
+    @If(section = "demangler", key = "GNU", defaultValue = true)
     public void testBatchDemangleGnu() {
         CppSymbolDemanglerImpl d = new CppSymbolDemanglerImpl(CPPCompiler.GNU);
         doTestBatchDemangle(d, GNU_MANGLED_NAMES, true);
         doTestBatchDemangle(d, GNU_MANGLED_NAMES, false);
     }
 
-    @Conditional(section = "demangler", key = "Sun", defaultValue = true)
+    @If(section = "demangler", key = "Sun", defaultValue = true)
     public void testDemangleSun() {
         CppSymbolDemanglerImpl d = new CppSymbolDemanglerImpl(CPPCompiler.SS);
         doTestDemangle(d, SUN_MANGLED_NAMES, true);
         doTestDemangle(d, SUN_MANGLED_NAMES, false);
     }
 
-    @Conditional(section = "demangler", key = "Sun", defaultValue = true)
+    @If(section = "demangler", key = "Sun", defaultValue = true)
     public void testBatchDemangleSun() {
         CppSymbolDemanglerImpl d = new CppSymbolDemanglerImpl(CPPCompiler.SS);
         doTestBatchDemangle(d, SUN_MANGLED_NAMES, true);

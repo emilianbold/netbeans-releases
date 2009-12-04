@@ -44,12 +44,14 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.net.URISyntaxException;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.util.Lookup;
 
 public class NativeExecutionBaseTestCase extends NbTestCase {
 
@@ -205,4 +207,20 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         tmpFile.deleteOnExit();
         return tmpFile;
     }
+
+    protected File getNetBeansDir() throws URISyntaxException {
+        return getNetBeansPlatformDir().getParentFile();
+    }
+
+    protected File getNetBeansPlatformDir() throws URISyntaxException {
+        File result = getIdeUtilJar(). // should be ${NBDIST}/platform10/lib/org-openide-util.jar
+                getParentFile().  // platform10/lib
+                getParentFile();  // platform10
+        return result;
+    }
+
+    private File getIdeUtilJar() throws URISyntaxException  {
+        return new File(Lookup.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+    }
+
 }
