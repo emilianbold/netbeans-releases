@@ -135,6 +135,7 @@ public class UploadTestCase extends RemoteTestBase {
         }
         totalTime = System.currentTimeMillis() - totalTime;
         System.out.printf("%d Kb in %d files to %s in %d ms\n", totalSize/1024, totalCount, execEnv, totalTime);
+        assertEquals("Can't remove " + remoteDir + " on remote host", 0, CommonTasksSupport.rmDir(execEnv, remoteDir, true, new PrintWriter(System.err)).get().intValue());
     }
 
 }
