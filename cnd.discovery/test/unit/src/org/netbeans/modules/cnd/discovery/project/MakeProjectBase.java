@@ -40,7 +40,6 @@
 package org.netbeans.modules.cnd.discovery.project;
 
 import java.io.BufferedReader;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -82,7 +81,7 @@ import org.openide.util.Utilities;
  * @author Alexander Simon
  */
 public abstract class MakeProjectBase extends CndBaseTestCase { //extends NbTestCase
-    private static final boolean OPTIMIZE_NATIVE_EXECUTIONS =true;
+    private static final boolean OPTIMIZE_NATIVE_EXECUTIONS =false;
     private static final boolean TRACE = true;
 
     public MakeProjectBase(String name) {
@@ -105,8 +104,8 @@ public abstract class MakeProjectBase extends CndBaseTestCase { //extends NbTest
     }
 
     @Override
-    protected List<Class> getServises() {
-        List<Class> list = new ArrayList<Class>();
+    protected List<Class<?>> getServises() {
+        List<Class<?>> list = new ArrayList<Class<?>>();
         list.add(MakeProjectType.class);
         list.addAll(super.getServises());
         return list;
@@ -397,42 +396,20 @@ public abstract class MakeProjectBase extends CndBaseTestCase { //extends NbTest
         String dataPath = fileDataPath.getAbsolutePath();
 
         String createdFolder = dataPath+"/"+packageName;
-        NativeProcessBuilder ne = null;
         File fileCreatedFolder = new File(createdFolder);
         if (!fileCreatedFolder.exists()){
             fileCreatedFolder.mkdirs();
+        } else {
+            if (!OPTIMIZE_NATIVE_EXECUTIONS) {
+                execute(tools, "rm", createdFolder, "-rf", "*");
+            }
         }
-        String command;
         if (fileCreatedFolder.list().length == 0){
             if (!new File(dataPath+"/"+tarName).exists()) {
-                command = tools.get("wget");
-                System.err.println(dataPath+"#"+command+" "+urlName);
-                //ne = new NativeExecutor(dataPath, command, urlName, new String[0], "wget", "run", false, false);
-                ne = NativeProcessBuilder.newProcessBuilder(ExecutionEnvironmentFactory.getLocal())
-                .setWorkingDirectory(dataPath)
-                .setExecutable(command)
-                .setArguments(urlName);
-                waitExecution(ne);
-
-                command = tools.get("gzip");
-                System.err.println(dataPath+"#"+command+" -d "+zipName);
-                //ne = new NativeExecutor(dataPath, command, "-d "+zipName, new String[0], "gzip", "run", false, false);
-                ne = NativeProcessBuilder.newProcessBuilder(ExecutionEnvironmentFactory.getLocal())
-                .setWorkingDirectory(dataPath)
-                .setExecutable(command)
-                .setArguments("-d", zipName);
-                waitExecution(ne);
+                execute(tools, "wget", dataPath, urlName);
+                execute(tools, "gzip", dataPath, "-d", zipName);
             }
-
-            command = tools.get("tar");
-            System.err.println(dataPath+"#"+command+" xf "+tarName);
-            //ne = new NativeExecutor(dataPath, command, "xf "+tarName, new String[0], "tar", "run", false, false);
-            ne = NativeProcessBuilder.newProcessBuilder(ExecutionEnvironmentFactory.getLocal())
-            .setWorkingDirectory(dataPath)
-            .setExecutable(command)
-            .setArguments("xf", tarName);
-            waitExecution(ne);
-
+            execute(tools, "tar", dataPath, "xf", tarName);
             execAdditionalScripts(createdFolder, additionalScripts, tools);
         } else {
             final File configure = new File(createdFolder+File.separator+"configure");
@@ -443,31 +420,36 @@ public abstract class MakeProjectBase extends CndBaseTestCase { //extends NbTest
                 }
             }
         }
-
-        //System.getenv().put("CFLAGS", "-g3 -gdwarf-2");
-        //System.getenv().put("CXXFLAGS", "-g3 -gdwarf-2");
-
-        command = tools.get("rm");
-        System.err.println(createdFolder+"#"+command+" -rf nbproject");
-        //ne = new NativeExecutor(createdFolder, tools.get("rm"), "-rf nbproject", new String[0], "rm", "run", false, false);
-        ne = NativeProcessBuilder.newProcessBuilder(ExecutionEnvironmentFactory.getLocal())
-        .setWorkingDirectory(createdFolder)
-        .setExecutable(command)
-        .setArguments("-rf", "nbproject");
-        waitExecution(ne);
+        execute(tools, "rm", createdFolder, "-rf", "nbproject");
         return createdFolder;
     }
+
+    private void execute(Map<String, String> tools, String cmd, String folder, String ... arguments){
+        String command = tools.get(cmd);
+        StringBuilder buf = new StringBuilder();
+        for(String arg : arguments) {
+            buf.append(' ');
+            buf.append(arg);
+        }
+        System.err.println(folder+"#"+command+buf.toString());
+        NativeProcessBuilder ne = NativeProcessBuilder.newProcessBuilder(ExecutionEnvironmentFactory.getLocal())
+        .setWorkingDirectory(folder)
+        .setExecutable(command)
+        .setArguments(arguments);
+        waitExecution(ne);
+    }
+
     private void execAdditionalScripts(String createdFolder, List<String> additionalScripts, Map<String, String> tools) throws IOException {
         if (additionalScripts != null) {
             for(String s: additionalScripts){
                 int i = s.indexOf(' ');
                 String command = s.substring(0,i);
                 String arguments = s.substring(i+1);
-                System.err.println(createdFolder+"#"+tools.get(command)+" "+arguments);
+                command = tools.get(command);
+                System.err.println(createdFolder+"#"+command+" "+arguments);
                 //NativeExecutor ne = new NativeExecutor(createdFolder, tools.get(command), arguments, new String[0], command, "run", false, false);
                 NativeProcessBuilder ne = NativeProcessBuilder.newProcessBuilder(ExecutionEnvironmentFactory.getLocal())
                 .setWorkingDirectory(createdFolder)
-                .setExecutable(command)
                 .setCommandLine(command+" "+arguments);
                 waitExecution(ne);
             }
