@@ -2170,22 +2170,9 @@ public class HgCommand {
         if (repositoryUrl == null ) return null;
         if (revision == null ) return null;
 
-        List<String> command = new ArrayList<String>();
-
-        command.add(getHgCommand());
-        command.add(HG_PARENT_CMD);
-        command.add(HG_OPT_REPOSITORY);
-        command.add(repositoryUrl);
-        command.add(HG_FLAG_REV_CMD);
-        command.add(revision);
-        command.add("--template={rev}\t");                              //NOI18N
-
-        List<String> list = null;
-        if (file != null) command.add(file.getAbsolutePath());
-        list = exec(command);
         String parentRevision = "-1";                                   //NOI18N
-        if (!list.isEmpty() && !isErrorAbort(list.get(0))) {
-            String[] revisions = list.get(0).split("\t");               //NOI18N
+        String[] revisions = getParents(repositoryUrl, file, revision);
+        if (revisions != null) {
             if (revisions.length > 1) {
                 String rev1 = revisions[0].trim();
                 String rev2 = revisions[1].trim();
@@ -2198,6 +2185,37 @@ public class HgCommand {
             }
         }
         return parentRevision;
+    }
+
+    /**
+     * Returns parent revisions of the given file
+     * @param repositoryUrl cannot be null
+     * @param file revisions of this file will be returned
+     * @param revision if not null, returns parents of this revision limited on the file
+     * @return parent revisions
+     * @throws HgException
+     */
+    public static String[] getParents (String repositoryUrl, File file, String revision) throws HgException {
+        if (repositoryUrl == null ) return null;
+        List<String> command = new ArrayList<String>();
+        command.add(getHgCommand());
+        command.add(HG_PARENT_CMD);
+        command.add(HG_OPT_REPOSITORY);
+        command.add(repositoryUrl);
+        if (revision != null) {
+            command.add(HG_FLAG_REV_CMD);
+            command.add(revision);
+        }
+        command.add("--template={rev}\t");                              //NOI18N
+
+        List<String> list = null;
+        if (file != null) command.add(file.getAbsolutePath());
+        list = exec(command);
+        String[] revisions = null;
+        if (!list.isEmpty() && !isErrorAbort(list.get(0))) {
+            revisions = list.get(0).split("\t");               //NOI18N
+        }
+        return revisions;
     }
 
 

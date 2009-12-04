@@ -346,15 +346,11 @@ public class UpdateAction extends ContextAction {
         }
 
         public void logMessage(String logMsg) {
-            FileUpdateInfo[] fuis = FileUpdateInfo.createFromLogMsg(logMsg);
-            if(fuis != null) {
-                for(FileUpdateInfo fui : fuis) {
-                    if(fui != null) getResults().add(fui);
-                }                
-            }                 
+            catchMessage(logMsg);
         }
 
         public void logError(String str) {
+            catchMessage(str);
         }
 
         public void logRevision(long rev, String str) {
@@ -372,6 +368,15 @@ public class UpdateAction extends ContextAction {
             }
             return results;
         }
+
+        private void catchMessage(String logMsg) {
+            FileUpdateInfo[] fuis = FileUpdateInfo.createFromLogMsg(logMsg);
+            if(fuis != null) {
+                for(FileUpdateInfo fui : fuis) {
+                    if(fui != null) getResults().add(fui);
+                }
+            }
+        }
         
     };
 
@@ -379,19 +384,24 @@ public class UpdateAction extends ContextAction {
         private Pattern p = Pattern.compile("C   (.+)");
         boolean causedConflict = false;
         public void logMessage(String msg) {
-            // XXX JAVAHL - different msg in case of conflicts
+            catchMessage(msg);
+        }
+        public void logError(String msg) {
+            catchMessage(msg);
+        }
+        public void setCommand(int arg0)                    { /* boring */  }
+        public void logCommandLine(String arg0)             { /* boring */  }
+        public void logRevision(long arg0, String arg1)     { /* boring */  }
+        public void logCompleted(String arg0)               { /* boring */  }
+        public void onNotify(File arg0, SVNNodeKind arg1)   { /* boring */  }
+
+        private void catchMessage (String message) {
             if(causedConflict) return;
-            Matcher m = p.matcher(msg);
+            Matcher m = p.matcher(message);
             if(m.matches()) {
                 causedConflict = true;
             }
         }
-        public void setCommand(int arg0)                    { /* boring */  }
-        public void logCommandLine(String arg0)             { /* boring */  }
-        public void logError(String arg0)                   { /* boring */  }
-        public void logRevision(long arg0, String arg1)     { /* boring */  }
-        public void logCompleted(String arg0)               { /* boring */  }
-        public void onNotify(File arg0, SVNNodeKind arg1)   { /* boring */  }
     }
     
 }
