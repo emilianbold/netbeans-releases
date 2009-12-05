@@ -76,7 +76,6 @@ public class TreeModelHyperNode extends TreeModelNode {
             model.getMain(),
             model.getColumns(),
             createChildren(model, treeModelRoot, object),
-            new AllowedDropActions.Hyper(model, object),
             treeModelRoot,
             object
         );

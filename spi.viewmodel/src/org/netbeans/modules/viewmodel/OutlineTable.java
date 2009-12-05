@@ -359,7 +359,8 @@ ExplorerManager.Provider, PropertyChangeListener {
         treeTable.setProperties (columnsToSet);
         updateTableColumns(columnsToSet);
         treeTable.setAllowedDragActions(model.getAllowedDragActions());
-        treeTable.setAllowedDropActions(model.getAllowedDropActions(null, null));
+        treeTable.setAllowedDropActions(model.getAllowedDropActions(null));
+        treeTable.setDynamicDropActions(model);
 
         //treeTable.getTable().tableChanged(new TableModelEvent(treeTable.getOutline().getModel()));
         //getExplorerManager ().setRootContext (rootNode);
@@ -439,7 +440,7 @@ ExplorerManager.Provider, PropertyChangeListener {
         treeTable.setProperties (columnsToSet);
         updateTableColumns(columnsToSet);
         treeTable.setAllowedDragActions(model.getAllowedDragActions());
-        treeTable.setAllowedDropActions(model.getAllowedDropActions(null, null));
+        treeTable.setAllowedDropActions(model.getAllowedDropActions(null));
 
         // 5) set root node for given model
         // Moved to 4), because the new root node must be ready when setting columns
@@ -866,6 +867,8 @@ ExplorerManager.Provider, PropertyChangeListener {
     
     private static class MyTreeTable extends OutlineView {
 
+        private Reference dndModelRef = new WeakReference(null);
+
         MyTreeTable () {
             super ();
             Outline outline = getOutline();
@@ -954,11 +957,21 @@ ExplorerManager.Provider, PropertyChangeListener {
             }
         }
 
+        void setDynamicDropActions(DnDNodeModel model) {
+            dndModelRef = new WeakReference(model);
+        }
+
+        void setDynamicDropActions(HyperCompoundModel model) {
+            dndModelRef = new WeakReference(model);
+        }
+
         @Override
-        protected int getAllowedDropActions(Node n, Transferable t) {
-            AllowedDropActions allowedDropActions = n.getLookup().lookup(AllowedDropActions.class);
-            if (allowedDropActions != null) {
-                return allowedDropActions.getAllowedDropActions(t);
+        protected int getAllowedDropActions(Transferable t) {
+            Object model = dndModelRef.get();
+            if (model instanceof DnDNodeModel) {
+                return ((DnDNodeModel) model).getAllowedDropActions(t);
+            } else if (model instanceof HyperCompoundModel) {
+                return ((HyperCompoundModel) model).getAllowedDropActions(t);
             } else {
                 return super.getAllowedDropActions();
             }

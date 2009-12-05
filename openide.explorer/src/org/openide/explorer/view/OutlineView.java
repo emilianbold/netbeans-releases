@@ -736,12 +736,11 @@ public class OutlineView extends JScrollPane {
     }
 
     /** Actions constants from {@link java.awt.dnd.DnDConstants}.
-    * @param n The node where the action is dropping to
     * @param t The transferable for which the allowed drop actions are requested
     * @return int representing set of actions which are allowed when dropping
     * into the asociated component. By default it returns {@link #getAllowedDropActions()}.
     */
-    protected int getAllowedDropActions(Node n, Transferable t) {
+    protected int getAllowedDropActions(Transferable t) {
         return getAllowedDropActions();
     }
 

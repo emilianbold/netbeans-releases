@@ -159,7 +159,7 @@ public class WatchesNodeModel extends VariablesNodeModel implements DnDNodeModel
         return DnDConstants.ACTION_COPY;
     }
 
-    public int getAllowedDropActions(Object node, Transferable t) {
+    public int getAllowedDropActions(Transferable t) {
         if (t != null && t.isDataFlavorSupported(new DataFlavor(JPDAWatch.class, null))) {
             return DnDConstants.ACTION_COPY_OR_MOVE;
         } else {

@@ -64,13 +64,12 @@ public interface DnDNodeModelFilter extends NodeModelFilter {
      * Action constants from {@link java.awt.dnd.DnDConstants}.
      * No actions are allowed by default.
      * @param original The original DnDNodeModel to filter
-     * @param node The node where the action is dropping to
      * @param t The transferable for which the allowed drop actions are requested,
      *          or <code>null</code> to get actions for the creation of DropTarget for the view.
      * @return int representing set of actions which are allowed when dropping
      * the transferable into the asociated component.
      */
-    int getAllowedDropActions(DnDNodeModel original, Object node, Transferable t);
+    int getAllowedDropActions(DnDNodeModel original, Transferable t);
 
     /**
      * Initiate a drag operation.

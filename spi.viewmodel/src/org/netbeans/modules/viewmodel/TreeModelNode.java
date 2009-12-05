@@ -145,7 +145,6 @@ public class TreeModelNode extends AbstractNode {
             model,
             columns,
             createChildren (model, columns, treeModelRoot, object),
-            new AllowedDropActions.Compound(model, object),
             treeModelRoot,
             object
         );
@@ -158,13 +157,12 @@ public class TreeModelNode extends AbstractNode {
         final Models.CompoundModel model,
         final ColumnModel[] columns,
         final Children children,
-        final AllowedDropActions allowedDropActions,
         final TreeModelRoot treeModelRoot,
         final Object object
     ) {
         super (
             children,
-            Lookups.fixed(object, new CheckNodeCookieImpl(model, object), allowedDropActions)
+            Lookups.fixed(object, new CheckNodeCookieImpl(model, object))
         );
         this.model = model;
         this.treeModelRoot = treeModelRoot;

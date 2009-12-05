@@ -62,14 +62,12 @@ public interface DnDNodeModel extends NodeModel {
     /**
      * Action constants from {@link java.awt.dnd.DnDConstants}.
      * No actions are allowed by default.
-     * @param node The node where the action is dropping to
-     *        or <code>null</code> to get actions for the creation of DropTarget for the view.
      * @param t The transferable for which the allowed drop actions are requested,
      *          or <code>null</code> to get actions for the creation of DropTarget for the view.
      * @return int representing set of actions which are allowed when dropping
      * the transferable into the asociated component.
      */
-    int getAllowedDropActions(Object node, Transferable t);
+    int getAllowedDropActions(Transferable t);
 
     /**
      * Initiate a drag operation.

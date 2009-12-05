@@ -87,10 +87,10 @@ public class HyperCompoundModel implements Model {
         return actions;
     }
 
-    int getAllowedDropActions(Object node, Transferable t) {
+    int getAllowedDropActions(Transferable t) {
         int actions = 0;
         for (Models.CompoundModel m : models) {
-            actions |= m.getAllowedDropActions(node, t);
+            actions |= m.getAllowedDropActions(t);
         }
         return actions;
     }
