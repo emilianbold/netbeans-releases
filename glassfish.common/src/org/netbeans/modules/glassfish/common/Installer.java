@@ -49,6 +49,20 @@ import org.openide.modules.ModuleInstall;
 public class Installer extends ModuleInstall {
 
     @Override
+    public void restored() {
+        super.restored();
+        // Initialize the GlassFish registry and trigger the default server
+        // registration.
+        //
+        // This is safe to do here, because the downstream module, glassfish.javaee,
+        // is not going to be doing initialization (which triggers a deadlock) until
+        // after this method returns.
+        for(GlassfishInstanceProvider provider: GlassfishInstanceProvider.getProviders(true)) {
+            provider.getInstances();
+        }
+    }
+
+    @Override
     public void close() {
         super.close();
 

@@ -83,6 +83,14 @@ org.netbeans.modules.cnd.debugger.common.breakpoints.ToggleBreakpointActionProvi
 org.netbeans.modules.debugger.jpda.projects.EditorContextImpl$SessionsListener
 org.netbeans.modules.debugger.jpda.projects.EditorContextImpl$SessionsListenerRemoval
 
+#177562
+org.netbeans.modules.glassfish.common.GlassfishInstanceProvider
+org.netbeans.modules.glassfish.javaee.RunTimeDDCatalog
+org.netbeans.modules.glassfish.javaee.ide.RegisteredDDCatalogImpl
+org.netbeans.modules.glassfish.spi.CommandFactory
+org.netbeans.modules.glassfish.spi.RegisteredDDCatalog
+org.netbeans.modules.xml.api.model.GrammarQueryManager
+
 
 com.sun.java.swing.plaf.windows.WindowsButtonUI
 com.sun.java.swing.plaf.windows.WindowsCheckBoxMenuItemUI
@@ -3039,9 +3047,28 @@ org.netbeans.modules.j2ee.ejbverification.EJBProblemFinderFactory
 org.netbeans.modules.j2ee.jpa.verification.JPAProblemFinderFactory
 org.netbeans.modules.j2ee.persistence.unit.PUDataLoader
 org.netbeans.modules.j2ee.persistence.unit.PUDataObject
+org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean
+org.netbeans.modules.j2ee.sun.dd.api.RootInterface
+org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp
+org.netbeans.modules.j2ee.sun.dd.impl.common.DDProviderDataObject
+org.netbeans.modules.j2ee.sun.ddloaders.DDMultiViewDataObject
+org.netbeans.modules.j2ee.sun.ddloaders.DDType
+org.netbeans.modules.j2ee.sun.ddloaders.DDViewFactory
+org.netbeans.modules.j2ee.sun.ddloaders.DDViewFactory$SunAppClientDDViewFactory
+org.netbeans.modules.j2ee.sun.ddloaders.DDViewFactory$SunApplicationDDViewFactory
+org.netbeans.modules.j2ee.sun.ddloaders.DDViewFactory$SunCmpMappingsDDViewFactory
+org.netbeans.modules.j2ee.sun.ddloaders.DDViewFactory$SunEjbJarDDViewFactory
+org.netbeans.modules.j2ee.sun.ddloaders.DDViewFactory$SunResourceDDViewFactory
+org.netbeans.modules.j2ee.sun.ddloaders.DDViewFactory$SunWebDDViewFactory
+org.netbeans.modules.j2ee.sun.ddloaders.SunDescriptorDataLoader
+org.netbeans.modules.j2ee.sun.ddloaders.SunDescriptorDataObject
+org.netbeans.modules.j2ee.sun.ddloaders.api.TransactionSupport
 org.netbeans.modules.j2ee.sun.ide.Installer
 org.netbeans.modules.j2ee.sun.ide.Installer$PrepareEnvironment
+org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.actions.RunASVerifierAction
 org.netbeans.modules.j2ee.sun.ide.j2ee.ui.DomainCreator
+org.netbeans.modules.j2ee.sun.ide.sunresources.resourcesloader.SunResourceDataLoader
+org.netbeans.modules.j2ee.sun.ide.sunresources.resourcesloader.SunResourceDataObject
 org.netbeans.modules.j2ee.websphere6.dd.loaders.WSMultiViewDataObject
 org.netbeans.modules.j2ee.websphere6.dd.loaders.appbnd.WSAppBndDataLoader
 org.netbeans.modules.j2ee.websphere6.dd.loaders.appbnd.WSAppBndDataObject
