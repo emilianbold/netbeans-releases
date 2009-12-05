@@ -39,20 +39,23 @@
 
 package org.netbeans.modules.glassfish.spi;
 
+import java.io.File;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.netbeans.junit.NbTestCase;
 import static org.junit.Assert.*;
 
 /**
  *
  * @author vkraemer
  */
-public class UtilsTest {
+public class UtilsTest extends NbTestCase {
 
-    public UtilsTest() {
+    public UtilsTest(String testName) {
+        super(testName);
     }
 
     @BeforeClass
@@ -110,4 +113,44 @@ public class UtilsTest {
         assertEquals(expResult, result);
     }
 
+    @Test
+    public void testGetFileFromPattern() throws Exception {
+        System.out.println("getFileFromPattern");
+        File f;
+        try {
+            f = Utils.getFileFromPattern(null, null);
+            assertNull(f);
+        } catch (AssertionError ae) {
+            // I expect this
+        }
+        try {
+            f = Utils.getFileFromPattern("", null);
+            assertNull(f);
+        } catch (AssertionError ae) {
+            // I expect this
+        }
+        File dataDir = getDataDir();
+        try {
+            f = Utils.getFileFromPattern(null, dataDir);
+            assertNull(f);
+        } catch (AssertionError ae) {
+            // I expect this
+        }
+        f = Utils.getFileFromPattern("", dataDir);
+        assertNull(f);
+        f = Utils.getFileFromPattern("", new File(dataDir, "nottaDir"));
+        assertNull(f);
+        f = Utils.getFileFromPattern("nottaDir", dataDir);
+        assertNotNull(f);
+        f = Utils.getFileFromPattern("nottaDir"+Utils.VERSIONED_JAR_SUFFIX_MATCHER, dataDir);
+        assertNotNull(f);
+        f = Utils.getFileFromPattern("nottaDir.jar", dataDir);
+        assertNull(f);
+        f = Utils.getFileFromPattern("subdir/nottaDir"+Utils.VERSIONED_JAR_SUFFIX_MATCHER, dataDir);
+        assertNotNull(f);
+        f = Utils.getFileFromPattern("subdir/nottaDir.jar", dataDir);
+        assertNull(f);
+        f = Utils.getFileFromPattern("nottasubdir/nottaDir"+Utils.VERSIONED_JAR_SUFFIX_MATCHER, dataDir);
+        assertNull(f);
+    }
 }
