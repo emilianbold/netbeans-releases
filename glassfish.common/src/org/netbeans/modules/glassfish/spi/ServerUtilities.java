@@ -40,7 +40,6 @@
 package org.netbeans.modules.glassfish.spi;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -51,7 +50,6 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;
 import org.netbeans.modules.glassfish.common.wizards.ServerWizardIterator;
@@ -199,19 +197,7 @@ public final class ServerUtilities {
      */
     public static File getJarName(String glassfishInstallRoot, String jarNamePattern) {
         File modulesDir = new File(glassfishInstallRoot + File.separatorChar + GFV3_MODULES_DIR_NAME);
-        int subindex = jarNamePattern.lastIndexOf("/");
-        if(subindex != -1) {
-            String subdir = jarNamePattern.substring(0, subindex);
-            jarNamePattern = jarNamePattern.substring(subindex+1);
-            modulesDir = new File(modulesDir, subdir);
-        }
-        File candidates[] = modulesDir.listFiles(new VersionFilter(jarNamePattern));
-
-        if(candidates != null && candidates.length > 0) {
-            return candidates[0]; // the first one
-        } else {
-            return null;
-        }
+        return Utils.getFileFromPattern(jarNamePattern, modulesDir);
     }
 
      /**
@@ -221,40 +207,12 @@ public final class ServerUtilities {
      */
     public static File getWsJarName(String glassfishInstallRoot, String jarNamePattern) {
         File modulesDir = new File(glassfishInstallRoot + File.separatorChar + GFV3_MODULES_DIR_NAME);
-        int subindex = jarNamePattern.lastIndexOf("/");
-        if(subindex != -1) {
-            String subdir = jarNamePattern.substring(0, subindex);
-            jarNamePattern = jarNamePattern.substring(subindex+1);
-            modulesDir = new File(modulesDir, subdir);
+        File retVal = Utils.getFileFromPattern(jarNamePattern, modulesDir);
+        if (null == retVal) {
+            retVal = Utils.getFileFromPattern(jarNamePattern,
+                    new File(modulesDir,"endorsed"));
         }
-        File candidates[] = modulesDir.listFiles(new VersionFilter(jarNamePattern));
-
-        if(candidates != null && candidates.length > 0) {
-            return candidates[0]; // the first one
-        } else {
-            File endorsed = new File(modulesDir,"endorsed");
-            if (endorsed!= null && endorsed.isDirectory()) {
-                File candidates1[] = endorsed.listFiles(new VersionFilter(jarNamePattern));
-                if (candidates1 != null && candidates1.length > 0) {
-                    return candidates1[0]; // the first one
-                }
-            }
-        }
-        return null;
-    }
-   
-    private static class VersionFilter implements FileFilter {
-       
-        private final Pattern pattern;
-        
-        public VersionFilter(String namePattern) {
-            pattern = Pattern.compile(namePattern);
-        }
-        
-        public boolean accept(File file) {
-            return pattern.matcher(file.getName()).matches();
-        }
-        
+        return retVal;
     }
     
     /**

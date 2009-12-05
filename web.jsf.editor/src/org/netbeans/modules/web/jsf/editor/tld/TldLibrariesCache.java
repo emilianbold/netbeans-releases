@@ -38,11 +38,8 @@
  */
 package org.netbeans.modules.web.jsf.editor.tld;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Logger;
 import org.netbeans.modules.web.jsf.editor.JsfSupport;
 import org.openide.filesystems.FileObject;
 
@@ -55,59 +52,30 @@ public class TldLibrariesCache {
 
     //uri -> library map
     private final Map<String, TldLibrary> LIBRARIES = new HashMap<String, TldLibrary>();
-    private static Collection<TldLibrary> DEFAULT_LIBRARIES;
     private JsfSupport support;
 
     public TldLibrariesCache(JsfSupport support) {
         this.support = support;
+    }
 
-        //add default libraries
-        for (TldLibrary lib : getDefaultLibraries()) {
-            LIBRARIES.put(lib.getURI(), lib);
+   public void clearCache() {
+        synchronized (LIBRARIES) {
+            LIBRARIES.clear();
         }
     }
 
     public synchronized TldLibrary getLibrary(String namespace) throws LibraryDescriptorException {
-        TldLibrary lib = LIBRARIES.get(namespace);
-        if(lib == null) {
-            FileObject file = support.getIndex().getTldFile(namespace);
-            if(file != null) {
-                lib = TldLibrary.create(file);
-                LIBRARIES.put(namespace, lib);
+        synchronized (LIBRARIES) {
+            TldLibrary lib = LIBRARIES.get(namespace);
+            if (lib == null) {
+                FileObject file = support.getIndex().getTldFile(namespace);
+                if (file != null) {
+                    lib = TldLibrary.create(file);
+                    LIBRARIES.put(namespace, lib);
+                }
             }
+            return lib;
         }
-        return lib;
-        
-    }
-
-    //current TLD versions taken from Mojarra 2.0.1 jsf-ri/conf/share/*.tld
-    //not all of the TLDs appears in the runtime jar so they are copied here
-    //facelets_jsf_core.tld is taken from http://www.netbeans.org/issues/show_bug.cgi?id=174945
-    //since it contains a bugfix which doesn't seem to be even in the Mojarra 2.0.1
-     public static synchronized Collection<TldLibrary> getDefaultLibraries() {
-        if (DEFAULT_LIBRARIES == null) {
-            DEFAULT_LIBRARIES = new ArrayList<TldLibrary>();
-            try {
-                DEFAULT_LIBRARIES.add(
-                        TldLibrary.create(Thread.currentThread().getContextClassLoader().getResourceAsStream("org/netbeans/modules/web/jsf/editor/resources/composite.tld"))); //NOI18N
-                DEFAULT_LIBRARIES.add(
-                        TldLibrary.create(Thread.currentThread().getContextClassLoader().getResourceAsStream("org/netbeans/modules/web/jsf/editor/resources/ui.tld"))); //NOI18N
-                DEFAULT_LIBRARIES.add(
-                        TldLibrary.create(Thread.currentThread().getContextClassLoader().getResourceAsStream("org/netbeans/modules/web/jsf/editor/resources/facelets_jsf_core.tld"))); //NOI18N
-//                DEFAULT_LIBRARIES.add(
-//                        TldLibrary.create(Thread.currentThread().getContextClassLoader().getResourceAsStream("org/netbeans/modules/web/jsf/editor/resources/jsf_core.tld"))); //NOI18N
-                DEFAULT_LIBRARIES.add(
-                        TldLibrary.create(Thread.currentThread().getContextClassLoader().getResourceAsStream("org/netbeans/modules/web/jsf/editor/resources/jstl-core.tld"))); //NOI18N
-                DEFAULT_LIBRARIES.add(
-                        TldLibrary.create(Thread.currentThread().getContextClassLoader().getResourceAsStream("org/netbeans/modules/web/jsf/editor/resources/jstl-fn.tld"))); //NOI18N
-                DEFAULT_LIBRARIES.add(
-                        TldLibrary.create(Thread.currentThread().getContextClassLoader().getResourceAsStream("org/netbeans/modules/web/jsf/editor/resources/mojarra_ext.tld"))); //NOI18N
-            } catch (LibraryDescriptorException ex) {
-                //warn user, this should not happen
-                Logger.global.warning(ex.getMessage());
-            }
-        }
-        return DEFAULT_LIBRARIES;
     }
 
     private void dumpLibs() {

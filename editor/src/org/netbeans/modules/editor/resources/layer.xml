@@ -235,6 +235,7 @@ made subject to such option by the copyright holder.
     <folder name="Editors">
         <file name="org-netbeans-modules-editor-impl-highlighting-HLFactory.instance"/>
         <file name="org-netbeans-lib-editor-hyperlink-HyperlinkOperation$HighlightFactoryImpl.instance"/>
+        <file name="org-netbeans-modules-editor-url-HighlightURLs$FactoryImpl.instance" />
 
         <folder name="Popup">
             <file name="org-openide-actions-CopyAction.shadow">
@@ -329,6 +330,9 @@ made subject to such option by the copyright holder.
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.editor.Bundle"/>
                         <attr name="nbeditor-settings-ColoringType" stringvalue="highlight"/>
                     </file>
+                    <file name="org-netbeans-modules-editor-url-coloring.xml" url="urlFontsColors.xml">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.editor.url.Bundle"/>
+                    </file>
                 </folder>
             </folder>
         </folder>
@@ -353,6 +357,10 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
             
+        <folder name="HyperlinkProviders">
+            <file name="org-netbeans-modules-editor-url-HyperlinkImpl.instance" />
+        </folder>
+        
     </folder>
 
     <folder name="xml">

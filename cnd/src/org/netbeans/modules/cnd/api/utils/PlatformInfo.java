@@ -199,35 +199,39 @@ public final class PlatformInfo {
             if (i >= 0) {
                 return null;
             }
-            String cmd2 = null;
             ArrayList<String> dirlist = getPath();
 
-            if (isWindows() && !cmd.endsWith(".exe")) { // NOI18N
-                cmd2 = cmd + ".exe"; // NOI18N
-            }
-
             for (String dir : dirlist) {
-                String path = dir + separator() + cmd;
-                if (fileExists(path)) {
+                String path = findCommand(dir, cmd);
+                if (path != null) {
                     return path;
-                } else {
-                    if (isWindows() && cmd.endsWith(".exe")){ // NOI18N
-                        String path2 = dir + separator() + cmd + ".lnk"; // NOI18N
-                        if (fileExists(path2)) {
-                            return path;
-                        }
-                    }
                 }
-                if (cmd2 != null) {
-                    path = dir + separator() + cmd2;
-                    if (fileExists(path)) {
-                        return path;
-                    }
-                    String path2 = dir + separator() + cmd + ".lnk"; // NOI18N
-                    if (fileExists(path2)) {
-                        return path;
-                    }
+            }
+        }
+        return null;
+    }
+
+    public String findCommand(String dir, String cmd) {
+        String path = dir + separator() + cmd;
+        if (fileExists(path)) {
+            return path;
+        } else {
+            if (isWindows() && cmd.endsWith(".exe")){ // NOI18N
+                String path2 = dir + separator() + cmd + ".lnk"; // NOI18N
+                if (fileExists(path2)) {
+                    return path;
                 }
+            }
+        }
+        if (isWindows() && !cmd.endsWith(".exe")) { // NOI18N
+            String cmd2 = cmd + ".exe"; // NOI18N
+            path = dir + separator() + cmd2;
+            if (fileExists(path)) {
+                return path;
+            }
+            String path2 = dir + separator() + cmd + ".lnk"; // NOI18N
+            if (fileExists(path2)) {
+                return path;
             }
         }
         return null;

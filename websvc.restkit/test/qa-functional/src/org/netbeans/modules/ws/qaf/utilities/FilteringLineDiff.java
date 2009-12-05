@@ -70,7 +70,7 @@ public class FilteringLineDiff extends LineDiff {
 
     /**
      *  Lines beginning with " * Created ", " * @author " or "import " and empty
-     * lines are treated equals. One can check import statements by buildng
+     * lines are treated equals. One can check import statements by building
      * a project.
      *
      * @param l1 first line to compare
@@ -104,6 +104,11 @@ public class FilteringLineDiff extends LineDiff {
         if (l1.replaceAll(pkg, "").equals(l2.replaceAll(pkg, ""))) {
             LOGGER.warning("skiping \"" + l1 + "\" and \"" + l2 + "\""); //NOI18N
             return true;
+        }
+        //to avoid having two sets of golden files (for ant/maven based projects)
+        if (l1.contains("private static String DEFAULT_PU = ")) { //NOI18N
+            LOGGER.warning("skiping \"" + l1 + "\" and \"" + l2 + "\""); //NOI18N
+            return l2.trim().startsWith("private static String DEFAULT_PU = "); //NOI18N
         }
         return false;
     }

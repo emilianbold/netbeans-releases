@@ -62,7 +62,6 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.netbeans.modules.websvc.rest.codegen.Constants;
 import org.netbeans.modules.websvc.rest.codegen.model.ClientStubModel;
 import org.netbeans.modules.websvc.rest.codegen.model.ClientStubModel.State;
@@ -250,18 +249,14 @@ public final class ClientStubsSetupPanelVisual extends JPanel implements Abstrac
             try {
                 FileObject projectRoot = FileUtil.toFileObject(projectDir);
                 Project p = ProjectManager.getDefault().findProject(projectRoot);
-//                if (! RestUtils.isRestEnabled(p)) {
-//                    rejecteds.add(p);
-//                    continue;
-//                }
                 boolean reject = true;
-                try {
-                    WebRestSupport restSupport = (WebRestSupport)p.getLookup().lookup(RestSupport.class);
-                    ServletMapping servletMap = restSupport.getRestServletMapping(restSupport.getWebApp());
-                    if(servletMap != null) { //Cannot find Servlet Adaptor in web.xml
+                RestSupport restSupport = p.getLookup().lookup(RestSupport.class);
+                if (restSupport != null && restSupport instanceof WebRestSupport) {
+                    WebRestSupport webRestSupport = (WebRestSupport) restSupport;
+                    if (webRestSupport.getApplicationPathFromDD() != null ||
+                        webRestSupport.getRestApplications().size() > 0 ) {
                         reject = false;
                     }
-                } catch(Exception ex) { // project may not be a web module
                 }
                 if(reject) {
                     rejecteds.add(p);

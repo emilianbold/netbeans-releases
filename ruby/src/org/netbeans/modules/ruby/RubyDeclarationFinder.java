@@ -79,6 +79,7 @@ import org.jrubyparser.ast.StrNode;
 import org.jrubyparser.ast.SymbolNode;
 import org.jrubyparser.ast.VCallNode;
 import org.jrubyparser.ast.INameNode;
+import org.jrubyparser.ast.NodeType;
 import org.jrubyparser.ast.SuperNode;
 import org.jrubyparser.ast.ZSuperNode;
 import org.netbeans.api.lexer.Token;
@@ -1170,7 +1171,13 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
             }
 
             Node node = AstUtilities.getForeignNode(candidate);
-            int nodeOffset = node != null ? node.getPosition().getStartOffset() : 0;
+            int nodeOffset = 0;
+            if (node != null) {
+                nodeOffset = node.getPosition().getStartOffset();
+                if (node.getNodeType() == NodeType.ALIASNODE) {
+                    nodeOffset += 6; // 6 = lenght of 'alias '
+                }
+            }
 
             DeclarationLocation loc = new DeclarationLocation(
                 fileObject, nodeOffset, candidate);

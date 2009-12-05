@@ -384,6 +384,7 @@ implements ChangeListener {
     
     /** mapping of files to registration count */
     private final Map<FileObject,Integer> registrationCounts = new WeakHashMap<FileObject,Integer>();
+
     void countRegistration(FileObject fo) {
         Integer i = registrationCounts.get(fo);
         Integer i2;
@@ -394,6 +395,7 @@ implements ChangeListener {
         }
         registrationCounts.put(fo, i2);
     }
+
     /** For use from FolderChildren. @see "#20699" */
     int registrationCount(FileObject fo) {
         Integer i = registrationCounts.get(fo);
@@ -807,7 +809,6 @@ implements ChangeListener {
             // ops, mistake,
             // return back the original
             map.put (fo, previous);
-            countRegistration(fo);
             // Furthermore, item is probably in toNotify by mistake.
             // Observed in DataFolderTest.testMove: after vetoing the move
             // of a data folder, the bogus item for the temporary new folder
@@ -817,9 +818,6 @@ implements ChangeListener {
                 notifyAll();
             }
             return;
-        } else {
-            // make all previous FolderChildrenPairs invalid
-            countRegistration(fo);
         }
 
         // refresh of parent folder
@@ -928,8 +926,8 @@ implements ChangeListener {
             this.obj = new ItemReference (obj, this);
             
             if (obj != null && !obj.getPrimaryFile ().isValid ()) {
-                // if the primary file is already invalid =>
-                // mark the object as invalid
+                // if the primary file is already invalid => mark the object as invalid
+                DataObjectPool.getPOOL().countRegistration(obj.getPrimaryFile());
                 deregister (false);
             }
             

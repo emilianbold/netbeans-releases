@@ -271,6 +271,7 @@ public abstract class Issue {
      * Returns a Node representing this issue
      * @return
      */
+    // XXX used only by issue table 
     public abstract IssueNode getNode();
 
     /**
@@ -289,6 +290,7 @@ public abstract class Issue {
      * Returns this issues attributes. 
      * @return
      */
+    // XXX used only by cache - move out from the spi
     public abstract Map<String, String> getAttributes();
 
     public void removePropertyChangeListener(PropertyChangeListener listener) {

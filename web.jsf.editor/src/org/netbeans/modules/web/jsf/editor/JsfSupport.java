@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.web.jsf.editor;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -108,6 +110,7 @@ public class JsfSupport {
     private FaceletsLibrarySupport faceletsLibrarySupport;
     private WebModule wm;
     private ClassPath classpath;
+    private JsfIndex index;
 
     private JsfSupport(WebModule wm) {
         assert wm != null;
@@ -115,11 +118,23 @@ public class JsfSupport {
         this.wm = wm;
 
         this.classpath = ClassPath.getClassPath(wm.getDocumentBase(), ClassPath.COMPILE);
+        
         //create classpath support
         this.tldLibrariesCache = new TldLibrariesCache(this);
         this.faceletsDescriptorsCache = new FaceletsLibraryDescriptorCache(this);
-
         this.faceletsLibrarySupport = new FaceletsLibrarySupport(this);
+
+        //adds a classpath listener which invalidates the index instance after classpath change
+        //and also invalidates the facelets library descriptors and tld caches
+        this.classpath.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                synchronized (JsfSupport.this) {
+                    index = null;
+                }
+                tldLibrariesCache.clearCache();
+                faceletsDescriptorsCache.clearCache();
+            }
+        });
         //register html extension
         //TODO this should be done declaratively via layer
         JsfHtmlExtension.activate();
@@ -170,13 +185,15 @@ public class JsfSupport {
         return faceletsLibrarySupport.getLibraries();
     }
 
-    public JsfIndex getIndex() {
-        try {
-            return JsfIndex.get(wm);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+    public synchronized JsfIndex getIndex() {
+        if(index == null) {
+            try {
+                this.index = JsfIndex.create(wm);
+            } catch (IOException ex) {
+                Logger.global.log(Level.SEVERE, "Cannot create index for jsf support!", ex); //NOI18N
+            }
         }
-        return null;
+        return this.index;
     }
 
 }

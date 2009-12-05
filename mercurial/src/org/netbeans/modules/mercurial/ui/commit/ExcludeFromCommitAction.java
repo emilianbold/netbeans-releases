@@ -41,19 +41,16 @@
 
 package org.netbeans.modules.mercurial.ui.commit;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import java.awt.event.ActionEvent;
 import java.io.*;
 import java.util.Set;
 import java.util.List;
 import java.util.ArrayList;
 
-import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
+import org.netbeans.modules.mercurial.util.HgUtils;
 import org.openide.util.RequestProcessor;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.openide.nodes.*;
@@ -68,33 +65,25 @@ public final class ExcludeFromCommitAction extends ContextAction {
     public static final int EXCLUDING = 1;
     public static final int INCLUDING = 2;
 
-    private final VCSContext context;
-
-    public ExcludeFromCommitAction(String name, VCSContext context) {
-        this.context = context;
-        putValue(Action.NAME, name);
+    @Override
+    protected boolean enable(Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
+        Set<File> ctxFiles = context != null? context.getRootFiles(): null;
+        if (!HgUtils.isFromHgRepository(context) || ctxFiles == null || ctxFiles.size() == 0) {
+            return false;
+        }
+        return true;
     }
 
-    protected boolean enable(VCSContext ctx) {
-        return getActionStatus(ctx) != UNDEFINED;
-    }
-
-    protected int getFileEnabledStatus() {
-        return FileInformation.STATUS_LOCAL_CHANGE;
-    }
-
-    protected int getDirectoryEnabledStatus() {
-        return FileInformation.STATUS_LOCAL_CHANGE;
-    }
-
-    protected String getBaseName(VCSContext ctx) {
+    protected String getBaseName(Node[] nodes) {
+        VCSContext ctx = HgUtils.getCurrentContext(nodes);
         int actionStatus = getActionStatus(ctx);
         switch (actionStatus) {
         case UNDEFINED:
         case EXCLUDING:
-            return "popup_commit_exclude"; // NOI18N
+            return "CTL_MenuItem_ExcludeFromCommit";                    //NOI18N
         case INCLUDING:
-            return "popup_commit_include"; // NOI18N
+            return "CTL_MenuItem_IncludeInCommit";                      //NOI18N
         default:
             throw new RuntimeException("Invalid action status: " + actionStatus); // NOI18N
         }
@@ -103,7 +92,9 @@ public final class ExcludeFromCommitAction extends ContextAction {
     public int getActionStatus(VCSContext ctx) {
         HgModuleConfig config = HgModuleConfig.getDefault();
         int status = UNDEFINED;
-        if (ctx == null) ctx = context;
+        if (ctx == null) {
+            ctx = HgUtils.getCurrentContext(null);
+        }
         Set<File> files = ctx.getRootFiles();
         for (File file : files) {
             if (config.isExcludedFromCommit(file.getAbsolutePath())) {
@@ -121,8 +112,9 @@ public final class ExcludeFromCommitAction extends ContextAction {
         return status;
     }
 
-    public void performAction(ActionEvent e) {
-        final VCSContext ctx = context;
+    @Override
+    protected void performContextAction(Node[] nodes) {
+        final VCSContext ctx = HgUtils.getCurrentContext(nodes);
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor();
         HgProgressSupport support = new HgProgressSupport() {
             public void perform() {

@@ -45,6 +45,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.TreeSet;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
@@ -146,12 +147,24 @@ class WSTransformer extends DefaultTreePathVisitor {
 
                 tokenSequence.move(node.getEndOffset());
                 if (tokenSequence.movePrevious() && !doNotSplitLine(tokenSequence, true)){
-                    
-                    Replacement postClose = new Replacement(tokenSequence.offset() +
-                            tokenSequence.token().length(), 0, "\n"); //NOI18N
 
-                    replacements.add(postClose);
-                    
+                    tokenSequence.move(node.getEndOffset());
+                    if (tokenSequence.moveNext()){
+
+                        if (tokenSequence.token().id() == PHPTokenId.WHITESPACE){
+                            tokenSequence.moveNext();
+                        }
+
+                        PHPTokenId id = tokenSequence.token().id();
+
+                        if (id != PHPTokenId.PHP_SEMICOLON && !(id == PHPTokenId.PHP_TOKEN
+                                && TokenUtilities.equals(tokenSequence.token().text(), ","))){
+                            Replacement postClose = new Replacement(tokenSequence.offset() +
+                                    tokenSequence.token().length(), 0, "\n"); //NOI18N
+
+                            replacements.add(postClose);
+                        }
+                    }
                 }
             }
             

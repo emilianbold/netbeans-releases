@@ -66,6 +66,7 @@ public class OutputTabOperatorTest extends JellyTestCase {
 
     static final String[] tests = new String[] {
         "testMakeComponentVisible",
+        "testToolbarButtons",
         "testFindLine",
         "testGetText",
         "testWaitText",
@@ -91,30 +92,7 @@ public class OutputTabOperatorTest extends JellyTestCase {
         junit.textui.TestRunner.run(suite());
     }
     
-    public static NbTest suite() {
-        /*
-        NbTestSuite suite = new NbTestSuite();
-        // suites have to be in particular order
-        suite.addTest(new OutputTabOperatorTest("testMakeComponentVisible"));
-        suite.addTest(new OutputTabOperatorTest("testFindLine"));
-        suite.addTest(new OutputTabOperatorTest("testGetText"));
-        suite.addTest(new OutputTabOperatorTest("testWaitText"));
-        suite.addTest(new OutputTabOperatorTest("testGetLineCount"));
-        suite.addTest(new OutputTabOperatorTest("testGetLine"));
-        suite.addTest(new OutputTabOperatorTest("testGetLength"));
-        suite.addTest(new OutputTabOperatorTest("testVerify"));
-        suite.addTest(new OutputTabOperatorTest("testSelectAll"));
-        suite.addTest(new OutputTabOperatorTest("testCopy"));
-        suite.addTest(new OutputTabOperatorTest("testFind"));
-        suite.addTest(new OutputTabOperatorTest("testFindNext"));
-        suite.addTest(new OutputTabOperatorTest("testSaveAs"));
-        //suite.addTest(new OutputTabOperatorTest("testNextError"));
-        //suite.addTest(new OutputTabOperatorTest("testPreviousError"));
-        suite.addTest(new OutputTabOperatorTest("testWrapText"));
-        suite.addTest(new OutputTabOperatorTest("testClear"));
-        suite.addTest(new OutputTabOperatorTest("testClose"));
-        return suite;
-         */
+    public static NbTest suite() {        
         return (NbTest) createModuleTest(OutputTabOperatorTest.class, tests);
     }
     
@@ -151,6 +129,21 @@ public class OutputTabOperatorTest extends JellyTestCase {
         // should be improved to use 2 terms and activate the hidden one
         outputTabOperator.makeComponentVisible();
         assertTrue(targetName+" output tab should be visible.", outputTabOperator.isShowing());
+    }
+
+    /**
+     * Tests presence and, where possible, functionality of buttons on the left
+     * side (toolbar) of the output tab.
+     */
+    public void testToolbarButtons()
+    {
+        outputTabOperator.clear();
+        outputTabOperator.btnReRun().push();
+        outputTabOperator.waitText("BUILD SUCCESSFUL");
+
+        assertFalse("When there's no task running, the Stop button should be disabled!", outputTabOperator.btnStop().isEnabled());
+        outputTabOperator.btnAntSettings().push();
+        new OptionsOperator().close();
     }
 
     /**

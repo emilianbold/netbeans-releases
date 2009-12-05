@@ -160,6 +160,7 @@ public abstract class Query implements Comparable<Query> {
      * Returns issue given by the last refresh
      * @return
      */
+    // XXX used only by kenai - move out from spi
     public abstract Issue[] getIssues(int includeStatus);
 
     public Issue[] getIssues() {
@@ -167,7 +168,7 @@ public abstract class Query implements Comparable<Query> {
     }
 
     /**
-     * Returns true if the issue doesn't belong to the query
+     * Returns true if the issue does belong to the query
      * @param issue
      * @return
      */
@@ -182,7 +183,8 @@ public abstract class Query implements Comparable<Query> {
      * @return
      */
     // XXX Shouldn't be called while running
-    // XXX on repository?
+    // XXX move to simple search
+
     public Issue[] getIssues(String criteria) {
         return BugtrackingUtil.getByIdOrSummary(getIssues(), criteria);
     }
@@ -199,6 +201,7 @@ public abstract class Query implements Comparable<Query> {
         return lastRefresh;
     }
 
+    // XXX used only by issue table - move out from spi
     public abstract int getIssueStatus(Issue issue);
 
     /*********

@@ -66,6 +66,7 @@ import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.VersionsCache;
+import org.netbeans.modules.mercurial.ui.annotate.AnnotateAction;
 import org.netbeans.modules.mercurial.ui.diff.DiffSetupSource;
 import org.netbeans.modules.mercurial.ui.diff.ExportDiffAction;
 import org.netbeans.modules.mercurial.ui.rollback.BackoutAction;
@@ -81,6 +82,7 @@ import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Lookup;
 
 /**
@@ -341,7 +343,8 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
 
         final boolean revertToEnabled = !missingFile && !revisionSelected && oneRevisionMultiselected;
         final boolean backoutChangeEnabled = !missingFile && oneRevisionMultiselected && (drev.length == 0); // drev.length == 0 => the whole revision was selected
-        final boolean viewEnabled = selection.length == 1 && !revisionSelected && drev[0].getFile() != null && drev[0].getFile().exists() &&  !drev[0].getFile().isDirectory();
+        final boolean viewEnabled = selection.length == 1 && !revisionSelected && drev[0].getFile() != null && !drev[0].getFile().isDirectory();
+        final boolean annotationsEnabled = viewEnabled && drev[0].getChangedPath().getAction() != HgLogMessage.HgDelStatus;
         final boolean diffToPrevEnabled = selection.length == 1;
         
         if (revision > 0) {
@@ -383,7 +386,19 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 public void actionPerformed(ActionEvent e) {
                     RequestProcessor.getDefault().post(new Runnable() {
                         public void run() {
-                            view(selection[0]);
+                            view(selection[0], false);
+                        }
+                    });
+                }
+            }));
+            menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_ShowAnnotations")) { // NOI18N
+                {
+                    setEnabled(annotationsEnabled);
+                }
+                public void actionPerformed(ActionEvent e) {
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        public void run() {
+                            view(selection[0], true);
                         }
                     });
                 }
@@ -512,36 +527,12 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         
     }
 
-    private void view(int idx) {
+    private void view (int idx, boolean showAnnotations) {
         Object o = dispResults.get(idx);
         if (o instanceof RepositoryRevision.Event) {
             try {
-                RepositoryRevision.Event drev = (RepositoryRevision.Event) o;
-                File file = VersionsCache.getInstance().getFileRevision(drev.getFile(), drev.getLogInfoHeader().getLog().getRevision());
-
-                if (file == null) { // can be null if the file does not exist or is empty in the given revision
-                    file = File.createTempFile("tmp", "-" + drev.getFile().getName()); //NOI18N
-                    file.deleteOnExit();
-                }
-
-                final FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
-                final String revision = drev.getLogInfoHeader().getLog().getRevision();
-                EditorCookie ec = null;
-                OpenCookie oc = null;
-                try {
-                    DataObject dobj = DataObject.find(fo);
-                    ec = dobj.getCookie(EditorCookie.class);
-                    oc = dobj.getCookie(OpenCookie.class);
-                } catch (DataObjectNotFoundException ex) {
-                    Mercurial.LOG.log(Level.FINE, null, ex);
-                }
-                if (ec != null) {
-                    org.netbeans.modules.versioning.util.Utils.openFile(fo, revision);
-                } else if (oc != null) {
-                    oc.open();
-                } else {
-                    org.netbeans.modules.versioning.util.Utils.openFile(fo, revision);
-                }
+                final RepositoryRevision.Event drev = (RepositoryRevision.Event) o;
+                HgUtils.openInRevision(drev.getFile(), drev.getLogInfoHeader().getLog().getRevision(), showAnnotations);
             } catch (IOException ex) {
                 // Ignore if file not available in cache
             }

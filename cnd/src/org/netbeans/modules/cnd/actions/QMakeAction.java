@@ -42,6 +42,7 @@ package org.netbeans.modules.cnd.actions;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
 import javax.swing.SwingUtilities;
@@ -52,6 +53,8 @@ import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
+import org.netbeans.modules.cnd.api.utils.PlatformInfo;
+import org.netbeans.modules.cnd.builds.ImportUtils;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.cnd.loaders.QtProjectDataObject;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -148,12 +151,15 @@ public class QMakeAction extends AbstractExecutorRunAction {
         }
         ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, outputListener, null, inputOutput, "QMake", syncWorker); // NOI18N
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv)
-        .setCommandLine(quoteExecutable(executable)+" "+argsFlat) // NOI18N
         .setWorkingDirectory(buildDir)
         .unbufferOutput(false)
         .addNativeProcessListener(processChangeListener);
         npb.getEnvironment().putAll(envMap);
         npb.redirectError();
+        List<String> list = ImportUtils.parseArgs(argsFlat.toString());
+        list = ImportUtils.normalizeParameters(list);
+        npb.setExecutable(executable);
+        npb.setArguments(list.toArray(new String[list.size()]));
 
         ExecutionDescriptor descr = new ExecutionDescriptor()
         .controllable(true)

@@ -406,6 +406,10 @@ public final class DDProvider {
                 org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_3_0_0.SunEjbJar.class, SunEjbJarProxy.class,
                 DTDRegistry.SUN_EJBJAR_300_DTD_PUBLIC_ID, DTDRegistry.SUN_EJBJAR_300_DTD_SYSTEM_ID
             ));
+        sunEjbJarVersionMap.put(SunEjbJar.VERSION_3_1_0, new VersionInfo(
+                org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_3_1_0.SunEjbJar.class, SunEjbJarProxy.class,
+                DTDRegistry.SUN_EJBJAR_310_DTD_PUBLIC_ID, DTDRegistry.SUN_EJBJAR_310_DTD_SYSTEM_ID
+            ));
 
         sunApplicationVersionMap.put(SunApplication.VERSION_1_3_0, new VersionInfo(
                 org.netbeans.modules.j2ee.sun.dd.impl.app.model_1_3_0.SunApplication.class, SunApplicationProxy.class,
@@ -418,6 +422,10 @@ public final class DDProvider {
         sunApplicationVersionMap.put(SunApplication.VERSION_5_0_0, new VersionInfo(
                 org.netbeans.modules.j2ee.sun.dd.impl.app.model_5_0_0.SunApplication.class, SunApplicationProxy.class,
                 DTDRegistry.SUN_APPLICATION_50_DTD_PUBLIC_ID, DTDRegistry.SUN_APPLICATION_50_DTD_SYSTEM_ID
+            ));
+        sunApplicationVersionMap.put(SunApplication.VERSION_6_0_0, new VersionInfo(
+                org.netbeans.modules.j2ee.sun.dd.impl.app.model_6_0_0.SunApplication.class, SunApplicationProxy.class,
+                DTDRegistry.SUN_APPLICATION_60_DTD_PUBLIC_ID, DTDRegistry.SUN_APPLICATION_60_DTD_SYSTEM_ID
             ));
 
         sunAppClientVersionMap.put(SunApplicationClient.VERSION_1_3_0, new VersionInfo(
@@ -495,7 +503,9 @@ public final class DDProvider {
     private static SunEjbJar createEjbJar(DDParse parse) {        
           SunEjbJar jar = null;
           String version = parse.getVersion();
-          if (SunEjbJar.VERSION_3_0_0.equals(version)) {
+          if (SunEjbJar.VERSION_3_1_0.equals(version)) {
+              return new org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_3_1_0.SunEjbJar(parse.getDocument(), Common.NO_DEFAULT_VALUES);
+          } else if (SunEjbJar.VERSION_3_0_0.equals(version)) {
               return new org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_3_0_0.SunEjbJar(parse.getDocument(), Common.NO_DEFAULT_VALUES); 
           } else if (SunEjbJar.VERSION_2_1_1.equals(version)) {
               return new org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_2_1_1.SunEjbJar(parse.getDocument(), Common.NO_DEFAULT_VALUES); 
@@ -534,7 +544,9 @@ public final class DDProvider {
     private static SunApplication createApplication(DDParse parse) {        
           SunApplication app = null;
           String version = parse.getVersion();
-          if (SunApplication.VERSION_5_0_0.equals(version)) {
+          if (SunApplication.VERSION_6_0_0.equals(version)) {
+              return new org.netbeans.modules.j2ee.sun.dd.impl.app.model_6_0_0.SunApplication(parse.getDocument(),  Common.NO_DEFAULT_VALUES);
+          } else if (SunApplication.VERSION_5_0_0.equals(version)) {
               return new org.netbeans.modules.j2ee.sun.dd.impl.app.model_5_0_0.SunApplication(parse.getDocument(),  Common.NO_DEFAULT_VALUES);
           } else if (SunApplication.VERSION_1_4_0.equals(version)) {
               return new org.netbeans.modules.j2ee.sun.dd.impl.app.model_1_4_0.SunApplication(parse.getDocument(),  Common.NO_DEFAULT_VALUES);
@@ -548,7 +560,9 @@ public final class DDProvider {
     private static SunApplicationClient createApplicationClient(DDParse parse) {        
           SunApplicationClient appClient = null;
           String version = parse.getVersion();
-          if (SunApplicationClient.VERSION_5_0_0.equals(version)) {
+          if (SunApplicationClient.VERSION_6_0_0.equals(version)) {
+              return new org.netbeans.modules.j2ee.sun.dd.impl.client.model_6_0_0.SunApplicationClient(parse.getDocument(),  Common.NO_DEFAULT_VALUES);
+          } else if (SunApplicationClient.VERSION_5_0_0.equals(version)) {
               return new org.netbeans.modules.j2ee.sun.dd.impl.client.model_5_0_0.SunApplicationClient(parse.getDocument(),  Common.NO_DEFAULT_VALUES);
           } else if (SunApplicationClient.VERSION_1_4_1.equals(version)) {
               return new org.netbeans.modules.j2ee.sun.dd.impl.client.model_1_4_1.SunApplicationClient(parse.getDocument(),  Common.NO_DEFAULT_VALUES);
@@ -979,6 +993,10 @@ public final class DDProvider {
                 SunEjbJar.VERSION_2_0_0, SunEjbJarProxy.class, SunEjbJar.class,
                 org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_2_0_0.SunEjbJar.class,
                 "/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-ejb-jar_2_0-0.dtd")); // NOI18N
+        publicIdToInfoMap.put(DTDRegistry.SUN_EJBJAR_310_DTD_PUBLIC_ID, new DocTypeInfo(
+                SunEjbJar.VERSION_3_1_0, SunEjbJarProxy.class, SunEjbJar.class,
+                org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_3_1_0.SunEjbJar.class,
+                "/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-ejb-jar_3_1-0.dtd")); // NOI18N
         publicIdToInfoMap.put(DTDRegistry.SUN_WEBAPP_300_DTD_PUBLIC_ID, new DocTypeInfo(
                 SunWebApp.VERSION_3_0_0, SunWebAppProxy.class, SunWebApp.class,
                 org.netbeans.modules.j2ee.sun.dd.impl.web.model_3_0_0.SunWebApp.class,
@@ -1007,6 +1025,11 @@ public final class DDProvider {
                 SunApplication.VERSION_5_0_0, SunApplicationProxy.class, SunApplication.class,
                 org.netbeans.modules.j2ee.sun.dd.impl.app.model_5_0_0.SunApplication.class,
                 "/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-application_5_0-0.dtd")); // NOI18N
+        publicIdToInfoMap.put(DTDRegistry.SUN_APPLICATION_60_DTD_PUBLIC_ID, new DocTypeInfo(
+                SunApplication.VERSION_6_0_0, SunApplicationProxy.class, SunApplication.class,
+                org.netbeans.modules.j2ee.sun.dd.impl.app.model_6_0_0.SunApplication.class,
+                "/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-application_6_0-0.dtd")); // NOI18N
+        
 //        publicIdToInfoMap.put(DTDRegistry.SUN_APPLICATION_141_DTD_PUBLIC_ID, new DocTypeInfo(
 //                SunApplication.VERSION_1_4_0, SunApplicationProxy.class, SunApplication.class,
 //                org.netbeans.modules.j2ee.sun.dd.impl.app.model_1_4_0.SunApplication.class,
@@ -1027,6 +1050,10 @@ public final class DDProvider {
                 SunApplicationClient.VERSION_5_0_0, SunApplicationClientProxy.class, SunApplicationClient.class,
                 org.netbeans.modules.j2ee.sun.dd.impl.client.model_5_0_0.SunApplicationClient.class,
                 "/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-application-client_5_0-0.dtd")); // NOI18N
+        publicIdToInfoMap.put(DTDRegistry.SUN_APPCLIENT_60_DTD_PUBLIC_ID, new DocTypeInfo(
+                SunApplicationClient.VERSION_6_0_0, SunApplicationClientProxy.class, SunApplicationClient.class,
+                org.netbeans.modules.j2ee.sun.dd.impl.client.model_6_0_0.SunApplicationClient.class,
+                "/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-application-client_6_0-0.dtd")); // NOI18N
         publicIdToInfoMap.put(DTDRegistry.SUN_APPCLIENT_141_DTD_PUBLIC_ID, new DocTypeInfo(
                 SunApplicationClient.VERSION_1_4_1, SunApplicationClientProxy.class, SunApplicationClient.class,
                 org.netbeans.modules.j2ee.sun.dd.impl.client.model_1_4_1.SunApplicationClient.class,

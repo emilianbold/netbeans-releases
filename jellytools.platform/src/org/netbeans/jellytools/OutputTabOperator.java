@@ -57,6 +57,8 @@ import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.jemmy.operators.ContainerOperator;
+import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComponentOperator;
 import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 import org.netbeans.jemmy.operators.Operator;
@@ -142,6 +144,15 @@ public class OutputTabOperator extends JComponentOperator {
     private static final CopyAction copyAction = new CopyAction();
     private static final FindAction findAction = new FindAction();
 
+    /**
+     * Buttons in the toolbar to the left of the currently active output tab.
+     * They apply to depend on the currently open tab, so they're placed
+     * here instead of OutputOperator. This way it's also more useful.
+     */
+    private JButtonOperator btnReRun;
+    private JButtonOperator btnStop;
+    private JButtonOperator btnAntSettings;
+
     /** Create new instance of OutputTabOperator from given component.
      * @param source JComponent source
      */
@@ -167,7 +178,61 @@ public class OutputTabOperator extends JComponentOperator {
         super((JComponent)new OutputOperator().waitSubComponent(new OutputTabSubchooser(name), index));
         makeComponentVisible();
     }
-    
+
+    /**
+     * Returns operator for the Re-Run button in the toolbar on the left of the tab.
+     * The button is inside the parent of the output tab, but applies (depends) to the
+     * currently active tab, so the methods are here instead of
+     * OutputOperator.
+     *
+     * @return
+     */
+    public JButtonOperator btnReRun()
+    {
+        if (btnReRun == null)
+        {
+            ContainerOperator co = new ContainerOperator(this.getParent());
+            btnReRun = new JButtonOperator(co);
+        }
+        return btnReRun;
+    }
+
+    /**
+     * Returns operator for the Stop button in the toolbar on the left of the tab.
+     * The button is inside the parent of the output tab, but applies (depends) to the
+     * currently active tab, so the methods are here instead of
+     * OutputOperator.
+     *
+     * @return
+     */
+    public JButtonOperator btnStop()
+    {
+        if (btnStop == null)
+        {
+            ContainerOperator co = new ContainerOperator(this.getParent());
+            btnStop = new JButtonOperator(co, 1);
+        }
+        return btnStop;
+    }
+
+    /**
+     * Returns operator for the Ant Settings button in the toolbar on the left of the tab.
+     * The button is inside the parent of the output tab, but applies (depends) to the
+     * currently active tab, so the methods are here instead of
+     * OutputOperator.
+     *
+     * @return
+     */
+    public JButtonOperator btnAntSettings()
+    {
+        if (btnAntSettings == null)
+        {
+            ContainerOperator co = new ContainerOperator(this.getParent());
+            btnAntSettings = new JButtonOperator(co, 2);
+        }
+        return btnAntSettings;
+    }
+
     /** Activates this output tab. If this output tab is in tabbed pane, it is selected. If
      * it is only tab in the Output top component, the Output top component 
      * is activated.

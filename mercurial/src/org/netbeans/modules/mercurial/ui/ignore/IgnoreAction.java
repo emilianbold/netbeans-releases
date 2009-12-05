@@ -51,9 +51,8 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
 import java.io.File;
 import java.io.IOException;
-import java.awt.event.ActionEvent;
-import javax.swing.*;
 import org.netbeans.api.queries.SharabilityQuery;
+import org.openide.nodes.Node;
 
 /**
  * Adds/removes files to repository .hgignore.
@@ -62,23 +61,22 @@ import org.netbeans.api.queries.SharabilityQuery;
  */
 public class IgnoreAction extends ContextAction {
     
-    private final VCSContext context;
-    private int mActionStatus;
     public static final int UNDEFINED  = 0;
     public static final int IGNORING   = 1;
     public static final int UNIGNORING = 2;
     
-    public IgnoreAction(String name, VCSContext context) {
-        this.context = context;
-        putValue(Action.NAME, name);
+    @Override
+    protected boolean enable(Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
+        Set<File> ctxFiles = context != null? context.getRootFiles(): null;
+        if(!HgUtils.isFromHgRepository(context) || ctxFiles == null || ctxFiles.size() == 0) {
+            return false;
+        }
+        return true;
     }
 
-    protected int getFileEnabledStatus() {
-        return FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | FileInformation.STATUS_NOTVERSIONED_EXCLUDED;
-    }
-
-    protected int getDirectoryEnabledStatus() {
-        return FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | FileInformation.STATUS_NOTVERSIONED_EXCLUDED;
+    protected String getBaseName(Node[] nodes) {
+        return "CTL_MenuItem_Ignore";                                   //NOI18N
     }
    
     public int getActionStatus(File [] files) {
@@ -112,16 +110,10 @@ public class IgnoreAction extends ContextAction {
         }
         return actionStatus == -1 ? UNDEFINED : actionStatus;
     }
-    
-    public boolean isEnabled() {
-        Set<File> ctxFiles = context != null? context.getRootFiles(): null;
-        if(!HgUtils.isFromHgRepository(context) || ctxFiles == null || ctxFiles.size() == 0) {
-            return false;
-        }
-        return true; 
-    }
 
-    public void performAction(ActionEvent e) {
+    @Override
+    protected void performContextAction(Node[] nodes) {
+        final VCSContext context = HgUtils.getCurrentContext(nodes);
         final Set<File> repositories = HgUtils.getRepositoryRoots(context);
         if(repositories == null || repositories.size() == 0) return;
 
@@ -140,8 +132,8 @@ public class IgnoreAction extends ContextAction {
 
             private void performIgnore(final File repository, final File[] files) throws MissingResourceException {
                 OutputLogger logger = getLogger();
+                int mActionStatus = getActionStatus(files);
                 try {
-                    mActionStatus = getActionStatus(files);
                     if (mActionStatus == UNDEFINED) {
                         logger.outputInRed(NbBundle.getMessage(IgnoreAction.class, "MSG_IGNORE_TITLE"));
                         logger.outputInRed(NbBundle.getMessage(IgnoreAction.class, "MSG_IGNORE_TITLE_SEP"));
@@ -165,7 +157,7 @@ public class IgnoreAction extends ContextAction {
                     Mercurial.LOG.log(Level.FINE, "IgnoreAction(): File {0} - {1}", new Object[]{repository.getAbsolutePath(), ex.toString()});
                 }
                 for (File file : files) {
-                    Mercurial.getInstance().getFileStatusCache().refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+                    Mercurial.getInstance().getFileStatusCache().refresh(file);
                     logger.output("\t" + file.getAbsolutePath());
                 }
                 if (mActionStatus == IGNORING) {

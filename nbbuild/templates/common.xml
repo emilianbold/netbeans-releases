@@ -67,7 +67,11 @@ made subject to such option by the copyright holder.
         <property file="nbproject/project.properties"/>
         <!-- Do not try to set module.classpath here, in particular: -->
         <!-- during a clean, the ${foo/bar.dir} properties may not be set. -->
-        <parseprojectxml project="." codenamebasedashesproperty="code.name.base.dashes" codenamebaseslashesproperty="code.name.base.slashes"/>
+        <parseprojectxml project="." 
+            codenamebaseproperty="code.name.base"
+            codenamebasedashesproperty="code.name.base.dashes" 
+            codenamebaseslashesproperty="code.name.base.slashes"
+        />
         <property name="module.jar.dir" value="modules"/>
         <property name="module.jar.basename" value="${code.name.base.dashes}.jar"/>
         <property name="module.jar" value="${module.jar.dir}/${module.jar.basename}"/>
@@ -160,6 +164,19 @@ made subject to such option by the copyright holder.
                 <path refid="cp"/>
             </srcresources>
         </uptodate>
+    </target>
+
+    <target name="update" depends="basic-init">
+        <fail
+            message="Please specify URL of catalog to perform the update from via -Dautoupdate.catalog.url=..."
+            unless="autoupdate.catalog.url"
+        />
+        <autoupdate
+            updatecenter="${autoupdate.catalog.url}"
+            todir="${cluster}"
+        >
+            <modules includes="${code.name.base}"/>
+        </autoupdate>
     </target>
 
     <target name="compile" depends="init,up-to-date" unless="is.jar.uptodate">
@@ -273,8 +290,35 @@ made subject to such option by the copyright holder.
 
     <target name="-verify-apichanges"/><!-- just for overriding -->
 
+    <target name="-validate-layers" depends="init">
+        <parsemanifest manifest="${manifest.mf}" attribute="OpenIDE-Module-Layer" property="layer.file"/>
+        <!-- DTD from sources -->
+        <available file="${nb_all}/openide.filesystems/src/org/openide/filesystems/filesystem.dtd" type="file"
+            property="dtd.cp" value="${nb_all}/openide.filesystems/src"/>
+        <!-- DTD from platform -->
+        <pathconvert property="dtd.cp">
+            <pathfileset>
+                <path refid="cluster.path.id"/>
+                <filename name="core/org-openide-filesystems.jar"/>
+            </pathfileset>
+        </pathconvert>
+
+        <xmlvalidate warn="no"> <!--  failonerror="false" -->
+            <fileset file="${src.dir}/${layer.file}"/>
+            <xmlcatalog classpath="${dtd.cp}">
+                <dtd publicId="-//NetBeans//DTD Filesystem 1.0//EN"
+                location="org/openide/filesystems/filesystem.dtd"/>
+                <dtd publicId="-//NetBeans//DTD Filesystem 1.1//EN"
+                location="org/openide/filesystems/filesystem1_1.dtd"/>
+                <dtd publicId="-//NetBeans//DTD Filesystem 1.2//EN"
+                location="org/openide/filesystems/filesystem1_2.dtd"/>
+            </xmlcatalog>
+        </xmlvalidate>
+    </target>
+
     <target name="netbeans" depends="init,jar,netbeans-extra,module-xml-regular,module-xml-autoload,
-            module-xml-eager,javahelp,module-auto-deps,release,chmod-executables,verify-class-linkage,-verify-apichanges">
+            module-xml-eager,javahelp,module-auto-deps,release,chmod-executables,verify-class-linkage,
+            -validate-layers,-verify-apichanges">
         <property name="module.files.toString" refid="module.files"/>
         <echo level="verbose">Basic matching module files: ${module.files.toString}</echo>
         <genlist outputfiledir="${cluster}" module="${module.jar}">
@@ -406,12 +450,12 @@ made subject to such option by the copyright holder.
                     <pathelement path="${test.@{test.type}.cp.extra}"/>
                 </path>
                 <path id="test.@{test.type}.run.cp">
+                    <pathelement path="${build.test.@{test.type}.classes.dir}"/>
                     <!-- Cannot use <path refid="cp"/> since that uses ${module.classpath} and we want ${module.run.classpath}: -->
                     <pathelement path="${test.@{test.type}.runtime.cp}"/>
                     <pathelement path="${cp.extra}"/>
                     <pathelement location="${cluster}/${module.jar}"/>
                     <path refid="test.unit.lib.cp"/>
-                    <pathelement path="${build.test.@{test.type}.classes.dir}"/>
                     <!-- for compatibility with property based classpath-->
                     <pathelement path="${module.run.classpath}"/>
                     <pathelement path="${test.@{test.type}.run.cp.extra}"/>

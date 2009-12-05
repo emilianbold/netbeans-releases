@@ -46,7 +46,8 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.regex.Pattern;
-import javax.swing.Timer;
+import java.util.Timer;
+import java.util.TimerTask;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
@@ -106,8 +107,8 @@ public class DocumentPreprocessor implements PropertyChangeListener {
 
 
     /** Timer which countdowns the auto-reparsing of configuration blocks. */
-    Timer timer;
-
+    Timer timer = new Timer();
+    TimerTask timerTask = null;
 
     public DocumentPreprocessor(){
 
@@ -165,23 +166,21 @@ public class DocumentPreprocessor implements PropertyChangeListener {
 
     /** Restart the timer which starts the parser after the specified delay.*/
     void restartTimer() {
-
-        if (timer==null) {  // initialize timer
-            timer = new Timer(200, new ActionListener() {
-                public void actionPerformed(@SuppressWarnings("unused")
-				final ActionEvent e) {
-                    JTextComponent component = EditorRegistry.focusedComponent();
-                    if (component != null) {
-                        DocumentPreprocessor.updateBlockChain((NbEditorDocument)component.getDocument());
-                    }
-
-                }
-            });
-            timer.setRepeats(false);
+        if (timerTask!=null) {  // initialize timer
+            timerTask.cancel();
         }
 
-        timer.restart();
+        timerTask = new TimerTask(){
+            @Override
+            public void run() {
+                JTextComponent component = EditorRegistry.focusedComponent();
+                if (component != null) {
+                    DocumentPreprocessor.updateBlockChain((NbEditorDocument) component.getDocument());
+                }
+            }
+        };
 
+       timer.schedule(timerTask, 200);
     }
 
     final public static void updateBlockChain(final NbEditorDocument doc) {

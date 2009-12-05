@@ -478,7 +478,8 @@ public class AddTableColumnDialog extends JPanel {
         assert statusLine != null : "Notification status line not available";  //NOI18N
 
         // enable/disable size/scale text field
-        String columnType = coltypecombo.getSelectedItem().toString();
+        Object selectedItem = coltypecombo.getSelectedItem();
+        String columnType = selectedItem == null ? null : selectedItem.toString();
         if (sizelesstypes.contains(columnType)) {
             if (colsizefield.isEditable()) {
                 colsizefield.setEditable(false);

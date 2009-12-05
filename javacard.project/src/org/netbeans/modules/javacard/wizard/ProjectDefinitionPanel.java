@@ -41,6 +41,7 @@
 package org.netbeans.modules.javacard.wizard;
 
 import com.sun.javacard.AID;
+import java.awt.Component;
 import java.awt.event.ActionListener;
 import org.netbeans.modules.javacard.common.Utils;
 import org.netbeans.modules.javacard.common.JCConstants;
@@ -52,26 +53,31 @@ import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.util.*;
 
-import javax.swing.*;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import java.awt.*;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.io.File;
 import java.util.Collection;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
+import javax.swing.JFileChooser;
+import javax.swing.JPanel;
 import org.netbeans.modules.javacard.spi.Card;
 import org.netbeans.modules.javacard.spi.JavacardPlatform;
-import org.netbeans.modules.javacard.spi.capabilities.CardInfo;
 import org.netbeans.modules.javacard.spi.ProjectKind;
+import org.openide.util.ChangeSupport;
+import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
+import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
+import org.openide.util.Utilities;
 
 public class ProjectDefinitionPanel extends JPanel implements DocumentListener, FocusListener, LookupListener, ActionListener {
 
@@ -384,7 +390,8 @@ public class ProjectDefinitionPanel extends JPanel implements DocumentListener, 
                 isWebContextPathValid(wizardDescriptor) &&
                 isSrcTgzURLValid(wizardDescriptor) &&
                 isServletMappingValid(wizardDescriptor) &&
-                isAppletAIDValid(wizardDescriptor);
+                isAppletAIDValid(wizardDescriptor) && 
+                isTargetFolderValid(wizardDescriptor);
     }
 
     private boolean isAppletAIDValid (WizardDescriptor wizardDescriptor) {
@@ -526,6 +533,17 @@ public class ProjectDefinitionPanel extends JPanel implements DocumentListener, 
         return true;
     }
 
+    private boolean isTargetFolderValid(WizardDescriptor wizardDescriptor) {
+        boolean result = new File (projectLocationTextField.getText()).exists();
+        if (!result) {
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                    NbBundle.getMessage(ProjectDefinitionPanel.class,
+                    "ERR_BAD_LOCATION", projectLocationTextField.getText())); //NOI18N
+
+        }
+        return result;
+    }
+
     private boolean isSrcTgzURLValid(WizardDescriptor wizardDescriptor) {
         return true;
     }
@@ -536,6 +554,7 @@ public class ProjectDefinitionPanel extends JPanel implements DocumentListener, 
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                     NbBundle.getMessage(ProjectDefinitionPanel.class,
                     "NO_SERVER_SELECTED")); //NOI18N
+            return false;
         }
         return true;
     }
@@ -546,7 +565,24 @@ public class ProjectDefinitionPanel extends JPanel implements DocumentListener, 
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                     NbBundle.getMessage(ProjectDefinitionPanel.class,
                     "NO_PLATFORM_SELECTED")); //NOI18N
+            return false;
+        } else {
+            JavacardPlatform p = platformRes.allInstances().iterator().next();
+            if (!p.isValid()) {
+                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                        NbBundle.getMessage(ProjectDefinitionPanel.class,
+                        "PLATFORM_INVALID", p.getDisplayName())); //NOI18N
+                return false;
+            }
+            if (kind != null && !p.supportedProjectKinds().contains(kind)) {
+                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                        NbBundle.getMessage(ProjectDefinitionPanel.class,
+                        "PLATFORM_DOES_NOT_SUPPORT_PROJECT_KIND", p.getDisplayName(), //NOI18N
+                        kind.getDisplayName())); //NOI18N
+                return false;
+            }
         }
+
         return true;
     }
 
@@ -558,22 +594,22 @@ public class ProjectDefinitionPanel extends JPanel implements DocumentListener, 
         if (!platformColl.isEmpty()) {
             JavacardPlatform platform = platformColl.iterator().next();
             invalidPlatform = !platform.isValid();
-            //XXX find cleaner way to do this
-            for (DataObject dob : platformAndDevicePanel1.getLookup().lookupAll(DataObject.class)) {
-                if (dob.getLookup().lookup(JavacardPlatform.class) != null) {
-                    d.putProperty(ProjectPropertyNames.PROJECT_PROP_ACTIVE_PLATFORM, dob.getName());
-                    break;
-                }
-            }
+            d.putProperty(ProjectPropertyNames.PROJECT_PROP_ACTIVE_PLATFORM, platform.getSystemName());
+            d.putProperty("activeplatform", platform.getSystemName()); //NOI18N //XXX constant?
         } else {
             invalidPlatform = true;
+            d.putProperty(ProjectPropertyNames.PROJECT_PROP_ACTIVE_PLATFORM, JCConstants.DEFAULT_JAVACARD_PLATFORM_FILE_NAME);
+            d.putProperty("activeplatform", JCConstants.DEFAULT_JAVACARD_PLATFORM_FILE_NAME); //NOI18N //XXX constant?
         }
-
         if (!invalidPlatform) {
             Collection<? extends Card> cards = serverRes.allInstances();
             if (!cards.isEmpty()) {
                 d.putProperty(ProjectPropertyNames.PROJECT_PROP_ACTIVE_DEVICE, cards.iterator().next().getSystemId());
+                d.putProperty("activedevice", cards.iterator().next().getSystemId()); //NOI18N //XXX locate constant
             }
+        } else {
+                d.putProperty(ProjectPropertyNames.PROJECT_PROP_ACTIVE_DEVICE, "Default Device"); //XXX locate constant
+                d.putProperty("activedevice", "Default Device"); //NOI18N //XXX locate constant
         }
         d.putProperty("projdir", new File(folder)); //NOI18N
         d.putProperty(ProjectWizardKeys.WIZARD_PROP_PROJECT_NAME, name);

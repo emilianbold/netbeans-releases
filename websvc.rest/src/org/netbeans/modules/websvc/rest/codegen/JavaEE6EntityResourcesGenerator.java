@@ -52,6 +52,7 @@ public class JavaEE6EntityResourcesGenerator extends EntityResourcesGenerator {
      /** Creates a new instance of EntityRESTServicesCodeGenerator */
     public JavaEE6EntityResourcesGenerator() {
         injectEntityManager = true;
+        useEjbInjections = true;
     }
 
     @Override

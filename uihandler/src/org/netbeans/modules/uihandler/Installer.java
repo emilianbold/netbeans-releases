@@ -1836,10 +1836,13 @@ public class Installer extends ModuleInstall implements Runnable {
         protected void createDialog() {
             String message = null;
             if (slownData != null) {
-                if (slownData.getLatestActionName() == null) {
-                    message = String.format("AWT thread blocked for %1$s ms.", Long.toString(slownData.getTime())); // NOI18N
+                String time = Long.toString(slownData.getTime());
+                if (slownData.getSlownessType() != null){
+                    message = String.format("%1$s took %2$s ms.", slownData.getSlownessType(), time);// NOI18N
+                }else if (slownData.getLatestActionName() != null) {
+                    message = String.format("Invoking %1$s took %2$s ms.", slownData.getLatestActionName(), time);// NOI18N
                 } else {
-                    message = String.format("Invoking %1$s took %2$s ms.", slownData.getLatestActionName(), Long.toString(slownData.getTime()));// NOI18N
+                    message = String.format("AWT thread blocked for %1$s ms.", time); // NOI18N
                 }
             } else {
                 Throwable t = getThrown(recs);

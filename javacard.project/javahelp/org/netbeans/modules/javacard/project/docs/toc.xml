@@ -10,15 +10,15 @@
 
 <toc version="2.0">
 <tocitem target="org.netbeans.modules.javacard.title" text="Java Card 3 Guide" expand="true">
-<tocitem target="org.netbeans.modules.javacard.docinfo" text="Copyright" expand="true"></tocitem>
-
- <tocitem target="org.netbeans.modules.javacard.AboutJavaCard3Development" text="About Java Card 3 Development" expand="false">
+<tocitem target="org.netbeans.modules.javacard.docinfo" text="Copyright" expand="true">
+</tocitem>
+ <tocitem target="org.netbeans.modules.javacard.AboutJavaCard3Development" text="About Java Card 3 Development" expand="true">
     <tocitem target="org.netbeans.modules.javacard.WhatYouShouldKnow" text="What You Should Know Before Working With the Java Card 3 Plugin" expand="false"></tocitem>
     <tocitem target="org.netbeans.modules.javacard.WhatIsIn" text="What Is In This Online Help" expand="false"></tocitem>
     <tocitem target="org.netbeans.modules.javacard.WhatIsNotIn" text="What Is Not In This Online Help" expand="false"></tocitem>
     </tocitem>
     
- <tocitem target="org.netbeans.modules.javacard.DevelopingforJavaCard3Platform" text="Developing for the Java Card 3 Platform" expand="false">
+ <tocitem target="org.netbeans.modules.javacard.DevelopingforJavaCard3Platform" text="Developing for the Java Card 3 Platform" expand="true">
     <tocitem target="org.netbeans.modules.javacard.SequenceofDevelopment" text="Sequence of Development Activities" expand="false">
         <tocitem target="org.netbeans.modules.javacard.CreateProject" text="Create a Project" expand="false"></tocitem>
         <tocitem target="org.netbeans.modules.javacard.WriteModifySourceCode" text="Write and Modify Source Code" expand="false"></tocitem>
@@ -99,10 +99,6 @@
    </tocitem>      
         
    <tocitem target="org.netbeans.modules.javacard.RunningClassicAppletProject" text="Running Your Classic Applet Project" expand="false"></tocitem>
-    
-   <tocitem target="org.netbeans.modules.javacard.RunningClassicAppletSamples" text="Running Classic Applet Samples" expand="false">
-           <tocitem target="org.netbeans.modules.javacard.RunClassicChannelsClassicApplet" text="Run ClassicChannels Classic Applet" expand="false"></tocitem>
-    </tocitem>       
         
     <tocitem target="org.netbeans.modules.javacard.CreatingExtendedAppletProject" text="Creating an Extended Applet Project" expand="false">
             <tocitem target="org.netbeans.modules.javacard.CreateExtendedAppletProjectFromTemplate" text="Create an Extended Applet Project From the Template" expand="false"></tocitem>
@@ -137,12 +133,6 @@
     
     <tocitem target="org.netbeans.modules.javacard.RunningExtendedAppletProject" text="Running Your Extended Applet Project" expand="false"></tocitem>
     
-    <tocitem target="org.netbeans.modules.javacard.RunningExtendedAppletSamples" text="Running Extended Applet Samples" expand="false">
-        <tocitem target="org.netbeans.modules.javacard.RunHelloWorldExtendedApplet" text="Run HelloWorld Extended Applet" expand="false"></tocitem>
-        <tocitem target="org.netbeans.modules.javacard.RunExtendedChannelsExtendedApplet" text="Run ExtendedChannels Extended Applet" expand="false"></tocitem>
-    </tocitem>
-   
-   
     <tocitem target="org.netbeans.modules.javacard.CreatingClassicLibProject" text="Creating a Classic Library Project" expand="false">
         <tocitem target="org.netbeans.modules.javacard.CreateClassicLibProjectFromTemplate" text="Create a Classic Library Project From Template" expand="false"></tocitem>
         <tocitem target="org.netbeans.modules.javacard.CreateClassicLibProjectFromExistingCode" text="Create a Classic Library Project From Existing Code" expand="false"></tocitem>
@@ -219,40 +209,13 @@
     </tocitem>
         
     <tocitem target="org.netbeans.modules.javacard.RunningWebAppProject" text="Running Your Web Application Project" expand="false"></tocitem>
-    
-    <tocitem target="org.netbeans.modules.javacard.RunningWebApplicationSamples" text="Running Web Application Samples" expand="false">
-        <tocitem target="org.netbeans.modules.javacard.RunningHelloWorldSampleWebApp" text="Running HelloWorld Sample Web Application" expand="false"></tocitem>
-        <tocitem target="org.netbeans.modules.javacard.RunningContainerManagedAuthenticationSampleWebApp" text="Running ContainerManagedAuthentication Sample Web Application" expand="false"></tocitem>
-        <tocitem target="org.netbeans.modules.javacard.RunningStaticSecureWebHostingSampleWebApp" text="Running StaticSecureWebHosting Sample Web Application" expand="false"></tocitem>
-        <tocitem target="org.netbeans.modules.javacard.RunningDynamicSecureWebHostingSampleWebApp" text="Running DynamicSecureWebHosting Sample Web Application" expand="false"></tocitem>
-        <tocitem target="org.netbeans.modules.javacard.RunningGCFClientSampleWebApp" text="Running GCFClient Sample Web Application" expand="false"></tocitem>
-        <tocitem target="org.netbeans.modules.javacard.RunningDynamicallyLoadedClassesSampleWebApp" text="Running DynamicallyLoadedClasses Sample Web Application" expand="false"></tocitem>
-        <tocitem target="org.netbeans.modules.javacard.RunningPersistenceSampleWebApp" text="Running Persistence Sample Web Application" expand="false"></tocitem>
-        <tocitem target="org.netbeans.modules.javacard.RunningRestartableTasksSampleWebApp" text="Running RestartableTasks Sample Web Application" expand="false"></tocitem>
-        <tocitem target="org.netbeans.modules.javacard.RunningTransactionsSampleWebApp" text="Running Transactions Sample Web Application" expand="false"></tocitem>
-        <tocitem target="org.netbeans.modules.javacard.RunningSIOFacilitySampleWebApp" text="Running SIOFacility Sample Web Application" expand="false"></tocitem>
-        <tocitem target="org.netbeans.modules.javacard.RunningEventFacilitySampleWebApp" text="Running EventFacility Sample Web Application" expand="false"></tocitem>
-        <tocitem target="org.netbeans.modules.javacard.RunningCardHolderAuthorizationSampleWebApp" text="Running CardHolderAuthorization Sample Web Application" expand="false"></tocitem>
-    </tocitem>
-          
-    <tocitem target="org.netbeans.modules.javacard.RunningTransitReferenceAppSample" text="Running the Transit Reference Application Sample" expand="false">
-        <tocitem target="org.netbeans.modules.javacard.BuildWalletClassicLibRefApp" text="Build WalletClassicLib" expand="false"></tocitem>
-        <tocitem target="org.netbeans.modules.javacard.BuildTransitExtLibRefApp" text="Build TransitExtLib" expand="false"></tocitem>
-        <tocitem target="org.netbeans.modules.javacard.RunClassicWalletAppletRefApp" text="Run ClassicWalletApplet" expand="false"></tocitem>
-        <tocitem target="org.netbeans.modules.javacard.RunWalletAssistAppletRefApp" text="Run WalletAssistApplet" expand="false"></tocitem>
-        <tocitem target="org.netbeans.modules.javacard.RunPOSWebRefApp" text="Run POSWeb" expand="false"></tocitem>
-        <tocitem target="org.netbeans.modules.javacard.RunAdminWebRefApp" text="Run AdminWeb" expand="false"></tocitem>
-        <tocitem target="org.netbeans.modules.javacard.RunTurnstileAppletRefApp" text="Run TurnstileApplet" expand="false"></tocitem>
-        <tocitem target="org.netbeans.modules.javacard.RunTurnstileClientRefApp" text="Run TurnstileClient" expand="false"></tocitem>
-        <tocitem target="org.netbeans.modules.javacard.RunTurnstileWebRefApp" text="Run TurnstileWeb" expand="false"></tocitem>
-    </tocitem>
         
     <tocitem target="org.netbeans.modules.javacard.SettingUpSecurityForWebApplication" text="Setting Up Security for Your Project" expand="false">
         <tocitem target="org.netbeans.modules.javacard.AcceptingUntrustedCertificates" text="Accepting Untrusted Certificates" expand="false"></tocitem>
     </tocitem>
- </tocitem>
 
- <tocitem target="org.netbeans.modules.javacard.CustomizingJavaCardPlatform" text="Customizing a Java Card Platform" expand="false">
+
+ <tocitem target="org.netbeans.modules.javacard.CustomizingJavaCardPlatform" text="Customizing a Java Card Platform" expand="true">
     <tocitem target="org.netbeans.modules.javacard.BuildingCustomJavaCardPlatformRI" text="Building a Custom Java Card Platform RI" expand="false"></tocitem>
     
     <tocitem target="org.netbeans.modules.javacard.ConfiguringCustomRI" text="Configuring a Custom Java Card Platform RI" expand="false">
@@ -263,9 +226,9 @@
     </tocitem>
  </tocitem>
  
- <tocitem target="org.netbeans.modules.javacard.Troubleshooting" text="Troubleshooting" expand="false">
+ <tocitem target="org.netbeans.modules.javacard.Troubleshooting" text="Troubleshooting" expand="true">
     <tocitem target="org.netbeans.modules.javacard.UnableRunSamples" text="Unable to Run Samples" expand="false"></tocitem>
  </tocitem>
  
- <tocitem target="org.netbeans.modules.javacard.Glossary" text="Glossary" expand="false"></tocitem>
+ <tocitem target="org.netbeans.modules.javacard.Glossary" text="Java Card 3 Glossary" expand="false"></tocitem>
 </toc>

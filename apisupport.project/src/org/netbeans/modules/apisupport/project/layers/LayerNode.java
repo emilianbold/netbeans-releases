@@ -55,6 +55,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.Util;
+import org.netbeans.modules.apisupport.project.api.LayerHandle;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -90,16 +91,16 @@ public final class LayerNode extends FilterNode implements Node.Cookie {
     
     private final boolean specialDisplayName;
 
-    public LayerNode(LayerUtils.LayerHandle handle) {
+    public LayerNode(LayerHandle handle) {
         this(getDataNode(handle), handle, true);
     }
     
-    private LayerNode(Node delegate, LayerUtils.LayerHandle handle, boolean specialDisplayName) {
+    private LayerNode(Node delegate, LayerHandle handle, boolean specialDisplayName) {
         super(delegate, new LayerChildren(handle));
         this.specialDisplayName = specialDisplayName;
     }
     
-    private static Node getDataNode(LayerUtils.LayerHandle handle) {
+    private static Node getDataNode(LayerHandle handle) {
         FileObject layer = handle.getLayerFile();
         try {
             return DataObject.find(layer).getNodeDelegate();
@@ -114,7 +115,7 @@ public final class LayerNode extends FilterNode implements Node.Cookie {
             public Lookup getEnvironment(DataObject obj) {
                 DataNode dn = new DataNode(obj, Children.LEAF);
                 dn.setIconBaseWithExtension("org/netbeans/modules/apisupport/project/ui/resources/layerObject.gif"); // NOI18N
-                LayerNode ln = new LayerNode(dn, new LayerUtils.LayerHandle(null, obj.getPrimaryFile()), false);
+                LayerNode ln = new LayerNode(dn, new LayerHandle(null, obj.getPrimaryFile()), false);
                 return Lookups.singleton(ln);
             }
         }
@@ -125,13 +126,13 @@ public final class LayerNode extends FilterNode implements Node.Cookie {
 
         enum KeyType {WAIT, RAW, CONTEXTUALIZED}
         
-        private final LayerUtils.LayerHandle handle;
+        private final LayerHandle handle;
         private ClassPath cp;
         private Project p;
         private FileSystem layerfs;
         private FileSystem sfs;
         
-        public LayerChildren(LayerUtils.LayerHandle handle) {
+        public LayerChildren(LayerHandle handle) {
             this.handle = handle;
         }
         
@@ -159,7 +160,7 @@ public final class LayerNode extends FilterNode implements Node.Cookie {
                         Project p = FileOwnerQuery.getOwner(handle.getLayerFile());
                         boolean context = false;
                         if (p != null) {
-                            LayerUtils.LayerHandle h = LayerUtils.layerForProject(p);
+                            LayerHandle h = LayerHandle.forProject(p);
                             h.setAutosave(true); // #135376
                             if (h != null && layer.equals(h.getLayerFile())) {
                                 FileSystem _sfs = LayerUtils.getEffectiveSystemFilesystem(p);

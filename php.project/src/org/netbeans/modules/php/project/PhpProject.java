@@ -153,12 +153,12 @@ public class PhpProject implements Project {
     // @GuardedBy(ProjectManager.mutex())
     volatile String name;
     private final AntProjectListener phpAntProjectListener = new PhpAntProjectListener();
+    private final PropertyChangeListener projectPropertiesListener = new ProjectPropertiesListener();
 
     // @GuardedBy(ProjectManager.mutex())
     volatile Set<BasePathSupport.Item> ignoredFolders;
     final Object ignoredFoldersLock = new Object();
     final ChangeSupport ignoredFoldersChangeSupport = new ChangeSupport(this);
-    private final PropertyChangeListener ignoredFoldersListener = new IgnoredFoldersListener();
 
     // frameworks
     final Object frameworksLock = new Object();
@@ -180,7 +180,7 @@ public class PhpProject implements Project {
         seleniumRoots = SourceRoots.create(updateHelper, eval, refHelper, SourceRoots.Type.SELENIUM);
         lookup = createLookup(configuration);
 
-        addWeakPropertyEvaluatorListener(ignoredFoldersListener);
+        addWeakPropertyEvaluatorListener(projectPropertiesListener);
         helper.addAntProjectListener(WeakListeners.create(AntProjectListener.class, phpAntProjectListener, helper));
     }
 
@@ -319,7 +319,6 @@ public class PhpProject implements Project {
     }
 
     void setTestsDirectory(FileObject testsDirectory) {
-        assert this.testsDirectory == null : "Project test directory already set to " + this.testsDirectory;
         assert testsDirectory != null && testsDirectory.isValid();
         this.testsDirectory = testsDirectory;
     }
@@ -772,11 +771,14 @@ public class PhpProject implements Project {
         }
     }
 
-    private final class IgnoredFoldersListener implements PropertyChangeListener {
+    private final class ProjectPropertiesListener implements PropertyChangeListener {
         public void propertyChange(PropertyChangeEvent evt) {
-            if (PhpProjectProperties.IGNORE_PATH.equals(evt.getPropertyName())) {
+            String propertyName = evt.getPropertyName();
+            if (PhpProjectProperties.IGNORE_PATH.equals(propertyName)) {
                 ignoredFolders = null;
                 ignoredFoldersChangeSupport.fireChange();
+            } else if (PhpProjectProperties.TEST_SRC_DIR.equals(propertyName)) {
+                testsDirectory = null;
             }
         }
     }
