@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.subversion.ui.update;
 
+import java.awt.EventQueue;
 import org.openide.nodes.*;
 import org.openide.util.NbBundle;
 import org.openide.filesystems.FileObject;
@@ -63,7 +64,7 @@ import org.tigris.subversion.svnclientadapter.SVNClientException;
  */
 class UpdateResultNode extends AbstractNode {
     
-    private FileUpdateInfo info;
+    private final FileUpdateInfo info;
 
     static final String COLUMN_NAME_NAME        = "name";   // NOI18N
     static final String COLUMN_NAME_PATH        = "path";   // NOI18N
@@ -77,9 +78,15 @@ class UpdateResultNode extends AbstractNode {
     private String statusDisplayName;
     
     private String htmlDisplayName;
-    
+    private String relativePath;
+
+    /**
+     * I/O accessed, do not call in AWT
+     * @param info
+     */
     public UpdateResultNode(FileUpdateInfo info) {
         super(Children.LEAF, Lookups.fixed(new Object [] { info }));
+        assert !EventQueue.isDispatchThread();
         this.info = info;
         initProperties();
         refreshHtmlDisplayName();
@@ -160,6 +167,18 @@ class UpdateResultNode extends AbstractNode {
         refreshHtmlDisplayName();
     }
 
+    private String getRelativePath () {
+        if (relativePath == null) {
+            try {
+                relativePath = SvnUtils.getRelativePath(info.getFile());
+            } catch (SVNClientException ex) {
+                SvnClientExceptionHandler.notifyException(ex, false, false);
+                relativePath = "";                                      //NOI18N
+            }
+        }
+        return relativePath;
+    }
+
     private abstract class SyncFileProperty extends PropertySupport.ReadOnly<String> {
         protected SyncFileProperty(String name, Class<String> type, String displayName, String shortDescription) {
             super(name, type, displayName, shortDescription);
@@ -178,12 +197,7 @@ class UpdateResultNode extends AbstractNode {
         private String shortPath;
         public PathProperty() {
             super(COLUMN_NAME_PATH, String.class, NbBundle.getMessage(UpdateResultNode.class, "LBL_Path_Name"), NbBundle.getMessage(UpdateResultNode.class, "LBL_Path_Desc")); // NOI18N
-            try {                
-                shortPath = SvnUtils.getRelativePath(info.getFile());
-            } catch (SVNClientException ex) {
-                SvnClientExceptionHandler.notifyException(ex, false, false);
-                shortPath = "";
-            }                
+            shortPath = getRelativePath();
             setValue("sortkey", shortPath + "\t" + UpdateResultNode.this.getName()); // NOI18N
         }
         public String getValue() throws IllegalAccessException, InvocationTargetException {
@@ -207,12 +221,7 @@ class UpdateResultNode extends AbstractNode {
         private String shortPath;        
         public FileStatusProperty() {            
             super(COLUMN_NAME_STATUS, String.class, NbBundle.getMessage(UpdateResultNode.class, "LBL_Status_Name"), NbBundle.getMessage(UpdateResultNode.class, "LBL_Status_Desc"));            
-            try {
-                shortPath = SvnUtils.getRelativePath(info.getFile());
-            } catch (SVNClientException ex) {
-                SvnClientExceptionHandler.notifyException(ex, false, false);
-                shortPath = "";
-            }                
+            shortPath = getRelativePath();
             String sortable = Integer.toString(info.getAction());
             setValue("sortkey", zeros[sortable.length()] + sortable + "\t" + shortPath + "\t" + UpdateResultNode.this.getName());
         }
