@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -55,6 +55,7 @@ import java.io.*;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
+import org.openide.util.Lookup;
 
 /**
  * Performs diff action by fetching the appropriate file from repository
@@ -113,7 +114,7 @@ public class DiffExecutor {
         openDiff(panel, group);
     }
     
-    private void openDiff(final JComponent c, final ExecutorGroup group) {
+    private void openDiff(final MultiDiffPanel c, final ExecutorGroup group) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 DiffTopComponent tc = new DiffTopComponent(c);
@@ -157,17 +158,27 @@ public class DiffExecutor {
 
     private static class DiffTopComponent extends TopComponent implements DiffSetupSource {
 
-        public DiffTopComponent() {
-        }
-        
-        public DiffTopComponent(JComponent c) {
+        private final Lookup lookup;
+
+        public DiffTopComponent(MultiDiffPanel c) {
             setLayout(new BorderLayout());
             c.putClientProperty(TopComponent.class, this);
             add(c, BorderLayout.CENTER);
+            lookup = c.getLookup();
             getAccessibleContext().setAccessibleName(NbBundle.getMessage(DiffTopComponent.class, "ACSN_Diff_Top_Component")); // NOI18N
             getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DiffTopComponent.class, "ACSD_Diff_Top_Component")); // NOI18N
         }
         
+        @Override
+        public Lookup getLookup() {
+            return lookup;
+        }
+
+        @Override
+        public boolean canClose() {
+            return ((MultiDiffPanel) getComponent(0)).canClose();
+        }
+
         public UndoRedo getUndoRedo() {
             MultiDiffPanel mainPanel = (MultiDiffPanel) getComponent(0);
             return mainPanel.getUndoRedo();

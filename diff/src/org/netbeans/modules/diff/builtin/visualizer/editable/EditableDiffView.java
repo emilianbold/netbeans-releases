@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -77,7 +77,6 @@ import org.openide.nodes.CookieSet;
 import org.openide.awt.UndoRedo;
 import org.openide.filesystems.FileObject;
 import org.openide.text.CloneableEditorSupport;
-import org.openide.cookies.SaveCookie;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
@@ -472,7 +471,6 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         DiffModuleConfig.getDefault().getPreferences().removePreferenceChangeListener(this);
         removeDocumentListeners();
         if (editableCookie != null) {
-            saveModifiedDocument();
             editableCookie.removePropertyChangeListener(this);
         }
     }
@@ -483,20 +481,6 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         refreshDiff(20);
     }
     
-    private void saveModifiedDocument() {
-        DataObject dao = (DataObject) editableDocument.getProperty(Document.StreamDescriptionProperty);
-        if (dao != null) {
-            SaveCookie sc = dao.getCookie(SaveCookie.class);
-            if (sc != null) {
-                try {
-                    sc.save();
-                } catch (IOException e) {
-                    Logger.getLogger(EditableDiffView.class.getName()).log(Level.INFO, "Error saving Diff document", e); // NOI18N
-                }
-            }
-        }
-    }
-
     public void ancestorMoved(AncestorEvent event) {
     }
 
