@@ -707,7 +707,7 @@ public abstract class EnterItemsPanel extends MakefileWizardPanel {
 
 	    if (text.charAt(0) != File.separatorChar) {
 		text = getMakefileData().getBaseDirectory(MakefileData.EXPAND) +
-			File.separator + text;
+			'/' + text;
 	    }
 	    for (int i = 0; i < text.length(); i++) {
 		char c = text.charAt(i);
