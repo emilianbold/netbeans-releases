@@ -461,15 +461,6 @@ public final class Splash implements Stamps.Updater {
                     } catch (Exception ex) {
                         ex.printStackTrace();
                     }
-                    try {
-                        Class ssClass = Class.forName("java.awt.SplashScreen");
-                        Object ss = ssClass.getMethod("getSplashScreen").invoke(null);
-                        ss.getClass().getMethod("update").invoke(ss);
-                    } catch (ClassNotFoundException x) {
-                        // JDK 5, ignore
-                    } catch (Exception x) {
-                        Logger.getLogger(Splash.class.getName()).log(Level.INFO, null, x);
-                    }
                     next = System.currentTimeMillis() + 200;
                 }
             }
