@@ -37,61 +37,14 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.viewmodel;
-
-import java.awt.datatransfer.Transferable;
-import org.netbeans.spi.viewmodel.ColumnModel;
-import org.netbeans.spi.viewmodel.Model;
-import org.netbeans.spi.viewmodel.Models;
-import org.netbeans.spi.viewmodel.TreeModelFilter;
+package org.netbeans.spi.viewmodel;
 
 /**
+ * NodeModel covering all known extensions.
+ * Not public API, created for implementation purpose only.
  *
  * @author Martin Entlicher
  */
-public class HyperCompoundModel implements Model {
+interface SuperNodeModel extends NodeModel, ExtendedNodeModel, CheckNodeModel, DnDNodeModel {
 
-    private Models.CompoundModel main;
-    private Models.CompoundModel[] models;
-    private TreeModelFilter treeFilter;
-
-    public HyperCompoundModel(Models.CompoundModel main,
-                              Models.CompoundModel[] models,
-                              TreeModelFilter treeFilter) {
-        this.main = main;
-        this.models = models;
-        this.treeFilter = treeFilter;
-    }
-
-    ColumnModel[] getColumns() {
-        return main.getColumns();
-    }
-
-    Models.CompoundModel getMain() {
-        return main;
-    }
-
-    Models.CompoundModel[] getModels() {
-        return models;
-    }
-
-    TreeModelFilter getTreeFilter() {
-        return treeFilter;
-    }
-
-    int getAllowedDragActions() {
-        int actions = 0;
-        for (Models.CompoundModel m : models) {
-            actions |= m.getAllowedDragActions();
-        }
-        return actions;
-    }
-
-    int getAllowedDropActions(Transferable t) {
-        int actions = 0;
-        for (Models.CompoundModel m : models) {
-            actions |= m.getAllowedDropActions(t);
-        }
-        return actions;
-    }
 }
