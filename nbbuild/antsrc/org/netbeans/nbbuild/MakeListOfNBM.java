@@ -43,6 +43,7 @@ package org.netbeans.nbbuild;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -150,13 +151,21 @@ public class MakeListOfNBM extends Task {
             }
 
         String codename = attr.getValue("OpenIDE-Module"); //NOI18N
+        String versionTag = "OpenIDE-Module-Specification-Version"; // NOI18N
+        if (codename == null) {
+            codename = attr.getValue("Bundle-SymbolicName"); // NOI18N
+            versionTag = "Bundle-Version"; // NOI18N
+            if (codename != null) {
+                codename = codename.replace('-', '_');
+            }
+        }
         if (codename == null) {
             throw new BuildException("Manifest in jar file "+module.getAbsolutePath()+" does not contain OpenIDE-Module", getLocation());
         }
 
-        String versionSpecNum = attr.getValue("OpenIDE-Module-Specification-Version"); //NOI18N
+        String versionSpecNum = attr.getValue(versionTag);
         if (versionSpecNum == null) {
-            log("Manifest in jar file "+module.getAbsolutePath()+" does not contain tag OpenIDE-Module-Specification-Version");
+            log("Manifest in jar file "+module.getAbsolutePath()+" does not contain tag " + versionTag);
             versionSpecNum = "0";
         }
 
@@ -264,12 +273,7 @@ public class MakeListOfNBM extends Task {
         for( int j=0; j < include.length; j++ ){
             try {
                 File inFile = new File( ds.getBasedir(), include[j] );
-                FileInputStream inFileStream = new FileInputStream( inFile );
-                byte array[] = new byte[ (int) inFile.length() ];
-                CRC32 crc = new CRC32();
-                inFileStream.read( array );
-                inFileStream.close();
-                crc.update( array );
+                CRC32 crc = UpdateTracking.crcForFile(inFile);
                 String abs = inFile.getAbsolutePath();
                 String prefix = ds.getBasedir().getAbsolutePath() + File.separatorChar;
                 if (! abs.startsWith(prefix)) throw new IllegalStateException(abs);
