@@ -117,7 +117,7 @@ public class ModuleDependencies extends Task {
                 if (o.type == null) throw new BuildException ("<output> needs attribute type");
                 if (o.file == null) throw new BuildException ("<output> needs attribute file");
                 
-                getProject ().log ("Generating " + o.type + " to " + o.file);
+                getProject().log(o.file + ": generating " + o.type);
                 
                 if ("public-packages".equals (o.type.getValue ())) {
                     generatePublicPackages (o.file, true, false);

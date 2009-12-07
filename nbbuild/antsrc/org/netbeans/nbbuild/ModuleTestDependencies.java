@@ -120,7 +120,7 @@ public class ModuleTestDependencies extends Task {
                     }
                 }
             }
-            log("Generating test dependencies to " + output);
+            log(output + ": generating test dependencies");
             PrintWriter pw = new PrintWriter(output);
             for (Map.Entry<String,SortedSet<String>> entry : deps.entrySet()) {
                 pw.printf("MODULE %s\n", entry.getKey());
