@@ -129,6 +129,16 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
         return startTimestamp;
     }
 
+    /**
+     * ID can be String as there will be not so many experiments
+     * @return session unique ID which can be used to open session later
+     * <code>DLightManager.getDefault().openSession(sessionID)</code>
+     */
+    public final String getID() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+
     public void targetStateChanged(DLightTargetChangeEvent event) {
         switch (event.state) {
             case RUNNING:
@@ -674,7 +684,7 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
      * Returns storages this session is using
      * @return data storage list this session is using to save data if any
      */
-    public List<DataStorage> getStorages() {
+    List<DataStorage> getStorages() {
         return (storages == null) ? Collections.<DataStorage>emptyList() : storages;
     }
 
