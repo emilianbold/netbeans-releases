@@ -191,6 +191,10 @@ public class RemoteBuildTestBase extends RemoteTestBase {
         }
     }
 
+    protected void changeProjectHost(FileObject projectDir) throws Exception {
+        changeProjectHost(FileUtil.toFile(projectDir));
+    }
+
     protected void changeProjectHost(File projectDir) throws Exception {
         File nbproject = new File(projectDir, "nbproject");
         assertTrue("file does not exist: " + nbproject.getAbsolutePath(), nbproject.exists());
