@@ -358,6 +358,24 @@ public class HgCommand {
         GUARDED_COMMANDS.add(HG_UPDATE_ALL_CMD);
     }
 
+    private static final HashSet<String> REPOSITORY_NOMODIFICATION_COMMANDS;
+    static {
+        REPOSITORY_NOMODIFICATION_COMMANDS = new HashSet<String>(8);
+        REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_ANNOTATE_CMD);
+        REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_CAT_CMD);
+        REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_EXPORT_CMD);
+        REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_INCOMING_CMD);
+        REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_LOG_CMD);
+        REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_OUTGOING_CMD);
+        REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_OUT_CMD);
+        REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_PUSH_CMD);
+        REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_STATUS_CMD);
+        REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_TIP_CMD);
+        REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_VERIFY_CMD);
+        REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_VERSION_CMD);
+        REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_VIEW_CMD);
+    }
+
     /**
      * Merge working directory with the head revision
      * Merge the contents of the current working directory and the
@@ -2634,6 +2652,8 @@ public class HgCommand {
         }
         logCommand(command);
         File outputStyleFile = null;
+        File repository = null;
+        final String hgCommand = getHgCommandName(command); // command name
         try {
             try {
                 outputStyleFile = createOutputStyleFile(command);
@@ -2648,8 +2668,6 @@ public class HgCommand {
                     envOrig.put(s.substring(0, s.indexOf('=')), s.substring(s.indexOf('=') + 1));
                 }
             }
-            File repository;
-            final String hgCommand = getHgCommandName(command); // command name
             if (isGuardedCommand(hgCommand) && (repository = getRepositoryFromCommand(command, hgCommand)) != null) {
                 // indexing is supposed to be disabled for the time the command is running
                 return runWithoutIndexing(new Callable<List<String>>() {
@@ -2663,6 +2681,14 @@ public class HgCommand {
         } finally{
             if (outputStyleFile != null) {
                 outputStyleFile.delete();
+            }
+            if (modifiesRepository(hgCommand)) {
+                if (repository == null) {
+                    repository = getRepositoryFromCommand(command, hgCommand);
+                }
+                if (repository != null) {
+                    Mercurial.getInstance().refreshWorkingCopyTimestamp(repository);
+                }
             }
         }
     }
@@ -3365,6 +3391,10 @@ public class HgCommand {
      */
     private static boolean isGuardedCommand(String hgCommand) {
         return GUARDED_COMMANDS.contains(hgCommand);
+    }
+
+    private static boolean modifiesRepository (String hgCommand) {
+        return !REPOSITORY_NOMODIFICATION_COMMANDS.contains(hgCommand);
     }
 
     /**

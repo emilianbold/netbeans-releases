@@ -281,6 +281,14 @@ public class Mercurial {
         return fileStatusCache;
     }
 
+    /**
+     * Refreshes cached modification timestamp of the repository's hg folder
+     * @param repository owner of the hg folder to refresh
+     */
+    public void refreshWorkingCopyTimestamp(File repository) {
+        getMercurialInterceptor().refreshHgFolderTimestamp(repository);
+    }
+
    /**
      * Tests whether a file or directory should receive the STATUS_NOTVERSIONED_NOTMANAGED status.
      * All files and folders that have a parent with CVS/Repository file are considered versioned.
