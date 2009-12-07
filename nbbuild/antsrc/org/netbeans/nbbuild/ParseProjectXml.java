@@ -449,20 +449,18 @@ public final class ParseProjectXml extends Task {
                 deps = getDeps(pDoc, modules);
             }
             if (moduleDependenciesProperty != null) {
-                if (moduleDependenciesProperty != null) {
-                    StringBuffer b = new StringBuffer();
-                    for (Dep d : deps) {
-                        if (!d.run) {
-                            continue;
-                        }
-                        if (b.length() > 0) {
-                            b.append(", ");
-                        }
-                        b.append(d);
+                StringBuffer b = new StringBuffer();
+                for (Dep d : deps) {
+                    if (!d.run) {
+                        continue;
                     }
                     if (b.length() > 0) {
-                        define(moduleDependenciesProperty, b.toString());
+                        b.append(", ");
                     }
+                    b.append(d);
+                }
+                if (b.length() > 0) {
+                    define(moduleDependenciesProperty, b.toString());
                 }
             }
             if (codeNameBaseProperty != null) {
