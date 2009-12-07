@@ -402,7 +402,8 @@ public abstract class MakeProjectBase extends CndBaseTestCase { //extends NbTest
             fileCreatedFolder.mkdirs();
         } else {
             if (!OPTIMIZE_NATIVE_EXECUTIONS) {
-                execute(tools, "rm", createdFolder, "-rf", "*", ".*");
+                execute(tools, "rm", dataPath, "-rf", packageName);
+                fileCreatedFolder.mkdirs();
             }
         }
         if (fileCreatedFolder.list().length == 0){
@@ -460,20 +461,40 @@ public abstract class MakeProjectBase extends CndBaseTestCase { //extends NbTest
     private void waitExecution(NativeProcessBuilder ne){
         try {
             NativeProcess process = ne.call();
+            int rc = process.waitFor();
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
             try {
                 while (true) {
                     String line = reader.readLine();
                     if (line == null) {
-                        return;
-                        //break;
+                        break;
                     } else {
                         System.out.println(line);
                     }
                 }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
             } finally {
                 reader.close();
             }
+            reader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+            try {
+                while (true) {
+                    String line = reader.readLine();
+                    if (line == null) {
+                        break;
+                    } else {
+                        System.out.println(line);
+                    }
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            } finally {
+                reader.close();
+            }
+
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
