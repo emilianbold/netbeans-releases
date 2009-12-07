@@ -1472,7 +1472,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <property name="generated.files.dir" location="build/generated" />
     <mkdir dir="${generated.files.dir}" />
   </target>
-  <target name="generate-golden-files" depends="generate-golden-files-init" >
+  <target name="generate-golden-files" depends="generate-golden-files-init" description="Generate summaries of module dependencies.">
     <property name="deps.max.friends" value="40"/> <!-- so high because of xml.wsdl.bindingsupport.api (21), gsf.api (30) -->
     
     <taskdef name="deps" classname="org.netbeans.nbbuild.ModuleDependencies" classpath="nbantext.jar"/>
@@ -1497,7 +1497,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <test-deps output="${generated.files.dir}/test-deps.txt"/>
   </target>
   
-  <target name="generate-files-layout" depends="generate-golden-files-init" >
+  <target name="generate-files-layout" depends="generate-golden-files-init" description="Generate summary of installed files.">
     
     <property name="check.files.layout.generated" location="${generated.files.dir}/files-layout.txt" />
   
