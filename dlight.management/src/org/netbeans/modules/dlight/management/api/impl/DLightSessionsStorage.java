@@ -36,46 +36,31 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.db.h2;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.logging.Level;
-import org.netbeans.modules.dlight.spi.storage.DataStorage;
-import org.netbeans.modules.dlight.spi.storage.DataStorageType;
-import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
-import org.netbeans.modules.dlight.impl.SQLDataStorageFactory;
-import org.netbeans.modules.dlight.util.DLightLogger;
-import org.openide.util.lookup.ServiceProvider;
+package org.netbeans.modules.dlight.management.api.impl;
+
+import org.netbeans.modules.dlight.management.api.DLightSession;
 
 /**
- *
- * @author masha
+ * This class is a storage for the sessions
+ * We will keep here sessionId+ dir + env
+ * @author Maria Tishkova
  */
-@ServiceProvider(service = org.netbeans.modules.dlight.spi.storage.DataStorageFactory.class, position = 10)
-public class H2DataStorageFactory extends SQLDataStorageFactory<H2DataStorage> {
+public final class DLightSessionsStorage {
 
-    static final String H2_DATA_STORAGE_TYPE = "db:sql:h2"; // NOI18N
-    private final Collection<DataStorageType> supportedStorageTypes = new ArrayList<DataStorageType>();
-
-    public H2DataStorageFactory() {
-        supportedStorageTypes.add(DataStorageTypeFactory.getInstance().getDataStorageType(H2_DATA_STORAGE_TYPE));
-        supportedStorageTypes.addAll(super.getStorageTypes());
+    private static class DLightSessionsStorageHolder {
+        public static DLightSessionsStorage instance = new DLightSessionsStorage();
     }
 
-    @Override
-    public Collection<DataStorageType> getStorageTypes() {
-        return supportedStorageTypes;
+    private DLightSessionsStorage(){
+        //read an XML file with the sessions list info: sessionID + dir + env
     }
 
-    @Override
-    public H2DataStorage createStorage() {
-        try {
-            return new H2DataStorage();
-        } catch (SQLException ex) {
-            DLightLogger.getLogger(H2DataStorageFactory.class).log(Level.SEVERE, null, ex);
-            return null;
-        }
+    public static DLightSessionsStorage getInstance(){
+        return DLightSessionsStorageHolder.instance;
     }
+
+    public final DLightSession openSession(String sessionID){
+        return null;
     }
+}

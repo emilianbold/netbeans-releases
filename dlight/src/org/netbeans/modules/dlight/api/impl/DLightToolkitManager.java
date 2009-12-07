@@ -42,12 +42,14 @@ package org.netbeans.modules.dlight.api.impl;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.execution.DLightToolkitManagement.DLightSessionHandler;
 import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  *
  * 
  */
 public interface DLightToolkitManager {
+    
   DLightSessionHandler createSession(DLightTarget target, String configurationName);
 
   DLightSessionHandler createSession(DLightTarget target, String configurationName, String sessionName);
@@ -55,6 +57,34 @@ public interface DLightToolkitManager {
   DLightSessionHandler createSession(DLightTarget target, DLightConfiguration configuration);
 
   DLightSessionHandler createSession(DLightTarget target, DLightConfiguration configuration, String sessionName);
+
+  DLightSessionHandler open(String sessionID);
+
+  /**
+   * @param reference dlight session to save
+   * @return session ID that can be used later to open session using #open(String) method
+   */
+  String save(DLightSessionHandler reference);
+
+
+  /**
+   * Saves DLight session, the session can be opened later using session ID returned in this method,
+   * will store all session related information into the <param>dir</param> directory
+   * @param dir directory to store all session related info into
+   * @param reference dlight session to save
+   * @return session ID that can be used later to open session using #open(String) method
+   */
+  String save(String dir, DLightSessionHandler reference);
+
+  /**
+   * Saves DLight session, the session can be opened later using session ID returned in this method,
+   * will store all session related information into the <param>dir</param> directory
+   * @param env execution enviroment 
+   * @param dir directory to store all session related info into
+   * @param reference dlight session to save
+   * @return session ID that can be used later to open session using #open(String) method
+   */
+  String save(ExecutionEnvironment env, String dir, DLightSessionHandler reference);
   
   void startSession(DLightSessionHandler reference);
 

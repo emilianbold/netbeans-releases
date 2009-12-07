@@ -62,6 +62,7 @@ import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.tool.DLightTool;
 import org.netbeans.modules.dlight.api.visualizer.TableBasedVisualizerConfiguration;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
+import org.netbeans.modules.dlight.management.api.impl.DLightSessionsStorage;
 import org.netbeans.modules.dlight.management.api.impl.VisualizerProvider;
 import org.netbeans.modules.dlight.management.ui.spi.EmptyVisualizerContainerProvider;
 import org.netbeans.modules.dlight.management.ui.spi.IndicatorsComponentProvider;
@@ -73,6 +74,7 @@ import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProvider;
 import org.netbeans.modules.dlight.util.DLightLogger;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
@@ -532,6 +534,34 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         if (!found) {
             openEmptyVisualizer(null, IndicatorAccessor.getDefault().getToolID(source), session);
         }
+    }
+
+    /**
+     * Opens session using the ID
+     * @param sessionID
+     * @return
+     */
+    public DLightSessionHandler open(String sessionID) {
+        return DLightSessionHandlerAccessor.getDefault().create(DLightSessionsStorage.getInstance().openSession(sessionID));
+    }
+
+
+    public String save(DLightSessionHandler reference) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public String save(String dir, DLightSessionHandler reference) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public String save(ExecutionEnvironment env, String dir, DLightSessionHandler handler) {
+        DLightSessionInternalReference reference = DLightSessionHandlerAccessor.getDefault().getSessionReferenceImpl(handler);
+        if (!(reference instanceof DLightSession)) {
+            throw new IllegalArgumentException("Illegal Argument, reference you are trying to use " + // NOI18N
+                    "to start D-Light session is invalid");//NOI18N
+        }
+
+        return null;
     }
 
     private class DLightManagerSessionStateListener implements SessionStateListener {
