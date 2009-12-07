@@ -73,10 +73,8 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service=ProjectAccessor.class)
 public class ProjectAccessorImpl extends ProjectAccessor {
 
-    private Kenai kenai = Kenai.getDefault();
-
     @Override
-    public List<ProjectHandle> getMemberProjects(LoginHandle login, boolean force) {
+    public List<ProjectHandle> getMemberProjects(Kenai kenai, LoginHandle login, boolean force) {
         try {
             LinkedList<ProjectHandle> l = new LinkedList<ProjectHandle>();
             for (KenaiProject prj : kenai.getMyProjects(force)) {
@@ -106,7 +104,7 @@ public class ProjectAccessorImpl extends ProjectAccessor {
     }
 
     @Override
-    public ProjectHandle getNonMemberProject(String projectId, boolean force) {
+    public ProjectHandle getNonMemberProject(Kenai kenai, String projectId, boolean force) {
         try {
             return new ProjectHandleImpl(kenai.getProject(projectId,force));
         } catch (KenaiException ex) {
@@ -122,7 +120,7 @@ public class ProjectAccessorImpl extends ProjectAccessor {
 
     @Override
     public Action getDetailsAction(final ProjectHandle project) {
-        return DetailsAction.forProject(project.getId());    
+        return DetailsAction.forProject(project);    
 //        return new URLDisplayerAction(NbBundle.getMessage(ProjectAccessorImpl.class, "CTL_EditProject"), ((ProjectHandleImpl) project).getKenaiProject().getWebLocation());
     }
 
@@ -216,7 +214,7 @@ public class ProjectAccessorImpl extends ProjectAccessor {
 
                 public void run() {
                     try {
-                        Kenai.getDefault().getProject(project.getId(), true);
+                        project.getKenaiProject().getKenai().getProject(project.getId(), true);
                         project.firePropertyChange(ProjectHandle.PROP_CONTENT, null, project);
                     } catch (KenaiException ex) {
                         Exceptions.printStackTrace(ex);

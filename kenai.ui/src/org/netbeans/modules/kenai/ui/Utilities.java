@@ -69,17 +69,9 @@ public class Utilities {
         return FileUtil.normalizeFile(new File(System.getProperty("user.home")));
     }
 
-    public static boolean isUserLoggedIn() {
-        if (Kenai.getDefault().getPasswordAuthentication() == null) {
-            return false;
-        }
-        return true;
-    }
-
     private static HashMap<String, Boolean> chatSupported = new HashMap();
 
-    public static boolean isChatSupported() {
-        Kenai kenai = Kenai.getDefault();
+    public static boolean isChatSupported(Kenai kenai) {
         String kenaiHost = kenai.getUrl().getHost();
         Boolean b = chatSupported.get(kenaiHost);
         if (b==null) {

@@ -131,8 +131,8 @@ public class KenaiProjectTest extends NbTestCase {
 
     @Test
     public void testCheckName() throws KenaiException, MalformedURLException {
-        assertNull(KenaiProject.checkName("non-existing-project"));
-        assertNotNull("Project does not exist, but it should...", KenaiProject.checkName(UNITTESTUNIQUENAME));
-        assertTrue(KenaiProject.checkName(UNITTESTUNIQUENAME).equals("Name has already been taken"));
+        assertNull(Kenai.getDefault().checkProjectName("non-existing-project"));
+        assertNotNull("Project does not exist, but it should...", Kenai.getDefault().checkProjectName(UNITTESTUNIQUENAME));
+        assertTrue(Kenai.getDefault().checkProjectName(UNITTESTUNIQUENAME).equals("Name has already been taken"));
     }
 }

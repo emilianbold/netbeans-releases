@@ -69,18 +69,13 @@ public class MessagingHandleImpl extends MessagingHandle {
     private static Preferences prefs = NbPreferences.forModule(MessagingHandleImpl.class);
 
 
-    MessagingHandleImpl(String id) {
-        this.id = id;
-        Kenai k = Kenai.getDefault();
-        try {
-            final KenaiProject prj = k.getProject(id);
-            if (prj.isMyProject() && k.getStatus()==Kenai.Status.ONLINE) {
-                onlineCount = -2;
-            } else {
-                onlineCount = -1;
-            }
-        } catch (KenaiException kenaiException) {
-            Exceptions.printStackTrace(kenaiException);
+    MessagingHandleImpl(KenaiProject prj) {
+        this.id = prj.getName();
+        Kenai k = prj.getKenai();
+        if (prj.isMyProject() && k.getStatus() == Kenai.Status.ONLINE) {
+            onlineCount = -2;
+        } else {
+            onlineCount = -1;
         }
         lastMessage = lastMessageRead = new Date(Long.parseLong(prefs.get(id + LASTMESSAGEAT, "0"))); // NOI18N
     }

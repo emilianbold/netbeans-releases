@@ -63,8 +63,10 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.BorderFactory;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -89,6 +91,7 @@ import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiService;
+import org.netbeans.modules.kenai.ui.nodes.AddInstanceAction;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.netbeans.modules.kenai.ui.treelist.TreeListUI;
 import org.openide.awt.Mnemonics;
@@ -129,12 +132,32 @@ public class KenaiSearchPanel extends JPanel {
 
     private KenaiProjectsListModel listModel;
 
+    //TODO: init;
+    private Kenai kenai = Kenai.getDefault();
+
     /** Creates new form KenaiProjectsListPanel */
     public KenaiSearchPanel(PanelType type, boolean multiSel) {
 
         panelType = type;
         multiSelection = multiSel;
         initComponents();
+        kenaiCombo.setModel(new KenaiComboModel());
+        kenaiCombo.setRenderer(new KenaiListRenderer());
+        kenai = (Kenai) kenaiCombo.getModel().getSelectedItem();
+
+        kenaiCombo.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                if (kenaiCombo.getSelectedItem() instanceof Kenai) {
+                    kenai = ((Kenai) kenaiCombo.getSelectedItem());
+                } else {
+                    new AddInstanceAction().actionPerformed(e);
+                }
+            }
+        });
+
+
+
         kenaiProjectsList.setUI(new TreeListUI());
 
         noSearchLabelPanel = createLabelPanel(noSearchResultsLabel);
@@ -184,7 +207,7 @@ public class KenaiSearchPanel extends JPanel {
         } else {
             setBrowsePanels();
         }
-        Kenai.getDefault().addPropertyChangeListener(Kenai.PROP_URL_CHANGED, new PropertyChangeListener() {
+        kenai.addPropertyChangeListener(Kenai.PROP_URL_CHANGED, new PropertyChangeListener() {
 
             public void propertyChange(PropertyChangeEvent evt) {
                 kenaiFeaturedProjectsList=null;
@@ -369,6 +392,7 @@ public class KenaiSearchPanel extends JPanel {
         searchInfoLabel = new JLabel();
         projectsLabel = new JLabel();
         searchTextField = new JTextField();
+        kenaiCombo = new JComboBox();
         createButtonPanel = new JPanel();
         createNewProjectButton = new JButton();
         kenaiProjectsTabPane = new JTabbedPane();
@@ -400,7 +424,7 @@ public class KenaiSearchPanel extends JPanel {
             }
         });
         gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(0, 4, 0, 0);
@@ -442,6 +466,8 @@ public class KenaiSearchPanel extends JPanel {
 
         searchTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.searchTextField.AccessibleContext.accessibleName")); // NOI18N
         searchTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.searchTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        searchButtonPanel.add(kenaiCombo, new GridBagConstraints());
+
         add(searchButtonPanel, BorderLayout.NORTH);
 
         createButtonPanel.setLayout(new GridBagLayout());
@@ -514,7 +540,7 @@ public class KenaiSearchPanel extends JPanel {
                 Iterator<KenaiProject> projectsIterator = null;
                 String searchPattern = "&filter=" + type; //NOI18N
                 try {
-                    projectsIterator = Kenai.getDefault().searchProjects(searchPattern).iterator();
+                    projectsIterator = kenai.searchProjects(searchPattern).iterator();
                 } catch (final KenaiException em) {
                     // SHOULD NOT HAPPEN - THIS IS WELL KNOWN REQUEST CALLED FROM IDE (featured, recent, ...)
                     // REQUEST IS WELL FORMED
@@ -573,7 +599,7 @@ public class KenaiSearchPanel extends JPanel {
     }
 
     // added to support search by the projects root url...
-    private static Pattern projectURLPattern = Pattern.compile(Kenai.getDefault().getUrl().toString().replaceFirst("^https://", "http://") + "/projects/([^/]*)/?.*");
+    private Pattern projectURLPattern = Pattern.compile(kenai.getUrl().toString().replaceFirst("^https://", "http://") + "/projects/([^/]*)/?.*");
     private static final int projectURLGroup = 1;
 
     private void invokeSearch() {
@@ -625,7 +651,7 @@ public class KenaiSearchPanel extends JPanel {
                     searchPattern = m.group(projectURLGroup);
                 }
                 try {
-                    projectsIterator = Kenai.getDefault().searchProjects(searchPattern).iterator();
+                    projectsIterator = kenai.searchProjects(searchPattern).iterator();
                 } catch (final KenaiException em) {
                     EventQueue.invokeLater(new Runnable() {
 
@@ -817,6 +843,7 @@ public class KenaiSearchPanel extends JPanel {
     private JPanel createButtonPanel;
     private JButton createNewProjectButton;
     private JPanel featuredProjectPanel;
+    private JComboBox kenaiCombo;
     private JList kenaiProjectsList;
     private JTabbedPane kenaiProjectsTabPane;
     private JLabel projectsLabel;

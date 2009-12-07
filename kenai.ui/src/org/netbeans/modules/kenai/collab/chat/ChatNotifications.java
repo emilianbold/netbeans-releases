@@ -48,13 +48,11 @@ import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.util.StringUtils;
-import org.netbeans.modules.kenai.api.Kenai;
-import org.netbeans.modules.kenai.api.KenaiException;
+import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.ui.dashboard.DashboardImpl;
 import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
 import org.openide.awt.NotificationDisplayer.Priority;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -112,20 +110,14 @@ public class ChatNotifications {
 
     synchronized void addGroupMessage(final Message msg) {
         assert SwingUtilities.isEventDispatchThread();
-        String name = StringUtils.parseName(msg.getFrom());
-        if (name.contains("@")) { // NOI18N
-            name = StringUtils.parseName(name);
-        }
-        final String chatRoomName = name;
-        final MessagingHandleImpl r = getMessagingHandle(chatRoomName);
+        final MessagingHandleImpl r = getMessagingHandle(KenaiConnection.getKenaiProject(StringUtils.parseBareAddress(msg.getFrom())));
         r.notifyMessageReceived(msg);
         String title = null;
-        try {
         int count = r.getMessageCount();
         if (count==1) {
-            title = NbBundle.getMessage(ChatTopComponent.class, "LBL_ChatNotification", new Object[]{Kenai.getDefault().getProject(chatRoomName).getDisplayName(), count});
+            title = NbBundle.getMessage(ChatTopComponent.class, "LBL_ChatNotification", new Object[]{KenaiConnection.getKenaiProject(msg.getFrom()).getDisplayName(), count});
         } else {
-            title = NbBundle.getMessage(ChatTopComponent.class, "LBL_ChatNotifications", new Object[]{Kenai.getDefault().getProject(chatRoomName).getDisplayName(), count});
+            title = NbBundle.getMessage(ChatTopComponent.class, "LBL_ChatNotifications", new Object[]{KenaiConnection.getKenaiProject(msg.getFrom()).getDisplayName(), count});
 
         }
             final String description = NbBundle.getMessage(ChatTopComponent.class, "LBL_ReadIt");
@@ -135,7 +127,7 @@ public class ChatNotifications {
                 public void actionPerformed(ActionEvent arg0) {
                     final ChatTopComponent chatTc = ChatTopComponent.findInstance();
                     ChatTopComponent.openAction(chatTc, "", "", false).actionPerformed(arg0); // NOI18N
-                    chatTc.setActiveGroup(chatRoomName);
+                    chatTc.setActiveGroup(msg.getFrom());
                 }
             };
 
@@ -143,15 +135,12 @@ public class ChatNotifications {
                 Notification n = NotificationDisplayer.getDefault().notify(title, getIcon(), description, l, Priority.NORMAL);
                 r.updateNotification(n);
             }
-        } catch (KenaiException ex) {
-            Exceptions.printStackTrace(ex);
-        }
         ChatTopComponent.refreshContactList();
     }
 
     synchronized void addPrivateMessage(final Message msg) {
         assert SwingUtilities.isEventDispatchThread();
-        final String name = StringUtils.parseName(msg.getFrom());
+        final String name = msg.getFrom();
         Notification n = privateNotifications.get(name);
         if (n != null) {
             n.clear();
@@ -183,11 +172,12 @@ public class ChatNotifications {
         return privateNotifications.get(name)!=null;
     }
 
-    public synchronized  MessagingHandleImpl getMessagingHandle(String id) {
-        MessagingHandleImpl handle=groupMessages.get(id);
+    public synchronized  MessagingHandleImpl getMessagingHandle(KenaiProject prj) {
+        //TODO: plain project name will not work for multiple instances
+        MessagingHandleImpl handle=groupMessages.get(prj.getName());
         if (handle==null) {
-            handle =new MessagingHandleImpl(id);
-            groupMessages.put(id, handle);
+            handle =new MessagingHandleImpl(prj);
+            groupMessages.put(prj.getName(), handle);
         }
         return handle;
     }

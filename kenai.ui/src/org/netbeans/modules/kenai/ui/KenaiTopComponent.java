@@ -39,11 +39,16 @@
 package org.netbeans.modules.kenai.ui;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.Serializable;
 import java.util.logging.Logger;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.ui.dashboard.DashboardImpl;
+import org.netbeans.modules.kenai.ui.nodes.AddInstanceAction;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -126,6 +131,23 @@ final class KenaiTopComponent extends TopComponent {
         removeAll();
         dashboardComponent = DashboardImpl.getInstance().getComponent();
         add(dashboardComponent, BorderLayout.CENTER);
+        add(getKenaiSwitcher(), BorderLayout.NORTH);
+    }
+
+    Component getKenaiSwitcher() {
+        final JComboBox combo = new JComboBox(new KenaiComboModel());
+        combo.setRenderer(new KenaiListRenderer());
+        combo.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                if (combo.getSelectedItem() instanceof Kenai) {
+                    DashboardImpl.getInstance().setKenai((Kenai) combo.getSelectedItem());
+                } else {
+                    new AddInstanceAction().actionPerformed(e);
+                }
+            }
+        });
+        return combo;
     }
 
     @Override
@@ -138,10 +160,11 @@ final class KenaiTopComponent extends TopComponent {
     @Override
     public void componentActivated() {
         super.componentActivated();
-        if (Kenai.getDefault().getPasswordAuthentication() != null
-                || DashboardImpl.getInstance().getOpenProjects().length > 0) {
-            UIUtils.logKenaiUsage("DASHBOARD"); // NOI18N
-        }
+//TODO: musi se domyslet
+//        if (Kenai.getDefault().getPasswordAuthentication() != null
+//                || DashboardImpl.getInstance().getOpenProjects().length > 0) {
+//            UIUtils.logKenaiUsage("DASHBOARD"); // NOI18N
+//        }
     }
 
     @SuppressWarnings("deprecation")

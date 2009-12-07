@@ -41,8 +41,9 @@ package org.netbeans.modules.kenai.collab.chat;
 
 import java.util.Collection;
 import java.util.TreeSet;
-import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smackx.muc.MultiUserChat;
+import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiManager;
 
 /**
  *
@@ -50,13 +51,15 @@ import org.jivesoftware.smackx.muc.MultiUserChat;
  */
 public class FakeRoster {
 
-    public FakeRoster(XMPPConnection connection) {
+    public FakeRoster() {
     }
 
     public Collection<FakeRosterGroup> getGroups() {
         TreeSet<FakeRosterGroup> l = new TreeSet();
-        for (MultiUserChat muc:KenaiConnection.getDefault().getChats()) {
-            l.add(new FakeRosterGroup(muc));
+        for (Kenai kenai:KenaiManager.getDefault().getKenaiInstances()) {
+            for (MultiUserChat muc : KenaiConnection.getDefault(kenai).getChats()) {
+                l.add(new FakeRosterGroup(muc));
+            }
         }
         return l;
     }
@@ -72,8 +75,8 @@ public class FakeRoster {
     public void addRosterListener(FakeRosterListener cLRosterListener) {
     }
 
-    public FakeRosterGroup getGroup(String group) {
-        return new FakeRosterGroup(KenaiConnection.getDefault().getChat(group));
+    public FakeRosterGroup getGroup(Kenai k, String group) {
+        return new FakeRosterGroup(KenaiConnection.getDefault(k).getChat(group));
     }
 
 }

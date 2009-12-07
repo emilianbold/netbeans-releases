@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.kenai.ui.nodes;
 
+import org.netbeans.modules.kenai.api.KenaiManager;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import org.netbeans.modules.kenai.api.Kenai;
@@ -50,21 +51,19 @@ import org.openide.util.NbBundle;
  */
 public class RemoveInstanceAction extends AbstractAction {
 
-    public KenaiInstance key;
-    public RemoveInstanceAction(KenaiInstance name) {
+    public Kenai key;
+    public RemoveInstanceAction(Kenai name) {
         super(NbBundle.getMessage(RemoveInstanceAction.class, "CTL_RemoveInstance"));
         this.key = name;
     }
 
 
     public void actionPerformed(ActionEvent e) {
-        KenaiInstancesManager.getDefault().removeInstance(key);
+        KenaiManager.getDefault().removeKenaiInstance(key);
     }
 
-    @Override
-    public boolean isEnabled() {
-        return !key.getUrl().equals(Kenai.getDefault().getUrl().toString());
-    }
-
-
+//    @Override
+//    public boolean isEnabled() {
+//        return !key.getUrl().equals(Kenai.getDefault().getUrl().toString());
+//    }
 }

@@ -163,7 +163,7 @@ public class PresenceIndicator {
                     contactListMenu.setEnabled(s==Kenai.Status.ONLINE);
                     final JCheckBoxMenuItem onlineCheckBox = new JCheckBoxMenuItem(NbBundle.getMessage(PresenceIndicator.class, "CTL_OnlineCheckboxMenuItem"),s==Kenai.Status.ONLINE); // NOI18N
                     menu.add(onlineCheckBox);
-                    onlineCheckBox.setEnabled(Utilities.isChatSupported());
+                    onlineCheckBox.setEnabled(Utilities.isChatSupported(Kenai.getDefault()));
                     final JMenuItem logoutItem = new JMenuItem(NbBundle.getMessage(PresenceIndicator.class, "CTL_LogoutMenuItem")); // NOI18N
                     menu.add(logoutItem);
                     final Kenai kenai = Kenai.getDefault();
@@ -204,10 +204,11 @@ public class PresenceIndicator {
         public void processPacket(Packet packet) {
             PresenceIndicator.getDefault().label.setText(KenaiUser.getOnlineUserCount()>0?KenaiUser.getOnlineUserCount()-1+"":""); // NOI18N
             PresenceIndicator.getDefault().label.setToolTipText(NbBundle.getMessage(PresenceIndicator.class, "LBL_LoggedIn_Tooltip", KenaiUser.getOnlineUserCount()>0?KenaiUser.getOnlineUserCount()-1:""));
-            for (MultiUserChat muc : KenaiConnection.getDefault().getChats()) {
+            for (MultiUserChat muc : KenaiConnection.getDefault(Kenai.getDefault()).getChats()) {
                 String chatName = StringUtils.parseName(muc.getRoom());
                 assert chatName != null : "muc.getRoom() = " + muc.getRoom(); // NOI18N
-                ChatNotifications.getDefault().getMessagingHandle(chatName).setOnlineCount(muc.getOccupantsCount());
+                //TODO: fixme
+                //ChatNotifications.getDefault().getMessagingHandle(chatName).setOnlineCount(muc.getOccupantsCount());
             }
         }
     }

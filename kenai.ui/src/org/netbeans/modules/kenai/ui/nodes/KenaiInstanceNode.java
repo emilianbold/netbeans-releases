@@ -57,24 +57,24 @@ import org.openide.util.lookup.Lookups;
  */
 public class KenaiInstanceNode extends AbstractNode implements PropertyChangeListener {
 
-    private KenaiInstance kenaiInstance;
+    private Kenai kenaiInstance;
     private KenaiInstanceProperties properties;
 
-    public KenaiInstanceNode(final KenaiInstance instance) {
+    public KenaiInstanceNode(final Kenai instance) {
         super(new Children.Array(), Lookups.singleton(instance));
         this.kenaiInstance=instance;
-        setName(kenaiInstance.getUrl());
-        Kenai.getDefault().addPropertyChangeListener(Kenai.PROP_URL_CHANGED, this);
-        setDisplayName(instance.getDisplayName());
-        setShortDescription(instance.getDisplayName() + " (" + instance.getUrl() + ")"); // NOI18N
+        setName(kenaiInstance.getUrl().toString());
+        instance.addPropertyChangeListener(Kenai.PROP_URL_CHANGED, this);
+        setDisplayName(instance.getName());
+        setShortDescription(instance.getName() + " (" + instance.getUrl() + ")"); // NOI18N
         setIconBaseWithExtension("org/netbeans/modules/kenai/ui/resources/kenai-small.png");//NOI18N
-        properties = new KenaiInstanceProperties(instance.getDisplayName(),instance.getUrl());
+        properties = new KenaiInstanceProperties(instance.getName(),instance.getUrl().toString());
     }
 
     @Override
     public Action[] getActions(boolean context) {
         return new Action[] {
-            new SetAsDefaultAction(this),
+            new LoginAction(kenaiInstance),
             new RemoveInstanceAction(kenaiInstance),
             SystemAction.get(PropertiesAction.class)
         };
@@ -82,9 +82,9 @@ public class KenaiInstanceNode extends AbstractNode implements PropertyChangeLis
 
     @Override
     public String getHtmlDisplayName() {
-        if (Kenai.getDefault().getUrl().toString().equals(kenaiInstance.getUrl())) {
-            return "<b>" + getDisplayName() + "</b>"; // NOI18N
-        }
+//        if (Kenai.getDefault().getUrl().toString().equals(kenaiInstance.getUrl())) {
+//            return "<b>" + getDisplayName() + "</b>"; // NOI18N
+//        }
         return super.getHtmlDisplayName();
     }
 
@@ -94,7 +94,7 @@ public class KenaiInstanceNode extends AbstractNode implements PropertyChangeLis
 
     @Override
     public void destroy() throws IOException {
-        Kenai.getDefault().removePropertyChangeListener(this);
+        kenaiInstance.removePropertyChangeListener(this);
     }
 
     @Override

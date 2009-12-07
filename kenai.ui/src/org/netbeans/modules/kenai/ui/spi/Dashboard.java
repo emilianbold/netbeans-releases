@@ -6,6 +6,7 @@
 package org.netbeans.modules.kenai.ui.spi;
 
 import java.beans.PropertyChangeListener;
+import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.ui.dashboard.DashboardImpl;
 
 /**

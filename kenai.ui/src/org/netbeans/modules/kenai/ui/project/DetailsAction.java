@@ -48,6 +48,7 @@ import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.ui.ProjectAccessorImpl;
+import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -60,7 +61,7 @@ public class DetailsAction {
 
     static RequestProcessor.Task t = null;
 
-    public static synchronized AbstractAction forProject(final String proj) {
+    public static synchronized AbstractAction forProject(final ProjectHandle proj) {
 
         return new AbstractAction(NbBundle.getMessage(ProjectAccessorImpl.class, "CTL_EditProject")) { //NOI18N
 
@@ -74,21 +75,16 @@ public class DetailsAction {
                 t = RequestProcessor.getDefault().post(new Runnable() {
 
                     public void run() {
-                        try {
-                            final KenaiProject kenaiProj = Kenai.getDefault().getProject(proj);
-                            SwingUtilities.invokeLater(new Runnable() {
+                        final KenaiProject kenaiProj = proj.getKenaiProject();
+                        SwingUtilities.invokeLater(new Runnable() {
 
-                                public void run() {
-                                    kenaiProjectTopComponent tc = kenaiProjectTopComponent.getInstance(kenaiProj);
-                                    tc.open();
-                                    tc.requestActive();
-                                }
-                            });
-                        } catch (KenaiException ex) {
-                            Exceptions.printStackTrace(ex);
-                        } finally {
-                            handle.finish();
-                        }
+                            public void run() {
+                                kenaiProjectTopComponent tc = kenaiProjectTopComponent.getInstance(kenaiProj);
+                                tc.open();
+                                tc.requestActive();
+                            }
+                        });
+                        handle.finish();
                     }
                 });
             }

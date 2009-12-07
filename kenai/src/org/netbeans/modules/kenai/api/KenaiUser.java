@@ -57,17 +57,27 @@ public final class KenaiUser {
 
     public static final String PROP_PRESENCE = "Presence";
     private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+    /*
+     * users cache <FQN, instance>
+     */
     private static final HashMap<String, KenaiUser> users = new HashMap();
     private static final HashSet<String> onlineUsers = new HashSet<String>();
     UserData data;
+    private Kenai kenai;
 
-    private KenaiUser(UserData data) {
+    private KenaiUser(Kenai kenai, UserData data) {
+        this.kenai = kenai;
         this.data = data;
     }
 
-    private KenaiUser(String username) {
+    private KenaiUser(Kenai kenai, String username) {
         this.data = new UserData();
-        this.data.user_name = username;
+        this.data.user_name = username.substring(0, username.indexOf('@'));
+        this.kenai=kenai;
+    }
+
+    public Kenai getKenai() {
+        return kenai;
     }
     
     /**
@@ -99,7 +109,7 @@ public final class KenaiUser {
      * @return
      */
     public Status getStatus() {
-        if (Kenai.getDefault().getPasswordAuthentication()==null) {
+        if (kenai.getPasswordAuthentication()==null) {
             return Status.UNKNOWN;
         }
         if (isOnline())
@@ -113,11 +123,15 @@ public final class KenaiUser {
     }
 
     public static KenaiUser forName(final String name) {
+        assert name !=null;
+        assert name.contains("@"): "username must be FQN";
+        assert !name.contains("/"): "username cannot contain '/'";
         synchronized (users) {
-            KenaiUser user = users.get(name);
+            Kenai kenai = KenaiManager.getDefault().getKenaiInstance("https://" + name.substring(name.indexOf('@')+1));
+            KenaiUser user = users.get(name + "@" + kenai.getUrl().getHost());
             if (user==null) {
-                user = new KenaiUser(name);
-                users.put(name, user);
+                user = new KenaiUser(kenai, name + "@" + kenai.getUrl().getHost());
+                users.put(name + "@" + kenai.getUrl().getHost(), user);
             }
             return user;
         }
@@ -129,13 +143,13 @@ public final class KenaiUser {
         }
     }
     
-    static KenaiUser get(UserData data) {
+    static KenaiUser get(Kenai kenai, UserData data) {
         synchronized (users) {
             KenaiUser user = users.get(data.user_name);
             if (user!=null) {
                 user.data = data;
             } else {
-                user = new KenaiUser(data);
+                user = new KenaiUser(kenai, data);
                 users.put(data.user_name, user);
             }
             return user;

@@ -85,6 +85,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
 
 /**
@@ -135,6 +136,9 @@ public final class DashboardImpl extends Dashboard {
     private final Object LOCK = new Object();
 
     private final PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
+    private Kenai kenai = Kenai.getDefault();
+
+    private PropertyChangeListener kenaiListener;
 
     private DashboardImpl() {
         dashboardComponent = new JScrollPane() {
@@ -163,48 +167,8 @@ public final class DashboardImpl extends Dashboard {
                 }
             }
         };
-        final Kenai kenai = Kenai.getDefault();
-        kenai.addPropertyChangeListener(new PropertyChangeListener() {
 
-            public void propertyChange(PropertyChangeEvent pce) {
-                if (Kenai.PROP_LOGIN.equals(pce.getPropertyName())) {
-
-                    final PasswordAuthentication newValue = (PasswordAuthentication) pce.getNewValue();
-                    if (newValue == null) {
-                        setUser(null);
-                    } else {
-                        setUser(new LoginHandleImpl(newValue.getUserName()));
-                    }
-                    loggingFinished();
-                } else if (Kenai.PROP_LOGIN_STARTED.equals(pce.getPropertyName())) {
-                    loggingStarted();
-                } else if (Kenai.PROP_LOGIN_FAILED.equals(pce.getPropertyName())) {
-                    loggingFinished();
-                } else if (Kenai.PROP_XMPP_LOGIN_STARTED.equals(pce.getPropertyName())) {
-                    xmppStarted();
-                } else if (Kenai.PROP_XMPP_LOGIN.equals(pce.getPropertyName())) {
-                    xmppFinsihed();
-                } else if (Kenai.PROP_XMPP_LOGIN_FAILED.equals(pce.getPropertyName())) {
-                    xmppFinsihed();
-                }
-            }
-        });
-
-        KenaiConnection.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
-
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (KenaiConnection.PROP_XMPP_STARTED.equals(evt.getPropertyName())) {
-                    xmppStarted();
-                } else if (KenaiConnection.PROP_XMPP_FINISHED.equals(evt.getPropertyName())) {
-                    xmppFinsihed();
-                }
-            }
-        });
-
-        final PasswordAuthentication pa = kenai.getPasswordAuthentication();
-        this.login = pa==null ? null : new LoginHandleImpl(pa.getUserName());
         userNode = new UserNode(this);
-        userNode.set(login, false);
         model.addRoot(-1, userNode);
         openProjectsNode = new CategoryNode(this, org.openide.util.NbBundle.getMessage(CategoryNode.class, "LBL_OpenProjects"), null); // NOI18N
         model.addRoot(-1, openProjectsNode);
@@ -213,8 +177,12 @@ public final class DashboardImpl extends Dashboard {
         myProjectsNode = new CategoryNode(this, org.openide.util.NbBundle.getMessage(CategoryNode.class, "LBL_MyProjects"), // NOI18N
                 ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/bookmark.png", true)); // NOI18N
         if (login!=null) {
-            model.addRoot(-1, myProjectsNode);
-            model.addRoot(-1, noMyProjects);
+            if (!model.getRootNodes().contains(myProjectsNode)) {
+                model.addRoot(-1, myProjectsNode);
+            }
+            if (!model.getRootNodes().contains(noMyProjects)) {
+                model.addRoot(-1, noMyProjects);
+            }
         }
 
         memberProjectsError = new ErrorNode(NbBundle.getMessage(DashboardImpl.class, "ERR_OpenMemberProjects"), new AbstractAction() {
@@ -259,6 +227,59 @@ public final class DashboardImpl extends Dashboard {
         return memberProjects.contains(m);
     }
 
+    public void setKenai(Kenai kenai) {
+        this.kenai = kenai;
+        final PasswordAuthentication newValue = kenai.getPasswordAuthentication();
+        if (newValue == null) {
+            setUser(null);
+        } else {
+            setUser(new LoginHandleImpl(newValue.getUserName()));
+        }
+        refreshNonMemberProjects();
+
+        kenaiListener = new PropertyChangeListener() {
+
+            public void propertyChange(PropertyChangeEvent pce) {
+                if (Kenai.PROP_LOGIN.equals(pce.getPropertyName())) {
+
+                    final PasswordAuthentication newValue = (PasswordAuthentication) pce.getNewValue();
+                    if (newValue == null) {
+                        setUser(null);
+                    } else {
+                        setUser(new LoginHandleImpl(newValue.getUserName()));
+                    }
+                    loggingFinished();
+                } else if (Kenai.PROP_LOGIN_STARTED.equals(pce.getPropertyName())) {
+                    loggingStarted();
+                } else if (Kenai.PROP_LOGIN_FAILED.equals(pce.getPropertyName())) {
+                    loggingFinished();
+                } else if (Kenai.PROP_XMPP_LOGIN_STARTED.equals(pce.getPropertyName())) {
+                    xmppStarted();
+                } else if (Kenai.PROP_XMPP_LOGIN.equals(pce.getPropertyName())) {
+                    xmppFinsihed();
+                } else if (Kenai.PROP_XMPP_LOGIN_FAILED.equals(pce.getPropertyName())) {
+                    xmppFinsihed();
+                }
+            }
+        };
+
+        kenai.addPropertyChangeListener(WeakListeners.propertyChange(kenaiListener, kenai));
+
+        KenaiConnection.getDefault(kenai).addPropertyChangeListener(new PropertyChangeListener() {
+
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (KenaiConnection.PROP_XMPP_STARTED.equals(evt.getPropertyName())) {
+                    xmppStarted();
+                } else if (KenaiConnection.PROP_XMPP_FINISHED.equals(evt.getPropertyName())) {
+                    xmppFinsihed();
+                }
+            }
+        });
+
+        final PasswordAuthentication pa = kenai.getPasswordAuthentication();
+        this.login = pa==null ? null : new LoginHandleImpl(pa.getUserName());
+        userNode.set(login, false);
+    }
     private static class Holder {
         private static final DashboardImpl theInstance = new DashboardImpl();
     }
@@ -308,8 +329,12 @@ public final class DashboardImpl extends Dashboard {
                 model.removeRoot(myProjectsNode);
                 model.removeRoot(noMyProjects);
             } else {
-                model.addRoot(-1, myProjectsNode);
-                model.addRoot(-1, noMyProjects);
+                if (!model.getRootNodes().contains(myProjectsNode)) {
+                    model.addRoot(-1, myProjectsNode);
+                }
+                if (!model.getRootNodes().contains(noMyProjects)) {
+                    model.addRoot(-1, noMyProjects);
+                }
             }
 //            removeMemberProjectsFromModel(memberProjects);
 //            memberProjects.clear();
@@ -387,7 +412,7 @@ public final class DashboardImpl extends Dashboard {
     Action createLoginAction() {
         return new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
-                LoginAction.getDefault().actionPerformed(e);
+                UIUtils.showLogin(kenai);
             }
         };
     }
@@ -559,7 +584,7 @@ public final class DashboardImpl extends Dashboard {
     }
 
     private void startLoadingAllProjects(boolean forceRefresh) {
-        String kenaiName = Kenai.getDefault().getUrl().getHost();
+        String kenaiName = kenai.getUrl().getHost();
         Preferences prefs = NbPreferences.forModule(DashboardImpl.class).node(PREF_ALL_PROJECTS + ("kenai.com".equals(kenaiName)?"":"-"+kenaiName)); //NOI18N
         int count = prefs.getInt(PREF_COUNT, 0); //NOI18N
         if( 0 == count ) {
@@ -586,7 +611,7 @@ public final class DashboardImpl extends Dashboard {
     }
 
     private void storeAllProjects() {
-        String kenaiName = Kenai.getDefault().getUrl().getHost();
+        String kenaiName = kenai.getUrl().getHost();
         Preferences prefs = NbPreferences.forModule(DashboardImpl.class).node(PREF_ALL_PROJECTS + ("kenai.com".equals(kenaiName)?"":"-"+kenaiName)); //NOI18N
         int index = 0;
         for( ProjectHandle project : openProjects ) {
@@ -812,7 +837,7 @@ public final class DashboardImpl extends Dashboard {
                     ArrayList<ProjectHandle> projects = new ArrayList<ProjectHandle>(projectIds.size());
                     ProjectAccessor accessor = ProjectAccessor.getDefault();
                     for( String id : projectIds ) {
-                        ProjectHandle handle = accessor.getNonMemberProject(id, forceRefresh);
+                        ProjectHandle handle = accessor.getNonMemberProject(kenai, id, forceRefresh);
                         if (handle!=null) {
                             projects.add(handle);
                         } else {
@@ -871,7 +896,7 @@ public final class DashboardImpl extends Dashboard {
             Runnable r = new Runnable() {
                 public void run() {
                     ProjectAccessor accessor = ProjectAccessor.getDefault();
-                    res[0] = new ArrayList( accessor.getMemberProjects(user, forceRefresh) );
+                    res[0] = new ArrayList( accessor.getMemberProjects(kenai, user, forceRefresh) );
                 }
             };
             t = new Thread( r );

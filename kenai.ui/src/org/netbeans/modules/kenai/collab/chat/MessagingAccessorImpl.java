@@ -64,8 +64,8 @@ public class MessagingAccessorImpl extends MessagingAccessor {
 
     @Override
     public MessagingHandle getMessaging(ProjectHandle project) {
-        KenaiConnection kc = KenaiConnection.getDefault();
-        Kenai k = Kenai.getDefault();
+        Kenai k = project.getKenaiProject().getKenai();
+        KenaiConnection kc = KenaiConnection.getDefault(k);
         synchronized (kc) {
             try {
                 final KenaiProject prj = k.getProject(project.getId());
@@ -81,20 +81,20 @@ public class MessagingAccessorImpl extends MessagingAccessor {
                             }
                         }
                     } else if (!chat.isJoined()) {
-                        KenaiConnection.getDefault().tryJoinChat(chat);
+                        kc.tryJoinChat(chat);
                         if (!chat.isJoined())
                             throw new RuntimeException();
                     }
                 }
             } catch (Exception ex) {
                 Logger.getLogger(MessagingAccessorImpl.class.getName()).log(Level.INFO, ex.getMessage(), ex);
-                    MessagingHandleImpl m = new MessagingHandleImpl(project.getId());
+                    MessagingHandleImpl m = new MessagingHandleImpl(project.getKenaiProject());
                     m.setMessageCount(0);
                     m.setOnlineCount(-3);
                     return m;
                 }
 
-            return ChatNotifications.getDefault().getMessagingHandle(project.getId());
+            return ChatNotifications.getDefault().getMessagingHandle(project.getKenaiProject());
         }
     }
 
@@ -114,7 +114,7 @@ public class MessagingAccessorImpl extends MessagingAccessor {
 
     @Override
     public Action getCreateChatAction(final ProjectHandle project) {
-        return new CreateChatAction(project.getId());
+        return new CreateChatAction(project.getKenaiProject());
     }
 
     @Override

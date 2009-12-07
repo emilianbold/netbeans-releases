@@ -44,9 +44,7 @@ import java.util.Iterator;
 import java.util.TreeSet;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.muc.MultiUserChat;
-import org.netbeans.modules.kenai.api.Kenai;
-import org.netbeans.modules.kenai.api.KenaiException;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.kenai.api.KenaiProject;
 
 /**
  *
@@ -59,6 +57,10 @@ public class FakeRosterGroup implements Comparable<FakeRosterGroup> {
         this.muc = muc;
     }
 
+    public KenaiProject getKenaiProject() {
+        return KenaiConnection.getKenaiProject(muc);
+    }
+
     public String getName() {
         return StringUtils.parseName(muc.getRoom());
     }
@@ -68,7 +70,7 @@ public class FakeRosterGroup implements Comparable<FakeRosterGroup> {
         Iterator<String> i = muc.getOccupants();
         while (i.hasNext()) {
             String name = i.next();
-            if (!StringUtils.parseResource(name).equals(Kenai.getDefault().getPasswordAuthentication().getUserName())) {
+            if (!StringUtils.parseResource(name).equals(KenaiConnection.getKenaiProject(muc).getKenai().getPasswordAuthentication().getUserName())) {
                 entries.add(new FakeRosterEntry(name));
             }
         }
@@ -98,14 +100,9 @@ public class FakeRosterGroup implements Comparable<FakeRosterGroup> {
     }
 
     public int compareTo(FakeRosterGroup o) {
-        try {
-            String thisName = Kenai.getDefault().getProject(getName()).getDisplayName();
-            String otherName = Kenai.getDefault().getProject(o.getName()).getDisplayName();
-            return thisName.compareToIgnoreCase(otherName);
-        } catch (KenaiException kenaiException) {
-            Exceptions.printStackTrace(kenaiException);
-        }
-        return getName().compareToIgnoreCase(o.getName());
+        String thisName = KenaiConnection.getKenaiProject(muc).getDisplayName();
+        String otherName = KenaiConnection.getKenaiProject(o.muc).getDisplayName();
+        return thisName.compareToIgnoreCase(otherName);
     }
 
     @Override

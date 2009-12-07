@@ -87,6 +87,7 @@ public final class KenaiProject {
     private KenaiFeature[] features;
     private KenaiProjectMember[] members;
     private KenaiLicense[] licenses;
+    private Kenai kenai;
 
     /**
      * I assume that this constructor does NOT provide full project information. If it does then
@@ -94,17 +95,17 @@ public final class KenaiProject {
      *
      * @param p
      */
-    private KenaiProject(ProjectData p) {
+    private KenaiProject(Kenai kenai, ProjectData p) {
         fillInfo(p);
+        this.kenai = kenai;
     }
 
-    static KenaiProject get(ProjectData p) {
-        final Kenai kenai = Kenai.getDefault();
+    static KenaiProject get(Kenai kenai, ProjectData p) {
         synchronized (kenai.projectsCache) {
             WeakReference<KenaiProject> wr = kenai.projectsCache.get(p.name);
             KenaiProject result = null;
             if (wr == null || (result = wr.get()) == null) {
-                result = new KenaiProject(p);
+                result = new KenaiProject(kenai, p);
                 kenai.projectsCache.put(p.name, new WeakReference<KenaiProject>(result));
             } else {
                 result = wr.get();
@@ -119,8 +120,7 @@ public final class KenaiProject {
      * @param name
      * @return returns null if project does not exist in cachce
      */
-    static KenaiProject get(String name) {
-        final Kenai kenai = Kenai.getDefault();
+    static KenaiProject get(Kenai kenai, String name) {
         synchronized (kenai.projectsCache) {
             WeakReference<KenaiProject> wr = kenai.projectsCache.get(name);
             if (wr == null) {
@@ -185,7 +185,7 @@ public final class KenaiProject {
      *         false otherwise
      */
     public boolean isMyProject() {
-        Collection<KenaiProject> my = Kenai.getDefault().myProjects;
+        Collection<KenaiProject> my = kenai.myProjects;
         if (my==null)
             return false;
         return my.contains(this);
@@ -197,7 +197,7 @@ public final class KenaiProject {
      * @throws KenaiException
      */
     public KenaiProjectMember.Role getMyRole() throws KenaiException {
-        PasswordAuthentication passwordAuthentication = Kenai.getDefault().getPasswordAuthentication();
+        PasswordAuthentication passwordAuthentication = kenai.getPasswordAuthentication();
         if (passwordAuthentication==null) {
             return null;
         }
@@ -253,8 +253,8 @@ public final class KenaiProject {
         return data.private_hidden;
     }
     
-    private static Pattern getRepositoryPattern() {
-        return Pattern.compile("(https|http)://([a-z]+\\.)?" + Kenai.getDefault().getUrl().getHost().replace(".", "\\.") + "/(svn|hg)/(\\S*)~(.*)");
+    private static Pattern getRepositoryPattern(Kenai kenai) {
+        return Pattern.compile("(https|http)://([a-z]+\\.)?" + kenai.getUrl().getHost().replace(".", "\\.") + "/(svn|hg)/(\\S*)~(.*)");
     }
     private static final int repositoryPatternProjectGroup = 4;
 
@@ -290,15 +290,18 @@ public final class KenaiProject {
      * @throws KenaiException if the project cannot be loaded
      */
     public static KenaiProject forRepository(String uri) throws KenaiException {
-        if (uri==null)
+        if (uri == null) {
             return null;
-        Matcher m = getRepositoryPattern().matcher(uri);
-        if (m.matches()) {
-            return Kenai.getDefault().getProject(m.group(repositoryPatternProjectGroup));
         }
-        //hard coded support for external netbeans repositories
-        if (Kenai.getDefault().getUrl().getHost().equals("netbeans.org") && (uri.startsWith("https://hg.netbeans.org") || uri.startsWith("http://hg.netbeans.org"))) {//NOI18N
-            return Kenai.getDefault().getProject("ide");//NOI18N
+        for (Kenai k : KenaiManager.getDefault().getKenaiInstances()) {
+            Matcher m = getRepositoryPattern(k).matcher(uri);
+            if (m.matches()) {
+                return k.getProject(m.group(repositoryPatternProjectGroup));
+            }
+            //hard coded support for external netbeans repositories
+            if (k.getUrl().getHost().equals("netbeans.org") && (uri.startsWith("https://hg.netbeans.org") || uri.startsWith("http://hg.netbeans.org"))) {//NOI18N
+                return k.getProject("ide");//NOI18N
+            }
         }
         return null;
     }
@@ -313,13 +316,15 @@ public final class KenaiProject {
     public static String getNameForRepository(String uri) {
         if (uri==null)
             return null;
-        Matcher m = getRepositoryPattern().matcher(uri);
-        if (m.matches()) {
-            return m.group(repositoryPatternProjectGroup);
-        }
-        //hard coded support for external netbeans repositories
-        if (Kenai.getDefault().getUrl().getHost().equals("netbeans.org") && (uri.startsWith("https://hg.netbeans.org") || uri.startsWith("http://hg.netbeans.org"))) {//NOI18N
-            return "ide";//NOI18N
+        for (Kenai k : KenaiManager.getDefault().getKenaiInstances()) {
+            Matcher m = getRepositoryPattern(k).matcher(uri);
+            if (m.matches()) {
+                return m.group(repositoryPatternProjectGroup);
+            }
+            //hard coded support for external netbeans repositories
+            if (k.getUrl().getHost().equals("netbeans.org") && (uri.startsWith("https://hg.netbeans.org") || uri.startsWith("http://hg.netbeans.org"))) {//NOI18N
+                return "ide";//NOI18N
+            }
         }
         return null;
     }
@@ -349,7 +354,7 @@ public final class KenaiProject {
      */
     public synchronized KenaiProjectMember[] getMembers() throws KenaiException {
         if (members==null) {
-            Collection<KenaiProjectMember> projectMembers = Kenai.getDefault().getProjectMembers(getName());
+            Collection<KenaiProjectMember> projectMembers = kenai.getProjectMembers(getName());
             members = projectMembers.toArray(new KenaiProjectMember[projectMembers.size()]);
         }
         return members;
@@ -357,7 +362,10 @@ public final class KenaiProject {
 
     public synchronized KenaiUser getOwner() throws KenaiException {
         fetchDetailsIfNotAvailable();
-        return KenaiUser.forName(data.owner);
+        if (data.owner==null) {
+            return null;
+        }
+        return KenaiUser.forName(data.owner + "@" + kenai.getUrl().getHost());
     }
 
     /**
@@ -415,23 +423,13 @@ public final class KenaiProject {
             String repository_url,
             String browse_url
             ) throws KenaiException {
-        KenaiFeature feature = Kenai.getDefault().createProjectFeature(getName(), name, display_name, description, service, url, repository_url, browse_url);
+        KenaiFeature feature = kenai.createProjectFeature(getName(), name, display_name, description, service, url, repository_url, browse_url);
         refresh();
         return feature;
     }
 
-    /**
-     * Checks weather proposed name is unique and valid
-     * @param name proposed name
-     * @return Error message or null, if name is valid
-     * @throws org.netbeans.modules.kenai.api.KenaiException
-     */
-    public static String checkName(String name) throws KenaiException {
-        return Kenai.getDefault().checkName(name);
-    }
-
     private void join() throws KenaiException {
-        Kenai.getDefault().joinProject(this);
+        kenai.joinProject(this);
     }
 
     void fillInfo(ProjectData prj) {
@@ -464,7 +462,7 @@ public final class KenaiProject {
      * @throws org.netbeans.modules.kenai.api.KenaiException
      */
     private void refresh() throws KenaiException {
-        fillInfo(Kenai.getDefault().getDetails(getName()));
+        fillInfo(kenai.getDetails(getName()));
     }
 
     @Override
@@ -536,5 +534,9 @@ public final class KenaiProject {
      */
     public synchronized void removePropertyChangeListener(String name, PropertyChangeListener l) {
         propertyChangeSupport.removePropertyChangeListener(name, l);
+    }
+
+    public Kenai getKenai() {
+        return kenai;
     }
 }

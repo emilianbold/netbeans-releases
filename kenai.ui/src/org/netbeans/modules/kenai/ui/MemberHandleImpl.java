@@ -128,4 +128,9 @@ public class MemberHandleImpl extends MemberHandle {
         return res;
     }
 
+    @Override
+    public String getFQN() {
+        return getName() + "@" + this.delegate.getKenaiUser().getKenai().getUrl().getHost().toString();
+    }
+
 }

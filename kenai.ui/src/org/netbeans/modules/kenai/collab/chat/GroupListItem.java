@@ -63,13 +63,8 @@ public class GroupListItem implements ContactListItem {
 
     @Override
     public String toString() {
-        try {
-            return NbBundle.getMessage(GroupListItem.class, "ChatRoomRenderer", 
-                    Kenai.getDefault().getProject(group.getName()).getDisplayName());
-        } catch (KenaiException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return null;
+        return NbBundle.getMessage(GroupListItem.class, "ChatRoomRenderer",
+                group.getKenaiProject().getDisplayName());
     }
 
     @Override
@@ -103,6 +98,8 @@ public class GroupListItem implements ContactListItem {
     }
 
     public boolean hasMessages() {
-        return ChatNotifications.getDefault().getMessagingHandle(group.getName()).getMessageCount()>0;
+        //TODO: fix me
+        //return ChatNotifications.getDefault().getMessagingHandle(group.getName()).getMessageCount()>0;
+        return true;
     }
 }

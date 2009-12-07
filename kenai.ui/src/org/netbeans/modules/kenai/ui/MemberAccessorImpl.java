@@ -70,7 +70,7 @@ public class MemberAccessorImpl extends MemberAccessor {
         try {
             KenaiUser owner = prj.getKenaiProject().getOwner();
             for (KenaiProjectMember member : prj.getKenaiProject().getMembers()) {
-                handles.add(new MemberHandleImpl(member, owner.equals(member.getKenaiUser())));
+                handles.add(new MemberHandleImpl(member, member.getKenaiUser().equals(owner)));
             }
         } catch (KenaiException ex) {
             Exceptions.printStackTrace(ex);

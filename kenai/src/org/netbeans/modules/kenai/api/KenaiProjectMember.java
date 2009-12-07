@@ -51,13 +51,13 @@ public final class KenaiProjectMember {
 
     private final KenaiUser user;
     private final Role role;
-    KenaiProjectMember(UserData userData) {
+    KenaiProjectMember(Kenai kenai, UserData userData) {
         if ("registered".equals(userData.role)) {
             this.role = Role.OBSERVER;
         } else {
             this.role= Role.valueOf(userData.role.toUpperCase());
         }
-        this.user = KenaiUser.get(userData);
+        this.user = KenaiUser.get(kenai, userData);
     }
 
     /**
