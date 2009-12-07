@@ -198,6 +198,7 @@ public final class DashboardImpl extends Dashboard {
                 refreshProjects();
             }
         });
+        setKenai(Kenai.getDefault());
     }
 
     public static DashboardImpl getInstance() {
