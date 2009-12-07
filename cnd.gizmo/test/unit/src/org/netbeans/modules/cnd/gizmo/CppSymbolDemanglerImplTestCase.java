@@ -43,8 +43,11 @@ import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.dlight.spi.CppSymbolDemanglerFactory.CPPCompiler;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.test.If;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.test.Ifdef;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
+import org.openide.util.Utilities;
 import static org.junit.Assert.*;
 
 /**
@@ -72,6 +75,8 @@ public class CppSymbolDemanglerImplTestCase extends NativeExecutionBaseTestCase 
             "__1cIwallTime6F_d_", "double wallTime()",
             "__1cKMandelbrot6F_v_", "void Mandelbrot()");
 
+    private static final String LOCAL_COMPILER_SETS = "localhost.compilerSets";
+
     public CppSymbolDemanglerImplTestCase(String name) {
         super(name);
     }
@@ -80,46 +85,65 @@ public class CppSymbolDemanglerImplTestCase extends NativeExecutionBaseTestCase 
         super(name, execEnv);
     }
 
-    @If(section = "demangler", key = "GNU", defaultValue = true)
-    public void testDemangleGnu() {
-        CppSymbolDemanglerImpl d = new CppSymbolDemanglerImpl(CPPCompiler.GNU);
+    @Ifdef(section = LOCAL_COMPILER_SETS, key = "GNU")
+    public void testDemangleGnu() throws Exception {
+        CppSymbolDemanglerImpl d = new CppSymbolDemanglerImpl(
+                ExecutionEnvironmentFactory.getLocal(), CPPCompiler.GNU,
+                NativeExecutionTestSupport.getRcFile().get(LOCAL_COMPILER_SETS, "GNU"));
         doTestDemangle(d, GNU_MANGLED_NAMES, true);
         doTestDemangle(d, GNU_MANGLED_NAMES, false);
     }
 
-    @If(section = "demangler", key = "GNU", defaultValue = true)
-    public void testBatchDemangleGnu() {
-        CppSymbolDemanglerImpl d = new CppSymbolDemanglerImpl(CPPCompiler.GNU);
+    @Ifdef(section = LOCAL_COMPILER_SETS, key = "GNU")
+    public void testBatchDemangleGnu() throws Exception {
+        CppSymbolDemanglerImpl d = new CppSymbolDemanglerImpl(
+                ExecutionEnvironmentFactory.getLocal(), CPPCompiler.GNU,
+                NativeExecutionTestSupport.getRcFile().get(LOCAL_COMPILER_SETS, "GNU"));
         doTestBatchDemangle(d, GNU_MANGLED_NAMES, true);
         doTestBatchDemangle(d, GNU_MANGLED_NAMES, false);
     }
 
-    @If(section = "demangler", key = "Sun", defaultValue = true)
-    public void testDemangleSun() {
-        CppSymbolDemanglerImpl d = new CppSymbolDemanglerImpl(CPPCompiler.SS);
+    @Ifdef(section = LOCAL_COMPILER_SETS, key = "SunStudio")
+    public void testDemangleSun() throws Exception {
+        CppSymbolDemanglerImpl d = new CppSymbolDemanglerImpl(
+                ExecutionEnvironmentFactory.getLocal(), CPPCompiler.SS,
+                NativeExecutionTestSupport.getRcFile().get(LOCAL_COMPILER_SETS, "SunStudio"));
         doTestDemangle(d, SUN_MANGLED_NAMES, true);
         doTestDemangle(d, SUN_MANGLED_NAMES, false);
     }
 
-    @If(section = "demangler", key = "Sun", defaultValue = true)
-    public void testBatchDemangleSun() {
-        CppSymbolDemanglerImpl d = new CppSymbolDemanglerImpl(CPPCompiler.SS);
+    @Ifdef(section = LOCAL_COMPILER_SETS, key = "SunStudio")
+    public void testBatchDemangleSun() throws Exception {
+        CppSymbolDemanglerImpl d = new CppSymbolDemanglerImpl(
+                ExecutionEnvironmentFactory.getLocal(), CPPCompiler.SS,
+                NativeExecutionTestSupport.getRcFile().get(LOCAL_COMPILER_SETS, "SunStudio"));
         doTestBatchDemangle(d, SUN_MANGLED_NAMES, true);
         doTestBatchDemangle(d, SUN_MANGLED_NAMES, false);
     }
 
-    private List<String> addUnmangled(List<String> data) {
-        List<String> result = new ArrayList<String>(data);
-        for (String sym : UNMANGLED_NAMES) {
-            result.add(sym);
-            result.add(sym);
+    private void addMangled(List<String> list, List<String> toAdd) {
+        for (int i = 0; i < toAdd.size(); i += 2) {
+            String sym = toAdd.get(i);
+            if (Utilities.isMac()) {
+                sym = "_" + sym;
+            }
+            list.add(sym);
+            list.add(toAdd.get(i + 1));
         }
-        return result;
+    }
+
+    private void addUnmangled(List<String> list) {
+        for (String sym : UNMANGLED_NAMES) {
+            list.add(sym);
+            list.add(sym);
+        }
     }
 
     private void doTestDemangle(CppSymbolDemanglerImpl d, List<String> data, boolean dtrace) {
         d.clearCache();
-        data = addUnmangled(data);
+        List<String> list = new ArrayList<String>();
+        addMangled(list, data);
+        addUnmangled(list);
         for (int i = 0; i < data.size(); i += 2) {
             String sym = data.get(i);
             if (dtrace) {
@@ -131,7 +155,9 @@ public class CppSymbolDemanglerImplTestCase extends NativeExecutionBaseTestCase 
 
     private void doTestBatchDemangle(CppSymbolDemanglerImpl d, List<String> data, boolean dtrace) {
         d.clearCache();
-        data = addUnmangled(data);
+        List<String> list = new ArrayList<String>();
+        addMangled(list, data);
+        addUnmangled(list);
         List<String> input = prepareInput(data, dtrace);
         List<String> output = prepareOutput(data, true);
         assertEquals(output, d.demangle(input));
