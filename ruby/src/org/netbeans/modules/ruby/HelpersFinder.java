@@ -42,22 +42,30 @@ import java.util.Set;
 import org.jrubyparser.ast.Node;
 import org.jrubyparser.ast.SymbolNode;
 import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
-import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport.Kind;
 import org.netbeans.modules.ruby.elements.IndexedClass;
 
 /**
- * Tries to locate helper classes declared using the helper method, e.g. tries to find
+ * Tries to locate class passed to methods that take a class name as an argument.
+ * E.g. tries to find
  * SomeClassHelper for :some_class in the following:
  * <pre>
  * helper :some_class
  * </pre>
  *
+ * <i>TODO: should rename as this isn't about helpers only anymore,
+ * just can't come up with a good name now</i>.
+ * 
  * @author Erno Mononen
  */
+
 final class HelpersFinder {
 
-    private static final String[] HELPER_METHODS = {"helper"};
+    private static final MethodInfo[] APPLICABLE_METHODS = {
+        new MethodInfo("helper", "Helper"),
+        new MethodInfo("cache_sweeper")
+    };
+
     private final RubyIndex index;
     private final SymbolNode closest;
     private final Node root;
@@ -70,38 +78,50 @@ final class HelpersFinder {
         this.path = path;
     }
 
-    private boolean isHelper(Node node) {
+    private MethodInfo getMethodInfo(Node node) {
         if (!AstUtilities.isCall(node)) {
-            return false;
+            return null;
         }
-        return AstUtilities.isNodeNameIn(node, HELPER_METHODS);
+        for (MethodInfo each : APPLICABLE_METHODS) {
+            if (AstUtilities.isNodeNameIn(node, each.name)) {
+                return each;
+            }
+        }
+        return null;
     }
 
-    private boolean isHelper() {
+    private MethodInfo getMethodInfo() {
+        MethodInfo result = null;
         // first argument
         for (Node child : closest.childNodes()) {
-            if (isHelper(child)) {
-                return true;
+            result = getMethodInfo(child);
+            if (result != null) {
+                return result;
             }
         }
         // others
-        return isHelper(path.leafParent()) || isHelper(path.leafGrandParent());
+        result = getMethodInfo(path.leafParent());
+        if (result == null) {
+            result = getMethodInfo(path.leafGrandParent());
+        }
+        return result;
     }
 
 
-    private String getClassName() {
+    private String getClassName(MethodInfo methodInfo) {
         String className = AstUtilities.getName(closest);
         if (className.length() == 0) {
             return null;
         }
-        return RubyUtils.underlinedNameToCamel(className) + "Helper"; //NOI18N
+        return methodInfo.getClassName(RubyUtils.underlinedNameToCamel(className)); //NOI18N
     }
 
     DeclarationLocation findHelperLocation() {
-        if (!isHelper()) {
+        MethodInfo methodInfo = getMethodInfo();
+        if (methodInfo == null) {
             return DeclarationLocation.NONE;
         }
-        String className = getClassName();
+        String className = getClassName(methodInfo);
         if (className == null) {
             return DeclarationLocation.NONE;
         }
@@ -110,5 +130,30 @@ final class HelpersFinder {
             return DeclarationLocation.NONE;
         }
         return RubyDeclarationFinder.getLocation(result);
+    }
+
+    private static class MethodInfo {
+        /**
+         * the name of the method.
+         */
+        private final String name;
+        /**
+         * the suffix to add to the class name
+         */
+        private final String suffix;
+
+        public MethodInfo(String name) {
+            this(name, "");
+        }
+
+        public MethodInfo(String name, String suffix) {
+            this.name = name;
+            this.suffix = suffix;
+        }
+
+        public String getClassName(String className) {
+            return className + suffix;
+        }
+
     }
 }
