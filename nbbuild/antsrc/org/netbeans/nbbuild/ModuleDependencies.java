@@ -331,7 +331,7 @@ public class ModuleDependencies extends Task {
                 }
 
                 String s = m.publicPackages;
-                HashMap<String,Boolean> pkgs = null;
+                Map<String,Boolean> pkgs = null;
                 if (s != null) {
                     pkgs = new HashMap<String,Boolean>();
                     StringTokenizer tok = new StringTokenizer(s, ",");
@@ -425,7 +425,7 @@ public class ModuleDependencies extends Task {
         w.close();
     }
     
-    private void iterateThruPackages (File f, HashMap pkgs, TreeSet<String> packages) throws IOException {
+    private void iterateThruPackages(File f, Map<String,Boolean> pkgs, TreeSet<String> packages) throws IOException {
         JarFile file = new JarFile (f);
         Enumeration en = file.entries ();
         LOOP: while (en.hasMoreElements ()) {
@@ -443,7 +443,7 @@ public class ModuleDependencies extends Task {
                    continue;
                 }
 
-                Boolean b = (Boolean)pkgs.get (p);
+                Boolean b = pkgs.get(p);
                 if (b != null) {
                     packages.add (p);
                     continue;
@@ -458,7 +458,7 @@ public class ModuleDependencies extends Task {
                         parent = parent.substring (0, prev);
                     }
 
-                    b = (Boolean)pkgs.get (parent);
+                    b = pkgs.get(parent);
                     if (Boolean.TRUE.equals (b)) {
                         packages.add (p);
                         continue LOOP;
