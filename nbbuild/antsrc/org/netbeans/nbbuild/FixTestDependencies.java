@@ -113,11 +113,11 @@ public class FixTestDependencies extends Task {
                 String part2 = xml.substring(xsdIndex + oldXsd.length(), xml.length());
                 xml = part1 + "3" + part2;
                 
-                int projectType = ParseProjectXml.TYPE_NB_ORG;
+                ModuleType projectType = ModuleType.NB_ORG;
                 if (xml.contains("<suite-component/>")) {
-                    projectType = ParseProjectXml.TYPE_SUITE;
+                    projectType = ModuleType.SUITE;
                 } else if (xml.contains("<standalone/>")) {
-                    projectType = ParseProjectXml.TYPE_STANDALONE;
+                    projectType = ModuleType.STANDALONE;
                 } 
                 //grrr
                 int typeStart = xml.indexOf("<code-name-base>");
@@ -234,7 +234,7 @@ public class FixTestDependencies extends Task {
         // store project.properties and project.xml
     }
 
-    private Set<ModuleListParser.Entry> getModuleList(final int projectType) throws IOException {
+    private Set<ModuleListParser.Entry> getModuleList(final ModuleType projectType) throws IOException {
         if (cachedEntries == null ) {
           // scan for all modules
             @SuppressWarnings("unchecked")

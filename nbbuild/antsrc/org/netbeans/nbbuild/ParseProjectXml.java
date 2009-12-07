@@ -101,10 +101,6 @@ public final class ParseProjectXml extends Task {
     static final String PROJECT_NS = "http://www.netbeans.org/ns/project/1";
     static final String NBM_NS2 = "http://www.netbeans.org/ns/nb-module-project/2";
     static final String NBM_NS3 = "http://www.netbeans.org/ns/nb-module-project/3";
-    
-    static final int TYPE_NB_ORG = 0;
-    static final int TYPE_SUITE = 1;
-    static final int TYPE_STANDALONE = 2;
 
     private File moduleProject;
     /**
@@ -330,7 +326,7 @@ public final class ParseProjectXml extends Task {
             // XXX share parse w/ ModuleListParser
             Document pDoc = XMLUtil.parse(new InputSource(getProjectFile ().toURI().toString()),
                                           false, true, /*XXX*/null, null);
-            VALIDATE: if (getModuleType(pDoc) == TYPE_NB_ORG) {
+            VALIDATE: if (getModuleType(pDoc) == ModuleType.NB_ORG) {
                 // Ensure project.xml is valid according to schema.
                 File nball = new File(getProject().getProperty("nb_all"));
                 SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
@@ -484,7 +480,7 @@ public final class ParseProjectXml extends Task {
                 define(moduleRunClassPathProperty, cp);
             }
             if (domainProperty != null) {
-                if (getModuleType(pDoc) != TYPE_NB_ORG) {
+                if (getModuleType(pDoc) != ModuleType.NB_ORG) {
                     throw new BuildException("Cannot set " + domainProperty + " for a non-netbeans.org module", getLocation());
                 }
                 File nball = new File(getProject().getProperty("nb_all"));
@@ -814,14 +810,14 @@ public final class ParseProjectXml extends Task {
         return t;
     }
 
-    private int getModuleType(Document d) throws BuildException {
+    private ModuleType getModuleType(Document d) throws BuildException {
         Element data = getConfig(d);
         if (findNBMElement(data, "suite-component") != null) {
-            return TYPE_SUITE;
+            return ModuleType.SUITE;
         } else if (findNBMElement(data, "standalone") != null) {
-            return TYPE_STANDALONE;
+            return ModuleType.STANDALONE;
         } else {
-            return TYPE_NB_ORG;
+            return ModuleType.NB_ORG;
         }
     }
 
@@ -1423,7 +1419,7 @@ public final class ParseProjectXml extends Task {
             File testSrcDir = new File(moduleProject, "test/" + testDeps.testtype + "/src");
             if (!testSrcDir.isDirectory()) {
                 String error = "No such dir " + testSrcDir + "; should not define test deps";
-                if (getModuleType(pDoc) == TYPE_NB_ORG) {
+                if (getModuleType(pDoc) == ModuleType.NB_ORG) {
                     throw new BuildException(error, getLocation());
                 } else {
                     // For compatibility reasons probably cannot make this fatal.
