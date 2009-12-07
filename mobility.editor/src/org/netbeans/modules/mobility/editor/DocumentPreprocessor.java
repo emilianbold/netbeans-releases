@@ -39,17 +39,14 @@
 
 package org.netbeans.modules.mobility.editor;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.regex.Pattern;
 import java.util.Timer;
 import java.util.TimerTask;
-import javax.swing.JEditorPane;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -81,7 +78,6 @@ import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.HintsController;
 import org.netbeans.spi.editor.hints.Severity;
 import org.openide.ErrorManager;
-import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.text.NbDocument;
@@ -95,6 +91,7 @@ import org.openide.util.NbBundle;
 public class DocumentPreprocessor implements PropertyChangeListener {
 
     public static final String PREPROCESSOR_LINE_LIST = "preprocessor.line.list"; //NOI18N
+    public static final String PREPROCESSOR_BLOCK_LIST = "preprocessor.block.list"; //NOI18N
 
     static final long serialVersionUID = 4863325941230276217L;
     static final Pattern BLOCK_HEADER_PATTERN = Pattern.compile("^\\s*/((/#)|(\\*[\\$#]))\\S"); //NOI18N
@@ -151,8 +148,9 @@ public class DocumentPreprocessor implements PropertyChangeListener {
         }
     }
 
-    static final void setLineList(final NbEditorDocument doc, final ArrayList<PPLine> lineList) {
+    static final void setLineInfo(NbEditorDocument doc, List<PPLine> lineList, List<PPBlockInfo> blockList) {
         doc.putProperty(PREPROCESSOR_LINE_LIST, lineList);
+        doc.putProperty(PREPROCESSOR_BLOCK_LIST, blockList);
         Highlighting headerLayer = (Highlighting) doc.getProperty(ConfigurationHighlightsLayerFactory.PROP_HIGLIGHT_HEADER_LAYER);
         if (headerLayer != null){
             headerLayer.updateBags();
@@ -198,7 +196,7 @@ public class DocumentPreprocessor implements PropertyChangeListener {
                 if (utilProvider == null) return; //we do not run in full NetBeans, but this should not happen here (no editor)
                 final CommentingPreProcessor cpp = new CommentingPreProcessor(utilProvider.createPPDocumentSource((NbEditorDocument) doc), null, activeIdentifiers);
                 cpp.run();
-                setLineList(doc, cpp.getLines());
+                setLineInfo(doc, cpp.getLines(), cpp.getBlockList());
             } catch (PreprocessorException e) {
                 ErrorManager.getDefault().notify(e);
             }
@@ -230,7 +228,7 @@ public class DocumentPreprocessor implements PropertyChangeListener {
 
     /*****              Annotation Stuff                                           ********/
 
-    static void processAnnotations(NbEditorDocument doc, ArrayList<PPLine> lineList) {  //XXX needs to be split for errors and warnings
+    static void processAnnotations(NbEditorDocument doc, List<PPLine> lineList) {  //XXX needs to be split for errors and warnings
         final ArrayList<ErrorDescription> errs = new ArrayList();
         DataObject dob = NbEditorUtilities.getDataObject(doc);
         FileObject fo = dob == null ? null : dob.getPrimaryFile();
