@@ -1192,6 +1192,7 @@ public class FileStatusCache {
         private final RequestProcessor.Task labelInfoRefreshTask;
         private boolean mimeTypeFlag;
         private final FileStatusCache master;
+        private static final boolean VERSIONING_ASYNC_ANNOTATOR = !"false".equals(System.getProperty("versioning.asyncAnnotator", "true")); //NOI18N
 
         private FileLabelCache(FileStatusCache master) {
             this.master = master;
@@ -1240,20 +1241,28 @@ public class FileStatusCache {
                 }
             }
             if (refreshInfo) {
-                scheduleLabelRefresh(file);
+                refreshLabelFor(file);
+            }
+            if (VERSIONING_ASYNC_ANNOTATOR) {
+                labelInfo = fileLabels.get(file);
+                assert labelInfo != null;
             }
             return labelInfo;
         }
 
         /**
-         * schedules file's label info refresh
+         * schedules file's label info refresh or run the refresh immediately depending on the async status of the versioning annotator
          * @param file
          */
-        private void scheduleLabelRefresh(File file) {
+        private void refreshLabelFor(File file) {
             synchronized (filesForLabelRefresh) {
                 filesForLabelRefresh.add(file);
             }
-            labelInfoRefreshTask.schedule(200);
+            if (VERSIONING_ASYNC_ANNOTATOR) {
+                labelInfoRefreshTask.run();
+            } else {
+                labelInfoRefreshTask.schedule(200);
+            }
         }
 
         private void remove(File file) {
@@ -1327,7 +1336,9 @@ public class FileStatusCache {
                             LABELS_CACHE_LOG.log(Level.INFO, null, ex);
                         }
                     }
-                    Subversion.getInstance().refreshAnnotations(filesToRefresh.toArray(new File[filesToRefresh.size()]));
+                    if (!VERSIONING_ASYNC_ANNOTATOR) {
+                        Subversion.getInstance().refreshAnnotations(filesToRefresh.toArray(new File[filesToRefresh.size()]));
+                    }
                     synchronized (fileLabels) {
                         if (fileLabels.size() > 50) {
                             if (LABELS_CACHE_LOG.isLoggable(Level.FINE)) {

@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.subversion.ui.blame;
 
+import java.text.ParseException;
 import org.netbeans.editor.*;
 import org.netbeans.editor.Utilities;
 import org.netbeans.api.editor.fold.*;
@@ -81,8 +82,10 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
+import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.kenai.SvnKenaiSupport;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
+import org.tigris.subversion.svnclientadapter.ISVNInfo;
 import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 
@@ -187,6 +190,11 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     private Map<String, KenaiUser> kenaiUsersMap = null;
 
     private File file;
+    /**
+     * This is not null when the displayed annotations do not belong directly to the displayed file but to another.
+     * This can happen e.g. when showing annotations for file in a certain past revision - the displayed file is in fact a temporary file.
+    */
+    private File referencedFile;
 
     /**
      * Creates new instance initializing final fields.
@@ -383,14 +391,14 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
      * exists.
      */
     File getCurrentFile() {
-        File result = null;
-        
-        DataObject dobj = (DataObject)doc.getProperty(Document.StreamDescriptionProperty);
-        if (dobj != null) {
-            FileObject fo = dobj.getPrimaryFile();
-            result = FileUtil.toFile(fo);
+        File result = referencedFile;
+        if (result == null) {
+            DataObject dobj = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
+            if (dobj != null) {
+                FileObject fo = dobj.getPrimaryFile();
+                result = FileUtil.toFile(fo);
+            }
         }
-        
         return result;
     }
     
@@ -476,7 +484,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         final String revisionPerLine = al == null ? null : al.getRevision();
         // used in menu Revert
         final File file = getCurrentFile();
-        final boolean revisionCanBeRolledBack = al == null ? false : al.canBeRolledBack();
+        final boolean revisionCanBeRolledBack = al == null || referencedFile != null ? false : al.canBeRolledBack();
         
         diffMenu.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -497,6 +505,20 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         });
         popupMenu.add(rollbackMenu);
         rollbackMenu.setEnabled(revisionCanBeRolledBack);
+
+        // an action showing annotation for previous revisions
+        final JMenuItem previousAnnotationsMenu = new JMenuItem();
+        previousAnnotationsMenu.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                Subversion.getInstance().getRequestProcessor().post(new Runnable() {
+                    public void run() {
+                        showPreviousAnnotations(file, revisionPerLine);
+                    }
+                });
+            }
+        });
+        popupMenu.add(previousAnnotationsMenu);
+        previousAnnotationsMenu.setVisible(false);
 
         if(isKenai() && al != null) {
             String author = al.getAuthor();
@@ -527,10 +549,13 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         diffMenu.setVisible(false);
         rollbackMenu.setVisible(false);
         if (revisionPerLine != null) {
-            if (getPreviousRevision(revisionPerLine) != null) {
+            String previousRevision;
+            if ((previousRevision = getPreviousRevision(revisionPerLine)) != null) {
                 String format = loc.getString("CTL_MenuItem_DiffToRevision");
                 diffMenu.setText(MessageFormat.format(format, new Object [] { revisionPerLine, getPreviousRevision(revisionPerLine) }));
                 diffMenu.setVisible(true);
+                previousAnnotationsMenu.setText(loc.getString("CTL_MenuItem_ShowAnnotationsPrevious")); //NOI18N
+                previousAnnotationsMenu.setVisible(file != null);
             }
             rollbackMenu.setVisible(true);
         }
@@ -540,16 +565,16 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
 
     private void revert(File file, String revision) {
         final Context ctx = new Context(file);
-        
-        final SVNUrl url;  
-        try {            
-            url = SvnUtils.getRepositoryRootUrl(file);  
+
+        final SVNUrl url;
+        try {
+            url = SvnUtils.getRepositoryRootUrl(file);
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ex, true, true);
             return;
-        }               
+        }
         final RepositoryFile repositoryFile = new RepositoryFile(url, url, SVNRevision.HEAD);
-        
+
         final RevertModifications revertModifications = new RevertModifications(repositoryFile, revision);
         if(!revertModifications.showDialog()) {
             return;
@@ -557,11 +582,47 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
 
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(url);
         SvnProgressSupport support = new SvnProgressSupport() {
-            public void perform() {                    
+            public void perform() {
                 RevertModificationsAction.performRevert(revertModifications.getRevisionInterval(), revertModifications.revertNewFiles(), ctx, this);
             }
         };
         support.start(rp, url, NbBundle.getMessage(AnnotationBar.class, "MSG_Revert_Progress")); // NOI18N
+    }
+
+    private void showPreviousAnnotations(final File file, String revision) {
+        final SVNRevision svnRevision;
+        final SVNUrl repositoryRoot;
+        final SVNUrl repositoryUrl;
+        try {
+            repositoryRoot = SvnUtils.getRepositoryRootUrl(file);
+            repositoryUrl = SvnUtils.getRepositoryUrl(file);
+        } catch (SVNClientException ex) {
+            SvnClientExceptionHandler.notifyException(ex, true, true);
+            return;
+        }
+        try {
+            svnRevision = SVNRevision.getRevision(getPreviousRevision(revision));
+        } catch (ParseException ex) {
+            Subversion.LOG.log(Level.SEVERE, "Previous revision: " + getPreviousRevision(revision), ex); //NOI18N
+            return;
+        }
+
+        RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repositoryRoot);
+        SvnProgressSupport support = new SvnProgressSupport() {
+            public void perform() {
+                try {
+                    SvnClient client = Subversion.getInstance().getClient(repositoryRoot);
+                    ISVNInfo info = client.getInfo(repositoryUrl, svnRevision, SVNRevision.HEAD);
+                } catch (SVNClientException ex) {
+                    if (SvnClientExceptionHandler.isFileNotFoundInRevision(ex.getMessage())) {
+                        SvnClientExceptionHandler.annotate(NbBundle.getMessage(AnnotationBar.class, "MSG_NoFileInRevision", svnRevision.toString())); //NOI18N
+                        return;
+                    }
+                }
+                SvnUtils.openInRevision(file, repositoryRoot, repositoryUrl, svnRevision, SVNRevision.HEAD, true);
+            }
+        };
+        support.start(rp, repositoryRoot, NbBundle.getMessage(AnnotationBar.class, "MSG_Annotation_Progress")); //NOI18N
     }
 
     private String getPreviousRevision(String revision) {
@@ -1095,5 +1156,14 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
 
     /** on JTextPane */
     public void componentShown(ComponentEvent e) {
+    }
+
+    /**
+     * Sets the file for which the annotations are displayed. This file can differ from the displayed one when showing annotations
+     * for a file in the past.
+     * @param file
+     */
+    void setReferencedFile(File file) {
+        this.referencedFile = file;
     }
 }
