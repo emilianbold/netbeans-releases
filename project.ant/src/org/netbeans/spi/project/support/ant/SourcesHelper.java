@@ -452,7 +452,7 @@ public final class SourcesHelper {
          * Turns a root into typed source root which will be considered only in certain contexts.
          * When not set, root is considered to be principal source root. See class javadoc for details.
          * @param value a source root type such as
-         * <a href="@JAVA/PROJECT@/org/netbeans/api/java/project/JavaProjectConstants.html#SOURCES_TYPE_JAVA"><code>JavaProjectConstants.SOURCES_TYPE_JAVA</code></a>
+         * <a href="@org-netbeans-modules-java-project@/org/netbeans/api/java/project/JavaProjectConstants.html#SOURCES_TYPE_JAVA"><code>JavaProjectConstants.SOURCES_TYPE_JAVA</code></a>
          * @return <code>this</code>
          */
         public SourceRootConfig type(String value) {
@@ -659,7 +659,7 @@ public final class SourcesHelper {
      * </p>
      * @param location a project-relative or absolute path giving the location
      *                 of a source tree; may contain Ant property substitutions
-     * @param type a source root type such as <a href="@JAVA/PROJECT@/org/netbeans/api/java/project/JavaProjectConstants.html#SOURCES_TYPE_JAVA"><code>JavaProjectConstants.SOURCES_TYPE_JAVA</code></a>
+     * @param type a source root type such as <a href="@org-netbeans-modules-java-project@/org/netbeans/api/java/project/JavaProjectConstants.html#SOURCES_TYPE_JAVA"><code>JavaProjectConstants.SOURCES_TYPE_JAVA</code></a>
      * @param displayName a display name (for {@link SourceGroup#getDisplayName})
      * @param icon a regular icon for the source root, or null
      * @param openedIcon an opened variant icon for the source root, or null
@@ -683,7 +683,7 @@ public final class SourcesHelper {
      *                 of a source tree; may contain Ant property substitutions
      * @param includes an optional list of Ant-style includes
      * @param excludes an optional list of Ant-style excludes
-     * @param type a source root type such as <a href="@JAVA/PROJECT@/org/netbeans/api/java/project/JavaProjectConstants.html#SOURCES_TYPE_JAVA"><code>JavaProjectConstants.SOURCES_TYPE_JAVA</code></a>
+     * @param type a source root type such as <a href="@org-netbeans-modules-java-project@/org/netbeans/api/java/project/JavaProjectConstants.html#SOURCES_TYPE_JAVA"><code>JavaProjectConstants.SOURCES_TYPE_JAVA</code></a>
      * @param displayName a display name (for {@link SourceGroup#getDisplayName})
      * @param icon a regular icon for the source root, or null
      * @param openedIcon an opened variant icon for the source root, or null
