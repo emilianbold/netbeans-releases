@@ -141,6 +141,7 @@ public class HgUtils {
     public static final String HG_CHECK_REPOSITORY_TIMEOUT_SWITCH = "mercurial.checkRepositoryTimeout"; //NOI18N
     public static final String HG_CHECK_REPOSITORY_DEFAULT_TIMEOUT = "5";
     public static final int HG_CHECK_REPOSITORY_DEFAULT_ROUNDS = 50;
+    public static final String HG_FOLDER_NAME = ".hg";                 //NOI18N
     private static int repositoryValidityCheckRounds = 0;
 
     /**
@@ -1570,5 +1571,14 @@ itor tabs #66700).
             }
         }
         return commitOptions;
+    }
+
+    /**
+     * Returns the administrative hg folder for the given repository and normalizes the file
+     * @param repositoryRoot root of the repository
+     * @return administrative hg folder
+     */
+    public static File getHgFolderForRoot (File repositoryRoot) {
+        return FileUtil.normalizeFile(new File(repositoryRoot, HG_FOLDER_NAME));
     }
 }
