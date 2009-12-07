@@ -154,6 +154,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         initComponents();
         setupComponents();
         refreshComponents();
+        commitButton.setEnabled(false);
         refreshTask = org.netbeans.modules.versioning.util.Utils.createTask(new RefreshViewTask());
         onRefreshButton();
     }
@@ -238,6 +239,10 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
     }
 
     boolean canClose() {
+        if (setups == null) {
+            return true;
+        }
+
         EditorCookie[] editorCookies = fileTable.getEditorCookies();
         DiffUtils.cleanThoseUnmodified(editorCookies);
         DiffUtils.cleanThoseWithEditorPaneOpen(editorCookies);
@@ -687,6 +692,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
                         Dimension dim = fileTable.getComponent().getPreferredSize();
                         fileTable.getComponent().setPreferredSize(new Dimension(dim.width + 1, dim.height));
                         setDiffIndex(0, 0);
+                        commitButton.setEnabled(true);
                         dpt = new DiffPrepareTask(setups);
                         prepareTask = RequestProcessor.getDefault().post(dpt);
                     }
