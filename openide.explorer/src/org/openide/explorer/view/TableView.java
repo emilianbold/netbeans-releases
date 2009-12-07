@@ -293,11 +293,11 @@ public class TableView extends JScrollPane {
         }
         if (firstSelection >= 0) {
             Rectangle rect = table.getCellRect(firstSelection, 0, true);
-            java.awt.Insets ins = getInsets();
-            rect.height = getHeight() - 30;
-            table.scrollRectToVisible(rect);
+            if (!getViewport().getViewRect().contains(rect.getLocation())) {
+                rect.height = Math.max(rect.height, getHeight() - 30);
+                table.scrollRectToVisible(rect);
+            }
         }
-
     }
     
     /**
