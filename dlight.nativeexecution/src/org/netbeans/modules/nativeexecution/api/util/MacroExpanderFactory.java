@@ -70,7 +70,7 @@ public final class MacroExpanderFactory {
             ExecutionEnvironment execEnv, ExpanderStyle style) {
 
         if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
-            throw new IllegalStateException("Host must be connected at this point"); // NOI18N
+            throw new IllegalStateException("Host " + execEnv + " must be connected at this point"); // NOI18N
         }
 
         String key = ExecutionEnvironmentFactory.toUniqueID(execEnv) + '_' + style;
