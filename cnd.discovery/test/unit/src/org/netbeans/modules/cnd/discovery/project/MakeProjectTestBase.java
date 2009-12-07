@@ -80,11 +80,11 @@ import org.openide.util.Utilities;
  *
  * @author Alexander Simon
  */
-public abstract class MakeProjectBase extends CndBaseTestCase { //extends NbTestCase
+public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends NbTestCase
     private static final boolean OPTIMIZE_NATIVE_EXECUTIONS =false;
     private static final boolean TRACE = true;
 
-    public MakeProjectBase(String name) {
+    public MakeProjectTestBase(String name) {
         super(name);
         if (TRACE) {
             System.setProperty("cnd.discovery.trace.projectimport", "true"); // NOI18N
@@ -104,10 +104,10 @@ public abstract class MakeProjectBase extends CndBaseTestCase { //extends NbTest
     }
 
     @Override
-    protected List<Class<?>> getServises() {
+    protected List<Class<?>> getServices() {
         List<Class<?>> list = new ArrayList<Class<?>>();
         list.add(MakeProjectType.class);
-        list.addAll(super.getServises());
+        list.addAll(super.getServices());
         return list;
     }
  

@@ -114,10 +114,10 @@ public class RemoteBuildTestBase extends RemoteTestBase {
     }
 
     @Override
-    protected List<Class<?>> getServises() {
+    protected List<Class<?>> getServices() {
         List<Class<?>> list = new ArrayList<Class<?>>();
         list.add(MakeProjectType.class);
-        list.addAll(super.getServises());
+        list.addAll(super.getServices());
         return list;
     }
 

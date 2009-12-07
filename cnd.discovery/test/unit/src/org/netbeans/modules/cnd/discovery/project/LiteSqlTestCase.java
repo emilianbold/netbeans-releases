@@ -47,7 +47,7 @@ import org.openide.util.Utilities;
  *
  * @author Alexander Simon
  */
-public class LiteSqlTestCase extends MakeProjectBase {
+public class LiteSqlTestCase extends MakeProjectTestBase {
 
     public LiteSqlTestCase() {
         super("LiteSql");

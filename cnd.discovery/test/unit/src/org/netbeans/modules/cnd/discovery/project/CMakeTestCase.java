@@ -45,7 +45,7 @@ import org.junit.Test;
  *
  * @author Alexander Simon
  */
-public class CMakeTestCase extends MakeProjectBase {
+public class CMakeTestCase extends MakeProjectTestBase {
 
     public CMakeTestCase() {
         super("CMake");

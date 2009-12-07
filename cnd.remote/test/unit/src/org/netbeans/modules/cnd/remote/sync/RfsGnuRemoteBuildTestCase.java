@@ -62,12 +62,6 @@ public class RfsGnuRemoteBuildTestCase extends RfsBaseRemoteBuildTestCase {
         super(testName, execEnv);
     }
 
-    @Override
-    public void setUp() throws Exception {
-        super.setUp();
-        setupHost("rfs");        
-    }
-
     @ForAllEnvironments
     public void testBuildRfsSampleArgsGNU_Single() throws Exception {
         setDefaultCompilerSet("GNU");
