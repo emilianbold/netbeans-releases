@@ -238,6 +238,10 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
     }
 
     boolean canClose() {
+        if (setups == null) {
+            return true;
+        }
+
         EditorCookie[] editorCookies = fileTable.getEditorCookies();
         DiffUtils.cleanThoseUnmodified(editorCookies);
         DiffUtils.cleanThoseWithEditorPaneOpen(editorCookies);
