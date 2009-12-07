@@ -137,10 +137,6 @@ public class BlameAction extends ContextAction {
                 return;
             }
             ab.setSVNClienListener(new SVNClientListener(status.getRevision().getNumber(), repository, file, ab));
-            revision = SVNRevision.BASE;
-        } else {
-            // showing annotations from past, the referenced file differs from the one being displayed
-            ab.setReferencedFile(file);
         }
 
         TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class, currentPane);
@@ -167,6 +163,12 @@ public class BlameAction extends ContextAction {
             ab.setAnnotationMessage(NbBundle.getMessage(BlameAction.class, "CTL_AnnotationFailed")); // NOI18N;
             SvnClientExceptionHandler.notifyException(ex, true, true);
             return;
+        }
+        if (revision == null) {
+            revision = SVNRevision.BASE;
+        } else {
+            // showing annotations from past, the referenced file differs from the one being displayed
+            ab.setReferencedFile(file);
         }
 
         ISVNAnnotations annotations;
