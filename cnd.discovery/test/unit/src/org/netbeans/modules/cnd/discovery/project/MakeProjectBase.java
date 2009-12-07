@@ -402,7 +402,7 @@ public abstract class MakeProjectBase extends CndBaseTestCase { //extends NbTest
             fileCreatedFolder.mkdirs();
         } else {
             if (!OPTIMIZE_NATIVE_EXECUTIONS) {
-                execute(tools, "rm", createdFolder, "-rf", "*");
+                execute(tools, "rm", createdFolder, "-rf", "*", ".*");
             }
         }
         if (fileCreatedFolder.list().length == 0){
