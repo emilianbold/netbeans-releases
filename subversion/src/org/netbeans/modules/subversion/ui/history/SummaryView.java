@@ -40,13 +40,11 @@
  */
 package org.netbeans.modules.subversion.ui.history;
 
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
 import org.openide.nodes.Node;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.FileObject;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.modules.subversion.util.Context;
@@ -75,15 +73,13 @@ import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.kenai.SvnKenaiSupport;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.AuthorLinker;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.IssueLinker;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.Linker;
 import org.netbeans.modules.versioning.util.HyperlinkProvider;
 import org.netbeans.modules.versioning.util.VCSKenaiSupport.KenaiUser;
-import org.openide.cookies.EditorCookie;
-import org.openide.cookies.OpenCookie;
-import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 
@@ -397,7 +393,19 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 public void actionPerformed(ActionEvent e) {
                     RequestProcessor.getDefault().post(new Runnable() {
                         public void run() {
-                            view(selection[0]);
+                            view(selection[0], false);
+                        }
+                    });
+                }
+            }));
+            menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_ShowAnnotations")) { // NOI18N
+                {
+                    setEnabled(viewEnabled);
+                }
+                public void actionPerformed(ActionEvent e) {
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        public void run() {
+                            view(selection[0], true);
                         }
                     });
                 }
@@ -519,38 +527,15 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         }
     }
 
-    private void view(int idx) {
+    private void view(int idx, boolean showAnnotations) {
         Object o = dispResults.get(idx);
         if (o instanceof RepositoryRevision.Event) {
             RepositoryRevision.Event drev = (RepositoryRevision.Event) o;
             File originFile = drev.getFile();
-            String rev = drev.getLogInfoHeader().getLog().getRevision().toString();
+            SVNRevision rev = drev.getLogInfoHeader().getLog().getRevision();
             SVNUrl repoUrl = drev.getLogInfoHeader().getRepositoryRootUrl();
             SVNUrl fileUrl = repoUrl.appendPath(drev.getChangedPath().getPath());
-            File file = null;
-            try {
-                file = VersionsCache.getInstance().getFileRevision(repoUrl, fileUrl, rev, originFile.getName());
-            } catch (IOException e) {
-                Subversion.LOG.log(Level.SEVERE, null, e);
-                return;
-            }
-            FileObject fo = FileUtil.toFileObject(file);
-            EditorCookie ec = null;
-            OpenCookie oc = null;
-            try {
-                DataObject dobj = DataObject.find(fo);
-                ec = dobj.getCookie(EditorCookie.class);
-                oc = dobj.getCookie(OpenCookie.class);
-            } catch (DataObjectNotFoundException ex) {
-                Subversion.LOG.log(Level.FINE, null, ex);
-            }
-            if (ec != null) {
-                org.netbeans.modules.versioning.util.Utils.openFile(fo, rev);
-            } else if (oc != null) {
-                oc.open();
-            } else {
-                org.netbeans.modules.versioning.util.Utils.openFile(fo, rev);
-            }
+            SvnUtils.openInRevision(originFile, repoUrl, fileUrl, rev, rev, showAnnotations);
         }
     }
     private void diffPrevious(int idx) {

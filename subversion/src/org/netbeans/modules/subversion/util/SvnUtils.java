@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.subversion.util;
 
+import java.awt.EventQueue;
 import java.net.MalformedURLException;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.openide.nodes.Node;
@@ -76,6 +77,7 @@ import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.modules.versioning.util.FileSelector;
 import org.netbeans.modules.versioning.util.Utils;
+import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.HelpCtx;
@@ -1217,8 +1219,10 @@ public class SvnUtils {
 
     public static SVNRevision toSvnRevision(String revision) {
         SVNRevision svnrevision;
-        if (Setup.REVISION_HEAD.equals(revision)) {
+        if (Setup.REVISION_HEAD.equals(revision) || SVNRevision.HEAD.toString().equals(revision)) {
             svnrevision = SVNRevision.HEAD;
+        } else if (SVNRevision.BASE.toString().equals(revision)) {
+            svnrevision = SVNRevision.BASE;
         } else {
             svnrevision = new SVNRevision.Number(Long.parseLong(revision));
         }
@@ -1385,6 +1389,49 @@ public class SvnUtils {
             idx = urlString.length();
         }
         return urlString.substring(4, idx);
+    }
+
+    public static void openInRevision(final File originalFile, final SVNUrl repoUrl, final SVNUrl fileUrl, final SVNRevision svnRevision, final SVNRevision pegRevision, boolean showAnnotations) {
+        File file;
+        String rev = svnRevision.toString();
+        try {
+            file = org.netbeans.modules.subversion.VersionsCache.getInstance().getFileRevision(repoUrl, fileUrl, rev, pegRevision.toString(), originalFile.getName());
+        } catch (IOException e) {
+            SvnClientExceptionHandler.notifyException(e, true, true);
+            return;
+        }
+
+        final FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+        EditorCookie ec = null;
+        org.openide.cookies.OpenCookie oc = null;
+        try {
+            DataObject dobj = DataObject.find(fo);
+            ec = dobj.getCookie(EditorCookie.class);
+            oc = dobj.getCookie(org.openide.cookies.OpenCookie.class);
+        } catch (DataObjectNotFoundException ex) {
+            Subversion.LOG.log(Level.FINE, null, ex);
+        }
+        org.openide.text.CloneableEditorSupport ces = null;
+        if (ec == null && oc != null) {
+            oc.open();
+        } else {
+            ces = org.netbeans.modules.versioning.util.Utils.openFile(fo, rev);
+        }
+        if (showAnnotations) {
+            if (ces == null) {
+                return;
+            } else {
+                final org.openide.text.CloneableEditorSupport support = ces;
+                EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        javax.swing.JEditorPane[] panes = support.getOpenedPanes();
+                        if (panes != null) {
+                            org.netbeans.modules.subversion.ui.blame.BlameAction.showAnnotations(panes[0], originalFile, svnRevision);
+                        }
+                    }
+                });
+            }
+        }
     }
 
     private static CommitOptions getDefaultCommitOptions(File file) {
