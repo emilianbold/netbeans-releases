@@ -186,7 +186,7 @@ public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
         System.setProperty("SUNW_NO_UPDATE_NOTIFY", "true");
         List<Class<?>> list = new ArrayList<Class<?>>();
         list.add(MockMimeLookup.class);
-        for(Class<?> cls : getServises()){
+        for(Class<?> cls : getServices()){
             list.add(cls);
         }
         MockServices.setServices(list.toArray(new Class<?>[list.size()]));
@@ -204,7 +204,7 @@ public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
         MockMimeLookup.setInstances(mimePath, new FKit());
     }
 
-    protected List<Class<?>> getServises(){
+    protected List<Class<?>> getServices(){
         return Collections.<Class<?>>emptyList();
     }
 

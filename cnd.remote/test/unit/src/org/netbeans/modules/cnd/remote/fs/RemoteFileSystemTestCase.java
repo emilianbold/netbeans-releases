@@ -195,7 +195,7 @@ public class RemoteFileSystemTestCase extends RemoteTestBase {
         public void run() {
             Thread.currentThread().setName(name);
             try {
-                System.err.printf("%s waiting on barriar\n", name);
+                System.err.printf("%s waiting on barrier\n", name);
                 barrier.await();
                 System.err.printf("%s working\n", name);
                 work();

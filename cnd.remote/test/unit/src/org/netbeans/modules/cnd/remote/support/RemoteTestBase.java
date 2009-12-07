@@ -172,6 +172,12 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
         }
     }
 
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        ConnectionManager.getInstance().disconnect(getTestExecutionEnvironment());
+    }
+
     protected static void setupHost(ExecutionEnvironment execEnv) {
         ToolsCacheManager tcm = new ToolsCacheManager();
         HostValidatorImpl validator = new HostValidatorImpl(tcm);
