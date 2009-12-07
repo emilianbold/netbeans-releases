@@ -41,15 +41,21 @@
 
 package org.netbeans.modules.debugger.jpda.ui.models;
 
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.dnd.DnDConstants;
 import java.io.IOException;
 
+import java.io.StringReader;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAWatch;
+import org.netbeans.spi.viewmodel.DnDNodeModel;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
@@ -61,7 +67,7 @@ import org.openide.util.datatransfer.PasteType;
 /**
  * @author   Jan Jancura
  */
-public class WatchesNodeModel extends VariablesNodeModel {
+public class WatchesNodeModel extends VariablesNodeModel implements DnDNodeModel {
 
     public static final String WATCH =
         "org/netbeans/modules/debugger/resources/watchesView/watch_16.png";
@@ -145,16 +151,30 @@ public class WatchesNodeModel extends VariablesNodeModel {
         return new StringSelection(((JPDAWatch) node).getExpression());
     }
 
-    /*
+    public int getAllowedDragActions() {
+        return DnDConstants.ACTION_COPY_OR_MOVE;
+    }
+
+    public int getAllowedDropActions() {
+        return DnDConstants.ACTION_COPY;
+    }
+
+    public int getAllowedDropActions(Transferable t) {
+        if (t != null && t.isDataFlavorSupported(new DataFlavor(JPDAWatch.class, null))) {
+            return DnDConstants.ACTION_COPY_OR_MOVE;
+        } else {
+            return DnDConstants.ACTION_COPY;
+        }
+    }
+
     public Transferable drag(Object node) throws IOException,
                                                  UnknownTypeException {
         if (node instanceof JPDAWatch) {
-            return new StringSelection(((JPDAWatch) node).getExpression());
+            return new WatchSelection((JPDAWatch) node);
         } else {
             return null;
         }
     }
-     */
 
     public PasteType[] getPasteTypes(final Object node, final Transferable t) throws UnknownTypeException {
         if (node != TreeModel.ROOT && !(node instanceof JPDAWatch)) {
@@ -187,12 +207,36 @@ public class WatchesNodeModel extends VariablesNodeModel {
         }
     }
 
-    /*
-    public PasteType getDropType(Object node, Transferable t, int action,
+    public PasteType getDropType(final Object node, final Transferable t, int action,
                                  int index) throws UnknownTypeException {
-        return null;
+        //System.err.println("\n\ngetDropType("+node+", "+t+", "+action+", "+index+")");
+        DataFlavor[] flavors = t.getTransferDataFlavors();
+        final DataFlavor textFlavor = DataFlavor.selectBestTextFlavor(flavors);
+        //System.err.println("Text Flavor = "+textFlavor);
+        if (textFlavor != null) {
+            return new PasteType() {
+
+                public Transferable paste() {
+                    try {
+                        java.io.Reader r = textFlavor.getReaderForText(t);
+                        java.nio.CharBuffer cb = java.nio.CharBuffer.allocate(1000);
+                        r.read(cb);
+                        cb.flip();
+                        if (node instanceof JPDAWatch) {
+                            ((JPDAWatch) node).setExpression(cb.toString());
+                            fireModelChange(new ModelEvent.NodeChanged(WatchesNodeModel.this, node));
+                        } else {
+                            // Root => add a new watch
+                            DebuggerManager.getDebuggerManager().createWatch(cb.toString());
+                        }
+                    } catch (Exception ex) {}
+                    return t;
+                }
+            };
+        } else {
+            return null;
+        }
     }
-     */
 
     public void setName(Object node, String name) throws UnknownTypeException {
         ((JPDAWatch) node).setExpression(name);
@@ -210,5 +254,81 @@ public class WatchesNodeModel extends VariablesNodeModel {
         }
         return super.getIconBaseWithExtension(node);
     }
-    
+
+    private static  class WatchSelection implements Transferable, ClipboardOwner {
+
+        private static final int STRING = 0;
+        private static final int PLAIN_TEXT = 1;
+        private static final int WATCH = 2;
+
+        private static final DataFlavor[] flavors = {
+            DataFlavor.stringFlavor,
+            DataFlavor.plainTextFlavor, // deprecated
+            new DataFlavor(JPDAWatch.class, "Watch")
+        };
+
+        private JPDAWatch watch;
+        private String str;
+
+        /**
+         * Creates a <code>Transferable</code> capable of transferring
+         * the specified <code>Watch</code>.
+         */
+        public WatchSelection(JPDAWatch watch) {
+            this.watch = watch;
+            this.str = watch.getExpression();
+        }
+
+        /**
+         * Returns an array of flavors in which this <code>Transferable</code>
+         * can provide the data.
+         */
+        public DataFlavor[] getTransferDataFlavors() {
+            // returning flavors itself would allow client code to modify
+            // our internal behavior
+            return (DataFlavor[])flavors.clone();
+        }
+
+        /**
+         * Returns whether the requested flavor is supported by this
+         * <code>Transferable</code>.
+         * 
+         * @throws NullPointerException if flavor is <code>null</code>
+         */
+        public boolean isDataFlavorSupported(DataFlavor flavor) {
+            for (int i = 0; i < flavors.length; i++) {
+                if (flavor.equals(flavors[i])) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /**
+         * Returns the <code>Transferable</code>'s data in the requested
+         * <code>DataFlavor</code> if possible.
+         * @param flavor the requested flavor for the data
+         * @return the data in the requested flavor, as outlined above
+         * @throws UnsupportedFlavorException if the requested data flavor is
+         *         not supported.
+         * @throws IOException if an IOException occurs while retrieving the data.
+         * @throws NullPointerException if flavor is <code>null</code>
+         */
+        public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException,
+                                                                IOException {
+            if (flavor.equals(flavors[STRING])) {
+                return (Object)str;
+            } else if (flavor.equals(flavors[PLAIN_TEXT])) {
+                return new StringReader(str == null ? "" : str);
+            } else if (flavor.equals(flavors[WATCH])) {
+                return watch;
+            } else {
+                throw new UnsupportedFlavorException(flavor);
+            }
+        }
+
+        public void lostOwnership(Clipboard clipboard, Transferable contents) {
+        }
+    }
+
 }

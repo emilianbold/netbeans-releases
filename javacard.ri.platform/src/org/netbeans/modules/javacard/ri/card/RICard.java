@@ -63,10 +63,12 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.javacard.api.AntClasspathClosureProvider;
 import org.netbeans.modules.javacard.api.RunMode;
 import org.netbeans.modules.javacard.common.CommonSystemFilesystemPaths;
+import org.netbeans.modules.javacard.common.JCConstants;
 import org.netbeans.modules.javacard.common.NodeRefresher;
+import org.netbeans.modules.javacard.common.Utils;
 import org.netbeans.modules.javacard.ri.platform.loader.CardChildren;
 import org.netbeans.modules.javacard.spi.capabilities.AntTargetInterceptor;
-import org.netbeans.modules.javacard.spi.capabilities.ApduSupport;
+import org.netbeans.modules.javacard.spi.capabilities.UrlCapability;
 import org.netbeans.modules.javacard.spi.capabilities.CardContentsProvider;
 import org.netbeans.modules.javacard.spi.capabilities.CardInfo;
 import org.netbeans.modules.javacard.spi.CardState;
@@ -78,6 +80,7 @@ import org.netbeans.modules.javacard.spi.JavacardPlatform;
 import org.netbeans.modules.javacard.spi.capabilities.AntTarget;
 import org.netbeans.modules.javacard.spi.capabilities.CardCustomizerProvider;
 import org.netbeans.modules.javacard.spi.capabilities.ContactedProtocol;
+import org.netbeans.modules.javacard.spi.capabilities.DeleteCapability;
 import org.netbeans.modules.javacard.spi.capabilities.PortKind;
 import org.netbeans.modules.javacard.spi.capabilities.PortProvider;
 import org.netbeans.modules.javacard.spi.capabilities.ProfileCapability;
@@ -130,7 +133,12 @@ public class RICard extends BaseCard<CardProperties> { //non-final only for unit
     }
 
     @Override
-    protected ApduSupport createApduSupport(CardProperties t) {
+    public DeleteCapability createDeleteCapability(CardProperties t) {
+        return new Delete();
+    }
+
+    @Override
+    protected UrlCapability createApduSupport(CardProperties t) {
         return new Apdu();
     }
 
@@ -565,7 +573,7 @@ public class RICard extends BaseCard<CardProperties> { //non-final only for unit
         }
     }
 
-    private class Apdu implements ApduSupport {
+    private class Apdu implements UrlCapability {
 
         public ContactedProtocol getContactedProtocol() {
             String p = getCapability(CardProperties.class).getContactedProtocol();
@@ -630,7 +638,8 @@ public class RICard extends BaseCard<CardProperties> { //non-final only for unit
                 }
                 StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(ClearEprom.class,
                         "MSG_DELETING_EPROM_FILE", getDisplayName())); //NOI18N
-                FileObject epromFile = getEpromFile(false);
+                EpromFileCapability epromFileCap = getCapability(EpromFileCapability.class);
+                FileObject epromFile = epromFileCap.getEpromFile();
                 assert epromFile != null : "ClearEprom should not be able to " + //NOI18N
                         "be invoked if no eprom file exists"; //NOI18N
                 epromFile.delete();
@@ -692,7 +701,14 @@ public class RICard extends BaseCard<CardProperties> { //non-final only for unit
     private final class Eprom implements EpromFileCapability {
 
         public FileObject getEpromFile() {
-            return RICard.this.getEpromFile(false);
+            FileObject result = null;
+            FileObject fld = Utils.sfsFolderForDeviceEepromsForPlatformNamed(
+                    getPlatform().getSystemName(), false);
+            if (fld != null) {
+                result = fld.getFileObject(getSystemId(),
+                        JCConstants.EEPROM_FILE_EXTENSION);
+            }
+            return result;
         }
     }
 
@@ -701,7 +717,7 @@ public class RICard extends BaseCard<CardProperties> { //non-final only for unit
         public XListModel getContents() {
             assert !EventQueue.isDispatchThread() : "May not be called on event " + //NOI18N
                     "thread"; //NOI18N
-            ApduSupport apdu = getCapability(ApduSupport.class);
+            UrlCapability apdu = getCapability(UrlCapability.class);
             String url = apdu.getListURL();
             if (url != null) {
                 InputStream in = null;
@@ -751,5 +767,11 @@ public class RICard extends BaseCard<CardProperties> { //non-final only for unit
     }
 
     private static final class Profile implements ProfileCapability {
+    }
+
+    private final class Delete implements DeleteCapability {
+        public void delete() throws IOException {
+            dob.delete();
+        }
     }
 }

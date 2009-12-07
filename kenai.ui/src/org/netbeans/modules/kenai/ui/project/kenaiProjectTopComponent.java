@@ -702,6 +702,7 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
                     downloadsLabel.setIcon(ImageUtilities.loadImageIcon("/org/netbeans/modules/kenai/ui/resources/insertlink.png", false)); //NOI18N
                     downloadsLabel.setToolTipText(KENAI_URL + down.getWebLocation().getPath());
                     downloadsLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                    downloadsLabel.removeActionListener(downloadsActionListener);
                     downloadsActionListener = new URLListener(down.getWebLocation());
                     downloadsLabel.addActionListener(downloadsActionListener);
                 }
@@ -728,6 +729,7 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
                     wikiLabel.setIcon(ImageUtilities.loadImageIcon("/org/netbeans/modules/kenai/ui/resources/insertlink.png", false)); //NOI18N
                     wikiLabel.setToolTipText(KENAI_URL + wiki.getWebLocation().getPath());
                     wikiLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                    wikiLabel.removeActionListener(wikiActionListener);
                     wikiActionListener = new URLListener(wiki.getWebLocation());
                     wikiLabel.addActionListener(wikiActionListener);
                 }

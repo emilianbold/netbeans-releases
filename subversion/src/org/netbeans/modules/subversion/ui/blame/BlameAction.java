@@ -60,6 +60,7 @@ import javax.swing.*;
 import java.io.File;
 import java.util.*;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
+import org.openide.windows.TopComponent;
 
 /**
  *
@@ -107,49 +108,58 @@ public class BlameAction extends ContextAction {
             JEditorPane[] panes = ec.getOpenedPanes();
             if (panes == null) {
                 ec.open();
+                panes = ec.getOpenedPanes();
             }
-            panes = ec.getOpenedPanes();
             if (panes == null) {
                 return;
             }
             final JEditorPane currentPane = panes[0];
-            
-            final AnnotationBar ab = AnnotationBarManager.showAnnotationBar(currentPane);
-            ab.setAnnotationMessage(NbBundle.getMessage(BlameAction.class, "CTL_AnnotationSubstitute")); // NOI18N;
+            showAnnotations(currentPane, file, null);
+        }
+    }
 
+    public static void showAnnotations(JEditorPane currentPane, File file, SVNRevision revision) {
+        final AnnotationBar ab = AnnotationBarManager.showAnnotationBar(currentPane);
+        ab.setAnnotationMessage(NbBundle.getMessage(BlameAction.class, "CTL_AnnotationSubstitute")); // NOI18N;
+
+        SVNUrl repository;
+        try {
+            repository = SvnUtils.getRepositoryRootUrl(file);
+        } catch (SVNClientException ex) {
+            SvnClientExceptionHandler.notifyException(ex, true, true);
+            return;
+        }
+
+        if (revision == null) {
             ISVNStatus status = Subversion.getInstance().getStatusCache().getStatus(file).getEntry(file);
             if (status == null) {
                 // status could not be loaded, do not continnue
                 return;
             }
-            long revision = status.getRevision().getNumber();
-            
-            SVNUrl repository;
-            try {            
-                repository = SvnUtils.getRepositoryRootUrl(file);
-            } catch (SVNClientException ex) {
-                SvnClientExceptionHandler.notifyException(ex, true, true);
-                return;
-            }                                                     
-            
-            ab.setSVNClienListener(new SVNClientListener(revision, repository, file, ab));
-            
-            computeAnnotations(repository, file, ab);                        
+            ab.setSVNClienListener(new SVNClientListener(status.getRevision().getNumber(), repository, file, ab));
+            revision = SVNRevision.BASE;
+        } else {
+            // showing annotations from past, the referenced file differs from the one being displayed
+            ab.setReferencedFile(file);
         }
+
+        TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class, currentPane);
+        tc.requestActive();
+        computeAnnotations(repository, file, ab, revision);
     }
 
-    private void computeAnnotations(SVNUrl repository, final File file, final AnnotationBar ab) {
+    private static void computeAnnotations(SVNUrl repository, final File file, final AnnotationBar ab, final SVNRevision revision) {
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);
         SvnProgressSupport support = new SvnProgressSupport() {
             public void perform() {                    
-                computeAnnotations(file, this, ab);
+                computeAnnotations(file, this, ab, revision);
             }
         };
         support.start(rp, repository, NbBundle.getMessage(BlameAction.class, "MSG_Annotation_Progress")); // NOI18N        
     }
             
     
-    private void computeAnnotations(File file, SvnProgressSupport progress, AnnotationBar ab) {
+    private static void computeAnnotations(File file, SvnProgressSupport progress, AnnotationBar ab, SVNRevision revision) {
         SvnClient client;
         try {
             client = Subversion.getInstance().getClient(file, progress);
@@ -161,7 +171,7 @@ public class BlameAction extends ContextAction {
 
         ISVNAnnotations annotations;
         try {
-            annotations = client.annotate(file, new SVNRevision.Number(1), SVNRevision.BASE);
+            annotations = client.annotate(file, new SVNRevision.Number(1), revision);
         } catch (SVNClientException e) {
             ab.setAnnotationMessage(NbBundle.getMessage(BlameAction.class, "CTL_AnnotationFailed")); // NOI18N;
             SvnClientExceptionHandler.notifyException(e, true, true);
@@ -177,7 +187,7 @@ public class BlameAction extends ContextAction {
         // fetch log messages
         ISVNLogMessage [] logs;
         try {
-            logs = client.getLogMessages(file, new SVNRevision.Number(1), SVNRevision.BASE, false, false);
+            logs = client.getLogMessages(file, new SVNRevision.Number(1), revision, false, false);
         } catch (SVNClientException e) {
             progress.annotate(e);
             return;
@@ -270,7 +280,7 @@ public class BlameAction extends ContextAction {
         return null;
     }
 
-    private class SVNClientListener implements ISVNNotifyListener {
+    private static class SVNClientListener implements ISVNNotifyListener {
         
         private final SVNUrl repository;
         private final File file;
@@ -308,7 +318,7 @@ public class BlameAction extends ContextAction {
                 return;
             }
             if(notifiedFile.getAbsolutePath().equals(file.getAbsolutePath()) && revision != newRevision) {
-                computeAnnotations(repository, file, ab);
+                computeAnnotations(repository, file, ab, SVNRevision.BASE);
                 revision = newRevision;
                 notifiedFile = null;
             }

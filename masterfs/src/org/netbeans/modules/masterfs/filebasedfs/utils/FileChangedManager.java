@@ -40,6 +40,7 @@ package org.netbeans.modules.masterfs.filebasedfs.utils;
 
 import java.io.File;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Logger;
 import org.netbeans.modules.masterfs.filebasedfs.naming.NamingFactory;
 import org.openide.util.Lookup;
 
@@ -49,6 +50,7 @@ import org.openide.util.Lookup;
  */
 @org.openide.util.lookup.ServiceProvider(service=java.lang.SecurityManager.class)
 public class FileChangedManager extends SecurityManager {
+    private static final Logger LOG = Logger.getLogger(FileChangedManager.class.getName());
     private static  FileChangedManager INSTANCE;
     private static final int CREATE_HINT = 2;
     private static final int DELETE_HINT = 1;
@@ -94,7 +96,15 @@ public class FileChangedManager extends SecurityManager {
     }    
 
     public boolean exists(File file) {
+        long time = 0;
+        assert (time = System.currentTimeMillis()) >= Long.MIN_VALUE;
         boolean retval = file.exists();
+        if (time > 0) {
+            time = System.currentTimeMillis() - time;
+            if (time > 500) {
+                LOG.warning("Too much time (" + time + " ms) spend touching " + file);
+            }
+        }
         Integer id = getKey(file);
         remove(id);
         put(id, retval);

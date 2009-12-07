@@ -187,7 +187,9 @@ public class JDBCTable extends TableImplementation {
                     LOGGER.log(Level.FINE, "Created column {0}", column);
                 }
             } finally {
-                rs.close();
+                if (rs != null) {
+                    rs.close();
+                }
             }
         } catch (SQLException e) {
             filterSQLException(e);
@@ -226,7 +228,9 @@ public class JDBCTable extends TableImplementation {
                     }
                 }
             } finally {
-                rs.close();
+                if (rs != null) {
+                    rs.close();
+                }
             }
         } catch (SQLException e) {
             filterSQLException(e);
@@ -291,7 +295,9 @@ public class JDBCTable extends TableImplementation {
                     LOGGER.log(Level.FINE, "Added foreign key column " + col.getName() + " to foreign key " + keyName);
                 }
             } finally {
-                rs.close();
+                if (rs != null) {
+                    rs.close();
+                }
             }
         } catch (SQLException e) {
             filterSQLException(e);
@@ -391,7 +397,9 @@ public class JDBCTable extends TableImplementation {
                     pkcols.add(getColumn(colName));
                 }
             } finally {
-                rs.close();
+                if (rs != null) {
+                    rs.close();
+                }
             }
         } catch (SQLException e) {
             filterSQLException(e);

@@ -82,7 +82,7 @@ public class AnnotationBar extends JComponent implements Accessible,
     /**
      * @return the fileAnnotationInfo
      */
-    protected FileAnnotationInfo getFileAnnotationInfo() {
+    private FileAnnotationInfo getFileAnnotationInfo() {
         return fileAnnotationInfo;
     }
 
@@ -261,7 +261,7 @@ public class AnnotationBar extends JComponent implements Accessible,
         revalidate();  // resize the component
     }
 
-    public void unAnnotate() {
+    public void hideAnnotate() {
         annotated = false;
 
         if (getFileAnnotationInfo() == null || getFileAnnotationInfo().getLineAnnotationInfo() == null) { // IZ 175761 
@@ -286,6 +286,15 @@ public class AnnotationBar extends JComponent implements Accessible,
 
         revalidate();  // resize the component
 
+    }
+
+    public void unAnnotate() {
+        hideAnnotate();
+        fileAnnotationInfo = null;
+    }
+
+    public boolean hasAnnotations() {
+        return fileAnnotationInfo != null;
     }
 
     private void setHighlight(StyledDocument doc, int line1, int line2, Color bgColor, Color fgColor) {
@@ -448,7 +457,7 @@ public class AnnotationBar extends JComponent implements Accessible,
                 navigationBarBG = null;
 
                 if (annotated) {
-                    unAnnotate();
+                    hideAnnotate();
                     annotate(getFileAnnotationInfo());
                 }
             }

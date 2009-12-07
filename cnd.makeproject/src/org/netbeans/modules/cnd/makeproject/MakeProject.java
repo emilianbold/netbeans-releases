@@ -138,7 +138,7 @@ import org.w3c.dom.Text;
     sharedNamespace=MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE,
     privateNamespace=MakeProjectType.PRIVATE_CONFIGURATION_NAMESPACE
 )
-public final class MakeProject implements Project, AntProjectListener {
+public final class MakeProject implements Project, AntProjectListener, Runnable {
 
     public static final boolean TRACE_MAKE_PROJECT_CREATION = Boolean.getBoolean("cnd.make.project.creation.trace"); // NOI18N
     private static final boolean UNIT_TEST_MODE = CndUtils.isUnitTestMode();
@@ -160,6 +160,7 @@ public final class MakeProject implements Project, AntProjectListener {
     private Set<String> cExtensions = MakeProject.createExtensionSet();
     private Set<String> cppExtensions = MakeProject.createExtensionSet();
     private String sourceEncoding = null;
+    private boolean isOpenHookDone = false;
 
     private final MakeSources sources;
     private final MutableCP sourcepath;
@@ -860,13 +861,15 @@ public final class MakeProject implements Project, AntProjectListener {
         openedTasks.add(task);
     }
 
-    private final class ProjectOpenedHookImpl extends ProjectOpenedHook {
+    public void run() {
+        // This is ugly solution introduced for waiting finished opened tasks in discovery module.
+        // see method org.netbeans.modules.cnd.discovery.projectimport.ImportProject.doWork().
+        // TODO: refactor this solution
+        onProjectOpened();
+    }
 
-        ProjectOpenedHookImpl() {
-        }
-
-        protected void projectOpened() {
-
+    private synchronized void onProjectOpened(){
+        if (!isOpenHookDone) {
             checkNeededExtensions();
             if (openedTasks != null) {
                 for (Runnable runnable : openedTasks) {
@@ -877,50 +880,29 @@ public final class MakeProject implements Project, AntProjectListener {
             }
 
             GlobalPathRegistry.getDefault().register(MakeProjectPaths.SOURCES, sourcepath.getClassPath());
+            isOpenHookDone = true;
+        }
+    }
 
-//            /* Don't do this for two reasons: semantically it is wrong (IZ 115314) and it is dangerous (IZ 118575)
-//            ConfigurationDescriptor projectDescriptor = null;
-//            int count = 15;
-//
-//            // The code to wait on projectDescriptor is due to a synchronization problem in makeproject.
-//            // If it gets fixed then projectDescriptorProvider.getConfigurationDescriptor() will never
-//            // return null and we can remove this change.
-//            while (projectDescriptor == null && count-- > 0) {
-//                projectDescriptor = projectDescriptorProvider.getConfigurationDescriptor();
-//                if (projectDescriptor == null) {
-//                    try {
-//                        Thread.sleep(100);
-//                    } catch (InterruptedException ex) {
-//                        return;
-//                    }
-//                }
-//            }
-//            if (projectDescriptor == null) {
-//                ErrorManager.getDefault().log(ErrorManager.WARNING, "Skipping project open validation"); // NOI18N
-//                return;
-//            }
-//
-//            Configuration[] confs = projectDescriptor.getConfs().getConfs();
-//            for (int i = 0; i < confs.length; i++) {
-//                MakeConfiguration makeConfiguration = (MakeConfiguration) confs[i];
-//                CompilerSetConfiguration csconf = makeConfiguration.getCompilerSet();
-//                if (!csconf.isValid()) {
-//                    CompilerSet cs = CompilerSet.getCompilerSet(csconf.getOldName());
-//                    CompilerSetManager.getDefault(makeConfiguration.getDevelopmentHost().getName()).add(cs);
-//                    if (cs.isValid()) {
-//                        csconf.setValue(cs.getName());
-//                    }
-//                }
-//            }
-//             */
+    private synchronized void onProjectClosed(){
+        if (projectDescriptorProvider.getConfigurationDescriptor() != null) {
+            projectDescriptorProvider.getConfigurationDescriptor().saveAndClose();
+        }
+
+        GlobalPathRegistry.getDefault().unregister(MakeProjectPaths.SOURCES, sourcepath.getClassPath());
+    }
+
+    private final class ProjectOpenedHookImpl extends ProjectOpenedHook {
+
+        ProjectOpenedHookImpl() {
+        }
+
+        protected void projectOpened() {
+            onProjectOpened();
         }
 
         protected void projectClosed() {
-            if (projectDescriptorProvider.getConfigurationDescriptor() != null) {
-                projectDescriptorProvider.getConfigurationDescriptor().saveAndClose();
-            }
-
-            GlobalPathRegistry.getDefault().unregister(MakeProjectPaths.SOURCES, sourcepath.getClassPath());
+            onProjectClosed();
         }
     }
 

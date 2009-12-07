@@ -14,7 +14,7 @@
     </condition>
     <path id="cobertura.classpath">
         <fileset dir="${cobertura.dir}">
-            <include name="cobertura-1.9.jar" />
+            <include name="cobertura-1.9.3.jar" />
             <include name="lib/**/*.jar" />
         </fileset>
     </path>
@@ -32,7 +32,7 @@
 
             <path id="cobertura.test.cp">
                 <pathelement location="${build.test.cobertura.classes.dir}" />
-                <pathelement location="${cobertura.dir}/cobertura-1.9.jar" />
+                <pathelement location="${cobertura.dir}/cobertura-1.9.3.jar" />
                 <pathelement location="${test.@{test.type}.lib.cp}"/>
                 <path refid="test.@{test.type}.run.cp"/>
                 <pathelement location="build/classes" />

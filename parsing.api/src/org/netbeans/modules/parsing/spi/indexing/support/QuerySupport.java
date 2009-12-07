@@ -40,6 +40,8 @@
 package org.netbeans.modules.parsing.spi.indexing.support;
 
 import java.io.IOException;
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -48,7 +50,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -63,14 +64,15 @@ import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
 import org.netbeans.modules.parsing.impl.indexing.IndexDocumentImpl;
 import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
 import org.netbeans.modules.parsing.impl.indexing.IndexImpl;
+import org.netbeans.modules.parsing.impl.indexing.Pair;
 import org.netbeans.modules.parsing.impl.indexing.PathRecognizerRegistry;
 import org.netbeans.modules.parsing.impl.indexing.PathRegistry;
+import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
 import org.netbeans.modules.parsing.impl.indexing.Util;
 import org.netbeans.modules.parsing.impl.indexing.lucene.LuceneIndexFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.URLMapper;
 import org.openide.util.Parameters;
 
 /**
@@ -242,16 +244,15 @@ public final class QuerySupport {
         Parameters.notNull("kind", kind); //NOI18N
 
         // check if there are stale indices
-        for (Map.Entry<URL, IndexImpl> ie : indexes.entrySet()) {
-            final IndexImpl index = ie.getValue();
+        for (Pair<URL, IndexImpl> pair : indices) {
+            final IndexImpl index = pair.second;
             final Collection<? extends String> staleFiles = index.getStaleFiles();
-
             if (LOG.isLoggable(Level.FINE)) {
                 LOG.fine("Index: " + index + ", staleFiles: " + staleFiles); //NOI18N
             }
 
             if (staleFiles != null && staleFiles.size() > 0) {
-                final URL root = ie.getKey();
+                final URL root = pair.first;
                 LinkedList<URL> list = new LinkedList<URL>();
                 for(String staleFile : staleFiles) {
                     try {
@@ -266,13 +267,15 @@ public final class QuerySupport {
         }
 
         final List<IndexResult> result = new LinkedList<IndexResult>();
-        for (Map.Entry<URL,IndexImpl> ie : indexes.entrySet()) {
-            final IndexImpl index = ie.getValue();
-            final URL root = ie.getKey();
+        for (Pair<URL, IndexImpl> pair : indices) {
+            final IndexImpl index = pair.second;
+            final URL root = pair.first;
             final Collection<? extends IndexDocumentImpl> pr = index.query(fieldName, fieldValue, kind, fieldsToLoad);
             if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("query(\"" + fieldName + "\", \"" + fieldValue + "\", " + kind + ", "
-                        + printFiledToLoad(fieldsToLoad) + ") for " + indexerIdentification + ":"); //NOI18N
+                LOG.fine("query(\"" + fieldName + "\", \"" + fieldValue + "\", " + kind + ", " //NOI18N
+                    + printFiledToLoad(fieldsToLoad) + ") invoked at " //NOI18N
+                    + getClass().getSimpleName() + "@" + Integer.toHexString(System.identityHashCode(this)) //NOI18N
+                    + "[indexer=" + indexerQuery.getIndexerId() + "]:"); //NOI18N
                 for(IndexDocumentImpl idi : pr) {
                     LOG.fine(" " + idi); //NOI18N
                 }
@@ -329,50 +332,22 @@ public final class QuerySupport {
     // ------------------------------------------------------------------------
 
     private static final Logger LOG = Logger.getLogger(QuerySupport.class.getName());
-    
-    private final String indexerIdentification;
-    private final IndexFactoryImpl spiFactory;
-    private final Map<URL,IndexImpl> indexes;
+
+    private final IndexerQuery indexerQuery;
+    private final Iterable<? extends Pair<URL, IndexImpl>> indices;
 
     private QuerySupport (final String indexerName, int indexerVersion, final URL... roots) throws IOException {
-        this.indexerIdentification = indexerName + "/" + indexerVersion; //NOI18N
-        this.spiFactory = new LuceneIndexFactory();
-        this.indexes = new LinkedHashMap<URL, IndexImpl>();
-        final String indexerFolder = findIndexerFolder(indexerName, indexerVersion);
-        if (indexerFolder != null) {
-            for (URL root : roots) {
-                final FileObject cacheFolder = CacheFolder.getDataFolder(root);
-                assert cacheFolder != null;
-                final FileObject indexFolder = cacheFolder.getFileObject(indexerFolder);
-                if (indexFolder != null) {
-                    final IndexImpl index = this.spiFactory.getIndex(indexFolder);
-                    if (index != null) {
-                        this.indexes.put(root,index);
-                    }
-                }
-            }
-        }
+        this.indexerQuery = IndexerQuery.forIndexer(indexerName, indexerVersion);
+        this.indices = indexerQuery.getIndices(roots);
 
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("QuerySupport for " + indexerIdentification + ":"); //NOI18N
-            for(URL root : indexes.keySet()) {
-                LOG.fine(" " + root + " -> index: " + indexes.get(root)); //NOI18N
+            LOG.fine(getClass().getSimpleName() + "@" + Integer.toHexString(System.identityHashCode(this)) //NOI18N
+                    + "[indexer=" + indexerQuery.getIndexerId() + "]:"); //NOI18N
+            for(Pair<URL, IndexImpl> pair : indices) {
+                LOG.fine(" " + pair.first + " -> index: " + pair.second); //NOI18N
             }
             LOG.fine("----"); //NOI18N
         }
-    }
-
-    /**
-     * Unit test constructor
-     */
-    private QuerySupport (final FileObject srcRoot, final String indexerName, final int indexerVersion) throws IOException {
-        this.indexerIdentification = indexerName + "/" + indexerVersion; //NOI18N
-        this.spiFactory = new LuceneIndexFactory();
-        this.indexes = new HashMap<URL, IndexImpl>();
-        final FileObject cacheFolder = CacheFolder.getDataFolder(srcRoot.getURL());
-        FileObject fo = cacheFolder.getFileObject(SPIAccessor.getInstance().getIndexerPath(indexerName, indexerVersion));
-        fo.getClass();
-        this.indexes.put (srcRoot.getURL(),this.spiFactory.getIndex(fo));
     }
 
     private static void collectClasspathRoots(FileObject file, Collection<String> pathIds, boolean binaryPaths, Collection<FileObject> roots) {
@@ -392,7 +367,7 @@ public final class QuerySupport {
                     if (srcRoots != null) {
                         LOG.log(Level.FINE, "Translating {0} -> {1}", new Object [] { binRootUrl, srcRoots }); //NOI18N
                         for(URL srcRootUrl : srcRoots) {
-                            FileObject srcRoot = URLMapper.findFileObject(srcRootUrl);
+                            FileObject srcRoot = RepositoryUpdater.URLCache.getInstance().findFileObject(srcRootUrl);
                             if (srcRoot != null) {
                                 roots.add(srcRoot);
                             }
@@ -420,7 +395,7 @@ public final class QuerySupport {
             roots = new HashSet<FileObject>();
             Set<URL> urls = PathRegistry.getDefault().getRootsMarkedAs(classpathId);
             for(URL url : urls) {
-                FileObject f = URLMapper.findFileObject(url);
+                FileObject f = RepositoryUpdater.URLCache.getInstance().findFileObject(url);
                 if (f != null) {
                     roots.add(f);
                 }
@@ -428,10 +403,6 @@ public final class QuerySupport {
         }
 
         return roots;
-    }
-
-    private static String findIndexerFolder (final String indexerName, final int indexerVersion) {
-        return SPIAccessor.getInstance().getIndexerPath(indexerName, indexerVersion);
     }
 
     private static String printFiledToLoad(String... fieldsToLoad) {
@@ -448,4 +419,73 @@ public final class QuerySupport {
             return sb.toString();
         }
     }
+
+    /* test */ static final class IndexerQuery {
+
+        public static synchronized IndexerQuery forIndexer(String indexerName, int indexerVersion) {
+            String indexerId = SPIAccessor.getInstance().getIndexerPath(indexerName, indexerVersion);
+            IndexerQuery q = queries.get(indexerId);
+            if (q == null) {
+                q = new IndexerQuery(indexerId);
+                queries.put(indexerId, q);
+            }
+            return q;
+        }
+
+        public Iterable<? extends Pair<URL, IndexImpl>> getIndices(URL... roots) {
+            synchronized (root2index) {
+                List<Pair<URL, IndexImpl>> indices = new LinkedList<Pair<URL, IndexImpl>>();
+
+                for(URL r : roots) {
+                    Reference<IndexImpl> indexRef = root2index.get(r);
+                    IndexImpl index = indexRef != null ? indexRef.get() : null;
+                    if (index == null) {
+                        index = findIndex(r);
+                        if (index != null) {
+                            root2index.put(r, new SoftReference<IndexImpl>(index));
+                        } else {
+                            root2index.remove(r);
+                        }
+                    }
+                    if (index != null) {
+                        indices.add(Pair.of(r, index));
+                    }
+                }
+
+                return indices;
+            }
+        }
+
+        public String getIndexerId() {
+            return indexerId;
+        }
+
+        // ------------------------------------------------------------------------
+        // Private implementation
+        // ------------------------------------------------------------------------
+
+        private static final Map<String, IndexerQuery> queries = new HashMap<String, IndexerQuery>();
+        /* test */ static /* final, but tests need to change it */ IndexFactoryImpl indexFactory = new LuceneIndexFactory();
+
+        private final String indexerId;
+        private final Map<URL, Reference<IndexImpl>> root2index = new HashMap<URL, Reference<IndexImpl>>();
+
+        private IndexerQuery(String indexerId) {
+            this.indexerId = indexerId;
+        }
+
+        private IndexImpl findIndex(URL root) {
+            try {
+                FileObject cacheFolder = CacheFolder.getDataFolder(root);
+                assert cacheFolder != null;
+                FileObject indexFolder = cacheFolder.getFileObject(indexerId);
+                if (indexFolder != null) {
+                    return indexFactory.getIndex(indexFolder);
+                }
+            } catch (IOException ioe) {
+                LOG.log(Level.INFO, "Can't create index for " + indexerId + " and " + root, ioe); //NOI18N
+            }
+            return null;
+        }
+    } // End of IndexerQuery class
 }

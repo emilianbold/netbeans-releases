@@ -188,6 +188,11 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
      * Holds parent/previous revisions for each line revision
      */
     private Map<String, String> previousRevisions;
+    /**
+     * This is not null when the displayed annotations do not belong directly to the displayed file but to another.
+     * This can happen e.g. when showing annotations for file in a certain past revision - the displayed file is in fact a temporary file.
+     */
+    private File referencedFile;
 
     /**
      * Creates new instance initializing final fields.
@@ -360,12 +365,13 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
      * exists.
      */
     File getCurrentFile() {
-        File result = null;
-        
-        DataObject dobj = (DataObject)doc.getProperty(Document.StreamDescriptionProperty);
-        if (dobj != null) {
-            FileObject fo = dobj.getPrimaryFile();
-            result = FileUtil.toFile(fo);
+        File result = referencedFile;
+        if (result == null) {
+            DataObject dobj = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
+            if (dobj != null) {
+                FileObject fo = dobj.getPrimaryFile();
+                result = FileUtil.toFile(fo);
+            }
         }
         
         return result;
@@ -460,27 +466,16 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         // used in diff menu, repository root set while computing revision
         // denotes the path of the file in the showing revision
         final File originalFile = al == null ? null : new File(repositoryRoot, al.getFileName());
-        final boolean revisionCanBeRolledBack = al == null ? false : al.canBeRolledBack();
+        final boolean revisionCanBeRolledBack = al == null || referencedFile != null ? false : al.canBeRolledBack();
         
         diffMenu.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                if (revisionPerLine != null) {
-                    // getting the prevoius revision may take some time, running in bg
-                    new HgProgressSupport() {
-                        @Override
-                        protected void perform() {
-                            final String previousRevision = getParentRevision(originalFile, revisionPerLine);
-                            if (!isCanceled() && previousRevision != null) {
-                                SwingUtilities.invokeLater(new Runnable () {
-                                    public void run() {
-                                        DiffAction.diff(originalFile, previousRevision, revisionPerLine);
-                                    }
-                                });
-                            }
-                        }
-                    }.start(RequestProcessor.getDefault(), repositoryRoot,
-                            NbBundle.getMessage(AnnotationBar.class, "MSG_GettingPreviousRevision")); //NOI18N
-                }
+                final PreviousRevisionInvoker pri = new PreviousRevisionInvoker(revisionPerLine, originalFile);
+                pri.runWithRevision(new Runnable() {
+                    public void run() {
+                        DiffAction.diff(originalFile, pri.getPreviousRevision(), revisionPerLine);
+                    }
+                }, true);
             }
         });
         popupMenu.add(diffMenu);
@@ -493,6 +488,25 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         });
         popupMenu.add(rollbackMenu);
         rollbackMenu.setEnabled(revisionCanBeRolledBack);
+
+        // an action showing annotation for previous revisions
+        final JMenuItem previousAnnotationsMenu = new JMenuItem();
+        previousAnnotationsMenu.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                final PreviousRevisionInvoker pri = new PreviousRevisionInvoker(revisionPerLine, originalFile);
+                pri.runWithRevision (new Runnable() {
+                    public void run() {
+                        try {
+                            String previousRevision = pri.getPreviousRevision();
+                            HgUtils.openInRevision(originalFile, previousRevision, !"-1".equals(pri.getPreviousRevision())); //NOI18N
+                        } catch (IOException ex) {
+                            //
+                        }
+                    }
+                }, false);
+            }
+        });
+        popupMenu.add(previousAnnotationsMenu);
 
         if(isKenai() && al != null) {
             String author = al.getAuthor();
@@ -522,6 +536,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         popupMenu.add(menu);
 
         diffMenu.setVisible(false);
+        previousAnnotationsMenu.setVisible(false);
         rollbackMenu.setVisible(false);
         separator.setVisible(false);
         if (revisionPerLine != null) {
@@ -541,10 +556,56 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                 diffMenu.setVisible(originalFile != null);
                 rollbackMenu.setVisible(true);
                 separator.setVisible(true);
+                format = loc.getString("CTL_MenuItem_ShowAnnotationsPrevious"); // NOI18N
+                previousAnnotationsMenu.setText(MessageFormat.format(format, new Object [] { previousRevision == null ? loc.getString("LBL_PreviousRevision") : previousRevision})); //NOI18N
+                previousAnnotationsMenu.setVisible(originalFile != null);
+                previousAnnotationsMenu.setEnabled(!"-1".equals(previousRevision)); //NOI18N
             }
         }
 
         return popupMenu;
+    }
+
+    /**
+     * Class for running a code after the previous revision is determined, which may take some time
+     */
+    private class PreviousRevisionInvoker {
+        private final String revisionPerLine;
+        private final File originalFile;
+        private String previousRevision;
+
+        private PreviousRevisionInvoker(String revisionPerLine, File originalFile) {
+            this.revisionPerLine = revisionPerLine;
+            this.originalFile = originalFile;
+        }
+
+        /**
+         * Runs the given runnable after the previous revision is determined
+         * @param runnable
+         */
+        private void runWithRevision (final Runnable runnable, final boolean inAWT) {
+            if (revisionPerLine != null) {
+                // getting the prevoius revision may take some time, running in bg
+                new HgProgressSupport() {
+                    @Override
+                    protected void perform() {
+                        previousRevision = getParentRevision(originalFile, revisionPerLine);
+                        if (!isCanceled() && previousRevision != null) {
+                            if (inAWT) {
+                                EventQueue.invokeLater(runnable);
+                            } else {
+                                getRequestProcessor().post(runnable);
+                            }
+                        }
+                    }
+                }.start(RequestProcessor.getDefault(), repositoryRoot,
+                        NbBundle.getMessage(AnnotationBar.class, "MSG_GettingPreviousRevision")); //NOI18N
+            }
+        }
+
+        private String getPreviousRevision() {
+            return previousRevision;
+        }
     }
 
     private void revert(final File file, String revision) {
@@ -1131,6 +1192,15 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     private Map<String, String> getPreviousRevisions () {
         Map<String, String> revisions = previousRevisions;
         return revisions == null ? new HashMap<String, String>(0) : previousRevisions;
+    }
+
+    /**
+     * Sets the file for which the annotations are displayed. This file can differ from the displayed one when showing annotations
+     * for a file in the past.
+     * @param file
+     */
+    void setReferencedFile(File file) {
+        this.referencedFile = file;
     }
 }
 

@@ -413,7 +413,7 @@
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="tmTypeLabel" alignment="0" min="-2" max="-2" attributes="1"/>
+                      <Component id="tmLabel" alignment="0" min="-2" max="-2" attributes="1"/>
                       <Component id="tmScrollPane" alignment="0" min="-2" max="-2" attributes="1"/>
                   </Group>
                   <EmptySpace max="32767" attributes="0"/>
@@ -426,7 +426,7 @@
                   <EmptySpace min="-2" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
-                          <Component id="tmTypeLabel" min="-2" max="-2" attributes="0"/>
+                          <Component id="tmLabel" min="-2" max="-2" attributes="0"/>
                           <EmptySpace min="-2" max="-2" attributes="0"/>
                           <Component id="tmScrollPane" pref="99" max="32767" attributes="1"/>
                       </Group>
@@ -857,7 +857,7 @@
             </Component>
           </SubComponents>
         </Container>
-        <Component class="javax.swing.JLabel" name="tmTypeLabel">
+        <Component class="javax.swing.JLabel" name="tmLabel">
           <Properties>
             <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
               <Font name="Lucida Grande" size="13" style="1"/>
@@ -866,7 +866,7 @@
               <ComponentRef name="severityList"/>
             </Property>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/bugzilla/query/Bundle.properties" key="QueryPanel.tmTypeLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/bugzilla/query/Bundle.properties" key="QueryPanel.tmLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
           <AuxValues>

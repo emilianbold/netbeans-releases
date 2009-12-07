@@ -100,7 +100,7 @@ public class JavaBinaryIndexer extends BinaryIndexer {
                                 final List<ElementHandle<TypeElement>> changed = new ArrayList<ElementHandle<TypeElement>>(changes.changed.size()+changes.removed.size());
                                 changed.addAll(changes.changed);
                                 changed.addAll(changes.removed);
-                                final Map<URL,Set<URL>> toRebuild = JavaCustomIndexer.findDependent(context.getRootURI(), srcDeps, binDeps, changed, !changes.added.isEmpty());
+                                final Map<URL,Set<URL>> toRebuild = JavaCustomIndexer.findDependent(context.getRootURI(), srcDeps, binDeps, changed, !changes.added.isEmpty(), false);
                                 for (Map.Entry<URL, Set<URL>> entry : toRebuild.entrySet()) {
                                     context.addSupplementaryFiles(entry.getKey(), entry.getValue());
                                 }

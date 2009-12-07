@@ -46,7 +46,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
-import org.netbeans.modules.nativeexecution.test.Conditional;
+import org.netbeans.modules.nativeexecution.test.If;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 /**
  *
@@ -74,7 +74,7 @@ public class RfsGnuRemoteBuildTestCase extends RfsBaseRemoteBuildTestCase {
         FileObject projectDirFO = prepareSampleProject("Arguments", "Args_rfs_gnu_single");
         MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
         removeRemoteHome();
-        buildProject(makeProject, 60, TimeUnit.SECONDS);
+        buildProject(makeProject, getSampleBuildTimeout(), TimeUnit.SECONDS);
     }
 
     @ForAllEnvironments
@@ -84,11 +84,11 @@ public class RfsGnuRemoteBuildTestCase extends RfsBaseRemoteBuildTestCase {
         removeRemoteHome();
         MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
         System.err.printf("BUILDING FIRST TIME\n");
-        buildProject(makeProject, 60, TimeUnit.SECONDS);
+        buildProject(makeProject, getSampleBuildTimeout(), TimeUnit.SECONDS);
         System.err.printf("BUILDING SECOND TIME\n");
-        buildProject(makeProject, 60, TimeUnit.SECONDS);
+        buildProject(makeProject, getSampleBuildTimeout(), TimeUnit.SECONDS);
         System.err.printf("BUILDING THIRD TIME\n");
-        buildProject(makeProject, 60, TimeUnit.SECONDS);
+        buildProject(makeProject, getSampleBuildTimeout(), TimeUnit.SECONDS);
     }
 
     public static Test suite() {

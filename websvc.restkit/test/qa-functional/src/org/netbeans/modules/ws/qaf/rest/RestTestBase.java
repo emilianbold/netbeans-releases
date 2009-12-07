@@ -153,6 +153,10 @@ public abstract class RestTestBase extends WebServicesTestBase {
         deployProject(getProjectName());
     }
 
+    public void testRun() throws IOException {
+        runProject(getProjectName());
+    }
+
     /**
      * Undeploy a project returned by <code>getProjectName()</code>
      */
@@ -328,6 +332,17 @@ public abstract class RestTestBase extends WebServicesTestBase {
         } else {
             createGoldenFiles(newFiles);
         }
+    }
+
+    @Override
+    public File getGoldenFile(String filename) {
+        String fullClassName = this.getClass().getName().replace("Mvn", "").replace("JEE6", "");
+        String goldenFileName = fullClassName.replace('.', '/')+"/"+filename;
+        // golden files are in ${xtest.data}/goldenfiles/${classname}/...
+        File goldenFile = new File(getDataDir()+"/goldenfiles/"+goldenFileName);
+        assertTrue("Golden file not found in the following locations:\n  " + goldenFile,
+                goldenFile.exists());
+        return goldenFile;
     }
 
     private void createGoldenFiles(Set<File> from) {

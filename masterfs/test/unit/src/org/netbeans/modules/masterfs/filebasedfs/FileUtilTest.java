@@ -113,6 +113,7 @@ public class FileUtilTest extends NbTestCase {
     /** Tests FileChangeListener on File.
      * @see FileUtil#addFileChangeListener(org.openide.filesystems.FileChangeListener, java.io.File)
      */
+    @RandomlyFails // "Event not fired when file was modified." in NB-Core-Build #3605
     public void testAddFileChangeListener() throws IOException, InterruptedException {
         clearWorkDir();
         File rootF = getWorkDir();
@@ -221,7 +222,7 @@ public class FileUtilTest extends NbTestCase {
         assertEquals("No other events should be fired.", 0, fcl.checkAll());
 
         // disk changes #66444
-        for (int cntr = 0; cntr < 50; cntr++) {
+        for (int cntr = 0; cntr < 5; cntr++) {
             dirF.mkdir();
             fileF.createNewFile();
             TestFileUtils.touch(fileF, null);
@@ -358,7 +359,7 @@ public class FileUtilTest extends NbTestCase {
 
         // disk changes #66444
         File fileX = new File(subdir, "oscilating.file");
-        for (int cntr = 0; cntr < 50; cntr++) {
+        for (int cntr = 0; cntr < 5; cntr++) {
             fileX.getParentFile().mkdirs();
             fileX.createNewFile();
             TestFileUtils.touch(fileX, null);
@@ -636,6 +637,7 @@ public class FileUtilTest extends NbTestCase {
     /** Tests recursive FileChangeListener on File.
      * @see FileUtil#addRecursiveListener(org.openide.filesystems.FileChangeListener, java.io.File)
      */
+    @RandomlyFails // NB-Core-Build #3632: Wrong number of events when file was modified. expected:<1> but was:<0>
     public void testAddRecursiveListenerToFile() throws IOException, InterruptedException {
         clearWorkDir();
         File rootF = getWorkDir();
@@ -744,7 +746,7 @@ public class FileUtilTest extends NbTestCase {
         assertEquals("No other events should be fired.", 0, fcl.checkAll());
 
         // disk changes #66444
-        for (int cntr = 0; cntr < 50; cntr++) {
+        for (int cntr = 0; cntr < 5; cntr++) {
             dirF.mkdir();
             fileF.createNewFile();
             TestFileUtils.touch(fileF, null);

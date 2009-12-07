@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.cnd.discovery.projectimport;
 
-import java.io.FileNotFoundException;
 import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.cnd.builds.ImportUtils;
 import java.beans.PropertyChangeEvent;
@@ -363,6 +362,9 @@ public class ImportProject implements PropertyChangeListener {
         //if (setAsMain) {
         //    OpenProjects.getDefault().setMainProject(makeProject);
         //}
+        if (makeProject instanceof Runnable) {
+            ((Runnable)makeProject).run();
+        }
         ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
         pdp.getConfigurationDescriptor();
         if (pdp.gotDescriptor()) {

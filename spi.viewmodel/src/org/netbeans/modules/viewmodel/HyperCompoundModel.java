@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.viewmodel;
 
+import java.awt.datatransfer.Transferable;
 import org.netbeans.spi.viewmodel.ColumnModel;
 import org.netbeans.spi.viewmodel.Model;
 import org.netbeans.spi.viewmodel.Models;
@@ -76,5 +77,21 @@ public class HyperCompoundModel implements Model {
 
     TreeModelFilter getTreeFilter() {
         return treeFilter;
+    }
+
+    int getAllowedDragActions() {
+        int actions = 0;
+        for (Models.CompoundModel m : models) {
+            actions |= m.getAllowedDragActions();
+        }
+        return actions;
+    }
+
+    int getAllowedDropActions(Transferable t) {
+        int actions = 0;
+        for (Models.CompoundModel m : models) {
+            actions |= m.getAllowedDropActions(t);
+        }
+        return actions;
     }
 }

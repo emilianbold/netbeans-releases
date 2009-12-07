@@ -1,4 +1,4 @@
-[<style> h1{| } </style>, border, <style> h1{border: } </style>, 440]
+[<style> h1{| } </style>, border, <style> h1{border:  } </style>, 441]
 azimuth
 background
 background-attachment
@@ -115,8 +115,8 @@ widows
 width
 word-spacing
 z-index
-End cursor position = 459
-[<style> h1{border: |} </style>, color red, <style> h1{border: red} </style>, 568]
+End cursor position = 461
+[<style> h1{border: |} </style>, color red, <style> h1{border: red} </style>, 569]
 color activeborder
 color activecaption
 color appworkspace
@@ -178,8 +178,8 @@ color window
 color windowframe
 color windowtext
 color yellow
-End cursor position = 591
-[<style> | </style>, @import, <style> @import </style>, 674]
+End cursor position = 592
+[<style> | </style>, @import, <style> @import </style>, 675]
 @charset
 @font-face
 @import
@@ -274,8 +274,8 @@ tt
 u
 ul
 var
-End cursor position = 690
-[<table style="|"></table>, background, <table style="background:"></table>, 825]
+End cursor position = 691
+[<table style="|"></table>, background, <table style="background: "></table>, 827]
 azimuth
 background
 background-attachment
@@ -392,8 +392,8 @@ widows
 width
 word-spacing
 z-index
-End cursor position = 851
-[<table style="background:|"></table>, background-repeat no-repeat, <table style="background:no-repeat"></table>, 989]
+End cursor position = 854
+[<table style="background:|"></table>, background-repeat no-repeat, <table style="background:no-repeat"></table>, 991]
 color activeborder
 color activecaption
 color appworkspace
@@ -455,4 +455,4 @@ color window
 color windowframe
 color windowtext
 color yellow
-End cursor position = 1024
+End cursor position = 1026

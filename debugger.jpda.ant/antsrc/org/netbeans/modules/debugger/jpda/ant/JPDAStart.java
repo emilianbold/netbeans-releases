@@ -66,6 +66,7 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import java.util.regex.Pattern;
 import org.apache.tools.ant.BuildEvent;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.BuildListener;
@@ -115,6 +116,11 @@ public class JPDAStart extends Task implements Runnable {
 
     private static final String SOCKET_TRANSPORT = "dt_socket"; // NOI18N
     private static final String SHMEM_TRANSPORT = "dt_shmem"; // NOI18N
+
+    private static final Pattern[] BOOT_CLASSPATH_WARNING_FILTER = new Pattern[] {
+        Pattern.compile(".*jre.lib.sunrsasign\\.jar$"),
+        Pattern.compile(".*jre.classes$"),
+    };
     
     /** Name of the property to which the JPDA address will be set.
      * Target VM should use this address and connect to it
@@ -289,6 +295,10 @@ public class JPDAStart extends Task implements Runnable {
                 logger.fine("Listening using transport "+transport);
 
                 final Map args = lc.defaultArguments ();
+                Connector.StringArgument localAddress = (Connector.StringArgument) args.get("localAddress"); // NOI18N
+                if (localAddress != null) {
+                    localAddress.setValue("127.0.0.1"); // NOI18N
+                }
                 String address = null;
                 try {
                     address = lc.startListening (args);
@@ -341,9 +351,11 @@ public class JPDAStart extends Task implements Runnable {
                         // perform a check for the address and use "localhost"
                         // if the address can not be resolved: (see http://www.netbeans.org/issues/show_bug.cgi?id=154974)
                         String host = address.substring(0, address.indexOf (':'));
+                        logger.fine("  socket listening at " + address+", host = "+host+", port = "+port); // NOI18N
                         try {
                             InetAddress.getByName(host);
                         } catch (UnknownHostException uhex) {
+                            logger.fine(  "unknown host '"+host+"'");
                             address = "localhost:" + port; // NOI18N
                         } catch (SecurityException  se) {}
                     } catch (Exception e) {
@@ -561,7 +573,7 @@ public class JPDAStart extends Task implements Runnable {
         if (sourcepath != null && isSourcePathExclusive) {
             return convertToClassPath (project, sourcepath);
         }
-        ClassPath cp = convertToSourcePath (project, classpath);
+        ClassPath cp = convertToSourcePath (project, classpath, null);
         ClassPath sp = convertToClassPath (project, sourcepath);
         
         ClassPath sourcePath = ClassPathSupport.createProxyClassPath (
@@ -583,7 +595,7 @@ public class JPDAStart extends Task implements Runnable {
                 return ClassPathSupport.createClassPath(java.util.Collections.EMPTY_LIST);
             }
         } else {
-            return convertToSourcePath (project, bootclasspath);
+            return convertToSourcePath (project, bootclasspath, BOOT_CLASSPATH_WARNING_FILTER);
         }
     }
     
@@ -595,7 +607,7 @@ public class JPDAStart extends Task implements Runnable {
             String pathName = project.replaceProperties(paths[i]);
             File f = FileUtil.normalizeFile (project.resolveFile (pathName));
             if (!isValid (f, project)) continue;
-            URL url = fileToURL (f, project);
+            URL url = fileToURL (f, project, null);
             if (url == null) continue;
             l.add (url);
         }
@@ -609,7 +621,7 @@ public class JPDAStart extends Task implements Runnable {
      * the sources were not found are omitted.
      *
      */
-    private static ClassPath convertToSourcePath (Project project, Path path) {
+    private static ClassPath convertToSourcePath (Project project, Path path, Pattern[] warningFilters) {
         String[] paths = path == null ? new String [0] : path.list ();
         List l = new ArrayList ();
         Set exist = new HashSet ();
@@ -619,7 +631,7 @@ public class JPDAStart extends Task implements Runnable {
             File file = FileUtil.normalizeFile 
                 (project.resolveFile (pathName));
             if (!isValid (file, project)) continue;
-            URL url = fileToURL (file, project);
+            URL url = fileToURL (file, project, warningFilters);
             if (url == null) continue;
             logger.fine("convertToSourcePath - class: " + url); // NOI18N
             try {
@@ -661,11 +673,23 @@ public class JPDAStart extends Task implements Runnable {
     }
 
 
-    private static URL fileToURL (File file, Project project) {
+    private static URL fileToURL (File file, Project project, Pattern[] warningFilters) {
         try {
             FileObject fileObject = FileUtil.toFileObject (file);
             if (fileObject == null) {
-                project.log("Have no FileObject for "+file.getAbsolutePath(), Project.MSG_WARN);
+                String path = file.getAbsolutePath();
+                boolean filtered = false;
+                if (warningFilters != null) {
+                    for (Pattern p : warningFilters) {
+                        if (p.matcher(path).matches()) {
+                            filtered = true;
+                            break;
+                        }
+                    }
+                }
+                if (!filtered) {
+                    project.log("Have no file for "+path, Project.MSG_WARN);
+                }
                 return null;
             }
             if (FileUtil.isArchiveFile (fileObject)) {

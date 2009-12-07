@@ -199,6 +199,10 @@ fi
 jargs_without_clusters="$jargs"
 jargs="-Dnetbeans.dirs=\"${clusters}\" $jargs_without_clusters"
 
+if [ -f "${userdir}/var/cache/splash.png" ]; then
+   jargs="$jargs -splash:${userdir}/var/cache/splash.png"
+fi
+
 jdkhome=`absolutize_path "$jdkhome"`
 
 args="--userdir \"${userdir}\" $args"
@@ -273,7 +277,7 @@ build_cp() {
 }
 
 do_run_updater() {
-    eval "\"$jdkhome/bin/java\"" -classpath "\"${updatercp}\"" $jargs "-Dnetbeans.user=\"$userdir\"" $updater_class "$args"
+    eval "\"$jdkhome/bin/java\"" -classpath "\"${updatercp}\"" "$jargs" "-Dnetbeans.user=\"$userdir\"" $updater_class "$args"
     construct_cp
 }
 

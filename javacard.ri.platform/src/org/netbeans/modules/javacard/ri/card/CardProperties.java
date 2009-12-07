@@ -81,18 +81,17 @@ final class CardProperties implements ICardCapability, CapabilitiesProvider {
     private static final String DEFAULT_CONTACTED_PROTOCOL = "T=1"; //NOI18N
     private static final String DEFAULT_CONTACTLESS_PORT = "9026"; //NOI18N
     private static final String DEFAULT_HOST = "127.0.0.1"; //NOI18N
-    private static final String DEFAULT_CAPABILITIES = "DEBUG,START,STOP,RESUME";
-    private static final String E2P_FILE_DEF = "${javacard.device.eeprom.folder}${file.separator}${javacard.device.name}.eprom";
-    static final String DEFAULT_DEBUG_PROXY_COMMAND_LINE = Utilities.isWindows() ?
-        "cmd /c ${debug.proxy.binary} " + //NOI18N
-        "--listen ${proxy.to.ide.port} " + //NOI18N
-        "--remote ${host}:${proxy.to.runtime.port} " + //NOI18N
-        "--classpath ${class.path}" :  //NOI18N
-
+    private static final String DEFAULT_CAPABILITIES = "START,STOP,RESUME," + //NOI18N
+            "DEBUG,EPROM_FILE,CLEAR_EPROM,CONTENTS,CUSTOMIZER,INTERCEPTOR," + //NOI18N
+            "PORTS,URL,DELETE"; //NOI18N
+    private static final String E2P_FILE_DEF = "${javacard.device.eeprom.folder}" + //NOI18N
+            "${file.separator}${javacard.device.name}.eprom"; //NOI18N
+    static final String DEFAULT_DEBUG_PROXY_COMMAND_LINE = (Utilities.isWindows() ? "cmd /c " : "") +
         "${debug.proxy.binary} " + //NOI18N
         "--listen ${proxy.to.ide.port} " + //NOI18N
         "--remote ${host}:${proxy.to.runtime.port} " + //NOI18N
         "--classpath ${class.path}"; //NOI18N
+
     static final String DEFAULT_RUN_COMMAND_LINE =
             "${" + JavacardPlatformKeyNames.PLATFORM_EMULATOR_PATH +"} " + //NOI18N
             "-ramsize ${" + JavacardDeviceKeyNames.DEVICE_RAMSIZE + "} " + //NOI18N
@@ -104,12 +103,13 @@ final class CardProperties implements ICardCapability, CapabilitiesProvider {
             "-contactedport ${" + JavacardDeviceKeyNames.DEVICE_CONTACTEDPORT +"} " + //NOI18N
             "-contactedprotocol ${" + JavacardDeviceKeyNames.DEVICE_CONTACTEDPROTOCOL + "} " + //NOI18N
             "-contactlessport ${" + JavacardDeviceKeyNames.DEVICE_CONTACTLESSPORT + "}"; //NOI18N
+
     static final String DEFAULT_RUN_COMMAND_LINE_DEBUG =
             "${" + JavacardPlatformKeyNames.PLATFORM_EMULATOR_PATH +"} " + //NOI18N
             "-ramsize ${" + JavacardDeviceKeyNames.DEVICE_RAMSIZE + "} " + //NOI18N
             "-e2psize ${" + JavacardDeviceKeyNames.DEVICE_E2PSIZE + "} " + //NOI18N
             "-corsize ${" + JavacardDeviceKeyNames.DEVICE_CORSIZE + "} " + //NOI18N
-            "-debug true" + //NOI18N
+            "-debug yes" + //NOI18N
             "-suspend ${" + JavacardDeviceKeyNames.DEVICE_SUSPEND_THREADS_ON_STARTUP + "} " + //NOI18N
             "-debugport ${" + JavacardDeviceKeyNames.DEVICE_PROXY2CJCREPORT + "} " + //NOI18N
             "-e2pfile " + E2P_FILE_DEF + " " + //NOI18N

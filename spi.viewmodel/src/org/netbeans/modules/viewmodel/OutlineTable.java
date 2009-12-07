@@ -43,9 +43,13 @@ package org.netbeans.modules.viewmodel;
 
 import java.awt.BorderLayout;
 import java.awt.Rectangle;
+import java.awt.datatransfer.Transferable;
+import java.awt.dnd.DnDConstants;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -71,6 +75,7 @@ import javax.swing.tree.TreePath;
 import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.ColumnModel;
 
+import org.netbeans.spi.viewmodel.DnDNodeModel;
 import org.netbeans.swing.etable.ETableColumn;
 import org.netbeans.swing.etable.ETableColumnModel;
 import org.netbeans.swing.outline.DefaultOutlineModel;
@@ -353,6 +358,10 @@ ExplorerManager.Provider, PropertyChangeListener {
         // The root node must be ready when setting the columns
         treeTable.setProperties (columnsToSet);
         updateTableColumns(columnsToSet);
+        treeTable.setAllowedDragActions(model.getAllowedDragActions());
+        treeTable.setAllowedDropActions(model.getAllowedDropActions(null));
+        treeTable.setDynamicDropActions(model);
+
         //treeTable.getTable().tableChanged(new TableModelEvent(treeTable.getOutline().getModel()));
         //getExplorerManager ().setRootContext (rootNode);
         
@@ -430,6 +439,8 @@ ExplorerManager.Provider, PropertyChangeListener {
         // The root node must be ready when setting the columns
         treeTable.setProperties (columnsToSet);
         updateTableColumns(columnsToSet);
+        treeTable.setAllowedDragActions(model.getAllowedDragActions());
+        treeTable.setAllowedDropActions(model.getAllowedDropActions(null));
 
         // 5) set root node for given model
         // Moved to 4), because the new root node must be ready when setting columns
@@ -855,6 +866,9 @@ ExplorerManager.Provider, PropertyChangeListener {
     }
     
     private static class MyTreeTable extends OutlineView {
+
+        private Reference dndModelRef = new WeakReference(null);
+
         MyTreeTable () {
             super ();
             Outline outline = getOutline();
@@ -942,6 +956,27 @@ ExplorerManager.Provider, PropertyChangeListener {
                 return null;
             }
         }
+
+        void setDynamicDropActions(DnDNodeModel model) {
+            dndModelRef = new WeakReference(model);
+        }
+
+        void setDynamicDropActions(HyperCompoundModel model) {
+            dndModelRef = new WeakReference(model);
+        }
+
+        @Override
+        protected int getAllowedDropActions(Transferable t) {
+            Object model = dndModelRef.get();
+            if (model instanceof DnDNodeModel) {
+                return ((DnDNodeModel) model).getAllowedDropActions(t);
+            } else if (model instanceof HyperCompoundModel) {
+                return ((HyperCompoundModel) model).getAllowedDropActions(t);
+            } else {
+                return super.getAllowedDropActions();
+            }
+        }
+
     }
     
     private static final class F8FilterComponentInputMap extends ComponentInputMap {

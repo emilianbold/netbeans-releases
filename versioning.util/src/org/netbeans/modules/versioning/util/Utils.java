@@ -734,11 +734,13 @@ public final class Utils {
      *
      * @param fo a file to open
      * @param revision revision of the file
+     * @return editor support opening the file
      */
-    public static void openFile(FileObject fo, String revision) {
+    public static CloneableEditorSupport openFile(FileObject fo, String revision) {
         ViewEnv env = new ViewEnv(fo);
         CloneableEditorSupport ces = new ViewCES(env, fo.getNameExt() + " @ " + revision, FileEncodingQuery.getEncoding(fo)); // NOI18N
         ces.view();
+        return ces;
     }
 
     /**
@@ -1011,6 +1013,7 @@ public final class Utils {
     private static class ViewEnv implements CloneableEditorSupport.Env {
 
         private final FileObject    file;
+        private static final long serialVersionUID = -5788777967029507963L;
 
         public ViewEnv(FileObject file) {
             this.file = file;
@@ -1075,6 +1078,7 @@ public final class Utils {
             this.charset = charset;
         }
 
+        @Override
         protected void loadFromStreamToKit(StyledDocument doc, InputStream stream, EditorKit kit) throws IOException, BadLocationException {
             kit.read(new InputStreamReader(stream, charset), doc, 0);
         }
@@ -1097,6 +1101,11 @@ public final class Utils {
 
         protected String messageOpened() {
             return name;
+        }
+
+        @Override
+        protected boolean asynchronousOpen() {
+            return false;
         }
     }
 

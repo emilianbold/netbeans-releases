@@ -1013,11 +1013,37 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
         protected String getNameAndFunctionBodyForTemplate() {
             StringBuilder template = new StringBuilder();
-            final String functionSignature = getFunction().getFunctionSignature(true);
-            template.append(" ").append(functionSignature);//NOI18N
+            template.append(" ").append(getName()).append("(");//NOI18N
+            template.append(parameters2String());
+            template.append(")");//NOI18N
             template.append(" ").append("{\n");//NOI18N
             template.append(getFunctionBodyForTemplate());//NOI18N
             template.append("}");//NOI18N
+            return template.toString();
+        }
+
+        private String parameters2String() {
+            StringBuilder template = new StringBuilder();
+            List<Parameter> parameterList = getFunction().getParameters();
+            if (parameterList.size() > 0) {
+                for (int i = 0, n = parameterList.size(); i < n; i++) {
+                    if (i > 0) {
+                        template.append(", ");//NOI18N
+                    }
+                    final Parameter param = parameterList.get(i);
+                    List<QualifiedName> types = param.getTypes();
+                    if (param.hasRawType()) {
+                        for (QualifiedName qName : types) {
+                            template.append(qName.toString()).append(' '); //NOI18N
+                        }
+                    }
+                    template.append(param.getName());
+                    String defaultValue = param.getDefaultValue();
+                    if (defaultValue != null) {
+                        template.append(" = ").append(defaultValue); //NOI18N
+                    }
+                }
+            }
             return template.toString();
         }
 

@@ -43,8 +43,6 @@ package org.netbeans.modules.mercurial.ui.update;
 
 import java.io.File;
 import java.util.*;
-import javax.swing.*;
-import java.awt.event.ActionEvent;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
@@ -59,6 +57,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.mercurial.util.HgCommand;
+import org.openide.nodes.Node;
 
 /**
  * Reverts local changes.
@@ -67,15 +66,33 @@ import org.netbeans.modules.mercurial.util.HgCommand;
  */
 public class RevertModificationsAction extends ContextAction {
     
-    private final VCSContext context;
     private static String HG_TIP = "tip"; // NOI18N
  
-    public RevertModificationsAction(String name, VCSContext context) {        
-        this.context =  context;
-        putValue(Action.NAME, name);
+    @Override
+    protected boolean enable(Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
+        Set<File> ctxFiles = context != null? context.getRootFiles(): null;
+        if(!HgUtils.isFromHgRepository(context) || ctxFiles == null || ctxFiles.size() == 0) {
+            return false;
+        }
+        Set<File> roots = context.getRootFiles();
+        if(roots == null) return false;
+        for (File root : roots) {
+            FileInformation info = Mercurial.getInstance().getFileStatusCache().getCachedStatus(root);
+            if(info != null && info.getStatus() == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) {
+                return false;
+            }
+        }
+        return true;
     }
 
-    public void performAction(ActionEvent e) {
+    protected String getBaseName(Node[] nodes) {
+        return "CTL_MenuItem_GetClean";                                 //NOI18N
+    }
+
+    @Override
+    protected void performContextAction(Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
         revert(context);
     }
 
@@ -182,21 +199,5 @@ public class RevertModificationsAction extends ContextAction {
                 "MSG_REVERT_DONE")); // NOI18N
         logger.outputInRed(""); // NOI18N
  
-    }
-
-    public boolean isEnabled() {
-        Set<File> ctxFiles = context != null? context.getRootFiles(): null;
-        if(!HgUtils.isFromHgRepository(context) || ctxFiles == null || ctxFiles.size() == 0) {
-            return false;
-        }
-        Set<File> roots = context.getRootFiles();
-        if(roots == null) return false;
-        for (File root : roots) {
-            FileInformation info = Mercurial.getInstance().getFileStatusCache().getCachedStatus(root);
-            if(info != null && info.getStatus() == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) {
-                return false;
-            }
-        }
-        return true; 
     }
 }

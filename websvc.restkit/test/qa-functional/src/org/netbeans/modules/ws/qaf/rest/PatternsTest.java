@@ -257,20 +257,37 @@ public class PatternsTest extends RestTestBase {
         jcbo.clickMouse();
         jcbo.clearText();
         jcbo.typeText(getRestPackage());
+
+        if (!getProjectType().isAntBasedProject() && Pattern.CcContainerItem.equals(pattern)) {
+            //set resource class name
+            JTextFieldOperator jtfo = new JTextFieldOperator(wo, new ClsName());
+            jtfo.clickMouse();
+            jtfo.clearText();
+            jtfo.typeText("ItemResource_1"); //NOI18N
+            //set container resource class name
+            jtfo = new JTextFieldOperator(wo, new CClsName());
+            jtfo.clickMouse();
+            jtfo.clearText();
+            jtfo.typeText("ItemsResource_1"); //NOI18N
+        }
+
         if (name != null) {
             //we're not using Defs when name != null !!!
             //set resource class name
             JTextFieldOperator jtfo = new JTextFieldOperator(wo, new ClsName());
+            jtfo.clickMouse();
             jtfo.clearText();
             jtfo.typeText(name + "Cl"); //NOI18N
             //set mimeType
             if (mimeType != null) {
                 jcbo = new JComboBoxOperator(wo, new Mime());
+                jcbo.clickMouse();
                 jcbo.selectItem(mimeType.toString());
             }
             //set resource representation class
             if (MimeType.APPLICATION_JSON.equals(mimeType)) {
                 jtfo = new JTextFieldOperator(wo, new RCls());
+                jtfo.clickMouse();
                 jtfo.clearText();
                 jtfo.typeText("org.codehaus.jettison.json.JSONString"); //NOI18N
             } else if (MimeType.TEXT_PLAIN.equals(mimeType)) {
@@ -284,24 +301,29 @@ public class PatternsTest extends RestTestBase {
             if (Pattern.Singleton.equals(pattern)) {
                 //set resource Path
                 jtfo = new JTextFieldOperator(wo, new Path());
+                jtfo.clickMouse();
                 jtfo.clearText();
                 jtfo.typeText(name + "URI"); //NOI18N
             } else {
                 //set resource Path
                 jtfo = new JTextFieldOperator(wo, new Path());
+                jtfo.clickMouse();
                 jtfo.clearText();
                 jtfo.typeText("{" + name + "URI}"); //NOI18N
                 //set container resource class name
                 jtfo = new JTextFieldOperator(wo, new CClsName());
+                jtfo.clickMouse();
                 jtfo.clearText();
                 jtfo.typeText(name + "CClass"); //NOI18N
                 //set container resource Path
                 jtfo = new JTextFieldOperator(wo, new CPath());
+                jtfo.clickMouse();
                 jtfo.clearText();
                 jtfo.typeText("/" + name + "ContainerURI"); //NOI18N
                 //set container resource representation class
                 if (MimeType.APPLICATION_JSON.equals(mimeType)) {
                     jtfo = new JTextFieldOperator(wo, new CRCls());
+                    jtfo.clickMouse();
                     jtfo.clearText();
                     jtfo.typeText("org.codehaus.jettison.json.JSONObject"); //NOI18N
                 } else if (MimeType.TEXT_PLAIN.equals(mimeType)) {
@@ -351,7 +373,7 @@ public class PatternsTest extends RestTestBase {
     }
 
     private File getFileFromProject(String fileName) {
-        FileObject fo = getProject().getProjectDirectory().getFileObject("src/java"); //NOI18N
+        FileObject fo = getProjectSourceRoot();
         String location = getRestPackage().replace('.', '/') + "/" + fileName + ".java"; //NOI18N
         FileObject file = fo.getFileObject(location);
         assertNotNull(fileName + " not found at " + FileUtil.toFile(fo).getAbsolutePath() + File.separator + location, file); //NOI18N
@@ -369,7 +391,7 @@ public class PatternsTest extends RestTestBase {
      * Creates suite from particular test cases. You can define order of testcases here.
      */
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(Server.GLASSFISH_V3, NbModuleSuite.createConfiguration(PatternsTest.class),
+        return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(PatternsTest.class),
                 "testSingletonDef", //NOI18N
                 "testContainerIDef", //NOI18N
                 "testCcContainerIDef", //NOI18N

@@ -44,19 +44,35 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.mercurial.FileInformation;
+import org.netbeans.modules.mercurial.FileStatusCache;
+import org.netbeans.modules.mercurial.HgFileNode;
 import org.netbeans.modules.mercurial.kenai.HgKenaiSupport;
 import org.netbeans.modules.mercurial.HgModuleConfig;
+import org.netbeans.modules.mercurial.HgProgressSupport;
+import org.netbeans.modules.mercurial.OutputLogger;
+import org.netbeans.modules.mercurial.hooks.spi.HgHook;
 import org.netbeans.modules.mercurial.ui.clone.CloneAction;
+import org.netbeans.modules.mercurial.ui.commit.CommitAction;
+import org.netbeans.modules.mercurial.ui.commit.CommitOptions;
 import org.netbeans.modules.mercurial.ui.log.LogAction;
+import org.netbeans.modules.mercurial.ui.push.PushAction;
 import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.netbeans.modules.mercurial.ui.repository.RepositoryConnection;
 import org.netbeans.modules.mercurial.ui.wizards.CloneWizardAction;
 import org.netbeans.modules.mercurial.util.HgCommand;
+import org.netbeans.modules.mercurial.util.HgUtils;
 import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -227,6 +243,92 @@ public class Mercurial {
         }
 
         HgKenaiSupport.getInstance().setFirmAssociations(new File[]{cloneFile}, repositoryUrl);
+    }
+
+    /**
+     * Commits all local changes under the given roots
+     *
+     * @param roots
+     * @param message
+     * @throws IOException when an error occurrs
+     */
+    public static void commit(final File[] roots, final String message) {
+        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote repository. Do not call in awt!";
+
+        if(!isClientAvailable(true)) {
+            org.netbeans.modules.mercurial.Mercurial.LOG.log(Level.WARNING, "Mercurial client is unavailable");
+            return;
+        }
+        Set<File> repositories = HgUtils.getRepositoryRoots(new HashSet<File>(Arrays.asList(roots)));
+        org.netbeans.modules.mercurial.Mercurial hg = org.netbeans.modules.mercurial.Mercurial.getInstance();
+        if (repositories.size() == 0) {
+            // this is necessary because kenai seems to copy metadata from a temp folder and the project would be treated as unversioned
+            hg.versionedFilesChanged();
+            repositories = HgUtils.getRepositoryRoots(new HashSet<File>(Arrays.asList(roots)));
+        }
+        if (repositories.size() != 1) {
+            org.netbeans.modules.mercurial.Mercurial.LOG.log(Level.WARNING, "Committing for {0} repositories", repositories.size());
+            return;
+        }
+        final File repository = repositories.iterator().next();
+        final Set<File> rootFiles = new HashSet<File>(roots.length);
+        for (File root : roots) {
+            rootFiles.add(root);
+        }
+
+        FileStatusCache cache = hg.getFileStatusCache();
+        cache.refreshAllRoots(Collections.singletonMap(repository, rootFiles));
+        File[] files = cache.listFiles(roots, FileInformation.STATUS_LOCAL_CHANGE);
+
+        if (files.length == 0) {
+            return;
+        }
+
+        HgFileNode[] nodes = new HgFileNode[files.length];
+        for (int i = 0; i < files.length; i++) {
+            nodes[i] = new HgFileNode(files[i]);
+        }
+        CommitOptions[] commitOptions = HgUtils.createDefaultCommitOptions(nodes);
+        final HashMap<HgFileNode, CommitOptions> commitFiles = new HashMap<HgFileNode, CommitOptions>(nodes.length);
+        for (int i = 0; i < nodes.length; i++) {
+            commitFiles.put(nodes[i], commitOptions[i]);
+        }
+
+        RequestProcessor rp = hg.getRequestProcessor(repository);
+        HgProgressSupport support = new HgProgressSupport() {
+            public void perform() {
+                OutputLogger logger = getLogger();
+                CommitAction.performCommit(message, commitFiles, Collections.singletonMap(repository, rootFiles), this, logger, Collections.<HgHook>emptyList());
+            }
+        };
+        support.start(rp, repository, org.openide.util.NbBundle.getMessage(CommitAction.class, "LBL_Commit_Progress")).waitFinished(); // NOI18N
+    }
+
+    /**
+     * Pushes outgoing changes to default push repository
+     *
+     * @param repository
+     * @throws IOException when an error occurrs
+     */
+    public static void pushToDefault (final File repository) {
+        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote repository. Do not call in awt!"; //NOI18N
+
+        if(!isClientAvailable(true)) {
+            org.netbeans.modules.mercurial.Mercurial.LOG.log(Level.WARNING, "Mercurial client is unavailable"); //NOI18N
+            return;
+        }
+
+        if (repository == null) {
+            throw new IllegalArgumentException("repository is null");   //NOI18N
+        }
+
+        RequestProcessor rp = org.netbeans.modules.mercurial.Mercurial.getInstance().getRequestProcessor(repository);
+        HgProgressSupport support = new HgProgressSupport() {
+            public void perform() {
+                PushAction.getDefaultAndPerformPush(repository, this.getLogger());
+            }
+        };
+        support.start(rp, repository, org.openide.util.NbBundle.getMessage(PushAction.class, "MSG_PUSH_PROGRESS")).waitFinished(); //NOI18N
     }
 
     /**

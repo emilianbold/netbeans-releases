@@ -56,6 +56,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
@@ -79,6 +80,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -125,7 +127,6 @@ public class TreeModelNode extends AbstractNode {
         this(
             model,
             model.getColumns (),
-            createChildren (model, model.getColumns (), treeModelRoot, object),
             treeModelRoot,
             object
         );
@@ -763,7 +764,7 @@ public class TreeModelNode extends AbstractNode {
         }
     }
     
-    /*
+    @Override
     public Transferable drag() throws IOException {
         Transferable t;
         try {
@@ -778,7 +779,6 @@ public class TreeModelNode extends AbstractNode {
             return t;
         }
     }
-     */
     
     @Override
     public void createPasteTypes(Transferable t, List<PasteType> l) {
@@ -796,7 +796,7 @@ public class TreeModelNode extends AbstractNode {
         }
     }
     
-    /*
+    @Override
     public PasteType getDropType(Transferable t, int action, int index) {
         PasteType p;
         try {
@@ -811,7 +811,6 @@ public class TreeModelNode extends AbstractNode {
             return p;
         }
     }
-     */
     
     private final void expandIfSetToExpanded() {
         try {
@@ -1051,7 +1050,7 @@ public class TreeModelNode extends AbstractNode {
             synchronized (evaluated) {
                 if (evaluated[0] != 1) {
                     try {
-                        evaluated.wait(200);
+                        evaluated.wait(getChildrenRefreshWaitTime());
                     } catch (InterruptedException iex) {}
                     if (evaluated[0] != 1) {
                         evaluated[0] = -1; // timeout
@@ -1077,6 +1076,19 @@ public class TreeModelNode extends AbstractNode {
                 applyWaitChildren();
             } else {
                 applyChildren(ch, refreshInfo);
+            }
+        }
+
+        private static AtomicLong lastChildrenRefresh = new AtomicLong(0);
+        
+        private static long getChildrenRefreshWaitTime() {
+            long now = System.currentTimeMillis();
+            long last = lastChildrenRefresh.getAndSet(now);
+            if ((now - last) < 1000) {
+                // Refreshes in less than a second - the system needs to respond fast
+                return 1;
+            } else {
+                return 200;
             }
         }
         

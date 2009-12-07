@@ -42,6 +42,7 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -164,7 +165,13 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                     terminalArgs);
 
             ProcessBuilder pb = new ProcessBuilder(command);
+
+            if (!workingDirectory.exists()) {
+                throw new FileNotFoundException(loc("NativeProcess.noSuchDirectoryError.text", workingDirectory.getAbsolutePath())); // NOI18N
+            }
+
             pb.directory(workingDirectory);
+            pb.redirectErrorStream(true);
 
             LOG.log(Level.FINEST, "Command: " + command); // NOI18N
 
@@ -274,15 +281,8 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
     }
 
     @Override
-    public void cancel() {
-        int pid = getPIDNoException();
-
-        if (pid < 0) {
-            // Process even was not started ...
-            return;
-        }
-
-        CommonTasksSupport.sendSignal(info.getExecutionEnvironment(), pid, Signal.SIGTERM, null);
+    public synchronized void cancel() {
+        ProcessUtils.destroy(this);
     }
 
     @Override
@@ -347,6 +347,10 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                 } catch (IOException ex) {
                 }
             }
+        }
+
+        if (getState() == State.CANCELLED) {
+            throw new InterruptedException();
         }
 
         return exitCode;

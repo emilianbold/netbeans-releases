@@ -271,7 +271,8 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
                                 String initialRevision = NbBundle.getMessage(NewKenaiProjectWizardIterator.class, "NewKenaiProject.initialRevision", newPrjTitle);
                                 handle.progress(NbBundle.getMessage(NewKenaiProjectWizardIterator.class,
                                         "NewKenaiProject.progress.repositoryCommit"), 5); // NOI18N
-        //                        Mercurial.commit(new File[] { localScmRoot }, passwdAuth.getUserName(), new String(passwdAuth.getPassword()), initialRevision);
+                                Mercurial.commit(new File[] { localScmRoot }, initialRevision);
+                                Mercurial.pushToDefault(localScmRoot);
                             }
                         }
                         if (!inPlaceRepository) {

@@ -273,9 +273,16 @@ public class EjbContainerChildren extends Children.Keys<EjbContainerChildren.Key
                 return false;
             }
             final Key other = (Key) obj;
-            if (this.ejbClass != other.ejbClass && (this.ejbClass == null || !this.ejbClass.equals(other.ejbClass))) {
+            if (this.ejbClass != other.ejbClass &&
+               (this.ejbClass == null || !this.ejbClass.equals(other.ejbClass))) {
                 return false;
             }
+
+            if (this.defaultDisplayName != other.defaultDisplayName &&
+               (this.defaultDisplayName == null || !this.defaultDisplayName.equals(other.defaultDisplayName))) {
+                return false;
+            }
+
             return true;
         }
 

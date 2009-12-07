@@ -92,7 +92,9 @@ public final class Utils {
      * @return A DataObject which may have the requested card in its lookup (this
      * method does matching by file name and does not check if there is really
      * an instance of Card present)
+     * @deprecated Not all cards are DataObjects anymore
      */
+    @Deprecated
     public static DataObject findDeviceForPlatform(String platform, String card) {
         FileObject deviceFolder = sfsFolderForDeviceConfigsForPlatformNamed(platform, false);
         if (deviceFolder != null) {
@@ -125,6 +127,7 @@ public final class Utils {
      * @param invalidDeviceName The device name
      * @return
      */
+    /*
     public static FileObject folderForInvalidDeviceConfigsForPlatformNamed(String platformName, String invalidDeviceName) {
         FileSystem fs = FileUtil.createMemoryFileSystem();
         try {
@@ -140,6 +143,7 @@ public final class Utils {
             throw new IllegalStateException(ex);
         }
     }
+     */
 
     /**
      * Get the system filesystem folder for files that define Card objects,
@@ -587,6 +591,11 @@ public final class Utils {
         return AID.generateInstanceAid(RID, packageName, clazz);
     }
 
+    public static AID generateRandomAppletAid(String clazz) {
+        byte[] RID = getDefaultRID();
+        return AID.generateApplicationAid(RID, generateRandomPackageName(), clazz);
+    }
+
     public static String generateRandomPackageName() {
         StringBuilder sb = new StringBuilder();
         Random r = new Random (System.currentTimeMillis());
@@ -652,7 +661,7 @@ public final class Utils {
             if (exePart.trim().length() == 0) {
                 exePart = null;
             }
-            argsPart = "-" + m.group(2).trim();
+            argsPart = "-" + m.group(2).trim(); //NOI18N
         } else {
             m = EXE_NOARGS_SPLIT.matcher(s);
             if (m.find()) {

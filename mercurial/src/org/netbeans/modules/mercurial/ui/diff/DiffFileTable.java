@@ -59,21 +59,34 @@ import java.awt.event.MouseEvent;
 import java.awt.Color;
 import java.awt.Point;
 import java.awt.Component;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.*;
 import java.lang.reflect.InvocationTargetException;
 import java.io.File;
+import org.netbeans.modules.versioning.diff.DiffUtils;
+import org.netbeans.modules.versioning.util.CollectionUtils;
 import org.netbeans.modules.versioning.util.SortedTable;
+import org.openide.cookies.EditorCookie;
 
 /**
  * 
  * @author Maros Sandor
  */
-class DiffFileTable implements MouseListener, ListSelectionListener, AncestorListener {
+class DiffFileTable implements MouseListener, ListSelectionListener, AncestorListener, PropertyChangeListener {
     
     private NodeTableModel tableModel;
     private JTable table;
     private JScrollPane     component;
     private Node [] nodes = new Node[0];
+    /**
+     * editor cookies belonging to the files being diffed.
+     * The array may contain {@code null}s if {@code EditorCookie}s
+     * for the corresponding files were not found.
+     *
+     * @see  #nodes
+     */
+    private EditorCookie[] editorCookies;
     
     private String []   tableColumns; 
     private TableSorter sorter;
@@ -227,9 +240,65 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
         tableModel.setProperties(properties);
     }
 
-    void setTableModel(Node [] nodes) {
-        this.nodes = nodes;
-        tableModel.setNodes(nodes);
+    void setTableModel(Setup[] setups) {
+        if (editorCookies != null) {
+            for (EditorCookie editorCookie : editorCookies) {
+                if (editorCookie instanceof EditorCookie.Observable) {
+                    ((EditorCookie.Observable) editorCookie).removePropertyChangeListener(this);
+                }
+            }
+            editorCookies = null;
+        }
+
+        tableModel.setNodes(nodes = setupsToNodes(setups));
+        editorCookies = DiffUtils.setupsToEditorCookies(setups);
+
+        for (EditorCookie editorCookie : editorCookies) {
+            if (editorCookie instanceof EditorCookie.Observable) {
+                ((EditorCookie.Observable) editorCookie).addPropertyChangeListener(this);
+            }
+        }
+    }
+
+    public void propertyChange(PropertyChangeEvent e) {
+        Object source = e.getSource();
+        String propertyName = e.getPropertyName();
+
+        if (EditorCookie.Observable.PROP_MODIFIED.equals(propertyName)
+                && (source instanceof EditorCookie.Observable)) {
+            statusModifiedChanged((EditorCookie.Observable) source);
+        }
+    }
+
+    /**
+     * Updates the corresponding table row - makes the file name bold or plain,
+     * depending on the new <em>modified</em> state of the corresponing file.
+     *
+     * @param  editorCookie  {@code EditorCookie} that fired the change
+     *                       if <em>modified</em> status
+     */
+    private void statusModifiedChanged(EditorCookie editorCookie) {
+        int index = CollectionUtils.findInArray(editorCookies, editorCookie);
+
+        if (index == -1) {
+            assert false;
+            return;
+        }
+
+        tableModel.fireTableChanged(
+              new TableSorter.SortingSafeTableModelEvent(tableModel, index, 0));
+    }
+
+    private static Node[] setupsToNodes(Setup[] setups) {
+        Node[] nodes = new Node[setups.length];
+        for (int i = 0; i < setups.length; i++) {
+            nodes[i] = setups[i].getNode();
+        }
+        return nodes;
+    }
+
+    EditorCookie[] getEditorCookies() {
+        return CollectionUtils.copyArray(editorCookies);
     }
 
     void focus() {
@@ -342,9 +411,23 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
     public void valueChanged(ListSelectionEvent e) {
         final TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class,  table);
         if (tc == null) return; // table is no longer in component hierarchy
-        master.setSelectedIndex(table.getSelectedRow());
+
+        master.tableRowSelected(table.getSelectedRow());
     }
     
+    /**
+     * Returns {@code EditorCookie} that belongs to the file that is at the
+     * given position (index) of <em>unsorted</em> table.
+     *
+     * @param  index  index to the unsorted table model
+     * @return  {@code EditorCookie} belonging to the file,
+     *          or {@code null} if there was no {@code EditorCookie} found
+     *          for the file
+     */
+    EditorCookie getEditorCookie(int index) {
+        return editorCookies[index];
+    }
+
     private class DiffTableCellRenderer extends DefaultTableCellRenderer {
         
         private FilePathCellRenderer pathRenderer = new FilePathCellRenderer();
@@ -353,9 +436,13 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
             Component renderer;
             int modelColumnIndex = table.convertColumnIndexToModel(column);
             if (modelColumnIndex == 0) {
-                Node node = nodes[sorter.modelIndex(row)];
-                if (!isSelected) {
-                    value = "<html>" + node.getHtmlDisplayName(); // NOI18N
+                int modelRow = sorter.modelIndex(row);
+                String htmlDisplayName
+                       = DiffUtils.getHtmlDisplayName(nodes[modelRow],
+                                                      isModified(modelRow),
+                                                      isSelected);
+                if (htmlDisplayName != null) {
+                    value = "<html>" + htmlDisplayName;                 //NOI18N
                 }
             }
             if (modelColumnIndex == 2) {
@@ -369,6 +456,11 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
                 ((JComponent) renderer).setToolTipText(path);
             }
             return renderer;
+        }
+
+        private boolean isModified(int row) {
+            EditorCookie editorCookie = editorCookies[row];
+            return (editorCookie != null) ? editorCookie.isModified() : false;
         }
     }
 }

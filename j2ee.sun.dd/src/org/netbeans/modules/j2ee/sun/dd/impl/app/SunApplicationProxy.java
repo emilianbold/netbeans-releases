@@ -190,6 +190,14 @@ public class SunApplicationProxy implements SunApplication, RootInterfaceImpl {
             return;
         if (appRoot != null) {
             Document document = null;
+            if(newVersion.equals(SunApplication.VERSION_6_0_0)){
+                //This will always be an upgrade
+                document = getDocument();
+                org.netbeans.modules.j2ee.sun.dd.impl.app.model_6_0_0.SunApplication appGraph =
+                        org.netbeans.modules.j2ee.sun.dd.impl.app.model_6_0_0.SunApplication.createGraph(document);
+                appGraph.changeDocType(DTDRegistry.SUN_APPLICATION_60_DTD_PUBLIC_ID, DTDRegistry.SUN_APPLICATION_60_DTD_SYSTEM_ID);
+                this.appRoot = appGraph;
+            }
             if(newVersion.equals(SunApplication.VERSION_5_0_0)){
                 //This will always be an upgrade
                 document = getDocument();
@@ -227,6 +235,9 @@ public class SunApplicationProxy implements SunApplication, RootInterfaceImpl {
         }else if (appRoot instanceof org.netbeans.modules.j2ee.sun.dd.impl.app.model_5_0_0.SunApplication) {
             document =
                     ((org.netbeans.modules.j2ee.sun.dd.impl.app.model_5_0_0.SunApplication)appRoot).graphManager().getXmlDocument();
+        } else if (appRoot instanceof org.netbeans.modules.j2ee.sun.dd.impl.app.model_6_0_0.SunApplication) {
+            document =
+                    ((org.netbeans.modules.j2ee.sun.dd.impl.app.model_6_0_0.SunApplication)appRoot).graphManager().getXmlDocument();
         }
         return document;
     }

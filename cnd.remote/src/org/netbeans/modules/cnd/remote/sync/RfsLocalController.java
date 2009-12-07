@@ -223,14 +223,14 @@ class RfsLocalController implements Runnable {
             }
             //update info about file where we thought file is copied, but it doesn't
             // exist remotely (i.e. project directory was removed)
-            if (request.length() < 3 || !request.startsWith("t ")) {
-                throw new IllegalArgumentException("Protocol error: " + request);
+            if (request.length() < 3 || !request.startsWith("t ")) { // NOI18N
+                throw new IllegalArgumentException("Protocol error: " + request); // NOI18N
             }
             String remoteFile = request.substring(2);
             String localFilePath = mapper.getLocalPath(remoteFile);
             if (localFilePath != null) {
                 File localFile = new File(localFilePath);
-                fileData.setState(localFile, FileState.INITIAL);
+                fileData.setState(localFile, FileState.TOUCHED);
             } else {
                 RemoteUtil.LOGGER.finest("LC: ERROR no local file for " + remoteFile);
             }
@@ -267,6 +267,9 @@ class RfsLocalController implements Runnable {
                     "State shouldn't be " + newState); //NOI18N
             responseStream.printf("%c %d %s\n", newState.id, file.length(), relPath); // NOI18N
             responseStream.flush(); //TODO: remove?
+            if (newState == FileState.INITIAL ) {
+                newState = FileState.TOUCHED;
+            }
             fileData.setState(file, newState);
         }
     }

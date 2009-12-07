@@ -42,6 +42,7 @@
 package org.netbeans.spi.viewmodel;
 
 import java.awt.datatransfer.Transferable;
+import java.awt.dnd.DnDConstants;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.lang.ref.Reference;
@@ -101,6 +102,8 @@ public final class Models {
     public static int MULTISELECTION_TYPE_EXACTLY_ONE = 1;
     public static int MULTISELECTION_TYPE_ALL = 2;
     public static int MULTISELECTION_TYPE_ANY = 3;
+
+    private static final int DEFAULT_DRAG_DROP_ALLOWED_ACTIONS = DnDConstants.ACTION_NONE;
     
     private static boolean verbose = 
         System.getProperty ("netbeans.debugger.models") != null;
@@ -470,11 +473,11 @@ public final class Models {
      *
      * @returns compund tree model
      */
-    private static ExtendedNodeModel createCompoundNodeModel (
-        ExtendedNodeModel originalNodeModel,
+    private static SuperNodeModel createCompoundNodeModel (
+        SuperNodeModel originalNodeModel,
         List treeNodeModelFilters
     ) {
-        ExtendedNodeModel nm = originalNodeModel;
+        SuperNodeModel nm = originalNodeModel;
         int i, k = treeNodeModelFilters.size ();
         for (i = 0; i < k; i++)
             nm = new CompoundNodeModel (
@@ -843,13 +846,14 @@ public final class Models {
      * 
      * @author   Jan Jancura
      */
-    private final static class CompoundNodeModel implements ExtendedNodeModel, CheckNodeModel, ModelListener {
+    private final static class CompoundNodeModel implements SuperNodeModel,
+                                                            ModelListener {
 
 
-        private ExtendedNodeModel model;
+        private SuperNodeModel model;
         private NodeModelFilter filter;
-        private CheckNodeModel cmodel;
         private CheckNodeModelFilter cfilter;
+        private DnDNodeModelFilter dndfilter;
 
         private final Collection<ModelListener> modelListeners = new HashSet<ModelListener>();
 
@@ -858,14 +862,14 @@ public final class Models {
          * Creates {@link org.netbeans.spi.viewmodel.TreeModel} for given TreeModel and
          * {@link org.netbeans.spi.viewmodel.TreeModelFilter}.
          */
-        CompoundNodeModel (ExtendedNodeModel model, NodeModelFilter filter) {
+        CompoundNodeModel (SuperNodeModel model, NodeModelFilter filter) {
             this.model = model;
             this.filter = filter;
-            if (model instanceof CheckNodeModel) {
-                this.cmodel = (CheckNodeModel) model;
-            }
             if (filter instanceof CheckNodeModelFilter) {
                 this.cfilter = (CheckNodeModelFilter) filter;
+            }
+            if (filter instanceof DnDNodeModelFilter) {
+                this.dndfilter = (DnDNodeModelFilter) filter;
             }
         }
     
@@ -1015,14 +1019,30 @@ public final class Models {
             }
         }
 
-        /*public Transferable drag(Object node) throws IOException,
+        public int getAllowedDragActions() {
+            if (dndfilter != null) {
+                return dndfilter.getAllowedDragActions(model);
+            } else {
+                return model.getAllowedDragActions();
+            }
+        }
+
+        public int getAllowedDropActions(Transferable t) {
+            if (dndfilter != null) {
+                return dndfilter.getAllowedDropActions(model, t);
+            } else {
+                return model.getAllowedDropActions(t);
+            }
+        }
+
+        public Transferable drag(Object node) throws IOException,
                                                      UnknownTypeException {
-            if (filter instanceof ExtendedNodeModelFilter) {
-                return ((ExtendedNodeModelFilter) filter).drag(model, node);
+            if (dndfilter != null) {
+                return dndfilter.drag(model, node);
             } else {
                 return model.drag(node);
             }
-        }*/
+        }
 
         public PasteType[] getPasteTypes(Object node, Transferable t) throws UnknownTypeException {
             if (filter instanceof ExtendedNodeModelFilter) {
@@ -1032,14 +1052,14 @@ public final class Models {
             }
         }
 
-        /*public PasteType getDropType(Object node, Transferable t, int action,
+        public PasteType getDropType(Object node, Transferable t, int action,
                                      int index) throws UnknownTypeException {
-            if (filter instanceof ExtendedNodeModelFilter) {
-                return ((ExtendedNodeModelFilter) filter).getDropType(model, node, t, action, index);
+            if (dndfilter != null) {
+                return dndfilter.getDropType(model, node, t, action, index);
             } else {
                 return model.getDropType(node, t, action, index);
             }
-        }*/
+        }
 
         public void setName(Object node, String name) throws UnknownTypeException {
             if (filter instanceof ExtendedNodeModelFilter) {
@@ -1076,40 +1096,32 @@ public final class Models {
         public boolean isCheckable(Object node) throws UnknownTypeException {
             if (cfilter != null) {
                 return cfilter.isCheckable(model, node);
-            } else if (cmodel != null) {
-                return cmodel.isCheckable(node);
             } else {
-                return false;
+                return model.isCheckable(node);
             }
         }
 
         public boolean isCheckEnabled(Object node) throws UnknownTypeException {
             if (cfilter != null) {
                 return cfilter.isCheckEnabled(model, node);
-            } else if (cmodel != null) {
-                return cmodel.isCheckEnabled(node);
             } else {
-                return true;
+                return model.isCheckEnabled(node);
             }
         }
 
         public Boolean isSelected(Object node) throws UnknownTypeException {
             if (cfilter != null) {
                 return cfilter.isSelected(model, node);
-            } else if (cmodel != null) {
-                return cmodel.isSelected(node);
             } else {
-                return false;
+                return model.isSelected(node);
             }
         }
 
         public void setSelected(Object node, Boolean selected) throws UnknownTypeException {
             if (cfilter != null) {
                 cfilter.setSelected(model, node, selected);
-            } else if (cmodel != null) {
-                cmodel.setSelected(node, selected);
             } else {
-                Exceptions.printStackTrace(new IllegalStateException("Can not set selected state to model "+this));
+                model.setSelected(node, selected);
             }
         }
 
@@ -2023,7 +2035,7 @@ public final class Models {
      *
      * @author   Jan Jancura
      */
-    private static final class DelegatingNodeModel implements ExtendedNodeModel, CheckNodeModel {
+    private static final class DelegatingNodeModel implements SuperNodeModel {
 
         private NodeModel[] models;
         private HashMap<String, NodeModel> classNameToModel = new HashMap<String, NodeModel>();
@@ -2233,22 +2245,18 @@ public final class Models {
             return null;
         }
 
-        /*
         private Transferable defaultDrag() throws IOException {
             return null;
         }
-         */
 
         private PasteType[] defaultGetPasteTypes(Transferable t) {
             return null;
         }
 
-        /*
         private PasteType defaultGetDropType(Transferable t, int action,
                                             int index) {
             return null;
         }
-         */
 
         private void defaultSetName(String name) {
             // nothing
@@ -2456,7 +2464,26 @@ public final class Models {
             }
         }
 
-        /*
+        public int getAllowedDragActions() {
+            int i, k = models.length;
+            for (i = 0; i < k; i++) {
+                if (models[i] instanceof DnDNodeModel) {
+                    return ((DnDNodeModel) models[i]).getAllowedDragActions();
+                }
+            }
+            return DEFAULT_DRAG_DROP_ALLOWED_ACTIONS;
+        }
+
+        public int getAllowedDropActions(Transferable t) {
+            int i, k = models.length;
+            for (i = 0; i < k; i++) {
+                if (models[i] instanceof DnDNodeModel) {
+                    return ((DnDNodeModel) models[i]).getAllowedDropActions(t);
+                }
+            }
+            return DEFAULT_DRAG_DROP_ALLOWED_ACTIONS;
+        }
+
         public Transferable drag(Object node) throws IOException,
                                                      UnknownTypeException {
             UnknownTypeException uex = null;
@@ -2464,9 +2491,9 @@ public final class Models {
                 node.getClass ().getName ()
             );
             if (model != null) {
-                if (model instanceof ExtendedNodeModel) {
+                if (model instanceof DnDNodeModel) {
                     try {
-                        return ((ExtendedNodeModel) model).drag (node);
+                        return ((DnDNodeModel) model).drag (node);
                     } catch (UnknownTypeException e) {
                         uex = e;
                     }
@@ -2477,9 +2504,9 @@ public final class Models {
             int i, k = models.length;
             boolean isExtended = false;
             for (i = 0; i < k; i++) {
-                if (models[i] instanceof ExtendedNodeModel) {
+                if (models[i] instanceof DnDNodeModel) {
                     try {
-                        Transferable t = ((ExtendedNodeModel) models [i]).drag (node);
+                        Transferable t = ((DnDNodeModel) models [i]).drag (node);
                         classNameToModel.put (node.getClass ().getName (), models [i]);
                         return t;
                     } catch (UnknownTypeException e) {
@@ -2497,7 +2524,6 @@ public final class Models {
                 throw new UnknownTypeException (node);
             }
         }
-         */
 
         public PasteType[] getPasteTypes(Object node, Transferable t) throws UnknownTypeException {
             UnknownTypeException uex = null;
@@ -2539,7 +2565,6 @@ public final class Models {
             }
         }
 
-        /*
         public PasteType getDropType(Object node, Transferable t, int action,
                                      int index) throws UnknownTypeException {
             UnknownTypeException uex = null;
@@ -2547,9 +2572,9 @@ public final class Models {
                 node.getClass ().getName ()
             );
             if (model != null) {
-                if (model instanceof ExtendedNodeModel) {
+                if (model instanceof DnDNodeModel) {
                     try {
-                        return ((ExtendedNodeModel) model).getDropType (node, t, action, index);
+                        return ((DnDNodeModel) model).getDropType (node, t, action, index);
                     } catch (UnknownTypeException e) {
                         uex = e;
                     }
@@ -2560,9 +2585,9 @@ public final class Models {
             int i, k = models.length;
             boolean isExtended = false;
             for (i = 0; i < k; i++) {
-                if (models[i] instanceof ExtendedNodeModel) {
+                if (models[i] instanceof DnDNodeModel) {
                     try {
-                        PasteType p = ((ExtendedNodeModel) models [i]).getDropType (node, t, action, index);
+                        PasteType p = ((DnDNodeModel) models [i]).getDropType (node, t, action, index);
                         classNameToModel.put (node.getClass ().getName (), models [i]);
                         return p;
                     } catch (UnknownTypeException e) {
@@ -2580,7 +2605,6 @@ public final class Models {
                 throw new UnknownTypeException (node);
             }
         }
-         */
 
         public void setName(Object node, String name) throws UnknownTypeException {
             UnknownTypeException uex = null;
@@ -3213,11 +3237,12 @@ public final class Models {
      * @author   Jan Jancura
      */
     public static final class CompoundModel implements TreeModel, 
-    ExtendedNodeModel, CheckNodeModel, NodeActionsProvider, TableModel, TreeExpansionModel {
+    ExtendedNodeModel, CheckNodeModel, DnDNodeModel, NodeActionsProvider, TableModel, TreeExpansionModel {
 
         private TreeModel       treeModel;
         private ExtendedNodeModel nodeModel;
         private CheckNodeModel cnodeModel;
+        private DnDNodeModel    dndNodeModel;
         private NodeActionsProvider nodeActionsProvider;
         private ColumnModel[]   columnModels;
         private TableModel      tableModel;
@@ -3265,6 +3290,9 @@ public final class Models {
             this.nodeModel = nodeModel;
             if (nodeModel instanceof CheckNodeModel) {
                 this.cnodeModel = (CheckNodeModel) nodeModel;
+            }
+            if (nodeModel instanceof DnDNodeModel) {
+                this.dndNodeModel = (DnDNodeModel) nodeModel;
             }
             this.tableModel = tableModel;
             this.nodeActionsProvider = nodeActionsProvider;
@@ -3635,23 +3663,43 @@ public final class Models {
             return nodeModel.clipboardCut(node);
         }
 
-        /*
+        public int getAllowedDragActions() {
+            if (dndNodeModel != null) {
+                return dndNodeModel.getAllowedDragActions();
+            } else {
+                return DEFAULT_DRAG_DROP_ALLOWED_ACTIONS;
+            }
+        }
+
+        public int getAllowedDropActions(Transferable t) {
+            if (dndNodeModel != null) {
+                return dndNodeModel.getAllowedDropActions(t);
+            } else {
+                return DEFAULT_DRAG_DROP_ALLOWED_ACTIONS;
+            }
+        }
+
         public Transferable drag(Object node) throws IOException,
                                                      UnknownTypeException {
-            return nodeModel.drag(node);
+            if (dndNodeModel != null) {
+                return dndNodeModel.drag(node);
+            } else {
+                return null;
+            }
         }
-         */
 
         public PasteType[] getPasteTypes(Object node, Transferable t) throws UnknownTypeException {
             return nodeModel.getPasteTypes(node, t);
         }
 
-        /*
         public PasteType getDropType(Object node, Transferable t, int action,
                                      int index) throws UnknownTypeException {
-            return nodeModel.getDropType(node, t, action, index);
+            if (dndNodeModel != null) {
+                return dndNodeModel.getDropType(node, t, action, index);
+            } else {
+                return null;
+            }
         }
-         */
 
         public void setName(Object node, String name) throws UnknownTypeException {
             nodeModel.setName(node, name);

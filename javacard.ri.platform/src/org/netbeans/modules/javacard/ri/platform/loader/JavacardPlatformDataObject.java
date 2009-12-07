@@ -51,6 +51,7 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObjectExistsException;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -61,17 +62,21 @@ import java.util.logging.Level;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.javacard.common.JCConstants;
-import org.netbeans.modules.javacard.ri.platform.RIPlatform;
+import org.netbeans.modules.javacard.common.Utils;
+import org.netbeans.modules.javacard.ri.platform.installer.RIPlatformFactory;
 import org.netbeans.modules.javacard.ri.platform.installer.ServersPanel;
 import org.netbeans.modules.javacard.spi.DeviceManagerDialogProvider;
 import org.netbeans.modules.javacard.spi.JavacardPlatform;
 import org.netbeans.modules.javacard.spi.JavacardPlatformKeyNames;
 import org.netbeans.modules.javacard.spi.ProjectKind;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
 import org.openide.util.Utilities;
 
 /**
@@ -104,17 +109,28 @@ public class JavacardPlatformDataObject extends PropertiesBasedDataObject<Javaca
 
     @Override
     protected void onDelete(FileObject parentFolder) throws Exception {
-        EditableProperties props = PropertyUtils.getGlobalProperties();
-        props.remove(JCConstants.GLOBAL_PROPERTIES_JCPLATFORM_DEFINITION_PREFIX + getName());
-        props.remove(JCConstants.GLOBAL_PROPERTIES_JCPLATFORM_DEFINITION_PREFIX + getName()
-                + JCConstants.GLOBAL_PROPERTIES_DEVICE_FOLDER_PATH_KEY_SUFFIX);
-        PropertyUtils.putGlobalProperties(props);
+        JavacardPlatform pform = getLookup().lookup(JavacardPlatform.class);
+        try {
+            pform.onDelete();
+        } finally {
+            final EditableProperties props = PropertyUtils.getGlobalProperties();
+            props.remove(JCConstants.GLOBAL_PROPERTIES_JCPLATFORM_DEFINITION_PREFIX + getName());
+            props.remove(JCConstants.GLOBAL_PROPERTIES_JCPLATFORM_DEFINITION_PREFIX + getName()
+                    + JCConstants.GLOBAL_PROPERTIES_DEVICE_FOLDER_PATH_KEY_SUFFIX);
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                public Void run() throws Exception {
+                    PropertyUtils.putGlobalProperties(props);
+                    return null;
+                }
+            });
+        }
     }
 
     @Override
     protected JavacardPlatform createFrom(ObservableProperties properties) {
         String old = properties.getProperty(JavacardPlatformKeyNames.PLATFORM_ID);
         boolean idPropMatch = getName().equals(old);
+        boolean empty = properties.isEmpty();
         if (!idPropMatch) {
             if (LOGGER.isLoggable(Level.FINEST)) {
                 LOGGER.log(Level.FINEST, JavacardPlatformKeyNames.PLATFORM_ID
@@ -125,16 +141,28 @@ public class JavacardPlatformDataObject extends PropertiesBasedDataObject<Javaca
             //be looked up without having to iterate all platforms.
             properties.setProperty(JavacardPlatformKeyNames.PLATFORM_ID, getName());
         }
-        if (properties.isEmpty()) {
+        if (empty) {
             return JavacardPlatform.createBrokenJavacardPlatform(getName());
         } else {
-            JavacardPlatform result = new RIPlatform(properties);
-            return result;
+            try {
+                JavacardPlatform result = RIPlatformFactory.createPlatform(properties, this);
+                return result;
+            } catch (IOException ioe) {
+                return JavacardPlatform.createBrokenJavacardPlatform(getName());
+            }
         }
     }
 
     public void showManageDevicesDialog(Component parent) {
-        new ServersPanel(getNodeDelegate()).showDialog();
+        try {
+            //XXX needs to be registered by kind instead!
+            FileObject p = Utils.sfsFolderForDeviceConfigsForPlatformNamed(getName(), true);
+            DataObject dob = DataObject.find(p);
+//            new ServersPanel(dob.getNodeDelegate()).showDialog();
+            new ServersPanel(getLookup().lookup(JavacardPlatform.class)).showDialog();
+        } catch (DataObjectNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     private static final class ND extends DataNode {
