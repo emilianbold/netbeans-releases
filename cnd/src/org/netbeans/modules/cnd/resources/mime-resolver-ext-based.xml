@@ -54,9 +54,7 @@ made subject to such option by the copyright holder.
         <resolver mime="text/x-h"/>
     </file>
     <file>
-        <!-- #176448
         <ext name="c"/>
-        -->
         <ext name="i"/>
         <ext name="m"/>
         <resolver mime="text/x-c"/>
@@ -66,24 +64,10 @@ made subject to such option by the copyright holder.
         <ext name="cc"/>
         <ext name="c++"/>
         <ext name="cxx"/>
-        <!-- #176448
         <ext name="C"/>
-        -->
         <ext name="mm"/>
         <resolver mime="text/x-c++"/>
     </file>
-    <!-- #176448 - workaround - begin -->
-    <file>
-        <ext name="C"/>
-        <name name=".C" substring="true" ignorecase="false"/>
-        <resolver mime="text/x-c++"/>
-    </file>
-    <file>
-        <ext name="c"/>
-        <name name=".c" substring="true" ignorecase="false"/>
-        <resolver mime="text/x-c"/>
-    </file>
-    <!-- #176448 - workaround - end -->
     <file>
         <ext name="f"/>
         <ext name="F"/>
