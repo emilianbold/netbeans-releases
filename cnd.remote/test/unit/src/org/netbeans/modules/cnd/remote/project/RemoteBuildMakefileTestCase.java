@@ -48,6 +48,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -65,27 +66,33 @@ public class RemoteBuildMakefileTestCase extends RemoteBuildTestBase {
         super(testName, execEnv);       
     }
 
-
     private void doTest(Sync sync, Toolchain toolchain) throws Exception {
+        final ExecutionEnvironment execEnv = getTestExecutionEnvironment();
+        try {
+            String projectName = "makefile_proj_1_nbproject";
+            File origBase = getDataFile(projectName).getParentFile();
+            File copiedBase = new File(new File(getWorkDir(), getTestHostName()), origBase.getName());
+            copyDirectory(origBase, copiedBase);
+            File projectDirFile = new File(copiedBase, projectName);
+            changeProjectHost(projectDirFile);
+            setupHost(sync.ID);
+            setSyncFactory(sync.ID);
+            assertEquals("Wrong sybc factory:", sync.ID,
+                    ServerList.get(execEnv).getSyncFactory().getID());
 
-        File projectDirFile = getDataFile("makefile_proj_1_nbproject");
-        changeProjectHost(projectDirFile);
+            setDefaultCompilerSet(toolchain.ID);
+            assertEquals("Wrong tools collection", toolchain.ID,
+                    CompilerSetManager.getDefault(execEnv).getDefaultCompilerSet().getName());
 
-        setupHost(sync.ID);
-        setSyncFactory(sync.ID);
-        assertEquals("Wrong sybc factory:", sync.ID,
-                ServerList.get(getTestExecutionEnvironment()).getSyncFactory().getID());
+            assertTrue(projectDirFile.exists());
 
-        setDefaultCompilerSet(toolchain.ID);
-        assertEquals("Wrong tools collection", toolchain.ID,
-                CompilerSetManager.getDefault(getTestExecutionEnvironment()).getDefaultCompilerSet().getName());
-
-        assertTrue(projectDirFile.exists());
-
-        FileObject projectDirFO = FileUtil.toFileObject(projectDirFile);
-        MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
-        assertNotNull("project is null", makeProject);
-        buildProject(makeProject, getSampleBuildTimeout(), TimeUnit.SECONDS);
+            FileObject projectDirFO = FileUtil.toFileObject(projectDirFile);
+            MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
+            assertNotNull("project is null", makeProject);
+            buildProject(makeProject, getSampleBuildTimeout(), TimeUnit.SECONDS);
+        } finally {
+            ConnectionManager.getInstance().disconnect(execEnv);
+        }
     }
 
     @ForAllEnvironments

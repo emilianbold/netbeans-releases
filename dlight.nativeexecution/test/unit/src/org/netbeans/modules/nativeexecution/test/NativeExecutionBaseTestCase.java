@@ -40,9 +40,13 @@ package org.netbeans.modules.nativeexecution.test;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Writer;
 import java.net.URISyntaxException;
 import java.util.logging.Handler;
@@ -221,6 +225,34 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
 
     private File getIdeUtilJar() throws URISyntaxException  {
         return new File(Lookup.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+    }
+
+    protected void copyFile(File srcFile, File dstFile) throws IOException  {
+        InputStream in = new FileInputStream(srcFile);
+        OutputStream out = new FileOutputStream(dstFile);
+        byte[] buf = new byte[8*1024];
+        int len;
+        while ((len = in.read(buf)) > 0) {
+            out.write(buf, 0, len);
+        }
+        in.close();
+        out.close();
+    }
+
+    protected void copyDirectory(File srcDir, File dstDir) throws IOException {
+        assertTrue(srcDir.getPath() + " should exist and be a directory", srcDir.isDirectory());
+        if (!dstDir.exists()) {
+            dstDir.mkdirs();
+        }
+        assertTrue("Can't create directory " + dstDir.getAbsolutePath(), dstDir.exists());
+        for (File child : srcDir.listFiles()) {
+            File dst = new File(dstDir, child.getName());
+            if (child.isDirectory()) {
+                copyDirectory(child, dst);
+            } else {
+                copyFile(child, dst);
+            }
+        }
     }
 
 }
