@@ -48,7 +48,7 @@ import org.openide.util.Utilities;
  *
  * @author Alexander Simon
  */
-public class QT_QLifeTestCase extends MakeProjectBase {
+public class QT_QLifeTestCase extends MakeProjectTestBase {
 
     public QT_QLifeTestCase() {
         super("QLife");

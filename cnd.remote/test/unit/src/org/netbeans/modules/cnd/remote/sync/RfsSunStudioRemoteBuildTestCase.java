@@ -61,12 +61,6 @@ public class RfsSunStudioRemoteBuildTestCase extends RfsBaseRemoteBuildTestCase 
         super(testName, execEnv);       
     }
 
-    @Override
-    public void setUp() throws Exception {
-        super.setUp();
-        setupHost("rfs");
-    }
-
     @ForAllEnvironments
     public void testBuildRfsSampleArgsSunStudio() throws Exception {
         setDefaultCompilerSet("SunStudio");

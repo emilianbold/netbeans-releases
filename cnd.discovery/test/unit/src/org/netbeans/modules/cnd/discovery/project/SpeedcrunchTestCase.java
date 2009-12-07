@@ -47,7 +47,7 @@ import org.junit.Test;
  *
  * @author Alexander Simon
  */
-public class SpeedcrunchTestCase extends MakeProjectBase {
+public class SpeedcrunchTestCase extends MakeProjectTestBase {
 
     public SpeedcrunchTestCase() {
         super("QT");
