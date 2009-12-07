@@ -874,8 +874,19 @@ public class ModuleDependencies extends Task {
                 l = new TreeSet<Dependency>();
                 groups.put(m.group, l);
             }
-            l.addAll(m.depends);
+            Set<Dependency> deps = new HashSet<Dependency>();
             for (Dependency d : m.depends) {
+                if (implementationOnly && (!d.exact || d.compare == null)) {
+                    continue;
+                }
+                // special dependencies are ignored
+                if (d.isSpecial ()) {
+                    continue;
+                }
+                deps.add(d);
+            }
+            l.addAll(deps);
+            for (Dependency d : deps) {
                 Set<ModuleInfo> r = referrers.get(d);
                 if (r == null) {
                     r = new HashSet<ModuleInfo>();
@@ -892,18 +903,6 @@ public class ModuleDependencies extends Task {
             boolean first = true;
             for (Dependency d : depends) {
                 String print = "  REQUIRES ";
-                if (d.exact && d.compare != null) {
-                    // ok, impl deps
-                } else {
-                    if (implementationOnly) {
-                        continue;
-                    }
-                }
-                
-                // special dependencies are ignored
-                if (d.isSpecial ()) {
-                    continue;
-                }
                 // dependencies within one group are not important
                 Set<ModuleInfo> r = referrers.get(d);
                 ModuleInfo ref = findModuleInfo(d, r.size() == 1 ? r.iterator().next() : null);
