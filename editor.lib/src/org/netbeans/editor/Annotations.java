@@ -94,22 +94,22 @@ import org.openide.util.lookup.ProxyLookup;
 public class Annotations implements DocumentListener {
     
     /** Map of [Mark, LineAnnotations] */
-    private HashMap<Mark, LineAnnotations> lineAnnotationsByMark;
+    private final Map<Mark, LineAnnotations> lineAnnotationsByMark;
     
     /** List of [LineAnnotations] which is ordered by line number */
-    private ArrayList<LineAnnotations> lineAnnotationsArray;
+    private final List<LineAnnotations> lineAnnotationsArray;
 
     /** Drawing layer for drawing of annotations */
     private DrawLayerFactory.AnnotationLayer drawLayer;
 
     /** Reference to document */
-    private BaseDocument doc;
+    private final BaseDocument doc;
 
     /** List of listeners on AnnotationsListener*/
-    private EventListenerList listenerList;
+    private final EventListenerList listenerList;
 
     /** Property change listener on annotation type changes */
-    private PropertyChangeListener l;
+    private final PropertyChangeListener l;
     
     /** Whether the column with glyph icons is visible */
     private boolean glyphColumn = false;
@@ -821,7 +821,7 @@ public class Annotations implements DocumentListener {
         return popupItem;
     }
 
-    private static class DelayedMenu extends JMenu{
+    private static final class DelayedMenu extends JMenu{
         
         RequestProcessor.Task task;
         
@@ -844,7 +844,7 @@ public class Annotations implements DocumentListener {
         void clearTask() {
             this.task = null; // clear the finished task to avoid leaking
         }
-    }
+    } // End of DelayedMenu class
     
     private JMenu createMenu(BaseKit kit, int line, boolean backgroundInit){
         final DelayedMenu pm = new DelayedMenu(NbBundle.getBundle(BaseKit.class).getString("generate-gutter-popup"));
@@ -902,10 +902,10 @@ public class Annotations implements DocumentListener {
      * the references to all annotations from one line in List and also
      * stores which annotation is active, count of visible annotations 
      * and line number. */
-    static public class LineAnnotations extends Object {
+    public static class LineAnnotations extends Object {
 
         /** List with all annotations in this LineAnnotations */
-        private LinkedList<AnnotationDesc> annos;
+        private final LinkedList<AnnotationDesc> annos;
 
         /** List with all visible annotations in this LineAnnotations */
         private LinkedList<AnnotationDesc> annosVisible;
@@ -914,21 +914,14 @@ public class Annotations implements DocumentListener {
          * annotation on the line */
         private AnnotationDesc active;
         
-        /** Line number */
-//        private int lineNumber;
-        
         protected LineAnnotations() {
             annos = new LinkedList<AnnotationDesc>();
             annosVisible = new LinkedList<AnnotationDesc>();
-//            lineNumber = -1;
         }
 
         /** Add annotation to this line and activate it. */
         public void addAnnotation(AnnotationDesc anno) {
-//            if (lineNumber == -1)
-//                lineNumber = anno.getLine();
             annos.add(anno);
-//            Collections.sort(annos);
             refreshAnnotations();
         }
         
@@ -964,12 +957,10 @@ public class Annotations implements DocumentListener {
             return (annos.size() > 0)
                 ? annos.peek().getLine()
                 : 0;
-//            return lineNumber;
         }
 
         /** Setter for the line number property */
         public void setLine(int line) {
-//            lineNumber = line;
             throw new IllegalStateException("Setting of line number not allowed"); // NOI18N
         }
 
@@ -1046,7 +1037,7 @@ public class Annotations implements DocumentListener {
         /** Searches all combination annotation type and sort them
          * by getCombinationOrder into combTypes array
          * which is passed as paramter. */
-        private void fillInCombinationsAndOrderThem(LinkedList<AnnotationType> combTypes) {
+        private static void fillInCombinationsAndOrderThem(LinkedList<AnnotationType> combTypes) {
             AnnotationType type;
             AnnotationType.CombinationMember[] combs;
             
@@ -1189,9 +1180,6 @@ public class Annotations implements DocumentListener {
             return false;
         }
     
-        
-        
-        
         /** Refresh the active annotation and count of visible annotations. 
          * This method is used after change of annotation type of some annotation
          * on this line */
@@ -1253,7 +1241,7 @@ public class Annotations implements DocumentListener {
             return annos.iterator();
         }
         
-    }
+    } // End of LineAnnotations class
     
 
     /** Listener for listening on changes in Annotations object.*/
@@ -1268,14 +1256,14 @@ public class Annotations implements DocumentListener {
          * must be reflected somehow (most probably by complete redraw). */
         public void changedAll();
 
-    }
+    } // End of AnnotationsListener interface
 
     /** Annotation which is used for representation of combined annotations. 
      * Some basic operations like getLine etc. are delegated to one of the
      * annotations which are representd by this combined annotation. The only
      * added functionality is for tooltip text and annotation type.
      */
-    private static class AnnotationCombination extends AnnotationDesc implements Lookup.Provider {
+    private static final class AnnotationCombination extends AnnotationDesc implements Lookup.Provider {
         
         /** Delegate annotaiton */
         private AnnotationDesc delegate;
@@ -1355,11 +1343,10 @@ public class Annotations implements DocumentListener {
             return l;
         }
         
-    }
+    } // End of AnnotationCombination class
 
     public static final class MenuComparator implements Comparator<JMenu> {
 
-       
         public MenuComparator() {
         }
         
@@ -1370,7 +1357,6 @@ public class Annotations implements DocumentListener {
             if (menuTwoText == null || menuOneText == null) return 0;
             return menuOneText.compareTo(menuTwoText);
         }
-
-    }
+    } // End of MenuComparator class
     
 }
