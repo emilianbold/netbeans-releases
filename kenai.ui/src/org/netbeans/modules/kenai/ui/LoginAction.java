@@ -43,6 +43,7 @@ import javax.swing.AbstractAction;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
+import org.openide.util.NbBundle;
 
 /**
  * @author Jan Becicka
@@ -52,6 +53,7 @@ public final class LoginAction extends AbstractAction {
     private static LoginAction instance;
 
     private LoginAction() {
+        super(NbBundle.getMessage(LoginAction.class, "CTL_LoginAction", NAME));
     }
 
     public static synchronized LoginAction getDefault() {
