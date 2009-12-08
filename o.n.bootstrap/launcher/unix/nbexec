@@ -99,6 +99,10 @@ EOF
             # go on and print IDE options as well
         args="$args --help"
             ;;
+        --nosplash)
+            nosplash="nosplash";
+            args="$args --nosplash"
+            ;;
         --jdkhome) shift; if [ $# -gt 0 ] ; then jdkhome=$1; fi
             ;;
         # this has to be here for purposes of updater.jar, but it should be
@@ -112,7 +116,6 @@ EOF
                 postfixcp=$postfixcp$1;
             fi
             ;;
-        
         -cp:p|--cp:p)
             shift;
             if [ $# -gt 0 ] ; then
@@ -199,8 +202,8 @@ fi
 jargs_without_clusters="$jargs"
 jargs="-Dnetbeans.dirs=\"${clusters}\" $jargs_without_clusters"
 
-if [ -f "${userdir}/var/cache/splash.png" ]; then
-   jargs="$jargs -splash:${userdir}/var/cache/splash.png"
+if [ -z "$nosplash" -a -f "${userdir}/var/cache/splash.png" ]; then
+   jargs="$jargs -splash:\"${userdir}/var/cache/splash.png\""
 fi
 
 jdkhome=`absolutize_path "$jdkhome"`
