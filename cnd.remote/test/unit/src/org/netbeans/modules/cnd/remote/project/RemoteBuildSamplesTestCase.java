@@ -41,7 +41,7 @@ package org.netbeans.modules.cnd.remote.project;
 
 import java.util.concurrent.TimeUnit;
 import junit.framework.Test;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
+import org.netbeans.modules.cnd.remote.RemoteDevelopmentFirstTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.ProjectManager;
@@ -102,6 +102,6 @@ public class RemoteBuildSamplesTestCase extends RemoteBuildTestBase {
     }
 
     public static Test suite() {
-        return new RemoteDevelopmentTest(RemoteBuildSamplesTestCase.class);
+        return new RemoteDevelopmentFirstTest(RemoteBuildSamplesTestCase.class);
     }
 }
