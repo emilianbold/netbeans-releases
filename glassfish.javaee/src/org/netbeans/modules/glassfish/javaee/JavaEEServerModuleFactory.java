@@ -115,7 +115,12 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
                         ip = InstanceProperties.createInstancePropertiesWithoutUI(
                                 url, username, password, displayName, props);
                     } catch (InstanceCreationException ex) {
+                        // the initialization delay of the ServerRegistry may have triggered a ignorable
+                        // exception
+                        ip = InstanceProperties.getInstanceProperties(url);
+                        if (null == ip) {
                             Logger.getLogger("glassfish-javaee").log(Level.WARNING, null, ex); // NOI18N
+                        }
                     }
 
                 if(ip == null) {
