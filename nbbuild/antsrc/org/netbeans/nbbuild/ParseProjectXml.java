@@ -651,7 +651,7 @@ public final class ParseProjectXml extends Task {
 
         public Dep(String parse, ModuleListParser modules) {
             this(modules);
-            Matcher m = Pattern.compile("([^=>/ ]+)(?:/(\\d+))?(?: > (.+)| = (.+))?").matcher(parse);
+            Matcher m = Pattern.compile("([^=>/ ]+)(?:/([\\d-]+))?(?: > (.+)| = (.+))?").matcher(parse);
             if (!m.matches()) {
                 throw new BuildException("Malformed dep: " + parse);
             }
