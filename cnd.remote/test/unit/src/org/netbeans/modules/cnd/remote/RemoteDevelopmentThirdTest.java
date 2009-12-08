@@ -64,18 +64,18 @@ import org.netbeans.modules.cnd.test.CndBaseTestSuite;
  *
  * @author Sergey Grinev
  */
-public class RemoteDevelopmentSecondTest extends CndBaseTestSuite {
+public class RemoteDevelopmentThirdTest extends CndBaseTestSuite {
 
     public static final String PLATFORMS_SECTION = "remote.platforms";
     public static final String DEFAULT_SECTION = "remote";
 
-    public RemoteDevelopmentSecondTest(Class testClass) {
+    public RemoteDevelopmentThirdTest(Class testClass) {
         this(testClass.getName(), testClass);
     }
 
     // Why are tests just Test, not NativeExecutionBaseTestCase?
     // to allow add warnings (TestSuite.warning() returns test stub with warning)
-    public RemoteDevelopmentSecondTest(String name, Test... tests) {
+    public RemoteDevelopmentThirdTest(String name, Test... tests) {
         setName(name);
         for (Test test : tests) {
             addTest(test);
@@ -84,27 +84,24 @@ public class RemoteDevelopmentSecondTest extends CndBaseTestSuite {
 
     // Why are tests just Test, not NativeExecutionBaseTestCase?
     // to allow add warnings (TestSuite.warning() returns test stub with warning)
-    public RemoteDevelopmentSecondTest(String name, Collection<Test> tests) {
+    public RemoteDevelopmentThirdTest(String name, Collection<Test> tests) {
         setName(name);
         for (Test test : tests) {
             addTest(test);
         }
     }
 
-    public RemoteDevelopmentSecondTest() {
-        this("Remote Development", // NOI18N
-             RemoteBuildMakefileTestCase.class,
-             RfsGnuRemoteBuildTestCase.class,
-             RfsSunStudioRemoteBuildTestCase.class);
+    public RemoteDevelopmentThirdTest() {
+        this("Remote Development", RemoteBuildSamplesTestCase.class);
     }
 
 
-    private RemoteDevelopmentSecondTest(String name, Class... testClasses) {
+    private RemoteDevelopmentThirdTest(String name, Class... testClasses) {
         super(name, PLATFORMS_SECTION, testClasses);
     }
 
     public static Test suite() {
-        TestSuite suite = new RemoteDevelopmentSecondTest();
+        TestSuite suite = new RemoteDevelopmentThirdTest();
         return suite;
     }
 }
