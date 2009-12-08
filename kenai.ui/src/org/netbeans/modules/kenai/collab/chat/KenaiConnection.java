@@ -139,7 +139,7 @@ public class KenaiConnection implements PropertyChangeListener {
     public static KenaiProject getKenaiProject(String room) {
         assert !room.contains("/") : "room name cannot contain '/'";
         String kenaiUrl = "https://" + room.substring(room.indexOf("@muc.")+"@muc.".length());
-        Kenai kenai = KenaiManager.getDefault().getKenaiInstance(kenaiUrl);
+        Kenai kenai = KenaiManager.getDefault().getKenai(kenaiUrl);
         try {
             return kenai.getProject(room.substring(0, room.indexOf("@muc.")));
         } catch (KenaiException ex) {
@@ -155,7 +155,7 @@ public class KenaiConnection implements PropertyChangeListener {
 
     public static Kenai getKenai(String jid) {
         String kenaiUrl = "https://" + jid.substring(jid.indexOf("@"));
-        return KenaiManager.getDefault().getKenaiInstance(kenaiUrl);
+        return KenaiManager.getDefault().getKenai(kenaiUrl);
     }
 
     /**

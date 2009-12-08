@@ -63,7 +63,7 @@ public class KenaiLoginTask implements Runnable {
             Preferences prefs = NbPreferences.forModule(KenaiLoginTask.class);
             try {
                 if (prefs.keys().length > 0) {
-                    for (Kenai k: KenaiManager.getDefault().getKenaiInstances()) {
+                    for (Kenai k: KenaiManager.getDefault().getKenais()) {
                         UIUtils.tryLogin(k, false);
                     }
                 }

@@ -183,7 +183,7 @@ public class KenaiInstanceCustomizer extends javax.swing.JPanel implements java.
         if (!urlPatten.matcher(s).matches()) {
             return NbBundle.getMessage(KenaiInstanceCustomizer.class, "ERR_UrlNotValid");
         }
-        for (Kenai instance : KenaiManager.getDefault().getKenaiInstances()) {
+        for (Kenai instance : KenaiManager.getDefault().getKenais()) {
             if (instance.getUrl().toString().equals(s.endsWith("/") ? s.substring(0, s.length() - 1) : s)) { // NOI18N
                 return NbBundle.getMessage(KenaiInstanceCustomizer.class, "ERR_UrlUsed", s);
             }

@@ -56,7 +56,7 @@ public class FakeRoster {
 
     public Collection<FakeRosterGroup> getGroups() {
         TreeSet<FakeRosterGroup> l = new TreeSet();
-        for (Kenai kenai:KenaiManager.getDefault().getKenaiInstances()) {
+        for (Kenai kenai:KenaiManager.getDefault().getKenais()) {
             for (MultiUserChat muc : KenaiConnection.getDefault(kenai).getChats()) {
                 l.add(new FakeRosterGroup(muc));
             }

@@ -59,7 +59,7 @@ public class RemoveInstanceAction extends AbstractAction {
 
 
     public void actionPerformed(ActionEvent e) {
-        KenaiManager.getDefault().removeKenaiInstance(key);
+        KenaiManager.getDefault().removeKenai(key);
     }
 
 //    @Override

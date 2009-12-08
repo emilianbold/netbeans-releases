@@ -62,7 +62,7 @@ public class AddInstanceAction extends AbstractAction {
         KenaiInstance s = showInputDialog();
         if (s!=null) {
             try {
-                KenaiManager.getDefault().createKenaiInstance(s.name, s.url);
+                KenaiManager.getDefault().createKenai(s.name, s.url);
             } catch (MalformedURLException ex) {
                 Exceptions.printStackTrace(ex);
             }
