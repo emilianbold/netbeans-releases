@@ -344,18 +344,18 @@ public final class UI {
         setSize(component, new Dimension(width, height));
     }
 
-    public static int getInt(String value) {
+    public static int getInt(Object value) {
         try {
-            return Integer.parseInt(value);
+            return Integer.parseInt(value.toString());
         }
         catch (NumberFormatException e) {
             return -1;
         }
     }
 
-    public static double getDouble(String value) {
+    public static double getDouble(Object value) {
         try {
-            return Double.parseDouble(value);
+            return Double.parseDouble(value.toString());
         }
         catch (NumberFormatException e) {
             return -1.0;
@@ -403,21 +403,28 @@ public final class UI {
         return (DataObject) ((Node) object).getLookup().lookup(DataObject.class);
     }
 
-    public static JComponent getResizable(JPanel panel) {
-        JPanel p = new JPanel(new GridBagLayout());
+    public static JComponent getResizableX(JPanel panel) {
+        return getResizable(panel, GridBagConstraints.HORIZONTAL);
+    }
+
+    public static JComponent getResizableXY(JPanel panel) {
+        return getResizable(panel, GridBagConstraints.BOTH);
+    }
+
+    private static JComponent getResizable(JPanel panel, int fill) {
+        JPanel mainPanel = new JPanel(new GridBagLayout());
         GridBagConstraints c = new GridBagConstraints();
 
         c.weightx = 1.0;
         c.weighty = 1.0;
+        c.fill =  fill;
         c.insets = new Insets(0, LARGE_SIZE, 0, LARGE_SIZE);
         c.anchor = GridBagConstraints.NORTHWEST;
-        c.fill = GridBagConstraints.HORIZONTAL;
-        p.add(panel, c);
-
-//      p.setBorder(new javax.swing.border.LineBorder(java.awt.Color.blue));
+        mainPanel.add(panel, c);
 //      panel.setBorder(new javax.swing.border.LineBorder(java.awt.Color.red));
+//      mainPanel.setBorder(new javax.swing.border.LineBorder(java.awt.Color.blue));
 
-        return p;
+        return mainPanel;
     }
 
     public static String removeHtml(String value) {
