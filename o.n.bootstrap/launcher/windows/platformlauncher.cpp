@@ -694,11 +694,11 @@ void PlatformLauncher::onExit() {
         logMsg("Old command line: %s", cmdLine.c_str());
         string::size_type bslashPos = cmdLine.find_last_of('\\');
         string::size_type pos = cmdLine.find(ARG_NAME_LA_START_APP);
-        if (bslashPos < pos && pos != string::npos) {
+        if ((bslashPos == string::npos || bslashPos < pos) && pos != string::npos) {
             cmdLine.erase(pos, strlen(ARG_NAME_LA_START_APP));
         }
         pos = cmdLine.find(ARG_NAME_LA_START_AU);
-        if (bslashPos < pos && pos != string::npos) {
+        if ((bslashPos == string::npos || bslashPos < pos) && pos != string::npos) {
             cmdLine.erase(pos, strlen(ARG_NAME_LA_START_AU));
         }
 
