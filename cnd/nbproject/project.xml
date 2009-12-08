@@ -352,6 +352,9 @@
                 <friend>com.sun.dlight.remotesupport</friend>
                 <friend>com.sun.dlight.target</friend>
                 <friend>com.sun.dlight.xyplot</friend>
+                <friend>com.sun.tools.debugger.gdb</friend>
+                <friend>com.sun.tools.debugger.dbx</friend>
+                <friend>com.sun.tools.debugger.common</friend>
                 <friend>com.sun.tools.debugger.dbxgui</friend>
                 <friend>com.sun.tools.debugger.dbxtool</friend>
                 <friend>com.sun.tools.swdev.advtools.actions.performanceanalyzeractions</friend>
