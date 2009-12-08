@@ -43,6 +43,8 @@ import java.net.MalformedURLException;
 import org.netbeans.modules.kenai.api.KenaiManager;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
+import javax.swing.JComboBox;
+import org.netbeans.modules.kenai.api.Kenai;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.Exceptions;
@@ -62,9 +64,16 @@ public class AddInstanceAction extends AbstractAction {
         KenaiInstance s = showInputDialog();
         if (s!=null) {
             try {
-                KenaiManager.getDefault().createKenai(s.name, s.url);
+                Kenai kenai = KenaiManager.getDefault().createKenai(s.name, s.url);
+                if (e!=null && e.getSource() instanceof JComboBox) {
+                    ((JComboBox) e.getSource()).setSelectedItem(kenai);
+                }
             } catch (MalformedURLException ex) {
                 Exceptions.printStackTrace(ex);
+            }
+        } else {
+            if (e != null && e.getSource() instanceof JComboBox) {
+                ((JComboBox) e.getSource()).setSelectedIndex(0);
             }
         }
     }
