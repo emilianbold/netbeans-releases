@@ -102,6 +102,8 @@ public abstract class RemotePathMap extends PathMap {
 
     protected final HashMap<String, String> map = new HashMap<String, String>();
     protected final ExecutionEnvironment execEnv;
+    protected volatile String localBase;
+
     protected RemotePathMap(ExecutionEnvironment execEnv) {
         this.execEnv = execEnv;
     }
@@ -195,8 +197,12 @@ public abstract class RemotePathMap extends PathMap {
                 String mpoint = entry.getKey();
                 return mpoint + rpath.substring(value.length());
             }
+        }        
+        if (useDefault) {
+            initLocalBase();
+            return localBase  + '/' + rpath;
         }
-        return useDefault ? rpath : null;
+        return null;
     }
 
     /**
@@ -387,6 +393,17 @@ public abstract class RemotePathMap extends PathMap {
         return false;
     }
 
+    protected void initLocalBase() {
+        if (localBase == null) {
+            String tmpLocalBase = getLocalSyncRoot(execEnv);
+            if (tmpLocalBase.endsWith("/")) {
+                tmpLocalBase = tmpLocalBase.substring(0, tmpLocalBase.length() - 1);
+            }
+            localBase = tmpLocalBase;
+        }
+    }
+
+
     private final static class CustomizableRemotePathMap extends RemotePathMap {
 
         private CustomizableRemotePathMap(ExecutionEnvironment exc) {
@@ -454,9 +471,15 @@ public abstract class RemotePathMap extends PathMap {
             if (rpath.startsWith(NO_MAPPING_PREFIX)) {
                 return rpath;
             }
-            String res = super.getLocalPath(rpath, useDefault);
-            if (res != null && Utilities.isWindows() && !"/".equals(res)) { // NOI18N
-                res = WindowsSupport.getInstance().convertFromMSysPath(res);
+            String res;
+            if (isSubPath(remoteBase, rpath)) {
+                res = super.getLocalPath(rpath, useDefault);
+                if (res != null && Utilities.isWindows() && !"/".equals(res)) { // NOI18N
+                    res = WindowsSupport.getInstance().convertFromMSysPath(res);
+                }
+            } else {
+                initLocalBase();
+                res = localBase  + '/' + rpath;
             }
             return res;
         }
@@ -472,7 +495,7 @@ public abstract class RemotePathMap extends PathMap {
 
         @Override
         public void addMapping(String localParent, String remoteParent) {
-            CndUtils.assertTrue(false, "Should never be called for " + getClass().getSimpleName()); //NOI18N
+            throw new UnsupportedOperationException();
         }
 
         @Override
@@ -484,6 +507,16 @@ public abstract class RemotePathMap extends PathMap {
     public static String getRemoteSyncRoot(ExecutionEnvironment executionEnvironment) {
         for (MirrorPathProvider mpp : Lookup.getDefault().lookupAll(MirrorPathProvider.class)) {
             String result = mpp.getRemoteMirror(executionEnvironment);
+            if (result != null) {
+                return result;
+            }
+        }
+        return null;
+    }
+
+    public static String getLocalSyncRoot(ExecutionEnvironment executionEnvironment) {
+        for (MirrorPathProvider mpp : Lookup.getDefault().lookupAll(MirrorPathProvider.class)) {
+            String result = mpp.getLocalMirror(executionEnvironment);
             if (result != null) {
                 return result;
             }
