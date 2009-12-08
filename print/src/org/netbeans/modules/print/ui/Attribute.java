@@ -99,7 +99,7 @@ final class Attribute extends Dialog implements FocusListener, Macro.Listener, P
     @Override
     protected DialogDescriptor createDescriptor() {
         myDescriptor = new DialogDescriptor(
-            getResizable(createPanel()),
+            getResizableX(createPanel()),
             i18n("LBL_Print_Options"), // NOI18N
             true,
             getButtons(),
