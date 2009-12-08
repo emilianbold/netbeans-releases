@@ -490,8 +490,10 @@ public class ClientStubsGenerator extends AbstractGenerator {
                     int count = 0;
                     List<Resource> resourceList = getModel().getResources();
                     for (Resource r : resourceList) {
-                        if (r.isContainer()) {
-                            initBody += "      this.resources[" + count++ + "] = new " + pkg + r.getName() + "(this.uri+'" + r.getPath() + "');\n";
+                        if (r.isRootResource()) {
+                            String path = r.getPath();
+                            if (!path.startsWith("/")) path = "/"+path;
+                            initBody += "      this.resources[" + count++ + "] = new " + pkg + r.getName() + "(this.uri+'" + path + "');\n";
                         }
                     }
                     sb.append(initBody);
@@ -534,12 +536,16 @@ public class ClientStubsGenerator extends AbstractGenerator {
         sb2.append("\t\t  var uri = resource.getUri();\n");
         sb2.append("\t\t  str += '<tr><td valign=\"top\"><a href=\"'+uri+'\" target=\"_blank\">'+uri+'</a></td><td>';\n");
         sb2.append("\t\t  var items  = resource.getItems();\n");
-        sb2.append("\t\t  if(items != undefined && items.length > 0) {\n");
-        sb2.append("\t\t    for(j=0;j<items.length;j++) {\n");
+        sb2.append("\t\t  if (items != undefined) {\n");
+        sb2.append("\t\t    if (items.length > 0) {\n");
+        sb2.append("\t\t      for(j=0;j<items.length;j++) {\n");
         sb2.append("\t\t        var item = items[j];\n");
         sb2.append("\t\t        var uri2 = item.getUri();\n");
         sb2.append("\t\t        str += '<a href=\"'+uri2+'\" target=\"_blank\">'+uri2+'</a><br/>';\n");
         sb2.append("\t\t        str += '&nbsp;&nbsp;<font size=\"-3\">'+item.toString()+'</font><br/>';\n");
+        sb2.append("\t\t      }\n");
+        sb2.append("\t\t    } else {\n");
+        sb2.append("\t\t      str += 'No items detected';\n");
         sb2.append("\t\t    }\n");
         sb2.append("\t\t  } else {\n");
         sb2.append("\t\t    str += 'No items, please check the url: <a href=\"'+uri+'\" target=\"_blank\">'+uri+'</a>.<br/>" +
