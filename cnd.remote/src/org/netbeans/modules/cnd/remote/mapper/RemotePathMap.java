@@ -396,7 +396,7 @@ public abstract class RemotePathMap extends PathMap {
     protected void initLocalBase() {
         if (localBase == null) {
             String tmpLocalBase = getLocalSyncRoot(execEnv);
-            if (tmpLocalBase.endsWith("/")) {
+            if (tmpLocalBase.endsWith("/")) { //NOI18N
                 tmpLocalBase = tmpLocalBase.substring(0, tmpLocalBase.length() - 1);
             }
             localBase = tmpLocalBase;
