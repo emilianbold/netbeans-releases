@@ -487,7 +487,8 @@ final class ModuleListParser {
                 prereqs.toArray(new String[prereqs.size()]), 
                 cluster, 
                 rundeps.toArray(new String[rundeps.size()]),
-                compileTestDeps
+                compileTestDeps,
+                new File(dir, "module-auto-deps.xml")
                 );
         if (entries.containsKey(cnb)) {
             throw new IOException("Duplicated module " + cnb + ": found in " + entries.get(cnb) + " and " + entry);
@@ -543,8 +544,9 @@ final class ModuleListParser {
      * XXX would be slightly more precise to check config/Modules/*.xml rather than scan for module JARs.
      */
     private static void doScanBinaries(File cluster, Map<String,Entry> entries) throws IOException {
-            for (int j = 0; j < MODULE_DIRS.length; j++) {
-                File dir = new File(cluster, MODULE_DIRS[j].replace('/', File.separatorChar));
+        File moduleAutoDepsDir = new File(new File(cluster, "config"), "ModuleAutoDeps");
+            for (String moduleDir : MODULE_DIRS) {
+                File dir = new File(cluster, moduleDir.replace('/', File.separatorChar));
                 if (!dir.isDirectory()) {
                     continue;
                 }
@@ -552,8 +554,7 @@ final class ModuleListParser {
                 if (jars == null) {
                     throw new IOException("Cannot examine dir " + dir);
                 }
-                for (int k = 0; k < jars.length; k++) {
-                    File m = jars[k];
+                for (File m : jars) {
                     if (!m.getName().endsWith(".jar")) {
                         continue;
                     }
@@ -587,7 +588,8 @@ final class ModuleListParser {
                         
                         
                         Entry entry = new Entry(codenamebase, m, exts,dir, null, null, cluster.getName(),
-                                parseRuntimeDependencies(moduleDependencies), Collections.<String,String[]>emptyMap());
+                                parseRuntimeDependencies(moduleDependencies), Collections.<String,String[]>emptyMap(),
+                                new File(moduleAutoDepsDir, codenamebase.replace('.', '-') + ".xml"));
                         if (entries.containsKey(codenamebase)) {
                             throw new IOException("Duplicated module " + codenamebase + ": found in " + entries.get(codenamebase) + " and " + entry);
                         } else {
@@ -839,9 +841,10 @@ final class ModuleListParser {
         private final String[] runtimeDependencies; 
         // dependencies on other tests
         private final Map<String,String[]> testDependencies;
+        private final File moduleAutoDeps;
         
         Entry(String cnb, File jar, File[] classPathExtensions, File sourceLocation, String netbeansOrgPath,
-                String[] buildPrerequisites, String clusterName,String[] runtimeDependencies, Map<String,String[]> testDependencies) {
+                String[] buildPrerequisites, String clusterName,String[] runtimeDependencies, Map<String,String[]> testDependencies, File moduleAutoDeps) {
             this.cnb = cnb;
             this.jar = jar;
             this.classPathExtensions = classPathExtensions;
@@ -852,6 +855,7 @@ final class ModuleListParser {
             this.runtimeDependencies = runtimeDependencies;
             assert testDependencies != null;
             this.testDependencies = testDependencies;
+            this.moduleAutoDeps = moduleAutoDeps;
         }
         
         /**
@@ -917,6 +921,15 @@ final class ModuleListParser {
         public Map<String,String[]> getTestDependencies() {
             return testDependencies;
         }
+
+        /**
+         * Gets the module auto dependencies XML file.
+         * @return a file location (may or may not exist)
+         */
+        public File getModuleAutoDeps() {
+            return moduleAutoDeps;
+        }
+
         public @Override String toString() {
             return (sourceLocation != null ? sourceLocation : jar).getAbsolutePath();
         }

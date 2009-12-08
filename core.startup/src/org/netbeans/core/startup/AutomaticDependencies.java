@@ -152,10 +152,12 @@ public final class AutomaticDependencies {
      * @since org.netbeans.core/1 1.19
      */
     public static final class Report {
+        private final String cnb;
         private final Set<Dependency> added;
         private final Set<Dependency> removed;
         private final Set<String> messages;
-        Report(Set<Dependency> added, Set<Dependency> removed, Set<String> messages) {
+        Report(String cnb, Set<Dependency> added, Set<Dependency> removed, Set<String> messages) {
+            this.cnb = cnb;
             this.added = added;
             this.removed = removed;
             this.messages = messages;
@@ -189,6 +191,15 @@ public final class AutomaticDependencies {
         public boolean isModified() {
             return !added.isEmpty() || !removed.isEmpty();
         }
+
+        /**
+         * @since org.netbeans.core.startup 1.21
+         */
+        public @Override String toString() {
+            return "had to upgrade dependencies for module " + cnb + ": added = " + getAdded() +
+                    " removed = " + getRemoved() + "; details: " + getMessages(); // NOI18N
+        }
+
     }
     
     /**
@@ -248,10 +259,10 @@ public final class AutomaticDependencies {
             Set<Dependency> added = new HashSet<Dependency>(dependencies);
             added.removeAll(oldDependencies);
             oldDependencies.removeAll(dependencies);
-            return new Report(added, oldDependencies, messages);
+            return new Report(cnb, added, oldDependencies, messages);
         } else {
             assert messages.isEmpty();
-            return new Report(Collections.<Dependency>emptySet(), Collections.<Dependency>emptySet(), Collections.<String>emptySet());
+            return new Report(cnb, Collections.<Dependency>emptySet(), Collections.<Dependency>emptySet(), Collections.<String>emptySet());
         }
     }
     
@@ -265,6 +276,32 @@ public final class AutomaticDependencies {
      */
     public void refineDependencies(String cnb, Set<Dependency> dependencies) {
         refineDependenciesAndReport(cnb, dependencies);
+    }
+
+    /**
+     * Variant of {@link #refineDependenciesAndReport} with simple signature
+     * intended for use from {@code org.netbeans.nbbuild.ParseProjectXml}.
+     * @param cnb the code name base of the module being considered
+     * @param dependencies a mutable set of dependencies in the format given by
+     *                     {@link Dependency#toString} and {@link Dependency#create} on {@link Dependency#TYPE_MODULE}
+     * @return a message listing some changes, or null if there were no changes
+     * @since org.netbeans.core.startup 1.21
+     */
+    public String refineDependenciesSimple(String cnb, Set<String> dependencies) {
+        Set<Dependency> deps = new HashSet<Dependency>();
+        for (String d : dependencies) {
+            deps.addAll(Dependency.create(Dependency.TYPE_MODULE, d));
+        }
+        Report r = refineDependenciesAndReport(cnb, deps);
+        if (r.isModified()) {
+            dependencies.clear();
+            for (Dependency d : deps) {
+                dependencies.add(d.toString().replaceFirst("^module ", ""));
+            }
+            return r.toString();
+        } else {
+            return null;
+        }
     }
     
     // ---------------- STRUCTS --------------------
