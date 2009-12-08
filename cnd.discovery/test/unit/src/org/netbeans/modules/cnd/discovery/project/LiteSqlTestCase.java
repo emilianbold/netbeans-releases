@@ -40,7 +40,6 @@
 package org.netbeans.modules.cnd.discovery.project;
 
 import org.junit.Test;
-import org.openide.util.Utilities;
 
 
 /**
@@ -55,12 +54,6 @@ public class LiteSqlTestCase extends MakeProjectTestBase {
 
     @Test
     public void testLiteSql(){
-        if (Utilities.isWindows()) {
-            // make does not work on windows
-            // it start XWin and all hangs
-            // do anybody know how to make litesql on windows?
-            return;
-        }
         performTestProject("http://www.mirrorservice.org/sites/download.sourceforge.net/pub/sourceforge/l/project/li/litesql/litesql/0.3.3/litesql-0.3.3.tar.gz", null, false);
 //        performTestProject("http://www.mirrorservice.org/sites/download.sourceforge.net/pub/sourceforge/l/project/li/litesql/litesql/0.3.5-beta/litesql-0.3.5-src.tar.gz", null, false);
     }
