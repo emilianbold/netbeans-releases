@@ -165,7 +165,8 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
     private UndoRedo.Manager editorUndoRedo;
     private EditableDiffMarkProvider diffMarkprovider;
 
-    private boolean lineLocationAsked;
+    private Integer askedLineLocation;
+    private static final String PROP_SMART_SCROLLING_DISABLED = "diff.smartScrollDisabled"; //NOI18N
 
     public EditableDiffView(final StreamSource ss1, final StreamSource ss2) throws IOException {
         refreshDiffTask = RequestProcessor.getDefault().create(new RefreshDiffTask());
@@ -339,9 +340,18 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                 if (type == DiffController.LocationType.DifferenceIndex) {
                     setDifferenceImpl(location);
                 } else {
-                    EditableDiffView.this.lineLocationAsked = true;
+                    EditableDiffView.this.askedLineLocation = location;
                     if (pane == DiffController.DiffPane.Base) {
-                        setBaseLineNumberImpl(location);
+                        if (Boolean.TRUE.equals(getJComponent().getClientProperty(PROP_SMART_SCROLLING_DISABLED))) {
+                            setBaseLineNumberImpl(location, false);
+                        } else {
+                            // refactoring jumps only in the left pane, setting the position must be done with smart scrolling enabled
+                            SwingUtilities.invokeLater(new Runnable() {
+                                public void run() {
+                                    setBaseLineNumberImpl(location, true);
+                                }
+                            });
+                        }
                     } else {
                         setModifiedLineNumberImpl(location);
                     }
@@ -371,7 +381,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         }
     }
 
-    private void setBaseLineNumberImpl(int line) {
+    private void setBaseLineNumberImpl(int line, boolean updateRightPanel) {
         initGlobalSizes(); // The window might be resized in the mean time.
         try {
             EditorUI editorUI = org.netbeans.editor.Utilities.getEditorUI(jEditorPane1.getEditorPane());
@@ -386,6 +396,11 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
     
             JScrollBar leftScrollBar = jEditorPane1.getScrollPane().getVerticalScrollBar();
             leftScrollBar.setValue(lineOffset);
+            if (updateRightPanel) {
+                JScrollBar rightScrollBar = jEditorPane2.getScrollPane().getVerticalScrollBar();
+                rightScrollBar.setValue(lineOffset);
+                updateCurrentDifference();
+            }
         } catch (IndexOutOfBoundsException ex) {
             ErrorManager.getDefault().notify(ex);
         }
@@ -1042,8 +1057,12 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                         refreshDividerSize();
                         jSplitPane1.repaint();
                         diffMarkprovider.refresh();
-                        if (diffs.length > 0 && getCurrentDifference() == -1 && !EditableDiffView.this.lineLocationAsked) {
-                            setCurrentDifference(0);
+                        if (diffs.length > 0 && !Boolean.TRUE.equals(getJComponent().getClientProperty(PROP_SMART_SCROLLING_DISABLED))) {
+                            if (EditableDiffView.this.askedLineLocation != null) {
+                                setLocation(DiffController.DiffPane.Base, DiffController.LocationType.LineNumber, EditableDiffView.this.askedLineLocation);
+                            } else if (getCurrentDifference() == -1) {
+                                setCurrentDifference(0);
+                            }
                         }
                     }
                 });
