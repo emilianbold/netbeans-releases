@@ -164,6 +164,7 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
 
     @Override
     protected void setUp() throws Exception {
+        System.err.printf("\n###> setUp    %s\n", getClass().getName() + '.' + getName());
         super.setUp();
         final ExecutionEnvironment env = getTestExecutionEnvironment();
         if (env != null) {
@@ -176,6 +177,7 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
     protected void tearDown() throws Exception {
         super.tearDown();
         ConnectionManager.getInstance().disconnect(getTestExecutionEnvironment());
+        System.err.printf("\n###< tearDown %s\n", getClass().getName() + '.' + getName());
     }
 
     protected static void setupHost(ExecutionEnvironment execEnv) {
