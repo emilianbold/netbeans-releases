@@ -55,7 +55,9 @@ public @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd
 class RfsSyncFactory extends BaseSyncFactory {
 
     public static final boolean ENABLE_RFS = CndUtils.getBoolean("cnd.remote.fs", true);
-    /*package*/ static final String ID = "rfs"; //NOI18N
+    
+    /** this factory ID -  public for test purposes */
+    public static final String ID = "rfs"; //NOI18N
 
     @Override
     public RemoteSyncWorker createNew( ExecutionEnvironment executionEnvironment,
