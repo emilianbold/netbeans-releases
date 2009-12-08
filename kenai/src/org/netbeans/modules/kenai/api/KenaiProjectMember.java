@@ -61,7 +61,7 @@ public final class KenaiProjectMember {
     }
 
     /**
-     * member's user name
+     * member's short user name
      * @return
      */
     public String getUserName() {

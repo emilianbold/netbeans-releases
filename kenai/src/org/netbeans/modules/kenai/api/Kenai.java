@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.kenai.api;
 
-import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -54,10 +53,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
-import javax.imageio.ImageIO;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.SwingUtilities;
 import org.codeviation.commons.patterns.Factory;
 import org.codeviation.commons.utils.Iterators;
 import org.jivesoftware.smack.PacketListener;
@@ -88,6 +85,9 @@ public final class Kenai implements Comparable<Kenai> {
      */
     public static final String PROP_LOGIN = "login";
 
+    /**
+     * fired when user logs int xmpp server
+     */
     public static final String PROP_XMPP_LOGIN = "xmpp_login";
 
     /**
@@ -106,11 +106,17 @@ public final class Kenai implements Comparable<Kenai> {
      */
     public static final String PROP_LOGIN_FAILED = "login_failed";
 
+    /**
+     * fired when log into xmpp failed
+     */
     public static final String PROP_XMPP_LOGIN_FAILED = "xmpp_login_failed";
 
+    /**
+     * never fired
+     */
+    @Deprecated
     public static final String PROP_URL_CHANGED = "url";
 
-    private static Kenai instance;
     private PasswordAuthentication auth = null;
     private KenaiImpl impl;
     private XMPPConnection xmppConnection;
@@ -133,7 +139,7 @@ public final class Kenai implements Comparable<Kenai> {
      */
     @Deprecated
      public static synchronized Kenai getDefault() {
-         return KenaiManager.getDefault().getKenaiInstance("https://kenai.com");
+         return KenaiManager.getDefault().getKenai("https://kenai.com");
 //        if (instance == null) {
 //            try {
 //                String urlString = prefs.get(DEFAULT_INSTANCE_PREF, "https://kenai.com/");

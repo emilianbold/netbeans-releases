@@ -76,12 +76,16 @@ public final class KenaiUser {
         this.kenai=kenai;
     }
 
+    /**
+     * kenai instance
+     * @return
+     */
     public Kenai getKenai() {
         return kenai;
     }
     
     /**
-     * getter for username
+     * getter for short username
      * @return
      */
     public String getUserName() {
@@ -102,6 +106,14 @@ public final class KenaiUser {
      */
     public String getLastName() {
         return data.last_name;
+    }
+
+    /**
+     * fully qualified name. E.g. john@kenai.com
+     * @return
+     */
+    public String getFQN() {
+        return getUserName() + "@" + kenai.getUrl().getHost();
     }
     
     /**
@@ -127,7 +139,7 @@ public final class KenaiUser {
         assert name.contains("@"): "username must be FQN";
         assert !name.contains("/"): "username cannot contain '/'";
         synchronized (users) {
-            Kenai kenai = KenaiManager.getDefault().getKenaiInstance("https://" + name.substring(name.indexOf('@')+1));
+            Kenai kenai = KenaiManager.getDefault().getKenai("https://" + name.substring(name.indexOf('@')+1));
             KenaiUser user = users.get(name + "@" + kenai.getUrl().getHost());
             if (user==null) {
                 user = new KenaiUser(kenai, name + "@" + kenai.getUrl().getHost());
@@ -193,6 +205,11 @@ public final class KenaiUser {
         propertyChangeSupport.removePropertyChangeListener(listener);
     }
 
+    /**
+     * is user online
+     * @param user's FQN
+     * @return
+     */
     public static boolean isOnline(String user) {
         synchronized (onlineUsers) {
             return onlineUsers.contains(user);

@@ -50,7 +50,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 
 /**
- *
+ * Manager of Kenai instances
  * @author Jan Becicka
  */
 public final class KenaiManager {
@@ -62,6 +62,10 @@ public final class KenaiManager {
     private Preferences prefs = NbPreferences.forModule(Kenai.class);
     private static final String INSTANCES_PREF="kenai.instances"; // NOI18N
 
+    /**
+     * singleton instance
+     * @return
+     */
     public static synchronized KenaiManager getDefault() {
         if (instance==null) {
             instance = new KenaiManager();
@@ -72,7 +76,15 @@ public final class KenaiManager {
     private KenaiManager() {
     }
     
-    public synchronized Kenai createKenaiInstance(String name, String url) throws MalformedURLException {
+    /**
+     * Creates a new instance of kenai server.
+     * You probably want to use {@link #getKenai(java.lang.String)}
+     * @param name display name
+     * @param url
+     * @return
+     * @throws MalformedURLException
+     */
+    public synchronized Kenai createKenai(String name, String url) throws MalformedURLException {
         return addInstance(Kenai.createInstance(name, url));
     }
     
@@ -98,14 +110,22 @@ public final class KenaiManager {
     }
 
 
-    public synchronized void removeKenaiInstance(Kenai instance) {
+    /**
+     * remove kenai instance from manager
+     * @param instance
+     */
+    public synchronized void removeKenai(Kenai instance) {
         initInstances();
         instances.remove(instance.getUrl().getHost());
         store();
         propertyChangeSupport.firePropertyChange(PROP_INSTANCES, instance, null);
     }
 
-    public synchronized Collection<Kenai> getKenaiInstances() {
+    /**
+     * returns all kenai instances registered in this manager
+     * @return
+     */
+    public synchronized Collection<Kenai> getKenais() {
         initInstances();
         return instances.values();
     }
@@ -137,7 +157,12 @@ public final class KenaiManager {
         instancesInited=true;
     }
 
-    public synchronized Kenai getKenaiInstance(String url) {
+    /**
+     * get kenai instance for specified url
+     * @param url
+     * @return
+     */
+    public synchronized Kenai getKenai(String url) {
         initInstances();
         return instances.get(url);
     }

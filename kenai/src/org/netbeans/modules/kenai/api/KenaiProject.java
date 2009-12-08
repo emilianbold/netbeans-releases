@@ -42,7 +42,6 @@ package org.netbeans.modules.kenai.api;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
@@ -293,7 +292,7 @@ public final class KenaiProject {
         if (uri == null) {
             return null;
         }
-        for (Kenai k : KenaiManager.getDefault().getKenaiInstances()) {
+        for (Kenai k : KenaiManager.getDefault().getKenais()) {
             Matcher m = getRepositoryPattern(k).matcher(uri);
             if (m.matches()) {
                 return k.getProject(m.group(repositoryPatternProjectGroup));
@@ -316,7 +315,7 @@ public final class KenaiProject {
     public static String getNameForRepository(String uri) {
         if (uri==null)
             return null;
-        for (Kenai k : KenaiManager.getDefault().getKenaiInstances()) {
+        for (Kenai k : KenaiManager.getDefault().getKenais()) {
             Matcher m = getRepositoryPattern(k).matcher(uri);
             if (m.matches()) {
                 return m.group(repositoryPatternProjectGroup);
@@ -536,6 +535,10 @@ public final class KenaiProject {
         propertyChangeSupport.removePropertyChangeListener(name, l);
     }
 
+    /**
+     * Kenai instance of this project
+     * @return kenai instance
+     */
     public Kenai getKenai() {
         return kenai;
     }
