@@ -150,6 +150,9 @@ public class KenaiSearchPanel extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 if (kenaiCombo.getSelectedItem() instanceof Kenai) {
                     kenai = ((Kenai) kenaiCombo.getSelectedItem());
+                    kenaiFeaturedProjectsList=null;
+                    kenaiRecentProjectsList=null;
+                    setOpenPanels();
                 } else {
                     new AddInstanceAction().actionPerformed(e);
                 }
@@ -207,13 +210,13 @@ public class KenaiSearchPanel extends JPanel {
         } else {
             setBrowsePanels();
         }
-        kenai.addPropertyChangeListener(Kenai.PROP_URL_CHANGED, new PropertyChangeListener() {
-
-            public void propertyChange(PropertyChangeEvent evt) {
-                kenaiFeaturedProjectsList=null;
-                kenaiRecentProjectsList=null;
-            }
-        });
+//        kenai.addPropertyChangeListener(Kenai.PROP_URL_CHANGED, new PropertyChangeListener() {
+//
+//            public void propertyChange(PropertyChangeEvent evt) {
+//                kenaiFeaturedProjectsList=null;
+//                kenaiRecentProjectsList=null;
+//            }
+//        });
     }
 
     private void setOpenPanels() {
