@@ -1,5 +1,5 @@
-#Signature file v4.0
-#Version 1.18.1
+#Signature file v4.1
+#Version 1.22.0
 
 CLSS public java.lang.Object
 cons public Object()
@@ -40,6 +40,13 @@ CLSS public abstract interface !annotation java.lang.annotation.Target
  anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
 intf java.lang.annotation.Annotation
 meth public abstract java.lang.annotation.ElementType[] value()
+
+CLSS public abstract interface !annotation org.netbeans.api.settings.ConvertAsJavaBean
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract !hasdefault boolean subclasses()
 
 CLSS public abstract interface !annotation org.netbeans.api.settings.ConvertAsProperties
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)

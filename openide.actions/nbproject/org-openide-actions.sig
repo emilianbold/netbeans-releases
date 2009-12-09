@@ -1,5 +1,5 @@
-#Signature file v4.0
-#Version 6.9.1
+#Signature file v4.1
+#Version 6.12.0
 
 CLSS public abstract interface java.awt.event.ActionListener
 intf java.util.EventListener
@@ -366,9 +366,11 @@ meth protected java.lang.Class[] cookieClasses()
 meth protected java.lang.String iconResource()
 meth protected void performAction(org.openide.nodes.Node[])
 meth public java.lang.String getName()
+meth public javax.swing.Action createContextAwareInstance(org.openide.util.Lookup)
 meth public org.openide.util.HelpCtx getHelpCtx()
 supr org.openide.util.actions.CookieAction
 hfds dataObject,getNodeDelegate
+hcls Delegate
 
 CLSS public org.openide.actions.ToolsAction
 cons public ToolsAction()
