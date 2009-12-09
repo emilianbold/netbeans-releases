@@ -87,7 +87,7 @@ public final class AttributesUtilities {
             map.put(attrKey, attrValue);
         }
         
-        return new Immutable(map);
+        return map.size() > 0 ? new Immutable(map) : SimpleAttributeSet.EMPTY;
     }
 
     /**
@@ -115,7 +115,7 @@ public final class AttributesUtilities {
             }
         }
 
-        return new Immutable(map);
+        return map.size() > 0 ? new Immutable(map) : SimpleAttributeSet.EMPTY;
     }
 
     /**
