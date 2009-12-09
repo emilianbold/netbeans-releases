@@ -37,32 +37,58 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.sync;
+package org.netbeans.modules.cnd.spi.editor;
 
-import java.io.File;
-import java.io.PrintWriter;
-import junit.framework.Test;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentFirstTest;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import java.util.List;
+import javax.swing.text.Document;
+import org.openide.util.Lookup;
 
 /**
- * Test for ScpSyncWorker
- * @author Vladimir Kvashin
+ *
+ * @author Alexander Simon
  */
-public class FtpSyncWorkerTestCase extends AbstractSyncWorkerTestCase {
+public abstract class CsmDocGeneratorProvider {
+    private static CsmDocGeneratorProvider DEFAULT = new Default();
 
-    public FtpSyncWorkerTestCase(String testName, ExecutionEnvironment execEnv) {
-        super(testName, execEnv);
+    public static CsmDocGeneratorProvider getDefault(){
+        return DEFAULT;
     }
 
-    @Override
-    BaseSyncWorker createWorker(File src, ExecutionEnvironment execEnv, 
-            PrintWriter out, PrintWriter err, File privProjectStorageDir) {
-        return new FtpSyncWorker(execEnv, out, err, privProjectStorageDir, src);
+    protected CsmDocGeneratorProvider() {
     }
 
+    public abstract Function getFunction(Document doc, int position);
 
-    public static Test suite() {
-        return new RemoteDevelopmentFirstTest(FtpSyncWorkerTestCase.class);
+    public static interface Function {
+        String getReturnType();
+        List<Parameter> getParametes();
+    }
+
+    public static interface Parameter {
+        String getType();
+        String getName();
+    }
+
+    private static final class Default extends CsmDocGeneratorProvider {
+        private final Lookup.Result<CsmDocGeneratorProvider> res;
+        Default() {
+            res = Lookup.getDefault().lookupResult(CsmDocGeneratorProvider.class);
+        }
+
+        private CsmDocGeneratorProvider getService(){
+            for (CsmDocGeneratorProvider selector : res.allInstances()) {
+                return selector;
+            }
+            return null;
+        }
+
+        @Override
+        public Function getFunction(Document doc, int position) {
+            CsmDocGeneratorProvider provider = getService();
+            if (provider != null) {
+                return provider.getFunction(doc, position);
+            }
+            return null;
+        }
     }
 }

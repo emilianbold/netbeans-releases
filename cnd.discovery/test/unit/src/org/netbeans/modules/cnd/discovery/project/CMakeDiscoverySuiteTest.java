@@ -37,58 +37,27 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.editor;
+package org.netbeans.modules.cnd.discovery.project;
 
-import java.util.List;
-import javax.swing.text.Document;
-import org.openide.util.Lookup;
+import junit.framework.Test;
+import junit.framework.TestSuite;
+import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
 /**
  *
  * @author Alexander Simon
  */
-public abstract class CsmDocGeneratorProvider {
-    private static CsmDocGeneratorProvider DEFAULT = new Default();
+public class CMakeDiscoverySuiteTest extends CndBaseTestSuite {
 
-    public static CsmDocGeneratorProvider getDefault(){
-        return DEFAULT;
+    public CMakeDiscoverySuiteTest() {
+        super("C/C++ CMake Discovery Test"); // NOI18N
+
+        //addTestSuite(CMakeTestCase.class);
+        addTestSuite(MysqlConnectorTestCase.class);
     }
 
-    protected CsmDocGeneratorProvider() {
-    }
-
-    public abstract Function getFunction(Document doc, int position);
-
-    public static interface Function {
-        String getReturnType();
-        List<Parameter> getParametes();
-    }
-
-    public static interface Parameter {
-        String getType();
-        String getName();
-    }
-
-    private static final class Default extends CsmDocGeneratorProvider {
-        private final Lookup.Result<CsmDocGeneratorProvider> res;
-        Default() {
-            res = Lookup.getDefault().lookupResult(CsmDocGeneratorProvider.class);
-        }
-
-        private CsmDocGeneratorProvider getService(){
-            for (CsmDocGeneratorProvider selector : res.allInstances()) {
-                return selector;
-            }
-            return null;
-        }
-
-        @Override
-        public Function getFunction(Document doc, int position) {
-            CsmDocGeneratorProvider provider = getService();
-            if (provider != null) {
-                return provider.getFunction(doc, position);
-            }
-            return null;
-        }
+    public static Test suite() {
+        TestSuite suite = new CMakeDiscoverySuiteTest();
+        return suite;
     }
 }

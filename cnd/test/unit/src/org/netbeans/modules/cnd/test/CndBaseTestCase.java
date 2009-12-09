@@ -164,6 +164,7 @@ public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
     }
 
     private void setupUserDir() {
+        Logger.getLogger("org.netbeans.modules.editor.settings.storage.keybindings.KeyMapsStorage").setLevel(Level.SEVERE);
         File dataDir = getDataDir();
         File dataDirParent = dataDir.getParentFile();
         File userDir = new File(dataDirParent, "userdir");

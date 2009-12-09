@@ -247,7 +247,11 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
                                 if (isSUN) {
                                     return "-spec solaris-cc QMAKE_CC=cc QMAKE_CXX=CC QMAKE_CFLAGS=-g QMAKE_CXXFLAGS=-g";
                                 } else {
-                                    return "QMAKE_CFLAGS=\"-g3 -gdwarf-2\" QMAKE_CXXFLAGS=\"-g3 -gdwarf-2\"";
+                                    if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+                                        return "-spec macx-g++ QMAKE_CFLAGS=\"-g3 -gdwarf-2\" QMAKE_CXXFLAGS=\"-g3 -gdwarf-2\"";
+                                    } else {
+                                        return "QMAKE_CFLAGS=\"-g3 -gdwarf-2\" QMAKE_CXXFLAGS=\"-g3 -gdwarf-2\"";
+                                    }
                                 }
                             }
                         }
