@@ -680,7 +680,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
 
     private void updateHttpPort() {
         GetPropertyCommand gpc = new GetPropertyCommand("*.http-listener-1.port"); // NOI18N
-        Future<OperationState> result2 = execute(gpc);
+        Future<OperationState> result2 = execute(true, gpc);
         try {
             if (result2.get(10, TimeUnit.SECONDS) == OperationState.COMPLETED) {
                 Map<String, String> retVal = gpc.getData();
