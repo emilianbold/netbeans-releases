@@ -1,5 +1,5 @@
-#Signature file v4.0
-#Version 6.22.1
+#Signature file v4.1
+#Version 6.27
 
 CLSS public abstract java.awt.Component
 cons protected Component()
@@ -272,8 +272,8 @@ meth public void transferFocusUpCycle()
 meth public void update(java.awt.Graphics)
 meth public void validate()
 supr java.lang.Object
-hfds FOCUS_TRAVERSABLE_DEFAULT,FOCUS_TRAVERSABLE_SET,FOCUS_TRAVERSABLE_UNKNOWN,LOCK,accessibleContext,actionListenerK,adjustmentListenerK,appContext,background,boundsOp,bufferStrategy,changeSupport,coalesceEventsParams,coalesceMap,coalescingEnabled,componentListener,componentListenerK,componentOrientation,componentSerializedDataVersion,containerListenerK,cursor,dbg,dropTarget,enabled,eventCache,eventMask,focusListener,focusListenerK,focusLog,focusTraversalKeyPropertyNames,focusTraversalKeys,focusTraversalKeysEnabled,focusable,font,foreground,graphicsConfig,height,hierarchyBoundsListener,hierarchyBoundsListenerK,hierarchyListener,hierarchyListenerK,ignoreRepaint,incRate,inputMethodListener,inputMethodListenerK,isFocusTraversableOverridden,isInc,isPacked,itemListenerK,keyListener,keyListenerK,locale,log,maxSize,maxSizeSet,minSize,minSizeSet,mouseListener,mouseListenerK,mouseMotionListener,mouseMotionListenerK,mouseWheelListener,mouseWheelListenerK,name,nameExplicitlySet,nativeInLightFixer,newEventsOnly,ownedWindowK,parent,peer,peerFont,popups,prefSize,prefSizeSet,privateKey,requestFocusController,serialVersionUID,textListenerK,valid,visible,width,windowClosingException,windowFocusListenerK,windowListenerK,windowStateListenerK,x,y
-hcls AWTTreeLock,BltSubRegionBufferStrategy,DummyRequestFocusController,FlipSubRegionBufferStrategy,NativeInLightFixer,SingleBufferStrategy
+hfds FOCUS_TRAVERSABLE_DEFAULT,FOCUS_TRAVERSABLE_SET,FOCUS_TRAVERSABLE_UNKNOWN,LOCK,accessibleContext,actionListenerK,adjustmentListenerK,appContext,background,backgroundEraseDisabled,boundsOp,bufferStrategy,changeSupport,coalesceEventsParams,coalesceMap,coalescingEnabled,componentListener,componentListenerK,componentOrientation,componentSerializedDataVersion,compoundShape,containerListenerK,cursor,dbg,dropTarget,enabled,eventCache,eventMask,focusListener,focusListenerK,focusLog,focusTraversalKeyPropertyNames,focusTraversalKeys,focusTraversalKeysEnabled,focusable,font,foreground,graphicsConfig,height,hierarchyBoundsListener,hierarchyBoundsListenerK,hierarchyListener,hierarchyListenerK,ignoreRepaint,incRate,inputMethodListener,inputMethodListenerK,isAddNotifyComplete,isFocusTraversableOverridden,isInc,isPacked,itemListenerK,keyListener,keyListenerK,locale,log,maxSize,maxSizeSet,minSize,minSizeSet,mixingCutoutRegion,mixingLog,mouseListener,mouseListenerK,mouseMotionListener,mouseMotionListenerK,mouseWheelListener,mouseWheelListenerK,name,nameExplicitlySet,nativeInLightFixer,newEventsOnly,objectLock,ownedWindowK,parent,peer,peerFont,popups,prefSize,prefSizeSet,privateKey,requestFocusController,serialVersionUID,textListenerK,valid,visible,width,windowClosingException,windowFocusListenerK,windowListenerK,windowStateListenerK,x,y
+hcls AWTTreeLock,BltSubRegionBufferStrategy,DummyRequestFocusController,FlipSubRegionBufferStrategy,NativeInLightFixer,ProxyCapabilities,SingleBufferStrategy
 
 CLSS public java.awt.Container
 cons public Container()
@@ -358,7 +358,7 @@ meth public void transferFocusDownCycle()
 meth public void update(java.awt.Graphics)
 meth public void validate()
 supr java.awt.Component
-hfds INCLUDE_SELF,SEARCH_HEAVYWEIGHTS,component,containerListener,containerSerializedDataVersion,dbg,descendantsCount,dispatcher,focusCycleRoot,focusTraversalPolicy,focusTraversalPolicyProvider,layoutMgr,listeningBoundsChildren,listeningChildren,modalAppContext,modalComp,ncomponents,printing,printingThreads,serialPersistentFields,serialVersionUID
+hfds EMPTY_ARRAY,INCLUDE_SELF,SEARCH_HEAVYWEIGHTS,component,containerListener,containerSerializedDataVersion,dbg,descendantsCount,dispatcher,focusCycleRoot,focusTraversalPolicy,focusTraversalPolicyProvider,layoutMgr,listeningBoundsChildren,listeningChildren,mixingLog,modalAppContext,modalComp,numOfHWComponents,numOfLWComponents,preserveBackgroundColor,printing,printingThreads,serialPersistentFields,serialVersionUID
 hcls DropTargetEventTargetFilter,EventTargetFilter,MouseEventTargetFilter,WakingRunnable
 
 CLSS public abstract interface java.awt.MenuContainer
@@ -707,6 +707,21 @@ meth public abstract void setCharacterAttributes(int,int,javax.swing.text.Attrib
 meth public abstract void setLogicalStyle(int,javax.swing.text.Style)
 meth public abstract void setParagraphAttributes(int,int,javax.swing.text.AttributeSet,boolean)
 
+CLSS public abstract interface org.netbeans.api.actions.Closable
+meth public abstract boolean close()
+
+CLSS public abstract interface org.netbeans.api.actions.Editable
+meth public abstract void edit()
+
+CLSS public abstract interface org.netbeans.api.actions.Openable
+meth public abstract void open()
+
+CLSS public abstract interface org.netbeans.api.actions.Printable
+meth public abstract void print()
+
+CLSS public abstract interface org.netbeans.api.actions.Viewable
+meth public abstract void view()
+
 CLSS public abstract org.openide.ServiceType
  anno 0 java.lang.Deprecated()
 cons public ServiceType()
@@ -730,8 +745,8 @@ supr java.lang.Object
 hfds err,name,serialVersionUID,supp
 
 CLSS public abstract interface org.openide.cookies.CloseCookie
+intf org.netbeans.api.actions.Closable
 intf org.openide.nodes.Node$Cookie
-meth public abstract boolean close()
 
 CLSS public abstract interface org.openide.cookies.ConnectionCookie
  anno 0 java.lang.Deprecated()
@@ -762,8 +777,8 @@ meth public abstract boolean overlaps(org.openide.cookies.ConnectionCookie$Type)
 meth public abstract java.lang.Class<?> getEventClass()
 
 CLSS public abstract interface org.openide.cookies.EditCookie
+intf org.netbeans.api.actions.Editable
 intf org.openide.nodes.Node$Cookie
-meth public abstract void edit()
 
 CLSS public abstract interface org.openide.cookies.EditorCookie
 innr public abstract interface static Observable
@@ -808,20 +823,20 @@ intf org.openide.nodes.Node$Cookie
 meth public abstract org.openide.text.Line$Set getLineSet()
 
 CLSS public abstract interface org.openide.cookies.OpenCookie
+intf org.netbeans.api.actions.Openable
 intf org.openide.nodes.Node$Cookie
-meth public abstract void open()
 
 CLSS public abstract interface org.openide.cookies.PrintCookie
+intf org.netbeans.api.actions.Printable
 intf org.openide.nodes.Node$Cookie
-meth public abstract void print()
 
 CLSS public abstract interface org.openide.cookies.SaveCookie
 intf org.openide.nodes.Node$Cookie
 meth public abstract void save() throws java.io.IOException
 
 CLSS public abstract interface org.openide.cookies.ViewCookie
+intf org.netbeans.api.actions.Viewable
 intf org.openide.nodes.Node$Cookie
-meth public abstract void view()
 
 CLSS public abstract org.openide.nodes.Node
 cons protected Node(org.openide.nodes.Children)
@@ -1027,8 +1042,8 @@ meth public void requestFocus()
 meth public void updateName()
 meth public void writeExternal(java.io.ObjectOutput) throws java.io.IOException
 supr org.openide.windows.CloneableTopComponent
-hfds CLOSE_LAST_LOCK,HELP_ID,LOG,RP,RPPostprocessing,TIMER,cursorPosition,customComponent,customToolbar,doInitialize,initialized,sb,serialVersionUID,support
-hcls DoInitialize
+hfds CLOSE_LAST_LOCK,HELP_ID,LOG,RP,RPPostprocessing,TIMER,cursorPosition,customComponent,customToolbar,doInitialize,finishedList,initVisualFinished,initialized,isComponentOpened,isDocLoadingCanceled,isModalDialog,serialVersionUID,support,tbdList,waitingOnInitVisual
+hcls AWTQuery,DoInitialize
 
 CLSS public abstract org.openide.text.CloneableEditorSupport
 cons public CloneableEditorSupport(org.openide.text.CloneableEditorSupport$Env)
@@ -1039,6 +1054,7 @@ innr public abstract interface static Pane
 meth protected abstract java.lang.String messageName()
 meth protected abstract java.lang.String messageSave()
 meth protected abstract java.lang.String messageToolTip()
+meth protected boolean asynchronousOpen()
 meth protected boolean canClose()
 meth protected boolean close(boolean)
 meth protected boolean notifyModified()
@@ -1083,7 +1099,7 @@ meth public void removeChangeListener(javax.swing.event.ChangeListener)
 meth public void saveDocument() throws java.io.IOException
 meth public void setMIMEType(java.lang.String)
 supr org.openide.windows.CloneableOpenSupport
-hfds DOCUMENT_LOADING,DOCUMENT_NO,DOCUMENT_READY,DOCUMENT_RELOADING,ERR,LOCAL_LOAD_TASK,LOCK_PRINTING,PROP_PANE,RP,alreadyModified,annotationsLoaded,counterGetDocument,counterOpenAtImpl,counterOpenDocument,counterPrepareDocument,doc,documentStatus,inUserQuestionExceptionHandler,isStrongSet,justRevertedToNotModified,kit,lastReusable,lastSaveTime,lastSelected,lineSet,lineSetWHM,listener,listeners,lookup,mimeType,positionManager,prepareDocumentRuntimeException,prepareTask,printing,propertyChangeSupport,reloadDialogOpened,reloadDocumentFireDocumentChangeClose,reloadDocumentFireDocumentChangeOpen,revertingUndoOrReloading,sb,undoRedo
+hfds DOCUMENT_LOADING,DOCUMENT_NO,DOCUMENT_READY,DOCUMENT_RELOADING,ERR,LOCAL_LOAD_TASK,LOCK_PRINTING,LOCK_STRONG_REF,PROP_PANE,RP,alreadyModified,annotationsLoaded,counterGetDocument,counterOpenAtImpl,counterOpenDocument,counterPrepareDocument,doc,documentStatus,inUserQuestionExceptionHandler,isStrongSet,justRevertedToNotModified,kit,lastReusable,lastSaveTime,lastSelected,lineSet,lineSetWHM,listener,listeners,lookup,mimeType,positionManager,prepareDocumentRuntimeException,prepareTask,printing,propertyChangeSupport,reloadDialogOpened,reloadDocumentFireDocumentChangeClose,reloadDocumentFireDocumentChangeOpen,revertingUndoOrReloading,undoRedo,warnedClasses
 hcls BeforeModificationEdit,BeforeSaveEdit,CESUndoRedoManager,DelegateIOExc,FilterUndoableEdit,Listener,PlainEditorKit,SearchBeforeModificationEdit,StrongRef
 
 CLSS public abstract interface static org.openide.text.CloneableEditorSupport$Env
@@ -1316,6 +1332,7 @@ meth public static int findLineColumn(javax.swing.text.StyledDocument,int)
 meth public static int findLineNumber(javax.swing.text.StyledDocument,int)
 meth public static int findLineOffset(javax.swing.text.StyledDocument,int)
 meth public static java.lang.Object findPageable(javax.swing.text.StyledDocument)
+meth public static javax.swing.JEditorPane findRecentEditorPane(org.openide.cookies.EditorCookie)
 meth public static javax.swing.text.Element findLineRootElement(javax.swing.text.StyledDocument)
 meth public static javax.swing.text.Position createPosition(javax.swing.text.Document,int,javax.swing.text.Position$Bias) throws javax.swing.text.BadLocationException
 meth public static void addAnnotation(javax.swing.text.StyledDocument,javax.swing.text.Position,int,org.openide.text.Annotation)

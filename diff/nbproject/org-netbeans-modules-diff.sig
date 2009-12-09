@@ -1,5 +1,5 @@
-#Signature file v4.0
-#Version 1.21.1
+#Signature file v4.1
+#Version 1.24.0
 
 CLSS public abstract interface java.io.Serializable
 
@@ -116,6 +116,11 @@ meth public int getStartPosition()
 meth public int getType()
 supr java.lang.Object
 hfds line,pos1,pos2,serialVersionUID,text,type
+
+CLSS public org.netbeans.api.diff.PatchUtils
+meth public static boolean isPatch(java.io.File) throws java.io.IOException
+meth public static void applyPatch(java.io.File,java.io.File) throws java.io.IOException
+supr java.lang.Object
 
 CLSS public abstract org.netbeans.api.diff.StreamSource
 cons public StreamSource()

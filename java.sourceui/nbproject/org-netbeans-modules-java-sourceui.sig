@@ -1,5 +1,10 @@
-#Signature file v4.0
-#Version 1.7.1
+#Signature file v4.1
+#Version 1.11.0
+
+CLSS public abstract interface !annotation java.lang.Deprecated
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+intf java.lang.annotation.Annotation
 
 CLSS public java.lang.Object
 cons public Object()
@@ -15,8 +20,36 @@ meth public final void wait(long,int) throws java.lang.InterruptedException
 meth public int hashCode()
 meth public java.lang.String toString()
 
+CLSS public abstract interface java.lang.annotation.Annotation
+meth public abstract boolean equals(java.lang.Object)
+meth public abstract int hashCode()
+meth public abstract java.lang.Class<? extends java.lang.annotation.Annotation> annotationType()
+meth public abstract java.lang.String toString()
+
+CLSS public abstract interface !annotation java.lang.annotation.Documented
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+
+CLSS public abstract interface !annotation java.lang.annotation.Retention
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract java.lang.annotation.RetentionPolicy value()
+
+CLSS public abstract interface !annotation java.lang.annotation.Target
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract java.lang.annotation.ElementType[] value()
+
 CLSS public final org.netbeans.api.java.source.ui.DialogBinding
+ anno 0 java.lang.Deprecated()
 meth public static org.netbeans.api.java.source.JavaSource bindComponentToFile(org.openide.filesystems.FileObject,int,int,javax.swing.text.JTextComponent)
+ anno 0 java.lang.Deprecated()
 supr java.lang.Object
 
 CLSS public final org.netbeans.api.java.source.ui.ElementHeaders
@@ -52,7 +85,7 @@ meth public static boolean open(org.netbeans.api.java.source.ClasspathInfo,javax
 meth public static boolean open(org.netbeans.api.java.source.ClasspathInfo,org.netbeans.api.java.source.ElementHandle<? extends javax.lang.model.element.Element>)
 meth public static boolean open(org.openide.filesystems.FileObject,org.netbeans.api.java.source.ElementHandle<? extends javax.lang.model.element.Element>)
 supr java.lang.Object
-hfds log
+hfds AWT_TIMEOUT,NON_AWT_TIMEOUT,log
 hcls FindDeclarationVisitor
 
 CLSS public org.netbeans.api.java.source.ui.ScanDialog

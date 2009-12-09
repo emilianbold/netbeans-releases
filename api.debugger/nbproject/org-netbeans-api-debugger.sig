@@ -1,5 +1,5 @@
-#Signature file v4.0
-#Version 1.17.1
+#Signature file v4.1
+#Version 1.20
 
 CLSS public abstract interface java.beans.PropertyChangeListener
 intf java.util.EventListener
@@ -164,7 +164,7 @@ meth public <%0 extends java.lang.Object> java.util.List<? extends {%%0}> lookup
 meth public <%0 extends java.lang.Object> {%%0} lookupFirst(java.lang.String,java.lang.Class<{%%0}>)
 meth public org.netbeans.api.debugger.ActionsManager getActionsManager()
 supr java.lang.Object
-hfds actionsManager,lookup,privateLookup
+hfds actionsManager,lookup,privateLookup,s
 
 CLSS public org.netbeans.api.debugger.DebuggerEngine$Destructor
 cons public Destructor(org.netbeans.api.debugger.DebuggerEngine)
