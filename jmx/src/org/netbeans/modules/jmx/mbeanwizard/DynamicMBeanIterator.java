@@ -52,14 +52,11 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ui.templates.support.Templates;
-import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.openide.loaders.TemplateWizard;
-import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.jmx.common.WizardConstants;
 import org.netbeans.modules.jmx.common.WizardHelpers;
 import org.netbeans.modules.jmx.common.FinishableDelegatedWizardPanel;
-import org.netbeans.modules.jmx.common.WizardPanelWithoutReadSettings;
 import org.netbeans.modules.jmx.mbeanwizard.generator.GeneratorControler;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.openide.WizardDescriptor;
@@ -211,7 +208,7 @@ public class DynamicMBeanIterator implements TemplateWizard.Iterator {
                 JavaTemplates.createPackageChooser(project,
                 mbeanSrcGroups,
                 mbeanTemplatePanel);
-        mbeanPanel = new WizardPanelWithoutReadSettings(
+        mbeanPanel = new FinishableDelegatedWizardPanel(
                 delegateMBeanPanel,mbeanTemplatePanel);
         mbeanPanel.getComponent().setName(
                 bundle.getString("LBL_Standard_Panel"));// NOI18N
