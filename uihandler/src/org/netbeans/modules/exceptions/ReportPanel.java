@@ -348,6 +348,10 @@ public class ReportPanel extends javax.swing.JPanel {
             jLabel10.setText(org.openide.util.NbBundle.getMessage(ReportPanel.class, "ReportPanel.checking_password")); // NOI18N
             jLabel10.setVisible(true);
         }
+
+        public void setInitialFocus(){
+            commentArea.requestFocusInWindow();
+        }
         
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox asAGuestCheckBox;

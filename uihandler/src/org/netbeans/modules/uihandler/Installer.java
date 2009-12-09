@@ -2199,7 +2199,7 @@ public class Installer extends ModuleInstall implements Runnable {
             return dd.getValue();
         }
         
-        protected void alterMessage(DialogDescriptor dd) {
+        protected void alterMessage(final DialogDescriptor dd) {
             if ("ERROR_URL".equals(msg)&(dd.getOptions().length > 1)){
                 Object obj = dd.getOptions()[0];
                 AbstractButton abut = null;
@@ -2211,7 +2211,13 @@ public class Installer extends ModuleInstall implements Runnable {
                     rptr = (String) abut.getClientProperty("alt");
                 }
                 if ("reportDialog".equals(rptr)&&!errorPage) {
-                    dd.setMessage(reportPanel);
+                    EventQueue.invokeLater(new Runnable(){
+
+                        public void run() {
+                            dd.setMessage(reportPanel);
+                            reportPanel.setInitialFocus();
+                        }
+                    });
                 }
             }
         }
