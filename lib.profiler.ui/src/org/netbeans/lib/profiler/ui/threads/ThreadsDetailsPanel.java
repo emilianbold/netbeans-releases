@@ -56,6 +56,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.ResourceBundle;
 import javax.swing.*;
+import org.netbeans.lib.profiler.ui.components.FlatToolBar;
+import org.netbeans.lib.profiler.ui.components.HTMLTextArea;
 
 
 /**
@@ -132,7 +134,11 @@ public class ThreadsDetailsPanel extends JPanel implements ActionListener, DataM
         this.manager = manager;
         this.supportsSleepingState = supportsSleepingState;
 
+        setOpaque(true);
+ 	    setBackground(new HTMLTextArea().getBackground());
+ 	     
         noContentPanel = new JPanel();
+        noContentPanel.setOpaque(false);
         noContentPanel.setLayout(new BorderLayout());
         noContentPanel.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
 
@@ -143,6 +149,7 @@ public class ThreadsDetailsPanel extends JPanel implements ActionListener, DataM
         noContentIcon.setEnabled(false);
 
         JTextArea noContentText = new JTextArea(NO_CONTENT_MSG);
+        noContentText.setOpaque(false);
         noContentText.setFont(noContentText.getFont().deriveFont(14));
 
         noContentText.setEditable(false);
@@ -152,6 +159,7 @@ public class ThreadsDetailsPanel extends JPanel implements ActionListener, DataM
         noContentText.setBackground(noContentPanel.getBackground());
 
         JPanel containerPanel = new JPanel(new BorderLayout());
+        containerPanel.setOpaque(false);
         containerPanel.add(noContentIcon, BorderLayout.WEST);
         containerPanel.add(noContentText, BorderLayout.CENTER);
         noContentPanel.add(containerPanel, BorderLayout.NORTH);
@@ -176,7 +184,7 @@ public class ThreadsDetailsPanel extends JPanel implements ActionListener, DataM
         showLabel.setDisplayedMnemonic(showLabel.getText().charAt(mnemCharIndex));
         showLabel.setDisplayedMnemonicIndex(mnemCharIndex);
 
-        buttonsToolBar = new JToolBar(JToolBar.HORIZONTAL) {
+        buttonsToolBar = new FlatToolBar() {
                 public Component add(Component comp) {
                     if (comp instanceof JButton) {
                         UIUtils.fixButtonUI((JButton) comp);
@@ -185,6 +193,8 @@ public class ThreadsDetailsPanel extends JPanel implements ActionListener, DataM
                     return super.add(comp);
                 }
             };
+        buttonsToolBar.setOpaque(true);
+        buttonsToolBar.setBackground(getBackground());
         content = new JPanel() {
                 public Dimension getPreferredSize() {
                     Dimension dim = super.getPreferredSize();
@@ -192,17 +202,20 @@ public class ThreadsDetailsPanel extends JPanel implements ActionListener, DataM
                     return new Dimension(Math.min(dim.width, scrollPane.getViewportBorderBounds().width), dim.height);
                 }
             };
+        content.setOpaque(false);
         content.getAccessibleContext().setAccessibleName(CONTENT_ACCESS_NAME);
         content.getAccessibleContext().setAccessibleName(CONTENT_ACCESS_DESCR);
 
         JPanel contentPanel = new JPanel();
+        contentPanel.setOpaque(false);
         contentPanel.setLayout(new BorderLayout());
         scrollPane = new JScrollPane(contentPanel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                                      JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollPane.setOpaque(false);
         scrollPane.getVerticalScrollBar().setUnitIncrement(30);
 
         // set properties
-        buttonsToolBar.setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
+        buttonsToolBar.setBorder(BorderFactory.createEmptyBorder(4, 0, 4, 0));
         buttonsToolBar.setFloatable(false);
         buttonsToolBar.putClientProperty("JToolBar.isRollover", Boolean.TRUE); // NOI18N
 
