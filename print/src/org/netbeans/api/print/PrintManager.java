@@ -166,8 +166,7 @@ public final class PrintManager {
     /**
      * Creates a new instance of <code>PrintManager</code>.
      */
-    private PrintManager() {
-    }
+    private PrintManager() {}
 
     /**
      * Returns the Print action for a component.
