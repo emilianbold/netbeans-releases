@@ -49,8 +49,6 @@ import java.awt.Insets;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 
@@ -75,7 +73,7 @@ import static org.netbeans.modules.print.ui.UI.*;
  * @author Vladimir Yaroslavskiy
  * @version 2006.02.14
  */
-final class Attribute extends Dialog implements FocusListener, Macro.Listener, Percent.Listener {
+final class Attribute extends Dialog implements Macro.Listener, Percent.Listener {
 
     Attribute(Preview preview) {
         myPreview = preview;
@@ -322,17 +320,18 @@ final class Attribute extends Dialog implements FocusListener, Macro.Listener, P
         c.fill = GridBagConstraints.HORIZONTAL;
         c.insets = new Insets(TINY_SIZE, LARGE_SIZE, TINY_SIZE, 0);
         myHeaderLeft = new JTextField();
-        setWidthFocused(myHeaderLeft, FIELD_WIDTH);
+        setWidth(myHeaderLeft, FIELD_WIDTH);
         panel.add(myHeaderLeft, c);
+        myLastField = myHeaderLeft;
 
         // header center
         myHeaderCenter = new JTextField();
-        setWidthFocused(myHeaderCenter, FIELD_WIDTH);
+        setWidth(myHeaderCenter, FIELD_WIDTH);
         panel.add(myHeaderCenter, c);
 
         // header right
         myHeaderRight = new JTextField();
-        setWidthFocused(myHeaderRight, FIELD_WIDTH);
+        setWidth(myHeaderRight, FIELD_WIDTH);
         panel.add(myHeaderRight, c);
 
         // header.color
@@ -383,17 +382,17 @@ final class Attribute extends Dialog implements FocusListener, Macro.Listener, P
         c.insets = new Insets(0, LARGE_SIZE, TINY_SIZE, 0);
         c.fill = GridBagConstraints.HORIZONTAL;
         myFooterLeft = new JTextField();
-        setWidthFocused(myFooterLeft, FIELD_WIDTH);
+        setWidth(myFooterLeft, FIELD_WIDTH);
         panel.add(myFooterLeft, c);
 
         // footer center
         myFooterCenter = new JTextField();
-        setWidthFocused(myFooterCenter, FIELD_WIDTH);
+        setWidth(myFooterCenter, FIELD_WIDTH);
         panel.add(myFooterCenter, c);
 
         // footer right
         myFooterRight = new JTextField();
-        setWidthFocused(myFooterRight, FIELD_WIDTH);
+        setWidth(myFooterRight, FIELD_WIDTH);
         panel.add(myFooterRight, c);
 
         // footer color
@@ -435,7 +434,6 @@ final class Attribute extends Dialog implements FocusListener, Macro.Listener, P
 
         for (Macro macro : Macro.values()) {
             JButton button = macro.getButton(this);
-            button.setEnabled(false);
             setWidth(button, MACROS_WIDTH);
             p.add(button, c);
         }
@@ -448,21 +446,24 @@ final class Attribute extends Dialog implements FocusListener, Macro.Listener, P
     }
 
     public void pressed(Macro macro) {
-        myCurrentField = getCurrentTextField();
-//out(field);
+        JTextField focusable = getFocusableTextField();
 
-        if (myCurrentField != null) {
-//out("Set macro: " + macro);
-//out("   select: " + myCurrentField.getSelectionStart() + " " + myCurrentField.getSelectionEnd());
-            String text = myCurrentField.getText();
-            String head = text.substring(0, myCurrentField.getSelectionStart());
-            String tail = text.substring(myCurrentField.getSelectionEnd(), text.length());
-
-            myCurrentField.setText(head + macro.getName() + tail);
+        if (focusable == null) {
+            myLastField.requestFocus();
         }
+        else {
+            myLastField = focusable;
+        }
+//out("Set macro: " + macro);
+//out("   select: " + myLastField.getSelectionStart() + " " + myLastField.getSelectionEnd());
+        String text = myLastField.getText();
+        String head = text.substring(0, myLastField.getSelectionStart());
+        String tail = text.substring(myLastField.getSelectionEnd(), text.length());
+
+        myLastField.setText(head + macro.getName() + tail);
     }
 
-    private JTextField getCurrentTextField() {
+    private JTextField getFocusableTextField() {
         if (myHeaderLeft.hasFocus()) {
             return myHeaderLeft;
         }
@@ -742,27 +743,6 @@ final class Attribute extends Dialog implements FocusListener, Macro.Listener, P
         return Integer.toString(value);
     }
 
-    private void setWidthFocused(JComponent component, int width) {
-        setWidth(component, width);
-        component.addFocusListener(this);
-    }
-
-    public void focusGained(FocusEvent event) {
-//out("FOCUS GAINED");
-        setMacroEnabled(true);
-    }
-
-    public void focusLost(FocusEvent event) {
-//out("FOCUS LOST");
-        setMacroEnabled(false);
-    }
-
-    private void setMacroEnabled(boolean enabled) {
-        for (Macro macro : Macro.values()) {
-            macro.getButton().setEnabled(enabled);
-        }
-    }
-
     private void headerFont() {
         Font font = font(myHeaderFontValue);
 
@@ -926,9 +906,9 @@ final class Attribute extends Dialog implements FocusListener, Macro.Listener, P
     private Percent myZoomFactor;
     private JTextField myZoomWidth;
     private JTextField myZoomHeight;
-    private JTextField myCurrentField;
     private JRadioButton myFitToPage;
     private Preview myPreview;
+    private JTextField myLastField;
 
     private static final int TEXT_WIDTH = 30;
     private static final int FIELD_WIDTH = 136;
