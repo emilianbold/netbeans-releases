@@ -37,7 +37,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.editor;
+package org.netbeans.modules.cnd.spi.editor;
 
 import java.util.List;
 import javax.swing.text.Document;
