@@ -115,7 +115,7 @@ public class StaticImportTest extends TreeRuleTestBase {
         performFixTest("test/Test.java",
                 test.replace("|", ""),
                 offset,
-                "0:" + start + "-0:" + end + ":hint:" + NbBundle.getMessage(StaticImport.class, "DSC_StaticImport"),
+                "0:" + start + "-0:" + end + ":hint:" + NbBundle.getMessage(StaticImport.class, "ERR_StaticImport"),
                 StaticImport.class.getSimpleName(),
                 golden);
     }

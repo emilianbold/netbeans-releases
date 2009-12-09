@@ -343,7 +343,8 @@ public final class ImportClass implements ErrorRule<ImportCandidatesHolder> {
                         CompilationUnitTree cut = JavaFixAllImports.addImports(
                             copy.getCompilationUnit(),
                             Collections.singletonList(te.getQualifiedName().toString()),
-                            copy.getTreeMaker()
+                            copy.getTreeMaker(),
+                            false
                         );
                         copy.rewrite(copy.getCompilationUnit(), cut);
                     }

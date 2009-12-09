@@ -41,13 +41,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
-import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.JavaSource;
@@ -58,6 +60,7 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.editor.imports.ComputeImports;
 import org.netbeans.modules.java.editor.imports.ComputeImports.Pair;
+import org.netbeans.modules.java.editor.imports.JavaFixAllImports;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -171,19 +174,7 @@ public class StaticImport extends AbstractHint {
      * @return true if the source level supports the static import language feature
      */
     public static boolean supportsStaticImports(CompilationInfo info) {
-        String level = SourceLevelQuery.getSourceLevel(info.getFileObject());
-        if (level == null) {
-            return false;
-        }
-        try {
-            double dLevel = Double.valueOf(level);
-            if (dLevel < 1.5) {
-                return false;
-            }
-            return true;
-        } catch (NumberFormatException e) {
-            return false;
-        }
+        return info.getSourceVersion().compareTo(SourceVersion.RELEASE_5) >= 0;
     }
 
     public static final class FixImpl implements Fix, Task<WorkingCopy> {
@@ -239,7 +230,7 @@ public class StaticImport extends AbstractHint {
                 return;
             }
             CompilationUnitTree cut = copy.getCompilationUnit();
-            CompilationUnitTree nue = addStaticImports(cut, Collections.singletonList(fqn), make);
+            CompilationUnitTree nue = JavaFixAllImports.addImports(cut, Collections.singletonList(fqn), make, true);
             copy.rewrite(cut, nue);
         }
     }
@@ -394,49 +385,9 @@ public class StaticImport extends AbstractHint {
         return false;
     }
 
-    // XXX should be in SourceUtils
-    private static CompilationUnitTree addStaticImports(CompilationUnitTree cut, List<String> toImport, TreeMaker make) {
-        return addImports(cut, toImport, make, true);
-    }
-
-    // XXX should be in SourceUtils
-    private static CompilationUnitTree addImports(CompilationUnitTree cut, List<String> toImport, TreeMaker make, boolean doStatic) {
-        // XXX old (private) version claimed to throw IOException, but it didn't really.
-        // do not modify the list given by the caller (may be reused or immutable).
-        toImport = new ArrayList<String>(toImport);
-        Collections.sort(toImport);
-
-        List<ImportTree> imports = new ArrayList<ImportTree>(cut.getImports());
-        int currentToImport = toImport.size() - 1;
-        int currentExisting = imports.size() - 1;
-
-        while (currentToImport >= 0 && currentExisting >= 0) {
-            String currentToImportText = toImport.get(currentToImport);
-
-            boolean ignore = (doStatic ^ imports.get(currentExisting).isStatic());
-            while (currentExisting >= 0 && (ignore || imports.get(currentExisting).getQualifiedIdentifier().toString().compareTo(currentToImportText) > 0)) {
-                currentExisting--;
-            }
-
-            if (currentExisting >= 0) {
-                imports.add(currentExisting + 1, make.Import(make.Identifier(currentToImportText), doStatic));
-                currentToImport--;
-            }
-        }
-        // we are at the head of import section and we still have some imports
-        // to add, put them to the very beginning
-        while (currentToImport >= 0) {
-            String importText = toImport.get(currentToImport);
-            imports.add(0, make.Import(make.Identifier(importText), doStatic));
-            currentToImport--;
-        }
-        // return a copy of the unit with changed imports section
-        return make.CompilationUnit(cut.getPackageName(), imports, cut.getTypeDecls(), cut.getSourceFile());
-    }
-
     // XXX workaround for errors, but very inefficient and probably full of bugs
     private Collection<String> guessCandidates(CompilationInfo info, String klass, String sn) {
-        System.out.println("GUESS " + klass + "." + sn);
+        Logger.getLogger(StaticImport.class.getName()).log(Level.FINE, "GUESS {0}.{1}", new Object[] {klass, sn});
         Pair<Map<String, List<TypeElement>>, Map<String, List<TypeElement>>> candidates = new ComputeImports().computeCandidates(info);
         Set<String> fqns = new HashSet<String>();
         if (candidates == null || candidates.a == null) {
