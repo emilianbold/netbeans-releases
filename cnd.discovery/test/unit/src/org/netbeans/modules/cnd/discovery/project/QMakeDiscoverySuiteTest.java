@@ -47,17 +47,16 @@ import org.netbeans.modules.cnd.test.CndBaseTestSuite;
  *
  * @author Alexander Simon
  */
-public class LongDiscovery1SuiteTest extends CndBaseTestSuite {
+public class QMakeDiscoverySuiteTest extends CndBaseTestSuite {
 
-    public LongDiscovery1SuiteTest() {
-        super("C/C++ Discovery Test"); // NOI18N
+    public QMakeDiscoverySuiteTest() {
+        super("C/C++ QMake Discovery Test"); // NOI18N
 
-        //addTestSuite(CMakeTestCase.class);
-        addTestSuite(MysqlConnectorTestCase.class);
+        addTestSuite(QT_QLifeTestCase.class);
     }
 
     public static Test suite() {
-        TestSuite suite = new LongDiscovery1SuiteTest();
+        TestSuite suite = new QMakeDiscoverySuiteTest();
         return suite;
     }
 }
