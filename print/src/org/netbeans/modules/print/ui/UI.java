@@ -471,11 +471,11 @@ public final class UI {
 
     public static void show(Container container, String indent) {
         out((container.isShowing() ? "[[ " : "") + indent + container.getClass().getName()); // NOI18N
-        Component[] components = container.getComponents();
+        Component[] children = container.getComponents();
 
-        for (Component component : components) {
-            if (component instanceof Container) {
-                show((Container) component, "    " + indent); // NOI18N
+        for (Component child : children) {
+            if (child instanceof Container) {
+                show((Container) child, "    " + indent); // NOI18N
             }
         }
     }

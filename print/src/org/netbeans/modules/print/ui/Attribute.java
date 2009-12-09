@@ -723,7 +723,6 @@ final class Attribute extends Dialog implements FocusListener, Macro.Listener, P
         boolean enabled = !myAsEditor.isSelected();
 
         mySelection.setEnabled(enabled);
-        myLineNumbers.setEnabled(enabled);
         myWrapLines.setEnabled(enabled);
         myUseColor.setEnabled(enabled);
         myUseFont.setEnabled(enabled);
