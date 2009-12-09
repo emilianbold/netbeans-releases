@@ -1,5 +1,5 @@
-#Signature file v4.0
-#Version 1.35.1
+#Signature file v4.1
+#Version 1.40.0
 
 CLSS public java.lang.Object
 cons public Object()
@@ -135,6 +135,7 @@ CLSS public org.netbeans.spi.project.ui.support.NodeFactorySupport
 meth public !varargs static org.netbeans.spi.project.ui.support.NodeList fixedNodeList(org.openide.nodes.Node[])
 meth public static org.openide.nodes.Children createCompositeChildren(org.netbeans.api.project.Project,java.lang.String)
 supr java.lang.Object
+hfds LOADING_KEY
 hcls DelegateChildren,FixedNodeList,NodeListKeyWrapper
 
 CLSS public abstract interface org.netbeans.spi.project.ui.support.NodeList<%0 extends java.lang.Object>
@@ -187,8 +188,25 @@ CLSS public abstract interface static org.netbeans.spi.project.ui.support.Projec
 meth public abstract javax.swing.JComponent create(org.netbeans.spi.project.ui.support.ProjectCustomizer$Category)
 
 CLSS public abstract interface static org.netbeans.spi.project.ui.support.ProjectCustomizer$CompositeCategoryProvider
+innr public abstract interface static !annotation Registration
+innr public abstract interface static !annotation Registrations
 meth public abstract javax.swing.JComponent createComponent(org.netbeans.spi.project.ui.support.ProjectCustomizer$Category,org.openide.util.Lookup)
 meth public abstract org.netbeans.spi.project.ui.support.ProjectCustomizer$Category createCategory(org.openide.util.Lookup)
+
+CLSS public abstract interface static !annotation org.netbeans.spi.project.ui.support.ProjectCustomizer$CompositeCategoryProvider$Registration
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE, METHOD, PACKAGE])
+intf java.lang.annotation.Annotation
+meth public abstract !hasdefault int position()
+meth public abstract !hasdefault java.lang.String category()
+meth public abstract !hasdefault java.lang.String categoryLabel()
+meth public abstract java.lang.String projectType()
+
+CLSS public abstract interface static !annotation org.netbeans.spi.project.ui.support.ProjectCustomizer$CompositeCategoryProvider$Registrations
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE, METHOD, PACKAGE])
+intf java.lang.annotation.Annotation
+meth public abstract org.netbeans.spi.project.ui.support.ProjectCustomizer$CompositeCategoryProvider$Registration[] value()
 
 CLSS public org.netbeans.spi.project.ui.support.ProjectSensitiveActions
 meth public static javax.swing.Action projectCommandAction(java.lang.String,java.lang.String,javax.swing.Icon)

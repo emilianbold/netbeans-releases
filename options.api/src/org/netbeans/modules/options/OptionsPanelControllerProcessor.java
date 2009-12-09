@@ -66,6 +66,7 @@ public class OptionsPanelControllerProcessor extends LayerGeneratingProcessor {
     public @Override Set<String> getSupportedAnnotationTypes() {
         return new HashSet<String>(Arrays.asList(
             TopLevelRegistration.class.getCanonicalName(),
+            ContainerRegistration.class.getCanonicalName(),
             SubRegistration.class.getCanonicalName()
         ));
     }
