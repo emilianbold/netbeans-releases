@@ -204,6 +204,7 @@ made subject to such option by the copyright holder.
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.hints.resources.Bundle"/>                    
                     <file name="org-netbeans-modules-java-hints-AddOverrideAnnotation.instance"/>
                     <file name="org-netbeans-modules-java-hints-AnnotationAsSuperInterface.instance"/>
+                    <file name="org-netbeans-modules-java-hints-StaticImport.instance"/>
                 </folder>
                 
                 <folder name="imports">
