@@ -97,12 +97,25 @@ public final class Preview extends Dialog implements Percent.Listener {
 
             public void keyPressed(KeyEvent event) {
                 char ch = event.getKeyChar();
+                int modifiers = event.getModifiers();
 
                 if (ch == '+' || ch == '=') {
-                    myScale.increaseValue();
+                    if (isCtrl(modifiers)) {
+                        increaseZoom();
+                        updated();
+                    }
+                    else {
+                        myScale.increaseValue();
+                    }
                 }
                 else if (ch == '-' || ch == '_') {
-                    myScale.decreaseValue();
+                    if (isCtrl(modifiers)) {
+                        decreaseZoom();
+                        updated();
+                    }
+                    else {
+                        myScale.decreaseValue();
+                    }
                 }
                 else if (ch == '/') {
                     myScale.normalValue();
