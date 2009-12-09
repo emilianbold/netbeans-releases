@@ -179,6 +179,7 @@ final class CloseButtonTabbedPane extends JTabbedPane implements ChangeListener,
         if (title != null) {
             setTitleAt(index, title);
         }
+        validate();
     }
 
     @Override
