@@ -321,17 +321,22 @@ public class HudsonConnector {
                             continue;
                         }
                         String nodeName2 = n2.getNodeName();
-                        String text = n2.getFirstChild().getTextContent();
-                        if (nodeName2.equals("name")) { // NOI18N
-                            name = text;
-                        } else if (nodeName2.equals("displayName")) { // NOI18N
-                            displayName = text;
-                        } else if (nodeName2.equals("url")) { // NOI18N
-                            url = normalizeUrl(text, "job/[^/]+/[^/]+/"); // NOI18N
-                        } else if (nodeName2.equals("color")) { // NOI18N
-                            color = Color.valueOf(text);
+                        Node firstChild = n2.getFirstChild();
+                        if (firstChild != null) {
+                            String text = firstChild.getTextContent();
+                            if (nodeName2.equals("name")) { // NOI18N
+                                name = text;
+                            } else if (nodeName2.equals("displayName")) { // NOI18N
+                                displayName = text;
+                            } else if (nodeName2.equals("url")) { // NOI18N
+                                url = normalizeUrl(text, "job/[^/]+/[^/]+/"); // NOI18N
+                            } else if (nodeName2.equals("color")) { // NOI18N
+                                color = Color.valueOf(text);
+                            } else {
+                                LOG.fine("unexpected <module> child: " + nodeName);
+                            }
                         } else {
-                            LOG.fine("unexpected <module> child: " + nodeName);
+                            LOG.fine("#178360: unexpected empty <module> child: " + nodeName);
                         }
                     }
                     job.addModule(name, displayName, color, url);
