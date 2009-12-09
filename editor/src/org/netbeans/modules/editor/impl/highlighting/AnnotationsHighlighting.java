@@ -105,11 +105,24 @@ public final class AnnotationsHighlighting extends AbstractHighlightsContainer i
     // ----------------------------------------------------------------------
 
     public void changedLine(final int line) {
-        refreshAllLinesTask.schedule(DELAY);
+        changedAll();
     }
 
     public void changedAll() {
-        refreshAllLinesTask.schedule(DELAY);
+        synchronized (this) {
+            if (refreshAllLinesTask == null) {
+                refreshAllLinesTask = RP.post(new Runnable() {
+                    public void run() {
+                        refreshAllLines();
+                        synchronized (AnnotationsHighlighting.this) {
+                            refreshAllLinesTask = null;
+                        }
+                    }
+                });
+            } else {
+                refreshAllLinesTask.schedule(DELAY);
+            }
+        }
     }
 
     // ----------------------------------------------------------------------
@@ -123,13 +136,9 @@ public final class AnnotationsHighlighting extends AbstractHighlightsContainer i
     private final BaseDocument document;
     private final Annotations annotations;
     private final OffsetsBag bag;
-    private final RequestProcessor.Task refreshAllLinesTask = RP.create(new Runnable() {
-        public void run() {
-            refreshAllLines();
-        }
-    });
-
     private final Map<AnnotationType, AttributeSet> cache = new WeakHashMap<AnnotationType, AttributeSet>();
+    
+    private RequestProcessor.Task refreshAllLinesTask = null;
 
     private void refreshAllLines() {
         final OffsetsBag b = new OffsetsBag(document, true);
