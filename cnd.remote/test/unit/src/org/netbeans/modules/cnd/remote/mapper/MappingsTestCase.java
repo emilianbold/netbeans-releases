@@ -42,7 +42,7 @@ package org.netbeans.modules.cnd.remote.mapper;
 import java.io.StringReader;
 import java.util.Map;
 import junit.framework.Test;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
+import org.netbeans.modules.cnd.remote.RemoteDevelopmentFirstTest;
 import org.netbeans.modules.cnd.remote.support.RemoteTestBase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
@@ -232,7 +232,7 @@ public class MappingsTestCase extends RemoteTestBase {
     }
 
     public static Test suite() {
-        return new RemoteDevelopmentTest(MappingsTestCase.class);
+        return new RemoteDevelopmentFirstTest(MappingsTestCase.class);
     }
 
 }

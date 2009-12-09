@@ -86,7 +86,7 @@ public class RemoteBuildTestBase extends RemoteTestBase {
     }
 
     protected int getSampleBuildTimeout() throws Exception {
-        int result = 60;
+        int result = 120;
         RcFile rcFile = NativeExecutionTestSupport.getRcFile();
         String timeout = rcFile.get("remote", "sample.build.timeout");
         if (timeout != null) {

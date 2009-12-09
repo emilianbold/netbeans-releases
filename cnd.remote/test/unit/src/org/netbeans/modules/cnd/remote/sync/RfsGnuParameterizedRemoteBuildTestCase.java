@@ -49,7 +49,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import junit.framework.Test;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
+import org.netbeans.modules.cnd.remote.RemoteDevelopmentFirstTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
 import org.openide.filesystems.FileObject;
@@ -164,6 +164,6 @@ public class RfsGnuParameterizedRemoteBuildTestCase extends RfsBaseRemoteBuildTe
     }
 
     public static Test suite() {
-        return new RemoteDevelopmentTest(RfsGnuParameterizedRemoteBuildTestCase.class);
+        return new RemoteDevelopmentFirstTest(RfsGnuParameterizedRemoteBuildTestCase.class);
     }
 }

@@ -65,12 +65,12 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.openide.util.WeakSet;
 import org.openide.windows.InputOutput;
 
@@ -85,6 +85,7 @@ public class ReconfigureProject {
     private final ConfigurationDescriptorProvider pdp;
     private final boolean isSunCompiler;
     private CompilerSet compilerSet;
+    private final int platform;
     private DataObject configure;
     private DataObject cmake;
     private DataObject qmake;
@@ -134,6 +135,7 @@ public class ReconfigureProject {
                 }
             }
         }
+        platform = configuration.getDevelopmentHost().getBuildPlatform();
     }
 
     public void addExecutionListener(ExecutionListener listener){
@@ -401,8 +403,11 @@ public class ReconfigureProject {
             buf.append(" -DCMAKE_CXX_FLAGS_DEBUG="+cppCompilerFlags); // NOI18N
             buf.append(" -DCMAKE_EXE_LINKER_FLAGS_DEBUG="+ldFlags); // NOI18N
         } else if (configure.endsWith(".pro")){ // NOI18N
-            if (isSunCompiler && Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
+            if (isSunCompiler && (platform == Platform.PLATFORM_SOLARIS_INTEL || platform == Platform.PLATFORM_SOLARIS_SPARC)) {
                 buf.append(" -spec solaris-cc"); // NOI18N
+            }
+            if (platform == Platform.PLATFORM_MACOSX) {
+                buf.append(" -spec macx-g++"); // NOI18N
             }
             buf.append(" QMAKE_CC="+getCCompilerName()); // NOI18N
             buf.append(" QMAKE_CXX="+getCppCompilerName()); // NOI18N
@@ -489,6 +494,7 @@ public class ReconfigureProject {
             lastFlags = removeFlag(lastFlags, "QMAKE_CXX=", false); // NOI18N
             lastFlags = removeFlag(lastFlags, "QMAKE_LDFLAGS=", false); // NOI18N
             lastFlags = removeFlag(lastFlags, "-spec solaris-cc", true); // NOI18N
+            lastFlags = removeFlag(lastFlags, "-spec macx-g++", true); // NOI18N
         } else if (MIMENames.MAKEFILE_MIME_TYPE.equals(mime)){
             return ""; // NOI18N
         }

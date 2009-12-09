@@ -41,7 +41,7 @@ package org.netbeans.modules.cnd.remote.support;
 import java.util.Map;
 import junit.framework.Test;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
+import org.netbeans.modules.cnd.remote.RemoteDevelopmentFirstTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 
@@ -81,6 +81,6 @@ public class TransportTestCase extends RemoteTestBase {
     }
 
     public static Test suite() {
-        return new RemoteDevelopmentTest(TransportTestCase.class);
+        return new RemoteDevelopmentFirstTest(TransportTestCase.class);
     }
 }

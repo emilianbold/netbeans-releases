@@ -42,7 +42,7 @@ package org.netbeans.modules.cnd.remote.sync;
 import java.io.File;
 import java.io.PrintWriter;
 import junit.framework.Test;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
+import org.netbeans.modules.cnd.remote.RemoteDevelopmentFirstTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
@@ -63,6 +63,6 @@ public class FtpSyncWorkerTestCase extends AbstractSyncWorkerTestCase {
 
 
     public static Test suite() {
-        return new RemoteDevelopmentTest(FtpSyncWorkerTestCase.class);
+        return new RemoteDevelopmentFirstTest(FtpSyncWorkerTestCase.class);
     }
 }
