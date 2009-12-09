@@ -41,7 +41,7 @@ package org.netbeans.modules.cnd.remote.support;
 import java.io.File;
 import java.util.concurrent.Future;
 import junit.framework.Test;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
+import org.netbeans.modules.cnd.remote.RemoteDevelopmentFirstTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
@@ -71,6 +71,6 @@ public class DownloadTestCase extends RemoteTestBase {
     }
     
     public static Test suite() {
-        return new RemoteDevelopmentTest(DownloadTestCase.class);
+        return new RemoteDevelopmentFirstTest(DownloadTestCase.class);
     }
 }

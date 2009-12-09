@@ -44,7 +44,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Collections;
 import junit.framework.Test;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
+import org.netbeans.modules.cnd.remote.RemoteDevelopmentFirstTest;
 import org.netbeans.modules.cnd.remote.support.RemoteTestBase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
@@ -133,6 +133,6 @@ public abstract class AbstractSyncWorkerTestCase extends RemoteTestBase {
     }
 
     public static Test suite() {
-        return new RemoteDevelopmentTest(AbstractSyncWorkerTestCase.class);
+        return new RemoteDevelopmentFirstTest(AbstractSyncWorkerTestCase.class);
     }
 }
