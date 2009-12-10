@@ -41,8 +41,13 @@ package org.netbeans.modules.mercurial;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Set;
 import org.netbeans.modules.mercurial.config.HgConfigFiles;
+import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgRepositoryContextCache;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -177,6 +182,76 @@ public class InterceptorTest extends AbstractHgTest {
         String attr = (String) fo.getAttribute("ProvidedExtensions.RemoteLocation");
         assertNotNull(attr);
         assertEquals(defaultPullReturned, attr);
+    }
+
+    public void testFullScanLimitedOnVisibleRoots () throws Exception {
+        File repo = new File("/tmp/", String.valueOf(System.currentTimeMillis()));
+        repo.mkdir();
+        File folderA = new File(repo, "folderA");
+        File fileA1 = new File(folderA, "file1");
+        File fileA2 = new File(folderA, "file2");
+        folderA.mkdirs();
+        fileA1.createNewFile();
+        fileA2.createNewFile();
+        File folderB = new File(repo, "folderB");
+        File fileB1 = new File(folderB, "file1");
+        File fileB2 = new File(folderB, "file2");
+        folderB.mkdirs();
+        fileB1.createNewFile();
+        fileB2.createNewFile();
+        File folderC = new File(repo, "folderC");
+        File fileC1 = new File(folderC, "file1");
+        File fileC2 = new File(folderC, "file2");
+        folderC.mkdirs();
+        fileC1.createNewFile();
+        fileC2.createNewFile();
+
+        HgCommand.doCreate(repo, NULL_LOGGER);
+
+        MercurialInterceptor interceptor = Mercurial.getInstance().getMercurialInterceptor();
+        Field f = MercurialInterceptor.class.getDeclaredField("hgFolderEventsHandler");
+        f.setAccessible(true);
+        Object hgFolderEventsHandler = f.get(interceptor);
+        f = hgFolderEventsHandler.getClass().getDeclaredField("seenRoots");
+        f.setAccessible(true);
+        HashMap<File, Set<File>> map = (HashMap) f.get(hgFolderEventsHandler);
+
+        getCache().getCachedStatus(folderA);
+        // some time for bg threads
+        Thread.sleep(3000);
+        Set<File> files = map.get(repo);
+        assertTrue(1 == files.size());
+        assertTrue(files.contains(folderA));
+
+        getCache().getCachedStatus(fileB1);
+        // some time for bg threads
+        Thread.sleep(3000);
+        assertTrue(2 == files.size());
+        assertTrue(files.contains(folderA));
+        assertTrue(files.contains(fileB1));
+
+        getCache().getCachedStatus(fileB2);
+        // some time for bg threads
+        Thread.sleep(3000);
+        assertTrue(2 == files.size());
+        assertTrue(files.contains(folderA));
+        assertTrue(files.contains(folderB));
+
+        getCache().getCachedStatus(folderC);
+        // some time for bg threads
+        Thread.sleep(3000);
+        assertTrue(3 == files.size());
+        assertTrue(files.contains(folderA));
+        assertTrue(files.contains(folderB));
+        assertTrue(files.contains(folderC));
+
+        getCache().getCachedStatus(repo);
+        // some time for bg threads
+        Thread.sleep(3000);
+        assertTrue(1 == files.size());
+        assertTrue(files.contains(repo));
+
+        Utils.deleteRecursively(repo);
     }
 
 }

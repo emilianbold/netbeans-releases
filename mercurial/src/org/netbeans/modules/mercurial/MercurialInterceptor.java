@@ -322,6 +322,13 @@ public class MercurialInterceptor extends VCSInterceptor {
         refreshTask.schedule(delayMillis);
     }
 
+    private void reScheduleRefresh (int delayMillis, Set<File> filesToRefresh) {
+        // refresh all at once
+        Mercurial.STATUS_LOG.fine("reScheduleRefresh: adding " + filesToRefresh);
+        this.filesToRefresh.addAll(filesToRefresh);
+        refreshTask.schedule(delayMillis);
+    }
+
     /**
      * Checks if administrative folder for a repository with the file is registered.
      * If it is not yet registered, this creates a fileobject for the .hg and keeps a reference to it.
@@ -380,6 +387,7 @@ public class MercurialInterceptor extends VCSInterceptor {
 
     private class HgFolderEventsHandler {
         private final HashMap<File, Long> hgFolders = new HashMap<File, Long>(5);
+        private final HashMap<File, Set<File>> seenRoots = new HashMap<File, Set<File>>(5);
         private final WeakHashMap<File, FileObject[]> hgFolderChildren = new WeakHashMap<File, FileObject[]>(5);
 
         /**
@@ -428,7 +436,7 @@ public class MercurialInterceptor extends VCSInterceptor {
                 if (lastCachedModified == null) {
                     File repository = hgFolder.getParentFile();
                     Mercurial.STATUS_LOG.fine("handleDirstateEvent: planning repository scan for " + repository.getAbsolutePath()); //NOI18N
-                    reScheduleRefresh(3000, repository); // scan repository root
+                    reScheduleRefresh(3000, getSeenRoots(repository)); // scan repository root
                 }
             }
         }
@@ -438,19 +446,53 @@ public class MercurialInterceptor extends VCSInterceptor {
             File repositoryRoot = Mercurial.getInstance().getRepositoryRoot(file);
             if (repositoryRoot != null) {
                 File hgFolder = HgUtils.getHgFolderForRoot(repositoryRoot);
-                synchronized (hgFolders) {
-                    if (!hgFolders.containsKey(hgFolder)) {
+                if (!addSeenRoot(repositoryRoot, file)) {
+                    synchronized (hgFolders) {
                         // this means the repository has not yet been scanned, so scan it
                         Mercurial.STATUS_LOG.fine("pingRepositoryRootFor: planning a scan for " + repositoryRoot.getAbsolutePath() + " - " + file.getAbsolutePath()); //NOI18N
-                        reScheduleRefresh(2000, repositoryRoot); // the whole clone
-                        if (hgFolder.isDirectory()) {
-                            // however there might be NO .hg folder, especially for just initialized repositories
-                            // so keep the reference only for existing and valid .hg folders
-                            hgFolders.put(hgFolder, null);
-                            refreshHgFolderTimestamp(hgFolder, hgFolder.lastModified());
+                        reScheduleRefresh(4000, file);
+                        if (!hgFolders.containsKey(hgFolder)) {
+                            if (hgFolder.isDirectory()) {
+                                // however there might be NO .hg folder, especially for just initialized repositories
+                                // so keep the reference only for existing and valid .hg folders
+                                hgFolders.put(hgFolder, null);
+                                refreshHgFolderTimestamp(hgFolder, hgFolder.lastModified());
+                            }
                         }
                     }
                 }
+            }
+        }
+
+        private Set<File> getSeenRoots (File repositoryRoot) {
+            Set<File> retval = new HashSet<File>();
+            Set<File> seenRootsForRepository = getSeenRootsForRepository(repositoryRoot);
+            synchronized (seenRootsForRepository) {
+                 retval.addAll(seenRootsForRepository);
+            }
+            return retval;
+        }
+
+        private boolean addSeenRoot (File repositoryRoot, File rootToAdd) {
+            boolean alreadyAdded = true;
+            Set<File> seenRootsForRepository = getSeenRootsForRepository(repositoryRoot);
+            synchronized (seenRootsForRepository) {
+                if (!seenRootsForRepository.contains(repositoryRoot)) {
+                    // try to add the file only when the repository root is not yet registered
+                    rootToAdd = FileUtil.normalizeFile(rootToAdd);
+                    alreadyAdded = HgUtils.prepareRootFiles(repositoryRoot, seenRootsForRepository, rootToAdd);
+                }
+            }
+            return alreadyAdded;
+        }
+
+        private Set<File> getSeenRootsForRepository (File repositoryRoot) {
+            synchronized (seenRoots) {
+                 Set<File> seenRootsForRepository = seenRoots.get(repositoryRoot);
+                 if (seenRootsForRepository == null) {
+                     seenRoots.put(repositoryRoot, seenRootsForRepository = new HashSet<File>());
+                 }
+                 return seenRootsForRepository;
             }
         }
     }
