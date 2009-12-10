@@ -70,11 +70,11 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-web-beans-navigation-actions-InspectInjectablesAtCaretAction.instance"/-->
         </folder>
     </folder>
-        <folder name="Shortcuts">
+        <!--folder name="Shortcuts">
 
         <file name="SD-J.shadow">
            <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-web-beans-navigation-actions-InspectInjectablesAtCaretAction.instance"/>
         </file>      
 
-    </folder> 
+    </folder--> 
 </filesystem>
