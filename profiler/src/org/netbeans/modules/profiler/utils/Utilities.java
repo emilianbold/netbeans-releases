@@ -53,7 +53,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import org.netbeans.modules.profiler.projectsupport.utilities.SourceUtils;
 
 
 /**
@@ -65,85 +64,7 @@ import org.netbeans.modules.profiler.projectsupport.utilities.SourceUtils;
 public final class Utilities {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
 
-    private static final class SelectClassPanel extends JPanel implements PropertyChangeListener, ExplorerManager.Provider {
-        //~ Instance fields ------------------------------------------------------------------------------------------------------
-
-        private BeanTreeView explorerTree;
-        private ExplorerManager manager;
-        private JButton okButton;
-        private boolean allowMultiple;
-
-        //~ Constructors ---------------------------------------------------------------------------------------------------------
-
-        public SelectClassPanel() {
-        }
-
-        private SelectClassPanel(final JButton okButton, final boolean allowMultiple) {
-            manager = new ExplorerManager();
-            manager.setRootContext(new ProjectsRootNode());
-            manager.addPropertyChangeListener(this);
-
-            this.okButton = okButton;
-            this.allowMultiple = allowMultiple;
-            okButton.setEnabled(false);
-            setBorder(new EmptyBorder(12, 12, 12, 12));
-            setLayout(new BorderLayout());
-            explorerTree = new BeanTreeView();
-            explorerTree.getAccessibleContext().setAccessibleName(EXPLORER_TREE_ACCESS_NAME);
-            explorerTree.getAccessibleContext().setAccessibleDescription(EXPLORER_TREE_ACCESS_DESCR);
-            explorerTree.setDefaultActionAllowed(false);
-            explorerTree.setPopupAllowed(false);
-            explorerTree.setBorder(UIManager.getBorder("ScrollPane.border")); //NOI18N
-            add(explorerTree, java.awt.BorderLayout.CENTER);
-        }
-
-        //~ Methods --------------------------------------------------------------------------------------------------------------
-
-        /**
-         * Get the explorer manager.
-         *
-         * @return the manager
-         */
-        public ExplorerManager getExplorerManager() {
-            return manager;
-        }
-
-        public Node[] getSelectedClassElements() {
-            return getExplorerManager().getSelectedNodes();
-        }
-
-        public void propertyChange(final PropertyChangeEvent evt) {
-            final Node[] nodes = getExplorerManager().getSelectedNodes();
-            boolean enable = false;
-
-            if (allowMultiple) {
-                if (nodes.length > 0) {
-                    for (int i = 0; i < nodes.length; i++) {
-                        if ((nodes[i].getCookie(DataObject.class) == null) && (SourceUtils.isJavaClass(nodes[i]))) {
-                            enable = false;
-
-                            break;
-                        }
-                    }
-                }
-            } else {
-                if ((nodes.length == 1) && (nodes[0].getCookie(DataObject.class) != null) && (SourceUtils.isJavaClass(nodes[0]))) {
-                    enable = true;
-                }
-            }
-
-            okButton.setEnabled(enable);
-        }
-
-        void activate() {
-            ExplorerUtils.activateActions(manager, true);
-        }
-
-        void deactivate() {
-            ExplorerUtils.activateActions(manager, false);
-        }
-    }
-
+ 
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
 
     // -----
@@ -157,7 +78,6 @@ public final class Utilities {
     private static final String EXPLORER_TREE_ACCESS_DESCR = NbBundle.getMessage(Utilities.class,
                                                                                  "Utilities_ExplorerTreeAccessDescr"); // NOI18N
                                                                                                                        // -----
-    private static SelectClassPanel selectClassPanel;
     private static JButton okButton;
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
@@ -168,23 +88,7 @@ public final class Utilities {
      * @return ClassElement of the top class in the selected class file
      */
     public static Node[] selectClass(final boolean allowMultiple) {
-        okButton = new JButton(SELECT_CLASS_BUTTON_OK_TEXT);
-        selectClassPanel = new SelectClassPanel(okButton, allowMultiple);
 
-        final DialogDescriptor dd = new DialogDescriptor(selectClassPanel, SELECT_CLASS_DIALOG_CAPTION, true,
-                                                         new Object[] { okButton, DialogDescriptor.CANCEL_OPTION }, okButton,
-                                                         DialogDescriptor.BOTTOM_ALIGN, null, null);
-        final Dialog d = ProfilerDialogs.createDialog(dd);
-        d.setVisible(true);
-
-        if (dd.getValue() == okButton) {
-            selectClassPanel.deactivate();
-
-            return selectClassPanel.getSelectedClassElements();
-        }
-
-        selectClassPanel.deactivate();
-        selectClassPanel = null;
 
         return null;
     }
